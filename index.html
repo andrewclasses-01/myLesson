@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lesson in Andrew Classes</title>
+<link rel="icon" href="assets/avatar.jpg">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+
+<!-- ===== SCREEN 1: SIGN IN ===== -->
+<section class="screen" id="scLogin">
+  <div class="login-wrap">
+    <img class="avatar big" src="assets/avatar.jpg" alt="Teacher Andrew">
+    <h1 class="site-title"><span>Lesson</span><small>in ANDREW CLASSES</small></h1>
+
+    <div class="card login-card">
+      <label class="lbl" for="inClass">Your class</label>
+      <input id="inClass" type="text" autocomplete="off" placeholder="A1C" autocapitalize="characters">
+
+      <label class="lbl" for="inName">Your name</label>
+      <input id="inName" type="text" autocomplete="off" placeholder="Type your name">
+      <div class="suggest" id="suggest" hidden></div>
+
+      <button class="btn primary wide" id="btnLogin">START</button>
+      <p class="tiny" id="loginNote">Ask teacher Andrew if you are not sure what to type.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===== SCREEN 2: MY CLASS ===== -->
+<section class="screen" id="scClass" hidden>
+  <header class="hero">
+    <div class="wrap hero-in">
+      <img class="avatar" src="assets/avatar.jpg" alt="">
+      <div class="hero-txt">
+        <p class="eyebrow">Teacher Andrew</p>
+        <h1 id="helloName">Hello!</h1>
+        <div class="chips">
+          <span class="chip class" id="chipClass">CLASS</span>
+          <span class="chip ghost" id="chipCount">0 lessons</span>
+        </div>
+      </div>
+      <button class="linkbtn" id="btnLogout">Not you?</button>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div id="lessonList" class="lesson-list"></div>
+    <p class="empty-note" id="emptyNote" hidden>No lesson yet. Come back after class.</p>
+  </div>
+  <footer class="foot"><img src="assets/avatar.jpg" alt=""><span>Lesson in Andrew Classes</span></footer>
+</section>
+
+<!-- ===== SCREEN 3: ONE LESSON ===== -->
+<section class="screen" id="scLesson" hidden>
+  <header class="hero">
+    <div class="wrap hero-in">
+      <button class="linkbtn back" id="btnBack">‹ All lessons</button>
+      <div class="hero-txt">
+        <p class="eyebrow" id="lsEyebrow">Teacher Andrew · English class</p>
+        <h1 id="lsTitle">Lesson</h1>
+        <div class="chips">
+          <span class="chip class" id="lsChipClass">CLASS</span>
+          <span class="chip date" id="lsChipDate">DUE</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <p class="lede" id="lsLede">Do the parts below one by one.</p>
+    <main id="lsBlocks"></main>
+  </div>
+  <footer class="foot"><img src="assets/avatar.jpg" alt=""><span>Lesson in Andrew Classes</span></footer>
+</section>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-card">
+    <h2 id="modalTitle">Oops</h2>
+    <p id="modalText"></p>
+    <button class="btn primary" id="modalOk">OK</button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,155 @@
+/* ============================================================
+   Lesson in Andrew Classes — TRANG CỦA HỌC SINH
+   Design thầy đã duyệt 08/07/2026 (dự án WebDesign):
+   LUÔN light mode · Montserrat nhúng · teal #0E7C6E + amber · thẻ bo 18px.
+   (App máy tính của thầy thì nền tối — hai hồ sơ khác nhau, đừng trộn.)
+   ============================================================ */
+:root{
+  --ground:#F7FAF9; --surface:#FFFFFF; --ink:#16232A; --muted:#5F7370;
+  --accent:#0E7C6E; --accent-ink:#FFFFFF; --accent-soft:#E3F1EE;
+  --amber:#F2A93B; --amber-soft:#FCF3E2;
+  --line:#E0EAE7;
+  --shadow:0 1px 3px rgba(22,35,42,.07), 0 8px 24px rgba(22,35,42,.06);
+  --mono:"Cascadia Code","Consolas",ui-monospace,monospace;
+  --sans:'Montserrat',"Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var(--sans)}
+.wrap{max-width:680px; margin:0 auto; padding:0 20px}
+.screen[hidden]{display:none}
+
+/* ---------- SIGN IN ---------- */
+.login-wrap{min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; padding:36px 20px; gap:6px}
+.avatar{width:92px; height:92px; border-radius:50%; object-fit:cover; flex:none;
+  border:4px solid var(--surface); outline:3px solid var(--accent); box-shadow:var(--shadow)}
+.avatar.big{width:104px; height:104px; margin-bottom:14px}
+.site-title{margin:0 0 22px; text-align:center}
+.site-title span{display:block; font:800 clamp(30px,9vw,40px)/1.1 var(--sans); color:var(--accent);
+  letter-spacing:-.02em}
+.site-title small{display:block; margin-top:7px; font:600 11px/1 var(--sans);
+  letter-spacing:.2em; color:var(--muted)}
+
+.card{background:var(--surface); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:24px}
+.login-card{width:100%; max-width:380px; position:relative}
+.lbl{display:block; font:600 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--muted); margin:0 0 8px}
+.lbl+input{margin-bottom:18px}
+input[type=text]{width:100%; padding:14px 16px; border-radius:12px; border:1.5px solid var(--line);
+  background:#fff; color:var(--ink); font:600 16px/1.2 var(--sans); outline:none;
+  transition:border-color .15s}
+/* 16px là cỡ tối thiểu để iPhone không tự phóng to trang khi bấm vào ô nhập. */
+input[type=text]:focus{border-color:var(--accent)}
+input::placeholder{color:#9fb0ac; font-weight:500}
+
+.suggest{position:absolute; left:24px; right:24px; z-index:5; margin-top:-16px;
+  background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow);
+  max-height:230px; overflow:auto}
+.suggest[hidden]{display:none}
+.suggest button{display:block; width:100%; text-align:left; padding:12px 16px; border:0;
+  background:transparent; font:600 15px/1.2 var(--sans); color:var(--ink); cursor:pointer}
+.suggest button:hover,.suggest button.on{background:var(--accent-soft)}
+
+.btn{display:inline-flex; align-items:center; justify-content:center; padding:14px 24px;
+  border-radius:12px; border:0; font:600 13.5px/1 var(--sans); letter-spacing:.06em;
+  text-decoration:none; cursor:pointer; transition:filter .12s, transform .12s}
+.btn.primary{background:var(--accent); color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent; color:var(--accent); border:1.5px solid var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft)}
+.btn.wide{width:100%}
+.btn:active{transform:scale(.97)}
+.tiny{color:var(--muted); font-size:12px; margin:14px 0 0; text-align:center}
+
+/* ---------- HERO ---------- */
+.hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line); background:var(--surface)}
+.hero::before{content:""; position:absolute; width:420px; height:420px; border-radius:50%;
+  background:radial-gradient(circle,var(--accent-soft) 0%,transparent 68%); top:-190px; right:-110px}
+.hero::after{content:""; position:absolute; width:300px; height:300px; border-radius:50%;
+  background:radial-gradient(circle,var(--amber-soft) 0%,transparent 66%); bottom:-150px; left:-80px}
+/* Lề ngang phải khai LẠI ở đây: .hero-in đứng sau .wrap trong file nên padding
+   của nó ĐÈ padding của .wrap — thiếu dòng này thì chữ dính sát mép màn hình. */
+.hero-in{position:relative; z-index:1; display:flex; align-items:center; gap:22px;
+  padding:28px 20px 26px; flex-wrap:wrap}
+.hero-txt{flex:1; min-width:230px}
+.eyebrow{font:600 11.5px/1 var(--sans); letter-spacing:.18em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 10px}
+h1{font:800 clamp(20px,5vw,28px)/1.25 var(--sans); letter-spacing:-.01em; margin:0 0 12px;
+  text-wrap:balance}
+h1 .code{font-family:var(--mono); font-weight:700; color:var(--accent)}
+.chips{display:flex; gap:8px; flex-wrap:wrap}
+.chip{font:600 11.5px/1 var(--sans); letter-spacing:.08em; padding:7px 12px; border-radius:999px}
+.chip.class{background:var(--accent); color:var(--accent-ink)}
+.chip.date{background:var(--amber-soft); color:var(--ink); border:1px solid var(--amber)}
+.chip.ghost{background:var(--accent-soft); color:var(--accent)}
+.linkbtn{background:transparent; border:0; color:var(--muted); font:600 12.5px/1 var(--sans);
+  cursor:pointer; padding:8px}
+.linkbtn:hover{color:var(--accent)}
+.linkbtn.back{position:relative; z-index:1; flex-basis:100%; text-align:left; padding-left:0}
+/* "Not you?" nép góc trên phải, không chiếm một dòng riêng dưới tên em. */
+#btnLogout{position:absolute; top:10px; right:14px; z-index:2}
+/* Chừa chỗ cho nút đó, không thì nó đè lên dòng chữ nhỏ phía trên tên em. */
+#scClass .eyebrow{padding-right:84px}
+
+/* ---------- LESSON LIST ---------- */
+.lesson-list{display:flex; flex-direction:column; gap:14px; padding:22px 0 0}
+.lesson-card{display:flex; align-items:center; gap:16px; text-align:left; width:100%;
+  background:var(--surface); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:18px 20px; cursor:pointer;
+  transition:transform .12s, border-color .12s}
+.lesson-card:hover{border-color:var(--accent); transform:translateY(-1px)}
+.lesson-card:active{transform:scale(.99)}
+.lc-main{flex:1; min-width:0}
+.lc-title{font:800 15.5px/1.35 var(--sans); margin:0 0 6px; word-break:break-word}
+.lc-title .code{font-family:var(--mono); font-weight:700; color:var(--accent); font-size:14px}
+.lc-meta{display:flex; gap:8px; flex-wrap:wrap}
+.lc-tag{font:600 10.5px/1 var(--sans); letter-spacing:.1em; padding:6px 10px; border-radius:999px;
+  background:var(--accent-soft); color:var(--accent)}
+.lc-tag.due{background:var(--amber-soft); color:#8a5b0e; border:1px solid var(--amber)}
+.lc-go{flex:none; color:var(--accent); font-size:22px; font-weight:700}
+.empty-note{color:var(--muted); text-align:center; padding:60px 0}
+
+/* ---------- ONE LESSON ---------- */
+.lede{color:var(--muted); font-size:14px; margin:22px 0 0}
+main{display:flex; flex-direction:column; gap:20px; padding:22px 0 0}
+.block{background:var(--surface); border:1px solid var(--line); border-radius:18px;
+  box-shadow:var(--shadow); padding:24px}
+.block-head{display:flex; align-items:center; gap:12px; margin-bottom:6px}
+.step{flex:none; width:32px; height:32px; border-radius:10px; background:var(--accent-soft);
+  color:var(--accent); display:grid; place-items:center; font:800 15px/1 var(--sans)}
+.block-head h2{margin:0; font:800 17px/1.3 var(--sans); letter-spacing:.03em}
+.act{font:600 12.5px/1.5 var(--mono); color:var(--muted); margin:0 0 18px 44px}
+
+/* Game AWord: KHÔNG tải iframe cho tới khi học sinh bấm — mở trang có 3 game mà
+   nạp sẵn cả 3 thì máy yếu ì ra, và tốn dữ liệu di động của các em. */
+.game{position:relative; border-radius:14px; overflow:hidden; border:1px solid var(--line);
+  background:var(--accent-soft); aspect-ratio:16/9}
+.game iframe{width:100%; height:100%; border:0; display:block}
+.game-cover{position:absolute; inset:0; display:grid; place-content:center; gap:14px;
+  justify-items:center; cursor:pointer; background:var(--accent-soft)}
+.game-cover:hover .play{filter:brightness(1.08); transform:scale(1.04)}
+.play{width:74px; height:74px; border-radius:50%; background:var(--accent); color:#fff;
+  display:grid; place-items:center; box-shadow:var(--shadow); transition:transform .15s, filter .15s}
+.play svg{width:30px; height:30px; margin-left:4px}
+.game-cover span{font:600 11.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
+  color:var(--accent)}
+.block-foot{display:flex; gap:10px; flex-wrap:wrap; margin-top:16px}
+
+.video-frame{aspect-ratio:16/9; border-radius:12px; background:var(--accent-soft);
+  border:1px solid var(--line); margin-top:4px; overflow:hidden}
+.video-frame iframe{width:100%; height:100%; border:0; display:block}
+.note{color:var(--muted); font-size:12.5px; margin:12px 2px 0}
+
+.foot{max-width:680px; margin:40px auto 0; padding:20px 20px 48px; border-top:1px solid var(--line);
+  display:flex; align-items:center; gap:12px; color:var(--muted); font-size:12.5px}
+.foot img{width:34px; height:34px; border-radius:50%; object-fit:cover; outline:2px solid var(--accent-soft)}
+
+/* ---------- MODAL ---------- */
+.modal{position:fixed; inset:0; display:grid; place-items:center; z-index:60;
+  background:rgba(22,35,42,.45); padding:20px}
+.modal[hidden]{display:none}
+.modal-card{background:var(--surface); border-radius:18px; box-shadow:var(--shadow);
+  padding:26px; max-width:360px; width:100%; text-align:center}
+.modal-card h2{margin:0 0 10px; font:800 18px/1.3 var(--sans)}
+.modal-card p{margin:0 0 20px; color:var(--muted); font-size:14px}

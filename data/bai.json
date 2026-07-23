@@ -1,0 +1,35 @@
+{
+  "capNhat": "2026-07-23 10:50:34",
+  "bai": {
+    "A1C": [
+      {
+        "id": "A1C_9.6_DICTS_LSFLY-S1.T3.P1-2-3",
+        "tieuDe": "A1C_9.6_DICTS LSFLY-S1.T3.P1-2-3",
+        "tenHien": "A1C_9.6_DICTS LSFLY-S1.T3.P1-2-3",
+        "dang": "DICTS",
+        "ngay": "9.6",
+        "taoLuc": "2026-07-23",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "",
+            "ma": "j9nsa2"
+          },
+          {
+            "loai": "video",
+            "ten": "LISTENING DICTATION",
+            "act": "",
+            "driveId": "1zmSRj4pyY8XlMuy-2gWUcmdUEzN6jvqy"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "",
+            "ma": "j9nsa2"
+          }
+        ]
+      }
+    ]
+  }
+}

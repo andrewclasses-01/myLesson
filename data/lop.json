@@ -1,0 +1,489 @@
+{
+  "capNhat": "2026-07-23 10:50:34",
+  "nguon": "myStudent",
+  "lop": [
+    {
+      "maLop": "A1A",
+      "tenGoc": "A1-A",
+      "hocSinh": [
+        {
+          "ten": "BẢO NGỌC"
+        },
+        {
+          "ten": "BẢO TRÂN"
+        },
+        {
+          "ten": "DIỆP"
+        },
+        {
+          "ten": "KHIÊM"
+        },
+        {
+          "ten": "KIM CHI"
+        },
+        {
+          "ten": "MAI DƯƠNG 2"
+        },
+        {
+          "ten": "MINH ANH"
+        },
+        {
+          "ten": "MINH HUY"
+        },
+        {
+          "ten": "MINH PHƯƠNG"
+        },
+        {
+          "ten": "MINH QUÂN"
+        },
+        {
+          "ten": "NHẬT SƠN"
+        },
+        {
+          "ten": "THÙY DƯƠNG 1"
+        },
+        {
+          "ten": "TRANG ANH"
+        },
+        {
+          "ten": "TRƯỜNG SƠN"
+        },
+        {
+          "ten": "TUẤN KHANG"
+        },
+        {
+          "ten": "TƯỜNG VY"
+        },
+        {
+          "ten": "VÂN TRANG"
+        },
+        {
+          "ten": "XUÂN HƯƠNG"
+        }
+      ]
+    },
+    {
+      "maLop": "A1B",
+      "tenGoc": "A1-B",
+      "hocSinh": [
+        {
+          "ten": "BẢO AN"
+        },
+        {
+          "ten": "BẢO ANH"
+        },
+        {
+          "ten": "BEN"
+        },
+        {
+          "ten": "CẨM ANH"
+        },
+        {
+          "ten": "CÔNG"
+        },
+        {
+          "ten": "DIỆP"
+        },
+        {
+          "ten": "ĐĂNG"
+        },
+        {
+          "ten": "HÀ VY"
+        },
+        {
+          "ten": "LINH"
+        },
+        {
+          "ten": "MINH NGỌC"
+        },
+        {
+          "ten": "PHÚC"
+        },
+        {
+          "ten": "PHƯỚC"
+        },
+        {
+          "ten": "THÀNH"
+        },
+        {
+          "ten": "TRANG ANH"
+        },
+        {
+          "ten": "TRUNG KIÊN"
+        },
+        {
+          "ten": "TUỆ LÂM"
+        },
+        {
+          "ten": "TUỆ NHI"
+        },
+        {
+          "ten": "TÙNG LÂM"
+        }
+      ]
+    },
+    {
+      "maLop": "A1C",
+      "tenGoc": "A1-C",
+      "hocSinh": [
+        {
+          "ten": "CHẤN PHONG"
+        },
+        {
+          "ten": "DUY"
+        },
+        {
+          "ten": "GIANG"
+        },
+        {
+          "ten": "HẢI"
+        },
+        {
+          "ten": "HẢI PHONG"
+        },
+        {
+          "ten": "HIẾU"
+        },
+        {
+          "ten": "HOÀNG NGÂN"
+        },
+        {
+          "ten": "HƯƠNG"
+        },
+        {
+          "ten": "LINH NHI"
+        },
+        {
+          "ten": "MINH PHƯƠNG"
+        },
+        {
+          "ten": "NGỌC KHANG"
+        },
+        {
+          "ten": "NGỌC KHÔI"
+        },
+        {
+          "ten": "NHẬT MINH"
+        },
+        {
+          "ten": "PHƯƠNG VY"
+        },
+        {
+          "ten": "QUYÊN"
+        },
+        {
+          "ten": "THÁI AN"
+        },
+        {
+          "ten": "THU PHƯƠNG"
+        }
+      ]
+    },
+    {
+      "maLop": "A2A",
+      "tenGoc": "A2-A",
+      "hocSinh": [
+        {
+          "ten": "AN NHIÊN"
+        },
+        {
+          "ten": "BẢO AN"
+        },
+        {
+          "ten": "CHI"
+        },
+        {
+          "ten": "DŨNG"
+        },
+        {
+          "ten": "ĐÌNH ĐỨC"
+        },
+        {
+          "ten": "ĐỨC TRÍ"
+        },
+        {
+          "ten": "HÀ MY"
+        },
+        {
+          "ten": "KHOA"
+        },
+        {
+          "ten": "LÂM ANH"
+        },
+        {
+          "ten": "MINH ANH"
+        },
+        {
+          "ten": "NGỌC MINH"
+        },
+        {
+          "ten": "NGUYỄN KHANG"
+        },
+        {
+          "ten": "NHẬT NAM"
+        },
+        {
+          "ten": "NHƯ"
+        },
+        {
+          "ten": "PHÚC"
+        },
+        {
+          "ten": "PHÚC AN"
+        },
+        {
+          "ten": "THÀNH ĐỨC"
+        },
+        {
+          "ten": "THẢO NHI"
+        },
+        {
+          "ten": "VINH"
+        }
+      ]
+    },
+    {
+      "maLop": "A2B",
+      "tenGoc": "A2-B",
+      "hocSinh": [
+        {
+          "ten": "ÁNH"
+        },
+        {
+          "ten": "ĐẠT"
+        },
+        {
+          "ten": "HÀ PHƯƠNG"
+        },
+        {
+          "ten": "HẢI NAM"
+        },
+        {
+          "ten": "HÂN"
+        },
+        {
+          "ten": "HOÀNG CHI"
+        },
+        {
+          "ten": "HƯNG"
+        },
+        {
+          "ten": "KHÁNH"
+        },
+        {
+          "ten": "KHÁNH NGÂN"
+        },
+        {
+          "ten": "KIM NGÂN"
+        },
+        {
+          "ten": "MAI HOA"
+        },
+        {
+          "ten": "MINH ANH"
+        },
+        {
+          "ten": "MY"
+        },
+        {
+          "ten": "MỸ ANH"
+        },
+        {
+          "ten": "NHI"
+        },
+        {
+          "ten": "PHONG"
+        },
+        {
+          "ten": "THƯ"
+        },
+        {
+          "ten": "TRỌNG"
+        }
+      ]
+    },
+    {
+      "maLop": "B1AH",
+      "tenGoc": "B1-A (H)",
+      "hocSinh": [
+        {
+          "ten": "BẢO CHÂU"
+        },
+        {
+          "ten": "CƯỜNG"
+        },
+        {
+          "ten": "DIỄM MY"
+        },
+        {
+          "ten": "HÀ AN"
+        },
+        {
+          "ten": "HOÀNG"
+        },
+        {
+          "ten": "KHÔI"
+        },
+        {
+          "ten": "NGÂN"
+        },
+        {
+          "ten": "PHONG"
+        },
+        {
+          "ten": "QUÂN"
+        },
+        {
+          "ten": "TIẾN"
+        },
+        {
+          "ten": "TRÚC"
+        }
+      ]
+    },
+    {
+      "maLop": "B2A",
+      "tenGoc": "B2-A",
+      "hocSinh": [
+        {
+          "ten": "ANNA"
+        },
+        {
+          "ten": "ANTHONY"
+        },
+        {
+          "ten": "BARRY"
+        },
+        {
+          "ten": "BEE"
+        },
+        {
+          "ten": "ĐĂNG MINH"
+        },
+        {
+          "ten": "HÀ VY"
+        },
+        {
+          "ten": "HÂN"
+        },
+        {
+          "ten": "HUYỀN"
+        },
+        {
+          "ten": "HƯNG"
+        },
+        {
+          "ten": "LỘC"
+        },
+        {
+          "ten": "LUCY"
+        },
+        {
+          "ten": "NGỌC"
+        },
+        {
+          "ten": "NGỌC NAM"
+        },
+        {
+          "ten": "NHI"
+        },
+        {
+          "ten": "ROSIE"
+        },
+        {
+          "ten": "SONG NGỌC"
+        }
+      ]
+    },
+    {
+      "maLop": "B2B",
+      "tenGoc": "B2-B",
+      "hocSinh": [
+        {
+          "ten": "BENTLY"
+        },
+        {
+          "ten": "BÌNH MINH"
+        },
+        {
+          "ten": "DŨNG"
+        },
+        {
+          "ten": "DUY MINH"
+        },
+        {
+          "ten": "HÀ"
+        },
+        {
+          "ten": "HÂN"
+        },
+        {
+          "ten": "LINH"
+        },
+        {
+          "ten": "NAM PHONG"
+        },
+        {
+          "ten": "NHÃ PHƯƠNG"
+        },
+        {
+          "ten": "THANH MAI"
+        },
+        {
+          "ten": "THẢO"
+        }
+      ]
+    },
+    {
+      "maLop": "BTR",
+      "tenGoc": "BỔ TRỢ",
+      "hocSinh": [
+        {
+          "ten": "BẢO NGỌC"
+        },
+        {
+          "ten": "H. PHƯƠNG THẢO"
+        },
+        {
+          "ten": "HÀ ANH"
+        },
+        {
+          "ten": "HÀ PHƯƠNG"
+        },
+        {
+          "ten": "KHÁNH MINH"
+        },
+        {
+          "ten": "KHỔNG NGỌC LINH"
+        },
+        {
+          "ten": "MỸ ANH"
+        },
+        {
+          "ten": "NGỌC BẢO"
+        },
+        {
+          "ten": "P. PHƯƠNG THẢO"
+        },
+        {
+          "ten": "THANH PHƯƠNG"
+        },
+        {
+          "ten": "THANH TÂM"
+        },
+        {
+          "ten": "TIẾN"
+        },
+        {
+          "ten": "TRÀ MY"
+        },
+        {
+          "ten": "TRANG ANH"
+        },
+        {
+          "ten": "TRÚC LINH"
+        }
+      ]
+    }
+  ]
+}

@@ -183,10 +183,25 @@
   function veKhoi(k, so) {
     var sec = document.createElement('section');
     sec.className = 'block';
+    // Đầu khối giữ đúng thứ tự của Google Sites: TÊN PHẦN → dòng yêu cầu
+    // ("100% requirement") → đặc tả act nhỏ bên dưới.
     var dau =
       '<div class="block-head"><span class="step">' + so + '</span>' +
       '<h2>' + chuAnToan(k.ten || 'PRACTICE') + '</h2></div>' +
+      (k.yeuCau ? '<p class="req">' + chuAnToan(k.yeuCau) + '</p>' : '') +
       (k.act ? '<p class="act">' + chuAnToan(k.act) + '</p>' : '');
+
+    // Khối slide (dạng SP): một nút mở slide Canva ra tab mới. Canva chặn nhúng
+    // trong iframe nên KHÔNG nhúng — bấm là mở thẳng, đúng như trang Sites cũ.
+    if (k.loai === 'slide') {
+      sec.innerHTML = dau +
+        '<div class="block-foot one">' +
+          '<a class="btn primary wide" target="_blank" rel="noopener" href="' +
+          chuAnToan(k.slide) + '">OPEN SLIDE</a>' +
+        '</div>' +
+        '<p class="note">Record your speaking video with this slide.</p>';
+      return sec;
+    }
 
     if (k.loai === 'video') {
       sec.innerHTML = dau +

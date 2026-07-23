@@ -119,7 +119,13 @@ main{display:flex; flex-direction:column; gap:20px; padding:22px 0 0}
 .step{flex:none; width:32px; height:32px; border-radius:10px; background:var(--accent-soft);
   color:var(--accent); display:grid; place-items:center; font:800 15px/1 var(--sans)}
 .block-head h2{margin:0; font:800 17px/1.3 var(--sans); letter-spacing:.03em}
+/* Dòng yêu cầu ("100% requirement") — giữ đúng chỗ nó đứng trên Google Sites:
+   ngay dưới tên phần, thụt vào bằng bề rộng ô số. */
+.req{font:600 13px/1.5 var(--sans); color:var(--accent); margin:0 0 18px 44px}
 .act{font:600 12.5px/1.5 var(--mono); color:var(--muted); margin:0 0 18px 44px}
+.req + .act{margin-top:-14px}
+.block-foot.one{margin-top:20px}
+.block-foot.one .btn{flex:1; text-align:center; justify-content:center}
 
 /* Game AWord: KHÔNG tải iframe cho tới khi học sinh bấm — mở trang có 3 game mà
    nạp sẵn cả 3 thì máy yếu ì ra, và tốn dữ liệu di động của các em. */

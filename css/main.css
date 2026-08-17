@@ -19,16 +19,48 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
 .screen[hidden]{display:none}
 
 /* ---------- SIGN IN ---------- */
-.login-wrap{min-height:100vh; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; padding:36px 20px; gap:6px}
-/* "Andrew Classes" dài gấp đôi chữ "Lesson" cũ nên cỡ chữ phải nhỏ hơn để vẫn
-   nằm gọn MỘT dòng: 38px trên máy tính, co theo bề ngang xuống 27px ở máy hẹp. */
-.site-title{margin:0 0 26px; text-align:center; white-space:nowrap;
-  font:800 clamp(27px,7.6vw,38px)/1.15 var(--sans); color:var(--accent); letter-spacing:-.02em}
+/* Nền chuyển màu: dải teal → aqua → xanh biển, kéo rộng 300% rồi TRƯỢT chậm
+   26 giây một vòng. Trượt background-position nên máy chỉ vẽ lại màu, không
+   tính lại bố cục — nhẹ cả với máy yếu của các em.
+   100svh (không phải 100vh) để trên iPhone thanh địa chỉ không cắt mất đáy. */
+.login-wrap{min-height:100vh; min-height:100svh; position:relative;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:36px 20px; gap:6px;
+  background:linear-gradient(135deg,#0A5F56,#0E7C6E,#17A398,#2BA8B8,#1E6F86,#0E7C6E,#0A5F56);
+  background-size:300% 300%; animation:nen-troi 26s ease-in-out infinite}
+@keyframes nen-troi{
+  0%{background-position:0% 50%}
+  50%{background-position:100% 50%}
+  100%{background-position:0% 50%}
+}
+/* Hai quầng sáng mềm nằm yên: một ấm (amber của bộ nhận diện) một mát, để nền
+   có chiều sâu chứ không phẳng lì. Không chuyển động nên không tốn gì thêm.
+   ⛔ `fixed` chứ KHÔNG `absolute` + `overflow:hidden` ở khối cha: quầng rộng
+   60vmax nên cách kia buộc phải cắt tràn, mà cắt tràn thì màn thấp (điện thoại
+   nằm ngang, hoặc bàn phím bật lên) sẽ CẮT LUÔN ô nhập, không cuộn tới được. */
+.login-wrap::before,.login-wrap::after{content:""; position:fixed; border-radius:50%;
+  pointer-events:none}
+.login-wrap::before{width:60vmax; height:60vmax; left:-22vmax; bottom:-26vmax;
+  background:radial-gradient(circle,rgba(242,169,59,.20) 0%,transparent 62%)}
+.login-wrap::after{width:52vmax; height:52vmax; right:-20vmax; top:-24vmax;
+  background:radial-gradient(circle,rgba(255,255,255,.22) 0%,transparent 64%)}
+.login-wrap>*{position:relative; z-index:1}
+@media (prefers-reduced-motion: reduce){
+  .login-wrap{animation:none; background-position:22% 50%}
+}
+
+/* Tiêu đề nay nằm TRONG khung nên nhỏ lại một bậc, và giới hạn theo bề rộng
+   khung (332px lòng khung) chứ không theo bề ngang màn hình nữa. */
+.site-title{margin:0 0 22px; text-align:center; white-space:nowrap;
+  font:800 clamp(24px,6.6vw,31px)/1.15 var(--sans); color:var(--accent); letter-spacing:-.02em}
 
 .card{background:var(--surface); border:1px solid var(--line); border-radius:18px;
   box-shadow:var(--shadow); padding:24px}
-.login-card{width:100%; max-width:380px; position:relative}
+/* Khung trắng nay nổi trên nền màu nên cần bóng sâu hơn và viền sáng mảnh,
+   thay cho viền xám vốn dành cho nền sáng. */
+.login-card{width:100%; max-width:380px; position:relative; padding:30px 24px 26px;
+  border-color:rgba(255,255,255,.5);
+  box-shadow:0 20px 54px rgba(5,38,36,.30), 0 3px 10px rgba(5,38,36,.14)}
 .login-card input{margin-bottom:14px}
 .lbl{display:block; font:600 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted); margin:0 0 8px}
@@ -53,11 +85,13 @@ input::placeholder{color:#9fb0ac; font-weight:500}
 .tiny[hidden]{display:none}
 .tiny.warn{color:#8a5b0e}
 
-/* Chân trang đăng nhập: hai dòng nhỏ, căn giữa, dòng dưới nhạt hơn một bậc. */
+/* Chân trang đăng nhập: hai dòng nhỏ, căn giữa, dòng dưới nhạt hơn một bậc.
+   Chữ trắng vì nay nằm trên nền màu; bóng chữ mảnh để lúc dải màu trôi qua
+   chỗ sáng nhất vẫn đọc được. */
 .login-foot{margin-top:26px; text-align:center}
-.login-foot p{margin:0; font:500 11px/1.75 var(--sans); color:var(--muted);
-  letter-spacing:.02em}
-.login-foot p+p{color:#8fa3a0}
+.login-foot p{margin:0; font:500 11px/1.75 var(--sans); color:rgba(255,255,255,.90);
+  letter-spacing:.02em; text-shadow:0 1px 2px rgba(5,38,36,.25)}
+.login-foot p+p{color:rgba(255,255,255,.68)}
 
 /* ---------- HERO ---------- */
 .hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line); background:var(--surface)}

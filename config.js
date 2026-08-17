@@ -7,7 +7,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.4.0',
+  PHIEN_BAN: '1.5.0',
 
   // Địa chỉ AWord — nơi các game bài tập nằm.
   // CÙNG NHÀ (tài khoản GitHub andrewclasses-01) với trang này nên nhúng game

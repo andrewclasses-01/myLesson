@@ -38,9 +38,9 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
 /* Lớp ấm: đào · vàng nắng · hồng phấn. Đi trước, nở nhanh hơn một chút. */
 .login-wrap::before{
   background:
-    radial-gradient(34vmax 30vmax at 50% 47%, rgba(255,193,133,.46) 0%, transparent 66%),
-    radial-gradient(28vmax 26vmax at 33% 38%, rgba(255,154,122,.34) 0%, transparent 64%),
-    radial-gradient(24vmax 22vmax at 63% 33%, rgba(255,178,196,.30) 0%, transparent 64%);
+    radial-gradient(34vmax 30vmax at 50% 47%, rgba(255,193,133,.62) 0%, transparent 66%),
+    radial-gradient(28vmax 26vmax at 33% 38%, rgba(255,154,122,.46) 0%, transparent 64%),
+    radial-gradient(24vmax 22vmax at 63% 33%, rgba(255,178,196,.40) 0%, transparent 64%);
   animation:loang 2.5s cubic-bezier(.22,.9,.3,1) .18s forwards,
             tho 34s ease-in-out 3.2s infinite}
 
@@ -48,8 +48,8 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
    Vào sau 0,42s để hai mép loang lệch nhau, nhìn tự nhiên như mực loang. */
 .login-wrap::after{
   background:
-    radial-gradient(32vmax 29vmax at 62% 60%, rgba(64,197,178,.34) 0%, transparent 66%),
-    radial-gradient(26vmax 24vmax at 38% 66%, rgba(255,214,150,.32) 0%, transparent 64%);
+    radial-gradient(32vmax 29vmax at 62% 60%, rgba(64,197,178,.46) 0%, transparent 66%),
+    radial-gradient(26vmax 24vmax at 38% 66%, rgba(255,214,150,.44) 0%, transparent 64%);
   animation:loang 3s cubic-bezier(.22,.9,.3,1) .42s forwards,
             tho 41s ease-in-out 3.8s infinite reverse}
 

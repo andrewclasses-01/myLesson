@@ -3,8 +3,11 @@
 Trang web tĩnh cho học sinh **Andrew Classes** vào làm bài tập.
 Một link duy nhất cho mọi lớp, mọi buổi: **https://andrewclasses-01.github.io/myLesson/**
 
-Học sinh gõ **tên lớp + tên mình** → thấy mọi bài của lớp mình → bấm vào bài là chơi ngay trong
-trang (game lấy từ [AWord](https://andrewclasses-01.github.io/AWord/), video lấy từ Google Drive).
+Học sinh gõ **MỘT mã riêng của mình** (thầy đặt trong myStudent, tab Lớp học) → trang tự biết
+em nào, lớp nào → thấy mọi bài của lớp mình → bấm vào bài là chơi ngay trong trang
+(game lấy từ [AWord](https://aword.andrewclasses.com/), video lấy từ Google Drive).
+Ngay dưới mỗi game có **bảng xếp hạng** đọc thẳng điểm từ kho AWord; đúng ngày sinh nhật
+(`sinhNhat` dạng `MM-DD`, KHÔNG có năm) thì trang chúc mừng + pháo giấy.
 
 ## Ai cập nhật trang này
 
@@ -21,10 +24,10 @@ Mọi file còn lại (`index.html`, `css/`, `js/`, `assets/`) là khung trang, 
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `index.html` | 3 màn: đăng nhập → trang lớp → trang một bài |
+| `index.html` | 3 màn: đăng nhập (MỘT ô mã) → trang lớp → trang một bài |
 | `css/main.css` | Design thầy duyệt 08/07/2026: light-only, teal `#0E7C6E`, thẻ bo 18px |
 | `js/app.js` | Toàn bộ logic — không framework, không thư viện ngoài |
-| `config.js` | Tên site + địa chỉ AWord |
+| `config.js` | Tên site + số phiên bản + địa chỉ AWord + kho điểm Firebase (khóa công khai) |
 | `assets/fonts.css` | Montserrat (Việt hoá) nhúng base64 — trang chạy cả khi mất mạng |
 | `assets/avatar.jpg` | Ảnh chibi Teacher Andrew (kiêm favicon) |
 
@@ -40,6 +43,12 @@ Nhờ vậy các em không phải gõ tên → bảng xếp hạng và báo cáo
 ## Chạy thử ở máy
 
 ```
-python -m http.server 8130 --directory "D:\APP AND DATA\myLesson Web"
+python -m http.server 8130 --directory "E:\LAP TRINH APP\myLesson\web"
 ```
 rồi mở http://localhost:8130
+
+## ⚠ Sửa css/js/config là PHẢI tăng `?v=` trong index.html
+
+GitHub Pages + trình duyệt học sinh giữ cache khoảng 10 phút. Số `?v=` sau
+`main.css` / `config.js` / `app.js` trong `index.html` là số chống cache —
+quên tăng là máy học sinh chạy bản cũ (bài học bên mySpeaking, chặng 36).

@@ -457,8 +457,10 @@
       } catch (e) {}
 
       if (!DL.lop.length) {
+        // Dòng này thường ẩn — chỉ bật khi chưa nạp được danh sách lớp.
         $('#loginNote').textContent =
           'The lesson list is not ready yet. Ask teacher Andrew.';
+        $('#loginNote').hidden = false;
       }
       theoDiaChi();
     });

@@ -8,24 +8,28 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
      không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=2">
+<link rel="stylesheet" href="css/main.css?v=3">
 </head>
 <body>
 
 <!-- ===== SCREEN 1: SIGN IN ===== -->
 <section class="screen" id="scLogin">
   <div class="login-wrap">
-    <img class="avatar big" src="assets/avatar.jpg" alt="Teacher Andrew">
-    <h1 class="site-title"><span>Lesson</span><small>in ANDREW CLASSES</small></h1>
+    <h1 class="site-title">Andrew Classes</h1>
 
     <div class="card login-card">
-      <label class="lbl" for="inCode">Your code</label>
-      <input id="inCode" type="text" autocomplete="off" placeholder="Type your code"
+      <input id="inCode" type="text" autocomplete="off" placeholder="My ID"
         autocapitalize="characters" spellcheck="false">
 
-      <button class="btn primary wide" id="btnLogin">START</button>
-      <p class="tiny" id="loginNote">Teacher Andrew gave you a secret code. Ask him if you forgot it.</p>
+      <button class="btn primary wide" id="btnLogin">BEGIN</button>
+      <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
+      <p class="tiny warn" id="loginNote" hidden></p>
     </div>
+
+    <footer class="login-foot">
+      <p>Copyright © 2016 - 2026 by ANDREW</p>
+      <p>Phone &amp; Zalo: 0359.769.765</p>
+    </footer>
   </div>
 </section>
 
@@ -33,7 +37,6 @@
 <section class="screen" id="scClass" hidden>
   <header class="hero">
     <div class="wrap hero-in">
-      <img class="avatar" src="assets/avatar.jpg" alt="">
       <div class="hero-txt">
         <p class="eyebrow">Teacher Andrew</p>
         <h1 id="helloName">Hello!</h1>
@@ -57,7 +60,7 @@
     <div id="lessonList" class="lesson-list"></div>
     <p class="empty-note" id="emptyNote" hidden>No lesson yet. Come back after class.</p>
   </div>
-  <footer class="foot"><img src="assets/avatar.jpg" alt=""><span>Lesson in Andrew Classes</span><i class="ver" id="verClass"></i></footer>
+  <footer class="foot"><span>Lesson in Andrew Classes</span><i class="ver" id="verClass"></i></footer>
 </section>
 
 <!-- ===== SCREEN 3: ONE LESSON ===== -->
@@ -80,7 +83,7 @@
     <p class="lede" id="lsLede">Do the parts below one by one.</p>
     <main id="lsBlocks"></main>
   </div>
-  <footer class="foot"><img src="assets/avatar.jpg" alt=""><span>Lesson in Andrew Classes</span><i class="ver" id="verLesson"></i></footer>
+  <footer class="foot"><span>Lesson in Andrew Classes</span><i class="ver" id="verLesson"></i></footer>
 </section>
 
 <div class="modal" id="modal" hidden>
@@ -91,7 +94,7 @@
   </div>
 </div>
 
-<script src="config.js?v=2"></script>
-<script src="js/app.js?v=2"></script>
+<script src="config.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 </body>
 </html>

@@ -1,7 +1,9 @@
 # Lesson in Andrew Classes — trang bài tập của học sinh
 
 Trang web tĩnh cho học sinh **Andrew Classes** vào làm bài tập.
-Một link duy nhất cho mọi lớp, mọi buổi: **https://andrewclasses-01.github.io/myLesson/**
+Một link duy nhất cho mọi lớp, mọi buổi: **https://andrewclasses.com**
+(link cũ `andrewclasses-01.github.io/myLesson/` tự chuyển hướng về đây; file `CNAME` +
+4 bản ghi A `185.199.108-111.153` ở portal.inet.vn, Bảo vệ/proxy TẮT)
 
 Học sinh gõ **MỘT mã riêng của mình** (thầy đặt trong myStudent, tab Lớp học) → trang tự biết
 em nào, lớp nào → thấy mọi bài của lớp mình → bấm vào bài là chơi ngay trong trang

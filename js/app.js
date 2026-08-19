@@ -373,8 +373,11 @@
     }
 
     // Khối bài tập AWord. Chỉ nạp game khi học sinh bấm (click-to-load).
+    // `n` = tên em, `lop` = lớp — cả hai lấy từ chính mã đăng nhập, em không
+    // phải gõ gì. AWord (Đợt 199) hiện "TÊN EM - LỚP" ở màn Start.
     var link = CFG.AWORD + '/play.html?g=' + encodeURIComponent(k.ma) +
-               '&n=' + encodeURIComponent(EM.ten);
+               '&n=' + encodeURIComponent(EM.ten) +
+               '&lop=' + encodeURIComponent(EM.lop || '');
     sec.innerHTML = dau +
       '<div class="game" data-src="' + chuAnToan(link) + '">' +
         '<div class="game-cover"><div class="play">' + ICON_PLAY + '</div>' +

@@ -209,9 +209,20 @@
     return p + ':' + (s < 10 ? '0' : '') + s;
   }
 
+  // LEVEL = phần TRƯỚC DẤU GẠCH ĐẦU TIÊN của mã bài (thầy chốt 19/08). Kho xếp
+  // mỗi level một thư mục nên suy ra được từ chính mã, bài không phải lưu đường
+  // dẫn: LSFLY-S1.T3.P1-2-3 → LSFLY · IEL-S15.T1.P1 → IEL.
+  // ⛔ Đổi cách xếp kho thì phải sửa CẢ `nghe.js` bên app.
+  function levelCuaMa(ma) {
+    var m = String(ma || '').trim().match(/^([A-Za-z0-9]+)-/);
+    return m ? m[1].toUpperCase() : 'KHAC';
+  }
+
   function veTrinhPhat(k) {
     var kho = (CFG.KHO_NGHE || '').replace(/\/+$/, '');
-    var duong = kho + '/' + encodeURIComponent(k.maNghe || '') + '.mp3';
+    var ma = k.maNghe || '';
+    var duong = kho + '/' + encodeURIComponent(levelCuaMa(ma)) +
+                '/' + encodeURIComponent(ma) + '.mp3';
     return '<div class="nghe">' +
       '<audio preload="metadata" src="' + chuAnToan(duong) + '"></audio>' +
       '<button class="ng-play dung" title="Play">' + ICON_PLAY + '</button>' +

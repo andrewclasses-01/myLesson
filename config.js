@@ -7,7 +7,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.7.0',
+  PHIEN_BAN: '1.7.1',
 
   // Địa chỉ AWord — nơi các game bài tập nằm.
   // CÙNG NHÀ (tài khoản GitHub andrewclasses-01) với trang này nên nhúng game
@@ -16,7 +16,8 @@ window.MYLESSON_CONFIG = {
   AWORD: 'https://aword.andrewclasses.com',
 
   // Kho FILE NGHE (v1.7.0, 19/08/2026) — repo RIÊNG `myLesson-audio`.
-  // Trang ghép: <KHO_NGHE>/<mã bài nghe>.mp3
+  // Trang ghép: <KHO_NGHE>/<LEVEL>/<mã bài nghe>.mp3 — LEVEL suy ra từ chính mã
+  // (phần trước dấu gạch đầu tiên): LSFLY · LSA2 · LSB1 · IEL.
   //
   // ⛔ Vì sao KHÔNG để file nghe chung repo này: GitHub Pages chỉ cho mỗi trang
   // 1 GB, mà git xoá file cũng không nhỏ lại. Kho gốc của thầy ~300 bài, nén

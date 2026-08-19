@@ -217,6 +217,47 @@ main{display:flex; flex-direction:column; gap:20px; padding:22px 0 0}
 .video-frame iframe{width:100%; height:100%; border:0; display:block}
 .note{color:var(--muted); font-size:12.5px; margin:12px 2px 0}
 
+/* ---------- TRÌNH PHÁT BÀI NGHE (v1.7.0, thay video Drive) ----------
+   Video cũ chỉ là ảnh tĩnh + tiếng, nặng ~18 MB và giấu mất thời gian. Nay là
+   thẻ <audio> vẽ lại mặt ngoài: đồng hồ · thanh kéo tua · lùi 5 giây · tốc độ. */
+.nghe{display:flex; align-items:center; gap:12px; margin-top:4px; padding:14px 16px;
+  border-radius:14px; background:var(--accent-soft); border:1px solid var(--line)}
+.ng-play{flex:none; width:52px; height:52px; border-radius:50%; background:var(--accent);
+  color:#fff; display:grid; place-items:center; border:0; cursor:pointer;
+  box-shadow:var(--shadow); transition:transform .15s, filter .15s}
+.ng-play:hover{transform:scale(1.05); filter:brightness(1.08)}
+.ng-play svg{width:22px; height:22px}
+/* Nút ▶ lệch phải 2px cho cân mắt (tam giác nặng bên trái), nút ⏸ thì không. */
+.ng-play.dung svg{margin-left:2px}
+.ng-giua{flex:1; min-width:0}
+/* Vùng bấm cao 18px nhưng vạch chỉ 6px — ngón tay các em bấm trúng dễ hơn. */
+.ng-thanh{position:relative; height:18px; display:flex; align-items:center; cursor:pointer;
+  touch-action:none}
+.ng-thanh::before{content:""; position:absolute; left:0; right:0; height:6px;
+  border-radius:99px; background:#C7DED8}
+.ng-chay{position:relative; height:6px; border-radius:99px; background:var(--accent); width:0}
+.ng-num{position:absolute; top:50%; width:14px; height:14px; margin:-7px 0 0 -7px;
+  border-radius:50%; background:var(--surface); border:2.5px solid var(--accent);
+  box-shadow:0 1px 3px rgba(22,35,42,.2); left:0}
+.ng-gio{display:flex; justify-content:space-between; margin-top:3px;
+  font:700 12px/1 var(--sans); color:var(--muted); font-variant-numeric:tabular-nums}
+.ng-nut{flex:none; display:flex; align-items:center; gap:6px}
+.ng-nut button{min-width:44px; height:34px; padding:0 10px; border-radius:10px;
+  background:var(--surface); border:1px solid var(--line); cursor:pointer;
+  font:800 12px/1 var(--sans); color:var(--accent); transition:background .15s, border-color .15s}
+.ng-nut button:hover{border-color:var(--accent)}
+.ng-nut .lui{display:flex; align-items:center; justify-content:center; gap:4px}
+.ng-nut .lui svg{width:14px; height:14px}
+.ng-nut .toc.cham{background:var(--amber-soft); border-color:var(--amber); color:#8C6420}
+/* Màn hẹp: cụm nút xuống hàng dưới, thanh kéo được cả bề ngang. */
+@media (max-width:620px){
+  .nghe{flex-wrap:wrap; gap:10px; padding:12px}
+  .ng-play{width:46px; height:46px}
+  .ng-play svg{width:19px; height:19px}
+  .ng-giua{flex:1 1 auto; order:1}
+  .ng-nut{order:2; width:100%; justify-content:flex-end}
+}
+
 /* ---------- LEADERBOARD (điểm AWord, ngay dưới game) ---------- */
 .lb{margin-top:18px; border-top:1px solid var(--line); padding-top:14px}
 .lb-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:8px}

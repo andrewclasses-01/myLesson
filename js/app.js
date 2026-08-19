@@ -184,6 +184,114 @@
   // ---------- trang một bài ----------
 
   var ICON_PLAY = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
+  var ICON_TAM = '<svg viewBox="0 0 24 24" fill="currentColor">' +
+    '<rect x="6.5" y="4.5" width="4" height="15" rx="1.3"/>' +
+    '<rect x="13.5" y="4.5" width="4" height="15" rx="1.3"/></svg>';
+  var ICON_LUI = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round">' +
+    '<path d="M4 11a8 8 0 1 1 2.3 6.3"/><path d="M4 5.5V11h5.5"/></svg>';
+
+  // ---------- trình phát bài nghe (v1.7.0) ----------
+  // Dùng thẻ <audio> có sẵn của trình duyệt, chỉ vẽ lại mặt ngoài cho hợp giao
+  // diện: nút phát · thanh kéo tua · ĐỒNG HỒ chạy · nút −5 giây · đổi tốc độ.
+  //
+  // ⚠ preload="metadata": chỉ tải phần đầu file để biết tổng thời lượng, chưa
+  // tải cả bài — em nào không bấm nghe thì không tốn dữ liệu di động.
+  // ⚠ Tua được là nhờ máy chủ GitHub Pages trả `206 Partial Content` (đã thử
+  // thật). Máy chủ thử ở nhà (python http.server) KHÔNG trả, nên chạy local
+  // thấy không tua được là bình thường — đừng đi sửa code.
+
+  var TOC_DO = [1, 0.75, 0.5];
+
+  function chuGio(giay) {
+    if (!isFinite(giay)) return '--:--';
+    var p = Math.floor(giay / 60), s = Math.floor(giay % 60);
+    return p + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  function veTrinhPhat(k) {
+    var kho = (CFG.KHO_NGHE || '').replace(/\/+$/, '');
+    var duong = kho + '/' + encodeURIComponent(k.maNghe || '') + '.mp3';
+    return '<div class="nghe">' +
+      '<audio preload="metadata" src="' + chuAnToan(duong) + '"></audio>' +
+      '<button class="ng-play dung" title="Play">' + ICON_PLAY + '</button>' +
+      '<div class="ng-giua">' +
+        '<div class="ng-thanh"><div class="ng-chay"></div><div class="ng-num"></div></div>' +
+        '<div class="ng-gio"><span class="ng-nay">0:00</span><span class="ng-tong">--:--</span></div>' +
+      '</div>' +
+      '<div class="ng-nut">' +
+        '<button class="lui" title="Back 5 seconds">' + ICON_LUI + '5s</button>' +
+        '<button class="toc" title="Speed">1&times;</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function noiTrinhPhat(sec) {
+    var am = sec.querySelector('audio'),
+        nut = sec.querySelector('.ng-play'),
+        thanh = sec.querySelector('.ng-thanh'),
+        chay = sec.querySelector('.ng-chay'),
+        num = sec.querySelector('.ng-num'),
+        nay = sec.querySelector('.ng-nay'),
+        tong = sec.querySelector('.ng-tong'),
+        lui = sec.querySelector('.lui'),
+        toc = sec.querySelector('.toc');
+
+    function veThanh() {
+      var ti = am.duration ? (am.currentTime / am.duration) : 0;
+      chay.style.width = (ti * 100) + '%';
+      num.style.left = (ti * 100) + '%';
+      nay.textContent = chuGio(am.currentTime);
+    }
+
+    // Tổng thời lượng chỉ biết được SAU khi trình duyệt đọc xong phần đầu file
+    // — trước đó `duration` là NaN, nên phải chờ sự kiện chứ đừng đọc ngay.
+    am.addEventListener('loadedmetadata', function () { tong.textContent = chuGio(am.duration); });
+    am.addEventListener('timeupdate', veThanh);
+    am.addEventListener('ended', function () {
+      nut.innerHTML = ICON_PLAY; nut.classList.add('dung'); nut.title = 'Play';
+    });
+
+    nut.onclick = function () {
+      if (am.paused) {
+        // Chỉ cho MỘT bài nghe chạy một lúc — hai bài cùng phát thì rối tai.
+        var het = document.querySelectorAll('.nghe audio');
+        for (var i = 0; i < het.length; i++) if (het[i] !== am) het[i].pause();
+        am.play();
+        nut.innerHTML = ICON_TAM; nut.classList.remove('dung'); nut.title = 'Pause';
+      } else {
+        am.pause();
+        nut.innerHTML = ICON_PLAY; nut.classList.add('dung'); nut.title = 'Play';
+      }
+    };
+
+    lui.onclick = function () { am.currentTime = Math.max(0, am.currentTime - 5); veThanh(); };
+
+    toc.onclick = function () {
+      var i = (TOC_DO.indexOf(am.playbackRate) + 1) % TOC_DO.length;
+      am.playbackRate = TOC_DO[i];
+      toc.innerHTML = TOC_DO[i] + '&times;';
+      if (TOC_DO[i] !== 1) toc.classList.add('cham'); else toc.classList.remove('cham');
+    };
+
+    // Kéo tua: dùng pointer nên chuột và ngón tay chung một đường code.
+    function tuaTheoX(x) {
+      if (!am.duration) return;
+      var o = thanh.getBoundingClientRect();
+      var ti = Math.min(1, Math.max(0, (x - o.left) / o.width));
+      am.currentTime = ti * am.duration;
+      veThanh();
+    }
+    var dangKeo = false;
+    thanh.addEventListener('pointerdown', function (e) {
+      dangKeo = true;
+      if (thanh.setPointerCapture) thanh.setPointerCapture(e.pointerId);
+      tuaTheoX(e.clientX);
+    });
+    thanh.addEventListener('pointermove', function (e) { if (dangKeo) tuaTheoX(e.clientX); });
+    thanh.addEventListener('pointerup', function () { dangKeo = false; });
+    thanh.addEventListener('pointercancel', function () { dangKeo = false; });
+  }
 
   function moBai(id) {
     var ds = baiCuaLop(EM.lop);
@@ -229,6 +337,21 @@
       return sec;
     }
 
+    // Khối BÀI NGHE (v1.7.0) — file mp3 trong kho riêng `myLesson-audio`.
+    // Thay cho khối `video` Drive: video cũ chỉ là ảnh tĩnh + tiếng, nặng ~18 MB
+    // và học sinh KHÔNG thấy còn bao nhiêu phút. Xem `veTrinhPhat` bên dưới.
+    if (k.loai === 'nghe') {
+      sec.innerHTML = dau + veTrinhPhat(k) +
+        '<p class="note">Listen as many times as you need. Drag the bar to move, ' +
+        'tap <b>&minus;5s</b> to hear the last sentence again, or slow it down.</p>';
+      noiTrinhPhat(sec);
+      return sec;
+    }
+
+    // Khối video Drive — GIỮ LẠI để mở được bài soạn trước 19/08/2026.
+    // ⛔ Đừng dùng cho bài mới, và đừng thử đổi sang link tải trực tiếp của
+    // Drive: trình duyệt từ chối phát (Drive trả kèm `attachment` + `nosniff`),
+    // đã thử cả ba kiểu link. Bài mới dùng khối `nghe` ở trên.
     if (k.loai === 'video') {
       sec.innerHTML = dau +
         '<div class="video-frame"><iframe src="https://drive.google.com/file/d/' +

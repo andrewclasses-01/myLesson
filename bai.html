@@ -1225,7 +1225,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=18"></script>
+<script src="config.js?v=19"></script>
 <script src="js/chung.js?v=17"></script>
 <script>
 /* ============================================================
@@ -1981,12 +1981,18 @@ function veKhoi(k, so){
     return sec;
   }
 
-  /* Đầu thẻ: tên act ở dòng trên, mã lesson xuống dòng dưới (đợt 5). */
+  /* Đầu thẻ: tên act ở dòng trên, mã lesson xuống dòng dưới (đợt 5).
+     ⭐ v1.12.0 (thầy chốt 24/08/2026) — khối có `act` (tên act AWord đã chọn
+     trong myLesson, vd ENG1) thì dòng dưới tiêu đề đổi thành
+     "LSA2-S2.T1.P3-4-5 • ENG1"; khối cũ không có `act` giữ nếp cũ (yeuCau). */
+  var dongDuoi = k.act
+    ? A.maLesson(BAI) + ' • ' + k.act
+    : (k.yeuCau || '');
   var dau =
     '<div class="card-head">' +
       '<span class="step">' + so + '</span>' +
       '<div class="ch-chu"><h2>' + chuAnToan(k.ten) + '</h2>' +
-        (k.yeuCau ? '<div class="ch-ma">' + chuAnToan(k.yeuCau) + '</div>' : '') +
+        (dongDuoi ? '<div class="ch-ma">' + chuAnToan(dongDuoi) + '</div>' : '') +
       '</div>' +
       /* ⭐ WORDS đợt 1 — thứ tự thầy chốt: ĐÈN · MỞ TAB MỚI · A-DICTIONARY.
          Cụm mang thêm `co-td` để rộng đúng bằng cột leaderboard. */

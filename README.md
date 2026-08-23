@@ -25,12 +25,33 @@ thầy chốt ở `mau-web` đã thành trang thật, mỗi màn một trang:
 | `lop.html` | Trang chính của lớp — cột thẻ bài tập + khung chat (chat đang khoá, chưa có kho tin) |
 | `bai.html` | Một bài tập — **dùng chung cho WORDS · DICTS · READING**, khác nhau chỉ ở `khoi[]` |
 | `bai-sp.html` | Bài SPEAKING SLIDE (Canva + danh sách tự báo nộp video) |
-| `dashboard.html` | Trang quản lý của thầy — mới là chỗ giữ chỗ, dựng thật ở Đợt 4 |
+| `dashboard.html` | **Trang quản lý của thầy** (v1.10.0) — xem mục ngay dưới |
 | `js/chung.js` | Dùng chung: đọc dữ liệu · danh tính em · điểm AWord · hạn nộp |
 | `js/dangnhap.js` | Riêng màn đăng nhập (thay `js/app.js` cũ — file đó đã bỏ, còn trong git) |
 
 ⭐ `bai.html?id=<mã bài>` là đường vào một bài. Thêm `&nhu=<mã đăng nhập>` để **xem như một
 em** — app myLesson dùng đường này cho nút xem nhanh, KHÔNG ghi gì vào máy.
+
+## ⭐ v1.10.0 (23/08/2026) — TRANG QUẢN LÝ (`dashboard.html`)
+
+Vào bằng **mã quản lý** ở màn đăng nhập, hoặc bấm tab **CLASSES** trong app myLesson. Máy nào
+đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng; nút **Thoát** quên đi.
+
+Ba tầng, xoay quanh câu hỏi thầy hỏi mỗi ngày — *bài nào sắp hết hạn mà lớp còn nhiều em chưa làm*:
+
+1. **Dải số** — lớp · học sinh · bài đang giao · bài đã đẩy · em chưa có mã.
+2. **CẦN NHẮC** (trên cùng) — mọi lớp, bài có hạn trong khoảng −3 ➜ +10 ngày, xếp gấp trước,
+   kèm số em chưa xong và nút **Chép tên em chưa xong** (dán thẳng vào Zalo; máy không cho chép
+   tự động thì mở hộp để bôi đen chép tay).
+3. **Theo lớp** — chọn lớp → từng bài: hạn + đồng hồ + thanh tiến độ; bấm mở ra thấy từng act
+   (template · mã · bao nhiêu em xong), dòng bài viết tay, và **ai chưa xong / ai đã xong**.
+   Nút **Xem trang của học sinh** mở đúng trang đó như một em đang thấy.
+
+Cột phải: **sinh nhật 7 ngày tới** · **em chưa có mã** · **top của lớp** đang chọn.
+
+⚠️ **Tốn hạn mức Firebase**: mỗi act là một lượt đọc kho điểm AWord. Trang CHỈ đọc điểm của
+(a) bài trong khoảng hạn −3 ➜ +10 ngày và (b) lớp đang chọn, đọc tối đa 6 lượt cùng lúc, và
+`js/chung.js` còn nhớ 60 giây. ⛔ Đừng sửa thành "đọc hết mọi bài mọi lớp cho tiện".
 
 ⚠️ Ba thứ CHƯA có dữ liệu thật nên đang ẩn/khoá, đừng tưởng là lỗi: **ví sao** (ẩn hẳn),
 **chat lớp** (khoá, hiện dòng "đang xây dựng"), **tên bài đẹp + giờ hạn** (app Đợt 2 mới gõ

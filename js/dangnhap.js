@@ -99,7 +99,7 @@
     nut.disabled = true;
     A.laMaQuanLy(go).then(function (dung) {
       nut.disabled = false;
-      if (dung) { location.href = 'dashboard.html'; return; }
+      if (dung) { A.datAdmin(); location.href = 'dashboard.html'; return; }
       hienModal('We cannot find this code',
         'Check your code again, or ask teacher Andrew to help you.');
     })['catch'](function () {
@@ -125,6 +125,11 @@
       // thông tin từ ngoài thì phải được xem, không bị đá đi ngay.
       if (location.hash !== '#/info' && A.emDangHoc(dl)) {
         location.replace('lop.html');
+        return;
+      }
+      // Máy của thầy (đã gõ đúng mã quản lý lần trước) thì vào thẳng trang quản lý.
+      if (location.hash !== '#/info' && A.laAdmin()) {
+        location.replace('dashboard.html');
         return;
       }
 

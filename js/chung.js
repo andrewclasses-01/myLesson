@@ -173,6 +173,21 @@
     });
   }
 
+  // Nhớ "máy này đã gõ đúng mã quản lý" — để lần sau vào thẳng dashboard, và để
+  // tab CLASSES bên app myLesson mở ra là dùng được ngay.
+  // ⛔ CHỈ nhớ một CỜ, KHÔNG nhớ mã: mã không bao giờ được nằm lại trong máy.
+  var KHOA_QL = 'mylesson_ql';
+
+  function laAdmin() {
+    try { return localStorage.getItem(KHOA_QL) === '1'; } catch (e) { return false; }
+  }
+  function datAdmin() {
+    try { localStorage.setItem(KHOA_QL, '1'); } catch (e) {}
+  }
+  function thoatAdmin() {
+    try { localStorage.removeItem(KHOA_QL); } catch (e) {}
+  }
+
   function laMaQuanLy(maGo) {
     var dich = String(CFG.QUAN_LY_BAM || '').toLowerCase();
     if (!dich) return Promise.resolve(false);
@@ -388,6 +403,7 @@
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,
     bam: bam, laMaQuanLy: laMaQuanLy,
+    laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct,
     actCuaBai: actCuaBai, maLesson: maLesson, tenBai: tenBai,
     mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,

@@ -4,26 +4,105 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Lesson in Andrew Classes</title>
-<link rel="icon" href="assets/avatar.jpg">
+<link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
      không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=9">
+<link rel="stylesheet" href="css/main.css?v=11">
 </head>
 <body>
 
+<!-- Nền loang màu — TÁCH RIÊNG khỏi từng màn, luôn sống một chỗ, không bị
+     dựng lại (nên không "giật"/chạy lại) mỗi lần đăng nhập ↔ thông tin đổi
+     qua lại. app.js chỉ ẩn/hiện khối này theo đúng nhóm màn hình. -->
+<div class="login-bg" id="loginBg"></div>
+
 <!-- ===== SCREEN 1: SIGN IN ===== -->
-<section class="screen" id="scLogin">
+<!-- scLogin/scInfo dùng .man-hien (visibility, KHÔNG dùng thuộc tính hidden/
+     display:none) — display:none làm mọi CSS animation bên trong (kể cả 9
+     sparkle của .brand) bị TRÌNH DUYỆT TỰ RESET, đã đo thật thấy currentTime
+     tụt về gần 0. visibility:hidden thì KHÔNG dừng animation, xem main.css. -->
+<section class="screen man-hien" id="scLogin">
   <div class="login-wrap">
-    <div class="card login-card">
-      <h1 class="site-title">Andrew Classes</h1>
+    <div class="card login-card" id="loginCardEl">
 
-      <input id="inCode" type="text" autocomplete="off" placeholder="My ID"
-        autocapitalize="characters" spellcheck="false">
+      <!-- Icon + tên trường: MỘT khối DUY NHẤT trong toàn trang (app.js dời
+           sang thẻ đang hiện — xem datBrandDungCho) nên sparkle KHÔNG BAO GIỜ
+           bị dựng lại/reset khi đổi đăng nhập ↔ thông tin. Bấm để mở/đóng
+           trang thông tin (đích tính động theo hash hiện tại). -->
+      <div class="brand" id="btnBrand" role="button" tabindex="0" aria-label="Mở trang thông tin">
+        <span class="brand-ava">
+          <img src="assets/avatar-tron.jpg" alt="">
+        </span>
+        <h1 class="brand-txt">Andrew Classes</h1>
+        <i class="spark s1"></i><i class="spark s2"></i><i class="spark s3"></i>
+        <i class="spark s4"></i><i class="spark s5"></i><i class="spark s6"></i>
+        <i class="spark s7"></i><i class="spark s8"></i><i class="spark s9"></i>
+      </div>
 
-      <button class="btn primary wide" id="btnLogin">BEGIN</button>
-      <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
-      <p class="tiny warn" id="loginNote" hidden></p>
+      <!-- .card-body = phần "trượt" ra/vào khi đổi màn (app.js gắn/gỡ .co-lai). -->
+      <div class="card-body">
+        <input id="inCode" type="text" autocomplete="off" placeholder="My ID"
+          autocapitalize="characters" spellcheck="false">
+        <button class="btn primary wide" id="btnLogin">BEGIN</button>
+        <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
+        <p class="tiny warn" id="loginNote" hidden></p>
+      </div>
+    </div>
+
+    <footer class="login-foot">
+      <p>Copyright © 2016 - 2026 by ANDREW</p>
+      <p>Phone &amp; Zalo: 0359.769.765</p>
+    </footer>
+  </div>
+</section>
+
+<!-- ===== SCREEN INFO: trang thông tin (người chưa vào học, tiếng Việt) ===== -->
+<section class="screen" id="scInfo">
+  <div class="login-wrap">
+    <div class="card login-card" id="infoCardEl">
+      <!-- Khối .brand (ở trên) được app.js dời vào đây khi mở trang này. -->
+
+      <!-- Ba mục chỉ có giao diện — thầy đưa nội dung/link ở đợt sau.
+           .card-body = phần "trượt" ra/vào khi đổi màn (app.js gắn/gỡ .co-lai). -->
+      <nav class="info-list card-body">
+        <button type="button" class="info-row" id="mnTrial">
+          <span class="ir-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="8.2" r="3.4"/>
+              <path d="M3.4 20c0-3.6 2.9-6 5.6-6s5.6 2.4 5.6 6"/>
+              <path d="M18.6 7.6v5M16.1 10.1h5"/>
+            </svg>
+          </span>
+          <span class="ir-txt">ĐĂNG KÝ KIỂM TRA/HỌC THỬ</span>
+          <span class="ir-go">›</span>
+        </button>
+        <button type="button" class="info-row" id="mnInfo">
+          <span class="ir-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 6.6c-1.7-1.3-3.8-1.8-6-1.8-.9 0-1.6.7-1.6 1.6v10.9c0 .9.7 1.6 1.6 1.6
+                2.2 0 4.3.5 6 1.8 1.7-1.3 3.8-1.8 6-1.8.9 0 1.6-.7 1.6-1.6V6.4c0-.9-.7-1.6-1.6-1.6
+                -2.2 0-4.3.5-6 1.8z"/>
+              <path d="M12 6.6v13.4"/>
+            </svg>
+          </span>
+          <span class="ir-txt">THÔNG TIN LỚP HỌC</span>
+          <span class="ir-go">›</span>
+        </button>
+        <button type="button" class="info-row" id="mnContact">
+          <span class="ir-ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12.4C4 7.8 7.8 4 12.5 4S21 7.8 21 12.4s-3.8 8.4-8.5 8.4c-1.2 0-2.4-.2-3.4-.7
+                L4.5 21.4l1.1-3.9C4.6 16.2 4 14.4 4 12.4z"/>
+            </svg>
+          </span>
+          <span class="ir-txt">LIÊN HỆ VỚI THẦY</span>
+          <span class="ir-go">›</span>
+        </button>
+      </nav>
     </div>
 
     <footer class="login-foot">
@@ -94,7 +173,7 @@
   </div>
 </div>
 
-<script src="config.js?v=9"></script>
-<script src="js/app.js?v=9"></script>
+<script src="config.js?v=11"></script>
+<script src="js/app.js?v=11"></script>
 </body>
 </html>

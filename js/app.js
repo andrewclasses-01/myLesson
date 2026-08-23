@@ -30,10 +30,28 @@
     $('#modal').hidden = false;
   }
 
+  // Khối .brand (icon + "Andrew Classes" + 9 sparkle) chỉ tồn tại DUY NHẤT
+  // một lần trong toàn trang — dời nó sang thẻ đang hiện thay vì tạo lại.
+  // Nhờ scLogin/scInfo ẩn bằng visibility (không phải display:none, xem
+  // main.css) nên việc dời này KHÔNG làm sparkle bị reset.
+  function datBrandDungCho(ten) {
+    var brand = $('#btnBrand');
+    var dichCard = ten === 'info' ? $('#infoCardEl') : $('#loginCardEl');
+    if (brand.parentElement !== dichCard) dichCard.insertBefore(brand, dichCard.firstChild);
+    brand.classList.toggle('gon', ten === 'info');
+    brand.setAttribute('aria-label', ten === 'info' ? 'Quay lại màn đăng nhập' : 'Mở trang thông tin');
+  }
+
   function man(ten) {
-    $('#scLogin').hidden = ten !== 'login';
+    $('#scLogin').classList.toggle('man-hien', ten === 'login');
+    $('#scInfo').classList.toggle('man-hien', ten === 'info');
     $('#scClass').hidden = ten !== 'class';
     $('#scLesson').hidden = ten !== 'lesson';
+    // Nền loang CHỈ dành cho 2 màn đăng nhập/thông tin — 2 màn kia có nền
+    // riêng (.hero). #loginBg không bị dựng lại nên đổi đăng nhập ↔ thông
+    // tin không làm nó chạy lại từ đầu.
+    $('#loginBg').hidden = (ten !== 'login' && ten !== 'info');
+    if (ten === 'login' || ten === 'info') datBrandDungCho(ten);
     window.scrollTo(0, 0);
   }
 
@@ -562,8 +580,10 @@
   // ---------- đường đi trong trang ----------
 
   function theoDiaChi() {
-    if (!EM) { man('login'); return; }
     var h = location.hash || '';
+    // Trang thông tin xem được cả khi CHƯA đăng nhập (đúng lối vào từ màn đăng nhập).
+    if (h === '#/info') { man('info'); return; }
+    if (!EM) { man('login'); return; }
     var m = h.match(/^#\/bai\/(.+)$/);
     if (m) moBai(decodeURIComponent(m[1]));
     else moLop();
@@ -575,6 +595,10 @@
     document.title = CFG.TEN_SITE || 'Lesson in Andrew Classes';
     $('#verClass').textContent = 'v' + (CFG.PHIEN_BAN || '?');
     $('#verLesson').textContent = 'v' + (CFG.PHIEN_BAN || '?');
+
+    // Nền loang xoay CỰC chậm — bốc thăm ngẫu nhiên chiều xuôi/ngược kim đồng
+    // hồ mỗi lần mở trang (xem .xuoi/.nguoc + xoayCham/xoayNguoc trong CSS).
+    $('#loginBg').classList.add(Math.random() < 0.5 ? 'xuoi' : 'nguoc');
 
     Promise.all([nap('data/lop.json'), nap('data/bai.json')]).then(function (r) {
       DL.lop = (r[0] && r[0].lop) || [];
@@ -604,6 +628,76 @@
 
     $('#inCode').onkeydown = function (e) { if (e.key === 'Enter') vaoHoc(); };
     $('#btnLogin').onclick = vaoHoc;
+
+    // Icon + "Andrew Classes" là MỘT khối DUY NHẤT, dùng chung 2 màn (xem
+    // datBrandDungCho) — bấm nó mở/đóng trang thông tin, đích tính động theo
+    // hash hiện tại nên không cần 2 handler riêng cho 2 chiều.
+    //
+    // Hoạt ảnh TRƯỢT NHIỀU GIAI ĐOẠN thầy chốt:
+    //  1) "Andrew Classes" ĐỨNG YÊN, phần bên dưới (ô mã/BEGIN hoặc 3 dòng
+    //     thông tin) CUỘN VÀO trước (.card-body + .co-lai).
+    //  2) Đổi màn xong, phần thân màn mới ĐẨY DẦN RA (.card-body nở lại) —
+    //     ĐÚNG LÚC NÀY khối brand mới TRƯỢT LÊN (kỹ thuật FLIP: đo vị trí cũ
+    //     → dời sang thẻ mới → đo vị trí mới → chạy transform bù từ cũ về 0).
+    //  Chiều ngược lại giống hệt, chỉ đảo thứ tự.
+    // ⛔ THOI_GIAN_TRUOT phải khớp "transition" dài nhất của .card-body trong
+    // main.css (nay 580ms) — lệch là đổi màn giữa chừng lúc còn đang co, nhìn
+    // giật cục (bài học thật: từng để 260 trong khi CSS 320).
+    var THOI_GIAN_TRUOT = 580;
+    var THOI_GIAN_BAY_BRAND = 520;
+    var GIAM_CHUYEN_DONG = window.matchMedia &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Chỉ lo phần "trượt" (FLIP: so vị trí TRƯỚC khi dời với vị trí SAU khi
+    // dời rồi bù transform từ đó về 0) — KHÔNG tự dời brand, vì man() ở trên
+    // đã dời rồi (đổi Ten trong man() gọi datBrandDungCho). Nếu tự dời thêm
+    // lần nữa ở đây thì "truoc" đo được đã là vị trí MỚI — hết còn gì để bù.
+    function bayBrandTuVe(brand, truoc) {
+      var sau = brand.getBoundingClientRect();
+      var dx = truoc.left - sau.left, dy = truoc.top - sau.top;
+      if (!dx && !dy) return;
+      brand.style.transition = 'none';
+      brand.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+      void brand.offsetWidth; // ép reflow rồi mới cho chạy transition, không thì nhảy cụt
+      brand.style.transition = 'transform ' + THOI_GIAN_BAY_BRAND + 'ms cubic-bezier(.22,.9,.3,1)';
+      brand.style.transform = '';
+      setTimeout(function () {
+        brand.style.transition = '';
+        brand.style.transform = '';
+      }, THOI_GIAN_BAY_BRAND + 20);
+    }
+
+    function chuyenManTruot(dich) {
+      if (GIAM_CHUYEN_DONG) { location.hash = dich; return; }
+      // scLogin/scInfo dùng .man-hien (visibility), KHÔNG dùng [hidden] nữa —
+      // nên tìm màn đang hiện qua đúng class đó, không querySelector([hidden]).
+      var manCu = $('#scLogin').classList.contains('man-hien') ? $('#scLogin') : $('#scInfo');
+      var thanCu = manCu.querySelector('.card-body');
+      if (!thanCu) { location.hash = dich; return; }
+      thanCu.classList.add('co-lai');
+      setTimeout(function () {
+        var brand = $('#btnBrand');
+        var truoc = brand.getBoundingClientRect(); // ĐO TRƯỚC khi man() dời nó
+        location.hash = dich;
+        man(dich === '#/info' ? 'info' : 'login'); // đổi màn + dời brand NGAY (đồng bộ)
+        bayBrandTuVe(brand, truoc);
+        var manMoi = dich === '#/info' ? $('#scInfo') : $('#scLogin');
+        var thanMoi = manMoi.querySelector('.card-body');
+        if (!thanMoi) return;
+        thanMoi.classList.add('co-lai');
+        void thanMoi.offsetWidth; // ép reflow để hoạt ảnh nở ra chạy lại từ đầu
+        requestAnimationFrame(function () { thanMoi.classList.remove('co-lai'); });
+      }, THOI_GIAN_TRUOT);
+    }
+
+    (function () {
+      var brand = $('#btnBrand');
+      function di() { chuyenManTruot(location.hash === '#/info' ? '' : '#/info'); }
+      brand.onclick = di;
+      brand.onkeydown = function (e) {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); di(); }
+      };
+    })();
 
     $('#btnLogout').onclick = function () {
       try { localStorage.removeItem(KHOA_HS); } catch (e) {}

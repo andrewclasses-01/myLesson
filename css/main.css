@@ -18,62 +18,183 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
 .wrap{max-width:680px; margin:0 auto; padding:0 20px}
 .screen[hidden]{display:none}
 
+/* scLogin/scInfo KHÔNG dùng display:none (thuộc tính hidden) để ẩn/hiện —
+   dùng visibility:hidden (qua .man-hien) vì display:none làm mọi CSS
+   animation bên trong RESET (đo thật: sparkle của .brand tụt currentTime về
+   gần 0 mỗi lần đổi màn). visibility:hidden thì animation vẫn chạy ngầm,
+   không sơn ra màn hình — nên .brand dời qua lại giữa 2 thẻ này không bao
+   giờ bị "hiện lại từ đầu". `fixed` để 2 màn luôn chồng khít lên nhau. */
+#scLogin,#scInfo{position:fixed; inset:0; z-index:1; overflow-y:auto;
+  visibility:hidden; pointer-events:none}
+#scLogin.man-hien,#scInfo.man-hien{visibility:visible; pointer-events:auto}
+
 /* ---------- SIGN IN ---------- */
-/* Nền TRẮNG NGẢ KEM. Mở trang ra là trắng, rồi các mảng màu ấm LOANG DẦN từ
-   chỗ ô đăng nhập ra xung quanh — hai lớp quầng nở so le nhau (lớp ấm trước,
-   lớp mát sau) nên mép loang không bao giờ thành một đường tròn rõ.
+/* v1.8.0: nền loang RỜI HẲN khỏi .login-wrap, sống ở #loginBg — MỘT phần tử
+   DUY NHẤT dùng chung cho cả màn đăng nhập lẫn màn thông tin (app.js chỉ ẩn
+   hiện nó, không bao giờ dựng lại) — nên đổi qua lại 2 màn đó KHÔNG làm nền
+   "giật"/chạy lại animation loang từ đầu như hồi còn nằm trong .login-wrap.
    100svh (không phải 100vh) để trên iPhone thanh địa chỉ không cắt mất đáy. */
-.login-wrap{min-height:100vh; min-height:100svh; position:relative;
+.login-wrap{min-height:100vh; min-height:100svh; position:relative; z-index:1;
   display:flex; flex-direction:column; align-items:center; justify-content:center;
-  padding:36px 20px; gap:6px; background:#FFFDFA}
+  padding:36px 20px; gap:6px}
+
+/* Nền TRẮNG NGẢ KEM, phủ kín màn hình, đứng sau mọi thứ (z-index:0).
+   Mở trang ra là trắng, rồi các mảng màu ấm LOANG DẦN ra xung quanh — hai lớp
+   quầng nở so le nhau (lớp ấm trước, lớp mát sau) nên mép loang không bao giờ
+   thành một đường tròn rõ. `fixed` để cuộn trang không kéo lệch nền. */
+.login-bg{position:fixed; inset:0; z-index:0; pointer-events:none; background:#FFFDFA}
+.login-bg[hidden]{display:none}
 
 /* Hai lớp quầng phủ kín màn hình, nở ra từ TÂM Ô ĐĂNG NHẬP (50% 47%).
-   ⛔ `fixed` chứ KHÔNG `absolute` + `overflow:hidden` ở khối cha: cắt tràn thì
-   màn thấp (điện thoại nằm ngang, hoặc bàn phím bật lên) sẽ CẮT LUÔN ô nhập,
-   không cuộn tới được. */
-.login-wrap::before,.login-wrap::after{content:""; position:fixed; inset:0;
-  pointer-events:none; opacity:0; transform:scale(.28);
-  transform-origin:50% 47%; will-change:transform,opacity}
+   Dùng property `scale`/`rotate` RIÊNG (không gộp vào `transform`) vì có tới
+   2 hoạt ảnh cùng cần "xoay hình" độc lập (thở to-nhỏ + xoay cực chậm) —
+   `transform` là MỘT thuộc tính duy nhất nên 2 @keyframes cùng ghi vào đó sẽ
+   đè nhau; tách property thì trình duyệt tự cộng dồn đúng như CSS Transforms
+   Level 2 quy định. */
+.login-bg::before,.login-bg::after{content:""; position:absolute; inset:0;
+  opacity:0; scale:.28; rotate:0deg;
+  transform-origin:50% 47%; will-change:opacity,filter,scale,rotate}
 
-/* Lớp ấm: đào · vàng nắng · hồng phấn. Đi trước, nở nhanh hơn một chút. */
-.login-wrap::before{
+/* Lớp ấm: đào · vàng nắng · hồng phấn. Đi trước, nở nhanh hơn một chút.
+   v1.8.0: vùng loang RỘNG HƠN (mỗi quầng +~20%) + thêm `mauDoi` đổi tông màu
+   liên tục qua filter hue-rotate — chuyển RẤT CHẬM nên mắt không thấy giật
+   + `xoayCham`/`xoayNguoc` (lớp .xuoi/.nguoc app.js gắn NGẪU NHIÊN mỗi lần mở
+   trang) xoay cả khối RẤT chậm, một vòng mất nhiều phút — nhìn cực kỹ mới ra. */
+.login-bg::before{
   background:
-    radial-gradient(34vmax 30vmax at 50% 47%, rgba(255,193,133,.62) 0%, transparent 66%),
-    radial-gradient(28vmax 26vmax at 33% 38%, rgba(255,154,122,.46) 0%, transparent 64%),
-    radial-gradient(24vmax 22vmax at 63% 33%, rgba(255,178,196,.40) 0%, transparent 64%);
+    radial-gradient(41vmax 36vmax at 50% 47%, rgba(255,193,133,.62) 0%, transparent 68%),
+    radial-gradient(34vmax 31vmax at 33% 38%, rgba(255,154,122,.46) 0%, transparent 66%),
+    radial-gradient(29vmax 26vmax at 63% 33%, rgba(255,178,196,.40) 0%, transparent 66%);
   animation:loang 2.5s cubic-bezier(.22,.9,.3,1) .18s forwards,
-            tho 34s ease-in-out 3.2s infinite}
+            tho 34s ease-in-out 3.2s infinite,
+            mauDoi 52s linear 3s infinite}
 
 /* Lớp mát: mint teal của bộ nhận diện + một vệt vàng chanh rất nhạt.
-   Vào sau 0,42s để hai mép loang lệch nhau, nhìn tự nhiên như mực loang. */
-.login-wrap::after{
+   Vào sau 0,42s để hai mép loang lệch nhau, nhìn tự nhiên như mực loang.
+   `mauDoi` chạy NGƯỢC CHIỀU + chu kỳ khác lớp trước, hai lớp không bao giờ
+   cùng tông cùng lúc — nhìn như màu đang tự trôi chứ không nháy đồng bộ. */
+.login-bg::after{
   background:
-    radial-gradient(32vmax 29vmax at 62% 60%, rgba(64,197,178,.46) 0%, transparent 66%),
-    radial-gradient(26vmax 24vmax at 38% 66%, rgba(255,214,150,.44) 0%, transparent 64%);
+    radial-gradient(38vmax 35vmax at 62% 60%, rgba(64,197,178,.46) 0%, transparent 68%),
+    radial-gradient(31vmax 29vmax at 38% 66%, rgba(255,214,150,.44) 0%, transparent 66%);
   animation:loang 3s cubic-bezier(.22,.9,.3,1) .42s forwards,
-            tho 41s ease-in-out 3.8s infinite reverse}
+            tho 41s ease-in-out 3.8s infinite reverse,
+            mauDoi 60s linear 3.4s infinite reverse}
+
+/* Chỉ MỘT trong hai lớp xoay (lớp còn lại đứng yên) — đủ để cảm nhận nền
+   "sống" mà không rối. app.js bốc thăm NGẪU NHIÊN mỗi lần mở trang, gắn class
+   .xuoi (theo chiều kim đồng hồ) hoặc .nguoc (ngược chiều) vào #loginBg.
+   Viết lại ĐỦ cả 4 hoạt ảnh (không tách riêng animation-name/-duration/…)
+   để khỏi lệch thứ tự danh sách — dễ đọc, chắc chắn hơn. */
+.login-bg.xuoi::before{
+  animation:loang 2.5s cubic-bezier(.22,.9,.3,1) .18s forwards,
+            tho 34s ease-in-out 3.2s infinite,
+            mauDoi 52s linear 3s infinite,
+            xoayCham 320s linear infinite}
+.login-bg.nguoc::before{
+  animation:loang 2.5s cubic-bezier(.22,.9,.3,1) .18s forwards,
+            tho 34s ease-in-out 3.2s infinite,
+            mauDoi 52s linear 3s infinite,
+            xoayNguoc 320s linear infinite}
 
 @keyframes loang{
-  from{opacity:0; transform:scale(.28)}
-  to  {opacity:1; transform:scale(1)}
+  from{opacity:0; scale:.28}
+  to  {opacity:1; scale:1}
 }
 /* Sau khi loang xong thì thở rất khẽ, để nền không đứng chết một chỗ.
    Bắt đầu đúng ở scale(1) nên nối liền mạch với lúc loang, không giật. */
 @keyframes tho{
-  0%,100%{transform:scale(1)}
-  50%    {transform:scale(1.07)}
+  0%,100%{scale:1}
+  50%    {scale:1.07}
 }
-.login-wrap>*{position:relative; z-index:1}
+/* Xoay tông màu liên tục, RẤT CHẬM (52s/60s một vòng) — filter hue-rotate
+   không đụng tới các lớp gradient gốc nên vẫn giữ đúng bộ màu đã duyệt. */
+@keyframes mauDoi{
+  0%  {filter:hue-rotate(0deg) saturate(1)}
+  50% {filter:hue-rotate(180deg) saturate(1.15)}
+  100%{filter:hue-rotate(360deg) saturate(1)}
+}
+/* Xoay CỰC chậm — 320 GIÂY (hơn 5 phút) một vòng, phải nhìn rất kỹ mới thấy
+   nền đang xoay. Hai chiều để app.js bốc thăm ngẫu nhiên mỗi lần mở trang. */
+@keyframes xoayCham { from{rotate:0deg} to{rotate:360deg} }
+@keyframes xoayNguoc{ from{rotate:0deg} to{rotate:-360deg} }
+
+/* ---------- CARD-BODY: hoạt ảnh trượt khi đổi đăng nhập ↔ thông tin ----------
+   app.js gắn/gỡ .co-lai NGAY TRƯỚC/SAU khi đổi màn: phần thân co lại (mờ +
+   nhỏ lại + trượt lên) như bị hút vào khối icon+chữ, màn mới hiện ra thì nở
+   theo chiều ngược lại — đúng kiểu "chạy thụt vào rồi chạy ra" thầy duyệt.
+   ⛔ THOI_GIAN_TRUOT bên app.js PHẢI khớp đúng số ms dài nhất ở đây — lệch là
+   JS đổi màn giữa chừng lúc CSS còn đang chạy, nhìn giật cục (đã vấp 1 lần:
+   JS 260ms nhưng CSS 320ms, bị cắt ngang 60ms cuối). */
+.card-body{overflow:hidden; transform-origin:50% 0%;
+  transition:max-height .58s cubic-bezier(.22,.9,.3,1), opacity .46s ease,
+             transform .58s cubic-bezier(.22,.9,.3,1);
+  max-height:420px; opacity:1; transform:scale(1) translateY(0)}
+.card-body.co-lai{max-height:0; opacity:0; transform:scale(.93) translateY(-10px); pointer-events:none}
 
 /* Máy nào đặt "giảm chuyển động": bày sẵn trạng thái đã loang xong, không chạy gì. */
 @media (prefers-reduced-motion: reduce){
-  .login-wrap::before,.login-wrap::after{animation:none; opacity:1; transform:scale(1)}
+  .login-bg::before,.login-bg::after{animation:none; opacity:1; scale:1; rotate:0deg; filter:none}
+  .spark{animation:none !important; opacity:0 !important}
+  .card-body{transition:none !important}
+  .brand{transition:none !important}
 }
 
-/* Tiêu đề nay nằm TRONG khung nên nhỏ lại một bậc, và giới hạn theo bề rộng
-   khung (332px lòng khung) chứ không theo bề ngang màn hình nữa. */
-.site-title{margin:0 0 22px; text-align:center; white-space:nowrap;
-  font:800 clamp(24px,6.6vw,31px)/1.15 var(--sans); color:var(--accent); letter-spacing:-.02em}
+/* ---------- BRAND: icon + "Andrew Classes" = MỘT nút bấm (v1.8.0) ----------
+   width:fit-content để khối co theo đúng icon+chữ rồi margin:auto tự căn giữa
+   trong khung — sparkle bên dưới định vị theo % của CHÍNH khối này nên luôn
+   bám sát viền icon+chữ dù màn rộng hẹp khác nhau.
+   ⛔ Thầy chốt: bấm vào KHÔNG hiện nền/khung nút bên dưới — chỉ scale nhẹ. */
+.brand{display:flex; align-items:center; gap:12px; width:fit-content; max-width:100%;
+  margin:0 auto 22px; position:relative; cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:transform .18s cubic-bezier(.22,.9,.3,1), margin-bottom .3s ease}
+.brand:active{transform:scale(.97)}
+/* .gon = "gọn": app.js gắn khi khối brand đang đứng trong trang THÔNG TIN —
+   nhích sát lên một chút cho gọn (danh sách 3 dòng bên dưới dài hơn ô nhập
+   mã) — cũng chính là quãng đường mà hiệu ứng FLIP bên app.js dùng để vẽ
+   cảnh "chữ Andrew Classes chuyển dần lên" lúc đổi màn. */
+.brand.gon{margin-bottom:12px}
+
+.brand-ava{position:relative; flex:0 0 auto; width:52px; height:52px; border-radius:50%;
+  overflow:hidden; background:var(--accent-soft);
+  box-shadow:0 0 0 3px #fff, 0 3px 12px rgba(88,60,30,.20)}
+.brand-ava img{width:100%; height:100%; object-fit:cover; display:block}
+
+.brand-txt{margin:0; white-space:nowrap;
+  font:800 clamp(22px,6.2vw,29px)/1.15 var(--sans); color:var(--accent); letter-spacing:-.02em}
+
+/* ---------- SPARKLE: bay ra liên tục TỪ TRONG icon+chữ, tông VÀNG ----------
+   Hình ngôi sao 4 cánh vẽ bằng clip-path (không dùng ký tự ✦ — glyph tuỳ font
+   trông thô), có glow mềm bằng drop-shadow. Mỗi hạt NEO Ở ĐIỂM NẰM TRÊN chính
+   icon hoặc chữ (không còn ở mép ngoài như bản trước) rồi bay tỏa xa dần theo
+   hướng riêng (--dx/--dy) trong lúc phóng to rồi mờ đi — như đang phát ra từ
+   trong hình/chữ chứ không phải lấp lánh quanh viền. Lặp vô hạn, lệch pha +
+   lệch nhịp để không nháy đồng loạt.
+   ⛔ Khối .spark SỐNG CHUNG với #btnBrand — app.js CHỈ dời cả khối .brand
+   (đủ nguyên icon+chữ+sparkle) sang thẻ đang hiện, không bao giờ tạo lại các
+   .spark này, nên hoạt ảnh KHÔNG BỊ RESET khi đổi đăng nhập ↔ thông tin. */
+.spark{position:absolute; pointer-events:none; width:9px; height:9px;
+  background:linear-gradient(145deg,#FFE9A8,#FFC22E);
+  clip-path:polygon(50% 0%,63% 37%,100% 50%,63% 63%,50% 100%,37% 63%,0% 50%,37% 37%);
+  filter:drop-shadow(0 0 4px rgba(255,190,50,.85));
+  opacity:0; transform:translate(-50%,-50%) translate(0,0) scale(.15) rotate(0deg)}
+.brand .spark{animation:lapLanh ease-in-out infinite}
+/* s1-s2-s9 neo TRÊN ẢNH đại diện (17% đầu của khối) · s3-s8 neo TRÊN chữ. */
+.brand .s1{top:30%; left:9%;  width:7px;  height:7px;  --dx:-26px; --dy:-22px; animation-duration:2.8s; animation-delay:0s}
+.brand .s2{top:76%; left:12%; width:10px; height:10px; --dx:-22px; --dy:24px;  animation-duration:3.3s; animation-delay:.35s}
+.brand .s9{top:14%; left:16%; width:8px;  height:8px;  --dx:-8px;  --dy:-28px; animation-duration:3s;   animation-delay:2.8s}
+.brand .s3{top:28%; left:30%; width:6px;  height:6px;  --dx:-10px; --dy:-28px; animation-duration:2.6s; animation-delay:.7s}
+.brand .s4{top:72%; left:42%; width:12px; height:12px; --dx:2px;   --dy:28px;  animation-duration:3.5s; animation-delay:1.05s}
+.brand .s5{top:24%; left:56%; width:8px;  height:8px;  --dx:11px;  --dy:-28px; animation-duration:2.9s; animation-delay:1.4s}
+.brand .s6{top:78%; left:66%; width:9px;  height:9px;  --dx:15px;  --dy:26px;  animation-duration:3.1s; animation-delay:1.75s}
+.brand .s7{top:35%; left:84%; width:8px;  height:8px;  --dx:28px;  --dy:-18px; animation-duration:2.7s; animation-delay:2.1s}
+.brand .s8{top:70%; left:93%; width:6px;  height:6px;  --dx:30px;  --dy:20px;  animation-duration:3.4s; animation-delay:2.45s}
+@keyframes lapLanh{
+  0%,100%{opacity:0; transform:translate(-50%,-50%) translate(0,0) scale(.15) rotate(0deg)}
+  40%    {opacity:1; transform:translate(-50%,-50%) translate(calc(var(--dx)*.5),calc(var(--dy)*.5)) scale(1) rotate(40deg)}
+  80%    {opacity:0; transform:translate(-50%,-50%) translate(var(--dx),var(--dy)) scale(.35) rotate(75deg)}
+}
 
 .card{background:var(--surface); border:1px solid var(--line); border-radius:18px;
   box-shadow:var(--shadow); padding:24px}
@@ -112,6 +233,21 @@ input::placeholder{color:#9fb0ac; font-weight:500}
 .login-foot p{margin:0; font:500 11px/1.75 var(--sans); color:#6E6257;
   letter-spacing:.02em}
 .login-foot p+p{color:#9A8D80}
+
+/* ---------- TRANG THÔNG TIN (v1.8.0) — bấm icon/chữ ở màn đăng nhập ra đây.
+   Cùng khung .login-card + cùng nền loang cho liền mạch, chỉ đổi phần ruột. */
+.info-list{display:flex; flex-direction:column}
+.info-row{display:flex; align-items:center; gap:14px; width:100%; padding:14px 2px;
+  background:transparent; border:0; border-top:1px solid var(--line); text-align:left;
+  cursor:pointer; font:700 12.5px/1.3 var(--sans); color:var(--ink); letter-spacing:.02em;
+  transition:background-color .15s}
+.info-list .info-row:first-child{border-top:0}
+.info-row:hover,.info-row:active{background:var(--accent-soft)}
+.ir-ic{flex:none; width:38px; height:38px; border-radius:12px; background:var(--accent-soft);
+  color:var(--accent); display:flex; align-items:center; justify-content:center}
+.ir-ic svg{width:19px; height:19px}
+.ir-txt{flex:1}
+.ir-go{flex:none; color:var(--line); font-size:20px; font-weight:700}
 
 /* ---------- HERO ---------- */
 .hero{position:relative; overflow:hidden; border-bottom:1px solid var(--line); background:var(--surface)}

@@ -31,7 +31,8 @@ Mọi file còn lại (`index.html`, `css/`, `js/`, `assets/`) là khung trang, 
 | `js/app.js` | Toàn bộ logic — không framework, không thư viện ngoài |
 | `config.js` | Tên site + số phiên bản + địa chỉ AWord + kho điểm Firebase (khóa công khai) |
 | `assets/fonts.css` | Montserrat (Việt hoá) nhúng base64 — trang chạy cả khi mất mạng |
-| `assets/avatar.jpg` | Ảnh chibi Teacher Andrew (kiêm favicon) |
+| `assets/avatar-tron.jpg` | Ảnh Teacher Andrew (kiêm favicon + icon bấm mở menu ở màn đăng nhập, v1.8.0) |
+| `assets/avatar.jpg` | Ảnh chibi cũ — hết dùng từ v1.8.0, GIỮ LẠI không xoá (đường lùi) |
 
 ## Vì sao AWord phải ở CÙNG tài khoản GitHub
 

@@ -7,7 +7,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.11.0',
+  PHIEN_BAN: '1.11.1',
 
   // ---- MÃ QUẢN LÝ CỦA THẦY (v1.9.0) ----
   // Gõ mã này ở màn đăng nhập là vào thẳng trang quản lý (dashboard.html) thay
@@ -41,6 +41,19 @@ window.MYLESSON_CONFIG = {
   // trình duyệt TỪ CHỐI PHÁT (Drive trả kèm `attachment` + `nosniff`). Drive
   // chỉ dùng được kiểu khung `/preview` — thứ vừa bỏ vì giấu mất đồng hồ.
   KHO_NGHE: 'https://andrewclasses-01.github.io/myLesson-audio',
+
+  // ---- Hai đầu bên mySpeaking (v1.11.1) — cho thẻ SP CHECK trong lop.html ----
+  // Thiếu 2 khóa này từ web v1.9.0 nên toàn bộ đường "Mở phòng chấm" + đếm
+  // "ai đã nộp" chết lặng (lop.html đọc A.CFG.SP_NAO / A.CFG.SP_WEB, rỗng là
+  // return sớm). Giá trị lấy từ bản mẫu mau-web, đã gọi thử ?config=1 ngày
+  // 24/08/2026 — bộ não trả về đúng dữ liệu lớp. ⚠️ Bộ não Apps Script chậm
+  // 8–40 giây, đó là bình thường.
+  SP_NAO: 'https://script.google.com/macros/s/AKfycbw3etxthOSUHRPA0F4Wvnd2NAoaaISYdfcoY27DyWqlUNOULCHOPC07Nx6KdgEbKOuhRw/exec',
+  // Chạy thử trên máy thì trỏ sang mySpeaking local cổng 8126; lên mạng thì
+  // dùng domain thật (đã kiểm: trả 200).
+  SP_WEB: /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
+    ? 'http://localhost:8126/'
+    : 'https://speaking.andrewclasses.com/',
 
   // Kho điểm AWord (Firebase) — để đọc bảng xếp hạng ngay trên trang bài.
   // apiKey là khóa CÔNG KHAI theo thiết kế Firebase (chỉ định danh dự án,

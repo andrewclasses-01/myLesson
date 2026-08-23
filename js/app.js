@@ -648,25 +648,13 @@
     var GIAM_CHUYEN_DONG = window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // Chỉ lo phần "trượt" (FLIP: so vị trí TRƯỚC khi dời với vị trí SAU khi
-    // dời rồi bù transform từ đó về 0) — KHÔNG tự dời brand, vì man() ở trên
-    // đã dời rồi (đổi Ten trong man() gọi datBrandDungCho). Nếu tự dời thêm
-    // lần nữa ở đây thì "truoc" đo được đã là vị trí MỚI — hết còn gì để bù.
-    function bayBrandTuVe(brand, truoc) {
-      var sau = brand.getBoundingClientRect();
-      var dx = truoc.left - sau.left, dy = truoc.top - sau.top;
-      if (!dx && !dy) return;
-      brand.style.transition = 'none';
-      brand.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-      void brand.offsetWidth; // ép reflow rồi mới cho chạy transition, không thì nhảy cụt
-      brand.style.transition = 'transform ' + THOI_GIAN_BAY_BRAND + 'ms cubic-bezier(.22,.9,.3,1)';
-      brand.style.transform = '';
-      setTimeout(function () {
-        brand.style.transition = '';
-        brand.style.transform = '';
-      }, THOI_GIAN_BAY_BRAND + 20);
-    }
-
+    // ⛔ v1.8.1: thầy chỉ ra brand "trượt trễ một nhịp" so với khung — vì
+    // hồi trước card-body được gỡ .co-lai (bắt đầu nở) trong MỘT requestAnimationFrame
+    // riêng, còn brand bắt đầu trượt NGAY LẬP TỨC (không qua rAF) — hai hoạt
+    // ảnh khởi động lệch nhau đúng 1 khung hình. Nay CẢ HAI cùng chờ chung
+    // MỘT rAF rồi bắt đầu cùng lúc. Card-body màn mới cũng được co SẴN TỪ
+    // TRƯỚC khi màn kịp hiện ra (không phải sau) — tránh loé cỡ đầy đủ một
+    // khung hình rồi mới co lại.
     function chuyenManTruot(dich) {
       if (GIAM_CHUYEN_DONG) { location.hash = dich; return; }
       // scLogin/scInfo dùng .man-hien (visibility), KHÔNG dùng [hidden] nữa —
@@ -676,17 +664,41 @@
       if (!thanCu) { location.hash = dich; return; }
       thanCu.classList.add('co-lai');
       setTimeout(function () {
+        var tenMoi = dich === '#/info' ? 'info' : 'login';
+        var manMoi = tenMoi === 'info' ? $('#scInfo') : $('#scLogin');
+        var thanMoi = manMoi.querySelector('.card-body');
+        // Co SẴN thân màn mới TRƯỚC khi nó kịp hiện ra — không thì nó hiện
+        // đúng một khung hình ở cỡ đầy đủ rồi mới co, nhìn "loé" một cái.
+        if (thanMoi) thanMoi.classList.add('co-lai');
+
         var brand = $('#btnBrand');
         var truoc = brand.getBoundingClientRect(); // ĐO TRƯỚC khi man() dời nó
         location.hash = dich;
-        man(dich === '#/info' ? 'info' : 'login'); // đổi màn + dời brand NGAY (đồng bộ)
-        bayBrandTuVe(brand, truoc);
-        var manMoi = dich === '#/info' ? $('#scInfo') : $('#scLogin');
-        var thanMoi = manMoi.querySelector('.card-body');
-        if (!thanMoi) return;
-        thanMoi.classList.add('co-lai');
-        void thanMoi.offsetWidth; // ép reflow để hoạt ảnh nở ra chạy lại từ đầu
-        requestAnimationFrame(function () { thanMoi.classList.remove('co-lai'); });
+        man(tenMoi); // đổi màn + dời brand NGAY (đồng bộ)
+
+        // Đặt sẵn điểm XUẤT PHÁT cho cú trượt brand (transform bù từ vị trí
+        // cũ) — nhưng CHƯA cho chạy transition, để dồn qua rAF bên dưới.
+        var sau = brand.getBoundingClientRect();
+        var dx = truoc.left - sau.left, dy = truoc.top - sau.top;
+        var canTruot = dx || dy;
+        if (canTruot) {
+          brand.style.transition = 'none';
+          brand.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
+        }
+        void brand.offsetWidth; // ép reflow — chốt lại trạng thái "trước" vừa đặt
+
+        // CẢ HAI hoạt ảnh khởi động chung một khung hình ở đây.
+        requestAnimationFrame(function () {
+          if (canTruot) {
+            brand.style.transition = 'transform ' + THOI_GIAN_BAY_BRAND + 'ms cubic-bezier(.22,.9,.3,1)';
+            brand.style.transform = '';
+            setTimeout(function () {
+              brand.style.transition = '';
+              brand.style.transform = '';
+            }, THOI_GIAN_BAY_BRAND + 20);
+          }
+          if (thanMoi) thanMoi.classList.remove('co-lai');
+        });
       }, THOI_GIAN_TRUOT);
     }
 

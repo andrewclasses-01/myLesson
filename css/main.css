@@ -60,11 +60,20 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
    liên tục qua filter hue-rotate — chuyển RẤT CHẬM nên mắt không thấy giật
    + `xoayCham`/`xoayNguoc` (lớp .xuoi/.nguoc app.js gắn NGẪU NHIÊN mỗi lần mở
    trang) xoay cả khối RẤT chậm, một vòng mất nhiều phút — nhìn cực kỹ mới ra. */
+/* ⛔ v1.8.1: MỖI quầng nay có 4 mốc màu (không phải 2) — hạ dần .62→.30→.08→0
+   thay vì nhảy thẳng từ đặc xuống trong suốt ở một mốc DUY NHẤT. Với gradient
+   2 mốc, phần "biến mất" dồn vào một dải hẹp cuối nên mắt vẫn thấy một VIỀN
+   RÕ (nhất là sau khi ghép animation xoay + saturate) — bài học thật, thầy
+   chỉ ra "viền nền bị thiếu fade nhìn rất xấu". 4 mốc + kéo dài tới 100% làm
+   quầng tan dần vào nền kem chứ không cắt cụt. */
 .login-bg::before{
   background:
-    radial-gradient(41vmax 36vmax at 50% 47%, rgba(255,193,133,.62) 0%, transparent 68%),
-    radial-gradient(34vmax 31vmax at 33% 38%, rgba(255,154,122,.46) 0%, transparent 66%),
-    radial-gradient(29vmax 26vmax at 63% 33%, rgba(255,178,196,.40) 0%, transparent 66%);
+    radial-gradient(41vmax 36vmax at 50% 47%, rgba(255,193,133,.62) 0%,
+      rgba(255,193,133,.30) 42%, rgba(255,193,133,.08) 74%, transparent 100%),
+    radial-gradient(34vmax 31vmax at 33% 38%, rgba(255,154,122,.46) 0%,
+      rgba(255,154,122,.22) 42%, rgba(255,154,122,.06) 74%, transparent 100%),
+    radial-gradient(29vmax 26vmax at 63% 33%, rgba(255,178,196,.40) 0%,
+      rgba(255,178,196,.19) 42%, rgba(255,178,196,.05) 74%, transparent 100%);
   animation:loang 2.5s cubic-bezier(.22,.9,.3,1) .18s forwards,
             tho 34s ease-in-out 3.2s infinite,
             mauDoi 52s linear 3s infinite}
@@ -75,8 +84,10 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
    cùng tông cùng lúc — nhìn như màu đang tự trôi chứ không nháy đồng bộ. */
 .login-bg::after{
   background:
-    radial-gradient(38vmax 35vmax at 62% 60%, rgba(64,197,178,.46) 0%, transparent 68%),
-    radial-gradient(31vmax 29vmax at 38% 66%, rgba(255,214,150,.44) 0%, transparent 66%);
+    radial-gradient(38vmax 35vmax at 62% 60%, rgba(64,197,178,.46) 0%,
+      rgba(64,197,178,.22) 42%, rgba(64,197,178,.06) 74%, transparent 100%),
+    radial-gradient(31vmax 29vmax at 38% 66%, rgba(255,214,150,.44) 0%,
+      rgba(255,214,150,.21) 42%, rgba(255,214,150,.06) 74%, transparent 100%);
   animation:loang 3s cubic-bezier(.22,.9,.3,1) .42s forwards,
             tho 41s ease-in-out 3.8s infinite reverse,
             mauDoi 60s linear 3.4s infinite reverse}
@@ -108,10 +119,12 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
   50%    {scale:1.07}
 }
 /* Xoay tông màu liên tục, RẤT CHẬM (52s/60s một vòng) — filter hue-rotate
-   không đụng tới các lớp gradient gốc nên vẫn giữ đúng bộ màu đã duyệt. */
+   không đụng tới các lớp gradient gốc nên vẫn giữ đúng bộ màu đã duyệt.
+   saturate hạ từ 1.15 xuống 1.05 (v1.8.1) — bão hoà cao làm viền quầng RÕ
+   hơn, cộng với gradient fade gấp mới càng lộ viền. */
 @keyframes mauDoi{
   0%  {filter:hue-rotate(0deg) saturate(1)}
-  50% {filter:hue-rotate(180deg) saturate(1.15)}
+  50% {filter:hue-rotate(180deg) saturate(1.05)}
   100%{filter:hue-rotate(360deg) saturate(1)}
 }
 /* Xoay CỰC chậm — 320 GIÂY (hơn 5 phút) một vòng, phải nhìn rất kỹ mới thấy

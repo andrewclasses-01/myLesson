@@ -66,7 +66,10 @@ a{color:inherit}
   position:sticky; top:0; z-index:20; background:rgba(255,255,255,.92);
   backdrop-filter:blur(10px); border-bottom:1px solid var(--vien);
 }
-.top-in{display:flex; align-items:center; gap:14px; padding:11px 0}
+/* ⛔ PHẢI GIỮ ĐỆM NGANG 18px ĐÚNG BẰNG `.wrap`. Rule này viết SAU `.wrap` nên
+   `padding:11px 0` (bản đầu) xoá luôn đệm ngang ⇒ cả thanh đầu thò ra ngoài
+   18px so với mọi khối bên dưới, nhìn lệch hẳn (thầy chỉ ra 23/08). */
+.top-in{display:flex; align-items:center; gap:14px; padding:11px 18px}
 .brand{display:flex; align-items:center; gap:11px; min-width:0}
 .brand img{width:40px; height:40px; border-radius:50%; object-fit:cover; flex:none}
 .brand .ten{font:800 15.5px/1.2 var(--font); letter-spacing:.2px}
@@ -103,8 +106,10 @@ a{color:inherit}
 /* ---------- KHỐI CHUNG ---------- */
 .khoi{background:var(--the); border:1px solid var(--vien); border-radius:var(--r);
   box-shadow:var(--bong); margin-bottom:18px; overflow:hidden}
+/* `flex-wrap` BẮT BUỘC: đầu khối "Bài của lớp" còn có ô chọn em + nút, ở màn
+   điện thoại mà không cho xuống dòng là cả khối thò ra ngoài 44px (đo thật). */
 .khoi-dau{display:flex; align-items:center; gap:12px; padding:14px 18px;
-  border-bottom:1px solid var(--vien)}
+  border-bottom:1px solid var(--vien); flex-wrap:wrap}
 .khoi-dau h2{margin:0; font:800 13px/1.3 var(--font); letter-spacing:.09em;
   text-transform:uppercase}
 .khoi-dau .phu{font:600 12px/1.3 var(--font); color:var(--nhat)}
@@ -195,6 +200,44 @@ a{color:inherit}
 .ten-o i{font-style:normal; opacity:.65; margin-left:4px}
 .bai-nut{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
 
+/* ---------- KHUNG TRÒ CHUYỆN CỦA LỚP ---------- */
+.chat-khoi .khoi-than{padding:0}
+.chat-body{
+  height:340px; overflow-y:auto; padding:14px 16px 8px;
+  display:flex; flex-direction:column; gap:9px;
+}
+.chat-cho{margin:auto; text-align:center; color:var(--nhat); font-size:12.5px;
+  line-height:1.6; padding:16px}
+.tin{display:flex; gap:9px; align-items:flex-end}
+.tin .av{flex:none; width:30px; height:30px; border-radius:50%; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+  font:800 11px/1 var(--font)}
+.tin .noi{min-width:0; max-width:78%}
+.tin .dau{font:700 11px/1.3 var(--font); color:var(--nhat); margin-bottom:3px}
+.tin .dau b{color:var(--mo)}
+.tin .bong{padding:8px 12px; border-radius:14px 14px 14px 4px;
+  background:#F1F5F4; border:1px solid var(--vien); font-size:13px;
+  line-height:1.5; word-break:break-word; white-space:pre-wrap}
+.tin.toi{flex-direction:row-reverse}
+.tin.toi .noi{text-align:right}
+.tin.toi .bong{border-radius:14px 14px 4px 14px; background:var(--xanh-nhat);
+  border-color:#BFDCD6; text-align:left}
+.tin.toi .av{background:var(--xanh)}
+.chat-foot{display:flex; gap:8px; align-items:flex-end; padding:11px 14px;
+  border-top:1px solid var(--vien)}
+.chat-foot textarea{
+  flex:1; min-width:0; resize:none; max-height:120px; padding:9px 13px;
+  border-radius:12px; border:1px solid var(--vien-dam); color:var(--chu);
+  font:600 13px/1.5 var(--font);
+}
+.chat-foot textarea:focus{outline:none; border-color:var(--xanh)}
+.chat-foot button{flex:none; width:42px; height:38px; border-radius:12px;
+  border:0; background:var(--xanh); color:#fff; display:flex;
+  align-items:center; justify-content:center}
+.chat-foot button:hover{filter:brightness(1.08)}
+.chat-foot button[disabled]{opacity:.5; pointer-events:none}
+.chat-foot button svg{width:17px; height:17px; fill:currentColor}
+
 /* ---------- CỘT PHẢI ---------- */
 .cot2{display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:18px; align-items:start}
 .ben .khoi-than{padding:10px 14px 14px}
@@ -252,6 +295,10 @@ a{color:inherit}
 }
 @media (max-width:620px){
   .wrap{padding:0 12px}
+  .khoi-dau{gap:8px; padding:12px 14px}
+  .khoi-dau .day{display:none}          /* bỏ khoảng đẩy, cho các nút bám sát nhau */
+  .chon-em{max-width:none; flex:1}
+  .chat-body{height:280px}
   .brand .ten{font-size:14px}
   .top-in{gap:9px}
   .so-o .n{font-size:23px}
@@ -326,6 +373,25 @@ a{color:inherit}
         </div>
         <div class="khoi-than" id="baiDs"></div>
       </section>
+
+      <!-- ⭐ v1.11.0 — TRÒ CHUYỆN VỚI LỚP. Đổi chip lớp là đổi luôn phòng này,
+           chung kho tin với khung chat bên trang học sinh (`js/chat.js`). -->
+      <section class="khoi chat-khoi">
+        <div class="khoi-dau">
+          <h2>Trò chuyện</h2>
+          <span class="phu" id="chatPhu"></span>
+        </div>
+        <div class="khoi-than">
+          <div class="chat-body" id="chatBody"></div>
+          <div class="chat-foot">
+            <textarea id="chatO" rows="1" maxlength="300"
+              placeholder="Nhắn cho cả lớp…"></textarea>
+            <button id="chatGui" title="Gửi">
+              <svg viewBox="0 0 512 512"><path d="M40.5 17.6C30 12.6 17.5 21.5 20.2 32.9L62.8 213.6C64.2 219.6 69.3 224 75.4 224.5L246 238.6C255.4 239.4 255.4 272.6 246 273.4L75.4 287.5C69.3 288 64.2 292.4 62.8 298.4L20.2 479.1C17.5 490.5 30 499.4 40.5 494.4L480.5 282.4C492 276.9 492 235.1 480.5 229.6Z"/></svg>
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
 
     <aside class="ben">
@@ -373,8 +439,9 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=16"></script>
-<script src="js/chung.js?v=16"></script>
+<script src="config.js?v=17"></script>
+<script src="js/chung.js?v=17"></script>
+<script src="js/chat.js?v=17"></script>
 <script>
 (function () {
   'use strict';
@@ -844,6 +911,82 @@ a{color:inherit}
       '&nhu=' + encodeURIComponent(ma), '_blank');
   }
 
+  // ---------- TRÒ CHUYỆN VỚI LỚP (v1.11.0) ----------
+  // Chung kho tin với khung chat bên trang học sinh — thầy nhắn ở đây thì các
+  // em thấy ngay trên `lop.html`, và ngược lại. Xem `js/chat.js`.
+  // ⛔ Đổi lớp phải gọi lại `noiChat()`: `AWChat.nghe()` tự bỏ phòng cũ, không
+  // thì tin của lớp này nhảy sang khung của lớp kia.
+  var MAU_AV = ['#0E7C6E', '#B3541E', '#5B8DEF', '#8CC63F', '#E36B5C', '#9C6ADE', '#F2A93B'];
+
+  function veAv(ten) {
+    var tu = String(ten || '?').trim().split(/\s+/);
+    var chu = tu.slice(-2).map(function (t) { return t[0]; }).join('').toUpperCase();
+    var i = 0;
+    for (var j = 0; j < ten.length; j++) i += ten.charCodeAt(j);
+    return '<span class="av" style="background:' + MAU_AV[i % MAU_AV.length] + '">' +
+           A.chuAnToan(chu) + '</span>';
+  }
+
+  var TIN = [];
+
+  function veChat() {
+    var hop = $('#chatBody');
+    if (!TIN.length) {
+      hop.innerHTML = '<div class="chat-cho">Lớp này chưa có tin nhắn nào.<br>' +
+        'Thầy nhắn câu đầu tiên nhé.</div>';
+      return;
+    }
+    var oDay = (hop.scrollHeight - hop.scrollTop - hop.clientHeight) < 60;
+    hop.innerHTML = TIN.map(function (t) {
+      var cuaThay = t.vaiTro === 'gv';
+      return '<div class="tin' + (cuaThay ? ' toi' : '') + '">' +
+        (cuaThay ? '<span class="av" style="background:var(--xanh)">GV</span>' : veAv(t.ten)) +
+        '<div class="noi">' +
+          '<div class="dau"><b>' + A.chuAnToan(cuaThay ? 'Thầy Andrew' : t.ten) + '</b> · ' +
+            A.chuAnToan(AWChat.chuGio(t.luc)) + '</div>' +
+          '<div class="bong">' + A.chuAnToan(t.chu) + '</div>' +
+        '</div></div>';
+    }).join('');
+    if (oDay) hop.scrollTop = hop.scrollHeight;
+  }
+
+  function noiChat() {
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    $('#chatPhu').textContent = 'lớp ' + ((l && l.tenGoc) || LOP_CHON);
+    $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
+    TIN = [];
+    $('#chatO').disabled = false;
+    $('#chatGui').disabled = false;
+    AWChat.nghe(LOP_CHON, function (ds) {
+      TIN = ds;
+      veChat();
+    }, function (e) {
+      $('#chatBody').innerHTML = '<div class="chat-cho">' + A.chuAnToan(AWChat.chuLoi(e)) + '</div>';
+      $('#chatO').disabled = true;
+      $('#chatGui').disabled = true;
+    });
+  }
+
+  function guiChat() {
+    var o = $('#chatO');
+    var chu = o.value.trim();
+    if (!chu) return;
+    o.disabled = true;
+    $('#chatGui').disabled = true;
+    AWChat.gui(LOP_CHON, { ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', chu: chu })
+      .then(function () { o.value = ''; noOChat(); })
+      ['catch'](function (e) { baoToast(AWChat.chuLoi(e)); })
+      .then(function () {
+        o.disabled = false; $('#chatGui').disabled = false; o.focus();
+      });
+  }
+
+  function noOChat() {
+    var o = $('#chatO');
+    o.style.height = 'auto';
+    o.style.height = (o.scrollHeight + (o.offsetHeight - o.clientHeight)) + 'px';
+  }
+
   // ---------- vẽ lại toàn trang ----------
   function veTat() {
     veDaiSo();
@@ -860,6 +1003,7 @@ a{color:inherit}
     LOP_CHON = maLop;
     try { localStorage.setItem('mylesson_ql_lop', maLop); } catch (e) {}
     veTat();
+    noiChat();
     var ds = A.baiCuaLop(DL, maLop).map(function (b) { return { b: b, maLop: maLop }; });
     docDiemCuaCacBai(ds, epMoi).then(veTat);
   }
@@ -876,6 +1020,7 @@ a{color:inherit}
       LOP_CHON = (DL.lop.some(function (l) { return l.maLop === cu; }) ? cu
                  : (DL.lop[0] ? DL.lop[0].maLop : ''));
       veTat();
+      noiChat();
 
       // Đọc điểm: bài cần nhắc (mọi lớp) + bài của lớp đang chọn.
       var can = baiCanNhac();
@@ -919,6 +1064,13 @@ a{color:inherit}
       var ma = maEmCuaLop(LOP_CHON);
       if (!ma) return baoToast('Lớp này chưa em nào có mã đăng nhập.');
       window.open('lop.html?nhu=' + encodeURIComponent(ma), '_blank');
+    };
+
+    $('#chatGui').onclick = guiChat;
+    $('#chatO').oninput = noOChat;
+    /* Enter = gửi · Shift+Enter = xuống dòng. */
+    $('#chatO').onkeydown = function (e) {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); guiChat(); }
     };
 
     $('#chepDong').onclick = function () { $('#chepNen').hidden = true; };

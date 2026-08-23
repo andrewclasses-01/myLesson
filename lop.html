@@ -152,6 +152,15 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    tính). Vì thế chat KHÔNG còn sticky/chiều cao theo màn hình nữa. */
 .main{display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:22px;
   align-items:stretch; padding:22px 20px 40px}
+/* ⭐ v1.11.0 — SÀN CHIỀU CAO CHO CẢ HÀNG LƯỚI.
+   Khung chat cao ĐÚNG BẰNG cột thẻ (xem khối CHAT bên dưới) — hay ở chỗ tin
+   nhắn nhiều mấy cũng không kéo dài trang, nhưng lớp CHƯA CÓ BÀI NÀO thì cột
+   thẻ chỉ còn một dòng "No homework" ⇒ khung chat lùn tịt, chỉ thấy cái tiêu
+   đề (thầy bắt được 23/08). Cho cả hàng một cái sàn là xong, thẻ nhiều thì
+   hàng tự cao hơn sàn nên không ảnh hưởng gì. */
+@media (min-width:1041px){
+  .main{min-height:min(70vh, 620px)}
+}
 .cot-bai{display:flex; flex-direction:column; gap:16px}
 .vach{height:0; border-top:1.5px dashed #B9CCC7; margin:-1px 0}
 
@@ -776,6 +785,12 @@ body.mo-menu .side.trai{transform:none}
 /* Khung chat lúc chưa có kho tin thật: một dòng nhắn ở giữa. */
 .chat-cho{margin:auto; padding:22px 18px; text-align:center; font-size:12.5px;
   line-height:1.55; color:var(--chu-mo, #7b8a97)}
+
+/* Tin của THẦY: nhãn nhỏ + bóng nền xanh nhạt cho các em nhìn ra ngay. */
+.msg.cua-thay .bong{background:#E7F2F0; border-color:#BFDCD6}
+.nhan-thay{display:inline-block; margin-left:5px; padding:1px 6px; border-radius:6px;
+  background:#0E7C6E; color:#fff; font:800 9px/1.5 var(--sans, inherit);
+  letter-spacing:.08em; vertical-align:1px}
 </style>
 </head>
 <body>
@@ -890,8 +905,9 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=16"></script>
-<script src="js/chung.js?v=16"></script>
+<script src="config.js?v=17"></script>
+<script src="js/chung.js?v=17"></script>
+<script src="js/chat.js?v=17"></script>
 <script>
 /* ============================================================
    TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).
@@ -904,6 +920,10 @@ var $ = function(s){ return document.querySelector(s); };
 
 /* Lời nhắn dùng chung cho mọi nút chưa làm xong. */
 var CHUA_XONG = 'Thầy Andrew đang xây dựng tính năng này, em hãy chờ thêm nhé!';
+
+/* Chống chèn thẻ HTML từ chữ người khác gõ (tên bài, TIN NHẮN của bạn cùng lớp).
+   ⛔ Dùng chung với js/chung.js — ĐỪNG viết lại một bản riêng ở đây. */
+function chuAnToan(x){ return window.AWC.chuAnToan(x); }
 
 /* Hai ngưỡng này trùng với @media bên trên — sửa một chỗ thì sửa cả hai.
      620px  = dạng điện thoại (cỡ chữ, khoảng cách thu nhỏ)
@@ -1721,6 +1741,7 @@ A.napDuLieu().then(function(dl){
     /* Ngầm hỏi bộ não xem buổi speaking này ai đã nộp — KHÔNG chặn gì, thẻ đã hiện rồi. */
     capNhatTheSpeaking();
     choTruoc = chupCho();    /* ảnh chụp đầu, để lần đổi bố cục đầu có chỗ chạy từ đó */
+    noiChat();               /* mở phòng trò chuyện của lớp (v1.11.0) */
   });
 })['catch'](function(e){
   dangDocDiem = false;
@@ -1991,44 +2012,63 @@ function capNhatTheSpeaking(){
     .catch(function(){ clearTimeout(het); });
 }
 
-/* ---------- CHAT ----------
-   ⚠️ v1.9.0 — CHƯA CÓ KHO TIN NHẮN THẬT. Bản mẫu chạy bằng 10 tin gõ sẵn; đưa
-   nguyên si lên mạng là học sinh đọc phải hội thoại bịa mang tên các bạn thật,
-   nên khối tin giả đã BỎ HẲN. Khung chat giữ nguyên chỗ (thầy đã chốt bố cục
-   này) nhưng ở trạng thái KHOÁ: một dòng nhắn + ô nhập không gõ được.
-   Đợt sau nối kho tin thật thì chỉ việc đổ mảng tin vào `veTin()` như cũ. */
-var TIN_MAU = [];
-
-function veAvChat(ten, i){ return veAv(ten, i); }
+/* ---------- CHAT (v1.11.0 — KHO TIN THẬT) ----------
+   Tới v1.10.x khung này còn bị KHOÁ vì chưa có chỗ chứa tin. Nay tin nằm trong
+   Firestore, mỗi lớp một phòng, cả thầy lẫn học sinh nhắn chung một chỗ —
+   xem `js/chat.js` (kèm đoạn LUẬT FIRESTORE thầy cần dán một lần).
+   ⛔ Chưa dán luật thì khung báo hiền một dòng, KHÔNG để trống trơn khiến em
+   nào cũng tưởng "lớp chưa ai nhắn gì". */
+var TIN_MAU = [];          /* tin đang hiện, đổ về từ kho (giữ tên cũ cho các
+                              hàm cảm xúc bên dưới không phải sửa) */
 
 function veTin(t, i){
-  var toi = (t.ten === TOI);
-  var bong = '<div class="bong">' + String(t.chu || '').replace(/</g, '&lt;') + '</div>';
-  if (toi) {
+  var laToi = !!(t.ma && MA_HS && t.ma === MA_HS);
+  var laThay = t.vaiTro === 'gv';
+  var bong = '<div class="bong">' + chuAnToan(t.chu) + '</div>';
+  var gio = AWChat.chuGio(t.luc);
+
+  if (laToi) {
     return '<div class="msg toi" data-i="' + i + '">' + veAv(t.ten, i) +
       '<div class="msg-c">' +
         '<div class="hang-bong">' + bong + '</div>' +
-        '<div class="gio-duoi">' + t.luc + '</div>' +
+        '<div class="gio-duoi">' + chuAnToan(gio) + '</div>' +
       '</div></div>';
   }
-  return '<div class="msg" data-i="' + i + '">' + veAv(t.ten, i) +
+  return '<div class="msg' + (laThay ? ' cua-thay' : '') + '" data-i="' + i + '">' +
+    veAv(t.ten, i) +
     '<div class="msg-c">' +
-      '<div class="msg-top"><span class="n">' + t.ten + '</span>' +
-      '<span class="t">' + t.luc + '</span></div>' +
+      '<div class="msg-top"><span class="n">' + chuAnToan(t.ten) +
+        (laThay ? ' <b class="nhan-thay">THẦY</b>' : '') + '</span>' +
+      '<span class="t">' + chuAnToan(gio) + '</span></div>' +
       '<div class="hang-bong">' + bong + '</div>' +
     '</div></div>';
 }
 
 var khung = $('#khungChat');
-khung.innerHTML = '<div class="chat-cho">' +
-  'Thầy Andrew đang xây dựng phần trò chuyện của lớp. Sắp có rồi nhé!</div>';
-(function khoaChat(){
-  var o = $('#oChat');
-  o.disabled = true;
-  o.placeholder = 'Sắp có — thầy đang xây dựng phần này';
-  var g = $('#nutGui');
-  if (g) g.disabled = true;
-})();
+
+function veChat(){
+  if (!TIN_MAU.length) {
+    khung.innerHTML = '<div class="chat-cho">Lớp mình chưa ai nhắn gì.<br>' +
+      'Em mở lời trước nhé!</div>';
+    return;
+  }
+  /* Đang ở sát đáy thì sau khi vẽ lại vẫn giữ ở đáy (tin mới về);
+     em đang cuộn đọc tin cũ thì KHÔNG giật xuống. */
+  var oDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60;
+  khung.innerHTML = TIN_MAU.map(veTin).join('');
+  if (oDay) khung.scrollTop = khung.scrollHeight;
+}
+
+function noiChat(){
+  khung.innerHTML = '<div class="chat-cho">Đang mở phòng trò chuyện…</div>';
+  AWChat.nghe(LOP_DL, function(ds){
+    TIN_MAU = ds;
+    veChat();
+  }, function(e){
+    khung.innerHTML = '<div class="chat-cho">' + chuAnToan(AWChat.chuLoi(e)) + '</div>';
+    var o = $('#oChat'); if (o) o.disabled = true;
+  });
+}
 
 /* Sáu cảm xúc thả được — giữ lại cho đợt nối kho tin thật. */
 var CAM_XUC = [
@@ -2217,12 +2257,17 @@ function guiTin(){
   var o = $('#oChat');
   var chu = o.value.trim();
   if (!chu) return;
-  var d = new Date();
-  var luc = 'Hôm nay ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
-  khung.insertAdjacentHTML('beforeend', veTin({ ten:TOI, luc:luc, chu:chu }, 2));
-  o.value = '';
-  noOChat();
-  khung.scrollTop = khung.scrollHeight;
+  o.disabled = true;
+  AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: 'hs', chu: chu })
+    .then(function(){
+      o.value = '';
+      noOChat();
+      /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay
+         là tin hiện HAI LẦN. */
+    })['catch'](function(e){
+      baoToast(AWChat.chuLoi(e));
+    })
+    .then(function(){ o.disabled = false; o.focus(); });
 }
 $('#nutGui').onclick = guiTin;
 $('#oChat').oninput = noOChat;

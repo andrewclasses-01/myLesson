@@ -46,6 +46,12 @@
   --r:16px;
 }
 *{box-sizing:border-box}
+/* ⛔⛔ BẪY ĐÃ VẤP NGAY NGÀY ĐẦU (23/08/2026): thuộc tính `hidden` của HTML chỉ là
+   `display:none` trong bảng mặc định của trình duyệt — hạng ƯU TIÊN THẤP NHẤT.
+   Chỉ cần một rule có class (vd `.chep-nen{display:flex}`) là nó THẮNG, và thẻ
+   đang "hidden" vẫn hiện đè kín màn hình, bấm gì cũng không được.
+   Dòng dưới bắt `hidden` luôn thắng. ĐỪNG XOÁ. */
+[hidden]{display:none !important}
 html,body{margin:0}
 body{
   background:var(--nen); color:var(--chu); font:600 14px/1.55 var(--font);
@@ -135,6 +141,14 @@ a{color:inherit}
 .chip:hover{border-color:var(--xanh)}
 .chip.chon{background:var(--xanh); border-color:var(--xanh); color:#fff}
 .chip.chon b, .chip.chon small{color:#fff}
+
+/* Ô chọn "xem như em nào" — để thầy soi trang của TỪNG em, khỏi phải đăng xuất
+   rồi gõ mã của em đó. */
+.chon-em{
+  max-width:190px; padding:6px 10px; border-radius:9px; background:#fff;
+  border:1px solid var(--vien-dam); color:var(--chu); font:700 11.5px/1.3 var(--font);
+}
+.chon-em:focus{outline:none; border-color:var(--xanh)}
 
 /* ---------- BÀI CỦA LỚP ---------- */
 .bai-o{border:1px solid var(--vien); border-radius:13px; margin-bottom:10px;
@@ -305,7 +319,8 @@ a{color:inherit}
           <h2 id="baiTieuDe">Bài của lớp</h2>
           <span class="phu" id="baiPhu"></span>
           <div class="day"></div>
-          <button class="nut nho" id="btnMoLop" title="Mở trang lớp như một em đang thấy">
+          <select class="chon-em" id="chonEm" title="Xem trang như em nào"></select>
+          <button class="nut nho" id="btnMoLop" title="Mở trang lớp như em đang chọn">
             Xem trang lớp
           </button>
         </div>
@@ -358,8 +373,8 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=15"></script>
-<script src="js/chung.js?v=15"></script>
+<script src="config.js?v=16"></script>
+<script src="js/chung.js?v=16"></script>
 <script>
 (function () {
   'use strict';
@@ -795,10 +810,27 @@ a{color:inherit}
   }
 
   // Mở trang học sinh (xem như một em có mã trong lớp đó).
+  // Mã em đang chọn trong ô "xem như"; chưa chọn thì lấy em đầu tiên có mã.
   function maEmCuaLop(maLop) {
+    var o = $('#chonEm');
+    if (o && o.value && maLop === LOP_CHON) return o.value;
     var l = A.lopTheoMa(DL, maLop);
     var em = ((l && l.hocSinh) || []).filter(function (h) { return String(h.ma || '').trim(); })[0];
     return em ? A.chuanMa(em.ma) : '';
+  }
+
+  function veChonEm() {
+    var o = $('#chonEm');
+    if (!o) return;
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var ds = ((l && l.hocSinh) || []).filter(function (h) { return String(h.ma || '').trim(); });
+    o.innerHTML = ds.length
+      ? ds.map(function (h) {
+          return '<option value="' + A.chuAnToan(A.chuanMa(h.ma)) + '">xem như ' +
+                 A.chuAnToan(h.ten) + '</option>';
+        }).join('')
+      : '<option value="">lớp chưa em nào có mã</option>';
+    o.disabled = !ds.length;
   }
 
   function moTrangHs(id) {
@@ -816,6 +848,7 @@ a{color:inherit}
   function veTat() {
     veDaiSo();
     veChipLop();
+    veChonEm();
     veDsBai();
     veSinhNhat();
     veThieuMa();
@@ -903,9 +936,11 @@ a{color:inherit}
       if (e.key === 'Escape') $('#chepNen').hidden = true;
     });
 
+    // Thoát = quên máy này rồi về màn đăng nhập. `?vao=1` để màn đó KHÔNG tự
+    // nhảy lại vào đây (nếu máy còn nhớ em nào đó đang đăng nhập).
     $('#btnRa').onclick = function () {
       A.thoatAdmin();
-      location.href = 'index.html';
+      location.href = 'index.html?vao=1';
     };
   }
 

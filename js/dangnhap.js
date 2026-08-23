@@ -120,15 +120,20 @@
     A.napDuLieu().then(function (dl) {
       DL = dl;
 
+      // ⭐ `?vao=1` = ÉP HIỆN MÀN ĐĂNG NHẬP dù máy đang nhớ ai đó. Thầy cần đường
+      // này để gõ thử mã của một em khác mà không phải đăng xuất trước.
+      var epGo = new URLSearchParams(location.search).get('vao') === '1';
+      if (epGo) { A.thoat(); A.thoatAdmin(); }
+
       // Máy này từng đăng nhập rồi thì vào thẳng lớp, khỏi gõ lại mã.
       // ⛔ Chỉ tự vào khi KHÔNG có `#/info` trên địa chỉ: thầy/em bấm vào trang
       // thông tin từ ngoài thì phải được xem, không bị đá đi ngay.
-      if (location.hash !== '#/info' && A.emDangHoc(dl)) {
+      if (!epGo && location.hash !== '#/info' && A.emDangHoc(dl)) {
         location.replace('lop.html');
         return;
       }
       // Máy của thầy (đã gõ đúng mã quản lý lần trước) thì vào thẳng trang quản lý.
-      if (location.hash !== '#/info' && A.laAdmin()) {
+      if (!epGo && location.hash !== '#/info' && A.laAdmin()) {
         location.replace('dashboard.html');
         return;
       }

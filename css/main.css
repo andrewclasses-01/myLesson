@@ -18,15 +18,13 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
 .wrap{max-width:680px; margin:0 auto; padding:0 20px}
 .screen[hidden]{display:none}
 
-/* scLogin/scInfo KHÔNG dùng display:none (thuộc tính hidden) để ẩn/hiện —
-   dùng visibility:hidden (qua .man-hien) vì display:none làm mọi CSS
-   animation bên trong RESET (đo thật: sparkle của .brand tụt currentTime về
-   gần 0 mỗi lần đổi màn). visibility:hidden thì animation vẫn chạy ngầm,
-   không sơn ra màn hình — nên .brand dời qua lại giữa 2 thẻ này không bao
-   giờ bị "hiện lại từ đầu". `fixed` để 2 màn luôn chồng khít lên nhau. */
-#scLogin,#scInfo{position:fixed; inset:0; z-index:1; overflow-y:auto;
+/* #scLogin KHÔNG dùng display:none (thuộc tính hidden) để ẩn/hiện — dùng
+   visibility:hidden (qua .man-hien) vì display:none làm mọi CSS animation
+   bên trong RESET (đo thật: sparkle của .brand tụt currentTime về gần 0).
+   visibility:hidden thì animation vẫn chạy ngầm, không sơn ra màn hình. */
+#scLogin{position:fixed; inset:0; z-index:1; overflow-y:auto;
   visibility:hidden; pointer-events:none}
-#scLogin.man-hien,#scInfo.man-hien{visibility:visible; pointer-events:auto}
+#scLogin.man-hien{visibility:visible; pointer-events:auto}
 
 /* ---------- SIGN IN ---------- */
 /* v1.8.0: nền loang RỜI HẲN khỏi .login-wrap, sống ở #loginBg — MỘT phần tử
@@ -42,18 +40,27 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
    Mở trang ra là trắng, rồi các mảng màu ấm LOANG DẦN ra xung quanh — hai lớp
    quầng nở so le nhau (lớp ấm trước, lớp mát sau) nên mép loang không bao giờ
    thành một đường tròn rõ. `fixed` để cuộn trang không kéo lệch nền. */
-.login-bg{position:fixed; inset:0; z-index:0; pointer-events:none; background:#FFFDFA}
+.login-bg{position:fixed; inset:0; z-index:0; pointer-events:none;
+  background:#FFFDFA; overflow:hidden}
 .login-bg[hidden]{display:none}
 
-/* Hai lớp quầng phủ kín màn hình, nở ra từ TÂM Ô ĐĂNG NHẬP (50% 47%).
-   Dùng property `scale`/`rotate` RIÊNG (không gộp vào `transform`) vì có tới
-   2 hoạt ảnh cùng cần "xoay hình" độc lập (thở to-nhỏ + xoay cực chậm) —
-   `transform` là MỘT thuộc tính duy nhất nên 2 @keyframes cùng ghi vào đó sẽ
-   đè nhau; tách property thì trình duyệt tự cộng dồn đúng như CSS Transforms
-   Level 2 quy định. */
-.login-bg::before,.login-bg::after{content:""; position:absolute; inset:0;
+/* ⛔⛔ HAI LỚP QUẦNG PHẢI TO HƠN HẲN MÀN HÌNH — 260vmax, KHÔNG PHẢI inset:0.
+   Đây là GỐC RỄ THẬT của lỗi "viền nền gradient" thầy bắt 2 lần: trước đây
+   phần tử chỉ to bằng đúng khung nhìn (inset:0), nên khi `rotate` chạy thì
+   CẠNH của chính hình chữ nhật đó quét chéo qua màn hình ⇒ hiện một ĐƯỜNG
+   CHÉO sắc lẹm. Không phải gradient thiếu fade — vá thêm mốc màu bao nhiêu
+   cũng vô ích (đã thử ở v1.8.1, vẫn lỗi y nguyên).
+   Bán kính cần ≥ nửa đường chéo khung nhìn (~115vmax ở màn 16:9) nên lấy
+   260vmax cho dư; các quầng màu chỉ nằm gọn giữa (rộng nhất 41vmax) nên
+   cách mép phần tử ~89vmax — xoay kiểu gì cũng không thể lộ mép.
+   Dùng property `scale`/`rotate` RIÊNG (không gộp vào `transform`) vì có 2
+   hoạt ảnh cùng cần biến hình độc lập (thở to-nhỏ + xoay cực chậm) —
+   `transform` là MỘT thuộc tính nên 2 @keyframes cùng ghi vào đó sẽ đè nhau;
+   tách property thì trình duyệt tự cộng dồn (CSS Transforms Level 2). */
+.login-bg::before,.login-bg::after{content:""; position:absolute;
+  width:260vmax; height:260vmax; left:50%; top:47%; margin:-130vmax 0 0 -130vmax;
   opacity:0; scale:.28; rotate:0deg;
-  transform-origin:50% 47%; will-change:opacity,filter,scale,rotate}
+  will-change:opacity,filter,scale,rotate}
 
 /* Lớp ấm: đào · vàng nắng · hồng phấn. Đi trước, nở nhanh hơn một chút.
    v1.8.0: vùng loang RỘNG HƠN (mỗi quầng +~20%) + thêm `mauDoi` đổi tông màu
@@ -66,13 +73,16 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
    RÕ (nhất là sau khi ghép animation xoay + saturate) — bài học thật, thầy
    chỉ ra "viền nền bị thiếu fade nhìn rất xấu". 4 mốc + kéo dài tới 100% làm
    quầng tan dần vào nền kem chứ không cắt cụt. */
+/* ⚠️ Toạ độ quầng nay tính THEO TÂM PHẦN TỬ bằng calc() — phần tử 260vmax
+   chứ không còn bằng khung nhìn, nên các % kiểu "33% 38%" của bản cũ sẽ văng
+   ra rất xa ngoài màn hình. calc(50% ± Nvmax) giữ chúng quanh tâm như cũ. */
 .login-bg::before{
   background:
-    radial-gradient(41vmax 36vmax at 50% 47%, rgba(255,193,133,.62) 0%,
+    radial-gradient(41vmax 36vmax at 50% 50%, rgba(255,193,133,.62) 0%,
       rgba(255,193,133,.30) 42%, rgba(255,193,133,.08) 74%, transparent 100%),
-    radial-gradient(34vmax 31vmax at 33% 38%, rgba(255,154,122,.46) 0%,
+    radial-gradient(34vmax 31vmax at calc(50% - 15vmax) calc(50% - 8vmax), rgba(255,154,122,.46) 0%,
       rgba(255,154,122,.22) 42%, rgba(255,154,122,.06) 74%, transparent 100%),
-    radial-gradient(29vmax 26vmax at 63% 33%, rgba(255,178,196,.40) 0%,
+    radial-gradient(29vmax 26vmax at calc(50% + 12vmax) calc(50% - 12vmax), rgba(255,178,196,.40) 0%,
       rgba(255,178,196,.19) 42%, rgba(255,178,196,.05) 74%, transparent 100%);
   animation:loang 2.5s cubic-bezier(.22,.9,.3,1) .18s forwards,
             tho 34s ease-in-out 3.2s infinite,
@@ -84,9 +94,9 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
    cùng tông cùng lúc — nhìn như màu đang tự trôi chứ không nháy đồng bộ. */
 .login-bg::after{
   background:
-    radial-gradient(38vmax 35vmax at 62% 60%, rgba(64,197,178,.46) 0%,
+    radial-gradient(38vmax 35vmax at calc(50% + 11vmax) calc(50% + 12vmax), rgba(64,197,178,.46) 0%,
       rgba(64,197,178,.22) 42%, rgba(64,197,178,.06) 74%, transparent 100%),
-    radial-gradient(31vmax 29vmax at 38% 66%, rgba(255,214,150,.44) 0%,
+    radial-gradient(31vmax 29vmax at calc(50% - 11vmax) calc(50% + 17vmax), rgba(255,214,150,.44) 0%,
       rgba(255,214,150,.21) 42%, rgba(255,214,150,.06) 74%, transparent 100%);
   animation:loang 3s cubic-bezier(.22,.9,.3,1) .42s forwards,
             tho 41s ease-in-out 3.8s infinite reverse,
@@ -132,24 +142,25 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
 @keyframes xoayCham { from{rotate:0deg} to{rotate:360deg} }
 @keyframes xoayNguoc{ from{rotate:0deg} to{rotate:-360deg} }
 
-/* ---------- CARD-BODY: hoạt ảnh trượt khi đổi đăng nhập ↔ thông tin ----------
-   app.js gắn/gỡ .co-lai NGAY TRƯỚC/SAU khi đổi màn: phần thân co lại (mờ +
-   nhỏ lại + trượt lên) như bị hút vào khối icon+chữ, màn mới hiện ra thì nở
-   theo chiều ngược lại — đúng kiểu "chạy thụt vào rồi chạy ra" thầy duyệt.
-   ⛔ THOI_GIAN_TRUOT bên app.js PHẢI khớp đúng số ms dài nhất ở đây — lệch là
-   JS đổi màn giữa chừng lúc CSS còn đang chạy, nhìn giật cục (đã vấp 1 lần:
-   JS 260ms nhưng CSS 320ms, bị cắt ngang 60ms cuối). */
-.card-body{overflow:hidden; transform-origin:50% 0%;
-  transition:max-height .58s cubic-bezier(.22,.9,.3,1), opacity .46s ease,
-             transform .58s cubic-bezier(.22,.9,.3,1);
-  max-height:420px; opacity:1; transform:scale(1) translateY(0)}
-.card-body.co-lai{max-height:0; opacity:0; transform:scale(.93) translateY(-10px); pointer-events:none}
+/* ---------- NGĂN: hai ngăn thay nhau đóng/mở trong CÙNG một thẻ ----------
+   ⛔ v1.8.2: `max-height` KHÔNG còn là số cứng (420px) — app.js đặt bằng ĐÚNG
+   `scrollHeight` của ngăn. Lý do: với số cứng lớn hơn nội dung thật, đoạn
+   max-height chạy từ 420px xuống ~190px KHÔNG làm thẻ đổi chiều cao chút nào
+   (nội dung chỉ cao 190px) ⇒ nửa đầu hoạt ảnh "đứng hình" rồi mới co ⇒ brand
+   (bị thẻ đẩy đi) trông như trễ một nhịp. Đặt đúng chiều cao thật thì thẻ đổi
+   cỡ tuyến tính suốt cả 580ms, brand đi theo khít từng khung hình.
+   ⛔ Đừng thêm `transform`/`scale` vào đây: nó làm phần thân trông như dịch
+   chuyển ĐỘC LẬP với thẻ, đúng thứ cảm giác "không ăn khớp" thầy phàn nàn. */
+.ngan{overflow:hidden;
+  transition:max-height .58s cubic-bezier(.22,.9,.3,1), opacity .34s ease;
+  opacity:1}
+.ngan.ngan-dong{max-height:0 !important; opacity:0; pointer-events:none}
 
 /* Máy nào đặt "giảm chuyển động": bày sẵn trạng thái đã loang xong, không chạy gì. */
 @media (prefers-reduced-motion: reduce){
   .login-bg::before,.login-bg::after{animation:none; opacity:1; scale:1; rotate:0deg; filter:none}
   .spark{animation:none !important; opacity:0 !important}
-  .card-body{transition:none !important}
+  .ngan{transition:none !important}
   .brand{transition:none !important}
 }
 

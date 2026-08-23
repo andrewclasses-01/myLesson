@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
      không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=12">
+<link rel="stylesheet" href="css/main.css?v=13">
 </head>
 <body>
 
@@ -17,19 +17,22 @@
      qua lại. app.js chỉ ẩn/hiện khối này theo đúng nhóm màn hình. -->
 <div class="login-bg" id="loginBg"></div>
 
-<!-- ===== SCREEN 1: SIGN IN ===== -->
-<!-- scLogin/scInfo dùng .man-hien (visibility, KHÔNG dùng thuộc tính hidden/
-     display:none) — display:none làm mọi CSS animation bên trong (kể cả 9
-     sparkle của .brand) bị TRÌNH DUYỆT TỰ RESET, đã đo thật thấy currentTime
-     tụt về gần 0. visibility:hidden thì KHÔNG dừng animation, xem main.css. -->
+<!-- ===== SCREEN 1: SIGN IN + TRANG THÔNG TIN (CHUNG MỘT THẺ) =====
+     ⛔ v1.8.2: hai màn GỘP LÀM MỘT thẻ, KHÔNG còn #scInfo riêng. Lý do: khi
+     tách 2 thẻ thì khối .brand phải bị DỜI DOM qua lại, mà dời DOM thì brand
+     "nhảy" tức thì trong khi khung co giãn mượt ⇒ phải bù bằng hoạt ảnh FLIP
+     riêng, và hai hoạt ảnh khác nguồn KHÔNG BAO GIỜ khớp tuyệt đối (thầy bắt
+     lỗi 2 lần). Nay brand nằm YÊN một chỗ, chỉ hai "ngăn" bên dưới đóng/mở —
+     thẻ cao lên thấp xuống thì trình duyệt TỰ đẩy brand đi theo từng khung
+     hình. Một nguồn chuyển động duy nhất ⇒ khớp 100% theo định nghĩa.
+     .man-hien dùng visibility (KHÔNG dùng hidden/display:none) vì display:none
+     làm mọi CSS animation bên trong (9 sparkle) bị TRÌNH DUYỆT TỰ RESET. -->
 <section class="screen man-hien" id="scLogin">
   <div class="login-wrap">
-    <div class="card login-card" id="loginCardEl">
+    <div class="card login-card">
 
-      <!-- Icon + tên trường: MỘT khối DUY NHẤT trong toàn trang (app.js dời
-           sang thẻ đang hiện — xem datBrandDungCho) nên sparkle KHÔNG BAO GIỜ
-           bị dựng lại/reset khi đổi đăng nhập ↔ thông tin. Bấm để mở/đóng
-           trang thông tin (đích tính động theo hash hiện tại). -->
+      <!-- Icon + tên trường: bấm để mở/đóng ngăn thông tin. KHÔNG BAO GIỜ dời
+           khỏi đây ⇒ sparkle chạy liên tục, không reset. -->
       <div class="brand" id="btnBrand" role="button" tabindex="0" aria-label="Mở trang thông tin">
         <span class="brand-ava">
           <img src="assets/avatar-tron.jpg" alt="">
@@ -40,32 +43,18 @@
         <i class="spark s7"></i><i class="spark s8"></i><i class="spark s9"></i>
       </div>
 
-      <!-- .card-body = phần "trượt" ra/vào khi đổi màn (app.js gắn/gỡ .co-lai). -->
-      <div class="card-body">
+      <!-- Hai ngăn thay nhau đóng/mở (app.js đặt max-height BẰNG ĐÚNG chiều
+           cao thật, xem datNgan) — chính chúng làm thẻ cao/thấp, kéo brand đi. -->
+      <div class="ngan" id="nganLogin">
         <input id="inCode" type="text" autocomplete="off" placeholder="My ID"
           autocapitalize="characters" spellcheck="false">
         <button class="btn primary wide" id="btnLogin">BEGIN</button>
         <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
         <p class="tiny warn" id="loginNote" hidden></p>
       </div>
-    </div>
 
-    <footer class="login-foot">
-      <p>Copyright © 2016 - 2026 by ANDREW</p>
-      <p>Phone &amp; Zalo: 0359.769.765</p>
-    </footer>
-  </div>
-</section>
-
-<!-- ===== SCREEN INFO: trang thông tin (người chưa vào học, tiếng Việt) ===== -->
-<section class="screen" id="scInfo">
-  <div class="login-wrap">
-    <div class="card login-card" id="infoCardEl">
-      <!-- Khối .brand (ở trên) được app.js dời vào đây khi mở trang này. -->
-
-      <!-- Ba mục chỉ có giao diện — thầy đưa nội dung/link ở đợt sau.
-           .card-body = phần "trượt" ra/vào khi đổi màn (app.js gắn/gỡ .co-lai). -->
-      <nav class="info-list card-body">
+      <!-- Ba mục chỉ có giao diện — thầy đưa nội dung/link ở đợt sau. -->
+      <nav class="ngan ngan-dong info-list" id="nganInfo">
         <button type="button" class="info-row" id="mnTrial">
           <span class="ir-ic">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
@@ -173,7 +162,7 @@
   </div>
 </div>
 
-<script src="config.js?v=12"></script>
-<script src="js/app.js?v=12"></script>
+<script src="config.js?v=13"></script>
+<script src="js/app.js?v=13"></script>
 </body>
 </html>

@@ -30,28 +30,69 @@
     $('#modal').hidden = false;
   }
 
-  // Khối .brand (icon + "Andrew Classes" + 9 sparkle) chỉ tồn tại DUY NHẤT
-  // một lần trong toàn trang — dời nó sang thẻ đang hiện thay vì tạo lại.
-  // Nhờ scLogin/scInfo ẩn bằng visibility (không phải display:none, xem
-  // main.css) nên việc dời này KHÔNG làm sparkle bị reset.
-  function datBrandDungCho(ten) {
+  // ĐÓNG/MỞ hai ngăn trong cùng MỘT thẻ. Brand nằm yên phía trên, thẻ cao lên
+  // thấp xuống thì trình duyệt tự đẩy brand đi — không cần (và ĐỪNG) chạy
+  // hoạt ảnh riêng cho brand, đó chính là thứ từng gây lệch nhịp.
+  // `tucThi` = true: nhảy thẳng tới trạng thái, không hoạt ảnh (lúc mới mở trang).
+  var THOI_GIAN_NGAN = 580;   // ⛔ phải khớp transition max-height của .ngan trong main.css
+  var dangChuyenNgan = false;
+
+  function datNgan(ten, tucThi) {
+    var moi = ten === 'info' ? $('#nganInfo') : $('#nganLogin');
+    var cu = ten === 'info' ? $('#nganLogin') : $('#nganInfo');
     var brand = $('#btnBrand');
-    var dichCard = ten === 'info' ? $('#infoCardEl') : $('#loginCardEl');
-    if (brand.parentElement !== dichCard) dichCard.insertBefore(brand, dichCard.firstChild);
-    brand.classList.toggle('gon', ten === 'info');
     brand.setAttribute('aria-label', ten === 'info' ? 'Quay lại màn đăng nhập' : 'Mở trang thông tin');
+
+    // Ngăn đang đóng phải `inert` — CSS chỉ thu nó lại về 0 chiều cao, phím
+    // Tab và trình đọc màn hình VẪN chui vào các nút bên trong nếu không chặn.
+    cu.inert = true;
+    moi.inert = false;
+
+    if (tucThi) {
+      cu.classList.add('ngan-dong'); cu.style.maxHeight = '';
+      moi.classList.remove('ngan-dong'); moi.style.maxHeight = 'none';
+      brand.classList.toggle('gon', ten === 'info');
+      return;
+    }
+    // Đang chạy dở thì bỏ qua cú bấm mới — bấm liên tiếp sẽ chồng hai chuỗi
+    // setTimeout lên nhau, ngăn kẹt ở max-height nửa vời.
+    if (dangChuyenNgan) return;
+    dangChuyenNgan = true;
+
+    // B1 — ĐÓNG ngăn cũ. Phải chốt max-height về số px thật trước, vì đang là
+    // 'none' thì trình duyệt không có mốc đầu để chạy transition.
+    cu.style.maxHeight = cu.scrollHeight + 'px';
+    void cu.offsetWidth;
+    cu.classList.add('ngan-dong');
+
+    setTimeout(function () {
+      // B2 — MỞ ngăn mới, từ 0 lên đúng chiều cao thật của nó.
+      brand.classList.toggle('gon', ten === 'info');
+      moi.classList.remove('ngan-dong');
+      moi.style.maxHeight = '0px';
+      void moi.offsetWidth;
+      moi.style.maxHeight = moi.scrollHeight + 'px';
+      setTimeout(function () {
+        // Thả tự do để nội dung đổi cỡ sau này (vd dòng cảnh báo hiện ra) không bị cắt.
+        moi.style.maxHeight = 'none';
+        dangChuyenNgan = false;
+        // Bấm dồn dập lúc đang chạy thì các cú sau bị chốt chặn bỏ qua, nhưng
+        // hash VẪN đổi theo từng cú ⇒ xong việc có thể lệch với hash. Soi lại
+        // một lần, lệch thì chạy tiếp cho khớp.
+        var dungRa = location.hash === '#/info' ? 'info' : 'login';
+        if (dungRa !== ten) datNgan(dungRa, false);
+      }, THOI_GIAN_NGAN + 20);
+    }, THOI_GIAN_NGAN);
   }
 
   function man(ten) {
-    $('#scLogin').classList.toggle('man-hien', ten === 'login');
-    $('#scInfo').classList.toggle('man-hien', ten === 'info');
+    var laManDau = (ten === 'login' || ten === 'info');
+    $('#scLogin').classList.toggle('man-hien', laManDau);
     $('#scClass').hidden = ten !== 'class';
     $('#scLesson').hidden = ten !== 'lesson';
-    // Nền loang CHỈ dành cho 2 màn đăng nhập/thông tin — 2 màn kia có nền
-    // riêng (.hero). #loginBg không bị dựng lại nên đổi đăng nhập ↔ thông
-    // tin không làm nó chạy lại từ đầu.
-    $('#loginBg').hidden = (ten !== 'login' && ten !== 'info');
-    if (ten === 'login' || ten === 'info') datBrandDungCho(ten);
+    // Nền loang CHỈ dành cho màn đăng nhập/thông tin — 2 màn kia có nền riêng
+    // (.hero). #loginBg không bị dựng lại nên không chạy lại animation từ đầu.
+    $('#loginBg').hidden = !laManDau;
     window.scrollTo(0, 0);
   }
 
@@ -581,9 +622,12 @@
 
   function theoDiaChi() {
     var h = location.hash || '';
-    // Trang thông tin xem được cả khi CHƯA đăng nhập (đúng lối vào từ màn đăng nhập).
-    if (h === '#/info') { man('info'); return; }
-    if (!EM) { man('login'); return; }
+    // Ngăn thông tin xem được cả khi CHƯA đăng nhập (đúng lối vào từ màn đăng nhập).
+    // ⛔ `!dangChuyenNgan`: khi chính cú bấm brand vừa khởi động hoạt ảnh thì
+    // hashchange bắn ngay sau đó — gọi bản "tức thì" ở đây sẽ NUỐT MẤT hoạt
+    // ảnh vừa bắt đầu. Truyền tucThi=false để rơi vào chốt chặn và bỏ qua.
+    if (h === '#/info') { man('info'); datNgan('info', !dangChuyenNgan); return; }
+    if (!EM) { man('login'); datNgan('login', !dangChuyenNgan); return; }
     var m = h.match(/^#\/bai\/(.+)$/);
     if (m) moBai(decodeURIComponent(m[1]));
     else moLop();
@@ -629,82 +673,30 @@
     $('#inCode').onkeydown = function (e) { if (e.key === 'Enter') vaoHoc(); };
     $('#btnLogin').onclick = vaoHoc;
 
-    // Icon + "Andrew Classes" là MỘT khối DUY NHẤT, dùng chung 2 màn (xem
-    // datBrandDungCho) — bấm nó mở/đóng trang thông tin, đích tính động theo
-    // hash hiện tại nên không cần 2 handler riêng cho 2 chiều.
+    // Icon + "Andrew Classes" — bấm để đóng/mở ngăn thông tin ngay trong CÙNG
+    // một thẻ. Đích tính động theo hash nên chỉ cần một handler cho cả 2 chiều.
     //
-    // Hoạt ảnh TRƯỢT NHIỀU GIAI ĐOẠN thầy chốt:
-    //  1) "Andrew Classes" ĐỨNG YÊN, phần bên dưới (ô mã/BEGIN hoặc 3 dòng
-    //     thông tin) CUỘN VÀO trước (.card-body + .co-lai).
-    //  2) Đổi màn xong, phần thân màn mới ĐẨY DẦN RA (.card-body nở lại) —
-    //     ĐÚNG LÚC NÀY khối brand mới TRƯỢT LÊN (kỹ thuật FLIP: đo vị trí cũ
-    //     → dời sang thẻ mới → đo vị trí mới → chạy transform bù từ cũ về 0).
-    //  Chiều ngược lại giống hệt, chỉ đảo thứ tự.
-    // ⛔ THOI_GIAN_TRUOT phải khớp "transition" dài nhất của .card-body trong
-    // main.css (nay 580ms) — lệch là đổi màn giữa chừng lúc còn đang co, nhìn
-    // giật cục (bài học thật: từng để 260 trong khi CSS 320).
-    var THOI_GIAN_TRUOT = 580;
-    var THOI_GIAN_BAY_BRAND = 520;
+    // ⛔⛔ v1.8.2 — ĐỪNG DỰNG LẠI HOẠT ẢNH RIÊNG CHO BRAND. Hai bản trước đã
+    // thử: brand bị dời DOM giữa 2 thẻ nên phải bù bằng FLIP
+    // (getBoundingClientRect + transform), và thầy bắt lỗi "chưa ăn khớp" CẢ
+    // HAI LẦN — kể cả khi đã ép chung một requestAnimationFrame. Lý do gốc:
+    // hai chuyển động khác NGUỒN (một do transition transform, một do layout
+    // đổi chiều cao) thì đường cong tăng tốc không bao giờ trùng khít.
+    // Nay chỉ còn MỘT nguồn duy nhất: ngăn đổi max-height ⇒ thẻ đổi chiều cao
+    // ⇒ trình duyệt tự dịch brand từng khung hình. Khớp tuyệt đối theo định
+    // nghĩa, không có gì để lệch.
     var GIAM_CHUYEN_DONG = window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // ⛔ v1.8.1: thầy chỉ ra brand "trượt trễ một nhịp" so với khung — vì
-    // hồi trước card-body được gỡ .co-lai (bắt đầu nở) trong MỘT requestAnimationFrame
-    // riêng, còn brand bắt đầu trượt NGAY LẬP TỨC (không qua rAF) — hai hoạt
-    // ảnh khởi động lệch nhau đúng 1 khung hình. Nay CẢ HAI cùng chờ chung
-    // MỘT rAF rồi bắt đầu cùng lúc. Card-body màn mới cũng được co SẴN TỪ
-    // TRƯỚC khi màn kịp hiện ra (không phải sau) — tránh loé cỡ đầy đủ một
-    // khung hình rồi mới co lại.
-    function chuyenManTruot(dich) {
-      if (GIAM_CHUYEN_DONG) { location.hash = dich; return; }
-      // scLogin/scInfo dùng .man-hien (visibility), KHÔNG dùng [hidden] nữa —
-      // nên tìm màn đang hiện qua đúng class đó, không querySelector([hidden]).
-      var manCu = $('#scLogin').classList.contains('man-hien') ? $('#scLogin') : $('#scInfo');
-      var thanCu = manCu.querySelector('.card-body');
-      if (!thanCu) { location.hash = dich; return; }
-      thanCu.classList.add('co-lai');
-      setTimeout(function () {
-        var tenMoi = dich === '#/info' ? 'info' : 'login';
-        var manMoi = tenMoi === 'info' ? $('#scInfo') : $('#scLogin');
-        var thanMoi = manMoi.querySelector('.card-body');
-        // Co SẴN thân màn mới TRƯỚC khi nó kịp hiện ra — không thì nó hiện
-        // đúng một khung hình ở cỡ đầy đủ rồi mới co, nhìn "loé" một cái.
-        if (thanMoi) thanMoi.classList.add('co-lai');
-
-        var brand = $('#btnBrand');
-        var truoc = brand.getBoundingClientRect(); // ĐO TRƯỚC khi man() dời nó
-        location.hash = dich;
-        man(tenMoi); // đổi màn + dời brand NGAY (đồng bộ)
-
-        // Đặt sẵn điểm XUẤT PHÁT cho cú trượt brand (transform bù từ vị trí
-        // cũ) — nhưng CHƯA cho chạy transition, để dồn qua rAF bên dưới.
-        var sau = brand.getBoundingClientRect();
-        var dx = truoc.left - sau.left, dy = truoc.top - sau.top;
-        var canTruot = dx || dy;
-        if (canTruot) {
-          brand.style.transition = 'none';
-          brand.style.transform = 'translate(' + dx + 'px,' + dy + 'px)';
-        }
-        void brand.offsetWidth; // ép reflow — chốt lại trạng thái "trước" vừa đặt
-
-        // CẢ HAI hoạt ảnh khởi động chung một khung hình ở đây.
-        requestAnimationFrame(function () {
-          if (canTruot) {
-            brand.style.transition = 'transform ' + THOI_GIAN_BAY_BRAND + 'ms cubic-bezier(.22,.9,.3,1)';
-            brand.style.transform = '';
-            setTimeout(function () {
-              brand.style.transition = '';
-              brand.style.transform = '';
-            }, THOI_GIAN_BAY_BRAND + 20);
-          }
-          if (thanMoi) thanMoi.classList.remove('co-lai');
-        });
-      }, THOI_GIAN_TRUOT);
-    }
-
     (function () {
       var brand = $('#btnBrand');
-      function di() { chuyenManTruot(location.hash === '#/info' ? '' : '#/info'); }
+      function di() {
+        var moInfo = location.hash !== '#/info';
+        location.hash = moInfo ? '#/info' : '';
+        // hashchange sẽ gọi theoDiaChi() → datNgan(..., true) tức thì; ta chạy
+        // bản CÓ hoạt ảnh ngay tại đây để cú bấm thật sự mượt.
+        if (!GIAM_CHUYEN_DONG) datNgan(moInfo ? 'info' : 'login', false);
+      }
       brand.onclick = di;
       brand.onkeydown = function (e) {
         if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); di(); }

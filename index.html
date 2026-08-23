@@ -8,13 +8,13 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
      không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=13">
+<link rel="stylesheet" href="css/main.css?v=14">
 </head>
 <body>
 
 <!-- Nền loang màu — TÁCH RIÊNG khỏi từng màn, luôn sống một chỗ, không bị
      dựng lại (nên không "giật"/chạy lại) mỗi lần đăng nhập ↔ thông tin đổi
-     qua lại. app.js chỉ ẩn/hiện khối này theo đúng nhóm màn hình. -->
+     qua lại. dangnhap.js chỉ ẩn/hiện khối này theo đúng nhóm màn hình. -->
 <div class="login-bg" id="loginBg"></div>
 
 <!-- ===== SCREEN 1: SIGN IN + TRANG THÔNG TIN (CHUNG MỘT THẺ) =====
@@ -101,59 +101,6 @@
   </div>
 </section>
 
-<!-- ===== SCREEN 2: MY CLASS ===== -->
-<section class="screen" id="scClass" hidden>
-  <header class="hero">
-    <div class="wrap hero-in">
-      <div class="hero-txt">
-        <p class="eyebrow">Teacher Andrew</p>
-        <h1 id="helloName">Hello!</h1>
-        <div class="chips">
-          <span class="chip class" id="chipClass">CLASS</span>
-          <span class="chip ghost" id="chipCount">0 lessons</span>
-        </div>
-      </div>
-      <button class="linkbtn" id="btnLogout">Not you?</button>
-    </div>
-  </header>
-
-  <div class="wrap">
-    <div class="card bday" id="bday" hidden>
-      <div class="bday-emoji">🎂</div>
-      <div class="bday-txt">
-        <p class="bday-title" id="bdayTitle">Happy birthday!</p>
-        <p class="bday-sub">Teacher Andrew and your class wish you a super happy birthday! 🎉</p>
-      </div>
-    </div>
-    <div id="lessonList" class="lesson-list"></div>
-    <p class="empty-note" id="emptyNote" hidden>No lesson yet. Come back after class.</p>
-  </div>
-  <footer class="foot"><span>Lesson in Andrew Classes</span><i class="ver" id="verClass"></i></footer>
-</section>
-
-<!-- ===== SCREEN 3: ONE LESSON ===== -->
-<section class="screen" id="scLesson" hidden>
-  <header class="hero">
-    <div class="wrap hero-in">
-      <button class="linkbtn back" id="btnBack">‹ All lessons</button>
-      <div class="hero-txt">
-        <p class="eyebrow" id="lsEyebrow">Teacher Andrew · English class</p>
-        <h1 id="lsTitle">Lesson</h1>
-        <div class="chips">
-          <span class="chip class" id="lsChipClass">CLASS</span>
-          <span class="chip date" id="lsChipDate">DUE</span>
-        </div>
-      </div>
-    </div>
-  </header>
-
-  <div class="wrap">
-    <p class="lede" id="lsLede">Do the parts below one by one.</p>
-    <main id="lsBlocks"></main>
-  </div>
-  <footer class="foot"><span>Lesson in Andrew Classes</span><i class="ver" id="verLesson"></i></footer>
-</section>
-
 <div class="modal" id="modal" hidden>
   <div class="modal-card">
     <h2 id="modalTitle">Oops</h2>
@@ -162,7 +109,8 @@
   </div>
 </div>
 
-<script src="config.js?v=13"></script>
-<script src="js/app.js?v=13"></script>
+<script src="config.js?v=14"></script>
+<script src="js/chung.js?v=14"></script>
+<script src="js/dangnhap.js?v=14"></script>
 </body>
 </html>

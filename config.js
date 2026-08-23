@@ -7,7 +7,21 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.8.2',
+  PHIEN_BAN: '1.9.0',
+
+  // ---- MÃ QUẢN LÝ CỦA THẦY (v1.9.0) ----
+  // Gõ mã này ở màn đăng nhập là vào thẳng trang quản lý (dashboard.html) thay
+  // vì trang lớp. Ở đây chỉ cất CHUỖI BĂM SHA-256 của mã (chữ đã bỏ khoảng
+  // trắng + viết hoa), nên ai mở file cũng không suy ngược ra mã được.
+  //
+  // ⚠️ Đây KHÔNG phải bảo mật thật: trang tĩnh thì mọi thứ chạy trên máy người
+  // xem. Nó chỉ chặn người tình cờ đọc file, đúng mức tin cậy mà cả hệ đăng
+  // nhập này đang có (mã học sinh vốn nằm công khai trong lop.json).
+  //
+  // Đổi mã: bấm Cài đặt → Quản lý đăng nhập trong app myLesson (Đợt 3), app tự
+  // băm rồi ghi lại dòng dưới. Muốn tính tay:
+  //   python -c "import hashlib;print(hashlib.sha256('MÃ VIẾT HOA'.encode()).hexdigest())"
+  QUAN_LY_BAM: '04dff441ce969820b0affe31d8e84bd981d67a0abe96eb5a551c950ec59eb632',
 
   // Địa chỉ AWord — nơi các game bài tập nằm.
   // CÙNG NHÀ (tài khoản GitHub andrewclasses-01) với trang này nên nhúng game

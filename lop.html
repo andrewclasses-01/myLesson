@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<!-- interactive-widget=resizes-content: bảo Chrome/Android THU NHỎ TRANG khi
+     bàn phím ảo hiện lên (thay vì phủ đè). iOS không theo cờ này nên phần
+     dưới còn xử lý thêm bằng visualViewport. -->
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>MẪU · Trang chính của lớp (BẢN CHỐT)</title>
+<link rel="stylesheet" href="assets/fonts.css">
+<style>
+/* ============================================================
+   BẢN MẪU v20 — TRANG CHÍNH CỦA LỚP (dữ liệu giả, chạy local)
+
+   ⭐ ĐỢT 4 (19/08/2026) — CHỈ ĐỔI THANH ĐẦU, cho khớp trang bài tập:
+    · BỎ HẲN nút sao ở góc phải.
+    · SỐ SAO chuyển lên avatar (huy hiệu nhỏ, nền trắng chữ vàng, tối đa 3 chữ
+      số) — thay cho phù hiệu 3 vạch cũ.
+    · Mọi thứ của ví sao (Thông tin ví · Đăng ký đổi quà · ô số sao) dồn vào
+      MENU mở từ avatar; sidebar phải bỏ hẳn. Ô số sao vẽ lại: MỘT ngôi sao to
+      + năm sao con lấp lánh (thay ⭐⭐⭐).
+    · Chỗ trống bên phải thanh CỐ Ý ĐỂ TRỐNG — thầy dành cho quảng cáo / thông
+      báo sau này. (Bên trang bài tập chỗ đó là ô hạn + tên bài.)
+   Mọi phần khác giữ NGUYÊN như v19 (bản thầy đã chốt 18/08/2026).
+   ============================================================ */
+/* ============================================================
+   NỀN — CHÚ THÍCH CỦA v19
+   ✅ THẦY ĐÃ CHỐT 18/08/2026 — đây là BẢN CHÍNH THỨC của mẫu này.
+   Sửa tiếp thì ghi ra TÊN FILE MỚI (v20…), đừng đè lên bản này.
+
+   ĐỔI SO VỚI v18 (thầy chỉ 18/08, đợt tiếp) — 7 việc:
+
+   1. Khung chat cao ĐÚNG BẰNG cột thẻ, tin nhắn dài thì cuộn trong khung
+      (bọc vào .chat-cot; dạng máy tính cho chat nằm tuyệt đối trong đó).
+   2. Đổi bố cục chat cạnh bên ↔ xuống dưới nay CHẠY MƯỢT (lối FLIP): thẻ
+      3–4 co lại chui vào thẻ 2, khung chat trượt sang ô mới.
+   3. Cửa sổ lùn dần thì khung chat co lại (tin nhắn chuyển thành cuộn) để ô
+      nhập luôn hiện đủ; chỉ khi ngắn hơn cả 2 thẻ mới chịu để ô nhập trồi
+      xuống dưới mép màn.
+   4. Tim chưa thả to đúng bằng tim đã thả — cùng một quả tim, chỉ rút màu.
+   5. Bỏ 😡, thay bằng gà con 🐥.
+   6. Pop-up "ai thả gì" nhỏ gọn, dán ngay dưới bóng chat, KHÔNG làm mờ nền,
+      bỏ chữ ANDREW CLASSES.
+   7. Hiện ĐỦ mọi cảm xúc lớp đã thả (chật thì thu nhỏ / xuống 2 dòng); loại
+      nào từ 2 lượt trở lên thì ghi thêm tổng số lượt.
+
+   ---
+   ĐỔI Ở v18 (giữ nguyên trong bản này) — 3 việc:
+
+   A. Cột CHƯA XONG BÀI **luôn thẳng tâm ô hạn ở MỌI bề ngang**. Thủ phạm cũ
+      là rule ép vùng điểm rộng cứng 392px trong khi đầu thẻ trải hết bề
+      ngang thẻ (ở cửa sổ 900px lệch nhau 389px) — đã GỠ HẲN, xem chú thích
+      chỗ `@media (max-width:1140px)` cũ. Quét kiểm thẻ rộng 280→1000px:
+      lệch 0px ở mọi bước.
+   B. Cửa sổ hẹp (≤1040px, chat rơi xuống dưới) nay chỉ vẽ **2 thẻ** như dạng
+      điện thoại và gói cả trang trong MỘT MÀN ⇒ khung chat rộng rãi, không
+      phải cuộn tìm ô nhập.
+   C. **Bàn phím ảo không còn đè lên ô nhập**: meta viewport thêm
+      `interactive-widget=resizes-content` (Android), iOS đo bằng
+      visualViewport đặt vào `--banphim`; khi bàn phím hiện thì gắn lớp
+      `.go-chat` để cất cột thẻ, nhường trọn màn cho khung chat.
+   D. (kèm theo) Chiều cao thanh đầu do **JS đo** đặt vào `--cao-dau`, bỏ hẳn
+      số gõ tay trong calc() — chỗ này đã sai hai lần.
+
+   ---
+   ĐỔI Ở v17 (giữ nguyên trong bản này) — 5 việc:
+
+   1. HẾT MẤT CHỮ ở thẻ có cột CHƯA XONG BÀI. Trước đây số tên là con số
+      CỨNG (máy tính 6) nên thẻ 4 bài + dòng CHÚ Ý không đủ chỗ, phần thừa
+      bị mép thẻ cắt mất — mất cả dòng "+N bạn nữa" lẫn dòng CHÚ Ý. Nay JS
+      dựng đủ tên rồi `vuaCotThieu()` ĐO CHỖ TRỐNG THẬT và cắt dần cho vừa.
+   2. Chiều cao thẻ vẫn cố định, nên phần trên (1–4 dòng act–thanh–số) đổi
+      tới đâu thì cột tên co giãn theo tới đó. Ưu tiên đẹp: 2 bài → 1 bài →
+      3 bài; 4 bài là mức tối đa của lớp chính, hiếm gặp, được phép bó sát
+      (chỉ bó KHOẢNG CÁCH, không bao giờ bó thanh hay cỡ chữ).
+   3. Mã lesson to hơn một chút (12,5 → 13,4px) và sát tên bài hơn; cả cụm
+      chữ nằm ĐÚNG GIỮA TÂM ô hạn — đầu thẻ đổi từ lưới 2 hàng sang một
+      hàng ngang, cụm chữ gói trong .t-chu.
+   4. Nút gửi vẽ lại theo ảnh mẫu của thầy: máy bay giấy đặc nằm ngang,
+      mũi nhọn sang phải, cạnh trái có khấc lõm; màu xanh ngọc của app.
+   5. Cụm cảm xúc: LUÔN HIỆN, cỡ không đổi giữa lúc trống và lúc đã thả
+      (chỉ sáng lên); lớp thả cảm xúc khác tim thì icon đó hiện thêm bên
+      cạnh tim; tin đã có cảm xúc thì chạm vào cụm là ra pop-up "ai thả
+      gì", muốn thả/gỡ của mình thì giữ 0,42s để ra bảng chọn.
+
+   Nền v16: ô hạn góc trên phải · một bố cục chung cho máy tính lẫn điện
+   thoại · pop-up bảng xếp hạng cả lớp · hai sidebar · khung chat một màn.
+
+   ⚠ ĐỌC `mau/GHI CHU MAU.md` trước khi sửa tiếp — ở đó có đủ chốt thiết kế
+   và 17 cái bẫy đã vấp.
+   ============================================================ */
+:root{
+  --ground:#F7FAF9; --surface:#FFFFFF; --ink:#16232A; --muted:#5F7370;
+  --accent:#0E7C6E; --accent-ink:#FFFFFF; --accent-soft:#E3F1EE;
+  --amber:#F2A93B; --amber-soft:#FCF3E2;
+  --xanh-la:#1DA45C;
+  --line:#E0EAE7;
+  --m-do:#E0575B; --m-cam:#F0821E; --m-vang:#E0B411; --m-duong:#3E7BFA; --m-la:#18A957;
+  --shadow:0 1px 3px rgba(22,35,42,.07), 0 8px 24px rgba(22,35,42,.06);
+  --mono:"Cascadia Code","Consolas",ui-monospace,monospace;
+  --sans:'Montserrat',"Segoe UI",system-ui,sans-serif;
+  --em:cubic-bezier(.22,.9,.3,1);
+  --cao-the:200px;
+  /* ⭐ v18 — hai số này do JS ĐO RỒI ĐẶT, không gõ tay nữa:
+     --cao-dau  = chiều cao THẬT của thanh đầu (v16 gõ tay 62 trong khi thật
+                  là 65 ⇒ cả trang dôi 3px, phải cuộn mới hết).
+     --banphim  = phần màn bị BÀN PHÍM ẢO che (iPhone không đẩy trang, nó phủ
+                  đè lên ô nhập). Trừ đi từng ấy thì ô nhập luôn nổi lên trên. */
+  --cao-dau:77px;
+  --banphim:0px;
+  /* Sàn của khung chat ở cửa sổ hẹp = [tiêu đề + chân khung có ô nhập], do
+     JS đo (doSanChat). Cửa sổ lùn dần thì phần tin nhắn cuộn lại cho tới
+     hết; chạm sàn này rồi mà vẫn lùn nữa thì ô nhập mới trồi xuống dưới. */
+  --san-chat:96px;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ground); color:var(--ink); font:500 15px/1.6 var(--sans)}
+button{font:inherit; color:inherit; background:none; border:none; cursor:pointer; padding:0}
+
+.wrap{max-width:1180px; margin:0 auto; padding:0 20px}
+
+/* ---------- THANH ĐẦU ---------- */
+.top{position:sticky; top:0; z-index:30; background:rgba(247,250,249,.86);
+  backdrop-filter:blur(10px); border-bottom:1px solid var(--line)}
+/* ⛔ Các khối mang class .wrap mà tự đặt `padding` rút gọn sẽ XOÁ MẤT lề
+   ngang 20px của .wrap — phải viết lại lề ngang ở đây, không thì cả trang
+   dính sát mép màn hình (lỗi có từ bản đầu, phát hiện ở v10). */
+.top-in{display:flex; align-items:center; gap:14px; padding:12px 20px}
+.av{flex:none; display:grid; place-items:center; border-radius:50%;
+  font-weight:800; color:#fff; user-select:none}
+.av.me{width:52px; height:52px; font-size:19px; cursor:pointer;
+  background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
+  position:relative; transition:transform .18s var(--em), box-shadow .18s}
+.av.me:hover{transform:scale(1.06); box-shadow:0 0 0 4px var(--accent-soft), var(--shadow)}
+/* ⭐ ĐỢT 4 — SỐ SAO nằm ngay trên avatar, thay cho phù hiệu 3 vạch cũ. */
+.sao-hieu{position:absolute; right:-7px; bottom:-4px; min-width:28px; height:19px;
+  padding:0 5px; border-radius:999px; background:var(--surface);
+  border:1px solid #F0DCB4; box-shadow:0 1px 4px rgba(22,35,42,.16);
+  display:grid; place-items:center; font-size:11px; font-weight:800;
+  color:#E5A20D; letter-spacing:.2px; font-variant-numeric:tabular-nums}
+.who{min-width:0}
+.who .ten{font-weight:800; font-size:18px; line-height:1.25; letter-spacing:-.01em;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.who .ten .nick{color:var(--muted); font-weight:600}
+.who .lop{font-size:12.5px; color:var(--muted); font-weight:600}
+/* ⛔ Nút sao đã bỏ ở đợt 4. Phần thanh đầu bên phải cố ý để TRỐNG — dành cho
+   quảng cáo / thông báo của thầy sau này. */
+
+/* ---------- BỐ CỤC MÁY TÍNH ----------
+   align-items:stretch để KHUNG CHAT cao đúng bằng cột thẻ (việc 2 dạng máy
+   tính). Vì thế chat KHÔNG còn sticky/chiều cao theo màn hình nữa. */
+.main{display:grid; grid-template-columns:minmax(0,1fr) 420px; gap:22px;
+  align-items:stretch; padding:22px 20px 40px}
+.cot-bai{display:flex; flex-direction:column; gap:16px}
+.vach{height:0; border-top:1.5px dashed #B9CCC7; margin:-1px 0}
+
+.chua-co{display:flex; align-items:center; justify-content:center; gap:9px;
+  min-height:64px; text-align:center; font-size:14px; font-weight:600;
+  color:#93A5A1; letter-spacing:.01em}
+.chua-co svg{width:17px; height:17px; stroke:currentColor; stroke-width:2; fill:none;
+  stroke-linecap:round; stroke-linejoin:round}
+.chua-co.vui{color:#B08344; font-weight:700}
+
+/* ---------- THẺ BÀI TẬP ---------- */
+.the{display:block; width:100%;
+  filter:drop-shadow(0 1px 2px rgba(22,35,42,.08)) drop-shadow(0 8px 20px rgba(22,35,42,.07));
+  transition:transform .2s var(--em)}
+.the:hover{transform:translateY(-2px)}
+.the-in{--mui:64px; position:relative; display:flex; flex-direction:column;
+  align-items:stretch;
+  height:var(--cao-the); background:var(--surface); border-radius:12px 0 0 12px;
+  clip-path:polygon(0 0, calc(100% - var(--mui)) 0, 100% 50%,
+                    calc(100% - var(--mui)) 100%, 0 100%);
+  padding-right:var(--mui); text-align:left; width:100%; transition:background .3s}
+.play{position:absolute; right:0; top:0; bottom:0; width:var(--mui);
+  display:grid; place-items:center; transition:background .2s}
+.play svg{width:22px; height:22px; fill:#fff; margin-right:30px;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.18))}
+.the.moi   .play{background:linear-gradient(135deg,#0E9E85,#22C3A4)}
+.the.moi:hover .play{background:linear-gradient(135deg,#0B8672,#16AE92)}
+.the.cu    .play{background:#C3D3CF}
+.the.cu:hover .play{background:#B2C5C0}
+
+/* Nền thẻ.
+   · THẺ CŨ (đã qua hạn): đỏ nếu còn thiếu, xanh lá nếu đủ.
+   · THẺ MỚI (chưa tới hạn): màu theo THỜI GIAN CÒN LẠI — trên 24h xanh
+     dương, 6–24h vàng, dưới 6h đỏ; xong hết thì xanh lá bất kể giờ. */
+.the-in.tt-do{background:#FDF3F3}
+.the-in.tt-la{background:#F2FBF5}
+.the-in.tt-vang{background:#FEFAEE}
+.the-in.tt-duong{background:#F3F7FE}
+
+/* Hào quang toả ra ngoài thẻ. Thẻ MỚI toả rộng, thẻ CŨ chỉ còn một viền
+   sáng rất mảnh — nhìn lướt là phân biệt được ngay bài nào đang cần làm. */
+.the.xong-het{filter:drop-shadow(0 2px 4px rgba(24,169,87,.22))
+                     drop-shadow(0 0 16px rgba(24,169,87,.42))}
+.the.cu.xong-het{filter:drop-shadow(0 1px 2px rgba(24,169,87,.16))
+                        drop-shadow(0 0 3px rgba(24,169,87,.26))}
+.the.gio-duong{filter:drop-shadow(0 2px 4px rgba(62,123,250,.18))
+                      drop-shadow(0 0 15px rgba(62,123,250,.34))}
+.the.gio-vang{filter:drop-shadow(0 2px 4px rgba(224,180,17,.22))
+                     drop-shadow(0 0 15px rgba(224,180,17,.42))}
+.the.gap{animation:hao-quang-do 3.4s ease-in-out infinite}
+@keyframes hao-quang-do{
+  0%,100%{filter:drop-shadow(0 2px 4px rgba(224,87,91,.28))
+                 drop-shadow(0 0 7px rgba(224,87,91,.35))}
+  50%    {filter:drop-shadow(0 2px 4px rgba(224,87,91,.40))
+                 drop-shadow(0 0 22px rgba(224,87,91,.80))}
+}
+@media (prefers-reduced-motion: reduce){
+  .the.gap{animation:none;
+    filter:drop-shadow(0 2px 4px rgba(224,87,91,.35)) drop-shadow(0 0 16px rgba(224,87,91,.6))}
+}
+
+/* ---------- RUỘT THẺ ----------
+   MỘT BỐ CỤC DÙNG CHUNG cho máy tính lẫn điện thoại (thầy chốt 18/08 — bản
+   điện thoại nhìn gọn hơn nên máy tính theo luôn): tên bài + ngày ở trái,
+   Ô HẠN góc trên phải, mã lesson xuống dòng, rồi VÙNG ĐIỂM nằm bên dưới.
+   Khác nhau giữa hai dạng chỉ còn là CỠ CHỮ và khoảng cách. */
+/* ⭐ v17 — ĐỔI TỪ LƯỚI 2 HÀNG SANG MỘT HÀNG NGANG.
+   Cụm chữ (tên bài + mã lesson) gói trong .t-chu là MỘT khối, ô hạn là khối
+   kia ⇒ cụm chữ nằm ĐÚNG GIỮA TÂM ô hạn. Lối lưới cũ không làm được việc
+   này: ô hạn cao hơn nên phần cao dư bị chia đều cho hai hàng, đẩy chữ lên
+   trên. Mã lesson cũng to hơn một chút và sát tên bài hơn (thầy chốt 18/08). */
+.the-body{flex:none; min-width:0; padding:11px 14px 6px 20px; display:flex;
+  align-items:center; column-gap:12px; overflow:hidden}
+.t-chu{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
+.t-ten{font-size:16.5px; font-weight:800; letter-spacing:-.01em; line-height:1.24;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.t-ten .ngay{margin-left:8px; color:var(--xanh-la)}
+.t-ten .khoang{margin-left:8px}
+.t-ma{font:600 13.4px/1.28 var(--mono); color:var(--muted); letter-spacing:.01em;
+  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+
+/* Ô hạn nằm gọn trong cột phải 176px và căn giữa cột — đúng bằng bề ngang
+   cụm CHƯA XONG BÀI bên dưới nên hai khối thẳng tâm nhau. */
+.han-boc{flex:none; width:176px;
+  display:flex; align-items:center; justify-content:center; gap:10px}
+.t-han{display:flex; flex-direction:column; gap:4px; width:158px;
+  padding:6px 12px 7px; border-radius:12px;
+  background:var(--amber-soft); border:1px solid #F5E3C0}
+.t-han .han-dong{display:flex; align-items:center; justify-content:center; gap:5px;
+  font-size:12px; font-weight:700; color:#9A6A12; white-space:nowrap}
+.t-han .han-dong svg{width:13px; height:13px; stroke:currentColor; stroke-width:2.4;
+  fill:none; stroke-linecap:round; stroke-linejoin:round}
+.t-han .han-vach{height:0; border-top:1px dashed #EBD3A6}
+.dhho{font-size:19px; font-weight:800; text-align:center; line-height:1.15;
+  letter-spacing:.6px; font-variant-numeric:tabular-nums; white-space:nowrap}
+.dhho.xanh{color:var(--m-la)} .dhho.cam{color:#DE7A12} .dhho.do{color:#D93B40}
+.dhho.xong{font-size:15.5px; letter-spacing:.9px; color:var(--m-la)}
+.tich-to{font-size:30px; font-weight:800; color:var(--m-la); line-height:1;
+  filter:drop-shadow(0 1px 4px rgba(24,169,87,.35))}
+.t-han.gap-gio{background:#FDECEC; border-color:#F6CFCF}
+.t-han.gap-gio .han-dong{color:#B03A3E}
+.t-han.gap-gio .han-vach{border-color:#F3CACA}
+.t-han.da-xong{background:#EFFAF3; border-color:#C9EBD6}
+.t-han.da-xong .han-dong{color:#2C7A50}
+.t-han.da-xong .han-vach{border-color:#CFEBDA}
+
+/* ---------- VÙNG ĐIỂM (nằm DƯỚI phần đầu thẻ) ---------- */
+.the-diem{flex:1; min-height:0; width:100%; overflow:hidden;
+  border-top:1.5px dashed var(--line);
+  padding:9px 14px 12px 20px; display:flex; flex-direction:column;
+  justify-content:center; gap:5px}
+/* Vùng điểm bấm được (mở bảng xếp hạng) — chỉ khi JS gắn role="button". */
+.the-diem[role="button"]{cursor:pointer; transition:background .18s}
+.the-diem[role="button"]:hover{background:rgba(14,124,110,.045)}
+/* Còn dưới 6 tiếng: thanh dồn trái, cột tên còn thiếu mở ra bên phải. */
+.the-diem.co-thieu{flex-direction:row; align-items:center; gap:12px}
+.the-diem.co-thieu .khoi-thanh{flex:1; min-width:0; display:flex; flex-direction:column; gap:5px}
+/* Chỉ có bài viết tay: dòng CHÚ Ý nằm giữa TOÀN THẺ, bỏ vạch ngăn. */
+.the-diem.chi-tay{position:absolute; left:0; right:var(--mui); top:0; bottom:0;
+  width:auto; border-top:none; padding:0 20px; justify-content:center}
+
+/* Cột CHƯA XONG BÀI: rộng đúng bằng cột ô hạn phía trên (176px) nên hai khối
+   thẳng tâm nhau; chữ thụt vào hai bên cho khỏi dính vạch và mép thẻ. */
+/* overflow:hidden là PHANH AN TOÀN — số dòng thật do JS `vuaCotThieu()` cắt
+   cho vừa chiều cao còn lại, nên bình thường không bao giờ chạm tới phanh. */
+.khoi-thieu{flex:none; width:176px; align-self:stretch; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:0 9px; border-left:1px dashed #F0CFCF}
+/* line-height 1.25 chứ không để 1.6 của body: chữ VIẾT HOA 9,5px mà giãn
+   dòng 1,6 thì chỉ tổ ăn mất chỗ của một tên em (v17). */
+.khoi-thieu .tieu{font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#C0484C;
+  line-height:1.25; margin-bottom:2px; text-align:center; white-space:nowrap}
+.ds-thieu{width:100%; display:grid; grid-template-columns:1fr auto;
+  column-gap:10px; row-gap:0; align-items:center}
+.ds-thieu .ten{font-size:11px; font-weight:700; color:#7A4B4C; line-height:1.3;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* ⚠ Chiều cao mỗi dòng do Ô SỐ quyết định chứ không phải chữ tên (ô số cao
+   hơn) — hạ ô số là cách rẻ nhất để thêm được một em vào cột. */
+.ds-thieu .so{min-width:16px; height:13px; padding:0 4px; border-radius:5px;
+  background:#FBE4E4; color:#C0484C; font-size:9.5px; font-weight:800;
+  display:grid; place-items:center}
+.khoi-thieu .them{margin-top:2px; text-align:center; font-size:10.5px; font-weight:700;
+  line-height:1.25; color:#A98B8B; white-space:nowrap}
+
+.td-dong{display:grid; grid-template-columns:62px minmax(0,1fr) 44px 11px;
+  align-items:center; gap:8px}
+/* Thẻ ít bài vẫn giữ cụm cao bằng thẻ 3 bài — nhưng CHỈ giãn khoảng cách
+   giữa các dòng. ⛔ Tuyệt đối không phóng to thanh hay chữ: mọi thanh tiến
+   độ trong app phải cùng một cỡ, tăng giảm thì tăng giảm đồng loạt
+   (thầy chốt 18/08). */
+.the-diem.n1 .td-dong{min-height:67px}
+.the-diem.n2 .td-dong{min-height:31px}
+/* ⭐ v17 — THỨ TỰ ƯU TIÊN THẦY CHỐT: 2 bài đẹp nhất → 1 bài → 3 bài; 4 bài là
+   mức TỐI ĐA của một lớp chính, rất hiếm gặp, nên được phép bó sát lại. Chỉ
+   bóp KHOẢNG CÁCH (khe giữa dòng, khe của dòng CHÚ Ý), TUYỆT ĐỐI không bóp
+   thanh tiến độ hay cỡ chữ — mọi thanh trong app vẫn phải cùng một cỡ.
+   ⛔ .the-diem.co-thieu là flex NGANG nên `gap` ở đó là khe giữa cụm thanh và
+   cột CHƯA XONG BÀI: phải tách riêng, không đặt gap chung kẻo dính cột. */
+.the-diem.n3{padding-top:8px; padding-bottom:10px}
+.the-diem.n4{padding-top:5px; padding-bottom:6px}
+.the-diem.n4:not(.co-thieu){gap:3px}
+.the-diem.co-thieu.n4 .khoi-thanh{gap:3px}
+.the-diem.n4 .td-tay{margin-top:4px; padding-top:5px}
+.td-ten{font-size:11.5px; font-weight:800; letter-spacing:.02em; color:#3D5450;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.td-bar{height:7px; border-radius:99px; background:#E7EDEB; overflow:hidden}
+.td-bar i{display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
+.td-so{font-size:11.5px; font-weight:800; text-align:right; color:#54706B;
+  white-space:nowrap; font-variant-numeric:tabular-nums}
+.td-tich{font-size:11px; font-weight:800; color:var(--m-la); text-align:left}
+i.m-do{background:var(--m-do)}      i.m-cam{background:var(--m-cam)}
+i.m-vang{background:var(--m-vang)}  i.m-duong{background:var(--m-duong)}
+i.m-la{background:var(--m-la)}
+.td-so.m-la{color:var(--m-la)}
+.td-so.m-do{color:var(--m-do)}
+.td-tay{margin-top:7px; padding-top:9px; border-top:1px dotted #D3E0DC;
+  font-size:10.5px; font-weight:800; letter-spacing:.02em; color:#8A6D2F;
+  line-height:1.4; text-align:center}
+/* Thẻ chỉ có bài viết tay (không có bài AWord nào): dòng CHÚ Ý là thứ duy
+   nhất trong vùng điểm nên cho nó nằm CHÍNH GIỮA, bỏ vạch kẻ phía trên. */
+.the-diem.chi-tay{justify-content:center}
+.the-diem.chi-tay .td-tay{margin-top:0; padding-top:0; border-top:none}
+.td-tay svg{width:12px; height:12px; margin-right:4px; vertical-align:-2px;
+  stroke:#C8922B; stroke-width:2.4; fill:none; stroke-linecap:round; stroke-linejoin:round}
+
+/* ---------- CHAT ---------- */
+/* ⭐ v19 — KHUNG CHAT CAO ĐÚNG BẰNG CỘT THẺ.
+   Trước đây chat là ô lưới bình thường nên tin nhắn nhiều là nó ĐẨY CAO cả
+   hàng lưới, dài hơn hẳn cột thẻ (thầy bắt được 18/08). Nay ở dạng máy tính
+   nó nằm tuyệt đối trong .chat-cot: .chat-cot không có nội dung trong dòng
+   nên KHÔNG góp chiều cao, hàng lưới cao đúng bằng cột thẻ, còn chat trải
+   khít ô đó và cuộn bên trong.
+   ⛔ Chỉ làm vậy ở dạng máy tính. Ở cửa sổ hẹp phải để chat nằm trong dòng
+   thật, nếu không nó bị ép đúng bằng hàng lưới và khi cửa sổ lùn quá thì ô
+   nhập bị CẮT MẤT thay vì trồi xuống dưới (xem min-height:min-content). */
+.chat-cot{min-width:0; min-height:0}
+@media (min-width:1041px){
+  .chat-cot{position:relative}
+  .chat{position:absolute; inset:0}
+}
+.chat{background:var(--surface); border:1px solid var(--line);
+  border-radius:18px; box-shadow:var(--shadow); display:flex; flex-direction:column;
+  overflow:hidden; min-height:0}
+/* ⛔ BẪY: từng thử `.chat{min-height:min-content}` cho khỏi gõ tay con số —
+   KHÔNG dùng được. Chrome tính min-content của khung chat theo TOÀN BỘ tin
+   nhắn (926px) chứ không phải [tiêu đề + ô nhập], nên khung chat lại phình
+   to hơn cột thẻ y như lỗi cũ. Sàn của khung chat nay đặt bằng biến
+   --san-chat do JS ĐO (tiêu đề + chân khung), xem `doSanChat()`. */
+.chat-head{flex:none; padding:13px 18px 12px; border-bottom:1px solid var(--line); text-align:center}
+.chat-head h2{margin:0; font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px}
+.chat-head h2 svg{flex:none; width:17px; height:17px; stroke:var(--accent); stroke-width:2.2;
+  fill:none; stroke-linecap:round; stroke-linejoin:round}
+.chat-body{flex:1; min-height:0; overflow-y:auto; padding:14px 14px 6px; display:flex;
+  flex-direction:column; gap:11px; scroll-behavior:smooth}
+.msg{display:flex; gap:9px; max-width:88%}
+.msg .av{width:32px; height:32px; font-size:12px; margin-top:14px}
+.msg-c{min-width:0}
+.msg-top{display:flex; align-items:baseline; gap:7px; padding-left:4px}
+.msg-top .n{font-size:11.5px; font-weight:800}
+.msg-top .t{font-size:10.5px; color:var(--muted); font-weight:600}
+.bong{background:var(--ground); border:1px solid var(--line); border-radius:4px 14px 14px 14px;
+  padding:7px 12px; font-size:13.5px; line-height:1.5; overflow-wrap:break-word}
+/* Bóng chat và nút cảm xúc đi cùng một hàng — nút ở BÊN PHẢI bóng với tin
+   của bạn khác, BÊN TRÁI bóng với tin của chính em. */
+.hang-bong{display:flex; align-items:center; gap:5px}
+.msg.toi .hang-bong{flex-direction:row-reverse}
+/* Tin của CHÍNH EM: bóng sát avatar, GIỜ GỬI xuống dòng dưới bóng, dạt phải. */
+.msg.toi{align-self:flex-end; flex-direction:row-reverse; align-items:flex-start; gap:7px}
+.msg.toi .av{margin-top:0}
+.msg.toi .msg-c{display:flex; flex-direction:column; align-items:flex-end; gap:2px}
+.msg.toi .msg-top{display:none}
+.gio-duoi{font-size:10px; font-weight:600; color:var(--muted); padding-right:3px}
+.msg.toi .bong{background:var(--accent); border-color:var(--accent); color:#fff;
+  border-radius:14px 4px 14px 14px}
+
+/* ---------- CỤM CẢM XÚC (v17 làm lại) ----------
+   · LUÔN HIỆN, bỏ hẳn lối "rê chuột mới ló ra" của v16 — màn lớp là màn cảm
+     ứng, không có rê chuột nên các em không biết chỗ đó bấm được.
+   · Ô nút GIỮ NGUYÊN CỠ ở cả hai trạng thái: cùng cao 22px, cùng cỡ chữ
+     14px, viền lúc nào cũng có sẵn (chỉ đổi màu) ⇒ thả tim chỉ thấy "sáng
+     lên", không thấy nhảy cỡ (thầy chốt 18/08).
+   · Lớp thả cảm xúc nào khác tim thì icon đó hiện THÊM bên cạnh tim.
+   · Đã có cảm xúc mà chạm vào cụm = mở pop-up "ai thả gì"; muốn thả/gỡ của
+     riêng mình thì GIỮ 0,42s (hoặc chuột phải) để ra bảng chọn. */
+.nut-cx{flex:none; min-height:22px; padding:1px 5px; border-radius:11px;
+  border:1px solid transparent; display:flex; align-items:center;
+  flex-wrap:wrap; justify-content:center; gap:3px; row-gap:1px; max-width:104px;
+  font-size:14px; line-height:1; color:#B4C3BF;
+  transition:transform .16s var(--em), background .18s, border-color .18s}
+.nut-cx:hover{transform:scale(1.12)}
+.nut-cx .ky{font-size:14px; line-height:1}
+/* ⭐ v19 — TIM CHƯA THẢ: vẫn là ĐÚNG QUẢ TIM ĐÓ, cùng hình cùng cỡ, chỉ rút
+   hết màu đi. Trước dùng ký tự ♡ nên trông bé hơn hẳn quả tim màu. */
+.nut-cx .ky.mo{filter:grayscale(1); opacity:.42}
+/* Lớp thả nhiều loại quá thì thu nhỏ một nấc; quá 104px là tự xuống dòng 2
+   (thầy chốt: phải hiện ĐỦ mọi cảm xúc, chứ không được giấu bớt). */
+/* Rộng thêm một nấc khi đã thu nhỏ icon: 5 icon + ô tổng số vừa đúng MỘT
+   dòng (109px). Để nguyên 104px thì mỗi con số bị rớt xuống dòng hai, trông
+   như lỗi. Đông hơn nữa mới thật sự xuống hai dòng. */
+.nut-cx.nhieu{gap:2px; padding:1px 4px; max-width:126px}
+.nut-cx.nhieu .ky{font-size:12px}
+/* Có loại nào từ 2 lượt trở lên thì ghi thêm TỔNG số lượt của cả tin. */
+.nut-cx .dem{font-size:10.5px; font-weight:800; color:#7C8F8B; padding:0 1px}
+.nut-cx.nhieu .dem{font-size:9.5px}
+.nut-cx.co{background:var(--surface); border-color:var(--line);
+  box-shadow:0 1px 4px rgba(22,35,42,.10); color:inherit}
+/* Trong cụm CÓ TIM CỦA CHÍNH EM → nền hồng nhạt cho sáng hẳn lên. */
+.nut-cx.tim-toi{background:#FFF4F4; border-color:#F4CBCE}
+
+/* ⭐ v19 — POP-UP "AI THẢ GÌ": dán NGAY DƯỚI cụm cảm xúc của đúng tin đó,
+   KHÔNG làm mờ nền phía sau, không tiêu đề, không slogan — chỉ icon + tên.
+   (v18 dùng chung khung bảng xếp hạng: to, có nền mờ, có chữ ANDREW CLASSES;
+   thầy chốt bỏ hết cho gọn.) */
+.cx-ai{position:fixed; z-index:59; min-width:100px; max-width:200px;
+  max-height:min(58vh,300px); overflow-y:auto;
+  background:var(--surface); border:1px solid var(--line); border-radius:12px;
+  box-shadow:0 8px 22px rgba(22,35,42,.16); padding:4px;
+  opacity:0; transform:translateY(-5px) scale(.96); pointer-events:none;
+  transition:opacity .15s var(--em), transform .15s var(--em)}
+.cx-ai.mo{opacity:1; transform:none; pointer-events:auto}
+.cx-ai .d{display:flex; align-items:center; gap:6px; padding:2px 6px;
+  border-radius:7px; font-size:11px; font-weight:700; color:var(--ink);
+  line-height:1.5; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.cx-ai .k{flex:none; font-size:12px; line-height:1}
+.cx-ai .d.toi{background:var(--accent-soft); color:var(--accent)}
+
+.cx-menu{position:fixed; z-index:58; display:flex; align-items:center; gap:1px;
+  background:var(--surface); border:1px solid var(--line); border-radius:999px;
+  padding:4px 6px; box-shadow:0 10px 28px rgba(22,35,42,.2);
+  opacity:0; transform:translateY(7px) scale(.93); pointer-events:none;
+  transition:opacity .18s var(--em), transform .18s var(--em)}
+.cx-menu.mo{opacity:1; transform:none; pointer-events:auto}
+.cx-menu button{width:31px; height:31px; border-radius:50%; font-size:19px;
+  line-height:1; display:grid; place-items:center; transition:transform .14s var(--em)}
+.cx-menu button:hover{transform:scale(1.22)}
+.cx-menu button.bo{font-size:14px; color:var(--muted); font-weight:800}
+
+.chat-foot{flex:none; display:flex; align-items:center; gap:8px; padding:11px 12px;
+  border-top:1px solid var(--line)}
+/* font-size 16px là NGƯỠNG CỨNG của iOS Safari: nhỏ hơn thì bấm vào ô nhập
+   là cả trang bị phóng to. Đừng hạ xuống cho "cân" — sẽ vỡ trải nghiệm. */
+.chat-foot textarea{flex:1; min-width:0; font:600 16px/1.45 var(--sans); color:var(--ink);
+  background:var(--ground); border:1.5px solid var(--line); border-radius:12px;
+  padding:9px 14px; outline:none; transition:border-color .15s;
+  resize:none; overflow-y:hidden}
+.chat-foot textarea:focus{border-color:var(--accent)}
+/* Nút gửi kiểu Messenger: chỉ mỗi icon máy bay giấy đặc, KHÔNG nền nút,
+   luôn nằm giữa theo chiều cao ô nhập (align-items:center ở .chat-foot). */
+.chat-foot button{flex:none; width:34px; height:34px; background:none;
+  display:grid; place-items:center; transition:transform .15s var(--em), opacity .15s}
+.chat-foot button:hover{transform:scale(1.12)}
+.chat-foot button:active{transform:scale(.94)}
+.chat-foot button svg{width:24px; height:24px; fill:var(--accent)}
+
+/* ---------- SIDEBAR ---------- */
+.phu-mo{position:fixed; inset:0; z-index:40; background:rgba(22,35,42,.34);
+  opacity:0; pointer-events:none; transition:opacity .25s}
+body.mo-menu .phu-mo{opacity:1; pointer-events:auto}
+.side{position:fixed; top:0; bottom:0; z-index:41; width:min(320px,88vw);
+  background:var(--surface); transition:transform .3s var(--em);
+  display:flex; flex-direction:column}
+.side.trai{left:0; transform:translateX(-105%); box-shadow:12px 0 40px rgba(22,35,42,.14)}
+.side.phai{right:0; transform:translateX(105%); box-shadow:-12px 0 40px rgba(22,35,42,.14)}
+body.mo-menu .side.trai{transform:none}
+.side-head{display:flex; align-items:center; gap:12px; padding:18px;
+  border-bottom:1px solid var(--line)}
+.side-head .av{width:44px; height:44px; font-size:16px;
+  background:linear-gradient(135deg,#0E7C6E,#16A08E)}
+.side-head .ten{font-weight:800; font-size:15px; line-height:1.3}
+.side-head .phu2{font-size:12px; font-weight:700; color:var(--muted)}
+.side-head .dong{margin-left:auto; width:36px; height:36px; border-radius:10px;
+  display:grid; place-items:center; background:var(--ground)}
+.side-head .dong svg{width:18px; height:18px; stroke:var(--muted); stroke-width:2.4;
+  fill:none; stroke-linecap:round}
+.side-ds{flex:1; overflow-y:auto; padding:10px}
+.side-ds button{display:flex; align-items:center; gap:13px; width:100%; text-align:left;
+  padding:12px 12px; border-radius:14px; transition:background .15s}
+.side-ds button:hover{background:var(--accent-soft)}
+.side-ds .ic{flex:none; width:38px; height:38px; border-radius:12px; display:grid;
+  place-items:center; background:var(--ground)}
+.side-ds .ic svg{width:19px; height:19px; stroke:var(--accent); stroke-width:2;
+  fill:none; stroke-linecap:round; stroke-linejoin:round}
+.side-ds .nh{font-weight:700; font-size:14px; line-height:1.3}
+.side-ds .mo-ta{font-size:11.5px; color:var(--muted); font-weight:600}
+.side-foot{padding:12px 18px 16px; border-top:1px solid var(--line);
+  font-size:11px; color:var(--muted); font-weight:600}
+.vi-to{margin:14px 12px 6px; padding:18px 16px; border-radius:16px; text-align:center;
+  background:linear-gradient(160deg,#FEF6E6,#FCEFD8); border:1px solid #F5E3C0}
+.vi-to .so{font-size:38px; font-weight:800; color:#9A6A12; line-height:1.1}
+.vi-to .nh{font-size:12px; font-weight:700; color:#B08344; letter-spacing:.04em}
+/* Ô SAO trong menu (đợt 4): MỘT ngôi sao to, năm sao con lấp lánh quanh nó
+   — thay cho ba ngôi sao ⭐⭐⭐ của bản cũ. */
+.sao-ve{position:relative; width:104px; height:74px; margin:0 auto 2px}
+.sao-lon{position:absolute; left:50%; top:50%; width:52px; height:52px;
+  margin:-26px 0 0 -26px; fill:#F3B21B;
+  filter:drop-shadow(0 2px 6px rgba(226,160,20,.45));
+  animation:sao-tho 3.6s ease-in-out infinite}
+.sao-con{position:absolute; width:12px; height:12px; fill:#F7CE63;
+  animation:lap-lanh 2.6s ease-in-out infinite}
+.sao-con.c1{left:6px;  top:12px; width:14px; height:14px; animation-delay:0s}
+.sao-con.c2{right:8px; top:6px;                            animation-delay:.45s}
+.sao-con.c3{right:2px; bottom:14px; width:10px; height:10px; animation-delay:.9s}
+.sao-con.c4{left:14px; bottom:6px;  width:10px; height:10px; animation-delay:1.35s}
+.sao-con.c5{left:50%; top:-2px; margin-left:-5px; width:9px; height:9px; animation-delay:1.8s}
+@keyframes sao-tho{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+@keyframes lap-lanh{
+  0%,100%{opacity:.25; transform:scale(.7) rotate(0deg)}
+  50%    {opacity:1;   transform:scale(1.15) rotate(35deg)}
+}
+@media (prefers-reduced-motion: reduce){
+  .sao-lon,.sao-con{animation:none} .sao-con{opacity:.85}
+}
+
+/* ---------- POP-UP BẢNG CẢ LỚP (bấm vào khu CHƯA XONG BÀI) ----------
+   Nền mờ + khung trượt lên; đóng bằng bấm ra ngoài, nút ×, hoặc Esc. */
+.pop-nen{position:fixed; inset:0; z-index:55; display:grid; place-items:center;
+  padding:20px; background:rgba(22,35,42,.42); backdrop-filter:blur(2px);
+  opacity:0; pointer-events:none; transition:opacity .26s var(--em)}
+.pop-nen.mo{opacity:1; pointer-events:auto}
+/* Cỡ dòng tính để LỚP ĐÔNG NHẤT (20 em) hiện hết trong một màn, không phải
+   cuộn: mỗi dòng ~26px × 20 = 520px, cộng đầu 54 + chân 30 = ~604px, vẫn
+   lọt trong 88vh của iPhone 11 Pro (812px). overflow-y giữ làm phanh an toàn. */
+.pop{width:min(376px,100%); max-height:92vh; background:var(--surface);
+  border-radius:20px; box-shadow:0 24px 60px rgba(22,35,42,.28);
+  display:flex; flex-direction:column; overflow:hidden;
+  transform:translateY(18px) scale(.96); opacity:0;
+  transition:transform .3s var(--em), opacity .26s var(--em)}
+.pop-nen.mo .pop{transform:none; opacity:1}
+.pop-head{flex:none; display:flex; align-items:center; gap:10px;
+  padding:13px 15px 11px; border-bottom:1px solid var(--line)}
+.pop-head h3{margin:0; font-size:14px; font-weight:800; letter-spacing:.03em}
+.pop-head .phu{font-size:10.5px; font-weight:600; color:var(--muted); margin-top:1px}
+.pop-head .dong{margin-left:auto; width:32px; height:32px; border-radius:10px;
+  display:grid; place-items:center; background:var(--ground)}
+.pop-head .dong svg{width:16px; height:16px; stroke:var(--muted); stroke-width:2.4;
+  fill:none; stroke-linecap:round}
+.pop-ds{flex:1; min-height:0; overflow-y:auto; padding:6px 9px 8px}
+/* 4 cột: hạng/cúp · tên · trạng thái chữ · ô cuối (tích HOẶC số bài thiếu) —
+   cột cuối rộng cố định nên tích và ô số luôn THẲNG MỘT CỘT. */
+.pop-dong{display:grid; grid-template-columns:24px minmax(0,1fr) auto 28px;
+  align-items:center; gap:7px; padding:3.5px 7px; border-radius:9px}
+.pop-dong + .pop-dong{margin-top:1.5px}
+.pop-dong.du{background:#F4FBF7}
+.pop-dong.thieu{background:#FDF5F5}
+.pop-hang{font-size:10.5px; font-weight:800; color:#8FA3A0; text-align:center}
+.pop-hang svg{display:block; width:17px; height:17px; margin:0 auto}
+.cup1{color:#E3AE1B} .cup2{color:#9AA6B0} .cup3{color:#C0783A}
+.pop-ten{font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis}
+.pop-dong.du .pop-ten{color:var(--m-la)}
+.pop-dong.thieu .pop-ten{color:var(--m-do)}
+.pop-phu{font-size:9.5px; font-weight:700; color:#93A5A1; white-space:nowrap}
+.pop-cuoi{justify-self:center; font-size:13px; font-weight:800; color:var(--m-la)}
+.pop-cuoi.so{justify-self:center; min-width:20px; height:17px; padding:0 5px;
+  border-radius:6px; background:#FBE4E4; color:#C0484C; font-size:10px;
+  display:grid; place-items:center}
+/* Chân bảng: slogan mảnh, chữ thưa — không phải dòng chú thích cách xếp hạng. */
+.pop-foot{flex:none; padding:8px 16px 11px; border-top:1px solid var(--line);
+  font-size:9px; font-weight:500; letter-spacing:.22em; color:#A9B6B3;
+  text-align:center}
+@media (prefers-reduced-motion: reduce){
+  .pop-nen,.pop{transition:none}
+}
+
+/* ---------- POP-UP MỞ PHÒNG CHẤM SPEAKING (⭐ SP CHECK, 20/08) ----------
+   Thầy chốt: bấm thẻ SPEAKING CHECK thì hiện pop-up cho học sinh BIẾT LÀ ĐANG
+   TẢI (bộ não mySpeaking đo được 8-40 giây), xong mới mở tab mới.
+   ⛔ Nền tối dùng z-index 44 = đúng tầng nền tối của bóng đèn bên trang bài
+   tập; hộp 46. Xem bảng thứ tự lớp ở `bai-words.html`. */
+.sp-nen{position:fixed; inset:0; z-index:44; background:rgba(8,18,16,.62);
+  backdrop-filter:blur(3px); display:grid; place-items:center; padding:20px;
+  opacity:0; pointer-events:none; transition:opacity .22s}
+.sp-nen.mo{opacity:1; pointer-events:auto}
+.sp-hop{width:min(340px,100%); background:var(--surface); border-radius:18px;
+  box-shadow:0 24px 60px rgba(22,35,42,.28); padding:22px 20px 18px;
+  text-align:center; transform:translateY(8px) scale(.98);
+  transition:transform .24s var(--em)}
+.sp-nen.mo .sp-hop{transform:none}
+.sp-vong{width:46px; height:46px; margin:0 auto 14px; border-radius:50%;
+  border:3.5px solid var(--accent-soft); border-top-color:var(--accent);
+  animation:sp-quay .8s linear infinite}
+@keyframes sp-quay{to{transform:rotate(360deg)}}
+.sp-hop.xong .sp-vong{animation:none; border-color:var(--xanh-la);
+  border-top-color:var(--xanh-la)}
+.sp-hop.loi .sp-vong{animation:none; border-color:#F3C7C8; border-top-color:var(--m-do)}
+.sp-tieu{margin:0 0 6px; font-weight:800; font-size:13px; letter-spacing:.06em;
+  text-transform:uppercase; color:var(--ink)}
+.sp-phu{margin:0; font-size:12.5px; line-height:1.5; color:var(--muted); min-height:38px}
+.sp-nut{display:flex; gap:8px; justify-content:center; margin-top:14px}
+.sp-nut button{height:34px; padding:0 16px; border-radius:10px; font-weight:800;
+  font-size:11.5px; letter-spacing:.05em; border:1px solid var(--line);
+  background:var(--ground); color:var(--muted); transition:filter .14s}
+.sp-nut button.chinh{background:var(--accent); border-color:var(--accent); color:#fff}
+.sp-nut button:hover{filter:brightness(.97)}
+@media (prefers-reduced-motion: reduce){ .sp-vong{animation:none} }
+
+/* ---------- BẢNG XEM THỬ (CHỈ CÓ TRONG BẢN MẪU) ---------- */
+.thu{position:fixed; left:14px; bottom:14px; z-index:50; display:flex;
+  flex-direction:column; gap:6px; background:var(--surface); border:1px solid #F6D3BC;
+  border-radius:14px; padding:9px 10px; box-shadow:var(--shadow)}
+.thu-hang{display:flex; align-items:center; gap:6px}
+.thu b{font-size:9.5px; font-weight:800; letter-spacing:.05em; color:#B3541E;
+  background:#FDEADF; border-radius:999px; padding:3px 8px; white-space:nowrap}
+.thu button{font-size:11px; font-weight:700; color:var(--muted); border-radius:9px;
+  padding:5px 9px; border:1px solid var(--line); transition:.15s; white-space:nowrap}
+.thu button:hover{background:var(--ground)}
+.thu button.chon{background:var(--accent); border-color:var(--accent); color:#fff}
+
+.toast{position:fixed; left:50%; bottom:26px; z-index:60; transform:translate(-50%,20px);
+  background:var(--ink); color:#fff; font-size:13px; font-weight:600;
+  border-radius:12px; padding:10px 18px; opacity:0; pointer-events:none;
+  transition:opacity .25s, transform .25s var(--em)}
+.toast.hien{opacity:1; transform:translate(-50%,0)}
+
+/* ⛔⛔ ĐÃ GỠ HẲN Ở v18 — ĐỪNG DỰNG LẠI:
+       @media (max-width:1140px){ .the-diem.co-thieu{width:392px} }
+   Rule này ép vùng điểm rộng đúng 392px trong khi ĐẦU THẺ vẫn trải hết bề
+   ngang thẻ ⇒ cột CHƯA XONG BÀI dừng ở 392px còn ô hạn nằm tít mép phải:
+   ở cửa sổ 900px hai khối LỆCH NHAU 389px (thầy bắt được 18/08).
+   Nó còn gây lỗi thứ hai ở v16: máy 375px lòng thẻ chỉ 297 mà vùng điểm bị
+   ép 392 ⇒ cột tên bị đẩy hẳn ra ngoài thẻ, cắt mất sạch.
+   Gỡ đi thì .the-diem trải hết bề ngang y như .the-body, mà hai khối cùng
+   đệm phải 14px và cùng cột phải 176px ⇒ ô hạn và cột CHƯA XONG BÀI THẲNG
+   TÂM NHAU trong MỌI bề ngang, không cần rule bù nào cả. */
+/* ⭐ v18 — CỬA SỔ HẸP (chat rơi xuống dưới cột thẻ).
+   Trước đây vẫn vẽ 4 thẻ và cho chat cao cứng 520px ⇒ phải cuộn mãi mới tới
+   ô nhập. Nay xử y như dạng điện thoại: JS chỉ vẽ 2 thẻ (xem `soThe()`), cả
+   trang gói trong MỘT MÀN, phần cao còn lại dồn hết cho khung chat.
+   minmax(176px,1fr): cửa sổ lùn quá thì thà cho cuộn còn hơn bóp khung chat
+   bẹp dí đến mức không đọc được. */
+@media (max-width:1040px){
+  /* minmax(--san-chat,1fr) chứ không phải minmax(176px,1fr) như v18: kéo cửa
+     sổ lùn dần thì hàng chat cứ co lại (tin nhắn chuyển thành cuộn) để ô nhập
+     luôn hiện ĐỦ. Chỉ khi cửa sổ ngắn hơn [2 thẻ + tiêu đề + ô nhập] thì lưới
+     mới tràn và ô nhập trồi xuống dưới mép màn — thầy chấp nhận ca này. */
+  .main{grid-template-columns:1fr; grid-template-rows:auto minmax(var(--san-chat),1fr);
+    gap:14px; padding:14px 20px 16px;
+    height:calc(100vh - var(--cao-dau) - var(--banphim));
+    height:calc(100dvh - var(--cao-dau) - var(--banphim))}
+  /* ⛔ Ô lưới bây giờ là .chat-cot chứ không phải .chat nữa, nên phải cho
+     khung chat cao ĐÚNG BẰNG Ô (100%). Để height:auto là nó phình theo số
+     tin nhắn rồi tràn ra ngoài ô, ô nhập tụt xuống tận đáy trang. */
+  .chat{height:100%}
+
+  /* ⭐ ĐANG GÕ (bàn phím ảo hiện lên) → CẤT CỘT THẺ, nhường trọn phần màn
+     còn lại cho khung chat.
+     ⛔ Chỉ trừ chiều cao bàn phím KHÔNG đủ: hàng thẻ là `auto` nên nó vẫn
+     giữ nguyên 2 thẻ, cộng với minmax(176px) của chat là lưới phình quá
+     khung ⇒ ô nhập tụt xuống DƯỚI mép bàn phím y như cũ (đo được: thò 26px).
+     Lúc em đang gõ thì cần thấy cuộc trò chuyện chứ không cần nhìn thẻ bài,
+     nên giấu hẳn là gọn nhất — bàn phím tắt là thẻ hiện lại ngay. */
+  .go-chat .cot-bai,.go-chat .vach{display:none}
+  .go-chat .main{grid-template-rows:1fr}
+}
+
+/* ============================================================
+   DẠNG ĐIỆN THOẠI DỌC — chuẩn iPhone 11 Pro (375 × 812)
+   · Chỉ 2 thẻ (JS lo), chat nằm dưới cùng.
+   · Danh sách chưa xong bài VẪN ở bên phải các thanh, tối đa 3 bạn.
+   · Thanh tiến độ ngắn lại, khoảng cách tên–thanh–số thu hẹp.
+   ============================================================ */
+@media (max-width:620px){
+  :root{--cao-the:166px}
+  /* Thẻ đừng chạm mép máy: chừa nền hai bên rộng hơn (12 → 18px). */
+  .wrap{padding:0 18px}
+  /* MỘT MÀN LÀ ĐỦ: 2 thẻ + khung chat (kể cả ô nhập) phải nằm trọn trong
+     màn, không phải cuộn xuống mới thấy chỗ gõ. Hàng 2 của lưới ăn hết phần
+     cao còn lại, và chat cao theo hàng đó.
+     100dvh (không phải 100vh) vì thanh địa chỉ Safari co giãn — 100vh trên
+     iPhone tính cả phần bị thanh đó che, đẩy ô nhập xuống dưới mép màn.
+     ⚠ v18: chiều cao thanh đầu KHÔNG gõ tay nữa mà để JS đo rồi đặt vào
+     --cao-dau (v16 gõ 62 trong khi thật là 65 ⇒ dôi 3px phải cuộn). --banphim
+     là phần bị bàn phím ảo che, trừ luôn ở đây nên ô nhập không bao giờ bị đè.
+     ⚠ Phải là HEIGHT chứ không phải min-height: với min-height, chiều cao
+     khung vẫn tính là "auto" nên hàng 1fr không có gì để chia — nó co theo
+     nội dung và khung chat lại dài ra như cũ. */
+  .main{gap:12px; padding:12px 18px 14px; grid-template-rows:auto minmax(190px,1fr);
+    height:calc(100vh - var(--cao-dau) - var(--banphim));
+    height:calc(100dvh - var(--cao-dau) - var(--banphim))}
+  .cot-bai{gap:12px}
+  .vach{margin:0}
+
+  .who .lop{display:none}
+  .av.me{width:44px; height:44px; font-size:16px}
+  .who .ten{font-size:15.5px}
+  .top-in{gap:10px; padding:10px 18px}
+
+  .the-in{--mui:42px}
+  .play svg{width:17px; height:17px; margin-right:17px}
+  /* Cùng bố cục với máy tính, chỉ thu nhỏ: cột phải 106px (thay 176px) và
+     .khoi-thieu bên dưới cũng 106px để hai khối vẫn thẳng tâm. */
+  /* v17: đầu thẻ nay là MỘT HÀNG NGANG (xem chú thích ở phần dùng chung),
+     điện thoại chỉ việc thu nhỏ — cột phải 106px thay 176px. */
+  .the-body{padding:9px 8px 5px 10px; column-gap:6px}
+  .t-chu{gap:0}
+  .t-ten{font-size:11px}
+  .t-ma{font-size:10.2px}
+  .t-ten .ngay,.t-ten .khoang{margin-left:5px}
+  .han-boc{width:106px; gap:5px}
+  .t-han{width:100px; min-width:0; padding:3px 6px 4px; border-radius:9px; gap:2px}
+  .t-han .han-dong{font-size:8.5px; gap:3px}
+  .t-han .han-dong svg{width:9px; height:9px}
+  .dhho{font-size:13.5px; letter-spacing:.2px}
+  .dhho.xong{font-size:11px; letter-spacing:.4px}
+  .tich-to{font-size:20px}
+
+  .the-diem{padding:6px 8px 7px 12px; gap:3px}
+  .the-diem.chi-tay{padding:0 14px}
+  .the-diem.co-thieu{gap:10px}
+  .the-diem.co-thieu .khoi-thanh{gap:3px}
+  .the-diem.n1 .td-dong{min-height:52px}
+  .the-diem.n2 .td-dong{min-height:24.5px}
+  /* 4 bài trên điện thoại là ca chật nhất — bó thêm một nấc nữa. */
+  .the-diem.n4{padding-top:5px; padding-bottom:6px}
+  .the-diem.n4:not(.co-thieu){gap:2px}
+  .the-diem.co-thieu.n4 .khoi-thanh{gap:2px}
+  .the-diem.n4 .td-tay{margin-top:3px; padding-top:4px}
+  .khoi-thieu{width:106px; padding:0 7px}
+  .khoi-thieu .tieu{font-size:8px; letter-spacing:.04em; margin-bottom:1px}
+  .ds-thieu{column-gap:6px}
+  .ds-thieu .ten{font-size:9.5px; line-height:1.32}
+  .ds-thieu .so{min-width:13px; height:12px; padding:0 3px; font-size:8.5px; border-radius:4px}
+  .khoi-thieu .them{margin-top:1px; font-size:9px}
+
+  /* thanh ngắn lại + các cột sát nhau hơn */
+  .td-dong{grid-template-columns:50px minmax(0,1fr) 36px 9px; gap:5px}
+  .td-ten{font-size:9.5px; letter-spacing:0}
+  .td-bar{height:6px}
+  .td-so{font-size:9.5px}
+  .td-tich{font-size:9px}
+  .td-tay{margin-top:6px; padding-top:7px; font-size:9px; line-height:1.3}
+  .td-tay svg{width:10px; height:10px; margin-right:3px}
+
+  /* Chat cao theo hàng lưới (không đặt height cứng) — nhờ vậy ô nhập luôn
+     nằm trong màn, khỏi phải cuộn tìm. */
+  /* ⛔ Ô lưới bây giờ là .chat-cot chứ không phải .chat nữa, nên phải cho
+     khung chat cao ĐÚNG BẰNG Ô (100%). Để height:auto là nó phình theo số
+     tin nhắn rồi tràn ra ngoài ô, ô nhập tụt xuống tận đáy trang. */
+  .chat{height:100%}
+  .chat-head{padding:10px 13px 8px}
+  .chat-head h2{font-size:12.5px; gap:6px}
+  .chat-head h2 svg{width:15px; height:15px}
+  .chat-body{padding:10px 10px 4px; gap:8px}
+  .bong{font-size:12.5px; padding:6px 10px}
+  .msg .av{width:28px; height:28px; font-size:11px; margin-top:13px}
+  .msg.toi .av{margin-top:0}
+  .chat-foot{padding:9px 10px}
+  .chat-foot textarea{padding:7px 12px}
+  .chat-foot button{width:40px}
+
+  .thu{left:8px; right:8px; bottom:8px}
+  .thu-hang{justify-content:center; flex-wrap:wrap}
+}
+
+/* ═══ v1.9.0 — HAI THỨ CHƯA CÓ DỮ LIỆU THẬT THÌ ẨN HẲN ═══
+   Ví sao chưa có kho sao, nên huy hiệu sao trên avatar và ô ví trong menu đều
+   ẩn — thà thiếu còn hơn hiện một con số bịa. Có kho sao thật thì XOÁ 2 dòng
+   này là mọi thứ hiện lại đúng như bản mẫu thầy đã duyệt. */
+.sao-hieu{display:none !important}
+.vi-to{display:none !important}
+
+/* Khung chat lúc chưa có kho tin thật: một dòng nhắn ở giữa. */
+.chat-cho{margin:auto; padding:22px 18px; text-align:center; font-size:12.5px;
+  line-height:1.55; color:var(--chu-mo, #7b8a97)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <!-- ⛔ v1.9.0 — KHÔNG gõ sẵn tên/lớp vào đây nữa: file này công khai trên
+         GitHub, và chữ gõ sẵn còn loé lên một nhịp trước khi JS điền tên thật.
+         `dienDanhTinh()` điền cả bốn chỗ (avatar · tên · lớp · sidebar). -->
+    <button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0</span></button>
+    <div class="who">
+      <div class="ten"></div>
+      <div class="lop">&nbsp;</div>
+    </div>
+    <!-- Chỗ này bên trang bài tập là ô HẠN + tên bài; ở trang chính thầy để
+         dành cho quảng cáo / thông báo, nên tạm bỏ trống. -->
+  </div>
+</header>
+
+<div class="wrap main">
+  <section class="cot-bai" id="cotBai"></section>
+
+  <!-- .chat-cot chỉ là CHỖ GIỮ Ô. Ở dạng máy tính, khung chat nằm TUYỆT ĐỐI
+       bên trong nó nên không góp chiều cao vào lưới ⇒ hàng lưới cao đúng
+       bằng cột thẻ, chat có dài mấy cũng chỉ cuộn bên trong. -->
+  <div class="chat-cot">
+  <aside class="chat">
+    <div class="chat-head">
+      <h2><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.9-.9L3 20l1-4.9a8.4 8.4 0 1 1 17-3.6z"/></svg>
+        <span class="ct-ten">CUỘC TRÒ CHUYỆN CỦA LỚP</span></h2>
+    </div>
+    <div class="chat-body" id="khungChat"></div>
+    <div class="chat-foot">
+      <!-- textarea (không phải input) để tin dài tự xuống dòng, xem được trọn
+           vẹn trước khi gửi. rows=1, JS tự nới cao theo nội dung. -->
+      <textarea id="oChat" rows="1" maxlength="300"
+        placeholder="Nhắn gì đó cho cả lớp..."></textarea>
+      <!-- v17: máy bay giấy ĐẶC nằm ngang, mũi nhọn sang phải, cạnh trái có
+           khấc lõm — vẽ lại theo đúng ảnh mẫu thầy gửi; màu đổi sang xanh
+           ngọc của app thay vì đen. -->
+      <button id="nutGui" title="Gửi">
+        <svg viewBox="0 0 512 512"><path d="M40.5 17.6C30 12.6 17.5 21.5 20.2 32.9L62.8 213.6C64.2 219.6 69.3 224 75.4 224.5L246 238.6C255.4 239.4 255.4 272.6 246 273.4L75.4 287.5C69.3 288 64.2 292.4 62.8 298.4L20.2 479.1C17.5 490.5 30 499.4 40.5 494.4L480.5 282.4C492 276.9 492 235.1 480.5 229.6Z"/></svg>
+      </button>
+    </div>
+  </aside>
+  </div>
+</div>
+
+<!-- Bảng chọn cảm xúc (hiện khi GIỮ nút tim) -->
+<div class="cx-menu" id="cxMenu"></div>
+<!-- Danh sách ai thả cảm xúc gì (hiện khi chạm vào cụm đã có cảm xúc) -->
+<div class="cx-ai" id="cxAi"></div>
+
+<div class="phu-mo" id="phuMo"></div>
+
+<nav class="side trai" id="sideMenu">
+  <div class="side-head">
+    <span class="av"></span>
+    <div>
+      <div class="ten"></div>
+      <div class="phu2">&nbsp;</div>
+    </div>
+    <button class="dong" data-dong="1" title="Đóng">
+      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <!-- ⭐ ĐỢT 4 — VÍ SAO nay nằm ngay trong menu này (nút sao riêng đã bỏ). -->
+  <div class="vi-to">
+    <div class="sao-ve">
+      <svg class="sao-lon" viewBox="0 0 24 24"><path d="M12 2.2l3 6.2 6.8.9-4.9 4.8 1.2 6.7L12 17.6l-6.1 3.2 1.2-6.7L2.2 9.3l6.8-.9z"/></svg>
+      <svg class="sao-con c1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c4" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c5" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+    </div>
+    <div class="so">350</div>
+    <div class="nh">SAO ĐANG CÓ</div>
+  </div>
+
+  <div class="side-ds" id="dsMenu"></div>
+  <div class="side-foot">Lesson in Andrew Classes · <span id="verFoot"></span></div>
+</nav>
+
+
+<!-- ===== POP-UP BẢNG CẢ LỚP ===== -->
+<!-- ⭐ SP CHECK — pop-up "đang mở phòng chấm" (bản thật giữ nguyên khối này) -->
+<div class="sp-nen" id="spNen">
+  <div class="sp-hop" id="spHop">
+    <div class="sp-vong"></div>
+    <h3 class="sp-tieu" id="spTieu">Đang lấy dữ liệu chấm speaking</h3>
+    <p class="sp-phu" id="spPhu">Việc này có thể cần chờ một chút.</p>
+    <div class="sp-nut" id="spNut"></div>
+  </div>
+</div>
+
+<div class="pop-nen" id="popNen">
+  <div class="pop" id="popKhung">
+    <div class="pop-head">
+      <div>
+        <h3></h3>
+        <div class="phu" id="popPhu"></div>
+      </div>
+      <button class="dong" id="popDong" title="Đóng">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="pop-ds" id="popDs"></div>
+    <div class="pop-foot">ANDREW CLASSES</div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="config.js?v=14"></script>
+<script src="js/chung.js?v=14"></script>
+<script>
+/* ============================================================
+   TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).
+   Dựng từ bản mẫu `mau-web/trang-chinh.html` thầy chốt 18/08, thay toàn bộ số
+   giả bằng dữ liệu thật. Đọc: lớp + GIỜ VÀO LỚP
+   từ myStudent · số em hoàn thành từng bài + DANH SÁCH EM CHƯA NỘP từ
+   AWord (Firebase) · loại bài viết tay do thầy đặt trong myLesson.
+   ============================================================ */
+var $ = function(s){ return document.querySelector(s); };
+
+/* Lời nhắn dùng chung cho mọi nút chưa làm xong. */
+var CHUA_XONG = 'Thầy Andrew đang xây dựng tính năng này, em hãy chờ thêm nhé!';
+
+/* Hai ngưỡng này trùng với @media bên trên — sửa một chỗ thì sửa cả hai.
+     620px  = dạng điện thoại (cỡ chữ, khoảng cách thu nhỏ)
+   1040px  = cửa sổ hẹp, khung chat rơi xuống dưới cột thẻ */
+var MAN_HEP = window.matchMedia('(max-width:620px)');
+var CHAT_DUOI = window.matchMedia('(max-width:1040px)');
+function laDienThoai(){ return MAN_HEP.matches; }
+function chatODuoi(){ return CHAT_DUOI.matches; }
+
+var MAU_AV = ['#0E7C6E','#B3541E','#5B8DEF','#8CC63F','#E36B5C','#9C6ADE','#F2A93B'];
+function veAv(ten, i){
+  var chu = ten.trim().split(/\s+/).map(function(t){return t[0];}).slice(-2).join('');
+  return '<span class="av" style="background:' + MAU_AV[i % MAU_AV.length] + '">' + chu + '</span>';
+}
+
+/* ---------- VIẾT TẮT TÊN (cùng lối app myTeam) ---------- */
+function tachTu(ten){ return String(ten || '').trim().split(/\s+/).filter(Boolean); }
+
+function dangTat(tu, mucDo){
+  var cuoi = tu[tu.length - 1];
+  var truoc = tu.slice(Math.max(0, tu.length - 1 - mucDo), tu.length - 1);
+  return truoc.map(function(t){ return t.charAt(0) + '.'; }).join('') + cuoi;
+}
+
+function bangVietTat(dsTen){
+  var duyNhat = [], da = {};
+  dsTen.forEach(function(t){ if (t && !da[t]) { da[t] = 1; duyNhat.push(t); } });
+  var muc = {};
+  duyNhat.forEach(function(t){ muc[t] = 1; });
+  for (var vong = 0; vong < 8; vong++) {
+    var nhom = {};
+    duyNhat.forEach(function(t){
+      var tu = tachTu(t);
+      var k = dangTat(tu, Math.min(muc[t], tu.length - 1));
+      (nhom[k] = nhom[k] || []).push(t);
+    });
+    var conTrung = false;
+    Object.keys(nhom).forEach(function(k){
+      if (nhom[k].length < 2) return;
+      nhom[k].forEach(function(t){
+        var tu = tachTu(t);
+        if (muc[t] < tu.length - 1) { muc[t]++; conTrung = true; }
+      });
+    });
+    if (!conTrung) break;
+  }
+  var ra = {};
+  duyNhat.forEach(function(t){
+    var tu = tachTu(t);
+    ra[t] = dangTat(tu, Math.min(muc[t], tu.length - 1));
+  });
+  return ra;
+}
+
+/* ---------- DỮ LIỆU THẬT (web v1.9.0) ----------
+   Tới bản mẫu, toàn bộ khu này là số gõ tay. Nay lấy thật:
+     · lớp + học sinh  <- data/lop.json (app myLesson xuất từ myStudent)
+     · các bài của lớp <- data/bai.json (app đẩy lên mỗi lần bấm PUSH)
+     · ai đã làm bài   <- kho điểm AWord (Firestore, chỉ đọc) — xem js/chung.js
+   ⛔ ĐỪNG gõ lại tên lớp / danh sách em ở đây nữa. Trang này KHÔNG được chứa
+   một chữ dữ liệu nào của thầy: file nằm công khai trên GitHub.
+
+   ⚠️ ĐỊNH NGHĨA "XONG MỘT BÀI" (Đợt 1, 23/08/2026): em có ÍT NHẤT MỘT lượt nộp
+   act đó bên AWord — không xét được bao nhiêu điểm. Muốn siết thành "phải đủ
+   100% mới tính xong" thì sửa đúng hàm `daLamAct()` bên dưới, chỗ khác không
+   phải đụng. */
+
+var A = window.AWC;
+var DL = { lop: [], bai: {} };
+var EM = null;
+
+var TOI = '';            /* tên em đang đăng nhập (đúng tên trong myStudent) */
+var LOP = '';            /* tên lớp HIỆN cho em xem, kiểu myStudent: "B2-B" */
+var LOP_DL = '';         /* mã lớp trong lop.json / bai.json: "B2B" */
+var LOP_HIEN = '';       /* mã lớp đưa cho em xem + truyền sang AWord: "B2B" */
+var MA_HS = '';          /* mã đăng nhập của em */
+
+var CA_LOP = [];         /* tên cả lớp, đúng thứ tự trong lop.json */
+var SI_SO = 0;
+var TAT = {};
+function tenTat(t){ return TAT[t] || t; }
+
+var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
+var BAI_CU = [];         /* các thẻ dưới vạch */
+var BAI_SP = null;       /* thẻ SPEAKING CHECK, nếu buổi này có */
+var HANG_LOP = {};       /* {tên em: {hangTB, nopLuc}} — dựng từ điểm AWord */
+
+/* Địa chỉ hai đầu bên mySpeaking — nay lấy từ config.js chứ không gõ trong trang. */
+var SP_NAO = A.CFG.SP_NAO || '';
+var SP_WEB = A.CFG.SP_WEB || '';
+function lopMa(){ return LOP_HIEN; }   /* mã lớp bên mySpeaking = "B2B" */
+
+/* ⭐ v18 — 2 thẻ ở MỌI cửa sổ hẹp, không riêng điện thoại: hễ khung chat đã
+   phải rơi xuống dưới thì nhường chỗ cho nó, thầy khỏi cuộn tìm ô nhập. */
+function soThe(){ return chatODuoi() ? 2 : 4; }
+
+/* "9.6" -> "9/6" (thầy viết ngày kiểu chấm trong tên bài, học sinh quen gạch chéo) */
+function ngayGach(s){
+  var m = /^(\d{1,2})\.(\d{1,2})$/.exec(String(s || '').trim());
+  return m ? (m[1] + '/' + m[2]) : String(s || '');
+}
+function ngayCuaMoc(ms){
+  if (ms == null) return '';
+  var d = new Date(ms);
+  return d.getDate() + '/' + (d.getMonth() + 1);
+}
+
+/* Một bài trong bai.json -> một THẺ trên trang này. `xong`/`thieu` để trống,
+   `donDiem()` đổ vào sau khi đọc xong kho điểm. */
+function theTuBai(b){
+  var acts = A.actCuaBai(b);
+  var moc = A.mocHan(b);
+  return {
+    id: b.id,
+    dang: b.dang || '',
+    loai: /SP\s*CHECK/i.test(b.dang || '') ? 'spcheck' : '',
+    trang: A.trangCuaBai(b),
+    ten: A.tenBai(b),
+    ma: A.maLesson(b),
+    giao: ngayGach(b.ngay),
+    han: A.chuHan(b),                 /* chữ trên ô hạn */
+    hanNgan: ngayCuaMoc(moc),         /* thẻ cũ chỉ hiện ngày */
+    hanMoc: moc,                      /* mốc thật cho đồng hồ đếm ngược */
+    bai: acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; }),
+    tay: b.tay || '',
+    thieu: []
+  };
+}
+
+/* Em này đã làm act đó chưa. ⇒ đổi định nghĩa "xong" thì sửa ĐÚNG hàm này. */
+function daLamAct(dsDiem, ten){
+  var k = A.khoaTen(ten);
+  for (var i = 0; i < dsDiem.length; i++) if (A.khoaTen(dsDiem[i].ten) === k) return true;
+  return false;
+}
+
+/* Đọc điểm của MỌI act trong các thẻ rồi đổ vào `bai[].xong` + `thieu[]`,
+   đồng thời dựng bảng HANG_LOP cho pop-up cả lớp. */
+function donDiem(cacThe){
+  var mangMa = [];
+  cacThe.forEach(function(t){
+    (t.bai || []).forEach(function(x){ if (x.ma && mangMa.indexOf(x.ma) < 0) mangMa.push(x.ma); });
+  });
+  if (!mangMa.length) return Promise.resolve();
+
+  return Promise.all(mangMa.map(function(ma){
+    return A.diemCuaAct(ma)['catch'](function(){ return []; })
+      .then(function(ds){ return { ma:ma, ds:ds }; });
+  })).then(function(kq){
+    var theoMa = {};
+    kq.forEach(function(r){ theoMa[r.ma] = r.ds; });
+
+    cacThe.forEach(function(t){
+      var thieu = {};
+      (t.bai || []).forEach(function(x){
+        var ds = theoMa[x.ma] || [];
+        var dem = 0;
+        CA_LOP.forEach(function(ten){
+          if (daLamAct(ds, ten)) dem++;
+          else thieu[ten] = (thieu[ten] || 0) + 1;
+        });
+        x.xong = dem;
+      });
+      t.thieu = Object.keys(thieu).map(function(ten){
+        return { ten:ten, so:thieu[ten] };
+      });
+    });
+
+    dungHangLop(theoMa);
+  });
+}
+
+/* Bảng xếp hạng cả lớp: hangTB = thứ hạng trung bình qua các act em có làm
+   (nhỏ hơn = giỏi hơn); nopLuc = lần nộp SỚM NHẤT, dùng phân định khi hoà.
+   Em chưa làm act nào thì không có trong bảng ⇒ `xepCaLop()` cho hangTB 99. */
+function dungHangLop(theoMa){
+  var gom = {};
+  for (var ma in theoMa) {
+    var ds = theoMa[ma];                       /* đã xếp sẵn: giỏi nhất đứng đầu */
+    ds.forEach(function(e, i){
+      var k = A.khoaTen(e.ten);
+      if (!gom[k]) gom[k] = { tong:0, so:0, luc:0 };
+      gom[k].tong += (i + 1);
+      gom[k].so++;
+      if (e.luc && (!gom[k].luc || e.luc < gom[k].luc)) gom[k].luc = e.luc;
+    });
+  }
+  HANG_LOP = {};
+  CA_LOP.forEach(function(ten){
+    var g = gom[A.khoaTen(ten)];
+    if (!g || !g.so) return;
+    HANG_LOP[ten] = {
+      hangTB: g.tong / g.so,
+      nopLuc: g.luc ? chuLuc(g.luc) : ''
+    };
+  });
+}
+
+function chuLuc(ms){
+  var d = new Date(ms);
+  var hai = function(n){ return (n < 10 ? '0' : '') + n; };
+  return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + hai(d.getHours()) + ':' + hai(d.getMinutes());
+}
+
+var IC_GIO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
+var IC_TAY = '<svg viewBox="0 0 24 24"><path d="M12 3.5 21 19H3z"/><path d="M12 9.5v4M12 16.4v.1"/></svg>';
+
+function bacMau(pt){
+  if (pt >= 100) return 'm-la';
+  if (pt >= 90)  return 'm-duong';
+  if (pt >= 80)  return 'm-vang';
+  if (pt >  70)  return 'm-cam';
+  return 'm-do';
+}
+
+function tinhHinhThe(b, hetGio){
+  var ds = b.bai || [];
+  if (!ds.length) {
+    return hetGio ? { lop:'tt-la', du:true } : { lop:'', du:false };
+  }
+  var du = ds.every(function(x){ return x.xong >= SI_SO; });
+  return { lop: du ? 'tt-la' : 'tt-do', du:du };
+}
+
+/* batDo: bài chưa đủ hiện ĐỎ (3 tiếng cuối, và mọi thẻ đã qua hạn).
+   hienThieu: mở cột "chưa xong bài" bên phải (chỉ 3 tiếng cuối). */
+function veDiem(b, batDo, hienThieu){
+  var thanh = (b.bai || []).map(function(x){
+    var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
+    var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
+    return '<span class="td-dong">' +
+      '<span class="td-ten">' + x.ten + '</span>' +
+      '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i></span>' +
+      '<span class="td-so ' + m + '">' + x.xong + '/' + SI_SO + '</span>' +
+      '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
+    '</span>';
+  }).join('');
+
+  if (b.tay) {
+    thanh += '<span class="td-tay">' + IC_TAY + '<span>CHÚ Ý ' + b.tay + '</span></span>';
+  }
+
+  var soBai = (b.bai || []).length;
+  /* Không có bài AWord nào → đánh dấu để dòng CHÚ Ý nằm giữa vùng điểm.
+     n1/n2 → CSS kéo cụm thanh cao bằng khi có 3 bài. */
+  var lopSo = soBai ? (' n' + soBai) : ' chi-tay';
+
+  var dsThieu = hienThieu ? (b.thieu || []) : [];
+  if (!dsThieu.length) return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
+
+  /* Dựng ĐỦ tên (thiếu nhiều bài đứng trước); `vuaCotThieu()` chạy ngay sau
+     khi vẽ xong sẽ cắt bớt cho vừa chỗ và tự thêm dòng "+N bạn nữa". */
+  var sap = dsThieu.slice().sort(function(a, b2){ return b2.so - a.so; });
+  var o = sap.map(function(e){
+    return '<span class="ten">' + tenTat(e.ten) + '</span>' +
+           '<span class="so">' + e.so + '</span>';
+  }).join('');
+
+  return '<span class="the-diem co-thieu' + lopSo + '">' +
+      '<span class="khoi-thanh">' + thanh + '</span>' +
+      '<span class="khoi-thieu" data-tong="' + sap.length + '">' +
+        '<span class="tieu">CHƯA XONG BÀI</span>' +
+        '<span class="ds-thieu">' + o + '</span>' +
+      '</span>' +
+    '</span>';
+}
+
+/* ---------- CẮT CỘT "CHƯA XONG BÀI" CHO VỪA CHỖ (v17) ----------
+   Chiều cao thẻ là cố định, còn phần trên (số dòng act–thanh–số lượng, có
+   hay không có dòng CHÚ Ý) thì đổi theo từng bài ⇒ chỗ trống dành cho cột
+   tên cũng đổi theo. Nên đo chỗ trống THẬT rồi bỏ bớt tên từ dưới lên, chứ
+   không ấn định trước một con số.
+   ⛔ Không dùng scrollHeight để đo: .khoi-thieu căn giữa theo chiều dọc nên
+   phần tràn chia đều hai đầu, scrollHeight chỉ đếm phần tràn xuống dưới —
+   đo kiểu đó là thiếu một nửa. Phải CỘNG chiều cao thật của từng khối con. */
+function caoCaLe(el){
+  if (!el) return 0;
+  var st = getComputedStyle(el);
+  return el.offsetHeight + (parseFloat(st.marginTop) || 0) + (parseFloat(st.marginBottom) || 0);
+}
+function datDongThem(khoi, con){
+  var them = khoi.querySelector('.them');
+  if (con <= 0) { if (them) khoi.removeChild(them); return; }
+  if (!them) {
+    them = document.createElement('span');
+    them.className = 'them';
+    khoi.appendChild(them);
+  }
+  them.textContent = '+' + con + ' bạn nữa';
+}
+function vuaCotThieu(khoi){
+  var ds = khoi.querySelector('.ds-thieu');
+  if (!ds) return;
+  var tong = parseInt(khoi.getAttribute('data-tong'), 10) || (ds.children.length / 2);
+  var canDung = function(){
+    return caoCaLe(khoi.querySelector('.tieu')) + caoCaLe(ds) +
+           caoCaLe(khoi.querySelector('.them'));
+  };
+  var soHang = ds.children.length / 2;
+  datDongThem(khoi, tong - soHang);
+  var vong = 0;
+  while (soHang > 1 && canDung() > khoi.clientHeight && vong++ < 40) {
+    ds.removeChild(ds.lastElementChild);   // ô số
+    ds.removeChild(ds.lastElementChild);   // tên
+    soHang--;
+    datDongThem(khoi, tong - soHang);
+  }
+}
+function vuaMoiCotThieu(){
+  document.querySelectorAll('.khoi-thieu').forEach(vuaCotThieu);
+}
+/* Montserrat nạp qua mạng: nạp xong chữ đổi cỡ đôi chút nên đo lại một lần
+   nữa — cả chiều cao thanh đầu lẫn số tên vừa cột. Cắt bớt là việc MỘT CHIỀU
+   nên chạy lại bao nhiêu lần cũng vô hại.
+   fonts.ready là promise ⇒ luôn chạy SAU khi dungCot() vẽ xong. */
+if (document.fonts && document.fonts.ready) {
+  document.fonts.ready.then(function(){ doCaoDau(); doSanChat(); vuaMoiCotThieu(); });
+}
+/* (Việc đo lại lúc kéo giãn cửa sổ nay nằm chung trong một trình nghe resize
+   duy nhất ở phần ĐỔI BỐ CỤC bên dưới — để khỏi chạy hai lần.) */
+
+/* ---------- POP-UP BẢNG XẾP HẠNG CẢ LỚP ----------
+   Dựng từ TOÀN BỘ danh sách lớp: em nào có tên trong b.thieu là còn thiếu,
+   còn lại coi như xong hết. Nhờ vậy MỌI thẻ đều mở được bảng, không cần
+   liệt kê riêng danh sách em đã xong cho từng bài.
+   Thứ tự: xong hết lên trên, xếp theo hạng trung bình (nhỏ hơn = giỏi hơn),
+   hoà thì ai nộp sớm hơn đứng trước; rồi tới nhóm còn thiếu (thiếu ít trước). */
+function xepCaLop(b){
+  var conThieu = {};
+  (b.thieu || []).forEach(function(e){ conThieu[e.ten] = e.so; });
+
+  var xong = CA_LOP.filter(function(t){ return !conThieu[t]; }).map(function(t){
+    var h = HANG_LOP[t] || { hangTB:99, nopLuc:'' };
+    return { ten:t, du:true, hangTB:h.hangTB, nop:h.nopLuc, phu:'hoàn thành' };
+  }).sort(function(a, c){
+    if (a.hangTB !== c.hangTB) return a.hangTB - c.hangTB;
+    return String(a.nop).localeCompare(String(c.nop));
+  });
+
+  var thieu = (b.thieu || []).slice()
+    .sort(function(a, c){ return a.so - c.so; })
+    .map(function(e){ return { ten:e.ten, du:false, so:e.so, phu:'chưa hoàn thành' }; });
+
+  return xong.concat(thieu);
+}
+
+var IC_TICH = '✓';
+/* Cúp cho ba hạng đầu — vàng · bạc · đồng (màu do class cup1/2/3). */
+function veCup(hang){
+  return '<svg class="cup' + hang + '" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M6.6 3h10.8v4.3a5.4 5.4 0 0 1-10.8 0z" fill="currentColor"/>' +
+    '<path d="M6.6 4.4H3.7v1.5a3.3 3.3 0 0 0 3.3 3.3M17.4 4.4h2.9v1.5a3.3 3.3 0 0 1-3.3 3.3" ' +
+      'fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+    '<path d="M10.7 12.6h2.6l.5 2.5h-3.6z" fill="currentColor"/>' +
+    '<rect x="8.3" y="15.2" width="7.4" height="2.2" rx="1.1" fill="currentColor"/>' +
+  '</svg>';
+}
+
+function moPopCaLop(b){
+  var ds = xepCaLop(b);
+  /* Dòng phụ: tên bài • mã lesson (thầy chốt bỏ phần đếm số em đã xong). */
+  $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
+  $('#popDs').innerHTML = ds.map(function(e, i){
+    var hang = (i < 3) ? veCup(i + 1) : (i + 1);
+    return '<div class="pop-dong ' + (e.du ? 'du' : 'thieu') + '">' +
+      '<span class="pop-hang">' + hang + '</span>' +
+      '<span class="pop-ten">' + e.ten + '</span>' +
+      '<span class="pop-phu">' + e.phu + '</span>' +
+      (e.du ? '<span class="pop-cuoi">' + IC_TICH + '</span>'
+            : '<span class="pop-cuoi so">' + e.so + '</span>') +
+    '</div>';
+  }).join('');
+  $('#popNen').classList.add('mo');
+}
+function dongPop(){ $('#popNen').classList.remove('mo'); }
+
+/* ---------- Ô HẠN + ĐỒNG HỒ ĐẾM NGƯỢC ----------
+   Bản thật: mốc = GIỜ VÀO LỚP kế tiếp (lịch học myStudent), riêng bài
+   SP CHECK (check speaking) thì trừ đi 1 tiếng. */
+var GIAY = 1000, PHUT = 60 * GIAY, TIENG = 60 * PHUT;
+/* ⏱ MỐC BÁO GẤP = 6 TIẾNG trước giờ vào lớp (thầy nâng từ 3 lên 6 ngày
+   18/08). Từ mốc này: ô hạn đỏ · thẻ nháy đỏ · thanh chưa đủ chuyển đỏ ·
+   cột CHƯA XONG BÀI hiện ra. Đổi số này là đổi cả bốn thứ trên. */
+var GAP_TIENG = 6;
+
+/* ⭐ v1.9.0 — TÌNH HÌNH của thẻ mới tính từ HẠN THẬT chứ không còn nút xem thử:
+     xong hết  -> 'xong'   (mọi bài đủ cả lớp)
+     còn <6h   -> 'gap'    · còn 6-24h -> '24h'   · còn hơn 24h -> 'thuong'
+   Chưa đặt hạn (bài cũ chưa có ngày) thì coi như 'thuong' và ô hạn để trống. */
+function tinhHinhGio(b){
+  if ((b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= SI_SO; })) {
+    return 'xong';
+  }
+  if (b.hanMoc == null) return 'thuong';
+  var con = (b.hanMoc - Date.now()) / TIENG;
+  if (con <= GAP_TIENG) return 'gap';
+  if (con <= 24) return '24h';
+  return 'thuong';
+}
+
+function veHan(b, tt){
+  var xongHet = (tt === 'xong');
+  /* Mốc THẬT của bài. Bài chưa có hạn thì để đồng hồ trống, không bịa giờ. */
+  var moc = (b.hanMoc == null) ? 0 : b.hanMoc;
+  var lop = 't-han' + (tt === 'gap' ? ' gap-gio' : (xongHet ? ' da-xong' : ''));
+  return '<span class="han-boc"><span class="' + lop + '">' +
+      '<span class="han-dong">' + IC_GIO +
+        (b.han ? ('Hạn ' + b.han) : 'Chưa đặt hạn') + '</span>' +
+      '<span class="han-vach"></span>' +
+      '<span class="dhho" data-moc="' + moc + '" data-xong="' + (xongHet ? 1 : 0) + '">…</span>' +
+    '</span>' +
+    (xongHet ? '<span class="tich-to">✓</span>' : '') +
+  '</span>';
+}
+
+function chuoiGio(ms){
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60), g = s % 60;
+  return h + ':' + ('0' + p).slice(-2) + ':' + ('0' + g).slice(-2);
+}
+
+var HEN_DH = null;
+function nhipDongHo(){
+  document.querySelectorAll('.dhho[data-moc]').forEach(function(e){
+    if (e.getAttribute('data-xong') === '1') {
+      e.textContent = 'COMPLETE'; e.className = 'dhho xong'; return;
+    }
+    var moc = +e.getAttribute('data-moc');
+    /* moc = 0 nghĩa là bài CHƯA có hạn (app chưa gõ) — để gạch ngang, đừng
+       hiện "HẾT HẠN" làm học sinh tưởng đã trễ. */
+    if (!moc) { e.textContent = '—'; e.className = 'dhho'; return; }
+    var con = moc - Date.now();
+    if (con <= 0) { e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return; }
+    e.textContent = chuoiGio(con);
+    var tieng = con / TIENG;
+    e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
+  });
+}
+function chayDongHo(){
+  clearInterval(HEN_DH);
+  nhipDongHo();
+  HEN_DH = setInterval(nhipDongHo, 1000);
+}
+
+/* ---------- VẼ THẺ ----------
+   Thẻ MỚI ăn màu theo THỜI GIAN CÒN LẠI (thầy chốt 18/08):
+     xong hết → xanh lá + hào quang xanh lá (ưu tiên cao nhất)
+     > 24h    → xanh dương nhạt + hào quang xanh dương
+     6h–24h   → vàng nhạt + hào quang vàng
+     < 6h     → đỏ + hào quang đỏ nhấp nháy
+   Thẻ CŨ vẫn theo kết quả bài (đỏ nếu thiếu, xanh lá nếu đủ). */
+function veTheMoi(b, tt){
+  var gap = (tt === 'gap');
+  var bDung = (tt === 'xong') ? xongHetBai(b) : b;
+  var th = tinhHinhThe(bDung, tt === 'xong');
+
+  var lopThem, lopNen;
+  if (th.du)            { lopThem = ' xong-het';  lopNen = 'tt-la'; }
+  else if (gap)         { lopThem = ' gap';       lopNen = 'tt-do'; }
+  else if (tt === '24h'){ lopThem = ' gio-vang';  lopNen = 'tt-vang'; }
+  else                  { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
+
+  return '<button class="the moi' + lopThem + '"><span class="the-in ' + lopNen + '">' +
+    '<span class="the-body">' +
+      '<span class="t-chu">' +
+        '<span class="t-ten">' + b.ten + '<span class="ngay">NGÀY ' + b.giao + '</span></span>' +
+        (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
+      '</span>' +
+      veHan(b, tt) +
+    '</span>' + veDiem(bDung, gap, gap) +
+    '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
+  '</span></button>';
+}
+
+function xongHetBai(b){
+  var c = {}; for (var k in b) c[k] = b[k];
+  c.bai = (b.bai || []).map(function(x){ return { ten:x.ten, xong:SI_SO }; });
+  c.thieu = [];
+  return c;
+}
+
+function veTheCu(b){
+  var th = tinhHinhThe(b, true);
+  return '<button class="the cu' + (th.du ? ' xong-het' : '') + '">' +
+    '<span class="the-in ' + th.lop + '">' +
+    '<span class="the-body">' +
+      '<span class="t-chu">' +
+        '<span class="t-ten">' + b.ten +
+          '<span class="khoang">(' + b.giao + ' - ' + b.hanNgan + ')</span></span>' +
+        (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
+      '</span>' +
+    '</span>' + veDiem(b, true, false) +
+    '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
+  '</span></button>';
+}
+
+/* ---------- DỰNG CỘT BÀI ---------- */
+/* Đang đọc kho điểm AWord: thẻ chưa có số nên hiện dòng chờ thay cả cột. */
+var dangDocDiem = true;
+
+function dungCot(){
+  var tong = soThe();
+
+  if (dangDocDiem) {
+    $('#cotBai').innerHTML = '<div class="chua-co">' + IC_GIO + 'Đang đọc kết quả của lớp…</div>';
+    return;
+  }
+
+  var tren, cu, dsThe;
+  if (BAI_MOI) {
+    tren = veTheMoi(BAI_MOI, tinhHinhGio(BAI_MOI));
+    cu = BAI_CU.slice(0, tong - 1);
+    dsThe = [BAI_MOI].concat(cu);
+  } else {
+    /* Không có bài nào còn hạn: trên vạch là dòng nhắn, mọi bài xuống dưới. */
+    tren = BAI_CU.length
+      ? '<div class="chua-co">' + IC_GIO + 'Bài tập mới sẽ sớm được cập nhật</div>'
+      : '<div class="chua-co vui">🎈 No homework, No fun!</div>';
+    cu = BAI_CU.slice(0, tong);
+    dsThe = cu.slice();
+  }
+  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + cu.map(veTheCu).join('');
+
+  document.querySelectorAll('.the').forEach(function(t, i){
+    var b = dsThe[i] || {};
+    t.onclick = function(){
+      /* ⭐ SP CHECK — thẻ speaking đi đường riêng: pop-up rồi sang mySpeaking. */
+      if (b.loai === 'spcheck') { moPhongCham(b); return; }
+      /* ⭐ v1.9.0 — mở đúng TRANG BÀI TẬP của thẻ này.
+         `bai.html` lo cả ba dạng WORDS · DICTS · READING; SP SLIDE đi
+         `bai-sp.html`. Thẻ chỉ có bài viết tay thì không có trang nào để mở. */
+      if (!b.id || !b.trang) { baoToast('Bài này thầy giao trên giấy, không có trang trên web.'); return; }
+      location.href = b.trang + '?id=' + encodeURIComponent(b.id) + giuXemNhu();
+    };
+    /* Bấm BẤT KỲ ĐÂU trong vùng điểm (thanh tiến độ hoặc cột CHƯA XONG BÀI)
+       đều mở bảng xếp hạng — và mở được ở MỌI khung giờ, không riêng 3 tiếng
+       cuối. stopPropagation vì vùng này nằm trong thẻ (một <button>). */
+    var vung = t.querySelector('.the-diem');
+    if (!vung || !(b.bai || []).length) return;   // thẻ chỉ có bài viết tay thì thôi
+    vung.setAttribute('role', 'button');
+    vung.setAttribute('tabindex', '0');
+    vung.setAttribute('title', 'Xem bảng xếp hạng cả lớp');
+    vung.onclick = function(e){ e.stopPropagation(); moPopCaLop(b); };
+    vung.onkeydown = function(e){
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault(); e.stopPropagation(); moPopCaLop(b);
+      }
+    };
+  });
+  vuaMoiCotThieu();
+  chayDongHo();
+}
+
+/* ---------- ĐỔI BỐ CỤC CHO MƯỢT (v19) ----------
+   Khung chat nhảy từ bên cạnh xuống dưới (và ngược lại) là do @media đổi —
+   mà @media thì đổi PHỰT một cái, không có đường nào cho CSS chạy mượt.
+   Nên dùng lối FLIP: ĐO chỗ cũ → đổi bố cục → ĐO chỗ mới → ép ngược về chỗ
+   cũ bằng transform rồi thả cho nó tự trượt về chỗ mới.
+     · Thẻ còn giữ lại  → trượt từ chỗ cũ sang chỗ mới.
+     · Thẻ 3–4 bị bỏ    → bản sao co dần rồi CHUI VÀO thẻ cuối cùng còn lại.
+     · Thẻ mới hiện ra  → nở ra từ chỗ thẻ cuối (chiều ngược lại).
+     · Khung chat       → trượt kèm co giãn từ ô cũ sang ô mới.
+   ⛔ Phải CHỤP BẢN SAO thẻ sắp bỏ TRƯỚC khi dựng lại cột, vì dungCot() xoá
+   sạch innerHTML — sau đó không còn gì mà cho chạy nữa. */
+var THOI_CHUYEN = 420;
+function giamChuyenDong(){
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+/* Ép phần tử về chỗ cũ rồi thả ra cho nó tự trượt về chỗ thật của mình. */
+function truotTu(el, r0, hienDan){
+  var r1 = el.getBoundingClientRect();
+  if (!r1.width || !r1.height || !r0.width || !r0.height) return;
+  var dx = r0.left - r1.left, dy = r0.top - r1.top;
+  var sx = r0.width / r1.width, sy = r0.height / r1.height;
+  el.style.transition = 'none';
+  el.style.transformOrigin = 'top left';
+  el.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(' + sx + ',' + sy + ')';
+  if (hienDan) el.style.opacity = '0';
+  el.getBoundingClientRect();        // ⛔ bắt buộc: ép trình duyệt nhận chỗ cũ trước
+  el.style.transition = 'transform ' + THOI_CHUYEN + 'ms var(--em)' +
+                        (hienDan ? ', opacity ' + THOI_CHUYEN + 'ms var(--em)' : '');
+  el.style.transform = '';
+  if (hienDan) el.style.opacity = '';
+  setTimeout(function(){
+    el.style.transition = ''; el.style.transformOrigin = '';
+  }, THOI_CHUYEN + 60);
+}
+/* Bản sao của thẻ vừa bị bỏ: co lại thành một vệt mỏng rồi chui vào thẻ cuối. */
+function chuiVaoThe(ban, r0, dich){
+  ban.style.cssText += ';position:fixed; left:' + r0.left + 'px; top:' + r0.top +
+    'px; width:' + r0.width + 'px; height:' + r0.height + 'px; margin:0; z-index:20;' +
+    'pointer-events:none; transform-origin:top left;' +
+    'transition:transform ' + THOI_CHUYEN + 'ms var(--em), opacity ' + THOI_CHUYEN + 'ms var(--em)';
+  document.body.appendChild(ban);
+  var dx = dich.left - r0.left;
+  var dy = dich.top + dich.height / 2 - r0.top;
+  requestAnimationFrame(function(){
+    ban.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(.45,.06)';
+    ban.style.opacity = '0';
+  });
+  setTimeout(function(){
+    if (ban.parentNode) ban.parentNode.removeChild(ban);
+  }, THOI_CHUYEN + 80);
+}
+/* Chụp chỗ đứng hiện thời của khung chat và từng thẻ. */
+function chupCho(){
+  var chat = document.querySelector('.chat');
+  return {
+    chat: chat ? chat.getBoundingClientRect() : null,
+    the: [].map.call(document.querySelectorAll('.the'), function(t){
+      return t.getBoundingClientRect();
+    })
+  };
+}
+/* ⛔ BẪY LỚN: KHÔNG đo "chỗ cũ" ngay trong lúc bố cục vừa đổi được.
+   Sự kiện `change` của matchMedia (và cả `resize`) chỉ chạy SAU khi trình
+   duyệt đã áp @media và bày lại trang xong — đo lúc đó là đo chỗ MỚI, hiệu
+   số bằng 0, chạy mà không thấy gì (đã thử, chỉ mỗi khung chat nhúc nhích
+   vì phần đó do JS vẽ lại). Nên chỗ cũ phải là ảnh chụp ở LẦN RESIZE TRƯỚC,
+   tức lúc còn đang ở bố cục cũ. */
+function doiBoCucMuot(choCu, veLai){
+  var chat = document.querySelector('.chat');
+  if (!chat || !choCu || !choCu.chat || giamChuyenDong()) { veLai(); return; }
+
+  /* Bản sao của các thẻ hiện có, phòng khi lát nữa bị bớt đi. */
+  var ban = [].map.call(document.querySelectorAll('.the'), function(t){
+    return t.cloneNode(true);
+  });
+
+  veLai();
+
+  var moi = document.querySelectorAll('.the');
+  var cu = choCu.the;
+  var n = moi.length, i;
+  for (i = 0; i < n && i < cu.length; i++) truotTu(moi[i], cu[i], false);
+
+  if (cu.length > n && n > 0) {                     // rộng → hẹp: bớt thẻ
+    var dich = moi[n - 1].getBoundingClientRect();
+    for (i = n; i < cu.length && i < ban.length; i++) chuiVaoThe(ban[i], cu[i], dich);
+  }
+  if (n > cu.length && cu.length > 0) {             // hẹp → rộng: thêm thẻ
+    var nguon = cu[cu.length - 1];
+    for (i = cu.length; i < n; i++) truotTu(moi[i], nguon, true);
+  }
+  truotTu(chat, choCu.chat, false);
+}
+
+/* Đổi qua lại máy tính ↔ cửa sổ hẹp ↔ điện thoại thì dựng lại cột thẻ (số thẻ
+   và số tên khác nhau) rồi cho chạy mượt sang bố cục mới.
+   Theo dõi CẢ HAI ngưỡng: 1040 đổi số thẻ và chỗ đứng của khung chat, 620 đổi
+   cỡ chữ nên số tên vừa cột cũng khác.
+   ⛔ Nghe `resize` chứ không nghe `change` của matchMedia: cần giữ ảnh chụp
+   chỗ đứng ở lần resize TRƯỚC (lúc còn bố cục cũ) thì mới có cái để chạy từ
+   đó về chỗ mới — xem chú thích ở doiBoCucMuot. */
+var hepTruoc = chatODuoi(), dtTruoc = laDienThoai();
+var choTruoc = null, dangDoiBoCuc = false;
+
+window.addEventListener('resize', function(){
+  doCaoDau(); doSanChat();
+  var hep = chatODuoi(), dt = laDienThoai();
+  if (hep !== hepTruoc || dt !== dtTruoc) {
+    hepTruoc = hep; dtTruoc = dt;
+    dangDoiBoCuc = true;
+    doiBoCucMuot(choTruoc, function(){ dungCot(); });
+    setTimeout(function(){
+      dangDoiBoCuc = false;
+      choTruoc = chupCho();          // đo lại khi đã đứng yên hẳn
+    }, THOI_CHUYEN + 80);
+    return;
+  }
+  /* Đang chạy dở thì đừng chụp: lúc ấy phần tử còn đang bị transform, chụp
+     vào là lần sau chạy từ chỗ sai. */
+  if (!dangDoiBoCuc) choTruoc = chupCho();
+});
+
+/* ---------- ĐO THANH ĐẦU + BÀN PHÍM ẢO (v18) ----------
+   ⛔ Đừng gõ tay chiều cao thanh đầu vào calc() nữa: v16 gõ 62 trong khi thật
+   là 65, cả trang dôi 3px và phải cuộn. Đo rồi đặt vào biến là hết cả lớp lỗi
+   đó, kể cả sau này có đổi cỡ ảnh đại diện hay cỡ chữ. */
+function doCaoDau(){
+  var t = document.querySelector('.top');
+  if (t) document.documentElement.style.setProperty('--cao-dau', t.offsetHeight + 'px');
+}
+/* Sàn của khung chat = tiêu đề + chân khung (ô nhập), cộng 2px viền. Ô nhập
+   cao lên khi gõ tin dài nên đo lại mỗi lần ô nhập nới cao. */
+function doSanChat(){
+  var d = document.querySelector('.chat-head'), c = document.querySelector('.chat-foot');
+  if (!d || !c) return;
+  document.documentElement.style.setProperty('--san-chat',
+    (d.offsetHeight + c.offsetHeight + 2) + 'px');
+}
+
+/* Bàn phím ảo: iPhone/iPad KHÔNG đẩy trang lên, nó phủ đè ⇒ ô nhập bị khuất.
+   visualViewport cho biết phần màn CÒN NHÌN THẤY; lấy hiệu với chiều cao
+   trang là ra phần bị che, trừ vào chiều cao .main thì ô nhập tự nổi lên trên
+   bàn phím. Android (Chrome) đã tự thu trang nhờ interactive-widget ở thẻ
+   meta ⇒ hiệu bằng 0, công thức này tự động không làm gì thêm — không sợ
+   trừ hai lần. */
+var manNhin = window.visualViewport;
+function doBanPhim(){
+  if (!manNhin) return;
+  var che = window.innerHeight - manNhin.height - manNhin.offsetTop;
+  /* Dưới 90px là thanh địa chỉ co giãn chứ không phải bàn phím — bỏ qua,
+     kẻo trang giật lên giật xuống lúc các em cuộn. */
+  if (!(che > 90)) che = 0;
+  document.documentElement.style.setProperty('--banphim', Math.round(che) + 'px');
+  document.documentElement.classList.toggle('go-chat', che > 0);
+}
+if (manNhin) {
+  manNhin.addEventListener('resize', doBanPhim);
+  manNhin.addEventListener('scroll', doBanPhim);
+}
+/* Bấm vào ô nhập thì kéo tin mới nhất lên: bàn phím vừa hiện, khung chat vừa
+   thu lại, phải đợi trình duyệt dựng xong mới cuộn cho đúng. */
+$('#oChat').addEventListener('focus', function(){
+  setTimeout(function(){
+    doBanPhim();
+    khung.scrollTop = khung.scrollHeight;
+    $('#oChat').scrollIntoView({ block:'nearest' });
+  }, 280);
+});
+$('#oChat').addEventListener('blur', function(){
+  setTimeout(doBanPhim, 120);
+});
+
+/* ---------- KHỞI ĐỘNG (v1.9.0) ----------
+   Thứ tự bắt buộc:
+     1. đọc lop.json + bai.json  -> biết em là ai, lớp nào, có bài gì
+     2. điền thanh đầu + sidebar  -> chữ đã đúng rồi mới đo chiều cao
+     3. vẽ cột thẻ ở trạng thái CHỜ, rồi đọc kho điểm AWord xong thì vẽ lại
+   ⛔ Đo (`doCaoDau`/`doSanChat`) phải chạy SAU khi tên em đã điền: tên dài
+   ngắn khác nhau làm thanh đầu cao khác nhau, đo trước là lệch cả cột. */
+function giuXemNhu(){
+  return (EM && EM.xemNhu) ? ('&nhu=' + encodeURIComponent(MA_HS)) : '';
+}
+
+/* Đặt CHỮ vào một ô đang có sẵn phần tử con (avatar có huy hiệu sao bên trong,
+   tiêu đề chat có icon) — chỉ thay phần chữ, giữ nguyên mọi thẻ con. */
+function datChu(el, chu){
+  if (!el) return;
+  Array.prototype.slice.call(el.childNodes).forEach(function(n){
+    if (n.nodeType === 3) el.removeChild(n);
+  });
+  el.insertBefore(document.createTextNode(chu), el.firstChild);
+}
+
+function dienDanhTinh(){
+  /* Chữ tắt trên avatar: hai chữ cái đầu của hai từ CUỐI trong tên
+     (NGUYỄN BẢO AN -> BA), đúng lối bản mẫu. */
+  var tu = TOI.trim().split(/\s+/).filter(Boolean);
+  var chuTat = tu.slice(-2).map(function(t){ return t[0]; }).join('').toUpperCase();
+
+  datChu($('#nutMenu'), chuTat);
+  var avSide = document.querySelector('.side-head .av');
+  if (avSide) avSide.textContent = chuTat;
+
+  var tenTren = document.querySelector('.who .ten');
+  if (tenTren) tenTren.textContent = TOI;
+  var tenSide = document.querySelector('.side-head .ten');
+  if (tenSide) tenSide.textContent = TOI;
+
+  var lopTren = document.querySelector('.who .lop');
+  if (lopTren) lopTren.textContent = 'Lớp ' + LOP + ' · Thầy Andrew';
+  var lopSide = document.querySelector('.side-head .phu2');
+  if (lopSide) lopSide.textContent = 'Lớp ' + LOP;
+
+  var h3 = document.querySelector('.pop-head h3');
+  if (h3) h3.textContent = 'LỚP ' + LOP_HIEN;
+  var ctTen = document.querySelector('.chat-head .ct-ten');
+  if (ctTen) ctTen.textContent = 'CUỘC TRÒ CHUYỆN CỦA LỚP ' + LOP;
+  var ver = $('#verFoot');
+  if (ver) ver.textContent = 'v' + (A.CFG.PHIEN_BAN || '?');
+
+  document.title = 'Lớp ' + LOP_HIEN + ' · ' + (A.CFG.TEN_SITE || 'Lesson in Andrew Classes');
+}
+
+A.napDuLieu().then(function(dl){
+  DL = dl;
+  EM = A.batBuocDangNhap(dl);
+  if (!EM) return;                       /* chưa đăng nhập -> đã bị đá về index.html */
+
+  /* ⛔ HAI TÊN LỚP, đừng lẫn:
+       `LOP_DL`  = mã trong lop.json/bai.json — đã bỏ gạch: "B2B"
+       `LOP`     = tên gốc bên myStudent, có gạch: "B2-B" — chữ HIỆN cho em xem
+     Tra dữ liệu thì dùng LOP_DL, in ra màn hình thì dùng LOP. */
+  TOI = EM.ten; MA_HS = EM.ma;
+  LOP_DL = EM.lop;
+  LOP_HIEN = EM.lop;
+  var l = A.lopTheoMa(dl, LOP_DL);
+  LOP = (l && l.tenGoc) || EM.lop;
+  CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
+  SI_SO = CA_LOP.length;
+  TAT = bangVietTat(CA_LOP);
+
+  dienDanhTinh();
+  doCaoDau(); doSanChat();   /* đo TRƯỚC khi vẽ thẻ, kẻo lần vẽ đầu tính nhầm chỗ */
+  dungCot();                 /* lần này chỉ hiện dòng "đang đọc kết quả" */
+
+  /* Bài của lớp: app đẩy bài mới lên ĐẦU mảng nên thứ tự này đã đúng. */
+  var cacThe = A.baiCuaLop(dl, LOP_DL).map(theTuBai);
+  BAI_SP = null;
+  for (var i = 0; i < cacThe.length; i++) if (cacThe[i].loai === 'spcheck') { BAI_SP = cacThe[i]; break; }
+
+  return donDiem(cacThe).then(function(){
+    /* Thẻ TRÊN VẠCH = bài mới nhất mà hạn CHƯA qua. Hết hạn cả rồi thì trên
+       vạch chỉ còn dòng nhắn, mọi bài xuống dưới (đúng ba cảnh của bản mẫu). */
+    var moi = null;
+    for (var i = 0; i < cacThe.length; i++) {
+      if (cacThe[i].hanMoc == null || cacThe[i].hanMoc > Date.now()) { moi = cacThe[i]; break; }
+    }
+    BAI_MOI = moi;
+    BAI_CU = cacThe.filter(function(t){ return t !== moi; });
+    dangDocDiem = false;
+    dungCot();
+    /* Ngầm hỏi bộ não xem buổi speaking này ai đã nộp — KHÔNG chặn gì, thẻ đã hiện rồi. */
+    capNhatTheSpeaking();
+    choTruoc = chupCho();    /* ảnh chụp đầu, để lần đổi bố cục đầu có chỗ chạy từ đó */
+  });
+})['catch'](function(e){
+  dangDocDiem = false;
+  $('#cotBai').innerHTML = '<div class="chua-co">' + IC_GIO +
+    'Chưa đọc được dữ liệu lớp. Em thử tải lại trang nhé.</div>';
+});
+
+/* ---------- SIDEBAR ---------- */
+var MUC_MENU = [
+  { nh:'Thông tin của tôi', mo:'Tên, lớp, ảnh đại diện',
+    ic:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>' },
+  { nh:'Thư viện kỷ niệm', mo:'Ảnh và khoảnh khắc của lớp',
+    ic:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 15.5 15.5 11l-7 8"/></svg>' },
+  { nh:'Công cụ', mo:'Máy tính · Lịch · To-do · Từ điển',
+    ic:'<svg viewBox="0 0 24 24"><path d="M14.5 6.5a4.8 4.8 0 0 0-6.4 6L3 17.6 6.4 21l5.1-5.1a4.8 4.8 0 0 0 6-6.4l-3 3-2.5-2.5z"/></svg>' },
+  { nh:'Liên hệ với Thầy Andrew', mo:'Zalo · 0359.769.765',
+    ic:'<svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h2L10 8l-1.8 1.8a13 13 0 0 0 6 6L16 14l4 1.5v2A2.5 2.5 0 0 1 17.5 20 13.5 13.5 0 0 1 4 6.5z"/></svg>' }
+];
+var MUC_VI = [
+  { nh:'Thông tin ví', mo:'Lịch sử cộng / trừ sao',
+    ic:'<svg viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.9L12 16.9l-5.2 2.8 1-5.9-4.3-4.1 5.9-.9z"/></svg>' },
+  { nh:'Đăng ký đổi quà', mo:'Dùng sao đổi quà của Thầy',
+    ic:'<svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4.5"/><path d="M5 12.5h14V21H5zM12 8v13M12 8s-1-4.5-4-4.5S5.5 8 8.5 8M12 8s1-4.5 4-4.5S18.5 8 15.5 8"/></svg>' }
+];
+/* ⭐ v1.9.0 — thêm mục ĐỔI BẠN (đăng xuất). Trang lớp nay là một trang riêng
+   nên phải có đường quay về màn đăng nhập; mục nào có `lam` thì chạy `lam`,
+   không thì vẫn báo "đang xây dựng" như bản mẫu. */
+var MUC_RA = [
+  { nh:'Đổi bạn khác', mo:'Thoát ra để bạn khác đăng nhập', lam: function(){
+      A.thoat();
+      location.href = 'index.html';
+    },
+    ic:'<svg viewBox="0 0 24 24"><path d="M15 4.5h3.5A1.5 1.5 0 0 1 20 6v12a1.5 1.5 0 0 1-1.5 1.5H15M10 8l-4 4 4 4M6 12h10"/></svg>' }
+];
+
+function veDsMenu(hop, ds){
+  hop.innerHTML = ds.map(function(m){
+    return '<button><span class="ic">' + m.ic + '</span>' +
+      '<span><span class="nh">' + m.nh + '</span><br><span class="mo-ta">' + m.mo + '</span></span></button>';
+  }).join('');
+  hop.querySelectorAll('button').forEach(function(b, i){
+    var m = ds[i];
+    b.onclick = m && m.lam ? m.lam : function(){ baoToast(CHUA_XONG); };
+  });
+}
+/* ⭐ ĐỢT 4 — một menu duy nhất: 4 mục cũ + 2 mục của ví sao. */
+veDsMenu($('#dsMenu'), MUC_MENU.concat(MUC_VI).concat(MUC_RA));
+
+function dongHet(){ document.body.classList.remove('mo-menu'); }
+$('#nutMenu').onclick = function(){ document.body.classList.add('mo-menu'); };
+$('#phuMo').onclick = dongHet;
+document.querySelectorAll('[data-dong]').forEach(function(b){ b.onclick = dongHet; });
+
+/* Pop-up cả lớp: bấm nền (chỉ đúng phần nền, không phải khung) hoặc × để đóng. */
+$('#popDong').onclick = dongPop;
+$('#popNen').onclick = function(e){ if (e.target === this) dongPop(); };
+
+document.addEventListener('keydown', function(e){
+  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); }
+});
+
+/* ═══════════════ SP CHECK — MỞ THẲNG PHÒNG CHẤM mySpeaking ═══════════════
+   Thầy chốt 20/08: bấm thẻ → pop-up loading → mở TAB MỚI đã vào sẵn bài, bỏ cả
+   ba màn (mã lớp · chọn team+tên · xác nhận). Team KHÔNG lấy từ myLesson mà để
+   mySpeaking lo — bên đó giữ `teams[]` và `pairs[]` (đội nào chấm đội nào) của
+   từng buổi.
+
+   ⛔ HAI BẪY ĐÃ ĐO THẬT, đừng bỏ:
+   1. **Bộ não chậm 8-40 giây** (đo bằng curl: 40,1s · 10,7s · 8,6s) ⇒ phải có
+      pop-up, có nút Huỷ, và tự bỏ cuộc sau 45s.
+   2. **Tên hai bên LỆCH**: myLesson có `CHẤN PHONG` (chuẩn myStudent, có dấu),
+      mySpeaking lớp B2B đang ghi `PHONG` (tên ngắn trong DS của buổi). So thẳng
+      là trượt ⇒ dùng `timEmTrongBuoi()` bên dưới. Đây đúng là bẫy bên mySpeaking
+      đã ghi trong CLAUDE.md của họ ("tra không ra ⇒ mất sạch dữ liệu đã nộp").
+   ⭐ SỬA 20/08 (thầy chỉ ngay sau khi xem): **KHÔNG tự nhảy tab nữa.** Pop-up
+   tải xong, báo xong, rồi học sinh **bấm nút "Mở phòng chấm"** mới sang tab mới.
+   Nhờ vậy cú `window.open` luôn nằm trong một cú bấm thật ⇒ không bao giờ bị
+   trình duyệt chặn, và cũng bỏ luôn được nhánh dự phòng của bản trước. */
+
+/* Bỏ dấu + viết hoa + gom khoảng trắng — để so tên hai hệ. */
+function khongDau(s){
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D')
+    .replace(/\s+/g, ' ').trim().toUpperCase();
+}
+/* `A` có phải là ĐUÔI THEO TỪ của `B` không: PHONG ⊂ CHAN PHONG (đúng),
+   nhưng ONG ⊄ CHAN PHONG (sai — cắt giữa từ). */
+function laDuoiTu(a, b){
+  var ta = khongDau(a).split(' '), tb = khongDau(b).split(' ');
+  if (!ta.length || ta.length >= tb.length) return false;
+  for (var i = 0; i < ta.length; i++) {
+    if (ta[ta.length - 1 - i] !== tb[tb.length - 1 - i]) return false;
+  }
+  return true;
+}
+
+/* Tìm em trong các đội của buổi. Trả:
+     {team, ten}                — tìm thấy chắc chắn
+     {loi:'khong-thay'}         — không có tên nào hợp
+     {loi:'mo-ho', ds:[…]}      — tên ngắn khớp NHIỀU đội (vd "MINH" hợp cả
+                                  "DUY MINH" lẫn "BINH MINH") ⇒ KHÔNG đoán bừa. */
+function timEmTrongBuoi(ten, teams){
+  var chuan = khongDau(ten), thay = [];
+  (teams || []).forEach(function(t){
+    (t.members || []).forEach(function(m){
+      if (khongDau(m) === chuan) thay.push({ team:t.team, ten:m, khop:'dung' });
+    });
+  });
+  if (thay.length === 1) return thay[0];
+  if (thay.length > 1)   return { loi:'mo-ho', ds:thay };
+
+  (teams || []).forEach(function(t){
+    (t.members || []).forEach(function(m){
+      if (laDuoiTu(m, ten) || laDuoiTu(ten, m)) thay.push({ team:t.team, ten:m, khop:'duoi' });
+    });
+  });
+  if (thay.length === 1) return thay[0];
+  if (thay.length > 1)   return { loi:'mo-ho', ds:thay };
+  return { loi:'khong-thay' };
+}
+
+/* Gói dữ liệu buổi cho mySpeaking — đi theo đường link vì hai trang KHÁC TÊN
+   MIỀN nên không dùng chung bộ nhớ trình duyệt được. */
+function goiB64(o){
+  var chuoi = unescape(encodeURIComponent(JSON.stringify(o)));
+  return btoa(chuoi).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+var spHuy = false, spDongHo = null, spDuong = '';
+
+function spHien(tieu, phu, kieu, nut){
+  var hop = $('#spHop');
+  hop.classList.remove('xong', 'loi');
+  if (kieu) hop.classList.add(kieu);
+  $('#spTieu').textContent = tieu;
+  $('#spPhu').innerHTML = phu;
+  $('#spNut').innerHTML = '';
+  (nut || []).forEach(function(n){
+    var b = document.createElement('button');
+    b.textContent = n.chu;
+    if (n.chinh) b.className = 'chinh';
+    b.onclick = n.lam;
+    $('#spNut').appendChild(b);
+  });
+  $('#spNen').classList.add('mo');
+}
+function spDong(){
+  $('#spNen').classList.remove('mo');
+  if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
+}
+function spThoi(){
+  spHuy = true;
+  spDong();
+}
+
+function moPhongCham(b){
+  spHuy = false;
+  spDuong = '';
+  spHien('Đang lấy dữ liệu chấm speaking',
+    'Việc này có thể cần chờ một chút.',
+    '', [{ chu:'Huỷ', lam:spThoi }]);
+
+  spDongHo = setTimeout(function(){
+    if (spHuy) return;
+    spHuy = true;
+    spHien('Mạng đang chậm',
+      'Chưa mở được phòng chấm. Em thử lại giúp thầy nhé.', 'loi',
+      [{ chu:'Đóng', lam:spDong }, { chu:'Thử lại', chinh:true, lam:function(){ spDong(); moPhongCham(b); } }]);
+  }, 45000);
+
+  fetch(SP_NAO + '?config=1&_=' + Date.now(), { cache:'no-store' })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      if (spHuy) return;
+      var lop = (j.classes || []).filter(function(c){
+        return khongDau(c.classCode) === khongDau(lopMa()); })[0];
+      if (!lop) return spLoi(b, 'Lớp mình chưa có buổi speaking nào đang mở.');
+
+      var em = timEmTrongBuoi(TOI, lop.teams);
+      if (em.loi === 'khong-thay')
+        return spLoi(b, 'Em chưa có trong đội nào của buổi này. Em hỏi thầy Andrew nhé.');
+      if (em.loi === 'mo-ho')
+        return spLoi(b, 'Tên của em trùng với ' + em.ds.length +
+          ' bạn trong buổi này nên thầy chưa mở được. Em báo thầy Andrew nhé.');
+
+      var cap = (lop.pairs || []).filter(function(p){ return Number(p.checker) === Number(em.team); })[0];
+      if (!cap) return spLoi(b, 'Đội ' + em.team + ' chưa được xếp chấm đội nào.');
+      var doiCham = (lop.teams || []).filter(function(t){ return Number(t.team) === Number(cap.checked); })[0];
+      if (!doiCham) return spLoi(b, 'Chưa tìm thấy đội mà em phải chấm.');
+
+      var goi = goiB64({
+        v:1, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
+        topic: lop.topic || lop.lesson, ten: em.ten, tenDayDu: TOI,
+        team: em.team, cham: cap.checked,
+        video: doiCham.video || '', members: doiCham.members || []
+      });
+      var duong = SP_WEB + '?goi=' + goi;
+
+      if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
+      spDuong = duong;
+      /* ⭐ Thầy chốt: KHÔNG tự nhảy tab — em bấm nút này mới mở. */
+      spHien('Đã lấy xong dữ liệu', 'Em chấm <b>TEAM ' + cap.checked + '</b>.', 'xong',
+        [{ chu:'Đóng', lam:spDong },
+         { chu:'Mở phòng chấm', chinh:true, lam:function(){
+             window.open(spDuong, '_blank'); spDong(); } }]);
+    })
+    .catch(function(e){
+      if (window.console) console.warn('speaking:', e);
+      spLoi(b, 'Chưa gọi được thầy Andrew. Em kiểm tra mạng rồi thử lại nhé.');
+    });
+}
+
+function spLoi(b, chu){
+  if (spHuy) return;
+  spHuy = true;
+  if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
+  spHien('Chưa vào được', chu, 'loi',
+    [{ chu:'Đóng', lam:spDong },
+     { chu:'Thử lại', chinh:true, lam:function(){ spDong(); moPhongCham(b); } }]);
+}
+
+/* ═══ ĐỔ TRẠNG THÁI NỘP BÀI VÀO THẺ SPEAKING (thầy chốt: "đẩy sẵn + đổ sau") ═══
+   Thẻ hiện NGAY bằng số app myLesson đẩy sẵn; xong xuôi mới ngầm hỏi bộ não
+   "buổi này ai đã nộp" rồi vẽ lại — em không phải chờ 8-40 giây lần nào.
+   ⛔ Bộ não chưa có cửa `?danop=1` (chưa deploy) thì nó trả `{ok:true,app:…}`
+   KHÔNG có mảng `daNop` ⇒ hàm này lặng lẽ giữ nguyên số đẩy sẵn. Đúng thiết kế:
+   thêm cửa lúc nào thì thẻ tự sống lúc ấy, không phải sửa lại trang. */
+
+/* Ngược chiều `timEmTrongBuoi`: từ tên TRONG BUỔI ("PHONG") tìm về tên đầy đủ
+   của lớp ("CHẤN PHONG"). Khớp nhiều thì trả rỗng — thà thiếu còn hơn gán nhầm. */
+function timTenLop(tenBuoi, ds){
+  var chuan = khongDau(tenBuoi);
+  var thay = ds.filter(function(t){ return khongDau(t) === chuan; });
+  if (thay.length !== 1) {
+    if (thay.length > 1) return '';
+    thay = ds.filter(function(t){ return laDuoiTu(tenBuoi, t) || laDuoiTu(t, tenBuoi); });
+  }
+  return thay.length === 1 ? thay[0] : '';
+}
+
+function capNhatTheSpeaking(){
+  if (!SP_NAO || !BAI_SP || !BAI_SP.ma) return;
+  var ctl = (window.AbortController) ? new AbortController() : null;
+  var het = setTimeout(function(){ if (ctl) ctl.abort(); }, 20000);
+  fetch(SP_NAO + '?danop=1&classCode=' + encodeURIComponent(lopMa()) +
+        '&lesson=' + encodeURIComponent(BAI_SP.ma) + '&_=' + Date.now(),
+        { cache:'no-store', signal: ctl ? ctl.signal : undefined })
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      clearTimeout(het);
+      if (!j || !j.ok || !Array.isArray(j.daNop)) return;   /* cửa chưa có ⇒ giữ số đẩy sẵn */
+      var xong = {}, khongGhep = [];
+      j.daNop.forEach(function(x){
+        var ten = timTenLop(x.ten, CA_LOP);
+        if (ten) xong[ten] = true; else khongGhep.push(x.ten);
+      });
+      /* Tên nộp bài không ghép được với em nào trong lớp ⇒ thẻ ĐẾM THIẾU. Ghi ra
+         console để còn biết đường sửa danh sách buổi bên mySpeaking.
+         (Trong bản mẫu, `CHẤN PHONG` cố ý không nằm trong `CA_LOP` nên `PHONG`
+         luôn rơi vào đây — bản thật danh sách lớp có đủ cả em.) */
+      if (khongGhep.length && window.console)
+        console.warn('speaking: khong ghep duoc ten ->', khongGhep.join(', '));
+      var chua = CA_LOP.filter(function(t){ return !xong[t]; });
+      BAI_SP.bai[0].xong = CA_LOP.length - chua.length;
+      BAI_SP.thieu = chua.map(function(t){ return { ten:t, so:1 }; });
+      dungCot();
+    })
+    .catch(function(){ clearTimeout(het); });
+}
+
+/* ---------- CHAT ----------
+   ⚠️ v1.9.0 — CHƯA CÓ KHO TIN NHẮN THẬT. Bản mẫu chạy bằng 10 tin gõ sẵn; đưa
+   nguyên si lên mạng là học sinh đọc phải hội thoại bịa mang tên các bạn thật,
+   nên khối tin giả đã BỎ HẲN. Khung chat giữ nguyên chỗ (thầy đã chốt bố cục
+   này) nhưng ở trạng thái KHOÁ: một dòng nhắn + ô nhập không gõ được.
+   Đợt sau nối kho tin thật thì chỉ việc đổ mảng tin vào `veTin()` như cũ. */
+var TIN_MAU = [];
+
+function veAvChat(ten, i){ return veAv(ten, i); }
+
+function veTin(t, i){
+  var toi = (t.ten === TOI);
+  var bong = '<div class="bong">' + String(t.chu || '').replace(/</g, '&lt;') + '</div>';
+  if (toi) {
+    return '<div class="msg toi" data-i="' + i + '">' + veAv(t.ten, i) +
+      '<div class="msg-c">' +
+        '<div class="hang-bong">' + bong + '</div>' +
+        '<div class="gio-duoi">' + t.luc + '</div>' +
+      '</div></div>';
+  }
+  return '<div class="msg" data-i="' + i + '">' + veAv(t.ten, i) +
+    '<div class="msg-c">' +
+      '<div class="msg-top"><span class="n">' + t.ten + '</span>' +
+      '<span class="t">' + t.luc + '</span></div>' +
+      '<div class="hang-bong">' + bong + '</div>' +
+    '</div></div>';
+}
+
+var khung = $('#khungChat');
+khung.innerHTML = '<div class="chat-cho">' +
+  'Thầy Andrew đang xây dựng phần trò chuyện của lớp. Sắp có rồi nhé!</div>';
+(function khoaChat(){
+  var o = $('#oChat');
+  o.disabled = true;
+  o.placeholder = 'Sắp có — thầy đang xây dựng phần này';
+  var g = $('#nutGui');
+  if (g) g.disabled = true;
+})();
+
+/* Sáu cảm xúc thả được — giữ lại cho đợt nối kho tin thật. */
+var CAM_XUC = [
+  { ma:'tim',  ky:'❤️' }, { ma:'haha', ky:'😆' }, { ma:'khoc', ky:'😢' },
+  { ma:'gaCon', ky:'🐥' }, { ma:'ngac', ky:'😮' }, { ma:'like', ky:'👍' }
+];
+function kyHieuCx(ma){
+  for (var i = 0; i < CAM_XUC.length; i++) if (CAM_XUC[i].ma === ma) return CAM_XUC[i].ky;
+  return '';
+}
+
+/* ---------- THẢ / XEM CẢM XÚC (v17) ----------
+   Tin CHƯA có cảm xúc nào → chạm nút ♡ là thả tim.
+   Tin ĐÃ có cảm xúc      → chạm vào cụm là mở pop-up "ai thả gì" (thầy chốt).
+   GIỮ 0,42s hoặc chuột phải → bảng chọn 6 cảm xúc + ✕ gỡ cảm xúc của mình. */
+var GIU_MS = 420;
+/* ⛔ Nhớ CHỈ SỐ TIN chứ đừng nhớ phần tử nút: mỗi lần đổi cảm xúc là cụm
+   được vẽ lại, phần tử cũ thành rác — giữ nó là trỏ vào chỗ đã mất. */
+var cxTin = null;
+var henGiu = null, daGiu = false;
+
+$('#cxMenu').innerHTML =
+  CAM_XUC.map(function(c){
+    return '<button type="button" data-cx="' + c.ma + '" title="' + c.ma + '">' + c.ky + '</button>';
+  }).join('') +
+  '<button type="button" class="bo" data-cx="" title="Bỏ cảm xúc">✕</button>';
+
+function dsCx(i){ return TIN_MAU[i].cx || (TIN_MAU[i].cx = []); }
+function cxCuaToi(i){
+  var ds = dsCx(i);
+  for (var k = 0; k < ds.length; k++) if (ds[k].ten === TOI) return ds[k].ma;
+  return '';
+}
+function chiSoTin(nut){
+  var m = nut.closest('.msg');
+  return m ? parseInt(m.getAttribute('data-i'), 10) : null;
+}
+/* Cụm hiện ra: TIM luôn đứng đầu (♡ mờ nếu chưa ai thả tim), rồi tới các
+   cảm xúc khác mà lớp đã thả — mỗi loại MỘT icon, xếp theo thứ tự trong
+   CAM_XUC để lần nào cũng giống nhau. */
+function veCumCx(i){
+  var ds = dsCx(i);
+  var dem = {};
+  ds.forEach(function(e){ dem[e.ma] = (dem[e.ma] || 0) + 1; });
+
+  /* Tim luôn đứng đầu: có ai thả thì đỏ, chưa ai thả thì VẪN QUẢ TIM ẤY
+     nhưng rút hết màu (class .mo) — cùng hình, cùng cỡ, chỉ khác màu. */
+  var o = '<span class="ky' + (dem['tim'] ? '' : ' mo') + '">' + kyHieuCx('tim') + '</span>';
+
+  /* Hiện ĐỦ mọi loại lớp đã thả, xếp theo thứ tự trong CAM_XUC cho ổn định. */
+  var loai = CAM_XUC.filter(function(c){ return c.ma !== 'tim' && dem[c.ma]; });
+  o += loai.map(function(c){ return '<span class="ky">' + c.ky + '</span>'; }).join('');
+
+  /* Có loại nào từ 2 lượt trở lên (ví dụ 5 bạn cùng thả tim) thì ghi thêm
+     TỔNG số lượt của cả tin. Chỉ một icon một lượt thì khỏi, cho đỡ rối. */
+  var trung = CAM_XUC.some(function(c){ return dem[c.ma] > 1; });
+  if (trung) o += '<span class="dem">' + ds.length + '</span>';
+
+  var soO = 1 + loai.length + (trung ? 1 : 0);
+  var lop = 'nut-cx' + (ds.length ? ' co' : '') +
+            (cxCuaToi(i) === 'tim' ? ' tim-toi' : '') +
+            (soO > 4 ? ' nhieu' : '');
+  var nhan = ds.length ? 'Xem ai đã thả cảm xúc' : 'Thả tim';
+  return '<button class="' + lop + '" type="button" title="' + nhan + '" aria-label="' + nhan + '">' +
+    o + '</button>';
+}
+function veLaiCum(i){
+  var msg = khung.querySelector('.msg[data-i="' + i + '"]');
+  var cu = msg && msg.querySelector('.nut-cx');
+  if (cu) cu.outerHTML = veCumCx(i);
+}
+/* Đặt cảm xúc CỦA RIÊNG EM (ma rỗng = gỡ); cảm xúc của bạn khác giữ nguyên. */
+function datCxToi(i, ma){
+  TIN_MAU[i].cx = dsCx(i).filter(function(e){ return e.ten !== TOI; });
+  if (ma) TIN_MAU[i].cx.push({ ten:TOI, ma:ma });
+  veLaiCum(i);
+}
+
+/* Pop-up "AI THẢ CẢM XÚC GÌ" (v19): khung nhỏ dán ngay dưới cụm cảm xúc của
+   đúng tin đó, không làm mờ nền — chỉ icon + tên, xếp theo thứ tự CAM_XUC. */
+function moPopCx(nut, i){
+  var ds = dsCx(i);
+  if (!ds.length) return;
+  var xep = [];
+  CAM_XUC.forEach(function(c){
+    ds.forEach(function(e){ if (e.ma === c.ma) xep.push({ ten:e.ten, ky:c.ky }); });
+  });
+  var o = $('#cxAi');
+  o.innerHTML = xep.map(function(e){
+    return '<div class="d' + (e.ten === TOI ? ' toi' : '') + '">' +
+      '<span class="k">' + e.ky + '</span>' +
+      '<span class="t">' + (e.ten === TOI ? 'Em' : e.ten) + '</span>' +
+    '</div>';
+  }).join('');
+  o.classList.add('mo');           // hiện trước để đo được kích thước thật
+  datChoCxAi(o, nut);
+}
+/* Đặt ngay DƯỚI cụm cảm xúc; sát đáy màn thì lật lên trên. */
+function datChoCxAi(o, nut){
+  var r = nut.getBoundingClientRect(), h = o.getBoundingClientRect();
+  var rong = document.documentElement.clientWidth;
+  var x = r.left + r.width / 2 - h.width / 2;
+  x = Math.max(8, Math.min(x, rong - h.width - 8));
+  var y = r.bottom + 6;
+  if (y + h.height > window.innerHeight - 8) y = r.top - h.height - 6;
+  o.style.left = Math.round(x) + 'px';
+  o.style.top  = Math.round(y) + 'px';
+}
+function dongPopCx(){ $('#cxAi').classList.remove('mo'); }
+
+function moBangCx(nut){
+  var m = $('#cxMenu');
+  cxTin = chiSoTin(nut);
+  m.classList.add('mo');                       // hiện trước để đo được kích thước
+  var r = nut.getBoundingClientRect(), mr = m.getBoundingClientRect();
+  var x = r.left + r.width / 2 - mr.width / 2;
+  x = Math.max(8, Math.min(x, document.documentElement.clientWidth - mr.width - 8));
+  var y = r.top - mr.height - 8;
+  if (y < 8) y = r.bottom + 8;                 // gần mép trên thì lật xuống dưới
+  m.style.left = Math.round(x) + 'px';
+  m.style.top  = Math.round(y) + 'px';
+}
+function dongBangCx(){ $('#cxMenu').classList.remove('mo'); cxTin = null; }
+
+$('#cxMenu').onclick = function(e){
+  var b = e.target.closest('button');
+  if (!b || cxTin === null) return;          // tin số 0 cũng hợp lệ nên so với null
+  datCxToi(cxTin, b.getAttribute('data-cx'));
+  dongBangCx();
+};
+
+khung.addEventListener('pointerdown', function(e){
+  var nut = e.target.closest('.nut-cx');
+  if (!nut) return;
+  daGiu = false;
+  clearTimeout(henGiu);
+  henGiu = setTimeout(function(){ daGiu = true; moBangCx(nut); }, GIU_MS);
+});
+khung.addEventListener('pointerup', function(e){
+  var nut = e.target.closest('.nut-cx');
+  clearTimeout(henGiu);
+  if (!nut || daGiu) return;
+  var i = chiSoTin(nut);
+  if (i === null) return;
+  /* Chạm nhanh: tin đã có cảm xúc → mở danh sách "ai thả gì"; tin còn trống
+     → chạm là thả tim luôn cho nhanh. */
+  if (dsCx(i).length) moPopCx(nut, i); else datCxToi(i, 'tim');
+});
+khung.addEventListener('pointercancel', function(){ clearTimeout(henGiu); });
+khung.addEventListener('pointerleave', function(){ clearTimeout(henGiu); });
+/* Chuột phải trên máy tính cũng mở bảng chọn cho nhanh. */
+khung.addEventListener('contextmenu', function(e){
+  var nut = e.target.closest('.nut-cx');
+  if (!nut) return;
+  e.preventDefault();
+  moBangCx(nut);
+});
+document.addEventListener('pointerdown', function(e){
+  if ($('#cxMenu').classList.contains('mo') &&
+      !e.target.closest('#cxMenu') && !e.target.closest('.nut-cx')) dongBangCx();
+  if ($('#cxAi').classList.contains('mo') &&
+      !e.target.closest('#cxAi') && !e.target.closest('.nut-cx')) dongPopCx();
+});
+window.addEventListener('scroll', function(){ dongBangCx(); dongPopCx(); }, true);
+
+/* Bấm vào chỗ trống bất kỳ trong khung chat → con trỏ nhảy vào ô nhập. */
+document.querySelector('.chat').addEventListener('click', function(e){
+  if (e.target.closest('.nut-cx') || e.target.closest('button') ||
+      e.target.closest('textarea') || e.target.closest('.bong')) return;
+  $('#oChat').focus();
+});
+
+/* Ô nhập tự nới cao theo đúng số dòng, KHÔNG chặn trần: thầy chốt phải luôn
+   nhìn thấy trọn tin trước khi gửi. Tin dài nhất (300 ký tự) chỉ chiếm chừng
+   nửa khung chat — phần danh sách tin tự co lại rồi bung ra sau khi gửi. */
+function noOChat(){
+  var o = $('#oChat');
+  o.style.height = 'auto';
+  /* box-sizing:border-box nên phải cộng thêm phần VIỀN — scrollHeight chỉ
+     tính tới padding, thiếu 3px viền là dòng cuối vẫn bị khuất. */
+  var vien = o.offsetHeight - o.clientHeight;
+  o.style.height = (o.scrollHeight + vien) + 'px';
+}
+
+function guiTin(){
+  var o = $('#oChat');
+  var chu = o.value.trim();
+  if (!chu) return;
+  var d = new Date();
+  var luc = 'Hôm nay ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+  khung.insertAdjacentHTML('beforeend', veTin({ ten:TOI, luc:luc, chu:chu }, 2));
+  o.value = '';
+  noOChat();
+  khung.scrollTop = khung.scrollHeight;
+}
+$('#nutGui').onclick = guiTin;
+$('#oChat').oninput = noOChat;
+/* Enter = gửi · Shift+Enter = xuống dòng trong ô nhập. */
+$('#oChat').onkeydown = function(e){
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); guiTin(); }
+};
+noOChat();
+
+var henToast = null;
+function baoToast(chu){
+  var t = $('#toast');
+  t.textContent = chu;
+  t.classList.add('hien');
+  clearTimeout(henToast);
+  henToast = setTimeout(function(){ t.classList.remove('hien'); }, 2600);
+}
+</script>
+</body>
+</html>

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-07-23 18:33:30",
+  "capNhat": "2026-08-23 12:15:03",
   "nguon": "myStudent",
   "lop": [
     {
@@ -7,58 +7,94 @@
       "tenGoc": "A1-A",
       "hocSinh": [
         {
-          "ten": "BẢO NGỌC"
+          "ten": "BẢO NGỌC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "BẢO TRÂN"
+          "ten": "BẢO TRÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "DIỆP"
+          "ten": "DIỆP",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHIÊM"
+          "ten": "KHIÊM",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KIM CHI"
+          "ten": "KIM CHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MAI DƯƠNG 2"
+          "ten": "MAI DƯƠNG 2",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH ANH"
+          "ten": "MINH ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH HUY"
+          "ten": "MINH HUY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH PHƯƠNG"
+          "ten": "MINH PHƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH QUÂN"
+          "ten": "MINH QUÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NHẬT SƠN"
+          "ten": "NHẬT SƠN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "THÙY DƯƠNG 1"
+          "ten": "THÙY DƯƠNG 1",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRANG ANH"
+          "ten": "TRANG ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRƯỜNG SƠN"
+          "ten": "TRƯỜNG SƠN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TUẤN KHANG"
+          "ten": "TUẤN KHANG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TƯỜNG VY"
+          "ten": "TƯỜNG VY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "VÂN TRANG"
+          "ten": "VÂN TRANG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "XUÂN HƯƠNG"
+          "ten": "XUÂN HƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -67,58 +103,94 @@
       "tenGoc": "A1-B",
       "hocSinh": [
         {
-          "ten": "BẢO AN"
+          "ten": "BẢO AN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "BẢO ANH"
+          "ten": "BẢO ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "BEN"
+          "ten": "BEN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "CẨM ANH"
+          "ten": "CẨM ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "CÔNG"
+          "ten": "CÔNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "DIỆP"
+          "ten": "DIỆP",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ĐĂNG"
+          "ten": "ĐĂNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ VY"
+          "ten": "HÀ VY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "LINH"
+          "ten": "LINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH NGỌC"
+          "ten": "MINH NGỌC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHÚC"
+          "ten": "PHÚC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHƯỚC"
+          "ten": "PHƯỚC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "THÀNH"
+          "ten": "THÀNH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRANG ANH"
+          "ten": "TRANG ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRUNG KIÊN"
+          "ten": "TRUNG KIÊN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TUỆ LÂM"
+          "ten": "TUỆ LÂM",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TUỆ NHI"
+          "ten": "TUỆ NHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TÙNG LÂM"
+          "ten": "TÙNG LÂM",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -127,58 +199,79 @@
       "tenGoc": "A1-C",
       "hocSinh": [
         {
-          "ten": "CHẤN PHONG"
+          "ten": "CHẤN PHONG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "DUY"
+          "ten": "DUY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "GIANG"
+          "ten": "GIANG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HẢI"
+          "ten": "HẢI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HẢI PHONG"
+          "ten": "HẢI PHONG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HIẾU"
+          "ten": "HIẾU",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HOÀNG NGÂN"
+          "ten": "HOÀNG MINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HƯƠNG"
+          "ten": "HOÀNG NGÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "LINH NHI"
+          "ten": "HƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH PHƯƠNG"
+          "ten": "LINH NHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH.BE"
+          "ten": "MINH PHƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH.BEO"
+          "ten": "NGỌC KHANG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGỌC KHANG"
+          "ten": "NGỌC KHÔI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGỌC KHÔI"
+          "ten": "NHẬT MINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHƯƠNG VY"
-        },
-        {
-          "ten": "QUYÊN"
-        },
-        {
-          "ten": "THÁI AN"
-        },
-        {
-          "ten": "THU PHƯƠNG"
+          "ten": "QUYÊN",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -187,61 +280,94 @@
       "tenGoc": "A2-A",
       "hocSinh": [
         {
-          "ten": "AN NHIÊN"
+          "ten": "AN NHIÊN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "BẢO AN"
+          "ten": "BẢO AN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "CHI"
+          "ten": "CHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "DŨNG"
+          "ten": "DŨNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ĐÌNH ĐỨC"
+          "ten": "ĐÌNH ĐỨC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ĐỨC TRÍ"
+          "ten": "ĐỨC TRÍ",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ MY"
+          "ten": "KHOA",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHOA"
+          "ten": "LÂM ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "LÂM ANH"
+          "ten": "MINH ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH ANH"
+          "ten": "NGỌC MINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGỌC MINH"
+          "ten": "NGUYÊN KHANG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGUYỄN KHANG"
+          "ten": "NHẬT NAM",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NHẬT NAM"
+          "ten": "NHƯ",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NHƯ"
+          "ten": "PHÚC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHÚC"
+          "ten": "PHÚC AN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHÚC AN"
+          "ten": "QUYÊN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "THÀNH ĐỨC"
+          "ten": "THÀNH ĐỨC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "THẢO NHI"
-        },
-        {
-          "ten": "VINH"
+          "ten": "THẢO NHI",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -250,58 +376,84 @@
       "tenGoc": "A2-B",
       "hocSinh": [
         {
-          "ten": "ÁNH"
+          "ten": "ÁNH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ĐẠT"
+          "ten": "ĐẠT",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ PHƯƠNG"
+          "ten": "HÀ PHƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HẢI NAM"
+          "ten": "HẢI NAM",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÂN"
+          "ten": "HÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HOÀNG CHI"
+          "ten": "HOÀNG CHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HƯNG"
+          "ten": "HƯNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHÁNH"
+          "ten": "KHÁNH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHÁNH NGÂN"
+          "ten": "KHÁNH NGÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KIM NGÂN"
+          "ten": "KIM NGÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MAI HOA"
+          "ten": "MAI HOA",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MINH ANH"
+          "ten": "MY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MY"
+          "ten": "NHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MỸ ANH"
+          "ten": "PHONG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NHI"
+          "ten": "THƯ",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHONG"
-        },
-        {
-          "ten": "THƯ"
-        },
-        {
-          "ten": "TRỌNG"
+          "ten": "TRỌNG",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -310,37 +462,59 @@
       "tenGoc": "B1-A (H)",
       "hocSinh": [
         {
-          "ten": "BẢO CHÂU"
+          "ten": "BẢO CHÂU",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "CƯỜNG"
+          "ten": "CƯỜNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "DIỄM MY"
+          "ten": "DIỄM MY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ AN"
+          "ten": "HÀ AN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HOÀNG"
+          "ten": "HOÀNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHÔI"
+          "ten": "KHÔI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGÂN"
+          "ten": "NGÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "PHONG"
+          "ten": "PHONG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "QUÂN"
+          "ten": "QUÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TIẾN"
+          "ten": "TIẾN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRÚC"
+          "ten": "TRÚC",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -349,52 +523,84 @@
       "tenGoc": "B2-A",
       "hocSinh": [
         {
-          "ten": "ANNA"
+          "ten": "ANNA",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ANTHONY"
+          "ten": "ANTHONY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "BARRY"
+          "ten": "BARRY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "BEE"
+          "ten": "BEE",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ĐĂNG MINH"
+          "ten": "ĐĂNG MINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ VY"
+          "ten": "HÀ VY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÂN"
+          "ten": "HÂN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HUYỀN"
+          "ten": "HUYỀN",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HƯNG"
+          "ten": "HƯNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "LỘC"
+          "ten": "LỘC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "LUCY"
+          "ten": "LUCY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGỌC"
+          "ten": "NGỌC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGỌC NAM"
+          "ten": "NGỌC NAM",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NHI"
+          "ten": "NHI",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "ROSIE"
+          "ten": "ROSIE",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "SONG NGỌC"
+          "ten": "SONG NGỌC",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     },
@@ -403,37 +609,69 @@
       "tenGoc": "B2-B",
       "hocSinh": [
         {
-          "ten": "BENTLY"
+          "ten": "BENTLY",
+          "ma": "BINH",
+          "sinhNhat": ""
         },
         {
-          "ten": "BÌNH MINH"
+          "ten": "BÌNH MINH",
+          "ma": "BMINH",
+          "sinhNhat": ""
         },
         {
-          "ten": "DŨNG"
+          "ten": "DŨNG",
+          "ma": "DUNG",
+          "sinhNhat": ""
         },
         {
-          "ten": "DUY MINH"
+          "ten": "DUY MINH",
+          "ma": "DMINH",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ"
+          "ten": "GIANG",
+          "ma": "GIANG",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÂN"
+          "ten": "HÀ",
+          "ma": "HA",
+          "sinhNhat": ""
         },
         {
-          "ten": "LINH"
+          "ten": "HÂN",
+          "ma": "HAN",
+          "sinhNhat": ""
         },
         {
-          "ten": "NAM PHONG"
+          "ten": "LINH",
+          "ma": "LINH",
+          "sinhNhat": ""
         },
         {
-          "ten": "NHÃ PHƯƠNG"
+          "ten": "NAM PHONG",
+          "ma": "PHONG",
+          "sinhNhat": ""
         },
         {
-          "ten": "THANH MAI"
+          "ten": "NHÃ PHƯƠNG",
+          "ma": "PHUONG",
+          "sinhNhat": ""
         },
         {
-          "ten": "THẢO"
+          "ten": "THANH MAI",
+          "ma": "MAI",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "THẢO",
+          "ma": "THAO",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "VY",
+          "ma": "VY",
+          "sinhNhat": ""
         }
       ]
     },
@@ -442,49 +680,170 @@
       "tenGoc": "BỔ TRỢ",
       "hocSinh": [
         {
-          "ten": "BẢO NGỌC"
+          "ten": "BẢO NGỌC",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "H. PHƯƠNG THẢO"
+          "ten": "H. PHƯƠNG THẢO",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ ANH"
+          "ten": "HÀ ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "HÀ PHƯƠNG"
+          "ten": "HÀ PHƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHÁNH MINH"
+          "ten": "KHÁNH MINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "KHỔNG NGỌC LINH"
+          "ten": "MỘC TRÀ",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "MỸ ANH"
+          "ten": "MỸ ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "NGỌC BẢO"
+          "ten": "NGỌC BẢO",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "P. PHƯƠNG THẢO"
+          "ten": "NGỌC LINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "THANH PHƯƠNG"
+          "ten": "THANH PHƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "THANH TÂM"
+          "ten": "THANH TÂM",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TIẾN"
+          "ten": "TIẾN MINH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRÀ MY"
+          "ten": "TRÀ MY",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRANG ANH"
+          "ten": "TRANG ANH",
+          "ma": "",
+          "sinhNhat": ""
         },
         {
-          "ten": "TRÚC LINH"
+          "ten": "TRÚC LINH",
+          "ma": "",
+          "sinhNhat": ""
+        }
+      ]
+    },
+    {
+      "maLop": "NNTNG4",
+      "tenGoc": "NỀN TẢNG 4",
+      "hocSinh": [
+        {
+          "ten": "AN NHIÊN",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "BẢO LINH",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "BÙI BẢO AN",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "DIỆP ANH",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "DIỆU LINH",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "ĐỨC",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "HÀ PHƯƠNG",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "MINH HIẾU",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "MINH KHANG",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "MINH PHÚC",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "MINH QUANG",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "MINH VÂN",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "NGỌC KHÁNH",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "NGUYỄN BẢO AN",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "NHẬT MINH",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "QUANG TÙNG",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "ten": "XUÂN KHANG",
+          "ma": "",
+          "sinhNhat": ""
         }
       ]
     }

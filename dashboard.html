@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trang quản lý · Andrew Classes</title>
+<link rel="icon" href="assets/avatar-tron.jpg">
+<link rel="stylesheet" href="assets/fonts.css">
+<!-- ============================================================
+     TRANG QUẢN LÝ CỦA THẦY — CHỖ GIỮ CHỖ (web v1.9.0, 23/08/2026).
+
+     Vào đây bằng cách gõ MÃ QUẢN LÝ ở màn đăng nhập (mã cất dạng băm trong
+     `config.js`, xem `laMaQuanLy()` trong js/chung.js), hoặc bấm tab CLASSES
+     trong app myLesson (Đợt 3).
+
+     Trang thật dựng ở ĐỢT 4: quản lý lớp · thẻ bài · thông báo · thông tin
+     chung. Bản này cố ý CHỈ hiện vài con số đọc thẳng từ hai file dữ liệu, để
+     thầy kiểm được rằng đường đăng nhập quản lý đã thông.
+     ============================================================ -->
+<style>
+:root{
+  --nen:#0f1720; --the:#16212c; --vien:#24313f;
+  --chu:#e8eef5; --mo:#93a3b3; --xanh:#0E7C6E; --vang:#F2A93B;
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--nen); color:var(--chu);
+  font:500 15px/1.5 Inter,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:960px; margin:0 auto; padding:32px 20px 60px}
+header{display:flex; align-items:center; gap:14px; margin-bottom:26px}
+header img{width:46px; height:46px; border-radius:50%; object-fit:cover}
+h1{margin:0; font-size:21px; font-weight:800; letter-spacing:.2px}
+.phu{margin:2px 0 0; font-size:13px; color:var(--mo)}
+.bang{display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  gap:14px; margin:22px 0 30px}
+.o{background:var(--the); border:1px solid var(--vien); border-radius:16px;
+  padding:16px 18px}
+.o .so{font-size:26px; font-weight:800; letter-spacing:.5px}
+.o .nh{font-size:11.5px; letter-spacing:.08em; color:var(--mo); text-transform:uppercase;
+  margin-top:4px}
+.o.canh .so{color:var(--vang)}
+.hop{background:var(--the); border:1px solid var(--vien); border-radius:16px;
+  padding:18px 20px; margin-bottom:16px}
+.hop h2{margin:0 0 10px; font-size:14px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--mo)}
+ul{margin:0; padding-left:18px}
+li{margin:5px 0; font-size:14px}
+li b{color:var(--vang)}
+.nut{display:inline-block; margin-top:6px; padding:9px 16px; border-radius:11px;
+  background:var(--xanh); color:#fff; text-decoration:none; font-weight:700; font-size:13.5px}
+.chan{margin-top:28px; font-size:12px; color:var(--mo)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <img src="assets/avatar-tron.jpg" alt="">
+    <div>
+      <h1>Trang quản lý · Andrew Classes</h1>
+      <p class="phu">Đăng nhập bằng mã quản lý · <span id="ver"></span></p>
+    </div>
+  </header>
+
+  <div class="bang">
+    <div class="o"><div class="so" id="soLop">–</div><div class="nh">Lớp</div></div>
+    <div class="o"><div class="so" id="soEm">–</div><div class="nh">Học sinh</div></div>
+    <div class="o"><div class="so" id="soMa">–</div><div class="nh">Em đã có mã</div></div>
+    <div class="o canh"><div class="so" id="soThieu">–</div><div class="nh">Em chưa có mã</div></div>
+    <div class="o"><div class="so" id="soBai">–</div><div class="nh">Bài đã đẩy lên</div></div>
+  </div>
+
+  <div class="hop">
+    <h2>Lớp đã có bài trên web</h2>
+    <ul id="dsLop"><li>Đang đọc…</li></ul>
+  </div>
+
+  <div class="hop">
+    <h2>Trang này còn đang xây dựng</h2>
+    <p style="margin:0 0 8px; font-size:14px; color:var(--mo)">
+      Đợt 4 sẽ dựng đủ: quản lý lớp · quản lý thẻ bài tập · gửi thông báo cho lớp ·
+      thông tin chung của trung tâm. Bản này chỉ để kiểm rằng đường đăng nhập
+      bằng mã quản lý đã thông.
+    </p>
+    <a class="nut" href="index.html">Về màn đăng nhập</a>
+  </div>
+
+  <p class="chan">Dữ liệu đọc thẳng từ <code>data/lop.json</code> + <code>data/bai.json</code> —
+    hai file do app myLesson đẩy lên mỗi lần bấm PUSH.</p>
+</div>
+
+<script src="config.js?v=14"></script>
+<script src="js/chung.js?v=14"></script>
+<script>
+(function(){
+  var A = window.AWC;
+  var $ = function(s){ return document.querySelector(s); };
+  $('#ver').textContent = 'web v' + (A.CFG.PHIEN_BAN || '?');
+
+  A.napDuLieu().then(function(dl){
+    var lop = dl.lop || [];
+    var em = 0, coMa = 0;
+    lop.forEach(function(l){
+      (l.hocSinh || []).forEach(function(h){
+        em++;
+        if (String(h.ma || '').trim()) coMa++;
+      });
+    });
+    $('#soLop').textContent = lop.length;
+    $('#soEm').textContent = em;
+    $('#soMa').textContent = coMa;
+    $('#soThieu').textContent = em - coMa;
+
+    var tong = 0, dong = [];
+    Object.keys(dl.bai || {}).forEach(function(ma){
+      var ds = dl.bai[ma] || [];
+      tong += ds.length;
+      if (ds.length) {
+        dong.push('<li><b>' + A.chuAnToan(ma) + '</b> — ' + ds.length +
+          ' bài · mới nhất: ' + A.chuAnToan(A.tenBai(ds[0]) + ' ' + A.maLesson(ds[0])) + '</li>');
+      }
+    });
+    $('#soBai').textContent = tong;
+    $('#dsLop').innerHTML = dong.length ? dong.join('')
+      : '<li>Chưa lớp nào có bài trên web.</li>';
+  })['catch'](function(){
+    $('#dsLop').innerHTML = '<li>Chưa đọc được dữ liệu.</li>';
+  });
+})();
+</script>
+</body>
+</html>

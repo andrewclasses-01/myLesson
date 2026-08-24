@@ -1500,7 +1500,15 @@ function lamMoiBang(sec, ma, nut){
     d.classList.add('di');
   });
 
-  setTimeout(function(){
+  /* 🐛 v1.13.0 — nút làm mới nay ĐỌC LẠI THẬT từ kho AWord (ép bỏ cache 60s).
+     Trước đây nó chỉ chạy hiệu ứng rồi vẽ lại từ RAM — em vừa nộp xong, thầy
+     bấm làm mới mấy lần bảng vẫn trống (thầy bắt được 25/08, cú nộp đầu tiên
+     của lớp B2-B). Hiệu ứng CHO_TAI và cú đọc chạy SONG SONG, xong cả hai mới
+     vẽ; đọc hỏng thì giữ danh sách cũ, không vỡ trang. */
+  Promise.all([
+    A.diemCuaAct(ma, true).then(function(d){ DIEM[ma] = d; })['catch'](function(){}),
+    new Promise(function(x){ setTimeout(x, CHO_TAI); }),
+  ]).then(function(){
     ds.innerHTML = veBang(ma);
     ds.querySelectorAll('.lb-row').forEach(function(d, i){
       d.style.setProperty('--tre', (i * 34) + 'ms');
@@ -1510,7 +1518,7 @@ function lamMoiBang(sec, ma, nut){
     tua.classList.remove('dang-tai');
     tua.textContent = tenCu;
     nut.classList.remove('quay');
-  }, CHO_TAI);
+  });
 }
 
 /* ⭐ Cỡ chữ + chiều cao dòng ĐO RỒI ĐẶT, không gõ tay: lớp 16 em thì dòng cao
@@ -1951,6 +1959,9 @@ function conThieu(ma){
 function veKhoi(k, so){
   var sec = document.createElement('section');
   sec.className = 'card';
+  /* v1.13.0 — thẻ act mang mã của mình, để bộ nghe tin nộp bài (AWORD:NOP)
+     tìm đúng thẻ mà làm mới bảng. */
+  if (k.loai === 'act' && k.ma) sec.setAttribute('data-ma', k.ma);
   if (conThieu(k.ma)) sec.classList.add('con-thieu');
 
   /* ⭐ WORDS đợt 2 — CẢ BA THẺ đều có từ điển RIÊNG: kho từ riêng, mở/đóng
@@ -2616,6 +2627,22 @@ function veCacPhan(){
   KHOI.forEach(function(k, i){ hop.appendChild(veKhoi(k, i + 1)); });
   canhLb();
 }
+
+/* ⭐ v1.13.0 — NGHE TIN NỘP BÀI TỪ KHUNG ACT NHÚNG (AWord Đợt 256): học sinh
+   bấm SUBMIT trong iframe là AWord bắn postMessage {type:'AWORD:NOP', code}
+   về trang mẹ — bảng xếp hạng của ĐÚNG act đó tự làm mới (một lượt đọc, đi
+   qua chính đường nút làm mới nên vẫn giữ nếp tiết kiệm hạn mức Firebase:
+   không có vòng poll nào cả).
+   ⛔ Chỉ nhận tin từ ĐÚNG trang AWord — tin từ origin khác bỏ qua. */
+window.addEventListener('message', function(e){
+  if (e.origin !== AWORD) return;
+  var d = e.data;
+  if (!d || d.type !== 'AWORD:NOP' || !d.code) return;
+  var sec = document.querySelector('.card[data-ma="' + String(d.code).replace(/[^A-Za-z0-9_-]/g, '') + '"]');
+  if (!sec) return;
+  var nut = sec.querySelector('.lam-moi');
+  if (nut) lamMoiBang(sec, String(d.code), nut);
+});
 
 /* Đo lại khi: kéo giãn cửa sổ · đổi ngưỡng màn · nạp xong font (font đổi thì
    chiều cao dòng đổi theo, đo trước khi font về là ra số sai). */

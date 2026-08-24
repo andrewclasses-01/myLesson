@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-07-23 18:37:24",
+  "capNhat": "2026-08-24 16:35:14",
   "bai": {
     "A1C": [
       {
@@ -31,6 +31,44 @@
         ]
       }
     ],
-    "B2A": []
+    "B2A": [],
+    "B2B": [
+      {
+        "id": "B2B_24.8_WORDS_LSA2-S2.T1.P3-4-5",
+        "tieuDe": "B2B_24.8_WORDS LSA2-S2.T1.P3-4-5",
+        "tenHien": "B2B_24.8_WORDS LSA2-S2.T1.P3-4-5",
+        "dang": "WORDS",
+        "ngay": "24.8",
+        "han": "2026-08-25T23:59",
+        "maLesson": "LSA2-S2.T1.P3-4-5",
+        "taoLuc": "2026-08-24",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "5hwvs8",
+            "mau": "ANAGRAM"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "7pgtb2",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "k6xznq",
+            "mau": "ANAGRAM"
+          }
+        ]
+      }
+    ]
   }
 }

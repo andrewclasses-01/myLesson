@@ -439,8 +439,8 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=19"></script>
-<script src="js/chung.js?v=17"></script>
+<script src="config.js?v=20"></script>
+<script src="js/chung.js?v=18"></script>
 <script src="js/chat.js?v=17"></script>
 <script>
 (function () {
@@ -451,6 +451,10 @@ a{color:inherit}
   var DL = { lop: [], bai: {} };
   var LOP_CHON = '';
   var DIEM = {};          // mã act -> [{ten, diem, giay, luc}]
+  // ⭐ v1.14.0 — chuẩn ĐỦ ĐIỂM của từng act: mã act -> {tru, dinh}. Dùng CHUNG
+  // luật với trang lớp + trang bài (js/chung.js), không thì dashboard đếm "đã
+  // xong" một kiểu mà thẻ của học sinh một kiểu.
+  var CHUAN = {};
   var TIENG = 3600 * 1000;
 
   // ---------- tiện ích ----------
@@ -503,7 +507,7 @@ a{color:inherit}
       if (ds) {
         xong = 0;
         caLop.forEach(function (ten) {
-          if (coTrongDiem(ds, ten)) xong++;
+          if (coTrongDiem(ds, ten, k.ma)) xong++;
         });
       }
       return { ten: k.ten, ma: k.ma, mau: k.mau || '', xong: xong };
@@ -517,7 +521,7 @@ a{color:inherit}
     var daDoc = acts.length ? acts.every(function (a) { return a.xong !== null; }) : true;
     if (daDoc) {
       caLop.forEach(function (ten) {
-        var con = acts.filter(function (a) { return !coTrongDiem(DIEM[a.ma] || [], ten); });
+        var con = acts.filter(function (a) { return !coTrongDiem(DIEM[a.ma] || [], ten, a.ma); });
         if (con.length) thieu.push({ ten: ten, so: con.length });
       });
     }
@@ -526,10 +530,11 @@ a{color:inherit}
              thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop };
   }
 
-  function coTrongDiem(ds, ten) {
-    var k = A.khoaTen(ten);
-    for (var i = 0; i < ds.length; i++) if (A.khoaTen(ds[i].ten) === k) return true;
-    return false;
+  // ⭐ v1.14.0 — "XONG" = ĐỦ ĐIỂM TỐI ĐA, không còn là "có nộp là được".
+  // ⛔ Luật nằm trong `A.xongAct()` (js/chung.js) — đừng viết lại ở đây, ba
+  // trang phải cùng một định nghĩa.
+  function coTrongDiem(ds, ten, ma) {
+    return A.xongAct(ds, ten, CHUAN[ma]);
   }
 
   // ---------- đọc điểm (có giới hạn) ----------
@@ -548,8 +553,13 @@ a{color:inherit}
     function ke() {
       if (i >= ma.length) return Promise.resolve();
       var m = ma[i++];
-      return A.diemCuaAct(m, !!epMoi)['catch'](function () { return []; })
-        .then(function (ds) { DIEM[m] = ds; return ke(); });
+      // Đọc kèm chuẩn đủ điểm. `chuanDiem` nhớ vĩnh viễn trong localStorage
+      // (tuỳ chọn bài giao là bản chụp đóng băng) nên chỉ tốn thêm lượt đọc ở
+      // LẦN ĐẦU của mỗi máy — hạn mức Firebase vẫn an toàn.
+      return Promise.all([
+        A.diemCuaAct(m, !!epMoi)['catch'](function () { return []; }),
+        A.chuanDiem(m)
+      ]).then(function (r) { DIEM[m] = r[0]; CHUAN[m] = r[1]; return ke(); });
     }
     var chay = [];
     for (var j = 0; j < Math.min(6, ma.length); j++) chay.push(ke());
@@ -627,8 +637,8 @@ a{color:inherit}
       return '<div class="nhac-o ' + lopO + '">' +
         '<span class="lop">' + A.chuAnToan(x.maLop) + '</span>' +
         '<div class="ten">' + A.chuAnToan(A.tenBai(x.b)) +
-          (A.chuanMa(A.tenBai(x.b)) === A.chuanMa(x.b.dang || '')
-            ? ' <span style="color:var(--nhat);font-weight:600;font-size:11.5px">(chưa đặt tên)</span>' : '') +
+          (A.coTenRieng(x.b)
+            ? '' : ' <span style="color:var(--nhat);font-weight:600;font-size:11.5px">(chưa đặt tên)</span>') +
         '</div>' +
         '<div class="ma">' + A.chuAnToan(A.maLesson(x.b)) + '</div>' +
         '<div class="han">Hạn ' + A.chuAnToan(A.chuHan(x.b) || chuNgay(x.moc)) +
@@ -673,10 +683,12 @@ a{color:inherit}
       var moc = A.mocHan(b);
       var con = conBaoLau(moc);
       var lopHan = con.lop === 'gap' ? 'gap' : (con.lop === 'het' ? 'het' : '');
-      // Chưa đặt tên bài thì `tenBai()` trả về chính DẠNG bài ⇒ in cả hai là
-      // thành "WORDSWORDS". Trùng thì chỉ giữ cái nhãn dạng.
+      // Chưa đặt tên bài thì `tenBai()` trả về TÊN KỸ NĂNG suy từ dạng (v1.14.0:
+      // WORDS -> VOCABULARY…), in cạnh nhãn dạng là thành hai lần một thứ.
+      // ⛔ ĐỪNG so `tenBai(b) === b.dang` như trước v1.14.0 — nay không bao giờ
+      // bằng nhau nữa, phải hỏi `A.coTenRieng()`.
       var ten = A.tenBai(b);
-      var trungDang = A.chuanMa(ten) === A.chuanMa(b.dang || '');
+      var trungDang = !A.coTenRieng(b);
       return '<div class="bai-o" data-id="' + A.chuAnToan(b.id) + '">' +
         '<button class="bai-dau">' +
           '<span>' +

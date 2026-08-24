@@ -307,8 +307,11 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    (cụm giữa căn giữa nên chỉ cần tăng đều hai lề là hai dòng dạt ra hai phía). */
 .bia-ten{margin-bottom:max(26px, 4.6cqw)}
 .bia-em{margin-top:max(26px, 4.6cqw)}
-/* ⭐ ĐỢT 10 — tên act nhỏ bớt một chút (3.4 → 3.0cqw, sàn 17 → 15px). */
-.bia-ten{font-weight:800; font-size:max(15px, 3cqw); line-height:1.3; letter-spacing:0;
+/* ⭐ ĐỢT 10 — tên act nhỏ bớt một chút (3.4 → 3.0cqw, sàn 17 → 15px).
+   ⭐ v1.14.0 — nhỏ thêm một nấc nữa (3.0 → 2.5cqw, sàn 15 → 13px) vì chữ trên
+   bìa nay là cụm ba phần "LSA2-S2.T1.P3-4-5 • VI2 • ANAGRAM" chứ không còn là
+   "WORD PRACTICE 1" ngắn ngủn — xem `chuBia()`. */
+.bia-ten{font-weight:800; font-size:max(13px, 2.5cqw); line-height:1.3; letter-spacing:0;
   color:var(--ink); text-transform:uppercase; max-width:90%}
 .bia-o-nut{display:flex; align-items:center; justify-content:center}
 .bia-ready{padding:max(9px, 1.5cqw) max(26px, 4.4cqw); border-radius:max(10px, 1.6cqw);
@@ -1158,8 +1161,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=19"></script>
-<script src="js/chung.js?v=17"></script>
+<script src="config.js?v=20"></script>
+<script src="js/chung.js?v=18"></script>
 <script>
 /* ============================================================
    TRANG BÀI TẬP — bản THẬT (web v1.9.0, 23/08/2026), dùng chung cho ba dạng
@@ -1210,6 +1213,14 @@ var CA_LOP = [];
 /* Điểm thật của từng act: { mã act: [{ten, diem, giay}] } — đọc kho AWord.
    Dạng dữ liệu giữ NGUYÊN như bộ mẫu nên `xepBang()`/`veBang()` không phải sửa. */
 var DIEM = {};
+
+/* ⭐ v1.14.0 — CHUẨN ĐỦ ĐIỂM của từng act: { mã act: {tru, dinh} }, đọc từ
+   `A.chuanDiem()`. Bảng xếp hạng ở đây và thanh tiến trình bên lop.html PHẢI
+   dùng CHUNG một mốc, không thì thẻ lớp báo "0/13" mà bảng vẫn treo huy chương
+   vàng cho đúng em đó. ⛔ Mốc KHÔNG phải lúc nào cũng 100% — anagram chế độ
+   bonus (mặc định) chấm theo chữ cái nên chơi hoàn hảo là 200%. Xem chú thích
+   dài trong js/chung.js. */
+var CHUAN = {};
 
 /* ---------- TOAST ---------- */
 var hen = null;
@@ -1388,11 +1399,14 @@ function xepBang(ma){
 
 /* Bốn mức màu tên (thầy chốt đợt 4):
    `hc` huy chương = full điểm và nằm trong 3 hạng đầu · `du` = full điểm mà
-   ngoài top 3 · `co` = có điểm nhưng chưa full · `chua` = chưa làm bài nào. */
+   ngoài top 3 · `co` = có điểm nhưng chưa full · `chua` = chưa làm bài nào.
+   ⭐ v1.14.0 — "full điểm" nay hỏi `CHUAN[ma]` chứ không gõ cứng 100 nữa. */
 function veBang(ma){
   var ds = xepBang(ma);
+  var c = CHUAN[ma];
+  var moc = (c && !c.tru) ? c.dinh : 0;      /* 0 = act không đo được ⇒ nộp là full */
   return ds.map(function(e, i){
-    var full = !e.chua && e.diem >= 100;
+    var full = !e.chua && e.diem >= moc;
     var huy  = full && i < 3;
     var lop  = e.chua ? 'chua' : (huy ? 'hc' : (full ? 'du' : 'co'));
     var hang = e.chua ? '–' : (huy ? veHuy(i + 1) : (i + 1));
@@ -1567,11 +1581,25 @@ $('#nenToi').onclick = tatDen;
    hiệu ứng: từng thứ bay vụt vào chữ ANDREW CLASSES → chữ to dần + trôi ra
    giữa → rung núi lửa → NỔ thành bụi 4 hướng, lộ màn START. Tối thiểu ~3,8s;
    mạng chậm thì chữ cứ rung thêm, act về xong mới nổ. */
+/* ⭐ v1.14.0 — CHỮ TRÊN BÌA (thầy chốt 24/08/2026): không còn "WORD PRACTICE 1"
+   nữa mà là ba thứ nhận ra bài ngay: MÃ LESSON • BỘ NGHĨA • TEMPLATE, vd
+   "LSA2-S2.T1.P3-4-5 • VI2 • ANAGRAM". Thiếu phần nào thì bỏ phần đó, không có
+   phần nào cả thì lùi về tên ngăn như cũ.
+   ⚠️ `k.act` (bộ nghĩa) và `k.mau` (template) đến từ phép map lúc boot ở cuối
+   file — thêm trường mới vào bìa thì SOI LẠI phép map đó (bẫy đã cắn ở v1.12.0,
+   dòng "mã lesson • ENG1" render sẵn mà không bao giờ hiện vì `act` rơi mất). */
+function chuBia(k){
+  var o = [A.maLesson(BAI), k.act, k.mau].filter(function(x){
+    return String(x || '').trim();
+  });
+  return o.length ? o.join(' • ') : (k.ten || '');
+}
+
 function veBia(k){
   return '<div class="game-cover">' +
     '<div class="bia-th">ANDREW CLASSES</div>' +
     '<div class="bia-giua">' +
-      '<div class="bia-ten">' + k.ten + '</div>' +
+      '<div class="bia-ten">' + chuAnToan(chuBia(k)) + '</div>' +
       '<div class="bia-o-nut"><button class="bia-ready" type="button">READY</button></div>' +
       '<div class="bia-em">' + TOI + ' \u2022 ' + LOP_HIEN + '</div>' +
     '</div>' +
@@ -2732,8 +2760,13 @@ A.napDuLieu().then(function(dl){
   var maAct = [];
   KHOI.forEach(function(k){ if (k.loai === 'act' && k.ma && maAct.indexOf(k.ma) < 0) maAct.push(k.ma); });
   return Promise.all(maAct.map(function(ma){
-    return A.diemCuaAct(ma)['catch'](function(){ return []; })
-      .then(function(d){ DIEM[ma] = d; });
+    /* ⭐ v1.14.0 — đọc SONG SONG điểm + chuẩn đủ điểm. Chuẩn nằm hẳn trong
+       localStorage sau lần đầu nên không thêm lượt đọc Firestore nào ở các
+       lần sau (tuỳ chọn bài giao là bản chụp đóng băng). */
+    return Promise.all([
+      A.diemCuaAct(ma)['catch'](function(){ return []; }),
+      A.chuanDiem(ma)
+    ]).then(function(r){ DIEM[ma] = r[0]; CHUAN[ma] = r[1]; });
   })).then(function(){ veCacPhan(); });
 })['catch'](function(){ veTrangLop(); });
 

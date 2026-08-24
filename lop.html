@@ -305,7 +305,18 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .khoi-thieu .them{margin-top:2px; text-align:center; font-size:10.5px; font-weight:700;
   line-height:1.25; color:#A98B8B; white-space:nowrap}
 
-.td-dong{display:grid; grid-template-columns:62px minmax(0,1fr) 44px 11px;
+/* ⭐ v1.14.0 — CỘT TÊN RỘNG RA, THANH NGẮN LẠI (thầy chốt 24/08/2026).
+   Nhãn dài nhất là "PRONUNCIATION": đo thật ở 11,5px/800/letter-spacing .02em
+   = 108px, nên trần 112px là vừa khít mà không thừa. Trước đó cột chỉ 62px nên
+   nhãn nào dài hơn "WORDS 1" cũng bị cắt "…".
+   ⛔⛔ PHẢI LÀ `minmax(0,112px)` CHỨ ĐỪNG GÕ THẲNG `112px`. Ca chật nhất của
+   trang này là thẻ GẤP trên điện thoại: vùng điểm nhường 106px cho cột CHƯA
+   XONG BÀI nên cụm thanh chỉ còn ~161px — cột tên cứng 112px ăn gần hết, đo
+   thật ở 375px thì THANH CÒN 11px, nhìn như mất hẳn (bản 62px cũ còn 51px).
+   `minmax(0,…)` cho cột tên co lại ĐÚNG KHI hết chỗ (cắt "…", tên đủ nằm
+   trong `title`), còn `minmax(56px,1fr)` giữ cho thanh không bao giờ tụt dưới
+   56px. Chỗ nào rộng rãi thì cả hai vẫn đúng như trên. */
+.td-dong{display:grid; grid-template-columns:minmax(0,112px) minmax(56px,1fr) 44px 11px;
   align-items:center; gap:8px}
 /* Thẻ ít bài vẫn giữ cụm cao bằng thẻ 3 bài — nhưng CHỈ giãn khoảng cách
    giữa các dòng. ⛔ Tuyệt đối không phóng to thanh hay chữ: mọi thanh tiến
@@ -746,7 +757,9 @@ body.mo-menu .side.trai{transform:none}
   .khoi-thieu .them{margin-top:1px; font-size:9px}
 
   /* thanh ngắn lại + các cột sát nhau hơn */
-  .td-dong{grid-template-columns:50px minmax(0,1fr) 36px 9px; gap:5px}
+  /* v1.14.0 — cùng phép nới (và cùng cặp minmax) như bản rộng: "PRONUNCIATION"
+     ở 9,5px đo được 87px ⇒ trần 90px; sàn thanh 40px cho thẻ GẤP. */
+  .td-dong{grid-template-columns:minmax(0,90px) minmax(40px,1fr) 36px 9px; gap:5px}
   .td-ten{font-size:9.5px; letter-spacing:0}
   .td-bar{height:6px}
   .td-so{font-size:9.5px}
@@ -905,8 +918,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=19"></script>
-<script src="js/chung.js?v=17"></script>
+<script src="config.js?v=20"></script>
+<script src="js/chung.js?v=18"></script>
 <script src="js/chat.js?v=17"></script>
 <script>
 /* ============================================================
@@ -986,10 +999,13 @@ function bangVietTat(dsTen){
    ⛔ ĐỪNG gõ lại tên lớp / danh sách em ở đây nữa. Trang này KHÔNG được chứa
    một chữ dữ liệu nào của thầy: file nằm công khai trên GitHub.
 
-   ⚠️ ĐỊNH NGHĨA "XONG MỘT BÀI" (Đợt 1, 23/08/2026): em có ÍT NHẤT MỘT lượt nộp
-   act đó bên AWord — không xét được bao nhiêu điểm. Muốn siết thành "phải đủ
-   100% mới tính xong" thì sửa đúng hàm `daLamAct()` bên dưới, chỗ khác không
-   phải đụng. */
+   ⭐⭐ ĐỊNH NGHĨA "XONG MỘT BÀI" (thầy siết 24/08/2026, web v1.14.0): em phải
+   đạt ĐIỂM TỐI ĐA của act đó. Nộp rồi mà 99/100 vẫn KHÔNG được tính (13 em, 1
+   em 99 điểm ⇒ thanh vẫn 0/13). Nếp cũ "nộp là xong" chỉ còn dùng cho act mà
+   điểm không đo được số câu đúng (Gameshow, bài bật trừ điểm).
+   ⛔ Luật + mốc điểm tối đa nằm TRỌN trong `A.chuanDiem()` / `A.xongAct()` bên
+   js/chung.js — trang này, bai.html và dashboard.html dùng CHUNG. Sửa định
+   nghĩa thì sửa ở đó, đừng vá lẻ ba nơi. */
 
 var A = window.AWC;
 var DL = { lop: [], bai: {} };
@@ -1053,15 +1069,11 @@ function theTuBai(b){
   };
 }
 
-/* Em này đã làm act đó chưa. ⇒ đổi định nghĩa "xong" thì sửa ĐÚNG hàm này. */
-function daLamAct(dsDiem, ten){
-  var k = A.khoaTen(ten);
-  for (var i = 0; i < dsDiem.length; i++) if (A.khoaTen(dsDiem[i].ten) === k) return true;
-  return false;
-}
-
 /* Đọc điểm của MỌI act trong các thẻ rồi đổ vào `bai[].xong` + `thieu[]`,
-   đồng thời dựng bảng HANG_LOP cho pop-up cả lớp. */
+   đồng thời dựng bảng HANG_LOP cho pop-up cả lớp.
+   ⭐ v1.14.0 — đọc kèm CHUẨN ĐỦ ĐIỂM của từng act (`A.chuanDiem`). Nó tốn thêm
+   một lượt đọc Firestore cho mỗi act ở LẦN ĐẦU của mỗi máy, sau đó nằm hẳn
+   trong localStorage (tuỳ chọn bài giao là bản chụp đóng băng, không đổi). */
 function donDiem(cacThe){
   var mangMa = [];
   cacThe.forEach(function(t){
@@ -1070,19 +1082,22 @@ function donDiem(cacThe){
   if (!mangMa.length) return Promise.resolve();
 
   return Promise.all(mangMa.map(function(ma){
-    return A.diemCuaAct(ma)['catch'](function(){ return []; })
-      .then(function(ds){ return { ma:ma, ds:ds }; });
+    return Promise.all([
+      A.diemCuaAct(ma)['catch'](function(){ return []; }),
+      A.chuanDiem(ma)
+    ]).then(function(r){ return { ma:ma, ds:r[0], chuan:r[1] }; });
   })).then(function(kq){
-    var theoMa = {};
-    kq.forEach(function(r){ theoMa[r.ma] = r.ds; });
+    var theoMa = {}, chuanMaAct = {};
+    kq.forEach(function(r){ theoMa[r.ma] = r.ds; chuanMaAct[r.ma] = r.chuan; });
 
     cacThe.forEach(function(t){
       var thieu = {};
       (t.bai || []).forEach(function(x){
         var ds = theoMa[x.ma] || [];
+        var chuan = chuanMaAct[x.ma];
         var dem = 0;
         CA_LOP.forEach(function(ten){
-          if (daLamAct(ds, ten)) dem++;
+          if (A.xongAct(ds, ten, chuan)) dem++;
           else thieu[ten] = (thieu[ten] || 0) + 1;
         });
         x.xong = dem;
@@ -1155,7 +1170,9 @@ function veDiem(b, batDo, hienThieu){
     var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
-      '<span class="td-ten">' + x.ten + '</span>' +
+      /* ⭐ v1.14.0 — nhãn RÚT GỌN: "WORD PRACTICE 1" -> "WORDS 1" (A.tenO).
+         Cột tên đã nới rộng bên CSS để "PRONUNCIATION" nằm trọn một dòng. */
+      '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' + A.chuAnToan(A.tenO(x.ten)) + '</span>' +
       '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i></span>' +
       '<span class="td-so ' + m + '">' + x.xong + '/' + SI_SO + '</span>' +
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
@@ -1287,7 +1304,12 @@ function moPopCaLop(b){
   /* Dòng phụ: tên bài • mã lesson (thầy chốt bỏ phần đếm số em đã xong). */
   $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
   $('#popDs').innerHTML = ds.map(function(e, i){
-    var hang = (i < 3) ? veCup(i + 1) : (i + 1);
+    /* ⛔ v1.14.0 — CÚP CHỈ TRAO CHO EM ĐÃ HOÀN THÀNH. Trước đó cứ 3 dòng đầu là
+       có cúp, mà `xepCaLop()` xếp nhóm "chưa hoàn thành" ngay sau nhóm "hoàn
+       thành" ⇒ lớp chưa ai xong thì ba em ĐẦU DANH SÁCH CHƯA XONG lại đeo cúp
+       vàng/bạc/đồng. Lỗi vốn có từ trước, nhưng luật mới (phải ĐỦ ĐIỂM mới tính
+       là xong) biến nó thành cảnh thường ngày — nhìn bảng là thấy ngay. */
+    var hang = (e.du && i < 3) ? veCup(i + 1) : (i + 1);
     return '<div class="pop-dong ' + (e.du ? 'du' : 'thieu') + '">' +
       '<span class="pop-hang">' + hang + '</span>' +
       '<span class="pop-ten">' + e.ten + '</span>' +

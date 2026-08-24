@@ -317,6 +317,116 @@
     return ra;
   }
 
+  // ---------- ⭐⭐ CHUẨN "ĐÃ XONG BÀI" = ĐỦ ĐIỂM TỐI ĐA (web v1.14.0) ----------
+  //
+  // Thầy chốt 24/08/2026: em nộp bài mà CHƯA đạt điểm tối đa thì thanh tiến
+  // trình trên thẻ lớp KHÔNG tính (13 em, 1 em 99/100 điểm ⇒ vẫn 0/13).
+  //
+  // ⛔⛔ "ĐIỂM TỐI ĐA" KHÔNG PHẢI LÚC NÀO CŨNG LÀ 100%. Kho điểm AWord chỉ có
+  // `score` + `total`, mà hai con số đó mang ý nghĩa khác nhau tuỳ template —
+  // đo thật trên bài B2-B ngày 24/08:
+  //
+  //   · ANAGRAM chế độ "bonus"/"bonusMinus" (MẶC ĐỊNH của template) chấm theo
+  //     CHỮ CÁI: `total` = tổng số chữ cái của cả bài (bài thật: 636), còn mỗi
+  //     từ giải ĐÚNG NGAY được ăn `số chữ × 2`. Chơi hoàn hảo ⇒ score = 2×total
+  //     = **200%**, chơi xong mà từ nào cũng sai một nhát ⇒ đúng 100%. Lấy
+  //     mốc 100% ở đây là gắn huy chương cho em làm sai khắp bài.
+  //     ("bonusMinus" đổi được hệ số nhân: `bonusMult`, mặc định 2, tối đa 20.)
+  //   · GAMESHOW chấm theo TỐC ĐỘ — không có mốc nào để so.
+  //   · Bật BẤT KỲ tuỳ chọn trừ điểm nào (`pointsOff` · `minusAmount` ·
+  //     `letterPenalty` · `timeCost`) thì `score` là số ĐÃ TRỪ, có thể âm.
+  //     Chép đúng danh sách khoá của `scoreIsPenalised()` bên AWord
+  //     (core/assignment-ui.js) — bên đó đổi thì đổi cả đây.
+  //
+  // ⇒ Hai trường hợp sau rơi về luật CŨ "nộp là xong" (`tru: true`), vì bắt
+  // một mốc trên con số vô nghĩa còn tệ hơn không bắt.
+  //
+  // Đọc `assignments/{mã}` qua REST công khai, CHỈ 2 trường (mask) nên gói tin
+  // vài trăm byte. ⚠️ Vẫn tốn 1 LƯỢT ĐỌC Firestore cho mỗi act, nên nhớ VĨNH
+  // VIỄN trong localStorage: tuỳ chọn của bài giao là bản chụp ĐÓNG BĂNG lúc
+  // tạo, không bao giờ đổi ⇒ mỗi máy chỉ đọc đúng một lần cho mỗi act.
+
+  var KHOA_CHUAN = 'awc_chuan_';
+  var nhoChuan = {};
+  var TRU_KHOA = ['pointsOff', 'minusAmount', 'letterPenalty', 'timeCost'];
+  var CHUAN_LUI = { tru: true, dinh: 100 };     // đọc hỏng -> giữ nếp cũ, không phạt em nào
+
+  function urlBaiGiao(ma) {
+    var db = CFG.AWORD_DB || {};
+    return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+      '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) +
+      '?key=' + db.apiKey +
+      '&mask.fieldPaths=activityType&mask.fieldPaths=activity.options';
+  }
+
+  function ruotMap(f) { return (f && f.mapValue && f.mapValue.fields) || {}; }
+  function chuF(f) { return (f && f.stringValue) || ''; }
+
+  function chuanTuDoc(f) {
+    var loai = chuF(f.activityType);
+    var opt = ruotMap(ruotMap(f.activity).options);
+    var tru = (loai === 'gameshow');
+    for (var i = 0; i < TRU_KHOA.length && !tru; i++) {
+      if (soF(opt[TRU_KHOA[i]]) > 0) tru = true;
+    }
+    var dinh = 100;
+    if (!tru && loai === 'anagram') {
+      var che = chuF(opt.anagramMode) || 'bonus';       // mặc định của template
+      if (che === 'bonus') dinh = 200;                  // hệ số nhân cố định x2
+      else if (che === 'bonusMinus') {
+        // clampBonusMult() bên AWord: số nguyên 1..20, sai/thiếu thì về 2.
+        var n = Math.round(soF(opt.bonusMult));
+        dinh = 100 * (n >= 1 ? Math.min(20, n) : 2);
+      }
+      // "submit" = 1 điểm/từ ⇒ giữ 100.
+    }
+    return { tru: tru, dinh: dinh };
+  }
+
+  // Trả về { tru, dinh } của một act. Không bao giờ reject.
+  function chuanDiem(ma) {
+    ma = String(ma || '').trim();
+    if (!ma) return Promise.resolve(CHUAN_LUI);
+    if (nhoChuan[ma]) return nhoChuan[ma];
+    try {
+      var cu = JSON.parse(localStorage.getItem(KHOA_CHUAN + ma) || 'null');
+      if (cu && typeof cu.dinh === 'number') {
+        nhoChuan[ma] = Promise.resolve(cu);
+        return nhoChuan[ma];
+      }
+    } catch (e) {}
+
+    nhoChuan[ma] = fetch(urlBaiGiao(ma))
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+      })
+      .then(function (d) {
+        var c = chuanTuDoc(d.fields || {});
+        try { localStorage.setItem(KHOA_CHUAN + ma, JSON.stringify(c)); } catch (e) {}
+        return c;
+      })
+      .catch(function () {
+        delete nhoChuan[ma];            // quên đi để lần mở trang sau còn thử lại
+        return CHUAN_LUI;
+      });
+    return nhoChuan[ma];
+  }
+
+  // Em tên `ten` đã XONG act đó chưa (dsDiem là kết quả `diemCuaAct`, mỗi em
+  // đúng một dòng — lượt TỐT NHẤT). `chuan` thiếu thì lùi về "nộp là xong".
+  // ⇒ ĐỔI ĐỊNH NGHĨA "XONG" THÌ SỬA ĐÚNG HÀM NÀY: trang lớp, trang bài và
+  // dashboard đều gọi vào đây.
+  function xongAct(dsDiem, ten, chuan) {
+    var k = khoaTen(ten);
+    for (var i = 0; i < (dsDiem || []).length; i++) {
+      if (khoaTen(dsDiem[i].ten) !== k) continue;
+      if (!chuan || chuan.tru) return true;
+      return dsDiem[i].diem >= chuan.dinh;
+    }
+    return false;
+  }
+
   function tenDepNhat(cac) {
     return cac.slice().sort(function (a, b) {
       var hoaA = (a.match(/[A-ZÀ-Ỹ]/g) || []).length;
@@ -352,11 +462,56 @@
     return j > 0 ? t.slice(j + 1).trim() : '';
   }
 
-  // Tên thẻ học sinh nhìn thấy.
-  // ⚠️ Đợt 1 chưa có ô cho thầy gõ tên đẹp ("BÀI TẬP TỪ VỰNG") nên tạm lấy DẠNG
-  // bài. ĐỪNG tự chế tên theo dạng — Đợt 2 thầy gõ thật, có `tenBai` thì dùng.
+  // ---------- TÊN DẠNG BÀI HỌC SINH NHÌN THẤY (⭐ v1.14.0, thầy chốt 24/08/2026) ----------
+  //
+  // `b.dang` là MÃ NỘI BỘ thầy gõ ở ô Loại bên app myLesson (WORDS · DICTS ·
+  // RD · SP SLIDE · SP CHECK). Học sinh thì đọc tên KỸ NĂNG. Bảng dưới là chỗ
+  // DUY NHẤT đổi chữ — thẻ trang lớp, tiêu đề trang bài, tab trình duyệt và
+  // dashboard đều đi qua `tenBai()`.
+  //
+  // ⛔ CHỈ ĐỔI CHỮ HIỆN RA, KHÔNG đổi `b.dang` trong dữ liệu: `trangCuaBai()`
+  // và `maLesson()` ngay dưới đây đều tra theo mã cũ, app myLesson cũng sinh
+  // `id`/`tieuDe` từ đúng mã đó. Đổi trong bai.json là mọi bài cũ mất đường về.
+  var TEN_DANG = {
+    'WORDS': 'VOCABULARY',
+    'DICTS': 'LISTENING SKILL',
+    'RD': 'READING SKILL',
+    'READING': 'READING SKILL',
+    'SP': 'SPEAKING SKILL',
+    'SP SLIDE': 'SPEAKING SKILL',
+    'SP CHECK': 'SPEAKING CHECK'
+  };
+  function tenDang(d) {
+    var k = String(d || '').trim().toUpperCase().replace(/\s+/g, ' ');
+    return TEN_DANG[k] || k;
+  }
+
+  // Thầy đã gõ tên riêng cho bài chưa (ô "tên bài" trên thanh bản nháp của app)?
+  // ⛔ Dashboard dùng hàm này để in "(chưa đặt tên)". TRƯỚC v1.14.0 nó so
+  // `tenBai(b) === b.dang`; nay `tenBai()` trả tên KỸ NĂNG nên phép so đó luôn
+  // sai ⇒ bài chưa đặt tên sẽ hiện "VOCABULARY" y như tên thầy tự gõ.
+  function coTenRieng(b) {
+    return !!String((b && b.tenBai) || '').trim();
+  }
+
+  // Tên thẻ học sinh nhìn thấy: thầy gõ gì thì lấy nấy, chưa gõ thì lấy tên
+  // KỸ NĂNG suy từ dạng bài.
   function tenBai(b) {
-    return b.tenBai || b.dang || 'BÀI TẬP';
+    if (coTenRieng(b)) return b.tenBai;
+    return tenDang(b && b.dang) || 'BÀI TẬP';
+  }
+
+  // Nhãn ngắn của MỘT ô bài trên thanh tiến trình của thẻ lớp (thầy chốt
+  // 24/08/2026): "WORD PRACTICE 1" -> "WORDS 1", "PRONUNCIATION" giữ nguyên.
+  //
+  // ⛔ CHỈ đổi chỗ HIỆN RA. Tên thật của ngăn vẫn là "WORD PRACTICE 1": app
+  // myLesson SUY NGƯỢC loại ô ra từ chính chuỗi đó (`tdLoaiCua()`) để đánh số
+  // lại mỗi lần vẽ, và tên bài giao bên AWord cũng rút gọn từ nó. Đổi trong dữ
+  // liệu là hỏng cả hai chỗ.
+  function tenO(t) {
+    var s = String(t == null ? '' : t).trim();
+    var m = /^WORD\s+PRACTICE\s*(\d*)$/i.exec(s);
+    return m ? ('WORDS' + (m[1] ? ' ' + m[1] : '')) : s;
   }
 
   // Hạn nộp, trả về mốc thời gian (ms) hoặc null.
@@ -404,8 +559,9 @@
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,
     bam: bam, laMaQuanLy: laMaQuanLy,
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
-    diemCuaAct: diemCuaAct,
+    diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     actCuaBai: actCuaBai, maLesson: maLesson, tenBai: tenBai,
+    tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,
     mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,
   };
 })();

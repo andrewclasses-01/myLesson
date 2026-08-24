@@ -3,111 +3,44 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>MẪU · Trang bài tập WORDS (BẢN CHỐT)</title>
+<title>Bài tập · Andrew Classes</title>
 <link rel="stylesheet" href="assets/fonts.css">
 <style>
 /* ============================================================
-   BẢN MẪU — TRANG BÀI TẬP DẠNG WORDS (dữ liệu giả, chạy local)
+   TRANG BÀI TẬP — dùng CHUNG cho WORDS · DICTS · READING
+   (bài SPEAKING SLIDE nằm ở `bai-sp.html`)
 
-   ⭐⭐ ĐỢT SỬA 3 (20/08) — THANH ĐẦU TRÊN CÙNG (chi tiết: GHI CHU MAU.md):
-      · `.top` lên z-index **35**, `.td-pop` xuống **24** — trước cả hai cùng 30
-        nên bảng từ điển che mất avatar/ô hạn/tên bài khi cuộn. Bảng thứ tự lớp
-        đầy đủ nằm trong chú thích ngay trên rule `.top`.
-      · Thanh đầu cố ý vẫn ĐỨNG DƯỚI sidebar (41) và nền tối bóng đèn (44).
-      · 🐛 Sửa thêm lỗi CÓ SẴN TỪ v3: pop-up "về trang lớp?" nằm trong khối có
-        `clip-path` nên bị XÉN — dời ra làm con của `.giua`, vị trí không đổi.
+   ⚠️ ĐÂY LÀ TRANG THẬT ĐANG CHẠY trên https://andrewclasses.com — dữ liệu THẬT
+   trong `data/bai.json` + `data/lop.json`, do app myLesson đẩy lên (nút ĐẨY BÀI
+   LÊN WEB trong khung 👁 xem thử bản nháp). ⛔ KHÔNG còn là bản mẫu, KHÔNG có
+   dữ liệu giả, KHÔNG có trò "chỉ commit không push". Kho `mau-web` nay chỉ là
+   bản đối chiếu thiết kế — SỬA GIAO DIỆN THÌ SỬA THẲNG Ở ĐÂY.
+   · Bản đồ cả cụm + danh sách bẫy: `BAN GIAO.md` của kho myLesson-app.
+   · Nhật ký thiết kế 5 trang mẫu (54 bẫy) vẫn đáng đọc: `GHI CHU MAU.md`
+     trong `mau-web` — nhớ là mọi số đo ở đó nói về BẢN CŨ.
 
-   ⭐⭐ ĐỢT SỬA 2 (20/08) — BA TỪ ĐIỂN RIÊNG (chi tiết + số đo: GHI CHU MAU.md):
-      · Hàng từ đã tra tối đa **15**; từ thứ 16 đẩy từ CŨ NHẤT ra.
-      · Kéo được bằng ngón tay: **ngang** ở dạng rộng, **dọc** ở dạng hẹp.
-      · Chữ trong từ điển **nhỏ lại** để hiện nhiều hơn (kết quả 11,8px ở màn
-        rộng · 11px ở điện thoại). ⛔ TRỪ Ô NHẬP: giữ **16px** kẻo Safari iOS
-        tự phóng to cả trang.
-      · **MỖI ACT MỘT TỪ ĐIỂN RIÊNG** — kho riêng (`awc-td-<mã act>`), mở/đóng
-        riêng, không dính nhau.
-      · **Sang bài tập mới thì từ điển trống lại**: mở trang là xoá mọi kho của
-        act không thuộc bài này.
+   CẤU TẠO: mỗi bài là một dãy `khoi[]`. Khối có `act` thì nhúng game AWord
+   (`&nhung=1`) kèm một LEADERBOARD riêng của đúng act đó.
+   ⛔ Thêm trường mới vào `khoi[]` là phải soi CẢ phép map `KHOI` lúc boot —
+   đó là chỗ RƠI TRƯỜNG trong im lặng (đã cắn với `act`, vá ở v1.12.1).
 
-   ⭐⭐ ĐỢT SỬA 1 (20/08) — A-DICTIONARY (chi tiết + số đo: GHI CHU MAU.md):
-      · Cụm nút đầu thẻ đổi thứ tự **ĐÈN · MỞ TAB MỚI · A-DICTIONARY** và rộng
-        ĐÚNG BẰNG cột leaderboard (244px, hai mép trùng khít 0px).
-      · Từ điển **PHỦ KÍN khung leaderboard** (cả tên template + nút làm mới);
-        đụng chỗ khác không đóng, **chỉ nút X mới đóng**.
-      · Nút Tra → **Check**. Thêm **hàng từ đã tra gần đây** (chữ to + đậm),
-        bấm là hiện ngay nghĩa lần trước — 0 lần gọi mạng. Kho `localStorage`
-        `awc-td-v1`, giữ 24 từ, sống qua cả lần tắt máy.
-      · Điện thoại (<=1040px): trên khung act chỉ còn đèn + mở tab mới; nút từ
-        điển thành **icon trong đầu bảng, góc trên bên trái**, đối xứng nút làm
-        mới. Mở ra thì từ đã tra nằm **cột trái ~20%**, có vạch mảnh ngăn.
-
-   ✅✅ BẢN THẦY ĐÃ CHỐT — 20/08/2026, sau 3 đợt sửa.
-   Dựng từ `bai-dicts.html` (bản chốt của DICTS).
-
-   ⭐ LUẬT ĐẶT TÊN MỚI (thầy chốt 20/08): tên file **KHÔNG còn đuôi `vN`** —
-   mỗi mẫu chỉ giữ MỘT file là bản mới nhất và tốt nhất, sửa thì sửa thẳng.
-   Muốn xem bản cũ thì lấy trong lịch sử git của kho `mau-web`.
-   Thầy chốt cách làm: *"mẫu WORDS dùng phong cách GIỐNG HỆT mẫu DICTS, chỉ
-   khác là thay vì có khung player cho bài nghe, ta sẽ có 3 act tương tự nhau"*.
-   ⇒ Mọi thứ của v3 giữ nguyên. File này chỉ khác đúng BỐN chỗ:
-
-    1. BA THẺ ACT thay cho [act · bài nghe · act]:
-         1 WORD PRACTICE 1 · 2 WORD PRACTICE 2 · 3 PRONUNCIATION
-       — đúng bộ khối của `SITE WORD PRACTICE FORM`, xem `KHOI_MAU` trong
-       app `src/renderer/js/app.js`.
-    2. BỎ trình phát mp3 (cả CSS lẫn JS, kèm `KHO_NGHE` · `TOC_DO` ·
-       `levelCuaMa`). Cần lại thì bê nguyên khối "TRÌNH PHÁT BÀI NGHE" từ
-       `bai-dicts.html` sang.
-    3. TỪ ĐIỂN MINI giữ nguyên không sửa một chữ, nhưng chỗ neo cũ (thẻ bài
-       nghe) không còn ⇒ ⚠️ TẠM treo nút DICTIONARY ở đầu THẺ 1.
-       **Chỗ đặt đúng chờ thầy chốt** (thầy: "giữ, ta sẽ bố trí sau").
-    4. Khung nhúng act thêm quyền **microphone**: thẻ PRONUNCIATION là act
-       SPEAKING của AWord — học sinh nói vào micro cho AI chấm phát âm.
-       ⛔ Thiếu quyền này thì act nhúng không thu được tiếng, không chấm được.
-       ⚠️ Kèm theo: model chấm phát âm của AWord nặng ~240MB, tải về máy học
-       sinh ngay lần đầu bấm READY ở thẻ 3. Thầy đã biết và chọn cứ nhúng.
-
-   ⚠️ KHO BÀI GIAO HIỆN CHỈ CÒN MỘT MÃ SỐNG (`jf98bk`, dạng anagram) nên cả ba
-   thẻ tạm NHÚNG CHUNG mã đó qua trường `maThat`; bảng xếp hạng thì vẫn tra
-   theo `ma` riêng của từng act để mỗi thẻ một bảng khác nhau. Thầy giao đủ ba
-   mã thì **xoá hẳn `maThat`** đi là mọi thứ tự khớp.
-   ⚠️ Vì thế thẻ 3 đang hiện act anagram — CHƯA soi được micro chạy thật.
-
-
-   ⭐⭐ ĐỢT SỬA 3 (19/08) — 11 việc thầy giao. Thầy dặn: **DICTS và MỌI
-   TEMPLATE SAU NÀY đều theo những điều này**:
-
-    1. Hai dạng RỘNG / ĐIỆN THOẠI, y lối trang chính của lớp.
-    2. Dạng rộng: chỗ trước đây là khung trò chuyện nay là **LEADERBOARD CỦA
-       CHÍNH ACT ĐÓ**, nằm ngay bên phải act, **cao đúng bằng khung act**;
-       chữ tự co giãn để **luôn đủ cả lớp** (tối đa 20 em, thường 18).
-    3. Dạng điện thoại: leaderboard xuống dưới act, **chia 3 CỘT** để hiện đủ
-       cả lớp, ưu tiên đổ đầy cột đầu (16 em → 6-6-4).
-    4. Tiêu đề bảng đổi thành **LEADERBOARD**, căn giữa; **bỏ nút "XEM CẢ
-       LỚP"** (đã hiện đủ rồi thì xem gì nữa).
-    5. Thêm **nút bóng đèn** cạnh nút mở tab mới: bấm là nền tối + mờ rất
-       mạnh, chỉ khung act sáng để chơi; nút đèn vẫn sáng bình thường.
-    6. Khung act AWord đổi sang **16 : 10,5** cho khớp bên AWord (khỏi cuộn).
-    7. Nút "mở ở tab mới" **chỉ còn một icon**, nằm **góc trên bên phải** thẻ,
-       cùng hàng với tiêu đề.
-    8. **Tên lesson nằm CÙNG HÀNG với tiêu đề**:
-       `WORD PRACTICE • LSFLY-S1.T3.P1-2-3 WORD / ANAGRAM`.
-    9. (Bên AWord) tên vào game lấy thẳng từ mã đăng nhập, không cho gõ tay;
-       màn Start hiện `TÊN EM - LỚP`.
-   10. ⛔ **BỎ MỌI DÒNG HƯỚNG DẪN** ("Làm lần lượt 3 phần…", "Em nghe lại bao
-       nhiêu lần cũng được…") và **đừng thêm dòng hướng dẫn nào nữa** — thầy
-       muốn học sinh tự khám phá, tự hiểu quy luật.
-   11. Trình phát bài nghe: **thanh thời gian nằm giữa các nút**, thanh dày
-       hơn, nút kéo to hơn, **thêm nút +5 giây**, icon ±5s đổi sang mũi tên,
-       nút tốc độ bấm ra **bảng dọc**: 0,5 · 0,75 · 1 · 1,5 · 2.
-
-   ---
-   NỀN (các đợt trước)
-   · Khung ngoài (thanh đầu · 2 sidebar · token màu · font · toast) CHÉP TỪ
-     `trang-chinh.html` — sửa bên đó thì nhớ sửa cả đây.
-   · Bố cục ruột theo `D:\APP AND DATA\WebDesign\…DEMO.html` của thầy.
-   · Ba khối chép đúng cấu trúc bài thật trong `data/bai.json`.
-   · (Dạng DICTS còn có thẻ BÀI NGHE mp3 — dạng WORDS không có, xem mục 2 ở trên.)
-   ⛔ File này dùng TÊN THẬT học sinh B2-B ⇒ kho `mau-web` cố ý KHÔNG có remote.
+   ⛔ LUẬT CÒN HIỆU LỰC (thầy chốt — đừng phá):
+   1. KHÔNG một dòng hướng dẫn nào cho học sinh; thầy muốn các em tự khám phá.
+   2. Khung nhúng act phải giữ quyền `microphone` (dòng `f.setAttribute('allow'…)`)
+      — thẻ PRONUNCIATION là act SPEAKING của AWord, AI chấm phát âm. Model chấm
+      nặng ~240MB tải về máy em ở lần bấm READY đầu tiên: thầy biết và vẫn chọn nhúng.
+   3. Khung act giữ tỉ lệ **16 : 10,5** cho khớp bên AWord (khỏi sinh thanh cuộn).
+   4. Leaderboard: dạng rộng nằm bên phải act, CAO ĐÚNG BẰNG khung act, chữ tự co
+      để luôn đủ cả lớp; dạng điện thoại xuống dưới act và chia 3 CỘT. Làm mới =
+      đọc lại THẬT (`diemCuaAct(ma, true)`), cộng nghe `AWORD:NOP` do khung act
+      nhúng bắn lên sau mỗi cú nộp. ⛔ TUYỆT ĐỐI không poll theo nhịp — hạn mức Firebase.
+   5. Thứ lớp: `.top` **35** > `.td-pop` **24**; thanh đầu cố ý vẫn ĐỨNG DƯỚI
+      sidebar (41) và nền tối bóng đèn (44). Bảng đầy đủ ở chú thích trên rule `.top`.
+   6. Từ điển mini: MỖI ACT MỘT KHO RIÊNG (`awc-td-<mã act>`), sang bài mới là
+      xoá kho của act lạ; ô nhập giữ **16px** kẻo Safari iOS tự phóng to cả trang;
+      mở ra thì phủ kín khung leaderboard và CHỈ nút ✕ mới đóng.
+   7. Khung ngoài (thanh đầu · 2 sidebar · token màu · font · toast) dùng CHUNG
+      với `lop.html` — sửa bên đó thì nhớ sửa cả đây.
    ============================================================ */
 :root{
   --ground:#F7FAF9; --surface:#FFFFFF; --ink:#16232A; --muted:#5F7370;

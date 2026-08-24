@@ -2750,6 +2750,11 @@ A.napDuLieu().then(function(dl){
     return {
       loai: (k.loai === 'nghe' || k.loai === 'audio') ? 'audio' : 'act',
       ten: k.ten || '', ma: k.ma || '', maNghe: k.maNghe || '',
+      /* 🐛 v1.12.1 — `act` (bộ nghĩa ENG1/VI1) bị RƠI ở chính phép lọc này từ
+         v1.12.0: dòng "mã lesson • ENG1" render ở veKhoi (k.act) nhưng map ở
+         đây không bê trường đó qua ⇒ không bao giờ hiện. Lộ ra nhờ bản XEM THỬ
+         BẢN NHÁP của app v1.17.0 — đo DOM thấy .ch-ma vắng mặt. */
+      act: k.act || '',
       yeuCau: k.yeuCau || '', mau: k.mau || ''
     };
   });

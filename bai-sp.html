@@ -559,9 +559,15 @@ body.mo-menu .side.trai{transform:none}
   .dau-bai .db-ten{font-size:11.8px}
 }
 
-/* ═══ v1.9.0 — chưa có kho sao thì ẩn huy hiệu sao + ví (giống hai trang kia). */
-.sao-hieu{display:none !important}
-.vi-to{display:none !important}
+/* ═══ v1.15.0 — VÍ SAO LUÔN HIỆN, KỂ CẢ KHI ĐANG 0 SAO ═══
+   Thầy chốt 25/08/2026: "luôn hiện số sao và các tính năng liên quan cho học
+   sinh, kể cả là 0 sao (trong mọi trang, sidebar, nơi xuất hiện và có thể bấm
+   nút avatar)". Hai dòng `display:none !important` của v1.9.0 đã BỎ HẲN.
+   ⚠️ Chưa có kho sao thật ⇒ số hiện ra là 0 cho mọi em (đừng gõ số giả vào
+   HTML nữa — bản trước để 350 trong sidebar, nhìn như em nào cũng có sẵn 350
+   sao). Khi có kho sao thì chỉ việc đổ số thật vào `.sao-hieu` và `.vi-to .so`,
+   không phải sửa CSS.
+   Hai mục "Thông tin ví" · "Đăng ký đổi quà" vẫn báo "đang xây dựng" khi bấm. */
 </style>
 </head>
 <body>
@@ -638,7 +644,9 @@ body.mo-menu .side.trai{transform:none}
       <svg class="sao-con c4" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
       <svg class="sao-con c5" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
     </div>
-    <div class="so">350</div>
+    <!-- v1.15.0 — số sao THẬT chưa có kho ⇒ 0 cho mọi em.
+           ⛔ Đừng gõ lại số giả: học sinh đọc con số này là tin ngay. -->
+      <div class="so">0</div>
     <div class="nh">SAO ĐANG CÓ</div>
   </div>
   <div class="side-ds" id="dsMenu"></div>
@@ -647,8 +655,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=20"></script>
-<script src="js/chung.js?v=18"></script>
+<script src="config.js?v=21"></script>
+<script src="js/chung.js?v=19"></script>
 <script>
 /* ============================================================
    TRANG SPEAKING SLIDE — bản THẬT (web v1.9.0, 23/08/2026).
@@ -705,7 +713,11 @@ var MUC_QUA = [
 ];
 /* ⭐ v1.9.0 — thêm mục ĐỔI BẠN (đăng xuất), giống hai trang kia. */
 var MUC_RA = [
-  { nh:'Đổi bạn khác', mo:'Thoát ra để bạn khác đăng nhập', lam: function(){
+  /* v1.15.0 — thầy chốt 25/08/2026: đổi tên thành ĐĂNG XUẤT cho đúng việc
+     nó làm (xoá danh tính đang nhớ trong máy rồi về màn đăng nhập). Chú
+     thích nói rõ đăng xuất khỏi CÁI GÌ — học sinh hay tưởng là thoát
+     Google/Zalo. ⛔ Việc làm KHÔNG đổi, vẫn `A.thoat()` + về index.html. */
+  { nh:'Đăng xuất', mo:'Đăng xuất ID Andrew Classes', lam: function(){
       A.thoat();
       location.href = 'index.html';
     },

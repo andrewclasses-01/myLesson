@@ -508,10 +508,19 @@
   // myLesson SUY NGƯỢC loại ô ra từ chính chuỗi đó (`tdLoaiCua()`) để đánh số
   // lại mỗi lần vẽ, và tên bài giao bên AWord cũng rút gọn từ nó. Đổi trong dữ
   // liệu là hỏng cả hai chỗ.
-  function tenO(t) {
+  //
+  // ⭐ v1.15.0 — THÊM cờ `ngan`: rút gọn thêm "PRONUNCIATION" -> "PRONUNC"
+  // (thầy chốt 25/08/2026). CHỈ trang lớp (`lop.html`) bật cờ này — chữ đó dài
+  // gấp rưỡi "WORDS 1" nên cột tên của thanh tiến trình phải nới rộng theo, ăn
+  // mất chỗ của chính thanh. Trang bài tập rộng rãi hơn ⇒ GIỮ NGUYÊN chữ đầy
+  // đủ (thầy chốt: "trong trang bài tập lớp thì không cần rút ngắn như vậy").
+  // ⛔ Đừng rút gọn thẳng trong nhánh không cờ: cả 3 trang gọi chung hàm này.
+  function tenO(t, ngan) {
     var s = String(t == null ? '' : t).trim();
     var m = /^WORD\s+PRACTICE\s*(\d*)$/i.exec(s);
-    return m ? ('WORDS' + (m[1] ? ' ' + m[1] : '')) : s;
+    if (m) return 'WORDS' + (m[1] ? ' ' + m[1] : '');
+    if (ngan && /^PRONUNCIATION$/i.test(s)) return 'PRONUNC';
+    return s;
   }
 
   // Hạn nộp, trả về mốc thời gian (ms) hoặc null.

@@ -14,6 +14,33 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
+## ⭐ v1.15.0 (25/08/2026) — THẺ TRANG LỚP + VÍ SAO + ĐĂNG XUẤT *(bản đang chạy)*
+
+> Hồ sơ đầy đủ của **cả cụm 3 app** (app myLesson · AWord · web này) nằm ở
+> `myLesson/app/BAN GIAO.md` — phiên mới đọc file đó trước.
+
+- **Nhãn thanh tiến trình trên thẻ lớp**: `PRONUNCIATION` rút thành **`PRONUNC`** — **CHỈ ở
+  `lop.html`** (`A.tenO(ten, true)`); `bai.html` gọi không cờ nên **giữ chữ đầy đủ** (thầy chốt).
+- Hàm mới **`canhNhanO()`** trong `lop.html`: đo chữ thật rồi giãn `letter-spacing` cho
+  `WORDS 1` · `WORDS 2` **rộng bằng** `PRONUNC`, sau đó hạ biến `--cot-ten` xuống đúng bề ngang
+  đó ⇒ chỗ dôi ra rơi hết vào THANH. Đo thật ở 1280px: cột tên **112 → 66px**, thanh **409 →
+  455px**; ca chật nhất (thẻ gấp 375px + cột CHƯA XONG BÀI) thanh còn 48px, không nhãn nào bị cắt.
+  ⛔ Đổi cỡ chữ nhãn thì quét kiểm lại CẢ hai bề ngang màn hình.
+- **Ví sao luôn hiện, kể cả 0 sao** (cả 3 trang): hai dòng `display:none !important` của v1.9.0
+  đã bỏ, số giả `350` trong sidebar đổi thành `0`. ⚠️ **Chưa có kho sao thật** — khi nào có thì
+  chỉ việc đổ số vào `.sao-hieu` và `.vi-to .so`, không phải sửa CSS.
+- Mục cuối menu: **"Đổi bạn khác" → "Đăng xuất"** (chú thích *Đăng xuất ID Andrew Classes*),
+  việc làm không đổi (`A.thoat()` rồi về `index.html`).
+
+## ⭐ v1.14.0 (24/08/2026) — "ĐÃ XONG BÀI" = ĐỦ ĐIỂM TỐI ĐA
+
+Bốn hàm dùng chung trong `js/chung.js`, **ba trang gọi vào đúng đó, đừng vá lẻ**:
+`A.chuanDiem(ma)` · `A.xongAct(dsDiem, ten, chuan)` · `A.tenBai/tenDang/coTenRieng` · `A.tenO`.
+⛔ Đổi định nghĩa "xong" là đổi **ở ba chỗ cùng lúc** (`lop.html` thanh tiến trình ·
+`bai.html` màu tên + huy chương · `dashboard.html` đếm "chưa xong").
+⛔⛔ "Điểm tối đa" **không phải lúc nào cũng 100%**: anagram chế độ `bonus` chấm theo CHỮ CÁI nên
+đỉnh là **200%**; Gameshow và bài bật trừ điểm thì `tru:true` = **nộp là xong**.
+
 ## ⭐ v1.9.0 (23/08/2026) — MỘT TRANG THÀNH NHIỀU TRANG
 
 Trước v1.9.0 cả web là một file `index.html` + `js/app.js` với 3 màn. Từ v1.9.0, bộ mẫu
@@ -36,6 +63,9 @@ em** — app myLesson dùng đường này cho nút xem nhanh, KHÔNG ghi gì v�
 
 Vào bằng **mã quản lý** ở màn đăng nhập, hoặc bấm tab **CLASSES** trong app myLesson. Máy nào
 đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng; nút **Thoát** quên đi.
+⭐ **Từ app myLesson v1.20.0**, tab CLASSES chạy trang này **ngay trong app** (webview) và **tự
+đặt cờ `mylesson_ql`** nên không hỏi mã. ⛔ Vì thế **đừng đổi id `#cong` / `#trang`** và đừng đổi
+tên khoá cờ — app dò đúng hai thứ đó để biết cửa hỏi mã còn hiện hay không.
 
 Ba tầng, xoay quanh câu hỏi thầy hỏi mỗi ngày — *bài nào sắp hết hạn mà lớp còn nhiều em chưa làm*:
 

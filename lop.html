@@ -938,7 +938,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=23"></script>
+<script src="config.js?v=24"></script>
 <script src="js/chung.js?v=19"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
@@ -1072,10 +1072,11 @@ function ngayCuaMoc(ms){
 function theTuBai(b){
   var acts = A.actCuaBai(b);
   var moc = A.mocHan(b);
+  var laSp = /SP\s*CHECK/i.test(b.dang || '');
   return {
     id: b.id,
     dang: b.dang || '',
-    loai: /SP\s*CHECK/i.test(b.dang || '') ? 'spcheck' : '',
+    loai: laSp ? 'spcheck' : '',
     trang: A.trangCuaBai(b),
     ten: A.tenBai(b),
     ma: A.maLesson(b),
@@ -1083,7 +1084,14 @@ function theTuBai(b){
     han: A.chuHan(b),                 /* chữ trên ô hạn */
     hanNgan: ngayCuaMoc(moc),         /* thẻ cũ chỉ hiện ngày */
     hanMoc: moc,                      /* mốc thật cho đồng hồ đếm ngược */
-    bai: acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; }),
+    /* (Đợt 3 Firebase — PHẦN C′) thẻ SP CHECK: app đẩy MỘT khối giả loai:'spcheck'
+       (không phải act AWord). Thanh tiến trình vẫn cần đúng 1 dòng để
+       `capNhatTheSpeaking()` đổ số "đã nộp" vào `bai[0].xong`; số `xong` app đẩy
+       sẵn hiện NGAY, kho Firestore đổ số thật đè lên sau (nếp "hiện trước, đổ sau"). */
+    bai: laSp
+      ? [{ ten: 'SPEAKING CHECK', ma: '',
+           xong: (b.khoi && b.khoi[0] && +b.khoi[0].xong) || 0 }]
+      : acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; }),
     tay: b.tay || '',
     thieu: []
   };
@@ -1113,6 +1121,9 @@ function donDiem(cacThe){
     cacThe.forEach(function(t){
       var thieu = {};
       (t.bai || []).forEach(function(x){
+        /* (Đợt 3) dòng giả của thẻ SP CHECK không có mã act — điểm/thiếu của nó
+           do capNhatTheSpeaking() lo, đếm ở đây là bêu nhầm cả lớp "chưa xong". */
+        if (!x.ma) return;
         var ds = theoMa[x.ma] || [];
         var chuan = chuanMaAct[x.ma];
         var dem = 0;
@@ -2178,7 +2189,10 @@ function spVaoBuoi(b, lop, kho){
     v:1, kho: kho, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
     topic: lop.topic || lop.lesson, ten: em.ten, tenDayDu: TOI,
     team: em.team, cham: cap.checked,
-    video: doiCham.video || '', members: doiCham.members || []
+    video: doiCham.video || '', members: doiCham.members || [],
+    /* (Đợt 3) video của MỌI đội — bên mySpeaking bấm logo là mở pop-up xem
+       cả lớp để học hỏi tham khảo (thầy chốt 26/08). */
+    clips: (lop.teams || []).map(function(t){ return { t: t.team, v: t.video || '' }; })
   });
   var duong = SP_WEB + '?goi=' + goi;
 

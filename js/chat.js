@@ -54,13 +54,18 @@
   var TOI_DA_TIN = 200;      // chỉ kéo về 200 tin gần nhất
 
   // Nạp SDK kiểu lười: trang nào không mở chat thì không tải gì cả (~120KB).
+  // (v1.17.0) ⛔ KHÔNG initializeApp mù quáng: khối SPEAKING của dashboard cũng
+  // nạp SDK này — bên nào chạy sau mà cứ initializeApp là dính lỗi duplicate-app
+  // và chat chết lặng. Ai đến trước thì tạo app, ai đến sau thì DÙNG CHUNG.
   var _p = null;
   function db() {
     if (!_p) {
       _p = (async function () {
         var appMod = await import(SDK + '/firebase-app.js');
         var fsMod = await import(SDK + '/firebase-firestore.js');
-        var app = appMod.initializeApp(CAU_HINH);
+        var app = (appMod.getApps && appMod.getApps().length)
+          ? appMod.getApp()
+          : appMod.initializeApp(CAU_HINH);
         return { fs: fsMod, db: fsMod.getFirestore(app) };
       })();
     }

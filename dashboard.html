@@ -200,6 +200,44 @@ a{color:inherit}
 .ten-o i{font-style:normal; opacity:.65; margin-left:4px}
 .bai-nut{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
 
+/* ---------- SPEAKING (v1.17.0 — kho Firestore mySpeaking, Đợt Firebase) ---------- */
+.sp-o{border:1px solid var(--vien); border-radius:13px; margin-bottom:8px;
+  overflow:hidden; background:#fff}
+.sp-dau{display:flex; align-items:center; gap:10px; width:100%; text-align:left;
+  padding:10px 13px; background:none; border:0}
+.sp-dau:hover{background:#FAFCFC}
+.sp-doi{flex:none; font:800 10px/1 var(--font); letter-spacing:.06em;
+  padding:3px 7px; border-radius:6px; background:var(--duong-nhat); color:var(--duong)}
+.sp-ten{font:800 13.5px/1.3 var(--font); min-width:0; overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
+.sp-tt{font:700 12px/1.35 var(--font); color:var(--mo); white-space:nowrap}
+.sp-tt b{color:var(--chu)}
+.sp-o.chua .sp-tt{color:var(--do); font-weight:800}
+.sp-nhan{font:800 10px/1.2 var(--font); padding:3px 7px; border-radius:6px;
+  white-space:nowrap}
+.sp-nhan.rong{background:var(--vang-nhat); color:#8a5b0e}
+.sp-nhan.giam{background:var(--do-nhat); color:#a33a2c}
+.sp-o .mui{color:var(--nhat); transition:transform .2s ease}
+.sp-o.mo .mui{transform:rotate(90deg)}
+.sp-than{display:none; padding:2px 13px 12px; border-top:1px dashed var(--vien)}
+.sp-o.mo .sp-than{display:block}
+.sp-luot{margin-top:11px}
+.sp-luot h4{margin:0 0 6px; font:800 11px/1.3 var(--font); letter-spacing:.06em;
+  text-transform:uppercase; color:var(--mo)}
+.sp-loi{border-left:3px solid var(--vien-dam); padding:5px 10px; margin:6px 0;
+  font-size:12.5px; line-height:1.5}
+.sp-loi .moc{font:700 11px/1 Consolas,monospace; background:#16232A; color:#fff;
+  border-radius:5px; padding:2px 6px; margin-right:6px}
+.sp-loi .ai{font:800 11.5px/1.3 var(--font); color:var(--duong)}
+.sp-loi .loai{font:700 10px/1.2 var(--font); letter-spacing:.05em; padding:2px 6px;
+  border-radius:5px; background:var(--xanh-nhat); color:var(--xanh); margin-left:5px}
+.sp-loi .cau{font-style:italic; margin-top:3px}
+.sp-loi .sai{color:#a33a2c; font-weight:700; margin-top:2px}
+.sp-loi .giai{color:#1f7a4d; margin-top:2px}
+.sp-gio{display:flex; flex-wrap:wrap; gap:6px; margin-top:6px}
+.sp-gio span{padding:3px 9px; border-radius:8px; background:#F1F5F4;
+  border:1px solid var(--vien); font:600 11.5px/1.4 var(--font)}
+
 /* ---------- KHUNG TRÒ CHUYỆN CỦA LỚP ---------- */
 .chat-khoi .khoi-than{padding:0}
 .chat-body{
@@ -374,6 +412,22 @@ a{color:inherit}
         <div class="khoi-than" id="baiDs"></div>
       </section>
 
+      <!-- ⭐ v1.17.0 — SPEAKING (Đợt 2 Firebase): bảng nộp bài chấm chéo của buổi
+           speaking, số TỰ NHẢY khi có em vừa nộp (kho spBuoi/baiNop, Firestore).
+           Bấm một em là bung chi tiết từng lỗi em đó bắt + bảng giờ nói. -->
+      <section class="khoi">
+        <div class="khoi-dau">
+          <h2>Speaking</h2>
+          <span class="phu" id="spPhu"></span>
+          <div class="day"></div>
+          <select class="chon-em" id="spChonBuoi" title="Chọn buổi speaking" disabled></select>
+          <button class="nut nho" id="spChep" hidden>Chép tên em chưa nộp</button>
+        </div>
+        <div class="khoi-than" id="spThan">
+          <div class="trong">Đang tìm buổi speaking…</div>
+        </div>
+      </section>
+
       <!-- ⭐ v1.11.0 — TRÒ CHUYỆN VỚI LỚP. Đổi chip lớp là đổi luôn phòng này,
            chung kho tin với khung chat bên trang học sinh (`js/chat.js`). -->
       <section class="khoi chat-khoi">
@@ -439,9 +493,9 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=22"></script>
+<script src="config.js?v=23"></script>
 <script src="js/chung.js?v=19"></script>
-<script src="js/chat.js?v=17"></script>
+<script src="js/chat.js?v=18"></script>
 <script>
 (function () {
   'use strict';
@@ -923,6 +977,222 @@ a{color:inherit}
       '&nhu=' + encodeURIComponent(ma), '_blank');
   }
 
+  // ---------- SPEAKING (v1.17.0 — Đợt 2 Firebase) ----------
+  // Bảng "ai đã nộp bài chấm chéo" của buổi speaking đang chọn, SỐ TỰ NHẢY
+  // (onSnapshot — đúng lúc thầy ngồi chờ cả lớp nộp là lúc cần nhất).
+  // KỶ LUẬT HẠN MỨC: 1 lượt hỏi danh sách buổi khi đổi lớp + 1 kênh nghe trên
+  // ĐÚNG buổi đang chọn (tự gỡ khi đổi lớp/buổi). ⛔ Đừng nghe mọi buổi mọi lớp.
+  // Tên hiện = TÊN TRONG BUỔI (vd PHONG) lấy từ chính spBuoi.teams — không phải
+  // tên chuẩn myStudent, không cần ghép tên gì cả.
+  // ⛔ SDK dùng CHUNG app Firebase với chat.js (getApps trước, initializeApp
+  // sau) — bên nào cũng initializeApp mù là dính duplicate-app, chat chết lặng.
+  var SP_SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
+  var SP_CAU_HINH = {
+    apiKey: 'AIzaSyAV_yoyAQM2fKKdOsJyuAxxf4AN7MsF7XY',
+    authDomain: 'aword-70dae.firebaseapp.com',
+    projectId: 'aword-70dae',
+    storageBucket: 'aword-70dae.firebasestorage.app',
+    messagingSenderId: '399279049436',
+    appId: '1:399279049436:web:b9b34dcfb34732aa744219'
+  };
+  var _spDb = null;
+  function spDb() {
+    if (!_spDb) {
+      _spDb = (async function () {
+        var appMod = await import(SP_SDK + '/firebase-app.js');
+        var fsMod = await import(SP_SDK + '/firebase-firestore.js');
+        var app = (appMod.getApps && appMod.getApps().length)
+          ? appMod.getApp()
+          : appMod.initializeApp(SP_CAU_HINH);
+        return { fs: fsMod, db: fsMod.getFirestore(app) };
+      })();
+    }
+    return _spDb;
+  }
+
+  var SP = { buoi: [], id: '', tenBuoi: '', dangMo: false, thoi: null,
+             em: [], nop: {}, moDang: '' };
+
+  function spKhoa(s) { return String(s || '').replace(/\s+/g, ' ').trim().toUpperCase(); }
+  function spGo() { if (SP.thoi) { try { SP.thoi(); } catch (e) {} SP.thoi = null; } }
+  function spLoiChu(e) {
+    var ma = (e && (e.code || e.message)) || '';
+    if (String(ma).indexOf('permission-denied') >= 0)
+      return 'Kho speaking chưa mở khoá (luật Firestore).';
+    return 'Chưa nối được kho speaking. Thử tải lại trang nhé.';
+  }
+  // 'dd/MM HH:mm' từ chuỗi ISO của lượt nộp
+  function spGioDep(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+
+  // Đổi lớp → nạp lại danh sách buổi của lớp (1 lượt hỏi, tối đa 25 buổi gần nhất)
+  function spNapBuoi() {
+    spGo();
+    SP.buoi = []; SP.id = ''; SP.tenBuoi = ''; SP.nop = {}; SP.em = []; SP.moDang = '';
+    $('#spPhu').textContent = '';
+    $('#spChep').hidden = true;
+    var o = $('#spChonBuoi');
+    o.innerHTML = ''; o.disabled = true;
+    $('#spThan').innerHTML = '<div class="trong">Đang tìm buổi speaking…</div>';
+    var lop = LOP_CHON;
+    spDb().then(function (f) {
+      if (lop !== LOP_CHON) return;
+      var q = f.fs.query(
+        f.fs.collection(f.db, 'spBuoi'),
+        f.fs.where('classCode', '==', String(lop).replace(/\s+/g, '').toUpperCase()),
+        f.fs.limit(25));
+      return f.fs.getDocs(q).then(function (snap) {
+        if (lop !== LOP_CHON) return;
+        var ds = [];
+        snap.forEach(function (d) { var x = d.data() || {}; x._id = d.id; ds.push(x); });
+        ds.sort(function (a, b) { return (b.capNhat || 0) - (a.capNhat || 0); });
+        SP.buoi = ds;
+        if (!ds.length) {
+          $('#spThan').innerHTML = '<div class="trong">Lớp này chưa có buổi speaking nào ' +
+            'trong kho mới.<br><span style="font-size:11.5px">(Ra bài từ app mySpeaking là ' +
+            'buổi hiện ở đây. Buổi cũ trong Google Sheets không hiện.)</span></div>';
+          return;
+        }
+        o.innerHTML = ds.map(function (b) {
+          return '<option value="' + A.chuAnToan(b._id) + '">' +
+            A.chuAnToan(b.lesson || b._id) + (b.active ? ' · đang mở' : '') + '</option>';
+        }).join('');
+        o.disabled = false;
+        var macDinh = ds.filter(function (b) { return b.active; })[0] || ds[0];
+        o.value = macDinh._id;
+        spChonBuoi(macDinh._id);
+      });
+    })['catch'](function (e) {
+      if (lop === LOP_CHON)
+        $('#spThan').innerHTML = '<div class="trong">' + A.chuAnToan(spLoiChu(e)) + '</div>';
+    });
+  }
+
+  // Chọn một buổi → mở kênh nghe lượt nộp của ĐÚNG buổi đó
+  function spChonBuoi(id) {
+    spGo();
+    SP.id = id; SP.nop = {}; SP.moDang = '';
+    var b = SP.buoi.filter(function (x) { return x._id === id; })[0] || {};
+    SP.tenBuoi = b.lesson || id;
+    SP.dangMo = !!b.active;
+    SP.em = [];
+    (b.teams || []).forEach(function (t) {
+      (t.members || []).forEach(function (m) { SP.em.push({ ten: m, doi: t.team }); });
+    });
+    veSp();
+    spDb().then(function (f) {
+      if (SP.id !== id) return;
+      SP.thoi = f.fs.onSnapshot(
+        f.fs.collection(f.db, 'spBuoi', id, 'baiNop'),
+        function (snap) {
+          if (SP.id !== id) return;
+          var docs = [];
+          snap.forEach(function (d) { docs.push(d.data() || {}); });
+          // sid = yyMMdd-HHmmss-… nên so chuỗi là so thời gian; mới nhất trước
+          docs.sort(function (a, c) { return String(a.sid || '') < String(c.sid || '') ? 1 : -1; });
+          var nop = {};
+          docs.forEach(function (d) {
+            var k = spKhoa(d.student);
+            if (!k) return;
+            if (!nop[k]) nop[k] = { ten: String(d.student || ''), luot: [] };
+            nop[k].luot.push(d);
+          });
+          SP.nop = nop;
+          veSp();
+        },
+        function (e) {
+          if (SP.id === id)
+            $('#spThan').innerHTML = '<div class="trong">' + A.chuAnToan(spLoiChu(e)) + '</div>';
+        });
+    });
+  }
+
+  function veSpMotLuot(d, stt, tong) {
+    var loi = d.errors || [];
+    var gio = (d.timers || []).map(function (t) {
+      var p = function (n) { return String(n == null ? '' : n); };
+      return '<span>' + A.chuAnToan(t.name || '') + ': ' +
+        p(t.sMin) + ':' + String(p(t.sSec)).padStart(2, '0') + ' → ' +
+        p(t.eMin) + ':' + String(p(t.eSec)).padStart(2, '0') + '</span>';
+    }).join('');
+    return '<div class="sp-luot">' +
+      '<h4>' + (tong > 1 ? ('Lượt ' + stt + '/' + tong + ' — ') : '') +
+        A.chuAnToan(spGioDep(d.submittedAt)) + ' · ' + loi.length + ' lỗi' +
+        (d.checkedTeam ? (' · chấm ' + A.chuAnToan(d.checkedTeam)) : '') + '</h4>' +
+      (loi.length ? loi.map(function (er) {
+        var p = function (n) { return String(parseInt(n, 10) || 0); };
+        return '<div class="sp-loi">' +
+          '<span class="moc">' + p(er.min) + ':' + String(p(er.sec)).padStart(2, '0') + '</span>' +
+          '<span class="ai">' + A.chuAnToan(er.who || '?') + '</span>' +
+          '<span class="loai">' + A.chuAnToan(er.type || '?') + '</span>' +
+          (er.sentence ? '<div class="cau">“' + A.chuAnToan(er.sentence) + '”</div>' : '') +
+          (er.detail ? '<div class="sai">' + A.chuAnToan(er.detail) + '</div>' : '') +
+          (er.explain ? '<div class="giai">' + A.chuAnToan(er.explain) + '</div>' : '') +
+        '</div>';
+      }).join('') : '<p class="mau" style="color:var(--nhat);margin:4px 0">Lượt này không có lỗi nào.</p>') +
+      (gio ? '<div class="sp-gio">' + gio + '</div>' : '') +
+    '</div>';
+  }
+
+  function veSp() {
+    if (!SP.id) return;
+    var daNop = 0;
+    SP.em.forEach(function (e) { if (SP.nop[spKhoa(e.ten)]) daNop++; });
+    // người nộp không khớp danh sách buổi (hiếm — sửa tay dữ liệu) vẫn phải hiện
+    var la = Object.keys(SP.nop).filter(function (k) {
+      return !SP.em.some(function (e) { return spKhoa(e.ten) === k; });
+    });
+    $('#spPhu').textContent = 'buổi ' + SP.tenBuoi + (SP.dangMo ? '' : ' (đã đóng)') +
+      ' · ' + daNop + '/' + SP.em.length + ' đã nộp';
+    $('#spChep').hidden = !(SP.em.length && daNop < SP.em.length);
+
+    function motDong(ten, doi, k) {
+      var n = SP.nop[k];
+      var mo = SP.moDang === k && n;
+      var tt, nhan = '';
+      if (!n) tt = 'chưa nộp';
+      else {
+        var moi = n.luot[0];
+        var soLoi = (moi.errors || []).length;
+        tt = '<b>' + soLoi + ' lỗi</b> · ' + A.chuAnToan(spGioDep(moi.submittedAt)) +
+          (n.luot.length > 1 ? (' · ' + n.luot.length + ' lượt') : '');
+        if (!soLoi) nhan = '<span class="sp-nhan rong">nộp 0 lỗi</span>';
+        else if (n.luot.length > 1 && soLoi < (n.luot[1].errors || []).length)
+          nhan = '<span class="sp-nhan giam">↓ ít hơn lượt trước</span>';
+      }
+      return '<div class="sp-o' + (n ? '' : ' chua') + (mo ? ' mo' : '') + '">' +
+        '<button class="sp-dau" data-sp-dau="' + A.chuAnToan(k) + '"' + (n ? '' : ' disabled') + '>' +
+          (doi ? '<span class="sp-doi">T' + A.chuAnToan(String(doi)) + '</span>' : '') +
+          '<span class="sp-ten">' + A.chuAnToan(ten) + '</span>' +
+          '<span class="day"></span>' + nhan +
+          '<span class="sp-tt">' + tt + '</span>' +
+          (n ? '<span class="mui">›</span>' : '') +
+        '</button>' +
+        (mo ? '<div class="sp-than">' + n.luot.map(function (d, i) {
+            return veSpMotLuot(d, n.luot.length - i, n.luot.length);
+          }).join('') + '</div>' : '') +
+      '</div>';
+    }
+
+    $('#spThan').innerHTML =
+      SP.em.map(function (e) { return motDong(e.ten, e.doi, spKhoa(e.ten)); }).join('') +
+      la.map(function (k) { return motDong(SP.nop[k].ten + ' (ngoài danh sách buổi)', '', k); }).join('') +
+      (!SP.em.length && !la.length
+        ? '<div class="trong">Buổi này chưa có đội nào.</div>' : '');
+  }
+
+  function spChepThieu() {
+    var thieu = SP.em.filter(function (e) { return !SP.nop[spKhoa(e.ten)]; });
+    if (!thieu.length) return;
+    var chu = 'Lớp ' + LOP_CHON + ' — chưa nộp bài chấm speaking "' + SP.tenBuoi + '": ' +
+      thieu.map(function (e) { return e.ten + ' (T' + e.doi + ')'; }).join(', ');
+    thuChep(chu, thieu.length);
+  }
+
   // ---------- TRÒ CHUYỆN VỚI LỚP (v1.11.0) ----------
   // Chung kho tin với khung chat bên trang học sinh — thầy nhắn ở đây thì các
   // em thấy ngay trên `lop.html`, và ngược lại. Xem `js/chat.js`.
@@ -1016,6 +1286,7 @@ a{color:inherit}
     try { localStorage.setItem('mylesson_ql_lop', maLop); } catch (e) {}
     veTat();
     noiChat();
+    spNapBuoi();          // v1.17.0 — khối Speaking đổi theo lớp
     var ds = A.baiCuaLop(DL, maLop).map(function (b) { return { b: b, maLop: maLop }; });
     docDiemCuaCacBai(ds, epMoi).then(veTat);
   }
@@ -1033,6 +1304,7 @@ a{color:inherit}
                  : (DL.lop[0] ? DL.lop[0].maLop : ''));
       veTat();
       noiChat();
+      spNapBuoi();        // v1.17.0 — khối Speaking
 
       // Đọc điểm: bài cần nhắc (mọi lớp) + bài của lớp đang chọn.
       var can = baiCanNhac();
@@ -1053,6 +1325,15 @@ a{color:inherit}
 
       var chep = e.target.closest('[data-chep]');
       if (chep) return void chepThieu(chep.dataset.chep, chep.dataset.lop || LOP_CHON);
+
+      /* v1.17.0 — bấm một em trong khối Speaking = bung/đóng chi tiết lỗi em đó */
+      var spDau = e.target.closest('[data-sp-dau]');
+      if (spDau) {
+        var kSp = spDau.dataset.spDau;
+        SP.moDang = (SP.moDang === kSp) ? '' : kSp;
+        veSp();
+        return;
+      }
 
       var xem = e.target.closest('[data-xem]');
       if (xem) return void moTrangHs(xem.dataset.xem);
@@ -1077,6 +1358,10 @@ a{color:inherit}
       if (!ma) return baoToast('Lớp này chưa em nào có mã đăng nhập.');
       window.open('lop.html?nhu=' + encodeURIComponent(ma), '_blank');
     };
+
+    /* v1.17.0 — khối Speaking: đổi buổi + chép danh sách chưa nộp */
+    $('#spChonBuoi').onchange = function () { if (this.value) spChonBuoi(this.value); };
+    $('#spChep').onclick = spChepThieu;
 
     $('#chatGui').onclick = guiChat;
     $('#chatO').oninput = noOChat;

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-25 13:34:58",
+  "capNhat": "2026-08-26 17:11:29",
   "nguon": "myStudent",
   "lop": [
     {
@@ -104,92 +104,92 @@
       "hocSinh": [
         {
           "ten": "BẢO AN",
-          "ma": "",
+          "ma": "TRANNGUYENBAOAN19012014",
           "sinhNhat": ""
         },
         {
           "ten": "BẢO ANH",
-          "ma": "",
+          "ma": "LUUBAOANH27062015",
           "sinhNhat": ""
         },
         {
           "ten": "BEN",
-          "ma": "",
+          "ma": "NGUYENDUCBINH16042014",
           "sinhNhat": ""
         },
         {
           "ten": "CẨM ANH",
-          "ma": "",
+          "ma": "DOANCAMANH12012016",
           "sinhNhat": ""
         },
         {
           "ten": "CÔNG",
-          "ma": "",
+          "ma": "NGUYENTRICONG07052015",
           "sinhNhat": ""
         },
         {
           "ten": "DIỆP",
-          "ma": "",
+          "ma": "BUINGOCDIEP17082014",
           "sinhNhat": ""
         },
         {
           "ten": "ĐĂNG",
-          "ma": "",
+          "ma": "HOANGLAHAIDANG22042015",
           "sinhNhat": ""
         },
         {
           "ten": "HÀ VY",
-          "ma": "",
+          "ma": "NGUYENHAVY18022014",
           "sinhNhat": ""
         },
         {
           "ten": "LINH",
-          "ma": "",
+          "ma": "DANGPHUONGLINH12072015",
           "sinhNhat": ""
         },
         {
           "ten": "MINH NGỌC",
-          "ma": "",
+          "ma": "PHAMMINHNGOC30012016",
           "sinhNhat": ""
         },
         {
           "ten": "PHÚC",
-          "ma": "",
+          "ma": "LEMINHPHUC01062016",
           "sinhNhat": ""
         },
         {
           "ten": "PHƯỚC",
-          "ma": "",
+          "ma": "PHAMGIAPHUOC24042015",
           "sinhNhat": ""
         },
         {
           "ten": "THÀNH",
-          "ma": "",
+          "ma": "TACHITHANH21042015",
           "sinhNhat": ""
         },
         {
           "ten": "TRANG ANH",
-          "ma": "",
+          "ma": "BUITRANGANH20032015",
           "sinhNhat": ""
         },
         {
           "ten": "TRUNG KIÊN",
-          "ma": "",
+          "ma": "HOANGTRUNGKIEN15072015",
           "sinhNhat": ""
         },
         {
           "ten": "TUỆ LÂM",
-          "ma": "",
+          "ma": "NGUYENTUELAM14032016",
           "sinhNhat": ""
         },
         {
           "ten": "TUỆ NHI",
-          "ma": "",
+          "ma": "TRANTUENHI24062015",
           "sinhNhat": ""
         },
         {
           "ten": "TÙNG LÂM",
-          "ma": "",
+          "ma": "NGUYENTUNGLAM22062016",
           "sinhNhat": ""
         }
       ]

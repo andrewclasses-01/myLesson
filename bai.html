@@ -260,12 +260,26 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    (bẫy 30), còn chữ BÊN TRONG bìa thì hỏi .game, cùng một bề ngang. */
 .game{position:relative; border-radius:14px; overflow:hidden;
   container-type:inline-size;
-  background:var(--accent-soft); aspect-ratio:16/10.5;
+  /* ⭐⭐ TỈ LỆ KHUNG ACT — ĐỔI THÌ ĐỔI ĐÚNG MỘT CHỖ NÀY. 10.5/16 = 65.625%.
+     ⛔⛔ VÌ SAO KHÔNG DÙNG `aspect-ratio` NỮA (sửa 26/08/2026, thầy báo từ
+     iPhone 11 Pro Max): `aspect-ratio` ĐỨNG CHUNG MỘT HỘP với
+     `container-type:inline-size` thì SAFARI/iOS tính ra CHIỀU CAO 0 — khung
+     game và bìa READY biến mất SẠCH, chỉ còn leaderboard. Chromium không dính
+     nên bàn thử trên máy nhìn vẫn đẹp (đo ở 414px: 388×255, y như thường).
+     Đệm-phần-trăm là lối cũ có trước `aspect-ratio` cả chục năm, KHÔNG dính
+     gì tới containment, chạy đúng ở mọi trình duyệt.
+     ⛔ Đừng thêm lại `aspect-ratio` "cho chắc": hai nguồn quy định chiều cao
+     là có ngày lệch nhau, mà lệch tí là game sinh thanh cuộn. */
+  --ti-le:65.625%;
+  background:var(--accent-soft);
   box-shadow:0 0 0 1px var(--line), 0 2px 6px rgba(22,35,42,.05),
              0 7px 20px rgba(22,35,42,.06);
   transition:transform .44s var(--em)}   /* ⛔ để ở đây, không để trong .sang —
      đặt trong .sang thì lúc tắt đèn class mất luôn, khung giật về chỗ cũ */
-.game iframe{width:100%; height:100%; border:0; display:block}
+/* Hộp giữ chỗ theo tỉ lệ. `content` rỗng + `display:block` là đủ; nó nằm
+   TRONG LUỒNG nên chính nó quyết chiều cao của `.game`. */
+.game::before{content:''; display:block; padding-top:var(--ti-le)}
+.game iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
 /* ---------- BÌA READY (đợt 5 · làm lại đợt 6 · ⭐ THU NHỎ Ở ĐỢT 7) ----------
    Bố cục vẫn theo màn START của AWord (brand ghim trên cùng · cụm giữa
    `margin:auto 0` · nút đứng trong một ô cao cố định nên các dòng trên/dưới
@@ -411,7 +425,11 @@ body.co-den{overflow:hidden}          /* khoá cuộn cho khung khỏi trôi */
    act ngang 16:10,5 mà màn dọc, phóng hết bề ngang thì cao có 236px, thừa hơn
    nửa màn hình. Đổi hẳn kích cỡ khung, game bên AWord tự bày lại theo khung. */
 .game.sang.toan-man{position:fixed; left:6px; right:6px; top:58px; bottom:6px;
-  width:auto; height:auto; aspect-ratio:auto; border-radius:12px;
+  width:auto; height:auto; border-radius:12px;
+  /* ⛔ Toàn màn thì chiều cao do `top/bottom` quyết ⇒ phải TẮT đệm tỉ lệ,
+     không thì nó cộng thêm một cục vào giữa khung. `aspect-ratio:auto` cũ bỏ
+     đi cùng lúc với `aspect-ratio` ở `.game` (không còn gì để huỷ). */
+  --ti-le:0;
   animation:no-ra .34s var(--em)}
 @keyframes no-ra{from{transform:scale(.93); opacity:.55} to{transform:none; opacity:1}}
 .den-nhan b{display:block; color:#fff; font-weight:800; font-size:16px;
@@ -940,6 +958,18 @@ body.mo-menu .side.trai{transform:none}
 
 @media (max-width:620px){
   .wrap{padding:0 16px}
+  /* ⭐ THẦY CHỐT 26/08/2026: "khung mobile cần cho tối đa khung game (không để
+     viền trống 2 bên, khung game bám sát viền)".
+     Cách phá lề: `100vw` + lề âm `50% - 50vw` — tự bù ĐÚNG bằng tổng đệm của
+     `.wrap` + `.card` + viền thẻ, nên sau này ai đổi mấy con số đệm đó thì chỗ
+     này vẫn khớp, khỏi phải sửa theo. Bám sát viền thì bỏ bo góc + vòng viền,
+     giữ lại quầng mờ cho khung còn nổi lên khỏi nền.
+     ⛔ Chỉ dùng trong khối điện thoại: trên máy tính `100vw` tính CẢ thanh
+     cuộn dọc nên sẽ tràn ngang. */
+  .game{
+    width:100vw; margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw);
+    border-radius:0; box-shadow:0 2px 10px rgba(22,35,42,.07);
+  }
   /* ⭐ Điện thoại: cất hẳn cụm tên - lớp (đã có avatar rồi) để ba khối còn
      lại vừa một hàng: avatar · ◀ + ô hạn (giữa) · tên bài + mã lesson. */
   .who{display:none}
@@ -1167,7 +1197,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=26"></script>
+<script src="config.js?v=27"></script>
 <script src="js/chung.js?v=20"></script>
 <script>
 /* ============================================================
@@ -1507,8 +1537,8 @@ function doLb(){
 }
 
 /* ⛔ BẪY: nghe `resize` rồi đo NGAY là đo trúng lúc trình duyệt chưa bày lại
-   xong — khung act cao theo `aspect-ratio` nên chiều cao về SAU cỡ chữ một
-   nhịp, đo ra số của lần trước (đã vấp: kéo cửa sổ ra 1400px mà vẫn giữ cỡ
+   xong — khung act cao theo ĐỆM TỈ LỆ (`--ti-le`, xem `.game::before`) nên
+   chiều cao về SAU cỡ chữ một nhịp, đo ra số của lần trước (đã vấp: kéo cửa sổ ra 1400px mà vẫn giữ cỡ
    chữ của dạng hẹp). Cách chắc ăn: để ResizeObserver báo khi khung ĐÃ đổi
    chiều cao thật rồi mới đo.
    Không sợ chạy vòng: đổi `--lb-cao` chỉ đổi chiều cao TỪNG DÒNG bên trong,

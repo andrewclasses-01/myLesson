@@ -228,12 +228,22 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 
 .game{position:relative; border-radius:14px; overflow:hidden;
   container-type:inline-size;
-  background:var(--accent-soft); aspect-ratio:16/9;   /* ⭐ ĐỢT 2 — riêng SP
-    khớp đúng tỉ lệ chuẩn của slide Canva/PowerPoint (16:9), KHÁC 16:10,5 của
-    ba mẫu kia (tỉ lệ đó là để khớp khung act AWord, không áp dụng ở đây). */
+  /* ⭐⭐ TỈ LỆ KHUNG SLIDE — ĐỔI THÌ ĐỔI ĐÚNG MỘT CHỖ NÀY. 9/16 = 56.25%.
+     ⭐ ĐỢT 2 — riêng SP khớp đúng tỉ lệ chuẩn của slide Canva/PowerPoint
+     (16:9), KHÁC 16:10,5 của ba mẫu kia (tỉ lệ đó để khớp khung act AWord).
+     ⛔⛔ VÌ SAO KHÔNG DÙNG `aspect-ratio` NỮA (sửa 26/08/2026): `aspect-ratio`
+     ĐỨNG CHUNG MỘT HỘP với `container-type:inline-size` thì SAFARI/iOS tính ra
+     CHIỀU CAO 0 — khung slide và bìa READY biến mất sạch. Thầy bắt được ở
+     `bai.html` trên iPhone 11 Pro Max; trang này dính Y HỆT nên sửa cùng lúc
+     (chưa ai báo vì chưa mở trang Speaking trên điện thoại). Chromium không
+     dính nên bàn thử trên máy nhìn vẫn đẹp. */
+  --ti-le:56.25%;
+  background:var(--accent-soft);
   box-shadow:0 0 0 1px var(--line), 0 2px 6px rgba(22,35,42,.05),
              0 7px 20px rgba(22,35,42,.06)}
-.game iframe{width:100%; height:100%; border:0; display:block}
+/* Hộp giữ chỗ theo tỉ lệ — nằm TRONG LUỒNG nên chính nó quyết chiều cao. */
+.game::before{content:''; display:block; padding-top:var(--ti-le)}
+.game iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
 
 /* ---------- BÌA "READY" — bố cục chép từ WORDS/DICTS nhưng BỎ hẳn hệ vật lý
    va chạm/nổ hạt: Canva không cần che thời gian tải như iframe AWord (mở ra
@@ -274,7 +284,8 @@ body.co-den{overflow:hidden}
   transition:opacity .3s var(--em), transform .3s var(--em)}
 .den-nhan.hien{opacity:1; transform:none}
 .game.sang.toan-man{position:fixed; left:6px; right:6px; top:58px; bottom:6px;
-  width:auto; height:auto; aspect-ratio:auto; border-radius:12px;
+  width:auto; height:auto; border-radius:12px;
+  --ti-le:0;                 /* toàn màn: chiều cao do top/bottom quyết */
   animation:no-ra .34s var(--em)}
 @keyframes no-ra{from{transform:scale(.93); opacity:.55} to{transform:none; opacity:1}}
 .den-nhan b{display:block; color:#fff; font-weight:800; font-size:16px;
@@ -508,6 +519,14 @@ body.mo-menu .side.trai{transform:none}
 }
 @media (max-width:620px){
   .wrap{padding:0 16px}
+  /* ⭐ THẦY CHỐT 26/08/2026: điện thoại thì khung chiếm TỐI ĐA, bám sát viền.
+     `100vw` + lề âm `50% - 50vw` tự bù đúng bằng tổng đệm `.wrap` + `.card` +
+     viền thẻ. ⛔ Chỉ dùng trong khối điện thoại — trên máy tính `100vw` tính
+     cả thanh cuộn dọc nên sẽ tràn ngang. */
+  .game{
+    width:100vw; margin-left:calc(50% - 50vw); margin-right:calc(50% - 50vw);
+    border-radius:0; box-shadow:0 2px 10px rgba(22,35,42,.07);
+  }
   .who{display:none}
   .av.me{width:42px; height:42px; font-size:15px}
   .sao-hieu{bottom:-2px; font-size:8.5px; padding:0 3px}
@@ -655,7 +674,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=26"></script>
+<script src="config.js?v=27"></script>
 <script src="js/chung.js?v=20"></script>
 <script>
 /* ============================================================

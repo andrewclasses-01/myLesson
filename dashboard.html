@@ -351,6 +351,23 @@ a{color:inherit}
   .top-in{gap:9px}
   .so-o .n{font-size:23px}
 }
+
+/* (Đợt D) khu Học sinh & avatar — hàng: vòng ảnh · tên · trạng thái · nút đổi */
+.av-dong{display:flex; align-items:center; gap:9px; padding:5px 0;
+  border-bottom:1px solid var(--vien, rgba(148,163,184,.14))}
+.av-dong:last-child{border-bottom:0}
+.av-hinh{position:relative; width:30px; height:30px; border-radius:999px; overflow:hidden;
+  flex:0 0 auto; background:#334155; color:#e2e8f0; font-weight:800; font-size:10px;
+  display:flex; align-items:center; justify-content:center}
+.av-hinh img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.av-ten{min-width:0; flex:1; font-weight:700; font-size:12.5px; white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis}
+.av-tt{font-size:10.5px; color:var(--nhat, #94a3b8); white-space:nowrap}
+.av-tt.av-loi{color:#f87171}
+.av-nut{flex:0 0 auto; border:1px solid rgba(148,163,184,.35); background:transparent;
+  color:inherit; border-radius:9px; font-size:11px; padding:3px 8px; cursor:pointer}
+.av-nut:hover{border-color:#60a5fa}
+.av-nut:disabled{opacity:.45; cursor:default}
 </style>
 </head>
 <body>
@@ -479,6 +496,18 @@ a{color:inherit}
         </div>
         <div class="khoi-than" id="topDs"></div>
       </section>
+
+      <!-- (Đợt D 27/08/2026) DANH SÁCH HỌC SINH + AVATAR — thầy chốt: xem DS và tự tay đổi
+           ảnh từng em. Ảnh sống ở assets/avatar/<lop>/<ten>.jpg (dùng chung với mySpeaking web).
+           Nút ✎ chỉ LÀM VIỆC khi trang chạy trong app myLesson (tab CLASSES) — app bắt marker
+           console `MYLESSON:AVATAR:DOI:` rồi mở hộp chọn ảnh, nén, đẩy kho web hộ. -->
+      <section class="khoi">
+        <div class="khoi-dau">
+          <h2>Học sinh &amp; avatar</h2>
+          <span class="phu" id="avPhu"></span>
+        </div>
+        <div class="khoi-than" id="avDs"></div>
+      </section>
     </aside>
   </div>
 
@@ -503,7 +532,7 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=27"></script>
+<script src="config.js?v=28"></script>
 <script src="js/chung.js?v=20"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
@@ -960,6 +989,64 @@ a{color:inherit}
       : '<div class="trong" style="color:var(--la)">Cả trung tâm đã có mã. 🎉</div>';
   }
 
+  // ---------- (Đợt D 27/08/2026) HỌC SINH & AVATAR ----------
+  // Danh sách em của LỚP ĐANG CHỌN + ảnh avatar (kho assets/avatar — dùng CHUNG với màn
+  // phản biện bên mySpeaking web). Nút ✎ chỉ làm việc khi trang chạy TRONG APP myLesson
+  // (tab CLASSES): app tiêm cờ `__mylessonApp`, bắt marker console `MYLESSON:AVATAR:DOI:`
+  // rồi mở hộp chọn ảnh → nén 96px → đẩy kho web → gọi lại `__avatarKq` để trang vẽ ảnh mới.
+  // ⛔ Luật slug PHẢI Y HỆT `tools/xuat-avatar.py` (app) + `avatarUrl()` (mySpeaking web):
+  //    bỏ dấu; LỚP bỏ hết ký tự lạ ("B2-B"→"b2b"); TÊN thay ký tự lạ bằng "-".
+  var AV_V = {};       // tên -> mốc cache-bust sau khi đổi ảnh xong
+  var AV_TT = {};      // tên -> { chu, loi } trạng thái đang hiện ở hàng đó
+  function avKhongDau(s) {
+    return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  }
+  function avSlugLop(s) { return avKhongDau(s).replace(/[^a-z0-9]/g, '') || 'lop'; }
+  function avSlugTen(s) {
+    return avKhongDau(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'hs';
+  }
+  function avChuTat(ten) {
+    var p = String(ten || '').trim().split(/\s+/);
+    return ((p[0] || '')[0] || '') + (p.length > 1 ? ((p[p.length - 1] || '')[0] || '') : '');
+  }
+  function veHocSinh() {
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var ds = (l && l.hocSinh) || [];
+    var lopSlug = avSlugLop((l && l.tenGoc) || LOP_CHON);
+    $('#avPhu').textContent = ds.length ? (((l && l.tenGoc) || LOP_CHON) + ' · ' + ds.length + ' em') : '';
+    $('#avDs').innerHTML = ds.length
+      ? ds.map(function (h) {
+          var tt = AV_TT[h.ten] || null;
+          var v = AV_V[h.ten] ? ('?v=' + AV_V[h.ten]) : '';
+          return '<div class="av-dong">' +
+            '<span class="av-hinh">' + A.chuAnToan(avChuTat(h.ten).toUpperCase()) +
+            '<img src="assets/avatar/' + lopSlug + '/' + avSlugTen(h.ten) + '.jpg' + v +
+            '" alt="" onerror="this.remove()"></span>' +
+            '<span class="av-ten">' + A.chuAnToan(h.ten) + '</span>' +
+            (tt ? '<span class="av-tt' + (tt.loi ? ' av-loi' : '') + '">' + A.chuAnToan(tt.chu) + '</span>' : '') +
+            '<button class="av-nut" data-av="' + A.chuAnToan(h.ten) + '"' + (tt && tt.khoa ? ' disabled' : '') + '>✎ đổi ảnh</button>' +
+            '</div>';
+        }).join('')
+      : '<div class="trong">Chọn lớp ở khối Lớp để xem danh sách.</div>';
+  }
+  function avDatTt(ten, chu, loi, khoa) {
+    if (chu) AV_TT[ten] = { chu: chu, loi: !!loi, khoa: !!khoa };
+    else delete AV_TT[ten];
+    veHocSinh();
+  }
+  // App gọi ngược vào đây sau từng chặng (chọn ảnh → đẩy → xong/lỗi/huỷ)
+  window.__avatarKq = function (ten, giaiDoan, chu) {
+    if (giaiDoan === 'dangDay') return avDatTt(ten, 'đang đẩy lên web (~1 phút)…', false, true);
+    if (giaiDoan === 'huy') return avDatTt(ten, '', false, false);
+    if (giaiDoan === 'loi') { baoToast(chu || 'Đổi ảnh chưa xong — thử lại.'); return avDatTt(ten, 'lỗi — thử lại', true, false); }
+    if (giaiDoan === 'xong') {
+      AV_V[ten] = Date.now();
+      baoToast('Đã đổi ảnh của ' + ten + ' ✓');
+      return avDatTt(ten, '', false, false);
+    }
+  };
+
   // Top của lớp đang chọn: xếp theo SỐ ACT ĐÃ LÀM rồi tới điểm trung bình.
   function veTop() {
     var l = A.lopTheoMa(DL, LOP_CHON);
@@ -1386,6 +1473,7 @@ a{color:inherit}
     veSinhNhat();
     veThieuMa();
     veTop();
+    veHocSinh();          // (Đợt D) danh sách HS + avatar theo lớp đang chọn
     veCanNhac(baiCanNhac());
   }
 
@@ -1491,6 +1579,20 @@ a{color:inherit}
     /* v1.17.0 — khối Speaking: đổi buổi + chép danh sách chưa nộp */
     $('#spChonBuoi').onchange = function () { if (this.value) spChonBuoi(this.value); };
     $('#spChep').onclick = spChepThieu;
+    // (Đợt D) nút ✎ đổi ảnh — chỉ chạy trong app myLesson (tab CLASSES); ngoài trình
+    // duyệt thì chỉ nhắc, không làm gì (trang tĩnh không tự ghi kho được).
+    $('#avDs').addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('[data-av]') : null;
+      if (!b || b.disabled) return;
+      var ten = b.getAttribute('data-av');
+      if (!window.__mylessonApp) {
+        baoToast('Đổi ảnh trong APP myLesson (tab CLASSES) — trang ngoài trình duyệt chỉ xem.');
+        return;
+      }
+      var l = A.lopTheoMa(DL, LOP_CHON);
+      avDatTt(ten, 'đang chọn ảnh…', false, true);
+      console.log('MYLESSON:AVATAR:DOI:' + JSON.stringify({ lop: (l && l.tenGoc) || LOP_CHON, ten: ten }));
+    });
 
     $('#chatGui').onclick = guiChat;
     $('#chatO').oninput = noOChat;

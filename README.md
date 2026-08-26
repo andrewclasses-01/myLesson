@@ -14,6 +14,35 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
+## ⭐ v1.20.0 (26/08/2026) — SỬA HẠN RIÊNG TỪNG THẺ TRÊN DASHBOARD *(bản mới nhất)*
+
+> ⚠️ Nhãn *"(bản đang chạy)"* ở mục v1.15.0 bên dưới là **nhãn cũ chưa gỡ** — các mục
+> v1.16.0…v1.19.0 chỉ được ghi trong `BAN GIAO.md` của repo app. Bản mới nhất là mục này.
+
+Thầy chốt 26/08/2026: *"có một hôm đặc biệt cần điều chỉnh riêng, không phải mặc định"*.
+
+- Ruột mỗi thẻ bài trên `dashboard.html` có ô **"Hạn riêng cho thẻ này"** — chọn ngày + giờ,
+  bấm **Đặt hạn này**. Đầu thẻ đeo huy hiệu **"đã chỉnh riêng"**, thẻ không bị đóng lại.
+- Bấm **Về hạn mặc định** là quay lại hạn thầy đặt trong app lúc đẩy bài.
+- **Hạn sửa THẮNG kể cả khi app đẩy lại bài đó** (thầy chốt) — app không biết gì về kho này.
+
+**Cách chạy:** kho `lessonHan` trên Firestore (project `aword-70dae`, dùng chung với AWord).
+`js/chung.js` nạp bảng đó ngay trong `napDuLieu()` nên **cả bốn trang** (`index` · `lop` · `bai`
+· `dashboard`) đều thấy; `mocHan()`/`chuHan()` hỏi `hanCua()` — hạn sửa trước, `bai.json` sau.
+
+- ⚠️ **Cần dán thêm một khối luật Firestore** (`lessonHan`) — file hướng dẫn:
+  `D:\APP AND DATA\myLesson-data\tai-lieu\LUAT FIRESTORE CAN DAN (26-08 THEM HAN SUA).md`.
+  **Chưa dán thì không hỏng gì** — mọi trang chạy y bản cũ, chỉ là chưa đặt hạn riêng được.
+- ⛔ Mã tài liệu là `b_` + mã bài đã thay ký tự lạ, nhưng **khoá thật là trường `baiId`** —
+  bên đọc tra theo trường đó (mã bài có thể chứa `/` mà Firestore cấm trong mã tài liệu).
+- ⛔ `napHanSua()` bọc **cả thân hàm** trong `try`: `fetch()` có thể **ném ngay tại chỗ**, mà
+  cú ném đó xuyên thẳng qua `Promise.all` trong `napDuLieu()` ⇒ mất sạch dữ liệu cả bốn trang.
+
+Bên app đi kèm: **myLesson app v2.3.0** — Cài đặt có mục **"Hạn nộp mặc định"** khai thứ học +
+giờ hạn cho từng lớp (cất trên trạm, ba máy dùng chung), dùng để điền sẵn ô hạn khi dựng thẻ.
+
+---
+
 ## ⭐ v1.15.0 (25/08/2026) — THẺ TRANG LỚP + VÍ SAO + ĐĂNG XUẤT *(bản đang chạy)*
 
 > Hồ sơ đầy đủ của **cả cụm 3 app** (app myLesson · AWord · web này) nằm ở

@@ -73,11 +73,79 @@
   // sinh vẫn thấy bài cũ.
   function napDuLieu() {
     if (nhoDl) return nhoDl;
-    nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json')])
+    // ⭐ v1.20.0 — nạp kèm BẢNG HẠN SỬA (xem `napHanSua`). Để ĐÚNG ửe ĐÂY, cố ý:
+    // cả bốn trang (lớp · bài · bài SP · dashboard) đều vào dữ liệu qua cửa này, nên
+    // cắm một chỗ là trang nào cũng thấy hạn đã sửa mà không phải sửa trang nào.
+    // ⛔ `napHanSua()` TỰ NUỐT mọi lỗi và trả bảng rỗng: mạng hỏng / chưa dán luật
+    // Firestore thì trang phải chạy y như trước v1.20.0 chứ không được trắng bảng.
+    nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json'), napHanSua()])
       .then(function (r) {
+        HAN_SUA = r[2] || {};
         return { lop: (r[0] && r[0].lop) || [], bai: (r[1] && r[1].bai) || {} };
       });
     return nhoDl;
+  }
+
+  // ---------- ⭐ v1.20.0 — HẠN SỬA RIÊNG TẪNG THẺ ----------
+  //
+  // Thầy chốt 26/08/2026: có hôm đặc biệt cần đổi hạn của MỘT thẻ, không phải
+  // hạn mặc định. Dashboard ghi hạn đó vào kho `lessonHan` trên Firestore; mọi trang
+  // đọc kho đó đè lên `bai.json`.
+  //
+  // ⛔ VÌ SAO KHÔNG GHI THẲNG VÀO `bai.json`: trang này là GitHub Pages tĩnh, không
+  // có cửa ghi nào — muốn đổi file là phải ngồi ở máy có app rồi đẩy lại.
+  //
+  // ⛔ KHOÁ CỦA BẢNG LÀ TRƯỜNG `baiId` TRONG TÀI LIỆU, KHÔNG phải mã tài liệu:
+  // mã bài có thể chứa dấu `/` (lấy từ lesson key thầy gõ) mà Firestore cấm dấu đó
+  // trong mã tài liệu, nên bên ghi phải thay nó đi. Đọc theo mã tài liệu là tra trượt.
+  //
+  // Chuỗi RỖNG = "đã gỡ, về hạn mặc định" — luật kho cấm xoá tài liệu (đúng nếp các
+  // khối cũ), nên gỡ là ghi đè chuỗi rỗng chứ không phải xoá.
+  var HAN_SUA = {};
+
+  function napHanSua() {
+    // ⛔ CẢ THÂN HÀM NẰM TRONG try: `fetch()` không chỉ trả Promise hỏng, nó còn
+    // NÉM NGAY TẠI CHỖ (URL không hợp lệ, tham số lạ). Ném ngay thì `.catch()`
+    // phía dưới không đỡ được, cú ném xuyên thẳng qua `Promise.all` trong
+    // `napDuLieu()` — và lúc đó KHÔNG trang nào nạp được bài nữa, chỉ vì một
+    // tính năng phụ. Đo được thật trên bàn thử 26/08/2026.
+    try {
+      var db = CFG.AWORD_DB || {};
+      if (!db.projectId || !db.apiKey) return Promise.resolve({});
+      var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
+            + '/databases/(default)/documents/lessonHan?pageSize=300&key='
+            + encodeURIComponent(db.apiKey);
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var ra = {};
+          var ds = (j && j.documents) || [];
+          for (var i = 0; i < ds.length; i++) {
+            var f = ds[i].fields || {};
+            var id = f.baiId && f.baiId.stringValue;
+            if (id) ra[id] = String((f.han && f.han.stringValue) || '');
+          }
+          return ra;
+        })['catch'](function () { return {}; });
+    } catch (e) { return Promise.resolve({}); }
+  }
+
+  // Hạn ĐANG CÓ HIỆU LỰC của một thẻ: hạn sửa trước, rồi mới tới `bai.json`.
+  function hanCua(b) {
+    var h = HAN_SUA[(b && b.id) || ''];
+    if (typeof h === 'string' && h) return h;
+    return (b && b.han) || '';
+  }
+
+  // Thẻ này có đang bị đổi hạn riêng không (để dashboard đeo huy hiệu).
+  function daSuaHan(b) {
+    var h = HAN_SUA[(b && b.id) || ''];
+    return !!(typeof h === 'string' && h);
+  }
+
+  // Dashboard gọi sau khi ghi xong, để vẽ lại ngay mà không phải nạp lại cả trang.
+  function datHanSua(id, han) {
+    if (id) HAN_SUA[id] = String(han || '');
   }
 
   function napJson(duong) {
@@ -529,8 +597,11 @@
   //    `taoLuc`, tính tới CUỐI NGÀY hôm đó. Không có gì để suy thì trả null và
   //    ô hạn hiện "Chưa đặt hạn" — thà để trống còn hơn bịa một giờ.
   function mocHan(b) {
-    if (b.han) {
-      var t = Date.parse(b.han);
+    // ⭐ v1.20.0 — qua `hanCua()`: hạn sửa ở dashboard đứng trước `b.han` của
+    // `bai.json`. Chưa sửa thì `hanCua()` chính là `b.han` — y hệt lối cũ.
+    var hh = hanCua(b);
+    if (hh) {
+      var t = Date.parse(hh);
       if (!isNaN(t)) return t;
     }
     var m = /^(\d{1,2})\.(\d{1,2})$/.exec(String(b.ngay || '').trim());
@@ -547,7 +618,7 @@
     if (t == null) return '';
     var d = new Date(t);
     var ngay = d.getDate() + '/' + (d.getMonth() + 1);
-    if (!b.han) return ngay;                       // Đợt 1: chỉ có ngày
+    if (!hanCua(b)) return ngay;                   // Đợt 1: chỉ có ngày
     var hai = function (n) { return (n < 10 ? '0' : '') + n; };
     return hai(d.getHours()) + ':' + hai(d.getMinutes()) + ' · ' + ngay;
   }
@@ -572,5 +643,7 @@
     actCuaBai: actCuaBai, maLesson: maLesson, tenBai: tenBai,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,
     mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,
+    // v1.20.0 — hạn sửa riêng từng thẻ (dashboard ghi, mọi trang đọc)
+    hanCua: hanCua, daSuaHan: daSuaHan, datHanSua: datHanSua,
   };
 })();

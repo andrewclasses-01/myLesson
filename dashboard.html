@@ -181,6 +181,16 @@ a{color:inherit}
 .mui{justify-self:end; color:var(--nhat); transition:transform .2s ease}
 .bai-o.mo .mui{transform:rotate(90deg)}
 .bai-than{display:none; padding:2px 14px 14px; border-top:1px dashed var(--vien)}
+/* ⭐ v1.20.0 — sửa hạn riêng cho MỘT thẻ (hôm đặc biệt) */
+.han-doi{display:block; font:800 9.5px/1.3 var(--font); font-style:normal;
+  letter-spacing:.06em; color:var(--cam, #C2700B)}
+.hs-o{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0 0;
+  padding:10px 12px; border:1px solid var(--vien); border-radius:11px; background:#FAFCFC}
+.hs-o b{font:800 12px/1.3 var(--font); letter-spacing:.04em; margin-right:2px}
+.hs-o input{border:1px solid var(--vien); border-radius:8px; padding:6px 8px;
+  font:600 12px/1.3 var(--font); color:inherit; background:#fff}
+.hs-o .nut{padding:6px 11px; font:700 11.5px/1.2 var(--font)}
+.hs-tinh{flex:1 1 100%; font:600 11px/1.5 var(--font); color:var(--nhat)}
 .bai-o.mo .bai-than{display:block}
 .act-ds{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
   gap:10px; margin:12px 0}
@@ -493,8 +503,8 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=25"></script>
-<script src="js/chung.js?v=19"></script>
+<script src="config.js?v=26"></script>
+<script src="js/chung.js?v=20"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
 (function () {
@@ -753,6 +763,9 @@ a{color:inherit}
           '</span>' +
           '<span class="bai-han ' + lopHan + '">' +
             (moc == null ? 'Chưa đặt hạn' : ('Hạn ' + A.chuAnToan(A.chuHan(b) || chuNgay(moc)))) +
+            // v1.20.0 — thẻ nào đang đi hạn riêng thì nói rõ, kểo thầy tưởng đó là
+            // hạn mặc định rồi đi sửa cài đặt lớp cho cả học kỳ.
+            (A.daSuaHan(b) ? '<em class="han-doi">đã chỉnh riêng</em>' : '') +
             '<small>' + con.chu + '</small></span>' +
           (t.xongHet !== null ? veThanh(t.xongHet, t.siSo)
             : '<span class="tien"><span class="so-n" style="color:var(--nhat)">' +
@@ -801,12 +814,96 @@ a{color:inherit}
       '</div>';
     }
 
-    return act + tay + em +
+    return act + tay + em + veSuaHan(b) +
       '<div class="bai-nut">' +
         '<button class="nut nho" data-xem="' + A.chuAnToan(b.id) + '">Xem trang của học sinh</button>' +
         (t.thieu.length ? '<button class="nut nho" data-chep="' + A.chuAnToan(b.id) +
           '" data-lop="' + A.chuAnToan(t.maLop) + '">Chép tên em chưa xong</button>' : '') +
       '</div>';
+  }
+
+  // ---------- ⭐ v1.20.0 — SỬA HẠN RIÊNG CHO MỘT THẺ ----------
+  //
+  // Thầy chốt 26/08/2026: "có một hôm đặc biệt cần điều chỉnh riêng, không phải
+  // mặc định". Hạn đặt ở đây ghi vào kho `lessonHan` (Firestore) và ĐÈ lên
+  // `bai.json` ở MỌI trang — xem `hanCua()` trong js/chung.js.
+  //
+  // ⛔ HẠN SỬA THẮNG, KỂ CẢ KHI APP ĐẨY LẠI (thầy chốt): app không biết gì về kho
+  // này nên cú đẩy sau đó KHÔNG xoá hạn thầy vừa chỉnh. Muốn bỏ thì bấm
+  // "Về hạn mặc định" — đó là đường DUY NHẤT gỡ nó ra.
+  function hsTach(b) {
+    var m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(String(A.hanCua(b) || ''));
+    if (m) return { ngay: m[1], gio: m[2] };
+    // Thẻ Đợt 1 (chưa từng có giờ): lấy ngày suy ra, để TRỐNG ô giờ cho chính
+    // thầy quyết — đổ sẵn 23:59 vào ô trông như thể thầy đã từng chọn giờ đó.
+    var t = A.mocHan(b);
+    if (t == null) return { ngay: '', gio: '' };
+    var d = new Date(t), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return { ngay: d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()), gio: '' };
+  }
+
+  function veSuaHan(b) {
+    var o = hsTach(b);
+    var id = A.chuAnToan(b.id);
+    return '<div class="hs-o">' +
+      '<b>Hạn riêng cho thẻ này</b>' +
+      '<input type="date" data-hs-ngay="' + id + '" value="' + A.chuAnToan(o.ngay) + '">' +
+      '<input type="time" data-hs-gio="' + id + '" value="' + A.chuAnToan(o.gio) + '">' +
+      '<button class="nut nho chinh" data-hs-luu="' + id + '">Đặt hạn này</button>' +
+      (A.daSuaHan(b)
+        ? '<button class="nut nho" data-hs-bo="' + id + '">Về hạn mặc định</button>' : '') +
+      '<span class="hs-tinh">' + (A.daSuaHan(b)
+        ? 'Đang dùng hạn riêng — cú đẩy bài từ app không xoá hạn này.'
+        : 'Đang dùng hạn mặc định thầy đặt lúc đẩy bài. Đặt ở đây là chỉ đổi MỘT thẻ này.')
+      + ' Không gõ giờ thì lấy 23:59.</span>' +
+      '</div>';
+  }
+
+  // Mã tài liệu Firestore: mã bài có thể mang ký tự kho cấm (nhất là dấu `/` đi
+  // từ lesson key thầy gõ). Thay hết cho an toàn, và thêm tiền tố `b_` để không
+  // bao giờ rơi trúng hai tên cấm của Firestore ("." / ".." / dạng `__ … __`).
+  // ⛔ Mã bài THẬT vẫn được cất nguyên trong trường `baiId` — bên đọc tra theo
+  // trường đó, KHÔNG tra theo mã tài liệu đã bị thay ký tự.
+  function hsMaTaiLieu(id) {
+    return 'b_' + String(id || '').replace(/[^A-Za-z0-9._-]/g, '_').slice(0, 200);
+  }
+
+  // Vẽ lại danh sách bài mà GIỮ nguyên những thẻ đang bung. `veDsBai()` dựng lại
+  // toàn bộ HTML nên bấm Lưu một cái là thẻ tự đóng lại trước mắt thầy.
+  function veDsBaiGiuMo() {
+    var mo = [];
+    Array.prototype.forEach.call(document.querySelectorAll('.bai-o.mo'), function (el) {
+      if (el.dataset.id) mo.push(el.dataset.id);
+    });
+    veDsBai();
+    mo.forEach(function (id) {
+      var an = (window.CSS && CSS.escape) ? CSS.escape(id) : id;
+      var el = document.querySelector('.bai-o[data-id="' + an + '"]');
+      if (el) el.classList.add('mo');
+    });
+  }
+
+  // Ghi một hạn sửa. `han` = '' là GỠ (luật kho cấm xoá tài liệu, đúng nếp các
+  // khối cũ — nên gỡ = ghi đè chuỗi rỗng chứ không phải xoá tài liệu).
+  function hsGhi(id, han, nut) {
+    if (nut) nut.disabled = true;
+    spDb().then(function (f) {
+      return f.fs.setDoc(f.fs.doc(f.db, 'lessonHan', hsMaTaiLieu(id)), {
+        baiId: String(id), han: String(han || ''), lop: String(LOP_CHON || ''),
+        luc: Date.now()
+      });
+    }).then(function () {
+      A.datHanSua(id, han);
+      veDsBaiGiuMo();
+      veCanNhac(baiCanNhac());        // khối "cần nhắc" cũng xếp theo hạn
+      baoToast(han ? 'Đã đặt hạn riêng cho thẻ này.' : 'Đã về hạn mặc định.');
+    })['catch'](function (e) {
+      if (nut) nut.disabled = false;
+      var ma = (e && (e.code || e.message)) || '';
+      baoToast(String(ma).indexOf('permission-denied') >= 0
+        ? 'Kho chưa mở khoá cho hạn sửa — cần dán thêm luật Firestore (khối lessonHan).'
+        : 'Chưa ghi được hạn. Thử lại nhé.');
+    });
   }
 
   // ---------- 4. CỘT PHẢI ----------
@@ -1348,6 +1445,27 @@ a{color:inherit}
 
       var xem = e.target.closest('[data-xem]');
       if (xem) return void moTrangHs(xem.dataset.xem);
+
+      /* ⭐ v1.20.0 — sửa hạn riêng cho một thẻ.
+         ⛔ Hai nhánh này phải đứng TRƯỚC nhánh `.bai-dau` cuối hàm: ô sửa hạn
+         nằm trong ruột thẻ (`.bai-than`) chứ không nằm trong nút đầu thẻ, nên
+         thứ tự không đụng nhau — nhưng để sau `data-xem` cho cùng một nếp
+         "nút cụ thể trước, vùng chung sau". */
+      var hsLuu = e.target.closest('[data-hs-luu]');
+      if (hsLuu) {
+        var idL = hsLuu.dataset.hsLuu;
+        var oNgay = document.querySelector('[data-hs-ngay="' + idL.replace(/"/g, '\\"') + '"]');
+        var oGio = document.querySelector('[data-hs-gio="' + idL.replace(/"/g, '\\"') + '"]');
+        var ngay = oNgay ? String(oNgay.value || '').trim() : '';
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) return void baoToast('Chọn ngày hạn trước đã.');
+        var gio = oGio ? String(oGio.value || '').trim() : '';
+        // Cùng luật với app myLesson (`mocHanBai`): có ngày mà chưa gõ giờ thì
+        // lấy 23:59 — đừng để hai bên hiểu "chưa gõ giờ" theo hai kiểu.
+        if (!/^\d{2}:\d{2}$/.test(gio)) gio = '23:59';
+        return void hsGhi(idL, ngay + 'T' + gio, hsLuu);
+      }
+      var hsBo = e.target.closest('[data-hs-bo]');
+      if (hsBo) return void hsGhi(hsBo.dataset.hsBo, '', hsBo);
 
       var dau = e.target.closest('.bai-dau');
       if (dau) dau.parentElement.classList.toggle('mo');

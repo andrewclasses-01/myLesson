@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-26 20:13:15",
+  "capNhat": "2026-08-27 00:11:29",
   "nguon": "myStudent",
   "lop": [
     {
@@ -315,11 +315,6 @@
           "sinhNhat": ""
         },
         {
-          "ten": "LÂM ANH",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
           "ten": "NGỌC MINH",
           "ma": "",
           "sinhNhat": ""
@@ -458,57 +453,57 @@
       "hocSinh": [
         {
           "ten": "BẢO CHÂU",
-          "ma": "",
+          "ma": "BUIBAOCHAU01112012",
           "sinhNhat": ""
         },
         {
           "ten": "CƯỜNG",
-          "ma": "",
+          "ma": "PHAMVIETCUONG06092013",
           "sinhNhat": ""
         },
         {
           "ten": "DIỄM MY",
-          "ma": "",
+          "ma": "DODIEMMY01032013",
           "sinhNhat": ""
         },
         {
           "ten": "HÀ AN",
-          "ma": "",
+          "ma": "NGHIEMHAAN09042013",
           "sinhNhat": ""
         },
         {
           "ten": "HOÀNG",
-          "ma": "",
+          "ma": "LEMINHHOANG07102012",
           "sinhNhat": ""
         },
         {
           "ten": "KHÔI",
-          "ma": "",
+          "ma": "NGUYENNGOCMINHKHOI24092013",
           "sinhNhat": ""
         },
         {
           "ten": "NGÂN",
-          "ma": "",
+          "ma": "PHAMVUBAONGAN27012012",
           "sinhNhat": ""
         },
         {
           "ten": "PHONG",
-          "ma": "",
+          "ma": "DUONGDINHPHONG02122012",
           "sinhNhat": ""
         },
         {
           "ten": "QUÂN",
-          "ma": "",
+          "ma": "HOANGTRUNGQUAN09112013",
           "sinhNhat": ""
         },
         {
           "ten": "TIẾN",
-          "ma": "",
+          "ma": "PHAMMANHTIEN26052012",
           "sinhNhat": ""
         },
         {
           "ten": "TRÚC",
-          "ma": "",
+          "ma": "DAOTHANHTRUC14122013",
           "sinhNhat": ""
         }
       ]

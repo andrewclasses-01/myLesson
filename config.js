@@ -7,7 +7,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.15.0',
+  PHIEN_BAN: '1.16.0',
 
   // ---- MÃ QUẢN LÝ CỦA THẦY (v1.9.0) ----
   // Gõ mã này ở màn đăng nhập là vào thẳng trang quản lý (dashboard.html) thay
@@ -43,6 +43,9 @@ window.MYLESSON_CONFIG = {
   KHO_NGHE: 'https://andrewclasses-01.github.io/myLesson-audio',
 
   // ---- Hai đầu bên mySpeaking (v1.11.1) — cho thẻ SP CHECK trong lop.html ----
+  // (v1.16.0 — Đợt Firebase 26/08/2026) Buổi speaking MỚI nay nằm trong Firestore
+  // (spBuoi, project aword-70dae — đọc bằng chính AWORD_DB bên dưới, không cần khoá
+  // mới). SP_NAO chỉ còn là ĐƯỜNG LÙI cho buổi cũ trong Google Sheets.
   // Thiếu 2 khóa này từ web v1.9.0 nên toàn bộ đường "Mở phòng chấm" + đếm
   // "ai đã nộp" chết lặng (lop.html đọc A.CFG.SP_NAO / A.CFG.SP_WEB, rỗng là
   // return sớm). Giá trị lấy từ bản mẫu mau-web, đã gọi thử ?config=1 ngày

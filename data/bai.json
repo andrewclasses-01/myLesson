@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-26 20:13:11",
+  "capNhat": "2026-08-27 01:52:46",
   "bai": {
     "A1C": [
       {
@@ -94,6 +94,25 @@
             "yeuCau": "100% requirement",
             "ma": "qar62p",
             "mau": "QUIZ"
+          }
+        ]
+      }
+    ],
+    "B1AH": [
+      {
+        "id": "B1AH_24.8_SP_CHECK_MOLDY_FOOD",
+        "tieuDe": "B1AH_24.8_SP CHECK MOLDY FOOD",
+        "tenHien": "B1AH_24.8_SP CHECK MOLDY FOOD",
+        "dang": "SP CHECK",
+        "ngay": "24.8",
+        "han": "2026-08-28T19:29",
+        "maLesson": "MOLDY FOOD",
+        "taoLuc": "2026-08-26",
+        "khoi": [
+          {
+            "loai": "spcheck",
+            "ten": "SPEAKING CHECK",
+            "xong": 0
           }
         ]
       }

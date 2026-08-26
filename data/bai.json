@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-24 23:08:59",
+  "capNhat": "2026-08-26 20:13:11",
   "bai": {
     "A1C": [
       {
@@ -66,6 +66,34 @@
             "yeuCau": "100% requirement",
             "ma": "mmyw4q",
             "mau": "ANAGRAM"
+          }
+        ]
+      }
+    ],
+    "A1B": [
+      {
+        "id": "A1B_25.8_DICTS_LSA2-S3.T1.P3-4-5",
+        "tieuDe": "A1B_25.8_DICTS LSA2-S3.T1.P3-4-5",
+        "tenHien": "A1B_25.8_DICTS LSA2-S3.T1.P3-4-5",
+        "dang": "DICTS",
+        "ngay": "25.8",
+        "han": "2026-08-27T19:30",
+        "maLesson": "LSA2-S3.T1.P3-4-5",
+        "taoLuc": "2026-08-26",
+        "khoi": [
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSA2-S3.T1.P3-4-5"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSA2-S3.T1.P3-4-5 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "qar62p",
+            "mau": "QUIZ"
           }
         ]
       }

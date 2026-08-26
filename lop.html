@@ -938,7 +938,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=24"></script>
+<script src="config.js?v=25"></script>
 <script src="js/chung.js?v=19"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
@@ -2064,16 +2064,20 @@ function spBuoiFs(maLop){
     var b = spFsGiaiDoc(doc.document);
     return { _id: b._id, classCode: b.classCode || '', name: b.className || '',
       code: b.code || '', lesson: b.lesson || '', topic: b.topic || b.lesson || '',
-      teams: b.teams || [], pairs: b.pairs || [] };
+      teams: b.teams || [], pairs: b.pairs || [],
+      /* (Đợt B 27/08/2026) mô hình 2 = bản tổng lỗi + màn phản biện (mySpeaking app v1.7.0 đóng dấu) */
+      moHinh: b.moHinh === 2 ? 2 : 1 };
   });
 }
-/* Ai đã nộp trong một buổi kho mới — chỉ kéo về TÊN + sid (không kéo nội dung lỗi). */
-function spDaNopFs(buoiId){
+/* Ai đã nộp trong một buổi kho mới — chỉ kéo về TÊN (không kéo nội dung lỗi).
+   (Đợt B) buổi MÔ HÌNH 2: mỗi em chấm = 1 bản tổng trong `tongLoi` — đếm ở đó;
+   buổi mô hình 1 giữ nếp cũ đếm `baiNop` (mỗi lượt nộp 1 tài liệu). */
+function spDaNopFs(buoiId, moHinh){
   var goc = spFsGoc();
   var db = (A.CFG && A.CFG.AWORD_DB) || {};
   var body = { structuredQuery: {
-    from: [{ collectionId: 'baiNop' }],
-    select: { fields: [{ fieldPath: 'student' }, { fieldPath: 'sid' }] },
+    from: [{ collectionId: moHinh === 2 ? 'tongLoi' : 'baiNop' }],
+    select: { fields: [{ fieldPath: 'student' }] },
     limit: 300
   } };
   return fetch(goc + '/spBuoi/' + encodeURIComponent(buoiId) + ':runQuery?key=' + db.apiKey, {
@@ -2185,24 +2189,45 @@ function spVaoBuoi(b, lop, kho){
   var doiCham = (lop.teams || []).filter(function(t){ return Number(t.team) === Number(cap.checked); })[0];
   if (!doiCham) return spLoi(b, 'Chưa tìm thấy đội mà em phải chấm.');
 
+  /* (Đợt B) cờ mô hình đi kèm trong gói — mh:2 là buổi bản-tổng-lỗi (màn chấm mới bên mySpeaking) */
+  var mh = lop.moHinh === 2 ? 2 : 1;
+  var clips = (lop.teams || []).map(function(t){ return { t: t.team, v: t.video || '' }; });
   var goi = goiB64({
-    v:1, kho: kho, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
+    v:1, kho: kho, mh: mh, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
     topic: lop.topic || lop.lesson, ten: em.ten, tenDayDu: TOI,
     team: em.team, cham: cap.checked,
     video: doiCham.video || '', members: doiCham.members || [],
     /* (Đợt 3) video của MỌI đội — bên mySpeaking bấm logo là mở pop-up xem
        cả lớp để học hỏi tham khảo (thầy chốt 26/08). */
-    clips: (lop.teams || []).map(function(t){ return { t: t.team, v: t.video || '' }; })
+    clips: clips
   });
   var duong = SP_WEB + '?goi=' + goi;
 
+  /* (Đợt B) nút PHẢN BIỆN — chỉ buổi mô hình 2: gói mang video + thành viên của CHÍNH ĐỘI EM
+     (bên mySpeaking mở màn xem lỗi đội mình bị chấm + tích đồng ý/phản đối). */
+  var duongPb = '';
+  var doiEm = (lop.teams || []).filter(function(t){ return Number(t.team) === Number(em.team); })[0];
+  if (mh === 2 && doiEm && doiEm.video) {
+    duongPb = SP_WEB + '?goi=' + goiB64({
+      v:1, kho: kho, mh: 2, pb: 1, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
+      topic: lop.topic || lop.lesson, ten: em.ten, tenDayDu: TOI,
+      team: em.team, cham: cap.checked,
+      video: doiEm.video || '', members: doiEm.members || [],
+      clips: clips
+    });
+  }
+
   if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
   spDuong = duong;
-  /* ⭐ Thầy chốt: KHÔNG tự nhảy tab — em bấm nút này mới mở. */
-  spHien('Đã lấy xong dữ liệu', 'Em chấm <b>TEAM ' + cap.checked + '</b>.', 'xong',
-    [{ chu:'Đóng', lam:spDong },
-     { chu:'Mở phòng chấm', chinh:true, lam:function(){
-         window.open(spDuong, '_blank'); spDong(); } }]);
+  /* ⭐ Thầy chốt: KHÔNG tự nhảy tab — em bấm nút này mới mở. Buổi mô hình 2 có thêm nút
+     PHẢN BIỆN (thầy chốt Đợt B): xem các câu đội mình bị chấm, tích đồng ý/phản đối. */
+  var nut = [{ chu:'Đóng', lam:spDong }];
+  if (duongPb) nut.push({ chu:'Phản biện', lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
+  nut.push({ chu:'Chấm bài', chinh:true, lam:function(){ window.open(spDuong, '_blank'); spDong(); } });
+  spHien('Đã lấy xong dữ liệu',
+    'Em chấm <b>TEAM ' + cap.checked + '</b>.' +
+    (duongPb ? '<br>Nút <b>Phản biện</b>: xem các câu đội mình bị chấm và tích đồng ý / phản đối.' : ''),
+    'xong', nut);
 }
 
 function spLoi(b, chu){
@@ -2259,7 +2284,7 @@ function capNhatTheSpeaking(){
   spBuoiFs(lopMa())
     .then(function(buoi){
       if (buoi && spKhopBai(BAI_SP.ma, buoi.lesson)) {
-        return spDaNopFs(buoi._id).then(spDoDaNop);
+        return spDaNopFs(buoi._id, buoi.moHinh).then(spDoDaNop);
       }
       capNhatTheSpeakingGas();
     })

@@ -493,7 +493,7 @@ a{color:inherit}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=24"></script>
+<script src="config.js?v=25"></script>
 <script src="js/chung.js?v=19"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
@@ -1084,14 +1084,25 @@ a{color:inherit}
       (t.members || []).forEach(function (m) { SP.em.push({ ten: m, doi: t.team }); });
     });
     veSp();
+    /* (Đợt B 27/08/2026) buổi MÔ HÌNH 2: mỗi em chấm = MỘT bản tổng sống trong `tongLoi`
+       (không còn nhiều lượt nộp). Số lỗi hiển thị = câu CÒN SỐNG ('an' em xoá / 'go' được
+       Agree gỡ không tính). Giao diện đầy đủ theo nhóm + phản biện làm ở đợt dashboard sau. */
+    var moHinh2 = b.moHinh === 2;
     spDb().then(function (f) {
       if (SP.id !== id) return;
       SP.thoi = f.fs.onSnapshot(
-        f.fs.collection(f.db, 'spBuoi', id, 'baiNop'),
+        f.fs.collection(f.db, 'spBuoi', id, moHinh2 ? 'tongLoi' : 'baiNop'),
         function (snap) {
           if (SP.id !== id) return;
           var docs = [];
           snap.forEach(function (d) { docs.push(d.data() || {}); });
+          if (moHinh2) {
+            docs.forEach(function (d) {
+              d.errors = (d.errors || []).filter(function (er) { return !er.trangThai || er.trangThai === 'song'; });
+              if (!d.submittedAt && d.capNhatLuc) d.submittedAt = new Date(d.capNhatLuc).toISOString();
+            });
+            docs.sort(function (a, c) { return (c.capNhatLuc || 0) - (a.capNhatLuc || 0); });
+          } else
           // sid = yyMMdd-HHmmss-… nên so chuỗi là so thời gian; mới nhất trước
           docs.sort(function (a, c) { return String(a.sid || '') < String(c.sid || '') ? 1 : -1; });
           var nop = {};

@@ -121,10 +121,14 @@ a{color:inherit}
 .nut[disabled]{opacity:.5; pointer-events:none}
 
 /* ---------- DẢI SỐ ---------- */
-.so{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px;
-  margin:18px 0}
-.so-o{background:var(--the); border:1px solid var(--vien); border-radius:var(--r);
-  padding:14px 16px; box-shadow:var(--bong)}
+/* ⭐ #6 — MỘT dải liền có ngăn bên trong (không còn là các ô rời từng cái). */
+.so{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  margin:18px 0 0; background:var(--the); border:1px solid var(--vien);
+  border-radius:var(--r); box-shadow:var(--bong); overflow:hidden}
+.so-o{padding:14px 16px; border-left:1px solid var(--vien)}
+.so-o:first-child{border-left:0}
+/* Vạch mảnh giữa dải số và các nút lớp bên dưới. */
+.vach-nhe{height:1px; background:var(--vien); margin:18px 0}
 .so-o .n{font:800 27px/1.1 var(--font); letter-spacing:-.5px}
 .so-o .nh{font:700 10.5px/1.3 var(--font); letter-spacing:.09em; color:var(--nhat);
   text-transform:uppercase; margin-top:5px}
@@ -204,16 +208,16 @@ a{color:inherit}
 .tien .so-n{font:800 12px/1 var(--font); min-width:44px; text-align:right}
 
 /* ---------- HAI CỘT: THẺ BÀI CÒN HẠN (trái) + CHAT (phải) — v1.24.0 ---------- */
-.hai-cot{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:18px; align-items:stretch}
+/* ⭐ #1 — hai cột KHÔNG còn ép cao bằng nhau: khung chat khoá đúng 2 lần
+   chiều cao một thẻ rồi tự cuộn bên trong, cột thẻ cao tự nhiên theo nội dung. */
+.hai-cot{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:18px; align-items:start}
 .cot-the, .cot-chat{display:flex; flex-direction:column}
-.cot-the .khoi-than{display:flex; flex-direction:column; gap:16px; flex:1}
+.cot-the .khoi-than{display:flex; flex-direction:column; gap:16px}
 .the-list{display:flex; flex-direction:column; gap:16px}
-/* Phần trống dưới thẻ khi chat cao hơn (chat tối thiểu cao gấp 2 lần một thẻ) —
-   dành sẵn chỗ cho tính năng sau này (vd lượt đăng nhập gần đây). */
-.dang-nhap{flex:1; min-height:0; display:flex; align-items:center; justify-content:center;
-  padding-top:12px; border-top:1px dashed var(--vien); text-align:center;
+/* Chỗ dành sẵn dưới thẻ cho tính năng sau này (vd lượt đăng nhập gần đây). */
+.dang-nhap{padding-top:12px; border-top:1px dashed var(--vien); text-align:center;
   color:var(--nhat); font-size:12.5px; line-height:1.6}
-.cot-chat .khoi-than{display:flex; flex-direction:column; flex:1; min-height:0; padding:0}
+.cot-chat .khoi-than{display:flex; flex-direction:column; padding:0}
 
 /* ================================================================
    THẺ BÀI TẬP — CSS lấy gần như nguyên văn từ lop.html (".the") để
@@ -344,7 +348,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 /* ---------- KHUNG TRÒ CHUYỆN CỦA LỚP ---------- */
 .chat-khoi .khoi-than{padding:0}
 .chat-body{
-  flex:1; min-height:calc(var(--cao-the) * 2); overflow-y:auto; padding:14px 16px 8px;
+  height:calc(var(--cao-the) * 2); flex:none; overflow-y:auto; padding:14px 16px 8px;
   display:flex; flex-direction:column; gap:9px;
 }
 .chat-cho{margin:auto; text-align:center; color:var(--nhat); font-size:12.5px;
@@ -558,6 +562,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <main class="wrap">
 
   <section class="so" id="daiSo"></section>
+
+  <div class="vach-nhe" aria-hidden="true"></div>
 
   <section class="lop-grid" id="lopGrid"></section>
 
@@ -1133,15 +1139,21 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
   function veKhuThe() {
     var l = A.lopTheoMa(DL, LOP_CHON);
-    var ds = A.baiCuaLop(DL, LOP_CHON).filter(function (b) {
+    var tatCa = A.baiCuaLop(DL, LOP_CHON);
+    var ds = tatCa.filter(function (b) {
       var moc = A.mocHan(b);
       return moc == null || moc > Date.now();
     }).sort(function (a, b) {
       var ma = A.mocHan(a), mb = A.mocHan(b);
       return (ma == null ? Infinity : ma) - (mb == null ? Infinity : mb);
     });
+    // ⭐ #9 — chưa có bài nào CÒN HẠN thì vẫn hiện THẺ GẦN NHẤT (dù đã hết hạn)
+    // thay vì trống trơn; bai.json luôn đẩy bài mới lên ĐẦU mảng.
+    var conHan = ds.length > 0;
+    if (!conHan && tatCa.length) ds = [tatCa[0]];
     $('#baiPhu').textContent = ((l && l.tenGoc) || LOP_CHON) +
-      (ds.length ? (' · ' + ds.length + ' bài còn hạn') : '');
+      (conHan ? (' · ' + ds.length + ' bài còn hạn')
+        : (ds.length ? ' · bài gần nhất (đã hết hạn)' : ''));
     $('#theListDs').innerHTML = ds.length ? ds.map(veTheCard).join('')
       : '<div class="trong">🎈 Lớp này hết bài — No homework, No fun!</div>';
     nhipDongHo();

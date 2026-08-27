@@ -128,7 +128,8 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    dính sát mép màn hình (lỗi có từ bản đầu, phát hiện ở v10). */
 .top-in{display:flex; align-items:center; gap:14px; padding:12px 20px}
 .av{flex:none; display:grid; place-items:center; border-radius:50%;
-  font-weight:800; color:#fff; user-select:none}
+  font-weight:800; color:#fff; user-select:none; position:relative; overflow:hidden}
+.av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .av.me{width:52px; height:52px; font-size:19px; cursor:pointer;
   background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
   position:relative; transition:transform .18s var(--em), box-shadow .18s}
@@ -1079,9 +1080,21 @@ function laDienThoai(){ return MAN_HEP.matches; }
 function chatODuoi(){ return CHAT_DUOI.matches; }
 
 var MAU_AV = ['#0E7C6E','#B3541E','#5B8DEF','#8CC63F','#E36B5C','#9C6ADE','#F2A93B'];
+/* ⭐ avatar thật (kho assets/avatar, luật slug Y HỆT dashboard.html/veHocSinh +
+   tools/xuat-avatar.py) — chưa có ảnh thì tự rơi về chữ tắt màu như cũ. */
+function avKhongDau(s){
+  return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+}
+function avSlugLop(s){ return avKhongDau(s).replace(/[^a-z0-9]/g, '') || 'lop'; }
+function avSlugTen(s){
+  return avKhongDau(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'hs';
+}
 function veAv(ten, i){
   var chu = ten.trim().split(/\s+/).map(function(t){return t[0];}).slice(-2).join('');
-  return '<span class="av" style="background:' + MAU_AV[i % MAU_AV.length] + '">' + chu + '</span>';
+  var anh = LOP_SLUG ? ('<img src="assets/avatar/' + LOP_SLUG + '/' + avSlugTen(ten) +
+    '.jpg" alt="" onerror="this.remove()">') : '';
+  return '<span class="av" style="background:' + MAU_AV[i % MAU_AV.length] + '">' + chu + anh + '</span>';
 }
 
 /* ---------- VIẾT TẮT TÊN (cùng lối app myTeam) ---------- */
@@ -1145,6 +1158,7 @@ var EM = null;
 
 var TOI = '';            /* tên em đang đăng nhập (đúng tên trong myStudent) */
 var LOP = '';            /* tên lớp HIỆN cho em xem, kiểu myStudent: "B2-B" */
+var LOP_SLUG = '';       /* thư mục avatar của lớp, dùng bởi veAv() */
 var LOP_DL = '';         /* mã lớp trong lop.json / bai.json: "B2B" */
 var LOP_HIEN = '';       /* mã lớp đưa cho em xem + truyền sang AWord: "B2B" */
 var MA_HS = '';          /* mã đăng nhập của em */
@@ -2024,6 +2038,7 @@ A.napDuLieu().then(function(dl){
   LOP_HIEN = EM.lop;
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
+  LOP_SLUG = avSlugLop(LOP);
   CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   SI_SO = CA_LOP.length;
   TAT = bangVietTat(CA_LOP);

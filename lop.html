@@ -369,6 +369,34 @@ i.m-la{background:var(--m-la)}
 .td-tay svg{width:12px; height:12px; margin-right:4px; vertical-align:-2px;
   stroke:#C8922B; stroke-width:2.4; fill:none; stroke-linecap:round; stroke-linejoin:round}
 
+/* ---------- SP CHECK — THANH TIẾN TRÌNH THEO TEAM (⭐ thiết kế lại 27/08) ----------
+   Thay dòng "SPEAKING CHECK x/SI_SO" chung (dùng .td-dong) bằng MỘT DÒNG MỖI
+   TEAM: tên team kề trái, thanh dài theo TỔNG SỐ LỖI đội đó bắt được so với
+   đội nhiều nhất, tổng lỗi kề phải. Màu xem `tinhDoiSp()` (JS). Vẽ bởi
+   `veDoiSpKhoi()`, nằm trong CHÍNH `.the-diem` dùng chung (co-thieu, cột CHƯA
+   XONG BÀI... vẫn hoạt động y hệt) — chỉ ruột `.khoi-thanh`/thanh đổi khuôn.
+   ⛔ Số team có thể tới 5 mà thẻ chỉ cao 200px (166px điện thoại) nên CHIỀU CAO
+   MỖI DÒNG phải theo tầng `.doiN` giống hệt lối `.the-diem.n1 .td-dong` cũ —
+   ĐỪNG phóng to cố định, kẻo 4-5 team tràn thẻ. */
+.doi-dong{display:grid; grid-template-columns:46px minmax(28px,1fr) 32px;
+  align-items:center; column-gap:7px}
+.doi-ten{font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#3D5450;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.doi-bar{height:7px; border-radius:99px; background:#E7EDEB; overflow:hidden}
+.doi-bar i{display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
+.doi-so{font-size:10.5px; font-weight:800; text-align:right; color:#54706B;
+  font-variant-numeric:tabular-nums}
+.doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
+.doi-so.m-cam{color:var(--m-cam)} .doi-so.m-do{color:var(--m-do)}
+.doi-bar i.m-la{background:var(--m-la)} .doi-bar i.m-duong{background:var(--m-duong)}
+.doi-bar i.m-cam{background:var(--m-cam)} .doi-bar i.m-do{background:var(--m-do)}
+.the-diem.doi2 .doi-dong{min-height:38px}
+.the-diem.doi3 .doi-dong{min-height:26px}
+.the-diem.doi4 .doi-dong{min-height:19px}
+.the-diem.doi5 .doi-dong{min-height:15px}
+.the-diem.doi5 .doi-ten,.the-diem.doi5 .doi-so{font-size:8.8px}
+.the-diem.doi5 .doi-bar{height:6px}
+
 /* ---------- CHAT ---------- */
 /* ⭐ v19 — KHUNG CHAT CAO ĐÚNG BẰNG CỘT THẺ.
    Trước đây chat là ô lưới bình thường nên tin nhắn nhiều là nó ĐẨY CAO cả
@@ -604,41 +632,114 @@ body.mo-menu .side.trai{transform:none}
 .pop-foot{flex:none; padding:8px 16px 11px; border-top:1px solid var(--line);
   font-size:9px; font-weight:500; letter-spacing:.22em; color:#A9B6B3;
   text-align:center}
+
+/* ---------- SP CHECK — POP-UP CHI TIẾT TỪNG BẠN THEO TEAM (⭐ 27/08) ----------
+   Dùng lại ĐÚNG khung #popNen/.pop-ds có sẵn (bảng cả lớp) — chỉ ruột #popDs
+   đổi khuôn: mỗi TEAM một vạch mảnh + tên team nằm giữa vạch, dưới vạch là
+   từng bạn xếp theo số lỗi bắt được (nhiều nhất lên trên). Dựng bởi
+   `moPopDoiSp()` (JS), thay cho `moPopCaLop()` khi thẻ là spcheck. */
+.doi-vach{display:flex; align-items:center; gap:10px; margin:14px 9px 6px}
+.doi-vach:first-child{margin-top:6px}
+.doi-vach .line{flex:1; height:1px; background:var(--line)}
+.doi-vach .lb{font-size:10.5px; font-weight:800; letter-spacing:.06em; color:var(--accent);
+  white-space:nowrap}
+.doi-vach .lb .tong{margin-left:6px; font-weight:700; letter-spacing:.03em; color:var(--muted)}
+.doi-vach .lb .tong::before{content:'•'; margin-right:6px; color:var(--line)}
+.hs-dong{display:grid; grid-template-columns:20px minmax(0,1fr) auto; align-items:center;
+  column-gap:8px; padding:5px 9px; border-radius:8px}
+.hs-dong + .hs-dong{margin-top:1px}
+.hs-hang{font-size:10px; font-weight:800; color:#9CADA9; text-align:center}
+.hs-ten{font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis}
+.hs-so{font-size:12px; font-weight:800; color:var(--ink); font-variant-numeric:tabular-nums}
+
 @media (prefers-reduced-motion: reduce){
   .pop-nen,.pop{transition:none}
 }
 
-/* ---------- POP-UP MỞ PHÒNG CHẤM SPEAKING (⭐ SP CHECK, 20/08) ----------
+/* ---------- POP-UP MỞ PHÒNG CHẤM SPEAKING (⭐ SP CHECK, 20/08 — THIẾT KẾ LẠI 27/08) ----------
    Thầy chốt: bấm thẻ SPEAKING CHECK thì hiện pop-up cho học sinh BIẾT LÀ ĐANG
    TẢI (bộ não mySpeaking đo được 8-40 giây), xong mới mở tab mới.
    ⛔ Nền tối dùng z-index 44 = đúng tầng nền tối của bóng đèn bên trang bài
-   tập; hộp 46. Xem bảng thứ tự lớp ở `bai-words.html`. */
+   tập; hộp 46. Xem bảng thứ tự lớp ở `bai-words.html`.
+   ⭐ 27/08 — thầy chốt mẫu mới: khung to hơn, tiêu đề SPEAKING CHECK CỐ ĐỊNH có
+   sao lấp lánh (không đổi theo trạng thái nữa) + dòng "in Andrew Classes" bên
+   dưới; nút đóng X thay nút "Đóng" nhỏ; trạng thái XONG bỏ vòng xoay + tiêu đề
+   phụ, chỉ còn 2 nút to Chấm bài (xanh lá) / Phản biện (xanh dương). */
 .sp-nen{position:fixed; inset:0; z-index:44; background:rgba(8,18,16,.62);
   backdrop-filter:blur(3px); display:grid; place-items:center; padding:20px;
   opacity:0; pointer-events:none; transition:opacity .22s}
 .sp-nen.mo{opacity:1; pointer-events:auto}
-.sp-hop{width:min(340px,100%); background:var(--surface); border-radius:18px;
-  box-shadow:0 24px 60px rgba(22,35,42,.28); padding:22px 20px 18px;
-  text-align:center; transform:translateY(8px) scale(.98);
+.sp-hop{position:relative; width:min(400px,94vw); background:var(--surface);
+  border-radius:24px; box-shadow:0 24px 60px rgba(22,35,42,.28);
+  padding:34px 26px 26px; text-align:center; transform:translateY(8px) scale(.98);
   transition:transform .24s var(--em)}
 .sp-nen.mo .sp-hop{transform:none}
-.sp-vong{width:46px; height:46px; margin:0 auto 14px; border-radius:50%;
+
+.sp-x{position:absolute; top:12px; right:12px; width:28px; height:28px;
+  border-radius:50%; border:none; background:#FDECEC; display:flex;
+  align-items:center; justify-content:center; cursor:pointer; padding:0;
+  transition:transform .15s var(--em), background .15s}
+.sp-x:hover{background:#FBDADA; transform:scale(1.08)}
+.sp-x svg{width:13px; height:13px}
+.sp-x svg path{stroke:var(--m-do); stroke-width:2.6; stroke-linecap:round}
+
+.sp-titlewrap{position:relative; padding:4px 6px 2px}
+.sp-brand{margin:0; font-weight:800; font-size:clamp(21px,6vw,27px); letter-spacing:.01em;
+  color:var(--accent); line-height:1.1; position:relative; z-index:2}
+.sp-spark{position:absolute; z-index:1; color:var(--amber); pointer-events:none;
+  animation:sp-lap 2.4s ease-in-out infinite}
+.sp-spark svg{display:block}
+.sp-spark.s1{top:-4px; left:4%; width:16px; animation-delay:0s}
+.sp-spark.s2{top:2px; right:2%; width:21px; animation-delay:.5s}
+.sp-spark.s3{bottom:-6px; left:16%; width:12px; animation-delay:1s}
+.sp-spark.s4{bottom:0; right:18%; width:13px; animation-delay:1.5s}
+@keyframes sp-lap{
+  0%,100%{opacity:.35; transform:scale(.8) rotate(0deg)}
+  50%    {opacity:1; transform:scale(1.15) rotate(14deg)}
+}
+.sp-sub{margin:4px 0 18px; font-weight:300; font-size:12px; color:var(--muted);
+  white-space:nowrap; text-transform:uppercase}
+
+.sp-vong{width:40px; height:40px; margin:0 auto 12px; border-radius:50%;
   border:3.5px solid var(--accent-soft); border-top-color:var(--accent);
   animation:sp-quay .8s linear infinite}
 @keyframes sp-quay{to{transform:rotate(360deg)}}
-.sp-hop.xong .sp-vong{animation:none; border-color:var(--xanh-la);
-  border-top-color:var(--xanh-la)}
+.sp-hop.xong .sp-vong{display:none}
 .sp-hop.loi .sp-vong{animation:none; border-color:#F3C7C8; border-top-color:var(--m-do)}
 .sp-tieu{margin:0 0 6px; font-weight:800; font-size:13px; letter-spacing:.06em;
   text-transform:uppercase; color:var(--ink)}
-.sp-phu{margin:0; font-size:12.5px; line-height:1.5; color:var(--muted); min-height:38px}
+.sp-hop.xong .sp-tieu{display:none}
+.sp-phu{margin:0; font-size:12.5px; line-height:1.5; color:var(--muted)}
+
 .sp-nut{display:flex; gap:8px; justify-content:center; margin-top:14px}
-.sp-nut button{height:34px; padding:0 16px; border-radius:10px; font-weight:800;
-  font-size:11.5px; letter-spacing:.05em; border:1px solid var(--line);
-  background:var(--ground); color:var(--muted); transition:filter .14s}
+.sp-nut button{position:relative; height:34px; padding:0 16px; border-radius:10px;
+  font-weight:800; font-size:11.5px; letter-spacing:.05em; border:1px solid var(--line);
+  background:var(--ground); color:var(--muted); transition:filter .14s, transform .15s var(--em)}
 .sp-nut button.chinh{background:var(--accent); border-color:var(--accent); color:#fff}
 .sp-nut button:hover{filter:brightness(.97)}
-@media (prefers-reduced-motion: reduce){ .sp-vong{animation:none} }
+.sp-nut button:active{transform:scale(.97)}
+
+/* Trạng thái XONG: hai nút to hẳn, vuông vắn, xanh lá (Chấm bài) / xanh dương (Phản biện). */
+.sp-hop.xong .sp-nut{gap:10px; margin-top:6px}
+.sp-hop.xong .sp-nut button{flex:1; height:auto; padding:22px 10px; border:none;
+  border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:7px;
+  font-size:14px; letter-spacing:.03em; color:#fff}
+.sp-hop.xong .sp-nut button svg{width:26px; height:26px}
+.sp-hop.xong .sp-nut button.chinh{background:linear-gradient(155deg,var(--xanh-la),#0E7A3F)}
+.sp-hop.xong .sp-nut button:not(.chinh){background:linear-gradient(155deg,var(--m-duong),#2456C4)}
+
+.sp-halo{position:absolute; inset:-2px; border-radius:inherit; pointer-events:none}
+.sp-halo span{position:absolute; inset:0; border-radius:inherit; border:2px solid #fff; opacity:0}
+.sp-halo span.di{animation:sp-halo-di .7s var(--em) forwards}
+@keyframes sp-halo-di{
+  0%{opacity:.85; transform:scale(1)}
+  100%{opacity:0; transform:scale(1.3)}
+}
+
+@media (prefers-reduced-motion: reduce){
+  .sp-vong, .sp-spark, .sp-halo span, .sp-x, .sp-nut button{animation:none !important; transition:none !important}
+}
 
 /* ---------- BẢNG XEM THỬ (CHỈ CÓ TRONG BẢN MẪU) ---------- */
 .thu{position:fixed; left:14px; bottom:14px; z-index:50; display:flex;
@@ -913,6 +1014,17 @@ body.mo-menu .side.trai{transform:none}
 <!-- ⭐ SP CHECK — pop-up "đang mở phòng chấm" (bản thật giữ nguyên khối này) -->
 <div class="sp-nen" id="spNen">
   <div class="sp-hop" id="spHop">
+    <button class="sp-x" id="spX" title="Đóng" aria-label="Đóng">
+      <svg viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13"/></svg>
+    </button>
+    <div class="sp-titlewrap">
+      <span class="sp-spark s1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
+      <span class="sp-spark s2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
+      <span class="sp-spark s3"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
+      <span class="sp-spark s4"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
+      <h2 class="sp-brand" id="spBrand">SPEAKING CHECK</h2>
+    </div>
+    <p class="sp-sub" id="spSub">in Andrew Classes</p>
     <div class="sp-vong"></div>
     <h3 class="sp-tieu" id="spTieu">Đang lấy dữ liệu chấm speaking</h3>
     <p class="sp-phu" id="spPhu">Việc này có thể cần chờ một chút.</p>
@@ -1241,6 +1353,42 @@ function veDiem(b, batDo, hienThieu){
     '</span>';
 }
 
+/* ⭐ 27/08 — VÙNG ĐIỂM RIÊNG CHO THẺ SP CHECK (mô hình 2): thay veDiem() một
+   dòng chung bằng MỘT DÒNG MỖI TEAM (xem CSS `.doi-dong`). Giữ NGUYÊN khuôn
+   ngoài (`.the-diem[.co-thieu][.doiN]`) để cột CHƯA XONG BÀI + `vuaCotThieu()`
+   + mọi CSS xoay quanh `.the-diem` không phải sửa gì thêm. Chỉ gọi khi
+   `b.doiSp` đã có dữ liệu (`capNhatTheSpeaking` nạp async) — chưa có thì
+   `veTheMoi`/`veTheCu` vẫn gọi `veDiem()` như cũ (đẩy sẵn + đổ sau). */
+function veDoiSpKhoi(b, hienThieu){
+  var doiSp = b.doiSp || [];
+  var thanh = doiSp.map(function(d){
+    return '<span class="doi-dong">' +
+      '<span class="doi-ten" title="' + A.chuAnToan(d.ten) + '">' + A.chuAnToan(d.ten) + '</span>' +
+      '<span class="doi-bar"><i class="' + d.mau + '" style="width:' + d.pt + '%"></i></span>' +
+      '<span class="doi-so ' + d.mau + '">' + d.tong + '</span>' +
+    '</span>';
+  }).join('');
+
+  var lopSo = ' doi' + Math.min(Math.max(doiSp.length, 2), 5);
+
+  var dsThieu = hienThieu ? (b.thieu || []) : [];
+  if (!dsThieu.length) return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
+
+  var sap = dsThieu.slice().sort(function(a, b2){ return b2.so - a.so; });
+  var o = sap.map(function(e){
+    return '<span class="ten">' + tenTat(e.ten) + '</span>' +
+           '<span class="so">' + e.so + '</span>';
+  }).join('');
+
+  return '<span class="the-diem co-thieu' + lopSo + '">' +
+      '<span class="khoi-thanh">' + thanh + '</span>' +
+      '<span class="khoi-thieu" data-tong="' + sap.length + '">' +
+        '<span class="tieu">CHƯA XONG BÀI</span>' +
+        '<span class="ds-thieu">' + o + '</span>' +
+      '</span>' +
+    '</span>';
+}
+
 /* ---------- CẮT CỘT "CHƯA XONG BÀI" CHO VỪA CHỖ (v17) ----------
    Chiều cao thẻ là cố định, còn phần trên (số dòng act–thanh–số lượng, có
    hay không có dòng CHÚ Ý) thì đổi theo từng bài ⇒ chỗ trống dành cho cột
@@ -1425,6 +1573,30 @@ function moPopCaLop(b){
   }).join('');
   $('#popNen').classList.add('mo');
 }
+
+/* ⭐ 27/08 — POP-UP CHI TIẾT SP CHECK: dùng lại ĐÚNG khung #popNen/#popDs, chỉ
+   đổi ruột — mỗi TEAM một vạch mảnh (tên + tổng lỗi "N FOUND" giữa vạch), dưới
+   vạch là từng bạn xếp theo số lỗi bắt được (nhiều nhất lên trên, đã sắp sẵn
+   trong `tinhDoiSp()`). Gọi thay `moPopCaLop()` khi thẻ là spcheck VÀ đã có
+   `b.doiSp` — chưa có (đang tải/buổi mô hình 1) thì vẫn rơi về bảng cả lớp cũ. */
+function moPopDoiSp(b){
+  $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
+  $('#popDs').innerHTML = (b.doiSp || []).map(function(d){
+    var vach = '<span class="doi-vach"><span class="line"></span>' +
+      '<span class="lb">' + A.chuAnToan(d.ten) +
+        '<span class="tong">' + d.tong + ' FOUND</span></span>' +
+      '<span class="line"></span></span>';
+    var hang = d.hs.map(function(e, i){
+      return '<span class="hs-dong">' +
+        '<span class="hs-hang">' + (i + 1) + '</span>' +
+        '<span class="hs-ten">' + tenTat(e.ten) + '</span>' +
+        '<span class="hs-so">' + e.so + '</span>' +
+      '</span>';
+    }).join('');
+    return vach + hang;
+  }).join('');
+  $('#popNen').classList.add('mo');
+}
 function dongPop(){ $('#popNen').classList.remove('mo'); }
 
 /* ---------- Ô HẠN + ĐỒNG HỒ ĐẾM NGƯỢC ----------
@@ -1520,7 +1692,8 @@ function veTheMoi(b, tt){
         (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
       '</span>' +
       veHan(b, tt) +
-    '</span>' + veDiem(bDung, gap, gap) +
+    '</span>' + (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
+      ? veDoiSpKhoi(bDung, gap) : veDiem(bDung, gap, gap)) +
     '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
   '</span></button>';
 }
@@ -1542,7 +1715,8 @@ function veTheCu(b){
           '<span class="khoang">(' + b.giao + ' - ' + b.hanNgan + ')</span></span>' +
         (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
       '</span>' +
-    '</span>' + veDiem(b, true, false) +
+    '</span>' + (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
+      ? veDoiSpKhoi(b, false) : veDiem(b, true, false)) +
     '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
   '</span></button>';
 }
@@ -1590,13 +1764,18 @@ function dungCot(){
        cuối. stopPropagation vì vùng này nằm trong thẻ (một <button>). */
     var vung = t.querySelector('.the-diem');
     if (!vung || !(b.bai || []).length) return;   // thẻ chỉ có bài viết tay thì thôi
+    /* ⭐ 27/08 — SP CHECK đã có thanh team (`b.doiSp`) thì mở bảng chi tiết
+       từng bạn theo team; chưa có (đang tải/buổi mô hình 1) vẫn mở bảng cả
+       lớp cũ như mọi thẻ khác. */
+    var spRieng = b.loai === 'spcheck' && b.doiSp && b.doiSp.length;
+    var moPopThe = spRieng ? moPopDoiSp : moPopCaLop;
     vung.setAttribute('role', 'button');
     vung.setAttribute('tabindex', '0');
-    vung.setAttribute('title', 'Xem bảng xếp hạng cả lớp');
-    vung.onclick = function(e){ e.stopPropagation(); moPopCaLop(b); };
+    vung.setAttribute('title', spRieng ? 'Xem chi tiết từng bạn' : 'Xem bảng xếp hạng cả lớp');
+    vung.onclick = function(e){ e.stopPropagation(); moPopThe(b); };
     vung.onkeydown = function(e){
       if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault(); e.stopPropagation(); moPopCaLop(b);
+        e.preventDefault(); e.stopPropagation(); moPopThe(b);
       }
     };
   });
@@ -1934,8 +2113,26 @@ document.querySelectorAll('[data-dong]').forEach(function(b){ b.onclick = dongHe
 $('#popDong').onclick = dongPop;
 $('#popNen').onclick = function(e){ if (e.target === this) dongPop(); };
 
+/* ⭐ Pop-up SP CHECK: nút X ở góc = Huỷ (chờ) hoặc Đóng (đã xong/lỗi) — spThoi()
+   lo cả hai vì chỉ set cờ huỷ rồi đóng, vô hại khi gọi lúc buổi đã xong. */
+$('#spX').onclick = spThoi;
+
+/* Tiêu đề "SPEAKING CHECK" cố định — giãn chữ "in Andrew Classes" bên dưới cho
+   vừa đúng bề ngang tiêu đề (đo lúc font đã nạp, kẻo Montserrat về muộn ra số lệch). */
+function spCanSub(){
+  var t = $('#spBrand'), s = $('#spSub');
+  if (!t || !s) return;
+  s.style.letterSpacing = '0px';
+  var muc = t.getBoundingClientRect().width, tu = s.getBoundingClientRect().width;
+  var soKy = s.textContent.length;
+  if (soKy > 1 && muc > tu) s.style.letterSpacing = ((muc - tu) / (soKy - 1)).toFixed(2) + 'px';
+}
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(spCanSub);
+window.addEventListener('load', spCanSub);
+window.addEventListener('resize', spCanSub);
+
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); }
+  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); spThoi(); }
 });
 
 /* ═══════════════ SP CHECK — MỞ THẲNG PHÒNG CHẤM mySpeaking ═══════════════
@@ -2097,6 +2294,81 @@ function spDaNopFs(buoiId, moHinh){
     return out;
   });
 }
+
+/* ⭐ 27/08 — THẺ SP CHECK: THANH TIẾN TRÌNH THEO TEAM. Chỉ buổi MÔ HÌNH 2 (bản
+   tổng lỗi `tongLoi/{slug}`, mỗi em chấm = 1 tài liệu) có đủ dữ liệu để dựng —
+   buổi mô hình 1 (`baiNop` cũ) không có `myTeam`/`errors` nên vẫn dùng dòng
+   chung cũ (`veDiem`, xem nhánh trong `veTheMoi`/`veTheCu`).
+   `student` = TÊN NGƯỜI CHẤM (bắt lỗi), `myTeam` = đội của chính người đó,
+   `checkedTeam` = đội BỊ chấm. "TEAM N · x FOUND" tính theo `myTeam` — đúng
+   nghĩa "đội N tìm/bắt được bao nhiêu lỗi" (mySpeaking gọi FOUND cho đội chấm,
+   CAUGHT cho đội bị chấm — ta dùng FOUND). */
+function spDoiSpFs(buoiId){
+  var goc = spFsGoc();
+  var db = (A.CFG && A.CFG.AWORD_DB) || {};
+  var body = { structuredQuery: {
+    from: [{ collectionId: 'tongLoi' }],
+    select: { fields: [{ fieldPath: 'student' }, { fieldPath: 'myTeam' }, { fieldPath: 'errors' }] },
+    limit: 300
+  } };
+  return fetch(goc + '/spBuoi/' + encodeURIComponent(buoiId) + ':runQuery?key=' + db.apiKey, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r){
+    if (!r.ok) throw new Error('FS_' + r.status);
+    return r.json();
+  }).then(function(ds){
+    return (Array.isArray(ds) ? ds : []).filter(function(x){ return x.document; })
+      .map(function(x){ return spFsGiaiDoc(x.document); });
+  });
+}
+/* Một tài liệu tongLoi có bao nhiêu lỗi CÒN SỐNG (bỏ câu đã "go"/"an" qua
+   phản biện — cùng luật `song` mySpeaking đang dùng ở mọi nơi khác). */
+function soLoiSong(errors){
+  return (errors || []).filter(function(er){ return !er.trangThai || er.trangThai === 'song'; }).length;
+}
+/* Ngưỡng CỐ ĐỊNH theo TB lỗi/người — thầy chốt: ≥30 luôn xanh lá, ≥25 luôn xanh
+   dương, ≥20 luôn cam; dưới 20 mới xét theo HẠNG (tinhDoiSp lo tiếp). */
+var DOI_MAU_CO_DINH = [ { min:30, m:'m-la' }, { min:25, m:'m-duong' }, { min:20, m:'m-cam' } ];
+function mauCoDinhDoi(tb){
+  for (var i = 0; i < DOI_MAU_CO_DINH.length; i++)
+    if (tb >= DOI_MAU_CO_DINH[i].min) return DOI_MAU_CO_DINH[i].m;
+  return null;
+}
+/* Gộp `docs` (tongLoi thô) + `teams` (roster của buổi) thành mảng hiển thị cho
+   thẻ + pop-up. Bạn nào chưa nộp vẫn hiện, tính 0 lỗi (không bỏ sót — thầy
+   chốt "thể hiện rõ ràng mỗi bạn đã bắt được bao nhiêu lỗi"). */
+function tinhDoiSp(teams, docs){
+  var theoTen = {};
+  (docs || []).forEach(function(d){
+    var ten = khongDau(d.student);
+    if (!ten) return;
+    theoTen[ten] = (theoTen[ten] || 0) + soLoiSong(d.errors);
+  });
+  var doi = (teams || []).map(function(t){
+    var hs = (t.members || []).map(function(m){
+      return { ten: m, so: theoTen[khongDau(m)] || 0 };
+    }).sort(function(a, b){ return b.so - a.so; });
+    var tong = hs.reduce(function(s, e){ return s + e.so; }, 0);
+    return { team: t.team, ten: 'TEAM ' + t.team, tong: tong,
+      tb: hs.length ? tong / hs.length : 0, hs: hs };
+  });
+
+  /* Đội đã có màu cố định (TB ≥20) đứng ngoài; đội còn lại xếp HẠNG theo tổng
+     lỗi: hạng 1 xanh lá, 2 xanh dương, 3 cam, 4-5 đỏ — thầy chốt riêng: nhóm
+     dưới 4 đội thì đội BÉT luôn đỏ (bỏ qua màu đúng thứ tự của hạng đó). */
+  var chuaCoMau = doi.filter(function(d){ return !mauCoDinhDoi(d.tb); })
+    .sort(function(a, b){ return b.tong - a.tong; });
+  var mauHang = ['m-la', 'm-duong', 'm-cam', 'm-do', 'm-do'];
+  chuaCoMau.forEach(function(d, i){
+    d.mau = (chuaCoMau.length < 4 && i === chuaCoMau.length - 1) ? 'm-do' : (mauHang[i] || 'm-do');
+  });
+  doi.forEach(function(d){ if (!d.mau) d.mau = mauCoDinhDoi(d.tb); });
+
+  var max = doi.length ? Math.max.apply(null, doi.map(function(d){ return d.tong; })) : 0;
+  doi.forEach(function(d){ d.pt = max ? Math.round(d.tong / max * 100) : 0; });
+  return doi;
+}
 /* Mã bài của thẻ có khớp buổi không — so "chịu lệch": bằng nhau, hoặc cái này nằm trong
    cái kia sau khi bỏ dấu (thẻ ghi "DS-S4.I2.W3 GERMS", buổi ghi "GERMS"). */
 function spKhopBai(maThe, tenBuoi){
@@ -2106,7 +2378,11 @@ function spKhopBai(maThe, tenBuoi){
 }
 
 var spHuy = false, spDongHo = null, spDuong = '';
+var IC_SP_CHAM = '<svg viewBox="0 0 24 24" fill="none"><path d="M9 12.5l2 2 4.5-5" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>';
+var IC_SP_PB = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v10H9l-4 4V5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
 
+/* n.ic (svg, tuỳ chọn): nút to trạng thái XONG có icon + hiệu ứng hào quang khi
+   bấm; nút thường (Huỷ/Đóng/Thử lại) không có `ic` thì giữ nguyên chữ trơn. */
 function spHien(tieu, phu, kieu, nut){
   var hop = $('#spHop');
   hop.classList.remove('xong', 'loi');
@@ -2116,9 +2392,19 @@ function spHien(tieu, phu, kieu, nut){
   $('#spNut').innerHTML = '';
   (nut || []).forEach(function(n){
     var b = document.createElement('button');
-    b.textContent = n.chu;
     if (n.chinh) b.className = 'chinh';
-    b.onclick = n.lam;
+    if (n.ic) b.innerHTML = n.ic + '<span>' + chuAnToan(n.chu) + '</span><span class="sp-halo"></span>';
+    else b.textContent = n.chu;
+    b.onclick = function(){
+      var halo = b.querySelector('.sp-halo');
+      if (halo) {
+        var v = document.createElement('span');
+        v.className = 'di';
+        halo.appendChild(v);
+        v.addEventListener('animationend', function(){ v.remove(); });
+      }
+      n.lam();
+    };
     $('#spNut').appendChild(b);
   });
   $('#spNen').classList.add('mo');
@@ -2220,14 +2506,15 @@ function spVaoBuoi(b, lop, kho){
   if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
   spDuong = duong;
   /* ⭐ Thầy chốt: KHÔNG tự nhảy tab — em bấm nút này mới mở. Buổi mô hình 2 có thêm nút
-     PHẢN BIỆN (thầy chốt Đợt B): xem các câu đội mình bị chấm, tích đồng ý/phản đối. */
-  var nut = [{ chu:'Đóng', lam:spDong }];
-  if (duongPb) nut.push({ chu:'Phản biện', lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
-  nut.push({ chu:'Chấm bài', chinh:true, lam:function(){ window.open(spDuong, '_blank'); spDong(); } });
-  spHien('Đã lấy xong dữ liệu',
-    'Em chấm <b>TEAM ' + cap.checked + '</b>.' +
-    (duongPb ? '<br>Nút <b>Phản biện</b>: xem các câu đội mình bị chấm và tích đồng ý / phản đối.' : ''),
-    'xong', nut);
+     PHẢN BIỆN (thầy chốt Đợt B): xem các câu đội mình bị chấm, tích đồng ý/phản đối.
+     ⭐ 27/08 — thiết kế lại: bỏ nút "Đóng" (đã có nút X ở góc pop-up), hai nút to có
+     icon — Chấm bài (xanh lá, luôn đứng trước = bên trái) rồi mới tới Phản biện
+     (xanh dương, bên phải). */
+  var nut = [{ chu:'Chấm bài', chinh:true, ic:IC_SP_CHAM,
+    lam:function(){ window.open(spDuong, '_blank'); spDong(); } }];
+  if (duongPb) nut.push({ chu:'Phản biện', ic:IC_SP_PB,
+    lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
+  spHien('Đã lấy xong dữ liệu', 'Em chấm <b>TEAM ' + cap.checked + '</b>.', 'xong', nut);
 }
 
 function spLoi(b, chu){
@@ -2280,13 +2567,23 @@ function spDoDaNop(dsDaNop){
 function capNhatTheSpeaking(){
   if (!BAI_SP || !BAI_SP.ma) return;
   /* (Đợt Firebase) kho MỚI trước: buổi đang mở của lớp có trong Firestore và khớp
-     mã bài của thẻ thì đếm thẳng từ đó (nhanh + không tốn lượt gọi bộ não). */
+     mã bài của thẻ thì đếm thẳng từ đó (nhanh + không tốn lượt gọi bộ não).
+     ⭐ 27/08 — buổi MÔ HÌNH 2: một lượt gọi `spDoiSpFs()` vừa ra "ai đã nộp"
+     (mọi em có tài liệu tongLoi = đã nộp, kể cả 0 lỗi) VỪA ra thanh theo team
+     (`tinhDoiSp`) — đỡ tốn thêm lượt gọi Firestore. Đặt `BAI_SP.doiSp` TRƯỚC
+     khi gọi `spDoDaNop` (nó tự vẽ lại thẻ ở cuối) để một lần vẽ là đủ. Buổi
+     mô hình 1 (cũ) giữ nguyên đường `spDaNopFs`, không có thanh team. */
   spBuoiFs(lopMa())
     .then(function(buoi){
-      if (buoi && spKhopBai(BAI_SP.ma, buoi.lesson)) {
-        return spDaNopFs(buoi._id, buoi.moHinh).then(spDoDaNop);
+      if (!buoi || !spKhopBai(BAI_SP.ma, buoi.lesson)) return capNhatTheSpeakingGas();
+      if (buoi.moHinh === 2) {
+        return spDoiSpFs(buoi._id).then(function(docs){
+          var doi = tinhDoiSp(buoi.teams, docs);
+          if (doi.length) BAI_SP.doiSp = doi;
+          spDoDaNop(docs.map(function(d){ return { ten: d.student }; }));
+        });
       }
-      capNhatTheSpeakingGas();
+      return spDaNopFs(buoi._id, buoi.moHinh).then(spDoDaNop);
     })
     .catch(function(){ capNhatTheSpeakingGas(); });
 }

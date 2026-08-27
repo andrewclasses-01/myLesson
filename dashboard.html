@@ -194,6 +194,18 @@ a{color:inherit}
   text-overflow:ellipsis; white-space:nowrap}
 .hsx-hang .chon-em{flex:1; min-width:0; max-width:none}
 
+/* ⭐ Đợt D — sidebar "Kho trò chuyện". */
+.klt-goi{border:1px solid var(--vien); border-radius:11px; margin-bottom:8px; overflow:hidden}
+.klt-dau{width:100%; display:flex; align-items:center; justify-content:space-between;
+  gap:8px; padding:9px 12px; background:var(--the); border:0; text-align:left}
+.klt-dau:hover{background:var(--xanh-nhat)}
+.klt-luc{font:800 12px/1.3 var(--font)}
+.klt-so{font:700 11px/1.3 var(--font); color:var(--nhat)}
+.klt-than{padding:8px 12px 10px; border-top:1px solid var(--vien); max-height:260px; overflow-y:auto}
+.klt-tin{font:600 12px/1.5 var(--font); padding:3px 0}
+.klt-tin b{font-weight:800; margin-right:5px}
+.klt-tin.toi b{color:var(--xanh)}
+
 /* ⭐ v1.20.0 — sửa hạn riêng cho MỘT thẻ (hôm đặc biệt); nay nằm trong hộp xem bài. */
 .han-doi{display:block; font:800 9.5px/1.3 var(--font); font-style:normal;
   letter-spacing:.06em; color:var(--cam, #C2700B)}
@@ -710,6 +722,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       <div class="khoi-dau">
         <h2>Trò chuyện</h2>
         <span class="phu" id="chatPhu"></span>
+        <div class="day"></div>
+        <button class="nut nho" id="btnLuuTru" title="Lưu tin nhắn hiện tại vào kho rồi làm sạch khung chat">
+          🗄 Lưu trữ &amp; làm mới
+        </button>
       </div>
       <div class="khoi-than">
         <div class="chat-body" id="chatBody"></div>
@@ -770,6 +786,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         <span class="chu"><span class="ten">Top của lớp</span><span class="mota">Lớp đang chọn ở trang chính</span></span>
         <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
       </button>
+      <button class="sb-item" data-muc="kholuutru">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l1.5-3h15L21 7"/><rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9.5 11.5h5"/></svg></span>
+        <span class="chu"><span class="ten">Kho trò chuyện</span><span class="mota">Các lượt đã lưu trữ &amp; làm mới</span></span>
+        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
+      </button>
       <button class="sb-item" data-muc="hocsinh">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M2 12l10-6 10 6-10 6-10-6z"/><path d="M6 14v5c0 1 2.7 2 6 2s6-1 6-2v-5"/></svg></span>
         <span class="chu"><span class="ten">Xem như học sinh</span><span class="mota">Kiểm tính năng: mở trang lớp bằng mã một em</span></span>
@@ -798,6 +819,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     <div id="sbMucTop" hidden>
       <p class="phu" id="topPhu" style="margin:0 0 8px"></p>
       <div id="topDs"></div>
+    </div>
+    <div id="sbMucKhoLuuTru" hidden>
+      <p class="sb-note" style="margin:0 0 11px">Mỗi gói là MỘT lượt "Lưu trữ &amp; làm mới" —
+        toàn bộ tin nhắn lớp đang chọn tại thời điểm đó, chỉ để xem lại.</p>
+      <div id="kltDs"></div>
     </div>
     <div id="sbMucHocSinh" hidden>
       <p class="sb-note" style="margin:0 0 11px">Chỉ để KIỂM TÍNH NĂNG — bấm thẻ lớp ở trang
@@ -855,9 +881,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=30"></script>
+<script src="config.js?v=31"></script>
 <script src="js/chung.js?v=21"></script>
-<script src="js/chat.js?v=18"></script>
+<script src="js/chat.js?v=19"></script>
 <script>
 (function () {
   'use strict';
@@ -1960,6 +1986,65 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     o.style.height = (o.scrollHeight + (o.offsetHeight - o.clientHeight)) + 'px';
   }
 
+  // ⭐ Đợt D — "Lưu trữ & làm mới": chép nguyên tin đang có vào kho
+  // `classChatArchive` rồi xoá sạch phòng đang mở, để lớp bắt đầu lại.
+  // ⚠️ Cần luật Firestore MỚI (cx/update/delete) — chưa dán thì báo hiền.
+  function luuTruVaLamMoi() {
+    if (!TIN.length) return baoToast('Lớp này chưa có tin nhắn nào để lưu trữ.');
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var tenLop = (l && l.tenGoc) || LOP_CHON;
+    if (!window.confirm('Lưu ' + TIN.length + ' tin nhắn hiện tại của lớp ' + tenLop +
+        ' vào kho lưu trữ, rồi XOÁ SẠCH khung chat để bắt đầu lại?')) return;
+    var nut = $('#btnLuuTru');
+    nut.disabled = true;
+    var dsXoa = TIN.slice();
+    AWChat.luuKho(LOP_CHON, tenLop, dsXoa)
+      .then(function () {
+        return Promise.all(dsXoa.map(function (t) {
+          return AWChat.xoa(LOP_CHON, t.id)['catch'](function () {});
+        }));
+      })
+      .then(function () {
+        nut.disabled = false;
+        baoToast('Đã lưu trữ và làm mới khung chat.');
+      })['catch'](function (e) {
+        nut.disabled = false;
+        baoToast(AWChat.chuLoi(e));
+      });
+  }
+
+  // ⭐ Đợt D — sidebar "Kho trò chuyện": liệt kê các gói đã lưu của lớp đang
+  // chọn, bấm một gói mới xổ ra xem (đọc một lần, không nghe realtime).
+  function veKhoLuuTru() {
+    var hop = $('#kltDs');
+    if (!hop) return;
+    hop.innerHTML = '<div class="trong">Đang tải…</div>';
+    AWChat.dsKho(LOP_CHON).then(function (ds) {
+      hop.innerHTML = ds.length ? ds.map(function (g, gi) {
+        var luc = new Date(g.luc);
+        var chuLuc = luc.getDate() + '/' + (luc.getMonth() + 1) + '/' + luc.getFullYear() + ' ' +
+          ('0' + luc.getHours()).slice(-2) + ':' + ('0' + luc.getMinutes()).slice(-2);
+        return '<div class="klt-goi">' +
+            '<button class="klt-dau" data-klt-mo="' + gi + '">' +
+              '<span class="klt-luc">' + chuLuc + '</span>' +
+              '<span class="klt-so">' + (g.soTin || 0) + ' tin</span>' +
+            '</button>' +
+            '<div class="klt-than" id="kltThan' + gi + '" hidden>' +
+              (g.tin || []).map(function (t) {
+                var cuaThay = t.vaiTro === 'gv';
+                return '<div class="klt-tin' + (cuaThay ? ' toi' : '') + '">' +
+                  '<b>' + A.chuAnToan(cuaThay ? 'Thầy Andrew' : t.ten) + '</b> ' +
+                  '<span>' + A.chuAnToan(t.chu) + '</span>' +
+                '</div>';
+              }).join('') +
+            '</div>' +
+          '</div>';
+      }).join('') : '<div class="trong">Lớp này chưa lưu trữ lượt nào.</div>';
+    })['catch'](function (e) {
+      hop.innerHTML = '<div class="trong">' + A.chuAnToan(AWChat.chuLoi(e)) + '</div>';
+    });
+  }
+
   // ---------- vẽ lại toàn trang ----------
   function veTat() {
     veDaiSo();
@@ -1990,7 +2075,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ #10 — chuyển cặp "xem như em nào" + "Xem trang lớp" (trước nằm ở đầu
     // khối Bài còn hạn) vào đây: chỉ để KIỂM TÍNH NĂNG, mặc định mở trang lớp
     // nay đi thẳng bằng danh tính của thầy (xem moBaiModal/veTheCard).
-    hocsinh: { id: 'sbMucHocSinh', ten: 'Xem như học sinh', mota: 'Kiểm tính năng: mở trang lớp bằng mã một em', ve: veXemNhuHs }
+    hocsinh: { id: 'sbMucHocSinh', ten: 'Xem như học sinh', mota: 'Kiểm tính năng: mở trang lớp bằng mã một em', ve: veXemNhuHs },
+    // ⭐ Đợt D — xem lại các gói "Lưu trữ & làm mới" (bấm nút cùng tên ở khối
+    // Trò chuyện) của LỚP ĐANG CHỌN.
+    kholuutru: { id: 'sbMucKhoLuuTru', ten: 'Kho trò chuyện', mota: 'Các lượt lưu trữ & làm mới của lớp đang chọn', ve: veKhoLuuTru }
   };
   function veChiTiet(muc) {
     var m = SB_MUC[muc];
@@ -2104,6 +2192,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
       // ⭐ #10 — sidebar "Xem như học sinh": mở lop.html bằng mã em đang chọn
       // ở đúng hàng đó (kiểm tính năng, không phải lối vào chính).
+      // ⭐ Đợt D — sidebar Kho trò chuyện: bấm đầu gói để xổ/thu ruột.
+      var kltMo = e.target.closest('[data-klt-mo]');
+      if (kltMo) {
+        var than = document.getElementById('kltThan' + kltMo.dataset.kltMo);
+        if (than) than.hidden = !than.hidden;
+        return;
+      }
+
       var hsxMo = e.target.closest('[data-hsx-mo]');
       if (hsxMo) {
         var oChon = hsxMo.parentElement.querySelector('[data-hsx-chon]');
@@ -2138,6 +2234,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
 
     $('#chatGui').onclick = guiChat;
+    $('#btnLuuTru').onclick = luuTruVaLamMoi;
     $('#chatO').oninput = noOChat;
     /* Enter = gửi · Shift+Enter = xuống dòng. */
     $('#chatO').onkeydown = function (e) {

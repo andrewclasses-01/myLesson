@@ -439,6 +439,12 @@ i.m-la{background:var(--m-la)}
    của bạn khác, BÊN TRÁI bóng với tin của chính em. */
 .hang-bong{display:flex; align-items:center; gap:5px}
 .msg.toi .hang-bong{flex-direction:row-reverse}
+/* ⭐ Đợt D — nút xoá tin: mờ sẵn, rõ hẳn khi rê/chạm tới cho đỡ chật mắt. */
+.nut-xoa-tin{flex:none; width:20px; height:20px; border:0; border-radius:50%;
+  background:transparent; color:#B4C3BF; opacity:.55; font-size:11px; cursor:pointer;
+  display:flex; align-items:center; justify-content:center; transition:opacity .15s, background .15s, color .15s}
+.nut-xoa-tin:hover{opacity:1; background:#FDECEC; color:#D93B40}
+.nut-xoa-tin:disabled{opacity:.25; pointer-events:none}
 /* Tin của CHÍNH EM: bóng sát avatar, GIỜ GỬI xuống dòng dưới bóng, dạt phải. */
 .msg.toi{align-self:flex-end; flex-direction:row-reverse; align-items:flex-start; gap:7px}
 .msg.toi .av{margin-top:0}
@@ -1051,9 +1057,9 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=30"></script>
+<script src="config.js?v=31"></script>
 <script src="js/chung.js?v=21"></script>
-<script src="js/chat.js?v=18"></script>
+<script src="js/chat.js?v=19"></script>
 <script>
 /* ============================================================
    TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).
@@ -2630,16 +2636,28 @@ function capNhatTheSpeakingGas(){
 var TIN_MAU = [];          /* tin đang hiện, đổ về từ kho (giữ tên cũ cho các
                               hàm cảm xúc bên dưới không phải sửa) */
 
+// ⭐ Đợt D — mỗi người tự xoá tin CỦA MÌNH; mã 'GV' xoá được của bất kỳ ai
+// (xem ghi chú giới hạn kỹ thuật ở đầu js/chat.js — trang chỉ chặn ở giao diện).
+function coTheXoaTin(t){
+  return !!(t.id && MA_HS && (t.ma === MA_HS || MA_HS === 'GV'));
+}
 function veTin(t, i){
   var laToi = !!(t.ma && MA_HS && t.ma === MA_HS);
   var laThay = t.vaiTro === 'gv';
   var bong = '<div class="bong">' + chuAnToan(t.chu) + '</div>';
   var gio = AWChat.chuGio(t.luc);
+  var nutXoa = coTheXoaTin(t)
+    ? '<button class="nut-xoa-tin" type="button" data-xoa="' + chuAnToan(t.id) + '" title="Xoá tin nhắn">✕</button>'
+    : '';
+  // ⭐ #8 — cụm thả cảm xúc CHƯA TỪNG được vẽ vào tin nhắn (chỉ có hàm vẽ LẠI
+  // `veLaiCum`, không có lần vẽ ĐẦU) — nay gắn thẳng vào đây mới thật sự dùng
+  // được. `veCumCx` đọc `TIN_MAU[i].cx` nên phải gọi SAU khi TIN_MAU đã có `t`.
+  var cumCx = veCumCx(i);
 
   if (laToi) {
     return '<div class="msg toi" data-i="' + i + '">' + veAv(t.ten, i) +
       '<div class="msg-c">' +
-        '<div class="hang-bong">' + bong + '</div>' +
+        '<div class="hang-bong">' + nutXoa + cumCx + bong + '</div>' +
         '<div class="gio-duoi">' + chuAnToan(gio) + '</div>' +
       '</div></div>';
   }
@@ -2649,7 +2667,7 @@ function veTin(t, i){
       '<div class="msg-top"><span class="n">' + chuAnToan(t.ten) +
         (laThay ? ' <b class="nhan-thay">THẦY</b>' : '') + '</span>' +
       '<span class="t">' + chuAnToan(gio) + '</span></div>' +
-      '<div class="hang-bong">' + bong + '</div>' +
+      '<div class="hang-bong">' + bong + cumCx + nutXoa + '</div>' +
     '</div></div>';
 }
 
@@ -2705,11 +2723,16 @@ $('#cxMenu').innerHTML =
   }).join('') +
   '<button type="button" class="bo" data-cx="" title="Bỏ cảm xúc">✕</button>';
 
-function dsCx(i){ return TIN_MAU[i].cx || (TIN_MAU[i].cx = []); }
+// ⭐ #8 (Đợt D) — cx nay ĐẾN TỪ FIRESTORE dạng map { maNguoi: {ma,ten} } (kho
+// tin thật, chia sẻ giữa mọi người). dsCx() đổi nó thành mảng [{ten,ma}] y hệt
+// hình dạng cũ để mọi hàm bên dưới (veCumCx/moPopCx…) không phải sửa gì thêm.
+function dsCx(i){
+  var m = TIN_MAU[i].cx || {};
+  return Object.keys(m).map(function(k){ return { ten: m[k].ten, ma: m[k].ma }; });
+}
 function cxCuaToi(i){
-  var ds = dsCx(i);
-  for (var k = 0; k < ds.length; k++) if (ds[k].ten === TOI) return ds[k].ma;
-  return '';
+  var m = TIN_MAU[i].cx || {};
+  return (m[MA_HS] && m[MA_HS].ma) || '';
 }
 function chiSoTin(nut){
   var m = nut.closest('.msg');
@@ -2749,11 +2772,22 @@ function veLaiCum(i){
   var cu = msg && msg.querySelector('.nut-cx');
   if (cu) cu.outerHTML = veCumCx(i);
 }
-/* Đặt cảm xúc CỦA RIÊNG EM (ma rỗng = gỡ); cảm xúc của bạn khác giữ nguyên. */
+/* Đặt cảm xúc CỦA RIÊNG EM (ma rỗng = gỡ); cảm xúc của bạn khác giữ nguyên.
+   ⭐ Đợt D — vẽ lại NGAY (lạc quan) rồi mới ghi lên Firestore; ghi hỏng (vd
+   chưa dán luật mới) thì báo hiền + tự lùi lại giao diện, không đứng im như
+   đã lưu mà thực ra chưa. */
 function datCxToi(i, ma){
-  TIN_MAU[i].cx = dsCx(i).filter(function(e){ return e.ten !== TOI; });
-  if (ma) TIN_MAU[i].cx.push({ ten:TOI, ma:ma });
+  var t = TIN_MAU[i];
+  var cuTruoc = t.cx && t.cx[MA_HS];
+  var m = t.cx || (t.cx = {});
+  if (ma) m[MA_HS] = { ma:ma, ten:TOI }; else delete m[MA_HS];
   veLaiCum(i);
+  if (!t.id) return;
+  AWChat.suaCx(LOP_DL, t.id, MA_HS, ma, TOI)['catch'](function(e){
+    if (cuTruoc) m[MA_HS] = cuTruoc; else delete m[MA_HS];
+    veLaiCum(i);
+    baoToast(AWChat.chuLoi(e));
+  });
 }
 
 /* Pop-up "AI THẢ CẢM XÚC GÌ" (v19): khung nhỏ dán ngay dưới cụm cảm xúc của
@@ -2835,6 +2869,21 @@ khung.addEventListener('contextmenu', function(e){
   e.preventDefault();
   moBangCx(nut);
 });
+/* ⭐ Đợt D — xoá một tin nhắn (nút chỉ hiện với tin của mình, hoặc mọi tin
+   nếu MA_HS là 'GV'). Không dùng pointerup chung với cụm cảm xúc kẻo bắt
+   nhầm giữ/chạm. */
+khung.addEventListener('click', function(e){
+  var nut = e.target.closest('[data-xoa]');
+  if (!nut) return;
+  var id = nut.getAttribute('data-xoa');
+  if (!id || !window.confirm('Xoá tin nhắn này?')) return;
+  nut.disabled = true;
+  AWChat.xoa(LOP_DL, id)['catch'](function(err){
+    nut.disabled = false;
+    baoToast(AWChat.chuLoi(err));
+  });
+});
+
 document.addEventListener('pointerdown', function(e){
   if ($('#cxMenu').classList.contains('mo') &&
       !e.target.closest('#cxMenu') && !e.target.closest('.nut-cx')) dongBangCx();

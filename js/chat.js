@@ -14,10 +14,21 @@
          role      'hs' | 'gv'
          text      nội dung, tối đa 300 chữ
          createdAt mốc mili giây
+         cx        (⭐ #8, tuỳ chọn) map mã người thả -> {ma, ten} — CẢM XÚC
 
-   ⛔⛔ CHƯA DÁN LUẬT FIRESTORE THÌ CHAT KHÔNG CHẠY (báo `permission-denied`).
-   Thầy vào Firebase Console → Firestore Database → Rules, thêm khối này vào
-   TRONG `match /databases/{database}/documents { … }`, rồi bấm Publish:
+       classChatArchive/{id tự sinh}   (⭐ #Đợt D — "Lưu trữ & làm mới")
+         lop       mã lớp (B1AH…)
+         tenLop    tên lớp lúc lưu (hiện cho dễ đọc, phòng khi đổi tên sau)
+         luc       mốc mili giây lúc lưu
+         soTin     số tin trong gói (để hiện nhanh, khỏi mở ra đếm)
+         tin       MẢNG snapshot y hệt khiCo() trả về lúc lưu
+
+   ⛔⛔ CHƯA DÁN LUẬT FIRESTORE MỚI THÌ CẢM XÚC/XOÁ TIN/LƯU TRỮ KHÔNG CHẠY (báo
+   `permission-denied`) — NHẮN VÀ ĐỌC vẫn chạy bình thường (luật cũ vẫn đúng
+   cho hai việc đó). Thầy vào Firebase Console → Firestore Database → Rules,
+   THAY khối `classChat` cũ bằng khối này (giữ nguyên `classChatArchive` mới
+   thêm bên dưới), rồi bấm Publish — chi tiết đầy đủ + lý do:
+   `D:\APP AND DATA\myLesson-data\tai-lieu\LUAT FIRESTORE CAN DAN (…THEM CAM XUC).md`
 
        match /classChat/{lop}/messages/{id} {
          allow read: if true;
@@ -30,13 +41,28 @@
            && request.resource.data.name.size() <= 60
            && request.resource.data.role in ['hs','gv']
            && request.resource.data.createdAt is number;
-         allow update, delete: if false;
+         // ⭐ #8 — CHỈ cho sửa trường `cx` (thả/gỡ cảm xúc), mọi trường khác
+         // (text/name/…) vẫn KHOÁ CỨNG như cũ — không ai sửa lại được lời đã nói.
+         allow update: if request.resource.data.diff(resource.data)
+                            .affectedKeys().hasOnly(['cx'])
+           && request.resource.data.cx is map;
+         // ⭐ Đợt D — MỞ xoá (thầy chốt, biết rõ giới hạn: không có đăng nhập
+         // thật nên KHÔNG thể ép luật "chỉ đúng người gửi/đúng thầy mới xoá
+         // được" — trang chỉ tự chặn ở GIAO DIỆN, ai rành kỹ thuật vẫn gọi
+         // thẳng Firestore xoá được tin của người khác).
+         allow delete: if true;
+       }
+       match /classChatArchive/{id} {
+         allow read: if true;
+         allow create: if request.resource.data.keys().hasOnly(
+                            ['lop','tenLop','luc','soTin','tin'])
+           && request.resource.data.lop is string
+           && request.resource.data.tin is list;
+         allow update, delete: if false;   // kho lưu trữ — chỉ thêm, không sửa/xoá
        }
 
    ⚠️ Luật này cho AI CŨNG ĐỌC VÀ GỬI ĐƯỢC (không đòi đăng nhập) — đúng mức tin
    cậy mà cả hệ này đang có: mã học sinh vốn nằm công khai trong `lop.json`.
-   Đổi lại nó CHẶN sửa/xoá tin, chặn tin quá dài, chặn thêm trường lạ.
-   ⛔ Đừng nới `allow update, delete` — sửa được tin là mất dấu vết hội thoại.
    ============================================================ */
 (function () {
   'use strict';
@@ -96,7 +122,8 @@
           ds.push({
             id: d.id, ten: x.name || '?', ma: x.code || '',
             vaiTro: x.role === 'gv' ? 'gv' : 'hs',
-            chu: x.text || '', luc: Number(x.createdAt) || 0
+            chu: x.text || '', luc: Number(x.createdAt) || 0,
+            cx: x.cx || {}
           });
         });
         ds.reverse();                              // Firestore trả mới->cũ, ta hiện cũ->mới
@@ -128,6 +155,58 @@
     });
   }
 
+  // ⭐ #8 — Thả/gỡ cảm xúc CỦA MỘT NGƯỜI trên MỘT tin (dot-path nên không đụng
+  // cảm xúc của người khác đang có trên cùng tin). `ma` rỗng = gỡ.
+  function suaCx(maLop, tinId, maNguoi, ma, ten) {
+    var khoa = String(maNguoi || '').replace(/[.$#[\]/]/g, '_');
+    if (!khoa) return Promise.reject(new Error('thieu-ma-nguoi'));
+    return db().then(function (f) {
+      var truong = 'cx.' + khoa;
+      var patch = {};
+      patch[truong] = ma ? { ma: String(ma), ten: String(ten || '?').slice(0, 60) } : f.fs.deleteField();
+      return f.fs.updateDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId), patch);
+    });
+  }
+
+  // Xoá MỘT tin. Không có đăng nhập thật nên trang gọi hàm này TỰ CHỊU TRÁCH
+  // NHIỆM kiểm "ai được xoá tin nào" ở phía giao diện — xem đầu file.
+  function xoa(maLop, tinId) {
+    return db().then(function (f) {
+      return f.fs.deleteDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId));
+    });
+  }
+
+  // ⭐ Đợt D — "Lưu trữ & làm mới": chép NGUYÊN mảng tin đang có vào một tài
+  // liệu kho, để dashboard xoá sạch phòng mà không mất dấu vết cũ.
+  function luuKho(maLop, tenLop, dsTin) {
+    return db().then(function (f) {
+      return f.fs.addDoc(f.fs.collection(f.db, 'classChatArchive'), {
+        lop: String(maLop || ''), tenLop: String(tenLop || maLop || ''),
+        luc: Date.now(), soTin: (dsTin || []).length,
+        tin: (dsTin || []).map(function (t) {
+          return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc, cx: t.cx || {} };
+        })
+      });
+    });
+  }
+
+  // Danh sách gói đã lưu của MỘT lớp, mới nhất trước.
+  function dsKho(maLop) {
+    return db().then(function (f) {
+      var q = f.fs.query(
+        f.fs.collection(f.db, 'classChatArchive'),
+        f.fs.where('lop', '==', maLop),
+        f.fs.orderBy('luc', 'desc'),
+        f.fs.limit(30)
+      );
+      return f.fs.getDocs(q);
+    }).then(function (snap) {
+      var ra = [];
+      snap.forEach(function (d) { ra.push(Object.assign({ id: d.id }, d.data())); });
+      return ra;
+    });
+  }
+
   // "Hôm nay 16:02" / "Hôm qua 20:15" / "18/8 20:15"
   function chuGio(ms) {
     if (!ms) return '';
@@ -155,7 +234,8 @@
   }
 
   window.AWChat = {
-    nghe: nghe, thoi: thoi, gui: gui,
+    nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
+    luuKho: luuKho, dsKho: dsKho,
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU
   };
 })();

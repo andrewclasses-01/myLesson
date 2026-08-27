@@ -1197,8 +1197,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=28"></script>
-<script src="js/chung.js?v=20"></script>
+<script src="config.js?v=29"></script>
+<script src="js/chung.js?v=21"></script>
 <script>
 /* ============================================================
    TRANG BÀI TẬP — bản THẬT (web v1.9.0, 23/08/2026), dùng chung cho ba dạng
@@ -2736,9 +2736,10 @@ function veDauTrang(){
   document.title = A.tenBai(BAI) + ' · Lớp ' + LOP_HIEN;
 }
 
-/* Về trang lớp — giữ nguyên `?nhu=` nếu thầy đang xem như một em. */
+/* Về trang lớp — giữ nguyên chế độ xem (như một em, hoặc thẳng là thầy). */
 function veTrangLop(){
-  location.href = 'lop.html' + ((EM && EM.xemNhu) ? ('?nhu=' + encodeURIComponent(MA_HS)) : '');
+  var q = A.giuXemNhuQuery(EM, MA_HS, LOP_DL);
+  location.href = 'lop.html' + (q ? ('?' + q) : '');
 }
 
 A.napDuLieu().then(function(dl){
@@ -2758,8 +2759,8 @@ A.napDuLieu().then(function(dl){
   /* Bài dạng SP SLIDE có trang riêng — vào nhầm thì chuyển sang đó. */
   var trang = A.trangCuaBai(BAI);
   if (trang && trang !== 'bai.html') {
-    location.replace(trang + '?id=' + encodeURIComponent(BAI.id) +
-      ((EM && EM.xemNhu) ? ('&nhu=' + encodeURIComponent(MA_HS)) : ''));
+    var qXn = A.giuXemNhuQuery(EM, MA_HS, LOP_DL);
+    location.replace(trang + '?id=' + encodeURIComponent(BAI.id) + (qXn ? ('&' + qXn) : ''));
     return;
   }
 

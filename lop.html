@@ -1051,8 +1051,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=28"></script>
-<script src="js/chung.js?v=20"></script>
+<script src="config.js?v=29"></script>
+<script src="js/chung.js?v=21"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
 /* ============================================================
@@ -1981,7 +1981,8 @@ $('#oChat').addEventListener('blur', function(){
    ⛔ Đo (`doCaoDau`/`doSanChat`) phải chạy SAU khi tên em đã điền: tên dài
    ngắn khác nhau làm thanh đầu cao khác nhau, đo trước là lệch cả cột. */
 function giuXemNhu(){
-  return (EM && EM.xemNhu) ? ('&nhu=' + encodeURIComponent(MA_HS)) : '';
+  var q = A.giuXemNhuQuery(EM, MA_HS, LOP_DL);
+  return q ? ('&' + q) : '';
 }
 
 /* Đặt CHỮ vào một ô đang có sẵn phần tử con (avatar có huy hiệu sao bên trong,
@@ -2866,7 +2867,7 @@ function guiTin(){
   var chu = o.value.trim();
   if (!chu) return;
   o.disabled = true;
-  AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: 'hs', chu: chu })
+  AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu })
     .then(function(){
       o.value = '';
       noOChat();

@@ -203,8 +203,16 @@
   // tab là hết, không đá em nào ra khỏi phiên đăng nhập của chính em.
   // Việc đăng nhập ở đây vốn KHÔNG nhằm bảo mật (mọi mã đều nằm trong lop.json
   // công khai), nên đường này không mở thêm cửa nào cả.
+  // ⭐ `?gv=1&lop=<maLop>` — XEM NHƯ CHÍNH THẦY (không phải một em). Dashboard
+  // dùng đường này khi thầy mở trang lớp từ trang quản lý — danh tính/avatar/
+  // chat hiện ra là "Thầy Andrew", không mượn tên em nào cả. Cũng KHÔNG ghi
+  // vào máy, giống hệt `?nhu=`.
   function emDangHoc(dl) {
     var q = new URLSearchParams(location.search);
+    if (q.get('gv')) {
+      var lgv = lopTheoMa(dl, q.get('lop') || '');
+      if (lgv) return { lop: lgv.maLop, ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', xemNhu: true };
+    }
     var nhu = q.get('nhu');
     if (nhu) {
       var t = timTheoMa(dl, nhu);
@@ -223,6 +231,16 @@
     var em = emDangHoc(dl);
     if (!em) { location.replace('index.html'); return null; }
     return em;
+  }
+
+  // Chuỗi query (KHÔNG có dấu & hay ? ở đầu) để GIỮ NGUYÊN chế độ xem khi
+  // chuyển trang: thầy xem như một em (`nhu=`) hoặc thầy xem thẳng bằng danh
+  // tính của mình (`gv=1&lop=`). Dùng CHUNG ở lop.html/bai.html/bai-sp.html —
+  // đừng viết riêng từng nơi, dễ quên cập nhật một chỗ (bài học cũ của app này).
+  function giuXemNhuQuery(em, maHs, maLop) {
+    if (!em || !em.xemNhu) return '';
+    if (em.vaiTro === 'gv') return 'gv=1&lop=' + encodeURIComponent(maLop || '');
+    return 'nhu=' + encodeURIComponent(maHs || '');
   }
 
   // ---------- mã quản lý ----------
@@ -637,6 +655,7 @@
     napDuLieu: napDuLieu, napJson: napJson,
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,
+    giuXemNhuQuery: giuXemNhuQuery,
     bam: bam, laMaQuanLy: laMaQuanLy,
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,

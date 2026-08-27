@@ -674,8 +674,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=28"></script>
-<script src="js/chung.js?v=20"></script>
+<script src="config.js?v=29"></script>
+<script src="js/chung.js?v=21"></script>
 <script>
 /* ============================================================
    TRANG SPEAKING SLIDE — bản THẬT (web v1.9.0, 23/08/2026).
@@ -1290,7 +1290,8 @@ function veDauTrang(){
 }
 
 function veTrangLop(){
-  location.href = 'lop.html' + ((EM && EM.xemNhu) ? ('?nhu=' + encodeURIComponent(MA_HS)) : '');
+  var q = A.giuXemNhuQuery(EM, MA_HS, LOP_DL);
+  location.href = 'lop.html' + (q ? ('?' + q) : '');
 }
 
 A.napDuLieu().then(function(dl){

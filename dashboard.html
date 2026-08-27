@@ -320,6 +320,108 @@ a{color:inherit}
 i.m-do{background:var(--m-do)} i.m-cam{background:var(--m-cam)}
 i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
 .td-so.m-la{color:var(--m-la)} .td-so.m-do{color:var(--m-do)}
+
+/* ================================================================
+   #2/#4 — VÙNG ĐIỂM khi CÒN THIẾU + THẺ SPEAKING CHECK (team) + bấm mở
+   được — port nguyên văn từ lop.html để giống 100% (token đổi tên cho khớp
+   dashboard: --line/--m-* đã có sẵn, --accent→--xanh, --muted→--nhat,
+   --ink→--chu, --surface→--the, --ground→--nen).
+   ================================================================ */
+.the-diem[role="button"]{cursor:pointer; transition:background .18s}
+.the-diem[role="button"]:hover{background:rgba(14,124,110,.045)}
+.the-diem.co-thieu{flex-direction:row; align-items:center; gap:12px}
+.the-diem.co-thieu .khoi-thanh{flex:1; min-width:0; display:flex; flex-direction:column; gap:5px}
+.khoi-thieu{flex:none; width:176px; align-self:stretch; overflow:hidden;
+  display:flex; flex-direction:column; justify-content:center;
+  padding:0 9px; border-left:1px dashed #F0CFCF}
+.khoi-thieu .tieu{font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#C0484C;
+  line-height:1.25; margin-bottom:2px; text-align:center; white-space:nowrap}
+.ds-thieu{width:100%; display:grid; grid-template-columns:1fr auto;
+  column-gap:10px; row-gap:0; align-items:center}
+.ds-thieu .ten{font-size:11px; font-weight:700; color:#7A4B4C; line-height:1.3;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ds-thieu .so{min-width:16px; height:13px; padding:0 4px; border-radius:5px;
+  background:#FBE4E4; color:#C0484C; font-size:9.5px; font-weight:800;
+  display:grid; place-items:center}
+.the-diem.n3{padding-top:8px; padding-bottom:10px}
+.the-diem.n4{padding-top:5px; padding-bottom:6px}
+.the-diem.n4:not(.co-thieu){gap:3px}
+.the-diem.co-thieu.n4 .khoi-thanh{gap:3px}
+
+/* ---- SP CHECK: một dòng mỗi TEAM thay dòng chung ---- */
+.doi-dong{display:grid; grid-template-columns:46px minmax(28px,1fr) 32px;
+  align-items:center; column-gap:7px}
+.doi-ten{font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#3D5450;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.doi-bar{height:7px; border-radius:99px; background:#E7EDEB; overflow:hidden}
+.doi-bar i{display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
+.doi-so{font-size:10.5px; font-weight:800; text-align:right; color:#54706B;
+  font-variant-numeric:tabular-nums}
+.doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
+.doi-so.m-cam{color:var(--m-cam)} .doi-so.m-do{color:var(--m-do)}
+.doi-bar i.m-la{background:var(--m-la)} .doi-bar i.m-duong{background:var(--m-duong)}
+.doi-bar i.m-cam{background:var(--m-cam)} .doi-bar i.m-do{background:var(--m-do)}
+.the-diem.doi2 .doi-dong{min-height:38px}
+.the-diem.doi3 .doi-dong{min-height:26px}
+.the-diem.doi4 .doi-dong{min-height:19px}
+.the-diem.doi5 .doi-dong{min-height:15px}
+.the-diem.doi5 .doi-ten,.the-diem.doi5 .doi-so{font-size:8.8px}
+.the-diem.doi5 .doi-bar{height:6px}
+
+/* ---- pop-up bảng xếp hạng / chi tiết SP CHECK (khung dùng chung) ---- */
+.pop-nen{position:fixed; inset:0; z-index:90; display:grid; place-items:center;
+  padding:20px; background:rgba(22,35,42,.42); backdrop-filter:blur(2px);
+  opacity:0; pointer-events:none; transition:opacity .26s var(--em)}
+.pop-nen.mo{opacity:1; pointer-events:auto}
+.pop{width:min(376px,100%); max-height:92vh; background:var(--the);
+  border-radius:20px; box-shadow:0 24px 60px rgba(22,35,42,.28);
+  display:flex; flex-direction:column; overflow:hidden;
+  transform:translateY(18px) scale(.96); opacity:0;
+  transition:transform .3s var(--em), opacity .26s var(--em)}
+.pop-nen.mo .pop{transform:none; opacity:1}
+.pop-head{flex:none; display:flex; align-items:center; gap:10px;
+  padding:13px 15px 11px; border-bottom:1px solid var(--line)}
+.pop-head h3{margin:0; font-size:14px; font-weight:800; letter-spacing:.03em}
+.pop-head .phu{font-size:10.5px; font-weight:600; color:var(--nhat); margin-top:1px}
+.pop-head .dong{margin-left:auto; width:32px; height:32px; border-radius:10px;
+  border:0; display:grid; place-items:center; background:var(--nen)}
+.pop-head .dong svg{width:16px; height:16px; stroke:var(--nhat); stroke-width:2.4;
+  fill:none; stroke-linecap:round}
+.pop-ds{flex:1; min-height:0; overflow-y:auto; padding:6px 9px 8px}
+.pop-dong{display:grid; grid-template-columns:24px minmax(0,1fr) auto 28px;
+  align-items:center; gap:7px; padding:3.5px 7px; border-radius:9px}
+.pop-dong + .pop-dong{margin-top:1.5px}
+.pop-dong.du{background:#F4FBF7}
+.pop-dong.thieu{background:#FDF5F5}
+.pop-hang{font-size:10.5px; font-weight:800; color:#8FA3A0; text-align:center}
+.pop-hang svg{display:block; width:17px; height:17px; margin:0 auto}
+.cup1{color:#E3AE1B} .cup2{color:#9AA6B0} .cup3{color:#C0783A}
+.pop-ten{font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden;
+  text-overflow:ellipsis}
+.pop-dong.du .pop-ten{color:var(--m-la)}
+.pop-dong.thieu .pop-ten{color:var(--m-do)}
+.pop-phu{font-size:9.5px; font-weight:700; color:#93A5A1; white-space:nowrap}
+.pop-cuoi{justify-self:center; font-size:13px; font-weight:800; color:var(--m-la)}
+.pop-cuoi.so{justify-self:center; min-width:20px; height:17px; padding:0 5px;
+  border-radius:6px; background:#FBE4E4; color:#C0484C; font-size:10px;
+  display:grid; place-items:center}
+.pop-foot{flex:none; padding:8px 16px 11px; border-top:1px solid var(--line);
+  font-size:9px; font-weight:500; letter-spacing:.22em; color:#A9B6B3;
+  text-align:center}
+.doi-vach{display:flex; align-items:center; gap:10px; margin:14px 9px 6px}
+.doi-vach:first-child{margin-top:6px}
+.doi-vach .line{flex:1; height:1px; background:var(--line)}
+.doi-vach .lb{font-size:10.5px; font-weight:800; letter-spacing:.06em; color:var(--xanh);
+  white-space:nowrap}
+.doi-vach .lb .tong{margin-left:6px; font-weight:700; letter-spacing:.03em; color:var(--nhat)}
+.doi-vach .lb .tong::before{content:'•'; margin-right:6px; color:var(--line)}
+.hs-dong{display:grid; grid-template-columns:20px minmax(0,1fr) auto; align-items:center;
+  column-gap:8px; padding:5px 9px; border-radius:8px}
+.hs-dong + .hs-dong{margin-top:1px}
+.hs-hang{font-size:10px; font-weight:800; color:#9CADA9; text-align:center}
+.hs-ten{font-size:12px; font-weight:700; color:var(--chu); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis}
+.hs-so{font-size:12px; font-weight:800; color:var(--chu); font-variant-numeric:tabular-nums}
 @media (max-width:620px){
   :root{--cao-the:166px}
   .the-in{--mui:42px}
@@ -719,6 +821,26 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 </div>
 </div>
 
+<!-- ============ #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK ============
+     Bấm vùng điểm trong thẻ mở đúng thứ học sinh thấy khi bấm progress ở
+     trang lớp — dùng chung khung này cho cả moPopCaLop (bảng cả lớp) lẫn
+     moPopDoiSp (chi tiết từng bạn theo team, thẻ SPEAKING CHECK). -->
+<div class="pop-nen" id="popNen">
+  <div class="pop" id="popKhung">
+    <div class="pop-head">
+      <div>
+        <h3></h3>
+        <div class="phu" id="popPhu"></div>
+      </div>
+      <button class="dong" id="popDong" title="Đóng">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="pop-ds" id="popDs"></div>
+    <div class="pop-foot">ANDREW CLASSES</div>
+  </div>
+</div>
+
 <div class="chep-nen" id="chepNen" hidden>
   <div class="chep-hop">
     <h3>Danh sách em chưa xong</h3>
@@ -733,7 +855,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=29"></script>
+<script src="config.js?v=30"></script>
 <script src="js/chung.js?v=21"></script>
 <script src="js/chat.js?v=18"></script>
 <script>
@@ -750,6 +872,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // xong" một kiểu mà thẻ của học sinh một kiểu.
   var CHUAN = {};
   var TIENG = 3600 * 1000;
+  // ⭐ #2 — thẻ SPEAKING CHECK: mã bài -> mảng tiến trình theo team (tinhDoiSp),
+  // đổ vào SAU khi hỏi Firestore (nếp "hiện trước, đổ sau" y hệt trang lớp).
+  var DOI_SP = {};
+  var DOI_SP_HOI = {};   // mã bài đã hỏi rồi — khỏi hỏi lại mỗi lần vẽ lại thẻ
 
   // ---------- tiện ích ----------
   var hen = null;
@@ -807,8 +933,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       });
     }
     var xongHet = (daDoc && acts.length) ? (caLop.length - thieu.length) : null;
+    // ⭐ #2 — thẻ SPEAKING CHECK (nhận theo tên dạng bài, y hệt lop.html
+    // theTuBai()): doiSp đổ vào sau khi đọc Firestore, xem capNhatSpeakingChoBai().
+    var laSp = /SP\s*CHECK/i.test(b.dang || '');
     return { bai: b, maLop: maLop, siSo: caLop.length, acts: acts,
-             thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop };
+             thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop,
+             laSp: laSp, doiSp: DOI_SP[b.id] || null };
   }
 
   // ⭐ v1.14.0 — "XONG" = ĐỦ ĐIỂM TỐI ĐA, không còn là "có nộp là được".
@@ -1131,6 +1261,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
 
   function veDiemCardThat(t, st) {
+    // ⭐ #2 — thẻ SPEAKING CHECK: MỘT DÒNG MỖI TEAM thay dòng chung, y hệt
+    // trang lớp. Chưa đọc xong Firestore thì báo hiền, không phải lỗi.
+    if (t.laSp) {
+      return (t.doiSp && t.doiSp.length) ? veDoiSpKhoi(t)
+        : '<span class="the-diem chi-tay">Đang đọc dữ liệu speaking…</span>';
+    }
     var acts = t.acts;
     if (!acts.length) {
       return '<span class="the-diem chi-tay">Bài này không có game AWord nào.</span>';
@@ -1180,6 +1316,212 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       '</span></button>';
   }
 
+  // ================================================================
+  // ⭐ #2 — THẺ SPEAKING CHECK: TIẾN TRÌNH THEO TEAM, port NGUYÊN VĂN từ
+  // lop.html (tinhDoiSp/spBuoiFs/spDoiSpFs/veDoiSpKhoi) — CHỈ phần XEM (bỏ
+  // hẳn moPhongCham/spVaoBuoi vì đó là lối "em bấm Chấm bài" của học sinh,
+  // không hợp với trang quản lý). Vẫn REST trực tiếp (không SDK) như bản gốc.
+  // ================================================================
+  function spFsGoc() {
+    var db = (A.CFG && A.CFG.AWORD_DB) || null;
+    if (!db || !db.projectId) return '';
+    return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+      '/databases/(default)/documents';
+  }
+  function spFsGiai(f) {
+    if (!f || typeof f !== 'object') return null;
+    if ('stringValue' in f) return f.stringValue;
+    if ('integerValue' in f) return parseInt(f.integerValue, 10);
+    if ('doubleValue' in f) return f.doubleValue;
+    if ('booleanValue' in f) return f.booleanValue;
+    if ('arrayValue' in f) return ((f.arrayValue && f.arrayValue.values) || []).map(spFsGiai);
+    if ('mapValue' in f) {
+      var o = {}, fs = (f.mapValue && f.mapValue.fields) || {};
+      for (var k in fs) o[k] = spFsGiai(fs[k]);
+      return o;
+    }
+    return null;
+  }
+  function spFsGiaiDoc(doc) {
+    var o = {}, fs = (doc && doc.fields) || {};
+    for (var k in fs) o[k] = spFsGiai(fs[k]);
+    if (doc && doc.name) o._id = String(doc.name).split('/').pop();
+    return o;
+  }
+  // Buổi ĐANG MỞ của một lớp trong kho mới — null nếu không có / kho chưa mở khoá.
+  function spBuoiFs(maLop) {
+    var goc = spFsGoc();
+    var db = (A.CFG && A.CFG.AWORD_DB) || {};
+    if (!goc) return Promise.resolve(null);
+    var body = { structuredQuery: {
+      from: [{ collectionId: 'spBuoi' }],
+      where: { compositeFilter: { op: 'AND', filters: [
+        { fieldFilter: { field: { fieldPath: 'classCode' }, op: 'EQUAL',
+          value: { stringValue: String(maLop || '').replace(/\s+/g, '').toUpperCase() } } },
+        { fieldFilter: { field: { fieldPath: 'active' }, op: 'EQUAL',
+          value: { booleanValue: true } } }
+      ] } },
+      limit: 5
+    } };
+    return fetch(goc + ':runQuery?key=' + db.apiKey, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('FS_' + r.status);
+      return r.json();
+    }).then(function (ds) {
+      var doc = (Array.isArray(ds) ? ds : []).filter(function (x) { return x.document; })[0];
+      if (!doc) return null;
+      var b = spFsGiaiDoc(doc.document);
+      return { _id: b._id, classCode: b.classCode || '', name: b.className || '',
+        lesson: b.lesson || '', topic: b.topic || b.lesson || '', teams: b.teams || [],
+        moHinh: b.moHinh === 2 ? 2 : 1 };
+    });
+  }
+  // Mã bài của thẻ có khớp buổi không (so "chịu lệch" y hệt lop.html).
+  function spKhopBai(maThe, tenBuoi) {
+    var a = A.khoaTen(maThe), b = A.khoaTen(tenBuoi);
+    if (!a || !b) return false;
+    return a === b || a.indexOf(b) >= 0 || b.indexOf(a) >= 0;
+  }
+  // Buổi MÔ HÌNH 2 (bản tổng lỗi) — mỗi em chấm = 1 tài liệu tongLoi.
+  function spDoiSpFs(buoiId) {
+    var goc = spFsGoc();
+    var db = (A.CFG && A.CFG.AWORD_DB) || {};
+    var body = { structuredQuery: {
+      from: [{ collectionId: 'tongLoi' }],
+      select: { fields: [{ fieldPath: 'student' }, { fieldPath: 'myTeam' }, { fieldPath: 'errors' }] },
+      limit: 300
+    } };
+    return fetch(goc + '/spBuoi/' + encodeURIComponent(buoiId) + ':runQuery?key=' + db.apiKey, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    }).then(function (r) {
+      if (!r.ok) throw new Error('FS_' + r.status);
+      return r.json();
+    }).then(function (ds) {
+      return (Array.isArray(ds) ? ds : []).filter(function (x) { return x.document; })
+        .map(function (x) { return spFsGiaiDoc(x.document); });
+    });
+  }
+  function soLoiSong(errors) {
+    return (errors || []).filter(function (er) { return !er.trangThai || er.trangThai === 'song'; }).length;
+  }
+  var DOI_MAU_CO_DINH = [{ min: 30, m: 'm-la' }, { min: 25, m: 'm-duong' }, { min: 20, m: 'm-cam' }];
+  function mauCoDinhDoi(tb) {
+    for (var i = 0; i < DOI_MAU_CO_DINH.length; i++)
+      if (tb >= DOI_MAU_CO_DINH[i].min) return DOI_MAU_CO_DINH[i].m;
+    return null;
+  }
+  // Gộp docs (tongLoi thô) + teams (roster của buổi) thành mảng hiển thị.
+  function tinhDoiSp(teams, docs) {
+    var theoTen = {};
+    (docs || []).forEach(function (d) {
+      var ten = A.khoaTen(d.student);
+      if (!ten) return;
+      theoTen[ten] = (theoTen[ten] || 0) + soLoiSong(d.errors);
+    });
+    var doi = (teams || []).map(function (t) {
+      var hs = (t.members || []).map(function (m) {
+        return { ten: m, so: theoTen[A.khoaTen(m)] || 0 };
+      }).sort(function (a, b) { return b.so - a.so; });
+      var tong = hs.reduce(function (s, e) { return s + e.so; }, 0);
+      return { team: t.team, ten: 'TEAM ' + t.team, tong: tong,
+        tb: hs.length ? tong / hs.length : 0, hs: hs };
+    });
+    var chuaCoMau = doi.filter(function (d) { return !mauCoDinhDoi(d.tb); })
+      .sort(function (a, b) { return b.tong - a.tong; });
+    var mauHang = ['m-la', 'm-duong', 'm-cam', 'm-do', 'm-do'];
+    chuaCoMau.forEach(function (d, i) {
+      d.mau = (chuaCoMau.length < 4 && i === chuaCoMau.length - 1) ? 'm-do' : (mauHang[i] || 'm-do');
+    });
+    doi.forEach(function (d) { if (!d.mau) d.mau = mauCoDinhDoi(d.tb); });
+    var max = doi.length ? Math.max.apply(null, doi.map(function (d) { return d.tong; })) : 0;
+    doi.forEach(function (d) { d.pt = max ? Math.round(d.tong / max * 100) : 0; });
+    return doi;
+  }
+  function veDoiSpKhoi(t) {
+    var doiSp = t.doiSp || [];
+    var thanh = doiSp.map(function (d) {
+      return '<span class="doi-dong">' +
+        '<span class="doi-ten" title="' + A.chuAnToan(d.ten) + '">' + A.chuAnToan(d.ten) + '</span>' +
+        '<span class="doi-bar"><i class="' + d.mau + '" style="width:' + d.pt + '%"></i></span>' +
+        '<span class="doi-so ' + d.mau + '">' + d.tong + '</span>' +
+      '</span>';
+    }).join('');
+    var lopSo = ' doi' + Math.min(Math.max(doiSp.length, 2), 5);
+    return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
+  }
+
+  // Hỏi Firestore MỘT LẦN cho mỗi bài spcheck đang hiện, rồi vẽ lại thẻ.
+  function capNhatSpeakingChoBai(b, maLop) {
+    if (DOI_SP_HOI[b.id]) return;
+    DOI_SP_HOI[b.id] = true;
+    spBuoiFs(maLop).then(function (buoi) {
+      if (!buoi || buoi.moHinh !== 2 || !spKhopBai(A.maLesson(b), buoi.lesson)) return;
+      return spDoiSpFs(buoi._id).then(function (docs) {
+        var doi = tinhDoiSp(buoi.teams, docs);
+        if (doi.length) { DOI_SP[b.id] = doi; veKhuThe(); if (BM_ID === b.id) moBaiModal(b.id); }
+      });
+    })['catch'](function () { /* im lặng — thẻ giữ nguyên dòng "đang đọc" */ });
+  }
+
+  // ---------- #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK (bấm vùng điểm) ----------
+  // ⛔ Bản RÚT GỌN so với lop.html: xếp "đã xong" lên trước rồi "thiếu ít
+  // trước", KHÔNG có hạng-trung-bình-theo-nộp-sớm (đòi hỏi gộp điểm nhiều act
+  // như donDiem()/HANG_LOP bên trang lớp — ngoài phạm vi trang quản lý này).
+  function xepCaLop(t) {
+    var thieuMap = {};
+    (t.thieu || []).forEach(function (e) { thieuMap[e.ten] = e.so; });
+    var xong = (t.caLop || []).filter(function (ten) { return !thieuMap[ten]; })
+      .map(function (ten) { return { ten: ten, du: true, phu: 'hoàn thành' }; });
+    var thieuDs = (t.thieu || []).slice().sort(function (a, b) { return a.so - b.so; })
+      .map(function (e) { return { ten: e.ten, du: false, so: e.so, phu: 'chưa hoàn thành' }; });
+    return xong.concat(thieuDs);
+  }
+  function veCup(hang) {
+    return '<svg class="cup' + hang + '" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M6.6 3h10.8v4.3a5.4 5.4 0 0 1-10.8 0z" fill="currentColor"/>' +
+      '<path d="M6.6 4.4H3.7v1.5a3.3 3.3 0 0 0 3.3 3.3M17.4 4.4h2.9v1.5a3.3 3.3 0 0 1-3.3 3.3" ' +
+        'fill="none" stroke="currentColor" stroke-width="1.5"/>' +
+      '<path d="M10.7 12.6h2.6l.5 2.5h-3.6z" fill="currentColor"/>' +
+      '<rect x="8.3" y="15.2" width="7.4" height="2.2" rx="1.1" fill="currentColor"/>' +
+    '</svg>';
+  }
+  function moPopCaLop(b, t) {
+    var ds = xepCaLop(t);
+    $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
+    $('#popDs').innerHTML = ds.map(function (e, i) {
+      var hang = (e.du && i < 3) ? veCup(i + 1) : (i + 1);
+      return '<div class="pop-dong ' + (e.du ? 'du' : 'thieu') + '">' +
+        '<span class="pop-hang">' + hang + '</span>' +
+        '<span class="pop-ten">' + A.chuAnToan(e.ten) + '</span>' +
+        '<span class="pop-phu">' + e.phu + '</span>' +
+        (e.du ? '<span class="pop-cuoi">✓</span>' : '<span class="pop-cuoi so">' + e.so + '</span>') +
+      '</div>';
+    }).join('');
+    $('#popNen').classList.add('mo');
+  }
+  function moPopDoiSp(b, t) {
+    $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
+    $('#popDs').innerHTML = (t.doiSp || []).map(function (d) {
+      var vach = '<span class="doi-vach"><span class="line"></span>' +
+        '<span class="lb">' + A.chuAnToan(d.ten) +
+          '<span class="tong">' + d.tong + ' FOUND</span></span>' +
+        '<span class="line"></span></span>';
+      var hang = d.hs.map(function (e, i) {
+        return '<span class="hs-dong">' +
+          '<span class="hs-hang">' + (i + 1) + '</span>' +
+          '<span class="hs-ten">' + A.chuAnToan(e.ten) + '</span>' +
+          '<span class="hs-so">' + e.so + '</span>' +
+        '</span>';
+      }).join('');
+      return vach + hang;
+    }).join('');
+    $('#popNen').classList.add('mo');
+  }
+  function dongPop() { $('#popNen').classList.remove('mo'); }
+
   function chuoiGio(ms) {
     var s = Math.floor(ms / 1000);
     var h = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60), g = s % 60;
@@ -1217,6 +1559,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#theListDs').innerHTML = ds.length ? ds.map(veTheCard).join('')
       : '<div class="trong">🎈 Lớp này hết bài — No homework, No fun!</div>';
     nhipDongHo();
+    // ⭐ #2 — thẻ SPEAKING CHECK chưa có doiSp thì hỏi Firestore (một lần/mã bài).
+    ds.forEach(function (b) {
+      if (/SP\s*CHECK/i.test(b.dang || '') && !DOI_SP[b.id]) capNhatSpeakingChoBai(b, LOP_CHON);
+    });
   }
 
   // ---------- BẤM THẺ BÀI: mở nội dung như bình thường (Thầy Andrew xem) ----------
@@ -1710,6 +2056,26 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var gvTop = e.target.closest('[data-gv-top]');
       if (gvTop) return void gvMoSidebar(gvTop.dataset.gvTop, 'top');
 
+      // ⭐ #4 — BA vùng bấm TÁCH RIÊNG trên thẻ bài (kiểm TRƯỚC .the[data-id]
+      // chung, vì cả ba đều NẰM TRONG nó): tam giác xanh mở trang lớp bằng
+      // danh tính thầy · vùng điểm mở bảng xếp hạng/chi tiết y hệt trang lớp ·
+      // phần thân còn lại (mặc định) vẫn mở hộp quản lý bài như cũ.
+      var playBtn = e.target.closest('.the[data-id] .play');
+      if (playBtn) {
+        window.open('lop.html?gv=1&lop=' + encodeURIComponent(LOP_CHON), '_blank');
+        return;
+      }
+      var diemBtn = e.target.closest('.the[data-id] .the-diem');
+      if (diemBtn) {
+        var idDiem = diemBtn.closest('.the[data-id]').dataset.id;
+        var bDiem = A.baiCuaLop(DL, LOP_CHON).filter(function (x) { return x.id === idDiem; })[0];
+        if (!bDiem) return;
+        var tDiem = tinhBai(bDiem, LOP_CHON);
+        if (tDiem.laSp && tDiem.doiSp && tDiem.doiSp.length) moPopDoiSp(bDiem, tDiem);
+        else if (tDiem.acts.length) moPopCaLop(bDiem, tDiem);
+        return;
+      }
+
       var theBtn = e.target.closest('.the[data-id]');
       if (theBtn) return void moBaiModal(theBtn.dataset.id);
 
@@ -1815,6 +2181,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ---------- HỘP XEM BÀI ----------
     $('#bmNen').addEventListener('click', dongBaiModal);
     $('#bmDong').addEventListener('click', dongBaiModal);
+
+    // ---------- #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK ----------
+    $('#popDong').onclick = dongPop;
+    $('#popNen').onclick = function (e) { if (e.target === this) dongPop(); };
   }
 
   // ---------- cửa vào ----------

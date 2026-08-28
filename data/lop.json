@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-28 09:32:39",
+  "capNhat": "2026-08-28 09:51:20",
   "nguon": "myStudent",
   "lop": [
     {
@@ -752,92 +752,92 @@
       "hocSinh": [
         {
           "ten": "AN NHIÊN",
-          "ma": "",
+          "ma": "PHAMNGUYENANNHIEN16042017",
           "sinhNhat": ""
         },
         {
           "ten": "BẢO LINH",
-          "ma": "",
+          "ma": "TRANBAOLINH03032017",
           "sinhNhat": ""
         },
         {
           "ten": "BÙI BẢO AN",
-          "ma": "",
+          "ma": "BUIBAOAN30042017",
           "sinhNhat": ""
         },
         {
           "ten": "DIỆP ANH",
-          "ma": "DIEPANH",
+          "ma": "TRANNGOCDIEPANH12072017",
           "sinhNhat": ""
         },
         {
           "ten": "DIỆU LINH",
-          "ma": "",
+          "ma": "BUIHOANGDIEULINH29052017",
           "sinhNhat": ""
         },
         {
           "ten": "ĐỨC",
-          "ma": "",
+          "ma": "DAMXUANDUC22032017",
           "sinhNhat": ""
         },
         {
           "ten": "GIA KHÁNH",
-          "ma": "",
+          "ma": "VUNGUYENGIAKHANH20082018",
           "sinhNhat": ""
         },
         {
           "ten": "HÀ PHƯƠNG",
-          "ma": "",
+          "ma": "NGUYENHAPHUONG20012018",
           "sinhNhat": ""
         },
         {
           "ten": "MINH HIẾU",
-          "ma": "",
+          "ma": "TRANMINHHIEU31122017",
           "sinhNhat": ""
         },
         {
           "ten": "MINH KHANG",
-          "ma": "",
+          "ma": "MACMINHKHANG29052017",
           "sinhNhat": ""
         },
         {
           "ten": "MINH PHÚC",
-          "ma": "",
+          "ma": "NGOMINHPHUC02022018",
           "sinhNhat": ""
         },
         {
           "ten": "MINH QUANG",
-          "ma": "",
+          "ma": "DAOMINHQUANG16112017",
           "sinhNhat": ""
         },
         {
           "ten": "MINH VÂN",
-          "ma": "",
+          "ma": "PHAMMINHVAN03082017",
           "sinhNhat": ""
         },
         {
           "ten": "NGỌC KHÁNH",
-          "ma": "",
+          "ma": "NGUYENNGOCKHANH21012017",
           "sinhNhat": ""
         },
         {
           "ten": "NGUYỄN BẢO AN",
-          "ma": "",
+          "ma": "NGUYENBAOAN02032017",
           "sinhNhat": ""
         },
         {
           "ten": "NHẬT MINH",
-          "ma": "",
+          "ma": "DONHATMINH09092017",
           "sinhNhat": ""
         },
         {
           "ten": "QUANG TÙNG",
-          "ma": "",
+          "ma": "BUIQUANGTUNG05032018",
           "sinhNhat": ""
         },
         {
           "ten": "XUÂN KHANG",
-          "ma": "",
+          "ma": "BUIXUANKHANG16102017",
           "sinhNhat": ""
         }
       ]

@@ -145,6 +145,18 @@ table.bang tr.da-go td{opacity:.55}
 .nhan.keep{background:var(--do-nhat); color:var(--do)}
 .nhan.agree{background:var(--la-nhat); color:var(--m-la)}
 
+/* (Đợt 28/08/2026 khuya) Bảng Phản biện gộp 1 dòng/câu: avatar chữ cái cho ai ĐỒNG Ý, ô riêng
+   cho mỗi người PHẢN ĐỐI kèm lý do — thay bảng dài 1 dòng/phiếu cũ. */
+.avt-wrap{display:flex; flex-wrap:wrap; gap:5px}
+.avt{display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px;
+  border-radius:999px; font-size:10px; font-weight:800; color:#fff; cursor:default; flex:none}
+.avt.m-la{background:var(--m-la)} .avt.m-duong{background:var(--m-duong)}
+.avt.m-cam{background:var(--m-cam)} .avt.m-do{background:var(--m-do)}
+.o-trong{color:var(--nhat)}
+.pd-o{font-size:11.5px; line-height:1.5}
+.pd-o + .pd-o{margin-top:5px; padding-top:5px; border-top:1px dashed var(--vien)}
+.pd-doi{color:var(--nhat); font-weight:600}
+
 .toast{position:fixed; left:50%; bottom:26px; transform:translate(-50%,14px);
   background:#16232A; color:#fff; padding:11px 18px; border-radius:12px;
   font:700 13px/1 var(--font); opacity:0; pointer-events:none;
@@ -210,7 +222,7 @@ table.bang tr.da-go td{opacity:.55}
     <section class="khoi">
       <div class="khoi-dau"><h2>Phản biện</h2><span class="phu" id="pbPhu"></span></div>
       <div class="bang-wrap"><table class="bang" id="bangPb">
-        <thead><tr><th>Người phản hồi</th><th>Đội</th><th>Ý kiến</th><th>Lý do</th><th>Câu liên quan</th><th>Kết luận cuối</th></tr></thead>
+        <thead><tr><th>Câu liên quan</th><th>Đồng ý</th><th>Phản đối</th><th>Kết luận cuối</th></tr></thead>
         <tbody></tbody>
       </table></div>
     </section>
@@ -533,21 +545,56 @@ table.bang tr.da-go td{opacity:.55}
     }).join('') : '<tr><td colspan="7" class="trong">Không có câu nào khớp bộ lọc.</td></tr>';
   }
 
+  // Chữ cái đại diện avatar: 2 chữ đầu của HAI TỪ CUỐI tên (tiếng Việt gọi nhau bằng từ cuối) —
+  // "SONG NGỌC" -> "SN", "NGỌC" (1 từ) -> "N". Tên đầy đủ luôn có trong tooltip (title).
+  var AVT_MAU = ['m-la', 'm-duong', 'm-cam', 'm-do'];
+  function avtChu(ten){
+    var tu = String(ten || '').trim().split(/\s+/).filter(Boolean);
+    if (!tu.length) return '?';
+    if (tu.length === 1) return tu[0].charAt(0).toUpperCase();
+    return (tu[tu.length - 2].charAt(0) + tu[tu.length - 1].charAt(0)).toUpperCase();
+  }
+  function avtMau(ten){
+    var h = 0, s = String(ten || '');
+    for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+    return AVT_MAU[h % AVT_MAU.length];
+  }
+  function avtHtml(p){
+    var ten = A.chuAnToan(p.voter) + (p.voterTeam ? ' (' + A.chuAnToan(p.voterTeam) + ')' : '') + ' — Đồng ý';
+    return '<span class="avt ' + avtMau(p.voter) + '" title="' + ten + '">' + A.chuAnToan(avtChu(p.voter)) + '</span>';
+  }
+  // (Đợt 28/08/2026 khuya) Gộp CHUNG 1 dòng/câu thay vì 1 dòng/phiếu (thầy yêu cầu: trước đây
+  // 3 em cùng "ĐỒNG Ý" một câu ra 3 dòng gần như y hệt nhau). Đồng ý gộp avatar chữ cái, phản
+  // đối vẫn giữ MỖI NGƯỜI một ô lý do riêng — không gộp, mất ý.
+  function phanBienNhom(){
+    var theo = {}, ds = [];
+    PHANHOI.forEach(function(p){
+      if (!theo[p.errId]) { theo[p.errId] = { errId: p.errId, phieu: [] }; ds.push(theo[p.errId]); }
+      theo[p.errId].phieu.push(p);
+    });
+    ds.forEach(function(n){ n.x = CHAM.filter(function(c){ return c.err.id === n.errId; })[0] || null; });
+    return ds;
+  }
   function veBangPb(){
     $('#pbPhu').textContent = PHANHOI.length + ' phiếu';
-    $('#bangPb tbody').innerHTML = PHANHOI.length ? PHANHOI.map(function(p){
-      var x = CHAM.filter(function(c){ return c.err.id === p.errId; })[0];
-      var e = x ? x.err : null;
+    var nhom = phanBienNhom();
+    $('#bangPb tbody').innerHTML = nhom.length ? nhom.map(function(n){
+      var e = n.x ? n.x.err : null;
+      var dongY = n.phieu.filter(function(p){ return p.y === 'dongY'; });
+      var phanDoi = n.phieu.filter(function(p){ return p.y === 'phanDoi'; });
+      var cau = e && e.sentence ? '“' + A.chuAnToan(e.sentence) + '”' : (e ? A.chuAnToan(e.detail || '') : '(không tìm thấy câu)');
       return '<tr>' +
-        '<td>' + A.chuAnToan(p.voter) + '</td>' +
-        '<td>' + A.chuAnToan(p.voterTeam || '') + '</td>' +
-        '<td>' + (p.y === 'dongY' ? '<span class="nhan dongy">ĐỒNG Ý</span>' : '<span class="nhan phandoi">PHẢN ĐỐI</span>') + '</td>' +
-        '<td>' + A.chuAnToan(p.lyDo || '') + '</td>' +
-        '<td>' + (e && e.sentence ? '“' + A.chuAnToan(e.sentence) + '”' : (e ? A.chuAnToan(e.detail || '') : '(không tìm thấy câu)')) + '</td>' +
+        '<td>' + cau + '</td>' +
+        '<td>' + (dongY.length ? '<div class="avt-wrap">' + dongY.map(avtHtml).join('') + '</div>' : '<span class="o-trong">—</span>') + '</td>' +
+        '<td>' + (phanDoi.length ? phanDoi.map(function(p){
+          return '<div class="pd-o"><b>' + A.chuAnToan(p.voter) + '</b>' +
+            (p.voterTeam ? ' <span class="pd-doi">(' + A.chuAnToan(p.voterTeam) + ')</span>' : '') +
+            ': ' + A.chuAnToan(p.lyDo || '(không ghi lý do)') + '</div>';
+        }).join('') : '<span class="o-trong">—</span>') + '</td>' +
         '<td>' + (e && e.ketLuan === 'agree' ? '<span class="nhan agree">ĐÃ GỠ</span>'
           : (e && e.ketLuan === 'keep' ? '<span class="nhan keep">GIỮ, CHỜ THẦY</span>' : '—')) + '</td>' +
       '</tr>';
-    }).join('') : '<tr><td colspan="6" class="trong">Buổi này chưa có phiếu phản biện nào.</td></tr>';
+    }).join('') : '<tr><td colspan="4" class="trong">Buổi này chưa có phiếu phản biện nào.</td></tr>';
   }
 
   // ---------- Xuất Excel (SheetJS — CÙNG BẢN mySpeaking/web đang dùng) ----------

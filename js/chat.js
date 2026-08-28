@@ -203,6 +203,28 @@
     });
   }
 
+  // ⭐ 28/08 — CHẤM ĐỎ báo tin mới trên nút lớp (dashboard.html): đọc MỘT LẦN
+  // (getDocs, không giữ kênh sống như nghe() ở trên) tin mới nhất của MỘT lớp
+  // — đúng 1 lượt đọc Firestore mỗi lần gọi. Dashboard gọi hàm này cho mọi lớp
+  // ĐÚNG MỘT LẦN lúc mở/tải lại trang (thầy chốt: rẻ hơn giữ listener sống cho
+  // cả chục lớp cùng lúc — xem mục 0‼ luật 8️⃣ trong BAN GIAO.md, cùng họ bẫy
+  // vừa làm cạn hạn mức 429 sáng 28/08). Trả về mốc `createdAt` (ms) của tin
+  // mới nhất, hoặc 0 nếu lớp chưa ai nhắn gì.
+  function tinMoiNhat(maLop) {
+    return db().then(function (f) {
+      var q = f.fs.query(
+        f.fs.collection(f.db, 'classChat', maLop, 'messages'),
+        f.fs.orderBy('createdAt', 'desc'),
+        f.fs.limit(1)
+      );
+      return f.fs.getDocs(q);
+    }).then(function (snap) {
+      var luc = 0;
+      snap.forEach(function (d) { luc = Number((d.data() || {}).createdAt) || 0; });
+      return luc;
+    });
+  }
+
   // Danh sách gói đã lưu của MỘT lớp, mới nhất trước.
   function dsKho(maLop) {
     return db().then(function (f) {
@@ -248,7 +270,7 @@
 
   window.AWChat = {
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
-    luuKho: luuKho, dsKho: dsKho,
+    luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU
   };
 })();

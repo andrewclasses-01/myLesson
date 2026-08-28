@@ -132,14 +132,32 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .av.me{width:52px; height:52px; font-size:19px; cursor:pointer;
   background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
-  position:relative; transition:transform .18s var(--em), box-shadow .18s}
+  position:relative; transition:transform .18s var(--em), box-shadow .18s;
+  /* ⛔ 28/08 — .av dùng chung có overflow:hidden để cắt ảnh đại diện trong chat
+     tròn đều; riêng nút NÀY không bao giờ mang ảnh (chỉ initials), và huy hiệu
+     sao bên dưới CỐ Ý tràn ra ngoài viền tròn — mở lại overflow CHỈ ở đây. */
+  overflow:visible}
 .av.me:hover{transform:scale(1.06); box-shadow:0 0 0 4px var(--accent-soft), var(--shadow)}
-/* ⭐ ĐỢT 4 — SỐ SAO nằm ngay trên avatar, thay cho phù hiệu 3 vạch cũ. */
-.sao-hieu{position:absolute; right:-7px; bottom:-4px; min-width:28px; height:19px;
-  padding:0 5px; border-radius:999px; background:var(--surface);
-  border:1px solid #F0DCB4; box-shadow:0 1px 4px rgba(22,35,42,.16);
-  display:grid; place-items:center; font-size:11px; font-weight:800;
-  color:#E5A20D; letter-spacing:.2px; font-variant-numeric:tabular-nums}
+/* ⭐ ĐỢT 4 → ĐỢT 11 (chép nguyên từ bai.html/bai-sp.html, 28/08 đồng bộ lại
+   lop.html cho khớp — bản cũ ở đây lệch phải + bị .av cắt mất một góc):
+   SỐ SAO nằm giữa đáy quả bóng avatar, khung nền trắng, kèm icon ngôi sao +
+   3 tia lấp lánh xung quanh. */
+.sao-hieu{position:absolute; left:50%; bottom:-2px; transform:translateX(-50%);
+  display:inline-flex; align-items:center; gap:1.5px;
+  padding:0 3.5px; border-radius:99px; background:#fff;
+  box-shadow:0 1px 3px rgba(22,35,42,.20);
+  font-size:9.5px; font-weight:800; white-space:nowrap; line-height:1.45;
+  color:#E5A20D; letter-spacing:.1px; font-variant-numeric:tabular-nums}
+/* ⛔ `:not(.lap)` — ba sparkle cũng là <svg> con trực tiếp của cụm này, không
+   loại chúng ra thì chúng ăn luôn cỡ của ngôi sao chính. */
+.sao-hieu > svg:not(.lap){width:9.5px; height:9.5px; fill:#F3B21B; flex:none}
+/* Sparkle quanh cụm số: 3 sao tí hon nhấp nháy lệch pha, chạy mãi (dùng lại
+   @keyframes lap-lanh đã có sẵn cho khối .sao-ve bên dưới). */
+.sao-hieu .lap{position:absolute; fill:#F7CE63; animation:lap-lanh 2.2s ease-in-out infinite}
+.sao-hieu .lap.l1{width:7px; height:7px; left:-10px; top:-4px; animation-delay:0s}
+.sao-hieu .lap.l2{width:6px; height:6px; right:-9px; top:6px; animation-delay:.7s}
+.sao-hieu .lap.l3{width:5px; height:5px; left:6px; top:-9px; animation-delay:1.4s}
+@media (prefers-reduced-motion: reduce){ .sao-hieu .lap{animation:none; opacity:.7} }
 .who{min-width:0}
 .who .ten{font-weight:800; font-size:18px; line-height:1.25; letter-spacing:-.01em;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -433,18 +451,31 @@ i.m-la{background:var(--m-la)}
 .msg-top{display:flex; align-items:baseline; gap:7px; padding-left:4px}
 .msg-top .n{font-size:11.5px; font-weight:800}
 .msg-top .t{font-size:10.5px; color:var(--muted); font-weight:600}
-.bong{background:var(--ground); border:1px solid var(--line); border-radius:4px 14px 14px 14px;
+.bong{position:relative; background:var(--ground); border:1px solid var(--line);
+  border-radius:4px 14px 14px 14px;
   padding:7px 12px; font-size:13.5px; line-height:1.5; overflow-wrap:break-word}
 /* Bóng chat và nút cảm xúc đi cùng một hàng — nút ở BÊN PHẢI bóng với tin
    của bạn khác, BÊN TRÁI bóng với tin của chính em. */
 .hang-bong{display:flex; align-items:center; gap:5px}
 .msg.toi .hang-bong{flex-direction:row-reverse}
-/* ⭐ Đợt D — nút xoá tin: mờ sẵn, rõ hẳn khi rê/chạm tới cho đỡ chật mắt. */
-.nut-xoa-tin{flex:none; width:20px; height:20px; border:0; border-radius:50%;
-  background:transparent; color:#B4C3BF; opacity:.55; font-size:11px; cursor:pointer;
+/* ⭐ 28/08 — cụm xoá tin ĐỔI CHỖ: nằm NGAY TRONG bong bóng, sát cạnh XA
+   avatar nhất, canh giữa theo chiều cao. Avatar đổi bên giữa tin của mình
+   (phải) và tin người khác (trái) nên cạnh "xa avatar" cũng đổi theo — xem
+   `.msg.toi .xoa-cum` bên dưới. Bấm ⁝ thì ẩn ⁝ hiện chữ "Xoá" ngay tại chỗ,
+   bấm "Xoá" mới ra hộp `confirm` rồi xoá thật (không đổi phần đó). */
+.xoa-cum{position:absolute; top:50%; right:6px; transform:translateY(-50%); z-index:1}
+.msg.toi .xoa-cum{right:auto; left:6px}
+.nut-xoa-tin{width:18px; height:18px; border:0; border-radius:50%;
+  background:rgba(255,255,255,.55); color:#8B9D98; opacity:.6; font-size:12px; cursor:pointer;
   display:flex; align-items:center; justify-content:center; transition:opacity .15s, background .15s, color .15s}
+.msg.toi .nut-xoa-tin{background:rgba(0,0,0,.14); color:rgba(255,255,255,.85)}
 .nut-xoa-tin:hover{opacity:1; background:#FDECEC; color:#D93B40}
-.nut-xoa-tin:disabled{opacity:.25; pointer-events:none}
+.xoa-cum.mo .nut-xoa-tin{display:none}
+.nut-xoa-that{display:none; border:0; border-radius:99px; padding:3px 8px;
+  background:#D93B40; color:#fff; font-size:10.5px; font-weight:800; white-space:nowrap;
+  cursor:pointer; box-shadow:0 1px 4px rgba(22,35,42,.2)}
+.xoa-cum.mo .nut-xoa-that{display:block}
+.nut-xoa-that:disabled{opacity:.5; pointer-events:none}
 /* Tin của CHÍNH EM: bóng sát avatar, GIỜ GỬI xuống dòng dưới bóng, dạt phải. */
 .msg.toi{align-self:flex-end; flex-direction:row-reverse; align-items:flex-start; gap:7px}
 .msg.toi .av{margin-top:0}
@@ -846,6 +877,8 @@ body.mo-menu .side.trai{transform:none}
 
   .who .lop{display:none}
   .av.me{width:44px; height:44px; font-size:16px}
+  .sao-hieu{bottom:-2px; font-size:8.5px; padding:0 3px}
+  .sao-hieu > svg:not(.lap){width:8.5px; height:8.5px}
   .who .ten{font-size:15.5px}
   .top-in{gap:10px; padding:10px 18px}
 
@@ -949,7 +982,7 @@ body.mo-menu .side.trai{transform:none}
     <!-- ⛔ v1.9.0 — KHÔNG gõ sẵn tên/lớp vào đây nữa: file này công khai trên
          GitHub, và chữ gõ sẵn còn loé lên một nhịp trước khi JS điền tên thật.
          `dienDanhTinh()` điền cả bốn chỗ (avatar · tên · lớp · sidebar). -->
-    <button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0</span></button>
+    <button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg><svg class="lap l1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg></span></button>
     <div class="who">
       <div class="ten"></div>
       <div class="lop">&nbsp;</div>
@@ -1067,9 +1100,9 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=31"></script>
+<script src="config.js?v=32"></script>
 <script src="js/chung.js?v=21"></script>
-<script src="js/chat.js?v=19"></script>
+<script src="js/chat.js?v=20"></script>
 <script>
 /* ============================================================
    TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).
@@ -1384,12 +1417,15 @@ function veDiem(b, batDo, hienThieu){
 }
 
 /* ⭐ 27/08 — VÙNG ĐIỂM RIÊNG CHO THẺ SP CHECK (mô hình 2): thay veDiem() một
-   dòng chung bằng MỘT DÒNG MỖI TEAM (xem CSS `.doi-dong`). Giữ NGUYÊN khuôn
-   ngoài (`.the-diem[.co-thieu][.doiN]`) để cột CHƯA XONG BÀI + `vuaCotThieu()`
-   + mọi CSS xoay quanh `.the-diem` không phải sửa gì thêm. Chỉ gọi khi
+   dòng chung bằng MỘT DÒNG MỖI TEAM (xem CSS `.doi-dong`). Chỉ gọi khi
    `b.doiSp` đã có dữ liệu (`capNhatTheSpeaking` nạp async) — chưa có thì
-   `veTheMoi`/`veTheCu` vẫn gọi `veDiem()` như cũ (đẩy sẵn + đổ sau). */
-function veDoiSpKhoi(b, hienThieu){
+   `veTheMoi`/`veTheCu` vẫn gọi `veDiem()` như cũ (đẩy sẵn + đổ sau).
+   ⛔ 28/08 — thầy chốt: thẻ SP CHECK KHÔNG BAO GIỜ hiện cột "CHƯA XONG BÀI"
+   (khác bài AWord thường), để đồng bộ với thẻ y hệt bên dashboard — bỏ hẳn
+   tham số `hienThieu` + nhánh `co-thieu`, không còn dùng `b.thieu` ở đây nữa
+   (biến này vẫn được `spDoDaNop()` tính để phục vụ bảng cả lớp cũ — buổi mô
+   hình 1, chưa có `doiSp` — xem `moPopCaLop`/`xepCaLop`). */
+function veDoiSpKhoi(b){
   var doiSp = b.doiSp || [];
   var thanh = doiSp.map(function(d){
     return '<span class="doi-dong">' +
@@ -1400,23 +1436,7 @@ function veDoiSpKhoi(b, hienThieu){
   }).join('');
 
   var lopSo = ' doi' + Math.min(Math.max(doiSp.length, 2), 5);
-
-  var dsThieu = hienThieu ? (b.thieu || []) : [];
-  if (!dsThieu.length) return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
-
-  var sap = dsThieu.slice().sort(function(a, b2){ return b2.so - a.so; });
-  var o = sap.map(function(e){
-    return '<span class="ten">' + tenTat(e.ten) + '</span>' +
-           '<span class="so">' + e.so + '</span>';
-  }).join('');
-
-  return '<span class="the-diem co-thieu' + lopSo + '">' +
-      '<span class="khoi-thanh">' + thanh + '</span>' +
-      '<span class="khoi-thieu" data-tong="' + sap.length + '">' +
-        '<span class="tieu">CHƯA XONG BÀI</span>' +
-        '<span class="ds-thieu">' + o + '</span>' +
-      '</span>' +
-    '</span>';
+  return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
 }
 
 /* ---------- CẮT CỘT "CHƯA XONG BÀI" CHO VỪA CHỖ (v17) ----------
@@ -1723,7 +1743,7 @@ function veTheMoi(b, tt){
       '</span>' +
       veHan(b, tt) +
     '</span>' + (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
-      ? veDoiSpKhoi(bDung, gap) : veDiem(bDung, gap, gap)) +
+      ? veDoiSpKhoi(bDung) : veDiem(bDung, gap, gap)) +
     '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
   '</span></button>';
 }
@@ -1746,7 +1766,7 @@ function veTheCu(b){
         (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
       '</span>' +
     '</span>' + (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
-      ? veDoiSpKhoi(b, false) : veDiem(b, true, false)) +
+      ? veDoiSpKhoi(b) : veDiem(b, true, false)) +
     '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
   '</span></button>';
 }
@@ -2164,7 +2184,7 @@ window.addEventListener('load', spCanSub);
 window.addEventListener('resize', spCanSub);
 
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); spThoi(); }
+  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); dongXoaCum(null); spThoi(); }
 });
 
 /* ═══════════════ SP CHECK — MỞ THẲNG PHÒNG CHẤM mySpeaking ═══════════════
@@ -2692,11 +2712,17 @@ function coTheXoaTin(t){
 function veTin(t, i){
   var laToi = !!(t.ma && MA_HS && t.ma === MA_HS);
   var laThay = t.vaiTro === 'gv';
-  var bong = '<div class="bong">' + chuAnToan(t.chu) + '</div>';
-  var gio = AWChat.chuGio(t.luc);
-  var nutXoa = coTheXoaTin(t)
-    ? '<button class="nut-xoa-tin" type="button" data-xoa="' + chuAnToan(t.id) + '" title="Xoá tin nhắn">✕</button>'
+  // ⭐ 28/08 — cụm xoá nằm NGAY TRONG bong bóng (xem CSS `.xoa-cum`): bấm ⁝ mới
+  // hiện chữ "Xoá", bấm "Xoá" mới ra hộp confirm (không đổi — xem trình nghe
+  // click bên dưới). Không xoá được thì bỏ hẳn cụm, không vẽ ⁝ vô nghĩa.
+  var xoaCum = coTheXoaTin(t)
+    ? '<span class="xoa-cum">' +
+        '<button class="nut-xoa-tin" type="button" data-xoa-mo title="Xoá tin nhắn">⁝</button>' +
+        '<button class="nut-xoa-that" type="button" data-xoa="' + chuAnToan(t.id) + '">Xoá</button>' +
+      '</span>'
     : '';
+  var bong = '<div class="bong">' + chuAnToan(t.chu) + xoaCum + '</div>';
+  var gio = AWChat.chuGio(t.luc);
   // ⭐ #8 — cụm thả cảm xúc CHƯA TỪNG được vẽ vào tin nhắn (chỉ có hàm vẽ LẠI
   // `veLaiCum`, không có lần vẽ ĐẦU) — nay gắn thẳng vào đây mới thật sự dùng
   // được. `veCumCx` đọc `TIN_MAU[i].cx` nên phải gọi SAU khi TIN_MAU đã có `t`.
@@ -2705,7 +2731,7 @@ function veTin(t, i){
   if (laToi) {
     return '<div class="msg toi" data-i="' + i + '">' + veAv(t.ten, i) +
       '<div class="msg-c">' +
-        '<div class="hang-bong">' + nutXoa + cumCx + bong + '</div>' +
+        '<div class="hang-bong">' + cumCx + bong + '</div>' +
         '<div class="gio-duoi">' + chuAnToan(gio) + '</div>' +
       '</div></div>';
   }
@@ -2715,7 +2741,7 @@ function veTin(t, i){
       '<div class="msg-top"><span class="n">' + chuAnToan(t.ten) +
         (laThay ? ' <b class="nhan-thay">THẦY</b>' : '') + '</span>' +
       '<span class="t">' + chuAnToan(gio) + '</span></div>' +
-      '<div class="hang-bong">' + bong + cumCx + nutXoa + '</div>' +
+      '<div class="hang-bong">' + bong + cumCx + '</div>' +
     '</div></div>';
 }
 
@@ -2917,10 +2943,23 @@ khung.addEventListener('contextmenu', function(e){
   e.preventDefault();
   moBangCx(nut);
 });
-/* ⭐ Đợt D — xoá một tin nhắn (nút chỉ hiện với tin của mình, hoặc mọi tin
-   nếu MA_HS là 'GV'). Không dùng pointerup chung với cụm cảm xúc kẻo bắt
-   nhầm giữ/chạm. */
+/* ⭐ 28/08 — cụm xoá 2 bước: bấm ⁝ mới hiện chữ "Xoá" (data-xoa-mo), bấm "Xoá"
+   mới ra hộp confirm rồi xoá thật (data-xoa, giữ NGUYÊN xử lý cũ của Đợt D).
+   Không dùng pointerup chung với cụm cảm xúc kẻo bắt nhầm giữ/chạm. */
+function dongXoaCum(tru){
+  document.querySelectorAll('.xoa-cum.mo').forEach(function(c){
+    if (c !== tru) c.classList.remove('mo');
+  });
+}
 khung.addEventListener('click', function(e){
+  var mo = e.target.closest('[data-xoa-mo]');
+  if (mo) {
+    var cum = mo.closest('.xoa-cum');
+    var dangMo = cum.classList.contains('mo');
+    dongXoaCum(null);
+    cum.classList.toggle('mo', !dangMo);
+    return;
+  }
   var nut = e.target.closest('[data-xoa]');
   if (!nut) return;
   var id = nut.getAttribute('data-xoa');
@@ -2937,6 +2976,7 @@ document.addEventListener('pointerdown', function(e){
       !e.target.closest('#cxMenu') && !e.target.closest('.nut-cx')) dongBangCx();
   if ($('#cxAi').classList.contains('mo') &&
       !e.target.closest('#cxAi') && !e.target.closest('.nut-cx')) dongPopCx();
+  if (!e.target.closest('.xoa-cum')) dongXoaCum(null);
 });
 window.addEventListener('scroll', function(){ dongBangCx(); dongPopCx(); }, true);
 

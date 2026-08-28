@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-28 09:52:55",
+  "capNhat": "2026-08-28 12:50:05",
   "bai": {
     "A1C": [
       {
@@ -31,7 +31,25 @@
         ]
       }
     ],
-    "B2A": [],
+    "B2A": [
+      {
+        "id": "B2A_25.8_SP_CHECK_MOLDY_FOOD",
+        "tieuDe": "B2A_25.8_SP CHECK MOLDY FOOD",
+        "tenHien": "B2A_25.8_SP CHECK MOLDY FOOD",
+        "dang": "SP CHECK",
+        "ngay": "25.8",
+        "han": "2026-08-29T17:30",
+        "maLesson": "MOLDY FOOD",
+        "taoLuc": "2026-08-28",
+        "khoi": [
+          {
+            "loai": "spcheck",
+            "ten": "SPEAKING CHECK",
+            "xong": 0
+          }
+        ]
+      }
+    ],
     "B2B": [
       {
         "id": "B2B_24.8_WORDS_LSA2-S2.T1.P3-4-5",

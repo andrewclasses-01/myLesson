@@ -961,7 +961,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=32"></script>
+<script src="config.js?v=33"></script>
 <script src="js/chung.js?v=21"></script>
 <script src="js/chat.js?v=20"></script>
 <script>
@@ -1565,8 +1565,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       d.mau = (chuaCoMau.length < 4 && i === chuaCoMau.length - 1) ? 'm-do' : (mauHang[i] || 'm-do');
     });
     doi.forEach(function (d) { if (!d.mau) d.mau = mauCoDinhDoi(d.tb); });
-    var max = doi.length ? Math.max.apply(null, doi.map(function (d) { return d.tong; })) : 0;
-    doi.forEach(function (d) { d.pt = max ? Math.round(d.tong / max * 100) : 0; });
+    // ⭐ 28/08 tối — thanh có DUNG TÍCH CỐ ĐỊNH 200 lỗi (khớp lop.html), đội
+    // nhiều điểm nhất luôn lên trên (mảng vẽ theo đúng thứ tự này).
+    var TRAN_DOI = 200;
+    doi.forEach(function (d) { d.pt = Math.min(100, Math.round(d.tong / TRAN_DOI * 100)); });
+    doi.sort(function (a, b) { return b.tong - a.tong; });
     return doi;
   }
   function veDoiSpKhoi(t) {
@@ -2526,7 +2529,17 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       }
 
       var theBtn = e.target.closest('.the[data-id]');
-      if (theBtn) return void moBaiModal(theBtn.dataset.id);
+      if (theBtn) {
+        // ⭐ 28/08 tối — thẻ SP CHECK: phần thân mở TRANG MỚI (bảng câu chấm/
+        // phản biện/biểu đồ/xuất dữ liệu) thay vì hộp quản lý bài chung.
+        var bThan = A.baiCuaLop(DL, LOP_CHON).filter(function (x) { return x.id === theBtn.dataset.id; })[0];
+        if (bThan && /SP\s*CHECK/i.test(bThan.dang || '')) {
+          window.open('sp-chitiet.html?lop=' + encodeURIComponent(LOP_CHON) +
+            '&bai=' + encodeURIComponent(bThan.id), '_blank');
+          return;
+        }
+        return void moBaiModal(theBtn.dataset.id);
+      }
 
       var chep = e.target.closest('[data-chep]');
       if (chep) return void chepThieu(chep.dataset.chep, chep.dataset.lop || LOP_CHON);

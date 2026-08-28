@@ -1100,7 +1100,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=32"></script>
+<script src="config.js?v=33"></script>
 <script src="js/chung.js?v=21"></script>
 <script src="js/chat.js?v=20"></script>
 <script>
@@ -2417,8 +2417,14 @@ function tinhDoiSp(teams, docs){
   });
   doi.forEach(function(d){ if (!d.mau) d.mau = mauCoDinhDoi(d.tb); });
 
-  var max = doi.length ? Math.max.apply(null, doi.map(function(d){ return d.tong; })) : 0;
-  doi.forEach(function(d){ d.pt = max ? Math.round(d.tong / max * 100) : 0; });
+  /* ⭐ 28/08 tối — thầy chốt: thanh có DUNG TÍCH CỐ ĐỊNH 200 lỗi (không co giãn
+     theo đội cao điểm nhất nữa) — dưới 200 thì chia đều trong thanh, đủ 200 là
+     đầy thanh, số vẫn tăng tiếp còn thanh đứng yên. */
+  var TRAN_DOI = 200;
+  doi.forEach(function(d){ d.pt = Math.min(100, Math.round(d.tong / TRAN_DOI * 100)); });
+  /* Đội nhiều điểm nhất luôn lên trên — vẽ theo đúng thứ tự mảng này (veDoiSpKhoi
+     chỉ .map() theo thứ tự), tự sắp lại mỗi lần dữ liệu mới về. */
+  doi.sort(function(a, b){ return b.tong - a.tong; });
   return doi;
 }
 /* Mã bài của thẻ có khớp buổi không — so "chịu lệch": bằng nhau, hoặc cái này nằm trong

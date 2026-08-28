@@ -719,6 +719,12 @@ body.mo-menu .side.trai{transform:none}
 .sp-hop.xong .sp-tieu{display:none}
 .sp-phu{margin:0; font-size:12.5px; line-height:1.5; color:var(--muted)}
 
+/* Em không thuộc đội nào của buổi — chỉ 1 dòng đậm, không icon/tiêu đề (thầy chốt). */
+.sp-hop.ngoaidoi .sp-vong{display:none}
+.sp-hop.ngoaidoi .sp-tieu{display:none}
+.sp-hop.ngoaidoi .sp-phu{font-weight:800; font-size:14px; line-height:1.5;
+  text-transform:uppercase; color:var(--ink)}
+
 .sp-nut{display:flex; gap:8px; justify-content:center; margin-top:14px}
 .sp-nut button{position:relative; height:34px; padding:0 16px; border-radius:10px;
   font-weight:800; font-size:11.5px; letter-spacing:.05em; border:1px solid var(--line);
@@ -2487,7 +2493,7 @@ function spHoiGas(b){
 function spVaoBuoi(b, lop, kho){
   var em = timEmTrongBuoi(TOI, lop.teams);
   if (em.loi === 'khong-thay')
-    return spLoi(b, 'Em chưa có trong đội nào của buổi này. Em hỏi thầy Andrew nhé.');
+    return spNgoaiDoi();
   if (em.loi === 'mo-ho')
     return spLoi(b, 'Tên của em trùng với ' + em.ds.length +
       ' bạn trong buổi này nên thầy chưa mở được. Em báo thầy Andrew nhé.');
@@ -2546,6 +2552,15 @@ function spLoi(b, chu){
   spHien('Chưa vào được', chu, 'loi',
     [{ chu:'Đóng', lam:spDong },
      { chu:'Thử lại', chinh:true, lam:function(){ spDong(); moPhongCham(b); } }]);
+}
+
+/* Em không có trong đội nào của buổi — không phải lỗi để thử lại, chỉ báo 1 dòng. */
+function spNgoaiDoi(){
+  if (spHuy) return;
+  spHuy = true;
+  if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
+  spHien('', 'EM KHÔNG THUỘC ĐỘI NÀO, HẸN EM Ở BÀI KIỂM TRA SAU NHÉ!', 'ngoaidoi',
+    [{ chu:'Đóng', lam:spDong }]);
 }
 
 /* ═══ ĐỔ TRẠNG THÁI NỘP BÀI VÀO THẺ SPEAKING (thầy chốt: "đẩy sẵn + đổ sau") ═══

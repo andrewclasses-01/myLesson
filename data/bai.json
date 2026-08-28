@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-28 08:08:03",
+  "capNhat": "2026-08-28 09:52:55",
   "bai": {
     "A1C": [
       {
@@ -132,6 +132,36 @@
             "loai": "spcheck",
             "ten": "SPEAKING CHECK",
             "xong": 0
+          }
+        ]
+      }
+    ],
+    "NNTNG4": [
+      {
+        "id": "NNTNG4_22.8_WORDS_2_HOUSE_THING",
+        "tieuDe": "NNTNG4_22.8_WORDS 2 HOUSE THING",
+        "tenHien": "NNTNG4_22.8_WORDS 2 HOUSE THING",
+        "dang": "WORDS",
+        "ngay": "22.8",
+        "han": "2026-08-29T07:50",
+        "maLesson": "2 HOUSE THING",
+        "taoLuc": "2026-08-28",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "rnt3u9",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "f9fuzt",
+            "mau": "ANAGRAM"
           }
         ]
       }

@@ -1507,7 +1507,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // Đã xảy ra thật 28/08/2026 — xem `js/chat.js TOI_DA_TIN` để biết chỗ đốt nhiều nhất.
   function chuLoiKho(e) {
     var m = String((e && e.message) || '');
-    if (m.indexOf('429') >= 0) return 'Kho quá tải hôm nay — chờ tới khoảng 14:00 rồi tải lại.';
+    // ⭐ v1.29.1 (thầy chốt) — CHỮ HIỆN CHO NGƯỜI DÙNG, KHÔNG PHẢI NHẬT KÝ KỸ THUẬT.
+    // Bản v1.29.0 ghi "Kho quá tải hôm nay — chờ tới khoảng 14:00" nghe rất phèn và
+    // còn tự khai chuyện nội bộ (hạn mức, mốc giờ) mà người xem không cần biết.
+    if (m.indexOf('429') >= 0) return 'Hệ thống đang nâng cấp, em hãy chờ một lát rồi tải lại.';
     if (m.indexOf('403') >= 0 || m.indexOf('401') >= 0) return 'Kho từ chối đọc — kiểm tra luật Firestore.';
     return 'Chưa đọc được kho speaking. Thầy thử tải lại trang.';
   }

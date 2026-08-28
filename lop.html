@@ -719,11 +719,15 @@ body.mo-menu .side.trai{transform:none}
 .sp-hop.xong .sp-tieu{display:none}
 .sp-phu{margin:0; font-size:12.5px; line-height:1.5; color:var(--muted)}
 
-/* Em không thuộc đội nào của buổi — chỉ 1 dòng đậm, không icon/tiêu đề (thầy chốt). */
-.sp-hop.ngoaidoi .sp-vong{display:none}
-.sp-hop.ngoaidoi .sp-tieu{display:none}
-.sp-hop.ngoaidoi .sp-phu{font-weight:800; font-size:14px; line-height:1.5;
-  text-transform:uppercase; color:var(--ink)}
+/* Kiểu "CHỈ MỘT DÒNG": bỏ vòng xoay + tiêu đề, còn đúng một dòng chữ hoa đậm.
+   ⛔ v1.29.1 — `ngoaidoi` là tên theo VIỆC ("em ngoài đội"), nay có việc THỨ HAI
+   dùng chung kiểu này (hệ thống đang nâng cấp). Thêm hẳn tên chung `motdong` thay
+   vì mượn `ngoaidoi` cho việc khác: mượn tên là đúng họ bẫy `.aw-gs-card` bên
+   AWord — người sau đọc `ngoaidoi` sẽ tưởng chỗ đó nói về đội. */
+.sp-hop.ngoaidoi .sp-vong, .sp-hop.motdong .sp-vong{display:none}
+.sp-hop.ngoaidoi .sp-tieu, .sp-hop.motdong .sp-tieu{display:none}
+.sp-hop.ngoaidoi .sp-phu, .sp-hop.motdong .sp-phu{font-weight:800; font-size:14px;
+  line-height:1.5; text-transform:uppercase; color:var(--ink)}
 
 .sp-nut{display:flex; gap:8px; justify-content:center; margin-top:14px}
 .sp-nut button{position:relative; height:34px; padding:0 16px; border-radius:10px;
@@ -2483,10 +2487,7 @@ function moPhongCham(b){
          là kho không cho đọc. Nói thẳng "kho quá tải" còn hơn đổ oan cho thầy
          là chưa mở buổi. */
       var ma = String((e && e.message) || '');
-      if (ma.indexOf('429') >= 0) {
-        return spLoi(b, 'Kho bài đang quá tải hôm nay nên chưa mở được phòng chấm. ' +
-          'Em chờ một lát rồi bấm Thử lại, hoặc báo thầy Andrew nhé.');
-      }
+      if (ma.indexOf('429') >= 0) return spDangNangCap();
       spHoiGas(b);
     });
 }
@@ -2580,6 +2581,18 @@ function spNgoaiDoi(){
   spHuy = true;
   if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
   spHien('', 'EM KHÔNG THUỘC ĐỘI NÀO, HẸN EM Ở BÀI KIỂM TRA SAU NHÉ!', 'ngoaidoi',
+    [{ chu:'Đóng', lam:spDong }]);
+}
+
+/* ⭐ v1.29.1 (thầy chốt) — KHO TỪ CHỐI ĐỌC (429): chỉ MỘT DÒNG, không nói gì thêm.
+   ⛔ Cố ý KHÔNG dùng `spLoi`: nó kèm tiêu đề "Chưa vào được" + nút "Thử lại", mà
+   bấm lại ngay thì kho vẫn từ chối — chỉ tổ mời em bấm vô ích. Cũng cố ý KHÔNG
+   khai lý do kỹ thuật (hạn mức, mốc giờ): em chỉ cần biết chờ rồi tải lại. */
+function spDangNangCap(){
+  if (spHuy) return;
+  spHuy = true;
+  if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
+  spHien('', 'HỆ THỐNG ĐANG NÂNG CẤP, EM HÃY CHỜ MỘT LÁT RỒI TẢI LẠI', 'motdong',
     [{ chu:'Đóng', lam:spDong }]);
 }
 

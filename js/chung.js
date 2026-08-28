@@ -425,7 +425,8 @@
       var cu = theo[k];
       if (!cu) {
         theo[k] = { ten: r.ten, diem: pt, giay: Math.round((r.ms || 0) / 1000),
-                    luc: r.luc || 0, cacTen: [r.ten] };
+                    luc: r.luc || 0, cacTen: [r.ten],
+                    tho: { diem: r.diem, tong: r.tong } };
         return;
       }
       cu.cacTen.push(r.ten);
@@ -433,7 +434,9 @@
       // Lượt NỘP ĐẦU TIÊN mới là mốc "em ấy nộp lúc mấy giờ" — em làm lại lần
       // hai để lên điểm thì không vì thế mà thành người nộp muộn.
       if (r.luc && (!cu.luc || r.luc < cu.luc)) cu.luc = r.luc;
-      if (pt > cu.diem || (pt === cu.diem && g < cu.giay)) { cu.diem = pt; cu.giay = g; }
+      if (pt > cu.diem || (pt === cu.diem && g < cu.giay)) {
+        cu.diem = pt; cu.giay = g; cu.tho = { diem: r.diem, tong: r.tong };
+      }
     });
     var ra = [];
     for (var k in theo) { theo[k].ten = tenDepNhat(theo[k].cacTen); ra.push(theo[k]); }

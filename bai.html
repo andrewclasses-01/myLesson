@@ -1440,7 +1440,12 @@ function xepBang(ma){
 /* Bốn mức màu tên (thầy chốt đợt 4):
    `hc` huy chương = full điểm và nằm trong 3 hạng đầu · `du` = full điểm mà
    ngoài top 3 · `co` = có điểm nhưng chưa full · `chua` = chưa làm bài nào.
-   ⭐ v1.14.0 — "full điểm" nay hỏi `CHUAN[ma]` chứ không gõ cứng 100 nữa. */
+   ⭐ v1.14.0 — "full điểm" nay hỏi `CHUAN[ma]` chứ không gõ cứng 100 nữa.
+   ⭐ v1.31.1 — cột lb-score đổi từ % (`e.diem`, dùng NỘI BỘ để xếp hạng/so
+   CHUẨN) sang điểm THẬT `e.tho.diem` (số câu đúng hoặc số điểm tuỳ game,
+   đúng như kho AWord ghi) — thầy chốt: % không có nghĩa với học sinh, số
+   câu đúng/30 mới đọc hiểu ngay. Màu tên/huy chương KHÔNG đổi, vẫn tính
+   trên % + CHUAN như cũ. */
 function veBang(ma){
   var ds = xepBang(ma);
   var c = CHUAN[ma];
@@ -1453,7 +1458,7 @@ function veBang(ma){
     return '<div class="lb-row ' + lop + (e.ten === TOI ? ' me' : '') + '">' +
       '<span class="lb-rank">' + hang + '</span>' +
       '<span class="lb-name">' + tenTat(e.ten) + '</span>' +
-      '<span class="lb-score">' + (e.chua ? '—' : e.diem) + '</span>' +
+      '<span class="lb-score">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +
       '<span class="lb-time">' + (e.chua ? '' : chuGiay(e.giay)) + '</span>' +
     '</div>';
   }).join('');

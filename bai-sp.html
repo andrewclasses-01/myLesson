@@ -847,7 +847,15 @@ function fbDb(){
     _fbP = (async function(){
       var appMod = await import(FB_SDK + '/firebase-app.js');
       var fsMod  = await import(FB_SDK + '/firebase-firestore.js');
-      var app = appMod.initializeApp(FB_CONFIG);
+      /* ⛔ v1.29.0 — MÌN CHỜ ĐÃ THÁO: chỗ này trước gọi `initializeApp` TRẦN,
+         trong khi `js/chat.js` và khối SPEAKING của `dashboard.html` đều đã có
+         chốt `getApps()` (xem ghi chú v1.17.0 đầu `chat.js`). Hôm nay chưa nổ
+         vì trang này không nạp `chat.js` — ngày nào nạp là dính `duplicate-app`
+         và danh sách tích nộp bài chết câm. Ai đến trước tạo app, ai đến sau
+         dùng chung, giống hệt hai chỗ kia. */
+      var app = (appMod.getApps && appMod.getApps().length)
+        ? appMod.getApp()
+        : appMod.initializeApp(FB_CONFIG);
       return { fs: fsMod, db: fsMod.getFirestore(app) };
     })();
   }

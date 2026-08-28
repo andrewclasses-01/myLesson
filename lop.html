@@ -2468,7 +2468,27 @@ function moPhongCham(b){
       if (lop) return spVaoBuoi(b, lop, 'fs');
       spHoiGas(b);
     })
-    .catch(function(){ if (!spHuy) spHoiGas(b); });
+    .catch(function(e){
+      if (spHuy) return;
+      /* ⭐⭐ v1.29.0 — KHO CẠN HẠN MỨC THÌ DỪNG HẲN, ĐỪNG LÙI VỀ BỘ NÃO CŨ.
+         `spBuoiFs` ném `Error('FS_' + mã HTTP)`; 429 = "Quota exceeded" — gói
+         Firebase MIỄN PHÍ cho 50.000 lượt đọc/ngày trên CẢ project, cạn là mọi
+         phép đọc bị chặn tới nửa đêm giờ Los Angeles (≈14:00 giờ VN).
+
+         ⛔ VÌ SAO PHẢI CHẶN CÚ LÙI: bộ não Apps Script cũ chỉ biết các buổi còn
+         nằm trong Google Sheets. Buổi mở bằng myLesson (từ Đợt C) nằm ở
+         Firestore nên bộ não cũ KHÔNG THẤY ⇒ nó trả về "Lớp mình chưa có buổi
+         speaking nào đang mở" — một câu SAI SỰ THẬT, sau khi bắt em ngồi chờ
+         8-40 giây. Đúng cảnh A2B ngày 28/08/2026: buổi vẫn mở đàng hoàng, chỉ
+         là kho không cho đọc. Nói thẳng "kho quá tải" còn hơn đổ oan cho thầy
+         là chưa mở buổi. */
+      var ma = String((e && e.message) || '');
+      if (ma.indexOf('429') >= 0) {
+        return spLoi(b, 'Kho bài đang quá tải hôm nay nên chưa mở được phòng chấm. ' +
+          'Em chờ một lát rồi bấm Thử lại, hoặc báo thầy Andrew nhé.');
+      }
+      spHoiGas(b);
+    });
 }
 
 /* Đường cũ — bộ não Apps Script (buổi còn nằm trong Google Sheets) */

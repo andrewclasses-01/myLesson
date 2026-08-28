@@ -103,6 +103,34 @@
   // khối cũ), nên gỡ là ghi đè chuỗi rỗng chứ không phải xoá.
   var HAN_SUA = {};
 
+  // ⭐ v1.29.0 (28/08/2026) — NHỚ ĐỆM 60 GIÂY, cùng nếp `nhoDiem`/`docPhien` ngay dưới.
+  //
+  // ⛔ VÌ SAO PHẢI ĐỆM: `napHanSua()` treo trong `napDuLieu()`, mà `napDuLieu()` là
+  // cửa vào dữ liệu của CẢ BỐN TRANG (index · lop · bai · bai-sp) + dashboard. Nó
+  // liệt kê cả kho `lessonHan`, và Firestore tính MỘT LƯỢT ĐỌC CHO MỖI TÀI LIỆU
+  // liệt kê được — nên mỗi cú bấm qua lại lop ↔ bai là đọc lại cả kho từ đầu.
+  // Cộng với 200 tin chat mỗi lần mở trang lớp (xem `chat.js TOI_DA_TIN`), ngày
+  // 28/08/2026 project `aword-70dae` cạn sạch 50.000 lượt đọc/ngày của gói miễn
+  // phí ⇒ kho trả 429 cho MỌI phép đọc ⇒ SP CHECK của A2B chết cứng.
+  //
+  // Cái giá của 60 giây: thầy vừa sửa hạn ở dashboard thì em nào đang mở trang sẽ
+  // thấy hạn mới chậm nhất sau 1 phút. Đổi lại quá hời, và đúng bằng `CACHE_GIAY`
+  // mà bảng điểm đã chịu từ lâu.
+  // ⛔ Cố ý KHÔNG dùng lại `CACHE_GIAY` của bảng điểm (khai tận dòng ~327, DƯỚI chỗ
+  // này): `var` được nâng lên nên tên có sẵn, nhưng GIÁ TRỊ thì chỉ gán khi chạy tới
+  // dòng đó. Tham chiếu ngược kiểu ấy hôm nay còn chạy đúng vì `napHanSua()` gọi
+  // muộn hơn, nhưng ai dời một khối là hỏng câm. Hai con số cùng là 60, khác nhiệm vụ.
+  var HAN_CACHE_GIAY = 60;
+  var KHOA_HAN = 'awc_hansua';
+
+  function docHanPhien() {
+    try {
+      var o = JSON.parse(sessionStorage.getItem(KHOA_HAN) || 'null');
+      if (o && (Date.now() - o.luc) < HAN_CACHE_GIAY * 1000) return o.bang;
+    } catch (e) {}
+    return null;
+  }
+
   function napHanSua() {
     // ⛔ CẢ THÂN HÀM NẰM TRONG try: `fetch()` không chỉ trả Promise hỏng, nó còn
     // NÉM NGAY TẠI CHỖ (URL không hợp lệ, tham số lạ). Ném ngay thì `.catch()`
@@ -112,6 +140,8 @@
     try {
       var db = CFG.AWORD_DB || {};
       if (!db.projectId || !db.apiKey) return Promise.resolve({});
+      var san = docHanPhien();
+      if (san) return Promise.resolve(san);
       var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
             + '/databases/(default)/documents/lessonHan?pageSize=300&key='
             + encodeURIComponent(db.apiKey);
@@ -125,6 +155,11 @@
             var id = f.baiId && f.baiId.stringValue;
             if (id) ra[id] = String((f.han && f.han.stringValue) || '');
           }
+          // ⛔ CHỈ ĐỆM KHI ĐỌC ĐƯỢC THẬT (`j` khác null). Đệm cả lượt hỏng là
+          // đóng băng bảng rỗng suốt 60 giây — mạng chớp một cái là mọi thẻ
+          // mất hạn đã sửa, mà lần tải lại ngay sau đó cũng không cứu được.
+          if (j) { try { sessionStorage.setItem(KHOA_HAN,
+            JSON.stringify({ luc: Date.now(), bang: ra })); } catch (e) {} }
           return ra;
         })['catch'](function () { return {}; });
     } catch (e) { return Promise.resolve({}); }
@@ -145,7 +180,13 @@
 
   // Dashboard gọi sau khi ghi xong, để vẽ lại ngay mà không phải nạp lại cả trang.
   function datHanSua(id, han) {
-    if (id) HAN_SUA[id] = String(han || '');
+    if (!id) return;
+    HAN_SUA[id] = String(han || '');
+    // ⭐ v1.29.0 — SỬA HẠN LÀ PHẢI DỌN LUÔN BẢN ĐỆM 60 GIÂY (xem `napHanSua`).
+    // Không dọn thì thầy vừa đặt hạn xong, bấm sang trang khác là bản đệm CŨ
+    // đè ngược lại — thầy tưởng lệnh đặt hạn không ăn.
+    try { sessionStorage.setItem(KHOA_HAN,
+      JSON.stringify({ luc: Date.now(), bang: HAN_SUA })); } catch (e) {}
   }
 
   function napJson(duong) {

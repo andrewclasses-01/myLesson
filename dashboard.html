@@ -903,6 +903,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // đổ vào SAU khi hỏi Firestore (nếp "hiện trước, đổ sau" y hệt trang lớp).
   var DOI_SP = {};
   var DOI_SP_HOI = {};   // mã bài đã hỏi rồi — khỏi hỏi lại mỗi lần vẽ lại thẻ
+  // ⭐ v1.29.0 — mã bài -> câu BÁO VÌ SAO KHÔNG CÓ TIẾN TRÌNH. Trước đợt này mọi
+  // ngả hỏng đều để thẻ đứng nguyên ở "Đang đọc dữ liệu speaking…" MÃI MÃI, nên
+  // 28/08/2026 kho cạn hạn mức (429) mà thầy chỉ thấy chữ "đang đọc" — tưởng
+  // mạng chậm, ngồi chờ. Nay ngả nào tắc thì nói thẳng ngả đó.
+  var DOI_SP_LOI = {};
 
   // ---------- tiện ích ----------
   var hen = null;
@@ -965,7 +970,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var laSp = /SP\s*CHECK/i.test(b.dang || '');
     return { bai: b, maLop: maLop, siSo: caLop.length, acts: acts,
              thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop,
-             laSp: laSp, doiSp: DOI_SP[b.id] || null };
+             laSp: laSp, doiSp: DOI_SP[b.id] || null,
+             loiSp: DOI_SP_LOI[b.id] || '' };
   }
 
   // ⭐ v1.14.0 — "XONG" = ĐỦ ĐIỂM TỐI ĐA, không còn là "có nộp là được".
@@ -1303,8 +1309,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ #2 — thẻ SPEAKING CHECK: MỘT DÒNG MỖI TEAM thay dòng chung, y hệt
     // trang lớp. Chưa đọc xong Firestore thì báo hiền, không phải lỗi.
     if (t.laSp) {
-      return (t.doiSp && t.doiSp.length) ? veDoiSpKhoi(t)
-        : '<span class="the-diem chi-tay">Đang đọc dữ liệu speaking…</span>';
+      if (t.doiSp && t.doiSp.length) return veDoiSpKhoi(t);
+      // ⭐ v1.29.0 — có câu giải thích thì nói ra, đừng để "đang đọc" chạy vĩnh viễn.
+      return '<span class="the-diem chi-tay">' +
+        A.chuAnToan(t.loiSp || 'Đang đọc dữ liệu speaking…') + '</span>';
     }
     var acts = t.acts;
     if (!acts.length) {
@@ -1491,17 +1499,50 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
   }
 
+  // ⭐ v1.29.0 — ĐỔI MÃ LỖI KHO RA TIẾNG NGƯỜI.
+  // `spBuoiFs`/`spDoiSpFs` ném `Error('FS_' + mã HTTP)`, nên ở đây đọc lại được.
+  // ⛔ 429 = "Quota exceeded": gói Firebase MIỄN PHÍ chỉ cho 50.000 lượt đọc mỗi
+  // ngày cho CẢ project `aword-70dae` (dùng chung AWord + mySpeaking + trang này).
+  // Cạn là MỌI phép đọc bị chặn tới nửa đêm giờ Los Angeles (≈ 14:00 giờ VN).
+  // Đã xảy ra thật 28/08/2026 — xem `js/chat.js TOI_DA_TIN` để biết chỗ đốt nhiều nhất.
+  function chuLoiKho(e) {
+    var m = String((e && e.message) || '');
+    if (m.indexOf('429') >= 0) return 'Kho quá tải hôm nay — chờ tới khoảng 14:00 rồi tải lại.';
+    if (m.indexOf('403') >= 0 || m.indexOf('401') >= 0) return 'Kho từ chối đọc — kiểm tra luật Firestore.';
+    return 'Chưa đọc được kho speaking. Thầy thử tải lại trang.';
+  }
+
   // Hỏi Firestore MỘT LẦN cho mỗi bài spcheck đang hiện, rồi vẽ lại thẻ.
+  // ⛔ MỌI NGẢ KHÔNG RA TIẾN TRÌNH ĐỀU PHẢI ĐẶT `DOI_SP_LOI` rồi vẽ lại. Bản cũ
+  // `return` trắng ở mấy ngả giữa và `catch` im lặng ⇒ thẻ đứng ở "Đang đọc dữ
+  // liệu speaking…" vĩnh viễn, thầy không tài nào biết tắc ở đâu (28/08/2026).
   function capNhatSpeakingChoBai(b, maLop) {
     if (DOI_SP_HOI[b.id]) return;
     DOI_SP_HOI[b.id] = true;
+    var bao = function (chu) {
+      DOI_SP_LOI[b.id] = chu;
+      veKhuThe();
+      if (BM_ID === b.id) moBaiModal(b.id);
+    };
     spBuoiFs(maLop).then(function (buoi) {
-      if (!buoi || buoi.moHinh !== 2 || !spKhopBai(A.maLesson(b), buoi.lesson)) return;
+      if (!buoi) return bao('Lớp này chưa có buổi speaking nào đang mở.');
+      if (!spKhopBai(A.maLesson(b), buoi.lesson))
+        return bao('Buổi đang mở của lớp là "' + (buoi.lesson || '?') + '", không phải bài này.');
+      if (buoi.moHinh !== 2) return bao('Buổi này theo mô hình cũ — không có tiến trình theo team.');
       return spDoiSpFs(buoi._id).then(function (docs) {
         var doi = tinhDoiSp(buoi.teams, docs);
-        if (doi.length) { DOI_SP[b.id] = doi; veKhuThe(); if (BM_ID === b.id) moBaiModal(b.id); }
+        if (!doi.length) return bao('Buổi đã mở nhưng chưa chia team nào.');
+        DOI_SP[b.id] = doi;
+        DOI_SP_LOI[b.id] = '';
+        veKhuThe();
+        if (BM_ID === b.id) moBaiModal(b.id);
       });
-    })['catch'](function () { /* im lặng — thẻ giữ nguyên dòng "đang đọc" */ });
+    })['catch'](function (e) {
+      bao(chuLoiKho(e));
+      // Hỏng vì kho tắc thì cho hỏi lại ở lần vẽ sau — khác hẳn mấy ngả trên
+      // (những ngả kia là sự thật ổn định, hỏi lại chỉ tốn thêm lượt đọc).
+      DOI_SP_HOI[b.id] = false;
+    });
   }
 
   // ---------- #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK (bấm vùng điểm) ----------

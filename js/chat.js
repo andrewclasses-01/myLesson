@@ -77,7 +77,20 @@
     appId: '1:399279049436:web:b9b34dcfb34732aa744219'
   };
   var TOI_DA_CHU = 300;      // phải khớp luật Firestore ở trên
-  var TOI_DA_TIN = 200;      // chỉ kéo về 200 tin gần nhất
+  // ⛔⛔ CON SỐ NÀY LÀ TIỀN — ĐỪNG NÂNG LÊN CHO "XEM ĐƯỢC NHIỀU HƠN" (28/08/2026)
+  // Firestore tính MỘT LƯỢT ĐỌC CHO MỖI TÀI LIỆU mà `onSnapshot` kéo về ở nhịp
+  // đầu. `noiChat()` chạy TỰ ĐỘNG lúc mở `lop.html` (không đợi em bấm vào cột
+  // chat), và trang KHÔNG bật bộ nhớ đệm Firestore ⇒ mỗi lần một em mở/tải lại
+  // trang lớp là ĐỌC LẠI ĐỦ TỪNG ẤY TÀI LIỆU TỪ MÁY CHỦ.
+  //   200 tin × 156 em × 2-3 lượt mở/ngày  ⇒  ~90.000 lượt đọc/ngày
+  //   Gói miễn phí chỉ có 50.000 lượt/ngày cho CẢ project (chung với AWord +
+  //   mySpeaking) — cạn là kho trả 429 "Quota exceeded" cho MỌI phép đọc.
+  // Đo thật 28/08/2026: kho `aword-70dae` cạn sạch, kéo sập luôn SP CHECK của
+  // A2B (thẻ speaking đứng ở "Đang đọc dữ liệu…", em bấm vào thì báo oan
+  // "Lớp mình chưa có buổi speaking nào đang mở").
+  // 👉 Tin cũ hơn 30 không mất đi đâu cả — thầy có nút "🗄 Lưu trữ & làm mới"
+  //    bên dashboard để cất nguyên phòng vào `classChatArchive` rồi xem lại.
+  var TOI_DA_TIN = 30;       // chỉ kéo về 30 tin gần nhất (xem khối ⛔ trên)
 
   // Nạp SDK kiểu lười: trang nào không mở chat thì không tải gì cả (~120KB).
   // (v1.17.0) ⛔ KHÔNG initializeApp mù quáng: khối SPEAKING của dashboard cũng

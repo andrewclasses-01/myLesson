@@ -1325,8 +1325,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     else if (st.tt === 'gap') { lopThem = ' gap'; lopNen = 'tt-do'; }
     else if (st.tt === '24h') { lopThem = ' gio-vang'; lopNen = 'tt-vang'; }
     else { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
-    var ten = A.coTenRieng(b) ? A.tenBai(b)
-      : (A.tenBai(b) + ' (chưa đặt tên bài)');
+    var ten = A.tenBai(b);
     return '<button class="the' + lopThem + '" type="button" data-id="' + A.chuAnToan(b.id) + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +

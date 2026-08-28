@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.24.0 (27/08/2026, dọn sidebar + thẻ thật)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.25.0 (28/08/2026, ô giờ hạn riêng ép 24h — bỏ AM/PM)
 
      Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
      Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
@@ -214,6 +214,7 @@ a{color:inherit}
 .hs-o b{font:800 12px/1.3 var(--font); letter-spacing:.04em; margin-right:2px}
 .hs-o input{border:1px solid var(--vien); border-radius:8px; padding:6px 8px;
   font:600 12px/1.3 var(--font); color:inherit; background:#fff}
+.hs-o input[data-hs-gio]{width:64px}
 .hs-o .nut{padding:6px 11px; font:700 11.5px/1.2 var(--font)}
 .hs-tinh{flex:1 1 100%; font:600 11px/1.5 var(--font); color:var(--nhat)}
 .act-ds{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
@@ -1190,13 +1191,25 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return { ngay: d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()), gio: '' };
   }
 
+  // v1.25.0 (thầy chốt 28/08) — ép LUÔN 24h, bỏ hẳn AM/PM: `<input type="time">`
+  // gốc hiện 12h hay 24h là tuỳ Windows Region của từng máy, không tự sửa được
+  // bằng CSS/JS. Thay bằng ô chữ tự gõ số, tự chèn dấu ":", tự kẹp giờ 0-23 và
+  // phút 0-59 — không bao giờ ra giá trị sai khuôn "HH:MM".
+  function epGio24(el) {
+    var d = String(el.value || '').replace(/\D/g, '').slice(0, 4);
+    if (d.length >= 2) d = String(Math.min(23, parseInt(d.slice(0, 2), 10))).padStart(2, '0') + d.slice(2);
+    if (d.length >= 4) d = d.slice(0, 2) + String(Math.min(59, parseInt(d.slice(2, 4), 10))).padStart(2, '0');
+    el.value = d.length > 2 ? d.slice(0, 2) + ':' + d.slice(2) : d;
+  }
+
   function veSuaHan(b) {
     var o = hsTach(b);
     var id = A.chuAnToan(b.id);
     return '<div class="hs-o">' +
       '<b>Hạn riêng cho thẻ này</b>' +
       '<input type="date" data-hs-ngay="' + id + '" value="' + A.chuAnToan(o.ngay) + '">' +
-      '<input type="time" data-hs-gio="' + id + '" value="' + A.chuAnToan(o.gio) + '">' +
+      '<input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" ' +
+      'data-hs-gio="' + id + '" value="' + A.chuAnToan(o.gio) + '">' +
       '<button class="nut nho chinh" data-hs-luu="' + id + '">Đặt hạn này</button>' +
       (A.daSuaHan(b)
         ? '<button class="nut nho" data-hs-bo="' + id + '">Về hạn mặc định</button>' : '') +
@@ -2128,6 +2141,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       docDiemCuaCacBai(dsBaiConHanMoiLop()).then(veTat);
     })['catch'](function () {
       $('#theListDs').innerHTML = '<div class="trong">Chưa đọc được dữ liệu.</div>';
+    });
+
+    // v1.25.0 — ô "Hạn riêng cho thẻ này" vẽ đi vẽ lại liên tục y hệt các nút
+    // click bên dưới, nên cũng bắt `input` bằng MỘT tay trên document.
+    document.addEventListener('input', function (e) {
+      if (e.target.matches('[data-hs-gio]')) epGio24(e.target);
     });
 
     // Bấm ở đâu cũng bắt bằng MỘT tay trên document: mấy khối trên vẽ đi vẽ lại

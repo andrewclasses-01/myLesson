@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-27 01:52:46",
+  "capNhat": "2026-08-28 08:08:03",
   "bai": {
     "A1C": [
       {
@@ -108,6 +108,25 @@
         "han": "2026-08-28T19:29",
         "maLesson": "MOLDY FOOD",
         "taoLuc": "2026-08-26",
+        "khoi": [
+          {
+            "loai": "spcheck",
+            "ten": "SPEAKING CHECK",
+            "xong": 0
+          }
+        ]
+      }
+    ],
+    "A2B": [
+      {
+        "id": "A2B_26.8_SP_CHECK_BEAVERS_AND_DAMS",
+        "tieuDe": "A2B_26.8_SP CHECK BEAVERS AND DAMS",
+        "tenHien": "A2B_26.8_SP CHECK BEAVERS AND DAMS",
+        "dang": "SP CHECK",
+        "ngay": "26.8",
+        "han": "2026-08-28T17:30",
+        "maLesson": "BEAVERS AND DAMS",
+        "taoLuc": "2026-08-28",
         "khoi": [
           {
             "loai": "spcheck",

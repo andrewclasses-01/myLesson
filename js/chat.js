@@ -170,13 +170,19 @@
 
   // ⭐ #8 — Thả/gỡ cảm xúc CỦA MỘT NGƯỜI trên MỘT tin (dot-path nên không đụng
   // cảm xúc của người khác đang có trên cùng tin). `ma` rỗng = gỡ.
+  // ⭐ v1.33.0 — thêm `luc` (mốc mili giây lúc thả) vào mỗi cảm xúc: dashboard
+  // dùng làm MỘT trong ba dấu vết tính "hoạt động gần đây" (xem
+  // `hoatDongGanDayCuaLop()` bên dashboard.html). ⛔ Không cần đổi luật
+  // Firestore: luật hiện tại chỉ kiểm `cx is map`, không giới hạn các trường
+  // con bên trong — thêm trường mới vẫn qua được luật cũ.
   function suaCx(maLop, tinId, maNguoi, ma, ten) {
     var khoa = String(maNguoi || '').replace(/[.$#[\]/]/g, '_');
     if (!khoa) return Promise.reject(new Error('thieu-ma-nguoi'));
     return db().then(function (f) {
       var truong = 'cx.' + khoa;
       var patch = {};
-      patch[truong] = ma ? { ma: String(ma), ten: String(ten || '?').slice(0, 60) } : f.fs.deleteField();
+      patch[truong] = ma ? { ma: String(ma), ten: String(ten || '?').slice(0, 60), luc: Date.now() }
+                          : f.fs.deleteField();
       return f.fs.updateDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId), patch);
     });
   }

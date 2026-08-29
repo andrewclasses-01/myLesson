@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.32.1 (30/08/2026, 3 việc dashboard + vá quầng sáng bị chém)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.33.0 (30/08/2026, + HOẠT ĐỘNG GẦN ĐÂY)
 
      Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
      Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
@@ -38,6 +38,15 @@
        Đã bỏ `overflow` ở `.khoi-than`/`.the-list`, đổi `height` cột `.cot-the`
        thành `min-height` — vẫn khớp chat trong ca thường gặp, không còn chém
        quầng sáng bao giờ. Chi tiết: `GHI CHU DU AN.md`.
+
+     ⭐ v1.33.0 — Ô "HOẠT ĐỘNG GẦN ĐÂY" (dưới thẻ bài) nay có DỮ LIỆU THẬT thay
+       vì câu "đang chuẩn bị": trang KHÔNG có lượt đăng nhập thật để ghi (tĩnh,
+       không gửi gì lên máy chủ lúc mở trang), nên lấy mốc GẦN NHẤT trong ba
+       dấu vết đã có sẵn của mỗi em — lúc nộp game gần nhất (DIEM) · lúc chat
+       gần nhất (TIN) · lúc thả cảm xúc gần nhất (`cx.luc`, MỚI thêm trong
+       `chat.js suaCx()`, tin nhắn cũ chưa có trường này thì bỏ qua). KHÔNG
+       tốn thêm lượt đọc Firestore nào — cả ba nguồn dashboard đã tải sẵn.
+       Xem `hoatDongGanDayCuaLop()`.
 
      ⭐ v1.24.0 — DỌN LẠI BỐ CỤC (thầy chốt qua bản xem thử):
        · Bỏ khối "Cần nhắc" — dải nút LỚP (dưới dải số) đã có sẵn "học sinh ·
@@ -893,8 +902,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       <div class="khoi-than">
         <div class="the-list" id="theListDs"></div>
         <div class="dn-zone">
-          <div class="dn-nhan">ĐĂNG NHẬP GẦN ĐÂY</div>
-          <div class="dn-bay">Chưa ghi lượt đăng nhập — tính năng đang chuẩn bị.</div>
+          <div class="dn-nhan">HOẠT ĐỘNG GẦN ĐÂY</div>
+          <div class="dn-bay" id="dnBay">Chưa có dấu vết hoạt động gần đây trong lớp này.</div>
         </div>
       </div>
     </section>
@@ -1079,7 +1088,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <script src="config.js?v=33"></script>
 <script src="js/chung.js?v=21"></script>
-<script src="js/chat.js?v=20"></script>
+<script src="js/chat.js?v=21"></script>
 <script>
 (function () {
   'use strict';
@@ -1943,6 +1952,87 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
   }
 
+  // ================================================================
+  // ⭐ v1.33.0 — "HOẠT ĐỘNG GẦN ĐÂY" (thầy chốt qua nghiên cứu chung): trang
+  // KHÔNG có lượt đăng nhập thật để ghi (tĩnh, không gửi gì lên máy chủ lúc
+  // mở trang) — nên dùng GẦN NHẤT của ba dấu vết đã có sẵn cho mỗi em:
+  //   (1) lúc nộp game gần nhất  — DIEM đã tải cho lớp đang chọn, so theo TÊN
+  //       (kho AWord không có mã đăng nhập, chỉ có tên).
+  //   (2) lúc chat gần nhất      — TIN đang nghe (30 tin gần nhất), so theo MÃ.
+  //   (3) lúc thả cảm xúc gần nhất — `cx[...].luc`, MỚI thêm ở suaCx() (chat.js
+  //       v1.33.0) — tin nhắn CŨ chưa có trường này thì coi như không có (0).
+  // ⛔ KHÔNG tính SP CHECK (nộp qua kho `tongLoi` khác, không phải
+  // `assignments/{mã}/scores`) — bỏ ngoài phạm vi, không giả vờ có.
+  // ================================================================
+  function hoatDongGanDayCuaLop() {
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var ds = (l && l.hocSinh) || [];
+    var ra = [];
+    ds.forEach(function (h) {
+      var kTen = A.khoaTen(h.ten);
+      var maCh = A.chuanMa(h.ma);
+      var cxKhoa = maCh.replace(/[.$#[\]/]/g, '_');   // khớp suaCx() bên chat.js
+      var best = 0;
+
+      Object.keys(DIEM).forEach(function (maAct) {
+        (DIEM[maAct] || []).forEach(function (r) {
+          if (kTen && A.khoaTen(r.ten) === kTen && r.luc > best) best = r.luc;
+        });
+      });
+
+      if (maCh) {
+        TIN.forEach(function (t) {
+          if (t.vaiTro === 'hs' && A.chuanMa(t.ma) === maCh && t.luc > best) best = t.luc;
+          var cx = t.cx && t.cx[cxKhoa];
+          if (cx && cx.luc && cx.luc > best) best = cx.luc;
+        });
+      }
+
+      if (best > 0) ra.push({ ten: h.ten, luc: best });
+    });
+    ra.sort(function (a, b) { return b.luc - a.luc; });
+    return ra;
+  }
+
+  function chuCachDay(ms) {
+    var ph = Math.floor(Math.max(0, Date.now() - ms) / 60000);
+    if (ph < 1) return 'vừa xong';
+    if (ph < 60) return ph + ' phút trước';
+    var gi = Math.floor(ph / 60);
+    if (gi < 24) return gi + ' giờ trước';
+    return Math.floor(gi / 24) + ' ngày trước';
+  }
+
+  // Toạ độ ngang rải sẵn (tránh chồng bong bóng lên nhau, đủ dùng cho tối đa 8).
+  var DN_TRAI = [8, 58, 30, 80, 44, 18, 68, 36];
+  function veDangNhapGanDay() {
+    var zone = $('#dnBay');
+    if (!zone) return;
+    var ds = hoatDongGanDayCuaLop().slice(0, 8);
+    if (!ds.length) {
+      zone.textContent = 'Chưa có dấu vết hoạt động gần đây trong lớp này.';
+      return;
+    }
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var lopSlug = avSlugLop((l && l.tenGoc) || LOP_CHON);
+    var moi = ds[0].luc, cu = ds[ds.length - 1].luc;
+    var bien = Math.max(1, moi - cu);
+    zone.innerHTML = ds.map(function (x, i) {
+      var top = 6 + ((moi - x.luc) / bien) * 66;      // mới hơn -> top NHỎ hơn (nổi cao hơn)
+      var op = Math.max(.5, 1 - (moi - x.luc) / (bien * 1.4));
+      var mauI = 0;
+      for (var j = 0; j < x.ten.length; j++) mauI += x.ten.charCodeAt(j);
+      var mau = MAU_AV[mauI % MAU_AV.length];
+      var anh = '<img src="assets/avatar/' + lopSlug + '/' + avSlugTen(x.ten) +
+        '.jpg" alt="" onerror="this.remove()">';
+      return '<span class="dn-b" style="top:' + top.toFixed(1) + '%; left:' +
+        DN_TRAI[i % DN_TRAI.length] + '%; background:' + mau +
+        '; opacity:' + op.toFixed(2) + '; animation-delay:' + (i * .35) + 's" ' +
+        'title="' + A.chuAnToan(x.ten) + ' · ' + chuCachDay(x.luc) + '">' +
+        A.chuAnToan(avChuTat(x.ten).toUpperCase()) + anh + '</span>';
+    }).join('');
+  }
+
   // ---------- BẤM THẺ BÀI: mở nội dung như bình thường (Thầy Andrew xem) ----------
   // Tái dùng NGUYÊN VẸN veRuotBai() (act/chưa xong/đã xong/sửa hạn/mở trang học
   // sinh) — hộp này chỉ là VỎ khác cho đúng nội dung đó, cộng thêm nút xem thử
@@ -2466,6 +2556,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     AWChat.nghe(LOP_CHON, function (ds) {
       TIN = ds;
       veChat();
+      veDangNhapGanDay();   // ⭐ v1.33.0 — tin/cảm xúc mới cũng là dấu vết hoạt động
     }, function (e) {
       $('#chatBody').innerHTML = '<div class="chat-cho">' + A.chuAnToan(AWChat.chuLoi(e)) + '</div>';
       $('#chatO').disabled = true;
@@ -2557,6 +2648,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     veDaiSo();
     veLopGrid();
     veKhuThe();
+    veDangNhapGanDay();    // ⭐ v1.33.0 — đọc DIEM/TIN hiện có, an toàn gọi lại nhiều lần
     veSinhNhat();
     veQuanLyMa();
     veTop();

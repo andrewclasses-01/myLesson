@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.32.0 (30/08/2026, 3 việc dashboard)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.32.1 (30/08/2026, 3 việc dashboard + vá quầng sáng bị chém)
 
      Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
      Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
@@ -33,6 +33,11 @@
          + đúng 1 trong 3 trạng thái (Đã giao bài/Đang chờ bài/Không có bài
          — "Không có bài" cần cờ lớp-level `khongGiaoBai` CHƯA build).
        Chi tiết đầy đủ: `GHI CHU DU AN.md` mục mới nhất đầu file.
+     ⛔ v1.32.1 — thầy phát hiện quầng sáng đỏ nhấp nháy (`.the.gap`) bị
+       `overflow:hidden` (mới thêm ở 1.32.0) chém cụt thành viền vuông xấu.
+       Đã bỏ `overflow` ở `.khoi-than`/`.the-list`, đổi `height` cột `.cot-the`
+       thành `min-height` — vẫn khớp chat trong ca thường gặp, không còn chém
+       quầng sáng bao giờ. Chi tiết: `GHI CHU DU AN.md`.
 
      ⭐ v1.24.0 — DỌN LẠI BỐ CỤC (thầy chốt qua bản xem thử):
        · Bỏ khối "Cần nhắc" — dải nút LỚP (dưới dải số) đã có sẵn "học sinh ·
@@ -291,7 +296,7 @@ a{color:inherit}
 .thanh i.do{background:var(--do)}
 .tien .so-n{font:800 12px/1 var(--font); min-width:44px; text-align:right}
 
-/* ---------- HAI CỘT: THẺ BÀI CÒN HẠN (trái) + CHAT (phải) — v1.32.0 ---------- */
+/* ---------- HAI CỘT: THẺ BÀI CÒN HẠN (trái) + CHAT (phải) — v1.32.1 ---------- */
 /* ⭐ v1.32.0 — thầy chốt ĐẢO NGƯỢC quyết định #1 cũ (v1.24.0): cột thẻ nay
    LUÔN cao đúng bằng khung chat, không tự do theo nội dung nữa. Khoá chiều
    cao trên CẢ CỘT `.cot-the` (không phải chỉ `.khoi-than`) bằng đúng con số
@@ -299,13 +304,21 @@ a{color:inherit}
    (--cao-the * 2) + chân (62.5px, có nút gửi) + viền (2px) ≈ +123px. Đặt
    trên CẢ CỘT vì đầu cột trái ("BÀI CÒN HẠN", không có nút) tự nhiên THẤP
    HƠN đầu cột phải — khoá riêng `.khoi-than` sẽ cộng dồn sai, hai cột lệch
-   nhau đúng phần chênh đó. Thẻ nhiều thì `.the-list` tự cuộn bên trong. */
+   nhau đúng phần chênh đó.
+   ⛔ v1.32.1 — thầy phát hiện `overflow:hidden` (bản 1.32.0, để cắt bớt khi
+   thẻ nhiều) CHÉM CỤT quầng sáng đỏ nhấp nháy của thẻ gấp hạn (`.the.gap`,
+   `filter:drop-shadow` lan ra NGOÀI khung phần tử — bất kỳ tổ tiên nào có
+   `overflow:hidden` đều cắt cụt nó thành viền vuông xấu, đúng họ bẫy khác
+   với #8 xoá-tin nhưng cùng gốc "âm toạ độ/hiệu ứng lan ra ngoài bị
+   overflow:hidden chém"). Bỏ hẳn `overflow` ở `.khoi-than`/`.the-list`, đổi
+   `height` cột thành `min-height`: bình thường (1-2 thẻ) vẫn khớp chat y
+   hệt; hoạ hiếm nhiều thẻ cùng lúc thì cột nhỉnh cao hơn chat một chút —
+   đổi lấy KHÔNG BAO GIỜ chém quầng sáng, còn hơn thanh nhìn xấu thường trực. */
 .hai-cot{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:18px; align-items:start}
 .cot-the, .cot-chat{display:flex; flex-direction:column}
-.cot-the{height:calc(var(--cao-the) * 2 + 123px)}
-.cot-the .khoi-than{display:flex; flex-direction:column; gap:14px; overflow:hidden;
-  flex:1; min-height:0}
-.the-list{flex:none; display:flex; flex-direction:column; gap:14px; overflow-y:auto; max-height:100%}
+.cot-the{min-height:calc(var(--cao-the) * 2 + 123px)}
+.cot-the .khoi-than{display:flex; flex-direction:column; gap:14px; flex:1; min-height:0}
+.the-list{flex:none; display:flex; flex-direction:column; gap:14px}
 /* ⭐ v1.32.0 — thay "Lượt đăng nhập gần đây — tính năng đang chuẩn bị" (chữ
    suông) bằng một vùng riêng: bong bóng avatar học sinh vừa đăng nhập bay
    lơ lửng, ai vào gần hơn thì nổi cao hơn. ⛔ Hệ thống CHƯA ghi lượt đăng

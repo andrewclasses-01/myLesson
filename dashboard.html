@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.33.0 (30/08/2026, + HOẠT ĐỘNG GẦN ĐÂY)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.33.1 (30/08/2026, + HOẠT ĐỘNG GẦN ĐÂY + 4 vá giao diện)
 
      Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
      Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
@@ -47,6 +47,14 @@
        `chat.js suaCx()`, tin nhắn cũ chưa có trường này thì bỏ qua). KHÔNG
        tốn thêm lượt đọc Firestore nào — cả ba nguồn dashboard đã tải sẵn.
        Xem `hoatDongGanDayCuaLop()`.
+     ⛔ v1.33.1 — 4 vá giao diện thầy phát hiện qua ảnh chụp thật: bóng avatar
+       to hẳn (32→46px); `.dn-b img` thiếu `object-fit:cover` nên ảnh render
+       nguyên cỡ gốc rồi bị cắt trúng một góc, nhìn như phóng to lệch — đã vá;
+       `.the-rail` thêm `position:relative` để LUÔN nổi trên quầng sáng nhấp
+       nháy của thẻ (trước bị quầng sáng đè lên, đúng họ bẫy vẽ-theo-DOM-order
+       của luật CSS stacking, khác vụ overflow:hidden ở 1.32.1); nền khung
+       "Hoạt động gần đây" đổi sang gradient hai quầng chéo (xanh + xanh
+       dương) thay dải màu đơn cũ.
 
      ⭐ v1.24.0 — DỌN LẠI BỐ CỤC (thầy chốt qua bản xem thử):
        · Bỏ khối "Cần nhắc" — dải nút LỚP (dưới dải số) đã có sẵn "học sinh ·
@@ -335,14 +343,26 @@ a{color:inherit}
 .dn-zone{flex:1; min-height:56px; display:flex; flex-direction:column}
 .dn-nhan{flex:none; font:800 9.5px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase;
   color:var(--nhat); margin-bottom:7px}
-.dn-bay{position:relative; flex:1; min-height:0; border:1px dashed var(--vien); border-radius:14px;
-  background:linear-gradient(180deg, var(--xanh-nhat) 0%, transparent 75%); overflow:hidden;
+/* ⭐ v1.33.1 — nền gradient hiện đại hơn (hai quầng màu chéo, xanh của app +
+   xanh dương phụ) thay dải xanh-nhạt→trong suốt cũ; bỏ viền đứt nét (không
+   còn là ô "để dành" nữa, đã có nội dung thật). */
+.dn-bay{position:relative; flex:1; min-height:0; border:1px solid var(--vien); border-radius:14px;
+  background:
+    radial-gradient(120% 100% at 14% 0%, rgba(91,141,239,.20) 0%, transparent 58%),
+    radial-gradient(120% 100% at 86% 100%, rgba(14,124,110,.20) 0%, transparent 58%),
+    linear-gradient(135deg, #F2F8F6 0%, #EEF2FB 100%);
+  overflow:hidden;
   display:flex; align-items:center; justify-content:center; text-align:center;
   padding:10px 16px; color:var(--nhat); font:600 12px/1.5 var(--font)}
-.dn-b{position:absolute; width:32px; height:32px; border-radius:50%; overflow:hidden;
+/* ⭐ v1.33.1 — bóng to hơn hẳn (32→46px) theo yêu cầu; `img` PHẢI có
+   position:absolute+object-fit:cover (đúng nếp `.msg .av img`) — thiếu là
+   ảnh render nguyên cỡ gốc rồi bị .dn-b overflow:hidden cắt trúng một góc,
+   nhìn như "zoom" quá đà (bẫy thầy bắt được qua ảnh chụp thật). */
+.dn-b{position:absolute; width:46px; height:46px; border-radius:50%; overflow:hidden;
   box-shadow:0 3px 10px rgba(16,40,36,.18), 0 0 0 2px var(--the);
-  display:flex; align-items:center; justify-content:center; font:800 11px var(--font); color:#fff;
+  display:flex; align-items:center; justify-content:center; font:800 13px var(--font); color:#fff;
   animation:dn-bay-nhe 5.6s ease-in-out infinite}
+.dn-b img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 @keyframes dn-bay-nhe{0%,100%{transform:translate(0,0)} 50%{transform:translate(3px,-9px)}}
 @media (prefers-reduced-motion:reduce){.dn-b{animation:none}}
 .cot-chat .khoi-than{display:flex; flex-direction:column; padding:0}
@@ -354,7 +374,12 @@ a{color:inherit}
    có") · 🏆 Bảng xếp hạng (tắt mở nhanh, y hệt bấm vùng điểm trong thẻ).
    ================================================================ */
 .the-row{position:relative; display:flex; align-items:stretch; gap:8px}
-.the-rail{flex:none; width:40px; display:flex; flex-direction:column; align-items:center;
+/* ⭐ v1.33.1 — thầy phát hiện quầng sáng nhấp nháy của thẻ (`.the.gap`, filter
+   drop-shadow) ĐÈ LÊN thanh công cụ — `.the` nằm SAU `.the-rail` trong DOM
+   nên mặc định vẽ đè lên trên. `position:relative` (không cần z-index) đẩy
+   rail sang lớp "phần tử có định vị", vẽ SAU MỌI phần tử tĩnh cùng cấp theo
+   đúng thứ tự vẽ CSS — rail luôn nổi trên quầng sáng dù đứng trước trong DOM. */
+.the-rail{position:relative; flex:none; width:40px; display:flex; flex-direction:column; align-items:center;
   justify-content:center; gap:9px; background:var(--the); border:1px solid var(--vien);
   border-radius:14px; box-shadow:var(--bong); padding:9px 0}
 .rail-ic{width:28px; height:28px; border-radius:9px; border:0; background:transparent;
@@ -2004,7 +2029,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
 
   // Toạ độ ngang rải sẵn (tránh chồng bong bóng lên nhau, đủ dùng cho tối đa 8).
-  var DN_TRAI = [8, 58, 30, 80, 44, 18, 68, 36];
+  // ⭐ v1.33.1 — thu hẹp biên (trước 8-80%) vì bóng to hơn (32→46px), tránh
+  // tràn ra ngoài khung ở cột hẹp.
+  var DN_TRAI = [8, 52, 28, 72, 40, 16, 62, 34];
   function veDangNhapGanDay() {
     var zone = $('#dnBay');
     if (!zone) return;
@@ -2018,7 +2045,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var moi = ds[0].luc, cu = ds[ds.length - 1].luc;
     var bien = Math.max(1, moi - cu);
     zone.innerHTML = ds.map(function (x, i) {
-      var top = 6 + ((moi - x.luc) / bien) * 66;      // mới hơn -> top NHỎ hơn (nổi cao hơn)
+      var top = 5 + ((moi - x.luc) / bien) * 56;      // mới hơn -> top NHỎ hơn (nổi cao hơn)
       var op = Math.max(.5, 1 - (moi - x.luc) / (bien * 1.4));
       var mauI = 0;
       for (var j = 0; j < x.ten.length; j++) mauI += x.ten.charCodeAt(j);

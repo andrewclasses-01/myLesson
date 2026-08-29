@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.25.0 (28/08/2026, ô giờ hạn riêng ép 24h — bỏ AM/PM)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.32.0 (30/08/2026, 3 việc dashboard)
 
      Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
      Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
@@ -16,6 +16,23 @@
      người xem, và `lop.json`/`bai.json` vốn công khai. Nó chỉ chặn người tình cờ
      mở địa chỉ này. Đừng đưa thêm thứ gì nhạy cảm hơn lên đây (⛔ nhất là NĂM
      SINH của học sinh — xem `xuatLop()` bên app).
+
+     ⭐ v1.32.0 — 3 VIỆC DASHBOARD (thầy chốt qua bản xem thử Artifact trước):
+       · Thanh đầu trang: dải số cũ (5 số) dời hẳn vào hàng avatar, chỉ còn 3
+         số — Bài đang giao · Lớp chờ bài [MỚI, đếm lớp không còn bài còn
+         hạn] · Bài đã giao — xem `veDaiSo()`, `#hdSo`.
+       · Cột "Bài còn hạn": LUÔN cao bằng khung chat (đảo NGƯỢC quyết định
+         #1 của v1.24.0 bên dưới), thêm cột icon ⚙/🏆 riêng từng thẻ
+         (`.the-rail`) — ⚙ chỉ "Đổi hạn nộp" chạy thật, Ẩn bài/Tạm khoá/Xoá
+         bài đều "sắp có" (chưa có cờ dữ liệu). Phần trống dưới thẻ đổi từ
+         chữ chờ sang vùng "đăng nhập gần đây" bay lơ lửng — ⛔ CHƯA có dữ
+         liệu thật (hệ thống chưa ghi lượt đăng nhập ở đâu), tạm hiện câu chờ.
+       · Nút chọn lớp: cột trái rút còn 3 mục (số HS · sinh nhật · thiết lập
+         lớp — bỏ sửa hạn/top của lớp, hai icon đó vẫn dùng được ở nơi khác).
+         Bên phải đổi câu mô tả dài thành dòng sinh nhật (nếu có, 7 ngày tới)
+         + đúng 1 trong 3 trạng thái (Đã giao bài/Đang chờ bài/Không có bài
+         — "Không có bài" cần cờ lớp-level `khongGiaoBai` CHƯA build).
+       Chi tiết đầy đủ: `GHI CHU DU AN.md` mục mới nhất đầu file.
 
      ⭐ v1.24.0 — DỌN LẠI BỐ CỤC (thầy chốt qua bản xem thử):
        · Bỏ khối "Cần nhắc" — dải nút LỚP (dưới dải số) đã có sẵn "học sinh ·
@@ -123,28 +140,19 @@ a{color:inherit}
   display:grid; place-items:center; font-size:14px; line-height:1}
 .nut[disabled]{opacity:.5; pointer-events:none}
 
-/* ---------- DẢI SỐ ---------- */
-/* ⭐ #6 — MỘT dải liền có ngăn bên trong (không còn là các ô rời từng cái).
-   ⛔ 28/08 — ĐỔI SELECTOR TỪ `.so` SANG `#daiSo`: tên class "so" quá chung
-   chung, trùng với các nhãn số nhỏ dùng lại cùng chữ ("so") ở nơi khác trong
-   trang (huy hiệu đỏ "CHƯA XONG BÀI" trong popup `.pop-cuoi.so`) — luật CSS
-   không giới hạn phạm vi này nên vô tình đè `grid-template-columns` lên huy
-   hiệu bé xíu đó, ép nó rộng tối thiểu 160px, tràn đè lên chữ (đúng họ bẫy
-   TRÙNG TÊN CLASS đã ghi trong BAN GIAO.md). Phần tử này vốn đã có sẵn
-   `id="daiSo"`, đổi sang chọn theo id là đủ, không đụng gì khác. */
-#daiSo{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  margin:18px 0 0; background:var(--the); border:1px solid var(--vien);
-  border-radius:var(--r); box-shadow:var(--bong); overflow:hidden}
-.so-o{padding:14px 16px; border-left:1px solid var(--vien)}
-.so-o:first-child{border-left:0}
-/* Vạch mảnh giữa dải số và các nút lớp bên dưới. */
-.vach-nhe{height:1px; background:var(--vien); margin:18px 0}
-.so-o .n{font:800 27px/1.1 var(--font); letter-spacing:-.5px}
-.so-o .nh{font:700 10.5px/1.3 var(--font); letter-spacing:.09em; color:var(--nhat);
-  text-transform:uppercase; margin-top:5px}
-.so-o.canh .n{color:var(--vang)}
-.so-o.gap .n{color:var(--do)}
-.so-o.tot .n{color:var(--la)}
+/* ---------- DẢI SỐ — nay GỘP vào thanh đầu trang (bên phải avatar) ---------- */
+/* ⭐ v1.32.0 — thầy chốt bỏ hẳn dải số rời bên dưới thanh đầu trang, chỉ giữ
+   3 số cần dùng ngay và đặt chung hàng với avatar. "Lớp chờ bài" là số MỚI
+   (đếm lớp không còn bài nào còn hạn) — xem `veDaiSo()`. */
+.hd-so-cum{display:flex; align-items:stretch; flex:none}
+.hd-so{display:flex; flex-direction:column; justify-content:center; align-items:center;
+  gap:2px; padding:2px 17px; border-left:1px solid var(--vien)}
+.hd-so:first-child{border-left:1px solid var(--vien)}
+.hd-so .n{font:800 19px/1 var(--font); letter-spacing:-.3px; font-variant-numeric:tabular-nums}
+.hd-so.tot .n{color:var(--la)}
+.hd-so.canh .n{color:var(--vang)}
+.hd-so .nh{font:700 8.3px/1.25 var(--font); letter-spacing:.06em; color:var(--nhat);
+  text-transform:uppercase; text-align:center; white-space:nowrap; margin-top:1px}
 
 /* ---------- KHỐI CHUNG ---------- */
 .khoi{background:var(--the); border:1px solid var(--vien); border-radius:var(--r);
@@ -162,7 +170,7 @@ a{color:inherit}
 
 /* ---------- DANH SÁCH LỚP (nút, chia đều bề ngang) — v1.24.0 ---------- */
 .lop-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px;
-  margin:0 0 18px}
+  margin:18px 0}
 /* ⭐ #5 — thẻ lớp nay CHIA HAI: cột icon riêng GV bên trái + nút chính chọn lớp. */
 .lop-btn{position:relative; display:flex; align-items:stretch; background:var(--the);
   border:1px solid var(--vien); border-radius:var(--r); box-shadow:var(--bong);
@@ -175,10 +183,18 @@ a{color:inherit}
 .lb-cham{position:absolute; top:8px; right:8px; width:9px; height:9px; border-radius:50%;
   background:var(--do); box-shadow:0 0 0 2px var(--the); z-index:3}
 .lop-btn.chon .lb-cham{box-shadow:0 0 0 2px var(--xanh)}
-.lb-gv{flex:none; display:flex; flex-direction:column; justify-content:center; gap:2px;
-  padding:6px; border-right:1px solid var(--vien); background:rgba(15,40,36,.025)}
+.lb-gv{flex:none; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:7px; padding:9px 7px; border-right:1px solid var(--vien); background:rgba(15,40,36,.025)}
 .lop-btn.chon .lb-gv{border-right-color:rgba(255,255,255,.25); background:rgba(255,255,255,.08)}
-.lb-ic{width:26px; height:26px; border-radius:8px; border:0; background:transparent;
+/* ⭐ v1.32.0 — số học sinh: chỉ để XEM (không phải nút bấm), thay chỗ icon
+   "sửa hạn" đã bỏ khỏi cột này (sửa hạn nay nằm trong ⚙ Cài đặt thẻ của
+   từng bài — xem `.the-rail`). */
+.lb-cnt{display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--nhat)}
+.lop-btn.chon .lb-cnt{color:rgba(255,255,255,.78)}
+.lb-cnt svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.1}
+.lb-cnt b{font:800 11.5px/1 var(--font); color:var(--chu)}
+.lop-btn.chon .lb-cnt b{color:#fff}
+.lb-ic{position:relative; width:27px; height:27px; border-radius:8px; border:0; background:transparent;
   color:var(--nhat); display:flex; align-items:center; justify-content:center;
   transition:background .15s ease, color .15s ease}
 .lb-ic:hover{background:var(--xanh-nhat); color:var(--xanh)}
@@ -186,13 +202,30 @@ a{color:inherit}
 .lop-btn.chon .lb-ic:hover{background:rgba(255,255,255,.2); color:#fff}
 .lb-ic svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.1;
   stroke-linecap:round; stroke-linejoin:round}
+/* Chấm đỏ nhỏ trên icon sinh nhật khi lớp có em sinh nhật trong 7 ngày tới —
+   cùng ngôn ngữ với `.lb-cham` (tin nhắn mới), chỉ nhỏ hơn và gắn trên icon. */
+.lb-ic .lb-dot{position:absolute; top:1px; right:1px; width:7px; height:7px; border-radius:50%;
+  background:var(--do); box-shadow:0 0 0 1.5px var(--the)}
+.lop-btn.chon .lb-ic .lb-dot{box-shadow:0 0 0 1.5px var(--xanh)}
 .lb-main{flex:1; min-width:0; text-align:left; background:none; border:0;
-  padding:14px 16px; transition:transform .1s ease}
+  padding:11px 14px; transition:transform .1s ease}
 .lb-main:active{transform:scale(.98)}
 .lb-ten{font:800 15px/1.3 var(--font)}
 .lop-btn.chon .lb-ten{color:#fff}
-.lb-meta{font:600 11.5px/1.4 var(--font); color:var(--nhat); margin-top:3px}
-.lop-btn.chon .lb-meta{color:rgba(255,255,255,.82)}
+/* ⭐ v1.32.0 — thay câu mô tả dài cũ: dòng sinh nhật (chỉ hiện khi có, trong
+   7 ngày tới) + đúng MỘT trong ba trạng thái bài tập. */
+.lb-sn{display:flex; align-items:center; gap:4px; font:700 11px/1.4 var(--font); color:var(--do);
+  margin-top:3px}
+.lop-btn.chon .lb-sn{color:#FFE3DC}
+.lb-sn svg{width:11px; height:11px; stroke:currentColor; fill:none; stroke-width:2.4; flex:none}
+.lb-tt{display:flex; align-items:center; gap:5px; font:700 11px/1.4 var(--font); margin-top:3px}
+.lb-tt i{width:6px; height:6px; border-radius:50%; flex:none}
+.lb-tt.giao{color:#1f7a4d} .lb-tt.giao i{background:var(--la)}
+.lb-tt.cho{color:#9A6A12} .lb-tt.cho i{background:var(--vang)}
+.lb-tt.khong{color:var(--nhat)} .lb-tt.khong i{background:var(--nhat)}
+.lop-btn.chon .lb-tt.giao{color:#D3F5E4} .lop-btn.chon .lb-tt.giao i{background:#7FEAB4}
+.lop-btn.chon .lb-tt.cho{color:#FDECC9} .lop-btn.chon .lb-tt.cho i{background:var(--vang)}
+.lop-btn.chon .lb-tt.khong{color:rgba(255,255,255,.78)} .lop-btn.chon .lb-tt.khong i{background:rgba(255,255,255,.6)}
 
 /* Ô chọn "xem như em nào" — để thầy soi trang của TỪNG em, khỏi phải đăng xuất
    rồi gõ mã của em đó. */
@@ -258,23 +291,78 @@ a{color:inherit}
 .thanh i.do{background:var(--do)}
 .tien .so-n{font:800 12px/1 var(--font); min-width:44px; text-align:right}
 
-/* ---------- HAI CỘT: THẺ BÀI CÒN HẠN (trái) + CHAT (phải) — v1.24.0 ---------- */
-/* ⭐ #1 — hai cột KHÔNG còn ép cao bằng nhau: khung chat khoá đúng 2 lần
-   chiều cao một thẻ rồi tự cuộn bên trong, cột thẻ cao tự nhiên theo nội dung. */
+/* ---------- HAI CỘT: THẺ BÀI CÒN HẠN (trái) + CHAT (phải) — v1.32.0 ---------- */
+/* ⭐ v1.32.0 — thầy chốt ĐẢO NGƯỢC quyết định #1 cũ (v1.24.0): cột thẻ nay
+   LUÔN cao đúng bằng khung chat, không tự do theo nội dung nữa. Khoá chiều
+   cao trên CẢ CỘT `.cot-the` (không phải chỉ `.khoi-than`) bằng đúng con số
+   cột chat đang chiếm — đo thật: đầu (59px, có nút 🗄) + thân cố định
+   (--cao-the * 2) + chân (62.5px, có nút gửi) + viền (2px) ≈ +123px. Đặt
+   trên CẢ CỘT vì đầu cột trái ("BÀI CÒN HẠN", không có nút) tự nhiên THẤP
+   HƠN đầu cột phải — khoá riêng `.khoi-than` sẽ cộng dồn sai, hai cột lệch
+   nhau đúng phần chênh đó. Thẻ nhiều thì `.the-list` tự cuộn bên trong. */
 .hai-cot{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:18px; align-items:start}
 .cot-the, .cot-chat{display:flex; flex-direction:column}
-.cot-the .khoi-than{display:flex; flex-direction:column; gap:16px}
-.the-list{display:flex; flex-direction:column; gap:16px}
-/* Chỗ dành sẵn dưới thẻ cho tính năng sau này (vd lượt đăng nhập gần đây). */
-.dang-nhap{padding-top:12px; border-top:1px dashed var(--vien); text-align:center;
-  color:var(--nhat); font-size:12.5px; line-height:1.6}
+.cot-the{height:calc(var(--cao-the) * 2 + 123px)}
+.cot-the .khoi-than{display:flex; flex-direction:column; gap:14px; overflow:hidden;
+  flex:1; min-height:0}
+.the-list{flex:none; display:flex; flex-direction:column; gap:14px; overflow-y:auto; max-height:100%}
+/* ⭐ v1.32.0 — thay "Lượt đăng nhập gần đây — tính năng đang chuẩn bị" (chữ
+   suông) bằng một vùng riêng: bong bóng avatar học sinh vừa đăng nhập bay
+   lơ lửng, ai vào gần hơn thì nổi cao hơn. ⛔ Hệ thống CHƯA ghi lượt đăng
+   nhập ở đâu cả — vùng này tạm hiện câu chờ tới khi có nguồn dữ liệu đó. */
+.dn-zone{flex:1; min-height:56px; display:flex; flex-direction:column}
+.dn-nhan{flex:none; font:800 9.5px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase;
+  color:var(--nhat); margin-bottom:7px}
+.dn-bay{position:relative; flex:1; min-height:0; border:1px dashed var(--vien); border-radius:14px;
+  background:linear-gradient(180deg, var(--xanh-nhat) 0%, transparent 75%); overflow:hidden;
+  display:flex; align-items:center; justify-content:center; text-align:center;
+  padding:10px 16px; color:var(--nhat); font:600 12px/1.5 var(--font)}
+.dn-b{position:absolute; width:32px; height:32px; border-radius:50%; overflow:hidden;
+  box-shadow:0 3px 10px rgba(16,40,36,.18), 0 0 0 2px var(--the);
+  display:flex; align-items:center; justify-content:center; font:800 11px var(--font); color:#fff;
+  animation:dn-bay-nhe 5.6s ease-in-out infinite}
+@keyframes dn-bay-nhe{0%,100%{transform:translate(0,0)} 50%{transform:translate(3px,-9px)}}
+@media (prefers-reduced-motion:reduce){.dn-b{animation:none}}
 .cot-chat .khoi-than{display:flex; flex-direction:column; padding:0}
+
+/* ================================================================
+   ⭐ v1.32.0 — CỘT ICON CHỨC NĂNG riêng cho từng thẻ bài (bên trái, thẻ thu
+   hẹp nhường chỗ): ⚙ Cài đặt thẻ (đổi hạn — tái dùng hộp xem bài có sẵn;
+   ẩn bài / tạm khoá / xoá bài — CHƯA có chỗ lưu trong dữ liệu, hiện "sắp
+   có") · 🏆 Bảng xếp hạng (tắt mở nhanh, y hệt bấm vùng điểm trong thẻ).
+   ================================================================ */
+.the-row{position:relative; display:flex; align-items:stretch; gap:8px}
+.the-rail{flex:none; width:40px; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:9px; background:var(--the); border:1px solid var(--vien);
+  border-radius:14px; box-shadow:var(--bong); padding:9px 0}
+.rail-ic{width:28px; height:28px; border-radius:9px; border:0; background:transparent;
+  color:var(--nhat); display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, color .15s ease, transform .12s ease}
+.rail-ic:hover{background:var(--xanh-nhat); color:var(--xanh); transform:scale(1.06)}
+.rail-ic svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.1;
+  stroke-linecap:round; stroke-linejoin:round}
+.rc-menu{position:fixed; z-index:95; width:228px; background:var(--the);
+  border:1px solid var(--vien); border-radius:14px; box-shadow:0 16px 40px rgba(16,40,36,.22);
+  padding:6px; opacity:0; pointer-events:none; transform:translateY(-6px) scale(.97);
+  transition:opacity .16s var(--em), transform .16s var(--em)}
+.rc-menu.mo{opacity:1; pointer-events:auto; transform:none}
+.rc-menu button{width:100%; display:flex; align-items:center; gap:9px; text-align:left;
+  padding:9px 10px; border-radius:9px; border:0; background:none; color:var(--chu);
+  font:700 12.5px/1.3 var(--font)}
+.rc-menu button:not(:disabled):hover{background:var(--xanh-nhat); color:var(--xanh)}
+.rc-menu button:disabled{color:var(--nhat); cursor:default}
+.rc-menu .sau{margin-left:auto; flex:none; font:700 9px/1 var(--font); letter-spacing:.03em;
+  color:var(--nhat); background:var(--nen); border:1px dashed var(--vien-dam); border-radius:6px;
+  padding:2px 5px}
+.rc-menu .chia{height:1px; background:var(--vien); margin:5px 4px}
+.rc-menu button.nguy:not(:disabled){color:var(--do)}
+.rc-menu button.nguy:not(:disabled):hover{background:var(--do-nhat); color:var(--do)}
 
 /* ================================================================
    THẺ BÀI TẬP — CSS lấy gần như nguyên văn từ lop.html (".the") để
    giống 100% thẻ học sinh thấy ở trang lớp. Chỉ hiện bài CÒN HẠN.
    ================================================================ */
-.the{display:block; width:100%; padding:0; border:0; background:none;
+.the{display:block; flex:1; min-width:0; padding:0; border:0; background:none;
   filter:drop-shadow(0 1px 2px rgba(22,35,42,.08)) drop-shadow(0 8px 20px rgba(22,35,42,.07));
   transition:transform .2s var(--em)}
 .the:hover{transform:translateY(-2px)}
@@ -714,8 +802,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   .khoi-dau .day{display:none}          /* bỏ khoảng đẩy, cho các nút bám sát nhau */
   .chon-em{max-width:none; flex:1}
   .brand .ten{font-size:14px}
-  .top-in{gap:9px}
-  .so-o .n{font-size:23px}
+  .top-in{gap:9px; flex-wrap:wrap; row-gap:8px}
+  /* ⭐ v1.32.0 — màn hẹp: cụm số xuống hàng riêng, chia đều bề ngang thay vì
+     bám theo avatar. */
+  .hd-so-cum{order:3; flex:1 1 100%; justify-content:space-between}
+  .hd-so{flex:1; padding:2px 6px}
+  .hd-so .n{font-size:16px}
 }
 
 /* (Đợt D) khu Học sinh & avatar — hàng: vòng ảnh · tên · trạng thái · nút đổi */
@@ -765,6 +857,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       </div>
     </button>
     <div class="day"></div>
+    <!-- ⭐ v1.32.0 — dải số cũ dời hẳn vào đây (bỏ số lớp/học sinh/em chưa có
+         mã, chỉ giữ 3 số cần dùng ngay) — xem `veDaiSo()`. -->
+    <div class="hd-so-cum" id="hdSo"></div>
     <button class="icon-btn" id="btnMoi" title="Đọc lại kết quả mới nhất từ kho điểm" aria-label="Làm mới">
       <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 5.5V11h-5.5"/></svg>
     </button>
@@ -772,10 +867,6 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 </header>
 
 <main class="wrap">
-
-  <section id="daiSo"></section>
-
-  <div class="vach-nhe" aria-hidden="true"></div>
 
   <section class="lop-grid" id="lopGrid"></section>
 
@@ -788,7 +879,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       </div>
       <div class="khoi-than">
         <div class="the-list" id="theListDs"></div>
-        <div class="dang-nhap">Lượt đăng nhập gần đây — tính năng đang chuẩn bị.</div>
+        <div class="dn-zone">
+          <div class="dn-nhan">ĐĂNG NHẬP GẦN ĐÂY</div>
+          <div class="dn-bay">Chưa ghi lượt đăng nhập — tính năng đang chuẩn bị.</div>
+        </div>
       </div>
     </section>
 
@@ -925,6 +1019,15 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <!-- ⭐ 28/08 — cụm thả cảm xúc (port từ lop.html), dùng chung cho hộp chat GV -->
 <div class="cx-menu" id="cxMenu"></div>
 <div class="cx-ai" id="cxAi"></div>
+
+<!-- ⭐ v1.32.0 — menu ⚙ Cài đặt thẻ (cột icon trái mỗi thẻ bài, xem `.the-rail`) -->
+<div class="rc-menu" id="rcMenu">
+  <button type="button" data-rc="han">🕐 <span>Đổi hạn nộp</span></button>
+  <button type="button" disabled>🙈 <span>Ẩn bài với học sinh</span><span class="sau">sắp có</span></button>
+  <button type="button" disabled>🔒 <span>Tạm khoá — hiện thẻ, không cho mở</span><span class="sau">sắp có</span></button>
+  <div class="chia"></div>
+  <button type="button" class="nguy" disabled>🗑 <span>Xoá bài tập</span><span class="sau">sắp có</span></button>
+</div>
 </div>
 
 <!-- ============ #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK ============
@@ -1090,30 +1193,31 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
 
   // ---------- 1. DẢI SỐ ----------
+  // ⭐ v1.32.0 — thầy chốt bỏ số lớp/học sinh/em chưa có mã, chỉ giữ 3 số cần
+  // dùng ngay và gộp vào thanh đầu trang (xem `#hdSo`). "Lớp chờ bài" là số
+  // MỚI: đếm lớp KHÔNG có bài nào còn hạn — cùng luật còn-hạn với
+  // `dsBaiConHanMoiLop()`, chỉ đổi góc nhìn từ "bài" sang "lớp".
   function veDaiSo() {
-    var soLop = DL.lop.length, soEm = 0, coMa = 0;
-    DL.lop.forEach(function (l) {
-      (l.hocSinh || []).forEach(function (h) {
-        soEm++;
-        if (String(h.ma || '').trim()) coMa++;
-      });
-    });
     var tongBai = 0, dangGiao = 0;
     moiBai(function (b) {
       tongBai++;
       var moc = A.mocHan(b);
       if (moc == null || moc > Date.now()) dangGiao++;
     });
+    var lopChoBai = DL.lop.filter(function (l) {
+      return !A.baiCuaLop(DL, l.maLop).some(function (b) {
+        var moc = A.mocHan(b);
+        return moc == null || moc > Date.now();
+      });
+    }).length;
 
     var o = [
-      { n: soLop, nh: 'Lớp', lop: '' },
-      { n: soEm, nh: 'Học sinh', lop: '' },
       { n: dangGiao, nh: 'Bài đang giao', lop: dangGiao ? 'tot' : '' },
-      { n: tongBai, nh: 'Bài đã đẩy lên web', lop: '' },
-      { n: soEm - coMa, nh: 'Em chưa có mã', lop: (soEm - coMa) ? 'canh' : 'tot' },
+      { n: lopChoBai, nh: 'Lớp chờ bài', lop: lopChoBai ? 'canh' : '' },
+      { n: tongBai, nh: 'Bài đã giao', lop: '' }
     ];
-    $('#daiSo').innerHTML = o.map(function (x) {
-      return '<div class="so-o ' + x.lop + '"><div class="n">' + x.n + '</div>' +
+    $('#hdSo').innerHTML = o.map(function (x) {
+      return '<div class="hd-so ' + x.lop + '"><div class="n">' + x.n + '</div>' +
              '<div class="nh">' + x.nh + '</div></div>';
     }).join('');
   }
@@ -1143,23 +1247,41 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ---------- 3. LỚP + BÀI ----------
   // Số em CHƯA HOÀN THÀNH ít nhất một act của bài còn hạn (hợp NHẤT các bài,
   // không cộng dồn trùng em). Bài chưa đọc xong điểm thì báo "đang đọc kết quả".
-  function chuThieuThat(maLop) {
-    var ds = A.baiCuaLop(DL, maLop).filter(function (b) {
+  // ⭐ v1.32.0 — trạng thái bài tập của một lớp: đúng MỘT trong ba, thay câu
+  // mô tả dài "X học sinh · Y em thiếu bài / đang đọc kết quả…" cũ. Muốn biết
+  // chi tiết ai còn thiếu thì mở thẳng lớp đó (bấm nút lớp).
+  // ⛔ 'khong' cần cờ lớp-level "Không giao bài" — CHƯA có trong dữ liệu thật
+  // (thầy nói sẽ build thẻ đó sau). Đọc `l.khongGiaoBai` phòng sẵn chỗ cắm,
+  // hiện luôn undefined nên mọi lớp thật chỉ rơi vào 'giao'/'cho'.
+  function trangThaiBai(l) {
+    if (l.khongGiaoBai) return 'khong';
+    var conHan = A.baiCuaLop(DL, l.maLop).some(function (b) {
       var moc = A.mocHan(b);
       return moc == null || moc > Date.now();
     });
-    if (!ds.length) return 'không có bài đang mở';
-    var dangDoc = false, thieuSet = {};
-    ds.forEach(function (b) {
-      var t = tinhBai(b, maLop);
-      if (!t.acts.length) return;             // bài viết tay: không đo được
-      if (!t.daDoc) { dangDoc = true; return; }
-      t.thieu.forEach(function (x) { thieuSet[x.ten] = true; });
-    });
-    if (dangDoc) return 'đang đọc kết quả…';
-    var n = Object.keys(thieuSet).length;
-    return n > 0 ? (n + ' em thiếu bài') : 'đủ bài cả lớp';
+    return conHan ? 'giao' : 'cho';
   }
+  var TT_NHAN = { giao: 'Đã giao bài', cho: 'Đang chờ bài', khong: 'Không có bài' };
+
+  // Sinh nhật trong 7 ngày tới CỦA RIÊNG một lớp — dùng chung `conMayNgay()`
+  // với sidebar "Sinh nhật sắp tới" (định nghĩa ở khối CỘT PHẢI phía dưới,
+  // hàm được hoisted nên gọi trước vị trí định nghĩa vẫn an toàn).
+  function sinhNhatTuanCuaLop(l) {
+    var ds = [];
+    (l.hocSinh || []).forEach(function (h) {
+      var con = conMayNgay(h.sinhNhat);
+      if (con !== null && con <= 7) ds.push({ ten: h.ten, con: con });
+    });
+    ds.sort(function (a, b) { return a.con - b.con; });
+    return ds;
+  }
+  function chuSinhNhatDong(ds) {
+    if (!ds.length) return '';
+    if (ds.length > 1) return ds[0].ten + ' +' + (ds.length - 1) + ' bạn khác';
+    return ds[0].ten + (ds[0].con === 0 ? ' · hôm nay' : ' · còn ' + ds[0].con + ' ngày');
+  }
+  var IC_CAKE_NHO = '<svg viewBox="0 0 24 24"><path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/>' +
+    '<path d="M4 20h16"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/><circle cx="12" cy="3.2" r="1"/></svg>';
 
   function veLopGrid() {
     var xep = DL.lop.slice().sort(function (a, b) {
@@ -1169,43 +1291,38 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var mb = db.length ? Math.min.apply(null, db.map(function (m) { return m == null ? Infinity : m; })) : Infinity;
       return ma - mb;
     });
-    // ⭐ #5 — cột icon RIÊNG CHO GV bên trái mỗi thẻ lớp (hạn nộp/thiết lập
-    // lớp/top), tách khỏi nút chọn lớp `.lb-main` để bấm icon không đổi lớp.
+    // ⭐ v1.32.0 — cột icon trái rút còn 3 mục: số học sinh (chỉ xem) · sinh
+    // nhật sắp tới (chấm đỏ nếu có, trong 7 ngày) · thiết lập lớp. Bỏ hẳn
+    // "sửa hạn" (nay ở ⚙ Cài đặt thẻ của từng bài, xem `.the-rail`) và "top
+    // của lớp" (vẫn có trong menu ☰ khi bấm avatar).
     $('#lopGrid').innerHTML = xep.map(function (l) {
       var mL = A.chuAnToan(l.maLop);
+      var sn = sinhNhatTuanCuaLop(l);
+      var tt = trangThaiBai(l);
       return '<div class="lop-btn' + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
         (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
         '<div class="lb-gv">' +
-          '<button class="lb-ic" data-gv-han="' + mL + '" title="Sửa hạn bài trong lớp">' +
-            '<svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2"/><path d="M9 2h6"/></svg></button>' +
+          '<div class="lb-cnt" title="Số học sinh">' +
+            '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg>' +
+            '<b>' + (l.hocSinh || []).length + '</b>' +
+          '</div>' +
+          '<button class="lb-ic" data-gv-sn="' + mL + '" title="Sinh nhật sắp tới">' +
+            (sn.length ? '<span class="lb-dot"></span>' : '') + IC_CAKE_NHO +
+          '</button>' +
           '<button class="lb-ic" data-gv-lop="' + mL + '" title="Thiết lập lớp">' +
-            '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg></button>' +
-          '<button class="lb-ic" data-gv-top="' + mL + '" title="Top của lớp">' +
-            '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 17h5"/></svg></button>' +
+            '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg></button>' +
         '</div>' +
         '<button class="lb-main" data-lop="' + mL + '">' +
           '<div class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</div>' +
-          '<div class="lb-meta">' + (l.hocSinh || []).length + ' học sinh • ' +
-            A.chuAnToan(chuThieuThat(l.maLop)) + '</div>' +
+          (sn.length ? '<div class="lb-sn">' + IC_CAKE_NHO + A.chuAnToan(chuSinhNhatDong(sn)) + '</div>' : '') +
+          '<div class="lb-tt ' + tt + '"><i></i>' + TT_NHAN[tt] + '</div>' +
         '</button>' +
       '</div>';
     }).join('');
   }
 
-  // ⭐ #5 — 3 hành động icon riêng cho GV trên thẻ lớp.
-  function gvSuaHan(maLop) {
-    chonLop(maLop);
-    var ds = A.baiCuaLop(DL, maLop);
-    if (!ds.length) return baoToast('Lớp này chưa có bài nào để sửa hạn.');
-    var conHan = ds.filter(function (b) {
-      var m = A.mocHan(b);
-      return m == null || m > Date.now();
-    }).sort(function (a, b) {
-      var ma = A.mocHan(a), mb = A.mocHan(b);
-      return (ma == null ? Infinity : ma) - (mb == null ? Infinity : mb);
-    });
-    moBaiModal((conHan[0] || ds[0]).id);
-  }
+  // ⭐ v1.32.0 — còn lại MỘT hành động icon riêng cho GV trên thẻ lớp (mở
+  // đúng mục "sinh nhật" hoặc "lớp" trong sidebar).
   function gvMoSidebar(maLop, muc) {
     chonLop(maLop);
     moSb();
@@ -1443,6 +1560,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         veDiemCardThat(t, st) +
         '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
       '</span></button>';
+  }
+
+  // ⭐ v1.32.0 — cột icon chức năng riêng bên trái mỗi thẻ (thẻ thu hẹp
+  // nhường chỗ): ⚙ Cài đặt thẻ · 🏆 Bảng xếp hạng nhanh. Xem `.the-rail`.
+  var IC_GEAR_NHO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/>' +
+    '<path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42' +
+    'M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg>';
+  var IC_CUP_NHO = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/>' +
+    '<path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 17h5"/></svg>';
+  function veTheRow(b) {
+    var id = A.chuAnToan(b.id);
+    return '<div class="the-row">' +
+      '<div class="the-rail">' +
+        '<button class="rail-ic" type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
+        '<button class="rail-ic" type="button" data-rail-xephang="' + id + '" title="Bảng xếp hạng">' + IC_CUP_NHO + '</button>' +
+      '</div>' +
+      veTheCard(b) +
+    '</div>';
   }
 
   // ================================================================
@@ -1690,6 +1825,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
   function dongPop() { $('#popNen').classList.remove('mo'); }
 
+  // ⭐ v1.32.0 — dùng chung cho bấm vùng điểm trong thẻ VÀ icon 🏆 Bảng xếp
+  // hạng ở `.the-rail` (hai lối vào, một hàm).
+  function moPopDiem(id) {
+    var b = A.baiCuaLop(DL, LOP_CHON).filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var t = tinhBai(b, LOP_CHON);
+    if (t.laSp && t.doiSp && t.doiSp.length) moPopDoiSp(b, t);
+    else if (t.acts.length) moPopCaLop(b, t);
+  }
+
   function chuoiGio(ms) {
     var s = Math.floor(ms / 1000);
     var h = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60), g = s % 60;
@@ -1775,7 +1920,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#baiPhu').textContent = ((l && l.tenGoc) || LOP_CHON) +
       (conHan ? (' · ' + ds.length + ' bài còn hạn')
         : (ds.length ? ' · bài gần nhất (đã hết hạn)' : ''));
-    $('#theListDs').innerHTML = ds.length ? ds.map(veTheCard).join('')
+    $('#theListDs').innerHTML = ds.length ? ds.map(veTheRow).join('')
       : '<div class="trong">🎈 Lớp này hết bài — No homework, No fun!</div>';
     nhipDongHo();
     canhNhanO();
@@ -2267,6 +2412,23 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     m.style.top = Math.round(y) + 'px';
   }
   function dongBangCx() { $('#cxMenu').classList.remove('mo'); cxTin = null; }
+
+  // ⭐ v1.32.0 — menu ⚙ Cài đặt thẻ (`#rcMenu`, một menu dùng chung cho mọi
+  // thẻ bài, định vị lại mỗi lần mở — cùng nếp với `moBangCx()` ở trên).
+  var RC_ID = null;
+  function moRcMenu(btn, id) {
+    RC_ID = id;
+    var m = $('#rcMenu');
+    m.classList.add('mo');
+    var r = btn.getBoundingClientRect(), mr = m.getBoundingClientRect();
+    var x = r.right + 8;
+    if (x + mr.width > document.documentElement.clientWidth - 8) x = r.left - mr.width - 8;
+    var y = Math.min(r.top, window.innerHeight - mr.height - 8);
+    m.style.left = Math.round(Math.max(8, x)) + 'px';
+    m.style.top = Math.round(Math.max(8, y)) + 'px';
+  }
+  function dongRcMenu() { $('#rcMenu').classList.remove('mo'); RC_ID = null; }
+
   $('#cxMenu').onclick = function (e) {
     var b = e.target.closest('button');
     if (!b || cxTin === null) return;
@@ -2501,12 +2663,26 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var lopBtn = e.target.closest('.lb-main[data-lop]');
       if (lopBtn) return void chonLop(lopBtn.dataset.lop);
 
-      var gvHan = e.target.closest('[data-gv-han]');
-      if (gvHan) return void gvSuaHan(gvHan.dataset.gvHan);
+      var gvSn = e.target.closest('[data-gv-sn]');
+      if (gvSn) return void gvMoSidebar(gvSn.dataset.gvSn, 'sinhnhat');
       var gvLop = e.target.closest('[data-gv-lop]');
       if (gvLop) return void gvMoSidebar(gvLop.dataset.gvLop, 'lop');
-      var gvTop = e.target.closest('[data-gv-top]');
-      if (gvTop) return void gvMoSidebar(gvTop.dataset.gvTop, 'top');
+
+      // ⭐ v1.32.0 — cột icon riêng cho từng thẻ bài (`.the-rail`): ⚙ mở menu
+      // Cài đặt thẻ (đổi hạn — nay dùng chung `moBaiModal`; ẩn bài/tạm khoá/
+      // xoá bài "sắp có"), 🏆 mở nhanh bảng xếp hạng (dùng chung `moPopDiem`
+      // với bấm vùng điểm trong thẻ).
+      var railCd = e.target.closest('[data-rail-caidat]');
+      if (railCd) return void moRcMenu(railCd, railCd.dataset.railCaidat);
+      var railXh = e.target.closest('[data-rail-xephang]');
+      if (railXh) return void moPopDiem(railXh.dataset.railXephang);
+      var rcHan = e.target.closest('[data-rc="han"]');
+      if (rcHan) {
+        var idHan = RC_ID;
+        dongRcMenu();
+        if (idHan) moBaiModal(idHan);
+        return;
+      }
 
       // ⭐ #4 — BA vùng bấm TÁCH RIÊNG trên thẻ bài (kiểm TRƯỚC .the[data-id]
       // chung, vì cả ba đều NẰM TRONG nó): tam giác xanh mở trang lớp bằng
@@ -2518,15 +2694,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         return;
       }
       var diemBtn = e.target.closest('.the[data-id] .the-diem');
-      if (diemBtn) {
-        var idDiem = diemBtn.closest('.the[data-id]').dataset.id;
-        var bDiem = A.baiCuaLop(DL, LOP_CHON).filter(function (x) { return x.id === idDiem; })[0];
-        if (!bDiem) return;
-        var tDiem = tinhBai(bDiem, LOP_CHON);
-        if (tDiem.laSp && tDiem.doiSp && tDiem.doiSp.length) moPopDoiSp(bDiem, tDiem);
-        else if (tDiem.acts.length) moPopCaLop(bDiem, tDiem);
-        return;
-      }
+      if (diemBtn) return void moPopDiem(diemBtn.closest('.the[data-id]').dataset.id);
 
       var theBtn = e.target.closest('.the[data-id]');
       if (theBtn) {
@@ -2660,6 +2828,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if ($('#cxAi').classList.contains('mo') &&
         !e.target.closest('#cxAi') && !e.target.closest('.nut-cx')) dongPopCx();
       if (!e.target.closest('.xoa-cum')) dongXoaCum(null);
+      if ($('#rcMenu').classList.contains('mo') &&
+        !e.target.closest('#rcMenu') && !e.target.closest('[data-rail-caidat]')) dongRcMenu();
     });
     $('#chatO').oninput = noOChat;
     /* Enter = gửi · Shift+Enter = xuống dòng. */
@@ -2686,6 +2856,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       dongBangCx();
       dongPopCx();
       dongXoaCum(null);
+      dongRcMenu();
     });
 
     // ---------- SIDEBAR ----------

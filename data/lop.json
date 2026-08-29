@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-08-28 22:20:22",
+  "capNhat": "2026-08-29 18:08:58",
   "nguon": "myStudent",
   "lop": [
     {
@@ -564,7 +564,7 @@
         },
         {
           "ten": "LỘC",
-          "ma": "",
+          "ma": "PHAMQUANGLOC12022012",
           "sinhNhat": ""
         },
         {
@@ -574,7 +574,7 @@
         },
         {
           "ten": "NGỌC NAM",
-          "ma": "",
+          "ma": "NGUYENNGOCNAM15072012",
           "sinhNhat": ""
         },
         {
@@ -600,22 +600,22 @@
       "hocSinh": [
         {
           "ten": "BENTLY",
-          "ma": "BINH",
+          "ma": "PHAMHAIBINH19102011",
           "sinhNhat": ""
         },
         {
           "ten": "BÌNH MINH",
-          "ma": "BMINH",
+          "ma": "PHAMBINHMINH18122011",
           "sinhNhat": ""
         },
         {
           "ten": "DŨNG",
-          "ma": "DUNG",
+          "ma": "TRANANHDUNG23072011",
           "sinhNhat": ""
         },
         {
           "ten": "DUY MINH",
-          "ma": "DMINH",
+          "ma": "NGUYENDUYMINH09122011",
           "sinhNhat": ""
         },
         {
@@ -625,12 +625,12 @@
         },
         {
           "ten": "HÀ",
-          "ma": "HA",
+          "ma": "NGUYENTHINGANHA17032011",
           "sinhNhat": ""
         },
         {
           "ten": "HÂN",
-          "ma": "HAN",
+          "ma": "NGUYENDOBAOHAN31052011",
           "sinhNhat": ""
         },
         {
@@ -640,27 +640,27 @@
         },
         {
           "ten": "NAM PHONG",
-          "ma": "PHONG",
+          "ma": "NGUYNAMPHONG23072011",
           "sinhNhat": ""
         },
         {
           "ten": "NHÃ PHƯƠNG",
-          "ma": "PHUONG",
+          "ma": "NGONHAPHUONG21052011",
           "sinhNhat": ""
         },
         {
           "ten": "THANH MAI",
-          "ma": "MAI",
+          "ma": "PHAMTHITHANHMAI02042011",
           "sinhNhat": ""
         },
         {
           "ten": "THẢO",
-          "ma": "THAO",
+          "ma": "DOPHUONGTHAO17012011",
           "sinhNhat": ""
         },
         {
           "ten": "VY",
-          "ma": "VY",
+          "ma": "TRANHAVY24012011",
           "sinhNhat": ""
         }
       ]

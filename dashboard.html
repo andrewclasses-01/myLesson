@@ -7,7 +7,7 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.33.2 (30/08/2026, + HOẠT ĐỘNG GẦN ĐÂY + vá giao diện)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.34.0 (30/08/2026, bỏ thẻ công cụ rời + xếp hạng chi tiết)
 
      Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
      Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
@@ -16,6 +16,26 @@
      người xem, và `lop.json`/`bai.json` vốn công khai. Nó chỉ chặn người tình cờ
      mở địa chỉ này. Đừng đưa thêm thứ gì nhạy cảm hơn lên đây (⛔ nhất là NĂM
      SINH của học sinh — xem `xuatLop()` bên app).
+
+     ⭐⭐ v1.34.0 — BỎ THẺ CÔNG CỤ RỜI + XẾP HẠNG CHI TIẾT (thầy chốt qua bản
+     xem thử Artifact, phát hiện + vá 1 lỗi HTML thật trong lúc xem thử):
+       · Thẻ bài về lại ĐÚNG SIZE CŨ (không còn thẻ công cụ trắng rời đứng
+         cạnh). ⚙ Cài đặt thẻ + 🏆 Bảng xếp hạng dọn vào MỘT DẢI HẸP ngay
+         trong khu vực điểm (`.diem-ic`), ngăn với thanh tiến trình bằng vạch
+         đứt mảnh (`.diem-vach`) — họ bẫy z-index #1.33.1/#1.33.2 biến mất
+         theo vì không còn hai khối tách rời chồng lên nhau nữa.
+       · ⛔ Thẻ bài đổi từ `<button>` sang `<div role="button" tabindex="0">`:
+         HTML KHÔNG cho nút lồng trong nút — ⚙/🏆 là `<button>` thật nằm bên
+         trong, nếu thẻ ngoài vẫn là `<button>` trình duyệt tự tách vỡ cấu
+         trúc (thanh tiến trình bay ra ngoài thẻ) — bắt được ngay ở bản xem
+         thử nhờ thầy chụp ảnh báo "thẻ bị sai", không phải đợi lên web thật.
+         Bù phím Enter/Space (div không tự có như button).
+       · 🏆 Bảng xếp hạng nay hiện XẾP HẠNG CHI TIẾT TỪNG ACT (điểm % thật
+         từng WORDS/QUIZ/PRONUNC…) — KHÁC bấm vùng điểm (vẫn bảng gộp "xong
+         cả bài/còn thiếu" như cũ). Xem `moPopChiTietAct()`. SP CHECK không
+         đổi (không có khái niệm "act", trophy vẫn dùng bảng team có sẵn).
+       · ⛔ Chỉ đổi `dashboard.html` — thẻ bài bên `lop.html` (học sinh xem)
+         có CSS/HTML riêng, không đụng gì.
 
      ⭐ v1.32.0 — 3 VIỆC DASHBOARD (thầy chốt qua bản xem thử Artifact trước):
        · Thanh đầu trang: dải số cũ (5 số) dời hẳn vào hàng avatar, chỉ còn 3
@@ -214,7 +234,7 @@ a{color:inherit}
 .lop-btn.chon .lb-gv{border-right-color:rgba(255,255,255,.25); background:rgba(255,255,255,.08)}
 /* ⭐ v1.32.0 — số học sinh: chỉ để XEM (không phải nút bấm), thay chỗ icon
    "sửa hạn" đã bỏ khỏi cột này (sửa hạn nay nằm trong ⚙ Cài đặt thẻ của
-   từng bài — xem `.the-rail`). */
+   từng bài — xem `.diem-ic`). */
 .lb-cnt{display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--nhat)}
 .lop-btn.chon .lb-cnt{color:rgba(255,255,255,.78)}
 .lb-cnt svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.1}
@@ -372,30 +392,19 @@ a{color:inherit}
 .cot-chat .khoi-than{display:flex; flex-direction:column; padding:0}
 
 /* ================================================================
-   ⭐ v1.32.0 — CỘT ICON CHỨC NĂNG riêng cho từng thẻ bài (bên trái, thẻ thu
-   hẹp nhường chỗ): ⚙ Cài đặt thẻ (đổi hạn — tái dùng hộp xem bài có sẵn;
-   ẩn bài / tạm khoá / xoá bài — CHƯA có chỗ lưu trong dữ liệu, hiện "sắp
-   có") · 🏆 Bảng xếp hạng (tắt mở nhanh, y hệt bấm vùng điểm trong thẻ).
-   ================================================================ */
-.the-row{position:relative; display:flex; align-items:stretch; gap:8px}
-/* ⭐⭐ v1.33.2 — bản vá v1.33.1 (chỉ `position:relative`) KHÔNG đủ: thầy vẫn
-   thấy quầng sáng đè lên thanh công cụ. Lý do thật — mọi CON TRỰC TIẾP của
-   flex container (`.the-row` là `display:flex`) đã được đặc tả Flexbox coi
-   như "có định vị" khi xếp lớp vẽ, KỂ CẢ KHÔNG khai `position` gì cả; hai
-   phần tử z-index:auto ngang nhau thì xếp theo THỨ TỰ DOM — `.the-rail` đứng
-   TRƯỚC `.the` trong DOM nên vẫn vẽ TRƯỚC (ở dưới) dù có `position:relative`.
-   👉 Phải cho `.the-rail` một `z-index` THẬT (số hơn 0) mới thắng được `.the`
-   (z-index:auto ~ 0). Bài học: luật xếp lớp "tĩnh vẽ trước, có định vị vẽ
-   sau" chỉ đúng NGOÀI flex container — bên trong flex thì luôn so z-index. */
-.the-rail{position:relative; z-index:2; flex:none; width:40px; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; gap:9px; background:var(--the); border:1px solid var(--vien);
-  border-radius:14px; box-shadow:var(--bong); padding:9px 0}
-.rail-ic{width:28px; height:28px; border-radius:9px; border:0; background:transparent;
-  color:var(--nhat); display:flex; align-items:center; justify-content:center;
-  transition:background .15s ease, color .15s ease, transform .12s ease}
-.rail-ic:hover{background:var(--xanh-nhat); color:var(--xanh); transform:scale(1.06)}
-.rail-ic svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.1;
-  stroke-linecap:round; stroke-linejoin:round}
+   ⭐⭐⭐ v1.34.0 — thầy chốt qua bản xem thử: BỎ HẲN thẻ công cụ rời (cả họ
+   bẫy z-index #1.33.1/#1.33.2 ở trên biến mất theo — không còn hai khối
+   tách rời chồng lên nhau thì không còn gì để xếp lớp sai nữa). Thẻ bài về
+   lại ĐÚNG SIZE CŨ; ⚙ Cài đặt thẻ + 🏆 Bảng xếp hạng dọn vào MỘT DẢI HẸP bên
+   trong khu vực điểm của chính thẻ (`.diem-ic`), ngăn với các thanh tiến
+   trình bằng vạch đứt mảnh (`.diem-vach`) — xem `.the-diem` bên dưới.
+   ⛔ Thẻ bài đổi từ `<button>` sang `<div role="button">`: HTML KHÔNG cho
+   phép nút lồng trong nút — ⚙/🏆 nay là `<button>` THẬT nằm bên trong, nếu
+   thẻ ngoài vẫn là `<button>` thì trình duyệt tự tách vỡ cấu trúc (đã vấp
+   thật ở bản xem thử, xem GHI CHU DU AN.md).
+   ⛔ Chỉ đổi dashboard.html — thẻ bài bên `lop.html` (học sinh xem) có bản
+   CSS/HTML RIÊNG (mỗi trang một file, không dùng chung stylesheet), không
+   đụng gì tới thay đổi này. */
 .rc-menu{position:fixed; z-index:95; width:228px; background:var(--the);
   border:1px solid var(--vien); border-radius:14px; box-shadow:0 16px 40px rgba(16,40,36,.22);
   padding:6px; opacity:0; pointer-events:none; transform:translateY(-6px) scale(.97);
@@ -417,9 +426,13 @@ a{color:inherit}
    THẺ BÀI TẬP — CSS lấy gần như nguyên văn từ lop.html (".the") để
    giống 100% thẻ học sinh thấy ở trang lớp. Chỉ hiện bài CÒN HẠN.
    ================================================================ */
-.the{display:block; flex:1; min-width:0; padding:0; border:0; background:none;
+/* ⭐ v1.34.0 — về lại `width:100%` (bản gốc, KHÔNG còn `flex:1` — đó là dư âm
+   của thẻ công cụ rời `.the-row`/`.the-rail` đã bỏ hẳn); `.the` nay là DIV
+   (không phải BUTTON) vì chứa `<button>` thật bên trong `.diem-ic`. */
+.the{display:block; width:100%; cursor:pointer; padding:0; border:0; background:none;
   filter:drop-shadow(0 1px 2px rgba(22,35,42,.08)) drop-shadow(0 8px 20px rgba(22,35,42,.07));
   transition:transform .2s var(--em)}
+.the:focus-visible{outline:2px solid var(--xanh); outline-offset:3px; border-radius:12px}
 .the:hover{transform:translateY(-2px)}
 .the-in{--mui:64px; position:relative; display:flex; flex-direction:column;
   align-items:stretch; height:var(--cao-the); background:#fff; border-radius:12px 0 0 12px;
@@ -475,9 +488,22 @@ a{color:inherit}
 .t-han.da-xong{background:#EFFAF3; border-color:#C9EBD6}
 .t-han.da-xong .han-dong{color:#2C7A50}
 .t-han.da-xong .han-vach{border-color:#CFEBDA}
+/* ⭐ v1.34.0 — the-diem nay là HÀNG NGANG: dải icon (⚙/🏆) · vạch đứt mảnh ·
+   các thanh tiến trình — thay vì chỉ có các thanh tiến trình đứng riêng. */
 .the-diem{flex:1; min-height:0; width:100%; overflow:hidden; border-top:1.5px dashed var(--line);
-  padding:9px 14px 12px 20px; display:flex; flex-direction:column; justify-content:center; gap:5px}
-.the-diem.chi-tay{justify-content:center; text-align:center; color:var(--mo); font-size:12px}
+  display:flex; align-items:stretch}
+.diem-ic{flex:none; width:38px; display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:9px}
+.diem-ic button{width:26px; height:26px; border-radius:9px; border:0; background:transparent;
+  color:var(--nhat); display:flex; align-items:center; justify-content:center;
+  transition:background .15s ease, color .15s ease, transform .12s ease}
+.diem-ic button:hover{background:rgba(14,124,110,.1); color:var(--xanh); transform:scale(1.08)}
+.diem-ic button svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.1;
+  stroke-linecap:round; stroke-linejoin:round}
+.diem-vach{flex:none; width:0; border-left:1.5px dashed var(--line); margin:9px 0}
+.diem-rows{flex:1; min-width:0; overflow:hidden; padding:9px 14px 12px 12px;
+  display:flex; flex-direction:column; justify-content:center; gap:5px}
+.the-diem.chi-tay .diem-rows{justify-content:center; text-align:center; color:var(--mo); font-size:12px}
 .td-dong{display:grid;
   grid-template-columns:minmax(0,var(--cot-ten,112px)) minmax(56px,1fr) 44px 11px;
   align-items:center; gap:8px}
@@ -516,9 +542,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .ds-thieu .so{min-width:16px; height:13px; padding:0 4px; border-radius:5px;
   background:#FBE4E4; color:#C0484C; font-size:9.5px; font-weight:800;
   display:grid; place-items:center}
-.the-diem.n3{padding-top:8px; padding-bottom:10px}
-.the-diem.n4{padding-top:5px; padding-bottom:6px}
-.the-diem.n4:not(.co-thieu){gap:3px}
+.the-diem.n3 .diem-rows{padding-top:8px; padding-bottom:10px}
+.the-diem.n4 .diem-rows{padding-top:5px; padding-bottom:6px; gap:3px}
 .the-diem.co-thieu.n4 .khoi-thanh{gap:3px}
 
 /* ---- SP CHECK: một dòng mỗi TEAM thay dòng chung ---- */
@@ -1075,7 +1100,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="cx-menu" id="cxMenu"></div>
 <div class="cx-ai" id="cxAi"></div>
 
-<!-- ⭐ v1.32.0 — menu ⚙ Cài đặt thẻ (cột icon trái mỗi thẻ bài, xem `.the-rail`) -->
+<!-- ⭐ v1.34.0 — menu ⚙ Cài đặt thẻ (dải icon trong khu vực điểm mỗi thẻ bài, xem `.diem-ic`) -->
 <div class="rc-menu" id="rcMenu">
   <button type="button" data-rc="han">🕐 <span>Đổi hạn nộp</span></button>
   <button type="button" disabled>🙈 <span>Ẩn bài với học sinh</span><span class="sau">sắp có</span></button>
@@ -1348,7 +1373,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
     // ⭐ v1.32.0 — cột icon trái rút còn 3 mục: số học sinh (chỉ xem) · sinh
     // nhật sắp tới (chấm đỏ nếu có, trong 7 ngày) · thiết lập lớp. Bỏ hẳn
-    // "sửa hạn" (nay ở ⚙ Cài đặt thẻ của từng bài, xem `.the-rail`) và "top
+    // "sửa hạn" (nay ở ⚙ Cài đặt thẻ của từng bài, xem `.diem-ic`) và "top
     // của lớp" (vẫn có trong menu ☰ khi bấm avatar).
     $('#lopGrid').innerHTML = xep.map(function (l) {
       var mL = A.chuAnToan(l.maLop);
@@ -1557,18 +1582,21 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     '</span>';
   }
 
+  // ⭐ v1.34.0 — trả về { cls, html } thay vì cả khối `<span class="the-diem">`:
+  // `cls` gắn lên `.the-diem` (chi-tay/n{N}/doi{N}), `html` là RUỘT đặt vào
+  // `.diem-rows` — vỏ ngoài (dải icon + vạch) nay do `veTheCard()` dựng CHUNG
+  // cho mọi trạng thái, khỏi lặp lại ở từng nhánh.
   function veDiemCardThat(t, st) {
     // ⭐ #2 — thẻ SPEAKING CHECK: MỘT DÒNG MỖI TEAM thay dòng chung, y hệt
     // trang lớp. Chưa đọc xong Firestore thì báo hiền, không phải lỗi.
     if (t.laSp) {
       if (t.doiSp && t.doiSp.length) return veDoiSpKhoi(t);
       // ⭐ v1.29.0 — có câu giải thích thì nói ra, đừng để "đang đọc" chạy vĩnh viễn.
-      return '<span class="the-diem chi-tay">' +
-        A.chuAnToan(t.loiSp || 'Đang đọc dữ liệu speaking…') + '</span>';
+      return { cls: 'chi-tay', html: A.chuAnToan(t.loiSp || 'Đang đọc dữ liệu speaking…') };
     }
     var acts = t.acts;
     if (!acts.length) {
-      return '<span class="the-diem chi-tay">Bài này không có game AWord nào.</span>';
+      return { cls: 'chi-tay', html: 'Bài này không có game AWord nào.' };
     }
     var batDo = st.tt === 'gap';
     // ⭐ 28/08 — nhãn RÚT GỌN y hệt lop.html (A.tenO cờ `true`: "WORD PRACTICE 1"
@@ -1589,8 +1617,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
       '</span>';
     }).join('');
-    return '<span class="the-diem n' + acts.length + '">' + thanh + '</span>';
+    return { cls: 'n' + acts.length, html: thanh };
   }
+
+  // ⭐ v1.34.0 — dải icon riêng cho từng thẻ bài, nay nằm NGAY TRONG khu vực
+  // điểm (thẻ về lại đúng size cũ, không còn thẻ công cụ rời — xem khối CSS
+  // "v1.34.0" phía trên): ⚙ Cài đặt thẻ (đổi hạn — tái dùng hộp xem bài có
+  // sẵn; ẩn bài / tạm khoá / xoá bài — CHƯA có chỗ lưu trong dữ liệu, hiện
+  // "sắp có") · 🏆 Bảng xếp hạng CHI TIẾT TỪNG ACT (khác bấm vùng điểm —
+  // xem `moPopChiTietAct()`).
+  var IC_GEAR_NHO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/>' +
+    '<path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42' +
+    'M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg>';
+  var IC_CUP_NHO = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/>' +
+    '<path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 17h5"/></svg>';
 
   function veTheCard(b) {
     var t = tinhBai(b, LOP_CHON);
@@ -1602,7 +1642,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     else if (st.tt === '24h') { lopThem = ' gio-vang'; lopNen = 'tt-vang'; }
     else { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
     var ten = A.tenBai(b);
-    return '<button class="the' + lopThem + '" type="button" data-id="' + A.chuAnToan(b.id) + '">' +
+    var id = A.chuAnToan(b.id);
+    var diem = veDiemCardThat(t, st);
+    // ⛔ DIV, không phải BUTTON: ⚙/🏆 bên trong là <button> thật, HTML không
+    // cho nút lồng trong nút (đã vấp thật ở bản xem thử — xem GHI CHU DU AN.md).
+    return '<div class="the' + lopThem + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
           '<span class="t-chu">' +
@@ -1612,27 +1656,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           '</span>' +
           veHanCard(b, moc, st) +
         '</span>' +
-        veDiemCardThat(t, st) +
+        '<span class="the-diem ' + diem.cls + '">' +
+          '<span class="diem-ic">' +
+            '<button type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
+            '<button type="button" data-rail-xephang="' + id + '" title="Bảng xếp hạng">' + IC_CUP_NHO + '</button>' +
+          '</span>' +
+          '<span class="diem-vach"></span>' +
+          '<span class="diem-rows">' + diem.html + '</span>' +
+        '</span>' +
         '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
-      '</span></button>';
-  }
-
-  // ⭐ v1.32.0 — cột icon chức năng riêng bên trái mỗi thẻ (thẻ thu hẹp
-  // nhường chỗ): ⚙ Cài đặt thẻ · 🏆 Bảng xếp hạng nhanh. Xem `.the-rail`.
-  var IC_GEAR_NHO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/>' +
-    '<path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42' +
-    'M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg>';
-  var IC_CUP_NHO = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/>' +
-    '<path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 17h5"/></svg>';
-  function veTheRow(b) {
-    var id = A.chuAnToan(b.id);
-    return '<div class="the-row">' +
-      '<div class="the-rail">' +
-        '<button class="rail-ic" type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
-        '<button class="rail-ic" type="button" data-rail-xephang="' + id + '" title="Bảng xếp hạng">' + IC_CUP_NHO + '</button>' +
-      '</div>' +
-      veTheCard(b) +
-    '</div>';
+      '</span></div>';
   }
 
   // ================================================================
@@ -1771,8 +1804,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         '<span class="doi-so ' + d.mau + '">' + d.tong + '</span>' +
       '</span>';
     }).join('');
-    var lopSo = ' doi' + Math.min(Math.max(doiSp.length, 2), 5);
-    return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
+    var lopSo = 'doi' + Math.min(Math.max(doiSp.length, 2), 5);
+    return { cls: lopSo, html: thanh };
   }
 
   // ⭐ v1.29.0 — ĐỔI MÃ LỖI KHO RA TIẾNG NGƯỜI.
@@ -1880,8 +1913,46 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
   function dongPop() { $('#popNen').classList.remove('mo'); }
 
-  // ⭐ v1.32.0 — dùng chung cho bấm vùng điểm trong thẻ VÀ icon 🏆 Bảng xếp
-  // hạng ở `.the-rail` (hai lối vào, một hàm).
+  // ⭐ v1.34.0 — 🏆 Bảng xếp hạng (icon riêng trong thẻ) hiện XẾP HẠNG CHI
+  // TIẾT TỪNG ACT (điểm % thật, ai đứng đầu ai đứng cuối MỖI act) — khác hẳn
+  // bấm vùng điểm (`moPopDiem` bên dưới, vẫn là bảng gộp CŨ "xong cả bài /
+  // còn thiếu"). Dùng chung khung `.doi-vach`/`.hs-dong` đã có sẵn từ
+  // `moPopDoiSp` — mỗi act một mục, y hệt mỗi team một mục.
+  // ⛔ SP CHECK không có "act" theo nghĩa này (nộp qua kho `tongLoi` khác
+  // hẳn) — trophy của thẻ SP CHECK vẫn dùng `moPopDoiSp` như trước, không đổi.
+  function moPopChiTietAct(b, t) {
+    $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
+    if (!t.acts.length) {
+      $('#popDs').innerHTML = '<div class="trong">Bài này không có game AWord nào để xếp hạng.</div>';
+      $('#popNen').classList.add('mo');
+      return;
+    }
+    $('#popDs').innerHTML = t.acts.map(function (a) {
+      var ds = (DIEM[a.ma] || []).slice().sort(function (x, y) {
+        if (y.diem !== x.diem) return y.diem - x.diem;
+        return x.giay - y.giay;
+      });
+      var vach = '<span class="doi-vach"><span class="line"></span>' +
+        '<span class="lb">' + A.chuAnToan(A.tenO(a.ten, true)) +
+          '<span class="tong">' + ds.length + '/' + t.siSo + ' đã làm</span></span>' +
+        '<span class="line"></span></span>';
+      var hang = ds.length
+        ? ds.map(function (e, i) {
+            return '<span class="hs-dong">' +
+              '<span class="hs-hang">' + (i + 1) + '</span>' +
+              '<span class="hs-ten">' + A.chuAnToan(e.ten) + '</span>' +
+              '<span class="hs-so">' + e.diem + '%</span>' +
+            '</span>';
+          }).join('')
+        : '<div class="trong" style="padding:6px 9px">Chưa em nào làm.</div>';
+      return vach + hang;
+    }).join('');
+    $('#popNen').classList.add('mo');
+  }
+
+  // ⭐ v1.32.0 — bấm vùng điểm (thanh tiến trình) trong thẻ: bảng gộp CẢ BÀI
+  // (xong hết mọi act / còn thiếu act nào đó) — KHÔNG còn dùng chung với
+  // icon 🏆 nữa từ v1.34.0 (xem `moPopChiTietAct` ở trên).
   function moPopDiem(id) {
     var b = A.baiCuaLop(DL, LOP_CHON).filter(function (x) { return x.id === id; })[0];
     if (!b) return;
@@ -1975,7 +2046,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#baiPhu').textContent = ((l && l.tenGoc) || LOP_CHON) +
       (conHan ? (' · ' + ds.length + ' bài còn hạn')
         : (ds.length ? ' · bài gần nhất (đã hết hạn)' : ''));
-    $('#theListDs').innerHTML = ds.length ? ds.map(veTheRow).join('')
+    $('#theListDs').innerHTML = ds.length ? ds.map(veTheCard).join('')
       : '<div class="trong">🎈 Lớp này hết bài — No homework, No fun!</div>';
     nhipDongHo();
     canhNhanO();
@@ -2808,14 +2879,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var gvLop = e.target.closest('[data-gv-lop]');
       if (gvLop) return void gvMoSidebar(gvLop.dataset.gvLop, 'lop');
 
-      // ⭐ v1.32.0 — cột icon riêng cho từng thẻ bài (`.the-rail`): ⚙ mở menu
-      // Cài đặt thẻ (đổi hạn — nay dùng chung `moBaiModal`; ẩn bài/tạm khoá/
-      // xoá bài "sắp có"), 🏆 mở nhanh bảng xếp hạng (dùng chung `moPopDiem`
-      // với bấm vùng điểm trong thẻ).
+      // ⭐ v1.34.0 — dải icon riêng cho từng thẻ bài (`.diem-ic`, trong khu
+      // vực điểm): ⚙ mở menu Cài đặt thẻ (đổi hạn — dùng chung `moBaiModal`;
+      // ẩn bài/tạm khoá/xoá bài "sắp có"), 🏆 mở BẢNG XẾP HẠNG CHI TIẾT TỪNG
+      // ACT (`moPopChiTietAct` — KHÁC bấm vùng điểm, xem hàm đó).
       var railCd = e.target.closest('[data-rail-caidat]');
       if (railCd) return void moRcMenu(railCd, railCd.dataset.railCaidat);
       var railXh = e.target.closest('[data-rail-xephang]');
-      if (railXh) return void moPopDiem(railXh.dataset.railXephang);
+      if (railXh) {
+        var idXh = railXh.dataset.railXephang;
+        var bXh = A.baiCuaLop(DL, LOP_CHON).filter(function (x) { return x.id === idXh; })[0];
+        if (!bXh) return;
+        var tXh = tinhBai(bXh, LOP_CHON);
+        // ⭐ v1.34.0 — SP CHECK vẫn dùng bảng team chi tiết có sẵn; bài
+        // thường thì trophy hiện XẾP HẠNG TỪNG ACT (khác bấm vùng điểm).
+        if (tXh.laSp && tXh.doiSp && tXh.doiSp.length) moPopDoiSp(bXh, tXh);
+        else moPopChiTietAct(bXh, tXh);
+        return;
+      }
       var rcHan = e.target.closest('[data-rc="han"]');
       if (rcHan) {
         var idHan = RC_ID;
@@ -2997,6 +3078,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       dongPopCx();
       dongXoaCum(null);
       dongRcMenu();
+    });
+
+    // ⭐ v1.34.0 — `.the[data-id]` đổi từ <button> sang <div role="button">
+    // (bắt buộc: ⚙/🏆 bên trong là <button> thật, HTML không cho nút lồng
+    // trong nút). <button> tự có phím Enter/Space kích hoạt, <div> thì
+    // không — bù bằng tay để giữ đúng khả năng dùng bàn phím. Chỉ bắt khi
+    // phím bấm lúc ĐANG FOCUS ĐÚNG vào thẻ (không phải một nút con bên
+    // trong — nút con tự lo phím của nó).
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'Enter' && e.key !== ' ') return;
+      var el = e.target.closest('.the[data-id]');
+      if (!el || e.target !== el) return;
+      e.preventDefault();
+      el.click();
     });
 
     // ---------- SIDEBAR ----------

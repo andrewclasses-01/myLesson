@@ -1327,11 +1327,18 @@
       ctx.textAlign = 'right'; ctx.textBaseline = 'top';
       ctx.fillText('HI ' + String(G.ky).padStart(4, '0') + '   ' +
                    String(Math.floor(G.diem)).padStart(4, '0'), W - 6, 5);
+      // ⭐ v1.50.0 — thua thì hiện ĐIỂM ra giữa (thầy chốt); đạt kỷ lục thì số
+      // điểm đổi sang CAM. Kỷ lục vẫn chỉ nằm trên máy đó (chữ `HI` góc phải) —
+      // thầy chốt BỎ phần lưu tên và nút SAVE của bản phác thảo đầu.
       if (G.thua) {
-        ctx.fillStyle = '#54706B';
-        ctx.font = '800 11px Montserrat, sans-serif';
+        var d = Math.floor(G.diem);
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('TAP TO PLAY AGAIN', W / 2, H / 2);   // ⭐ v1.49.0 — chữ trong game đều tiếng Anh
+        ctx.fillStyle = (d > 0 && d >= G.ky) ? '#E07A12' : '#54706B';
+        ctx.font = '800 19px Montserrat, sans-serif';
+        ctx.fillText('SCORE ' + String(d).padStart(4, '0'), W / 2, H / 2 - 9);
+        ctx.fillStyle = '#93A5A1';
+        ctx.font = '800 10px Montserrat, sans-serif';
+        ctx.fillText('TAP TO PLAY AGAIN', W / 2, H / 2 + 11);
       }
     }
 
@@ -1393,10 +1400,11 @@
   var IC_CHOI = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>';
   var IC_VE = '<svg viewBox="0 0 24 24"><path d="M17 4.5v15L4 12z"/></svg>';
 
-  // ⭐ v1.49.0 — đầu thẻ BA DÒNG SÁT NHAU (thầy chốt 02/09): chữ chính · nhãn
-  // nhỏ · ĐỒNG HỒ nằm đúng tâm thẻ. Trước đó nhãn và đồng hồ chung một hàng nên
-  // đồng hồ bị đẩy lệch khỏi tâm.
-  // `themHtml` = chỗ cắm thêm của riêng dashboard (nút ⚙ cài đặt thẻ).
+  // ⭐ v1.50.0 — nhãn và đồng hồ VỀ LẠI CÙNG MỘT HÀNG (thầy chốt), nhưng nay hai
+  // chữ BẰNG CỠ NHAU nên cụm tự cân — không còn cảnh đồng hồ bị đẩy lệch khỏi
+  // tâm như bản v1.48 (bản đó nhãn nhỏ, đồng hồ to gấp đôi).
+  // `themHtml` = chỗ cắm của riêng dashboard (dải ⚙), nay nằm TRONG vùng sân,
+  // bên trái và có vạch ngăn — đúng chỗ `.diem-ic` của thẻ bài thường.
   function theNghiHtml(moc, themHtml) {
     return '<div class="the nghi" data-nghi="1">' +
       '<span class="the-in">' +
@@ -1405,13 +1413,16 @@
             '<img class="nghi-ava" src="assets/avatar-tron.jpg" alt="">' +
             '<span class="nghi-chu">NO HOMEWORK, ENJOY YOUR DAY!</span>' +
           '</span>' +
-          '<span class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</span>' +
-          '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
+          '<span class="nghi-han">' +
+            '<i class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</i>' +
+            '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
+          '</span>' +
         '</span>' +
-        '<span class="the-diem nghi-san"><canvas class="nghi-canvas"></canvas></span>' +
+        '<span class="the-diem nghi-san">' + (themHtml || '') +
+          '<span class="nghi-khung"><canvas class="nghi-canvas"></canvas></span>' +
+        '</span>' +
         '<button type="button" class="play nghi-play" title="Play the piggy game">' +
           IC_CHOI + '</button>' +
-        (themHtml || '') +
       '</span>' +
     '</div>';
   }
@@ -1426,11 +1437,12 @@
     for (var i = 0; i < ds.length; i++) {
       var e = ds[i];
       var moc = +e.getAttribute('data-moc');
-      var boc = e.parentElement;                   // .nghi-dau
+      var boc = e.parentElement;                   // .nghi-han (v1.50.0)
       if (!moc) { e.textContent = '—'; continue; }
       var con = moc - Date.now();
-      // Hết hạn thì bỏ luôn nhãn "BUỔI HỌC TIẾP THEO TRONG" (CSS `.het .nghi-nhan`
-      // ẩn nó), không thì đọc thành "…TIẾP THEO TRONG ĐÃ ĐẾN GIỜ HỌC".
+      // Hết hạn thì bỏ luôn nhãn "BUỔI HỌC TIẾP THEO TRONG" (CSS
+      // `.nghi-han.het .nghi-nhan` ẩn nó), không thì đọc thành
+      // "…TIẾP THEO TRONG ĐÃ ĐẾN GIỜ HỌC".
       if (con <= 0) {
         e.textContent = 'ĐÃ ĐẾN GIỜ HỌC';
         if (boc) boc.classList.add('het');

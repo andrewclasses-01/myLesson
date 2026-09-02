@@ -766,6 +766,128 @@
     return 'bai.html';
   }
 
+  /* ============================================================
+     ⭐ v1.37.0 (02/09/2026) — AVATAR DÙNG CHUNG CHO MỌI CHỖ
+
+     Ảnh đại diện của em CHỈ CÓ MỘT NGUỒN: `assets/avatar/<lớp>/<tên>.jpg`
+     — thầy đổi ở dashboard → Thiết lập lớp (nút ✎), app nén 96px rồi đẩy
+     lên kho web. Khung chat đã dùng đường này từ lâu; từ v1.37.0 thanh đầu
+     và đầu sidebar của cả 3 trang học sinh cũng dùng ĐÚNG đường này ⇒ đổi
+     một chỗ là mọi chỗ đổi theo.
+
+     ⛔ Luật slug PHẢI Y HỆT 4 nơi kia, sai một ký tự là ảnh 404 câm lặng:
+        `app/tools/xuat-avatar.py` · `app/src/main/lib/avatar.js` ·
+        khối avatar trong `dashboard.html` · `avatarUrl()` bên mySpeaking web.
+        Bỏ dấu · LỚP bỏ mọi ký tự không phải chữ-số ("B2-B" → "b2b") ·
+        TÊN thay ký tự lạ bằng "-" ("DUY MINH" → "duy-minh").
+
+     ⏳ Đổi ảnh xong máy em có thể còn thấy ảnh CŨ tối đa ~10 phút (GitHub
+        Pages cho trình duyệt nhớ ảnh 600 giây). Muốn "đổi là thấy ngay"
+        thì phải ghi thêm mốc thời gian bên app — để đợt sau.
+     ============================================================ */
+  function avKhongDau(s) {
+    return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+      .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  }
+  function avSlugLop(s) { return avKhongDau(s).replace(/[^a-z0-9]/g, '') || 'lop'; }
+  function avSlugTen(s) {
+    return avKhongDau(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'hs';
+  }
+  // `lop` ở đây là TÊN GỐC có gạch ("B2-B"), không phải mã đã bỏ gạch.
+  function avUrl(lop, ten) {
+    return 'assets/avatar/' + avSlugLop(lop) + '/' + avSlugTen(ten) + '.jpg';
+  }
+
+  // Gắn ẢNH + CHỮ TẮT vào một ô avatar ĐÃ CÓ SẴN thẻ con (huy hiệu số sao,
+  // chấm đỏ tin mới). ⛔ Đừng dùng `el.textContent = …` cho mấy ô này: nó
+  // xoá sạch thẻ con — đúng cái bẫy làm mất huy hiệu sao ở bản nháp đầu.
+  // Chưa có ảnh cho em nào thì thẻ <img> tự gỡ mình ⇒ hiện chữ tắt như cũ.
+  function gaAvatar(el, lop, ten, chuTat) {
+    if (!el) return;
+    Array.prototype.slice.call(el.childNodes).forEach(function (n) {
+      if (n.nodeType === 3) el.removeChild(n);
+    });
+    var img = el.querySelector('img.av-anh');
+    if (!img) {
+      img = document.createElement('img');
+      img.className = 'av-anh';
+      img.alt = '';
+      img.onerror = function () { if (img.parentNode) img.parentNode.removeChild(img); };
+      // Chèn LÊN ĐẦU: mọi thẻ con khác (huy hiệu sao, chấm đỏ) vẽ sau ⇒ nằm
+      // trên ảnh. Ảnh chèn cuối là nó đè mất huy hiệu.
+      el.insertBefore(img, el.firstChild);
+    }
+    var url = avUrl(lop, ten);
+    if (img.getAttribute('src') !== url) img.setAttribute('src', url);
+    if (chuTat) el.insertBefore(document.createTextNode(chuTat), el.firstChild);
+  }
+
+  /* ============================================================
+     ⭐ v1.37.0 — CHẤM ĐỎ "LỚP CÓ TIN NHẮN MỚI" trên avatar
+
+     Thầy chốt 02/09/2026: chấm đỏ hiện ở MỌI avatar của em (thanh đầu +
+     đầu sidebar) trên cả 3 trang, và CHỈ TẮT khi em bấm vào khung chat.
+
+     💸 Tiền: `lop.html` đã mở sẵn kênh chat sống ⇒ biết tin mới nhất MIỄN
+     PHÍ, chỉ việc gọi `datMocTinMoi()`. Hai trang bài phải hỏi kho 1 lượt
+     đọc — nên có ĐỆM 60 GIÂY trong sessionStorage. ⛔ CHỈ đệm khi đọc được
+     THẬT (đệm cả lượt hỏng là giấu chấm đỏ suốt 60 giây — cùng họ bẫy đã
+     cắn ở `napHanSua()`).
+     ============================================================ */
+  var TIN_DEM_MS = 60000;
+  function khoaXemTin(lop, ma) { return 'mylesson_xemtin_' + lop + '_' + ma; }
+  function khoaTinMoi(lop) { return 'awc_tinmoi_' + lop; }
+
+  // Mốc em đã xem tin tới đâu — nhớ ngay trên máy em. Có kèm MÃ EM vì một
+  // máy ở nhà có thể hai anh em cùng học, đừng để em này tắt chấm hộ em kia.
+  function mocDaXem(lop, ma) {
+    try { return Number(localStorage.getItem(khoaXemTin(lop, ma))) || 0; } catch (e) { return 0; }
+  }
+  // ⛔ LUẬT 10 — đừng đánh dấu bằng `Date.now()` trần: đồng hồ máy em chạy
+  // chậm vài phút là mốc "đã xem" thấp hơn tin vừa đọc ⇒ chấm đỏ không chịu
+  // tắt. Luôn truyền vào MỐC CỦA TIN cuối cùng em đã thấy.
+  function danhDauDaXem(lop, ma, luc) {
+    var m = Number(luc) || Date.now();
+    try { localStorage.setItem(khoaXemTin(lop, ma), String(m)); } catch (e) {}
+  }
+
+  function datMocTinMoi(lop, luc) {
+    try {
+      sessionStorage.setItem(khoaTinMoi(lop),
+        JSON.stringify({ luc: Number(luc) || 0, tai: Date.now() }));
+    } catch (e) {}
+  }
+  function mocTinMoi(lop) {
+    var nay = Date.now();
+    try {
+      var o = JSON.parse(sessionStorage.getItem(khoaTinMoi(lop)) || 'null');
+      if (o && (nay - Number(o.tai)) < TIN_DEM_MS) return Promise.resolve(Number(o.luc) || 0);
+    } catch (e) {}
+    if (!window.AWChat || !AWChat.tinMoiNhat) return Promise.resolve(0);
+    return AWChat.tinMoiNhat(lop).then(function (luc) {
+      datMocTinMoi(lop, luc);                 // chỉ đệm khi ĐỌC ĐƯỢC THẬT
+      return Number(luc) || 0;
+    })['catch'](function () { return 0; });   // kho hỏng/hết hạn mức: im lặng, không đệm
+  }
+  function chatChuaDoc(lop, ma) {
+    return mocTinMoi(lop).then(function (luc) { return !!luc && luc > mocDaXem(lop, ma); });
+  }
+
+  // Bật/tắt chấm đỏ trên mọi avatar của em trong trang (thanh đầu + sidebar).
+  function veChamDo(hien) {
+    var ds = document.querySelectorAll('.av.me, .side-head .av');
+    Array.prototype.forEach.call(ds, function (el) {
+      var c = el.querySelector('.av-cham');
+      if (!c) {
+        c = document.createElement('span');
+        c.className = 'av-cham';
+        c.setAttribute('title', 'Lớp có tin nhắn mới');
+        el.appendChild(c);
+      }
+      c.hidden = !hien;
+    });
+  }
+
   window.AWC = {
     CFG: CFG,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,
@@ -783,5 +905,10 @@
     hanCua: hanCua, daSuaHan: daSuaHan, datHanSua: datHanSua,
     // v1.35.0 — trạng thái thẻ (ẩn / tạm khoá / xoá mềm) + "còn hạn" dùng chung
     trangThaiThe: trangThaiThe, datTrangThai: datTrangThai, conHan: conHan,
+    // ⭐ v1.37.0 — avatar dùng chung + chấm đỏ tin nhắn mới
+    avSlugLop: avSlugLop, avSlugTen: avSlugTen, avUrl: avUrl, gaAvatar: gaAvatar,
+    mocDaXem: mocDaXem, danhDauDaXem: danhDauDaXem,
+    mocTinMoi: mocTinMoi, datMocTinMoi: datMocTinMoi,
+    chatChuaDoc: chatChuaDoc, veChamDo: veChamDo,
   };
 })();

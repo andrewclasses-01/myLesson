@@ -98,7 +98,15 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   gap:12px; padding:9px 20px}
 .cum-trai{display:flex; align-items:center; gap:13px; min-width:0}
 .av{flex:none; display:grid; place-items:center; border-radius:50%;
-  font-weight:800; color:#fff; user-select:none}
+  font-weight:800; color:#fff; user-select:none; position:relative}
+/* ⭐ v1.37.0 — ẢNH ĐẠI DIỆN THẬT (cùng kho ảnh với khung chat trang lớp — xem
+   `A.gaAvatar` trong js/chung.js) + CHẤM ĐỎ báo lớp có tin nhắn mới. */
+.av .av-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  border-radius:50%}
+.av-cham{position:absolute; top:-1px; right:-1px; width:13px; height:13px;
+  border-radius:50%; background:var(--m-do); border:2.5px solid #fff;
+  box-shadow:0 1px 3px rgba(22,35,42,.28); z-index:5; pointer-events:none}
+.side-head .av-cham{width:12px; height:12px}
 .av.me{width:52px; height:52px; font-size:19px; cursor:pointer;
   background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
   position:relative; transition:transform .18s var(--em), box-shadow .18s}
@@ -1197,8 +1205,11 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=35"></script>
-<script src="js/chung.js?v=22"></script>
+<script src="config.js?v=36"></script>
+<script src="js/chung.js?v=23"></script>
+<!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
+     File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
+<script src="js/chat.js?v=21"></script>
 <script>
 /* ============================================================
    TRANG BÀI TẬP — bản THẬT (web v1.9.0, 23/08/2026), dùng chung cho ba dạng
@@ -2714,9 +2725,14 @@ function veDauTrang(){
     });
     el.insertBefore(document.createTextNode(chu), el.firstChild);
   }
-  datChu($('#nutMenu'), chuTat);
-  var avSide = document.querySelector('.side-head .av');
-  if (avSide) avSide.textContent = chuTat;
+  /* ⭐ v1.37.0 — avatar thanh đầu + đầu sidebar mang ẢNH THẬT, cùng kho ảnh
+     với khung chat bên trang lớp. Giữ nguyên huy hiệu số sao bên trong. */
+  A.gaAvatar($('#nutMenu'), LOP, TOI, chuTat);
+  A.gaAvatar(document.querySelector('.side-head .av'), LOP, TOI, chuTat);
+  /* Chấm đỏ tin nhắn mới: trang này không mở phòng chat nên phải hỏi kho —
+     1 lượt đọc, có đệm 60 giây trong `A.chatChuaDoc`. Bấm được vào khung chat
+     chỉ có ở trang lớp, nên ở đây chấm chỉ HIỆN, không tắt. */
+  A.chatChuaDoc(LOP_DL, MA_HS).then(A.veChamDo)['catch'](function(){});
   var tenTren = document.querySelector('.who .ten');
   if (tenTren) tenTren.textContent = TOI;
   var tenSide = document.querySelector('.side-head .ten');

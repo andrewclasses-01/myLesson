@@ -137,6 +137,17 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .av{flex:none; display:grid; place-items:center; border-radius:50%;
   font-weight:800; color:#fff; user-select:none; position:relative; overflow:hidden}
 .av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+/* ⭐ v1.37.0 — ẢNH ĐẠI DIỆN THẬT ở thanh đầu + đầu sidebar (CÙNG KHO ẢNH với
+   khung chat — xem `A.gaAvatar` trong js/chung.js) và CHẤM ĐỎ báo tin nhắn
+   mới. Ảnh tự bo tròn nên hai ô này để `overflow:visible`, cho chấm đỏ và
+   huy hiệu sao tràn ra ngoài viền mà không bị cắt góc. */
+.av .av-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover;
+  border-radius:50%}
+.av.me, .side-head .av{overflow:visible}
+.av-cham{position:absolute; top:-1px; right:-1px; width:13px; height:13px;
+  border-radius:50%; background:var(--m-do); border:2.5px solid #fff;
+  box-shadow:0 1px 3px rgba(22,35,42,.28); z-index:5; pointer-events:none}
+.side-head .av-cham{width:12px; height:12px}
 .av.me{width:52px; height:52px; font-size:19px; cursor:pointer;
   background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
   position:relative; transition:transform .18s var(--em), box-shadow .18s;
@@ -1116,8 +1127,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=35"></script>
-<script src="js/chung.js?v=22"></script>
+<script src="config.js?v=36"></script>
+<script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
 /* ============================================================
@@ -2076,9 +2087,12 @@ function dienDanhTinh(){
   var tu = TOI.trim().split(/\s+/).filter(Boolean);
   var chuTat = tu.slice(-2).map(function(t){ return t[0]; }).join('').toUpperCase();
 
-  datChu($('#nutMenu'), chuTat);
-  var avSide = document.querySelector('.side-head .av');
-  if (avSide) avSide.textContent = chuTat;
+  /* ⭐ v1.37.0 — hai ô avatar này nay mang ẢNH THẬT của em, lấy ĐÚNG kho ảnh
+     mà khung chat đang dùng. `A.gaAvatar` chỉ thay chữ + ảnh, giữ nguyên huy
+     hiệu số sao và chấm đỏ bên trong (⛔ đừng quay lại `textContent = …`:
+     nó xoá sạch thẻ con). Em nào chưa có ảnh thì tự lùi về chữ tắt. */
+  A.gaAvatar($('#nutMenu'), LOP, TOI, chuTat);
+  A.gaAvatar(document.querySelector('.side-head .av'), LOP, TOI, chuTat);
 
   var tenTren = document.querySelector('.who .ten');
   if (tenTren) tenTren.textContent = TOI;
@@ -2811,11 +2825,33 @@ function veChat(){
   if (oDay) khung.scrollTop = khung.scrollHeight;
 }
 
+/* ⭐ v1.37.0 — CHẤM ĐỎ "lớp có tin nhắn mới".
+   Trang này đã mở KÊNH CHAT SỐNG nên biết mốc tin cuối MIỄN PHÍ (không tốn
+   thêm lượt đọc nào) — cất luôn vào đệm chung để hai trang bài khỏi phải hỏi
+   kho. Thầy chốt: chấm CHỈ tắt khi em bấm vào khung chat. */
+function mocTinCuoi(){
+  var l = 0;
+  TIN_MAU.forEach(function(t){ var x = Number(t.luc) || 0; if (x > l) l = x; });
+  return l;
+}
+function capNhatChamTin(){
+  var l = mocTinCuoi();
+  A.datMocTinMoi(LOP_DL, l);
+  A.veChamDo(!!l && l > A.mocDaXem(LOP_DL, MA_HS));
+}
+function danhDauDocChat(){
+  var l = mocTinCuoi();
+  if (!l) return;
+  A.danhDauDaXem(LOP_DL, MA_HS, l);   /* ⛔ mốc CỦA TIN, không phải Date.now() */
+  A.veChamDo(false);
+}
+
 function noiChat(){
   khung.innerHTML = '<div class="chat-cho">Đang mở phòng trò chuyện…</div>';
   AWChat.nghe(LOP_DL, function(ds){
     TIN_MAU = ds;
     veChat();
+    capNhatChamTin();
   }, function(e){
     khung.innerHTML = '<div class="chat-cho">' + chuAnToan(AWChat.chuLoi(e)) + '</div>';
     var o = $('#oChat'); if (o) o.disabled = true;
@@ -3068,6 +3104,13 @@ function guiTin(){
 }
 $('#nutGui').onclick = guiTin;
 $('#oChat').oninput = noOChat;
+/* ⭐ v1.37.0 — bấm bất cứ chỗ nào trong khung trò chuyện = "em đã đọc" ⇒ tắt
+   chấm đỏ ở mọi avatar. Gõ vào ô nhập (bàn phím, không có cú bấm) cũng tính. */
+(function(){
+  var kc = document.querySelector('.chat');
+  if (kc) kc.addEventListener('pointerdown', danhDauDocChat);
+  $('#oChat').addEventListener('focus', danhDauDocChat);
+})();
 /* Enter = gửi · Shift+Enter = xuống dòng trong ô nhập. */
 $('#oChat').onkeydown = function(e){
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); guiTin(); }

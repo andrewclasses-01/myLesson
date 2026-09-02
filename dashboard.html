@@ -7,7 +7,21 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.36.0 (02/09/2026, menu ⚙ dọn lại + hộp xác nhận)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.47.0 (02/09/2026)
+
+     ⭐⭐ v1.47.0 — BỐN VIỆC THẦY CHỐT SAU KHI XEM ẢNH CHỤP THẺ CỦA A1-B:
+       · `canhNhanO()` ĐO THEO TỪNG THẺ (`--cot-ten` đặt lên `.the-diem`, không
+         còn `<html>`); thẻ toàn nhãn lạ (chỉ "QUIZ") nay cũng được co cột thay
+         vì rơi về 112px cứng — đo thật 112px → 33px. ⛔ Hệ quả CỐ Ý: thanh của
+         hai thẻ nhãn dài ngắn khác nhau không thẳng hàng, đừng "sửa cho nhất quán".
+       · POP-UP XEM NHANH (bấm vùng điểm) BỎ HẲN XẾP HẠNG + BỎ CÚP: chỉ "ai xong
+         / ai chưa", số bên trái là số thứ tự dòng, thứ tự theo myStudent. Gỡ
+         theo: `veCup()` + `.cup1/2/3` + `.pop-hang svg`.
+       · POP-UP 🏆 nay MỖI ACT MỘT CỘT NẰM NGANG (`.pop.rong` + `--so-cot`), ruột
+         dựng y hệt leaderboard trang bài tập: điểm THẬT + thời gian (bỏ %), huy
+         chương 3 hạng đầu, tên hạng 1 vàng lấp lánh, liệt kê đủ cả lớp.
+       · ⛔ Bảng xếp hạng ở trang này dùng tiền tố `.xh-*` — `.lb-*` đã là THẺ LỚP.
+       Chi tiết + bẫy: `app\GHI CHU DU AN.md` (mục đầu) · `BAN GIAO.md` mục 0👤/B.
 
      ⭐ v1.36.0 — BỐN ĐIỀU CHỈNH THẦY CHỐT NGAY SAU v1.35.0:
        · Menu ⚙ thay 4 EMOJI bằng ICON NÉT (bảng `IC_MENU`); icon Ẩn/Khoá đổi
@@ -693,9 +707,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .pop-dong + .pop-dong{margin-top:1.5px}
 .pop-dong.du{background:#F4FBF7}
 .pop-dong.thieu{background:#FDF5F5}
+/* ⭐ v1.47.0 — đã bỏ icon cúp (`veCup` + `.cup1/2/3` + `.pop-hang svg`): pop-up
+   xem nhanh không còn xếp hạng, cột đầu chỉ là số thứ tự dòng. */
 .pop-hang{font-size:10.5px; font-weight:800; color:#8FA3A0; text-align:center}
-.pop-hang svg{display:block; width:17px; height:17px; margin:0 auto}
-.cup1{color:#E3AE1B} .cup2{color:#9AA6B0} .cup3{color:#C0783A}
 .pop-ten{font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden;
   text-overflow:ellipsis}
 .pop-dong.du .pop-ten{color:var(--m-la)}
@@ -722,6 +736,57 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hs-ten{font-size:12px; font-weight:700; color:var(--chu); white-space:nowrap;
   overflow:hidden; text-overflow:ellipsis}
 .hs-so{font-size:12px; font-weight:800; color:var(--chu); font-variant-numeric:tabular-nums}
+
+/* ================================================================
+   ⭐⭐ v1.47.0 — POP-UP 🏆 XẾP HẠNG: MỖI ACT MỘT CỘT NẰM NGANG, ruột giống hệt
+   leaderboard trong trang bài tập của học sinh (`bai.html`). Thầy chốt 02/09:
+   "hiện các cột bài theo chiều ngang, mở rộng bề ngang pop-up cho vừa mọi act,
+   không hiện %, mà hiện y như leaderboard khi mở trang bài tập".
+
+   ⛔⛔ TÊN CLASS PHẢI LÀ `.xh-*`, TUYỆT ĐỐI KHÔNG CHÉP `.lb-*` TỪ `bai.html`.
+   Ở trang này `.lb-…` đã thuộc về THẺ LỚP (`.lb-main` · `.lb-ten` · `.lb-cnt` ·
+   `.lb-ic` · `.lb-gv`) và vạch pop-up (`.doi-vach .lb`) — chép nguyên tên sang
+   là đứt hàm vẽ thẻ lớp, đúng LUẬT 3️⃣ trong BAN GIAO.md.
+
+   ⛔ `veHuy()` (huy chương có số) và `@keyframes hao-quang-ten` dưới đây là BẢN
+   CHÉP THỨ HAI của `bai.html` — sửa một bên phải sửa bên kia.
+   ================================================================ */
+/* Bề ngang pop-up: `--so-cot` do JS đặt (= số act). 0 = pop-up thường (376px).
+   `min(…,100%)` giữ cho không bao giờ tràn màn; hẹp quá thì các cột tự xuống
+   dòng (`flex-wrap`) chứ không bóp chữ nhỏ lại. */
+.pop.rong{width:min(calc(var(--so-cot,1) * 244px + 30px), 100%)}
+.pop-ds.ngang{display:flex; flex-wrap:wrap; align-items:flex-start; gap:0 14px}
+.xh-cot{flex:1 1 214px; min-width:0}
+.xh-cot .doi-vach{margin-left:0; margin-right:0}
+.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch 4.8ch;
+  gap:6px; align-items:center; padding:0 6px; border-radius:7px;
+  height:24px; font-weight:700; font-size:12px; line-height:1}
+/* ⛔ `odd` chứ không phải `even` như `bai.html`: ở đây vạch tên act là con ĐẦU
+   TIÊN của cột, nên dòng dữ liệu bắt đầu từ nth-child(2) — lấy `odd` mới vằn
+   đúng vào dòng 2·4·6 y như bên trang bài tập. */
+.xh-dong:nth-child(odd){background:#F3F8F6}
+.xh-hang{font-weight:800; font-size:10.5px; color:#9AACA8; text-align:center;
+  font-variant-numeric:tabular-nums}
+.xh-hang .huy{display:block; width:19px; height:19px; margin:0 auto}
+.xh-ten{font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.xh-diem{font-weight:800; color:var(--xanh); text-align:right;
+  font-variant-numeric:tabular-nums}
+.xh-giay{color:#93A5A1; text-align:right; font-size:11px;
+  font-variant-numeric:tabular-nums}
+/* Bốn mức màu tên — GIỐNG HỆT `bai.html` sau v1.47.0: hạng 1 vàng + hào quang,
+   mọi bạn full điểm khác xanh lá, có điểm chưa full đen, chưa làm đỏ. */
+.xh-dong.hc   .xh-ten{color:#D79B0C; animation:hao-quang-ten 2.4s ease-in-out infinite}
+.xh-dong.du   .xh-ten{color:var(--m-la)}
+.xh-dong.co   .xh-ten{color:var(--chu)}
+.xh-dong.chua .xh-ten{color:#D93B40}
+.xh-dong.chua .xh-diem,.xh-dong.chua .xh-giay{color:#C9A3A4}
+@keyframes hao-quang-ten{
+  0%,100%{text-shadow:0 0 8px rgba(243,178,27,.30), 0 0 18px rgba(243,178,27,.14)}
+  50%    {text-shadow:0 0 10px rgba(247,196,60,.75), 0 0 22px rgba(243,178,27,.50),
+                      0 0 36px rgba(243,178,27,.28)}
+}
+@media (prefers-reduced-motion:reduce){.xh-dong.hc .xh-ten{animation:none}}
+
 @media (max-width:620px){
   :root{--cao-the:166px}
   .the-in{--mui:42px}
@@ -1399,7 +1464,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=43"></script>
+<script src="config.js?v=44"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
@@ -2293,35 +2358,37 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
   }
 
-  // ---------- #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK (bấm vùng điểm) ----------
-  // ⛔ Bản RÚT GỌN so với lop.html: xếp "đã xong" lên trước rồi "thiếu ít
-  // trước", KHÔNG có hạng-trung-bình-theo-nộp-sớm (đòi hỏi gộp điểm nhiều act
-  // như donDiem()/HANG_LOP bên trang lớp — ngoài phạm vi trang quản lý này).
+  // ---------- #4 — POP-UP XEM NHANH / CHI TIẾT SP CHECK (bấm vùng điểm) ----------
+  // ⭐⭐ v1.47.0 (thầy chốt 02/09/2026) — pop-up này KHÔNG CÒN XẾP HẠNG, ở CẢ HAI
+  // trang. Nó gộp nhiều act nên "hạng" chẳng đo được cái gì rõ ràng; nay chỉ
+  // trả lời một câu: em nào XONG, em nào CHƯA. Bỏ luôn icon cúp (`veCup` +
+  // `.cup1/2/3`) — cột đầu chỉ là SỐ THỨ TỰ DÒNG.
+  // Thứ tự: nhóm XONG lên trên theo đúng THỨ TỰ myStudent (chính là thứ tự
+  // `hocSinh` trong lop.json, tức `t.caLop`); nhóm CHƯA XONG dồn xuống dưới,
+  // thiếu ÍT lên trước — thiếu NHIỀU xuống cuối, cùng số thiếu thì lại theo
+  // thứ tự myStudent.
+  // ⛔ Bản chép CÙNG LUẬT ở `lop.html` (`xepCaLop`) — sửa một bên phải sửa bên
+  // kia. Trước 02/09 hai bên lệch nhau đúng ở chỗ này (dashboard xếp A→Z, trang
+  // lớp xếp theo hạng trung bình) và thầy bắt được.
   function xepCaLop(t) {
     var thieuMap = {};
     (t.thieu || []).forEach(function (e) { thieuMap[e.ten] = e.so; });
-    var xong = (t.caLop || []).filter(function (ten) { return !thieuMap[ten]; })
+    var caLop = t.caLop || [];
+    var xong = caLop.filter(function (ten) { return !thieuMap[ten]; })
       .map(function (ten) { return { ten: ten, du: true, phu: 'hoàn thành' }; });
-    var thieuDs = (t.thieu || []).slice().sort(function (a, b) { return a.so - b.so; })
-      .map(function (e) { return { ten: e.ten, du: false, so: e.so, phu: 'chưa hoàn thành' }; });
+    var thieuDs = (t.thieu || []).slice().sort(function (a, b) {
+      if (a.so !== b.so) return a.so - b.so;
+      return caLop.indexOf(a.ten) - caLop.indexOf(b.ten);
+    }).map(function (e) { return { ten: e.ten, du: false, so: e.so, phu: 'chưa hoàn thành' }; });
     return xong.concat(thieuDs);
-  }
-  function veCup(hang) {
-    return '<svg class="cup' + hang + '" viewBox="0 0 24 24" aria-hidden="true">' +
-      '<path d="M6.6 3h10.8v4.3a5.4 5.4 0 0 1-10.8 0z" fill="currentColor"/>' +
-      '<path d="M6.6 4.4H3.7v1.5a3.3 3.3 0 0 0 3.3 3.3M17.4 4.4h2.9v1.5a3.3 3.3 0 0 1-3.3 3.3" ' +
-        'fill="none" stroke="currentColor" stroke-width="1.5"/>' +
-      '<path d="M10.7 12.6h2.6l.5 2.5h-3.6z" fill="currentColor"/>' +
-      '<rect x="8.3" y="15.2" width="7.4" height="2.2" rx="1.1" fill="currentColor"/>' +
-    '</svg>';
   }
   function moPopCaLop(b, t) {
     var ds = xepCaLop(t);
+    popRong(0);
     $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
     $('#popDs').innerHTML = ds.map(function (e, i) {
-      var hang = (e.du && i < 3) ? veCup(i + 1) : (i + 1);
       return '<div class="pop-dong ' + (e.du ? 'du' : 'thieu') + '">' +
-        '<span class="pop-hang">' + hang + '</span>' +
+        '<span class="pop-hang">' + (i + 1) + '</span>' +
         '<span class="pop-ten">' + A.chuAnToan(e.ten) + '</span>' +
         '<span class="pop-phu">' + e.phu + '</span>' +
         (e.du ? '<span class="pop-cuoi">✓</span>' : '<span class="pop-cuoi so">' + e.so + '</span>') +
@@ -2329,7 +2396,19 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }).join('');
     $('#popNen').classList.add('mo');
   }
+  // ⭐ v1.47.0 — bề ngang pop-up: 0 = khung thường (376px, pop-up xem nhanh và
+  // SP CHECK), n > 0 = khung RỘNG có n cột act nằm ngang (pop-up 🏆).
+  // ⛔ Phải gọi ở CẢ BA lối mở, không thì khung rộng của lần trước còn nguyên.
+  function popRong(n) {
+    var k = $('#popKhung'), d = $('#popDs');
+    k.classList.toggle('rong', n > 0);
+    d.classList.toggle('ngang', n > 0);
+    if (n > 0) k.style.setProperty('--so-cot', n);
+    else k.style.removeProperty('--so-cot');
+  }
+
   function moPopDoiSp(b, t) {
+    popRong(0);
     $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
     $('#popDs').innerHTML = (t.doiSp || []).map(function (d) {
       var vach = '<span class="doi-vach"><span class="line"></span>' +
@@ -2350,38 +2429,91 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function dongPop() { $('#popNen').classList.remove('mo'); }
 
   // ⭐ v1.34.0 — 🏆 Bảng xếp hạng (icon riêng trong thẻ) hiện XẾP HẠNG CHI
-  // TIẾT TỪNG ACT (điểm % thật, ai đứng đầu ai đứng cuối MỖI act) — khác hẳn
-  // bấm vùng điểm (`moPopDiem` bên dưới, vẫn là bảng gộp CŨ "xong cả bài /
-  // còn thiếu"). Dùng chung khung `.doi-vach`/`.hs-dong` đã có sẵn từ
-  // `moPopDoiSp` — mỗi act một mục, y hệt mỗi team một mục.
+  // TIẾT TỪNG ACT — khác hẳn bấm vùng điểm (`moPopDiem` bên dưới: chỉ "ai xong
+  // ai chưa", không xếp hạng nữa từ v1.47.0).
   // ⛔ SP CHECK không có "act" theo nghĩa này (nộp qua kho `tongLoi` khác
   // hẳn) — trophy của thẻ SP CHECK vẫn dùng `moPopDoiSp` như trước, không đổi.
+  //
+  // ⭐⭐ v1.47.0 (thầy chốt 02/09/2026) — MỖI ACT MỘT CỘT NẰM NGANG (trước xếp
+  // dọc nối đuôi nhau), pop-up nở rộng cho vừa, và ruột mỗi cột dựng GIỐNG HỆT
+  // leaderboard trang bài tập của học sinh:
+  //   · bỏ hẳn %, hiện ĐIỂM THẬT (`e.tho.diem`) + THỜI GIAN;
+  //   · huy chương có số cho 3 hạng đầu ĐÃ FULL ĐIỂM;
+  //   · màu tên 4 mức, hạng 1 vàng lấp lánh — 2-3 xanh lá như mọi bạn full khác;
+  //   · liệt kê ĐỦ CẢ LỚP, em chưa làm nằm cuối, chữ đỏ, dấu "–" ở cột hạng.
+  // ⛔ "Full điểm" hỏi `CHUAN[ma]` y như `bai.html`, đừng gõ cứng 100: ANAGRAM
+  // chế độ bonus có đỉnh 200% (xem chú thích dài trong js/chung.js).
+
+  // Huy chương có số — BẢN CHÉP của `veHuy()` trong `bai.html`, sửa một bên
+  // phải sửa bên kia. (Không đưa vào chung.js vì hai trang khác hẳn nhau về
+  // vòng đời; đưa ra rồi lại quên bản kia — cứ ghi rõ ở đây là chắc nhất.)
+  function veHuyDb(hang) {
+    var mat = ['#F5BE2A', '#B9C4CC', '#CE8845'][hang - 1];
+    var vien = ['#C98A0B', '#7E8B95', '#9A5D28'][hang - 1];
+    var day = ['#DDA210', '#98A4AE', '#AC6C33'][hang - 1];
+    return '<svg class="huy" viewBox="0 0 24 24" aria-hidden="true">' +
+      '<path d="M8.2 2.2 10.9 8.6M15.8 2.2 13.1 8.6" fill="none" stroke="' + day +
+        '" stroke-width="2.4" stroke-linecap="round"/>' +
+      '<circle cx="12" cy="15.4" r="6.9" fill="' + mat + '" stroke="' + vien + '" stroke-width="1.2"/>' +
+      '<circle cx="12" cy="15.4" r="5" fill="none" stroke="' + vien + '" stroke-width=".7" opacity=".55"/>' +
+      '<text x="12" y="15.9" text-anchor="middle" dominant-baseline="middle" ' +
+        'font-family="Montserrat, sans-serif" font-size="7.6" font-weight="800" fill="#FFFFFF">' +
+        hang + '</text>' +
+    '</svg>';
+  }
+  function chuGiayDb(g) {
+    var p = Math.floor(g / 60), s = Math.floor(g % 60);
+    return p + ':' + (s < 10 ? '0' : '') + s;
+  }
+
+  // Một act -> danh sách xếp sẵn: có điểm (điểm ↓, hoà thì nhanh hơn trước),
+  // rồi tới em chưa làm theo đúng thứ tự myStudent. Y hệt `xepBang()` bai.html.
+  function xepActDb(ma, caLop) {
+    var co = (DIEM[ma] || []).filter(function (e) {
+      return caLop.some(function (t) { return A.khoaTen(t) === A.khoaTen(e.ten); });
+    }).slice().sort(function (a, b) {
+      if (a.diem !== b.diem) return b.diem - a.diem;
+      return a.giay - b.giay;
+    });
+    var daCo = {};
+    co.forEach(function (e) { daCo[A.khoaTen(e.ten)] = 1; });
+    var chua = caLop.filter(function (t) { return !daCo[A.khoaTen(t)]; })
+      .map(function (t) { return { ten: t, chua: true }; });
+    return co.concat(chua);
+  }
+
   function moPopChiTietAct(b, t) {
     $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
     if (!t.acts.length) {
+      popRong(0);
       $('#popDs').innerHTML = '<div class="trong">Bài này không có game AWord nào để xếp hạng.</div>';
       $('#popNen').classList.add('mo');
       return;
     }
+    popRong(t.acts.length);
+    var caLop = t.caLop || [];
     $('#popDs').innerHTML = t.acts.map(function (a) {
-      var ds = (DIEM[a.ma] || []).slice().sort(function (x, y) {
-        if (y.diem !== x.diem) return y.diem - x.diem;
-        return x.giay - y.giay;
-      });
+      var ds = xepActDb(a.ma, caLop);
+      var daLam = ds.filter(function (e) { return !e.chua; }).length;
+      var c = CHUAN[a.ma];
+      var moc = (c && !c.tru) ? c.dinh : 0;   // 0 = act không đo được ⇒ nộp là full
       var vach = '<span class="doi-vach"><span class="line"></span>' +
         '<span class="lb">' + A.chuAnToan(A.tenO(a.ten, true)) +
-          '<span class="tong">' + ds.length + '/' + t.siSo + ' đã làm</span></span>' +
+          '<span class="tong">' + daLam + '/' + t.siSo + ' đã làm</span></span>' +
         '<span class="line"></span></span>';
-      var hang = ds.length
-        ? ds.map(function (e, i) {
-            return '<span class="hs-dong">' +
-              '<span class="hs-hang">' + (i + 1) + '</span>' +
-              '<span class="hs-ten">' + A.chuAnToan(e.ten) + '</span>' +
-              '<span class="hs-so">' + e.diem + '%</span>' +
-            '</span>';
-          }).join('')
-        : '<div class="trong" style="padding:6px 9px">Chưa em nào làm.</div>';
-      return vach + hang;
+      var hang = ds.map(function (e, i) {
+        var full = !e.chua && e.diem >= moc;
+        var huy = full && i < 3;               // huy chương: ba hạng đầu, phải full
+        var lop = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
+        var o = e.chua ? '–' : (huy ? veHuyDb(i + 1) : (i + 1));
+        return '<span class="xh-dong ' + lop + '">' +
+          '<span class="xh-hang">' + o + '</span>' +
+          '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
+          '<span class="xh-diem">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +
+          '<span class="xh-giay">' + (e.chua ? '' : chuGiayDb(e.giay)) + '</span>' +
+        '</span>';
+      }).join('');
+      return '<div class="xh-cot">' + vach + hang + '</div>';
     }).join('');
     $('#popNen').classList.add('mo');
   }
@@ -2420,8 +2552,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // đo chữ thật của mọi nhãn `.td-ten` đang hiện, giãn nhẹ letter-spacing cho
   // các nhãn "chuẩn" (WORDS n / PRONUNC) bằng nhau, rồi hạ `--cot-ten` xuống
   // đúng bề ngang đó — nhãn ngắn (vd "QUIZ") không còn kéo cột tên rộng lố ra
-  // 112px như cũ. Đặt biến ở `documentElement` nên MỌI thẻ đang hiện tự cân
-  // theo nhãn cần rộng nhất trong nhóm đang thấy.
+  // 112px như cũ.
+  // ⭐⭐ v1.47.0 (thầy chốt 02/09/2026) — ĐO THEO TỪNG THẺ, biến đặt lên chính
+  // `.the-diem` chứ không còn `documentElement`. Bản cũ có hai chỗ hỏng:
+  //   · thẻ KHÔNG có nhãn chuẩn nào (chỉ mỗi "QUIZ") thì hàm BỎ HẲN biến ⇒ rơi
+  //     về số cứng 112px, chữ QUIZ ~30px ⇒ dôi ~80px trống giữa chữ và thanh;
+  //   · một biến chung cả trang ⇒ thẻ "QUIZ" phải gánh bề ngang của thẻ
+  //     "PRONUNCIATION" nằm cạnh nó.
+  // ⛔ Hệ quả thầy ĐÃ BIẾT VÀ VẪN CHỌN: thanh của hai thẻ nhãn dài ngắn khác
+  // nhau sẽ không thẳng hàng nhau — đừng "sửa cho nhất quán".
+  // ⛔ Bản chép của hàm này còn ở `lop.html` — sửa một bên phải sửa bên kia.
   var NHAN_CHUAN_DB = /^(WORDS(\s+\d+)?|PRONUNC)$/;
   function canhNhanO() {
     var ds = [].slice.call(document.querySelectorAll('.td-ten'));
@@ -2442,26 +2582,45 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     thuoc.style.fontStyle = st.fontStyle;
     thuoc.style.textTransform = st.textTransform;
     thuoc.style.letterSpacing = st.letterSpacing === 'normal' ? '0px' : st.letterSpacing;
-    var rong = {}, dinh = 0, rongNhat = 0;
-    ds.forEach(function (e) {
-      var t = e.textContent.trim();
+    var rong = {};
+    function doChu(t) {
       if (rong[t] == null) { thuoc.textContent = t; rong[t] = thuoc.getBoundingClientRect().width; }
-      if (rong[t] > rongNhat) rongNhat = rong[t];
-      if (NHAN_CHUAN_DB.test(t) && rong[t] > dinh) dinh = rong[t];
-    });
-    if (!dinh) {
-      document.documentElement.style.removeProperty('--cot-ten');
-      ds.forEach(function (e) { e.style.letterSpacing = ''; });
-      return;
+      return rong[t];
     }
+    // Gom nhãn theo THẺ (`.the-diem`); nhãn lạc ngoài thẻ thì gom một rổ và đặt
+    // biến lên <html> như lối cũ — chỉ là lối thoát an toàn.
+    var oThe = [], nhom = [];
     ds.forEach(function (e) {
-      var t = e.textContent.trim();
-      if (!NHAN_CHUAN_DB.test(t) || !t.length) { e.style.letterSpacing = ''; return; }
-      var them = (dinh - rong[t]) / t.length;
-      e.style.letterSpacing = them > 0.05 ? (Math.round(them * 100) / 100 + 'px') : '';
+      var the = e.closest ? e.closest('.the-diem') : null;
+      var i = oThe.indexOf(the);
+      if (i < 0) { oThe.push(the); nhom.push([e]); } else nhom[i].push(e);
     });
-    var can = Math.ceil(Math.max(dinh, Math.min(rongNhat, dinh + 26))) + 1;
-    document.documentElement.style.setProperty('--cot-ten', can + 'px');
+    // Trần cho thẻ toàn nhãn lạ = đúng số cứng của CSS `.td-dong` (dashboard
+    // không có bản điện thoại riêng nên chỉ một con số).
+    var TRAN = 112;
+    document.documentElement.style.removeProperty('--cot-ten');
+    nhom.forEach(function (oCon, i) {
+      var dinh = 0, rongNhat = 0;
+      oCon.forEach(function (e) {
+        var t = e.textContent.trim();
+        var w = doChu(t);
+        if (w > rongNhat) rongNhat = w;
+        if (NHAN_CHUAN_DB.test(t) && w > dinh) dinh = w;
+      });
+      // Thẻ toàn nhãn lạ thì KHÔNG giãn chữ (giãn "QUIZ" cho bằng "READING
+      // QUIZ" là thành chữ bảng hiệu), chỉ co cột về nhãn dài nhất của thẻ.
+      var coChuan = !!dinh;
+      if (!coChuan) dinh = Math.min(rongNhat, TRAN);
+      oCon.forEach(function (e) {
+        var t = e.textContent.trim();
+        if (!coChuan || !NHAN_CHUAN_DB.test(t) || !t.length) { e.style.letterSpacing = ''; return; }
+        var them = (dinh - rong[t]) / t.length;
+        e.style.letterSpacing = them > 0.05 ? (Math.round(them * 100) / 100 + 'px') : '';
+      });
+      var can = Math.ceil(coChuan ? Math.max(dinh, Math.min(rongNhat, dinh + 26)) : dinh) + 1;
+      if (oThe[i]) oThe[i].style.setProperty('--cot-ten', can + 'px');
+      else document.documentElement.style.setProperty('--cot-ten', can + 'px');
+    });
   }
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(canhNhanO);

@@ -10,6 +10,18 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <style>
 /* ============================================================
+   ⭐⭐ web v1.47.0 (02/09/2026) — HAI VIỆC Ở TRANG NÀY:
+   · `canhNhanO()` đo theo TỪNG THẺ (`--cot-ten` đặt lên `.the-diem`, không còn
+     `<html>`) ⇒ thẻ chỉ có nhãn lạ như "QUIZ" cũng co cột vừa khít thay vì rơi
+     về 112px cứng (đo thật 112px → 33px). ⛔ Hệ quả CỐ Ý: thanh của hai thẻ có
+     nhãn dài ngắn khác nhau KHÔNG thẳng hàng — đừng "sửa cho nhất quán".
+   · POP-UP XEM NHANH bỏ hẳn xếp hạng + bỏ cúp: chỉ "ai xong / ai chưa", số bên
+     trái là số thứ tự dòng, thứ tự theo myStudent (chưa xong dồn xuống dưới,
+     thiếu nhiều xuống cuối). Gỡ theo: `dungHangLop` · `HANG_LOP` · `chuLuc` ·
+     `veCup` · CSS `.cup1/2/3`.
+   Chi tiết + bẫy: `app\GHI CHU DU AN.md` (mục đầu) · `BAN GIAO.md` mục 0👤/B.
+   ============================================================ */
+/* ============================================================
    ⭐ web v1.35.0 (02/09/2026) — THẺ TẠM KHOÁ (thầy khoá ở dashboard, kho
    `lessonHan` trường `tt`): thẻ hiện với ổ khoá xám, đồng hồ hiện "TẠM KHOÁ"
    (dừng hẳn, không HẾT HẠN), bấm chỉ báo một câu; luôn được coi là CÒN HẠN
@@ -371,7 +383,12 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    thoại (đo thật 375px), cột tên cứng là thanh còn 11px. 112px chỉ còn là TRẦN
    cho nhãn lạ (tên ngăn thầy tự gõ), bình thường không ai chạm tới.
    ⛔ Đo bằng JS nên phải chờ FONT nạp xong mới đo (`document.fonts.ready`) —
-   đo lúc font dự phòng còn đang dùng là ra một con số khác hẳn. */
+   đo lúc font dự phòng còn đang dùng là ra một con số khác hẳn.
+   ⭐ v1.47.0 — `--cot-ten` nay đặt lên TỪNG `.the-diem` (không còn trên <html>),
+   nên MỖI THẺ một bề ngang riêng vừa khít nhãn của chính nó; thẻ toàn nhãn lạ
+   (chỉ "QUIZ") cũng được co chứ không rơi về 112px như trước. Xem `canhNhanO()`.
+   ⛔ Ai dựng bàn thử `ban-thu-*.html` thì phải bọc đúng `.the-diem`, thiếu là
+   biến không tới nơi và cột tên về lại số cứng dưới đây. */
 .td-dong{display:grid;
   grid-template-columns:minmax(0,var(--cot-ten,112px)) minmax(56px,1fr) 44px 11px;
   align-items:center; gap:8px}
@@ -692,16 +709,16 @@ body.mo-menu .side.trai{transform:none}
 .pop-head .dong svg{width:16px; height:16px; stroke:var(--muted); stroke-width:2.4;
   fill:none; stroke-linecap:round}
 .pop-ds{flex:1; min-height:0; overflow-y:auto; padding:6px 9px 8px}
-/* 4 cột: hạng/cúp · tên · trạng thái chữ · ô cuối (tích HOẶC số bài thiếu) —
-   cột cuối rộng cố định nên tích và ô số luôn THẲNG MỘT CỘT. */
+/* 4 cột: số thứ tự · tên · trạng thái chữ · ô cuối (tích HOẶC số bài thiếu) —
+   cột cuối rộng cố định nên tích và ô số luôn THẲNG MỘT CỘT.
+   ⭐ v1.47.0 — đã bỏ icon cúp (`veCup` + `.cup1/2/3` + `.pop-hang svg`): pop-up
+   này không còn xếp hạng, cột đầu chỉ là số thứ tự dòng. */
 .pop-dong{display:grid; grid-template-columns:24px minmax(0,1fr) auto 28px;
   align-items:center; gap:7px; padding:3.5px 7px; border-radius:9px}
 .pop-dong + .pop-dong{margin-top:1.5px}
 .pop-dong.du{background:#F4FBF7}
 .pop-dong.thieu{background:#FDF5F5}
 .pop-hang{font-size:10.5px; font-weight:800; color:#8FA3A0; text-align:center}
-.pop-hang svg{display:block; width:17px; height:17px; margin:0 auto}
-.cup1{color:#E3AE1B} .cup2{color:#9AA6B0} .cup3{color:#C0783A}
 .pop-ten{font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden;
   text-overflow:ellipsis}
 .pop-dong.du .pop-ten{color:var(--m-la)}
@@ -1146,7 +1163,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=43"></script>
+<script src="config.js?v=44"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -1272,7 +1289,6 @@ function tenTat(t){ return TAT[t] || t; }
 var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
 var BAI_CU = [];         /* các thẻ dưới vạch */
 var BAI_SP = null;       /* thẻ SPEAKING CHECK, nếu buổi này có */
-var HANG_LOP = {};       /* {tên em: {hangTB, nopLuc}} — dựng từ điểm AWord */
 
 /* Địa chỉ hai đầu bên mySpeaking — nay lấy từ config.js chứ không gõ trong trang. */
 var SP_NAO = A.CFG.SP_NAO || '';
@@ -1328,8 +1344,8 @@ function theTuBai(b){
   };
 }
 
-/* Đọc điểm của MỌI act trong các thẻ rồi đổ vào `bai[].xong` + `thieu[]`,
-   đồng thời dựng bảng HANG_LOP cho pop-up cả lớp.
+/* Đọc điểm của MỌI act trong các thẻ rồi đổ vào `bai[].xong` + `thieu[]`.
+   (v1.47.0 — bỏ phần dựng bảng hạng cho pop-up, xem `xepCaLop()`.)
    ⭐ v1.14.0 — đọc kèm CHUẨN ĐỦ ĐIỂM của từng act (`A.chuanDiem`). Nó tốn thêm
    một lượt đọc Firestore cho mỗi act ở LẦN ĐẦU của mỗi máy, sau đó nằm hẳn
    trong localStorage (tuỳ chọn bài giao là bản chụp đóng băng, không đổi). */
@@ -1371,42 +1387,14 @@ function donDiem(cacThe){
         return { ten:ten, so:thieu[ten] };
       });
     });
-
-    dungHangLop(theoMa);
   });
 }
 
-/* Bảng xếp hạng cả lớp: hangTB = thứ hạng trung bình qua các act em có làm
-   (nhỏ hơn = giỏi hơn); nopLuc = lần nộp SỚM NHẤT, dùng phân định khi hoà.
-   Em chưa làm act nào thì không có trong bảng ⇒ `xepCaLop()` cho hangTB 99. */
-function dungHangLop(theoMa){
-  var gom = {};
-  for (var ma in theoMa) {
-    var ds = theoMa[ma];                       /* đã xếp sẵn: giỏi nhất đứng đầu */
-    ds.forEach(function(e, i){
-      var k = A.khoaTen(e.ten);
-      if (!gom[k]) gom[k] = { tong:0, so:0, luc:0 };
-      gom[k].tong += (i + 1);
-      gom[k].so++;
-      if (e.luc && (!gom[k].luc || e.luc < gom[k].luc)) gom[k].luc = e.luc;
-    });
-  }
-  HANG_LOP = {};
-  CA_LOP.forEach(function(ten){
-    var g = gom[A.khoaTen(ten)];
-    if (!g || !g.so) return;
-    HANG_LOP[ten] = {
-      hangTB: g.tong / g.so,
-      nopLuc: g.luc ? chuLuc(g.luc) : ''
-    };
-  });
-}
-
-function chuLuc(ms){
-  var d = new Date(ms);
-  var hai = function(n){ return (n < 10 ? '0' : '') + n; };
-  return d.getDate() + '/' + (d.getMonth() + 1) + ' ' + hai(d.getHours()) + ':' + hai(d.getMinutes());
-}
+/* ⛔ v1.47.0 — ĐÃ GỠ `dungHangLop()` · `HANG_LOP` · `chuLuc()` (hạng trung bình
+   qua các act + mốc nộp sớm nhất). Chúng chỉ phục vụ phép xếp hạng của pop-up
+   xem nhanh, mà thầy đã chốt 02/09 bỏ hẳn xếp hạng ở pop-up đó — xem chú thích
+   dài ở `xepCaLop()`. Cần xếp hạng thật thì đó là việc của leaderboard trong
+   trang bài tập (`bai.html`), nơi mỗi bảng chỉ đo ĐÚNG MỘT act. */
 
 var IC_GIO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 var IC_TAY = '<svg viewBox="0 0 24 24"><path d="M12 3.5 21 19H3z"/><path d="M12 9.5v4M12 16.4v.1"/></svg>';
@@ -1712,6 +1700,18 @@ function vuaMoiCotThieu(){
    Cách làm: ĐO chữ thật rồi giãn nhẹ (letter-spacing) mấy nhãn ngắn cho bằng
    nhãn dài nhất trong NHÓM CHUẨN, sau đó hạ `--cot-ten` đúng bằng bề ngang ấy.
 
+   ⭐⭐ v1.47.0 (thầy chốt 02/09/2026) — ĐO THEO TỪNG THẺ, KHÔNG CÒN CHUNG CẢ TRANG.
+   `--cot-ten` nay đặt lên chính `.the-diem` của từng thẻ. Hai chỗ hỏng của lối cũ:
+     · Thẻ KHÔNG có nhãn chuẩn nào (ví dụ chỉ mỗi "QUIZ") thì hàm BỎ HẲN biến ⇒
+       rơi về số cứng 112px trong CSS, trong khi chữ QUIZ chỉ ~30px ⇒ dôi ~80px
+       trống hoác giữa chữ và thanh (thầy chụp ảnh báo 02/09). Nay lấy luôn bề
+       ngang nhãn dài nhất CỦA THẺ ĐÓ, chặn trần bằng đúng số cũ của CSS.
+     · Một biến chung cho cả trang nghĩa là thẻ "QUIZ" phải gánh bề ngang của
+       thẻ "PRONUNCIATION" nằm bên dưới nó.
+   ⛔ HỆ QUẢ THẦY ĐÃ BIẾT VÀ VẪN CHỌN: thanh của hai thẻ có nhãn dài ngắn khác
+   nhau sẽ KHÔNG thẳng hàng nhau nữa. Đừng "sửa cho nhất quán" — đó là cái giá
+   đổi lấy việc không còn khoảng chết.
+
    ⛔ CHỈ giãn nhãn thuộc NHÓM CHUẨN (`WORDS n` · `PRONUNC`). Ngăn thầy tự gõ
    tên có thể dài gấp đôi — gộp nó vào phép lấy max là WORDS 1 bị giãn toác ra
    như chữ bảng hiệu. Nhãn lạ để nguyên, vẫn cắt "…" như cũ.
@@ -1749,30 +1749,56 @@ function canhNhanO(){
   thuoc.style.textTransform = st.textTransform;
   thuoc.style.letterSpacing = st.letterSpacing === 'normal' ? '0px' : st.letterSpacing;
 
-  var rong = {}, dinh = 0, rongNhat = 0;
-  ds.forEach(function(e){
-    var t = e.textContent.trim();
+  /* Cùng một chuỗi ở cùng một cỡ chữ thì bề ngang y nhau ⇒ nhớ chung cho cả
+     trang, dù mỗi thẻ tự tính con số của mình. */
+  var rong = {};
+  function doChu(t){
     if (rong[t] == null) { thuoc.textContent = t; rong[t] = thuoc.getBoundingClientRect().width; }
-    if (rong[t] > rongNhat) rongNhat = rong[t];
-    if (NHAN_CHUAN.test(t) && rong[t] > dinh) dinh = rong[t];
-  });
-  if (!dinh) {                       /* thẻ không có nhãn chuẩn nào ⇒ để nguyên */
-    document.documentElement.style.removeProperty('--cot-ten');
-    ds.forEach(function(e){ e.style.letterSpacing = ''; });
-    return;
+    return rong[t];
   }
 
+  /* Gom nhãn theo THẺ (`.the-diem`). Nhãn lạc không nằm trong thẻ nào thì gom
+     chung một rổ và đặt biến lên <html> như lối cũ — chỉ là lối thoát an toàn. */
+  var oThe = [], nhom = [];
   ds.forEach(function(e){
-    var t = e.textContent.trim();
-    if (!NHAN_CHUAN.test(t) || !t.length) { e.style.letterSpacing = ''; return; }
-    var them = (dinh - rong[t]) / t.length;
-    e.style.letterSpacing = them > 0.05 ? (Math.round(them * 100) / 100 + 'px') : '';
+    var the = e.closest ? e.closest('.the-diem') : null;
+    var i = oThe.indexOf(the);
+    if (i < 0) { oThe.push(the); nhom.push([e]); } else nhom[i].push(e);
   });
 
-  /* Cột tên vừa khít nhãn chuẩn (+1px cho phần lẻ khi trình duyệt làm tròn).
-     Có nhãn lạ dài hơn thì nhường nó tới mức TRẦN của CSS, không quá. */
-  var can = Math.ceil(Math.max(dinh, Math.min(rongNhat, dinh + 26))) + 1;
-  document.documentElement.style.setProperty('--cot-ten', can + 'px');
+  /* Trần cho thẻ KHÔNG có nhãn chuẩn: đúng bằng số cứng của CSS (`.td-dong`),
+     kẻo tên lạ thầy tự gõ dài quá nuốt mất thanh. Hai ngưỡng phải khớp CSS. */
+  var tran = laDienThoai() ? 90 : 112;
+  /* Lối cũ đặt biến lên <html>; gỡ đi kẻo còn sót của lần chạy trước. */
+  document.documentElement.style.removeProperty('--cot-ten');
+
+  nhom.forEach(function(oCon, i){
+    var dinh = 0, rongNhat = 0;
+    oCon.forEach(function(e){
+      var t = e.textContent.trim();
+      var w = doChu(t);
+      if (w > rongNhat) rongNhat = w;
+      if (NHAN_CHUAN.test(t) && w > dinh) dinh = w;
+    });
+    /* Thẻ có nhãn chuẩn thì giãn cho bằng nhau như cũ; thẻ toàn nhãn lạ thì
+       KHÔNG giãn chữ (giãn "QUIZ" cho bằng "READING QUIZ" là chữ bảng hiệu),
+       chỉ co cột về đúng bề ngang nhãn dài nhất. */
+    var coChuan = !!dinh;
+    if (!coChuan) dinh = Math.min(rongNhat, tran);
+
+    oCon.forEach(function(e){
+      var t = e.textContent.trim();
+      if (!coChuan || !NHAN_CHUAN.test(t) || !t.length) { e.style.letterSpacing = ''; return; }
+      var them = (dinh - rong[t]) / t.length;
+      e.style.letterSpacing = them > 0.05 ? (Math.round(them * 100) / 100 + 'px') : '';
+    });
+
+    /* Cột tên vừa khít nhãn chuẩn (+1px cho phần lẻ khi trình duyệt làm tròn).
+       Có nhãn lạ dài hơn thì nhường nó tới mức TRẦN của CSS, không quá. */
+    var can = Math.ceil(coChuan ? Math.max(dinh, Math.min(rongNhat, dinh + 26)) : dinh) + 1;
+    if (oThe[i]) oThe[i].style.setProperty('--cot-ten', can + 'px');
+    else document.documentElement.style.setProperty('--cot-ten', can + 'px');
+  });
 }
 /* Montserrat nạp qua mạng: nạp xong chữ đổi cỡ đôi chút nên đo lại một lần
    nữa — cả chiều cao thanh đầu lẫn số tên vừa cột. Cắt bớt là việc MỘT CHIỀU
@@ -1786,56 +1812,54 @@ if (document.fonts && document.fonts.ready) {
 /* (Việc đo lại lúc kéo giãn cửa sổ nay nằm chung trong một trình nghe resize
    duy nhất ở phần ĐỔI BỐ CỤC bên dưới — để khỏi chạy hai lần.) */
 
-/* ---------- POP-UP BẢNG XẾP HẠNG CẢ LỚP ----------
+/* ---------- POP-UP XEM NHANH CẢ LỚP ----------
    Dựng từ TOÀN BỘ danh sách lớp: em nào có tên trong b.thieu là còn thiếu,
    còn lại coi như xong hết. Nhờ vậy MỌI thẻ đều mở được bảng, không cần
    liệt kê riêng danh sách em đã xong cho từng bài.
-   Thứ tự: xong hết lên trên, xếp theo hạng trung bình (nhỏ hơn = giỏi hơn),
-   hoà thì ai nộp sớm hơn đứng trước; rồi tới nhóm còn thiếu (thiếu ít trước). */
+
+   ⭐⭐ v1.47.0 (thầy chốt 02/09/2026) — BỎ HẲN XẾP HẠNG Ở POP-UP NÀY.
+   Nó gộp NHIỀU act nên "hạng" chẳng đo được cái gì rõ ràng; nay chỉ trả lời
+   đúng một câu: em nào XONG, em nào CHƯA. Bỏ luôn icon cúp — con số bên trái
+   từ nay chỉ là SỐ THỨ TỰ DÒNG.
+   Thứ tự: nhóm XONG lên trên, giữ nguyên THỨ TỰ myStudent (chính là thứ tự
+   `hocSinh` app đẩy sang, tức thứ tự CA_LOP); nhóm CHƯA XONG dồn xuống dưới,
+   thiếu ÍT lên trước — thiếu NHIỀU xuống cuối cùng, cùng số thiếu thì lại
+   theo thứ tự myStudent.
+   ⛔ Gỡ theo trong cùng đợt: `dungHangLop()` · `HANG_LOP` · `chuLuc()` — cả
+   cụm đó chỉ đẻ ra để phục vụ phép xếp hạng vừa bỏ.
+   ⛔ Bản chép CÙNG LUẬT ở `dashboard.html` (`xepCaLop`) — sửa một bên phải
+   sửa bên kia, kẻo hai trang lại lệch thứ tự như trước 02/09. */
 function xepCaLop(b){
   var conThieu = {};
   (b.thieu || []).forEach(function(e){ conThieu[e.ten] = e.so; });
 
   var xong = CA_LOP.filter(function(t){ return !conThieu[t]; }).map(function(t){
-    var h = HANG_LOP[t] || { hangTB:99, nopLuc:'' };
-    return { ten:t, du:true, hangTB:h.hangTB, nop:h.nopLuc, phu:'hoàn thành' };
-  }).sort(function(a, c){
-    if (a.hangTB !== c.hangTB) return a.hangTB - c.hangTB;
-    return String(a.nop).localeCompare(String(c.nop));
+    return { ten:t, du:true, phu:'hoàn thành' };
   });
 
+  /* ⛔ Đừng trông vào thứ tự vào mảng: `b.thieu` dựng từ `Object.keys()` nên
+     thứ tự khoá là chuyện của trình duyệt. Chốt lại bằng chỉ số trong CA_LOP. */
   var thieu = (b.thieu || []).slice()
-    .sort(function(a, c){ return a.so - c.so; })
+    .sort(function(a, c){
+      if (a.so !== c.so) return a.so - c.so;
+      return CA_LOP.indexOf(a.ten) - CA_LOP.indexOf(c.ten);
+    })
     .map(function(e){ return { ten:e.ten, du:false, so:e.so, phu:'chưa hoàn thành' }; });
 
   return xong.concat(thieu);
 }
 
 var IC_TICH = '✓';
-/* Cúp cho ba hạng đầu — vàng · bạc · đồng (màu do class cup1/2/3). */
-function veCup(hang){
-  return '<svg class="cup' + hang + '" viewBox="0 0 24 24" aria-hidden="true">' +
-    '<path d="M6.6 3h10.8v4.3a5.4 5.4 0 0 1-10.8 0z" fill="currentColor"/>' +
-    '<path d="M6.6 4.4H3.7v1.5a3.3 3.3 0 0 0 3.3 3.3M17.4 4.4h2.9v1.5a3.3 3.3 0 0 1-3.3 3.3" ' +
-      'fill="none" stroke="currentColor" stroke-width="1.5"/>' +
-    '<path d="M10.7 12.6h2.6l.5 2.5h-3.6z" fill="currentColor"/>' +
-    '<rect x="8.3" y="15.2" width="7.4" height="2.2" rx="1.1" fill="currentColor"/>' +
-  '</svg>';
-}
 
 function moPopCaLop(b){
   var ds = xepCaLop(b);
   /* Dòng phụ: tên bài • mã lesson (thầy chốt bỏ phần đếm số em đã xong). */
   $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
   $('#popDs').innerHTML = ds.map(function(e, i){
-    /* ⛔ v1.14.0 — CÚP CHỈ TRAO CHO EM ĐÃ HOÀN THÀNH. Trước đó cứ 3 dòng đầu là
-       có cúp, mà `xepCaLop()` xếp nhóm "chưa hoàn thành" ngay sau nhóm "hoàn
-       thành" ⇒ lớp chưa ai xong thì ba em ĐẦU DANH SÁCH CHƯA XONG lại đeo cúp
-       vàng/bạc/đồng. Lỗi vốn có từ trước, nhưng luật mới (phải ĐỦ ĐIỂM mới tính
-       là xong) biến nó thành cảnh thường ngày — nhìn bảng là thấy ngay. */
-    var hang = (e.du && i < 3) ? veCup(i + 1) : (i + 1);
+    /* ⭐ v1.47.0 — chỉ còn SỐ THỨ TỰ DÒNG, không cúp, không hạng (thầy chốt
+       02/09). Bảng xếp hạng thật nằm ở leaderboard trong trang bài tập. */
     return '<div class="pop-dong ' + (e.du ? 'du' : 'thieu') + '">' +
-      '<span class="pop-hang">' + hang + '</span>' +
+      '<span class="pop-hang">' + (i + 1) + '</span>' +
       '<span class="pop-ten">' + e.ten + '</span>' +
       '<span class="pop-phu">' + e.phu + '</span>' +
       (e.du ? '<span class="pop-cuoi">' + IC_TICH + '</span>'

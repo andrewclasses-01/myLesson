@@ -500,10 +500,11 @@ body.co-den{overflow:hidden}          /* khoá cuộn cho khung khỏi trôi */
 .lb-time{color:#93A5A1; text-align:right; font-size:calc(var(--lb-chu) - 1px);
   font-variant-numeric:tabular-nums}
 
-/* MÀU TÊN — bốn mức thầy chốt ở đợt 4:
-   huy chương (full điểm, hạng 1-2-3) vàng + hào quang nháy · full điểm ngoài
-   top 3 xanh lá · có điểm chưa full đen · chưa làm bài nào đỏ (và nháy hào
-   quang đỏ khi còn dưới 6 tiếng, cùng nhịp 3,4s với thẻ gấp ở trang chính). */
+/* MÀU TÊN — bốn mức thầy chốt ở đợt 4, sửa lại ở v1.47.0 (02/09/2026):
+   HẠNG 1 (full điểm) vàng + hào quang nháy · MỌI bạn full điểm khác (kể cả
+   hạng 2-3) xanh lá · có điểm chưa full đen · chưa làm bài nào đỏ (và nháy hào
+   quang đỏ khi còn dưới 6 tiếng, cùng nhịp 3,4s với thẻ gấp ở trang chính).
+   ⛔ Huy chương bạc/đồng VẪN CÒN ở cột hạng — chỉ màu CHỮ đổi. */
 .lb-row.hc   .lb-name{color:#D79B0C; animation:hao-quang-ten 2.4s ease-in-out infinite}
 .lb-row.du   .lb-name{color:var(--m-la)}
 .lb-row.co   .lb-name{color:var(--ink)}
@@ -1205,7 +1206,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=43"></script>
+<script src="config.js?v=44"></script>
 <script src="js/chung.js?v=23"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -1429,15 +1430,20 @@ function xepBang(ma){
    CHUẨN) sang điểm THẬT `e.tho.diem` (số câu đúng hoặc số điểm tuỳ game,
    đúng như kho AWord ghi) — thầy chốt: % không có nghĩa với học sinh, số
    câu đúng/30 mới đọc hiểu ngay. Màu tên/huy chương KHÔNG đổi, vẫn tính
-   trên % + CHUAN như cũ. */
+   trên % + CHUAN như cũ.
+   ⭐⭐ v1.47.0 (thầy chốt 02/09/2026) — MÀU VÀNG CHỈ CÒN CHO HẠNG 1. Hạng 2-3
+   rơi về `du` (xanh lá) như mọi bạn hoàn thành khác; HUY CHƯƠNG vẫn trao đủ ba
+   hạng (`veHuy(1/2/3)` giữ nguyên), chỉ đổi màu chữ.
+   ⛔ Từ đây `huy` (được đeo huy chương) và `lop` (màu chữ) là HAI CHUYỆN KHÁC
+   NHAU — đừng gộp lại thành một biến như bản cũ. */
 function veBang(ma){
   var ds = xepBang(ma);
   var c = CHUAN[ma];
   var moc = (c && !c.tru) ? c.dinh : 0;      /* 0 = act không đo được ⇒ nộp là full */
   return ds.map(function(e, i){
     var full = !e.chua && e.diem >= moc;
-    var huy  = full && i < 3;
-    var lop  = e.chua ? 'chua' : (huy ? 'hc' : (full ? 'du' : 'co'));
+    var huy  = full && i < 3;                /* huy chương: ba hạng đầu, phải full */
+    var lop  = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
     var hang = e.chua ? '–' : (huy ? veHuy(i + 1) : (i + 1));
     return '<div class="lb-row ' + lop + (e.ten === TOI ? ' me' : '') + '">' +
       '<span class="lb-rank">' + hang + '</span>' +

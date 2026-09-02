@@ -394,8 +394,11 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .the-diem.n4 .td-tay{margin-top:4px; padding-top:5px}
 .td-ten{font-size:11.5px; font-weight:800; letter-spacing:.02em; color:#3D5450;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.td-bar{height:7px; border-radius:99px; background:#E7EDEB; overflow:hidden}
-.td-bar i{display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
+/* ⛔ (02/09 đợt 4) BỎ `overflow:hidden` + thêm `position:relative` — y hệt `.doi-bar`:
+   avatar bạn top 1 cao hơn thanh 7px nên overflow sẽ chém cụt. Bỏ được vì vệt màu `i` vốn
+   TỰ bo tròn hai đầu, không cần khung cha cắt hộ. */
+.td-bar{position:relative; height:7px; border-radius:99px; background:#E7EDEB}
+.td-bar i{position:absolute; inset:0 auto 0 0; display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
 .td-so{font-size:11.5px; font-weight:800; text-align:right; color:#54706B;
   white-space:nowrap; font-variant-numeric:tabular-nums}
 .td-tich{font-size:11px; font-weight:800; color:var(--m-la); text-align:left}
@@ -1143,7 +1146,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=42"></script>
+<script src="config.js?v=43"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -1250,6 +1253,9 @@ function bangVietTat(dsTen){
 var A = window.AWC;
 var DL = { lop: [], bai: {} };
 var EM = null;
+/* ⭐ (02/09 đợt 4) Bảng điểm TỪNG ACT: { mã act -> danh sách em }. `donDiem()` đổ vào,
+   `veDiem()` dùng để biết em nào TOP 1 mà đặt avatar lên thanh tiến trình. */
+var DIEM_ACT = {};
 
 var TOI = '';            /* tên em đang đăng nhập (đúng tên trong myStudent) */
 var LOP = '';            /* tên lớp HIỆN cho em xem, kiểu myStudent: "B2-B" */
@@ -1342,6 +1348,9 @@ function donDiem(cacThe){
   })).then(function(kq){
     var theoMa = {}, chuanMaAct = {};
     kq.forEach(function(r){ theoMa[r.ma] = r.ds; chuanMaAct[r.ma] = r.chuan; });
+    /* ⭐ (02/09 đợt 4) Giữ bảng điểm từng act ra NGOÀI để `veDiem()` biết em nào TOP 1 mà đặt
+       avatar lên thanh. Trước đây `theoMa` sống và chết trong đúng hàm này. */
+    DIEM_ACT = theoMa;
 
     cacThe.forEach(function(t){
       var thieu = {};
@@ -1431,7 +1440,8 @@ function veDiem(b, batDo, hienThieu){
          trang này; trang bài tập giữ chữ đầy đủ). Bề ngang cột + phép giãn chữ
          cho ba nhãn bằng nhau do `canhNhanO()` lo, xem chú thích ở `.td-dong`. */
       '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' + A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
-      '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i></span>' +
+      '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
+        avMocHtml(DIEM_ACT[x.ma], LOP || LOP_DL) + '</span>' +
       '<span class="td-so ' + m + '">' + x.xong + '/' + SI_SO + '</span>' +
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
     '</span>';
@@ -1512,13 +1522,58 @@ function avThanhHtml(d, lopGoc){
    ⇒ Đo lại ở BA mốc: ngay lập tức · nhịp vẽ kế tiếp · lúc trình duyệt báo font đã xong.
    ⛔ Đừng đổi sang ResizeObserver: chính việc đặt `--av` làm kích thước đổi ⇒ tự gọi lại mình
    vô tận, phải bịa thêm chốt so sánh. Ba mốc cố định vừa rẻ vừa không vòng lặp. */
-function veLaiAvatar(goc){ coAvatarThanh(goc); xepAvatarThanh(goc); }
+function veLaiAvatar(goc){ coAvatarThanh(goc); xepAvatarThanh(goc); xepAvatarMoc(goc); }
 function henVeLaiAvatar(goc){
   veLaiAvatar(goc);
   requestAnimationFrame(function(){ veLaiAvatar(goc); });
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function(){ veLaiAvatar(goc); });
   }
+}
+
+/* ═══ (02/09 đợt 4 — thầy chốt) AVATAR BẠN TOP 1 TRÊN THANH BÀI THƯỜNG ═══════════════════
+   MỘT avatar duy nhất mỗi thanh: em ĐIỂM CAO NHẤT của act đó, đặt ở MỐC CAO NHẤT của thanh
+   (cuối vệt màu). Chưa em nào làm, hoặc chưa đọc xong điểm ⇒ KHÔNG hiện gì (thầy chốt).
+
+   ⛔ Hoà điểm thì lấy em LÀM NHANH HƠN — đúng luật bảng xếp hạng act đang chạy (`gopTotNhat`
+   xếp `diem` giảm dần rồi `giay` tăng dần), để avatar trên thanh KHỚP với hạng 1 trong bảng
+   xếp hạng. Vẫn tự xếp lại ở đây cho chắc, không tin danh sách đã xếp sẵn.
+
+   ⛔ Đừng nhầm hai thứ trên cùng một thanh: VỆT MÀU đo "bao nhiêu em đã xong / sĩ số", còn
+   AVATAR là "em điểm cao nhất". Thầy biết và chọn đặt ở cuối vệt (02/09).
+   ⛔ Bản sao ở `dashboard.html` — sửa là sửa cả hai. */
+function avMocHtml(dsDiem, lopGoc){
+  var ds = (dsDiem || []).slice();
+  if (!ds.length) return '';
+  ds.sort(function(a, b){
+    if (b.diem !== a.diem) return b.diem - a.diem;
+    return (a.giay || 0) - (b.giay || 0);
+  });
+  var e = ds[0];
+  if (!e || !e.ten) return '';
+  return '<span class="av-thanh av-moc" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
+    '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
+    '<img src="' + A.chuAnToan(A.avUrl(lopGoc, e.ten)) + '" alt="" onerror="this.remove()">' +
+    A.chuAnToan(avChuTat(e.ten)) + '</span>';
+}
+
+/* Đặt chỗ cho avatar MỐC: tâm ghim đúng cuối vệt màu, nhưng kẹp trong hai mép THANH để vòng
+   tròn không đè sang cột tên bên trái hay cột số bên phải.
+   ⛔ Khác hẳn `xepAvatarThanh` của SP CHECK (nhiều avatar, phải nằm gọn trong vệt màu). */
+function xepAvatarMoc(goc){
+  var bars = (goc || document).querySelectorAll('.td-bar');
+  Array.prototype.forEach.call(bars, function(bar){
+    var av = bar.querySelector('.av-moc');
+    if (!av) return;
+    var rong = bar.getBoundingClientRect().width;
+    var d = av.getBoundingClientRect().width || 14;
+    if (!rong || !d) return;
+    var r = d / 2;
+    var vet = bar.querySelector('i');
+    var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 0;
+    var p = Math.max(r, Math.min(rong - r, rong * ptVet / 100));
+    av.style.left = (Math.round(p * 10) / 10) + 'px';
+  });
 }
 
 var TRAN_DOI_AV = 200;   /* thanh đầy ở 200 lỗi — cùng mốc với `tinhDoiSp` */
@@ -2036,7 +2091,9 @@ function dungCot(){
 
    ⛔ Bản sao ở `dashboard.html` và `sp-chitiet.html` — sửa là sửa cả ba. */
 function coAvatarThanh(goc){
-  var ds = (goc || document).querySelectorAll('.doi-dong');
+  /* ⭐ (02/09 đợt 4) Đo CẢ hàng bài thường `.td-dong` — thanh đó nay cũng có avatar
+     (bạn top 1 của act). Hai loại hàng không bao giờ nằm chung một thẻ nên gộp được. */
+  var ds = (goc || document).querySelectorAll('.doi-dong, .td-dong');
   if (!ds.length) return;
   var nhom = [];
   Array.prototype.forEach.call(ds, function(h){

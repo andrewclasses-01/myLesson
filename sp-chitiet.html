@@ -348,7 +348,7 @@ body.khoa-cuon{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=42"></script>
+<script src="config.js?v=43"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -756,7 +756,9 @@ body.khoa-cuon{overflow:hidden}
   //
   // ⛔ Bản sao ở `dashboard.html` và `lop.html` — sửa là sửa cả ba.
   function coAvatarThanh(goc){
-    var ds = (goc || document).querySelectorAll('.doi-dong');
+    // ⭐ (02/09 đợt 4) Đo CẢ hàng bài thường `.td-dong` — thanh đó nay cũng có avatar
+    // (bạn top 1 của act). Hai loại hàng không bao giờ nằm chung một thẻ nên gộp được.
+    var ds = (goc || document).querySelectorAll('.doi-dong, .td-dong');
     if (!ds.length) return;
     var nhom = [];
     Array.prototype.forEach.call(ds, function(h){

@@ -5,15 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trang quản lý · Andrew Classes</title>
 <link rel="icon" href="assets/avatar-tron.jpg">
-<link rel="stylesheet" href="assets/fonts.css">
-<!-- ⭐ v1.54.0 — MỞ TRANG NHANH HƠN (03/09/2026). (1) preconnect: bắt tay sớm với các
-     máy chủ mà trang chắc chắn sẽ gọi (Firestore, SDK gstatic). (2) khối SOM bên dưới
-     (dập thẳng từ js/som.js, KHÔNG tốn lượt tải nào) xin bốn lượt dữ liệu (lop.json ·
-     bai.json · lessonHan · lessonNghi) ngay khi trình duyệt đọc tới đây, thay vì chờ
-     chung.js ở cuối <body>; chung.js nhận lại qua window.__napSom. ⛔ Đừng đưa lại thành
-     thẻ script src ở head: cache quá 10 phút là nó chặn vẽ trang ~300ms (đo 03/09). -->
-<link rel="preconnect" href="https://firestore.googleapis.com">
-<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<!-- ⚡ Khối SOM đứng TRƯỚC mọi <link rel=stylesheet>: script inline phải chờ CSS phía trên
+     nó tải xong mới được chạy — đo live 03/09 (v1.54.1): fonts.css hết hạn cache làm dữ
+     liệu chỉ bắt đầu ở 640ms thay vì ~320ms. -->
 <!-- SOM:BEGIN -->
 <!-- ⚡ SINH TỰ ĐỘNG từ js/som.js bằng `python tools/sinh-som.py --write` — ĐỪNG SỬA TAY.
      Khởi động sớm: xin lop.json · bai.json · lessonHan · lessonNghi ngay tại đây,
@@ -47,6 +41,15 @@
 })();
 </script>
 <!-- SOM:END -->
+<link rel="stylesheet" href="assets/fonts.css">
+<!-- ⭐ v1.54.0 — MỞ TRANG NHANH HƠN (03/09/2026). (1) preconnect: bắt tay sớm với các
+     máy chủ mà trang chắc chắn sẽ gọi (Firestore, SDK gstatic). (2) khối SOM bên dưới
+     (dập thẳng từ js/som.js, KHÔNG tốn lượt tải nào) xin bốn lượt dữ liệu (lop.json ·
+     bai.json · lessonHan · lessonNghi) ngay khi trình duyệt đọc tới đây, thay vì chờ
+     chung.js ở cuối <body>; chung.js nhận lại qua window.__napSom. ⛔ Đừng đưa lại thành
+     thẻ script src ở head: cache quá 10 phút là nó chặn vẽ trang ~300ms (đo 03/09). -->
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 <!-- ============================================================
      TRANG QUẢN LÝ CỦA THẦY — web v1.47.0 (02/09/2026)
 
@@ -1623,7 +1626,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=53"></script>
+<script src="config.js?v=54"></script>
 <script src="js/chung.js?v=29"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->

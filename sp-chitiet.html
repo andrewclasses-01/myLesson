@@ -103,37 +103,81 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
 .cq-pd{margin-top:6px; padding-top:6px; border-top:1px dashed #F0C9C3; font-size:12px}
 .cq-pd b{color:var(--do)}
 
-/* Biểu đồ phân loại lỗi theo đội — thanh chia đoạn màu, không thư viện ngoài */
-.pl-doi{display:flex; align-items:center; gap:10px; padding:6px 0}
-.pl-doi + .pl-doi{border-top:1px dashed var(--vien)}
-.pl-ten{width:80px; flex:none; font-size:12px; font-weight:800}
-.pl-thanh{flex:1; height:16px; border-radius:8px; overflow:hidden; display:flex; background:#E7EDEB}
-.pl-thanh i{display:block; height:100%}
-.pl-thanh i.g{background:var(--m-duong)} .pl-thanh i.p{background:var(--m-la)} .pl-thanh i.i{background:var(--m-cam)}
-.pl-chu{flex:none; font-size:11px; font-weight:700; color:var(--nhat); display:flex; gap:8px}
-.cham{display:inline-flex; align-items:center; gap:4px}
-.cham i{width:8px; height:8px; border-radius:2px; display:inline-block}
-.cham i.g{background:var(--m-duong)} .cham i.p{background:var(--m-la)} .cham i.i{background:var(--m-cam)}
+/* ══════════ HÀNG NÚT ĐỘI (02/09/2026 — mượn khuôn `.lop-btn` của dashboard) ══════════
+   Bấm một nút = lọc CẢ khối "Cần thầy quyết" LẪN khối hai nửa bên dưới theo đội đó. */
+.doi-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(252px,1fr)); gap:12px}
+.doi-btn{display:block; width:100%; text-align:left; background:var(--the);
+  border:1px solid var(--vien); border-radius:var(--r); box-shadow:var(--bong); padding:12px 14px;
+  transition:border-color .15s ease, background .15s ease, transform .1s ease}
+.doi-btn:hover{border-color:var(--xanh)}
+.doi-btn:active{transform:scale(.99)}
+.doi-btn.chon{background:var(--xanh); border-color:var(--xanh)}
+.db-ten{font:800 15px/1.3 var(--font)}
+.doi-btn.chon .db-ten{color:#fff}
+.db-tv{margin-top:2px; font:700 11px/1.45 var(--font); color:var(--nhat)}
+.doi-btn.chon .db-tv{color:rgba(255,255,255,.82)}
+/* Hàng HAI SỐ LỚN — thầy chốt 02/09: hàng RIÊNG, chia đôi bằng vạch dọc, chữ to + đậm.
+   Trái = ĐÃ BẮT (xanh dương) · Phải = ĐƯỢC BẮT (cam). Nút đang chọn có nền xanh đậm nên
+   hai màu này phải đổi sang bản SÁNG, không thì chữ chìm hẳn vào nền. */
+.sl-hang{display:grid; grid-template-columns:1fr 1px 1fr; gap:10px; margin:9px 0 8px;
+  padding:8px 0; border-top:1px solid var(--vien); border-bottom:1px solid var(--vien)}
+.doi-btn.chon .sl-hang{border-color:rgba(255,255,255,.3)}
+.sl-vach{background:var(--vien)}
+.doi-btn.chon .sl-vach{background:rgba(255,255,255,.3)}
+.sl-o{text-align:center; min-width:0}
+.sl-nh{font:800 8.5px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
+.sl-so{font:800 23px/1.15 var(--font); font-variant-numeric:tabular-nums; margin-top:1px}
+.sl-o.bat .sl-nh, .sl-o.bat .sl-so{color:var(--m-duong)}
+.sl-o.bi  .sl-nh, .sl-o.bi  .sl-so{color:var(--m-cam)}
+.doi-btn.chon .sl-o.bat .sl-nh, .doi-btn.chon .sl-o.bat .sl-so{color:#B8D4FF}
+.doi-btn.chon .sl-o.bi  .sl-nh, .doi-btn.chon .sl-o.bi  .sl-so{color:#FFD6A8}
+/* Hai dòng việc còn tồn — số 0 xanh lá (xong), khác 0 đỏ (còn việc) */
+.db-viec{display:flex; flex-direction:column; gap:2px; font:700 11.5px/1.5 var(--font); color:var(--mo)}
+.doi-btn.chon .db-viec{color:rgba(255,255,255,.85)}
+.db-viec b{font-weight:800}
+.db-viec .n0{color:var(--m-la)} .db-viec .nx{color:var(--m-do)}
+.doi-btn.chon .db-viec .n0{color:#A6F0CB} .doi-btn.chon .db-viec .nx{color:#FFC4C4}
 
-/* Tỉ lệ giải quyết — số to + thanh chia đoạn */
-.tl-so{display:flex; gap:22px; flex-wrap:wrap; margin-bottom:10px}
-.tl-o{text-align:center}
-.tl-o .n{font:800 26px/1.1 var(--font)}
-.tl-o .nh{font:700 10px/1.4 var(--font); letter-spacing:.06em; color:var(--nhat); text-transform:uppercase; margin-top:3px}
-.tl-o.song .n{color:var(--m-duong)} .tl-o.go .n{color:var(--m-la)} .tl-o.tc .n{color:var(--m-do)}
-.tl-thanh{height:14px; border-radius:8px; overflow:hidden; display:flex; background:#E7EDEB}
-.tl-thanh i{display:block; height:100%}
-.tl-thanh i.song{background:var(--m-duong)} .tl-thanh i.go{background:var(--m-la)} .tl-thanh i.tc{background:var(--m-do)}
+/* ══════════ KHỐI HAI NỬA (câu được bắt | câu đã bắt) ══════════
+   Mỗi nửa CUỘN RIÊNG trong khung, không để cả trang dài ra như bản bảng phẳng cũ. */
+.hai-nua{display:grid; grid-template-columns:1fr 1px 1fr; height:min(64vh,680px)}
+.nua{min-width:0; display:flex; flex-direction:column; min-height:0}
+.nua-vach{background:var(--vien)}
+.nua-dau{flex:none; display:flex; align-items:center; gap:8px; padding:10px 14px;
+  border-bottom:1px solid var(--vien)}
+.nua-dau h3{margin:0; font:800 10.5px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
+.nua-dau .so{margin-left:auto; font:800 13px/1 var(--font); font-variant-numeric:tabular-nums}
+.nua.bi .nua-dau h3, .nua.bi .nua-dau .so{color:var(--m-cam)}
+.nua.bat .nua-dau h3, .nua.bat .nua-dau .so{color:var(--m-duong)}
+.nua-than{flex:1; min-height:0; overflow-y:auto; padding:10px 14px}
+/* Hai nút tab — chỉ hiện ở màn hẹp (xem @media cuối file) */
+.nua-tab{display:none; gap:8px; padding:12px 14px 0}
+.nua-tab button{flex:1; padding:9px 10px; border-radius:11px; border:2px solid var(--vien-dam);
+  background:#fff; font:800 11px/1.2 var(--font); letter-spacing:.05em; color:var(--nhat)}
+.nua-tab button.chon.bi{border-color:var(--m-cam); background:var(--m-cam); color:#fff}
+.nua-tab button.chon.bat{border-color:var(--m-duong); background:var(--m-duong); color:#fff}
 
-.loc{display:flex; align-items:center; gap:8px; flex-wrap:wrap; padding:0 18px 12px}
-.bang-wrap{overflow-x:auto; padding:0 18px 16px}
-table.bang{width:100%; border-collapse:collapse; font-size:12.5px; min-width:760px}
-table.bang th{text-align:left; font:800 10.5px/1.3 var(--font); letter-spacing:.05em; text-transform:uppercase;
-  color:var(--nhat); padding:8px 10px; border-bottom:2px solid var(--vien); white-space:nowrap}
-table.bang td{padding:8px 10px; border-bottom:1px solid var(--vien); vertical-align:top}
-table.bang tr:hover td{background:var(--nen)}
-table.bang tr.tranh-chap td{background:var(--do-nhat)}
-table.bang tr.da-go td{opacity:.55}
+/* Một câu trong hai nửa — viền nói lên trạng thái, ĐỒNG BỘ với màn học sinh:
+   vàng dày = còn tranh chấp thật · xanh lá dày = đã ngã ngũ · xám mảnh = chưa ai đụng. */
+.cau-o{border:1px solid var(--vien); border-radius:12px; padding:10px 12px; margin-bottom:9px}
+.cau-o:last-child{margin-bottom:0}
+.cau-o.tc{border:3px solid var(--m-vang); background:#FFFCF3}
+.cau-o.ok{border:3px solid var(--m-la)}
+.cau-o.go{opacity:.6}
+.cau-o.go .cau-goc, .cau-o.go .cau-loi, .cau-o.go .cau-giai{text-decoration:line-through}
+.cau-dau{display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-bottom:5px}
+.gio{font:800 11px/1 var(--mono); background:#16232A; color:#fff; border-radius:7px; padding:3px 6px}
+.ai{font:700 11px/1.4 var(--font); color:var(--mo)}
+.cau-goc{font-size:12.5px; font-weight:700; font-style:italic}
+.cau-loi{font-size:12.5px; font-weight:700; color:var(--do); margin-top:2px}
+.cau-giai{font-size:12.5px; font-weight:700; color:var(--m-la); margin-top:2px}
+.cau-tt{margin-top:7px; padding-top:6px; border-top:1px dashed var(--vien);
+  display:flex; flex-direction:column; gap:3px; font-size:11.5px; line-height:1.5}
+.tt-nh{font-weight:800; color:var(--nhat); letter-spacing:.02em}
+.tt-do{color:var(--do); font-weight:700}
+.tt-la{color:var(--m-la); font-weight:700}
+.tt-cam{color:#B5720C; font-weight:700}
+
 .nhan{display:inline-block; padding:2px 8px; border-radius:99px; font:800 10px/1.6 var(--font)}
 .nhan.g{background:var(--duong-nhat); color:var(--m-duong)}
 .nhan.p{background:var(--la-nhat); color:var(--m-la)}
@@ -165,6 +209,17 @@ table.bang tr.da-go td{opacity:.55}
   font:700 13px/1 var(--font); opacity:0; pointer-events:none;
   transition:opacity .22s ease, transform .22s ease; z-index:60}
 .toast.hien{opacity:1; transform:translate(-50%,0)}
+
+/* ══════════ MÀN HẸP: hai nửa thành HAI TAB bấm qua lại (thầy chốt 02/09) ══════════
+   Mặc định mở tab "ĐƯỢC BẮT". Vạch dọc giữa hai nửa biến mất, mỗi nửa chiếm cả bề ngang. */
+@media (max-width:900px){
+  .hai-nua{grid-template-columns:1fr; height:auto}
+  .nua-vach{display:none}
+  .nua{display:none}
+  .nua.hien{display:flex}
+  .nua-than{max-height:68vh}
+  .nua-tab{display:flex}
+}
 </style>
 </head>
 <body>
@@ -191,50 +246,51 @@ table.bang tr.da-go td{opacity:.55}
       <div class="khoi-than" id="doiVe"></div>
     </section>
 
+    <!-- ⭐ 02/09/2026 — HÀNG NÚT ĐỘI. Bấm một đội = lọc CẢ "Cần thầy quyết" LẪN khối hai
+         nửa bên dưới (thầy chốt). Mở trang thì chọn sẵn ĐỘI ĐẦU TIÊN theo số thứ tự. -->
+    <section class="khoi">
+      <div class="khoi-dau"><h2>Chọn đội để xem chi tiết</h2><span class="phu">bấm một đội · mọi khối bên dưới lọc theo đội đó</span></div>
+      <div class="khoi-than"><div class="doi-grid" id="doiNut"></div></div>
+    </section>
+
     <section class="khoi" id="khoiCanQuyet" hidden>
       <div class="khoi-dau"><h2>⚠️ Cần thầy quyết</h2><span class="phu" id="cqPhu"></span></div>
-      <div class="khoi-than" id="cqVe"></div>
+      <!-- Khung cuộn RIÊNG (thầy chốt): trước đây khối này đổ phẳng ra trang, buổi nhiều
+           tranh chấp là đẩy khối hai nửa xuống tít dưới, phải cuộn mãi mới tới. -->
+      <div class="khoi-than" id="cqVe" style="max-height:min(46vh,420px); overflow-y:auto"></div>
     </section>
 
-    <section class="khoi">
-      <div class="khoi-dau"><h2>Biểu đồ</h2></div>
-      <div class="khoi-than">
-        <p class="phu" style="margin:0 0 8px">Tỉ lệ giải quyết (mọi câu đã chấm)</p>
-        <div id="tlVe"></div>
-        <p class="phu" style="margin:16px 0 8px">Phân loại lỗi theo đội (Grammar · Pronunciation · Information)</p>
-        <div id="plVe"></div>
-      </div>
-    </section>
-
+    <!-- ⭐ 02/09/2026 — KHỐI HAI NỬA. Trái = câu đội KHÁC bắt lỗi đội này (ĐƯỢC BẮT, cam) ·
+         Phải = câu đội này đi bắt đội khác (ĐÃ BẮT, xanh dương). Mỗi nửa cuộn riêng.
+         Màn hẹp: hai nửa thành hai TAB, mặc định mở "ĐƯỢC BẮT". -->
     <section class="khoi">
       <div class="khoi-dau">
-        <h2>Câu chấm</h2><span class="phu" id="chamPhu"></span>
+        <h2 id="hnTieuDe">Chi tiết từng câu</h2><span class="phu" id="hnPhu"></span>
         <div class="day"></div>
         <button class="nut chinh nho" id="btnXuat">⬇ Xuất Excel</button>
       </div>
-      <div class="loc">
-        <select id="chamLocDoi"><option value="">Mọi đội</option></select>
-        <input type="search" id="chamTim" placeholder="Tìm câu/chi tiết…">
+      <div class="nua-tab" id="nuaTab">
+        <button data-nua="bi" class="chon bi">ĐƯỢC BẮT</button>
+        <button data-nua="bat" class="bat">ĐÃ BẮT</button>
       </div>
-      <div class="bang-wrap"><table class="bang" id="bangCham">
-        <thead><tr><th>Đội chấm</th><th>Người chấm</th><th>Loại</th><th>Câu gốc</th><th>Chi tiết lỗi</th><th>Giải thích</th><th>Trạng thái</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
-    </section>
-
-    <section class="khoi">
-      <div class="khoi-dau"><h2>Phản biện</h2><span class="phu" id="pbPhu"></span></div>
-      <div class="bang-wrap"><table class="bang" id="bangPb">
-        <thead><tr><th>Câu liên quan</th><th>Đồng ý</th><th>Phản đối</th><th>Kết luận cuối</th></tr></thead>
-        <tbody></tbody>
-      </table></div>
+      <div class="hai-nua">
+        <div class="nua bi hien" id="nuaBi">
+          <div class="nua-dau"><h3>Đội bạn bắt lỗi đội này</h3><span class="so" id="soBi"></span></div>
+          <div class="nua-than" id="veBi"></div>
+        </div>
+        <div class="nua-vach"></div>
+        <div class="nua bat" id="nuaBat">
+          <div class="nua-dau"><h3>Đội này đi bắt lỗi đội bạn</h3><span class="so" id="soBat"></span></div>
+          <div class="nua-than" id="veBat"></div>
+        </div>
+      </div>
     </section>
   </div>
 </main>
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=37"></script>
+<script src="config.js?v=38"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -392,6 +448,10 @@ table.bang tr.da-go td{opacity:.55}
       return Promise.all([spTongLoiFs(BUOI._id), spPhanHoiFs(BUOI._id)]).then(function(r2){
         TONGLOI = r2[0]; PHANHOI = r2[1];
         DOI = tinhDoiSp(BUOI.teams, TONGLOI);
+        // Thầy chốt: mở trang là chọn sẵn ĐỘI ĐẦU TIÊN theo SỐ THỨ TỰ (TEAM 1).
+        // ⛔ `DOI` đã được `tinhDoiSp` xếp theo ĐIỂM giảm dần cho thanh tổng quan, nên
+        // `DOI[0]` là đội cao điểm nhất chứ KHÔNG phải TEAM 1 — phải sắp lại theo số đội.
+        DOI_CHON = (DOI.slice().sort(function(a, b){ return a.team - b.team; })[0] || {}).ten || '';
         gomCham();
         $('#khoiLoi').hidden = true;
         $('#thanTrang').hidden = false;
@@ -449,14 +509,71 @@ table.bang tr.da-go td{opacity:.55}
     });
   }
 
+  // ⭐ 02/09/2026 — chính chủ ĐÃ CÓ Ý KIẾN chưa (dongY hay phanDoi đều tính là đã trả lời).
+  // Khác `chinhChuDaNhan` ở chỗ: hàm kia chỉ hỏi "đã ĐỒNG Ý chưa".
+  function chinhChuDaTraLoi(e){
+    return !!e.who && PHANHOI.some(function(p){ return p.errId === e.id && tenBang(p.voter, e.who); });
+  }
+  // Câu này còn CHỜ NGƯỜI CHẤM trả lời Keep/Accept (đội đi bắt còn việc)
+  function choNguoiChamTraLoi(x){ return tranhChap(x) && !x.err.ketLuan; }
+
+  var DOI_CHON = '';   // 'TEAM n' đang chọn ở hàng nút đội
+  var NUA_CHON = 'bi'; // màn hẹp: đang mở tab nào ('bi' | 'bat')
+
   function veTatCa(){
     veDoiVe();
+    veNutDoi();
     veCanQuyet();
-    veTiLe();
-    vePhanLoai();
-    veLocDoi();
-    veBangCham();
-    veBangPb();
+    veHaiNua();
+  }
+
+  // ═══ HÀNG NÚT ĐỘI (02/09/2026) ═══════════════════════════════════════════════════════
+  // Bốn con số mỗi đội, LẤY TỪ HAI PHÍA KHÁC NHAU — đừng gộp nhầm:
+  //   ĐÃ BẮT      = câu đội này đi chấm đội khác  (myTeam === đội)
+  //   ĐƯỢC BẮT    = câu đội khác chấm đội này     (checkedTeam === đội)
+  //   Chưa phản biện = việc của đội BỊ chấm: chính chủ chưa Agree/Disagree
+  //   Chưa phản hồi  = việc của đội ĐI chấm: còn tranh chấp mà chưa Keep/Accept
+  function soCuaDoi(ten){
+    var bat = CHAM.filter(function(x){ return x.doiCham === ten; });
+    var bi = CHAM.filter(function(x){ return x.doiBiCham === ten; });
+    return {
+      bat: bat.length,
+      bi: bi.length,
+      chuaPhanBien: bi.filter(function(x){ return !chinhChuDaTraLoi(x.err); }).length,
+      chuaPhanHoi: bat.filter(choNguoiChamTraLoi).length
+    };
+  }
+  function veNutDoi(){
+    $('#doiNut').innerHTML = DOI.map(function(d){
+      var s = soCuaDoi(d.ten);
+      // ⛔ Lấy tên theo ĐÚNG THỨ TỰ DANH SÁCH ĐỘI trong buổi, KHÔNG dùng `d.hs` — mảng đó đã bị
+      // `tinhDoiSp` xếp lại theo số lỗi giảm dần (cho popup xếp hạng), nên thứ tự tên sẽ nhảy
+      // mỗi khi có em bắt thêm lỗi. Tên đội thì phải đứng yên.
+      var goc = (BUOI.teams || []).filter(function(t){ return t.team === d.team; })[0];
+      var tv = ((goc && goc.members) || (d.hs || []).map(function(h){ return h.ten; })).join(' • ');
+      var so = function(n){ return '<b class="' + (n ? 'nx' : 'n0') + '">' + n + '</b>'; };
+      return '<button class="doi-btn' + (d.ten === DOI_CHON ? ' chon' : '') +
+          '" data-doi="' + A.chuAnToan(d.ten) + '">' +
+        '<div class="db-ten">' + A.chuAnToan(d.ten) + '</div>' +
+        '<div class="db-tv">' + A.chuAnToan(tv || 'chưa có thành viên') + '</div>' +
+        '<div class="sl-hang">' +
+          '<div class="sl-o bat"><div class="sl-nh">Số lỗi đã bắt</div><div class="sl-so">' + s.bat + '</div></div>' +
+          '<div class="sl-vach"></div>' +
+          '<div class="sl-o bi"><div class="sl-nh">Số lỗi được bắt</div><div class="sl-so">' + s.bi + '</div></div>' +
+        '</div>' +
+        '<div class="db-viec">' +
+          '<span>Chưa phản biện: ' + so(s.chuaPhanBien) + '</span>' +
+          '<span>Chưa phản hồi: ' + so(s.chuaPhanHoi) + '</span>' +
+        '</div>' +
+      '</button>';
+    }).join('') || '<div class="trong">Buổi chưa chia đội nào.</div>';
+  }
+  function chonDoi(ten){
+    if (!ten || ten === DOI_CHON) return;
+    DOI_CHON = ten;
+    veNutDoi();
+    veCanQuyet();
+    veHaiNua();
   }
 
   function veDoiVe(){
@@ -470,12 +587,17 @@ table.bang tr.da-go td{opacity:.55}
     }).join('') || '<div class="trong">Buổi chưa chia đội nào.</div>';
   }
 
+  // ⭐ 02/09/2026 (thầy chốt) — LỌC THEO ĐỘI ĐANG CHỌN. Một câu tranh chấp dính tới HAI đội
+  // (đội chấm + đội bị chấm) nên tính là "liên quan" nếu đội đang chọn nằm ở BẤT KỲ phía nào,
+  // không thì bấm đội nào cũng thiếu mất một nửa số câu của chính đội đó.
   function veCanQuyet(){
-    var ds = CHAM.filter(tranhChap);
+    var ds = CHAM.filter(tranhChap).filter(function(x){
+      return !DOI_CHON || x.doiCham === DOI_CHON || x.doiBiCham === DOI_CHON;
+    });
     var khoi = $('#khoiCanQuyet');
     if (!ds.length) { khoi.hidden = true; return; }
     khoi.hidden = false;
-    $('#cqPhu').textContent = ds.length + ' câu còn tranh chấp';
+    $('#cqPhu').textContent = ds.length + ' câu còn tranh chấp · lọc theo ' + DOI_CHON;
     $('#cqVe').innerHTML = ds.map(function(x){
       var e = x.err;
       var phieu = PHANHOI.filter(function(p){ return p.errId === e.id && p.y === 'phanDoi'; });
@@ -494,90 +616,80 @@ table.bang tr.da-go td{opacity:.55}
     }).join('');
   }
 
-  function veTiLe(){
-    var tong = CHAM.length;
-    var song = CHAM.filter(function(x){ return x.err.trangThai === 'song' && !tranhChap(x); }).length;
-    var go = CHAM.filter(function(x){ return x.err.trangThai === 'go'; }).length;
-    var tc = CHAM.filter(tranhChap).length;
-    function pt(n){ return tong ? Math.round(n / tong * 100) : 0; }
-    $('#tlVe').innerHTML =
-      '<div class="tl-so">' +
-        '<div class="tl-o song"><div class="n">' + song + '</div><div class="nh">còn hiệu lực</div></div>' +
-        '<div class="tl-o go"><div class="n">' + go + '</div><div class="nh">đã gỡ (đồng ý)</div></div>' +
-        '<div class="tl-o tc"><div class="n">' + tc + '</div><div class="nh">đang tranh chấp</div></div>' +
+  // ═══ KHỐI HAI NỬA (02/09/2026 — thay hẳn bảng "Câu chấm" + bảng "Phản biện" phẳng cũ) ═══
+  // Trái = câu đội KHÁC bắt lỗi đội đang chọn · Phải = câu đội đang chọn đi bắt đội khác.
+  // Cùng MỘT khuôn thẻ `cauHtml()` cho cả hai bên, chỉ đổi phần "ai với ai" ở dòng đầu —
+  // hai bên vốn là cùng một bản ghi lỗi, chỉ khác chỗ đứng nhìn.
+  function veHaiNua(){
+    var bi = CHAM.filter(function(x){ return x.doiBiCham === DOI_CHON; });
+    var bat = CHAM.filter(function(x){ return x.doiCham === DOI_CHON; });
+    // Xếp theo mốc giờ trong video để thầy dò theo bài nói cho dễ
+    bi.sort(mocGio); bat.sort(mocGio);
+    $('#hnPhu').textContent = DOI_CHON ? ('đang xem ' + DOI_CHON) : '';
+    $('#soBi').textContent = bi.length + ' câu';
+    $('#soBat').textContent = bat.length + ' câu';
+    $('#veBi').innerHTML = bi.length ? bi.map(function(x){ return cauHtml(x, 'bi'); }).join('')
+      : '<div class="trong">Chưa đội nào bắt lỗi ' + A.chuAnToan(DOI_CHON) + '.</div>';
+    $('#veBat').innerHTML = bat.length ? bat.map(function(x){ return cauHtml(x, 'bat'); }).join('')
+      : '<div class="trong">' + A.chuAnToan(DOI_CHON) + ' chưa bắt lỗi đội nào.</div>';
+  }
+  function mocGio(a, b){
+    return ((+a.err.min || 0) * 60 + (+a.err.sec || 0)) - ((+b.err.min || 0) * 60 + (+b.err.sec || 0));
+  }
+  function fmtGio(e){
+    return String(e.min || 0).padStart(2, '0') + ':' + String(e.sec || 0).padStart(2, '0');
+  }
+
+  // MỘT câu, gom đủ mọi dấu vết của MỌI học sinh liên quan (thầy chốt: "thông tin đầy đủ chi
+  // tiết được tổng hợp lại từ mọi dữ liệu, mọi học sinh"). Ba tầng:
+  //   1. Ai — mốc giờ · loại lỗi · em bị bắt · người chấm (kèm đội, tuỳ bên đang xem)
+  //   2. Nội dung — câu gốc · lỗi · giải thích
+  //   3. Diễn biến — chính chủ trả lời gì · đồng đội nói gì · người chấm kết luận gì
+  function cauHtml(x, ben){
+    var e = x.err;
+    var phieu = PHANHOI.filter(function(p){ return p.errId === e.id; });
+    var cc = phieu.filter(function(p){ return tenBang(p.voter, e.who); })[0] || null;
+    var khac = phieu.filter(function(p){ return !tenBang(p.voter, e.who); });
+    var laTc = tranhChap(x), daGo = e.trangThai === 'go';
+    var vo = daGo ? 'go' : (laTc ? 'tc' : (phieu.some(function(p){ return p.y === 'dongY'; }) ? 'ok' : ''));
+
+    // Tầng 3 — diễn biến, mỗi dòng một việc, luôn nói rõ AI làm gì
+    var dong = [];
+    dong.push('<span><span class="tt-nh">Chính chủ:</span> ' + (
+      !e.who ? '<span class="tt-nh">(câu không ghi tên ai)</span>'
+        : !cc ? '<span class="tt-do">' + A.chuAnToan(e.who) + ' chưa phản biện</span>'
+          : cc.y === 'dongY' ? '<span class="tt-la">' + A.chuAnToan(e.who) + ' đã nhận lỗi</span>'
+            : '<span class="tt-cam">' + A.chuAnToan(e.who) + ' phản đối</span>: ' +
+              A.chuAnToan(cc.lyDo || '(không ghi lý do)')
+    ) + '</span>');
+    if (khac.length) {
+      dong.push('<span><span class="tt-nh">Đồng đội:</span> ' + khac.map(function(p){
+        return '<b>' + A.chuAnToan(p.voter) + '</b> ' +
+          (p.y === 'dongY' ? '<span class="tt-la">đồng ý</span>'
+            : '<span class="tt-cam">phản đối</span>: ' + A.chuAnToan(p.lyDo || '(không ghi lý do)'));
+      }).join(' · ') + '</span>');
+    }
+    dong.push('<span><span class="tt-nh">Người chấm:</span> ' + (
+      e.ketLuan === 'agree' ? '<span class="tt-la">đã nhường lỗi (Accept Appeal)</span>'
+        : e.ketLuan === 'keep' ? '<span class="tt-do">giữ lỗi (Keep Issue) — chờ thầy quyết</span>'
+          : laTc ? '<span class="tt-do">chưa trả lời phản biện</span>'
+            : '<span class="tt-nh">không phải trả lời (chưa ai phản đối)</span>'
+    ) + '</span>');
+
+    return '<div class="cau-o ' + vo + '">' +
+      '<div class="cau-dau">' +
+        '<span class="gio">' + fmtGio(e) + '</span>' + nhanLoai(e.type) +
+        '<span class="ai">' + (ben === 'bi'
+          ? '👤 ' + A.chuAnToan(e.who || '?') + ' · chấm bởi <b>' + A.chuAnToan(x.chuLoi) + '</b> (' + A.chuAnToan(x.doiCham) + ')'
+          : '👤 ' + A.chuAnToan(e.who || '?') + ' (' + A.chuAnToan(x.doiBiCham) + ') · <b>' + A.chuAnToan(x.chuLoi) + '</b> chấm') +
+        '</span>' +
+        (batDongTrongDoi(x) ? '<span class="nhan batdong">ĐỘI CÃI HỘ</span>' : '') +
       '</div>' +
-      '<div class="tl-thanh">' +
-        (song ? '<i class="song" style="width:' + pt(song) + '%"></i>' : '') +
-        (go ? '<i class="go" style="width:' + pt(go) + '%"></i>' : '') +
-        (tc ? '<i class="tc" style="width:' + pt(tc) + '%"></i>' : '') +
-      '</div>';
-  }
-
-  function vePhanLoai(){
-    var theoDoi = {};
-    CHAM.forEach(function(x){
-      if (x.err.trangThai !== 'song') return;
-      var k = x.doiCham || '?';
-      var m = TYPE_MAU[x.err.type] || 'i';
-      theoDoi[k] = theoDoi[k] || { g: 0, p: 0, i: 0 };
-      theoDoi[k][m]++;
-    });
-    var ds = Object.keys(theoDoi).sort();
-    $('#plVe').innerHTML = ds.length ? ds.map(function(k){
-      var c = theoDoi[k], tong = c.g + c.p + c.i;
-      function pt(n){ return tong ? (n / tong * 100) : 0; }
-      return '<div class="pl-doi">' +
-        '<span class="pl-ten">' + A.chuAnToan(k) + '</span>' +
-        '<span class="pl-thanh">' +
-          (c.g ? '<i class="g" style="width:' + pt(c.g) + '%"></i>' : '') +
-          (c.p ? '<i class="p" style="width:' + pt(c.p) + '%"></i>' : '') +
-          (c.i ? '<i class="i" style="width:' + pt(c.i) + '%"></i>' : '') +
-        '</span>' +
-        '<span class="pl-chu">' +
-          '<span class="cham"><i class="g"></i>' + c.g + '</span>' +
-          '<span class="cham"><i class="p"></i>' + c.p + '</span>' +
-          '<span class="cham"><i class="i"></i>' + c.i + '</span>' +
-        '</span>' +
-      '</div>';
-    }).join('') : '<div class="trong">Chưa có lỗi nào còn hiệu lực.</div>';
-  }
-
-  var LOC_DOI = '';
-  function veLocDoi(){
-    var doi = {};
-    CHAM.forEach(function(x){ if (x.doiCham) doi[x.doiCham] = true; });
-    var ds = Object.keys(doi).sort();
-    var sel = $('#chamLocDoi');
-    sel.innerHTML = '<option value="">Mọi đội</option>' +
-      ds.map(function(d){ return '<option value="' + A.chuAnToan(d) + '">' + A.chuAnToan(d) + '</option>'; }).join('');
-  }
-
-  function veBangCham(){
-    var tim = ($('#chamTim').value || '').trim().toLowerCase();
-    var ds = CHAM.filter(function(x){
-      if (LOC_DOI && x.doiCham !== LOC_DOI) return false;
-      if (!tim) return true;
-      var gop = (x.err.sentence || '') + ' ' + (x.err.detail || '') + ' ' + (x.err.explain || '');
-      return gop.toLowerCase().indexOf(tim) >= 0;
-    });
-    $('#chamPhu').textContent = ds.length + ' / ' + CHAM.length + ' câu';
-    $('#bangCham tbody').innerHTML = ds.length ? ds.map(function(x){
-      var e = x.err;
-      var laTc = tranhChap(x), daGo = e.trangThai === 'go';
-      return '<tr class="' + (laTc ? 'tranh-chap' : '') + (daGo ? ' da-go' : '') + '">' +
-        '<td>' + A.chuAnToan(x.doiCham) + '</td>' +
-        '<td>' + A.chuAnToan(x.chuLoi) + '</td>' +
-        '<td>' + nhanLoai(e.type) + '</td>' +
-        '<td>' + (e.sentence ? '“' + A.chuAnToan(e.sentence) + '”' : '') + '</td>' +
-        '<td>' + A.chuAnToan(e.detail || '') + '</td>' +
-        '<td>' + A.chuAnToan(e.explain || '') + '</td>' +
-        '<td>' + (daGo ? '<span class="nhan go">ĐÃ GỠ</span>' : (laTc ? '<span class="nhan phandoi">TRANH CHẤP</span>' : '<span class="nhan song">CÒN HIỆU LỰC</span>')) +
-          // (02/09/2026) Đánh dấu câu chính chủ đã tự nhận — thầy nhìn là biết vì sao câu có
-          // người phản đối mà KHÔNG nằm trong "Cần thầy quyết".
-          (!daGo && !laTc && chinhChuDaNhan(e) ? '<span class="nhan tunhan">CHÍNH CHỦ ĐÃ NHẬN</span>' : '') +
-          (batDongTrongDoi(x) ? '<span class="nhan batdong">ĐỘI CÃI HỘ</span>' : '') + '</td>' +
-      '</tr>';
-    }).join('') : '<tr><td colspan="7" class="trong">Không có câu nào khớp bộ lọc.</td></tr>';
+      (e.sentence ? '<div class="cau-goc">“' + A.chuAnToan(e.sentence) + '”</div>' : '') +
+      '<div class="cau-loi">' + A.chuAnToan(e.detail || '') + '</div>' +
+      (e.explain ? '<div class="cau-giai">' + A.chuAnToan(e.explain) + '</div>' : '') +
+      '<div class="cau-tt">' + dong.join('') + '</div>' +
+    '</div>';
   }
 
   // Chữ cái đại diện avatar: 2 chữ đầu của HAI TỪ CUỐI tên (tiếng Việt gọi nhau bằng từ cuối) —
@@ -594,43 +706,10 @@ table.bang tr.da-go td{opacity:.55}
     for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
     return AVT_MAU[h % AVT_MAU.length];
   }
-  function avtHtml(p){
-    var ten = A.chuAnToan(p.voter) + (p.voterTeam ? ' (' + A.chuAnToan(p.voterTeam) + ')' : '') + ' — Đồng ý';
-    return '<span class="avt ' + avtMau(p.voter) + '" title="' + ten + '">' + A.chuAnToan(avtChu(p.voter)) + '</span>';
-  }
-  // (Đợt 28/08/2026 khuya) Gộp CHUNG 1 dòng/câu thay vì 1 dòng/phiếu (thầy yêu cầu: trước đây
-  // 3 em cùng "ĐỒNG Ý" một câu ra 3 dòng gần như y hệt nhau). Đồng ý gộp avatar chữ cái, phản
-  // đối vẫn giữ MỖI NGƯỜI một ô lý do riêng — không gộp, mất ý.
-  function phanBienNhom(){
-    var theo = {}, ds = [];
-    PHANHOI.forEach(function(p){
-      if (!theo[p.errId]) { theo[p.errId] = { errId: p.errId, phieu: [] }; ds.push(theo[p.errId]); }
-      theo[p.errId].phieu.push(p);
-    });
-    ds.forEach(function(n){ n.x = CHAM.filter(function(c){ return c.err.id === n.errId; })[0] || null; });
-    return ds;
-  }
-  function veBangPb(){
-    $('#pbPhu').textContent = PHANHOI.length + ' phiếu';
-    var nhom = phanBienNhom();
-    $('#bangPb tbody').innerHTML = nhom.length ? nhom.map(function(n){
-      var e = n.x ? n.x.err : null;
-      var dongY = n.phieu.filter(function(p){ return p.y === 'dongY'; });
-      var phanDoi = n.phieu.filter(function(p){ return p.y === 'phanDoi'; });
-      var cau = e && e.sentence ? '“' + A.chuAnToan(e.sentence) + '”' : (e ? A.chuAnToan(e.detail || '') : '(không tìm thấy câu)');
-      return '<tr>' +
-        '<td>' + cau + '</td>' +
-        '<td>' + (dongY.length ? '<div class="avt-wrap">' + dongY.map(avtHtml).join('') + '</div>' : '<span class="o-trong">—</span>') + '</td>' +
-        '<td>' + (phanDoi.length ? phanDoi.map(function(p){
-          return '<div class="pd-o"><b>' + A.chuAnToan(p.voter) + '</b>' +
-            (p.voterTeam ? ' <span class="pd-doi">(' + A.chuAnToan(p.voterTeam) + ')</span>' : '') +
-            ': ' + A.chuAnToan(p.lyDo || '(không ghi lý do)') + '</div>';
-        }).join('') : '<span class="o-trong">—</span>') + '</td>' +
-        '<td>' + (e && e.ketLuan === 'agree' ? '<span class="nhan agree">ĐÃ GỠ</span>'
-          : (e && e.ketLuan === 'keep' ? '<span class="nhan keep">GIỮ, CHỜ THẦY</span>' : '—')) + '</td>' +
-      '</tr>';
-    }).join('') : '<tr><td colspan="4" class="trong">Buổi này chưa có phiếu phản biện nào.</td></tr>';
-  }
+  // ⛔ (02/09/2026) `avtHtml` / `phanBienNhom` / `veBangPb` ĐÃ GỠ cùng bảng "Phản biện" phẳng.
+  // Mọi phiếu đồng ý/phản đối nay nằm ngay trong thẻ câu của khối hai nửa (`cauHtml`), gắn
+  // đúng câu của nó — không còn bảng rời phải tự dò `errId` sang bảng kia nữa.
+  // `avtChu`/`avtMau` ở trên GIỮ LẠI: vẫn dùng được nếu sau này muốn hiện avatar trong thẻ câu.
 
   // ---------- Xuất Excel (SheetJS — CÙNG BẢN mySpeaking/web đang dùng) ----------
   function xuatExcel(){
@@ -666,8 +745,24 @@ table.bang tr.da-go td{opacity:.55}
 
   $('#veDashboard').href = 'dashboard.html?lop=' + encodeURIComponent(MA_LOP);
   $('#btnXuat').onclick = xuatExcel;
-  $('#chamLocDoi').addEventListener('change', function(e){ LOC_DOI = e.target.value; veBangCham(); });
-  $('#chamTim').addEventListener('input', veBangCham);
+
+  // Bấm một nút đội → lọc lại cả trang. Bắt trên khối cha (nút vẽ lại sau mỗi lần chọn nên
+  // gắn tay bắt vào từng nút là mất ngay ở lần vẽ thứ hai).
+  $('#doiNut').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-doi]');
+    if (b) chonDoi(b.dataset.doi);
+  });
+  // Màn hẹp: hai nút tab đổi nửa đang hiện (màn rộng CSS cho cả hai nửa hiện, tab bị ẩn)
+  $('#nuaTab').addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-nua]');
+    if (!b) return;
+    NUA_CHON = b.dataset.nua;
+    $('#nuaBi').classList.toggle('hien', NUA_CHON === 'bi');
+    $('#nuaBat').classList.toggle('hien', NUA_CHON === 'bat');
+    Array.prototype.forEach.call($('#nuaTab').children, function(n){
+      n.classList.toggle('chon', n.dataset.nua === NUA_CHON);
+    });
+  });
 
   taiDuLieu();
 })();

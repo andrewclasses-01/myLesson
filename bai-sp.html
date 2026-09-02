@@ -686,6 +686,9 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/chung.js?v=23"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới. -->
 <script src="js/chat.js?v=21"></script>
+<!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
+     File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
+<script src="js/vi-qua.js?v=1"></script>
 <script>
 /* ============================================================
    TRANG SPEAKING SLIDE — bản THẬT (web v1.9.0, 23/08/2026).
@@ -725,51 +728,26 @@ function baoToast(chu){
   hen = setTimeout(function(){ t.classList.remove('hien'); }, 2600);
 }
 
-/* ---------- SIDEBAR (chép từ trang chính) ---------- */
-var MUC_MENU = [
-  { nh:'Thông tin của tôi', mo:'Tên, lớp, ảnh đại diện',
-    ic:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-3.6 4-5.5 7.5-5.5s6.3 1.9 7.5 5.5"/></svg>' },
-  { nh:'Thư viện kỷ niệm', mo:'Ảnh và khoảnh khắc của lớp',
-    ic:'<svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="14" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 15.5 15.5 11l-7 8"/></svg>' },
-  { nh:'Công cụ', mo:'Máy tính · Lịch · To-do · Từ điển',
-    ic:'<svg viewBox="0 0 24 24"><path d="M14.5 6.5a4.8 4.8 0 0 0-6.4 6L3 17.6 6.4 21l5.1-5.1a4.8 4.8 0 0 0 6-6.4l-3 3-2.5-2.5z"/></svg>' },
-  { nh:'Liên hệ với Thầy Andrew', mo:'Zalo · 0359.769.765',
-    ic:'<svg viewBox="0 0 24 24"><path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h2L10 8l-1.8 1.8a13 13 0 0 0 6 6L16 14l4 1.5v2A2.5 2.5 0 0 1 17.5 20 13.5 13.5 0 0 1 4 6.5z"/></svg>' }
-];
-var MUC_QUA = [
-  { nh:'Đăng ký đổi quà', mo:'Dùng sao đổi quà của Thầy',
-    ic:'<svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4.5"/><path d="M5 12.5h14V21H5zM12 8v13M12 8s-1-4.5-4-4.5S5.5 8 8.5 8M12 8s1-4.5 4-4.5S18.5 8 15.5 8"/></svg>' }
-];
-/* ⭐ v1.9.0 — thêm mục ĐỔI BẠN (đăng xuất), giống hai trang kia. */
-var MUC_RA = [
-  /* v1.15.0 — thầy chốt 25/08/2026: đổi tên thành ĐĂNG XUẤT cho đúng việc
-     nó làm (xoá danh tính đang nhớ trong máy rồi về màn đăng nhập). Chú
-     thích nói rõ đăng xuất khỏi CÁI GÌ — học sinh hay tưởng là thoát
-     Google/Zalo. ⛔ Việc làm KHÔNG đổi, vẫn `A.thoat()` + về index.html. */
-  { nh:'Đăng xuất', mo:'Đăng xuất ID Andrew Classes', lam: function(){
-      A.thoat();
-      location.href = 'index.html';
-    },
-    ic:'<svg viewBox="0 0 24 24"><path d="M15 4.5h3.5A1.5 1.5 0 0 1 20 6v12a1.5 1.5 0 0 1-1.5 1.5H15M10 8l-4 4 4 4M6 12h10"/></svg>' }
-];
-
-function veDsMenu(hop, ds){
-  hop.innerHTML = ds.map(function(m){
-    return '<button><span class="ic">' + m.ic + '</span>' +
-      '<span><span class="nh">' + m.nh + '</span><br><span class="mo-ta">' + m.mo + '</span></span></button>';
-  }).join('');
-  hop.querySelectorAll('button').forEach(function(b, i){
-    var m = ds[i];
-    b.onclick = m && m.lam ? m.lam : function(){ baoToast(CHUA_XONG); };
-  });
-}
-veDsMenu($('#dsMenu'), [MUC_MENU[0], MUC_MENU[1], MUC_QUA[0], MUC_MENU[2], MUC_MENU[3], MUC_RA[0]]);
-
-var oSao = document.querySelector('.vi-to');
-if (oSao) oSao.onclick = function(){ baoToast(CHUA_XONG); };
+/* ---------- SIDEBAR ----------
+   ⭐ v1.38.0 (thầy chốt 02/09/2026) — menu + hai mục ví nay do `js/vi-qua.js`
+   dựng CHUNG cho cả ba trang học sinh (⛔ đừng chép mảng menu ngược về đây).
+   Thứ tự: Thông tin của tôi · Công cụ (xổ 4 công cụ con) · Thư viện kỷ niệm ·
+   Liên hệ với Thầy Andrew · Đăng xuất; bấm Ô SAO thì trượt sang trang con có
+   THÔNG TIN VÍ + ĐĂNG KÝ ĐỔI QUÀ. */
+var veMenuChinh = AWVi.dungMenu({
+  hop: $('#dsMenu'),
+  oSao: document.querySelector('.vi-to'),
+  layCtx: function(){
+    return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, baoToast: baoToast };
+  }
+});
 
 function dongHet(){ document.body.classList.remove('mo-menu'); }
-$('#nutMenu').onclick = function(){ document.body.classList.add('mo-menu'); };
+$('#nutMenu').onclick = function(){
+  /* Mở lại là luôn thấy menu chính (trả trang con về lúc sidebar còn ngoài màn). */
+  if (veMenuChinh) veMenuChinh();
+  document.body.classList.add('mo-menu');
+};
 $('#phuMo').onclick = dongHet;
 document.querySelectorAll('[data-dong]').forEach(function(b){ b.onclick = dongHet; });
 

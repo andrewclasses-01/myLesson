@@ -277,6 +277,11 @@
   window.AWChat = {
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
-    chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU
+    chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU,
+    // ⭐ v1.38.0 — mở CỬA FIREBASE dùng chung cho khối khác (js/vi-qua.js đọc
+    // kho quà `quaTang/catalog`). ⛔ Nơi khác ĐỪNG tự `initializeApp` /
+    // `getFirestore()` lần nữa: cùng một app gọi hai lần là dính
+    // `duplicate-app` hoặc `failed-precondition` ⇒ chat chết câm (v1.17.0).
+    kho: db
   };
 })();

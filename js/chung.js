@@ -1023,14 +1023,26 @@
   // Mốc GIỜ VÀO HỌC của buổi kế tiếp, dạng "YYYY-MM-DDTHH:mm" (rỗng nếu không
   // đủ dữ liệu). Dò 8 ngày tới cho chắc: hôm nay mà chưa tới giờ thì tính luôn
   // hôm nay, qua giờ rồi thì sang buổi sau.
+  // ⛔⛔ GIỜ TRONG myStudent GHI KIỂU VIỆT: "17h40" · "8h00" · "19h30" — KHÔNG
+  // phải "17:40". Đo thật trên kho ngày 02/09/2026: cả 10 lớp đều dạng `h`, nên
+  // bản đầu (chỉ nhận dấu hai chấm) chặn SẠCH mọi lớp. Nhận cả ba kiểu, và cho
+  // giờ MỘT chữ số ("8h00"), phút có thể vắng ("8h" = 8:00).
+  function gioPhut(gio) {
+    var m = /^(\d{1,2})\s*[h:.]\s*(\d{1,2})?$/i.exec(String(gio || '').trim());
+    if (!m) return null;
+    var h = Number(m[1]), p = Number(m[2] || 0);
+    if (!(h >= 0 && h <= 23 && p >= 0 && p <= 59)) return null;
+    return { h: h, p: p };
+  }
+
   function buoiTiepTheo(thuChuoi, gio, tuMoc) {
     var thu = thuTuChuoi(thuChuoi);
-    var m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(gio || '').trim());
+    var m = gioPhut(gio);
     if (!thu.length || !m) return '';
     var goc = new Date(tuMoc == null ? Date.now() : tuMoc);
     for (var i = 0; i < 8; i++) {
       var d = new Date(goc.getFullYear(), goc.getMonth(), goc.getDate() + i,
-                       Number(m[1]), Number(m[2]), 0, 0);
+                       m.h, m.p, 0, 0);
       if (thu.indexOf(d.getDay()) < 0) continue;
       if (d.getTime() <= goc.getTime()) continue;
       var hai = function (n) { return (n < 10 ? '0' : '') + n; };

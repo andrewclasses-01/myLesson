@@ -837,6 +837,191 @@
     var url = avUrl(lop, ten);
     if (img.getAttribute('src') !== url) img.setAttribute('src', url);
     if (chuTat) el.insertBefore(document.createTextNode(chuTat), el.firstChild);
+    // ⭐ v1.55.0 — đánh dấu ô này là của em nào, để `deAvatarKho()` tìm lại mà đè
+    // ảnh mới nhất từ kho. ⛔ Đánh dấu lên Ô chứ KHÔNG lên thẻ <img>: ảnh thiếu thì
+    // `onerror` ngay trên kia GỠ HẲN thẻ <img>, đánh dấu lên đó là mất luôn manh mối
+    // của đúng những em đang cần cứu nhất.
+    el.setAttribute('data-av-em', ten);
+    el.setAttribute('data-av-lop', lop);
+  }
+
+  /* ============================================================
+     ⭐ v1.55.0 (03/09/2026) — ẢNH ĐẠI DIỆN LẤY TỪ KHO, NEO THEO MÃ SỐ EM
+
+     VÌ SAO CÓ KHỐI NÀY — sự cố 02/09/2026: myStudent đổi tên 64 em từ tên gọi
+     ngắn sang tên đầy đủ ("THƯ" → "MINH THƯ"); `lop.json` đồng bộ theo sau 9
+     giây, nhưng file ảnh đặt tên THEO TÊN nên 48 em mất ảnh, câm lặng.
+     👉 Ảnh không được neo vào TÊN (đổi được) mà neo vào MÃ SỐ EM (không đổi,
+        kể cả khi em chuyển lớp).
+
+     HAI LỚP, thầy chốt 03/09:
+       ① LỚP NỀN — file tĩnh `assets/avatar/<lop>/<ten>.jpg` như cũ. Hiện NGAY
+          lúc mở trang, trình duyệt còn nhớ được giữa các phiên.
+       ② ĐÈ LÊN — kho `lessonAvatar/{lop-slug}`, MỘT tài liệu cho cả lớp, ảnh
+          xếp theo mã số em. Gọi SAU khi trang vẽ xong (nếp "đẩy sẵn + đổ sau"),
+          nên không làm chậm lúc mở trang — thứ vừa được tối ưu ở v1.54.x.
+
+     💸 Tiền: 1 lượt đọc cho CẢ LỚP (LUẬT 8), cộng đệm 10 phút. ⛔ Đừng tách mỗi
+        em một tài liệu: 154 em × mấy lượt mỗi ngày là đốt hạn mức của cả cụm.
+     ============================================================ */
+  var AV_CACHE_GIAY = 600;          // ảnh đổi rất thưa, đệm rộng tay hơn hạn nộp
+  var KHOA_AV = 'awc_av1';
+  // ⛔⛔ CHỐT CHỐNG HỎI LẠI LIÊN TỤC (bắt được lúc chạy thử 03/09, trước khi dán luật).
+  // Luật chung của dự án là CHỈ ĐỆM KHI ĐỌC ĐƯỢC THẬT — nhưng `deAvatarKho()` được
+  // `batAvatarKho()` gọi lại sau MỖI lượt trang vẽ thêm ô. Kho đang 403 (luật chưa dán)
+  // hay mất mạng thì không có gì để đệm ⇒ mỗi lượt vẽ lại bắn thêm một lượt hỏi kho.
+  // Đo được 5 lượt 403 chỉ trong 3 giây đầu mở trang. Nên nhớ RIÊNG mốc hỏng và im
+  // lặng 60 giây — vẫn không đệm nội dung rỗng, chỉ đệm cái sự "vừa hỏi hụt".
+  var AV_HONG = {};
+  var AV_HONG_GIAY = 60;
+
+  function docAvatarPhien(slug) {
+    try {
+      var o = JSON.parse(sessionStorage.getItem(KHOA_AV + ':' + slug) || 'null');
+      if (o && (Date.now() - o.luc) < AV_CACHE_GIAY * 1000) return o.em;
+    } catch (e) {}
+    return null;
+  }
+
+  // Trả { "<id>": { t: tên, a: base64 } } của một lớp; {} nếu kho im lặng.
+  function napAvatarKho(lopGoc) {
+    // ⛔ CẢ THÂN HÀM TRONG try — `fetch()` ném ngay tại chỗ khi URL hỏng, cú ném đó
+    // xuyên qua mọi `.catch()` phía dưới (đã trả giá ở `napHanSua`).
+    try {
+      var db = CFG.AWORD_DB || {};
+      if (!db.projectId || !db.apiKey || !lopGoc) return Promise.resolve({});
+      var slug = avSlugLop(lopGoc);
+      var san = docAvatarPhien(slug);
+      if (san) return Promise.resolve(san);
+      if (AV_HONG[slug] && (Date.now() - AV_HONG[slug]) < AV_HONG_GIAY * 1000) {
+        return Promise.resolve({});
+      }
+      var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
+            + '/databases/(default)/documents/lessonAvatar/' + encodeURIComponent(slug)
+            + '?key=' + encodeURIComponent(db.apiKey);
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) {
+          // 404 = lớp chưa từng được đẩy ảnh lên kho. KHÔNG phải lỗi: cứ để lớp nền
+          // file tĩnh lo, và vẫn đệm lại để khỏi hỏi lại mỗi lượt vẽ.
+          if (r.status === 404) return { fields: {} };
+          return r.ok ? r.json() : null;
+        })
+        .then(function (j) {
+          if (!j) { AV_HONG[slug] = Date.now(); return {}; }
+          delete AV_HONG[slug];
+          var em = {}, f = (j.fields && j.fields.em && j.fields.em.mapValue
+                            && j.fields.em.mapValue.fields) || {};
+          for (var id in f) {
+            var g = (f[id].mapValue && f[id].mapValue.fields) || {};
+            var a = g.a && g.a.stringValue;
+            if (!a) continue;
+            em[id] = { t: (g.t && g.t.stringValue) || '', a: a };
+          }
+          // ⛔ CHỈ đệm khi đọc được thật — đệm cả lượt hỏng là đóng băng bảng rỗng.
+          try { sessionStorage.setItem(KHOA_AV + ':' + slug,
+            JSON.stringify({ luc: Date.now(), em: em })); } catch (e) {}
+          return em;
+        })['catch'](function () { AV_HONG[slug] = Date.now(); return {}; });
+    } catch (e) { return Promise.resolve({}); }
+  }
+
+  // So tên kiểu LỎNG: bằng nhau, hoặc tên này là ĐUÔI của tên kia ("THƯ" ↔ "MINH THƯ").
+  // ⛔ Chính luật đuôi này cứu được ca đổi tên: buổi speaking cũ còn ghi tên ngắn,
+  //    kho thì đã mang tên đầy đủ. So bằng không thôi là trượt hết.
+  function avTenKhop(a, b) {
+    var x = avKhongDau(a).replace(/\s+/g, ' ').trim();
+    var y = avKhongDau(b).replace(/\s+/g, ' ').trim();
+    if (!x || !y) return false;
+    if (x === y) return true;
+    return x.length > y.length ? x.slice(-(y.length + 1)) === (' ' + y)
+                               : y.slice(-(x.length + 1)) === (' ' + x);
+  }
+
+  // Đè ảnh mới nhất từ kho lên mọi ô avatar đã vẽ của một lớp.
+  // `dsEm` (tuỳ chọn): [{id, ten}] lấy từ lop.json — có thì tra THẲNG theo mã số
+  // (chắc chắn nhất); không có thì lùi về so tên lỏng với tên kho đang giữ.
+  function deAvatarKho(lopGoc, dsEm) {
+    return napAvatarKho(lopGoc).then(function (em) {
+      var ids = Object.keys(em);
+      if (!ids.length) return 0;
+
+      var theoTen = {};                       // mã số của từng em, tra theo tên
+      (dsEm || []).forEach(function (x) {
+        if (x && x.id != null) theoTen[avKhongDau(x.ten)] = String(x.id);
+      });
+
+      var o = document.querySelectorAll('[data-av-em]'), de = 0;
+      for (var i = 0; i < o.length; i++) {
+        var el = o[i];
+        if (avSlugLop(el.getAttribute('data-av-lop')) !== avSlugLop(lopGoc)) continue;
+        var ten = el.getAttribute('data-av-em');
+        var id = theoTen[avKhongDau(ten)];
+        if (!(id && em[id])) {                // không có mã số → dò theo tên
+          id = null;
+          for (var k = 0; k < ids.length; k++) {
+            if (avTenKhop(em[ids[k]].t, ten)) { id = ids[k]; break; }
+          }
+        }
+        if (!(id && em[id])) continue;
+
+        var img = el.querySelector('img.av-anh');
+        if (!img) {
+          // Ảnh nền 404 nên `onerror` đã gỡ thẻ — dựng lại đúng khuôn của `gaAvatar`
+          // (chèn LÊN ĐẦU để huy hiệu sao / chấm đỏ vẫn nằm trên ảnh).
+          img = document.createElement('img');
+          img.className = 'av-anh';
+          img.alt = '';
+          el.insertBefore(img, el.firstChild);
+        }
+        // ⛔ Chỉ đặt khi KHÁC — `batAvatarKho()` chạy lại mỗi lần trang vẽ thêm ô mới,
+        // đặt lại `src` y hệt là bắt trình duyệt giải mã lại ảnh không công.
+        var moi = 'data:image/jpeg;base64,' + em[id].a;
+        if (img.getAttribute('src') !== moi) { img.setAttribute('src', moi); de++; }
+      }
+
+      // Bóng bay trên canvas — xem chú thích `anhBong()`.
+      for (var b = 0; b < AV_BONG.length; b++) {
+        var q = AV_BONG[b];
+        if (avSlugLop(q.lop) !== avSlugLop(lopGoc)) continue;
+        var qid = theoTen[avKhongDau(q.ten)];
+        if (!(qid && em[qid])) {
+          qid = null;
+          for (var m = 0; m < ids.length; m++) {
+            if (avTenKhop(em[ids[m]].t, q.ten)) { qid = ids[m]; break; }
+          }
+        }
+        if (qid && em[qid]) {
+          var mb = 'data:image/jpeg;base64,' + em[qid].a;
+          if (q.im.src !== mb) { q.im.src = mb; de++; }
+        }
+      }
+      return de;
+    })['catch'](function () { return 0; });
+  }
+
+  // Bật một lần cho cả trang: đè ngay, rồi đè lại mỗi khi trang vẽ thêm ô avatar mới
+  // (đổi lớp, mở pop-up cả lớp, vẽ lại thẻ…). Lượt sau lấy từ đệm phiên nên KHÔNG
+  // tốn thêm lượt đọc kho nào — chỉ quét DOM.
+  // ⛔ CHỈ theo dõi `childList`, TUYỆT ĐỐI KHÔNG theo dõi `attributes`: chính hàm đè
+  //    đổi thuộc tính `src`, theo dõi attributes là nó tự gọi lại mình vô tận.
+  // ⛔ Gọi LẠI với lớp khác là ĐỔI lớp đang theo dõi, KHÔNG phải bị bỏ qua: dashboard
+  //    của thầy đổi lớp liên tục trong cùng một trang. Nhưng cái tai nghe DOM chỉ dựng
+  //    ĐÚNG MỘT LẦN — dựng thêm mỗi lần đổi lớp thì mỗi lượt vẽ chạy N lượt đè chồng nhau.
+  var avLop = '', avDs = [], avTai = null, avHen = null;
+  function batAvatarKho(lopGoc, dsEm) {
+    if (!lopGoc) return;
+    avLop = lopGoc;
+    avDs = dsEm || [];
+    var chay = function () { try { deAvatarKho(avLop, avDs); } catch (e) {} };
+    chay();
+    if (avTai) return;
+    try {
+      avTai = new MutationObserver(function () {
+        if (avHen) return;
+        avHen = setTimeout(function () { avHen = null; chay(); }, 250);
+      });
+      avTai.observe(document.body, { childList: true, subtree: true });
+    } catch (e) { /* trình duyệt cổ: vẫn có lượt đè đầu tiên ở trên */ }
   }
 
   /* ============================================================
@@ -1106,11 +1291,22 @@
 
   // Vẽ nền tròn + chữ tắt trước, ảnh đè lên khi tải xong (ảnh 404 thì giữ chữ tắt
   // — cùng nếp `onerror="this.remove()"` của avatar bên các trang).
+  //
+  // ⭐ v1.55.0 — bóng bay vẽ trên CANVAS nên `deAvatarKho()` không với tới được
+  // (nó chỉ đè được thẻ DOM). Nên ghi tên từng quả bóng vào `AV_BONG`; khi kho ảnh
+  // về, `deAvatarKho()` duyệt lại danh sách này và đổi `im.src`. Sân bóng vẽ lại
+  // liên tục và đọc `o.anh` ở MỖI khung hình, nên khung kế tiếp là ảnh mới hiện ra,
+  // không phải dựng lại sân.
+  var AV_BONG = [];
   function anhBong(lopGoc, ten) {
     var im = new Image();
     var o = { anh: null };
     im.onload = function () { o.anh = im; };
     im.src = avUrl(lopGoc, ten);
+    AV_BONG.push({ lop: lopGoc, ten: ten, im: im });
+    // ⛔ Sân nghỉ dựng lại mỗi lần vẽ thẻ; không chặn trần thì danh sách phình mãi
+    // suốt phiên. Giữ 400 quả gần nhất là quá đủ cho lớp đông nhất (18 em).
+    if (AV_BONG.length > 400) AV_BONG.splice(0, AV_BONG.length - 400);
     return o;
   }
 
@@ -1539,6 +1735,8 @@
     trangThaiThe: trangThaiThe, datTrangThai: datTrangThai, conHan: conHan,
     // ⭐ v1.37.0 — avatar dùng chung + chấm đỏ tin nhắn mới
     avSlugLop: avSlugLop, avSlugTen: avSlugTen, avUrl: avUrl, gaAvatar: gaAvatar,
+    napAvatarKho: napAvatarKho, deAvatarKho: deAvatarKho, batAvatarKho: batAvatarKho,
+    avTenKhop: avTenKhop,
     mocDaXem: mocDaXem, danhDauDaXem: danhDauDaXem,
     mocTinMoi: mocTinMoi, datMocTinMoi: datMocTinMoi,
     chatChuaDoc: chatChuaDoc, veChamDo: veChamDo,

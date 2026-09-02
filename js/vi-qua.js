@@ -219,7 +219,10 @@
   function avNho(ctx, ten) {
     var tu = String(ten || '').trim().split(/\s+/);
     var chu = tu.slice(-2).map(function (t) { return t.charAt(0); }).join('').toUpperCase();
-    return '<span class="vq-av">' + esc(chu) +
+    // `data-av-em`/`data-av-lop` (v1.55.0) — dấu để `A.deAvatarKho()` đè ảnh mới nhất
+    // từ kho. ⛔ Đặt trên Ô, KHÔNG trên <img> (onerror gỡ hẳn thẻ ảnh khi thiếu).
+    return '<span class="vq-av" data-av-em="' + esc(ten) + '" data-av-lop="' + esc(ctx.lop) + '">' +
+      esc(chu) +
       '<img src="' + esc(A.avUrl(ctx.lop, ten)) + '" alt="" onerror="this.remove()"></span>';
   }
   function soCoDau(n) { return (n > 0 ? '+' : '') + n; }

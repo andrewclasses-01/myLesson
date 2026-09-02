@@ -1328,13 +1328,13 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=54"></script>
-<script src="js/chung.js?v=29"></script>
+<script src="js/chung.js?v=30"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=1"></script>
+<script src="js/vi-qua.js?v=2"></script>
 <script>
 /* ============================================================
    TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).
@@ -1649,7 +1649,12 @@ function avThanhHtml(d, lopGoc){
   return (d.hs || []).slice()
     .sort(function(a, b){ return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
     .map(function(h){
-      return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '" title="' +
+      /* `data-av-em` / `data-av-lop` (v1.55.0) — dấu để `A.deAvatarKho()` tìm lại ô này
+         mà đè ảnh mới nhất từ kho. ⛔ Đặt trên Ô, KHÔNG trên thẻ <img>: `onerror` ngay
+         dòng dưới GỠ HẲN <img> khi thiếu ảnh, đánh dấu lên đó là mất manh mối của đúng
+         những em đang cần cứu nhất. */
+      return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '"' +
+        ' data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
         A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
         '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
         A.chuAnToan(avChuTat(h.ten)) + '</span>';
@@ -1705,7 +1710,8 @@ function avMocHtml(dsDiem, lopGoc){
   });
   var e = ds[0];
   if (!e || !e.ten) return '';
-  return '<span class="av-thanh av-moc" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
+  return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(e.ten) +
+    '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
     '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
     '<img src="' + A.chuAnToan(A.avUrl(lopGoc, e.ten)) + '" alt="" onerror="this.remove()">' +
     A.chuAnToan(avChuTat(e.ten)) + '</span>';
@@ -2580,6 +2586,11 @@ A.napDuLieu().then(function(dl){
   CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   SI_SO = CA_LOP.length;
   TAT = bangVietTat(CA_LOP);
+  /* ⭐ v1.55.0 — ảnh đại diện MỚI NHẤT từ kho `lessonAvatar`, đè lên lớp nền là bộ ảnh
+     file tĩnh. Neo theo MÃ SỐ em (`h.id`) chứ không theo tên: 02/09 một lượt đồng bộ
+     đổi tên 64 em là 48 em mất ảnh câm lặng. Gọi ở đây — SAU khi đã có danh sách lớp,
+     TRƯỚC khi vẽ — nhưng bản thân nó chạy nền, không giữ chân lượt vẽ nào. */
+  A.batAvatarKho(LOP, (l && l.hocSinh) || []);
 
   dienDanhTinh();
   doCaoDau(); doSanChat();   /* đo TRƯỚC khi vẽ thẻ, kẻo lần vẽ đầu tính nhầm chỗ */

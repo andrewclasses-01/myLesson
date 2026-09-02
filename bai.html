@@ -1252,13 +1252,13 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=54"></script>
-<script src="js/chung.js?v=29"></script>
+<script src="js/chung.js?v=30"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=1"></script>
+<script src="js/vi-qua.js?v=2"></script>
 <script>
 /* ============================================================
    TRANG BÀI TẬP — bản THẬT (web v1.9.0, 23/08/2026), dùng chung cho ba dạng
@@ -2830,6 +2830,9 @@ A.napDuLieu().then(function(dl){
   LOP = (l && l.tenGoc) || EM.lop;
   CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   TAT = bangVietTat(CA_LOP);
+  /* ⭐ v1.55.0 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em
+     (tên đổi được, mã số thì không). Xem chú thích ở lượt gọi trong `lop.html`. */
+  A.batAvatarKho(LOP, (l && l.hocSinh) || []);
 
   var id = new URLSearchParams(location.search).get('id') || '';
   var ds = A.baiCuaLop(dl, LOP_DL);

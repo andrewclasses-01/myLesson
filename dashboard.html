@@ -1627,7 +1627,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=54"></script>
-<script src="js/chung.js?v=29"></script>
+<script src="js/chung.js?v=30"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -2315,7 +2315,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return (d.hs || []).slice()
       .sort(function (a, b) { return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
       .map(function (h) {
-        return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '" title="' +
+        /* `data-av-em` / `data-av-lop` (v1.55.0) — dấu để `A.deAvatarKho()` đè ảnh mới
+           nhất từ kho. ⛔ Đặt trên Ô, KHÔNG trên <img>: `onerror` gỡ hẳn thẻ ảnh khi
+           thiếu, đánh dấu lên đó là mất manh mối của đúng em đang cần cứu. */
+        return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '"' +
+          ' data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
           A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
           '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
           A.chuAnToan(avChuTat(h.ten)) + '</span>';
@@ -2371,7 +2375,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
     var e = ds[0];
     if (!e || !e.ten) return '';
-    return '<span class="av-thanh av-moc" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
+    return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(e.ten) +
+      '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
       '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
       '<img src="' + A.chuAnToan(A.avUrl(lopGoc, e.ten)) + '" alt="" onerror="this.remove()">' +
       A.chuAnToan(avChuTat(e.ten)) + '</span>';
@@ -3959,6 +3964,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function chonLop(maLop, epMoi) {
     LOP_CHON = maLop;
     try { localStorage.setItem('mylesson_ql_lop', maLop); } catch (e) {}
+    /* ⭐ v1.55.0 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em.
+       Gọi ở ĐÂY chứ không phải lúc nạp trang: dashboard đổi lớp liên tục, mỗi lớp
+       một gói ảnh riêng. Gọi lại là đổi lớp đang theo dõi (xem `batAvatarKho`). */
+    var lQL = A.lopTheoMa(DL, maLop) || {};
+    A.batAvatarKho(lQL.tenGoc || maLop, lQL.hocSinh || []);
     danhDauDaXemTin(maLop);
     veTat();
     noiChat();

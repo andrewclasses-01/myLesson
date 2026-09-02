@@ -7,7 +7,21 @@
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ============================================================
-     TRANG QUẢN LÝ CỦA THẦY — web v1.35.0 (02/09/2026, ⚙ Ẩn bài · Tạm khoá · Xoá bài chạy thật)
+     TRANG QUẢN LÝ CỦA THẦY — web v1.36.0 (02/09/2026, menu ⚙ dọn lại + hộp xác nhận)
+
+     ⭐ v1.36.0 — BỐN ĐIỀU CHỈNH THẦY CHỐT NGAY SAU v1.35.0:
+       · Menu ⚙ thay 4 EMOJI bằng ICON NÉT (bảng `IC_MENU`); icon Ẩn/Khoá đổi
+         theo trạng thái (mắt gạch ↔ mắt · ổ khoá ↔ ổ khoá mở).
+       · MỌI hành động (ẩn · hiện lại · tạm khoá · mở khoá · xoá · đặt hạn · về
+         hạn mặc định · khôi phục) đều qua HỘP XÁC NHẬN `#xnPop` hiện NGAY CẠNH
+         menu. Bỏ hẳn lối "bấm Xoá hai lần" của v1.35.0.
+       · Chữ menu rút ngắn: "Ẩn bài" · "Tạm khoá" (lời giải thích dài dời vào
+         hộp xác nhận, xem `loiHoiTt`).
+       · "Đổi hạn nộp" mở HỘP NHỎ `#hanPop` (ngày + giờ + 2 nút) thay vì mở
+         nguyên hộp xem bài. Ô "Hạn riêng cho thẻ này" trong hộp xem bài đã GỠ —
+         `veSuaHan()` và hai tay bắt `[data-hs-luu]`/`[data-hs-bo]` không còn.
+       · ⛔ Ba hộp nối nhau (menu → hạn → xác nhận): tay `pointerdown` chỉ đóng
+         khi bấm ra NGOÀI CẢ BA, kẻo bấm sang hộp bên cạnh là hộp kia tắt mất.
 
      ⭐⭐ v1.35.0 — BA NÚT CÒN LẠI CỦA MENU ⚙ CÀI ĐẶT THẺ CHẠY THẬT (thầy chốt
      4 điều qua AskUserQuestion 02/09, phương án ở
@@ -346,7 +360,6 @@ a{color:inherit}
 .the.khoa .play, .the.khoa:hover .play{background:#9FB0AC}
 .the.khoa .play svg{width:20px; height:20px}
 .dhho.khoa{font-size:13.5px; letter-spacing:.7px; color:#7B8C89}
-.rc-menu button.nguy.xn:not(:disabled){background:var(--do-nhat); color:var(--do)}
 /* Mục KHO (sidebar): bài đã xoá của lớp đang chọn + nút Khôi phục. */
 .kho-hang{display:flex; align-items:center; gap:10px; padding:9px 11px; margin-bottom:7px;
   border:1px solid var(--vien); border-radius:11px; background:#FAFCFC}
@@ -354,14 +367,29 @@ a{color:inherit}
 .kho-hang .kt b{display:block; font:800 12px/1.3 var(--font); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap}
 .kho-hang .kt span{display:block; font:600 10.5px/1.4 var(--font); color:var(--nhat)}
-.hs-o{display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin:12px 0 0;
-  padding:10px 12px; border:1px solid var(--vien); border-radius:11px; background:#FAFCFC}
-.hs-o b{font:800 12px/1.3 var(--font); letter-spacing:.04em; margin-right:2px}
-.hs-o input{border:1px solid var(--vien); border-radius:8px; padding:6px 8px;
-  font:600 12px/1.3 var(--font); color:inherit; background:#fff}
-.hs-o input[data-hs-gio]{width:64px}
-.hs-o .nut{padding:6px 11px; font:700 11.5px/1.2 var(--font)}
-.hs-tinh{flex:1 1 100%; font:600 11px/1.5 var(--font); color:var(--nhat)}
+/* ⭐ v1.36.0 — HAI HỘP NHỎ cạnh menu ⚙: XÁC NHẬN (`#xnPop`) và ĐỔI HẠN NỘP
+   (`#hanPop`). Cùng khuôn với `.rc-menu` (fixed, tự định vị bằng `datCanh`).
+   ⛔ Thay hẳn ô "Hạn riêng cho thẻ này" (`.hs-o`) từng nằm trong hộp xem bài —
+   thầy chốt 02/09: hộp đó quá phức tạp, đổi hạn phải là MỘT việc duy nhất. */
+.pop-nho{position:fixed; z-index:97; width:268px; background:var(--the);
+  border:1px solid var(--vien); border-radius:14px; box-shadow:0 18px 44px rgba(16,40,36,.24);
+  padding:14px 15px; opacity:0; pointer-events:none; transform:translateY(-6px) scale(.97);
+  transition:opacity .16s var(--em), transform .16s var(--em)}
+.pop-nho.mo{opacity:1; pointer-events:auto; transform:none}
+.pop-nho h4{margin:0 0 6px; font:800 13.5px/1.35 var(--font)}
+.pop-nho p{margin:0; font:600 11.5px/1.55 var(--font); color:var(--mo)}
+.pop-nho p.nhat{color:var(--nhat); font-size:11px}
+.pop-nho .nho-nut{display:flex; gap:8px; margin-top:13px}
+.pop-nho .nho-nut .nut{flex:1; justify-content:center; padding:8px 10px; font-size:12px}
+/* Nút hành động NGUY (xoá) — đỏ đặc, phải thắng cả `.nut:hover` chung. */
+.nut.do,.nut.do:hover{background:var(--do); border-color:var(--do); color:#fff}
+.nut.do:hover{filter:brightness(1.06)}
+#hanPop{width:286px}
+.hp-hang{display:flex; gap:8px; margin:11px 0 9px}
+.hp-hang input{flex:1; min-width:0; border:1px solid var(--vien-dam); border-radius:9px;
+  padding:7px 9px; font:700 12px/1.3 var(--font); color:inherit; background:#fff}
+.hp-hang input:focus{outline:none; border-color:var(--xanh)}
+.hp-hang input[data-hs-gio]{flex:none; width:70px; text-align:center}
 .act-ds{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
   gap:10px; margin:12px 0}
 .act-o{border:1px solid var(--vien); border-radius:11px; padding:10px 12px}
@@ -455,7 +483,12 @@ a{color:inherit}
    ⛔ Chỉ đổi dashboard.html — thẻ bài bên `lop.html` (học sinh xem) có bản
    CSS/HTML RIÊNG (mỗi trang một file, không dùng chung stylesheet), không
    đụng gì tới thay đổi này. */
-.rc-menu{position:fixed; z-index:95; width:228px; background:var(--the);
+/* ⭐ v1.36.0 — menu ⚙ dùng ICON NÉT (Lucide) thay 4 emoji cũ; icon của mục
+   Ẩn/Khoá đổi theo trạng thái thẻ (mắt gạch ↔ mắt, ổ khoá đóng ↔ mở) — dựng
+   trong `moRcMenu` từ bảng `IC_MENU`. */
+.rc-menu button svg{width:16px; height:16px; flex:none; stroke:currentColor;
+  fill:none; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+.rc-menu{position:fixed; z-index:95; width:210px; background:var(--the);
   border:1px solid var(--vien); border-radius:14px; box-shadow:0 16px 40px rgba(16,40,36,.22);
   padding:6px; opacity:0; pointer-events:none; transform:translateY(-6px) scale(.97);
   transition:opacity .16s var(--em), transform .16s var(--em)}
@@ -1164,14 +1197,45 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="cx-ai" id="cxAi"></div>
 
 <!-- ⭐ v1.34.0 — menu ⚙ Cài đặt thẻ (dải icon trong khu vực điểm mỗi thẻ bài, xem `.diem-ic`) -->
-<!-- ⭐ v1.35.0 — cả 4 mục chạy thật; chữ 2 mục giữa đổi theo trạng thái thẻ đang
-     mở (Ẩn ↔ Hiện lại · Khoá ↔ Mở khoá), xem `moRcMenu`. Xoá là 2 bước. -->
+<!-- ⭐ v1.36.0 (thầy chốt 02/09) — 4 mục CHỮ NGẮN + ICON NÉT; RUỘT CỦA CẢ 4 NÚT
+     DO `moRcMenu` DỰNG LẠI mỗi lần mở (icon + chữ đổi theo trạng thái thẻ:
+     Ẩn ↔ Hiện lại · Tạm khoá ↔ Mở khoá). Mọi mục đều đi qua HỘP XÁC NHẬN
+     `#xnPop` bên dưới — không mục nào ghi thẳng nữa. -->
 <div class="rc-menu" id="rcMenu">
-  <button type="button" data-rc="han">🕐 <span>Đổi hạn nộp</span></button>
-  <button type="button" data-rc="an" id="rcAn">🙈 <span>Ẩn bài với học sinh</span></button>
-  <button type="button" data-rc="khoa" id="rcKhoa">🔒 <span>Tạm khoá — hiện thẻ, không cho mở</span></button>
+  <button type="button" data-rc="han" id="rcHan"></button>
+  <button type="button" data-rc="an" id="rcAn"></button>
+  <button type="button" data-rc="khoa" id="rcKhoa"></button>
   <div class="chia"></div>
-  <button type="button" class="nguy" data-rc="xoa" id="rcXoa">🗑 <span>Xoá bài tập</span></button>
+  <button type="button" class="nguy" data-rc="xoa" id="rcXoa"></button>
+</div>
+
+<!-- ⭐ v1.36.0 — HỘP XÁC NHẬN dùng chung cho MỌI hành động của menu ⚙ (ẩn ·
+     hiện lại · tạm khoá · mở khoá · xoá · đặt hạn · về hạn mặc định · khôi
+     phục). Hiện NGAY CẠNH menu, menu vẫn mở phía sau để thầy thấy mình đang
+     ở thẻ nào. Xem `moXnPop`. -->
+<div class="pop-nho" id="xnPop">
+  <h4 id="xnTieu">Xác nhận</h4>
+  <p id="xnChu"></p>
+  <div class="nho-nut">
+    <button class="nut" type="button" id="xnHuy">Huỷ</button>
+    <button class="nut chinh" type="button" id="xnOk">Xác nhận</button>
+  </div>
+</div>
+
+<!-- ⭐ v1.36.0 — HỘP ĐỔI HẠN NỘP: nhỏ, ĐÚNG MỘT việc (ngày + giờ). Thay hộp
+     xem bài to đùng mà mục "Đổi hạn nộp" từng mở ra (thầy chốt 02/09). -->
+<div class="pop-nho" id="hanPop">
+  <h4>Đổi hạn nộp</h4>
+  <p id="hpTen"></p>
+  <div class="hp-hang">
+    <input type="date" id="hpNgay">
+    <input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" id="hpGio" data-hs-gio="1">
+  </div>
+  <p class="nhat" id="hpGhi"></p>
+  <div class="nho-nut">
+    <button class="nut" type="button" id="hpBo">Về mặc định</button>
+    <button class="nut chinh" type="button" id="hpLuu">Đặt hạn này</button>
+  </div>
 </div>
 </div>
 
@@ -1209,7 +1273,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=34"></script>
+<script src="config.js?v=35"></script>
 <script src="js/chung.js?v=22"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
@@ -1512,7 +1576,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       '</div>';
     }
 
-    return act + tay + em + veSuaHan(b) +
+    // ⭐ v1.36.0 — BỎ ô "Hạn riêng cho thẻ này" khỏi hộp xem bài (thầy chốt
+    // 02/09: đổi hạn phải là một hộp nhỏ riêng). Đường duy nhất nay là
+    // ⚙ Cài đặt thẻ → Đổi hạn nộp → `#hanPop`.
+    return act + tay + em +
       '<div class="bai-nut">' +
         '<button class="nut nho" data-xem="' + A.chuAnToan(b.id) + '">Xem trang của học sinh</button>' +
         (t.thieu.length ? '<button class="nut nho" data-chep="' + A.chuAnToan(b.id) +
@@ -1551,23 +1618,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     el.value = d.length > 2 ? d.slice(0, 2) + ':' + d.slice(2) : d;
   }
 
-  function veSuaHan(b) {
-    var o = hsTach(b);
-    var id = A.chuAnToan(b.id);
-    return '<div class="hs-o">' +
-      '<b>Hạn riêng cho thẻ này</b>' +
-      '<input type="date" data-hs-ngay="' + id + '" value="' + A.chuAnToan(o.ngay) + '">' +
-      '<input type="text" inputmode="numeric" maxlength="5" placeholder="HH:MM" ' +
-      'data-hs-gio="' + id + '" value="' + A.chuAnToan(o.gio) + '">' +
-      '<button class="nut nho chinh" data-hs-luu="' + id + '">Đặt hạn này</button>' +
-      (A.daSuaHan(b)
-        ? '<button class="nut nho" data-hs-bo="' + id + '">Về hạn mặc định</button>' : '') +
-      '<span class="hs-tinh">' + (A.daSuaHan(b)
-        ? 'Đang dùng hạn riêng — cú đẩy bài từ app không xoá hạn này.'
-        : 'Đang dùng hạn mặc định thầy đặt lúc đẩy bài. Đặt ở đây là chỉ đổi MỘT thẻ này.')
-      + ' Không gõ giờ thì lấy 23:59.</span>' +
-      '</div>';
-  }
+  // ⭐ v1.36.0 — `veSuaHan()` ĐÃ GỠ: ô hạn nay là hộp riêng `#hanPop` (dựng sẵn
+  // trong HTML, đổ dữ liệu ở `moHanPop`), không còn HTML nhúng trong hộp xem bài.
 
   // Mã tài liệu Firestore: mã bài có thể mang ký tự kho cấm (nhất là dấu `/` đi
   // từ lesson key thầy gõ). Thay hết cho an toàn, và thêm tiền tố `b_` để không
@@ -2717,30 +2769,169 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
   // ⭐ v1.32.0 — menu ⚙ Cài đặt thẻ (`#rcMenu`, một menu dùng chung cho mọi
   // thẻ bài, định vị lại mỗi lần mở — cùng nếp với `moBangCx()` ở trên).
-  var RC_ID = null;
-  var RC_XOA_CHO = false;   // v1.35.0 — đã bấm "Xoá" lần 1, chờ lần 2
-  function moRcMenu(btn, id) {
-    RC_ID = id;
-    RC_XOA_CHO = false;
-    var m = $('#rcMenu');
-    // ⭐ v1.35.0 — chữ menu theo trạng thái thẻ đang mở (xem `A.trangThaiThe`).
-    var bRc = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
-    var tt = bRc ? A.trangThaiThe(bRc) : '';
-    $('#rcAn').querySelector('span').textContent =
-      tt === 'an' ? 'Hiện lại bài cho học sinh' : 'Ẩn bài với học sinh';
-    $('#rcKhoa').querySelector('span').textContent =
-      tt === 'khoa' ? 'Mở khoá bài' : 'Tạm khoá — hiện thẻ, không cho mở';
-    $('#rcXoa').querySelector('span').textContent = 'Xoá bài tập';
-    $('#rcXoa').classList.remove('xn');
-    m.classList.add('mo');
-    var r = btn.getBoundingClientRect(), mr = m.getBoundingClientRect();
+  // ⭐ v1.36.0 — ICON NÉT cho menu ⚙ (thay 4 emoji). Cùng bộ nét với icon khắp
+  // trang: viewBox 24, `fill:none`, màu ăn theo `currentColor` (xem CSS
+  // `.rc-menu button svg`) — nên mục "Xoá" tự đỏ theo `.nguy`.
+  var IC_MENU = {
+    han: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6"/><path d="M12 7.3v5l3.4 2"/></svg>',
+    an: '<svg viewBox="0 0 24 24"><path d="M3 3l18 18"/>' +
+        '<path d="M10.7 5.4A9.9 9.9 0 0 1 12 5.3c5.3 0 8.7 4.3 9.4 6-.3.8-1.2 2.2-2.6 3.5"/>' +
+        '<path d="M6.5 7.1A13.3 13.3 0 0 0 2.6 11.3c.7 1.7 4.1 6 9.4 6 1.5 0 2.9-.35 4.1-.93"/>' +
+        '<path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>',
+    hien: '<svg viewBox="0 0 24 24"><path d="M2.6 11.3C3.3 9.6 6.7 5.3 12 5.3s8.7 4.3 9.4 6c-.7 1.7-4.1 6-9.4 6s-8.7-4.3-9.4-6z"/>' +
+          '<circle cx="12" cy="11.3" r="2.9"/></svg>',
+    khoa: '<svg viewBox="0 0 24 24"><rect x="4.7" y="10.3" width="14.6" height="10.2" rx="2.3"/>' +
+          '<path d="M8.3 10.3V7.2a3.7 3.7 0 0 1 7.4 0v3.1"/></svg>',
+    mokhoa: '<svg viewBox="0 0 24 24"><rect x="4.7" y="10.3" width="14.6" height="10.2" rx="2.3"/>' +
+            '<path d="M8.3 10.3V7.2a3.7 3.7 0 0 1 7.2-1.1"/></svg>',
+    xoa: '<svg viewBox="0 0 24 24"><path d="M4.2 6.9h15.6"/>' +
+         '<path d="M9.6 6.9V5.4a1.4 1.4 0 0 1 1.4-1.4h2a1.4 1.4 0 0 1 1.4 1.4v1.5"/>' +
+         '<path d="M6.4 6.9l.85 12.1a1.8 1.8 0 0 0 1.8 1.7h6a1.8 1.8 0 0 0 1.8-1.7l.85-12.1"/>' +
+         '<path d="M10.5 10.6v6.2M13.5 10.6v6.2"/></svg>'
+  };
+
+  // Đặt một hộp `position:fixed` NGAY CẠNH một cái neo (nút hoặc chính menu ⚙):
+  // ưu tiên bên phải, hết chỗ thì lật sang trái, và luôn kẹp trong khung nhìn.
+  // Dùng chung cho menu ⚙ · hộp xác nhận · hộp đổi hạn.
+  function datCanh(el, neo) {
+    var r = neo.getBoundingClientRect();
+    var mr = el.getBoundingClientRect();
     var x = r.right + 8;
     if (x + mr.width > document.documentElement.clientWidth - 8) x = r.left - mr.width - 8;
     var y = Math.min(r.top, window.innerHeight - mr.height - 8);
-    m.style.left = Math.round(Math.max(8, x)) + 'px';
-    m.style.top = Math.round(Math.max(8, y)) + 'px';
+    el.style.left = Math.round(Math.max(8, x)) + 'px';
+    el.style.top = Math.round(Math.max(8, y)) + 'px';
   }
-  function dongRcMenu() { $('#rcMenu').classList.remove('mo'); RC_ID = null; RC_XOA_CHO = false; }
+
+  var RC_ID = null;
+  function moRcMenu(btn, id) {
+    RC_ID = id;
+    var m = $('#rcMenu');
+    // ⭐ v1.35.0 — chữ menu theo trạng thái thẻ đang mở (xem `A.trangThaiThe`).
+    // ⭐ v1.36.0 — chữ NGẮN (thầy chốt: "Ẩn bài" / "Tạm khoá", phần giải thích
+    // dài dời hẳn sang hộp xác nhận) + icon đổi theo trạng thái.
+    var bRc = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
+    var tt = bRc ? A.trangThaiThe(bRc) : '';
+    var muc = function (el, ic, chu) { $(el).innerHTML = ic + '<span>' + chu + '</span>'; };
+    muc('#rcHan', IC_MENU.han, 'Đổi hạn nộp');
+    muc('#rcAn', tt === 'an' ? IC_MENU.hien : IC_MENU.an, tt === 'an' ? 'Hiện lại bài' : 'Ẩn bài');
+    muc('#rcKhoa', tt === 'khoa' ? IC_MENU.mokhoa : IC_MENU.khoa, tt === 'khoa' ? 'Mở khoá' : 'Tạm khoá');
+    muc('#rcXoa', IC_MENU.xoa, 'Xoá bài tập');
+    m.classList.add('mo');
+    datCanh(m, btn);
+  }
+  function dongRcMenu() { $('#rcMenu').classList.remove('mo'); RC_ID = null; }
+
+  // ================================================================
+  // ⭐ v1.36.0 — HỘP XÁC NHẬN DÙNG CHUNG (`#xnPop`)
+  //
+  // Thầy chốt 02/09: MỌI hành động đổi trạng thái thẻ phải hỏi lại một bước —
+  // thay cách "bấm Xoá hai lần" của v1.35.0 (dễ bấm nhầm mà không kịp đọc).
+  // Hộp hiện NGAY CẠNH menu ⚙ (menu vẫn mở phía sau), nên thầy luôn thấy mình
+  // đang thao tác trên thẻ nào.
+  // ⛔ `XN_OK` phải được XOÁ TRƯỚC khi gọi (xem nút #xnOk): hàm chạy xong có
+  // thể mở lại chính hộp này cho một việc khác.
+  // ================================================================
+  var XN_OK = null;
+  function moXnPop(neo, o) {
+    XN_OK = o.khiOk || null;
+    $('#xnTieu').textContent = o.tieuDe || 'Xác nhận';
+    $('#xnChu').textContent = o.chu || '';
+    var ok = $('#xnOk');
+    ok.textContent = o.nutOk || 'Xác nhận';
+    ok.classList.toggle('do', !!o.nguy);
+    ok.classList.toggle('chinh', !o.nguy);
+    var p = $('#xnPop');
+    p.classList.add('mo');
+    datCanh(p, neo);
+  }
+  function dongXnPop() { $('#xnPop').classList.remove('mo'); XN_OK = null; }
+
+  // Lời hỏi cho từng hành động. `dich` = trạng thái SẮP đặt ('' là gỡ về bình thường).
+  function loiHoiTt(dich, dangCo, ten) {
+    var t = '“' + ten + '”';
+    if (dich === 'an') return { tieuDe: 'Ẩn bài này?', nutOk: 'Ẩn bài',
+      chu: 'Học sinh sẽ không còn thấy thẻ ' + t + ', kể cả khi mở thẳng đường dẫn bài. ' +
+           'Điểm các em đã làm vẫn giữ nguyên, thầy hiện lại lúc nào cũng được.' };
+    if (dich === 'khoa') return { tieuDe: 'Tạm khoá bài này?', nutOk: 'Tạm khoá',
+      chu: 'Thẻ ' + t + ' vẫn hiện nhưng học sinh không mở được, và đồng hồ đếm ngược DỪNG lại. ' +
+           'Mở khoá thì hạn cũ chạy tiếp nguyên vẹn.' };
+    if (dich === 'xoa') return { tieuDe: 'Xoá bài tập này?', nutOk: 'Xoá bài', nguy: true,
+      chu: 'Thẻ ' + t + ' biến mất với mọi người. Dữ liệu bài và điểm AWord VẪN CÒN — ' +
+           'khôi phục ở icon kho trên nút lớp.' };
+    if (dangCo === 'an') return { tieuDe: 'Hiện lại bài?', nutOk: 'Hiện lại',
+      chu: 'Học sinh sẽ thấy lại thẻ ' + t + ' sau nhiều nhất một phút.' };
+    if (dangCo === 'khoa') return { tieuDe: 'Mở khoá bài?', nutOk: 'Mở khoá',
+      chu: 'Học sinh mở được bài ' + t + ' trở lại, đồng hồ chạy tiếp theo đúng hạn cũ.' };
+    return { tieuDe: 'Về trạng thái bình thường?', nutOk: 'Đồng ý',
+      chu: 'Thẻ ' + t + ' trở lại như chưa từng chỉnh gì.' };
+  }
+
+  // ================================================================
+  // ⭐ v1.36.0 — HỘP ĐỔI HẠN NỘP (`#hanPop`) — MỘT việc duy nhất
+  //
+  // Trước đây mục "Đổi hạn nộp" mở nguyên hộp xem bài (danh sách act, ai chưa
+  // xong, nút xem thử…) — thầy chốt 02/09 là quá phức tạp. Nay chỉ còn ô ngày +
+  // ô giờ + hai nút, và bấm "Đặt hạn này" còn phải qua hộp xác nhận.
+  // Ô giờ vẫn ăn `epGio24()` nhờ thuộc tính `data-hs-gio` (bắt ở tầng document).
+  // ================================================================
+  var HP_ID = null;
+  function moHanPop(id, neo) {
+    var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    HP_ID = id;
+    var o = hsTach(b);
+    $('#hpTen').textContent = A.tenBai(b);
+    $('#hpNgay').value = o.ngay;
+    $('#hpGio').value = o.gio;
+    $('#hpGhi').textContent = (A.daSuaHan(b)
+      ? 'Thẻ này đang dùng hạn riêng. '
+      : 'Thẻ này đang dùng hạn mặc định lúc đẩy bài. ') + 'Bỏ trống giờ thì lấy 23:59.';
+    $('#hpBo').hidden = !A.daSuaHan(b);
+    var p = $('#hanPop');
+    p.classList.add('mo');
+    datCanh(p, neo);
+  }
+  function dongHanPop() { $('#hanPop').classList.remove('mo'); HP_ID = null; }
+
+  // Ba nút của hai hộp nhỏ. Gắn thẳng (không qua tay bắt chung trên document)
+  // vì đây là phần tử TĨNH, không bị vẽ lại bao giờ.
+  $('#xnHuy').onclick = dongXnPop;
+  $('#xnOk').onclick = function () {
+    var lam = XN_OK;                 // ⛔ giữ ra biến rồi mới đóng: `dongXnPop`
+    dongXnPop();                     //    xoá XN_OK, và `lam()` có thể mở lại hộp.
+    dongRcMenu();
+    if (lam) lam();
+  };
+  $('#hpLuu').onclick = function () {
+    var id = HP_ID;
+    if (!id) return;
+    var ngay = String($('#hpNgay').value || '').trim();
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) return void baoToast('Chọn ngày hạn trước đã.');
+    var gio = String($('#hpGio').value || '').trim();
+    // Cùng luật với app myLesson (`mocHanBai`): có ngày mà chưa gõ giờ thì lấy
+    // 23:59 — đừng để hai bên hiểu "chưa gõ giờ" theo hai kiểu.
+    if (!/^\d{2}:\d{2}$/.test(gio)) gio = '23:59';
+    var moc = ngay + 'T' + gio;
+    var d = ngay.split('-');
+    moXnPop($('#hanPop'), {
+      tieuDe: 'Đặt hạn nộp mới?',
+      chu: 'Hạn của thẻ này thành ' + gio + ' ngày ' + (+d[2]) + '/' + (+d[1]) + '/' + d[0] +
+           '. Hạn riêng thắng cả khi thầy đẩy lại bài từ app; muốn bỏ thì bấm “Về mặc định”.',
+      nutOk: 'Đặt hạn này',
+      khiOk: function () { dongHanPop(); hsGhi(id, moc); }
+    });
+  };
+  $('#hpBo').onclick = function () {
+    var id = HP_ID;
+    if (!id) return;
+    moXnPop($('#hanPop'), {
+      tieuDe: 'Về hạn mặc định?',
+      chu: 'Bỏ hạn riêng của thẻ này, quay lại đúng hạn thầy đặt lúc đẩy bài từ app.',
+      nutOk: 'Về mặc định',
+      khiOk: function () { dongHanPop(); hsGhi(id, ''); }
+    });
+  };
 
   // ⭐ v1.35.0 — ghi TRẠNG THÁI THẺ vào kho `lessonHan` (cùng tài liệu với hạn
   // riêng). `tt` = '' (bình thường) | 'an' | 'khoa' | 'xoa'. Cùng luật với `hsGhi`:
@@ -3055,37 +3246,45 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         else moPopChiTietAct(bXh, tXh);
         return;
       }
+      // ⭐ v1.36.0 — "Đổi hạn nộp" nay mở HỘP NHỎ `#hanPop` (một việc duy nhất),
+      // không còn mở nguyên hộp xem bài. Định vị TRƯỚC khi đóng menu — hộp bám
+      // vào chỗ menu đang đứng.
       var rcHan = e.target.closest('[data-rc="han"]');
       if (rcHan) {
         var idHan = RC_ID;
+        if (idHan) moHanPop(idHan, $('#rcMenu'));
         dongRcMenu();
-        if (idHan) moBaiModal(idHan);
         return;
       }
       // ⭐ v1.35.0 — Ẩn/Hiện lại · Khoá/Mở khoá: bấm là đổi (đang ở trạng thái đó
-      // thì về bình thường). Xoá là 2 BƯỚC: lần 1 đổi chữ, lần 2 mới ghi.
+      // thì về bình thường).
+      // ⭐ v1.36.0 — cả ba mục đi qua HỘP XÁC NHẬN, không ghi thẳng nữa; menu vẫn
+      // mở phía sau cho tới khi thầy chọn xong (`#xnOk` tự đóng cả hai).
       var rcTt = e.target.closest('[data-rc="an"],[data-rc="khoa"],[data-rc="xoa"]');
       if (rcTt) {
         var idTt = RC_ID;
         if (!idTt) return void dongRcMenu();
         var muon = rcTt.dataset.rc;
-        if (muon === 'xoa' && !RC_XOA_CHO) {
-          RC_XOA_CHO = true;
-          rcTt.classList.add('xn');
-          rcTt.querySelector('span').textContent = 'Bấm lần nữa để xoá';
-          return;
-        }
         var bTt2 = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === idTt; })[0];
         var hienTai = bTt2 ? A.trangThaiThe(bTt2) : '';
-        dongRcMenu();
-        ttGhi(idTt, hienTai === muon ? '' : muon);
+        var dich = (hienTai === muon) ? '' : muon;
+        var oHoi = loiHoiTt(dich, hienTai, bTt2 ? A.tenBai(bTt2) : 'này');
+        oHoi.khiOk = function () { ttGhi(idTt, dich); };
+        moXnPop($('#rcMenu'), oHoi);
         return;
       }
       // ⭐ v1.35.0 — mục KHO: Khôi phục bài đã xoá (về trạng thái bình thường).
+      // ⭐ v1.36.0 — hỏi lại một bước như mọi hành động khác.
       var kp = e.target.closest('[data-kp]');
       if (kp) {
-        kp.disabled = true;
-        ttGhi(kp.dataset.kp, '', function () { veKho(); });
+        var idKp = kp.dataset.kp;
+        var bKp = A.baiCuaLop(DL, LOP_CHON, 'kho').filter(function (x) { return x.id === idKp; })[0];
+        moXnPop(kp, {
+          tieuDe: 'Khôi phục bài này?',
+          chu: 'Thẻ “' + (bKp ? A.tenBai(bKp) : 'này') + '” hiện lại với học sinh như trước khi xoá.',
+          nutOk: 'Khôi phục',
+          khiOk: function () { ttGhi(idKp, '', function () { veKho(); }); }
+        });
         return;
       }
       var gvKho = e.target.closest('[data-gv-kho]');
@@ -3122,22 +3321,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var xem = e.target.closest('[data-xem]');
       if (xem) return void moTrangHs(xem.dataset.xem);
 
-      /* ⭐ v1.20.0 — sửa hạn riêng cho một thẻ (nay nằm trong hộp xem bài). */
-      var hsLuu = e.target.closest('[data-hs-luu]');
-      if (hsLuu) {
-        var idL = hsLuu.dataset.hsLuu;
-        var oNgay = document.querySelector('[data-hs-ngay="' + idL.replace(/"/g, '\\"') + '"]');
-        var oGio = document.querySelector('[data-hs-gio="' + idL.replace(/"/g, '\\"') + '"]');
-        var ngay = oNgay ? String(oNgay.value || '').trim() : '';
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(ngay)) return void baoToast('Chọn ngày hạn trước đã.');
-        var gio = oGio ? String(oGio.value || '').trim() : '';
-        // Cùng luật với app myLesson (`mocHanBai`): có ngày mà chưa gõ giờ thì
-        // lấy 23:59 — đừng để hai bên hiểu "chưa gõ giờ" theo hai kiểu.
-        if (!/^\d{2}:\d{2}$/.test(gio)) gio = '23:59';
-        return void hsGhi(idL, ngay + 'T' + gio, hsLuu);
-      }
-      var hsBo = e.target.closest('[data-hs-bo]');
-      if (hsBo) return void hsGhi(hsBo.dataset.hsBo, '', hsBo);
+      /* ⭐ v1.20.0 — sửa hạn riêng cho một thẻ. ⭐ v1.36.0 — hai tay bắt
+         `[data-hs-luu]` / `[data-hs-bo]` ĐÃ GỠ: ô hạn không còn nằm trong hộp
+         xem bài nữa, nay là hộp riêng `#hanPop` với nút tĩnh (#hpLuu/#hpBo). */
 
       // ⭐ #10 — sidebar "Xem như học sinh": mở lop.html bằng mã em đang chọn
       // ở đúng hàng đó (kiểm tính năng, không phải lối vào chính).
@@ -3235,8 +3421,15 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if ($('#cxAi').classList.contains('mo') &&
         !e.target.closest('#cxAi') && !e.target.closest('.nut-cx')) dongPopCx();
       if (!e.target.closest('.xoa-cum')) dongXoaCum(null);
-      if ($('#rcMenu').classList.contains('mo') &&
-        !e.target.closest('#rcMenu') && !e.target.closest('[data-rail-caidat]')) dongRcMenu();
+      // ⭐ v1.36.0 — ba hộp nối nhau (menu ⚙ → hạn → xác nhận): bấm ra NGOÀI CẢ
+      // BA mới đóng, kẻo bấm sang hộp bên cạnh là hộp kia tự tắt mất.
+      var trongCum = e.target.closest('#rcMenu') || e.target.closest('#xnPop') ||
+                     e.target.closest('#hanPop') || e.target.closest('[data-rail-caidat]');
+      if (!trongCum) {
+        if ($('#rcMenu').classList.contains('mo')) dongRcMenu();
+        if ($('#xnPop').classList.contains('mo')) dongXnPop();
+        if ($('#hanPop').classList.contains('mo')) dongHanPop();
+      }
     });
     $('#chatO').oninput = noOChat;
     /* Enter = gửi · Shift+Enter = xuống dòng. */
@@ -3264,6 +3457,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       dongPopCx();
       dongXoaCum(null);
       dongRcMenu();
+      dongXnPop();      // v1.36.0
+      dongHanPop();     // v1.36.0
     });
 
     // ⭐ v1.34.0 — `.the[data-id]` đổi từ <button> sang <div role="button">

@@ -427,8 +427,18 @@ i.m-la{background:var(--m-la)}
   align-items:center; column-gap:7px}
 .doi-ten{font-size:9.5px; font-weight:800; letter-spacing:.02em; color:#3D5450;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.doi-bar{height:7px; border-radius:99px; background:#E7EDEB; overflow:hidden}
-.doi-bar i{display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
+/* ⛔ (02/09/2026) BỎ `overflow:hidden` khỏi `.doi-bar`: avatar 14px cao gấp đôi thanh 7px,
+   để overflow là bị chém cụt còn một vệt. Bỏ được vì vệt màu `i` vốn TỰ bo tròn hai đầu.
+   ⚠️ `.the-diem` bọc ngoài VẪN có `overflow:hidden` — nên 14px là VỪA KHÍT hàng 19px (thẻ
+   4 đội) và 15px (thẻ 5 đội); to hơn nữa sẽ bị chém ở đó. */
+.doi-bar{position:relative; height:7px; border-radius:99px; background:#E7EDEB}
+.doi-bar i{position:absolute; inset:0 auto 0 0; display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
+/* ⭐ AVATAR TỪNG EM TRÊN THANH ĐỘI (thầy chốt 02/09: 14px, có viền trắng) */
+.av-thanh{position:absolute; top:50%; width:14px; height:14px; border-radius:999px;
+  transform:translate(-50%,-50%); overflow:hidden; background:#CFDCD9;
+  display:grid; place-items:center; font:800 6px/1 var(--font); color:#fff;
+  box-shadow:0 0 0 1.5px #fff, 0 1px 2px rgba(22,35,42,.35)}
+.av-thanh img{width:100%; height:100%; object-fit:cover; display:block}
 .doi-so{font-size:10.5px; font-weight:800; text-align:right; color:#54706B;
   font-variant-numeric:tabular-nums}
 .doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
@@ -1127,7 +1137,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=39"></script>
+<script src="config.js?v=40"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -1459,12 +1469,44 @@ function veDiem(b, batDo, hienThieu){
    tham số `hienThieu` + nhánh `co-thieu`, không còn dùng `b.thieu` ở đây nữa
    (biến này vẫn được `spDoDaNop()` tính để phục vụ bảng cả lớp cũ — buổi mô
    hình 1, chưa có `doiSp` — xem `moPopCaLop`/`xepCaLop`). */
+/* ⭐ 02/09/2026 (thầy chốt) — AVATAR TỪNG EM ĐẶT TRÊN THANH ĐỘI.
+   · Vị trí = điểm của em ÷ điểm cao nhất CẢ LỚP × 100% (thước chung — xem `tinhDoiSp`).
+   · TRÙNG ĐIỂM thì KHÔNG đẩy lệch: em nộp SỚM hơn nằm ĐÈ LÊN TRÊN ("ưu tiên nộp sớm, người
+     sau muốn vượt phải hơn điểm"). Lớp trên/dưới do THỨ TỰ DOM quyết định (thẻ vẽ sau nằm
+     trên) nên vẽ em nộp MUỘN TRƯỚC. ⛔ Đừng bịa `z-index` cho từng avatar.
+   · Thanh màu vẫn là TỔNG ĐỘI thang 200 — khác thước với avatar, nên avatar CÓ THỂ nằm quá
+     vệt màu. Cố ý, không phải lỗi vẽ.
+   ⛔ Bản sao của hàm này còn ở `dashboard.html` và `sp-chitiet.html` — sửa là sửa cả ba. */
+function avThanhHtml(d, lopGoc){
+  if (!d.maxLop) return '';
+  return (d.hs || []).slice()
+    .sort(function(a, b){ return (b.luc || 0) - (a.luc || 0); })
+    .map(function(h){
+      var vt = Math.max(0, Math.min(100, h.so / d.maxLop * 100));
+      return '<span class="av-thanh" style="left:' + vt.toFixed(1) + '%" title="' +
+        A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
+        '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
+        A.chuAnToan(avChuTat(h.ten)) + '</span>';
+    }).join('');
+}
+/* Chữ tắt khi em chưa có ảnh: 2 chữ đầu của HAI TỪ CUỐI ("HOÀNG CHI" → "HC") */
+function avChuTat(ten){
+  var tu = String(ten || '').trim().split(/\s+/).filter(Boolean);
+  if (!tu.length) return '?';
+  if (tu.length === 1) return tu[0].charAt(0).toUpperCase();
+  return (tu[tu.length - 2].charAt(0) + tu[tu.length - 1].charAt(0)).toUpperCase();
+}
+
 function veDoiSpKhoi(b){
   var doiSp = b.doiSp || [];
+  /* ⛔ Ảnh nằm theo TÊN GỐC có gạch ("B2-B") — biến `LOP`, KHÔNG phải `LOP_DL` ("B2B").
+     Xem khối chú thích "HAI TÊN LỚP, đừng lẫn" chỗ nhận dữ liệu. */
+  var lopGoc = LOP || LOP_DL;
   var thanh = doiSp.map(function(d){
     return '<span class="doi-dong">' +
       '<span class="doi-ten" title="' + A.chuAnToan(d.ten) + '">' + A.chuAnToan(d.ten) + '</span>' +
-      '<span class="doi-bar"><i class="' + d.mau + '" style="width:' + d.pt + '%"></i></span>' +
+      '<span class="doi-bar"><i class="' + d.mau + '" style="width:' + d.pt + '%"></i>' +
+        avThanhHtml(d, lopGoc) + '</span>' +
       '<span class="doi-so ' + d.mau + '">' + d.tong + '</span>' +
     '</span>';
   }).join('');
@@ -2403,7 +2445,9 @@ function spDoiSpFs(buoiId){
   var db = (A.CFG && A.CFG.AWORD_DB) || {};
   var body = { structuredQuery: {
     from: [{ collectionId: 'tongLoi' }],
-    select: { fields: [{ fieldPath: 'student' }, { fieldPath: 'myTeam' }, { fieldPath: 'errors' }] },
+    // ⭐ 02/09 — thêm `capNhatLuc`: cần mốc nộp để xếp trên/dưới khi hai em TRÙNG ĐIỂM
+    // (avatar trên thanh đội). Thiếu trường này thì mọi em `luc = 0`, chồng lớp hú hoạ.
+    select: { fields: [{ fieldPath: 'student' }, { fieldPath: 'myTeam' }, { fieldPath: 'errors' }, { fieldPath: 'capNhatLuc' }] },
     limit: 300
   } };
   return fetch(goc + '/spBuoi/' + encodeURIComponent(buoiId) + ':runQuery?key=' + db.apiKey, {
@@ -2434,20 +2478,31 @@ function mauCoDinhDoi(tb){
    thẻ + pop-up. Bạn nào chưa nộp vẫn hiện, tính 0 lỗi (không bỏ sót — thầy
    chốt "thể hiện rõ ràng mỗi bạn đã bắt được bao nhiêu lỗi"). */
 function tinhDoiSp(teams, docs){
-  var theoTen = {};
+  var theoTen = {}, lucTen = {};
   (docs || []).forEach(function(d){
     var ten = khongDau(d.student);
     if (!ten) return;
     theoTen[ten] = (theoTen[ten] || 0) + soLoiSong(d.errors);
+    /* ⭐ 02/09 — mốc nộp, để phân trên/dưới khi HAI EM TRÙNG ĐIỂM (xem `avThanhHtml`) */
+    var l = +d.capNhatLuc || 0;
+    if (l && (!lucTen[ten] || l < lucTen[ten])) lucTen[ten] = l;
   });
   var doi = (teams || []).map(function(t){
     var hs = (t.members || []).map(function(m){
-      return { ten: m, so: theoTen[khongDau(m)] || 0 };
+      return { ten: m, so: theoTen[khongDau(m)] || 0, luc: lucTen[khongDau(m)] || 0 };
     }).sort(function(a, b){ return b.so - a.so; });
     var tong = hs.reduce(function(s, e){ return s + e.so; }, 0);
     return { team: t.team, ten: 'TEAM ' + t.team, tong: tong,
       tb: hs.length ? tong / hs.length : 0, hs: hs };
   });
+
+  /* ⭐ 02/09 (thầy chốt) — THƯỚC CHUNG CẢ LỚP cho avatar: điểm cao nhất mà MỘT EM đạt được
+     trong cả buổi. Em điểm cao hơn LUÔN đứng cao hơn, kể cả khác đội.
+     ⛔ ĐỪNG neo em giỏi nhất vào TỔNG ĐỘI (mỗi đội một thước) — đo thật buổi A2B ra 13 cặp
+     sai, có cả cảnh em 38 điểm đứng trên em 42 điểm. Xem GHI CHU DU AN.md 02/09. */
+  var maxLop = 0;
+  doi.forEach(function(d){ d.hs.forEach(function(h){ if (h.so > maxLop) maxLop = h.so; }); });
+  doi.forEach(function(d){ d.maxLop = maxLop; });
 
   /* Đội đã có màu cố định (TB ≥20) đứng ngoài; đội còn lại xếp HẠNG theo tổng
      lỗi: hạng 1 xanh lá, 2 xanh dương, 3 cam, 4-5 đỏ — thầy chốt riêng: nhóm

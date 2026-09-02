@@ -827,14 +827,25 @@ body.mo-menu .side.trai{transform:none}
    ⭐ 27/08 — thầy chốt mẫu mới: khung to hơn, tiêu đề SPEAKING CHECK CỐ ĐỊNH có
    sao lấp lánh (không đổi theo trạng thái nữa) + dòng "in Andrew Classes" bên
    dưới; nút đóng X thay nút "Đóng" nhỏ; trạng thái XONG bỏ vòng xoay + tiêu đề
-   phụ, chỉ còn 2 nút to Chấm bài (xanh lá) / Phản biện (xanh dương). */
+   phụ, chỉ còn 2 nút to Chấm bài (xanh lá) / Phản biện (xanh dương).
+   ⭐⭐ 02/09/2026 (web v1.53.0) — THẦY DUYỆT QUA BẢN MẪU
+   `mau-web/mau-sp-popup-02-09-2026.html`, đổi 4 việc:
+     • Hộp rộng 400 → 460px, đệm trên 34 → 22px.
+     • Slogan ANDREW CLASSES lên TRÊN CÙNG, nét mảnh; ⛔ BỎ HẲN dòng "in Andrew
+       Classes" dưới tiêu đề (`.sp-sub` đã gỡ — đừng dựng lại).
+     • Dòng "Em chấm TEAM X" TÁCH KHỎI `.sp-phu` thành khối riêng `.sp-doi`.
+       ⛔ Cố ý tách: `.sp-phu` còn phải gánh MỌI câu báo lỗi ("Mạng đang chậm…",
+       "Đội 3 chưa được xếp chấm đội nào."), nhét chung thì chỉnh kiểu chữ cho
+       tên đội là câu lỗi cũng to đậm theo — đúng họ bẫy mượn tên `ngoaidoi`
+       ghi ngay bên dưới.
+     • Hai ô tròn đỏ `.sp-bad` ở góc trên phải mỗi nút — số do `spDemViec()` đọc. */
 .sp-nen{position:fixed; inset:0; z-index:44; background:rgba(8,18,16,.62);
   backdrop-filter:blur(3px); display:grid; place-items:center; padding:20px;
   opacity:0; pointer-events:none; transition:opacity .22s}
 .sp-nen.mo{opacity:1; pointer-events:auto}
-.sp-hop{position:relative; width:min(400px,94vw); background:var(--surface);
+.sp-hop{position:relative; width:min(460px,94vw); background:var(--surface);
   border-radius:24px; box-shadow:0 24px 60px rgba(22,35,42,.28);
-  padding:34px 26px 26px; text-align:center; transform:translateY(8px) scale(.98);
+  padding:22px 28px 26px; text-align:center; transform:translateY(8px) scale(.98);
   transition:transform .24s var(--em)}
 .sp-nen.mo .sp-hop{transform:none}
 
@@ -846,8 +857,14 @@ body.mo-menu .side.trai{transform:none}
 .sp-x svg{width:13px; height:13px}
 .sp-x svg path{stroke:var(--m-do); stroke-width:2.6; stroke-linecap:round}
 
+/* Slogan trên cùng: chữ nhỏ, nét MẢNH (300), giãn chữ rộng cho ra dáng thương
+   hiệu. Lề phải 34px để không chui xuống dưới nút ✕ đang nằm đè góc. */
+.sp-slogan{margin:0 34px 12px; font-weight:300; font-size:9.5px; letter-spacing:.3em;
+  text-transform:uppercase; color:var(--muted); white-space:nowrap;
+  overflow:hidden; text-overflow:ellipsis}
+
 .sp-titlewrap{position:relative; padding:4px 6px 2px}
-.sp-brand{margin:0; font-weight:800; font-size:clamp(21px,6vw,27px); letter-spacing:.01em;
+.sp-brand{margin:0; font-weight:800; font-size:clamp(22px,6.4vw,30px); letter-spacing:.01em;
   color:var(--accent); line-height:1.1; position:relative; z-index:2}
 .sp-spark{position:absolute; z-index:1; color:var(--amber); pointer-events:none;
   animation:sp-lap 2.4s ease-in-out infinite}
@@ -860,8 +877,17 @@ body.mo-menu .side.trai{transform:none}
   0%,100%{opacity:.35; transform:scale(.8) rotate(0deg)}
   50%    {opacity:1; transform:scale(1.15) rotate(14deg)}
 }
-.sp-sub{margin:4px 0 18px; font-weight:300; font-size:12px; color:var(--muted);
-  white-space:nowrap; text-transform:uppercase}
+/* Khối "EM CHẤM / TEAM X" — chỉ hiện khi JS bật `.hien` (mọi trạng thái khác:
+   đang tải, báo lỗi, em ngoài đội… đều không có đội nào để nói tới). */
+.sp-doi{display:none; margin:20px 0 4px}
+.sp-doi.hien{display:block}
+.sp-doi-vach{display:flex; align-items:center; gap:10px}
+.sp-doi-vach i{flex:1; height:1px; background:var(--line)}
+.sp-doi-vach b{font-size:9.5px; font-weight:800; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--muted); white-space:nowrap}
+.sp-doi-ten{margin:9px 0 0; font-weight:800; font-size:26px; letter-spacing:.04em;
+  color:var(--ink); line-height:1.1}
+.sp-doi-ten em{font-style:normal; color:var(--accent)}
 
 .sp-vong{width:40px; height:40px; margin:0 auto 12px; border-radius:50%;
   border:3.5px solid var(--accent-soft); border-top-color:var(--accent);
@@ -873,6 +899,10 @@ body.mo-menu .side.trai{transform:none}
   text-transform:uppercase; color:var(--ink)}
 .sp-hop.xong .sp-tieu{display:none}
 .sp-phu{margin:0; font-size:12.5px; line-height:1.5; color:var(--muted)}
+/* Trạng thái XONG truyền `phu` rỗng (dòng đội đã sang khối `.sp-doi` riêng) —
+   thẻ <p> rỗng vẫn chiếm chiều cao dòng, phải giấu hẳn kẻo dôi một khoảng trống
+   không ai hiểu vì đâu mà ra. */
+.sp-phu:empty{display:none}
 
 /* Kiểu "CHỈ MỘT DÒNG": bỏ vòng xoay + tiêu đề, còn đúng một dòng chữ hoa đậm.
    ⛔ v1.29.1 — `ngoaidoi` là tên theo VIỆC ("em ngoài đội"), nay có việc THỨ HAI
@@ -893,13 +923,31 @@ body.mo-menu .side.trai{transform:none}
 .sp-nut button:active{transform:scale(.97)}
 
 /* Trạng thái XONG: hai nút to hẳn, vuông vắn, xanh lá (Chấm bài) / xanh dương (Phản biện). */
-.sp-hop.xong .sp-nut{gap:10px; margin-top:6px}
+.sp-hop.xong .sp-nut{gap:10px; margin-top:20px}
 .sp-hop.xong .sp-nut button{flex:1; height:auto; padding:22px 10px; border:none;
   border-radius:16px; display:flex; flex-direction:column; align-items:center; gap:7px;
   font-size:14px; letter-spacing:.03em; color:#fff}
 .sp-hop.xong .sp-nut button svg{width:26px; height:26px}
 .sp-hop.xong .sp-nut button.chinh{background:linear-gradient(155deg,var(--xanh-la),#0E7A3F)}
 .sp-hop.xong .sp-nut button:not(.chinh){background:linear-gradient(155deg,var(--m-duong),#2456C4)}
+
+/* ⭐ 02/09/2026 — Ô TRÒN ĐỎ BÁO SỐ VIỆC, góc trên bên phải mỗi nút.
+   • Viền trắng 2,5px để tách hẳn khỏi nền nút, không bị "dính" vào màu nút.
+   • `min-width` + đệm ngang: 1 chữ số thì TRÒN VO, 2-3 chữ số tự giãn thành
+     viên thuốc chứ không bóp méo con số.
+   • Số 0 thì `spGanSo()` KHÔNG vẽ gì — đừng để vòng tròn rỗng trên nút.
+   ⛔ Đừng đặt `overflow:hidden` cho `.sp-nut` hay cho nút: ô này cố ý tràn ra
+      ngoài mép nút (top/right âm), có overflow là bị xén mất một góc. */
+.sp-bad{position:absolute; top:-9px; right:-9px; min-width:27px; height:27px;
+  padding:0 7px; border-radius:999px; background:var(--m-do); color:#fff;
+  font-size:12.5px; font-weight:800; letter-spacing:0; line-height:1;
+  display:flex; align-items:center; justify-content:center;
+  border:2.5px solid var(--surface); box-shadow:0 3px 10px rgba(224,87,91,.5);
+  font-variant-numeric:tabular-nums; animation:sp-dap 2.6s ease-in-out infinite}
+@keyframes sp-dap{
+  0%,88%,100%{transform:scale(1)}
+  93%        {transform:scale(1.14)}
+}
 
 .sp-halo{position:absolute; inset:-2px; border-radius:inherit; pointer-events:none}
 .sp-halo span{position:absolute; inset:0; border-radius:inherit; border:2px solid #fff; opacity:0}
@@ -909,8 +957,14 @@ body.mo-menu .side.trai{transform:none}
   100%{opacity:0; transform:scale(1.3)}
 }
 
+/* Máy hẹp: nút thấp lại + tên đội nhỏ bớt, kẻo hộp cao quá màn điện thoại. */
+@media (max-width:400px){
+  .sp-hop.xong .sp-nut button{padding:18px 8px; font-size:13px}
+  .sp-doi-ten{font-size:23px}
+}
 @media (prefers-reduced-motion: reduce){
-  .sp-vong, .sp-spark, .sp-halo span, .sp-x, .sp-nut button{animation:none !important; transition:none !important}
+  .sp-vong, .sp-spark, .sp-halo span, .sp-x, .sp-nut button,
+  .sp-bad{animation:none !important; transition:none !important}
 }
 
 /* ---------- BẢNG XEM THỬ (CHỈ CÓ TRONG BẢN MẪU) ---------- */
@@ -1192,6 +1246,7 @@ body.mo-menu .side.trai{transform:none}
     <button class="sp-x" id="spX" title="Đóng" aria-label="Đóng">
       <svg viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13"/></svg>
     </button>
+    <p class="sp-slogan">Andrew Classes</p>
     <div class="sp-titlewrap">
       <span class="sp-spark s1"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
       <span class="sp-spark s2"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
@@ -1199,10 +1254,13 @@ body.mo-menu .side.trai{transform:none}
       <span class="sp-spark s4"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0l2.2 8.8L23 11l-8.8 2.2L12 22l-2.2-8.8L1 11l8.8-2.2z"/></svg></span>
       <h2 class="sp-brand" id="spBrand">SPEAKING CHECK</h2>
     </div>
-    <p class="sp-sub" id="spSub">in Andrew Classes</p>
     <div class="sp-vong"></div>
     <h3 class="sp-tieu" id="spTieu">Đang lấy dữ liệu chấm speaking</h3>
     <p class="sp-phu" id="spPhu">Việc này có thể cần chờ một chút.</p>
+    <div class="sp-doi" id="spDoi">
+      <div class="sp-doi-vach"><i></i><b>Em chấm</b><i></i></div>
+      <p class="sp-doi-ten">TEAM <em id="spDoiSo">1</em></p>
+    </div>
     <div class="sp-nut" id="spNut"></div>
   </div>
 </div>
@@ -1225,7 +1283,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=50"></script>
+<script src="config.js?v=51"></script>
 <script src="js/chung.js?v=28"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -2832,21 +2890,32 @@ function spKhopBai(maThe, tenBuoi){
 }
 
 var spHuy = false, spDongHo = null, spDuong = '';
+/* Số thứ tự LƯỢT mở phòng chấm. Hai con số đỏ đọc xong sau khi nút đã hiện, mà
+   em có thể đã đóng pop-up rồi bấm lại thẻ khác — so lượt để không treo số của
+   lượt cũ lên nút của lượt mới. */
+var spLuot = 0;
 var IC_SP_CHAM = '<svg viewBox="0 0 24 24" fill="none"><path d="M9 12.5l2 2 4.5-5" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>';
 var IC_SP_PB = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v10H9l-4 4V5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
 
 /* n.ic (svg, tuỳ chọn): nút to trạng thái XONG có icon + hiệu ứng hào quang khi
-   bấm; nút thường (Huỷ/Đóng/Thử lại) không có `ic` thì giữ nguyên chữ trơn. */
-function spHien(tieu, phu, kieu, nut){
+   bấm; nút thường (Huỷ/Đóng/Thử lại) không có `ic` thì giữ nguyên chữ trơn.
+   n.viec (02/09/2026): 'cham' | 'pb' — tên VIỆC của nút, để `spGanSo()` tìm đúng
+   nút mà treo ô tròn đỏ khi số đọc xong. Không đánh theo VỊ TRÍ nút vì buổi kiểu
+   cũ chỉ có một nút, vị trí 1 lúc là Phản biện lúc lại không có.
+   doi (02/09/2026): số đội em phải chấm — có thì hiện khối "EM CHẤM / TEAM X". */
+function spHien(tieu, phu, kieu, nut, doi){
   var hop = $('#spHop');
   hop.classList.remove('xong', 'loi');
   if (kieu) hop.classList.add(kieu);
   $('#spTieu').textContent = tieu;
   $('#spPhu').innerHTML = phu;
+  $('#spDoi').classList.toggle('hien', doi != null && doi !== '');
+  if (doi != null && doi !== '') $('#spDoiSo').textContent = doi;
   $('#spNut').innerHTML = '';
   (nut || []).forEach(function(n){
     var b = document.createElement('button');
     if (n.chinh) b.className = 'chinh';
+    if (n.viec) b.dataset.viec = n.viec;
     if (n.ic) b.innerHTML = n.ic + '<span>' + chuAnToan(n.chu) + '</span><span class="sp-halo"></span>';
     else b.textContent = n.chu;
     b.onclick = function(){
@@ -2875,6 +2944,7 @@ function spThoi(){
 function moPhongCham(b){
   spHuy = false;
   spDuong = '';
+  spLuot++;   /* mỗi lần bấm là một lượt — xem chú thích chỗ khai báo `spLuot` */
   spHien('Đang lấy dữ liệu chấm speaking',
     'Việc này có thể cần chờ một chút.',
     '', [{ chu:'Huỷ', lam:spThoi }]);
@@ -2931,6 +3001,133 @@ function spHoiGas(b){
     });
 }
 
+/* ═══ ⭐ 02/09/2026 (web v1.53.0) — HAI Ô TRÒN ĐỎ TRÊN HAI NÚT ═══════════════
+   Thầy chốt: nút Chấm bài đeo số câu em chấm ĐANG BỊ PHẢN BIỆN; nút Phản biện
+   đeo số câu của RIÊNG EM đang chờ em xác nhận. Hai con số này chính là hai
+   nhãn em sẽ thấy khi vào bên trong mySpeaking — "REQUIREMENT: n" ở màn chấm và
+   "UNCONFIRMED: n" (chế độ MINE) ở màn phản biện. ⛔ Đổi luật đếm ở đây là phải
+   đổi cả `mySpeaking/web/js/app.js` (`demTranhChap` · `layThieuBatBuocPb`), kẻo
+   số ngoài nút một đằng số trong màn một nẻo — thà không có số còn hơn số sai.
+
+   ⛔ LUẬT 8 (Firestore tính tiền theo SỐ TÀI LIỆU). Đã đo trên 3 buổi thật
+   02/09/2026: quét sạch hai ngăn con tốn 207 · 378 · 556 tài liệu MỖI LẦN BẤM.
+   Nên ở đây KHÔNG quét, mà hỏi đúng 4 câu đã lọc sẵn — đo lại trên chính 3 buổi
+   ấy còn trung bình 30 · 71 · 77 tài liệu (cao nhất 193), và cho ra số GIỐNG HỆT
+   cách quét sạch ở cả 41/41 học sinh. Bốn câu đó là:
+     1. tongLoi  student     = tên em   → bản chấm CỦA EM (1 tài liệu)
+     2. tongLoi  checkedTeam = đội em   → các bản chấm SOI VÀO ĐỘI EM (3-4 tài liệu)
+     3. phanHoi  chuLoi      = tên em   → phiếu tích trên bản chấm của em
+     4. phanHoi  voter       = tên em   → phiếu chính em đã tích
+   `chuLoi` trong phanHoi là TÊN EM CHẤM (chủ của bản chấm), KHÔNG phải người bị
+   bắt lỗi — người bị bắt lỗi nằm ở `err.who`. Đọc nhầm hai trường này là số sai
+   mà không có gì báo. Đã kiểm bằng dữ liệu thật: errId `mtcclrqrvv` có
+   chuLoi=HOÀNG CHI (em chấm) trong khi who=THƯ (em bị bắt lỗi).
+
+   Việc đọc chạy SAU khi nút đã hiện (nếp "đẩy sẵn + đổ sau" của thẻ speaking) —
+   em không phải chờ thêm giây nào, số nhảy vào sau. */
+
+/* Hỏi một ngăn con của buổi, lọc sẵn theo MỘT trường. Trả [] nếu kho im lặng. */
+function spTruyCon(buoiId, ngan, truong, gtri){
+  var goc = spFsGoc();
+  var db = (A.CFG && A.CFG.AWORD_DB) || {};
+  if (!goc || !buoiId) return Promise.resolve([]);
+  var body = { structuredQuery: {
+    from: [{ collectionId: ngan }],
+    where: { fieldFilter: { field: { fieldPath: truong }, op: 'EQUAL',
+      value: { stringValue: String(gtri) } } },
+    /* Chốt trần: buổi đông nhất đo được có 541 phiếu CHO CẢ BUỔI, một em không
+       thể chạm 400. Có trần thì lỡ dữ liệu hỏng cũng không kéo về vô hạn. */
+    limit: 400
+  } };
+  return fetch(goc + '/spBuoi/' + encodeURIComponent(buoiId) + ':runQuery?key=' + db.apiKey, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body)
+  }).then(function(r){
+    if (!r.ok) throw new Error('FS_' + r.status);
+    return r.json();
+  }).then(function(ds){
+    return (Array.isArray(ds) ? ds : [])
+      .filter(function(x){ return x.document; })
+      .map(function(x){ return spFsGiaiDoc(x.document); });
+  });
+}
+
+/* So tên kiểu mySpeaking: bỏ khoảng trắng thừa + không phân biệt hoa thường.
+   ⛔ Cố ý KHÔNG dùng `khongDau()` như `timEmTrongBuoi`: bên mySpeaking ghi phiếu
+   bằng phép so NÀY, nới lỏng hơn ở đây là số ngoài nút lệch số trong màn. */
+function spTenBang(a, b){
+  return !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+}
+
+/* Đếm hai con số. `doiEm` là chuỗi kiểu "TEAM 2" — đúng khuôn kho ghi trong
+   tongLoi.checkedTeam (đã xem dữ liệu thật, không phải đoán). */
+function spDemViec(buoiId, tenEm, doiEm){
+  return Promise.all([
+    spTruyCon(buoiId, 'tongLoi', 'student', tenEm),
+    spTruyCon(buoiId, 'tongLoi', 'checkedTeam', doiEm),
+    spTruyCon(buoiId, 'phanHoi', 'chuLoi', tenEm),
+    spTruyCon(buoiId, 'phanHoi', 'voter', tenEm)
+  ]).then(function(kq){
+    var banEm = kq[0][0] || {}, banSoiDoiEm = kq[1], phieuTrenBanEm = kq[2], phieuCuaEm = kq[3];
+
+    /* (1) REQUIREMENT — câu em chấm CÒN TRANH CHẤP THẬT: có người phản đối mà
+       chính chủ (err.who) chưa tự nhận, và em chưa chốt Keep/Agree (`ketLuan`). */
+    var soCham = (banEm.errors || []).filter(function(e){
+      if (e.trangThai !== 'song' || e.ketLuan) return false;
+      var ph = phieuTrenBanEm.filter(function(p){ return p.errId === e.id; });
+      var coPhanDoi = ph.some(function(p){ return p.y === 'phanDoi'; });
+      var chinhChuDaNhan = !!e.who && ph.some(function(p){
+        return p.y === 'dongY' && spTenBang(p.voter, e.who); });
+      return coPhanDoi && !chinhChuDaNhan;
+    }).length;
+
+    /* (2) UNCONFIRMED của RIÊNG EM — câu ghi tên em mà em chưa tích gì.
+       'an' = em chấm tự xoá · 'go' = đã được gỡ ⇒ cả hai đều hết việc. */
+    var daTich = {};
+    phieuCuaEm.forEach(function(p){ daTich[p.errId] = true; });
+    var soPb = 0;
+    banSoiDoiEm.forEach(function(d){
+      (d.errors || []).forEach(function(e){
+        if (e.trangThai === 'an' || e.trangThai === 'go') return;
+        if (!spTenBang(e.who, tenEm)) return;
+        if (daTich[e.id]) return;
+        soPb++;
+      });
+    });
+
+    return { cham: soCham, pb: soPb };
+  });
+}
+
+/* Treo ô tròn đỏ lên nút. `n` là số, hoặc '!' khi ĐỌC KHÔNG ĐƯỢC.
+   ⛔ Đọc hỏng thì KHÔNG được im lặng bỏ trống: nút trống có nghĩa là "0 việc"
+   (số 0 vốn không vẽ gì), im lặng là nói với em rằng em hết việc — đúng họ bẫy
+   "báo ok giả". Dấu `!` để em biết là chưa đọc được chứ không phải hết việc. */
+function spGanSo(viec, n, chuThich){
+  var b = document.querySelector('#spNut button[data-viec="' + viec + '"]');
+  if (!b || !n) return;
+  var s = document.createElement('span');
+  s.className = 'sp-bad';
+  s.textContent = (typeof n === 'number' && n > 99) ? '99+' : String(n);
+  s.title = chuThich;
+  b.appendChild(s);
+}
+
+/* Đọc rồi treo số — chạy nền, hỏng thì chỉ ghi console + treo dấu `!`. */
+function spDoSo(buoiId, tenEm, doiEm){
+  var luot = spLuot;
+  spDemViec(buoiId, tenEm, doiEm).then(function(v){
+    if (luot !== spLuot) return;   /* em đã đóng / mở lượt khác */
+    spGanSo('cham', v.cham, v.cham + ' câu em chấm đang bị phản biện');
+    spGanSo('pb', v.pb, v.pb + ' câu của em đang chờ em xác nhận');
+  }).catch(function(e){
+    if (luot !== spLuot) return;
+    if (window.console) console.warn('speaking: khong dem duoc so viec ->', e);
+    spGanSo('cham', '!', 'Chưa đọc được số việc — em cứ vào bình thường nhé');
+    spGanSo('pb', '!', 'Chưa đọc được số việc — em cứ vào bình thường nhé');
+  });
+}
+
 /* Có buổi trong tay (từ kho nào cũng vậy) → tìm em → dựng gói → nút "Mở phòng chấm".
    `kho` đi kèm trong gói để web mySpeaking biết bài nộp phải ghi vào đâu. */
 function spVaoBuoi(b, lop, kho){
@@ -2981,11 +3178,20 @@ function spVaoBuoi(b, lop, kho){
      ⭐ 27/08 — thiết kế lại: bỏ nút "Đóng" (đã có nút X ở góc pop-up), hai nút to có
      icon — Chấm bài (xanh lá, luôn đứng trước = bên trái) rồi mới tới Phản biện
      (xanh dương, bên phải). */
-  var nut = [{ chu:'Chấm bài', chinh:true, ic:IC_SP_CHAM,
+  var nut = [{ chu:'Chấm bài', chinh:true, ic:IC_SP_CHAM, viec:'cham',
     lam:function(){ window.open(spDuong, '_blank'); spDong(); } }];
-  if (duongPb) nut.push({ chu:'Phản biện', ic:IC_SP_PB,
+  if (duongPb) nut.push({ chu:'Phản biện', ic:IC_SP_PB, viec:'pb',
     lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
-  spHien('Đã lấy xong dữ liệu', 'Em chấm <b>TEAM ' + cap.checked + '</b>.', 'xong', nut);
+  /* ⭐ 02/09/2026 — đội em chấm nay là khối riêng `.sp-doi` (tham số thứ 5), câu
+     phụ để RỖNG. Xem chú thích khối CSS `.sp-doi` vì sao không nhét vào `.sp-phu`. */
+  spHien('Đã lấy xong dữ liệu', '', 'xong', nut, cap.checked);
+  /* Nút đã hiện rồi mới đi đếm — em không phải chờ thêm, số nhảy vào sau.
+     ⛔ CHỈ buổi mô hình 2 trong kho Firestore mới có hai ngăn tongLoi/phanHoi để
+     đếm. Buổi cũ đi đường Apps Script (`spHoiGas`) dựng `lop` từ Google Sheets,
+     không hề có `_id` — gọi đếm ở đó thì 4 câu hỏi đều rỗng, ra số 0, và số 0 lại
+     KHÔNG vẽ gì ⇒ nút trắng trơn, đúng nghĩa "im lặng báo hết việc". Chặn hẳn ở
+     đây thay vì để nó tự ra 0. */
+  if (mh === 2 && lop._id) spDoSo(lop._id, em.ten, 'TEAM ' + em.team);
 }
 
 function spLoi(b, chu){

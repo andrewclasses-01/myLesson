@@ -22,6 +22,19 @@
       nên mở pop-up chỉ tốn ĐÚNG 1 lượt đọc (LUẬT 8: Firestore tính tiền theo
       SỐ TÀI LIỆU). Chưa có tài liệu đó thì rơi về bộ mẫu `MAU_QUA` bên dưới.
 
+   🔑 LUẬT FIRESTORE CẦN DÁN (thầy dán trong Firebase Console → Firestore →
+      Rules, thêm khối này rồi bấm Publish; chưa dán thì trang học sinh vẫn
+      chạy bằng bộ mẫu, còn dashboard sẽ báo "Kho chưa mở khoá cho quà"):
+
+        match /quaTang/{ma} {
+          allow read: if true;                       // học sinh chỉ đọc
+          allow write: if request.resource.data.nhom is list
+                       && request.resource.data.thue is number;
+        }
+
+      ⚠️ Mức tin cậy y hệt các kho khác của hệ này (mã học sinh vốn nằm công
+      khai trong lop.json) — đủ chặn người tình cờ, không phải bảo mật thật.
+
    ⛔ Viết kiểu ES5 (var, function) — giống mọi file khác của web, vì máy học
       sinh có cả iPad đời cũ.
    ============================================================ */
@@ -329,7 +342,8 @@
       function veLuoi() {
         var n = null;
         for (var i = 0; i < nhom.length; i++) if (nhom[i].ma === chon) n = nhom[i];
-        var mon = (n && n.mon) || [];
+        // `tat: true` = thầy tạm ẩn món đó ở trang "Quản lý quà" bên dashboard.
+        var mon = ((n && n.mon) || []).filter(function (m) { return !m.tat; });
         luoi.innerHTML = mon.length ? mon.map(function (m, i) {
           var het = Number(m.con) <= 0;
           return '<div class="vq-mon' + (het ? ' het' : '') + '">' +

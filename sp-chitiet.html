@@ -131,25 +131,48 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
 .sl-o.bi  .sl-nh, .sl-o.bi  .sl-so{color:var(--m-cam)}
 .doi-btn.chon .sl-o.bat .sl-nh, .doi-btn.chon .sl-o.bat .sl-so{color:#B8D4FF}
 .doi-btn.chon .sl-o.bi  .sl-nh, .doi-btn.chon .sl-o.bi  .sl-so{color:#FFD6A8}
-/* Hai dòng việc còn tồn — số 0 xanh lá (xong), khác 0 đỏ (còn việc) */
-.db-viec{display:flex; flex-direction:column; gap:2px; font:700 11.5px/1.5 var(--font); color:var(--mo)}
-.doi-btn.chon .db-viec{color:rgba(255,255,255,.85)}
-.db-viec b{font-weight:800}
-.db-viec .n0{color:var(--m-la)} .db-viec .nx{color:var(--m-do)}
-.doi-btn.chon .db-viec .n0{color:#A6F0CB} .doi-btn.chon .db-viec .nx{color:#FFC4C4}
+/* Hai việc còn tồn — (thầy chốt 02/09, đợt 2) NẰM CÙNG MỘT HÀNG, cân đối hai bên, VÀO Ô KẺ
+   y như hàng số lớn ở trên. Số 0 xanh lá (xong việc), khác 0 đỏ (còn việc). */
+.sl-hang.viec{margin-top:0; border-top:0}
+.sl-hang.viec .sl-nh{color:var(--nhat)}
+.doi-btn.chon .sl-hang.viec .sl-nh{color:rgba(255,255,255,.8)}
+.sl-hang.viec .sl-so{font-size:17px}
+.sl-hang.viec .sl-so.n0{color:var(--m-la)} .sl-hang.viec .sl-so.nx{color:var(--m-do)}
+.doi-btn.chon .sl-hang.viec .sl-so.n0{color:#A6F0CB}
+.doi-btn.chon .sl-hang.viec .sl-so.nx{color:#FFC4C4}
 
 /* ══════════ KHỐI HAI NỬA (câu được bắt | câu đã bắt) ══════════
    Mỗi nửa CUỘN RIÊNG trong khung, không để cả trang dài ra như bản bảng phẳng cũ. */
-.hai-nua{display:grid; grid-template-columns:1fr 1px 1fr; height:min(64vh,680px)}
+/* (thầy chốt 02/09 đợt 2) Cao gần GẤP ĐÔI bản đầu (`min(64vh,680px)`). Trần vh giữ dưới 100
+   để khối vẫn gọn trong một màn hình; ai muốn to hơn nữa thì bấm nút phóng to toàn màn. */
+.hai-nua{display:grid; grid-template-columns:1fr 1px 1fr; height:min(104vh,1360px)}
 .nua{min-width:0; display:flex; flex-direction:column; min-height:0}
 .nua-vach{background:var(--vien)}
-.nua-dau{flex:none; display:flex; align-items:center; gap:8px; padding:10px 14px;
+.nua-dau{flex:none; display:flex; align-items:center; gap:7px; padding:10px 14px;
   border-bottom:1px solid var(--vien)}
 .nua-dau h3{margin:0; font:800 10.5px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
-.nua-dau .so{margin-left:auto; font:800 13px/1 var(--font); font-variant-numeric:tabular-nums}
+/* Tổng số nằm NGAY CẠNH tên (thầy chốt: "LỖI ĐƯỢC BẮT • 77 CÂU"), không đẩy sang mép phải nữa
+   — mép phải nay để dành cho nút phóng to. */
+.nua-dau .so{font:800 10.5px/1.3 var(--font); letter-spacing:.05em}
+.nua-dau .day{flex:1}
 .nua.bi .nua-dau h3, .nua.bi .nua-dau .so{color:var(--m-cam)}
 .nua.bat .nua-dau h3, .nua.bat .nua-dau .so{color:var(--m-duong)}
 .nua-than{flex:1; min-height:0; overflow-y:auto; padding:10px 14px}
+
+/* ══════════ NÚT PHÓNG TO TOÀN MÀN (thầy chốt 02/09 đợt 2) ══════════
+   Ba chỗ: khối "Cần thầy quyết" + hai nửa. Bấm là khối đó chiếm trọn màn hình để thầy tập
+   trung soi; bấm lại (hoặc phím Esc) thì thu về. Icon đổi mũi tên ra ↔ mũi tên vào. */
+.zoom-nut{flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--vien-dam);
+  background:#fff; color:var(--mo); display:grid; place-items:center; transition:background .15s, color .15s}
+.zoom-nut:hover{background:var(--xanh-nhat); color:var(--xanh); border-color:var(--xanh)}
+.zoom-nut svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.2;
+  stroke-linecap:round; stroke-linejoin:round}
+/* Khối đang phóng to — dùng chung cho .khoi (Cần thầy quyết) lẫn .nua (một nửa) */
+.phong{position:fixed !important; inset:0; z-index:80; margin:0 !important; border-radius:0 !important;
+  background:var(--the); box-shadow:none; display:flex !important; flex-direction:column}
+.phong .khoi-dau, .phong .nua-dau{flex:none}
+.phong .khoi-than, .phong .nua-than{flex:1; min-height:0; max-height:none; overflow-y:auto}
+body.khoa-cuon{overflow:hidden}
 /* Hai nút tab — chỉ hiện ở màn hẹp (xem @media cuối file) */
 .nua-tab{display:none; gap:8px; padding:12px 14px 0}
 .nua-tab button{flex:1; padding:9px 10px; border-radius:11px; border:2px solid var(--vien-dam);
@@ -159,6 +182,11 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
 
 /* Một câu trong hai nửa — viền nói lên trạng thái, ĐỒNG BỘ với màn học sinh:
    vàng dày = còn tranh chấp thật · xanh lá dày = đã ngã ngũ · xám mảnh = chưa ai đụng. */
+/* Khung cuộn của khối "Cần thầy quyết" — để ở CLASS chứ không nhét style thẳng vào thẻ:
+   lúc phóng to toàn màn, luật `.phong .khoi-than` phải đè được max-height này (style inline
+   thì phải bịa thêm `!important`, dễ quên). Cao gần gấp đôi bản đầu (`min(46vh,420px)`). */
+.cq-cuon{max-height:min(84vh,840px); overflow-y:auto}
+
 .cau-o{border:1px solid var(--vien); border-radius:12px; padding:10px 12px; margin-bottom:9px}
 .cau-o:last-child{margin-bottom:0}
 .cau-o.tc{border:3px solid var(--m-vang); background:#FFFCF3}
@@ -217,7 +245,9 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
   .nua-vach{display:none}
   .nua{display:none}
   .nua.hien{display:flex}
-  .nua-than{max-height:68vh}
+  /* Màn hẹp CHỈ nới vừa phải: cao hơn màn hình thì phải cuộn trang mới thấy đáy khung cuộn,
+     rất khó chịu trên điện thoại. Muốn xem dài hơn thì bấm nút phóng to. */
+  .nua-than{max-height:78vh}
   .nua-tab{display:flex}
 }
 </style>
@@ -254,10 +284,14 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
     </section>
 
     <section class="khoi" id="khoiCanQuyet" hidden>
-      <div class="khoi-dau"><h2>⚠️ Cần thầy quyết</h2><span class="phu" id="cqPhu"></span></div>
+      <div class="khoi-dau">
+        <h2>⚠️ Cần thầy quyết</h2><span class="phu" id="cqPhu"></span>
+        <div class="day"></div>
+        <button class="zoom-nut" data-phong="khoiCanQuyet" title="Phóng to toàn màn hình"></button>
+      </div>
       <!-- Khung cuộn RIÊNG (thầy chốt): trước đây khối này đổ phẳng ra trang, buổi nhiều
            tranh chấp là đẩy khối hai nửa xuống tít dưới, phải cuộn mãi mới tới. -->
-      <div class="khoi-than" id="cqVe" style="max-height:min(46vh,420px); overflow-y:auto"></div>
+      <div class="khoi-than cq-cuon" id="cqVe"></div>
     </section>
 
     <!-- ⭐ 02/09/2026 — KHỐI HAI NỬA. Trái = câu đội KHÁC bắt lỗi đội này (ĐƯỢC BẮT, cam) ·
@@ -275,12 +309,20 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
       </div>
       <div class="hai-nua">
         <div class="nua bi hien" id="nuaBi">
-          <div class="nua-dau"><h3>Đội bạn bắt lỗi đội này</h3><span class="so" id="soBi"></span></div>
+          <div class="nua-dau">
+            <h3>Lỗi được bắt</h3><span class="so" id="soBi"></span>
+            <div class="day"></div>
+            <button class="zoom-nut" data-phong="nuaBi" title="Phóng to toàn màn hình"></button>
+          </div>
           <div class="nua-than" id="veBi"></div>
         </div>
         <div class="nua-vach"></div>
         <div class="nua bat" id="nuaBat">
-          <div class="nua-dau"><h3>Đội này đi bắt lỗi đội bạn</h3><span class="so" id="soBat"></span></div>
+          <div class="nua-dau">
+            <h3>Lỗi bắt được</h3><span class="so" id="soBat"></span>
+            <div class="day"></div>
+            <button class="zoom-nut" data-phong="nuaBat" title="Phóng to toàn màn hình"></button>
+          </div>
           <div class="nua-than" id="veBat"></div>
         </div>
       </div>
@@ -290,7 +332,7 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=38"></script>
+<script src="config.js?v=39"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -544,14 +586,23 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
     };
   }
   function veNutDoi(){
-    $('#doiNut').innerHTML = DOI.map(function(d){
+    // ⭐ (thầy chốt 02/09 đợt 2) HÀNG NÚT xếp theo TÊN ĐỘI lần lượt (TEAM 1 → 2 → 3 → 4).
+    // ⛔ Chỉ hàng nút này thôi — thanh TỔNG QUAN ĐỘI phía trên vẫn giữ luật cũ "đội nhiều
+    // điểm nhất lên trên" (thầy chốt 28/08), nên phải chép mảng ra sắp riêng, KHÔNG sắp
+    // thẳng trên `DOI` kẻo đổi luôn thứ tự thanh bên trên.
+    var xep = DOI.slice().sort(function(a, b){ return a.team - b.team; });
+    $('#doiNut').innerHTML = xep.map(function(d){
       var s = soCuaDoi(d.ten);
       // ⛔ Lấy tên theo ĐÚNG THỨ TỰ DANH SÁCH ĐỘI trong buổi, KHÔNG dùng `d.hs` — mảng đó đã bị
       // `tinhDoiSp` xếp lại theo số lỗi giảm dần (cho popup xếp hạng), nên thứ tự tên sẽ nhảy
       // mỗi khi có em bắt thêm lỗi. Tên đội thì phải đứng yên.
       var goc = (BUOI.teams || []).filter(function(t){ return t.team === d.team; })[0];
       var tv = ((goc && goc.members) || (d.hs || []).map(function(h){ return h.ten; })).join(' • ');
-      var so = function(n){ return '<b class="' + (n ? 'nx' : 'n0') + '">' + n + '</b>'; };
+      // Hai việc còn tồn nay CÙNG MỘT HÀNG, cân đối hai bên, trong ô kẻ y như hàng số lớn
+      var oViec = function(nhan, n){
+        return '<div class="sl-o"><div class="sl-nh">' + nhan + '</div>' +
+          '<div class="sl-so ' + (n ? 'nx' : 'n0') + '">' + n + '</div></div>';
+      };
       return '<button class="doi-btn' + (d.ten === DOI_CHON ? ' chon' : '') +
           '" data-doi="' + A.chuAnToan(d.ten) + '">' +
         '<div class="db-ten">' + A.chuAnToan(d.ten) + '</div>' +
@@ -561,9 +612,10 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
           '<div class="sl-vach"></div>' +
           '<div class="sl-o bi"><div class="sl-nh">Số lỗi được bắt</div><div class="sl-so">' + s.bi + '</div></div>' +
         '</div>' +
-        '<div class="db-viec">' +
-          '<span>Chưa phản biện: ' + so(s.chuaPhanBien) + '</span>' +
-          '<span>Chưa phản hồi: ' + so(s.chuaPhanHoi) + '</span>' +
+        '<div class="sl-hang viec">' +
+          oViec('Chưa phản biện', s.chuaPhanBien) +
+          '<div class="sl-vach"></div>' +
+          oViec('Chưa phản hồi', s.chuaPhanHoi) +
         '</div>' +
       '</button>';
     }).join('') || '<div class="trong">Buổi chưa chia đội nào.</div>';
@@ -626,8 +678,9 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
     // Xếp theo mốc giờ trong video để thầy dò theo bài nói cho dễ
     bi.sort(mocGio); bat.sort(mocGio);
     $('#hnPhu').textContent = DOI_CHON ? ('đang xem ' + DOI_CHON) : '';
-    $('#soBi').textContent = bi.length + ' câu';
-    $('#soBat').textContent = bat.length + ' câu';
+    // "LỖI ĐƯỢC BẮT • 77 CÂU" — số đứng ngay cạnh tên (thầy chốt 02/09 đợt 2)
+    $('#soBi').textContent = '• ' + bi.length + ' CÂU';
+    $('#soBat').textContent = '• ' + bat.length + ' CÂU';
     $('#veBi').innerHTML = bi.length ? bi.map(function(x){ return cauHtml(x, 'bi'); }).join('')
       : '<div class="trong">Chưa đội nào bắt lỗi ' + A.chuAnToan(DOI_CHON) + '.</div>';
     $('#veBat').innerHTML = bat.length ? bat.map(function(x){ return cauHtml(x, 'bat'); }).join('')
@@ -742,6 +795,44 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
     var tenBai = (BAI ? A.tenBai(BAI) : (BUOI ? BUOI.lesson : 'sp-check')).replace(/[^\w\-]+/g, '_');
     XLSX.writeFile(wb, 'SP_CHECK_' + MA_LOP + '_' + tenBai + '.xlsx');
   }
+
+  // ═══ NÚT PHÓNG TO TOÀN MÀN (thầy chốt 02/09 đợt 2) ══════════════════════════════════════
+  // Ba khối dùng CHUNG một cơ chế: gắn class `.phong` (CSS lo phần position:fixed) + khoá cuộn
+  // trang nền. Bấm lại nút đó, hoặc phím Esc, thì thu về. Mỗi lúc chỉ phóng to MỘT khối.
+  var IC_TO = '<svg viewBox="0 0 24 24"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/>' +
+    '<path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>';
+  var IC_NHO = '<svg viewBox="0 0 24 24"><path d="M15 9h6"/><path d="M15 9V3"/>' +
+    '<path d="M9 15H3"/><path d="M9 15v6"/><path d="M21 3l-6 6"/><path d="M3 21l6-6"/></svg>';
+  var DANG_PHONG = '';
+  function datIconPhong(){
+    Array.prototype.forEach.call(document.querySelectorAll('[data-phong]'), function(n){
+      var to = n.dataset.phong === DANG_PHONG;
+      n.innerHTML = to ? IC_NHO : IC_TO;
+      n.title = to ? 'Thu về như cũ' : 'Phóng to toàn màn hình';
+    });
+  }
+  function doiPhong(id){
+    var el = document.getElementById(id);
+    if (!el) return;
+    // Đang phóng khối khác thì thu khối đó lại trước — hai khối cùng fixed inset:0 là chồng nhau
+    if (DANG_PHONG && DANG_PHONG !== id) {
+      var cu = document.getElementById(DANG_PHONG);
+      if (cu) cu.classList.remove('phong');
+    }
+    var bat = DANG_PHONG !== id;
+    el.classList.toggle('phong', bat);
+    DANG_PHONG = bat ? id : '';
+    document.body.classList.toggle('khoa-cuon', bat);
+    datIconPhong();
+  }
+  document.addEventListener('click', function(ev){
+    var n = ev.target.closest('[data-phong]');
+    if (n) doiPhong(n.dataset.phong);
+  });
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && DANG_PHONG) doiPhong(DANG_PHONG);
+  });
+  datIconPhong();
 
   $('#veDashboard').href = 'dashboard.html?lop=' + encodeURIComponent(MA_LOP);
   $('#btnXuat').onclick = xuatExcel;

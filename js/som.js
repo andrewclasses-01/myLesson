@@ -1,12 +1,19 @@
 /* ============================================================
-   som.js — KHỞI ĐỘNG SỚM (web v1.54.0, 03/09/2026)
+   som.js — KHỞI ĐỘNG SỚM (web v1.54.0 → v1.54.1, 03/09/2026)
 
-   Nạp ở <head> NGAY SAU config.js (trước cả CSS/HTML còn lại), để bốn lượt
-   đọc dữ liệu mà mọi trang đều cần bắt đầu từ mili-giây đầu tiên thay vì
-   chờ trình duyệt đọc hết trang + chạy chung.js ở cuối <body> (đo thật
-   02/09: chung.js chỉ bắt đầu xin dữ liệu ở ~420ms, trong khi HTML về từ
-   ~230ms — mất không gần 200ms mỗi lần mở trang, mà lượt Firestore 300ms
-   nằm đúng trên đường găng vẽ thẻ).
+   ⛔ KHÔNG trang nào nạp file này bằng <script src>. Nó là NGUỒN để
+   `python tools/sinh-som.py --write` DẬP THẲNG mã vào <head> của 5 trang
+   (giữa hai mốc SOM:BEGIN/END), thay `window.MYLESSON_CONFIG` bằng
+   projectId/apiKey đọc từ config.js. Sửa file này ⇒ chạy lại generator.
+   Vì sao dập chứ không nạp: <script src> ở <head> chặn vẽ trang cho tới
+   khi file về — cache quá 10 phút thì tốn ~300ms hỏi-lại TRƯỚC KHI vẽ gì
+   (đo live 03/09, bản v1.54.0: dữ liệu chỉ bắt đầu ở 765ms, tệ hơn 418ms cũ).
+
+   Mục đích: bốn lượt đọc dữ liệu mà mọi trang đều cần bắt đầu từ mili-giây
+   đầu tiên thay vì chờ trình duyệt đọc hết trang + chạy chung.js ở cuối
+   <body> (đo thật 02/09: chung.js chỉ bắt đầu xin dữ liệu ở ~420ms, trong
+   khi HTML về từ ~230ms, mà lượt Firestore 300ms nằm đúng trên đường găng
+   vẽ thẻ).
 
    Kết quả để ở `window.__napSom` — chung.js (`napJson` · `napHanSua` ·
    `napNghi`) lấy ra dùng MỘT LẦN rồi xoá; không có (trang cũ, lỗi) thì

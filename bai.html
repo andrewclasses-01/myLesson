@@ -5,6 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Bài tập · Andrew Classes</title>
 <link rel="stylesheet" href="assets/fonts.css">
+<!-- ⭐ v1.54.0 — MỞ TRANG NHANH HƠN (03/09/2026). (1) preconnect: bắt tay sớm với các
+     máy chủ mà trang chắc chắn sẽ gọi (Firestore, SDK gstatic, AWord nhúng). (2) config.js
+     + js/som.js nạp NGAY Ở ĐẦU để bốn lượt đọc dữ liệu (lop.json · bai.json ·
+     lessonHan · lessonNghi) bắt đầu từ mili-giây đầu tiên thay vì chờ chung.js ở
+     cuối <body> (đo: sớm hơn ~200ms). chung.js nhận lại qua window.__napSom. -->
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://aword.andrewclasses.com">
+<script src="config.js?v=52"></script>
+<script src="js/som.js?v=1"></script>
 <style>
 /* ============================================================
    TRANG BÀI TẬP — dùng CHUNG cho WORDS · DICTS · READING
@@ -1206,8 +1216,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=51"></script>
-<script src="js/chung.js?v=28"></script>
+<script src="js/chung.js?v=29"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
@@ -1752,6 +1761,38 @@ var GIAT_LAI  = 260;    /* húc xong khựng lại bao lâu rồi mới lao ti�
 var LAO_TIEP  = 320;    /* húc thứ cuối xong còn lao thêm bấy nhiêu */
 var TOI_THIEU = 700;    /* về tới chỗ nổ rồi còn rung ít nhất bấy nhiêu mới nổ */
 
+/* ⭐ v1.54.0 — SƯỞI TRƯỚC AWord NGAY KHI VẼ THẺ (03/09/2026).
+   Trước đợt này, bấm READY mới tạo iframe ⇒ lúc đó AWord mới bắt đầu tải
+   trang + 32 module + SDK Firebase (đo thật 02/09: 1,4-2,5 giây, mạng trường
+   lâu hơn), hiệu ứng sparkle phải rung chờ. Nay lúc vẽ thẻ đã:
+     1. fetch() ĐÚNG địa chỉ iframe sẽ mở (kèm ?g=&n=&lop=&nhung=1) — HTML
+        nằm sẵn trong cache HTTP 10 phút, iframe mở là dùng lại (cùng site
+        andrewclasses.com nên chung ngăn cache với trang này);
+     2. đọc play.html của AWord MỘT LẦN, nhặt mọi <link rel="modulepreload">
+        rồi fetch() từng file (AWord tự khai danh sách, bên này không giữ
+        bản sao nào; GitHub Pages mở CORS `*` nên đọc được).
+   ⛔ Cố ý dùng fetch() chứ không phải <link rel=preload>: Chrome chỉ cho thẻ
+   HTML ra mạng 3 yêu cầu một lượt, fetch() thì 20 (AWord Đợt 285c đo được).
+   Không đụng Firestore (không tốn lượt đọc nào cho thẻ chưa bấm). Hỏng gì
+   cũng nuốt — bấm READY vẫn tải như cũ, chỉ chậm hơn. */
+var daSuoiMa = false;
+function suoiAWord(url){
+  try {
+    fetch(url).catch(function(){});
+    if (daSuoiMa) return;
+    daSuoiMa = true;
+    fetch(AWORD + '/play.html')
+      .then(function(r){ return r.ok ? r.text() : ''; })
+      .then(function(html){
+        var re = /<link[^>]+rel="modulepreload"[^>]+href="([^"]+)"/g, m;
+        while ((m = re.exec(html))) {
+          try { fetch(new URL(m[1], AWORD + '/play.html').href).catch(function(){}); } catch (e) {}
+        }
+      })
+      .catch(function(){});
+  } catch (e) { /* trình duyệt cũ không có fetch/URL: bỏ qua */ }
+}
+
 function moAct(khung){
   var bia = khung.querySelector('.game-cover');
   if (!bia || bia.classList.contains('dang-nap')) return;
@@ -2025,6 +2066,7 @@ function veKhoi(k, so){
   var link  = AWORD + '/play.html?g=' + encodeURIComponent(k.ma) +
               '&n=' + encodeURIComponent(TOI) + '&lop=' + encodeURIComponent(LOP_HIEN);
   var nhung = link + '&nhung=1';
+  suoiAWord(nhung);   /* ⭐ v1.54.0 — kéo sẵn trang + mã AWord, bấm READY là có ngay */
   sec.innerHTML = dau.replace('__LINK__', link) +
     '<div class="than">' +
       '<div class="game" data-src="' + nhung + '">' + veBia(k) + '</div>' +

@@ -166,7 +166,8 @@
       var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
             + '/databases/(default)/documents/lessonHan?pageSize=300&key='
             + encodeURIComponent(db.apiKey);
-      return fetch(u, { cache: 'no-store' })
+      // ⭐ v1.54.0 — ưu tiên lượt đã xin sớm ở js/som.js (cùng địa chỉ, cùng luật đệm).
+      return (laySom('lessonHan') || fetch(u, { cache: 'no-store' }))
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           // ⭐ v1.35.0 — trả HAI bảng {han, tt} thay vì một bảng hạn.
@@ -252,8 +253,20 @@
     luuDemHan();
   }
 
+  // ⭐ v1.54.0 — LẤY LƯỢT ĐÃ XIN SỚM (js/som.js ở <head>) nếu có, dùng MỘT LẦN
+  // rồi xoá. Không có (trang không nạp som.js, lỗi) thì trả null ⇒ tự fetch.
+  function laySom(khoa) {
+    try {
+      var s = window.__napSom;
+      if (!s || !s[khoa]) return null;
+      var p = s[khoa]; s[khoa] = null;
+      return p;
+    } catch (e) { return null; }
+  }
+
   function napJson(duong) {
-    return fetch(duong + '?t=' + Date.now(), { cache: 'no-store' })
+    var p = laySom(duong) || fetch(duong + '?t=' + Date.now(), { cache: 'no-store' });
+    return p
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
   }
@@ -933,7 +946,8 @@
       var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
             + '/databases/(default)/documents/lessonNghi?pageSize=100&key='
             + encodeURIComponent(db.apiKey);
-      return fetch(u, { cache: 'no-store' })
+      // ⭐ v1.54.0 — ưu tiên lượt đã xin sớm ở js/som.js (cùng địa chỉ, cùng luật đệm).
+      return (laySom('lessonNghi') || fetch(u, { cache: 'no-store' }))
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           var ra = {};

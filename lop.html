@@ -8,6 +8,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
 <title>Lớp học · Andrew Classes</title>
 <link rel="stylesheet" href="assets/fonts.css">
+<!-- ⭐ v1.54.0 — MỞ TRANG NHANH HƠN (03/09/2026). (1) preconnect: bắt tay sớm với các
+     máy chủ mà trang chắc chắn sẽ gọi (Firestore, SDK gstatic). (2) config.js
+     + js/som.js nạp NGAY Ở ĐẦU để bốn lượt đọc dữ liệu (lop.json · bai.json ·
+     lessonHan · lessonNghi) bắt đầu từ mili-giây đầu tiên thay vì chờ chung.js ở
+     cuối <body> (đo: sớm hơn ~200ms). chung.js nhận lại qua window.__napSom. -->
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<script src="config.js?v=52"></script>
+<script src="js/som.js?v=1"></script>
 <style>
 /* ============================================================
    ⭐⭐ web v1.47.0 (02/09/2026) — HAI VIỆC Ở TRANG NÀY:
@@ -1283,8 +1292,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=51"></script>
-<script src="js/chung.js?v=28"></script>
+<script src="js/chung.js?v=29"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>

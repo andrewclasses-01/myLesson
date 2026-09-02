@@ -1400,6 +1400,13 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
       </button>
       <div class="sb-chia"></div>
+      <!-- ⭐ v1.52.0 (gói bảo mật C) — PHIÊN THẦY trên Firebase Auth: luật kho nay đòi
+           phiên này mới GHI được (hạn/ẩn/xoá thẻ · thẻ nghỉ · kho quà · xoá tin · tin THẦY).
+           Trong app myLesson phiên được app tiêm sẵn; ngoài app bấm nút này → Google. -->
+      <button class="sb-item" id="thayDn" title="Phiên ghi kho của thầy">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
+        <span class="chu"><span class="ten" id="thayDnChu">Đang kiểm phiên thầy…</span></span>
+      </button>
       <button class="sb-item sb-out" id="dangXuat">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M15 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h9"/><path d="M10 12h11m0 0-4-4m4 4-4 4"/></svg></span>
         <span class="chu"><span class="ten">Đăng xuất</span></span>
@@ -1575,9 +1582,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=49"></script>
+<script src="config.js?v=50"></script>
 <script src="js/chung.js?v=28"></script>
-<script src="js/chat.js?v=21"></script>
+<script src="js/chat.js?v=22"></script>
+<!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
+<script src="js/thay.js?v=1"></script>
 <script>
 (function () {
   'use strict';
@@ -1943,6 +1952,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // phải có; `tt` lấy lại từ bảng đang nhớ trong máy để không ghi lùi).
   function hsGhi(id, han, nut) {
     if (nut) nut.disabled = true;
+    if (chuaThay(nut)) return;
     var bTt = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
     var ttCu = bTt ? A.trangThaiThe(bTt) : '';
     spDb().then(function (f) {
@@ -1963,7 +1973,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (nut) nut.disabled = false;
       var ma = (e && (e.code || e.message)) || '';
       baoToast(String(ma).indexOf('permission-denied') >= 0
-        ? 'Kho chưa mở khoá cho hạn sửa — cần dán thêm luật Firestore (khối lessonHan).'
+        ? loiPhien('Kho từ chối ghi hạn')
         : 'Chưa ghi được hạn. Thử lại nhé.');
     });
   }
@@ -2612,6 +2622,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // giao lại chỉ 2 cú bấm, không có xoá mềm/KHO như thẻ bài).
   function nghiGhi(moc, nut, tt, loiBao) {
     if (nut && nut.disabled !== undefined) nut.disabled = true;
+    if (chuaThay(nut)) return;
     var maLop = LOP_CHON;
     spDb().then(function (f) {
       return f.fs.setDoc(f.fs.doc(f.db, 'lessonNghi', maLop), {
@@ -2628,7 +2639,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (nut && nut.disabled !== undefined) nut.disabled = false;
       var ma = (e && (e.code || e.message)) || '';
       baoToast(String(ma).indexOf('permission-denied') >= 0
-        ? 'Kho chưa mở khoá — luật Firestore của khối lessonNghi cần thêm trường “tt”.'
+        ? loiPhien('Kho từ chối ghi thẻ nghỉ')
         : chuLoiKho(e));
     });
   }
@@ -3727,6 +3738,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // riêng). `tt` = '' (bình thường) | 'an' | 'khoa' | 'xoa'. Cùng luật với `hsGhi`:
   // gửi đủ 5 trường + merge — xem chú thích ở `hsGhi`.
   function ttGhi(id, tt, sauKhi) {
+    if (chuaThay(null)) { if (sauKhi) sauKhi(false); return; }
     var b = A.baiCuaLop(DL, LOP_CHON, 'kho').concat(A.baiCuaLop(DL, LOP_CHON, 'ql'))
       .filter(function (x) { return x.id === id; })[0];
     var hanCu = (b && A.daSuaHan(b)) ? A.hanCua(b) : '';
@@ -3748,7 +3760,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     })['catch'](function (e) {
       var ma = (e && (e.code || e.message)) || '';
       baoToast(String(ma).indexOf('permission-denied') >= 0
-        ? 'Kho chưa mở khoá cho trạng thái thẻ — cần dán lại luật Firestore (khối lessonHan thêm tt).'
+        ? loiPhien('Kho từ chối đổi trạng thái thẻ')
         : 'Chưa ghi được. Thử lại nhé.');
       if (sauKhi) sauKhi(false);
     });
@@ -3792,6 +3804,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     if (!chu) return;
     o.disabled = true;
     $('#chatGui').disabled = true;
+    if (chuaThay(null)) { o.disabled = false; $('#chatGui').disabled = false; return; }
     AWChat.gui(LOP_CHON, { ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', chu: chu })
       .then(function () { o.value = ''; noOChat(); })
       ['catch'](function (e) { baoToast(AWChat.chuLoi(e)); })
@@ -3811,6 +3824,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ⚠️ Cần luật Firestore MỚI (cx/update/delete) — chưa dán thì báo hiền.
   function luuTruVaLamMoi() {
     if (!TIN.length) return baoToast('Lớp này chưa có tin nhắn nào để lưu trữ.');
+    if (chuaThay(null)) return;
     var l = A.lopTheoMa(DL, LOP_CHON);
     var tenLop = (l && l.tenGoc) || LOP_CHON;
     if (!window.confirm('Lưu ' + TIN.length + ' tin nhắn hiện tại của lớp ' + tenLop +
@@ -4056,6 +4070,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function ghiQua() {
     var nut = $('#qqLuu');
     nut.disabled = true;
+    if (chuaThay(nut)) { $('#qqTin').textContent = AWThay.CAN_DANG_NHAP; return; }
     $('#qqTin').textContent = 'Đang lưu vào kho…';
     spDb().then(function (f) {
       // ⛔ LUẬT 9 — setDoc {merge:true}: nếu sau này có nơi khác đặt thêm
@@ -4072,7 +4087,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       nut.disabled = false;
       var ma = (e && (e.code || e.message)) || '';
       var chu = String(ma).indexOf('permission-denied') >= 0
-        ? 'Kho chưa mở khoá cho quà — cần dán thêm luật Firestore (khối quaTang).'
+        ? loiPhien('Kho từ chối lưu kho quà')
         : 'Chưa lưu được kho quà. Thử lại nhé.';
       $('#qqTin').textContent = chu;
       baoToast(chu);
@@ -4397,6 +4412,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var nut = e.target.closest('[data-xoa]');
       if (!nut) return;
       var id = nut.getAttribute('data-xoa');
+      if (chuaThay(null)) return;
       if (!id || !window.confirm('Xoá tin nhắn này?')) return;
       nut.disabled = true;
       AWChat.xoa(LOP_CHON, id)['catch'](function (err) {
@@ -4533,6 +4549,52 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#congMa').onkeydown = function (e) { if (e.key === 'Enter') vao(); };
     $('#congMa').focus();
   }
+
+  // ---------- ⭐ v1.52.0 (gói bảo mật C) — PHIÊN THẦY ----------
+  // Cờ `mylesson_ql` (mã quản lý) chỉ MỞ GIAO DIỆN. Quyền GHI kho nay do Firebase
+  // Auth quyết: luật Firestore đòi `laThay()` (email của thầy, hoặc claim `thay`
+  // từ token app ký). THAY_PHIEN: undefined = chưa biết (mới mở trang, cứ để kho
+  // quyết) · null = chắc chắn CHƯA có phiên (chặn sớm, báo rõ) · object = có phiên.
+  var THAY_PHIEN;
+  function chuaThay(nut) {
+    if (THAY_PHIEN !== null) return false;
+    if (nut && nut.disabled !== undefined) nut.disabled = false;
+    baoToast(AWThay.CAN_DANG_NHAP);
+    return true;
+  }
+  function loiPhien(viec) {
+    return THAY_PHIEN
+      ? viec + ' — luật Firestore gói C chưa dán, hoặc phiên không phải của thầy.'
+      : viec + ' — ' + AWThay.CAN_DANG_NHAP;
+  }
+  function veThayDn() {
+    var chu = $('#thayDnChu');
+    if (!chu) return;
+    if (THAY_PHIEN) {
+      chu.textContent = 'Thầy đã đăng nhập ✓' + (THAY_PHIEN.uid === 'thay' ? ' (từ app)' : '');
+      $('#thayDn').title = 'Bấm để thoát phiên ghi kho (' + (THAY_PHIEN.email || 'token app') + ')';
+    } else {
+      chu.textContent = THAY_PHIEN === null ? '🔐 Đăng nhập Google để ghi kho' : 'Đang kiểm phiên thầy…';
+      $('#thayDn').title = 'Cần phiên của thầy mới ghi được kho';
+    }
+  }
+  $('#thayDn').addEventListener('click', function () {
+    if (THAY_PHIEN) {
+      if (!window.confirm('Thoát phiên ghi kho của thầy trên máy này?')) return;
+      AWThay.thoat().then(function () { baoToast('Đã thoát phiên thầy.'); });
+      return;
+    }
+    $('#thayDnChu').textContent = 'Đang mở cửa sổ Google…';
+    AWThay.dangNhapGoogle().then(function () {
+      baoToast('Đã đăng nhập — ghi kho được rồi.');
+    })['catch'](function (e) {
+      veThayDn();
+      baoToast((e && e.message) || 'Không đăng nhập được.');
+    });
+  });
+  AWThay.theoDoi(function (u) { THAY_PHIEN = u; veThayDn(); })['catch'](function () {
+    THAY_PHIEN = null; veThayDn();
+  });
 
   if (A.laAdmin()) { $('#trang').hidden = false; batDau(); }
   else moCong();

@@ -1225,9 +1225,11 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=49"></script>
+<script src="config.js?v=50"></script>
 <script src="js/chung.js?v=28"></script>
-<script src="js/chat.js?v=21"></script>
+<script src="js/chat.js?v=22"></script>
+<!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
+<script src="js/thay.js?v=1"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
 <script src="js/vi-qua.js?v=1"></script>
@@ -3104,10 +3106,11 @@ function capNhatTheSpeakingGas(){
 var TIN_MAU = [];          /* tin đang hiện, đổ về từ kho (giữ tên cũ cho các
                               hàm cảm xúc bên dưới không phải sửa) */
 
-// ⭐ Đợt D — mỗi người tự xoá tin CỦA MÌNH; mã 'GV' xoá được của bất kỳ ai
-// (xem ghi chú giới hạn kỹ thuật ở đầu js/chat.js — trang chỉ chặn ở giao diện).
+// ⭐ v1.52.0 (gói bảo mật C) — CHỈ THẦY xoá được tin (luật Firestore `delete: if laThay()`).
+// Trước (Đợt D) em tự xoá tin của mình được; nay luật chặn ⇒ giấu nút kẻo bấm là 403.
+// Em tự xoá tin của mình: để đợt sau khi có đăng nhập học sinh.
 function coTheXoaTin(t){
-  return !!(t.id && MA_HS && (t.ma === MA_HS || MA_HS === 'GV'));
+  return !!(t.id && MA_HS === 'GV');
 }
 function veTin(t, i){
   var laToi = !!(t.ma && MA_HS && t.ma === MA_HS);

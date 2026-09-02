@@ -23,6 +23,11 @@
          soTin     số tin trong gói (để hiện nhanh, khỏi mở ra đếm)
          tin       MẢNG snapshot y hệt khiCo() trả về lúc lưu
 
+   ⭐ v1.52.0 (GÓI BẢO MẬT C, 02/09/2026): luật `classChat` đã đổi — `delete: if laThay()`,
+   tin `role:'gv'` và `classChatArchive` cũng đòi `laThay()` (phiên Firebase Auth của thầy,
+   xem js/thay.js). Khối luật chép dưới đây là bản CŨ (Đợt D), giữ để tra; bản đang chạy
+   xem `myLesson-data/tai-lieu/LUAT FIRESTORE CAN DAN (GOI C — THAY DANG NHAP).md`.
+
    ⛔⛔ CHƯA DÁN LUẬT FIRESTORE MỚI THÌ CẢM XÚC/XOÁ TIN/LƯU TRỮ KHÔNG CHẠY (báo
    `permission-denied`) — NHẮN VÀ ĐỌC vẫn chạy bình thường (luật cũ vẫn đúng
    cho hai việc đó). Thầy vào Firebase Console → Firestore Database → Rules,
@@ -269,7 +274,9 @@
   function chuLoi(e) {
     var ma = (e && (e.code || e.message)) || '';
     if (String(ma).indexOf('permission-denied') >= 0) {
-      return 'Kho tin chưa mở khoá (thầy cần dán luật Firestore — xem đầu file js/chat.js).';
+      // ⭐ v1.52.0 (gói bảo mật C): xoá tin · tin ký THẦY · lưu trữ nay đòi PHIÊN THẦY
+      // (js/thay.js). Học sinh nhắn/thả cảm xúc vẫn không cần đăng nhập.
+      return 'Kho từ chối: việc này cần phiên của thầy (nút 🔐 ở dashboard hoặc mở từ app myLesson) — hoặc luật Firestore chưa dán.';
     }
     return 'Chưa nối được kho tin nhắn. Thử tải lại trang nhé.';
   }

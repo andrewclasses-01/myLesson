@@ -1327,8 +1327,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=54"></script>
-<script src="js/chung.js?v=30"></script>
+<script src="config.js?v=55"></script>
+<script src="js/chung.js?v=31"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1496,6 +1496,11 @@ function theTuBai(b){
     /* ⭐ v1.35.0 — thầy TẠM KHOÁ ở dashboard: thẻ hiện, không mở được, đồng hồ
        dừng. `conHan` là luật chung (khoá = luôn còn hạn), xem js/chung.js. */
     khoa: A.trangThaiThe(b) === 'khoa',
+    /* ⭐ v1.56.0 (thầy chốt 03/09/2026) — THẺ ĐÃ ĐỔI HẠN RIÊNG = COI NHƯ THẺ MỚI.
+       Thầy sửa hạn ở dashboard là để lớp làm tiếp/làm lại, nên trang học sinh phải
+       chạy lại đồng hồ đếm ngược chứ không được đứng ở "COMPLETE" của vòng trước.
+       Xem `tinhHinhGio()` + `veTheMoi()`. Áp cho MỌI dạng bài, không riêng SP CHECK. */
+    suaHan: A.daSuaHan(b),
     conHan: A.conHan(b),
     /* (Đợt 3 Firebase — PHẦN C′) thẻ SP CHECK: app đẩy MỘT khối giả loai:'spcheck'
        (không phải act AWord). Thanh tiến trình vẫn cần đúng 1 dòng để
@@ -2082,7 +2087,10 @@ var GAP_TIENG = 6;
 function tinhHinhGio(b){
   /* ⭐ v1.35.0 — TẠM KHOÁ đứng trước mọi trạng thái: đồng hồ dừng, không màu gấp. */
   if (b.khoa) return 'khoa';
-  if ((b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= SI_SO; })) {
+  /* ⭐ v1.56.0 — thẻ thầy đã ĐỔI HẠN RIÊNG thì KHÔNG bao giờ ăn trạng thái 'xong':
+     đồng hồ chạy lại như thẻ mới cho tới mốc hạn mới (thầy chốt 03/09/2026). */
+  if (!b.suaHan &&
+      (b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= SI_SO; })) {
     return 'xong';
   }
   if (b.hanMoc == null) return 'thuong';
@@ -2161,6 +2169,11 @@ function veTheMoi(b, tt){
   var gap = (tt === 'gap');
   var bDung = (tt === 'xong') ? xongHetBai(b) : b;
   var th = tinhHinhThe(bDung, tt === 'xong');
+  /* ⭐ v1.56.0 — thẻ đã đổi hạn riêng: bỏ luôn màu xanh lá "xong hết" + dấu ✓.
+     ⛔ Phải chặn Ở ĐÂY nữa: `tinhHinhGio()` đã thôi trả 'xong' nhưng `tinhHinhThe()`
+     tự đếm lại `bai[].xong >= SI_SO` nên vẫn ra `du:true` ⇒ thẻ xanh lá mà đồng hồ
+     lại chạy, nhìn tréo ngoe. Các thanh tiến trình vẫn giữ nguyên số thật của lớp. */
+  if (b.suaHan) th = { lop: th.lop, du: false };
 
   var lopThem, lopNen;
   /* v1.35.0 — TẠM KHOÁ đứng trước cả "xong hết": thẻ nhìn là biết đang khoá. */

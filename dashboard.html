@@ -425,6 +425,11 @@ a{color:inherit}
 .kho-hang .kt b{display:block; font:800 12px/1.3 var(--font); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap}
 .kho-hang .kt span{display:block; font:600 10.5px/1.4 var(--font); color:var(--nhat)}
+/* ⭐ v1.56.0 — mỗi hàng nay có HAI nút (Khôi phục · Xoá vĩnh viễn). Xếp CỘT chứ
+   không nằm ngang: panel sidebar hẹp, để ngang là chữ trong nút bị xuống dòng. */
+.kho-hang .kho-nut{flex:none; display:flex; flex-direction:column; gap:5px}
+.kho-hang .kho-nut .nut{justify-content:center; white-space:nowrap}
+.kho-het{margin-top:10px; display:flex; justify-content:flex-end}
 /* ⭐ v1.36.0 — HAI HỘP NHỎ cạnh menu ⚙: XÁC NHẬN (`#xnPop`) và ĐỔI HẠN NỘP
    (`#hanPop`). Cùng khuôn với `.rc-menu` (fixed, tự định vị bằng `datCanh`).
    ⛔ Thay hẳn ô "Hạn riêng cho thẻ này" (`.hs-o`) từng nằm trong hộp xem bài —
@@ -1484,7 +1489,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       <p class="phu" id="khoPhu" style="margin:0 0 8px"></p>
       <p class="sb-note" style="margin:0 0 11px">Xoá ở đây là XOÁ MỀM: bài biến mất với học sinh
         và khỏi mọi con số, nhưng dữ liệu bài + điểm AWord còn nguyên. Bấm <b>Khôi phục</b> là
-        bài về lại như cũ (học sinh thấy lại sau tối đa 1 phút).</p>
+        bài về lại như cũ (học sinh thấy lại sau tối đa 1 phút).<br>
+        <!-- ⭐ v1.56.0 -->
+        <b>Xoá vĩnh viễn</b> là dọn thẻ khỏi CẢ danh sách này — trên web không còn đường lấy
+        lại. (Dữ liệu bài và điểm AWord vẫn nằm nguyên trong kho, chỉ là không cửa nào hiện nữa.)</p>
       <div id="khoDs"></div>
     </div>
     <div id="sbMucHocSinh" hidden>
@@ -1626,8 +1634,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=54"></script>
-<script src="js/chung.js?v=30"></script>
+<script src="config.js?v=55"></script>
+<script src="js/chung.js?v=31"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -1876,8 +1884,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           '<button class="lb-ic" data-gv-sn="' + mL + '" title="Sinh nhật sắp tới">' +
             (sn.length ? '<span class="lb-dot"></span>' : '') + IC_CAKE_NHO +
           '</button>' +
+          // ⛔ v1.56.0 — KHÔNG có chấm đỏ ở icon KHO nữa (thầy chốt 03/09/2026):
+          // bài đã xoá là chuyện đã xong, không phải việc cần nhắc. Chấm đỏ của
+          // icon SINH NHẬT ngay trên thì GIỮ.
           '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho: bài đã xoá của lớp này">' +
-            (A.baiCuaLop(DL, l.maLop, 'kho').length ? '<span class="lb-dot"></span>' : '') + IC_KHO_NHO +
+            IC_KHO_NHO +
           '</button>' +
         '</div>' +
         '<button class="lb-main" data-lop="' + mL + '">' +
@@ -2043,8 +2054,13 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
   // Trạng thái màu của thẻ: xong hết (xanh lá) > gấp <6h (đỏ, nhấp nháy) >
   // 6–24h (vàng) > còn lâu/chưa đặt hạn (xanh dương) — y hệt trang lớp.
-  function tinhTrangThe(t, moc) {
-    var du = t.acts.length > 0 && t.xongHet !== null && t.xongHet >= t.siSo;
+  // ⭐ v1.56.0 — `moi` = thẻ đã ĐỔI HẠN RIÊNG (thầy chốt 03/09/2026): coi như thẻ
+  // MỚI, không ăn trạng thái "xong hết" nữa ⇒ đồng hồ chạy lại tới mốc hạn mới.
+  // ⛔ Bản chép của luật này nằm ở `lop.html` (`tinhHinhGio()` + `veTheMoi()`).
+  // Sửa một bên là dashboard và trang học sinh nói hai chuyện khác nhau — đúng
+  // cái lỗi thầy báo 03/09 (dashboard chạy đồng hồ, trang em hiện COMPLETE).
+  function tinhTrangThe(t, moc, moi) {
+    var du = !moi && t.acts.length > 0 && t.xongHet !== null && t.xongHet >= t.siSo;
     if (du) return { tt: 'xong', du: true };
     if (moc == null) return { tt: 'thuong', du: false };
     var tieng = (moc - Date.now()) / TIENG;
@@ -2054,15 +2070,19 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
 
   function veHanCard(b, moc, st) {
-    // ⭐ v1.35.0 — thẻ TẠM KHOÁ không nhận màu gấp; huy hiệu trạng thái đứng
-    // cạnh "đã chỉnh riêng"; đồng hồ mang cờ `data-khoa` (xem `nhipDongHo`).
+    // ⭐ v1.35.0 — thẻ TẠM KHOÁ không nhận màu gấp; đồng hồ mang cờ `data-khoa`
+    // (xem `nhipDongHo`). v1.56.0 — chỉ còn 2 huy hiệu: ẨN và TẠM KHOÁ.
     var tt = A.trangThaiThe(b);
     var khoa = tt === 'khoa';
     var lop = 't-han' + (!khoa && st.tt === 'gap' ? ' gap-gio' : (st.du ? ' da-xong' : ''));
     var chu = A.chuHan(b) || (moc == null ? '' : chuNgay(moc));
     return '<span class="han-boc"><span class="' + lop + '">' +
         '<span class="han-dong">' + IC_GIO + (chu ? ('Hạn ' + A.chuAnToan(chu)) : 'Chưa đặt hạn') + '</span>' +
-        (A.daSuaHan(b) ? '<em class="han-doi">đã chỉnh riêng</em>' : '') +
+        /* ⛔ v1.56.0 — ĐÃ BỎ huy hiệu "đã chỉnh riêng" (thầy chốt 03/09/2026:
+           "đã chỉnh rồi là cứ theo như vậy, coi như mới luôn"). `A.daSuaHan()`
+           VẪN DÙNG ở chỗ khác — đừng gỡ theo: hộp ⚙ Hạn riêng đổi chữ nút và
+           bật/tắt nút "Về hạn mặc định" theo nó (xem `moHanPop`), và
+           `tinhTrangThe()` ngay trên dùng nó để cho đồng hồ chạy lại. */
         (tt === 'an' ? '<em class="han-doi tt-an">🙈 ĐANG ẨN với học sinh</em>' : '') +
         (khoa ? '<em class="han-doi tt-khoa">🔒 đồng hồ đang dừng</em>' : '') +
         '<span class="han-vach"></span>' +
@@ -2127,7 +2147,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function veTheCard(b) {
     var t = tinhBai(b, LOP_CHON);
     var moc = A.mocHan(b);
-    var st = tinhTrangThe(t, moc);
+    var st = tinhTrangThe(t, moc, A.daSuaHan(b));
     var lopThem, lopNen;
     if (st.du) { lopThem = ' xong-het'; lopNen = 'tt-la'; }
     else if (st.tt === 'gap') { lopThem = ' gap'; lopNen = 'tt-do'; }
@@ -3784,8 +3804,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   };
 
   // ⭐ v1.35.0 — ghi TRẠNG THÁI THẺ vào kho `lessonHan` (cùng tài liệu với hạn
-  // riêng). `tt` = '' (bình thường) | 'an' | 'khoa' | 'xoa'. Cùng luật với `hsGhi`:
-  // gửi đủ 5 trường + merge — xem chú thích ở `hsGhi`.
+  // riêng). `tt` = '' (bình thường) | 'an' | 'khoa' | 'xoa' | 'xvv'. Cùng luật với
+  // `hsGhi`: gửi đủ 5 trường + merge — xem chú thích ở `hsGhi`.
   function ttGhi(id, tt, sauKhi) {
     if (chuaThay(null)) { if (sauKhi) sauKhi(false); return; }
     var b = A.baiCuaLop(DL, LOP_CHON, 'kho').concat(A.baiCuaLop(DL, LOP_CHON, 'ql'))
@@ -3800,10 +3820,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       A.datTrangThai(id, tt);
       veTat();
       if (BM_ID === id) {
-        if (tt === 'xoa') dongBaiModal(); else moBaiModal(id);
+        if (tt === 'xoa' || tt === 'xvv') dongBaiModal(); else moBaiModal(id);
       }
       baoToast({ an: 'Đã ẩn bài với học sinh.', khoa: 'Đã tạm khoá bài — đồng hồ dừng.',
-                 xoa: 'Đã xoá bài (xem lại ở mục KHO).' }[tt] ||
+                 xoa: 'Đã xoá bài (xem lại ở mục KHO).',
+                 xvv: 'Đã xoá vĩnh viễn — thẻ không còn trong kho nữa.' }[tt] ||
                'Bài đã về trạng thái bình thường.');
       if (sauKhi) sauKhi(true);
     })['catch'](function (e) {
@@ -3811,6 +3832,43 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       baoToast(String(ma).indexOf('permission-denied') >= 0
         ? loiPhien('Kho từ chối đổi trạng thái thẻ')
         : 'Chưa ghi được. Thử lại nhé.');
+      if (sauKhi) sauKhi(false);
+    });
+  }
+
+  // ⭐ v1.56.0 — XOÁ VĨNH VIỄN CẢ MỚ (nút "Xoá vĩnh viễn tất cả" trong mục KHO).
+  // ⛔ Cố ý KHÔNG gọi `ttGhi()` trong vòng lặp: mỗi lượt nó `veTat()` + `baoToast()`
+  // ⇒ 10 bài là 10 lần vẽ lại cả trang và 10 cái toast chồng nhau. Ở đây gom một
+  // lượt: mở kho MỘT lần, ghi song song, vẽ lại MỘT lần, báo MỘT câu.
+  // ⛔ Vẫn ghi TỪNG tài liệu (không dùng writeBatch): luật kho soi từng cú ghi
+  // theo `hasOnly` 5 trường, và bản SDK nạp ở `spDb()` chỉ mở đúng mấy hàm đang dùng.
+  function xvvGhiNhieu(ids, sauKhi) {
+    if (chuaThay(null)) { if (sauKhi) sauKhi(false); return; }
+    if (!ids || !ids.length) { if (sauKhi) sauKhi(true); return; }
+    var kho = A.baiCuaLop(DL, LOP_CHON, 'kho');
+    spDb().then(function (f) {
+      return Promise.all(ids.map(function (id) {
+        var b = kho.filter(function (x) { return x.id === id; })[0];
+        var hanCu = (b && A.daSuaHan(b)) ? A.hanCua(b) : '';
+        return f.fs.setDoc(f.fs.doc(f.db, 'lessonHan', hsMaTaiLieu(id)), {
+          baiId: String(id), han: String(hanCu || ''), tt: 'xvv',
+          lop: String(LOP_CHON || ''), luc: Date.now()
+        }, { merge: true });
+      }));
+    }).then(function () {
+      ids.forEach(function (id) { A.datTrangThai(id, 'xvv'); });
+      veTat();
+      veKho();
+      baoToast('Đã xoá vĩnh viễn ' + ids.length + ' bài.');
+      if (sauKhi) sauKhi(true);
+    })['catch'](function (e) {
+      // ⛔ Một cú ghi hỏng là `Promise.all` bỏ dở — số còn lại có thể ĐÃ ghi xong.
+      // Vẽ lại theo kho thật thay vì đoán, để thầy thấy đúng cái gì còn cái gì mất.
+      var ma = (e && (e.code || e.message)) || '';
+      veTat(); veKho();
+      baoToast(String(ma).indexOf('permission-denied') >= 0
+        ? loiPhien('Kho từ chối xoá vĩnh viễn')
+        : 'Chưa xoá hết được. Mở lại mục này xem còn bài nào rồi thử tiếp.');
       if (sauKhi) sauKhi(false);
     });
   }
@@ -4182,9 +4240,18 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
             '<span>' + A.chuAnToan(A.tenDang(b.dang || '') || b.dang || '') +
               ' · ngày ' + A.chuAnToan(ngayGach(b.ngay)) +
               (chuHan ? (' · hạn ' + A.chuAnToan(chuHan)) : '') + '</span></div>' +
-          '<button class="nut nho chinh" data-kp="' + A.chuAnToan(b.id) + '">Khôi phục</button>' +
+          '<div class="kho-nut">' +
+            '<button class="nut nho chinh" data-kp="' + A.chuAnToan(b.id) + '">Khôi phục</button>' +
+            '<button class="nut nho do" data-xvv="' + A.chuAnToan(b.id) + '">Xoá vĩnh viễn</button>' +
+          '</div>' +
         '</div>';
-    }).join('') : '<div class="trong">Lớp này chưa xoá bài nào.</div>';
+    }).join('') +
+      // ⭐ v1.56.0 — nút "xoá hết" hiện NGAY CẢ KHI chỉ có 1 bài (đo 03/09: mỗi lớp
+      // trong `bai.json` hiện chỉ có đúng 1 thẻ, gài `ds.length > 1` là thầy không
+      // bao giờ nhìn thấy nút mình vừa đặt làm).
+      '<div class="kho-het"><button class="nut nho do" id="khoXoaHet">' +
+        'Xoá vĩnh viễn tất cả (' + ds.length + ' bài)</button></div>'
+      : '<div class="trong">Lớp này chưa xoá bài nào.</div>';
   }
   function veChiTiet(muc) {
     var m = SB_MUC[muc];
@@ -4342,6 +4409,35 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           chu: 'Thẻ “' + (bKp ? A.tenBai(bKp) : 'này') + '” hiện lại với học sinh như trước khi xoá.',
           nutOk: 'Khôi phục',
           khiOk: function () { ttGhi(idKp, '', function () { veKho(); }); }
+        });
+        return;
+      }
+      // ⭐ v1.56.0 — mục KHO: XOÁ VĨNH VIỄN một bài (thầy chốt 03/09/2026).
+      var xvv = e.target.closest('[data-xvv]');
+      if (xvv) {
+        var idXvv = xvv.dataset.xvv;
+        var bXvv = A.baiCuaLop(DL, LOP_CHON, 'kho').filter(function (x) { return x.id === idXvv; })[0];
+        moXnPop(xvv, {
+          tieuDe: 'Xoá vĩnh viễn bài này?',
+          chu: 'Thẻ “' + (bXvv ? A.tenBai(bXvv) : 'này') + '” rời khỏi cả danh sách này — ' +
+               'trên web không còn nút nào lấy lại được. Dữ liệu bài và điểm AWord vẫn còn trong kho.',
+          nutOk: 'Xoá vĩnh viễn', nguy: true,
+          khiOk: function () { ttGhi(idXvv, 'xvv', function () { veKho(); }); }
+        });
+        return;
+      }
+      // ⭐ v1.56.0 — mục KHO: XOÁ VĨNH VIỄN TẤT CẢ bài đã xoá của lớp đang chọn.
+      var xvvHet = e.target.closest('#khoXoaHet');
+      if (xvvHet) {
+        var dsXvv = A.baiCuaLop(DL, LOP_CHON, 'kho').map(function (x) { return x.id; });
+        var lXvv = A.lopTheoMa(DL, LOP_CHON);
+        moXnPop(xvvHet, {
+          tieuDe: 'Xoá vĩnh viễn tất cả?',
+          chu: 'Cả ' + dsXvv.length + ' bài đã xoá của lớp ' + ((lXvv && lXvv.tenGoc) || LOP_CHON) +
+               ' rời khỏi danh sách này — trên web không còn nút nào lấy lại được. ' +
+               'Chỉ đụng lớp đang chọn, các lớp khác giữ nguyên.',
+          nutOk: 'Xoá hết vĩnh viễn', nguy: true,
+          khiOk: function () { xvvGhiNhieu(dsXvv); }
         });
         return;
       }

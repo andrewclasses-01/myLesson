@@ -116,6 +116,13 @@
   //   'khoa'  TẠM KHOÁ (thẻ hiện, không mở được, đồng hồ DỪNG — thầy chốt 02/09)
   //   'xoa'   ĐÃ XOÁ MỀM (biến mất mọi trang; dữ liệu bai.json + điểm AWord còn nguyên,
   //           khôi phục ở mục KHO trên dashboard)
+  //   'xvv'   ⭐ v1.56.0 (03/09/2026) — XOÁ VĨNH VIỄN: biến mất khỏi mọi trang VÀ khỏi
+  //           cả mục KHO, KHÔNG còn đường khôi phục trên web.
+  //           ⛔ "Vĩnh viễn" ở đây là VĨNH VIỄN VỚI WEB, không phải xoá dữ liệu: trang
+  //           này là GitHub Pages tĩnh (không ghi được `bai.json`) và luật kho vẫn
+  //           `allow delete: if false`. Bài vẫn nằm trong `bai.json` + điểm AWord còn
+  //           nguyên; chỉ là không cửa nào (học sinh · dashboard · kho) nhìn thấy nữa.
+  //           Muốn lấy lại thì phải sửa tay tài liệu `lessonHan` trên Firebase Console.
   // Thầy chốt: cờ GIỮ NGUYÊN khi app đẩy lại bài (y hệt hạn riêng). Vì sao gộp
   // chung tài liệu với hạn riêng: kho này đã được liệt kê sẵn ở `napHanSua()`,
   // thêm trường = KHÔNG tốn thêm lượt đọc Firestore nào (luật 8️⃣ BAN GIAO.md).
@@ -197,13 +204,13 @@
       JSON.stringify({ luc: Date.now(), bang: { han: HAN_SUA, tt: TT_THE } })); } catch (e) {}
   }
 
-  // Chỉ nhận đúng 3 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
+  // Chỉ nhận đúng 4 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
   function chuanTt(s) {
     s = String(s || '');
-    return (s === 'an' || s === 'khoa' || s === 'xoa') ? s : '';
+    return (s === 'an' || s === 'khoa' || s === 'xoa' || s === 'xvv') ? s : '';
   }
 
-  // ⭐ v1.35.0 — trạng thái ĐANG CÓ HIỆU LỰC của một thẻ: '' | 'an' | 'khoa' | 'xoa'.
+  // ⭐ v1.35.0 — trạng thái ĐANG CÓ HIỆU LỰC của một thẻ: '' | 'an' | 'khoa' | 'xoa' | 'xvv'.
   function trangThaiThe(b) {
     return chuanTt(TT_THE[(b && b.id) || '']);
   }
@@ -217,14 +224,14 @@
 
   // ⭐ v1.35.0 — "CÒN HẠN" là MỘT hàm chung, đừng tự viết `moc == null || moc > now`
   // ở từng trang nữa (trước v1.35.0 có 6 chỗ viết tay như thế):
-  //   · ẩn / xoá  → KHÔNG còn hạn (không tính là bài đang giao)
+  //   · ẩn / xoá / xoá vĩnh viễn → KHÔNG còn hạn (không tính là bài đang giao)
   //   · tạm khoá  → LUÔN còn hạn, kể cả mốc đã qua (thầy chốt 02/09: khoá là
   //                 DỪNG đồng hồ, không bao giờ hiện HẾT HẠN trong lúc khoá; mở
   //                 khoá thì đồng hồ chạy lại theo hạn cũ nguyên vẹn)
   //   · còn lại   → chưa đặt hạn, hoặc mốc chưa qua
   function conHan(b) {
     var tt = trangThaiThe(b);
-    if (tt === 'an' || tt === 'xoa') return false;
+    if (tt === 'an' || tt === 'xoa' || tt === 'xvv') return false;
     if (tt === 'khoa') return true;
     var moc = mocHan(b);
     return moc == null || moc > Date.now();
@@ -285,10 +292,14 @@
   //                   để thầy bấm "Hiện lại".
   //   'kho'           chỉ thẻ ĐÃ XOÁ — mục KHO trên dashboard, để Khôi phục.
   // Thẻ TẠM KHOÁ có mặt ở mọi cửa (khoá là "hiện thẻ, không cho mở", xem lop.html).
+  // ⭐ v1.56.0 — thẻ XOÁ VĨNH VIỄN ('xvv') rụng khỏi CẢ BA cửa, kể cả cửa 'kho'.
+  // ⛔ Chốt chặn phải đứng TRƯỚC ba dòng dưới: cửa 'ql' viết là `tt !== 'xoa'` nên
+  // 'xvv' lọt qua, thẻ đã xoá vĩnh viễn lại hiện ngược trên dashboard.
   function baiCuaLop(dl, maLop, che) {
     var ds = (dl.bai && dl.bai[maLop]) ? dl.bai[maLop] : [];
     return ds.filter(function (b) {
       var tt = trangThaiThe(b);
+      if (tt === 'xvv') return false;
       if (che === 'kho') return tt === 'xoa';
       if (che === 'ql') return tt !== 'xoa';
       return tt !== 'xoa' && tt !== 'an';

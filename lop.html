@@ -434,6 +434,51 @@ i.m-la{background:var(--m-la)}
 .td-tay svg{width:12px; height:12px; margin-right:4px; vertical-align:-2px;
   stroke:#C8922B; stroke-width:2.4; fill:none; stroke-linecap:round; stroke-linejoin:round}
 
+/* ================================================================
+   ⭐⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI" (thầy chốt 02/09/2026)
+   Đầu thẻ: avatar thầy + NO HOMEWORK, ENJOY YOUR DAY! căn giữa TOÀN thẻ, dưới
+   là đồng hồ đếm tới GIỜ VÀO HỌC buổi kế tiếp (TIẾNG:PHÚT).
+   Ruột thẻ: MỘT canvas — bóng bay avatar cả lớp, bấm ▶ đổi sang trò khủng long.
+   ⛔ Khối này CHÉP Y HỆT sang `dashboard.html` — sửa một bên phải sửa bên kia.
+   ⛔ Thẻ nghỉ là `<div>` (không phải `<button>` như thẻ bài của trang này) vì
+   chứa nút ▶ THẬT bên trong — HTML cấm nút lồng trong nút. Nhờ tách riêng thế
+   này mà thẻ bài thường KHÔNG phải đổi cấu trúc gì cả.
+   ================================================================ */
+.the.nghi{cursor:default}
+.the.nghi:hover{transform:none}
+.the.nghi .the-in{background:#F2FBF5}
+/* Ghi đè `.the-body` (vốn là hàng ngang tên-bài ‖ ô hạn) thành cụm dọc căn giữa. */
+.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  padding:10px 14px 8px 20px; text-align:center}
+.nghi-cum{display:flex; align-items:center; justify-content:center; gap:9px; min-width:0}
+.nghi-ava{width:26px; height:26px; border-radius:50%; object-fit:cover; flex:none;
+  box-shadow:0 0 0 2px #fff, 0 1px 3px rgba(22,35,42,.25)}
+.nghi-chu{font-size:15.5px; font-weight:800; letter-spacing:.01em; color:#1f7a4d;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nghi-han{display:flex; align-items:center; justify-content:center; gap:7px;
+  font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
+.nghi-han i{font-style:normal}
+.nghi-han b{font-size:13px; font-weight:800; color:#2C7A50; letter-spacing:.4px;
+  font-variant-numeric:tabular-nums}
+.nghi-han.het i{display:none}
+.nghi-han.het b{color:#D93B40; font-size:11.5px; letter-spacing:.06em}
+/* Sân chơi: canvas phủ kín, KHÔNG padding — mọi thứ vẽ bên trong nên không có
+   gì thò ra để `clip-path`/`overflow` chém. */
+.nghi-san{position:relative; padding:0; display:block; border-top:1.5px dashed var(--line)}
+.nghi-canvas{position:absolute; inset:0; width:100%; height:100%; display:block;
+  touch-action:manipulation}
+.the.nghi .play{border:0; padding:0; cursor:pointer}
+.the.nghi .play, .the.nghi:hover .play{background:linear-gradient(135deg,#0E9E85,#22C3A4)}
+.the.nghi.dang-choi .play, .the.nghi.dang-choi:hover .play{
+  background:linear-gradient(135deg,#B3541E,#E08A3C)}
+@media (max-width:620px){
+  .nghi-dau{padding:8px 8px 6px 12px; gap:2px}
+  .nghi-ava{width:21px; height:21px}
+  .nghi-chu{font-size:11.5px}
+  .nghi-han{font-size:8px; gap:5px}
+  .nghi-han b{font-size:11px}
+}
+
 /* ---------- SP CHECK — THANH TIẾN TRÌNH THEO TEAM (⭐ thiết kế lại 27/08) ----------
    Thay dòng "SPEAKING CHECK x/SI_SO" chung (dùng .td-dong) bằng MỘT DÒNG MỖI
    TEAM: tên team kề trái, thanh dài theo TỔNG SỐ LỖI đội đó bắt được so với
@@ -1163,8 +1208,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=44"></script>
-<script src="js/chung.js?v=23"></script>
+<script src="config.js?v=45"></script>
+<script src="js/chung.js?v=24"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
@@ -1970,6 +2015,7 @@ function nhipDongHo(){
     var tieng = con / TIENG;
     e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
   });
+  A.nhipNghi(document);          /* ⭐ v1.48.0 — đồng hồ của thẻ "không giao bài" */
 }
 function chayDongHo(){
   clearInterval(HEN_DH);
@@ -2045,11 +2091,24 @@ function dungCot(){
     return;
   }
 
+  /* ⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI" (thầy giao ở dashboard, kho `lessonNghi`).
+     · Còn hạn (chưa tới giờ vào học buổi kế tiếp) ⇒ nằm TRÊN VẠCH thay dòng nhắn.
+     · Hết hạn ⇒ tụt xuống DƯỚI VẠCH, đứng đầu nhóm bài cũ (thầy chốt).
+     ⛔ Có bài thật CÒN HẠN (`BAI_MOI`) thì thẻ nghỉ TỰ ẨN — thầy chốt; dữ liệu
+     trong kho vẫn còn nguyên, hết bài là nó hiện lại. */
+  var mocNghi = A.nghiCua(LOP_DL);
+  var nghiConHan = !BAI_MOI && mocNghi != null && mocNghi > Date.now();
+  var nghiHetHan = !BAI_MOI && mocNghi != null && mocNghi <= Date.now();
+
   var tren, cu, dsThe;
   if (BAI_MOI) {
     tren = veTheMoi(BAI_MOI, tinhHinhGio(BAI_MOI));
     cu = BAI_CU.slice(0, tong - 1);
     dsThe = [BAI_MOI].concat(cu);
+  } else if (nghiConHan) {
+    tren = A.theNghiHtml(mocNghi);
+    cu = BAI_CU.slice(0, tong - 1);
+    dsThe = cu.slice();          /* thẻ nghỉ KHÔNG nằm trong bảng tra bên dưới */
   } else {
     /* Không có bài nào còn hạn: trên vạch là dòng nhắn, mọi bài xuống dưới. */
     tren = BAI_CU.length
@@ -2058,9 +2117,13 @@ function dungCot(){
     cu = BAI_CU.slice(0, tong);
     dsThe = cu.slice();
   }
-  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + cu.map(veTheCu).join('');
+  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' +
+    (nghiHetHan ? A.theNghiHtml(mocNghi) : '') + cu.map(veTheCu).join('');
 
-  document.querySelectorAll('.the').forEach(function(t, i){
+  /* ⛔ `:not(.nghi)` BẮT BUỘC: vòng dưới tra `dsThe[i]` THEO CHỈ SỐ, mà thẻ nghỉ
+     cũng mang class `.the`. Thiếu bộ lọc là mọi thẻ bị gán nhầm bài của thẻ khác
+     — đúng họ bẫy "trùng tên class" (LUẬT 3️⃣ BAN GIAO.md). */
+  document.querySelectorAll('.the:not(.nghi)').forEach(function(t, i){
     var b = dsThe[i] || {};
     t.onclick = function(){
       /* ⭐ v1.35.0 — thẻ TẠM KHOÁ: không mở gì cả (kể cả SP CHECK), chỉ báo một câu. */
@@ -2099,6 +2162,11 @@ function dungCot(){
   canhNhanO();
   vuaMoiCotThieu();
   henVeLaiAvatar($('#cotBai'));  /* ⭐ 02/09 — đo cỡ + xếp chỗ avatar trên thanh đội */
+  /* ⭐ v1.48.0 — sân chơi của thẻ nghỉ (bóng bay + trò khủng long).
+     ⛔ Ảnh avatar lấy theo `LOP` (TÊN GỐC "B2-B"), KHÔNG phải `LOP_DL` ("B2B") —
+     bẫy #5 của đợt 02/09: dùng nhầm là 404 hết mà `onerror` âm thầm gỡ ảnh nên
+     không lỗi nào hiện ra, chỉ thấy toàn chữ tắt. */
+  A.gaTheNghi($('#cotBai'), CA_LOP, LOP);
   chayDongHo();
 }
 

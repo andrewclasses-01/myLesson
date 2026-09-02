@@ -787,6 +787,64 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 }
 @media (prefers-reduced-motion:reduce){.xh-dong.hc .xh-ten{animation:none}}
 
+/* ================================================================
+   ⭐⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI" (thầy chốt 02/09/2026)
+   Đầu thẻ: avatar thầy + NO HOMEWORK, ENJOY YOUR DAY! căn giữa TOÀN thẻ, dưới
+   là đồng hồ đếm tới GIỜ VÀO HỌC buổi kế tiếp (TIẾNG:PHÚT).
+   Ruột thẻ: MỘT canvas — bóng bay avatar cả lớp, bấm ▶ đổi sang trò khủng long.
+   ⛔ Khối này CHÉP Y HỆT sang `lop.html` — sửa một bên phải sửa bên kia.
+   ⛔ Thẻ nghỉ là `<div>` (không phải `<button>`) vì chứa nút ▶ thật bên trong.
+   ================================================================ */
+.the.nghi{cursor:default}
+.the.nghi:hover{transform:none}
+.the.nghi .the-in{background:#F2FBF5}
+/* Ghi đè `.the-body` (vốn là hàng ngang tên-bài ‖ ô hạn) thành cụm dọc căn giữa. */
+.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  padding:10px 14px 8px 20px; text-align:center}
+.nghi-cum{display:flex; align-items:center; justify-content:center; gap:9px; min-width:0}
+.nghi-ava{width:26px; height:26px; border-radius:50%; object-fit:cover; flex:none;
+  box-shadow:0 0 0 2px #fff, 0 1px 3px rgba(22,35,42,.25)}
+.nghi-chu{font-size:15.5px; font-weight:800; letter-spacing:.01em; color:#1f7a4d;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.nghi-han{display:flex; align-items:center; justify-content:center; gap:7px;
+  font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
+.nghi-han i{font-style:normal}
+.nghi-han b{font-size:13px; font-weight:800; color:#2C7A50; letter-spacing:.4px;
+  font-variant-numeric:tabular-nums}
+.nghi-han.het i{display:none}
+.nghi-han.het b{color:#D93B40; font-size:11.5px; letter-spacing:.06em}
+/* Sân chơi: canvas phủ kín, KHÔNG padding — mọi thứ vẽ bên trong nên không có
+   gì thò ra để `clip-path`/`overflow` chém. */
+.nghi-san{position:relative; padding:0; display:block; border-top:1.5px dashed var(--line)}
+.nghi-canvas{position:absolute; inset:0; width:100%; height:100%; display:block;
+  touch-action:manipulation}
+.the.nghi .play{border:0; padding:0; cursor:pointer}
+.the.nghi.dang-choi .play{background:linear-gradient(135deg,#B3541E,#E08A3C)}
+.the.nghi.dang-choi:hover .play{background:linear-gradient(135deg,#9A4718,#CE7A2F)}
+
+/* Ruột pop-up GIAO BÀI TẬP — mỗi dạng bài một ô bấm được. */
+.giao-o{display:flex; align-items:center; gap:12px; width:100%; text-align:left;
+  padding:13px 14px; border-radius:14px; border:1px solid var(--vien);
+  background:var(--the); margin-bottom:9px; transition:border-color .15s, background .15s}
+.giao-o:not(:disabled):hover{border-color:var(--xanh); background:var(--xanh-nhat)}
+.giao-o:disabled{opacity:.55; cursor:default}
+.giao-o .ic{flex:none; width:40px; height:40px; border-radius:13px; display:grid;
+  place-items:center; background:var(--xanh-nhat); font-size:20px}
+.giao-o .nh{font:800 13.5px/1.3 var(--font); color:var(--chu)}
+.giao-o .mo-ta{margin-top:2px; font:600 11.5px/1.4 var(--font); color:var(--nhat)}
+.giao-loi{margin:2px 2px 10px; padding:10px 12px; border-radius:12px;
+  background:var(--do-nhat); color:#a33a2c; font:700 12px/1.5 var(--font)}
+.giao-mach{margin:0 2px 10px; font:600 11.5px/1.5 var(--font); color:var(--nhat)}
+.giao-mach b{color:var(--chu)}
+
+/* Icon cây bút ở đầu khối BÀI CÒN HẠN — chỉ hiện khi lớp đang chờ bài. */
+.nut-giao{flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--vien);
+  background:var(--the); color:var(--xanh); display:grid; place-items:center;
+  transition:background .15s ease, transform .12s ease}
+.nut-giao:hover{background:var(--xanh-nhat); transform:scale(1.06)}
+.nut-giao svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.1;
+  stroke-linecap:round; stroke-linejoin:round}
+
 @media (max-width:620px){
   :root{--cao-the:166px}
   .the-in{--mui:42px}
@@ -1204,6 +1262,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         <h2>Bài còn hạn</h2>
         <span class="phu" id="baiPhu"></span>
         <div class="day"></div>
+        <!-- ⭐ v1.48.0 — cây bút: chỉ hiện khi lớp ĐANG CHỜ BÀI (xem veKhuThe). -->
+        <button class="nut-giao" id="btnGiao" title="Giao bài tập cho lớp này" hidden>
+          <svg viewBox="0 0 24 24"><path d="M4 20h4L19.5 8.5a2.1 2.1 0 0 0-3-3L5 17v3z"/>
+            <path d="M14.5 6.5l3 3"/></svg>
+        </button>
       </div>
       <div class="khoi-than">
         <div class="the-list" id="theListDs"></div>
@@ -1431,6 +1494,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   </div>
 </div>
 
+<!-- ⭐ v1.48.0 — POP-UP GIAO BÀI TẬP. Tạm thời đúng MỘT dạng: KHÔNG GIAO BÀI.
+     Dạng mới thêm sau thì thêm một `.giao-o` nữa, phần khung giữ nguyên. -->
+<div class="pop-nen" id="giaoNen">
+  <div class="pop">
+    <div class="pop-head">
+      <div>
+        <h3>Giao bài tập</h3>
+        <div class="phu" id="giaoPhu"></div>
+      </div>
+      <button class="dong" id="giaoDong" title="Đóng">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="pop-ds" id="giaoDs"></div>
+    <div class="pop-foot">ANDREW CLASSES</div>
+  </div>
+</div>
+
 <div class="chep-nen" id="chepNen" hidden>
   <div class="chep-hop">
     <h3>Danh sách em chưa xong</h3>
@@ -1464,8 +1545,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=44"></script>
-<script src="js/chung.js?v=23"></script>
+<script src="config.js?v=45"></script>
+<script src="js/chung.js?v=24"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
 (function () {
@@ -1647,15 +1728,17 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ⭐ v1.32.0 — trạng thái bài tập của một lớp: đúng MỘT trong ba, thay câu
   // mô tả dài "X học sinh · Y em thiếu bài / đang đọc kết quả…" cũ. Muốn biết
   // chi tiết ai còn thiếu thì mở thẳng lớp đó (bấm nút lớp).
-  // ⛔ 'khong' cần cờ lớp-level "Không giao bài" — CHƯA có trong dữ liệu thật
-  // (thầy nói sẽ build thẻ đó sau). Đọc `l.khongGiaoBai` phòng sẵn chỗ cắm,
-  // hiện luôn undefined nên mọi lớp thật chỉ rơi vào 'giao'/'cho'.
+  // ⭐ v1.48.0 — chỗ cắm 'khong' (dựng sẵn từ v1.32.0, khi đó chưa có dữ liệu)
+  // NAY CHẠY THẬT: lớp có thẻ "không giao bài" còn hạn thì trạng thái là 'khong'.
+  // ⛔ Bài thật CÒN HẠN đứng trước — thầy chốt: có bài thật thì thẻ nghỉ tự ẩn.
   function trangThaiBai(l) {
-    if (l.khongGiaoBai) return 'khong';
     var conHan = A.baiCuaLop(DL, l.maLop, 'ql').some(A.conHan);   // v1.35.0
-    return conHan ? 'giao' : 'cho';
+    if (conHan) return 'giao';
+    var m = A.nghiCua(l.maLop);
+    if (m != null && m > Date.now()) return 'khong';
+    return 'cho';
   }
-  var TT_NHAN = { giao: 'Đã giao bài', cho: 'Đang chờ bài', khong: 'Không có bài' };
+  var TT_NHAN = { giao: 'Đã giao bài', cho: 'Đang chờ bài', khong: 'Không có bài tập' };
 
   // Sinh nhật trong 7 ngày tới CỦA RIÊNG một lớp — dùng chung `conMayNgay()`
   // với sidebar "Sinh nhật sắp tới" (định nghĩa ở khối CỘT PHẢI phía dưới,
@@ -2428,6 +2511,88 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
   function dongPop() { $('#popNen').classList.remove('mo'); }
 
+  // ================================================================
+  // ⭐⭐ v1.48.0 — POP-UP GIAO BÀI TẬP (icon cây bút ở đầu khối "Bài còn hạn")
+  //
+  // Tạm thời đúng MỘT dạng: KHÔNG GIAO BÀI. Thêm dạng mới thì thêm một `.giao-o`
+  // nữa, khung giữ nguyên.
+  //
+  // Hạn của thẻ nghỉ = GIỜ VÀO HỌC của buổi kế tiếp, tính từ kho lịch myStudent
+  // (`mystudentRosterClasses`: `days` + `start_time`).
+  // ⛔ Kho đó tính MỘT LƯỢT ĐỌC CHO MỖI TÀI LIỆU nên CHỈ đọc khi thầy MỞ pop-up
+  // này, không nạp kèm lúc mở trang (luật 8️⃣ BAN GIAO.md). Đệm 5 phút.
+  // ⛔ Lớp CHƯA khai giờ học ⇒ CHẶN, báo thầy khai trong myStudent trước (thầy
+  // chốt 02/09) — cố ý KHÔNG bịa một mốc giờ.
+  // ================================================================
+  var IC_NGHI_TO = '🎈';
+
+  function moGiao() {
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var tenLop = (l && l.tenGoc) || LOP_CHON;
+    $('#giaoPhu').textContent = 'Lớp ' + tenLop;
+    $('#giaoDs').innerHTML = '<p class="giao-mach">Đang đọc lịch học của lớp…</p>';
+    $('#giaoNen').classList.add('mo');
+
+    A.napLopHoc().then(function (bang) {
+      // null = chưa dán luật / mất mạng; {} = đọc được nhưng kho rỗng.
+      if (bang === null) {
+        $('#giaoDs').innerHTML = '<div class="giao-loi">Chưa đọc được lịch học. ' +
+          'Kho <b>mystudentRosterClasses</b> chưa mở khoá cho web — cần dán thêm luật ' +
+          'Firestore (xem “LUAT FIRESTORE CAN DAN (02-09 THEM THE KHONG GIAO BAI).md”).</div>';
+        return;
+      }
+      var lh = bang[LOP_CHON] || null;
+      var moc = lh ? A.buoiTiepTheo(lh.thu, lh.gio) : '';
+      if (!moc) {
+        $('#giaoDs').innerHTML = '<div class="giao-loi">Lớp <b>' + A.chuAnToan(tenLop) +
+          '</b> chưa khai đủ lịch học (thứ học + giờ vào lớp) trong myStudent, nên chưa ' +
+          'tính được “buổi học tiếp theo”. Thầy khai trong myStudent rồi quay lại nhé.</div>' +
+          (lh ? '<p class="giao-mach">Đang có: thứ học <b>' +
+                 A.chuAnToan(lh.thu || '(trống)') + '</b> · giờ vào lớp <b>' +
+                 A.chuAnToan(lh.gio || '(trống)') + '</b></p>' : '');
+        return;
+      }
+      var d = new Date(Date.parse(moc));
+      var THU_DU = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+      var hai = function (n) { return (n < 10 ? '0' : '') + n; };
+      var chu = THU_DU[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1) +
+                ' lúc ' + hai(d.getHours()) + ':' + hai(d.getMinutes());
+      $('#giaoDs').innerHTML =
+        '<p class="giao-mach">Buổi học tiếp theo: <b>' + A.chuAnToan(chu) + '</b>' +
+          (lh.tamNghi ? ' · <b>lớp đang tạm nghỉ</b>' : '') + '</p>' +
+        '<button type="button" class="giao-o" data-giao-nghi="' + A.chuAnToan(moc) + '">' +
+          '<span class="ic">' + IC_NGHI_TO + '</span>' +
+          '<span><span class="nh">KHÔNG GIAO BÀI</span>' +
+          '<span class="mo-ta">Học sinh thấy thẻ “NO HOMEWORK, ENJOY YOUR DAY!” ' +
+          'kèm đồng hồ đếm tới buổi học tiếp theo.</span></span>' +
+        '</button>';
+    });
+  }
+  function dongGiao() { $('#giaoNen').classList.remove('mo'); }
+
+  // Ghi thẻ nghỉ. ⛔ LUẬT 9️⃣ BAN GIAO.md — gửi ĐỦ cả 3 trường + `merge:true`.
+  function nghiGhi(moc, nut) {
+    if (nut) nut.disabled = true;
+    var maLop = LOP_CHON;
+    spDb().then(function (f) {
+      return f.fs.setDoc(f.fs.doc(f.db, 'lessonNghi', maLop), {
+        lop: String(maLop), han: String(moc || ''), luc: Date.now()
+      }, { merge: true });
+    }).then(function () {
+      A.datNghi(maLop, moc);
+      dongGiao();
+      veLopGrid();
+      veKhuThe();
+      baoToast(moc ? 'Đã giao: lớp này không có bài tập.' : 'Đã gỡ thẻ không giao bài.');
+    })['catch'](function (e) {
+      if (nut) nut.disabled = false;
+      var ma = (e && (e.code || e.message)) || '';
+      baoToast(String(ma).indexOf('permission-denied') >= 0
+        ? 'Kho chưa mở khoá cho thẻ không giao bài — cần dán thêm luật Firestore (khối lessonNghi).'
+        : chuLoiKho(e));
+    });
+  }
+
   // ⭐ v1.34.0 — 🏆 Bảng xếp hạng (icon riêng trong thẻ) hiện XẾP HẠNG CHI
   // TIẾT TỪNG ACT — khác hẳn bấm vùng điểm (`moPopDiem` bên dưới: chỉ "ai xong
   // ai chưa", không xếp hạng nữa từ v1.47.0).
@@ -2545,6 +2710,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var tieng = con / TIENG;
       e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
     });
+    A.nhipNghi(document);          // ⭐ v1.48.0 — đồng hồ của thẻ "không giao bài"
   }
   setInterval(nhipDongHo, 1000);
 
@@ -2642,14 +2808,29 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var conHan = ds.length > 0;
     if (!conHan && tatCa.length) ds = [tatCa[0]];
     var soConHan = ds.filter(A.conHan).length;
+    // ⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI": chỉ dựng khi lớp KHÔNG có bài thật còn
+    // hạn (thầy chốt: có bài thật thì thẻ nghỉ tự biến mất, dữ liệu vẫn còn) và
+    // thẻ nghỉ đó CHƯA tới giờ học.
+    var mocNghi = A.nghiCua(LOP_CHON);
+    var coNghi = !conHan && mocNghi != null && mocNghi > Date.now();
+    // Cây bút chỉ hiện khi lớp đang chờ bài: không có bài còn hạn, cũng chưa
+    // giao nghỉ. Đã giao nghỉ rồi thì thẻ nghỉ nằm ngay đó, khỏi giao lại.
+    $('#btnGiao').hidden = !(!conHan && !coNghi);
     $('#baiPhu').textContent = ((l && l.tenGoc) || LOP_CHON) +
       (conHan ? (' · ' + soConHan + ' bài còn hạn' +
                  (ds.length > soConHan ? (' · ' + (ds.length - soConHan) + ' đang ẩn') : ''))
-        : (ds.length ? ' · bài gần nhất (đã hết hạn)' : ''));
-    $('#theListDs').innerHTML = ds.length ? ds.map(veTheCard).join('')
-      : '<div class="trong">🎈 Lớp này hết bài — No homework, No fun!</div>';
+        : (coNghi ? ' · đã giao: không có bài tập'
+                  : (ds.length ? ' · bài gần nhất (đã hết hạn)' : '')));
+    $('#theListDs').innerHTML = coNghi ? A.theNghiHtml(mocNghi)
+      : (ds.length ? ds.map(veTheCard).join('')
+                   : '<div class="trong">Đang chờ bài tập.</div>');
     nhipDongHo();
     canhNhanO();
+    if (coNghi) {
+      A.nhipNghi($('#theListDs'));
+      A.gaTheNghi($('#theListDs'), ((l && l.hocSinh) || []).map(function (h) { return h.ten; }),
+                  (l && l.tenGoc) || LOP_CHON);
+    }
     henVeLaiAvatar($('#theListDs'));  // ⭐ 02/09 — đo cỡ + xếp chỗ avatar trên thanh đội
     // ⭐ #2 — thẻ SPEAKING CHECK chưa có doiSp thì hỏi Firestore (một lần/mã bài).
     ds.forEach(function (b) {
@@ -4180,6 +4361,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ---------- #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK ----------
     $('#popDong').onclick = dongPop;
     $('#popNen').onclick = function (e) { if (e.target === this) dongPop(); };
+
+    // ---------- ⭐ v1.48.0 — GIAO BÀI TẬP (cây bút) ----------
+    $('#btnGiao').addEventListener('click', moGiao);
+    $('#giaoDong').addEventListener('click', dongGiao);
+    $('#giaoNen').addEventListener('click', function (e) { if (e.target === this) dongGiao(); });
+    // Ô "KHÔNG GIAO BÀI" dựng bằng innerHTML sau khi đọc lịch xong ⇒ bắt nổi.
+    $('#giaoDs').addEventListener('click', function (e) {
+      var o = e.target.closest('[data-giao-nghi]');
+      if (o) nghiGhi(o.getAttribute('data-giao-nghi'), o);
+    });
   }
 
   // ---------- cửa vào ----------

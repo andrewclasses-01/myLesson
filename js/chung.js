@@ -78,12 +78,16 @@
     // cắm một chỗ là trang nào cũng thấy hạn đã sửa mà không phải sửa trang nào.
     // ⛔ `napHanSua()` TỰ NUỐT mọi lỗi và trả bảng rỗng: mạng hỏng / chưa dán luật
     // Firestore thì trang phải chạy y như trước v1.20.0 chứ không được trắng bảng.
-    nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json'), napHanSua()])
+    // ⭐ v1.48.0 — nạp kèm kho `lessonNghi` (thẻ "không giao bài"). Cùng lý do
+    // đặt ở đây với `napHanSua()`: mọi trang vào dữ liệu qua đúng cửa này.
+    nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json'),
+                         napHanSua(), napNghi()])
       .then(function (r) {
         // ⭐ v1.35.0 — kho `lessonHan` nay mang HAI bảng: hạn riêng + trạng thái thẻ.
         var bang = r[2] || {};
         HAN_SUA = bang.han || {};
         TT_THE = bang.tt || {};
+        NGHI = r[3] || {};
         return { lop: (r[0] && r[0].lop) || [], bai: (r[1] && r[1].bai) || {} };
       });
     return nhoDl;
@@ -888,8 +892,547 @@
     });
   }
 
+  // ============================================================
+  // ⭐⭐ v1.48.0 (02/09/2026) — THẺ "KHÔNG GIAO BÀI" (thầy chốt)
+  //
+  // Thầy bấm icon cây bút trên dashboard → ghi MỘT tài liệu vào kho `lessonNghi`
+  // (id = mã lớp, ghi đè lần trước). Cả dashboard lẫn trang lớp đọc kho đó và
+  // dựng một thẻ ĐẶC BIỆT: chữ căn giữa, dưới là đồng hồ đếm tới GIỜ VÀO HỌC
+  // buổi kế tiếp; hết giờ = hết hạn (trang lớp đẩy nó xuống nhóm bài cũ).
+  //
+  // ⛔ `han` chốt CỨNG lúc bấm, không tính lại mỗi lần mở trang. Nhờ vậy trang
+  // lớp KHÔNG cần đọc kho lịch học `mystudentRosterClasses` — chỉ pop-up bên
+  // dashboard mới đọc (tiết kiệm lượt đọc Firestore, luật 8️⃣ BAN GIAO.md).
+  // ⛔ Chuỗi `han` RỖNG = "đã gỡ thẻ nghỉ" — luật kho cấm xoá tài liệu, đúng
+  // nếp `lessonHan`.
+  // ============================================================
+  var NGHI = {};                       // { '<mã lớp>': '<han>' }
+  var KHOA_NGHI = 'awc_nghi1';
+  var NGHI_CACHE_GIAY = 60;            // cùng nhịp với HAN_CACHE_GIAY
+
+  function docNghiPhien() {
+    try {
+      var o = JSON.parse(sessionStorage.getItem(KHOA_NGHI) || 'null');
+      if (o && (Date.now() - o.luc) < NGHI_CACHE_GIAY * 1000) return o.bang;
+    } catch (e) {}
+    return null;
+  }
+
+  // ⛔ CẢ THÂN HÀM TRONG try + tự nuốt lỗi, y hệt `napHanSua()`: chưa dán luật
+  // Firestore hay mất mạng thì mọi trang phải chạy đúng như trước v1.48.0.
+  function napNghi() {
+    try {
+      var db = CFG.AWORD_DB || {};
+      if (!db.projectId || !db.apiKey) return Promise.resolve({});
+      var san = docNghiPhien();
+      if (san) return Promise.resolve(san);
+      var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
+            + '/databases/(default)/documents/lessonNghi?pageSize=100&key='
+            + encodeURIComponent(db.apiKey);
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var ra = {};
+          var ds = (j && j.documents) || [];
+          for (var i = 0; i < ds.length; i++) {
+            var f = ds[i].fields || {};
+            var lop = f.lop && f.lop.stringValue;
+            if (!lop) continue;
+            ra[lop] = String((f.han && f.han.stringValue) || '');
+          }
+          if (j) { try { sessionStorage.setItem(KHOA_NGHI,
+            JSON.stringify({ luc: Date.now(), bang: ra })); } catch (e) {} }
+          return ra;
+        })['catch'](function () { return {}; });
+    } catch (e) { return Promise.resolve({}); }
+  }
+
+  // Mốc hết hạn của thẻ nghỉ một lớp (ms), hoặc null nếu lớp không có thẻ nghỉ.
+  function nghiCua(maLop) {
+    var h = NGHI[String(maLop || '')];
+    if (!h) return null;
+    var t = Date.parse(h);
+    return isNaN(t) ? null : t;
+  }
+  // Đặt tại chỗ sau khi ghi Firestore xong, khỏi phải chờ hết 60 giây đệm.
+  function datNghi(maLop, han) {
+    NGHI[String(maLop || '')] = String(han || '');
+    try { sessionStorage.setItem(KHOA_NGHI,
+      JSON.stringify({ luc: Date.now(), bang: NGHI })); } catch (e) {}
+  }
+
+  // ---------- LỊCH HỌC (kho myStudent, CHỈ ĐỌC) ----------
+  // ⛔ CHỈ dashboard gọi, và chỉ khi thầy MỞ pop-up giao nghỉ — kho này tính một
+  // lượt đọc cho mỗi tài liệu. Đệm 5 phút (lịch học hiếm khi đổi).
+  // ⛔ Kho anh em `mystudentRosterStudents` chứa mã đăng nhập + ngày sinh ĐỦ NĂM
+  // của 156 em — TUYỆT ĐỐI không mở luật cho kho đó. Xem BAN GIAO.md mục 0🔒.
+  var KHOA_LICH = 'awc_lichhoc1';
+  var LICH_CACHE_GIAY = 300;
+
+  function napLopHoc() {
+    try {
+      var db = CFG.AWORD_DB || {};
+      if (!db.projectId || !db.apiKey) return Promise.resolve(null);
+      try {
+        var o = JSON.parse(sessionStorage.getItem(KHOA_LICH) || 'null');
+        if (o && (Date.now() - o.luc) < LICH_CACHE_GIAY * 1000) return Promise.resolve(o.bang);
+      } catch (e) {}
+      var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
+            + '/databases/(default)/documents/mystudentRosterClasses?pageSize=300&key='
+            + encodeURIComponent(db.apiKey);
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        // ⛔ null (403 chưa dán luật / mất mạng) KHÁC {} (đọc được nhưng kho rỗng):
+        // bên gọi phải phân biệt để báo đúng câu cho thầy.
+        .then(function (j) {
+          if (!j) return null;
+          var ra = {};
+          var ds = j.documents || [];
+          for (var i = 0; i < ds.length; i++) {
+            var f = ds[i].fields || {};
+            var ma = String((f.code && f.code.stringValue) || '')
+                       .replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+            if (!ma) continue;
+            if (Number((f.archived && f.archived.integerValue) || 0)) continue;
+            ra[ma] = {
+              thu: String((f.days && f.days.stringValue) || ''),
+              gio: String((f.start_time && f.start_time.stringValue) || ''),
+              tamNghi: !!Number((f.on_break && f.on_break.integerValue) || 0)
+            };
+          }
+          try { sessionStorage.setItem(KHOA_LICH,
+            JSON.stringify({ luc: Date.now(), bang: ra })); } catch (e) {}
+          return ra;
+        })['catch'](function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
+  }
+
+  // "T3,T7" -> [2, 6] theo chỉ số getDay(). Cùng bảng chữ với app myLesson
+  // (`THU_TEN`) — đừng đổi chữ, đó là chữ myStudent ghi trong cột `days`.
+  var THU_TEN = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  function thuTuChuoi(s) {
+    var ra = [];
+    var phan = String(s || '').split(/[,;/]/);
+    for (var i = 0; i < phan.length; i++) {
+      var j = THU_TEN.indexOf(phan[i].trim().toUpperCase());
+      if (j >= 0 && ra.indexOf(j) < 0) ra.push(j);
+    }
+    return ra;
+  }
+
+  // Mốc GIỜ VÀO HỌC của buổi kế tiếp, dạng "YYYY-MM-DDTHH:mm" (rỗng nếu không
+  // đủ dữ liệu). Dò 8 ngày tới cho chắc: hôm nay mà chưa tới giờ thì tính luôn
+  // hôm nay, qua giờ rồi thì sang buổi sau.
+  function buoiTiepTheo(thuChuoi, gio, tuMoc) {
+    var thu = thuTuChuoi(thuChuoi);
+    var m = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(String(gio || '').trim());
+    if (!thu.length || !m) return '';
+    var goc = new Date(tuMoc == null ? Date.now() : tuMoc);
+    for (var i = 0; i < 8; i++) {
+      var d = new Date(goc.getFullYear(), goc.getMonth(), goc.getDate() + i,
+                       Number(m[1]), Number(m[2]), 0, 0);
+      if (thu.indexOf(d.getDay()) < 0) continue;
+      if (d.getTime() <= goc.getTime()) continue;
+      var hai = function (n) { return (n < 10 ? '0' : '') + n; };
+      return d.getFullYear() + '-' + hai(d.getMonth() + 1) + '-' + hai(d.getDate())
+           + 'T' + hai(d.getHours()) + ':' + hai(d.getMinutes());
+    }
+    return '';
+  }
+
+  // ---------- RUỘT THẺ NGHỈ: BÓNG BAY + GAME KHỦNG LONG ----------
+  //
+  // ⛔ VÌ SAO MỘT CANVAS CHO CẢ HAI: `.the-in` có `clip-path` hình mũi tên và
+  // `.the-diem` có `overflow:hidden` — mọi thứ vẽ bằng thẻ DOM thò ra ngoài đều
+  // bị chém cụt (đúng bẫy đã trả giá với avatar hôm 02/09). Vẽ trong canvas thì
+  // không có gì thò ra được, và chỉ tốn MỘT vòng lặp rAF cho cả hai chế độ.
+  //
+  // ⛔ VÒNG LẶP PHẢI TỰ CHẾT: mỗi khung hình kiểm `document.contains(canvas)` —
+  // thẻ bị vẽ lại (đổi lớp, nạp lại danh sách) là DOM cũ rời cây, vòng lặp cũ
+  // phải dừng ngay kẻo chạy ngầm mãi và cộng dồn mỗi lần vẽ.
+  //
+  // ⛔ Máy bật "giảm chuyển động" thì KHÔNG chạy vòng lặp: vẽ đứng yên một khung.
+  var MAU_BONG = ['#0E7C6E', '#B3541E', '#5B8DEF', '#8CC63F', '#E36B5C', '#9C6ADE', '#F2A93B'];
+
+  function chuTatBong(ten) {
+    var tu = String(ten || '').trim().split(/\s+/).filter(Boolean);
+    if (!tu.length) return '?';
+    if (tu.length === 1) return tu[0].slice(0, 2).toUpperCase();
+    return (tu[tu.length - 2].charAt(0) + tu[tu.length - 1].charAt(0)).toUpperCase();
+  }
+
+  function itMau(ten) {
+    var s = 0;
+    for (var i = 0; i < String(ten).length; i++) s += String(ten).charCodeAt(i);
+    return MAU_BONG[s % MAU_BONG.length];
+  }
+
+  // Vẽ nền tròn + chữ tắt trước, ảnh đè lên khi tải xong (ảnh 404 thì giữ chữ tắt
+  // — cùng nếp `onerror="this.remove()"` của avatar bên các trang).
+  function anhBong(lopGoc, ten) {
+    var im = new Image();
+    var o = { anh: null };
+    im.onload = function () { o.anh = im; };
+    im.src = avUrl(lopGoc, ten);
+    return o;
+  }
+
+  function giamChuyenDongChung() {
+    try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; }
+    catch (e) { return false; }
+  }
+
+  // ============================================================
+  // gaSanNghi(canvas, dsTen, lopGoc) — gắn sân chơi vào một canvas.
+  // Trả về { doiCheDo(), doiCo() } cho trang gọi; `doiCo()` gọi lại khi khung
+  // đổi kích thước.
+  // ============================================================
+  function gaSanNghi(canvas, dsTen, lopGoc) {
+    var ctx = canvas.getContext('2d');
+    var W = 0, H = 0, dpr = 1;
+    var cheDo = 'bong';                 // 'bong' | 'game'
+    var bong = [], anh = {};
+    var G = null;                       // trạng thái game khủng long
+    var chay = false, lucTruoc = 0;
+
+    (dsTen || []).forEach(function (t) { anh[t] = anhBong(lopGoc, t); });
+
+    function doiCo() {
+      var r = canvas.getBoundingClientRect();
+      if (!r.width || !r.height) return false;
+      dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = r.width; H = r.height;
+      canvas.width = Math.round(W * dpr);
+      canvas.height = Math.round(H * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return true;
+    }
+
+    // ---- BÓNG BAY ----
+    // Cỡ bóng theo chiều cao khung và SỐ EM: lớp đông thì bóng nhỏ lại cho còn
+    // chỗ lượn (thầy chốt "size bóng không quá to để có không gian bay tự do").
+    function dungBong() {
+      var n = (dsTen || []).length || 1;
+      var r = Math.max(9, Math.min(H * 0.22, Math.sqrt((W * H * 0.13) / (n * Math.PI))));
+      bong = (dsTen || []).map(function (t, i) {
+        var g = (i * 2.399963) + 0.7;                 // rải góc kiểu hạt hướng dương
+        var toc = 9 + (i % 5) * 3.5;                  // 9-23 px/giây — chậm, vô định
+        return {
+          ten: t, r: r,
+          x: r + Math.random() * Math.max(1, W - 2 * r),
+          y: r + Math.random() * Math.max(1, H - 2 * r),
+          vx: Math.cos(g) * toc, vy: Math.sin(g) * toc,
+          mau: itMau(t), tat: chuTatBong(t)
+        };
+      });
+      // Gỡ chồng chỗ ban đầu (rải ngẫu nhiên có thể trùng nhau).
+      for (var v = 0; v < 60; v++) goBong();
+    }
+
+    function goBong() {
+      for (var i = 0; i < bong.length; i++) {
+        for (var j = i + 1; j < bong.length; j++) {
+          var a = bong[i], b = bong[j];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          var chong = a.r + b.r - d;
+          if (chong <= 0) continue;
+          var ux = dx / d, uy = dy / d, nua = chong / 2;
+          a.x -= ux * nua; a.y -= uy * nua;
+          b.x += ux * nua; b.y += uy * nua;
+        }
+      }
+    }
+
+    function nhipBong(dt) {
+      var i, j;
+      for (i = 0; i < bong.length; i++) {
+        var o = bong[i];
+        o.x += o.vx * dt; o.y += o.vy * dt;
+        if (o.x - o.r < 0) { o.x = o.r; o.vx = Math.abs(o.vx); }
+        if (o.x + o.r > W) { o.x = W - o.r; o.vx = -Math.abs(o.vx); }
+        if (o.y - o.r < 0) { o.y = o.r; o.vy = Math.abs(o.vy); }
+        if (o.y + o.r > H) { o.y = H - o.r; o.vy = -Math.abs(o.vy); }
+      }
+      // Va chạm đàn hồi, hai bóng coi như cùng khối lượng: đổi thành phần vận
+      // tốc DỌC THEO đường nối tâm, giữ nguyên thành phần vuông góc.
+      for (i = 0; i < bong.length; i++) {
+        for (j = i + 1; j < bong.length; j++) {
+          var a = bong[i], b = bong[j];
+          var dx = b.x - a.x, dy = b.y - a.y;
+          var d = Math.sqrt(dx * dx + dy * dy) || 0.01;
+          if (d >= a.r + b.r) continue;
+          var ux = dx / d, uy = dy / d;
+          var va = a.vx * ux + a.vy * uy, vb = b.vx * ux + b.vy * uy;
+          if (va - vb <= 0) continue;                 // đang rời nhau thì thôi
+          a.vx += (vb - va) * ux; a.vy += (vb - va) * uy;
+          b.vx += (va - vb) * ux; b.vy += (va - vb) * uy;
+          var nua = (a.r + b.r - d) / 2;
+          a.x -= ux * nua; a.y -= uy * nua;
+          b.x += ux * nua; b.y += uy * nua;
+        }
+      }
+    }
+
+    function veBong() {
+      ctx.clearRect(0, 0, W, H);
+      for (var i = 0; i < bong.length; i++) {
+        var o = bong[i];
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.fillStyle = o.mau;
+        ctx.fill();
+        ctx.clip();
+        var im = anh[o.ten] && anh[o.ten].anh;
+        if (im) ctx.drawImage(im, o.x - o.r, o.y - o.r, o.r * 2, o.r * 2);
+        else {
+          ctx.fillStyle = '#fff';
+          ctx.font = '800 ' + Math.round(o.r * 0.8) + 'px Montserrat, sans-serif';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+          ctx.fillText(o.tat, o.x, o.y + 0.5);
+        }
+        ctx.restore();
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.r, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(255,255,255,.9)';
+        ctx.lineWidth = 1.6;
+        ctx.stroke();
+      }
+    }
+
+    // ---- GAME KHỦNG LONG ----
+    // Sân chỉ cao ~110px nên mọi thứ nhỏ: khủng long ~22px, xương rồng 14-24px.
+    function dungGame() {
+      G = { day: H - 12, x: Math.max(18, W * 0.11), y: 0, vy: 0, tren: false,
+            gai: [], toc: 118, diem: 0, ky: kyLuc(), thua: false, tre: 0 };
+    }
+    function kyLuc() {
+      try { return Number(localStorage.getItem('awc_dino_ky') || 0) || 0; } catch (e) { return 0; }
+    }
+    function ghiKyLuc(v) { try { localStorage.setItem('awc_dino_ky', String(v)); } catch (e) {} }
+
+    function nhay() {
+      if (!G) return;
+      if (G.thua) { dungGame(); return; }             // thua rồi thì chạm để chơi lại
+      if (G.tren) return;
+      G.vy = -Math.sqrt(2 * 1500 * (H * 0.44));       // đủ cao để qua cây cao nhất
+      G.tren = true;
+    }
+
+    function nhipGame(dt) {
+      if (G.thua) return;
+      G.diem += dt * 11;
+      G.toc += dt * 3.2;                              // nhanh dần, rất từ tốn
+      G.vy += 1500 * dt;
+      G.y += G.vy * dt;
+      if (G.y > 0) { G.y = 0; G.vy = 0; G.tren = false; }
+
+      G.tre -= dt;
+      if (G.tre <= 0) {
+        G.gai.push({ x: W + 10, cao: 14 + Math.random() * 10, rong: 6 + Math.random() * 5 });
+        G.tre = 0.75 + Math.random() * 0.9;
+      }
+      for (var i = G.gai.length - 1; i >= 0; i--) {
+        G.gai[i].x -= G.toc * dt;
+        if (G.gai[i].x + G.gai[i].rong < -6) G.gai.splice(i, 1);
+      }
+      // Va chạm: hộp khủng long thu nhỏ 3px mỗi bên cho đỡ ức chế.
+      var kx = G.x + 3, kw = 16, ky2 = G.day - 22 + G.y + 3, kh = 16;
+      for (var j = 0; j < G.gai.length; j++) {
+        var c = G.gai[j];
+        if (kx < c.x + c.rong && kx + kw > c.x && ky2 + kh > G.day - c.cao) {
+          G.thua = true;
+          var d = Math.floor(G.diem);
+          if (d > G.ky) { G.ky = d; ghiKyLuc(d); }
+          break;
+        }
+      }
+    }
+
+    function veGame() {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = '#C6D6D2'; ctx.lineWidth = 1.4;
+      ctx.beginPath(); ctx.moveTo(0, G.day + 0.5); ctx.lineTo(W, G.day + 0.5); ctx.stroke();
+
+      ctx.fillStyle = '#3D5450';
+      var dx = G.x, dy = G.day - 22 + G.y;
+      ctx.fillRect(dx + 2, dy + 6, 12, 12);            // thân
+      ctx.fillRect(dx + 11, dy, 11, 9);                // đầu
+      ctx.fillRect(dx + 20, dy + 4, 3, 2);             // mõm
+      ctx.fillRect(dx, dy + 9, 3, 6);                  // đuôi
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(dx + 17, dy + 2, 2, 2);             // mắt
+      if (!G.thua) {
+        ctx.fillStyle = '#3D5450';
+        var buoc = Math.floor(G.diem * 1.6) % 2;
+        ctx.fillRect(dx + 3, dy + 18, 4, 4 - buoc);
+        ctx.fillRect(dx + 9, dy + 18, 4, 3 + buoc);
+      } else {
+        ctx.fillStyle = '#3D5450';
+        ctx.fillRect(dx + 3, dy + 18, 4, 4); ctx.fillRect(dx + 9, dy + 18, 4, 4);
+      }
+
+      ctx.fillStyle = '#4E7F5C';
+      for (var i = 0; i < G.gai.length; i++) {
+        var c = G.gai[i];
+        ctx.fillRect(c.x, G.day - c.cao, c.rong, c.cao);
+        ctx.fillRect(c.x - 3, G.day - c.cao * 0.72, 3, c.cao * 0.34);
+        ctx.fillRect(c.x + c.rong, G.day - c.cao * 0.6, 3, c.cao * 0.3);
+      }
+
+      ctx.fillStyle = '#93A5A1';
+      ctx.font = '800 10px Montserrat, sans-serif';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'top';
+      ctx.fillText('HI ' + String(G.ky).padStart(4, '0') + '   ' +
+                   String(Math.floor(G.diem)).padStart(4, '0'), W - 6, 5);
+      if (G.thua) {
+        ctx.fillStyle = '#54706B';
+        ctx.font = '800 11px Montserrat, sans-serif';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('CHẠM ĐỂ CHƠI LẠI', W / 2, H / 2);
+      }
+    }
+
+    // ---- VÒNG LẶP ----
+    function khung(luc) {
+      if (!document.contains(canvas)) { chay = false; return; }   // thẻ đã bị vẽ lại
+      if (!W || !H) { if (!doiCo()) { requestAnimationFrame(khung); return; } dungLai(); }
+      var dt = Math.min(0.05, (luc - lucTruoc) / 1000 || 0);      // chặn nhảy cóc khi tab ẩn
+      lucTruoc = luc;
+      if (cheDo === 'game') { nhipGame(dt); veGame(); }
+      else { nhipBong(dt); veBong(); }
+      requestAnimationFrame(khung);
+    }
+    function dungLai() {
+      if (cheDo === 'game') dungGame(); else dungBong();
+    }
+    function batDau() {
+      if (chay) return;
+      chay = true; lucTruoc = 0;
+      if (giamChuyenDongChung()) {                    // đứng yên: vẽ đúng một khung
+        if (doiCo()) { dungLai(); if (cheDo === 'game') veGame(); else veBong(); }
+        chay = false;
+        return;
+      }
+      requestAnimationFrame(function (t) { lucTruoc = t; khung(t); });
+    }
+
+    canvas.addEventListener('pointerdown', function (e) {
+      if (cheDo !== 'game') return;
+      e.preventDefault(); e.stopPropagation();
+      nhay();
+    });
+
+    doiCo(); dungLai(); batDau();
+
+    return {
+      doiCheDo: function (m) {
+        cheDo = (m === 'game') ? 'game' : 'bong';
+        doiCo(); dungLai();
+        if (!chay) batDau();
+        else if (giamChuyenDongChung()) { if (cheDo === 'game') veGame(); else veBong(); }
+      },
+      laGame: function () { return cheDo === 'game'; },
+      doiCo: function () { if (doiCo()) dungLai(); },
+      nhay: nhay
+    };
+  }
+
+  // ---------- KHUÔN HTML CỦA THẺ NGHỈ (dùng chung hai trang) ----------
+  //
+  // ⛔ THẺ NGHỈ LÀ `<div>`, KHÔNG phải `<button>` như thẻ bài bên `lop.html`:
+  // bên trong nó có nút ▶ THẬT (bật/tắt game), mà HTML cấm nút lồng trong nút
+  // (đã vấp thật ở v1.34.0). Nhờ để riêng thế này, thẻ bài thường của lop.html
+  // KHÔNG phải đổi gì cả.
+  //
+  // ⛔ CSS của thẻ này CHÉP Ở HAI NƠI (`lop.html` + `dashboard.html`) đúng nếp
+  // mọi thứ khác của cụm — mỗi trang một khối <style> riêng, không có
+  // stylesheet chung. Sửa một bên phải sửa bên kia.
+  var IC_CHOI = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  var IC_VE = '<svg viewBox="0 0 24 24"><path d="M17 4.5v15L4 12z"/></svg>';
+
+  function theNghiHtml(moc) {
+    return '<div class="the nghi" data-nghi="1">' +
+      '<span class="the-in">' +
+        '<span class="the-body nghi-dau">' +
+          '<span class="nghi-cum">' +
+            '<img class="nghi-ava" src="assets/avatar-tron.jpg" alt="">' +
+            '<span class="nghi-chu">NO HOMEWORK, ENJOY YOUR DAY!</span>' +
+          '</span>' +
+          '<span class="nghi-han"><i>BUỔI HỌC TIẾP THEO TRONG</i>' +
+            '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b></span>' +
+        '</span>' +
+        '<span class="the-diem nghi-san"><canvas class="nghi-canvas"></canvas></span>' +
+        '<button type="button" class="play nghi-play" title="Chơi trò khủng long">' +
+          IC_CHOI + '</button>' +
+      '</span>' +
+    '</div>';
+  }
+
+  // Nhịp đồng hồ của thẻ nghỉ — mỗi trang gọi từ vòng 1 giây sẵn có của mình.
+  // "TIẾNG:PHÚT" (thầy chốt); quá 24 tiếng thì số tiếng cứ cộng dồn (52:07).
+  function nhipNghi(goc) {
+    var ds = (goc || document).querySelectorAll('.dhho-nghi[data-moc]');
+    for (var i = 0; i < ds.length; i++) {
+      var e = ds[i];
+      var moc = +e.getAttribute('data-moc');
+      var boc = e.parentElement;
+      if (!moc) { e.textContent = '—'; continue; }
+      var con = moc - Date.now();
+      // Hết hạn thì bỏ luôn nhãn "BUỔI HỌC TIẾP THEO TRONG" (CSS `.het i` ẩn nó),
+      // không thì đọc thành "…TIẾP THEO TRONG ĐÃ ĐẾN GIỜ HỌC".
+      if (con <= 0) {
+        e.textContent = 'ĐÃ ĐẾN GIỜ HỌC';
+        if (boc) boc.classList.add('het');
+        continue;
+      }
+      if (boc) boc.classList.remove('het');
+      var phut = Math.floor(con / 60000);
+      var h = Math.floor(phut / 60), p = phut % 60;
+      e.textContent = h + ':' + (p < 10 ? '0' : '') + p;
+    }
+  }
+
+  // Gắn sân chơi + nút ▶ cho MỌI thẻ nghỉ bên trong `goc`.
+  // ⛔ Gọi lại sau MỖI lần vẽ lại danh sách thẻ: DOM cũ rời cây thì vòng lặp cũ
+  // tự chết (xem `gaSanNghi`), nhưng DOM mới thì chưa ai gắn gì.
+  function gaTheNghi(goc, dsTen, lopGoc) {
+    var ds = (goc || document).querySelectorAll('.the.nghi');
+    for (var i = 0; i < ds.length; i++) {
+      (function (the) {
+        if (the.dataset.daGa === '1') return;
+        the.dataset.daGa = '1';
+        var canvas = the.querySelector('.nghi-canvas');
+        var nut = the.querySelector('.nghi-play');
+        if (!canvas || !nut) return;
+        var san = gaSanNghi(canvas, dsTen || [], lopGoc || '');
+        nut.addEventListener('click', function (e) {
+          e.preventDefault(); e.stopPropagation();
+          var sangGame = !san.laGame();
+          san.doiCheDo(sangGame ? 'game' : 'bong');
+          the.classList.toggle('dang-choi', sangGame);
+          nut.innerHTML = sangGame ? IC_VE : IC_CHOI;
+          nut.title = sangGame ? 'Về bóng bay' : 'Chơi trò khủng long';
+        });
+        // ⛔ Đo lại khi cửa sổ đổi cỡ — canvas phải khớp khung thật, không thì
+        // hình bị kéo giãn nhoè (canvas không tự co theo CSS như ảnh).
+        window.addEventListener('resize', function () { san.doiCo(); });
+        // ⛔ Đo lại sau khi FONT nạp xong: khung thẻ cao lên đôi chút, đo sớm là
+        // canvas thấp hơn khung thật (đúng bẫy "đo layout quá sớm" 02/09).
+        if (document.fonts && document.fonts.ready) {
+          document.fonts.ready.then(function () { san.doiCo(); });
+        }
+      })(ds[i]);
+    }
+  }
+
   window.AWC = {
     CFG: CFG,
+    // ⭐ v1.48.0 — thẻ "không giao bài" + lịch học + sân chơi
+    nghiCua: nghiCua, datNghi: datNghi, napLopHoc: napLopHoc,
+    buoiTiepTheo: buoiTiepTheo, thuTuChuoi: thuTuChuoi, gaSanNghi: gaSanNghi,
+    theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,
     napDuLieu: napDuLieu, napJson: napJson,
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,

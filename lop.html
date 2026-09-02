@@ -1143,7 +1143,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=41"></script>
+<script src="config.js?v=42"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -1475,25 +1475,109 @@ function veDiem(b, batDo, hienThieu){
    tham số `hienThieu` + nhánh `co-thieu`, không còn dùng `b.thieu` ở đây nữa
    (biến này vẫn được `spDoDaNop()` tính để phục vụ bảng cả lớp cũ — buổi mô
    hình 1, chưa có `doiSp` — xem `moPopCaLop`/`xepCaLop`). */
-/* ⭐ 02/09/2026 (thầy chốt) — AVATAR TỪNG EM ĐẶT TRÊN THANH ĐỘI.
-   · Vị trí = điểm của em ÷ điểm cao nhất CẢ LỚP × 100% (thước chung — xem `tinhDoiSp`).
-   · TRÙNG ĐIỂM thì KHÔNG đẩy lệch: em nộp SỚM hơn nằm ĐÈ LÊN TRÊN ("ưu tiên nộp sớm, người
-     sau muốn vượt phải hơn điểm"). Lớp trên/dưới do THỨ TỰ DOM quyết định (thẻ vẽ sau nằm
-     trên) nên vẽ em nộp MUỘN TRƯỚC. ⛔ Đừng bịa `z-index` cho từng avatar.
-   · Thanh màu vẫn là TỔNG ĐỘI thang 200 — khác thước với avatar, nên avatar CÓ THỂ nằm quá
-     vệt màu. Cố ý, không phải lỗi vẽ.
+/* ⭐ 02/09/2026 — AVATAR TỪNG EM ĐẶT TRÊN THANH ĐỘI.
+   ⛔ KHÔNG tính chỗ đứng ở đây được: nó phụ thuộc BỀ NGANG THẬT của thanh và ĐƯỜNG KÍNH thật
+   của avatar — hai thứ chỉ biết sau khi trình duyệt vẽ xong. Ở đây chỉ gắn `data-so` (điểm)
+   và `data-luc` (mốc nộp); `xepAvatarThanh()` chạy sau mới đặt `left`.
    ⛔ Bản sao của hàm này còn ở `dashboard.html` và `sp-chitiet.html` — sửa là sửa cả ba. */
 function avThanhHtml(d, lopGoc){
-  if (!d.maxLop) return '';
+  if (!(d.hs || []).length) return '';
   return (d.hs || []).slice()
-    .sort(function(a, b){ return (b.luc || 0) - (a.luc || 0); })
+    .sort(function(a, b){ return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
     .map(function(h){
-      var vt = Math.max(0, Math.min(100, h.so / d.maxLop * 100));
-      return '<span class="av-thanh" style="left:' + vt.toFixed(1) + '%" title="' +
+      return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '" title="' +
         A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
         '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
         A.chuAnToan(avChuTat(h.ten)) + '</span>';
     }).join('');
+}
+
+/* ⭐⭐ (02/09 đợt 3 — thầy chốt) XẾP CHỖ AVATAR TRÊN THANH. Ba luật:
+     1. Avatar CHỈ nằm trong PHẦN MÀU (tổng đội), tuyệt đối không lấn sang vùng trống.
+     2. Em cao điểm nhất đứng SÁT MÉP PHẢI của phần màu; em thấp điểm nhất đứng đúng điểm
+        của mình; các em giữa chia đều theo điểm giữa hai mốc đó.
+     3. KHÔNG BAO GIỜ ĐÈ NHAU — gần nhất chỉ được CHẠM CẠNH, kể cả khi trùng điểm.
+
+   ⛔⛔ Luật 1+2 là THƯỚC RIÊNG TỪNG ĐỘI (mốc phải = tổng đội, mỗi đội một khác). Nó ĐÈ LÊN
+   luật "ai điểm cao đứng cao xuyên đội" của bản trước — thầy đã biết và vẫn chọn (02/09).
+   ⇒ ĐỪNG so vị trí avatar giữa HAI ĐỘI khác nhau; muốn so điểm cá nhân thì đọc số trong
+   tooltip. Xem GHI CHU DU AN.md mục 02/09 đợt 3.
+
+   ⛔ Chạy SAU `coAvatarThanh` (cần biết đường kính) và sau khi thanh đã có bề ngang thật.
+   ⛔ Bản sao ở `dashboard.html` và `sp-chitiet.html` — sửa là sửa cả ba. */
+/* ⛔⛔ ĐO NGAY SAU KHI VẼ LÀ CHƯA CHẮC ĐÚNG. Lúc đó font Montserrat có thể chưa tải xong, nên
+   chiều cao hàng và bề ngang thanh vẫn là số của font dự phòng. Đo thật 02/09: avatar tính ra
+   **15,6px** trong khi cỡ đúng là **33px**, và em cao điểm nhất thò ra ngoài vệt màu 9px —
+   nhìn thì tưởng sai công thức, thật ra chỉ là đo quá sớm.
+   ⇒ Đo lại ở BA mốc: ngay lập tức · nhịp vẽ kế tiếp · lúc trình duyệt báo font đã xong.
+   ⛔ Đừng đổi sang ResizeObserver: chính việc đặt `--av` làm kích thước đổi ⇒ tự gọi lại mình
+   vô tận, phải bịa thêm chốt so sánh. Ba mốc cố định vừa rẻ vừa không vòng lặp. */
+function veLaiAvatar(goc){ coAvatarThanh(goc); xepAvatarThanh(goc); }
+function henVeLaiAvatar(goc){
+  veLaiAvatar(goc);
+  requestAnimationFrame(function(){ veLaiAvatar(goc); });
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(function(){ veLaiAvatar(goc); });
+  }
+}
+
+var TRAN_DOI_AV = 200;   /* thanh đầy ở 200 lỗi — cùng mốc với `tinhDoiSp` */
+function xepAvatarThanh(goc){
+  var bars = (goc || document).querySelectorAll('.doi-bar');
+  Array.prototype.forEach.call(bars, function(bar){
+    var av = bar.querySelectorAll('.av-thanh');
+    if (!av.length) return;
+    var rong = bar.getBoundingClientRect().width;
+    if (!rong) return;
+    var vet = bar.querySelector('i');
+    var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 100;
+    var cuoiVet = rong * ptVet / 100;
+    /* ⛔ Gỡ cỡ riêng của lần chạy trước RỒI mới đo, không thì mỗi lần chạy lại lấy đúng cái
+       cỡ đã thu nhỏ làm chuẩn và thu nhỏ tiếp — vài lần là avatar teo mất. */
+    bar.style.removeProperty('--av');
+    var dHang = av[0].getBoundingClientRect().width || 14;
+    /* ⭐ (02/09 đợt 3) Vệt màu quá ngắn thì THU NHỎ avatar CỦA RIÊNG THANH NÀY, chứ không cho
+       đè nhau cũng không cho tràn ra vùng trống (hai điều thầy cấm). n avatar chạm cạnh nhau
+       chiếm đúng n × đường kính ⇒ đường kính tối đa = ĐỘ DÀI VỆT MÀU ÷ SỐ EM.
+       Thẻ bài vệt chỉ dài 39-58px mà 4 em ⇒ mỗi em chưa tới 15px, đành chịu bé. */
+    var d = Math.max(8, Math.min(dHang, cuoiVet / av.length));
+    if (dHang - d > 0.5) bar.style.setProperty('--av', (Math.round(d * 10) / 10) + 'px');
+    var r = d / 2;
+    /* Tâm avatar phải cách mép ít nhất BÁN KÍNH thì cả vòng tròn mới nằm gọn trong vệt màu */
+    var lo = r, hi = Math.max(lo, cuoiVet - r);
+    var ds = Array.prototype.slice.call(av).map(function(e){
+      return { e: e, so: +e.dataset.so || 0, luc: +e.dataset.luc || 0 };
+    });
+    /* Điểm thấp về bên trái. TRÙNG ĐIỂM: em nộp SỚM hơn đứng về phía điểm cao. */
+    ds.sort(function(a, b){ return (a.so - b.so) || (b.luc - a.luc); });
+    var minS = ds[0].so, maxS = ds[ds.length - 1].so;
+    var pMin = Math.min(hi, Math.max(lo, rong * (minS / TRAN_DOI_AV)));
+    ds.forEach(function(x){
+      x.p = (maxS === minS) ? hi : pMin + (x.so - minS) / (maxS - minS) * (hi - pMin);
+    });
+    /* Giãn ra cho không em nào đè em nào: tâm cách tâm ít nhất ĐÚNG MỘT ĐƯỜNG KÍNH. */
+    var buoc = d;
+    if (ds.length > 1 && (ds.length - 1) * buoc >= hi - lo) {
+      /* Vệt màu quá ngắn, không đủ chỗ xếp hàng ⇒ rải đều cả dải (chạm nhau là cùng) */
+      ds.forEach(function(x, i){ x.p = lo + i * (hi - lo) / (ds.length - 1); });
+    } else {
+      for (var i = 1; i < ds.length; i++) {
+        if (ds[i].p < ds[i - 1].p + buoc) ds[i].p = ds[i - 1].p + buoc;
+      }
+      /* Đẩy phải xong có thể lòi ra khỏi vệt màu ⇒ ghim em cuối vào mép rồi đẩy ngược lại */
+      if (ds[ds.length - 1].p > hi) {
+        ds[ds.length - 1].p = hi;
+        for (var j = ds.length - 2; j >= 0; j--) {
+          if (ds[j].p > ds[j + 1].p - buoc) ds[j].p = ds[j + 1].p - buoc;
+        }
+      }
+      if (ds[0].p < lo) {
+        var bu = lo - ds[0].p;
+        ds.forEach(function(x){ x.p = Math.min(hi, x.p + bu); });
+      }
+    }
+    ds.forEach(function(x){ x.e.style.left = (Math.round(x.p * 10) / 10) + 'px'; });
+  });
 }
 /* Chữ tắt khi em chưa có ảnh: 2 chữ đầu của HAI TỪ CUỐI ("HOÀNG CHI" → "HC") */
 function avChuTat(ten){
@@ -1935,7 +2019,7 @@ function dungCot(){
      thật để cắt tên. Làm ngược thứ tự là đo trên bố cục sắp bị đổi. */
   canhNhanO();
   vuaMoiCotThieu();
-  coAvatarThanh($('#cotBai'));   /* ⭐ 02/09 — đo lại cỡ avatar trên thanh đội */
+  henVeLaiAvatar($('#cotBai'));  /* ⭐ 02/09 — đo cỡ + xếp chỗ avatar trên thanh đội */
   chayDongHo();
 }
 
@@ -2084,7 +2168,7 @@ var choTruoc = null, dangDoiBoCuc = false;
 
 window.addEventListener('resize', function(){
   doCaoDau(); doSanChat();
-  coAvatarThanh();   /* ⭐ 02/09 — hàng đổi chiều cao thì đo lại cỡ avatar trên thanh đội */
+  coAvatarThanh(); xepAvatarThanh();   /* ⭐ 02/09 — đổi khổ màn thì đo + xếp lại avatar */
   var hep = chatODuoi(), dt = laDienThoai();
   if (hep !== hepTruoc || dt !== dtTruoc) {
     hepTruoc = hep; dtTruoc = dt;
@@ -2543,13 +2627,10 @@ function tinhDoiSp(teams, docs){
       tb: hs.length ? tong / hs.length : 0, hs: hs };
   });
 
-  /* ⭐ 02/09 (thầy chốt) — THƯỚC CHUNG CẢ LỚP cho avatar: điểm cao nhất mà MỘT EM đạt được
-     trong cả buổi. Em điểm cao hơn LUÔN đứng cao hơn, kể cả khác đội.
-     ⛔ ĐỪNG neo em giỏi nhất vào TỔNG ĐỘI (mỗi đội một thước) — đo thật buổi A2B ra 13 cặp
-     sai, có cả cảnh em 38 điểm đứng trên em 42 điểm. Xem GHI CHU DU AN.md 02/09. */
-  var maxLop = 0;
-  doi.forEach(function(d){ d.hs.forEach(function(h){ if (h.so > maxLop) maxLop = h.so; }); });
-  doi.forEach(function(d){ d.maxLop = maxLop; });
+  /* ⛔ (02/09 đợt 3) Đoạn tính `maxLop` (thước chung cả lớp) ĐÃ GỠ: thầy chốt avatar phải nằm
+     gọn trong PHẦN MÀU của chính đội mình, em giỏi nhất chạm mép phải vệt màu ⇒ mỗi đội một
+     thước, không còn thước chung nữa. Chỗ xếp nay do `xepAvatarThanh()` tính từ bề ngang thật
+     của thanh — xem chú thích ở hàm đó, kèm hệ quả phải biết. */
 
   /* Đội đã có màu cố định (TB ≥20) đứng ngoài; đội còn lại xếp HẠNG theo tổng
      lỗi: hạng 1 xanh lá, 2 xanh dương, 3 cam, 4-5 đỏ — thầy chốt riêng: nhóm

@@ -91,12 +91,18 @@ select,input[type=search]{font:600 12.5px/1 var(--font); padding:8px 11px; borde
    avatar định vị theo chiều dài thanh. */
 .doi-bar{position:relative; height:11px; border-radius:99px; background:#E7EDEB}
 .doi-bar i{position:absolute; inset:0 auto 0 0; display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
-/* ⭐ AVATAR TỪNG EM TRÊN THANH ĐỘI (thầy chốt 02/09: 14px, có viền trắng) */
-.av-thanh{position:absolute; top:50%; width:14px; height:14px; border-radius:999px;
-  transform:translate(-50%,-50%); overflow:hidden; background:#CFDCD9;
-  display:grid; place-items:center; font:800 6px/1 var(--font); color:#fff;
+/* ⭐ AVATAR TỪNG EM TRÊN THANH ĐỘI (thầy chốt 02/09).
+   Đường kính KHÔNG đặt số cứng: `--av` do `coAvatarThanh()` đo chiều cao THẬT của hàng rồi
+   đặt vào — xem chú thích của hàm đó. `14px` chỉ là số đỡ khi JS chưa kịp chạy. */
+.av-thanh{position:absolute; top:50%; width:var(--av,14px); height:var(--av,14px);
+  border-radius:999px; transform:translate(-50%,-50%); overflow:hidden; background:#CFDCD9;
+  display:grid; place-items:center; font:800 calc(var(--av,14px)*.4)/1 var(--font); color:#fff;
   box-shadow:0 0 0 1.5px #fff, 0 1px 2px rgba(22,35,42,.35)}
-.av-thanh img{width:100%; height:100%; object-fit:cover; display:block}
+/* ⛔ Ảnh PHẢI `position:absolute; inset:0` — đúng nếp `.msg .av img` của khung chat.
+   Để `width/height:100%` trần thì <img> thành MỘT Ô GRID RIÊNG nằm trên chữ tắt, chỉ cao
+   bằng nửa khung ⇒ `object-fit:cover` cắt mất mặt em, nhìn như ảnh bị phóng to (thầy chụp
+   ảnh báo 02/09). Ảnh gốc VUÔNG 96×96 nên phủ đúng cả khung là không cắt tí nào. */
+.av-thanh img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%}
 .doi-so{font-size:13.5px; font-weight:800; text-align:right}
 .doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
 .doi-so.m-cam{color:var(--m-cam)} .doi-so.m-do{color:var(--m-do)}
@@ -342,7 +348,7 @@ body.khoa-cuon{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=40"></script>
+<script src="config.js?v=41"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -673,6 +679,45 @@ body.khoa-cuon{overflow:hidden}
       }).join('');
   }
 
+  // ⭐ (02/09 đợt 2 — thầy chốt) AVATAR TO HẾT CỠ mà hai hàng liền nhau vẫn không chạm nhau.
+  // ⛔ PHẢI ĐO, đừng đặt số cứng — hàng co giãn theo chiều cao khối/thẻ (thẻ 2 đội hàng cao
+  // gấp đôi thẻ 4 đội), số cứng là chỗ thừa chỗ thiếu.
+  //
+  // ⛔ Trần KHÔNG PHẢI chiều cao hàng mà là **khoảng cách TÂM–TÂM hai hàng liền nhau**: giữa
+  // hai hàng còn cái khe của `gap` (thẻ bài `.diem-rows{gap:5px}`), avatar thò vào khe đó vẫn
+  // chẳng chạm ai. Lấy nhầm chiều cao hàng là bỏ phí 5px — bản đầu 02/09 đã phí đúng chỗ này.
+  // Chặn thứ hai: avatar không được thò khỏi KHỐI CHA (`.diem-rows` và `.the-diem` đều có
+  // `overflow:hidden`) ⇒ đường kính ≤ 2× khoảng cách từ tâm hàng tới mép khối.
+  // Mọi hàng trong cùng một khối lấy CHUNG một cỡ, không thì to nhỏ so le rất xấu.
+  //
+  // ⛔ Bản sao ở `dashboard.html` và `lop.html` — sửa là sửa cả ba.
+  function coAvatarThanh(goc){
+    var ds = (goc || document).querySelectorAll('.doi-dong');
+    if (!ds.length) return;
+    var nhom = [];
+    Array.prototype.forEach.call(ds, function(h){
+      var o = nhom.filter(function(x){ return x.cha === h.parentElement; })[0];
+      if (!o) { o = { cha: h.parentElement, hang: [] }; nhom.push(o); }
+      o.hang.push(h);
+    });
+    nhom.forEach(function(o){
+      var ob = o.cha.getBoundingClientRect();
+      var tam = o.hang.map(function(h){
+        var b = h.getBoundingClientRect();
+        return { giua: b.top + b.height / 2, cao: b.height };
+      });
+      if (!tam.length || !tam[0].cao) return;
+      var co = 999;
+      tam.forEach(function(x, i){
+        if (i > 0) co = Math.min(co, tam[i].giua - tam[i - 1].giua);
+        if (i < tam.length - 1) co = Math.min(co, tam[i + 1].giua - tam[i].giua);
+        co = Math.min(co, (x.giua - ob.top) * 2, (ob.bottom - x.giua) * 2);
+      });
+      var av = Math.max(10, Math.min(40, Math.round(co - 2)));
+      o.hang.forEach(function(h){ h.style.setProperty('--av', av + 'px'); });
+    });
+  }
+
   function veDoiVe(){
     $('#doiPhu').textContent = 'thanh đầy ở 200 lỗi bắt được · avatar đặt theo điểm riêng của từng em';
     $('#doiVe').innerHTML = DOI.map(function(d){
@@ -683,6 +728,7 @@ body.khoa-cuon{overflow:hidden}
         '<span class="doi-so ' + d.mau + '">' + d.tong + '</span>' +
       '</div>';
     }).join('') || '<div class="trong">Buổi chưa chia đội nào.</div>';
+    coAvatarThanh($('#doiVe'));
   }
 
   // ⭐ 02/09/2026 (thầy chốt) — LỌC THEO ĐỘI ĐANG CHỌN. Một câu tranh chấp dính tới HAI đội
@@ -877,6 +923,12 @@ body.khoa-cuon{overflow:hidden}
   });
   document.addEventListener('keydown', function(ev){
     if (ev.key === 'Escape' && DANG_PHONG) doiPhong(DANG_PHONG);
+  });
+  // Đổi khổ màn hình là hàng đổi chiều cao ⇒ đo lại cỡ avatar (chờ 150ms cho layout xong)
+  var henCo = null;
+  window.addEventListener('resize', function(){
+    clearTimeout(henCo);
+    henCo = setTimeout(function(){ coAvatarThanh(); }, 150);
   });
   datIconPhong();
 

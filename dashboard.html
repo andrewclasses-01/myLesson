@@ -640,12 +640,18 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
    14px là VỪA KHÍT hàng 19px (thẻ 4 đội) và 15px (thẻ 5 đội); to hơn nữa sẽ bị chém ở đó. */
 .doi-bar{position:relative; height:7px; border-radius:99px; background:#E7EDEB}
 .doi-bar i{position:absolute; inset:0 auto 0 0; display:block; height:100%; border-radius:99px; transition:width .5s var(--em)}
-/* ⭐ AVATAR TỪNG EM TRÊN THANH ĐỘI (thầy chốt 02/09: 14px, có viền trắng) */
-.av-thanh{position:absolute; top:50%; width:14px; height:14px; border-radius:999px;
-  transform:translate(-50%,-50%); overflow:hidden; background:#CFDCD9;
-  display:grid; place-items:center; font:800 6px/1 var(--font); color:#fff;
+/* ⭐ AVATAR TỪNG EM TRÊN THANH ĐỘI (thầy chốt 02/09).
+   Đường kính KHÔNG đặt số cứng: `--av` do `coAvatarThanh()` đo chiều cao THẬT của hàng rồi
+   đặt vào — xem chú thích của hàm đó. `14px` chỉ là số đỡ khi JS chưa kịp chạy. */
+.av-thanh{position:absolute; top:50%; width:var(--av,14px); height:var(--av,14px);
+  border-radius:999px; transform:translate(-50%,-50%); overflow:hidden; background:#CFDCD9;
+  display:grid; place-items:center; font:800 calc(var(--av,14px)*.4)/1 var(--font); color:#fff;
   box-shadow:0 0 0 1.5px #fff, 0 1px 2px rgba(22,35,42,.35)}
-.av-thanh img{width:100%; height:100%; object-fit:cover; display:block}
+/* ⛔ Ảnh PHẢI `position:absolute; inset:0` — đúng nếp `.msg .av img` của khung chat.
+   Để `width/height:100%` trần thì <img> thành MỘT Ô GRID RIÊNG nằm trên chữ tắt, chỉ cao
+   bằng nửa khung ⇒ `object-fit:cover` cắt mất mặt em, nhìn như ảnh bị phóng to (thầy chụp
+   ảnh báo 02/09). Ảnh gốc VUÔNG 96×96 nên phủ đúng cả khung là không cắt tí nào. */
+.av-thanh img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%}
 .doi-so{font-size:10.5px; font-weight:800; text-align:right; color:#54706B;
   font-variant-numeric:tabular-nums}
 .doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
@@ -1390,7 +1396,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=40"></script>
+<script src="config.js?v=41"></script>
 <script src="js/chung.js?v=23"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
@@ -2354,9 +2360,49 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       : '<div class="trong">🎈 Lớp này hết bài — No homework, No fun!</div>';
     nhipDongHo();
     canhNhanO();
+    coAvatarThanh($('#theListDs'));   // ⭐ 02/09 — đo lại cỡ avatar trên thanh đội
     // ⭐ #2 — thẻ SPEAKING CHECK chưa có doiSp thì hỏi Firestore (một lần/mã bài).
     ds.forEach(function (b) {
       if (/SP\s*CHECK/i.test(b.dang || '') && !DOI_SP[b.id]) capNhatSpeakingChoBai(b, LOP_CHON);
+    });
+  }
+
+  // ⭐ (02/09 đợt 2 — thầy chốt) AVATAR TO HẾT CỠ mà hai hàng liền nhau vẫn không chạm nhau.
+  // ⛔ PHẢI ĐO, đừng đặt số cứng — hàng co giãn theo chiều cao thẻ (thẻ 2 đội hàng cao gấp
+  // đôi thẻ 4 đội), số cứng là chỗ thừa chỗ thiếu.
+  //
+  // ⛔ Trần KHÔNG PHẢI chiều cao hàng mà là **khoảng cách TÂM–TÂM hai hàng liền nhau**: giữa
+  // hai hàng còn cái khe `gap` của `.diem-rows` (5px), avatar thò vào khe đó vẫn chẳng chạm
+  // ai. Lấy nhầm chiều cao hàng là bỏ phí 5px — bản đầu 02/09 đã phí đúng chỗ này.
+  // Chặn thứ hai: avatar không được thò khỏi KHỐI CHA (`.diem-rows` và `.the-diem` đều có
+  // `overflow:hidden`) ⇒ đường kính ≤ 2× khoảng cách từ tâm hàng tới mép khối.
+  // Mọi hàng trong cùng một khối lấy CHUNG một cỡ, không thì to nhỏ so le rất xấu.
+  //
+  // ⛔ Bản sao ở `lop.html` và `sp-chitiet.html` — sửa là sửa cả ba.
+  function coAvatarThanh(goc) {
+    var ds = (goc || document).querySelectorAll('.doi-dong');
+    if (!ds.length) return;
+    var nhom = [];
+    Array.prototype.forEach.call(ds, function (h) {
+      var o = nhom.filter(function (x) { return x.cha === h.parentElement; })[0];
+      if (!o) { o = { cha: h.parentElement, hang: [] }; nhom.push(o); }
+      o.hang.push(h);
+    });
+    nhom.forEach(function (o) {
+      var ob = o.cha.getBoundingClientRect();
+      var tam = o.hang.map(function (h) {
+        var b = h.getBoundingClientRect();
+        return { giua: b.top + b.height / 2, cao: b.height };
+      });
+      if (!tam.length || !tam[0].cao) return;
+      var co = 999;
+      tam.forEach(function (x, i) {
+        if (i > 0) co = Math.min(co, tam[i].giua - tam[i - 1].giua);
+        if (i < tam.length - 1) co = Math.min(co, tam[i + 1].giua - tam[i].giua);
+        co = Math.min(co, (x.giua - ob.top) * 2, (ob.bottom - x.giua) * 2);
+      });
+      var av = Math.max(10, Math.min(40, Math.round(co - 2)));
+      o.hang.forEach(function (h) { h.style.setProperty('--av', av + 'px'); });
     });
   }
 

@@ -906,8 +906,12 @@
   // ⛔ Chuỗi `han` RỖNG = "đã gỡ thẻ nghỉ" — luật kho cấm xoá tài liệu, đúng
   // nếp `lessonHan`.
   // ============================================================
-  var NGHI = {};                       // { '<mã lớp>': '<han>' }
-  var KHOA_NGHI = 'awc_nghi1';
+  // ⭐ v1.51.0 — mỗi lớp nay là { han, tt }: `tt` = '' | 'an' (ẩn với học sinh).
+  // ⛔ ĐỔI KHOÁ ĐỆM khi đổi khuôn bảng (`awc_nghi1` → `awc_nghi2`): máy đang mở
+  // trang bản cũ mà đọc trúng khuôn cũ là mất sạch thẻ nghỉ trong 60 giây đầu —
+  // đúng bẫy đã gặp với `awc_hansua2`.
+  var NGHI = {};                       // { '<mã lớp>': { han, tt } }
+  var KHOA_NGHI = 'awc_nghi2';
   var NGHI_CACHE_GIAY = 60;            // cùng nhịp với HAN_CACHE_GIAY
 
   function docNghiPhien() {
@@ -938,7 +942,9 @@
             var f = ds[i].fields || {};
             var lop = f.lop && f.lop.stringValue;
             if (!lop) continue;
-            ra[lop] = String((f.han && f.han.stringValue) || '');
+            var tt = String((f.tt && f.tt.stringValue) || '');
+            ra[lop] = { han: String((f.han && f.han.stringValue) || ''),
+                        tt: (tt === 'an') ? 'an' : '' };
           }
           if (j) { try { sessionStorage.setItem(KHOA_NGHI,
             JSON.stringify({ luc: Date.now(), bang: ra })); } catch (e) {} }
@@ -949,14 +955,19 @@
 
   // Mốc hết hạn của thẻ nghỉ một lớp (ms), hoặc null nếu lớp không có thẻ nghỉ.
   function nghiCua(maLop) {
-    var h = NGHI[String(maLop || '')];
-    if (!h) return null;
-    var t = Date.parse(h);
+    var o = NGHI[String(maLop || '')];
+    if (!o || !o.han) return null;
+    var t = Date.parse(o.han);
     return isNaN(t) ? null : t;
   }
+  // Trạng thái thẻ nghỉ: '' bình thường · 'an' ẩn với học sinh.
+  function nghiTt(maLop) {
+    var o = NGHI[String(maLop || '')];
+    return (o && o.tt === 'an') ? 'an' : '';
+  }
   // Đặt tại chỗ sau khi ghi Firestore xong, khỏi phải chờ hết 60 giây đệm.
-  function datNghi(maLop, han) {
-    NGHI[String(maLop || '')] = String(han || '');
+  function datNghi(maLop, han, tt) {
+    NGHI[String(maLop || '')] = { han: String(han || ''), tt: (tt === 'an') ? 'an' : '' };
     try { sessionStorage.setItem(KHOA_NGHI,
       JSON.stringify({ luc: Date.now(), bang: NGHI })); } catch (e) {}
   }
@@ -1405,17 +1416,20 @@
   // tâm như bản v1.48 (bản đó nhãn nhỏ, đồng hồ to gấp đôi).
   // `themHtml` = chỗ cắm của riêng dashboard (dải ⚙), nay nằm TRONG vùng sân,
   // bên trái và có vạch ngăn — đúng chỗ `.diem-ic` của thẻ bài thường.
-  function theNghiHtml(moc, themHtml) {
-    return '<div class="the nghi" data-nghi="1">' +
+  // ⭐ v1.51.0 — đầu thẻ: AVATAR bên trái (to hơn, nằm GIỮA cụm hai dòng theo
+  // chiều dọc) · hai dòng chữ CĂN TRÁI THẲNG HÀNG CHỮ ĐẦU (thầy chốt). Cả cụm
+  // vẫn nằm giữa thẻ theo chiều ngang.
+  function theNghiHtml(moc, themHtml, an) {
+    return '<div class="the nghi' + (an ? ' an' : '') + '" data-nghi="1">' +
       '<span class="the-in">' +
         '<span class="the-body nghi-dau">' +
-          '<span class="nghi-cum">' +
-            '<img class="nghi-ava" src="assets/avatar-tron.jpg" alt="">' +
+          '<img class="nghi-ava" src="assets/avatar-tron.jpg" alt="">' +
+          '<span class="nghi-chuoi">' +
             '<span class="nghi-chu">NO HOMEWORK, ENJOY YOUR DAY!</span>' +
-          '</span>' +
-          '<span class="nghi-han">' +
-            '<i class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</i>' +
-            '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
+            '<span class="nghi-han">' +
+              '<i class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</i>' +
+              '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
+            '</span>' +
           '</span>' +
         '</span>' +
         '<span class="the-diem nghi-san">' + (themHtml || '') +
@@ -1491,7 +1505,7 @@
   window.AWC = {
     CFG: CFG,
     // ⭐ v1.48.0 — thẻ "không giao bài" + lịch học + sân chơi
-    nghiCua: nghiCua, datNghi: datNghi, napLopHoc: napLopHoc,
+    nghiCua: nghiCua, nghiTt: nghiTt, datNghi: datNghi, napLopHoc: napLopHoc,
     buoiTiepTheo: buoiTiepTheo, thuTuChuoi: thuTuChuoi, gaSanNghi: gaSanNghi,
     theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,

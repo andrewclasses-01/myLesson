@@ -803,18 +803,22 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
    Bản cũ để nhãn và đồng hồ chung MỘT hàng ngang nên cả cụm mới là thứ được căn
    giữa, còn riêng đồng hồ thì luôn lệch sang phải. Tách ra thì đồng hồ tự đúng tâm.
    Lề trái/phải bằng nhau (18px) để cụm chữ cân giữa phần chữ của thẻ. */
-.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:1px;
-  padding:13px 18px 10px; text-align:center}
-.nghi-cum{display:flex; align-items:center; justify-content:center; gap:9px; min-width:0}
-.nghi-ava{width:26px; height:26px; border-radius:50%; object-fit:cover; flex:none;
-  box-shadow:0 0 0 2px #fff, 0 1px 3px rgba(22,35,42,.25)}
+/* ⭐ v1.51.0 (thầy chốt) — AVATAR bên trái, TO hơn (26 → 38px) và nằm GIỮA cụm
+   hai dòng theo chiều dọc (`align-items:center`); hai dòng chữ CĂN TRÁI, thẳng
+   hàng chữ đầu. Cả cụm vẫn nằm giữa thẻ theo chiều ngang. */
+.nghi-dau{flex-direction:row; align-items:center; justify-content:center; gap:11px;
+  padding:12px 18px 10px; text-align:left}
+.nghi-chuoi{display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  min-width:0}
+.nghi-ava{width:38px; height:38px; border-radius:50%; object-fit:cover; flex:none;
+  box-shadow:0 0 0 2px #fff, 0 1px 4px rgba(22,35,42,.28)}
 .nghi-chu{font-size:15.5px; font-weight:800; letter-spacing:.01em; color:#1f7a4d;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 /* ⭐ v1.50.0 (thầy chốt) — nhãn và đồng hồ CÙNG MỘT HÀNG, BẰNG CỠ NHAU (11.5px).
    Bản v1.48 để chung hàng nhưng đồng hồ to gấp đôi nên cụm lệch; bản v1.49 tách
    hai dòng cho đồng hồ đúng tâm. Nay bằng cỡ thì chung hàng vẫn cân. Đồng hồ
    vẫn nổi nhờ MÀU CAM. Chạy từng giây — xem nhipNghi() trong chung.js. */
-.nghi-han{display:flex; align-items:baseline; justify-content:center; gap:8px;
+.nghi-han{display:flex; align-items:baseline; justify-content:flex-start; gap:8px;
   font-size:11.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
 .nghi-nhan{font-style:normal}
 .dhho-nghi{font-size:11.5px; font-weight:800; color:#E07A12; letter-spacing:.4px;
@@ -833,6 +837,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   touch-action:manipulation}
 .the.nghi .play{border:0; padding:0; cursor:pointer}
 .the.nghi.dang-choi .play{background:linear-gradient(135deg,#B3541E,#E08A3C)}
+/* ⭐ v1.51.0 — thẻ nghỉ ĐANG ẨN: mờ đi (dùng lại `.the.an` sẵn có) + huy hiệu. */
+.the.nghi.an .nghi-chuoi::after{content:'ĐANG ẨN VỚI HỌC SINH'; display:block;
+  margin-top:3px; font:800 8.5px/1.3 var(--font); letter-spacing:.08em; color:var(--do)}
 .the.nghi.dang-choi:hover .play{background:linear-gradient(135deg,#9A4718,#CE7A2F)}
 
 /* Ruột pop-up GIAO BÀI TẬP — mỗi dạng bài một ô bấm được. */
@@ -856,16 +863,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 /* ⭐ v1.50.0 — nút ⚙ của thẻ nghỉ KHÔNG còn CSS riêng: nó dùng lại nguyên
    `.diem-ic` + `.diem-vach` của thẻ bài thường (xem `veKhuThe`). */
 
-/* Hộp sửa hạn trong pop-up giao bài (chế độ SỬA). */
-.giao-han{display:flex; gap:8px; margin:2px 2px 12px}
-.giao-han input{flex:1; min-width:0; padding:9px 11px; border-radius:11px;
-  border:1px solid var(--vien-dam); background:var(--the); color:var(--chu);
-  font:700 13px/1.3 var(--font)}
-.giao-han input:focus{outline:none; border-color:var(--xanh)}
-.giao-o.nguy{border-color:#F0CFCF}
-.giao-o.nguy .ic{background:var(--do-nhat)}
-.giao-o.nguy .nh{color:var(--do)}
-.giao-o.nguy:not(:disabled):hover{border-color:var(--do); background:var(--do-nhat)}
+/* ⛔ v1.51.0 — đã gỡ CSS `.giao-han` / `.giao-o.nguy`: chế độ SỬA trong pop-up
+   giao bài không còn, cài đặt thẻ nghỉ nay dùng chung menu ⚙ + hộp xác nhận +
+   hộp đổi hạn của thẻ bài thường. */
 
 /* Icon cây bút ở đầu khối BÀI CÒN HẠN — chỉ hiện khi lớp đang chờ bài. */
 .nut-giao{flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--vien);
@@ -1575,8 +1575,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=48"></script>
-<script src="js/chung.js?v=27"></script>
+<script src="config.js?v=49"></script>
+<script src="js/chung.js?v=28"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
 (function () {
@@ -1765,7 +1765,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var conHan = A.baiCuaLop(DL, l.maLop, 'ql').some(A.conHan);   // v1.35.0
     if (conHan) return 'giao';
     var m = A.nghiCua(l.maLop);
-    if (m != null && m > Date.now()) return 'khong';
+    // ⭐ v1.51.0 — thẻ nghỉ ĐANG ẨN thì học sinh không thấy gì ⇒ lớp vẫn là "đang chờ bài".
+    if (m != null && m > Date.now() && A.nghiTt(l.maLop) !== 'an') return 'khong';
     return 'cho';
   }
   var TT_NHAN = { giao: 'Đã giao bài', cho: 'Đang chờ bài', khong: 'Không có bài tập' };
@@ -2601,69 +2602,47 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
   function dongGiao() { $('#giaoNen').classList.remove('mo'); }
 
-  // ⭐ v1.49.0 — CHẾ ĐỘ SỬA của cùng pop-up: đổi hạn (gõ tay ngày + giờ, thầy
-  // chốt) và xoá thẻ. Dùng lại đúng khung `#giaoNen`, chỉ đổi ruột — khỏi dựng
-  // thêm một hộp nữa như `#hanPop` của thẻ bài.
-  // ⛔ Xoá = ghi `han` RỖNG, KHÔNG xoá tài liệu (luật kho `allow delete: if false`).
-  function moSuaNghi() {
-    var l = A.lopTheoMa(DL, LOP_CHON);
-    var moc = A.nghiCua(LOP_CHON);
-    var d = moc == null ? new Date() : new Date(moc);
-    var hai = function (n) { return (n < 10 ? '0' : '') + n; };
-    var ngay = d.getFullYear() + '-' + hai(d.getMonth() + 1) + '-' + hai(d.getDate());
-    var gio = hai(d.getHours()) + ':' + hai(d.getMinutes());
-    $('#giaoTieuDe').textContent = 'Cài đặt thẻ';
-    $('#giaoPhu').textContent = 'Thẻ không giao bài · lớp ' + ((l && l.tenGoc) || LOP_CHON);
-    $('#giaoDs').innerHTML =
-      '<p class="giao-mach">Đổi mốc hết hạn của thẻ. Tới mốc này thẻ tự tụt xuống ' +
-        'nhóm bài cũ bên trang học sinh.</p>' +
-      '<div class="giao-han">' +
-        '<input type="date" id="nghiNgay" value="' + ngay + '">' +
-        '<input type="time" id="nghiGio" value="' + gio + '">' +
-      '</div>' +
-      '<button type="button" class="giao-o" data-nghi-luu="1">' +
-        '<span class="ic">🕒</span>' +
-        '<span><span class="nh">LƯU HẠN MỚI</span>' +
-        '<span class="mo-ta">Giữ nguyên thẻ, chỉ đổi giờ hết hạn.</span></span>' +
-      '</button>' +
-      '<button type="button" class="giao-o nguy" data-nghi-xoa="1">' +
-        '<span class="ic">🗑</span>' +
-        '<span><span class="nh">XOÁ THẺ NÀY</span>' +
-        '<span class="mo-ta">Học sinh thôi thấy thẻ; lớp về lại “đang chờ bài tập”. ' +
-        'Giao lại lúc nào cũng được.</span></span>' +
-      '</button>';
-    $('#giaoNen').classList.add('mo');
-  }
+  // ⛔ v1.51.0 — ĐÃ GỠ "chế độ SỬA" của pop-up giao bài (`moSuaNghi`/`mocTuOSua`).
+  // Thầy chốt: cài đặt thẻ nghỉ phải dùng CHUNG menu ⚙ + hộp xác nhận + hộp đổi
+  // hạn của thẻ bài thường, không được là một hộp riêng trông khác hẳn.
 
-  // Ghép ô ngày + ô giờ thành mốc "YYYY-MM-DDTHH:mm". Thiếu ngày thì trả rỗng.
-  function mocTuOSua() {
-    var ngay = ($('#nghiNgay') || {}).value || '';
-    var gio = ($('#nghiGio') || {}).value || '';
-    if (!ngay) return '';
-    return ngay + 'T' + (gio || '00:00');
-  }
-
-  // Ghi thẻ nghỉ. ⛔ LUẬT 9️⃣ BAN GIAO.md — gửi ĐỦ cả 3 trường + `merge:true`.
-  function nghiGhi(moc, nut) {
-    if (nut) nut.disabled = true;
+  // Ghi thẻ nghỉ. ⛔ LUẬT 9️⃣ BAN GIAO.md — gửi ĐỦ cả 4 trường + `merge:true`,
+  // kẻo đổi hạn thì xoá mất trạng thái ẩn và ngược lại.
+  // ⭐ v1.51.0 — thêm `tt`; `moc` rỗng = gỡ hẳn thẻ (thầy chốt: xoá là gỡ hẳn,
+  // giao lại chỉ 2 cú bấm, không có xoá mềm/KHO như thẻ bài).
+  function nghiGhi(moc, nut, tt, loiBao) {
+    if (nut && nut.disabled !== undefined) nut.disabled = true;
     var maLop = LOP_CHON;
     spDb().then(function (f) {
       return f.fs.setDoc(f.fs.doc(f.db, 'lessonNghi', maLop), {
-        lop: String(maLop), han: String(moc || ''), luc: Date.now()
+        lop: String(maLop), han: String(moc || ''), tt: String(tt || ''), luc: Date.now()
       }, { merge: true });
     }).then(function () {
-      A.datNghi(maLop, moc);
+      A.datNghi(maLop, moc, tt);
       dongGiao();
       veLopGrid();
       veKhuThe();
-      baoToast(moc ? 'Đã giao: lớp này không có bài tập.' : 'Đã gỡ thẻ không giao bài.');
+      baoToast(loiBao || (moc ? 'Đã giao: lớp này không có bài tập.'
+                              : 'Đã gỡ thẻ không giao bài.'));
     })['catch'](function (e) {
-      if (nut) nut.disabled = false;
+      if (nut && nut.disabled !== undefined) nut.disabled = false;
       var ma = (e && (e.code || e.message)) || '';
       baoToast(String(ma).indexOf('permission-denied') >= 0
-        ? 'Kho chưa mở khoá cho thẻ không giao bài — cần dán thêm luật Firestore (khối lessonNghi).'
+        ? 'Kho chưa mở khoá — luật Firestore của khối lessonNghi cần thêm trường “tt”.'
         : chuLoiKho(e));
     });
+  }
+
+  // Mã đặc biệt của thẻ nghỉ trong menu ⚙ / hộp hạn (thẻ bài dùng id bài thật).
+  function laNghi(id) { return id === '@nghi'; }
+
+  // ms -> "YYYY-MM-DDTHH:mm". Dùng khi CHỈ đổi trạng thái (ẩn/hiện) mà phải gửi
+  // lại nguyên hạn cũ — luật 9️⃣: mỗi lượt ghi phải gửi ĐỦ trường.
+  function kieuMoc(ms) {
+    var d = new Date(ms);
+    var h = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + h(d.getMonth() + 1) + '-' + h(d.getDate()) +
+           'T' + h(d.getHours()) + ':' + h(d.getMinutes());
   }
 
   // ⭐ v1.34.0 — 🏆 Bảng xếp hạng (icon riêng trong thẻ) hiện XẾP HẠNG CHI
@@ -2885,6 +2864,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // hạn (thầy chốt: có bài thật thì thẻ nghỉ tự biến mất, dữ liệu vẫn còn) và
     // thẻ nghỉ đó CHƯA tới giờ học.
     var mocNghi = A.nghiCua(LOP_CHON);
+    // ⭐ v1.51.0 — thẻ ĐANG ẨN vẫn hiện ở dashboard (mờ đi) để thầy còn bấm
+    // "Hiện lại" — đúng nếp thẻ bài; trang học sinh thì không thấy gì.
+    var ttNghi = A.nghiTt(LOP_CHON);
     var coNghi = !conHan && mocNghi != null && mocNghi > Date.now();
     // Cây bút chỉ hiện khi lớp đang chờ bài: không có bài còn hạn, cũng chưa
     // giao nghỉ. Đã giao nghỉ rồi thì thẻ nghỉ nằm ngay đó, khỏi giao lại.
@@ -2900,10 +2882,13 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       // ⭐ v1.50.0 — dải ⚙ nay dùng ĐÚNG khuôn `.diem-ic` + `.diem-vach` của thẻ
       // bài thường (nửa dưới bên trái, có vạch ngăn) — thầy chốt; CSS tái dùng
       // nguyên, không thêm dòng nào.
+      // ⭐ v1.51.0 — nút ⚙ mang `data-rail-caidat="@nghi"` để đi CHUNG tay bắt
+      // và CHUNG menu `#rcMenu` với thẻ bài thường (thầy chốt: phải giống hệt).
+      // `@nghi` là mã đặc biệt — mọi nhánh xử lý nhận ra nó bằng `laNghi()`.
       ? A.theNghiHtml(mocNghi,
-          '<span class="diem-ic"><button type="button" id="btnNghiCai" ' +
-          'title="Cài đặt thẻ: đổi hạn · xoá">' + IC_GEAR_NHO + '</button></span>' +
-          '<span class="diem-vach"></span>')
+          '<span class="diem-ic"><button type="button" data-rail-caidat="@nghi" ' +
+          'title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button></span>' +
+          '<span class="diem-vach"></span>', ttNghi === 'an')
       : (ds.length ? ds.map(veTheCard).join('')
                    : '<div class="trong">Đang chờ bài tập.</div>');
     nhipDongHo();
@@ -3570,9 +3555,23 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ v1.35.0 — chữ menu theo trạng thái thẻ đang mở (xem `A.trangThaiThe`).
     // ⭐ v1.36.0 — chữ NGẮN (thầy chốt: "Ẩn bài" / "Tạm khoá", phần giải thích
     // dài dời hẳn sang hộp xác nhận) + icon đổi theo trạng thái.
+    var muc = function (el, ic, chu) { $(el).innerHTML = ic + '<span>' + chu + '</span>'; };
+    // ⭐ v1.51.0 — THẺ NGHỈ dùng CHUNG menu này, chỉ khác: bỏ mục "Tạm khoá"
+    // (thầy chốt không cần) và đổi chữ cho hợp nghĩa.
+    if (laNghi(id)) {
+      var ttN = A.nghiTt(LOP_CHON);
+      muc('#rcHan', IC_MENU.han, 'Đổi hạn nộp');
+      muc('#rcAn', ttN === 'an' ? IC_MENU.hien : IC_MENU.an,
+          ttN === 'an' ? 'Hiện lại thẻ' : 'Ẩn thẻ');
+      muc('#rcXoa', IC_MENU.xoa, 'Xoá thẻ này');
+      $('#rcKhoa').hidden = true;
+      m.classList.add('mo');
+      datCanh(m, btn);
+      return;
+    }
+    $('#rcKhoa').hidden = false;
     var bRc = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
     var tt = bRc ? A.trangThaiThe(bRc) : '';
-    var muc = function (el, ic, chu) { $(el).innerHTML = ic + '<span>' + chu + '</span>'; };
     muc('#rcHan', IC_MENU.han, 'Đổi hạn nộp');
     muc('#rcAn', tt === 'an' ? IC_MENU.hien : IC_MENU.an, tt === 'an' ? 'Hiện lại bài' : 'Ẩn bài');
     muc('#rcKhoa', tt === 'khoa' ? IC_MENU.mokhoa : IC_MENU.khoa, tt === 'khoa' ? 'Mở khoá' : 'Tạm khoá');
@@ -3637,6 +3636,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ================================================================
   var HP_ID = null;
   function moHanPop(id, neo) {
+    // ⭐ v1.51.0 — thẻ nghỉ: cùng hộp, chỉ đổi chữ. Nút "Về mặc định" ẩn đi vì
+    // thẻ nghỉ không có hạn mặc định nào để quay về.
+    if (laNghi(id)) {
+      HP_ID = id;
+      var mN = A.nghiCua(LOP_CHON);
+      var dN = mN == null ? new Date() : new Date(mN);
+      var haiN = function (n) { return (n < 10 ? '0' : '') + n; };
+      $('#hpTen').textContent = 'Thẻ “không có bài tập”';
+      $('#hpNgay').value = dN.getFullYear() + '-' + haiN(dN.getMonth() + 1) + '-' + haiN(dN.getDate());
+      $('#hpGio').value = haiN(dN.getHours()) + ':' + haiN(dN.getMinutes());
+      $('#hpGhi').textContent = 'Tới mốc này thẻ tự tụt xuống nhóm bài cũ bên trang học sinh. '
+        + 'Bỏ trống giờ thì lấy 23:59.';
+      $('#hpBo').hidden = true;
+      var pN = $('#hanPop');
+      pN.classList.add('mo');
+      datCanh(pN, neo);
+      return;
+    }
     var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
     if (!b) return;
     HP_ID = id;
@@ -3674,6 +3691,19 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     if (!/^\d{2}:\d{2}$/.test(gio)) gio = '23:59';
     var moc = ngay + 'T' + gio;
     var d = ngay.split('-');
+    if (laNghi(id)) {
+      return void moXnPop($('#hanPop'), {
+        tieuDe: 'Đặt hạn mới cho thẻ này?',
+        chu: 'Thẻ “không có bài tập” sẽ hết hạn lúc ' + gio + ' ngày ' +
+             (+d[2]) + '/' + (+d[1]) + '/' + d[0] + ', rồi tụt xuống nhóm bài cũ ' +
+             'bên trang học sinh.',
+        nutOk: 'Đặt hạn này',
+        khiOk: function () {
+          dongHanPop();
+          nghiGhi(moc, null, A.nghiTt(LOP_CHON), 'Đã đổi hạn của thẻ không giao bài.');
+        }
+      });
+    }
     moXnPop($('#hanPop'), {
       tieuDe: 'Đặt hạn nộp mới?',
       chu: 'Hạn của thẻ này thành ' + gio + ' ngày ' + (+d[2]) + '/' + (+d[1]) + '/' + d[0] +
@@ -4195,6 +4225,34 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (rcTt) {
         var idTt = RC_ID;
         if (!idTt) return void dongRcMenu();
+        // ⭐ v1.51.0 — thẻ nghỉ: chỉ có Ẩn/Hiện lại và Xoá (gỡ hẳn).
+        if (laNghi(idTt)) {
+          var muonN = rcTt.dataset.rc;
+          var ttHt = A.nghiTt(LOP_CHON);
+          var mocHt = A.nghiCua(LOP_CHON);
+          var hoiN;
+          if (muonN === 'xoa') {
+            hoiN = { tieuDe: 'Xoá thẻ này?', nutOk: 'Xoá thẻ', nguy: true,
+              chu: 'Thẻ “không có bài tập” biến mất với mọi người, lớp về lại ' +
+                   '“đang chờ bài tập”. Không mất dữ liệu gì — giao lại chỉ hai cú bấm.',
+              khiOk: function () { nghiGhi('', null, '', 'Đã xoá thẻ không giao bài.'); } };
+          } else if (ttHt === 'an') {
+            hoiN = { tieuDe: 'Hiện lại thẻ?', nutOk: 'Hiện lại',
+              chu: 'Học sinh thấy lại thẻ “không có bài tập” sau nhiều nhất một phút.',
+              khiOk: function () {
+                nghiGhi(mocHt ? kieuMoc(mocHt) : '', null, '', 'Đã hiện lại thẻ với học sinh.');
+              } };
+          } else {
+            hoiN = { tieuDe: 'Ẩn thẻ này?', nutOk: 'Ẩn thẻ',
+              chu: 'Học sinh sẽ không còn thấy thẻ “không có bài tập”; dashboard vẫn giữ ' +
+                   'thẻ (mờ đi) và hạn cũ nguyên vẹn để thầy hiện lại lúc nào cũng được.',
+              khiOk: function () {
+                nghiGhi(mocHt ? kieuMoc(mocHt) : '', null, 'an', 'Đã ẩn thẻ với học sinh.');
+              } };
+          }
+          moXnPop($('#rcMenu'), hoiN);
+          return;
+        }
         var muon = rcTt.dataset.rc;
         var bTt2 = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === idTt; })[0];
         var hienTai = bTt2 ? A.trangThaiThe(bTt2) : '';
@@ -4452,20 +4510,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#giaoDs').addEventListener('click', function (e) {
       var o = e.target.closest('[data-giao-nghi]');
       if (o) return void nghiGhi(o.getAttribute('data-giao-nghi'), o);
-      // ⭐ v1.49.0 — chế độ SỬA
-      var luu = e.target.closest('[data-nghi-luu]');
-      if (luu) {
-        var moc = mocTuOSua();
-        if (!moc) return void baoToast('Thầy chọn ngày trước đã nhé.');
-        return void nghiGhi(moc, luu);
-      }
-      var xoa = e.target.closest('[data-nghi-xoa]');
-      if (xoa) return void nghiGhi('', xoa);      // chuỗi rỗng = gỡ thẻ
     });
-    // ⚙ trên thẻ nghỉ được vẽ lại mỗi lần `veKhuThe()` chạy ⇒ bắt nổi ở thùng chứa.
-    $('#theListDs').addEventListener('click', function (e) {
-      if (e.target.closest('#btnNghiCai')) { e.stopPropagation(); moSuaNghi(); }
-    });
+    // ⛔ v1.51.0 — KHÔNG còn tay bắt riêng cho nút ⚙ của thẻ nghỉ: nó mang
+    // `data-rail-caidat="@nghi"` nên đi chung tay bắt của thẻ bài thường.
   }
 
   // ---------- cửa vào ----------

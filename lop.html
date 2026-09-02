@@ -452,18 +452,22 @@ i.m-la{background:var(--m-la)}
    Bản cũ để nhãn và đồng hồ chung MỘT hàng ngang nên cả cụm mới là thứ được căn
    giữa, còn riêng đồng hồ thì luôn lệch sang phải. Tách ra thì đồng hồ tự đúng tâm.
    Lề trái/phải bằng nhau (18px) để cụm chữ cân giữa phần chữ của thẻ. */
-.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:1px;
-  padding:13px 18px 10px; text-align:center}
-.nghi-cum{display:flex; align-items:center; justify-content:center; gap:9px; min-width:0}
-.nghi-ava{width:26px; height:26px; border-radius:50%; object-fit:cover; flex:none;
-  box-shadow:0 0 0 2px #fff, 0 1px 3px rgba(22,35,42,.25)}
+/* ⭐ v1.51.0 (thầy chốt) — AVATAR bên trái, TO hơn (26 → 38px) và nằm GIỮA cụm
+   hai dòng theo chiều dọc (`align-items:center`); hai dòng chữ CĂN TRÁI, thẳng
+   hàng chữ đầu. Cả cụm vẫn nằm giữa thẻ theo chiều ngang. */
+.nghi-dau{flex-direction:row; align-items:center; justify-content:center; gap:11px;
+  padding:12px 18px 10px; text-align:left}
+.nghi-chuoi{display:flex; flex-direction:column; align-items:flex-start; gap:2px;
+  min-width:0}
+.nghi-ava{width:38px; height:38px; border-radius:50%; object-fit:cover; flex:none;
+  box-shadow:0 0 0 2px #fff, 0 1px 4px rgba(22,35,42,.28)}
 .nghi-chu{font-size:15.5px; font-weight:800; letter-spacing:.01em; color:#1f7a4d;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 /* ⭐ v1.50.0 (thầy chốt) — nhãn và đồng hồ CÙNG MỘT HÀNG, BẰNG CỠ NHAU (11.5px).
    Bản v1.48 để chung hàng nhưng đồng hồ to gấp đôi nên cụm lệch; bản v1.49 tách
    hai dòng cho đồng hồ đúng tâm. Nay bằng cỡ thì chung hàng vẫn cân. Đồng hồ
    vẫn nổi nhờ MÀU CAM. Chạy từng giây — xem nhipNghi() trong chung.js. */
-.nghi-han{display:flex; align-items:baseline; justify-content:center; gap:8px;
+.nghi-han{display:flex; align-items:baseline; justify-content:flex-start; gap:8px;
   font-size:11.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
 .nghi-nhan{font-style:normal}
 .dhho-nghi{font-size:11.5px; font-weight:800; color:#E07A12; letter-spacing:.4px;
@@ -1221,8 +1225,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=48"></script>
-<script src="js/chung.js?v=27"></script>
+<script src="config.js?v=49"></script>
+<script src="js/chung.js?v=28"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
@@ -2109,7 +2113,9 @@ function dungCot(){
      · Hết hạn ⇒ tụt xuống DƯỚI VẠCH, đứng đầu nhóm bài cũ (thầy chốt).
      ⛔ Có bài thật CÒN HẠN (`BAI_MOI`) thì thẻ nghỉ TỰ ẨN — thầy chốt; dữ liệu
      trong kho vẫn còn nguyên, hết bài là nó hiện lại. */
-  var mocNghi = A.nghiCua(LOP_DL);
+  /* ⭐ v1.51.0 — thầy ẩn thẻ ở dashboard (`tt:'an'`) thì học sinh KHÔNG thấy gì cả;
+     dashboard vẫn giữ thẻ (mờ đi) để thầy hiện lại. */
+  var mocNghi = (A.nghiTt(LOP_DL) === 'an') ? null : A.nghiCua(LOP_DL);
   var nghiConHan = !BAI_MOI && mocNghi != null && mocNghi > Date.now();
   var nghiHetHan = !BAI_MOI && mocNghi != null && mocNghi <= Date.now();
 

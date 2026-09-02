@@ -144,6 +144,9 @@ table.bang tr.da-go td{opacity:.55}
 .nhan.phandoi{background:var(--do-nhat); color:var(--do)}
 .nhan.keep{background:var(--do-nhat); color:var(--do)}
 .nhan.agree{background:var(--la-nhat); color:var(--m-la)}
+/* (02/09/2026 — luật CHÍNH CHỦ QUYẾT) hai nhãn phụ trong cột Trạng thái */
+.nhan.tunhan{background:var(--la-nhat); color:var(--m-la); margin-left:4px}
+.nhan.batdong{background:var(--vang-nhat); color:#B5720C; margin-left:4px}
 
 /* (Đợt 28/08/2026 khuya) Bảng Phản biện gộp 1 dòng/câu: avatar chữ cái cho ai ĐỒNG Ý, ô riêng
    cho mỗi người PHẢN ĐỐI kèm lý do — thay bảng dài 1 dòng/phiếu cũ. */
@@ -231,8 +234,8 @@ table.bang tr.da-go td{opacity:.55}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=35"></script>
-<script src="js/chung.js?v=22"></script>
+<script src="config.js?v=37"></script>
+<script src="js/chung.js?v=23"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -415,9 +418,35 @@ table.bang tr.da-go td{opacity:.55}
       });
     });
   }
+  // ═══ (Đợt CHÍNH CHỦ QUYẾT — 02/09/2026, thầy chốt) ═══════════════════════════════════════
+  // Lỗi ghi tên bạn A mà CHÍNH BẠN A đã bấm AGREE ⇒ CHỐT là lỗi thật. Phiếu phản đối của đồng
+  // đội lúc đó chỉ còn giá trị THAM KHẢO ⇒ KHÔNG xếp vào "Cần thầy quyết" nữa.
+  //
+  // ⛔ Bộ ba hàm này là BẢN SAO của `mySpeaking/web/js/app.js` (tenBang/chinhChuDaNhan/
+  // tranhChapThat) — sửa một bên là phải sửa bên kia, không thì số của thầy lệch số học sinh
+  // nhìn thấy. Tab "Kết quả" app mySpeaking CỐ Ý chưa theo luật này (thầy dựng lại tab đó sau).
+  //
+  // ⛔ So tên bằng trim+HOA vì kho có bản ghi tên lệch (buổi A2B đang có một dòng `who` hỏng
+  // font). So thẳng bằng === là câu đó tự nhiên rơi ra khỏi mọi phép đếm mà không ai biết.
+  function tenBang(a, b){
+    return !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+  }
+  function chinhChuDaNhan(e){
+    return !!e.who && PHANHOI.some(function(p){
+      return p.errId === e.id && p.y === 'dongY' && tenBang(p.voter, e.who);
+    });
+  }
   function tranhChap(x){
     if (x.err.trangThai !== 'song') return false;
+    if (chinhChuDaNhan(x.err)) return false;
     return PHANHOI.some(function(p){ return p.errId === x.err.id && p.y === 'phanDoi'; });
+  }
+  // Chính chủ đã nhận nhưng đồng đội vẫn cãi hộ — chỉ để ĐÁNH DẤU cho thầy biết, không phải
+  // việc phải xử (bên web học sinh có nút lọc riêng "TEAM CONFLICT" cho đúng nhóm này).
+  function batDongTrongDoi(x){
+    return chinhChuDaNhan(x.err) && PHANHOI.some(function(p){
+      return p.errId === x.err.id && p.y === 'phanDoi' && !tenBang(p.voter, x.err.who);
+    });
   }
 
   function veTatCa(){
@@ -542,7 +571,11 @@ table.bang tr.da-go td{opacity:.55}
         '<td>' + (e.sentence ? '“' + A.chuAnToan(e.sentence) + '”' : '') + '</td>' +
         '<td>' + A.chuAnToan(e.detail || '') + '</td>' +
         '<td>' + A.chuAnToan(e.explain || '') + '</td>' +
-        '<td>' + (daGo ? '<span class="nhan go">ĐÃ GỠ</span>' : (laTc ? '<span class="nhan phandoi">TRANH CHẤP</span>' : '<span class="nhan song">CÒN HIỆU LỰC</span>')) + '</td>' +
+        '<td>' + (daGo ? '<span class="nhan go">ĐÃ GỠ</span>' : (laTc ? '<span class="nhan phandoi">TRANH CHẤP</span>' : '<span class="nhan song">CÒN HIỆU LỰC</span>')) +
+          // (02/09/2026) Đánh dấu câu chính chủ đã tự nhận — thầy nhìn là biết vì sao câu có
+          // người phản đối mà KHÔNG nằm trong "Cần thầy quyết".
+          (!daGo && !laTc && chinhChuDaNhan(e) ? '<span class="nhan tunhan">CHÍNH CHỦ ĐÃ NHẬN</span>' : '') +
+          (batDongTrongDoi(x) ? '<span class="nhan batdong">ĐỘI CÃI HỘ</span>' : '') + '</td>' +
       '</tr>';
     }).join('') : '<tr><td colspan="7" class="trong">Không có câu nào khớp bộ lọc.</td></tr>';
   }

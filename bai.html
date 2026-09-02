@@ -1197,8 +1197,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=33"></script>
-<script src="js/chung.js?v=21"></script>
+<script src="config.js?v=34"></script>
+<script src="js/chung.js?v=22"></script>
 <script>
 /* ============================================================
    TRANG BÀI TẬP — bản THẬT (web v1.9.0, 23/08/2026), dùng chung cho ba dạng
@@ -2742,9 +2742,11 @@ function veDauTrang(){
 }
 
 /* Về trang lớp — giữ nguyên chế độ xem (như một em, hoặc thẳng là thầy). */
-function veTrangLop(){
+function veTrangLop(them){
   var q = A.giuXemNhuQuery(EM, MA_HS, LOP_DL);
-  location.href = 'lop.html' + (q ? ('?' + q) : '');
+  /* v1.35.0 — `them` (tuỳ chọn): tham số nối thêm, vd 'khoa=1' (bài đang tạm khoá). */
+  var cac = [them || '', q || ''].filter(Boolean).join('&');
+  location.href = 'lop.html' + (cac ? ('?' + cac) : '');
 }
 
 A.napDuLieu().then(function(dl){
@@ -2760,6 +2762,10 @@ A.napDuLieu().then(function(dl){
   var ds = A.baiCuaLop(dl, LOP_DL);
   for (var i = 0; i < ds.length; i++) if (ds[i].id === id) { BAI = ds[i]; break; }
   if (!BAI) { veTrangLop(); return; }
+  /* ⭐ v1.35.0 — bài đang TẠM KHOÁ (dashboard): không cho mở dù gõ thẳng địa chỉ,
+     về trang lớp kèm cờ `khoa=1` để bên đó báo một câu. (Bài ẩn/xoá thì
+     `A.baiCuaLop` cửa học sinh đã bỏ sẵn → rơi vào `!BAI` ở trên.) */
+  if (A.trangThaiThe(BAI) === 'khoa') { veTrangLop('khoa=1'); return; }
 
   /* Bài dạng SP SLIDE có trang riêng — vào nhầm thì chuyển sang đó. */
   var trang = A.trangCuaBai(BAI);

@@ -10,6 +10,13 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <style>
 /* ============================================================
+   ⭐ web v1.35.0 (02/09/2026) — THẺ TẠM KHOÁ (thầy khoá ở dashboard, kho
+   `lessonHan` trường `tt`): thẻ hiện với ổ khoá xám, đồng hồ hiện "TẠM KHOÁ"
+   (dừng hẳn, không HẾT HẠN), bấm chỉ báo một câu; luôn được coi là CÒN HẠN
+   (`A.conHan`). Thẻ ẨN / ĐÃ XOÁ thì `A.baiCuaLop` cửa học sinh đã bỏ sẵn —
+   trang này không phải làm gì. Xem js/chung.js (v1.35.0) + dashboard.html.
+   ============================================================ */
+/* ============================================================
    BẢN MẪU v20 — TRANG CHÍNH CỦA LỚP (dữ liệu giả, chạy local)
 
    ⭐ ĐỢT 4 (19/08/2026) — CHỈ ĐỔI THANH ĐẦU, cho khớp trang bài tập:
@@ -209,6 +216,13 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .the.moi:hover .play{background:linear-gradient(135deg,#0B8672,#16AE92)}
 .the.cu    .play{background:#C3D3CF}
 .the.cu:hover .play{background:#B2C5C0}
+/* ⭐ v1.35.0 — thẻ TẠM KHOÁ (thầy khoá ở dashboard): mũi xám + ổ khoá, không mở được,
+   đồng hồ hiện chữ "TẠM KHOÁ" (xem nhipDongHo). Nền thẻ giữ màu xanh dương nhạt
+   như bài còn lâu — cố ý KHÔNG dùng đỏ/vàng vì đồng hồ đã dừng. */
+.the.khoa .play, .the.khoa:hover .play{background:#9FB0AC}
+.the.khoa .play svg{width:20px; height:20px}
+.the.khoa:hover{transform:none}
+.the.khoa{cursor:default}
 
 /* Nền thẻ.
    · THẺ CŨ (đã qua hạn): đỏ nếu còn thiếu, xanh lá nếu đủ.
@@ -277,6 +291,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   letter-spacing:.6px; font-variant-numeric:tabular-nums; white-space:nowrap}
 .dhho.xanh{color:var(--m-la)} .dhho.cam{color:#DE7A12} .dhho.do{color:#D93B40}
 .dhho.xong{font-size:15.5px; letter-spacing:.9px; color:var(--m-la)}
+.dhho.khoa{font-size:13.5px; letter-spacing:.7px; color:#7B8C89}   /* v1.35.0 */
 .tich-to{font-size:30px; font-weight:800; color:var(--m-la); line-height:1;
   filter:drop-shadow(0 1px 4px rgba(24,169,87,.35))}
 .t-han.gap-gio{background:#FDECEC; border-color:#F6CFCF}
@@ -899,6 +914,7 @@ body.mo-menu .side.trai{transform:none}
   .t-han .han-dong svg{width:9px; height:9px}
   .dhho{font-size:13.5px; letter-spacing:.2px}
   .dhho.xong{font-size:11px; letter-spacing:.4px}
+  .dhho.khoa{font-size:10px; letter-spacing:.3px}
   .tich-to{font-size:20px}
 
   .the-diem{padding:6px 8px 7px 12px; gap:3px}
@@ -1100,8 +1116,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=33"></script>
-<script src="js/chung.js?v=21"></script>
+<script src="config.js?v=34"></script>
+<script src="js/chung.js?v=22"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
 /* ============================================================
@@ -1259,6 +1275,10 @@ function theTuBai(b){
     han: A.chuHan(b),                 /* chữ trên ô hạn */
     hanNgan: ngayCuaMoc(moc),         /* thẻ cũ chỉ hiện ngày */
     hanMoc: moc,                      /* mốc thật cho đồng hồ đếm ngược */
+    /* ⭐ v1.35.0 — thầy TẠM KHOÁ ở dashboard: thẻ hiện, không mở được, đồng hồ
+       dừng. `conHan` là luật chung (khoá = luôn còn hạn), xem js/chung.js. */
+    khoa: A.trangThaiThe(b) === 'khoa',
+    conHan: A.conHan(b),
     /* (Đợt 3 Firebase — PHẦN C′) thẻ SP CHECK: app đẩy MỘT khối giả loai:'spcheck'
        (không phải act AWord). Thanh tiến trình vẫn cần đúng 1 dòng để
        `capNhatTheSpeaking()` đổ số "đã nộp" vào `bai[0].xong`; số `xong` app đẩy
@@ -1663,6 +1683,8 @@ var GAP_TIENG = 6;
      còn <6h   -> 'gap'    · còn 6-24h -> '24h'   · còn hơn 24h -> 'thuong'
    Chưa đặt hạn (bài cũ chưa có ngày) thì coi như 'thuong' và ô hạn để trống. */
 function tinhHinhGio(b){
+  /* ⭐ v1.35.0 — TẠM KHOÁ đứng trước mọi trạng thái: đồng hồ dừng, không màu gấp. */
+  if (b.khoa) return 'khoa';
   if ((b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= SI_SO; })) {
     return 'xong';
   }
@@ -1682,10 +1704,19 @@ function veHan(b, tt){
       '<span class="han-dong">' + IC_GIO +
         (b.han ? ('Hạn ' + b.han) : 'Chưa đặt hạn') + '</span>' +
       '<span class="han-vach"></span>' +
-      '<span class="dhho" data-moc="' + moc + '" data-xong="' + (xongHet ? 1 : 0) + '">…</span>' +
+      '<span class="dhho" data-moc="' + moc + '" data-xong="' + (xongHet ? 1 : 0) +
+        '" data-khoa="' + (b.khoa ? 1 : 0) + '">…</span>' +
     '</span>' +
     (xongHet ? '<span class="tich-to">✓</span>' : '') +
   '</span>';
+}
+
+/* ⭐ v1.35.0 — mũi bên phải thẻ: tam giác ▶ như cũ, thẻ TẠM KHOÁ thì là ổ khoá. */
+function veMui(khoa){
+  return '<span class="play">' + (khoa
+    ? '<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"/>' +
+      '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1" fill="none" stroke="#fff" stroke-width="2.2"/></svg>'
+    : '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>') + '</span>';
 }
 
 function chuoiGio(ms){
@@ -1697,6 +1728,10 @@ function chuoiGio(ms){
 var HEN_DH = null;
 function nhipDongHo(){
   document.querySelectorAll('.dhho[data-moc]').forEach(function(e){
+    /* ⭐ v1.35.0 — thẻ TẠM KHOÁ: đồng hồ DỪNG, không bao giờ hiện HẾT HẠN (thầy chốt). */
+    if (e.getAttribute('data-khoa') === '1') {
+      e.textContent = 'TẠM KHOÁ'; e.className = 'dhho khoa'; return;
+    }
     if (e.getAttribute('data-xong') === '1') {
       e.textContent = 'COMPLETE'; e.className = 'dhho xong'; return;
     }
@@ -1730,7 +1765,9 @@ function veTheMoi(b, tt){
   var th = tinhHinhThe(bDung, tt === 'xong');
 
   var lopThem, lopNen;
-  if (th.du)            { lopThem = ' xong-het';  lopNen = 'tt-la'; }
+  /* v1.35.0 — TẠM KHOÁ đứng trước cả "xong hết": thẻ nhìn là biết đang khoá. */
+  if (tt === 'khoa')    { lopThem = ' khoa';      lopNen = 'tt-duong'; }
+  else if (th.du)       { lopThem = ' xong-het';  lopNen = 'tt-la'; }
   else if (gap)         { lopThem = ' gap';       lopNen = 'tt-do'; }
   else if (tt === '24h'){ lopThem = ' gio-vang';  lopNen = 'tt-vang'; }
   else                  { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
@@ -1744,7 +1781,7 @@ function veTheMoi(b, tt){
       veHan(b, tt) +
     '</span>' + (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
       ? veDoiSpKhoi(bDung) : veDiem(bDung, gap, gap)) +
-    '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
+    veMui(b.khoa) +
   '</span></button>';
 }
 
@@ -1757,7 +1794,7 @@ function xongHetBai(b){
 
 function veTheCu(b){
   var th = tinhHinhThe(b, true);
-  return '<button class="the cu' + (th.du ? ' xong-het' : '') + '">' +
+  return '<button class="the cu' + (th.du ? ' xong-het' : '') + (b.khoa ? ' khoa' : '') + '">' +
     '<span class="the-in ' + th.lop + '">' +
     '<span class="the-body">' +
       '<span class="t-chu">' +
@@ -1767,7 +1804,7 @@ function veTheCu(b){
       '</span>' +
     '</span>' + (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
       ? veDoiSpKhoi(b) : veDiem(b, true, false)) +
-    '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
+    veMui(b.khoa) +
   '</span></button>';
 }
 
@@ -1801,6 +1838,8 @@ function dungCot(){
   document.querySelectorAll('.the').forEach(function(t, i){
     var b = dsThe[i] || {};
     t.onclick = function(){
+      /* ⭐ v1.35.0 — thẻ TẠM KHOÁ: không mở gì cả (kể cả SP CHECK), chỉ báo một câu. */
+      if (b.khoa) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
       /* ⭐ SP CHECK — thẻ speaking đi đường riêng: pop-up rồi sang mySpeaking. */
       if (b.loai === 'spcheck') { moPhongCham(b); return; }
       /* ⭐ v1.9.0 — mở đúng TRANG BÀI TẬP của thẻ này.
@@ -2094,12 +2133,18 @@ A.napDuLieu().then(function(dl){
        vạch chỉ còn dòng nhắn, mọi bài xuống dưới (đúng ba cảnh của bản mẫu). */
     var moi = null;
     for (var i = 0; i < cacThe.length; i++) {
-      if (cacThe[i].hanMoc == null || cacThe[i].hanMoc > Date.now()) { moi = cacThe[i]; break; }
+      /* v1.35.0 — `conHan` thay phép so mốc viết tay (thẻ TẠM KHOÁ luôn còn hạn). */
+      if (cacThe[i].conHan) { moi = cacThe[i]; break; }
     }
     BAI_MOI = moi;
     BAI_CU = cacThe.filter(function(t){ return t !== moi; });
     dangDocDiem = false;
     dungCot();
+    /* ⭐ v1.35.0 — bai.html/bai-sp.html đẩy về đây kèm `khoa=1` khi em mở thẳng
+       địa chỉ một bài đang tạm khoá: báo một câu cho em hiểu vì sao bị đẩy về. */
+    if (new URLSearchParams(location.search).get('khoa') === '1') {
+      baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.');
+    }
     /* Ngầm hỏi bộ não xem buổi speaking này ai đã nộp — KHÔNG chặn gì, thẻ đã hiện rồi. */
     capNhatTheSpeaking();
     choTruoc = chupCho();    /* ảnh chụp đầu, để lần đổi bố cục đầu có chỗ chạy từ đó */

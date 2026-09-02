@@ -80,7 +80,10 @@
     // Firestore thì trang phải chạy y như trước v1.20.0 chứ không được trắng bảng.
     nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json'), napHanSua()])
       .then(function (r) {
-        HAN_SUA = r[2] || {};
+        // ⭐ v1.35.0 — kho `lessonHan` nay mang HAI bảng: hạn riêng + trạng thái thẻ.
+        var bang = r[2] || {};
+        HAN_SUA = bang.han || {};
+        TT_THE = bang.tt || {};
         return { lop: (r[0] && r[0].lop) || [], bai: (r[1] && r[1].bai) || {} };
       });
     return nhoDl;
@@ -103,6 +106,17 @@
   // khối cũ), nên gỡ là ghi đè chuỗi rỗng chứ không phải xoá.
   var HAN_SUA = {};
 
+  // ⭐ v1.35.0 (02/09/2026) — TRẠNG THÁI THẺ, cùng tài liệu `lessonHan`, trường `tt`:
+  //   ''      bình thường
+  //   'an'    ẨN với học sinh (thẻ biến mất ở trang lớp/bài; dashboard vẫn thấy, mờ)
+  //   'khoa'  TẠM KHOÁ (thẻ hiện, không mở được, đồng hồ DỪNG — thầy chốt 02/09)
+  //   'xoa'   ĐÃ XOÁ MỀM (biến mất mọi trang; dữ liệu bai.json + điểm AWord còn nguyên,
+  //           khôi phục ở mục KHO trên dashboard)
+  // Thầy chốt: cờ GIỮ NGUYÊN khi app đẩy lại bài (y hệt hạn riêng). Vì sao gộp
+  // chung tài liệu với hạn riêng: kho này đã được liệt kê sẵn ở `napHanSua()`,
+  // thêm trường = KHÔNG tốn thêm lượt đọc Firestore nào (luật 8️⃣ BAN GIAO.md).
+  var TT_THE = {};
+
   // ⭐ v1.29.0 (28/08/2026) — NHỚ ĐỆM 60 GIÂY, cùng nếp `nhoDiem`/`docPhien` ngay dưới.
   //
   // ⛔ VÌ SAO PHẢI ĐỆM: `napHanSua()` treo trong `napDuLieu()`, mà `napDuLieu()` là
@@ -121,7 +135,10 @@
   // dòng đó. Tham chiếu ngược kiểu ấy hôm nay còn chạy đúng vì `napHanSua()` gọi
   // muộn hơn, nhưng ai dời một khối là hỏng câm. Hai con số cùng là 60, khác nhiệm vụ.
   var HAN_CACHE_GIAY = 60;
-  var KHOA_HAN = 'awc_hansua';
+  // ⭐ v1.35.0 — đổi tên khoá đệm (`awc_hansua` → `awc_hansua2`): khuôn bản đệm đổi
+  // từ {id: hạn} sang {han:{}, tt:{}}; máy đang mở trang bản cũ mà đọc trúng khuôn
+  // cũ là mất sạch hạn/trạng thái trong 60 giây đầu.
+  var KHOA_HAN = 'awc_hansua2';
 
   function docHanPhien() {
     try {
@@ -141,19 +158,22 @@
       var db = CFG.AWORD_DB || {};
       if (!db.projectId || !db.apiKey) return Promise.resolve({});
       var san = docHanPhien();
-      if (san) return Promise.resolve(san);
+      if (san && san.han && san.tt) return Promise.resolve(san);
       var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
             + '/databases/(default)/documents/lessonHan?pageSize=300&key='
             + encodeURIComponent(db.apiKey);
       return fetch(u, { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
-          var ra = {};
+          // ⭐ v1.35.0 — trả HAI bảng {han, tt} thay vì một bảng hạn.
+          var ra = { han: {}, tt: {} };
           var ds = (j && j.documents) || [];
           for (var i = 0; i < ds.length; i++) {
             var f = ds[i].fields || {};
             var id = f.baiId && f.baiId.stringValue;
-            if (id) ra[id] = String((f.han && f.han.stringValue) || '');
+            if (!id) continue;
+            ra.han[id] = String((f.han && f.han.stringValue) || '');
+            ra.tt[id] = chuanTt((f.tt && f.tt.stringValue) || '');
           }
           // ⛔ CHỈ ĐỆM KHI ĐỌC ĐƯỢC THẬT (`j` khác null). Đệm cả lượt hỏng là
           // đóng băng bảng rỗng suốt 60 giây — mạng chớp một cái là mọi thẻ
@@ -161,8 +181,48 @@
           if (j) { try { sessionStorage.setItem(KHOA_HAN,
             JSON.stringify({ luc: Date.now(), bang: ra })); } catch (e) {} }
           return ra;
-        })['catch'](function () { return {}; });
-    } catch (e) { return Promise.resolve({}); }
+        })['catch'](function () { return { han: {}, tt: {} }; });
+    } catch (e) { return Promise.resolve({ han: {}, tt: {} }); }
+  }
+
+  // Bản đệm ghi lại cả hai bảng (gọi sau mỗi lần dashboard ghi xong, xem `datHanSua`
+  // / `datTrangThai`) — không dọn là thầy vừa bấm xong, sang trang khác bản đệm CŨ đè lại.
+  function luuDemHan() {
+    try { sessionStorage.setItem(KHOA_HAN,
+      JSON.stringify({ luc: Date.now(), bang: { han: HAN_SUA, tt: TT_THE } })); } catch (e) {}
+  }
+
+  // Chỉ nhận đúng 3 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
+  function chuanTt(s) {
+    s = String(s || '');
+    return (s === 'an' || s === 'khoa' || s === 'xoa') ? s : '';
+  }
+
+  // ⭐ v1.35.0 — trạng thái ĐANG CÓ HIỆU LỰC của một thẻ: '' | 'an' | 'khoa' | 'xoa'.
+  function trangThaiThe(b) {
+    return chuanTt(TT_THE[(b && b.id) || '']);
+  }
+
+  // Dashboard gọi sau khi ghi xong (cùng nếp `datHanSua`).
+  function datTrangThai(id, tt) {
+    if (!id) return;
+    TT_THE[id] = chuanTt(tt);
+    luuDemHan();
+  }
+
+  // ⭐ v1.35.0 — "CÒN HẠN" là MỘT hàm chung, đừng tự viết `moc == null || moc > now`
+  // ở từng trang nữa (trước v1.35.0 có 6 chỗ viết tay như thế):
+  //   · ẩn / xoá  → KHÔNG còn hạn (không tính là bài đang giao)
+  //   · tạm khoá  → LUÔN còn hạn, kể cả mốc đã qua (thầy chốt 02/09: khoá là
+  //                 DỪNG đồng hồ, không bao giờ hiện HẾT HẠN trong lúc khoá; mở
+  //                 khoá thì đồng hồ chạy lại theo hạn cũ nguyên vẹn)
+  //   · còn lại   → chưa đặt hạn, hoặc mốc chưa qua
+  function conHan(b) {
+    var tt = trangThaiThe(b);
+    if (tt === 'an' || tt === 'xoa') return false;
+    if (tt === 'khoa') return true;
+    var moc = mocHan(b);
+    return moc == null || moc > Date.now();
   }
 
   // Hạn ĐANG CÓ HIỆU LỰC của một thẻ: hạn sửa trước, rồi mới tới `bai.json`.
@@ -185,8 +245,7 @@
     // ⭐ v1.29.0 — SỬA HẠN LÀ PHẢI DỌN LUÔN BẢN ĐỆM 60 GIÂY (xem `napHanSua`).
     // Không dọn thì thầy vừa đặt hạn xong, bấm sang trang khác là bản đệm CŨ
     // đè ngược lại — thầy tưởng lệnh đặt hạn không ăn.
-    try { sessionStorage.setItem(KHOA_HAN,
-      JSON.stringify({ luc: Date.now(), bang: HAN_SUA })); } catch (e) {}
+    luuDemHan();
   }
 
   function napJson(duong) {
@@ -201,8 +260,22 @@
     return null;
   }
 
-  function baiCuaLop(dl, maLop) {
-    return (dl.bai && dl.bai[maLop]) ? dl.bai[maLop] : [];
+  // ⭐ v1.35.0 — BA CỬA lấy bài của một lớp, theo trạng thái thẻ (`trangThaiThe`):
+  //   (không truyền)  cửa HỌC SINH: bỏ thẻ ẨN + thẻ ĐÃ XOÁ. Đây là cửa mặc định —
+  //                   lop/bai/bai-sp và cả "xem như học sinh" của dashboard đều
+  //                   qua đây, nên mở thẳng địa chỉ bài đã ẩn/xoá cũng bị đẩy về lớp.
+  //   'ql'            cửa QUẢN LÝ (dashboard): chỉ bỏ thẻ ĐÃ XOÁ, thẻ ẩn vẫn hiện (mờ)
+  //                   để thầy bấm "Hiện lại".
+  //   'kho'           chỉ thẻ ĐÃ XOÁ — mục KHO trên dashboard, để Khôi phục.
+  // Thẻ TẠM KHOÁ có mặt ở mọi cửa (khoá là "hiện thẻ, không cho mở", xem lop.html).
+  function baiCuaLop(dl, maLop, che) {
+    var ds = (dl.bai && dl.bai[maLop]) ? dl.bai[maLop] : [];
+    return ds.filter(function (b) {
+      var tt = trangThaiThe(b);
+      if (che === 'kho') return tt === 'xoa';
+      if (che === 'ql') return tt !== 'xoa';
+      return tt !== 'xoa' && tt !== 'an';
+    });
   }
 
   // Tìm em theo mã trên TOÀN BỘ các lớp — mã là duy nhất toàn trung tâm (myStudent
@@ -708,5 +781,7 @@
     mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,
     // v1.20.0 — hạn sửa riêng từng thẻ (dashboard ghi, mọi trang đọc)
     hanCua: hanCua, daSuaHan: daSuaHan, datHanSua: datHanSua,
+    // v1.35.0 — trạng thái thẻ (ẩn / tạm khoá / xoá mềm) + "còn hạn" dùng chung
+    trangThaiThe: trangThaiThe, datTrangThai: datTrangThai, conHan: conHan,
   };
 })();

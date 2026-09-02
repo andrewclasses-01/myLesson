@@ -231,8 +231,8 @@ table.bang tr.da-go td{opacity:.55}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=33"></script>
-<script src="js/chung.js?v=21"></script>
+<script src="config.js?v=34"></script>
+<script src="js/chung.js?v=22"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -376,7 +376,9 @@ table.bang tr.da-go td{opacity:.55}
     if (!MA_LOP || !ID_BAI) return baoLoi('Thiếu thông tin lớp/bài trên đường dẫn.');
     Promise.all([A.napDuLieu(), spBuoiFs(MA_LOP)]).then(function(r){
       DL = r[0]; BUOI = r[1];
-      var ds = A.baiCuaLop(DL, MA_LOP);
+      /* v1.35.0 — trang này là của THẦY (mở từ dashboard) nên đi cửa quản lý:
+         bài đang ẨN vẫn mở được chi tiết; bài ĐÃ XOÁ thì không. */
+      var ds = A.baiCuaLop(DL, MA_LOP, 'ql');
       BAI = ds.filter(function(b){ return b.id === ID_BAI; })[0] || null;
       veDauTrang();
       if (!BUOI) return baoLoi('Lớp này chưa có buổi speaking nào đang mở.');

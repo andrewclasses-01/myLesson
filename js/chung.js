@@ -1123,12 +1123,17 @@
     // ---- BÓNG BAY ----
     // Cỡ bóng theo chiều cao khung và SỐ EM: lớp đông thì bóng nhỏ lại cho còn
     // chỗ lượn (thầy chốt "size bóng không quá to để có không gian bay tự do").
+    // ⭐ v1.49.0 (thầy chốt) — BÓNG TO HƠN, BAY NHANH/XA/LỘN XỘN HƠN.
+    // Ba số đã nới: phần diện tích khung dành cho bóng .13 → .19 · trần bán kính
+    // H*.22 → H*.30 · tốc độ 9-23 → 26-52 px/giây. Xem thêm `nhipBong()`: mỗi
+    // khung hình có thêm một cú hích ngẫu nhiên nhỏ để đường bay cong vô định
+    // thay vì đi thẳng rồi nảy như bi-a.
     function dungBong() {
       var n = (dsTen || []).length || 1;
-      var r = Math.max(9, Math.min(H * 0.22, Math.sqrt((W * H * 0.13) / (n * Math.PI))));
+      var r = Math.max(11, Math.min(H * 0.30, Math.sqrt((W * H * 0.19) / (n * Math.PI))));
       bong = (dsTen || []).map(function (t, i) {
-        var g = (i * 2.399963) + 0.7;                 // rải góc kiểu hạt hướng dương
-        var toc = 9 + (i % 5) * 3.5;                  // 9-23 px/giây — chậm, vô định
+        var g = (i * 2.399963) + Math.random() * 6.283;   // rải góc + nhiễu
+        var toc = 26 + Math.random() * 26;                // 26-52 px/giây
         return {
           ten: t, r: r,
           x: r + Math.random() * Math.max(1, W - 2 * r),
@@ -1156,10 +1161,22 @@
       }
     }
 
+    // ⭐ v1.49.0 — CÚ HÍCH NGẪU NHIÊN mỗi khung hình để đường bay CONG và vô
+    // định (thầy chốt "lộn xộn hơn nữa"). Sau khi hích thì kéo tốc độ về lại
+    // khoảng [26, 58] — không có bước này thì nhiễu cộng dồn, bóng nhanh dần
+    // tới mức xuyên qua nhau giữa hai khung hình.
+    var TOC_MIN = 26, TOC_MAX = 58;
     function nhipBong(dt) {
       var i, j;
       for (i = 0; i < bong.length; i++) {
         var o = bong[i];
+        o.vx += (Math.random() - 0.5) * 90 * dt;
+        o.vy += (Math.random() - 0.5) * 90 * dt;
+        var v = Math.sqrt(o.vx * o.vx + o.vy * o.vy) || 0.01;
+        if (v < TOC_MIN || v > TOC_MAX) {
+          var k = (v < TOC_MIN ? TOC_MIN : TOC_MAX) / v;
+          o.vx *= k; o.vy *= k;
+        }
         o.x += o.vx * dt; o.y += o.vy * dt;
         if (o.x - o.r < 0) { o.x = o.r; o.vx = Math.abs(o.vx); }
         if (o.x + o.r > W) { o.x = W - o.r; o.vx = -Math.abs(o.vx); }
@@ -1267,22 +1284,34 @@
       ctx.strokeStyle = '#C6D6D2'; ctx.lineWidth = 1.4;
       ctx.beginPath(); ctx.moveTo(0, G.day + 0.5); ctx.lineTo(W, G.day + 0.5); ctx.stroke();
 
-      ctx.fillStyle = '#3D5450';
+      // ⭐ v1.49.0 — CON LỢN thay khủng long (thầy chốt). Vẽ kiểu ô vuông cho
+      // hợp không khí trò Chrome; hai màu hồng đậm/nhạt + mõm và đuôi xoắn.
+      var HONG = '#E88AA5', HONG_DAM = '#C96A87';
       var dx = G.x, dy = G.day - 22 + G.y;
-      ctx.fillRect(dx + 2, dy + 6, 12, 12);            // thân
-      ctx.fillRect(dx + 11, dy, 11, 9);                // đầu
-      ctx.fillRect(dx + 20, dy + 4, 3, 2);             // mõm
-      ctx.fillRect(dx, dy + 9, 3, 6);                  // đuôi
-      ctx.fillStyle = '#fff';
-      ctx.fillRect(dx + 17, dy + 2, 2, 2);             // mắt
+      ctx.fillStyle = HONG_DAM;
+      ctx.fillRect(dx + 12, dy + 1, 3, 4);             // tai trái
+      ctx.fillRect(dx + 18, dy + 1, 3, 4);             // tai phải
+      ctx.fillStyle = HONG;
+      ctx.fillRect(dx + 2, dy + 7, 13, 12);            // thân
+      ctx.fillRect(dx + 12, dy + 4, 10, 10);           // đầu
+      ctx.fillStyle = HONG_DAM;
+      ctx.fillRect(dx + 21, dy + 8, 3, 5);             // mõm
+      ctx.fillStyle = '#8E4A61';
+      ctx.fillRect(dx + 22, dy + 9, 1, 1);             // hai lỗ mũi
+      ctx.fillRect(dx + 22, dy + 11, 1, 1);
+      ctx.fillStyle = HONG_DAM;                        // đuôi xoắn
+      ctx.fillRect(dx - 2, dy + 9, 2, 2);
+      ctx.fillRect(dx - 3, dy + 11, 2, 2);
+      ctx.fillRect(dx - 1, dy + 13, 2, 2);
+      ctx.fillStyle = '#3D2A32';
+      ctx.fillRect(dx + 17, dy + 7, 2, 2);             // mắt
+      ctx.fillStyle = HONG_DAM;
       if (!G.thua) {
-        ctx.fillStyle = '#3D5450';
         var buoc = Math.floor(G.diem * 1.6) % 2;
         ctx.fillRect(dx + 3, dy + 18, 4, 4 - buoc);
-        ctx.fillRect(dx + 9, dy + 18, 4, 3 + buoc);
+        ctx.fillRect(dx + 10, dy + 18, 4, 3 + buoc);
       } else {
-        ctx.fillStyle = '#3D5450';
-        ctx.fillRect(dx + 3, dy + 18, 4, 4); ctx.fillRect(dx + 9, dy + 18, 4, 4);
+        ctx.fillRect(dx + 3, dy + 18, 4, 4); ctx.fillRect(dx + 10, dy + 18, 4, 4);
       }
 
       ctx.fillStyle = '#4E7F5C';
@@ -1302,7 +1331,7 @@
         ctx.fillStyle = '#54706B';
         ctx.font = '800 11px Montserrat, sans-serif';
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText('CHẠM ĐỂ CHƠI LẠI', W / 2, H / 2);
+        ctx.fillText('TAP TO PLAY AGAIN', W / 2, H / 2);   // ⭐ v1.49.0 — chữ trong game đều tiếng Anh
       }
     }
 
@@ -1364,7 +1393,11 @@
   var IC_CHOI = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>';
   var IC_VE = '<svg viewBox="0 0 24 24"><path d="M17 4.5v15L4 12z"/></svg>';
 
-  function theNghiHtml(moc) {
+  // ⭐ v1.49.0 — đầu thẻ BA DÒNG SÁT NHAU (thầy chốt 02/09): chữ chính · nhãn
+  // nhỏ · ĐỒNG HỒ nằm đúng tâm thẻ. Trước đó nhãn và đồng hồ chung một hàng nên
+  // đồng hồ bị đẩy lệch khỏi tâm.
+  // `themHtml` = chỗ cắm thêm của riêng dashboard (nút ⚙ cài đặt thẻ).
+  function theNghiHtml(moc, themHtml) {
     return '<div class="the nghi" data-nghi="1">' +
       '<span class="the-in">' +
         '<span class="the-body nghi-dau">' +
@@ -1372,37 +1405,41 @@
             '<img class="nghi-ava" src="assets/avatar-tron.jpg" alt="">' +
             '<span class="nghi-chu">NO HOMEWORK, ENJOY YOUR DAY!</span>' +
           '</span>' +
-          '<span class="nghi-han"><i>BUỔI HỌC TIẾP THEO TRONG</i>' +
-            '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b></span>' +
+          '<span class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</span>' +
+          '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
         '</span>' +
         '<span class="the-diem nghi-san"><canvas class="nghi-canvas"></canvas></span>' +
-        '<button type="button" class="play nghi-play" title="Chơi trò khủng long">' +
+        '<button type="button" class="play nghi-play" title="Play the piggy game">' +
           IC_CHOI + '</button>' +
+        (themHtml || '') +
       '</span>' +
     '</div>';
   }
 
   // Nhịp đồng hồ của thẻ nghỉ — mỗi trang gọi từ vòng 1 giây sẵn có của mình.
-  // "TIẾNG:PHÚT" (thầy chốt); quá 24 tiếng thì số tiếng cứ cộng dồn (52:07).
+  // ⭐ v1.49.0 — CHẠY TỪNG GIÂY `TIẾNG:PHÚT:GIÂY` (thầy chốt). Bản cũ chỉ có
+  // TIẾNG:PHÚT nên mỗi phút mới nhảy một lần, nhìn y như đồng hồ chết.
+  // Quá 24 tiếng thì số tiếng cứ cộng dồn (52:07:31).
   function nhipNghi(goc) {
     var ds = (goc || document).querySelectorAll('.dhho-nghi[data-moc]');
+    var hai = function (n) { return (n < 10 ? '0' : '') + n; };
     for (var i = 0; i < ds.length; i++) {
       var e = ds[i];
       var moc = +e.getAttribute('data-moc');
-      var boc = e.parentElement;
+      var boc = e.parentElement;                   // .nghi-dau
       if (!moc) { e.textContent = '—'; continue; }
       var con = moc - Date.now();
-      // Hết hạn thì bỏ luôn nhãn "BUỔI HỌC TIẾP THEO TRONG" (CSS `.het i` ẩn nó),
-      // không thì đọc thành "…TIẾP THEO TRONG ĐÃ ĐẾN GIỜ HỌC".
+      // Hết hạn thì bỏ luôn nhãn "BUỔI HỌC TIẾP THEO TRONG" (CSS `.het .nghi-nhan`
+      // ẩn nó), không thì đọc thành "…TIẾP THEO TRONG ĐÃ ĐẾN GIỜ HỌC".
       if (con <= 0) {
         e.textContent = 'ĐÃ ĐẾN GIỜ HỌC';
         if (boc) boc.classList.add('het');
         continue;
       }
       if (boc) boc.classList.remove('het');
-      var phut = Math.floor(con / 60000);
-      var h = Math.floor(phut / 60), p = phut % 60;
-      e.textContent = h + ':' + (p < 10 ? '0' : '') + p;
+      var s = Math.floor(con / 1000);
+      e.textContent = Math.floor(s / 3600) + ':' + hai(Math.floor((s % 3600) / 60)) +
+                      ':' + hai(s % 60);
     }
   }
 
@@ -1425,7 +1462,7 @@
           san.doiCheDo(sangGame ? 'game' : 'bong');
           the.classList.toggle('dang-choi', sangGame);
           nut.innerHTML = sangGame ? IC_VE : IC_CHOI;
-          nut.title = sangGame ? 'Về bóng bay' : 'Chơi trò khủng long';
+          nut.title = sangGame ? 'Back to bubbles' : 'Play the piggy game';
         });
         // ⛔ Đo lại khi cửa sổ đổi cỡ — canvas phải khớp khung thật, không thì
         // hình bị kéo giãn nhoè (canvas không tự co theo CSS như ảnh).

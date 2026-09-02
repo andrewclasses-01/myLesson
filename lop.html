@@ -448,20 +448,24 @@ i.m-la{background:var(--m-la)}
 .the.nghi:hover{transform:none}
 .the.nghi .the-in{background:#F2FBF5}
 /* Ghi đè `.the-body` (vốn là hàng ngang tên-bài ‖ ô hạn) thành cụm dọc căn giữa. */
-.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:3px;
-  padding:10px 14px 8px 20px; text-align:center}
+/* ⭐ v1.49.0 (thầy chốt) — BA DÒNG SÁT NHAU, đồng hồ nằm ĐÚNG TÂM thẻ.
+   Bản cũ để nhãn và đồng hồ chung MỘT hàng ngang nên cả cụm mới là thứ được căn
+   giữa, còn riêng đồng hồ thì luôn lệch sang phải. Tách ra thì đồng hồ tự đúng tâm.
+   Lề trái/phải bằng nhau (18px) để cụm chữ cân giữa phần chữ của thẻ. */
+.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:1px;
+  padding:13px 18px 10px; text-align:center}
 .nghi-cum{display:flex; align-items:center; justify-content:center; gap:9px; min-width:0}
 .nghi-ava{width:26px; height:26px; border-radius:50%; object-fit:cover; flex:none;
   box-shadow:0 0 0 2px #fff, 0 1px 3px rgba(22,35,42,.25)}
 .nghi-chu{font-size:15.5px; font-weight:800; letter-spacing:.01em; color:#1f7a4d;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.nghi-han{display:flex; align-items:center; justify-content:center; gap:7px;
-  font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
-.nghi-han i{font-style:normal}
-.nghi-han b{font-size:13px; font-weight:800; color:#2C7A50; letter-spacing:.4px;
-  font-variant-numeric:tabular-nums}
-.nghi-han.het i{display:none}
-.nghi-han.het b{color:#D93B40; font-size:11.5px; letter-spacing:.06em}
+.nghi-nhan{font-size:9px; font-weight:800; letter-spacing:.07em; color:#93A5A1;
+  line-height:1.3}
+/* Đồng hồ: CAM cho nổi (thầy chốt), chạy từng giây — xem nhipNghi() trong chung.js. */
+.dhho-nghi{font-size:17px; font-weight:800; color:#E07A12; letter-spacing:.5px;
+  line-height:1.15; font-variant-numeric:tabular-nums}
+.nghi-dau.het .nghi-nhan{display:none}
+.nghi-dau.het .dhho-nghi{font-size:12.5px; letter-spacing:.06em; color:#D93B40}
 /* Sân chơi: canvas phủ kín, KHÔNG padding — mọi thứ vẽ bên trong nên không có
    gì thò ra để `clip-path`/`overflow` chém. */
 .nghi-san{position:relative; padding:0; display:block; border-top:1.5px dashed var(--line)}
@@ -472,11 +476,12 @@ i.m-la{background:var(--m-la)}
 .the.nghi.dang-choi .play, .the.nghi.dang-choi:hover .play{
   background:linear-gradient(135deg,#B3541E,#E08A3C)}
 @media (max-width:620px){
-  .nghi-dau{padding:8px 8px 6px 12px; gap:2px}
+  .nghi-dau{padding:9px 10px 7px; gap:0}
   .nghi-ava{width:21px; height:21px}
   .nghi-chu{font-size:11.5px}
-  .nghi-han{font-size:8px; gap:5px}
-  .nghi-han b{font-size:11px}
+  .nghi-nhan{font-size:7.5px; letter-spacing:.05em}
+  .dhho-nghi{font-size:13.5px; letter-spacing:.3px}
+  .nghi-dau.het .dhho-nghi{font-size:10.5px}
 }
 
 /* ---------- SP CHECK — THANH TIẾN TRÌNH THEO TEAM (⭐ thiết kế lại 27/08) ----------
@@ -1208,8 +1213,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=46"></script>
-<script src="js/chung.js?v=25"></script>
+<script src="config.js?v=47"></script>
+<script src="js/chung.js?v=26"></script>
 <script src="js/chat.js?v=21"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->

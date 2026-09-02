@@ -799,20 +799,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .the.nghi:hover{transform:none}
 .the.nghi .the-in{background:#F2FBF5}
 /* Ghi đè `.the-body` (vốn là hàng ngang tên-bài ‖ ô hạn) thành cụm dọc căn giữa. */
-.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:3px;
-  padding:10px 14px 8px 20px; text-align:center}
+/* ⭐ v1.49.0 (thầy chốt) — BA DÒNG SÁT NHAU, đồng hồ nằm ĐÚNG TÂM thẻ.
+   Bản cũ để nhãn và đồng hồ chung MỘT hàng ngang nên cả cụm mới là thứ được căn
+   giữa, còn riêng đồng hồ thì luôn lệch sang phải. Tách ra thì đồng hồ tự đúng tâm.
+   Lề trái/phải bằng nhau (18px) để cụm chữ cân giữa phần chữ của thẻ. */
+.nghi-dau{flex-direction:column; align-items:center; justify-content:center; gap:1px;
+  padding:13px 18px 10px; text-align:center}
 .nghi-cum{display:flex; align-items:center; justify-content:center; gap:9px; min-width:0}
 .nghi-ava{width:26px; height:26px; border-radius:50%; object-fit:cover; flex:none;
   box-shadow:0 0 0 2px #fff, 0 1px 3px rgba(22,35,42,.25)}
 .nghi-chu{font-size:15.5px; font-weight:800; letter-spacing:.01em; color:#1f7a4d;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.nghi-han{display:flex; align-items:center; justify-content:center; gap:7px;
-  font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
-.nghi-han i{font-style:normal}
-.nghi-han b{font-size:13px; font-weight:800; color:#2C7A50; letter-spacing:.4px;
-  font-variant-numeric:tabular-nums}
-.nghi-han.het i{display:none}
-.nghi-han.het b{color:#D93B40; font-size:11.5px; letter-spacing:.06em}
+.nghi-nhan{font-size:9px; font-weight:800; letter-spacing:.07em; color:#93A5A1;
+  line-height:1.3}
+/* Đồng hồ: CAM cho nổi (thầy chốt), chạy từng giây — xem nhipNghi() trong chung.js. */
+.dhho-nghi{font-size:17px; font-weight:800; color:#E07A12; letter-spacing:.5px;
+  line-height:1.15; font-variant-numeric:tabular-nums}
+.nghi-dau.het .nghi-nhan{display:none}
+.nghi-dau.het .dhho-nghi{font-size:12.5px; letter-spacing:.06em; color:#D93B40}
 /* Sân chơi: canvas phủ kín, KHÔNG padding — mọi thứ vẽ bên trong nên không có
    gì thò ra để `clip-path`/`overflow` chém. */
 .nghi-san{position:relative; padding:0; display:block; border-top:1.5px dashed var(--line)}
@@ -830,12 +834,37 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .giao-o:disabled{opacity:.55; cursor:default}
 .giao-o .ic{flex:none; width:40px; height:40px; border-radius:13px; display:grid;
   place-items:center; background:var(--xanh-nhat); font-size:20px}
-.giao-o .nh{font:800 13.5px/1.3 var(--font); color:var(--chu)}
-.giao-o .mo-ta{margin-top:2px; font:600 11.5px/1.4 var(--font); color:var(--nhat)}
+/* ⛔ `display:block` BẮT BUỘC: hai thẻ này là `<span>`, để mặc định inline thì
+   tên và mô tả DÍNH LIỀN nhau một dòng ("LƯU HẠN MỚIGiữ nguyên thẻ…") — lỗi có
+   từ v1.48.0, bắt được trên bàn thử 02/09. */
+.giao-o .nh{display:block; font:800 13.5px/1.3 var(--font); color:var(--chu)}
+.giao-o .mo-ta{display:block; margin-top:2px; font:600 11.5px/1.4 var(--font); color:var(--nhat)}
 .giao-loi{margin:2px 2px 10px; padding:10px 12px; border-radius:12px;
   background:var(--do-nhat); color:#a33a2c; font:700 12px/1.5 var(--font)}
 .giao-mach{margin:0 2px 10px; font:600 11.5px/1.5 var(--font); color:var(--nhat)}
 .giao-mach b{color:var(--chu)}
+
+/* ⭐ v1.49.0 — nút ⚙ trên thẻ NO HOMEWORK (CHỈ dashboard): đổi hạn / xoá thẻ.
+   ⛔ Đặt trong vùng CHỮ, cách mép phải đúng bề rộng mũi tên (`--mui`) — thò sang
+   vùng mũi tên là bị `clip-path` của `.the-in` chém mất một góc. */
+.nghi-cai{position:absolute; top:9px; right:calc(var(--mui) + 10px); z-index:2;
+  width:27px; height:27px; border-radius:9px; border:0; background:rgba(15,40,36,.05);
+  color:var(--nhat); display:grid; place-items:center; cursor:pointer;
+  transition:background .15s ease, color .15s ease, transform .12s ease}
+.nghi-cai:hover{background:var(--xanh-nhat); color:var(--xanh); transform:scale(1.08)}
+.nghi-cai svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.1;
+  stroke-linecap:round; stroke-linejoin:round}
+
+/* Hộp sửa hạn trong pop-up giao bài (chế độ SỬA). */
+.giao-han{display:flex; gap:8px; margin:2px 2px 12px}
+.giao-han input{flex:1; min-width:0; padding:9px 11px; border-radius:11px;
+  border:1px solid var(--vien-dam); background:var(--the); color:var(--chu);
+  font:700 13px/1.3 var(--font)}
+.giao-han input:focus{outline:none; border-color:var(--xanh)}
+.giao-o.nguy{border-color:#F0CFCF}
+.giao-o.nguy .ic{background:var(--do-nhat)}
+.giao-o.nguy .nh{color:var(--do)}
+.giao-o.nguy:not(:disabled):hover{border-color:var(--do); background:var(--do-nhat)}
 
 /* Icon cây bút ở đầu khối BÀI CÒN HẠN — chỉ hiện khi lớp đang chờ bài. */
 .nut-giao{flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--vien);
@@ -1500,7 +1529,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   <div class="pop">
     <div class="pop-head">
       <div>
-        <h3>Giao bài tập</h3>
+        <h3 id="giaoTieuDe">Giao bài tập</h3>
         <div class="phu" id="giaoPhu"></div>
       </div>
       <button class="dong" id="giaoDong" title="Đóng">
@@ -1545,8 +1574,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=46"></script>
-<script src="js/chung.js?v=25"></script>
+<script src="config.js?v=47"></script>
+<script src="js/chung.js?v=26"></script>
 <script src="js/chat.js?v=21"></script>
 <script>
 (function () {
@@ -2529,6 +2558,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function moGiao() {
     var l = A.lopTheoMa(DL, LOP_CHON);
     var tenLop = (l && l.tenGoc) || LOP_CHON;
+    $('#giaoTieuDe').textContent = 'Giao bài tập';
     $('#giaoPhu').textContent = 'Lớp ' + tenLop;
     $('#giaoDs').innerHTML = '<p class="giao-mach">Đang đọc lịch học của lớp…</p>';
     $('#giaoNen').classList.add('mo');
@@ -2569,6 +2599,48 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
   }
   function dongGiao() { $('#giaoNen').classList.remove('mo'); }
+
+  // ⭐ v1.49.0 — CHẾ ĐỘ SỬA của cùng pop-up: đổi hạn (gõ tay ngày + giờ, thầy
+  // chốt) và xoá thẻ. Dùng lại đúng khung `#giaoNen`, chỉ đổi ruột — khỏi dựng
+  // thêm một hộp nữa như `#hanPop` của thẻ bài.
+  // ⛔ Xoá = ghi `han` RỖNG, KHÔNG xoá tài liệu (luật kho `allow delete: if false`).
+  function moSuaNghi() {
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    var moc = A.nghiCua(LOP_CHON);
+    var d = moc == null ? new Date() : new Date(moc);
+    var hai = function (n) { return (n < 10 ? '0' : '') + n; };
+    var ngay = d.getFullYear() + '-' + hai(d.getMonth() + 1) + '-' + hai(d.getDate());
+    var gio = hai(d.getHours()) + ':' + hai(d.getMinutes());
+    $('#giaoTieuDe').textContent = 'Cài đặt thẻ';
+    $('#giaoPhu').textContent = 'Thẻ không giao bài · lớp ' + ((l && l.tenGoc) || LOP_CHON);
+    $('#giaoDs').innerHTML =
+      '<p class="giao-mach">Đổi mốc hết hạn của thẻ. Tới mốc này thẻ tự tụt xuống ' +
+        'nhóm bài cũ bên trang học sinh.</p>' +
+      '<div class="giao-han">' +
+        '<input type="date" id="nghiNgay" value="' + ngay + '">' +
+        '<input type="time" id="nghiGio" value="' + gio + '">' +
+      '</div>' +
+      '<button type="button" class="giao-o" data-nghi-luu="1">' +
+        '<span class="ic">🕒</span>' +
+        '<span><span class="nh">LƯU HẠN MỚI</span>' +
+        '<span class="mo-ta">Giữ nguyên thẻ, chỉ đổi giờ hết hạn.</span></span>' +
+      '</button>' +
+      '<button type="button" class="giao-o nguy" data-nghi-xoa="1">' +
+        '<span class="ic">🗑</span>' +
+        '<span><span class="nh">XOÁ THẺ NÀY</span>' +
+        '<span class="mo-ta">Học sinh thôi thấy thẻ; lớp về lại “đang chờ bài tập”. ' +
+        'Giao lại lúc nào cũng được.</span></span>' +
+      '</button>';
+    $('#giaoNen').classList.add('mo');
+  }
+
+  // Ghép ô ngày + ô giờ thành mốc "YYYY-MM-DDTHH:mm". Thiếu ngày thì trả rỗng.
+  function mocTuOSua() {
+    var ngay = ($('#nghiNgay') || {}).value || '';
+    var gio = ($('#nghiGio') || {}).value || '';
+    if (!ngay) return '';
+    return ngay + 'T' + (gio || '00:00');
+  }
 
   // Ghi thẻ nghỉ. ⛔ LUẬT 9️⃣ BAN GIAO.md — gửi ĐỦ cả 3 trường + `merge:true`.
   function nghiGhi(moc, nut) {
@@ -2821,7 +2893,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
                  (ds.length > soConHan ? (' · ' + (ds.length - soConHan) + ' đang ẩn') : ''))
         : (coNghi ? ' · đã giao: không có bài tập'
                   : (ds.length ? ' · bài gần nhất (đã hết hạn)' : '')));
-    $('#theListDs').innerHTML = coNghi ? A.theNghiHtml(mocNghi)
+    // ⭐ v1.49.0 — thẻ nghỉ ở dashboard có thêm nút ⚙ (đổi hạn / xoá thẻ). Trang
+    // học sinh KHÔNG có nút này — đó là lý do `theNghiHtml` nhận `themHtml` rời.
+    $('#theListDs').innerHTML = coNghi
+      ? A.theNghiHtml(mocNghi, '<button type="button" class="nghi-cai" id="btnNghiCai" ' +
+          'title="Cài đặt thẻ: đổi hạn · xoá">' + IC_GEAR_NHO + '</button>')
       : (ds.length ? ds.map(veTheCard).join('')
                    : '<div class="trong">Đang chờ bài tập.</div>');
     nhipDongHo();
@@ -4366,10 +4442,23 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#btnGiao').addEventListener('click', moGiao);
     $('#giaoDong').addEventListener('click', dongGiao);
     $('#giaoNen').addEventListener('click', function (e) { if (e.target === this) dongGiao(); });
-    // Ô "KHÔNG GIAO BÀI" dựng bằng innerHTML sau khi đọc lịch xong ⇒ bắt nổi.
+    // Mọi ô trong pop-up dựng bằng innerHTML sau khi đọc lịch xong ⇒ bắt nổi.
     $('#giaoDs').addEventListener('click', function (e) {
       var o = e.target.closest('[data-giao-nghi]');
-      if (o) nghiGhi(o.getAttribute('data-giao-nghi'), o);
+      if (o) return void nghiGhi(o.getAttribute('data-giao-nghi'), o);
+      // ⭐ v1.49.0 — chế độ SỬA
+      var luu = e.target.closest('[data-nghi-luu]');
+      if (luu) {
+        var moc = mocTuOSua();
+        if (!moc) return void baoToast('Thầy chọn ngày trước đã nhé.');
+        return void nghiGhi(moc, luu);
+      }
+      var xoa = e.target.closest('[data-nghi-xoa]');
+      if (xoa) return void nghiGhi('', xoa);      // chuỗi rỗng = gỡ thẻ
+    });
+    // ⚙ trên thẻ nghỉ được vẽ lại mỗi lần `veKhuThe()` chạy ⇒ bắt nổi ở thùng chứa.
+    $('#theListDs').addEventListener('click', function (e) {
+      if (e.target.closest('#btnNghiCai')) { e.stopPropagation(); moSuaNghi(); }
     });
   }
 

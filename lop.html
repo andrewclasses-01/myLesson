@@ -887,7 +887,8 @@ body.mo-menu .side.trai{transform:none}
   backdrop-filter:blur(3px); display:grid; place-items:center; padding:20px;
   opacity:0; pointer-events:none; transition:opacity .22s}
 .sp-nen.mo{opacity:1; pointer-events:auto}
-.sp-hop{position:relative; width:min(460px,94vw); background:var(--surface);
+/* ⭐ 03/09/2026 — 460 → 560px (thầy chốt): bốn dòng chú thích trong nút phải gọn một dòng. */
+.sp-hop{position:relative; width:min(560px,94vw); background:var(--surface);
   border-radius:24px; box-shadow:0 24px 60px rgba(22,35,42,.28);
   padding:22px 28px 26px; text-align:center; transform:translateY(8px) scale(.98);
   transition:transform .24s var(--em)}
@@ -974,6 +975,35 @@ body.mo-menu .side.trai{transform:none}
 .sp-hop.xong .sp-nut button svg{width:26px; height:26px}
 .sp-hop.xong .sp-nut button.chinh{background:linear-gradient(155deg,var(--xanh-la),#0E7A3F)}
 .sp-hop.xong .sp-nut button:not(.chinh){background:linear-gradient(155deg,var(--m-duong),#2456C4)}
+
+/* ⭐⭐ 03/09/2026 — BỐN NÚT, HAI CỘT (thầy duyệt qua bản mẫu
+   `mau-web/mau-kiem-tra-trung-03-09-2026.html`, 6 vòng chỉnh).
+     cột trái XANH LÁ  : CHẤM BÀI CÁ NHÂN (to) · XÁC NHẬN TRÙNG (nhỏ)
+     cột phải XANH DƯƠNG: PHẢN BIỆN CÁ NHÂN (to) · KIỂM TRA TRÙNG (nhỏ)
+   ⛔ HỘP RỘNG 460 → 560px: bốn dòng chú thích nằm TRONG nút và phải gọn ĐÚNG MỘT DÒNG
+      (`white-space:nowrap`). Hạ lại 460 mà quên nowrap là chú thích tự xuống hàng.
+   ⛔ Cột là GRID hai hàng `1fr auto`, KHÔNG phải flex-column: chú thích dài ngắn khác
+      nhau thì nút to bên này cao hơn bên kia, nhìn lệch ngay — thầy đã bắt một lần.
+   ⛔ `.sp-nut.hai-cot` chỉ bật khi CÓ nút khai `cot`; mọi pop-up báo lỗi vẫn dùng hàng
+      ngang cũ, đừng gộp hai nếp làm một. */
+.sp-hop.xong .sp-nut.hai-cot{display:grid; grid-template-columns:1fr 1fr; align-items:stretch}
+.sp-cot{display:grid; grid-template-rows:1fr auto; gap:6px; min-width:0}
+.sp-hop.xong .sp-nut.hai-cot button{width:100%}
+.sp-hop.xong .sp-nut button.to{padding:20px 10px 16px; font-size:13.5px}
+.sp-hop.xong .sp-nut button.to.la{background:linear-gradient(155deg,var(--xanh-la),#0E7A3F)}
+.sp-hop.xong .sp-nut button.to.duong{background:linear-gradient(155deg,var(--m-duong),#2456C4)}
+.sp-hop.xong .sp-nut button.nho{padding:10px 8px; gap:3px; border-radius:13px; font-size:11.5px}
+.sp-hop.xong .sp-nut button.nho svg{width:15px; height:15px}
+.sp-hop.xong .sp-nut button.nho.la{background:#E4F5EA; color:#0E7A3F}
+.sp-hop.xong .sp-nut button.nho.duong{background:#E4ECFE; color:#2456C4}
+.sp-nut .nho .hang{display:flex; align-items:center; gap:5px}
+/* Chú thích: nhỏ, nghiêng, nhẹ hơn tên nút, MỘT DÒNG. Chữ nào dài quá thì SỬA CHỮ cho
+   ngắn lại, đừng cho nó xuống hàng. */
+.sp-nut .to .chu{font-size:9.5px; line-height:1.3; font-style:italic; font-weight:500;
+  letter-spacing:0; color:rgba(255,255,255,.82); white-space:nowrap}
+.sp-nut .nho .chu{font-size:9px; line-height:1.3; font-style:italic; font-weight:500;
+  letter-spacing:0; opacity:.72; white-space:nowrap}
+.sp-nut .nho .sp-bad{top:-8px; right:-8px; min-width:23px; height:23px; font-size:11px}
 
 /* ⭐ 02/09/2026 — Ô TRÒN ĐỎ BÁO SỐ VIỆC, góc trên bên phải mỗi nút.
    • Viền trắng 2,5px để tách hẳn khỏi nền nút, không bị "dính" vào màu nút.
@@ -1327,7 +1357,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=56"></script>
+<script src="config.js?v=57"></script>
 <script src="js/chung.js?v=31"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -2964,6 +2994,10 @@ var spHuy = false, spDongHo = null, spDuong = '';
 var spLuot = 0;
 var IC_SP_CHAM = '<svg viewBox="0 0 24 24" fill="none"><path d="M9 12.5l2 2 4.5-5" stroke="#fff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9.5" stroke="#fff" stroke-width="2"/></svg>';
 var IC_SP_PB = '<svg viewBox="0 0 24 24" fill="none"><path d="M4 5h16v10H9l-4 4V5z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>';
+/* ⭐ 03/09/2026 — icon hai nút NHỎ. Nét lấy màu chữ của chính nút (`currentColor`) chứ
+   không ghim trắng như hai nút to: nút nhỏ nền nhạt, chữ đậm màu, ghim trắng là mất tích. */
+var IC_SP_XN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 7-7"/><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2V6a2 2 0 012-2h9"/></svg>';
+var IC_SP_KT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="11" height="11" rx="2"/><rect x="10" y="10" width="11" height="11" rx="2"/></svg>';
 
 /* n.ic (svg, tuỳ chọn): nút to trạng thái XONG có icon + hiệu ứng hào quang khi
    bấm; nút thường (Huỷ/Đóng/Thử lại) không có `ic` thì giữ nguyên chữ trơn.
@@ -2980,12 +3014,34 @@ function spHien(tieu, phu, kieu, nut, doi){
   $('#spDoi').classList.toggle('hien', doi != null && doi !== '');
   if (doi != null && doi !== '') $('#spDoiSo').textContent = doi;
   $('#spNut').innerHTML = '';
+  /* ⭐ 03/09/2026 — nút nay xếp HAI CỘT (`n.cot` = 0 trái / 1 phải, `n.to` = nút to hay
+     nút nhỏ). Nút không khai `cot` (mọi lời báo lỗi, "Huỷ", "Thử lại"…) vẫn nằm thẳng
+     trong `#spNut` như cũ — CSS `.sp-hop:not(.xong)` giữ nguyên nếp hàng ngang.
+     ⛔ Đừng bắt mọi lời gọi phải khai `cot`: `spLoi`/`spNgoaiDoi`/`moPhongCham` đều gọi
+     `spHien` với nút trơn, ép cột là chúng rơi vào lưới 2 cột trông rất kỳ. */
+  var oCot = [null, null];
+  function layCot(i){
+    if (!oCot[i]) {
+      oCot[i] = document.createElement('div');
+      oCot[i].className = 'sp-cot';
+      $('#spNut').appendChild(oCot[i]);
+    }
+    return oCot[i];
+  }
   (nut || []).forEach(function(n){
     var b = document.createElement('button');
-    if (n.chinh) b.className = 'chinh';
+    var lop = [];
+    if (n.chinh) lop.push('chinh');
+    if (n.cot != null) lop.push(n.to ? 'to' : 'nho', n.cot === 0 ? 'la' : 'duong');
+    if (lop.length) b.className = lop.join(' ');
     if (n.viec) b.dataset.viec = n.viec;
-    if (n.ic) b.innerHTML = n.ic + '<span>' + chuAnToan(n.chu) + '</span><span class="sp-halo"></span>';
-    else b.textContent = n.chu;
+    if (n.ic) {
+      var loi = n.to === 0
+        ? '<span class="hang">' + n.ic + '<span>' + chuAnToan(n.chu) + '</span></span>'
+        : n.ic + '<span>' + chuAnToan(n.chu) + '</span>';
+      b.innerHTML = loi + (n.phu ? '<span class="chu">' + chuAnToan(n.phu) + '</span>' : '') +
+        '<span class="sp-halo"></span>';
+    } else b.textContent = n.chu;
     b.onclick = function(){
       var halo = b.querySelector('.sp-halo');
       if (halo) {
@@ -2996,8 +3052,9 @@ function spHien(tieu, phu, kieu, nut, doi){
       }
       n.lam();
     };
-    $('#spNut').appendChild(b);
+    (n.cot != null ? layCot(n.cot) : $('#spNut')).appendChild(b);
   });
+  $('#spNut').classList.toggle('hai-cot', oCot[0] != null || oCot[1] != null);
   $('#spNen').classList.add('mo');
 }
 function spDong(){
@@ -3167,6 +3224,30 @@ function spDemViec(buoiId, tenEm, doiEm){
   });
 }
 
+/* ⭐ 03/09/2026 — HAI SỐ CỦA HAI NÚT NHỎ (gộp lỗi trùng). Đọc RIÊNG, chạy SAU hai số
+   trên để nút to có số trước; kho `cum`/`cumPhieu` chưa dán luật thì phép này ném 403
+   và nút nhỏ đứng dấu `!` — hai nút to KHÔNG bị ảnh hưởng.
+     · kiemtratrung = số cụm đội EM đang soạn mà CHƯA GỬI (việc dang dở, phải bấm gửi)
+     · xacnhantrung = số cụm đội em CHẤM đã gửi mà EM chưa bỏ phiếu
+   ⛔ Đừng đếm "số lỗi chưa gộp" cho nút KIỂM TRA TRÙNG: con số đó luôn hàng trăm và
+      không bao giờ về 0 (phần lớn lỗi vốn không trùng ai), treo lên nút là vô nghĩa. */
+function spDemTrung(buoiId, tenEm, doiEm, doiEmCham){
+  return Promise.all([
+    spTruyCon(buoiId, 'cum', 'doiBiCham', doiEm),
+    spTruyCon(buoiId, 'cum', 'doiBiCham', doiEmCham),
+    spTruyCon(buoiId, 'cumPhieu', 'voter', tenEm)
+  ]).then(function(kq){
+    var song = function(c){ return (c.ids || []).length > 1; };   /* ids rỗng = cụm đã giải tán */
+    var cuaEm = kq[0].filter(song), doiKia = kq[1].filter(song), phieuEm = kq[2];
+    var daBo = {};
+    phieuEm.forEach(function(p){ if (p.y) daBo[p.cumId] = true; });
+    return {
+      kt: cuaEm.filter(function(c){ return !c.daGui; }).length,
+      xn: doiKia.filter(function(c){ return c.daGui && !daBo[c._id]; }).length
+    };
+  });
+}
+
 /* Treo ô tròn đỏ lên nút. `n` là số, hoặc '!' khi ĐỌC KHÔNG ĐƯỢC.
    ⛔ Đọc hỏng thì KHÔNG được im lặng bỏ trống: nút trống có nghĩa là "0 việc"
    (số 0 vốn không vẽ gì), im lặng là nói với em rằng em hết việc — đúng họ bẫy
@@ -3182,7 +3263,7 @@ function spGanSo(viec, n, chuThich){
 }
 
 /* Đọc rồi treo số — chạy nền, hỏng thì chỉ ghi console + treo dấu `!`. */
-function spDoSo(buoiId, tenEm, doiEm){
+function spDoSo(buoiId, tenEm, doiEm, doiEmCham){
   var luot = spLuot;
   spDemViec(buoiId, tenEm, doiEm).then(function(v){
     if (luot !== spLuot) return;   /* em đã đóng / mở lượt khác */
@@ -3193,6 +3274,18 @@ function spDoSo(buoiId, tenEm, doiEm){
     if (window.console) console.warn('speaking: khong dem duoc so viec ->', e);
     spGanSo('cham', '!', 'Chưa đọc được số việc — em cứ vào bình thường nhé');
     spGanSo('pb', '!', 'Chưa đọc được số việc — em cứ vào bình thường nhé');
+  });
+  /* Hai nút nhỏ đọc RIÊNG một mạch: kho `cum` có thể chưa dán luật (403) mà hai nút
+     to vẫn phải có số đúng — gộp chung một Promise.all là hỏng một cái hỏng cả bốn. */
+  spDemTrung(buoiId, tenEm, doiEm, doiEmCham).then(function(v){
+    if (luot !== spLuot) return;
+    spGanSo('kt', v.kt, v.kt + ' cụm đội em đang soạn, chưa gửi');
+    spGanSo('xn', v.xn, v.xn + ' cụm đang chờ em bỏ phiếu');
+  }).catch(function(e){
+    if (luot !== spLuot) return;
+    if (window.console) console.warn('speaking: khong dem duoc so cum trung ->', e);
+    spGanSo('kt', '!', 'Chưa đọc được — em cứ vào bình thường nhé');
+    spGanSo('xn', '!', 'Chưa đọc được — em cứ vào bình thường nhé');
   });
 }
 
@@ -3239,17 +3332,49 @@ function spVaoBuoi(b, lop, kho){
     });
   }
 
+  /* ⭐ 03/09/2026 — HAI ĐƯỜNG MỚI của tính năng GỘP LỖI TRÙNG.
+       kt (KIỂM TRA TRÙNG)  — đội EM bị chấm ⇒ mang video + thành viên ĐỘI EM, y như `pb`.
+                              kèm `cb` = đội ĐANG CHẤM đội em, để bên kia ghi "TEAM mấy
+                              sẽ bỏ phiếu". Tra trong `pairs`: checked == đội em.
+       xn (XÁC NHẬN TRÙNG)  — em đi chấm ⇒ mang video + thành viên ĐỘI BỊ CHẤM, y như `cham`.
+     ⛔ Cả hai chỉ dựng cho buổi MÔ HÌNH 2 (buổi cũ Google Sheets không có kho `cum`). */
+  var duongKt = '', duongXn = '';
+  if (mh === 2) {
+    var capChamEm = (lop.pairs || []).filter(function(p){ return Number(p.checked) === Number(em.team); })[0];
+    if (doiEm && doiEm.video) {
+      duongKt = SP_WEB + '?goi=' + goiB64({
+        v:1, kho: kho, mh: 2, kt: 1, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
+        topic: lop.topic || lop.lesson, ten: em.ten, tenDayDu: TOI,
+        team: em.team, cham: cap.checked, cb: capChamEm ? capChamEm.checker : 0,
+        video: doiEm.video || '', members: doiEm.members || [], clips: clips
+      });
+    }
+    duongXn = SP_WEB + '?goi=' + goiB64({
+      v:1, kho: kho, mh: 2, xn: 1, classCode: lop.classCode, tenLop: lop.name, lesson: lop.lesson,
+      topic: lop.topic || lop.lesson, ten: em.ten, tenDayDu: TOI,
+      team: em.team, cham: cap.checked,
+      video: doiCham.video || '', members: doiCham.members || [], clips: clips
+    });
+  }
+
   if (spDongHo) { clearTimeout(spDongHo); spDongHo = null; }
   spDuong = duong;
-  /* ⭐ Thầy chốt: KHÔNG tự nhảy tab — em bấm nút này mới mở. Buổi mô hình 2 có thêm nút
-     PHẢN BIỆN (thầy chốt Đợt B): xem các câu đội mình bị chấm, tích đồng ý/phản đối.
-     ⭐ 27/08 — thiết kế lại: bỏ nút "Đóng" (đã có nút X ở góc pop-up), hai nút to có
-     icon — Chấm bài (xanh lá, luôn đứng trước = bên trái) rồi mới tới Phản biện
-     (xanh dương, bên phải). */
-  var nut = [{ chu:'Chấm bài', chinh:true, ic:IC_SP_CHAM, viec:'cham',
-    lam:function(){ window.open(spDuong, '_blank'); spDong(); } }];
-  if (duongPb) nut.push({ chu:'Phản biện', ic:IC_SP_PB, viec:'pb',
-    lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
+  /* ⭐ Thầy chốt: KHÔNG tự nhảy tab — em bấm nút này mới mở.
+     ⭐ 03/09/2026 — BỐN NÚT, XẾP HAI CỘT (thầy duyệt qua bản mẫu):
+       cột trái XANH LÁ  = việc CHẤM   : CHẤM BÀI CÁ NHÂN (to) · XÁC NHẬN TRÙNG (nhỏ)
+       cột phải XANH DƯƠNG = việc BỊ CHẤM: PHẢN BIỆN CÁ NHÂN (to) · KIỂM TRA TRÙNG (nhỏ)
+     Chú thích nằm TRONG nút, một dòng, nghiêng. ⛔ Đừng tách ra thành dòng chữ rời
+     bên dưới nút — thầy đã bảo bỏ. */
+  var nut = [
+    { cot:0, to:1, chu:'CHẤM BÀI CÁ NHÂN', phu:'Bài chấm của cá nhân em',
+      ic:IC_SP_CHAM, viec:'cham', lam:function(){ window.open(spDuong, '_blank'); spDong(); } }
+  ];
+  if (duongXn) nut.push({ cot:0, to:0, chu:'XÁC NHẬN TRÙNG', phu:'Cả đội quyết các lỗi chấm trùng',
+    ic:IC_SP_XN, viec:'xn', lam:function(){ window.open(duongXn, '_blank'); spDong(); } });
+  if (duongPb) nut.push({ cot:1, to:1, chu:'PHẢN BIỆN CÁ NHÂN', phu:'Phản biện của cá nhân em',
+    ic:IC_SP_PB, viec:'pb', lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
+  if (duongKt) nut.push({ cot:1, to:0, chu:'KIỂM TRA TRÙNG', phu:'Gộp lỗi bị bắt trùng của đội em',
+    ic:IC_SP_KT, viec:'kt', lam:function(){ window.open(duongKt, '_blank'); spDong(); } });
   /* ⭐ 02/09/2026 — đội em chấm nay là khối riêng `.sp-doi` (tham số thứ 5), câu
      phụ để RỖNG. Xem chú thích khối CSS `.sp-doi` vì sao không nhét vào `.sp-phu`. */
   spHien('Đã lấy xong dữ liệu', '', 'xong', nut, cap.checked);
@@ -3259,7 +3384,7 @@ function spVaoBuoi(b, lop, kho){
      không hề có `_id` — gọi đếm ở đó thì 4 câu hỏi đều rỗng, ra số 0, và số 0 lại
      KHÔNG vẽ gì ⇒ nút trắng trơn, đúng nghĩa "im lặng báo hết việc". Chặn hẳn ở
      đây thay vì để nó tự ra 0. */
-  if (mh === 2 && lop._id) spDoSo(lop._id, em.ten, 'TEAM ' + em.team);
+  if (mh === 2 && lop._id) spDoSo(lop._id, em.ten, 'TEAM ' + em.team, 'TEAM ' + cap.checked);
 }
 
 function spLoi(b, chu){

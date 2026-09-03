@@ -750,7 +750,7 @@ body.khoa-cuon{overflow:hidden}
     Array.prototype.forEach.call(bars, function(bar){
       var av = bar.querySelectorAll('.av-thanh');
       if (!av.length) return;
-      var rong = bar.getBoundingClientRect().width;
+      var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
       if (!rong) return;
       var vet = bar.querySelector('i');
       var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 100;
@@ -876,6 +876,8 @@ body.khoa-cuon{overflow:hidden}
   function henVeLaiAvatar(goc){
     veLaiAvatar(goc);
     requestAnimationFrame(function(){ veLaiAvatar(goc); });
+    // ⭐ v1.58.0 — mốc muộn (xem chú thích cùng tên ở lop.html).
+    setTimeout(function(){ veLaiAvatar(goc); }, 600);
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function(){ veLaiAvatar(goc); });
     }

@@ -1740,6 +1740,15 @@ function henVeLaiAvatar(goc){
   if (document.fonts && document.fonts.ready) {
     document.fonts.ready.then(function(){ veLaiAvatar(goc); });
   }
+  /* ⭐ v1.58.0 — MỐC THỨ TƯ: SAU KHI THẺ TRƯỢT XONG. Đo thật 03/09 (bàn thử 8137, lớp B1-A (H)):
+     ba mốc trên đều rơi vào lúc thẻ còn đang trượt/co giãn theo lối FLIP (`THOI_CHUYEN` 420ms,
+     xem "ĐỔI BỐ CỤC CHO MƯỢT") — thanh đo được 254px trong khi bề ngang thật là 508px ⇒ cả hàng
+     avatar dồn về nửa trái (em cao nhất đứng giữa thanh). Kéo cửa sổ một cái là đúng ngay (vì
+     có `resize`), tức là chỉ thiếu MỘT lượt đo muộn. Hai mốc muộn: ngay sau FLIP và 1,2 giây
+     (mạng chậm/ảnh về muộn). Rẻ (chỉ đọc DOM) và không tự gọi lại mình. */
+  var tre = (typeof THOI_CHUYEN === 'number' ? THOI_CHUYEN : 420) + 100;
+  setTimeout(function(){ veLaiAvatar(goc); }, tre);
+  setTimeout(function(){ veLaiAvatar(goc); }, 1200);
 }
 
 /* ═══ (02/09 đợt 4 — thầy chốt) AVATAR BẠN TOP 1 TRÊN THANH BÀI THƯỜNG ═══════════════════
@@ -1778,7 +1787,7 @@ function xepAvatarMoc(goc){
   Array.prototype.forEach.call(bars, function(bar){
     var av = bar.querySelector('.av-moc');
     if (!av) return;
-    var rong = bar.getBoundingClientRect().width;
+    var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
     var d = av.getBoundingClientRect().width || 14;
     if (!rong || !d) return;
     var r = d / 2;
@@ -1795,7 +1804,7 @@ function xepAvatarThanh(goc){
   Array.prototype.forEach.call(bars, function(bar){
     var av = bar.querySelectorAll('.av-thanh');
     if (!av.length) return;
-    var rong = bar.getBoundingClientRect().width;
+    var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
     if (!rong) return;
     var vet = bar.querySelector('i');
     var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 100;

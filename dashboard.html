@@ -2383,6 +2383,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     if (document.fonts && document.fonts.ready) {
       document.fonts.ready.then(function () { veLaiAvatar(goc); });
     }
+    // ⭐ v1.58.0 — mốc muộn (xem chú thích cùng tên ở lop.html: thẻ còn đang trượt lúc đo).
+    setTimeout(function () { veLaiAvatar(goc); }, 600);
+    setTimeout(function () { veLaiAvatar(goc); }, 1200);
   }
   // ⭐ v1.58.0 — đổi khổ cửa sổ thì bề ngang thanh đổi mà `left` (px) của avatar thì không:
   // đo + xếp lại như `lop.html` đã làm. Chờ 120ms cho lượt kéo giãn liên tục khỏi đo dồn.
@@ -2431,7 +2434,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     Array.prototype.forEach.call(bars, function (bar) {
       var av = bar.querySelector('.av-moc');
       if (!av) return;
-      var rong = bar.getBoundingClientRect().width;
+      var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
       var d = av.getBoundingClientRect().width || 14;
       if (!rong || !d) return;
       var r = d / 2;
@@ -2448,7 +2451,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     Array.prototype.forEach.call(bars, function (bar) {
       var av = bar.querySelectorAll('.av-thanh');
       if (!av.length) return;
-      var rong = bar.getBoundingClientRect().width;
+      var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
       if (!rong) return;
       var vet = bar.querySelector('i');
       var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 100;

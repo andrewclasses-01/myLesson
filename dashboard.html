@@ -724,10 +724,15 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .doi-so.m-cam{color:var(--m-cam)} .doi-so.m-do{color:var(--m-do)}
 .doi-bar i.m-la{background:var(--m-la)} .doi-bar i.m-duong{background:var(--m-duong)}
 .doi-bar i.m-cam{background:var(--m-cam)} .doi-bar i.m-do{background:var(--m-do)}
+/* ⭐ v1.58.0 — thẻ 4-5 đội: bớt đệm trên/dưới + khe hàng để hàng cao lên (19→25px, 15→19px),
+   nhờ đó avatar thẻ 4 đội bằng cỡ thẻ 3 đội (trần chung 26px trong `coAvatarThanh`).
+   Khối `.diem-rows` cao ~118px: 4×25+3×2+5+6 = 117 ✓ · 5×19+4×2+4+4 = 111 ✓ */
 .the-diem.doi2 .doi-dong{min-height:38px}
 .the-diem.doi3 .doi-dong{min-height:26px}
-.the-diem.doi4 .doi-dong{min-height:19px}
-.the-diem.doi5 .doi-dong{min-height:15px}
+.the-diem.doi4 .doi-dong{min-height:25px}
+.the-diem.doi4 .diem-rows{padding-top:5px; padding-bottom:6px; gap:2px}
+.the-diem.doi5 .doi-dong{min-height:19px}
+.the-diem.doi5 .diem-rows{padding-top:4px; padding-bottom:4px; gap:2px}
 .the-diem.doi5 .doi-ten,.the-diem.doi5 .doi-so{font-size:8.8px}
 .the-diem.doi5 .doi-bar{height:6px}
 
@@ -2332,16 +2337,21 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ⛔ Bản sao của hàm này còn ở `lop.html` và `sp-chitiet.html` — sửa là sửa cả ba.
   function avThanhHtml(d, lopGoc) {
     if (!(d.hs || []).length) return '';
+    /* ⭐ v1.58.0 — buổi speaking còn ghi TÊN GỌI NGẮN ("QUÂN") trong khi file ảnh tĩnh và
+       kho đặt theo tên HIỆN TẠI của lop.json ("TRUNG QUÂN") ⇒ tra tên đầy đủ TRƯỚC khi dựng
+       URL, để lớp nền có ảnh ngay cả khi kho im lặng. Tooltip vẫn hiện tên buổi ghi. */
+    var dsEm = (A.lopTheoMa(DL, LOP_CHON) || {}).hocSinh || [];
     return (d.hs || []).slice()
       .sort(function (a, b) { return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
       .map(function (h) {
+        var tenDay = A.avTenDayDu(h.ten, dsEm);
         /* `data-av-em` / `data-av-lop` (v1.55.0) — dấu để `A.deAvatarKho()` đè ảnh mới
            nhất từ kho. ⛔ Đặt trên Ô, KHÔNG trên <img>: `onerror` gỡ hẳn thẻ ảnh khi
            thiếu, đánh dấu lên đó là mất manh mối của đúng em đang cần cứu. */
         return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '"' +
-          ' data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
+          ' data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
           A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
-          '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
+          '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
           A.chuAnToan(avChuTat(h.ten)) + '</span>';
       }).join('');
   }
@@ -2374,6 +2384,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       document.fonts.ready.then(function () { veLaiAvatar(goc); });
     }
   }
+  // ⭐ v1.58.0 — đổi khổ cửa sổ thì bề ngang thanh đổi mà `left` (px) của avatar thì không:
+  // đo + xếp lại như `lop.html` đã làm. Chờ 120ms cho lượt kéo giãn liên tục khỏi đo dồn.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible') veLaiAvatar(document);
+  });
+  var henKho = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(henKho);
+    henKho = setTimeout(function () { veLaiAvatar(document); }, 120);
+  });
 
   // ═══ (02/09 đợt 4 — thầy chốt) AVATAR BẠN TOP 1 TRÊN THANH BÀI THƯỜNG ═══════════════════
   // MỘT avatar duy nhất mỗi thanh: em ĐIỂM CAO NHẤT của act đó, đặt ở MỐC CAO NHẤT của thanh
@@ -2395,10 +2415,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
     var e = ds[0];
     if (!e || !e.ten) return '';
-    return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(e.ten) +
+    var tenDay = A.avTenDayDu(e.ten, (A.lopTheoMa(DL, LOP_CHON) || {}).hocSinh || []);   // v1.58.0
+    return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(tenDay) +
       '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
       '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
-      '<img src="' + A.chuAnToan(A.avUrl(lopGoc, e.ten)) + '" alt="" onerror="this.remove()">' +
+      '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
       A.chuAnToan(avChuTat(e.ten)) + '</span>';
   }
 
@@ -2436,15 +2457,18 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       // cái cỡ đã thu nhỏ làm chuẩn và thu nhỏ tiếp — vài lần là avatar teo mất.
       bar.style.removeProperty('--av');
       var dHang = av[0].getBoundingClientRect().width || 14;
-      // ⭐ (02/09 đợt 3) Vệt màu quá ngắn thì THU NHỎ avatar CỦA RIÊNG THANH NÀY, chứ không
-      // cho đè nhau cũng không cho tràn ra vùng trống (hai điều thầy cấm). n avatar chạm
-      // cạnh nhau chiếm đúng n × đường kính ⇒ đường kính tối đa = ĐỘ DÀI VỆT MÀU ÷ SỐ EM.
-      // Thẻ bài vệt chỉ dài 39-58px mà 4 em ⇒ mỗi em chưa tới 15px, đành chịu bé.
-      var d = Math.max(8, Math.min(dHang, cuoiVet / av.length));
-      if (dHang - d > 0.5) bar.style.setProperty('--av', (Math.round(d * 10) / 10) + 'px');
+      // ⭐ v1.58.0 (03/09/2026 — thầy chốt): KHÔNG thu nhỏ avatar theo vệt màu nữa. Bản 02/09
+      // lấy đường kính = vệt màu ÷ số em, nên cùng một loại bài SP CHECK mà thẻ điểm thấp
+      // (vệt 40px, 4 em) ra avatar 10px còn thẻ khác 24-30px — thầy coi đó là LỖI (03/09).
+      // Nay MỌI thanh giữ đúng cỡ của hàng (`--av` do `coAvatarThanh` đo); vệt màu không đủ
+      // chỗ thì NỚI mép phải ra vùng trống (tối đa tới hết thanh), chạm cạnh chứ không đè —
+      // thanh cũng không đủ thì mới đành rải đều cho chạm nhau (nhánh 'rải đều' bên dưới).
+      var d = dHang;
       var r = d / 2;
       // Tâm avatar phải cách mép ít nhất BÁN KÍNH thì cả vòng tròn mới nằm gọn trong vệt màu
       var lo = r, hi = Math.max(lo, cuoiVet - r);
+      var can = lo + (av.length - 1) * d;
+      if (can > hi) hi = Math.min(Math.max(lo, rong - r), can);
       var ds = Array.prototype.slice.call(av).map(function (e) {
         return { e: e, so: +e.dataset.so || 0, luc: +e.dataset.luc || 0 };
       });
@@ -3021,7 +3045,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         if (i < tam.length - 1) co = Math.min(co, tam[i + 1].giua - tam[i].giua);
         co = Math.min(co, (x.giua - ob.top) * 2, (ob.bottom - x.giua) * 2);
       });
-      var av = Math.max(10, Math.min(40, Math.round(co - 2)));
+      // ⭐ v1.58.0 — hàng ĐỘI (SP CHECK) chốt trần 26px cho MỌI thẻ: thẻ 3 đội (hàng 26px)
+      // và thẻ 4 đội (hàng 25px, xem CSS `.doi4`) ra cùng một cỡ; trước đây 29px ↔ 17px.
+      // Hàng bài thường (`.td-dong`, avatar bạn top 1) giữ trần 40px như cũ.
+      var tran = o.hang[0].classList.contains('doi-dong') ? 26 : 40;
+      var av = Math.max(10, Math.min(tran, Math.round(co - 2)));
       o.hang.forEach(function (h) { h.style.setProperty('--av', av + 'px'); });
     });
   }
@@ -3085,6 +3113,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var zone = $('#dnBay');
     if (!zone) return;
     var ds = hoatDongGanDayCuaLop().slice(0, 8);
+    var lopGoc = (A.lopTheoMa(DL, LOP_CHON) || {}).tenGoc || LOP_CHON;   // v1.58.0
     if (!ds.length) {
       zone.textContent = 'Chưa có dấu vết hoạt động gần đây trong lớp này.';
       return;
@@ -3099,9 +3128,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var mauI = 0;
       for (var j = 0; j < x.ten.length; j++) mauI += x.ten.charCodeAt(j);
       var mau = MAU_AV[mauI % MAU_AV.length];
-      var anh = '<img src="assets/avatar/' + lopSlug + '/' + avSlugTen(x.ten) +
+      // v1.58.0 — mang dấu `data-av-*` để kho ảnh đè được như mọi ô avatar khác.
+      var anh = '<img class="av-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(x.ten) +
         '.jpg" alt="" onerror="this.remove()">';
-      return '<span class="dn-b" style="top:' + top.toFixed(1) + '%; left:' +
+      return '<span class="dn-b" data-av-em="' + A.chuAnToan(x.ten) + '" data-av-lop="' +
+        A.chuAnToan(lopGoc) + '" style="top:' + top.toFixed(1) + '%; left:' +
         DN_TRAI[i % DN_TRAI.length] + '%; background:' + mau +
         '; opacity:' + op.toFixed(2) + '; animation-delay:' + (i * .35) + 's" ' +
         'title="' + A.chuAnToan(x.ten) + ' · ' + chuCachDay(x.luc) + '">' +
@@ -3245,8 +3276,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           var tt = AV_TT[h.ten] || null;
           var v = AV_V[h.ten] ? ('?v=' + AV_V[h.ten]) : '';
           return '<div class="av-dong">' +
-            '<span class="av-hinh">' + A.chuAnToan(avChuTat(h.ten).toUpperCase()) +
-            '<img src="assets/avatar/' + lopSlug + '/' + avSlugTen(h.ten) + '.jpg' + v +
+            '<span class="av-hinh" data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' +
+            A.chuAnToan((l && l.tenGoc) || LOP_CHON) + '">' + A.chuAnToan(avChuTat(h.ten).toUpperCase()) +
+            '<img class="av-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(h.ten) + '.jpg' + v +
             '" alt="" onerror="this.remove()"></span>' +
             '<span class="av-ten">' + A.chuAnToan(h.ten) + '</span>' +
             (tt ? '<span class="av-tt' + (tt.loi ? ' av-loi' : '') + '">' + A.chuAnToan(tt.chu) + '</span>' : '') +
@@ -3434,9 +3466,15 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var chu = tu.slice(-2).map(function (t) { return t[0]; }).join('').toUpperCase();
     var i = 0;
     for (var j = 0; j < ten.length; j++) i += ten.charCodeAt(j);
-    var anh = lopSlug ? ('<img src="assets/avatar/' + lopSlug + '/' + avSlugTen(ten) +
+    // ⭐ v1.58.0 — tin cũ còn ghi TÊN GỌI NGẮN người gửi ("QUÂN") ⇒ tra tên đầy đủ theo
+    // danh sách lớp trước khi dựng URL (đo 03/09: 5 ảnh 404 mỗi lượt vẽ chỉ vì thế), và
+    // mang dấu `data-av-*` để kho ảnh đè được. Chữ tắt vẫn theo tên tin ghi.
+    var lQ = A.lopTheoMa(DL, LOP_CHON) || {};
+    var tenDay = A.avTenDayDu(ten, lQ.hocSinh || []);
+    var anh = lopSlug ? ('<img class="av-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(tenDay) +
       '.jpg" alt="" onerror="this.remove()">') : '';
-    return '<span class="av" style="background:' + MAU_AV[i % MAU_AV.length] + '">' +
+    return '<span class="av" data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' +
+           A.chuAnToan(lQ.tenGoc || LOP_CHON) + '" style="background:' + MAU_AV[i % MAU_AV.length] + '">' +
            A.chuAnToan(chu) + anh + '</span>';
   }
 

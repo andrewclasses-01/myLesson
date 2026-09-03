@@ -711,10 +711,13 @@ body.khoa-cuon{overflow:hidden}
   // (điểm) và `data-luc` (mốc nộp); `xepAvatarThanh()` chạy sau mới đặt `left`.
   function avThanhHtml(d){
     if (!(d.hs || []).length) return '';
-    var lopGoc = (A.lopTheoMa(DL, MA_LOP) || {}).tenGoc || MA_LOP;
+    var lChiTiet = A.lopTheoMa(DL, MA_LOP) || {};
+    var lopGoc = lChiTiet.tenGoc || MA_LOP;
+    var dsEm = lChiTiet.hocSinh || [];   // v1.58.0 — tra tên đầy đủ trước khi dựng URL ảnh
     return (d.hs || []).slice()
       .sort(function(a, b){ return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
       .map(function(h){
+        var tenDay = A.avTenDayDu(h.ten, dsEm);
         /* ⭐ v1.56.1 (03/09/2026) — `data-av-em` / `data-av-lop`: dấu để `A.deAvatarKho()`
            đè ảnh MỚI NHẤT từ kho `lessonAvatar` (neo theo MÃ SỐ em) lên ô này.
            ⛔ Trang này BỊ BỎ SÓT ở v1.55.0 (chỉ dashboard.html + lop.html được vá) nên em
@@ -722,9 +725,9 @@ body.khoa-cuon{overflow:hidden}
            ⛔ Đặt trên Ô, KHÔNG trên <img>: `onerror` gỡ hẳn thẻ ảnh khi thiếu, đánh dấu lên
            đó là mất manh mối của đúng những em đang cần cứu nhất. */
         return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '"' +
-          ' data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
+          ' data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
           A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
-          '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
+          '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
           A.chuAnToan(avtChu(h.ten)) + '</span>';
       }).join('');
   }
@@ -756,15 +759,18 @@ body.khoa-cuon{overflow:hidden}
       // cái cỡ đã thu nhỏ làm chuẩn và thu nhỏ tiếp — vài lần là avatar teo mất.
       bar.style.removeProperty('--av');
       var dHang = av[0].getBoundingClientRect().width || 14;
-      // ⭐ (02/09 đợt 3) Vệt màu quá ngắn thì THU NHỎ avatar CỦA RIÊNG THANH NÀY, chứ không
-      // cho đè nhau cũng không cho tràn ra vùng trống (hai điều thầy cấm). n avatar chạm
-      // cạnh nhau chiếm đúng n × đường kính ⇒ đường kính tối đa = ĐỘ DÀI VỆT MÀU ÷ SỐ EM.
-      // Thẻ bài vệt chỉ dài 39-58px mà 4 em ⇒ mỗi em chưa tới 15px, đành chịu bé.
-      var d = Math.max(8, Math.min(dHang, cuoiVet / av.length));
-      if (dHang - d > 0.5) bar.style.setProperty('--av', (Math.round(d * 10) / 10) + 'px');
+      // ⭐ v1.58.0 (03/09/2026 — thầy chốt): KHÔNG thu nhỏ avatar theo vệt màu nữa. Bản 02/09
+      // lấy đường kính = vệt màu ÷ số em, nên cùng một loại bài SP CHECK mà thẻ điểm thấp
+      // (vệt 40px, 4 em) ra avatar 10px còn thẻ khác 24-30px — thầy coi đó là LỖI (03/09).
+      // Nay MỌI thanh giữ đúng cỡ của hàng (`--av` do `coAvatarThanh` đo); vệt màu không đủ
+      // chỗ thì NỚI mép phải ra vùng trống (tối đa tới hết thanh), chạm cạnh chứ không đè —
+      // thanh cũng không đủ thì mới đành rải đều cho chạm nhau (nhánh 'rải đều' bên dưới).
+      var d = dHang;
       var r = d / 2;
       // Tâm avatar phải cách mép ít nhất BÁN KÍNH thì cả vòng tròn mới nằm gọn trong vệt màu
       var lo = r, hi = Math.max(lo, cuoiVet - r);
+      var can = lo + (av.length - 1) * d;
+      if (can > hi) hi = Math.min(Math.max(lo, rong - r), can);
       var ds = Array.prototype.slice.call(av).map(function(e){
         return { e: e, so: +e.dataset.so || 0, luc: +e.dataset.luc || 0 };
       });
@@ -863,6 +869,10 @@ body.khoa-cuon{overflow:hidden}
   // ⛔ Đừng đổi sang ResizeObserver: chính việc đặt `--av` làm kích thước đổi ⇒ tự gọi lại
   // mình vô tận, phải bịa thêm chốt so sánh. Ba mốc cố định vừa rẻ vừa không vòng lặp.
   function veLaiAvatar(goc){ coAvatarThanh(goc); xepAvatarThanh(goc); }
+  // ⭐ v1.58.0 — mở trong tab NỀN thì thanh chưa có bề ngang thật lúc đo; tab hiện lại thì đo lại.
+  document.addEventListener('visibilitychange', function(){
+    if (document.visibilityState === 'visible') veLaiAvatar(document);
+  });
   function henVeLaiAvatar(goc){
     veLaiAvatar(goc);
     requestAnimationFrame(function(){ veLaiAvatar(goc); });

@@ -223,7 +223,7 @@
     // từ kho. ⛔ Đặt trên Ô, KHÔNG trên <img> (onerror gỡ hẳn thẻ ảnh khi thiếu).
     return '<span class="vq-av" data-av-em="' + esc(ten) + '" data-av-lop="' + esc(ctx.lop) + '">' +
       esc(chu) +
-      '<img src="' + esc(A.avUrl(ctx.lop, ten)) + '" alt="" onerror="this.remove()"></span>';
+      '<img class="av-anh" src="' + esc(A.avUrl(ctx.lop, ten)) + '" alt="" onerror="this.remove()"></span>';
   }
   function soCoDau(n) { return (n > 0 ? '+' : '') + n; }
 

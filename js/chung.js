@@ -832,6 +832,9 @@
   // Chưa có ảnh cho em nào thì thẻ <img> tự gỡ mình ⇒ hiện chữ tắt như cũ.
   function gaAvatar(el, lop, ten, chuTat) {
     if (!el) return;
+    // ⭐ v1.58.0 — tin nhắn cũ còn mang TÊN GỌI NGẮN của người gửi; tra tên đầy đủ theo
+    // danh sách lớp đang theo dõi (`batAvatarKho` đã nạp) trước khi dựng URL lớp nền.
+    if (avDs && avDs.length && avSlugLop(avLop) === avSlugLop(lop)) ten = avTenDayDu(ten, avDs);
     Array.prototype.slice.call(el.childNodes).forEach(function (n) {
       if (n.nodeType === 3) el.removeChild(n);
     });
@@ -948,6 +951,30 @@
                                : y.slice(-(x.length + 1)) === (' ' + x);
   }
 
+  // ⭐ v1.58.0 (03/09/2026) — TÊN ĐẦY ĐỦ theo danh sách lớp cho một tên "lỏng".
+  // Buổi speaking / bảng điểm có thể còn ghi TÊN GỌI NGẮN ("QUÂN"), trong khi file ảnh
+  // TĨNH đặt theo tên HIỆN TẠI trong `lop.json` ("TRUNG QUÂN") ⇒ URL lớp nền 404 dù ảnh
+  // có sẵn trong kho web. Tra ở đây TRƯỚC khi dựng URL: bằng nhau → lấy; không thì theo
+  // luật ĐUÔI của `avTenKhop`, nhưng CHỈ khi đúng MỘT em khớp — hai em cùng đuôi ("MINH"
+  // ↔ "ĐĂNG MINH"/"NGỌC MINH") thì trả nguyên tên, thà thiếu ảnh còn hơn gắn nhầm mặt.
+  // `dsEm`: mảng tên, hoặc mảng {ten} của lop.json.
+  function avTenDayDu(ten, dsEm) {
+    var ds = dsEm || [];
+    var x = avKhongDau(ten).replace(/\s+/g, ' ').trim();
+    if (!x || !ds.length) return ten;
+    var tenCua = function (e) { return (e && typeof e === 'object') ? e.ten : e; };
+    for (var i = 0; i < ds.length; i++) {
+      var t = tenCua(ds[i]);
+      if (t && avKhongDau(t).replace(/\s+/g, ' ').trim() === x) return t;
+    }
+    var khop = [];
+    for (var k = 0; k < ds.length; k++) {
+      var u = tenCua(ds[k]);
+      if (u && avTenKhop(u, ten)) khop.push(u);
+    }
+    return khop.length === 1 ? khop[0] : ten;
+  }
+
   // Đè ảnh mới nhất từ kho lên mọi ô avatar đã vẽ của một lớp.
   // `dsEm` (tuỳ chọn): [{id, ten}] lấy từ lop.json — có thì tra THẲNG theo mã số
   // (chắc chắn nhất); không có thì lùi về so tên lỏng với tên kho đang giữ.
@@ -975,7 +1002,9 @@
         }
         if (!(id && em[id])) continue;
 
-        var img = el.querySelector('img.av-anh');
+        // v1.58.0 — ô trên thanh đội (`av-thanh`) từng vẽ <img> không mang lớp `av-anh`:
+        // bản trước không thấy nên chèn thêm một <img> thứ hai chồng lên. Nay nhận cả hai.
+        var img = el.querySelector('img.av-anh') || el.querySelector('img');
         if (!img) {
           // Ảnh nền 404 nên `onerror` đã gỡ thẻ — dựng lại đúng khuôn của `gaAvatar`
           // (chèn LÊN ĐẦU để huy hiệu sao / chấm đỏ vẫn nằm trên ảnh).
@@ -1747,7 +1776,7 @@
     // ⭐ v1.37.0 — avatar dùng chung + chấm đỏ tin nhắn mới
     avSlugLop: avSlugLop, avSlugTen: avSlugTen, avUrl: avUrl, gaAvatar: gaAvatar,
     napAvatarKho: napAvatarKho, deAvatarKho: deAvatarKho, batAvatarKho: batAvatarKho,
-    avTenKhop: avTenKhop,
+    avTenKhop: avTenKhop, avTenDayDu: avTenDayDu,
     mocDaXem: mocDaXem, danhDauDaXem: danhDauDaXem,
     mocTinMoi: mocTinMoi, datMocTinMoi: datMocTinMoi,
     chatChuaDoc: chatChuaDoc, veChamDo: veChamDo,

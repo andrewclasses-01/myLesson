@@ -577,10 +577,15 @@ i.m-la{background:var(--m-la)}
 .doi-so.m-cam{color:var(--m-cam)} .doi-so.m-do{color:var(--m-do)}
 .doi-bar i.m-la{background:var(--m-la)} .doi-bar i.m-duong{background:var(--m-duong)}
 .doi-bar i.m-cam{background:var(--m-cam)} .doi-bar i.m-do{background:var(--m-do)}
+/* ⭐ v1.58.0 — thẻ 4-5 đội: bớt đệm trên/dưới + khe hàng để hàng cao lên (19→25px, 15→19px),
+   nhờ đó avatar thẻ 4 đội bằng cỡ thẻ 3 đội (trần chung 26px trong `coAvatarThanh`).
+   Ở trang này hàng nằm THẲNG trong `.the-diem` (không có `.diem-rows` như dashboard). */
 .the-diem.doi2 .doi-dong{min-height:38px}
 .the-diem.doi3 .doi-dong{min-height:26px}
-.the-diem.doi4 .doi-dong{min-height:19px}
-.the-diem.doi5 .doi-dong{min-height:15px}
+.the-diem.doi4 .doi-dong{min-height:25px}
+.the-diem.doi4{padding-top:5px; padding-bottom:6px; gap:2px}
+.the-diem.doi5 .doi-dong{min-height:19px}
+.the-diem.doi5{padding-top:4px; padding-bottom:4px; gap:2px}
 .the-diem.doi5 .doi-ten,.the-diem.doi5 .doi-so{font-size:8.8px}
 .the-diem.doi5 .doi-bar{height:6px}
 
@@ -1403,9 +1408,13 @@ function avSlugTen(s){
 }
 function veAv(ten, i){
   var chu = ten.trim().split(/\s+/).map(function(t){return t[0];}).slice(-2).join('');
-  var anh = LOP_SLUG ? ('<img src="assets/avatar/' + LOP_SLUG + '/' + avSlugTen(ten) +
+  /* ⭐ v1.58.0 — tin cũ còn ghi TÊN GỌI NGẮN người gửi ⇒ tra tên đầy đủ (`CA_LOP`) trước khi
+     dựng URL, và mang dấu `data-av-*` để kho ảnh đè được như mọi ô avatar khác. */
+  var tenDay = A.avTenDayDu(ten, typeof CA_LOP !== 'undefined' ? CA_LOP : []);
+  var anh = LOP_SLUG ? ('<img class="av-anh" src="assets/avatar/' + LOP_SLUG + '/' + avSlugTen(tenDay) +
     '.jpg" alt="" onerror="this.remove()">') : '';
-  return '<span class="av" style="background:' + MAU_AV[i % MAU_AV.length] + '">' + chu + anh + '</span>';
+  return '<span class="av" data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(LOP || '') +
+    '" style="background:' + MAU_AV[i % MAU_AV.length] + '">' + chu + anh + '</span>';
 }
 
 /* ---------- VIẾT TẮT TÊN (cùng lối app myTeam) ---------- */
@@ -1681,17 +1690,21 @@ function veDiem(b, batDo, hienThieu){
    ⛔ Bản sao của hàm này còn ở `dashboard.html` và `sp-chitiet.html` — sửa là sửa cả ba. */
 function avThanhHtml(d, lopGoc){
   if (!(d.hs || []).length) return '';
+  /* ⭐ v1.58.0 — buổi speaking còn ghi TÊN GỌI NGẮN ("QUÂN") trong khi file ảnh tĩnh và kho
+     đặt theo tên HIỆN TẠI của lop.json ("TRUNG QUÂN") ⇒ tra tên đầy đủ (`CA_LOP`) TRƯỚC khi
+     dựng URL, để lớp nền có ảnh ngay cả khi kho im lặng. Tooltip vẫn hiện tên buổi ghi. */
   return (d.hs || []).slice()
     .sort(function(a, b){ return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
     .map(function(h){
+      var tenDay = A.avTenDayDu(h.ten, CA_LOP);
       /* `data-av-em` / `data-av-lop` (v1.55.0) — dấu để `A.deAvatarKho()` tìm lại ô này
          mà đè ảnh mới nhất từ kho. ⛔ Đặt trên Ô, KHÔNG trên thẻ <img>: `onerror` ngay
          dòng dưới GỠ HẲN <img> khi thiếu ảnh, đánh dấu lên đó là mất manh mối của đúng
          những em đang cần cứu nhất. */
       return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '"' +
-        ' data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
+        ' data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
         A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
-        '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
+        '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
         A.chuAnToan(avChuTat(h.ten)) + '</span>';
     }).join('');
 }
@@ -1717,6 +1730,10 @@ function avThanhHtml(d, lopGoc){
    ⛔ Đừng đổi sang ResizeObserver: chính việc đặt `--av` làm kích thước đổi ⇒ tự gọi lại mình
    vô tận, phải bịa thêm chốt so sánh. Ba mốc cố định vừa rẻ vừa không vòng lặp. */
 function veLaiAvatar(goc){ coAvatarThanh(goc); xepAvatarThanh(goc); xepAvatarMoc(goc); }
+/* ⭐ v1.58.0 — trang mở trong tab NỀN thì thanh chưa có bề ngang thật lúc đo; tab hiện lại thì đo lại. */
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible') veLaiAvatar(document);
+});
 function henVeLaiAvatar(goc){
   veLaiAvatar(goc);
   requestAnimationFrame(function(){ veLaiAvatar(goc); });
@@ -1745,10 +1762,11 @@ function avMocHtml(dsDiem, lopGoc){
   });
   var e = ds[0];
   if (!e || !e.ten) return '';
-  return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(e.ten) +
+  var tenDay = A.avTenDayDu(e.ten, CA_LOP);   /* v1.58.0 */
+  return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(tenDay) +
     '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
     '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
-    '<img src="' + A.chuAnToan(A.avUrl(lopGoc, e.ten)) + '" alt="" onerror="this.remove()">' +
+    '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
     A.chuAnToan(avChuTat(e.ten)) + '</span>';
 }
 
@@ -1786,15 +1804,18 @@ function xepAvatarThanh(goc){
        cỡ đã thu nhỏ làm chuẩn và thu nhỏ tiếp — vài lần là avatar teo mất. */
     bar.style.removeProperty('--av');
     var dHang = av[0].getBoundingClientRect().width || 14;
-    /* ⭐ (02/09 đợt 3) Vệt màu quá ngắn thì THU NHỎ avatar CỦA RIÊNG THANH NÀY, chứ không cho
-       đè nhau cũng không cho tràn ra vùng trống (hai điều thầy cấm). n avatar chạm cạnh nhau
-       chiếm đúng n × đường kính ⇒ đường kính tối đa = ĐỘ DÀI VỆT MÀU ÷ SỐ EM.
-       Thẻ bài vệt chỉ dài 39-58px mà 4 em ⇒ mỗi em chưa tới 15px, đành chịu bé. */
-    var d = Math.max(8, Math.min(dHang, cuoiVet / av.length));
-    if (dHang - d > 0.5) bar.style.setProperty('--av', (Math.round(d * 10) / 10) + 'px');
+    /* ⭐ v1.58.0 (03/09/2026 — thầy chốt): KHÔNG thu nhỏ avatar theo vệt màu nữa. Bản 02/09
+       lấy đường kính = vệt màu ÷ số em, nên cùng một loại bài SP CHECK mà thẻ điểm thấp
+       (vệt 40px, 4 em) ra avatar 10px còn thẻ khác 24-30px — thầy coi đó là LỖI (03/09).
+       Nay MỌI thanh giữ đúng cỡ của hàng (`--av` do `coAvatarThanh` đo); vệt màu không đủ
+       chỗ thì NỚI mép phải ra vùng trống (tối đa tới hết thanh), chạm cạnh chứ không đè —
+       thanh cũng không đủ thì mới đành rải đều cho chạm nhau (nhánh 'rải đều' bên dưới). */
+    var d = dHang;
     var r = d / 2;
     /* Tâm avatar phải cách mép ít nhất BÁN KÍNH thì cả vòng tròn mới nằm gọn trong vệt màu */
     var lo = r, hi = Math.max(lo, cuoiVet - r);
+    var can = lo + (av.length - 1) * d;
+    if (can > hi) hi = Math.min(Math.max(lo, rong - r), can);
     var ds = Array.prototype.slice.call(av).map(function(e){
       return { e: e, so: +e.dataset.so || 0, luc: +e.dataset.luc || 0 };
     });
@@ -2378,7 +2399,11 @@ function coAvatarThanh(goc){
       if (i < tam.length - 1) co = Math.min(co, tam[i + 1].giua - tam[i].giua);
       co = Math.min(co, (x.giua - ob.top) * 2, (ob.bottom - x.giua) * 2);
     });
-    var av = Math.max(10, Math.min(40, Math.round(co - 2)));
+    // ⭐ v1.58.0 — hàng ĐỘI (SP CHECK) chốt trần 26px cho MỌI thẻ: thẻ 3 đội (hàng 26px)
+    // và thẻ 4 đội (hàng 25px, xem CSS `.doi4`) ra cùng một cỡ; trước đây 29px ↔ 17px.
+    // Hàng bài thường (`.td-dong`, avatar bạn top 1) giữ trần 40px như cũ.
+    var tran = o.hang[0].classList.contains('doi-dong') ? 26 : 40;
+    var av = Math.max(10, Math.min(tran, Math.round(co - 2)));
     o.hang.forEach(function(h){ h.style.setProperty('--av', av + 'px'); });
   });
 }

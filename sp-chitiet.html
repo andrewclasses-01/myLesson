@@ -392,7 +392,7 @@ body.khoa-cuon{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=55"></script>
+<script src="config.js?v=56"></script>
 <script src="js/chung.js?v=31"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
@@ -552,6 +552,13 @@ body.khoa-cuon{overflow:hidden}
       var ds = A.baiCuaLop(DL, MA_LOP, 'ql');
       BAI = ds.filter(function(b){ return b.id === ID_BAI; })[0] || null;
       veDauTrang();
+      /* ⭐ v1.56.1 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em.
+         Gọi NGAY ở đây (trước khi thanh đội được vẽ) là được: `batAvatarKho` dựng một
+         MutationObserver, hễ trang vẽ thêm ô `[data-av-em]` nào là đè lại — lượt sau lấy
+         từ đệm phiên nên KHÔNG tốn thêm lượt đọc kho. Trang này chỉ xem MỘT lớp nên chỉ
+         gọi đúng một lần (khác dashboard: đổi lớp thì gọi lại). */
+      var lChiTiet = A.lopTheoMa(DL, MA_LOP) || {};
+      A.batAvatarKho(lChiTiet.tenGoc || MA_LOP, lChiTiet.hocSinh || []);
       if (!BUOI) return baoLoi('Lớp này chưa có buổi speaking nào đang mở.');
       if (BAI && !spKhopBai(A.maLesson(BAI), BUOI.lesson))
         return baoLoi('Buổi đang mở của lớp là "' + (BUOI.lesson || '?') + '", không khớp bài này.');
@@ -708,7 +715,14 @@ body.khoa-cuon{overflow:hidden}
     return (d.hs || []).slice()
       .sort(function(a, b){ return (a.so - b.so) || ((b.luc || 0) - (a.luc || 0)); })
       .map(function(h){
-        return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '" title="' +
+        /* ⭐ v1.56.1 (03/09/2026) — `data-av-em` / `data-av-lop`: dấu để `A.deAvatarKho()`
+           đè ảnh MỚI NHẤT từ kho `lessonAvatar` (neo theo MÃ SỐ em) lên ô này.
+           ⛔ Trang này BỊ BỎ SÓT ở v1.55.0 (chỉ dashboard.html + lop.html được vá) nên em
+           nào myStudent đã đổi tên là ảnh file tĩnh 404 ⇒ chỉ còn chữ cái. Xem BAN GIAO 0👤.
+           ⛔ Đặt trên Ô, KHÔNG trên <img>: `onerror` gỡ hẳn thẻ ảnh khi thiếu, đánh dấu lên
+           đó là mất manh mối của đúng những em đang cần cứu nhất. */
+        return '<span class="av-thanh" data-so="' + h.so + '" data-luc="' + (h.luc || 0) + '"' +
+          ' data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
           A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
           '<img src="' + A.chuAnToan(A.avUrl(lopGoc, h.ten)) + '" alt="" onerror="this.remove()">' +
           A.chuAnToan(avtChu(h.ten)) + '</span>';

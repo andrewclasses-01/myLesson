@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-03 22:37:11",
+  "capNhat": "2026-09-03 22:48:54",
   "nguon": "myStudent",
   "lop": [
     {
@@ -877,6 +877,12 @@
           "sinhNhat": ""
         },
         {
+          "id": 204,
+          "ten": "CÔNG THÀNH",
+          "ma": "CONGTHANH",
+          "sinhNhat": ""
+        },
+        {
           "id": 152,
           "ten": "DIỆP ANH",
           "ma": "TRANNGOCDIEPANH12072017",
@@ -886,6 +892,12 @@
           "id": 154,
           "ten": "DIỆU LINH",
           "ma": "BUIHOANGDIEULINH29052017",
+          "sinhNhat": ""
+        },
+        {
+          "id": 203,
+          "ten": "MINH ĐỨC",
+          "ma": "MAIMINHDUC",
           "sinhNhat": ""
         },
         {

@@ -231,12 +231,25 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
 .lbl{display:block; font:600 10.5px/1 var(--sans); letter-spacing:.14em; text-transform:uppercase;
   color:var(--muted); margin:0 0 8px}
 .lbl+input{margin-bottom:18px}
-input[type=text]{width:100%; padding:14px 16px; border-radius:12px; border:1.5px solid var(--line);
-  background:#fff; color:var(--ink); font:600 16px/1.2 var(--sans); outline:none;
-  transition:border-color .15s}
+input[type=text],input[type=password]{width:100%; padding:14px 16px; border-radius:12px;
+  border:1.5px solid var(--line); background:#fff; color:var(--ink); font:600 16px/1.2 var(--sans);
+  outline:none; transition:border-color .15s}
 /* 16px là cỡ tối thiểu để iPhone không tự phóng to trang khi bấm vào ô nhập. */
-input[type=text]:focus{border-color:var(--accent)}
+input[type=text]:focus,input[type=password]:focus{border-color:var(--accent)}
 input::placeholder{color:#9fb0ac; font-weight:500}
+
+/* Ô "My ID" — con mắt ẩn/hiện đè lên mép phải ô nhập (v1.60). Chỉ ĐỔI
+   type=password↔text qua lại, KHÔNG tự viết code che ký tự (xem index.html). */
+.id-wrap{position:relative; margin-bottom:14px}
+.id-wrap input{margin-bottom:0; padding-right:46px}
+.id-eye{position:absolute; right:5px; top:50%; transform:translateY(-50%); width:36px; height:36px;
+  border:0; background:transparent; border-radius:9px; display:flex; align-items:center;
+  justify-content:center; color:var(--muted); cursor:pointer; padding:0; transition:background-color .15s}
+.id-eye:hover{background:var(--accent-soft); color:var(--accent)}
+.id-eye svg{width:20px; height:20px}
+/* Thẻ <svg> gốc KHÔNG tự ẩn theo thuộc tính hidden (quirk trình duyệt cũ) —
+   phải tự khai rõ như mọi chỗ khác trong file này (.tiny[hidden] v.v). */
+.id-eye svg[hidden]{display:none}
 
 .btn{display:inline-flex; align-items:center; justify-content:center; padding:14px 24px;
   border-radius:12px; border:0; font:600 13.5px/1 var(--sans); letter-spacing:.06em;

@@ -149,6 +149,26 @@
     $('#inCode').onkeydown = function (e) { if (e.key === 'Enter') vaoHoc(); };
     $('#btnLogin').onclick = vaoHoc;
 
+    // ---------- con mắt ẩn/hiện mã số ----------
+    // Chỉ đổi type=password↔text — trình duyệt tự lo việc che ký tự (chấm
+    // tròn), không tự dựng ký tự giả nên không có rủi ro lộ/lỗi khi sửa mã.
+    (function () {
+      var inp = $('#inCode');
+      var nut = $('#btnEye');
+      var mo = nut.querySelector('.eye-on');
+      var dong = nut.querySelector('.eye-off');
+      var dangAn = true;
+      nut.onclick = function () {
+        dangAn = !dangAn;
+        inp.type = dangAn ? 'password' : 'text';
+        // ⛔ <svg> KHÔNG ăn kiểu gán .hidden=bool (không phản ánh ra thuộc
+        // tính thật trên một số trình duyệt) — phải set/removeAttribute.
+        mo.toggleAttribute('hidden', !dangAn);
+        dong.toggleAttribute('hidden', dangAn);
+        nut.setAttribute('aria-label', dangAn ? 'Hiện mã số' : 'Ẩn mã số');
+      };
+    })();
+
     var GIAM_CHUYEN_DONG = window.matchMedia &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 

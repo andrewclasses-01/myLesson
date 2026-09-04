@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
      không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=17">
+<link rel="stylesheet" href="css/main.css?v=18">
 </head>
 <body>
 
@@ -46,9 +46,28 @@
       <!-- Hai ngăn thay nhau đóng/mở (app.js đặt max-height BẰNG ĐÚNG chiều
            cao thật, xem datNgan) — chính chúng làm thẻ cao/thấp, kéo brand đi. -->
       <div class="ngan" id="nganLogin">
-        <input id="inCode" type="text" autocomplete="off" placeholder="My ID"
-          autocapitalize="characters" spellcheck="false">
-        <button class="btn primary wide" id="btnLogin">BEGIN</button>
+        <!-- Mặc định ẩn mã số (type=password → chấm tròn chuẩn trình duyệt,
+             chạy chắc trên MỌI máy). Con mắt chỉ đổi type qua lại, không tự
+             viết code che ký tự riêng — tránh rủi ro lộ/lỗi khi HS sửa. -->
+        <div class="id-wrap">
+          <input id="inCode" type="password" autocomplete="off" placeholder="My ID"
+            autocapitalize="characters" spellcheck="false">
+          <button type="button" class="id-eye" id="btnEye" aria-label="Hiện mã số">
+            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
+              stroke-linecap="round" stroke-linejoin="round" hidden>
+              <path d="M3 3l18 18"/>
+              <path d="M10.6 5.2A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.4 4"/>
+              <path d="M6.6 6.6C3.9 8.3 2 12 2 12s4 7 11 7a10.4 10.4 0 0 0 5.4-1.6"/>
+              <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn primary wide" id="btnLogin">SIGN IN</button>
         <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
         <p class="tiny warn" id="loginNote" hidden></p>
       </div>
@@ -109,8 +128,8 @@
   </div>
 </div>
 
-<script src="config.js?v=57"></script>
+<script src="config.js?v=58"></script>
 <script src="js/chung.js?v=32"></script>
-<script src="js/dangnhap.js?v=17"></script>
+<script src="js/dangnhap.js?v=18"></script>
 </body>
 </html>

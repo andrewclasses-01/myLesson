@@ -290,16 +290,22 @@
   //                   qua đây, nên mở thẳng địa chỉ bài đã ẩn/xoá cũng bị đẩy về lớp.
   //   'ql'            cửa QUẢN LÝ (dashboard): chỉ bỏ thẻ ĐÃ XOÁ, thẻ ẩn vẫn hiện (mờ)
   //                   để thầy bấm "Hiện lại".
-  //   'kho'           chỉ thẻ ĐÃ XOÁ — mục KHO trên dashboard, để Khôi phục.
+  //   'kho'           chỉ thẻ ĐÃ XOÁ — dùng cho nhóm "Đã xoá" của mục KHO và cho
+  //                   nút "Xoá vĩnh viễn tất cả" (nó chỉ được đụng nhóm này).
+  //   'tatca'         ⭐ v1.60.0 — MỌI thẻ của lớp, đủ bốn trạng thái (bình thường ·
+  //                   ẩn · tạm khoá · đã xoá): mục KHO nay là chỗ quản lý cả bài cũ.
+  //                   ⛔ CHỈ dashboard được gọi cửa này. Đem sang lop/bai/bai-sp là
+  //                   thẻ ẩn và thẻ đã xoá hiện ngược lên cho học sinh.
   // Thẻ TẠM KHOÁ có mặt ở mọi cửa (khoá là "hiện thẻ, không cho mở", xem lop.html).
-  // ⭐ v1.56.0 — thẻ XOÁ VĨNH VIỄN ('xvv') rụng khỏi CẢ BA cửa, kể cả cửa 'kho'.
-  // ⛔ Chốt chặn phải đứng TRƯỚC ba dòng dưới: cửa 'ql' viết là `tt !== 'xoa'` nên
-  // 'xvv' lọt qua, thẻ đã xoá vĩnh viễn lại hiện ngược trên dashboard.
+  // ⭐ v1.56.0 — thẻ XOÁ VĨNH VIỄN ('xvv') rụng khỏi MỌI cửa, kể cả 'kho' và 'tatca'.
+  // ⛔ Chốt chặn phải đứng TRƯỚC mấy dòng dưới: cửa 'ql' viết là `tt !== 'xoa'` và cửa
+  // 'tatca' nhận tuốt, nên 'xvv' lọt qua cả hai, thẻ đã xoá vĩnh viễn hiện ngược lên.
   function baiCuaLop(dl, maLop, che) {
     var ds = (dl.bai && dl.bai[maLop]) ? dl.bai[maLop] : [];
     return ds.filter(function (b) {
       var tt = trangThaiThe(b);
       if (tt === 'xvv') return false;
+      if (che === 'tatca') return true;
       if (che === 'kho') return tt === 'xoa';
       if (che === 'ql') return tt !== 'xoa';
       return tt !== 'xoa' && tt !== 'an';

@@ -419,17 +419,43 @@ a{color:inherit}
 .the.khoa .play svg{width:20px; height:20px}
 .dhho.khoa{font-size:13.5px; letter-spacing:.7px; color:#7B8C89}
 /* Mục KHO (sidebar): bài đã xoá của lớp đang chọn + nút Khôi phục. */
-.kho-hang{display:flex; align-items:center; gap:10px; padding:9px 11px; margin-bottom:7px;
+.kho-hang{display:flex; flex-direction:column; align-items:stretch; gap:8px;
+  padding:9px 11px; margin-bottom:7px;
   border:1px solid var(--vien); border-radius:11px; background:#FAFCFC}
 .kho-hang .kt{flex:1; min-width:0}
 .kho-hang .kt b{display:block; font:800 12px/1.3 var(--font); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap}
 .kho-hang .kt span{display:block; font:600 10.5px/1.4 var(--font); color:var(--nhat)}
-/* ⭐ v1.56.0 — mỗi hàng nay có HAI nút (Khôi phục · Xoá vĩnh viễn). Xếp CỘT chứ
-   không nằm ngang: panel sidebar hẹp, để ngang là chữ trong nút bị xuống dòng. */
-.kho-hang .kho-nut{flex:none; display:flex; flex-direction:column; gap:5px}
+/* ⭐ v1.56.0 — mỗi hàng có nhiều nút. ⭐ v1.60.0 — tới BỐN nút (Ẩn · Tạm khoá ·
+   Xoá · Xoá hẳn). Panel sidebar chỉ rộng ~250px: để nút NẰM CẠNH chữ thì tên bài
+   bị cắt còn dăm chữ. Nay xếp hai tầng — tên + nhãn ở trên, hàng nút căn phải ở
+   dưới — nút tự xuống dòng khi chật. */
+.kho-hang .kho-nut{flex:none; display:flex; flex-flow:row wrap; justify-content:flex-end;
+  gap:5px}
 .kho-hang .kho-nut .nut{justify-content:center; white-space:nowrap}
 .kho-het{margin-top:10px; display:flex; justify-content:flex-end}
+/* ⭐ v1.60.0 — KHO nay giữ CẢ BÀI CŨ, không riêng bài đã xoá:
+   · `.kho-loc`  hàng nút lọc theo trạng thái, có số đếm ngay trong nút;
+   · `.kho-nhan` nhãn màu đứng cạnh tên bài để biết thẻ đang ở trạng thái nào.
+   Bốn màu lấy thẳng từ bảng token, KHÔNG đặt màu mới: xanh dương = đang giao
+   (đúng màu thẻ bình thường ở dashboard) · xám = ẩn · vàng = tạm khoá · đỏ = đã xoá. */
+.kho-loc{display:flex; flex-wrap:wrap; gap:6px; margin:0 0 11px}
+.kho-loc button{border:1px solid var(--vien-dam); background:#fff; color:var(--mo);
+  border-radius:999px; padding:5px 11px; font:700 11px/1.2 var(--font); cursor:pointer;
+  transition:background .16s var(--em), color .16s var(--em), border-color .16s var(--em)}
+.kho-loc button:hover{border-color:var(--xanh); color:var(--xanh)}
+.kho-loc button.chon{background:var(--xanh); border-color:var(--xanh); color:#fff}
+.kho-loc button i{font-style:normal; opacity:.72; margin-left:4px}
+.kho-hang .kt .dau{display:flex; align-items:center; gap:6px; min-width:0}
+.kho-hang .kt .dau b{flex:1; min-width:0}
+.kho-nhan{flex:none; padding:2px 7px; border-radius:999px;
+  font:800 9.5px/1.5 var(--font); letter-spacing:.04em; text-transform:uppercase}
+.kho-nhan.tt-bt{background:var(--duong-nhat); color:var(--duong)}
+.kho-nhan.tt-an{background:#EFF3F2; color:var(--nhat)}
+.kho-nhan.tt-khoa{background:var(--vang-nhat); color:#B07A1E}
+.kho-nhan.tt-xoa{background:var(--do-nhat); color:var(--do)}
+/* Hàng của bài đã xoá làm mờ nền cho khác hẳn nhóm đang dùng. */
+.kho-hang.la-xoa{background:#FDF7F6; border-color:#F3DEDA}
 /* ⭐ v1.36.0 — HAI HỘP NHỎ cạnh menu ⚙: XÁC NHẬN (`#xnPop`) và ĐỔI HẠN NỘP
    (`#hanPop`). Cùng khuôn với `.rc-menu` (fixed, tự định vị bằng `datCanh`).
    ⛔ Thay hẳn ô "Hạn riêng cho thẻ này" (`.hs-o`) từng nằm trong hộp xem bài —
@@ -1489,15 +1515,22 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         toàn bộ tin nhắn lớp đang chọn tại thời điểm đó, chỉ để xem lại.</p>
       <div id="kltDs"></div>
     </div>
-    <!-- ⭐ v1.35.0 — KHO: bài đã xoá mềm của lớp đang chọn -->
+    <!-- ⭐ v1.35.0 — KHO: bài đã xoá mềm của lớp đang chọn
+         ⭐ v1.60.0 — nay là KHO BÀI: mọi bài của lớp từ trước tới giờ, đủ bốn trạng
+         thái, làm được mọi việc ngay tại đây (ẩn/hiện · khoá/mở · xoá/khôi phục ·
+         xoá vĩnh viễn · và "xoá hẳn" khi mở trong app). -->
     <div id="sbMucKho" hidden>
       <p class="phu" id="khoPhu" style="margin:0 0 8px"></p>
-      <p class="sb-note" style="margin:0 0 11px">Xoá ở đây là XOÁ MỀM: bài biến mất với học sinh
-        và khỏi mọi con số, nhưng dữ liệu bài + điểm AWord còn nguyên. Bấm <b>Khôi phục</b> là
-        bài về lại như cũ (học sinh thấy lại sau tối đa 1 phút).<br>
+      <p class="sb-note" style="margin:0 0 11px">Mọi bài đã giao cho lớp này, mới nhất trên đầu.
+        <b>Ẩn</b> · <b>Tạm khoá</b> · <b>Xoá</b> đều lấy lại được — dữ liệu bài và điểm AWord
+        luôn còn nguyên.<br>
         <!-- ⭐ v1.56.0 -->
-        <b>Xoá vĩnh viễn</b> là dọn thẻ khỏi CẢ danh sách này — trên web không còn đường lấy
-        lại. (Dữ liệu bài và điểm AWord vẫn nằm nguyên trong kho, chỉ là không cửa nào hiện nữa.)</p>
+        <b>Xoá vĩnh viễn</b> dọn thẻ khỏi cả danh sách này: trên web không còn đường lấy lại,
+        nhưng bài vẫn nằm im trong kho.
+        <!-- ⭐ v1.60.0 — nút chỉ hiện khi trang chạy trong app (tab CLASSES) -->
+        <span id="khoNoteApp" hidden><br><b>Xoá hẳn</b> (chỉ có trong app) mới thật sự bỏ bài
+        khỏi dữ liệu web rồi đẩy lên mạng — không lấy lại được.</span></p>
+      <div class="kho-loc" id="khoLoc"></div>
       <div id="khoDs"></div>
     </div>
     <div id="sbMucHocSinh" hidden>
@@ -1892,7 +1925,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           // ⛔ v1.56.0 — KHÔNG có chấm đỏ ở icon KHO nữa (thầy chốt 03/09/2026):
           // bài đã xoá là chuyện đã xong, không phải việc cần nhắc. Chấm đỏ của
           // icon SINH NHẬT ngay trên thì GIỮ.
-          '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho: bài đã xoá của lớp này">' +
+          '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho bài: mọi bài của lớp này">' +
             IC_KHO_NHO +
           '</button>' +
         '</div>' +
@@ -3849,7 +3882,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // `hsGhi`: gửi đủ 5 trường + merge — xem chú thích ở `hsGhi`.
   function ttGhi(id, tt, sauKhi) {
     if (chuaThay(null)) { if (sauKhi) sauKhi(false); return; }
-    var b = A.baiCuaLop(DL, LOP_CHON, 'kho').concat(A.baiCuaLop(DL, LOP_CHON, 'ql'))
+    // ⭐ v1.60.0 — một cửa 'tatca' là đủ (trước phải cộng 'kho' + 'ql' mới đủ bốn trạng thái).
+    var b = A.baiCuaLop(DL, LOP_CHON, 'tatca')
       .filter(function (x) { return x.id === id; })[0];
     var hanCu = (b && A.daSuaHan(b)) ? A.hanCua(b) : '';
     spDb().then(function (f) {
@@ -3860,6 +3894,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }).then(function () {
       A.datTrangThai(id, tt);
       veTat();
+      // ⭐ v1.60.0 — kho đang mở thì vẽ lại luôn: đổi trạng thái từ menu ⚙ của thẻ
+      // cũng phải thấy ngay trong kho (nhãn + số đếm ở hàng lọc).
+      veKho();
       if (BM_ID === id) {
         if (tt === 'xoa' || tt === 'xvv') dongBaiModal(); else moBaiModal(id);
       }
@@ -3913,6 +3950,56 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (sauKhi) sauKhi(false);
     });
   }
+
+  // ================================================================
+  // ⭐ v1.60.0 — XOÁ HẲN MỘT BÀI KHỎI `data/bai.json` (chỉ chạy TRONG APP)
+  //
+  // Web là trang tĩnh GitHub Pages: nó KHÔNG tự ghi được `data/bai.json`. Nên nút này
+  // đi đúng cây cầu mà "đổi ảnh đại diện" đang dùng — bắn marker ra console, app
+  // (tab CLASSES) bắt lấy, xoá dòng bài rồi đẩy RIÊNG file đó lên GitHub, xong gọi
+  // ngược `window.__xoaHanKq`.
+  //
+  // ⛔ GỠ CỜ TRƯỚC KHI XOÁ: cờ trạng thái nằm ở kho Firestore `lessonHan/b_<mã bài>`
+  //    và luật kho CẤM xoá tài liệu (`allow delete: if false`). Xoá bài khỏi
+  //    `bai.json` mà để nguyên cờ 'xoa'/'an' thì mai kia thầy lưu lại một bài trùng
+  //    mã là nó SỐNG DẬY ở trạng thái cũ, không ai hiểu vì sao. Gỡ cờ hỏng thì vẫn
+  //    xoá tiếp (việc chính là xoá bài), chỉ nói thật trong lời báo.
+  // ⛔ Chặn bấm hai lần: một lượt xoá mất ~1 phút (đẩy + chờ Pages dựng).
+  // ================================================================
+  var XH_DANG = {};      // mã bài -> mã lớp, khoá trong lúc đang xoá
+  function xoaHan(id, ten) {
+    if (!window.__mylessonApp) {
+      baoToast('Xoá hẳn chỉ làm được trong APP myLesson (tab CLASSES).');
+      return;
+    }
+    if (XH_DANG[id]) { baoToast('Bài này đang xoá, chờ chút…'); return; }
+    XH_DANG[id] = LOP_CHON;
+    baoToast('Đang xoá hẳn “' + ten + '” rồi đẩy lên web (~1 phút)…');
+    var b = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === id; })[0];
+    var canGo = !!b && (A.trangThaiThe(b) !== '' || A.daSuaHan(b));
+    var goCo = canGo ? spDb().then(function (f) {
+      return f.fs.setDoc(f.fs.doc(f.db, 'lessonHan', hsMaTaiLieu(id)), {
+        baiId: String(id), han: '', tt: '', lop: String(LOP_CHON || ''), luc: Date.now()
+      }, { merge: true });
+    }) : Promise.resolve();
+    goCo['catch'](function () { return null; }).then(function () {
+      if (canGo) A.datTrangThai(id, '');
+      console.log('MYLESSON:BAI:XOAHAN:' + JSON.stringify({ lop: XH_DANG[id], id: id, ten: ten }));
+    });
+  }
+  // App gọi ngược vào đây khi xong (hoặc hỏng). `giaiDoan`: 'xong' | 'loi'.
+  window.__xoaHanKq = function (id, giaiDoan, chu) {
+    var lop = XH_DANG[id] || LOP_CHON;
+    delete XH_DANG[id];
+    if (giaiDoan !== 'xong') { baoToast(chu || 'Chưa xoá hẳn được — thử lại nhé.'); return; }
+    // Bỏ luôn khỏi dữ liệu đang giữ trong trang, khỏi phải tải lại mới thấy đúng.
+    if (DL.bai && DL.bai[lop]) {
+      DL.bai[lop] = DL.bai[lop].filter(function (x) { return x.id !== id; });
+    }
+    veTat();
+    veKho();
+    baoToast(chu || 'Đã xoá hẳn bài khỏi web ✓');
+  };
 
   $('#cxMenu').onclick = function (e) {
     var b = e.target.closest('button');
@@ -4263,40 +4350,113 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     kholuutru: { id: 'sbMucKhoLuuTru', ten: 'Kho trò chuyện', mota: 'Các lượt lưu trữ & làm mới của lớp đang chọn', ve: veKhoLuuTru },
     // ⭐ v1.35.0 — bài đã XOÁ MỀM của lớp đang chọn (mở từ icon KHO trên nút lớp
     // hoặc menu này), có nút Khôi phục.
-    kho: { id: 'sbMucKho', ten: 'Bài đã xoá', mota: 'Lớp đang chọn — bấm Khôi phục là bài về lại như cũ', ve: veKho }
+    // ⭐ v1.60.0 — nay là KHO BÀI: mọi bài của lớp, đủ bốn trạng thái.
+    kho: { id: 'sbMucKho', ten: 'Kho bài', mota: 'Lớp đang chọn — mọi bài từ trước tới giờ', ve: veKho }
   };
 
-  // ⭐ v1.35.0 — mục KHO: liệt kê bài đã xoá mềm (cửa 'kho' của `A.baiCuaLop`).
+  // ================================================================
+  // ⭐ v1.60.0 — MỤC KHO: QUẢN LÝ MỌI BÀI CỦA LỚP ĐANG CHỌN
+  //
+  // Trước v1.60.0 mục này chỉ liệt kê bài ĐÃ XOÁ. Thầy chốt 04/09: bài cũ không có
+  // chỗ nào quản lý, nên kho ôm luôn cả bài đang giao — một danh sách + hàng lọc.
+  //
+  // ⛔ Nút của mỗi hàng ĐỔI THEO TRẠNG THÁI (xem `KHO_NUT`), đừng vẽ cứng 2 nút như
+  //    bản cũ: hàng "đang giao" mà hiện nút Khôi phục là vô nghĩa.
+  // ⛔ Mọi nút đều đi qua ĐÚNG `ttGhi()` mà menu ⚙ của thẻ đang dùng — không viết
+  //    đường ghi Firestore thứ hai. Thêm đường ghi riêng là sớm muộn hai chỗ lệch nhau.
+  // ⛔ KHÔNG đẻ giá trị `tt` mới: luật kho Firestore chỉ nhận ['', 'an', 'khoa',
+  //    'xoa', 'xvv']. Thêm giá trị là phải sửa luật trên Console — việc nguy hiểm
+  //    nhất của cụm này (xem BAN GIAO mục 0🗑).
+  // ================================================================
+  var KHO_LOC = 'tatca';     // nhóm đang xem: tatca | bt | an | khoa | xoa
+  var KHO_NHAN = {
+    bt:   { chu: 'Đang giao', lop: 'tt-bt' },
+    an:   { chu: 'Đã ẩn',     lop: 'tt-an' },
+    khoa: { chu: 'Tạm khoá',  lop: 'tt-khoa' },
+    xoa:  { chu: 'Đã xoá',    lop: 'tt-xoa' }
+  };
+  // Nút của từng trạng thái: [nhãn, kiểu nút, việc]. `việc` là giá trị `tt` sắp đặt,
+  // riêng 'xvv' và 'xoahan' đi đường riêng (hỏi lời khác hẳn).
+  var KHO_NUT = {
+    bt:   [['Ẩn', '', 'an'], ['Tạm khoá', '', 'khoa'], ['Xoá', 'do', 'xoa']],
+    an:   [['Hiện lại', 'chinh', ''], ['Xoá', 'do', 'xoa']],
+    khoa: [['Mở khoá', 'chinh', ''], ['Xoá', 'do', 'xoa']],
+    xoa:  [['Khôi phục', 'chinh', ''], ['Xoá vĩnh viễn', 'do', 'xvv']]
+  };
+  // Trạng thái thẻ → khoá nhóm ('' của `trangThaiThe` là bài bình thường).
+  function khoNhom(b) { return A.trangThaiThe(b) || 'bt'; }
+
   function veKho() {
     var hop = $('#khoDs');
     if (!hop) return;
     var l = A.lopTheoMa(DL, LOP_CHON);
-    var ds = A.baiCuaLop(DL, LOP_CHON, 'kho');
+    var ds = A.baiCuaLop(DL, LOP_CHON, 'tatca');
+    // Đếm từng nhóm TRƯỚC khi lọc — số trong nút lọc phải là số thật của cả lớp.
+    var dem = { tatca: ds.length, bt: 0, an: 0, khoa: 0, xoa: 0 };
+    ds.forEach(function (b) { dem[khoNhom(b)]++; });
+    // ⛔ ĐỪNG tự nhảy về "Tất cả" khi nhóm đang xem rỗng: thầy bấm "Đang giao (0)" mà
+    // màn hình nhảy sang Tất cả thì trông y như nút hỏng. Nhóm rỗng cứ hiện đúng một
+    // dòng "Không có bài nào ở nhóm này" — số đếm ngay trên nút đã nói đủ.
+
     $('#khoPhu').textContent = 'Lớp ' + ((l && l.tenGoc) || LOP_CHON) + ' · ' +
-      (ds.length ? (ds.length + ' bài đã xoá') : 'chưa xoá bài nào');
-    hop.innerHTML = ds.length ? ds.map(function (b) {
+      (ds.length ? (ds.length + ' bài') : 'chưa có bài nào');
+    // Trong app mới có nút "Xoá hẳn" — ngoài trình duyệt thì giấu luôn dòng giải thích.
+    var trongApp = !!window.__mylessonApp;
+    $('#khoNoteApp').hidden = !trongApp;
+
+    var loc = [['tatca', 'Tất cả'], ['bt', 'Đang giao'], ['an', 'Đã ẩn'],
+               ['khoa', 'Tạm khoá'], ['xoa', 'Đã xoá']];
+    $('#khoLoc').innerHTML = ds.length ? loc.map(function (k) {
+      return '<button type="button" data-loc="' + k[0] + '"' +
+        (KHO_LOC === k[0] ? ' class="chon"' : '') + '>' + k[1] +
+        '<i>' + dem[k[0]] + '</i></button>';
+    }).join('') : '';
+
+    var hien = (KHO_LOC === 'tatca') ? ds
+      : ds.filter(function (b) { return khoNhom(b) === KHO_LOC; });
+
+    if (!ds.length) { hop.innerHTML = '<div class="trong">Lớp này chưa có bài nào.</div>'; return; }
+
+    hop.innerHTML = hien.map(function (b) {
+      var nhom = khoNhom(b);
+      var nhan = KHO_NHAN[nhom];
       var chuHan = A.chuHan(b);
-      return '<div class="kho-hang">' +
-          '<div class="kt"><b>' + A.chuAnToan(A.tenBai(b)) + '</b>' +
+      var id = A.chuAnToan(b.id);
+      var nut = (KHO_NUT[nhom] || []).map(function (n) {
+        return '<button class="nut nho' + (n[1] ? (' ' + n[1]) : '') +
+          '" data-kho-lam="' + n[2] + '" data-kho-id="' + id + '">' + n[0] + '</button>';
+      }).join('');
+      // ⭐ Nút XOÁ HẲN chỉ có khi trang chạy trong app myLesson (tab CLASSES): web là
+      // trang tĩnh, tự nó không sửa nổi `data/bai.json` — app mới ghi file và đẩy được.
+      if (trongApp) {
+        nut += '<button class="nut nho do" data-kho-lam="xoahan" data-kho-id="' + id +
+          '">Xoá hẳn</button>';
+      }
+      return '<div class="kho-hang' + (nhom === 'xoa' ? ' la-xoa' : '') + '">' +
+          '<div class="kt">' +
+            '<div class="dau"><b>' + A.chuAnToan(A.tenBai(b)) + '</b>' +
+              '<span class="kho-nhan ' + nhan.lop + '">' + nhan.chu + '</span></div>' +
             '<span>' + A.chuAnToan(A.tenDang(b.dang || '') || b.dang || '') +
               ' · ngày ' + A.chuAnToan(ngayGach(b.ngay)) +
               (chuHan ? (' · hạn ' + A.chuAnToan(chuHan)) : '') + '</span></div>' +
-          '<div class="kho-nut">' +
-            '<button class="nut nho chinh" data-kp="' + A.chuAnToan(b.id) + '">Khôi phục</button>' +
-            '<button class="nut nho do" data-xvv="' + A.chuAnToan(b.id) + '">Xoá vĩnh viễn</button>' +
-          '</div>' +
+          '<div class="kho-nut">' + nut + '</div>' +
         '</div>';
     }).join('') +
       // ⭐ v1.56.0 — nút "xoá hết" hiện NGAY CẢ KHI chỉ có 1 bài (đo 03/09: mỗi lớp
       // trong `bai.json` hiện chỉ có đúng 1 thẻ, gài `ds.length > 1` là thầy không
       // bao giờ nhìn thấy nút mình vừa đặt làm).
-      '<div class="kho-het"><button class="nut nho do" id="khoXoaHet">' +
-        'Xoá vĩnh viễn tất cả (' + ds.length + ' bài)</button></div>'
-      : '<div class="trong">Lớp này chưa xoá bài nào.</div>';
+      // ⛔ v1.60.0 — nút này CHỈ đụng nhóm ĐÃ XOÁ (`dem.xoa`), không phải cả kho.
+      // Ẩn khi nhóm đó rỗng, kẻo bấm nhầm tưởng xoá sạch bài đang giao.
+      (dem.xoa ? ('<div class="kho-het"><button class="nut nho do" id="khoXoaHet">' +
+        'Xoá vĩnh viễn tất cả (' + dem.xoa + ' bài đã xoá)</button></div>') : '') +
+      (hien.length ? '' : '<div class="trong">Không có bài nào ở nhóm này.</div>');
   }
   function veChiTiet(muc) {
     var m = SB_MUC[muc];
     if (!m) return;
+    // ⭐ v1.60.0 — mở mục KHO là luôn bắt đầu ở "Tất cả"; bộ lọc chỉ giữ trong lúc
+    // thầy đang làm việc trong kho (đổi trạng thái xong không nhảy nhóm lung tung).
+    if (muc === 'kho') KHO_LOC = 'tatca';
     $('#sbQuay').hidden = false;
     $('#sbTieuDe').textContent = m.ten;
     $('#sbPhu').textContent = m.mota;
@@ -4439,32 +4599,44 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         moXnPop($('#rcMenu'), oHoi);
         return;
       }
+      // ⭐ v1.60.0 — mục KHO: hàng nút LỌC theo trạng thái (chỉ đổi cách nhìn,
+      // không đụng dữ liệu nên KHÔNG hỏi lại).
+      var khoLoc = e.target.closest('#khoLoc [data-loc]');
+      if (khoLoc) { KHO_LOC = khoLoc.dataset.loc; veKho(); return; }
+
       // ⭐ v1.35.0 — mục KHO: Khôi phục bài đã xoá (về trạng thái bình thường).
       // ⭐ v1.36.0 — hỏi lại một bước như mọi hành động khác.
-      var kp = e.target.closest('[data-kp]');
-      if (kp) {
-        var idKp = kp.dataset.kp;
-        var bKp = A.baiCuaLop(DL, LOP_CHON, 'kho').filter(function (x) { return x.id === idKp; })[0];
-        moXnPop(kp, {
-          tieuDe: 'Khôi phục bài này?',
-          chu: 'Thẻ “' + (bKp ? A.tenBai(bKp) : 'này') + '” hiện lại với học sinh như trước khi xoá.',
-          nutOk: 'Khôi phục',
-          khiOk: function () { ttGhi(idKp, '', function () { veKho(); }); }
-        });
-        return;
-      }
-      // ⭐ v1.56.0 — mục KHO: XOÁ VĨNH VIỄN một bài (thầy chốt 03/09/2026).
-      var xvv = e.target.closest('[data-xvv]');
-      if (xvv) {
-        var idXvv = xvv.dataset.xvv;
-        var bXvv = A.baiCuaLop(DL, LOP_CHON, 'kho').filter(function (x) { return x.id === idXvv; })[0];
-        moXnPop(xvv, {
-          tieuDe: 'Xoá vĩnh viễn bài này?',
-          chu: 'Thẻ “' + (bXvv ? A.tenBai(bXvv) : 'này') + '” rời khỏi cả danh sách này — ' +
-               'trên web không còn nút nào lấy lại được. Dữ liệu bài và điểm AWord vẫn còn trong kho.',
-          nutOk: 'Xoá vĩnh viễn', nguy: true,
-          khiOk: function () { ttGhi(idXvv, 'xvv', function () { veKho(); }); }
-        });
+      // ⭐ v1.60.0 — MỘT handler cho MỌI nút của kho (ẩn · khoá · xoá · khôi phục ·
+      // hiện lại · mở khoá · xoá vĩnh viễn · xoá hẳn). Lời hỏi mượn đúng `loiHoiTt()`
+      // mà menu ⚙ của thẻ đang dùng, nên hai chỗ không bao giờ nói khác nhau.
+      var khoNut = e.target.closest('#khoDs [data-kho-lam]');
+      if (khoNut) {
+        var idK = khoNut.dataset.khoId;
+        var lam = khoNut.dataset.khoLam;
+        var bK = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === idK; })[0];
+        var tenK = bK ? A.tenBai(bK) : 'này';
+        var hoi;
+        if (lam === 'xvv') {
+          hoi = { tieuDe: 'Xoá vĩnh viễn bài này?', nutOk: 'Xoá vĩnh viễn', nguy: true,
+            chu: 'Thẻ “' + tenK + '” rời khỏi cả danh sách này — trên web không còn nút nào ' +
+                 'lấy lại được. Dữ liệu bài và điểm AWord vẫn còn trong kho.',
+            khiOk: function () { ttGhi(idK, 'xvv'); } };
+        } else if (lam === 'xoahan') {
+          // ⛔ Đường DUY NHẤT xoá thật khỏi `data/bai.json` — chỉ chạy được trong app.
+          hoi = { tieuDe: 'Xoá hẳn bài này khỏi dữ liệu?', nutOk: 'Xoá hẳn', nguy: true,
+            chu: 'Bài “' + tenK + '” bị xoá khỏi dữ liệu web rồi đẩy thẳng lên mạng. ' +
+                 'Không có nút nào lấy lại. (Điểm các em đã làm vẫn nằm bên AWord.)',
+            khiOk: function () { xoaHan(idK, tenK); } };
+        } else {
+          // '' | 'an' | 'khoa' | 'xoa' — y hệt menu ⚙ của thẻ.
+          hoi = loiHoiTt(lam, khoNhom(bK || {}) === 'bt' ? '' : khoNhom(bK || {}), tenK);
+          if (lam === '' && khoNhom(bK || {}) === 'xoa') {
+            hoi = { tieuDe: 'Khôi phục bài này?', nutOk: 'Khôi phục',
+              chu: 'Thẻ “' + tenK + '” hiện lại với học sinh như trước khi xoá.' };
+          }
+          hoi.khiOk = function () { ttGhi(idK, lam); };
+        }
+        moXnPop(khoNut, hoi);
         return;
       }
       // ⭐ v1.56.0 — mục KHO: XOÁ VĨNH VIỄN TẤT CẢ bài đã xoá của lớp đang chọn.

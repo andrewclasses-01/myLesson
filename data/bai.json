@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-04 09:27:47",
+  "capNhat": "2026-09-04 12:11:19",
   "bai": {
     "A1C": [
       {
@@ -206,6 +206,34 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_4.9_WORDS_3_FOOD_AND_DRINK",
+        "tieuDe": "NNTNG4_4.9_WORDS 3 FOOD AND DRINK",
+        "tenHien": "NNTNG4_4.9_WORDS 3 FOOD AND DRINK",
+        "dang": "WORDS",
+        "ngay": "4.9",
+        "han": "2026-09-05T14:00",
+        "maLesson": "3 FOOD AND DRINK",
+        "taoLuc": "2026-09-04",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "nzgus4",
+            "mau": "ANAGRAM"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "3 FOOD AND DRINK / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "4mmufy",
+            "mau": "OPEN THE BOX"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_22.8_WORDS_2_HOUSE_THING",
         "tieuDe": "NNTNG4_22.8_WORDS 2 HOUSE THING",

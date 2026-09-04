@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-04 09:27:48",
+  "capNhat": "2026-09-04 11:58:17",
   "nguon": "myStudent",
   "lop": [
     {
@@ -357,7 +357,7 @@
         {
           "id": 94,
           "ten": "NHẬT NAM",
-          "ma": "MRNGUYENNHATNAM06112013",
+          "ma": "NGUYENNHATNAM06112013",
           "sinhNhat": ""
         },
         {
@@ -877,9 +877,9 @@
           "sinhNhat": ""
         },
         {
-          "id": 204,
+          "id": 203,
           "ten": "CÔNG THÀNH",
-          "ma": "CONGTHANH",
+          "ma": "",
           "sinhNhat": ""
         },
         {
@@ -895,9 +895,9 @@
           "sinhNhat": ""
         },
         {
-          "id": 203,
+          "id": 204,
           "ten": "MINH ĐỨC",
-          "ma": "MAIMINHDUC",
+          "ma": "",
           "sinhNhat": ""
         },
         {

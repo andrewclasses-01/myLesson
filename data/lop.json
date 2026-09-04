@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-04 21:43:14",
+  "capNhat": "2026-09-04 21:51:07",
   "nguon": "myStudent",
   "lop": [
     {
@@ -241,9 +241,15 @@
           "sinhNhat": ""
         },
         {
+          "id": 142,
+          "ten": "HÀ ANH",
+          "ma": "NGUYENHAANH12092015",
+          "sinhNhat": ""
+        },
+        {
           "id": 52,
           "ten": "HẢI",
-          "ma": "",
+          "ma": "HAI",
           "sinhNhat": ""
         },
         {
@@ -255,13 +261,25 @@
         {
           "id": 63,
           "ten": "HOÀNG NGÂN",
-          "ma": "",
+          "ma": "HOANGNGAN",
+          "sinhNhat": ""
+        },
+        {
+          "id": 139,
+          "ten": "KHÁNH MINH",
+          "ma": "NGUYENKHANHMINH11082014",
           "sinhNhat": ""
         },
         {
           "id": 57,
           "ten": "MINH PHƯƠNG",
-          "ma": "",
+          "ma": "MINHPHUONG",
+          "sinhNhat": ""
+        },
+        {
+          "id": 132,
+          "ten": "MỸ ANH",
+          "ma": "BUINGOCMYANH24102014",
           "sinhNhat": ""
         },
         {
@@ -277,9 +295,15 @@
           "sinhNhat": ""
         },
         {
+          "id": 143,
+          "ten": "NGỌC LINH",
+          "ma": "KHONGNGOCLINH31032014",
+          "sinhNhat": ""
+        },
+        {
           "id": 59,
           "ten": "NHẬT MINH",
-          "ma": "",
+          "ma": "NHATMINH",
           "sinhNhat": ""
         },
         {
@@ -292,6 +316,24 @@
           "id": 55,
           "ten": "QUỲNH HƯƠNG",
           "ma": "VUNGOCQUYNHHUONG21052013",
+          "sinhNhat": ""
+        },
+        {
+          "id": 141,
+          "ten": "THANH TÂM",
+          "ma": "VUTHITHANHTAM01092014",
+          "sinhNhat": ""
+        },
+        {
+          "id": 136,
+          "ten": "TRÀ MY",
+          "ma": "VUTRAMY17062014",
+          "sinhNhat": ""
+        },
+        {
+          "id": 138,
+          "ten": "TRÚC LINH",
+          "ma": "DAOTRUCLINH10112014",
           "sinhNhat": ""
         }
       ]
@@ -775,32 +817,8 @@
           "sinhNhat": ""
         },
         {
-          "id": 142,
-          "ten": "HÀ ANH",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
-          "id": 139,
-          "ten": "KHÁNH MINH",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
-          "id": 132,
-          "ten": "MỸ ANH",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
           "id": 133,
           "ten": "NGỌC BẢO",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
-          "id": 143,
-          "ten": "NGỌC LINH",
           "ma": "",
           "sinhNhat": ""
         },
@@ -811,32 +829,14 @@
           "sinhNhat": ""
         },
         {
-          "id": 141,
-          "ten": "THANH TÂM",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
           "id": 135,
           "ten": "TIẾN MINH",
           "ma": "",
           "sinhNhat": ""
         },
         {
-          "id": 136,
-          "ten": "TRÀ MY",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
           "id": 137,
           "ten": "TRANG ANH",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
-          "id": 138,
-          "ten": "TRÚC LINH",
           "ma": "",
           "sinhNhat": ""
         }

@@ -2489,7 +2489,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var d = av[0].getBoundingClientRect().width || 14;
       if (!rong || !d) return;
       var n = av.length, r = d / 2;
-      var buoc = d * 0.62;                       // chồng mí ~38% — vẫn nhìn rõ mặt từng em
+      // ⭐ v1.61.1 — thầy chốt 04/09: bản đầu để `0.62` (chồng mí 38%) thì mặt hai bạn sau
+      // bị che gần hết. Nay `0.85` = chồng mí ~15%, chỉ còn chớm vành tai.
+      var buoc = d * 0.85;
       if (n > 1 && (n - 1) * buoc + d > rong) buoc = Math.max(0, (rong - d) / (n - 1));
       var vet = bar.querySelector('i');
       var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 0;

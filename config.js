@@ -7,7 +7,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.61.0',
+  PHIEN_BAN: '1.61.1',
 
   // ---- MÃ QUẢN LÝ CỦA THẦY (v1.9.0) ----
   // Gõ mã này ở màn đăng nhập là vào thẳng trang quản lý (dashboard.html) thay

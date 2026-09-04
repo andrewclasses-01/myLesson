@@ -571,6 +571,12 @@ i.m-la{background:var(--m-la)}
    bằng nửa khung ⇒ `object-fit:cover` cắt mất mặt em, nhìn như ảnh bị phóng to (thầy chụp
    ảnh báo 02/09). Ảnh gốc VUÔNG 96×96 nên phủ đúng cả khung là không cắt tí nào. */
 .av-thanh img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%}
+/* ⭐ v1.61.0 — CỤM TOP 3 trên thanh bài thường: ba avatar chồng mí nhau, hạng cao NẰM TRÊN.
+   ⛔ Không có mấy dòng này thì thứ tự trong DOM tự quyết: hạng 3 vẽ sau nên đè lên mặt hạng
+   1 — ngược hẳn ý nghĩa. Chỉ đụng `.av-moc`, KHÔNG đụng avatar SP CHECK. */
+.av-moc[data-hang="1"]{z-index:3}
+.av-moc[data-hang="2"]{z-index:2}
+.av-moc[data-hang="3"]{z-index:1}
 .doi-so{font-size:10.5px; font-weight:800; text-align:right; color:#54706B;
   font-variant-numeric:tabular-nums}
 .doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
@@ -1751,17 +1757,21 @@ function henVeLaiAvatar(goc){
   setTimeout(function(){ veLaiAvatar(goc); }, 1200);
 }
 
-/* ═══ (02/09 đợt 4 — thầy chốt) AVATAR BẠN TOP 1 TRÊN THANH BÀI THƯỜNG ═══════════════════
-   MỘT avatar duy nhất mỗi thanh: em ĐIỂM CAO NHẤT của act đó, đặt ở MỐC CAO NHẤT của thanh
-   (cuối vệt màu). Chưa em nào làm, hoặc chưa đọc xong điểm ⇒ KHÔNG hiện gì (thầy chốt).
+/* ═══ (02/09 đợt 4 — thầy chốt) AVATAR TOP 3 TRÊN THANH BÀI THƯỜNG ═══════════════════════
+   ⭐ v1.61.0 (04/09/2026 — thầy chốt) — TRƯỚC ĐÂY MỘT avatar (hạng 1), NAY BA: ba bạn điểm
+   cao nhất của act đó, CHỤM Ở CUỐI VỆT MÀU, hạng 1 ngoài cùng bên phải (đúng chỗ avatar cũ
+   đứng) rồi hạng 2, hạng 3 lùi dần sang trái, chồng mí nhau.
+   Act mới có 1–2 em làm ⇒ hiện đúng 1–2 avatar. Chưa em nào làm, hoặc chưa đọc xong điểm ⇒
+   KHÔNG hiện gì (thầy chốt 02/09, giữ nguyên).
 
    ⛔ Hoà điểm thì lấy em LÀM NHANH HƠN — đúng luật bảng xếp hạng act đang chạy (`gopTotNhat`
-   xếp `diem` giảm dần rồi `giay` tăng dần), để avatar trên thanh KHỚP với hạng 1 trong bảng
-   xếp hạng. Vẫn tự xếp lại ở đây cho chắc, không tin danh sách đã xếp sẵn.
+   xếp `diem` giảm dần rồi `giay` tăng dần), để avatar trên thanh KHỚP với ba hạng đầu trong
+   bảng xếp hạng. Vẫn tự xếp lại ở đây cho chắc, không tin danh sách đã xếp sẵn.
 
    ⛔ Đừng nhầm hai thứ trên cùng một thanh: VỆT MÀU đo "bao nhiêu em đã xong / sĩ số", còn
-   AVATAR là "em điểm cao nhất". Thầy biết và chọn đặt ở cuối vệt (02/09).
+   AVATAR là "ba em điểm cao nhất". Thầy biết và chọn đặt ở cuối vệt (02/09).
    ⛔ Bản sao ở `dashboard.html` — sửa là sửa cả hai. */
+var AV_MOC_SO = 3;   /* v1.61.0 — bao nhiêu bạn trên một thanh */
 function avMocHtml(dsDiem, lopGoc){
   var ds = (dsDiem || []).slice();
   if (!ds.length) return '';
@@ -1769,32 +1779,43 @@ function avMocHtml(dsDiem, lopGoc){
     if (b.diem !== a.diem) return b.diem - a.diem;
     return (a.giay || 0) - (b.giay || 0);
   });
-  var e = ds[0];
-  if (!e || !e.ten) return '';
-  var tenDay = A.avTenDayDu(e.ten, CA_LOP);   /* v1.58.0 */
-  return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(tenDay) +
-    '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
-    '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
-    '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
-    A.chuAnToan(avChuTat(e.ten)) + '</span>';
+  /* ⛔ Lọc em không tên TRƯỚC khi cắt 3, không thì một bản ghi hỏng ăn mất một suất. */
+  return ds.filter(function(e){ return e && e.ten; }).slice(0, AV_MOC_SO)
+    .map(function(e, i){
+      var tenDay = A.avTenDayDu(e.ten, CA_LOP);   /* v1.58.0 */
+      return '<span class="av-thanh av-moc" data-hang="' + (i + 1) + '" data-av-em="' +
+        A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
+        A.chuAnToan(e.ten) + ' · hạng ' + (i + 1) + ' · ' + e.diem + '%">' +
+        '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
+        A.chuAnToan(avChuTat(e.ten)) + '</span>';
+    }).join('');
 }
 
-/* Đặt chỗ cho avatar MỐC: tâm ghim đúng cuối vệt màu, nhưng kẹp trong hai mép THANH để vòng
-   tròn không đè sang cột tên bên trái hay cột số bên phải.
-   ⛔ Khác hẳn `xepAvatarThanh` của SP CHECK (nhiều avatar, phải nằm gọn trong vệt màu). */
+/* Đặt chỗ cho CỤM avatar MỐC: tâm hạng 1 ghim đúng cuối vệt màu, hạng sau lùi sang trái đều
+   nhau; cả cụm kẹp trong hai mép THANH để không đè sang cột tên bên trái hay cột số bên phải.
+   ⛔ Khác hẳn `xepAvatarThanh` của SP CHECK (avatar rải theo ĐIỂM RIÊNG từng em).
+   ⛔ ĐỪNG ĐẶT SỐ CỨNG cho bước lùi: cột thanh co tới `minmax(56px,1fr)`, mà đường kính avatar
+   lại do `coAvatarThanh` đo theo chiều cao hàng. Số cứng là chỗ tràn chỗ thừa — bước lùi phải
+   TỰ CO cho cụm vừa lòng thanh. */
 function xepAvatarMoc(goc){
   var bars = (goc || document).querySelectorAll('.td-bar');
   Array.prototype.forEach.call(bars, function(bar){
-    var av = bar.querySelector('.av-moc');
-    if (!av) return;
+    var av = bar.querySelectorAll('.av-moc');   /* đã theo đúng thứ tự hạng 1 → 3 */
+    if (!av.length) return;
     var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
-    var d = av.getBoundingClientRect().width || 14;
+    var d = av[0].getBoundingClientRect().width || 14;
     if (!rong || !d) return;
-    var r = d / 2;
+    var n = av.length, r = d / 2;
+    var buoc = d * 0.62;                       /* chồng mí ~38% — vẫn nhìn rõ mặt từng em */
+    if (n > 1 && (n - 1) * buoc + d > rong) buoc = Math.max(0, (rong - d) / (n - 1));
     var vet = bar.querySelector('i');
     var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 0;
-    var p = Math.max(r, Math.min(rong - r, rong * ptVet / 100));
-    av.style.left = (Math.round(p * 10) / 10) + 'px';
+    /* Tâm hạng 1 không được lùi quá trái (cụm thò khỏi thanh) cũng không quá phải. */
+    var trai = (n - 1) * buoc + r;
+    var p = Math.min(rong - r, Math.max(trai, rong * ptVet / 100));
+    Array.prototype.forEach.call(av, function(x, i){
+      x.style.left = (Math.round((p - buoc * i) * 10) / 10) + 'px';
+    });
   });
 }
 

@@ -744,6 +744,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
    bằng nửa khung ⇒ `object-fit:cover` cắt mất mặt em, nhìn như ảnh bị phóng to (thầy chụp
    ảnh báo 02/09). Ảnh gốc VUÔNG 96×96 nên phủ đúng cả khung là không cắt tí nào. */
 .av-thanh img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%}
+/* ⭐ v1.61.0 — CỤM TOP 3 trên thanh bài thường: ba avatar chồng mí nhau, hạng cao NẰM
+   TRÊN. ⛔ Không có mấy dòng này thì thứ tự trong DOM tự quyết: hạng 3 vẽ sau nên đè
+   lên mặt hạng 1 — ngược hẳn ý nghĩa. Chỉ đụng `.av-moc`, KHÔNG đụng avatar SP CHECK. */
+.av-moc[data-hang="1"]{z-index:3}
+.av-moc[data-hang="2"]{z-index:2}
+.av-moc[data-hang="3"]{z-index:1}
 .doi-so{font-size:10.5px; font-weight:800; text-align:right; color:#54706B;
   font-variant-numeric:tabular-nums}
 .doi-so.m-la{color:var(--m-la)} .doi-so.m-duong{color:var(--m-duong)}
@@ -2431,17 +2437,22 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     henKho = setTimeout(function () { veLaiAvatar(document); }, 120);
   });
 
-  // ═══ (02/09 đợt 4 — thầy chốt) AVATAR BẠN TOP 1 TRÊN THANH BÀI THƯỜNG ═══════════════════
-  // MỘT avatar duy nhất mỗi thanh: em ĐIỂM CAO NHẤT của act đó, đặt ở MỐC CAO NHẤT của thanh
-  // (cuối vệt màu). Chưa em nào làm, hoặc chưa đọc xong điểm ⇒ KHÔNG hiện gì (thầy chốt).
+  // ═══ (02/09 đợt 4 — thầy chốt) AVATAR TOP 3 TRÊN THANH BÀI THƯỜNG ═══════════════════════
+  // ⭐ v1.61.0 (04/09/2026 — thầy chốt) — TRƯỚC ĐÂY MỘT avatar (hạng 1), NAY BA: ba bạn
+  // điểm cao nhất của act đó, CHỤM Ở CUỐI VỆT MÀU, hạng 1 ngoài cùng bên phải (đúng chỗ
+  // avatar cũ đứng) rồi hạng 2, hạng 3 lùi dần sang trái, chồng mí nhau.
+  // Act mới có 1–2 em làm ⇒ hiện đúng 1–2 avatar. Chưa em nào làm, hoặc chưa đọc xong
+  // điểm ⇒ KHÔNG hiện gì (thầy chốt 02/09, giữ nguyên).
   //
   // ⛔ Hoà điểm thì lấy em LÀM NHANH HƠN — đúng luật bảng xếp hạng act đang chạy
   // (`gopTotNhat` xếp `diem` giảm dần rồi `giay` tăng dần), để avatar trên thanh KHỚP với
-  // hạng 1 trong bảng 🏆 thầy bấm trên thẻ. Vẫn tự xếp lại ở đây cho chắc, không tin
+  // ba hạng đầu trong bảng 🏆 thầy bấm trên thẻ. Vẫn tự xếp lại ở đây cho chắc, không tin
   // `DIEM[ma]` đã xếp sẵn.
   //
   // ⛔ Đừng nhầm hai thứ trên cùng một thanh: VỆT MÀU đo "bao nhiêu em đã xong / sĩ số",
-  // còn AVATAR là "em điểm cao nhất". Thầy biết và chọn đặt ở cuối vệt (02/09).
+  // còn AVATAR là "ba em điểm cao nhất". Thầy biết và chọn đặt ở cuối vệt (02/09).
+  // ⛔ Bản sao của cặp hàm này ở `lop.html` — sửa là sửa cả hai.
+  var AV_MOC_SO = 3;   // v1.61.0 — bao nhiêu bạn trên một thanh
   function avMocHtml(dsDiem, lopGoc) {
     var ds = (dsDiem || []).slice();
     if (!ds.length) return '';
@@ -2449,32 +2460,45 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (b.diem !== a.diem) return b.diem - a.diem;
       return (a.giay || 0) - (b.giay || 0);
     });
-    var e = ds[0];
-    if (!e || !e.ten) return '';
-    var tenDay = A.avTenDayDu(e.ten, (A.lopTheoMa(DL, LOP_CHON) || {}).hocSinh || []);   // v1.58.0
-    return '<span class="av-thanh av-moc" data-av-em="' + A.chuAnToan(tenDay) +
-      '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' + A.chuAnToan(e.ten) + ' · ' + e.diem +
-      '% · làm nhanh nhất trong nhóm điểm cao nhất">' +
-      '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
-      A.chuAnToan(avChuTat(e.ten)) + '</span>';
+    var dsEm = (A.lopTheoMa(DL, LOP_CHON) || {}).hocSinh || [];
+    // ⛔ Lọc em không tên TRƯỚC khi cắt 3, không thì một bản ghi hỏng ăn mất một suất.
+    return ds.filter(function (e) { return e && e.ten; }).slice(0, AV_MOC_SO)
+      .map(function (e, i) {
+        var tenDay = A.avTenDayDu(e.ten, dsEm);   // v1.58.0
+        return '<span class="av-thanh av-moc" data-hang="' + (i + 1) + '" data-av-em="' +
+          A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
+          A.chuAnToan(e.ten) + ' · hạng ' + (i + 1) + ' · ' + e.diem + '%">' +
+          '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
+          A.chuAnToan(avChuTat(e.ten)) + '</span>';
+      }).join('');
   }
 
-  // Đặt chỗ cho avatar MỐC: tâm ghim đúng cuối vệt màu, nhưng kẹp trong hai mép THANH để
-  // vòng tròn không đè sang cột tên bên trái hay cột số bên phải.
-  // ⛔ Khác hẳn `xepAvatarThanh` của SP CHECK (nhiều avatar, phải nằm gọn trong vệt màu).
+  // Đặt chỗ cho CỤM avatar MỐC: tâm hạng 1 ghim đúng cuối vệt màu, hạng sau lùi sang
+  // trái đều nhau; cả cụm kẹp trong hai mép THANH để không đè sang cột tên bên trái
+  // hay cột số bên phải.
+  // ⛔ Khác hẳn `xepAvatarThanh` của SP CHECK (avatar rải theo ĐIỂM RIÊNG từng em).
+  // ⛔ ĐỪNG ĐẶT SỐ CỨNG cho bước lùi: cột thanh co tới `minmax(56px,1fr)`, mà đường kính
+  // avatar lại do `coAvatarThanh` đo theo chiều cao hàng (thẻ 1 act cao gấp đôi thẻ 2 act).
+  // Số cứng là chỗ tràn chỗ thừa — bước lùi phải TỰ CO cho cụm vừa lòng thanh.
   function xepAvatarMoc(goc) {
     var bars = (goc || document).querySelectorAll('.td-bar');
     Array.prototype.forEach.call(bars, function (bar) {
-      var av = bar.querySelector('.av-moc');
-      if (!av) return;
+      var av = bar.querySelectorAll('.av-moc');   // đã theo đúng thứ tự hạng 1 → 3
+      if (!av.length) return;
       var rong = bar.offsetWidth || bar.getBoundingClientRect().width;   // v1.58.0 — offsetWidth không dính transform scale lúc thẻ đang trượt (FLIP)
-      var d = av.getBoundingClientRect().width || 14;
+      var d = av[0].getBoundingClientRect().width || 14;
       if (!rong || !d) return;
-      var r = d / 2;
+      var n = av.length, r = d / 2;
+      var buoc = d * 0.62;                       // chồng mí ~38% — vẫn nhìn rõ mặt từng em
+      if (n > 1 && (n - 1) * buoc + d > rong) buoc = Math.max(0, (rong - d) / (n - 1));
       var vet = bar.querySelector('i');
       var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 0;
-      var p = Math.max(r, Math.min(rong - r, rong * ptVet / 100));
-      av.style.left = (Math.round(p * 10) / 10) + 'px';
+      // Tâm hạng 1 không được lùi quá trái (cụm thò khỏi thanh) cũng không quá phải.
+      var trai = (n - 1) * buoc + r;
+      var p = Math.min(rong - r, Math.max(trai, rong * ptVet / 100));
+      Array.prototype.forEach.call(av, function (x, i) {
+        x.style.left = (Math.round((p - buoc * i) * 10) / 10) + 'px';
+      });
     });
   }
 
@@ -2987,18 +3011,27 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function veKhuThe() {
     var l = A.lopTheoMa(DL, LOP_CHON);
     var tatCa = A.baiCuaLop(DL, LOP_CHON, 'ql');
-    // ⭐ v1.35.0 — `A.conHan` (khoá = luôn còn hạn); thẻ ĐANG ẨN vẫn hiện (mờ) dù
-    // không tính là còn hạn, để thầy còn bấm "Hiện lại".
-    var ds = tatCa.filter(function (b) {
-      return A.conHan(b) || A.trangThaiThe(b) === 'an';
-    }).sort(function (a, b) {
+    // ⭐ v1.35.0 — `A.conHan` (khoá = luôn còn hạn).
+    // ⭐ v1.61.0 — THẺ ĐANG ẨN KHÔNG CÒN HIỆN Ở DASHBOARD (thầy chốt 04/09/2026):
+    // từ v1.60.0 mục KHO BÀI đã quản lý đủ bốn trạng thái, nên khu này chỉ còn là
+    // "bài đang hoạt động và còn hạn". Trước v1.61.0 buộc phải giữ thẻ ẩn lại (vẽ
+    // mờ) vì đó là NƠI DUY NHẤT bấm được "Hiện lại".
+    // ⛔ Thẻ TẠM KHOÁ VẪN Ở LẠI — `A.conHan` coi khoá là "luôn còn hạn" (khoá là
+    // dừng đồng hồ, không phải rút bài về), đừng thấy "cũng là trạng thái" mà lọc theo.
+    var ds = tatCa.filter(A.conHan).sort(function (a, b) {
       var ma = A.mocHan(a), mb = A.mocHan(b);
       return (ma == null ? Infinity : ma) - (mb == null ? Infinity : mb);
     });
     // ⭐ #9 — chưa có bài nào CÒN HẠN thì vẫn hiện THẺ GẦN NHẤT (dù đã hết hạn)
     // thay vì trống trơn; bai.json luôn đẩy bài mới lên ĐẦU mảng.
+    // ⛔ v1.61.0 — `tatCa` đi cửa 'ql' nên VẪN CÒN thẻ ẩn bên trong: phải gạt thẻ ẩn
+    // ra TRƯỚC khi lấy `[0]`, không thì bài mới nhất mà đang ẩn lại lòi ngược lên
+    // đúng chỗ vừa dọn xong.
     var conHan = ds.length > 0;
-    if (!conHan && tatCa.length) ds = [tatCa[0]];
+    if (!conHan && tatCa.length) {
+      var gan = tatCa.filter(function (b) { return A.trangThaiThe(b) !== 'an'; });
+      ds = gan.length ? [gan[0]] : [];
+    }
     var soConHan = ds.filter(A.conHan).length;
     // ⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI": chỉ dựng khi lớp KHÔNG có bài thật còn
     // hạn (thầy chốt: có bài thật thì thẻ nghỉ tự biến mất, dữ liệu vẫn còn) và
@@ -3012,8 +3045,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // giao nghỉ. Đã giao nghỉ rồi thì thẻ nghỉ nằm ngay đó, khỏi giao lại.
     $('#btnGiao').hidden = !(!conHan && !coNghi);
     $('#baiPhu').textContent = ((l && l.tenGoc) || LOP_CHON) +
-      (conHan ? (' · ' + soConHan + ' bài còn hạn' +
-                 (ds.length > soConHan ? (' · ' + (ds.length - soConHan) + ' đang ẩn') : ''))
+      /* ⛔ v1.61.0 — ĐÃ BỎ mẩu "· N đang ẩn": thẻ ẩn không còn nằm trong `ds` nữa
+         nên `ds.length` luôn bằng `soConHan`, mẩu chữ đó vĩnh viễn không hiện. */
+      (conHan ? (' · ' + soConHan + ' bài còn hạn')
         : (coNghi ? ' · đã giao: không có bài tập'
                   : (ds.length ? ' · bài gần nhất (đã hết hạn)' : '')));
     // ⭐ v1.49.0 — thẻ nghỉ ở dashboard có thêm nút ⚙ (đổi hạn / xoá thẻ). Trang

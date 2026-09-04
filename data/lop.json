@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-04 21:59:33",
+  "capNhat": "2026-09-04 22:28:31",
   "nguon": "myStudent",
   "lop": [
     {
@@ -234,6 +234,12 @@
       "maLop": "A1C",
       "tenGoc": "A1-C",
       "hocSinh": [
+        {
+          "id": 129,
+          "ten": "BẢO NGỌC",
+          "ma": "NGUYENBAONGOC31032014",
+          "sinhNhat": ""
+        },
         {
           "id": 61,
           "ten": "CHẤN PHONG",
@@ -810,12 +816,6 @@
       "maLop": "BTR",
       "tenGoc": "BỔ TRỢ",
       "hocSinh": [
-        {
-          "id": 129,
-          "ten": "BẢO NGỌC",
-          "ma": "",
-          "sinhNhat": ""
-        },
         {
           "id": 133,
           "ten": "NGỌC BẢO",

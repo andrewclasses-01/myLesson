@@ -875,11 +875,28 @@
           xếp theo mã số em. Gọi SAU khi trang vẽ xong (nếp "đẩy sẵn + đổ sau"),
           nên không làm chậm lúc mở trang — thứ vừa được tối ưu ở v1.54.x.
 
-     💸 Tiền: 1 lượt đọc cho CẢ LỚP (LUẬT 8), cộng đệm 10 phút. ⛔ Đừng tách mỗi
-        em một tài liệu: 154 em × mấy lượt mỗi ngày là đốt hạn mức của cả cụm.
+     💸 Tiền: 1 lượt đọc cho CẢ LỚP (LUẬT 8), cộng đệm (v1.59.0: đệm sống qua các
+        phiên, xem khối ngay dưới). ⛔ Đừng tách mỗi em một tài liệu: 154 em × mấy
+        lượt mỗi ngày là đốt hạn mức của cả cụm.
      ============================================================ */
-  var AV_CACHE_GIAY = 600;          // ảnh đổi rất thưa, đệm rộng tay hơn hạn nộp
-  var KHOA_AV = 'awc_av1';
+  /* ⭐⭐ v1.59.0 (04/09/2026) — ĐỆM ẢNH SỐNG QUA CÁC PHIÊN, HỎI MỐC TRƯỚC KHI TẢI
+     Đo thật 04/09 trên kho đang chạy: gói ảnh một lớp nặng 33–62 KB (147 em / 10 lớp).
+     Bản v1.55.0 đệm bằng `sessionStorage` hạn 10 phút ⇒ ĐÓNG TAB LÀ MẤT SẠCH, mở lại
+     tải trọn 52 KB dù cả tuần không em nào đổi ảnh. Nay:
+       ① `localStorage` — ảnh sống qua các lần đóng/mở trình duyệt.
+       ② Quá hạn kiểm thì KHÔNG tải trọn gói ngay, mà hỏi RIÊNG mốc `luc` bằng
+          `?mask.fieldPaths=luc` — đo được **254 byte** thay vì 57.869 byte (nhẹ 99,6%).
+          Mốc giống bản trong máy ⇒ dùng luôn ảnh cũ, không tải gì thêm.
+     💸 ⛔ SỐ LƯỢT ĐỌC KHÔNG ĐỔI — Firestore tính tiền theo TÀI LIỆU, hỏi mốc hay hỏi
+        trọn gói đều là 1 lượt (LUẬT 8). Cái tiết kiệm là BĂNG THÔNG của học sinh và
+        tốc độ hiện ảnh, đừng nhầm thành tiết kiệm hạn mức.
+     ⛔ Mốc `luc` do `app/src/main/lib/avatar-kho.js` ghi CÙNG lượt ghi `em` — đã tra,
+        không có đường nào ghi ảnh mà quên đổi mốc. Vẫn để hạn cứng 24 giờ làm lối thoát.
+     ⛔ KHOÁ MỚI `awc_av2` (bản cũ `awc_av1` nằm ở sessionStorage, để nguyên cho chết
+        theo tab): trùng khoá là bản mới đọc phải hình dạng cũ (không có `kiem`/`tai`). */
+  var AV_KIEM_GIAY = 600;           // trong 10 phút: tin thẳng ảnh trong máy, không hỏi mạng
+  var AV_HAN_GIAY = 86400;          // quá 24 giờ: tải lại trọn gói dù mốc có vẻ giống
+  var KHOA_AV = 'awc_av2';
   // ⛔⛔ CHỐT CHỐNG HỎI LẠI LIÊN TỤC (bắt được lúc chạy thử 03/09, trước khi dán luật).
   // Luật chung của dự án là CHỈ ĐỆM KHI ĐỌC ĐƯỢC THẬT — nhưng `deAvatarKho()` được
   // `batAvatarKho()` gọi lại sau MỖI lượt trang vẽ thêm ô. Kho đang 403 (luật chưa dán)
@@ -888,13 +905,69 @@
   // lặng 60 giây — vẫn không đệm nội dung rỗng, chỉ đệm cái sự "vừa hỏi hụt".
   var AV_HONG = {};
   var AV_HONG_GIAY = 60;
+  // Nhớ trong RAM: đồng hồ đếm ngược đổi chữ mỗi giây ⇒ MutationObserver bắn ⇒ hàm này
+  // được gọi ~1 lần/giây. Không có bản RAM thì mỗi giây lại đọc + parse 52 KB localStorage.
+  var AV_RAM = {};
+  // Lượt hỏi ĐANG BAY của từng lớp. Thiếu chốt này thì lượt vẽ thứ hai (250ms sau lượt
+  // đầu) bắn thêm một lượt hỏi nữa trước khi lượt đầu về ⇒ trả tiền 2 lượt đọc cho
+  // đúng một tài liệu. Đã thấy thật lúc mở trang lần đầu.
+  var AV_BAY = {};
 
-  function docAvatarPhien(slug) {
+  // Còn trong hạn không? Đồng hồ máy lệch về TƯƠNG LAI cũng coi như hết hạn (hiệu số âm)
+  // — thà hỏi lại một lượt còn hơn đóng băng ảnh cũ vĩnh viễn trên máy đó.
+  function avConHan(moc, giay) {
+    if (typeof moc !== 'number') return false;
+    var d = Date.now() - moc;
+    return d >= 0 && d < giay * 1000;
+  }
+
+  // Bản đang giữ trong máy: { luc, kiem, tai, em }. `luc` = mốc của KHO (do app đóng),
+  // `kiem` = lần cuối đối chiếu mốc, `tai` = lần cuối tải trọn gói.
+  function docAvatarMay(slug) {
+    if (AV_RAM[slug]) return AV_RAM[slug];
     try {
-      var o = JSON.parse(sessionStorage.getItem(KHOA_AV + ':' + slug) || 'null');
-      if (o && (Date.now() - o.luc) < AV_CACHE_GIAY * 1000) return o.em;
+      var o = JSON.parse(localStorage.getItem(KHOA_AV + ':' + slug) || 'null');
+      if (o && o.em && typeof o.em === 'object') { AV_RAM[slug] = o; return o; }
     } catch (e) {}
     return null;
+  }
+
+  function ghiAvatarMay(slug, o) {
+    AV_RAM[slug] = o;
+    var chuoi;
+    try { chuoi = JSON.stringify(o); } catch (e) { return; }
+    try { localStorage.setItem(KHOA_AV + ':' + slug, chuoi); return; } catch (e) {}
+    // Hết chỗ (thầy mở đủ 10 lớp ≈ 520 KB, hoặc trang khác đã chiếm): dọn ảnh của các
+    // lớp KHÁC rồi thử lại đúng MỘT lần. Vẫn hỏng thì thôi — bản RAM ở trên vẫn chạy
+    // tốt cho phiên này, chỉ là lần mở sau phải tải lại.
+    try {
+      for (var i = localStorage.length - 1; i >= 0; i--) {
+        var k = localStorage.key(i);
+        if (k && k.indexOf(KHOA_AV + ':') === 0 && k !== KHOA_AV + ':' + slug)
+          localStorage.removeItem(k);
+      }
+      localStorage.setItem(KHOA_AV + ':' + slug, chuoi);
+    } catch (e) {}
+  }
+
+  // Bóc `em` + `luc` từ một tài liệu Firestore đã json hoá.
+  function avBoc(j) {
+    var em = {}, f = (j.fields && j.fields.em && j.fields.em.mapValue
+                      && j.fields.em.mapValue.fields) || {};
+    for (var id in f) {
+      var g = (f[id].mapValue && f[id].mapValue.fields) || {};
+      var a = g.a && g.a.stringValue;
+      if (!a) continue;
+      em[id] = { t: (g.t && g.t.stringValue) || '', a: a };
+    }
+    return { em: em, luc: avMoc(j) };
+  }
+
+  // Mốc `luc` của kho. 404 (lớp chưa từng được đẩy ảnh) trả 0 — và bản trong máy của
+  // lớp đó cũng mang `luc: 0`, nên hai bên khớp nhau, không tải lại vô ích.
+  function avMoc(j) {
+    var v = j && j.fields && j.fields.luc;
+    return (v && (Number(v.integerValue || v.doubleValue) || 0)) || 0;
   }
 
   // Trả { "<id>": { t: tên, a: base64 } } của một lớp; {} nếu kho im lặng.
@@ -905,37 +978,64 @@
       var db = CFG.AWORD_DB || {};
       if (!db.projectId || !db.apiKey || !lopGoc) return Promise.resolve({});
       var slug = avSlugLop(lopGoc);
-      var san = docAvatarPhien(slug);
-      if (san) return Promise.resolve(san);
-      if (AV_HONG[slug] && (Date.now() - AV_HONG[slug]) < AV_HONG_GIAY * 1000) {
-        return Promise.resolve({});
+      var cu = docAvatarMay(slug);
+
+      // ① Vừa kiểm trong 10 phút — dùng thẳng, không đụng tới mạng.
+      if (cu && avConHan(cu.kiem, AV_KIEM_GIAY)) return Promise.resolve(cu.em);
+      // ② Kho vừa hỏi hụt — im 60 giây. Có bản cũ thì vẫn xài (ảnh cũ hơn hẳn không ảnh).
+      if (AV_HONG[slug] && avConHan(AV_HONG[slug], AV_HONG_GIAY))
+        return Promise.resolve(cu ? cu.em : {});
+      // ③ Đang có lượt hỏi bay — bám vào nó, đừng bắn thêm lượt đọc thứ hai.
+      if (AV_BAY[slug]) return AV_BAY[slug];
+
+      var goc = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
+              + '/databases/(default)/documents/lessonAvatar/' + encodeURIComponent(slug)
+              + '?key=' + encodeURIComponent(db.apiKey);
+
+      // Tải TRỌN GÓI (~52 KB) — chỉ khi chưa có gì trong máy, quá 24 giờ, hoặc mốc đã đổi.
+      var taiDu = function () {
+        return fetch(goc, { cache: 'no-store' })
+          .then(function (r) {
+            // 404 = lớp chưa từng được đẩy ảnh lên kho. KHÔNG phải lỗi: cứ để lớp nền
+            // file tĩnh lo, và vẫn ghi lại để khỏi hỏi lại mỗi lượt vẽ.
+            if (r.status === 404) return { fields: {} };
+            return r.ok ? r.json() : null;
+          })
+          .then(function (j) {
+            if (!j) { AV_HONG[slug] = Date.now(); return cu ? cu.em : {}; }
+            delete AV_HONG[slug];
+            var b = avBoc(j), gio = Date.now();
+            // ⛔ CHỈ ghi khi đọc được thật — ghi cả lượt hỏng là đóng băng bảng rỗng.
+            ghiAvatarMay(slug, { luc: b.luc, kiem: gio, tai: gio, em: b.em });
+            return b.em;
+          });
+      };
+
+      var chay;
+      if (!cu || !avConHan(cu.tai, AV_HAN_GIAY)) {
+        chay = taiDu();
+      } else {
+        // Hỏi RIÊNG mốc `luc` — 254 byte. Giống mốc đang giữ thì đóng lại dấu `kiem`
+        // và dùng luôn ảnh cũ; khác (hoặc đọc không ra mốc) mới tải trọn gói.
+        chay = fetch(goc + '&mask.fieldPaths=luc', { cache: 'no-store' })
+          .then(function (r) {
+            if (r.status === 404) return { fields: {} };
+            return r.ok ? r.json() : null;
+          })
+          .then(function (j) {
+            if (!j) { AV_HONG[slug] = Date.now(); return cu.em; }
+            delete AV_HONG[slug];
+            if (avMoc(j) !== cu.luc) return taiDu();
+            ghiAvatarMay(slug, { luc: cu.luc, kiem: Date.now(), tai: cu.tai, em: cu.em });
+            return cu.em;
+          });
       }
-      var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
-            + '/databases/(default)/documents/lessonAvatar/' + encodeURIComponent(slug)
-            + '?key=' + encodeURIComponent(db.apiKey);
-      return fetch(u, { cache: 'no-store' })
-        .then(function (r) {
-          // 404 = lớp chưa từng được đẩy ảnh lên kho. KHÔNG phải lỗi: cứ để lớp nền
-          // file tĩnh lo, và vẫn đệm lại để khỏi hỏi lại mỗi lượt vẽ.
-          if (r.status === 404) return { fields: {} };
-          return r.ok ? r.json() : null;
-        })
-        .then(function (j) {
-          if (!j) { AV_HONG[slug] = Date.now(); return {}; }
-          delete AV_HONG[slug];
-          var em = {}, f = (j.fields && j.fields.em && j.fields.em.mapValue
-                            && j.fields.em.mapValue.fields) || {};
-          for (var id in f) {
-            var g = (f[id].mapValue && f[id].mapValue.fields) || {};
-            var a = g.a && g.a.stringValue;
-            if (!a) continue;
-            em[id] = { t: (g.t && g.t.stringValue) || '', a: a };
-          }
-          // ⛔ CHỈ đệm khi đọc được thật — đệm cả lượt hỏng là đóng băng bảng rỗng.
-          try { sessionStorage.setItem(KHOA_AV + ':' + slug,
-            JSON.stringify({ luc: Date.now(), em: em })); } catch (e) {}
-          return em;
-        })['catch'](function () { AV_HONG[slug] = Date.now(); return {}; });
+
+      AV_BAY[slug] = chay['catch'](function () {
+        AV_HONG[slug] = Date.now();
+        return cu ? cu.em : {};
+      }).then(function (em) { delete AV_BAY[slug]; return em; });
+      return AV_BAY[slug];
     } catch (e) { return Promise.resolve({}); }
   }
 

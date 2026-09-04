@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-04 19:27:54",
+  "capNhat": "2026-09-04 21:13:51",
   "nguon": "myStudent",
   "lop": [
     {
@@ -873,7 +873,7 @@
         {
           "id": 204,
           "ten": "CÔNG THÀNH",
-          "ma": "CONGTHANH",
+          "ma": "PHAMCONGTHANH12062017",
           "sinhNhat": ""
         },
         {
@@ -891,7 +891,7 @@
         {
           "id": 203,
           "ten": "MINH ĐỨC",
-          "ma": "MAIMINHDUC",
+          "ma": "MAIMINHDUC21122017",
           "sinhNhat": ""
         },
         {

@@ -1,7 +1,35 @@
 {
-  "capNhat": "2026-09-04 13:35:10",
+  "capNhat": "2026-09-04 21:59:32",
   "bai": {
     "A1C": [
+      {
+        "id": "A1C_4.9_WORDS_LSA2-S2.T2.P4-5",
+        "tieuDe": "A1C_4.9_WORDS LSA2-S2.T2.P4-5",
+        "tenHien": "A1C_4.9_WORDS LSA2-S2.T2.P4-5",
+        "dang": "WORDS",
+        "ngay": "4.9",
+        "han": "2026-09-06T08:00",
+        "maLesson": "LSA2-S2.T2.P4-5",
+        "taoLuc": "2026-09-04",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "sshkut",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "47a352",
+            "mau": "ANAGRAM"
+          }
+        ]
+      },
       {
         "id": "A1C_9.6_DICTS_LSFLY-S1.T3.P1-2-3",
         "tieuDe": "A1C_9.6_DICTS LSFLY-S1.T3.P1-2-3",

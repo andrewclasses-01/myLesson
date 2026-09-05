@@ -279,6 +279,9 @@ body.khoa-cuon{overflow:hidden}
 /* (02/09/2026 — luật CHÍNH CHỦ QUYẾT) hai nhãn phụ trong cột Trạng thái */
 .nhan.tunhan{background:var(--la-nhat); color:var(--m-la); margin-left:4px}
 .nhan.batdong{background:var(--vang-nhat); color:#B5720C; margin-left:4px}
+/* v1.71.0 — hai chiều của khối "Cần thầy quyết": lỗi CỦA đội đang xem ↔ lỗi đội đó BẮT ĐƯỢC */
+.nhan.cuadoi{background:var(--la-nhat); color:var(--m-la)}
+.nhan.batduoc{background:var(--nen); color:var(--mo)}
 
 /* (Đợt 28/08/2026 khuya) Bảng Phản biện gộp 1 dòng/câu: avatar chữ cái cho ai ĐỒNG Ý, ô riêng
    cho mỗi người PHẢN ĐỐI kèm lý do — thay bảng dài 1 dòng/phiếu cũ. */
@@ -965,12 +968,22 @@ body.khoa-cuon{overflow:hidden}
     var khoi = $('#khoiCanQuyet');
     if (!ds.length) { khoi.hidden = true; return; }
     khoi.hidden = false;
-    $('#cqPhu').textContent = ds.length + ' câu còn tranh chấp · lọc theo ' + DOI_CHON;
+    /* ⭐ v1.71.0 (05/09/2026, đồng bộ với mySpeaking app v1.27.1) — TÁCH RÕ HAI CHIỀU.
+       Thầy bắt được khi dùng thật: thẻ TEAM 1 báo "69 câu tranh chấp" mà tab CHỮA LỖI của TEAM 1
+       bên app chỉ có 2 ⇒ tưởng mất câu. Thật ra 2 câu là của CHÍNH TEAM 1 (bị bắt lỗi), 67 câu kia
+       là TEAM 1 ĐI BẮT lỗi TEAM 2 — chúng thuộc về màn chữa lỗi của TEAM 2. Con số 69 không sai,
+       chỉ là gộp hai thứ khác nhau; nay ghi rõ ra. */
+    var cuaDoiNay = function(x){ return x.doiBiCham === DOI_CHON; };
+    var soCua = ds.filter(cuaDoiNay).length, soBat = ds.length - soCua;
+    $('#cqPhu').textContent = ds.length + ' câu · lọc theo ' + DOI_CHON + ' — ' + soCua
+      + ' của chính đội · ' + soBat + ' đội này bắt được (chữa ở màn của đội bị bắt)';
     $('#cqVe').innerHTML = ds.map(function(x){
       var e = x.err;
       var phieu = PHANHOI.filter(function(p){ return p.errId === e.id && p.y === 'phanDoi'; });
       return '<div class="cq-o">' +
         '<div class="cq-dau">' + nhanLoai(e.type) +
+          (cuaDoiNay(x) ? '<span class="nhan cuadoi">CỦA ĐỘI NÀY</span>'
+            : '<span class="nhan batduoc">BẮT ĐƯỢC · CHỮA Ở ' + A.chuAnToan(x.doiBiCham) + '</span>') +
           '<span>Chấm bởi ' + A.chuAnToan(x.chuLoi) + ' (' + A.chuAnToan(x.doiCham) + ')</span>' +
           /* ⭐ v1.67.0 (thầy chốt 05/09 tối) — nhãn nói ĐÚNG NGƯỜI đang nợ việc: câu còn tranh chấp mà
              chưa `ketLuan` thì việc nằm ở NGƯỜI CHẤM (bấm Keep/Accept), không phải "đội bị chấm phản
@@ -1050,6 +1063,17 @@ body.khoa-cuon{overflow:hidden}
           : laTc ? '<span class="tt-do">chưa trả lời phản biện</span>'
             : '<span class="tt-nh">không phải trả lời (chưa ai phản đối)</span>'
     ) + '</span>');
+    /* ⭐ v1.71.0 — PHÁN QUYẾT CUỐI CỦA THẦY (trường `thay`, do mySpeaking app v1.28.0 ghi khi bấm
+       CHỐT KẾT QUẢ ở tab Chữa lỗi). Thầy chốt 05/09: *"phán quyết của GV trong mySpeaking là phán
+       quyết cuối cùng"* ⇒ nó đứng SAU CÙNG và đè lên mọi phiếu học sinh ở trên.
+       `gop` = dòng trùng đã gộp vào câu chính, không tính nữa (không phải thầy bỏ). */
+    if (e.thay) {
+      dong.push('<span><span class="tt-nh">Thầy:</span> ' + (
+        e.thay === 'bo' ? '<span class="tt-la">đã BỎ lỗi này</span>'
+          : e.thay === 'giu' ? '<span class="tt-do">GIỮ lỗi này</span>'
+            : '<span class="tt-nh">dòng trùng — đã gộp vào câu chính, không tính</span>'
+      ) + '</span>');
+    }
 
     return '<div class="cau-o ' + vo + '">' +
       '<div class="cau-dau">' +

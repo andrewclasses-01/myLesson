@@ -311,6 +311,8 @@ body.khoa-cuon{overflow:hidden}
   .nua-tab{display:flex}
 }
 </style>
+<!-- ⭐ v1.66.0 (05/09/2026) — khung AI CÒN VIỆC + bảng chốt toàn màn hình: css/sp-bang.css + js/sp-bang.js -->
+<link rel="stylesheet" href="css/sp-bang.css?v=1">
 </head>
 <body>
 
@@ -332,14 +334,29 @@ body.khoa-cuon{overflow:hidden}
 
   <div id="thanTrang" hidden>
     <section class="khoi">
-      <div class="khoi-dau"><h2>Tổng quan đội</h2><span class="phu" id="doiPhu"></span></div>
+      <!-- ⭐ v1.66.0 — thầy chốt 05/09: BỎ mọi câu hướng dẫn trong tiêu đề khối
+           ("thanh đầy ở 200 lỗi…", "bấm một đội · mọi khối…") — `#doiPhu` đã gỡ. -->
+      <div class="khoi-dau"><h2>Tổng quan đội</h2></div>
       <div class="khoi-than" id="doiVe"></div>
+    </section>
+
+    <!-- ⭐⭐ v1.66.0 (05/09/2026) — KHUNG AI CÒN VIỆC: mọi đội, từng em hai số chính chưa phản
+         biện / chưa phản hồi + hai số phụ đã bắt / bị bắt; nút XỬ LÝ mở pop-up chọn đội rồi
+         BẢNG CHỐT toàn màn hình. Ruột do js/sp-bang.js vẽ (một hàm đếm chung `SPBang.dem()`). -->
+    <section class="khoi" id="khoiAcv">
+      <div class="khoi-dau">
+        <h2>Ai còn việc</h2>
+        <div class="day"></div>
+        <div class="acv-tong" id="acvTong"></div>
+        <button class="nut chinh" id="btnXuLy"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg> XỬ LÝ</button>
+      </div>
+      <div class="khoi-than"><div class="acv-luoi" id="acvLuoi"></div></div>
     </section>
 
     <!-- ⭐ 02/09/2026 — HÀNG NÚT ĐỘI. Bấm một đội = lọc CẢ "Cần thầy quyết" LẪN khối hai
          nửa bên dưới (thầy chốt). Mở trang thì chọn sẵn ĐỘI ĐẦU TIÊN theo số thứ tự. -->
     <section class="khoi">
-      <div class="khoi-dau"><h2>Chọn đội để xem chi tiết</h2><span class="phu">bấm một đội · mọi khối bên dưới lọc theo đội đó</span></div>
+      <div class="khoi-dau"><h2>Chọn đội để xem chi tiết</h2></div>
       <div class="khoi-than"><div class="doi-grid" id="doiNut"></div></div>
     </section>
 
@@ -390,10 +407,32 @@ body.khoa-cuon{overflow:hidden}
   </div>
 </main>
 
+<!-- ⭐ v1.66.0 — pop-up chọn đội + BẢNG CHỐT toàn màn hình (ruột do js/sp-bang.js vẽ) -->
+<div class="nen-mo" id="popNen" hidden>
+  <div class="pop">
+    <div class="pop-dau"><div class="pop-slogan">Andrew Classes</div><h3>Mở bảng chốt</h3></div>
+    <div class="pop-ds" id="popDs"></div>
+    <div class="pop-chan">
+      <button class="nut xam" id="popHuy">Huỷ</button>
+      <button class="nut chinh" id="popMo">MỞ BẢNG</button>
+    </div>
+  </div>
+</div>
+<div class="bang" id="bang" hidden>
+  <div class="bang-dai">
+    <div class="bd-tieu"><b>Ai còn việc</b><small id="bdTieuPhu"></small></div>
+    <div class="bd-chips" id="bdChips"></div>
+    <div class="bd-dong"><span class="bd-luu" id="bdLuu"></span><span class="bd-gio" id="bdGio"></span><button class="nut" id="btnDong">Đóng bảng · Esc</button></div>
+  </div>
+  <div class="bang-cot" id="bangCot"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=59"></script>
+<script src="config.js?v=60"></script>
 <script src="js/chung.js?v=33"></script>
+<script src="js/trung.js?v=1"></script>
+<script src="js/sp-bang.js?v=1"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -483,6 +522,11 @@ body.khoa-cuon{overflow:hidden}
   }
   function spTongLoiFs(buoiId){ return docNganCon(buoiId, 'tongLoi', 300); }
   function spPhanHoiFs(buoiId){ return docNganCon(buoiId, 'phanHoi', 3000); }
+  /* ⭐ v1.66.0 — hai ngăn gộp lỗi trùng, cho khung AI CÒN VIỆC (số cụm hoà phiếu) + bảng chốt.
+     ⛔ LUẬT 8️⃣: CHỈ trang này (thầy mở, vài lượt/ngày) mới được đọc thêm hai ngăn này lúc mở
+     trang — đừng đem sang dashboard/lop. Đọc hỏng thì coi như rỗng, KHÔNG chặn cả trang. */
+  function spCumFs(buoiId){ return docNganCon(buoiId, 'cum', 500)['catch'](function(){ return []; }); }
+  function spCumPhieuFs(buoiId){ return docNganCon(buoiId, 'cumPhieu', 3000)['catch'](function(){ return []; }); }
 
   function soLoiSong(errors){
     return (errors || []).filter(function(er){ return !er.trangThai || er.trangThai === 'song'; }).length;
@@ -536,6 +580,7 @@ body.khoa-cuon{overflow:hidden}
 
   // ---------- Dữ liệu ----------
   var DL = null, BAI = null, BUOI = null, DOI = [], TONGLOI = [], PHANHOI = [], CHAM = [];
+  var CUM = [], CUMPHIEU = [];   // ⭐ v1.66.0 — kho gộp lỗi trùng (đọc lúc mở trang, nghe sống khi mở bảng)
 
   function baoLoi(chu){
     $('#khoiLoi').hidden = false;
@@ -564,8 +609,25 @@ body.khoa-cuon{overflow:hidden}
         return baoLoi('Buổi đang mở của lớp là "' + (BUOI.lesson || '?') + '", không khớp bài này.');
       if (BUOI.moHinh !== 2)
         return baoLoi('Buổi này theo mô hình cũ — chưa có dữ liệu câu chấm/phản biện chi tiết.');
-      return Promise.all([spTongLoiFs(BUOI._id), spPhanHoiFs(BUOI._id)]).then(function(r2){
-        TONGLOI = r2[0]; PHANHOI = r2[1];
+      return Promise.all([spTongLoiFs(BUOI._id), spPhanHoiFs(BUOI._id), spCumFs(BUOI._id), spCumPhieuFs(BUOI._id)]).then(function(r2){
+        TONGLOI = r2[0]; PHANHOI = r2[1]; CUM = r2[2]; CUMPHIEU = r2[3];
+        /* ⭐ v1.66.0 — nối dây khung AI CÒN VIỆC + bảng chốt. Luật CHÍNH CHỦ QUYẾT truyền
+           sang chứ KHÔNG chép thêm bản thứ năm; mảng kho trả về qua `lay()` là CHÍNH mảng
+           của trang (bảng sửa tại chỗ rồi vẽ lại cả trang), `nhan()` nhận bản mới từ onSnapshot. */
+        SPBang.init({
+          A: A, db: (A.CFG && A.CFG.AWORD_DB) || {}, buoiId: BUOI._id, teams: BUOI.teams || [],
+          tenLop: lChiTiet.tenGoc || MA_LOP, tenBai: BAI ? A.tenBai(BAI) : (BUOI.lesson || ''),
+          lopGoc: lChiTiet.tenGoc || MA_LOP, dsEm: lChiTiet.hocSinh || [], avtChu: avtChu, toast: baoToast,
+          luat: { tenBang: tenBang, chinhChuDaNhan: chinhChuDaNhan, tranhChap: tranhChap, choNguoiChamTraLoi: choNguoiChamTraLoi },
+          lay: function(){ return { tongLoi: TONGLOI, phanHoi: PHANHOI, cum: CUM, cumPhieu: CUMPHIEU }; },
+          nhan: function(part){
+            if (part.tongLoi) TONGLOI = part.tongLoi;
+            if (part.phanHoi) PHANHOI = part.phanHoi;
+            if (part.cum) CUM = part.cum;
+            if (part.cumPhieu) CUMPHIEU = part.cumPhieu;
+          },
+          veTrang: function(){ DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa(); }
+        });
         DOI = tinhDoiSp(BUOI.teams, TONGLOI);
         // Thầy chốt: mở trang là chọn sẵn ĐỘI ĐẦU TIÊN theo SỐ THỨ TỰ (TEAM 1).
         // ⛔ `DOI` đã được `tinhDoiSp` xếp theo ĐIỂM giảm dần cho thanh tổng quan, nên
@@ -641,6 +703,7 @@ body.khoa-cuon{overflow:hidden}
 
   function veTatCa(){
     veDoiVe();
+    if (window.SPBang) SPBang.veAcv();   // ⭐ v1.66.0 — khung AI CÒN VIỆC (js/sp-bang.js)
     veNutDoi();
     veCanQuyet();
     veHaiNua();
@@ -849,7 +912,6 @@ body.khoa-cuon{overflow:hidden}
   }
 
   function veDoiVe(){
-    $('#doiPhu').textContent = 'thanh đầy ở 200 lỗi bắt được · avatar đặt theo điểm riêng của từng em';
     $('#doiVe').innerHTML = DOI.map(function(d){
       return '<div class="doi-dong">' +
         '<span class="doi-ten">' + A.chuAnToan(d.ten) + '</span>' +

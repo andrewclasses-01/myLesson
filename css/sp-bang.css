@@ -65,7 +65,13 @@
 .nut.xam{color:var(--mo)}
 
 /* ── bảng chốt ── */
-.bang{position:fixed; inset:0; z-index:60; background:var(--nen); display:flex; flex-direction:column}
+/* ⭐ v1.69.0 — CHỪA CHỖ CHO THANH ĐIỀU HƯỚNG CỦA myActivity.
+   Trong myActivity, thanh ◀ ▶ ⟳ của app nằm ĐÈ lên trang khách; app đặt chiều cao phần bị che vào
+   `--banphim` (đúng nếp `lop.html` đã dùng). Khai sẵn 0px ở đây để ngoài app trang chạy y như cũ.
+   ⛔ Không có dòng này thì thanh app ăn mất HAI HÀNG PHÍM DƯỚI của bàn phím trong cột — thầy chụp
+   ảnh báo 05/09. `body{padding-bottom}` của app KHÔNG cứu được vì `.bang` là `position:fixed`. */
+:root{--banphim:0px}
+.bang{position:fixed; inset:0 0 var(--banphim,0px) 0; z-index:60; background:var(--nen); display:flex; flex-direction:column}
 .bang-dai{flex:none; background:#16232A; color:#fff; padding:10px 16px; display:flex; align-items:center; gap:14px; overflow:hidden}
 .bd-tieu{flex:none; display:flex; flex-direction:column; gap:2px; padding-right:14px; border-right:1px solid rgba(255,255,255,.14)}
 .bd-tieu b{font:800 12px/1.2 var(--font); letter-spacing:.06em; text-transform:uppercase}

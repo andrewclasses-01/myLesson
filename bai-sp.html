@@ -726,8 +726,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=57"></script>
-<script src="js/chung.js?v=32"></script>
+<script src="config.js?v=59"></script>
+<script src="js/chung.js?v=33"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới. -->
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -749,6 +749,9 @@ var EM = null, BAI = null;
 var TOI = '';            /* tên em đang đăng nhập */
 var LOP = '';            /* tên lớp hiện cho em xem: "B2-B" */
 var LOP_DL = '';         /* mã lớp trong lop.json / bai.json: "B2B" */
+/* ⭐ v1.64.0 — chữ lớp ĐƯA CHO EM XEM (bìa READY · tiêu đề tab): "B2B", lớp tên
+   chữ thì "N.TANG 4" chứ không phải "NNTNG4". Do `A.lopHien(mã, tênGốc)` sinh
+   ra — ⛔ đừng gán thẳng `EM.lop` lại như trước. */
 var LOP_HIEN = '';
 var MA_HS = '';          /* MÃ ĐĂNG NHẬP THẬT — cũng là khoá dòng tích Firestore */
 
@@ -1343,9 +1346,10 @@ function veTrangLop(them){
 A.napDuLieu().then(function(dl){
   EM = A.batBuocDangNhap(dl);
   if (!EM) return;
-  TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop; LOP_HIEN = EM.lop;
+  TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop;
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
+  LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
   CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
 
   var id = new URLSearchParams(location.search).get('id') || '';

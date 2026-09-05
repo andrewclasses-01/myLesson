@@ -58,10 +58,37 @@
     return ra.trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
-  // "B2-B" -> "B2B" (chữ đưa cho học sinh xem và truyền sang AWord).
-  // Lớp tên chữ như "NỀN TẢNG K9" thì giữ nguyên.
-  function lopHien(ma) {
-    return String(ma || '').replace(/^([A-Za-z]+\d*)-(\w)$/, '$1$2');
+  // ⭐⭐ v1.64.0 (05/09/2026, thầy chốt) — CHỮ LỚP ĐƯA CHO HỌC SINH XEM.
+  //
+  // Thầy: *"Lớp NỀN TẢNG 4 lại bị ghi là NNTNG4"*. Mã lớp là thứ máy dùng
+  // (khớp `bai.json`, khớp buổi bên mySpeaking, đường dẫn ảnh) — học sinh không
+  // việc gì phải đọc nó. Hàm này là **CỬA DUY NHẤT** đổi mã sang chữ hiện:
+  //
+  //   "B2-B"       -> "B2B"        (mã lớp, giữ y nếp cũ)
+  //   "B1-A (H)"   -> "B1AH"
+  //   "NỀN TẢNG 4" -> "N.TANG 4"   (lớp tên chữ: bỏ dấu, "NỀN " rút thành "N.")
+  //   "BỔ TRỢ"     -> "BO TRO"
+  //
+  // ⛔ ĐỪNG gọi hàm này cho những chỗ MÁY ĐỌC: `lopMa()` bên `lop.html` (mã khớp
+  // buổi speaking), tham số `gv=1&lop=` (xem-như-thầy), đường dẫn ảnh đại diện
+  // (neo theo TÊN GỐC có gạch). Chữ hiện và mã máy đọc từ nay là HAI thứ —
+  // trước v1.64.0 chúng là một biến `LOP_HIEN` duy nhất, đó chính là chỗ vỡ.
+  //
+  // ⚠️ Chuỗi này CÓ đi sang AWord qua `?lop=` — đã kiểm tận `queueAttempt()` bên
+  // AWord: `className` chỉ dùng để IN lên bìa READY + màn kết thúc, KHÔNG hề
+  // được ghi vào kho điểm (bản ghi chỉ có name · score · total · timeMs ·
+  // createdAt). Nên đưa chữ hiện sang là an toàn, và nhờ vậy bìa của chính game
+  // cũng hết in "NNTNG4" (thầy chốt qua AskUserQuestion).
+  //
+  // Cách nhận ra "lớp tên chữ": bỏ dấu xong còn một cụm từ 3 chữ cái trở lên
+  // ("TANG", "TRO"). Mã lớp thì không ("B2B", "A1C", "B1AH" — toàn cụm ngắn).
+  function lopHien(maLop, tenGoc) {
+    var ma = String(maLop || '').trim();
+    var goc = String(tenGoc || '').trim();
+    if (!goc) return ma;
+    var chu = khoaTen(goc).toUpperCase();          // bỏ dấu + gom khoảng trắng
+    if (!/[A-Z]{3,}/.test(chu)) return ma;         // tên kiểu mã -> dùng mã lớp
+    return chu.replace(/^NEN\s+/, 'N.');           // "NEN TANG 4" -> "N.TANG 4"
   }
 
   // ---------- đọc dữ liệu ----------

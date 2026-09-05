@@ -1251,8 +1251,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=57"></script>
-<script src="js/chung.js?v=32"></script>
+<script src="config.js?v=59"></script>
+<script src="js/chung.js?v=33"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
@@ -1280,7 +1280,10 @@ function chuAnToan(x){ return window.AWC.chuAnToan(x); }
 var TOI = '';            /* tên em đang đăng nhập */
 var LOP = '';            /* tên lớp hiện cho em xem, kiểu myStudent: "B2-B" */
 var LOP_DL = '';         /* mã lớp trong lop.json / bai.json: "B2B" */
-var LOP_HIEN = '';       /* chữ đưa sang AWord + in trên bìa READY: "B2B" */
+/* ⭐ v1.64.0 — chữ lớp ĐƯA CHO EM XEM (bìa READY · tiêu đề tab · sang AWord):
+   "B2B", và lớp tên chữ thì "N.TANG 4" chứ không phải "NNTNG4". Do
+   `A.lopHien(mã, tênGốc)` sinh ra — ⛔ đừng gán thẳng `EM.lop` lại như trước. */
+var LOP_HIEN = '';
 var MA_HS = '';
 var EM = null;
 var BAI = null;          /* chính bài đang mở, đọc từ data/bai.json */
@@ -2825,9 +2828,10 @@ function veTrangLop(them){
 A.napDuLieu().then(function(dl){
   EM = A.batBuocDangNhap(dl);
   if (!EM) return;
-  TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop; LOP_HIEN = EM.lop;
+  TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop;
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
+  LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
   CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   TAT = bangVietTat(CA_LOP);
   /* ⭐ v1.55.0 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em

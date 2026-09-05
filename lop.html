@@ -1368,8 +1368,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=57"></script>
-<script src="js/chung.js?v=32"></script>
+<script src="config.js?v=59"></script>
+<script src="js/chung.js?v=33"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1489,7 +1489,11 @@ var TOI = '';            /* tên em đang đăng nhập (đúng tên trong myStu
 var LOP = '';            /* tên lớp HIỆN cho em xem, kiểu myStudent: "B2-B" */
 var LOP_SLUG = '';       /* thư mục avatar của lớp, dùng bởi veAv() */
 var LOP_DL = '';         /* mã lớp trong lop.json / bai.json: "B2B" */
-var LOP_HIEN = '';       /* mã lớp đưa cho em xem + truyền sang AWord: "B2B" */
+/* ⭐ v1.64.0 — chữ lớp ĐƯA CHO EM XEM (tiêu đề tab · đầu pop-up danh sách):
+   "B2B", lớp tên chữ thì "N.TANG 4" chứ không phải "NNTNG4". Do
+   `A.lopHien(mã, tênGốc)` sinh ra — ⛔ đừng gán thẳng `EM.lop` lại như trước,
+   và ⛔ ĐỪNG dùng nó cho chỗ MÁY ĐỌC (xem `lopMa()` bên dưới). */
+var LOP_HIEN = '';
 var MA_HS = '';          /* mã đăng nhập của em */
 
 var CA_LOP = [];         /* tên cả lớp, đúng thứ tự trong lop.json */
@@ -1504,7 +1508,13 @@ var BAI_SP = null;       /* thẻ SPEAKING CHECK, nếu buổi này có */
 /* Địa chỉ hai đầu bên mySpeaking — nay lấy từ config.js chứ không gõ trong trang. */
 var SP_NAO = A.CFG.SP_NAO || '';
 var SP_WEB = A.CFG.SP_WEB || '';
-function lopMa(){ return LOP_HIEN; }   /* mã lớp bên mySpeaking = "B2B" */
+/* ⛔⛔ v1.64.0 — MÃ LỚP CHO MÁY ĐỌC, KHÔNG PHẢI CHỮ HIỆN. Đây là `classCode`
+   dùng để khớp buổi bên mySpeaking (`spBuoiFs`, `?danop=1&classCode=`), nên nó
+   PHẢI là mã thô "NNTNG4" — đổi sang chữ hiện "N.TANG 4" là khớp trượt, thẻ SP
+   CHECK mất sạch. Trước v1.64.0 nó đọc `LOP_HIEN` — hồi đó hai thứ trùng nhau
+   nên không ai thấy; nay `LOP_HIEN` là chữ hiện nên phải đọc `LOP_DL`.
+   (Hôm tách đôi, hai biến bằng nhau từng chữ ⇒ đổi dòng này không đổi hành vi.) */
+function lopMa(){ return LOP_DL; }
 
 /* ⭐ v18 — 2 thẻ ở MỌI cửa sổ hẹp, không riêng điện thoại: hễ khung chat đã
    phải rơi xuống dưới thì nhường chỗ cho nó, thầy khỏi cuộn tìm ô nhập. */
@@ -2679,9 +2689,9 @@ A.napDuLieu().then(function(dl){
      Tra dữ liệu thì dùng LOP_DL, in ra màn hình thì dùng LOP. */
   TOI = EM.ten; MA_HS = EM.ma;
   LOP_DL = EM.lop;
-  LOP_HIEN = EM.lop;
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
+  LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
   LOP_SLUG = avSlugLop(LOP);
   CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   SI_SO = CA_LOP.length;

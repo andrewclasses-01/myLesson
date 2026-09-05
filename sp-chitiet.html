@@ -432,7 +432,7 @@ body.khoa-cuon{overflow:hidden}
 <script src="config.js?v=60"></script>
 <script src="js/chung.js?v=33"></script>
 <script src="js/trung.js?v=1"></script>
-<script src="js/sp-bang.js?v=2"></script>
+<script src="js/sp-bang.js?v=3"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -442,6 +442,9 @@ body.khoa-cuon{overflow:hidden}
   var qs = new URLSearchParams(location.search);
   var MA_LOP = (qs.get('lop') || '').trim();
   var ID_BAI = (qs.get('bai') || '').trim();
+  /* ⭐ v1.68.0 — `?bang=<số đội>`: mở thẳng BẢNG CHỐT cho đúng một đội (myActivity chia cột, mỗi cột
+     một trang). Không có tham số thì trang chạy y như cũ. */
+  var SO_BANG = Math.max(0, Math.min(9, parseInt(qs.get('bang'), 10) || 0));
 
   var hen = null;
   function baoToast(chu){
@@ -619,6 +622,7 @@ body.khoa-cuon{overflow:hidden}
           tenLop: lChiTiet.tenGoc || MA_LOP, tenBai: BAI ? A.tenBai(BAI) : (BUOI.lesson || ''),
           lopGoc: lChiTiet.tenGoc || MA_LOP, dsEm: lChiTiet.hocSinh || [], avtChu: avtChu, toast: baoToast,
           luat: { tenBang: tenBang, chinhChuDaNhan: chinhChuDaNhan, tranhChap: tranhChap, choNguoiChamTraLoi: choNguoiChamTraLoi },
+          bang: SO_BANG,
           lay: function(){ return { tongLoi: TONGLOI, phanHoi: PHANHOI, cum: CUM, cumPhieu: CUMPHIEU }; },
           nhan: function(part){
             if (part.tongLoi) TONGLOI = part.tongLoi;

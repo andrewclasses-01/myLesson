@@ -36,7 +36,12 @@
 
   var ctx = null, A = null;
   var ST = { mo: false, cot: [], nghe: [], yt: {}, ytSan: false, ytCho: [], nhip: null,
-    luu: { dang: 0, luc: 0, loi: '' }, henVe: null };
+    luu: { dang: 0, luc: 0, loi: '' }, henVe: null,
+    /* ⭐ v1.68.0 — CHẾ ĐỘ MỘT CỘT (`?bang=<số đội>`): trang mở thẳng bảng chốt cho ĐÚNG MỘT đội,
+       dùng khi myActivity chia 4 cột, mỗi cột một trang riêng. Lý do: Chrome coi cả trang là MỘT
+       vùng chạm nên hai em chạm hai cột cùng lúc bị gộp thành một cử chỉ; myActivity thì mỗi cột
+       là một WebContentsView riêng, chạm độc lập thật. */
+    motCot: 0 };
 
   var IC_TICK = '<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>';
   var IC_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
@@ -268,6 +273,10 @@
     });
     ST.mo = true;
     $('bang').hidden = false; document.body.style.overflow = 'hidden';
+    /* ⛔ v1.68.0 — BÁO CHO myActivity BIẾT TRANG ĐÃ CÓ BÀN PHÍM RIÊNG. Không có cờ này thì bàn phím
+       ảo của myActivity (`keyboard.js`, chèn vào trang khách) cũng bung ra khi em chạm ô lý do ⇒ HAI
+       bàn phím chồng nhau. `inputmode="none"` KHÔNG chặn được nó vì nó tự bắt sự kiện focus. */
+    document.documentElement.dataset.banPhimRieng = '1';
     $('bdTieuPhu').textContent = ctx.tenLop + ' · ' + (ctx.tenBai || 'Speaking check');
     $('bangCot').innerHTML = ST.cot.map(veCot).join('');
     ST.cot.forEach(function (c) { veCotRuot(c); veKbd(c); });
@@ -279,7 +288,9 @@
   }
   function dongBang() {
     ST.mo = false;
+    ST.motCot = 0;
     $('bang').hidden = true; document.body.style.overflow = '';
+    delete document.documentElement.dataset.banPhimRieng;
     clearInterval(ST.nhip); ST.nhip = null;
     tatLive();
     Object.keys(ST.yt).forEach(function (n) { try { ST.yt[n].destroy(); } catch (e) {} });
@@ -291,7 +302,15 @@
 
   function veDai(nhayN) {
     var D = dem();
-    $('bdChips').innerHTML = D.doi.map(function (d) {
+    /* ⭐ v1.68.0 (thầy chốt) — MỘT CỘT thì dải đen chỉ hiện ĐỘI MÌNH + ĐỘI MÌNH CHẤM: vừa bề ngang
+       một cột, mà vẫn thấy việc mình vừa gây ra cho đội kia (bấm DISAGREE là đội kia có thêm việc). */
+    var ds = D.doi;
+    if (ST.motCot) {
+      var minh = D.doi.filter(function (x) { return x.n === ST.motCot; })[0];
+      var tenKia = minh ? minh.cham : '';
+      ds = D.doi.filter(function (x) { return x.n === ST.motCot || (tenKia && x.ten === tenKia); });
+    }
+    $('bdChips').innerHTML = ds.map(function (d) {
       return '<div class="bd-doi' + (d.xong ? ' xong' : '') + (d.n === nhayN ? ' nhay' : '') + '"><span class="ten">' + esc(d.ten) + '</span>' +
         '<span class="bd-avs">' + d.hs.map(function (h) {
           return avHtml(h.ten, 'bd-av' + (h.xong ? ' xong' : '')).replace('</span>', '<i>' + (h.pb + h.ph) + '</i></span>');
@@ -848,6 +867,18 @@
     setInterval(function () { if (ST.mo) $('bdGio').textContent = gioHienTai(); }, 15000);
   }
 
-  window.SPBang = { init: function (c) { ctx = c; A = c.A; gan(); }, veAcv: veAcv, dem: dem, dangMo: function () { return ST.mo; },
+  /* ⭐ v1.68.0 — mở thẳng bảng cho một đội (myActivity gọi qua `?bang=n`). Gọi SAU khi trang vẽ
+     xong lượt đầu; đội không có thật thì báo rồi để nguyên trang thường. */
+  function moMotCot(n) {
+    var d = dem().doi.filter(function (x) { return x.n === n; })[0];
+    if (!d) { ctx.toast('Buổi này không có TEAM ' + n + ' — bảng mở ở chế độ đủ đội.'); return; }
+    ST.motCot = n;
+    moBang([n]);
+  }
+
+  window.SPBang = { init: function (c) {
+      ctx = c; A = c.A; gan();
+      if (c.bang) setTimeout(function () { moMotCot(c.bang); }, 0);
+    }, veAcv: veAcv, dem: dem, dangMo: function () { return ST.mo; },
     _soi: function () { return { L: L(), ST: ST }; } };   // chỉ để bàn thử soi trạng thái, không dùng trong trang
 })();

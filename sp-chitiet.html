@@ -432,7 +432,7 @@ body.khoa-cuon{overflow:hidden}
 <script src="config.js?v=60"></script>
 <script src="js/chung.js?v=33"></script>
 <script src="js/trung.js?v=1"></script>
-<script src="js/sp-bang.js?v=1"></script>
+<script src="js/sp-bang.js?v=2"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -715,9 +715,15 @@ body.khoa-cuon{overflow:hidden}
   //   ĐƯỢC BẮT    = câu đội khác chấm đội này     (checkedTeam === đội)
   //   Chưa phản biện = việc của đội BỊ chấm: chính chủ chưa Agree/Disagree
   //   Chưa phản hồi  = việc của đội ĐI chấm: còn tranh chấp mà chưa Keep/Accept
+  // ⭐ v1.67.0 (thầy chốt 05/09 tối) — "Số lỗi đã bắt / được bắt" CHỈ đếm lỗi còn hiệu lực (`song`),
+  // lỗi đã gỡ (Accept Appeal) không tính — cùng thước với thanh Tổng quan đội (`soLoiSong`) và
+  // khung AI CÒN VIỆC. Trước đây thẻ đếm cả lỗi đã gỡ ⇒ TEAM 1 thanh 128 mà thẻ 149, thầy bắt được.
+  // Khối hai nửa VẪN liệt kê cả câu đã gỡ (gạch mờ, làm lịch sử) — tiêu đề nửa ghi rõ "· m đã gỡ".
+  // ⛔ Bản chép ở app mySpeaking tab KẾT QUẢ (`kqSoCuaDoi`) — sửa một bên phải sửa bên kia.
+  function conSong(x){ return !x.err.trangThai || x.err.trangThai === 'song'; }
   function soCuaDoi(ten){
-    var bat = CHAM.filter(function(x){ return x.doiCham === ten; });
-    var bi = CHAM.filter(function(x){ return x.doiBiCham === ten; });
+    var bat = CHAM.filter(function(x){ return x.doiCham === ten && conSong(x); });
+    var bi = CHAM.filter(function(x){ return x.doiBiCham === ten && conSong(x); });
     return {
       bat: bat.length,
       bi: bi.length,
@@ -962,7 +968,10 @@ body.khoa-cuon{overflow:hidden}
       return '<div class="cq-o">' +
         '<div class="cq-dau">' + nhanLoai(e.type) +
           '<span>Chấm bởi ' + A.chuAnToan(x.chuLoi) + ' (' + A.chuAnToan(x.doiCham) + ')</span>' +
-          (e.ketLuan === 'keep' ? '<span class="nhan keep">ĐÃ GIỮ, CHỜ THẦY</span>' : '<span class="nhan phandoi">CHỜ ' + A.chuAnToan(x.doiBiCham) + ' PHẢN HỒI</span>') +
+          /* ⭐ v1.67.0 (thầy chốt 05/09 tối) — nhãn nói ĐÚNG NGƯỜI đang nợ việc: câu còn tranh chấp mà
+             chưa `ketLuan` thì việc nằm ở NGƯỜI CHẤM (bấm Keep/Accept), không phải "đội bị chấm phản
+             hồi" — họ đã phản đối rồi. Chính bộ đếm "chưa phản hồi" trên thẻ đội cũng tính như vậy. */
+          (e.ketLuan === 'keep' ? '<span class="nhan keep">ĐÃ GIỮ, CHỜ THẦY</span>' : '<span class="nhan phandoi">CHỜ ' + A.chuAnToan(x.chuLoi) + ' TRẢ LỜI</span>') +
         '</div>' +
         (e.sentence ? '<div class="cq-cau">“' + A.chuAnToan(e.sentence) + '”</div>' : '') +
         '<div class="cq-chi">' + A.chuAnToan(e.detail || '') + (e.explain ? ' — ' + A.chuAnToan(e.explain) : '') + '</div>' +
@@ -985,8 +994,11 @@ body.khoa-cuon{overflow:hidden}
     bi.sort(mocGio); bat.sort(mocGio);
     $('#hnPhu').textContent = DOI_CHON ? ('đang xem ' + DOI_CHON) : '';
     // "LỖI ĐƯỢC BẮT • 77 CÂU" — số đứng ngay cạnh tên (thầy chốt 02/09 đợt 2)
-    $('#soBi').textContent = '• ' + bi.length + ' CÂU';
-    $('#soBat').textContent = '• ' + bat.length + ' CÂU';
+    // ⭐ v1.67.0 — số CÂU = lỗi còn hiệu lực (khớp thẻ đội + thanh tổng quan); câu đã gỡ vẫn nằm
+    // trong danh sách (gạch mờ) nên ghi thêm "· m đã gỡ" để khỏi đếm hụt tưởng thiếu câu.
+    var goBi = bi.length - bi.filter(conSong).length, goBat = bat.length - bat.filter(conSong).length;
+    $('#soBi').textContent = '• ' + bi.filter(conSong).length + ' CÂU' + (goBi ? ' · ' + goBi + ' đã gỡ' : '');
+    $('#soBat').textContent = '• ' + bat.filter(conSong).length + ' CÂU' + (goBat ? ' · ' + goBat + ' đã gỡ' : '');
     $('#veBi').innerHTML = bi.length ? bi.map(function(x){ return cauHtml(x, 'bi'); }).join('')
       : '<div class="trong">Chưa đội nào bắt lỗi ' + A.chuAnToan(DOI_CHON) + '.</div>';
     $('#veBat').innerHTML = bat.length ? bat.map(function(x){ return cauHtml(x, 'bat'); }).join('')

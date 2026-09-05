@@ -194,7 +194,8 @@
       var hs = t.tv.map(function (em) {
         var pb = pbCua(em, CH, PH).length, ph = phCua(em, CH).length;
         var bat = 0, bi = 0;
-        CH.forEach(function (x) { if (tenBang(x.chuLoi, em)) bat++; if (tenBang(x.err.who, em)) bi++; });
+        // ⭐ v1.67.0 — đã bắt / bị bắt CHỈ đếm lỗi còn hiệu lực (cùng thước với thanh tổng quan + thẻ đội)
+        CH.forEach(function (x) { if (!song(x.err)) return; if (tenBang(x.chuLoi, em)) bat++; if (tenBang(x.err.who, em)) bi++; });
         return { ten: em, pb: pb, ph: ph, bat: bat, bi: bi, xong: !pb && !ph };
       });
       var cham = chamDoi(t.ten);

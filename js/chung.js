@@ -523,12 +523,43 @@
     return nhoDiem[ma];
   }
 
+  // ⭐⭐ v1.63.0 (05/09/2026) — MẪU SỐ CHUẨN CỦA CẢ ACT, KHÔNG PHẢI MẪU SỐ CỦA
+  // TỪNG LƯỢT. Đo thật trên act `4mmufy` (OPEN THE BOX, lớp NNTNG4, 175 lượt):
+  // bốn em làm ĐÚNG CẢ 30 CÂU vẫn bị chấm "chưa hoàn thành" vì kho ghi 30/31,
+  // 30/33 ⇒ 97%, 91%.
+  //
+  // ⛔ Vì sao: từ ĐỢT 265 của AWord (25/08/2026), bốn template CHO MỞ LẠI CÂU
+  // ĐÃ SAI — open-the-box · true-false · crossword · find-the-match — nộp
+  // `total` = SỐ LƯỢT ĐÃ TIÊU chứ không phải số câu (`rowTotal = review.length`,
+  // mở lại một ô là thêm một hàng). Đó là con số ĐÚNG cho màn tổng kết trong
+  // game ("đội ấy đã tiêu thêm một lượt cho câu đó" — thầy chốt ở Đợt 265b),
+  // nhưng sai với câu hỏi bên này: "em ấy đã đạt ĐIỂM TỐI ĐA chưa?".
+  //
+  // ⇒ Mẫu số để tính % là mẫu số NHỎ NHẤT act ấy từng ghi. Mẫu số chỉ PHỒNG LÊN
+  // khi có người mở lại câu, không bao giờ tụt xuống dưới số câu thật (ô chưa ai
+  // mở vẫn được đếm vào), nên nhỏ nhất = số câu thật. Đã đối chiếu với chính đề
+  // trong kho: `4mmufy` có đúng 30 câu, nhỏ nhất trong 175 lượt = 30.
+  //
+  // ⚠️ Game mẫu số CỐ ĐỊNH không đổi một ly: anagram (636 chữ cái), quiz,
+  // type-the-answer… mọi lượt cùng một `total` nên nhỏ nhất chính là nó. Đã đo
+  // cả 14 act đang chạy của 8 lớp trước và sau khi sửa, chỉ act OPEN THE BOX đổi.
+  // ⛔ ĐỪNG đổi sang mẫu số PHỔ BIẾN NHẤT hay LỚN NHẤT: lớn nhất là lượt sai
+  // nhiều nhất lớp, lấy nó thì không em nào đủ điểm nữa.
+  function mauChuan(ds) {
+    var m = 0;
+    ds.forEach(function (r) {
+      if (r.tong > 0 && (m === 0 || r.tong < m)) m = r.tong;
+    });
+    return m;
+  }
+
   function gopTotNhat(ds) {
     var theo = {};
+    var mau = mauChuan(ds);
     ds.forEach(function (r) {
       var k = khoaTen(r.ten);
       if (!k) return;
-      var pt = r.tong > 0 ? Math.round(r.diem / r.tong * 100) : 0;
+      var pt = mau > 0 ? Math.round(r.diem / mau * 100) : 0;
       var cu = theo[k];
       if (!cu) {
         theo[k] = { ten: r.ten, diem: pt, giay: Math.round((r.ms || 0) / 1000),

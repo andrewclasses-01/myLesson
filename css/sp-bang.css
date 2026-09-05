@@ -111,7 +111,7 @@
 .pl-b svg{width:17px; height:17px}
 .pl-play{width:34px; height:34px; background:var(--xanh); color:#fff; box-shadow:0 3px 8px rgba(14,124,110,.3)}
 .pl-play:hover{background:var(--xanh); filter:brightness(1.1)}
-.pl-play svg{width:15px; height:15px; fill:currentColor; stroke:none}
+.pl-b.pl-play svg{width:15px; height:15px; fill:currentColor; stroke:none}   /* đặc hiệu cao hơn luật nét `.pl-b svg` phía dưới */
 .pl-gio{font:800 11px/1 var(--mono); font-variant-numeric:tabular-nums; color:var(--chu); flex:none}
 .pl-gio.mo{color:var(--nhat)}
 .pl-seek{flex:1; min-width:0; accent-color:var(--xanh); cursor:pointer}
@@ -143,6 +143,13 @@
 .pt.chon{background:var(--chu); border-color:var(--chu); color:#fff}
 .pt.chon b{color:#FF9B9B} .pt.chon.n0 b{color:#6FE3A5}
 .ruot{flex:1; min-height:0; overflow-y:auto; padding:10px; display:flex; flex-direction:column; gap:8px}
+/* ⛔ 05/09 (thầy bắt lỗi trên bảng thật): con của cột flex mà có `overflow:hidden` (.gr/.cum) thì
+   `min-height:auto` thành 0 ⇒ 41 khung cụm bị ÉP DẸT vừa chiều cao cột. Khoá không cho co. */
+.ruot > *{flex-shrink:0}
+/* ⛔ 05/09: trang thật KHÔNG có luật chung `svg{fill:none;stroke:currentColor}` như bản mẫu ⇒ icon nét
+   (±5s, tích, ✕, gửi) bị tô đặc thành CHẤM ĐEN. Khai nét cho mọi icon của file này; icon đặc (play,
+   pause, mốc giờ) đã tự khai `fill:currentColor; stroke:none` bên dưới. */
+.pl-b svg,.seg svg,.hs-tick svg,.acv-sn svg,.cot-sn svg,.tro .tk svg,.cum-o .bo svg,.lydo .gui svg,.hanh .nut svg,#btnXuLy svg{fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
 .trong.la{color:var(--m-la); border:1.5px dashed var(--m-la); border-radius:12px; background:var(--la-nhat)}
 .trong.mo{border:1.5px dashed var(--vien-dam); border-radius:12px}
 .cau{border:1.5px solid var(--vien); border-radius:12px; padding:10px 12px; background:#fff}

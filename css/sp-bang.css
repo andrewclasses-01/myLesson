@@ -70,8 +70,11 @@
    `--banphim` (đúng nếp `lop.html` đã dùng). Khai sẵn 0px ở đây để ngoài app trang chạy y như cũ.
    ⛔ Không có dòng này thì thanh app ăn mất HAI HÀNG PHÍM DƯỚI của bàn phím trong cột — thầy chụp
    ảnh báo 05/09. `body{padding-bottom}` của app KHÔNG cứu được vì `.bang` là `position:fixed`. */
-:root{--banphim:0px}
-.bang{position:fixed; inset:0 0 var(--banphim,0px) 0; z-index:60; background:var(--nen); display:flex; flex-direction:column}
+:root{--banphim:0px; --che-duoi:0px}
+/* ⭐ v1.70.0 — lấy SỐ LỚN HƠN giữa hai nguồn: `--banphim` do app đặt, `--che-duoi` do CHÍNH TRANG
+   tự đo thanh của app (`doThanhApp` trong js/sp-bang.js). App đo hụt thì trang vẫn tự cứu được,
+   và hai bên không đá nhau. ⛔ Trang kết thúc ĐÚNG ở mép trên thanh: không nội dung nào chui xuống dưới. */
+.bang{position:fixed; inset:0 0 max(var(--banphim,0px), var(--che-duoi,0px)) 0; z-index:60; background:var(--nen); display:flex; flex-direction:column}
 .bang-dai{flex:none; background:#16232A; color:#fff; padding:10px 16px; display:flex; align-items:center; gap:14px; overflow:hidden}
 .bd-tieu{flex:none; display:flex; flex-direction:column; gap:2px; padding-right:14px; border-right:1px solid rgba(255,255,255,.14)}
 .bd-tieu b{font:800 12px/1.2 var(--font); letter-spacing:.06em; text-transform:uppercase}
@@ -99,8 +102,16 @@
 .bd-luu.dang{color:#FCD34D} .bd-luu.loi{color:#FF9B9B}
 .bd-gio{font:800 13px/1 var(--mono); color:rgba(255,255,255,.7); font-variant-numeric:tabular-nums}
 
-.bang-cot{flex:1; min-height:0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(380px,1fr); gap:12px; padding:12px; overflow-x:auto}
-.cot{min-width:0; min-height:0; display:flex; flex-direction:column; background:#fff; border:1px solid var(--vien); border-radius:var(--r); box-shadow:var(--bong); overflow:hidden; container-type:inline-size; transition:box-shadow .3s}
+/* ⛔⛔ v1.70.0 — `grid-template-rows: minmax(0,1fr)` LÀ BẮT BUỘC. Thiếu nó, hàng của lưới cao
+   THEO NỘI DUNG (auto) chứ không theo khung: cột nào cao hơn chỗ còn lại là cả hàng phình ra, đẩy
+   BÀN PHÍM TRÀN XUỐNG DƯỚI đáy khung — đúng cảnh "nội dung chạy xuống dưới bàn phím" thầy báo
+   05/09. Đo thật lúc chưa có dòng này: bàn phím kết thúc ở 608px trong khi khung bảng chỉ tới
+   493px, tức thò ra 115px và nằm gọn dưới thanh của app. `minmax(0,…)` để cột được phép co nhỏ
+   hơn nội dung tối thiểu của nó. */
+.bang-cot{flex:1; min-height:0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(380px,1fr); grid-template-rows:minmax(0,1fr); gap:12px; padding:12px; overflow-x:auto}
+/* `container-type:size` (không phải `inline-size`): bàn phím cần biết CẢ chiều cao cột để tự kẹp
+   cỡ (xem `--u` ở `.kbd`), và nó chặn luôn việc cột phình theo nội dung. */
+.cot{min-width:0; min-height:0; display:flex; flex-direction:column; background:#fff; border:1px solid var(--vien); border-radius:var(--r); box-shadow:var(--bong); overflow:hidden; container-type:size; transition:box-shadow .3s}
 .cot.xong{box-shadow:inset 0 0 0 2px var(--m-la), var(--bong)}
 .cot-dau{flex:none; display:flex; align-items:center; gap:10px; padding:10px 12px; border-bottom:1px solid var(--vien)}
 .cot-ten{font:800 15px/1.2 var(--font)}
@@ -238,7 +249,13 @@ button.gio:hover{background:var(--xanh)}
 .gr .cum-dau .phai{color:#64748B}
 
 /* ── bàn phím trong cột — chép khuôn myActivity (mk-kbd), lấp trọn bề ngang cột ── */
-.kbd{flex:none; --u:min(calc(97cqw / 66.92), 19px); background:#2b2b2e; padding:calc(1 * var(--u)); display:flex; flex-direction:column; gap:calc(.55 * var(--u)); font-family:system-ui,'Segoe UI',Roboto,Arial,sans-serif; line-height:1.15; user-select:none; -webkit-user-select:none}
+/* ⭐⭐ v1.70.0 — KẸP CỠ PHÍM THEO CẢ CHIỀU CAO CỘT (`cqh`), không chỉ bề ngang.
+   Bàn phím cao khoảng **22u**; phía trên nó còn 4 dải cố định (tên đội · player · dải thành viên ·
+   hai nút phụ) ăn ~180px, và phải chừa chỗ đọc nội dung ⇒ trừ thẳng 260px rồi mới chia.
+   ⛔ Thiếu vế này thì cột lùn (chia 4-5 đội trên màn thấp) bị BÀN PHÍM CẮT CỤT: đo thật lúc chưa
+   kẹp — cột cao 405px mà tổng nội dung 469px, hai hàng phím dưới bị `overflow:hidden` của cột xén
+   mất, đúng cảnh thầy chụp ảnh báo. `clamp` giữ phím không nhỏ quá 4px/u để còn bấm được. */
+.kbd{flex:none; --u:clamp(4px, min(calc(97cqw / 66.92), calc((100cqh - 260px) / 22)), 19px); background:#2b2b2e; padding:calc(1 * var(--u)); display:flex; flex-direction:column; gap:calc(.55 * var(--u)); font-family:system-ui,'Segoe UI',Roboto,Arial,sans-serif; line-height:1.15; user-select:none; -webkit-user-select:none}
 .kr{display:flex; gap:calc(.5 * var(--u))}
 .k{flex:1; min-width:0; font-family:inherit; font-weight:600; font-size:calc(1.35 * var(--u)); color:#f4f4f5; background:#48484b; border:0; border-radius:calc(.6 * var(--u)); box-shadow:0 calc(.24 * var(--u)) 0 #202022; padding:calc(.95 * var(--u)) 0; margin:0; touch-action:manipulation; transition:filter .08s; cursor:pointer}
 .k:hover{filter:brightness(1.14)}

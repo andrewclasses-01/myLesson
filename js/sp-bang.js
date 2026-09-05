@@ -632,6 +632,8 @@
       c.nhap[id2] = c.nhap[id2] || '';
       the.querySelector('.lydo').classList.add('mo');
       var ta = the.querySelector('textarea'); ta.focus(); c.kb.el = ta; c.kb.cardId = id2; c.kb.tho = ''; c.kb.wStart = ta.value.length;
+      // Ô lý do có thể đang nằm ngoài tầm nhìn của khung cuộn — kéo nó vào giữa cho em thấy mình đang gõ đâu.
+      try { the.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {}
       return;
     }
     if (act === 'gui') {
@@ -736,6 +738,28 @@
     }).catch(function (e) { ctx.toast('Không nghe được kho: ' + ((e && e.message) || e)); });
   }
   function tatLive() { ST.nghe.forEach(function (h) { try { h(); } catch (e) {} }); ST.nghe = []; }
+  /* ⭐⭐ v1.70.0 — TỰ ĐO THANH ĐIỀU HƯỚNG CỦA myActivity, KHÔNG CHỜ APP.
+     App chèn thanh đó THẲNG vào document của trang này (`#__myactKbd`), nên trang tự đo được. Trước
+     đây trang chỉ ngồi chờ app đặt `--banphim`; app đo hụt hay khoá nhầm cờ một lần là trang chịu
+     trận cả phiên (đúng ca đã xảy ra). Nay trang tự lo phần của mình: ghi vào biến RIÊNG
+     `--che-duoi`, còn `.bang` lấy `max(--banphim, --che-duoi)` ⇒ hai bên KHÔNG đá nhau, ai đo ra
+     số lớn hơn thì nghe người đó, và app cũ/mới đều chạy đúng.
+     ⛔ Đo `innerHeight - top` chứ không lấy `height`: thanh đó neo cách đáy màn một khoảng (`bottom`),
+     lấy mỗi chiều cao là chừa hụt đúng khoảng đó. */
+  function doThanhApp() {
+    var el = document.getElementById('__myactKbd');
+    var che = 0;
+    if (el && !el.hidden) {
+      var r = el.getBoundingClientRect();
+      if (r.height > 0 && r.top < (window.innerHeight || 0)) {
+        che = Math.ceil((window.innerHeight || 0) - r.top) + 12;
+      }
+    }
+    var de = document.documentElement;
+    var can = che ? che + 'px' : '0px';
+    if (de.style.getPropertyValue('--che-duoi') !== can) de.style.setProperty('--che-duoi', can);
+  }
+
   function henVe() {
     clearTimeout(ST.henVe);
     ST.henVe = setTimeout(function () {
@@ -840,12 +864,22 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { if (ST.mo) dongBang(); pop.hidden = true; } });
     var bc = $('bangCot');
     bc.addEventListener('click', bamBang);
-    bc.addEventListener('click', bamPhim);
-    // ⛔ Chặn ở tầng KHUNG, pha capture: phím dựng lại cả hàng thì nút biến mất trước mousedown,
-    //    con trỏ ô gõ không rơi về body (bẫy đã ghi: ban-phim-ao-mat-con-tro).
-    ['mousedown', 'pointerdown', 'touchstart'].forEach(function (ev) {
-      bc.addEventListener(ev, function (e) { if (e.target.closest('.kbd')) e.preventDefault(); }, true);
-    });
+    /* ⛔⛔ v1.70.0 — BÀN PHÍM XỬ LÝ Ở `pointerdown`, KHÔNG PHẢI `click`. Thầy báo 05/09: trên màn
+       cảm ứng TOMKO bàn phím "không hề bấm được", trong khi chuột vẫn chạy.
+       GỐC RỄ (đã dựng bàn thử chứng minh cả hai chiều): bản cũ `preventDefault()` ở
+       `touchstart`/`pointerdown` (pha capture, để con trỏ không rơi khỏi ô gõ) rồi lại CHỜ `click`
+       mới hành động. Với CHUỘT thì `preventDefault` ở `mousedown` vẫn cho `click` bắn — nên bấm
+       chuột chạy tốt và bàn thử bằng chuột KHÔNG bắt được lỗi. Nhưng với NGÓN TAY, Chromium coi
+       `preventDefault` ở `touchstart`/`pointerdown` là "trang tự lo cử chỉ này" và NUỐT LUÔN cả
+       chuỗi chuột giả lập phía sau, gồm `click` ⇒ chạm bao nhiêu lần cũng không có sự kiện nào.
+       Đo thật: chạm ngón tay ra 0 lần `click`, ô gõ trống; chuyển sang `pointerdown` thì cả chạm
+       lẫn chuột đều ăn. `pointerdown` bắn cho MỌI loại con trỏ nên một tay bắt là đủ, và vẫn giữ
+       được `preventDefault` để con trỏ ở lại ô lý do (bẫy `ban-phim-ao-mat-con-tro`). */
+    bc.addEventListener('pointerdown', function (e) {
+      if (!e.target.closest('.kbd')) return;
+      e.preventDefault();
+      bamPhim(e);
+    }, true);
     bc.addEventListener('focusin', function (e) {
       var ta = e.target.closest('textarea'); if (!ta) return;
       var c = cotCua(+ta.closest('.cot').id.slice(3)); if (!c) return;
@@ -865,6 +899,10 @@
       var c = cotCua(+sk.closest('.cot').id.slice(3)); if (c) keoSeek(c, sk, true);
     });
     setInterval(function () { if (ST.mo) $('bdGio').textContent = gioHienTai(); }, 15000);
+    /* Canh giữ 400ms: thanh của app xuất hiện/đổi cỡ bất cứ lúc nào (nó tự dựng sau khi trang tải,
+       và đổi hình khi trang khai `banPhimRieng`). Chỉ ghi khi số đo LỆCH nên không làm trang giật. */
+    setInterval(doThanhApp, 400);
+    doThanhApp();
   }
 
   /* ⭐ v1.68.0 — mở thẳng bảng cho một đội (myActivity gọi qua `?bang=n`). Gọi SAU khi trang vẽ

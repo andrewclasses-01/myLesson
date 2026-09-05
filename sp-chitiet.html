@@ -266,6 +266,59 @@ body.khoa-cuon{overflow:hidden}
 .tt-la{color:var(--m-la); font-weight:700}
 .tt-cam{color:#B5720C; font-weight:700}
 
+/* ⭐⭐ v1.72.0 — THANH TIẾNG GHIM ĐẦU TRANG (thầy chốt 05/09 khuya).
+   MỘT player YouTube duy nhất cho cả trang, ẨN HẲN HÌNH (thầy chốt "audio player"): bấm ô giờ
+   ở BẤT KỲ ô lỗi nào ⇒ thanh đổi sang video của ĐỘI BỊ CHẤM câu đó rồi nhảy tới mốc.
+   ⛔ Thanh nằm TRONG <header class="top"> nên dính sẵn theo thanh đầu trang và tự bó đúng bề
+   ngang cột (.wrap) — KHÔNG phải đo chiều cao header bằng JS rồi đặt `top:` bằng tay.
+   ⛔⛔ Khung <iframe> của YouTube (#ytAn) CỐ Ý nằm thẳng dưới <body>, KHÔNG nằm trong thanh:
+   dời một cây DOM có <iframe> sang chỗ khác là trình duyệt NẠP LẠI iframe đó (mất luôn chỗ
+   đang phát). Khi thầy phóng to một khối thì chỉ hàng nút được dời, iframe đứng yên. */
+.pl-hang{border-top:1px solid var(--vien); background:rgba(255,255,255,.92)}
+.pl{display:flex; align-items:center; gap:10px; padding:8px 18px}
+.pl-doi{flex:none; min-width:96px; font:800 9.5px/1.25 var(--font); letter-spacing:.07em;
+  text-transform:uppercase; color:var(--nhat)}
+.pl-doi b{display:block; font:800 12.5px/1.3 var(--font); letter-spacing:.02em; color:var(--chu)}
+.pl-nut{flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--vien-dam);
+  background:#fff; color:var(--chu); display:grid; place-items:center; transition:background .15s, color .15s}
+.pl-nut:hover{background:var(--xanh-nhat); border-color:var(--xanh); color:var(--xanh)}
+.pl-nut:active{transform:scale(.95)}
+.pl-nut svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2;
+  stroke-linecap:round; stroke-linejoin:round}
+/* ⛔ Icon ĐẶC (tam giác play, hai vạch pause) phải khai fill riêng — trang này KHÔNG có luật
+   chung `svg{fill:none}`, đây đúng là cái bẫy đã cắn ở sp-bang.css v1.66.1 (nét thành chấm đen). */
+.pl-nut svg.dac{fill:currentColor; stroke:none}
+.pl-keo{flex:1; min-width:60px; accent-color:var(--xanh)}
+.pl-gio{flex:none; font:800 11px/1 var(--mono); color:var(--mo); font-variant-numeric:tabular-nums}
+.pl-chu{flex:1; font:700 11.5px/1.35 var(--font); color:var(--nhat)}
+/* Khung iframe 1px — đứng ngoài mọi khối, không bao giờ bị dời */
+#ytAn{position:fixed; left:0; top:0; width:1px; height:1px; opacity:.01; pointer-events:none; z-index:-1}
+/* Thanh đi theo vào màn phóng to (`doiChoThanh`) — khối phóng to là cột flex nên phải khai flex:none */
+.phong > .pl-hang{flex:none; border-top:0; border-bottom:1px solid var(--vien)}
+
+/* ⭐ v1.72.0 — ô giờ nay BẤM ĐƯỢC (nghe đúng đoạn đó) */
+button.gio{border:0; transition:filter .15s}
+button.gio:hover{filter:brightness(1.7)}
+button.gio:active{transform:scale(.94)}
+
+/* ⭐⭐ v1.72.0 — "Cần thầy quyết" nay dùng CHUNG khuôn thẻ câu đầy đủ ba tầng của khối
+   "Chi tiết từng câu" (`cauHtml`) + hàng nút BỎ LỖI / GIỮ LẠI.
+   ⛔ Bộ luật `.cq-o` / `.cq-dau` / `.cq-cau` / `.cq-chi` / `.cq-pd` phía trên GIỮ LẠI làm lịch
+   sử — từ bản này không còn phần tử nào mang các class đó nữa. */
+#cqVe .cau-o{background:#FFFCF7}
+.cq-nut{display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+  margin-top:8px; padding-top:8px; border-top:1px dashed var(--vien)}
+.cq-cum{flex:1; min-width:150px; font:700 11px/1.4 var(--font); color:#B5720C}
+.nut.bo{border-color:var(--do); color:var(--do)}
+.nut.bo:hover{background:var(--do-nhat); border-color:var(--do); color:var(--do)}
+.nut.dangchon{background:var(--xanh); border-color:var(--xanh); color:#fff}
+.nut.bo.dangchon{background:var(--do); border-color:var(--do); color:#fff}
+.cau-o.tq{border:3px solid var(--xanh)}
+.nhan.tq{background:var(--xanh); color:#fff}
+.cq-luu{font:700 11px/1.3 var(--font); color:var(--nhat)}
+.cq-luu.dang{color:var(--m-cam)}
+.cq-luu.loi{color:var(--do)}
+
 .nhan{display:inline-block; padding:2px 8px; border-radius:99px; font:800 10px/1.6 var(--font)}
 .nhan.g{background:var(--duong-nhat); color:var(--m-duong)}
 .nhan.p{background:var(--la-nhat); color:var(--m-la)}
@@ -326,7 +379,25 @@ body.khoa-cuon{overflow:hidden}
     </a>
     <div class="day"></div>
   </div>
+  <!-- ⭐⭐ v1.72.0 — THANH TIẾNG. Đặt trong <header class="top"> để dính cùng thanh đầu trang
+       (khỏi đo chiều cao header) và bó đúng bề ngang cột. Ẩn tới khi có buổi thật. -->
+  <div class="pl-hang" id="plHang" hidden>
+    <div class="wrap pl" id="plThanh">
+      <div class="pl-doi">Đang nghe<b id="plDoi">—</b></div>
+      <button class="pl-nut" id="plLui" type="button" title="Lùi 5 giây">
+        <svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 1-6.9 8.2"/><path d="M12 2.5 8.4 5.2 12 8"/></svg></button>
+      <button class="pl-nut" id="plChay" type="button" title="Phát / Dừng"></button>
+      <button class="pl-nut" id="plTien" type="button" title="Tiến 5 giây">
+        <svg viewBox="0 0 24 24"><path d="M12 5a7 7 0 1 0 6.9 8.2"/><path d="M12 2.5 15.6 5.2 12 8"/></svg></button>
+      <input class="pl-keo" id="plKeo" type="range" min="0" max="1000" value="0" title="Kéo tới đoạn khác">
+      <span class="pl-gio" id="plGio">00:00 / 00:00</span>
+      <span class="pl-chu" id="plChu">Bấm ô giờ ở một câu bất kỳ để nghe đúng đoạn đó.</span>
+    </div>
+  </div>
 </header>
+<!-- ⛔⛔ Khung YouTube 1px — CỐ Ý đứng ngoài mọi khối và KHÔNG BAO GIỜ bị dời chỗ: dời một cây
+     DOM có <iframe> là trình duyệt nạp lại iframe, mất chỗ đang phát. -->
+<div id="ytAn"><div id="ytKhung"></div></div>
 
 <main class="wrap">
   <div class="tieu-de" id="dauTrang" style="padding:18px 0 4px">Đang đọc dữ liệu…</div>
@@ -366,6 +437,7 @@ body.khoa-cuon{overflow:hidden}
     <section class="khoi" id="khoiCanQuyet" hidden>
       <div class="khoi-dau">
         <h2>⚠️ Cần thầy quyết</h2><span class="phu" id="cqPhu"></span>
+        <span class="cq-luu" id="cqLuu"></span>
         <div class="day"></div>
         <button class="zoom-nut" data-phong="khoiCanQuyet" title="Phóng to toàn màn hình"></button>
       </div>
@@ -432,10 +504,10 @@ body.khoa-cuon{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=61"></script>
+<script src="config.js?v=62"></script>
 <script src="js/chung.js?v=33"></script>
 <script src="js/trung.js?v=1"></script>
-<script src="js/sp-bang.js?v=4"></script>
+<script src="js/sp-bang.js?v=5"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -615,8 +687,15 @@ body.khoa-cuon{overflow:hidden}
         return baoLoi('Buổi đang mở của lớp là "' + (BUOI.lesson || '?') + '", không khớp bài này.');
       if (BUOI.moHinh !== 2)
         return baoLoi('Buổi này theo mô hình cũ — chưa có dữ liệu câu chấm/phản biện chi tiết.');
-      return Promise.all([spTongLoiFs(BUOI._id), spPhanHoiFs(BUOI._id), spCumFs(BUOI._id), spCumPhieuFs(BUOI._id)]).then(function(r2){
-        TONGLOI = r2[0]; PHANHOI = r2[1]; CUM = r2[2]; CUMPHIEU = r2[3];
+      /* ⭐⭐ v1.72.0 — vào kho bằng NGHE SỐNG (bản chụp đầu tiên = lượt đọc mở trang).
+         ⛔ Đường lùi thật: SDK không tải được (mạng chặn gstatic) thì đọc một lượt bằng REST y
+         như trước — trang vẫn xem được, chỉ không tự cập nhật, và bảng chốt tự nghe lấy. */
+      return batNgheKho()['catch'](function(e){
+        KHONG_SONG = true;
+        baoToast('Không nghe được kho sống (' + ((e && e.message) || e) + ') — trang đọc một lượt như cũ.');
+        return Promise.all([spTongLoiFs(BUOI._id), spPhanHoiFs(BUOI._id), spCumFs(BUOI._id), spCumPhieuFs(BUOI._id)])
+          .then(function(r2){ TONGLOI = r2[0]; PHANHOI = r2[1]; CUM = r2[2]; CUMPHIEU = r2[3]; });
+      }).then(function(){
         /* ⭐ v1.66.0 — nối dây khung AI CÒN VIỆC + bảng chốt. Luật CHÍNH CHỦ QUYẾT truyền
            sang chứ KHÔNG chép thêm bản thứ năm; mảng kho trả về qua `lay()` là CHÍNH mảng
            của trang (bảng sửa tại chỗ rồi vẽ lại cả trang), `nhan()` nhận bản mới từ onSnapshot. */
@@ -626,6 +705,9 @@ body.khoa-cuon{overflow:hidden}
           lopGoc: lChiTiet.tenGoc || MA_LOP, dsEm: lChiTiet.hocSinh || [], avtChu: avtChu, toast: baoToast,
           luat: { tenBang: tenBang, chinhChuDaNhan: chinhChuDaNhan, tranhChap: tranhChap, choNguoiChamTraLoi: choNguoiChamTraLoi },
           bang: SO_BANG,
+          /* ⛔ v1.72.0 — trang đã nghe kho sống rồi thì bảng ĐỪNG nghe nữa (gấp đôi lượt đọc).
+             Chỉ khi trang phải lùi về đọc REST một lượt thì mới để bảng tự nghe. */
+          nghe: KHONG_SONG,
           lay: function(){ return { tongLoi: TONGLOI, phanHoi: PHANHOI, cum: CUM, cumPhieu: CUMPHIEU }; },
           nhan: function(part){
             if (part.tongLoi) TONGLOI = part.tongLoi;
@@ -644,6 +726,10 @@ body.khoa-cuon{overflow:hidden}
         $('#khoiLoi').hidden = true;
         $('#thanTrang').hidden = false;
         veTatCa();
+        // Thanh tiếng chỉ có nghĩa khi đã có buổi thật (mới biết link video của từng đội).
+        $('#plHang').hidden = false;
+        noiThanhTieng();
+        napYT();
       });
     })['catch'](function(e){ baoLoi('Không đọc được dữ liệu (' + ((e && e.message) || e) + ').'); });
   }
@@ -962,9 +1048,13 @@ body.khoa-cuon{overflow:hidden}
   // (đội chấm + đội bị chấm) nên tính là "liên quan" nếu đội đang chọn nằm ở BẤT KỲ phía nào,
   // không thì bấm đội nào cũng thiếu mất một nửa số câu của chính đội đó.
   function veCanQuyet(){
-    var ds = CHAM.filter(tranhChap).filter(function(x){
+    /* ⭐⭐ v1.72.0 — câu thầy ĐÃ QUYẾT (`err.thay`) rớt khỏi khối này và về nằm ở khối "Chi tiết
+       từng câu" (thầy chốt). ⛔ Phải lọc bằng `!x.err.thay` chứ không dựa vào `tranhChap`: khi
+       thầy bấm GIỮ LẠI thì `trangThai` vẫn là 'song' và câu vẫn còn phiếu phản đối ⇒ `tranhChap`
+       vẫn trả true và câu sẽ nằm lại đây mãi. Bấm BỎ LỖI thì tự rớt (trangThai thành 'go'). */
+    var ds = CHAM.filter(tranhChap).filter(function(x){ return !x.err.thay; }).filter(function(x){
       return !DOI_CHON || x.doiCham === DOI_CHON || x.doiBiCham === DOI_CHON;
-    });
+    }).sort(mocGio);
     var khoi = $('#khoiCanQuyet');
     if (!ds.length) { khoi.hidden = true; return; }
     khoi.hidden = false;
@@ -977,26 +1067,12 @@ body.khoa-cuon{overflow:hidden}
     var soCua = ds.filter(cuaDoiNay).length, soBat = ds.length - soCua;
     $('#cqPhu').textContent = ds.length + ' câu · lọc theo ' + DOI_CHON + ' — ' + soCua
       + ' của chính đội · ' + soBat + ' đội này bắt được (chữa ở màn của đội bị bắt)';
+    /* ⭐ v1.72.0 — thay ruột tự vẽ (chỉ có câu + lỗi + phiếu phản đối) bằng ĐÚNG khuôn thẻ câu
+       ba tầng của khối "Chi tiết từng câu": mốc giờ bấm nghe được · ai chấm ai · câu gốc · lỗi ·
+       giải thích · chính chủ nói gì · TỪNG đồng đội nói gì · người chấm Keep/Accept chưa —
+       cộng hàng nút BỎ LỖI / GIỮ LẠI. Một khuôn duy nhất ⇒ sửa một chỗ là cả trang cùng đúng. */
     $('#cqVe').innerHTML = ds.map(function(x){
-      var e = x.err;
-      var phieu = PHANHOI.filter(function(p){ return p.errId === e.id && p.y === 'phanDoi'; });
-      return '<div class="cq-o">' +
-        '<div class="cq-dau">' + nhanLoai(e.type) +
-          (cuaDoiNay(x) ? '<span class="nhan cuadoi">CỦA ĐỘI NÀY</span>'
-            : '<span class="nhan batduoc">BẮT ĐƯỢC · CHỮA Ở ' + A.chuAnToan(x.doiBiCham) + '</span>') +
-          '<span>Chấm bởi ' + A.chuAnToan(x.chuLoi) + ' (' + A.chuAnToan(x.doiCham) + ')</span>' +
-          /* ⭐ v1.67.0 (thầy chốt 05/09 tối) — nhãn nói ĐÚNG NGƯỜI đang nợ việc: câu còn tranh chấp mà
-             chưa `ketLuan` thì việc nằm ở NGƯỜI CHẤM (bấm Keep/Accept), không phải "đội bị chấm phản
-             hồi" — họ đã phản đối rồi. Chính bộ đếm "chưa phản hồi" trên thẻ đội cũng tính như vậy. */
-          (e.ketLuan === 'keep' ? '<span class="nhan keep">ĐÃ GIỮ, CHỜ THẦY</span>' : '<span class="nhan phandoi">CHỜ ' + A.chuAnToan(x.chuLoi) + ' TRẢ LỜI</span>') +
-        '</div>' +
-        (e.sentence ? '<div class="cq-cau">“' + A.chuAnToan(e.sentence) + '”</div>' : '') +
-        '<div class="cq-chi">' + A.chuAnToan(e.detail || '') + (e.explain ? ' — ' + A.chuAnToan(e.explain) : '') + '</div>' +
-        phieu.map(function(p){
-          return '<div class="cq-pd"><b>' + A.chuAnToan(p.voter) + '</b> (' + A.chuAnToan(p.voterTeam || '') + ') phản đối: ' +
-            A.chuAnToan(p.lyDo || '(không ghi lý do)') + '</div>';
-        }).join('') +
-      '</div>';
+      return cauHtml(x, x.doiBiCham === DOI_CHON ? 'bi' : 'bat', 'quyet');
     }).join('');
   }
 
@@ -1033,13 +1109,16 @@ body.khoa-cuon{overflow:hidden}
   //   1. Ai — mốc giờ · loại lỗi · em bị bắt · người chấm (kèm đội, tuỳ bên đang xem)
   //   2. Nội dung — câu gốc · lỗi · giải thích
   //   3. Diễn biến — chính chủ trả lời gì · đồng đội nói gì · người chấm kết luận gì
-  function cauHtml(x, ben){
+  function cauHtml(x, ben, cheDo){
     var e = x.err;
     var phieu = PHANHOI.filter(function(p){ return p.errId === e.id; });
     var cc = phieu.filter(function(p){ return tenBang(p.voter, e.who); })[0] || null;
     var khac = phieu.filter(function(p){ return !tenBang(p.voter, e.who); });
     var laTc = tranhChap(x), daGo = e.trangThai === 'go';
     var vo = daGo ? 'go' : (laTc ? 'tc' : (phieu.some(function(p){ return p.y === 'dongY'; }) ? 'ok' : ''));
+    // ⭐ v1.72.0 — thầy đã GIỮ thì viền xanh (chốt xong, còn tính lỗi). 'bo'/'gop' đã mang
+    // trangThai 'go' nên tự rơi vào lớp `go` ở trên, không phải xử thêm.
+    if (e.thay === 'giu') vo = 'tq';
 
     // Tầng 3 — diễn biến, mỗi dòng một việc, luôn nói rõ AI làm gì
     var dong = [];
@@ -1075,9 +1154,28 @@ body.khoa-cuon{overflow:hidden}
       ) + '</span>');
     }
 
+    /* ⭐ v1.72.0 — ô giờ nay là NÚT: bấm là thanh tiếng đầu trang đổi sang video của ĐỘI BỊ
+       CHẤM câu này (đội đang nói) rồi nhảy tới mốc.
+       ⛔ `data-pldoi` phải là đội BỊ chấm, KHÔNG phải đội chấm — nhầm chỗ này thì nghe nhầm
+       bài của đội khác mà mọi con số vẫn "đúng", không có gì báo sai. */
+    var nutGio = '<button type="button" class="gio" data-giay="' + giayCua(e) +
+      '" data-pldoi="' + A.chuAnToan(x.doiBiCham) + '" title="Nghe đoạn này">' + fmtGio(e) + '</button>';
+    var nhanTq = e.thay ? '<span class="nhan tq">THẦY QUYẾT · ' +
+      (e.thay === 'bo' ? 'ĐÃ BỎ' : e.thay === 'giu' ? 'GIỮ LỖI' : 'ĐÃ GỘP') + '</span>' : '';
+    // Hai badge hai chiều (v1.71.0) chỉ có nghĩa ở khối "Cần thầy quyết" — khối hai nửa đã tự
+    // chia bên trái/bên phải rồi.
+    var nhanChieu = cheDo === 'quyet'
+      ? (x.doiBiCham === DOI_CHON ? '<span class="nhan cuadoi">CỦA ĐỘI NÀY</span>'
+        : '<span class="nhan batduoc">BẮT ĐƯỢC · CHỮA Ở ' + A.chuAnToan(x.doiBiCham) + '</span>')
+      : '';
+    /* Hàng nút hiện ở HAI ca: câu đang chờ quyết (khối Cần thầy quyết) VÀ câu thầy ĐÃ quyết
+       (đang nằm ở khối hai nửa) — ca sau là đường ĐỔI Ý, không thì bấm nhầm một cái là hết
+       đường sửa vì câu đã rớt khỏi khối Cần thầy quyết. */
+    var hangNut = (cheDo === 'quyet' || e.thay) ? nutQuyetHtml(x) : '';
+
     return '<div class="cau-o ' + vo + '">' +
       '<div class="cau-dau">' +
-        '<span class="gio">' + fmtGio(e) + '</span>' + nhanLoai(e.type) +
+        nutGio + nhanLoai(e.type) + nhanChieu + nhanTq +
         '<span class="ai">' + (ben === 'bi'
           ? '👤 ' + A.chuAnToan(e.who || '?') + ' · chấm bởi <b>' + A.chuAnToan(x.chuLoi) + '</b> (' + A.chuAnToan(x.doiCham) + ')'
           : '👤 ' + A.chuAnToan(e.who || '?') + ' (' + A.chuAnToan(x.doiBiCham) + ') · <b>' + A.chuAnToan(x.chuLoi) + '</b> chấm') +
@@ -1087,7 +1185,22 @@ body.khoa-cuon{overflow:hidden}
       (e.sentence ? '<div class="cau-goc">“' + A.chuAnToan(e.sentence) + '”</div>' : '') +
       '<div class="cau-loi">' + A.chuAnToan(e.detail || '') + '</div>' +
       (e.explain ? '<div class="cau-giai">' + A.chuAnToan(e.explain) + '</div>' : '') +
-      '<div class="cau-tt">' + dong.join('') + '</div>' +
+      '<div class="cau-tt">' + dong.join('') + '</div>' + hangNut +
+    '</div>';
+  }
+
+  /* ⭐⭐ v1.72.0 — HÀNG NÚT PHÁN QUYẾT CỦA THẦY (thầy chốt: bấm ngay trên dashboard).
+     Câu nằm trong CỤM lỗi trùng thì báo rõ trước khi bấm — thầy đã chốt "áp cho CẢ CỤM, giống
+     app": BỎ = gỡ trọn cụm · GIỮ = câu đang bấm tính lỗi, các câu trùng còn lại đánh dấu đã gộp. */
+  function nutQuyetHtml(x){
+    var e = x.err, c = cumCua(e.id);
+    var chu = c ? 'Câu này nằm trong cụm ' + ((c.ids || []).length) +
+      ' câu trùng — quyết là áp cho CẢ CỤM (giữ câu này, các câu còn lại đánh dấu đã gộp).' : '';
+    return '<div class="cq-nut"><span class="cq-cum">' + A.chuAnToan(chu) + '</span>' +
+      '<button type="button" class="nut bo' + (e.thay === 'bo' ? ' dangchon' : '') +
+        '" data-quyet="bo" data-err="' + A.chuAnToan(e.id) + '">BỎ LỖI</button>' +
+      '<button type="button" class="nut' + (e.thay === 'giu' ? ' dangchon' : '') +
+        '" data-quyet="giu" data-err="' + A.chuAnToan(e.id) + '">GIỮ LẠI</button>' +
     '</div>';
   }
 
@@ -1142,6 +1255,325 @@ body.khoa-cuon{overflow:hidden}
     XLSX.writeFile(wb, 'SP_CHECK_' + MA_LOP + '_' + tenBai + '.xlsx');
   }
 
+  // ═══ THANH TIẾNG — MỘT player YouTube ẩn hình cho cả trang (v1.72.0) ════════════════════
+  // Bộ máy chép từ `js/sp-bang.js` (bảng chốt) — cùng cách dựng, cùng cách nhảy giây (lùi 1
+  // giây cho khỏi cụt đầu câu). Khác một điểm: bảng chốt mỗi cột một máy, trang này DÙNG CHUNG
+  // một máy và đổi video theo câu thầy bấm.
+  var PL = { yt: null, san: false, ok: false, vid: '', doi: '', keo: false, cho: -1 };
+
+  function giayCua(e){ return (+e.min || 0) * 60 + (+e.sec || 0); }
+  function mmss(s){
+    s = Math.max(0, Math.floor(s || 0));
+    return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  }
+  function parseYt(url){
+    var m = String(url || '').trim()
+      .match(/(?:youtube\.com\/(?:watch\?.*v=|shorts\/|embed\/)|youtu\.be\/)([\w-]{6,})/);
+    return m ? m[1] : '';
+  }
+  function videoTheoDoi(tenDoi){
+    var so = parseInt(String(tenDoi || '').replace(/\D+/g, ''), 10);
+    var t = ((BUOI && BUOI.teams) || []).filter(function(x){ return +x.team === so; })[0];
+    return t ? parseYt(t.video) : '';
+  }
+  function napYT(){
+    if (window.YT && window.YT.Player) { PL.san = true; return; }
+    if (!document.getElementById('ytApi')) {
+      var tag = document.createElement('script');
+      tag.id = 'ytApi'; tag.src = 'https://www.youtube.com/iframe_api';
+      document.head.appendChild(tag);
+    }
+    /* ⛔ NỐI ĐUÔI tay bắt, đừng gán đè: `js/sp-bang.js` cũng đặt `onYouTubeIframeAPIReady` khi
+       thầy mở BẢNG CHỐT. Gán đè là một trong hai bên mất player mà không báo lỗi gì. */
+    var cu = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){
+      if (cu) { try { cu(); } catch (e) {} }
+      PL.san = true;
+      if (PL.vid) dungPl();
+    };
+  }
+  function dungPl(){
+    if (PL.yt || !PL.san || !PL.vid) return;
+    try {
+      PL.yt = new YT.Player('ytKhung', {
+        videoId: PL.vid, playerVars: { rel: 0, playsinline: 1 },
+        events: { onReady: function(){ PL.ok = true; if (PL.cho >= 0) { var g = PL.cho; PL.cho = -1; plToiGiay(g); } } }
+      });
+    } catch (e) {}
+  }
+  function plToiGiay(giay){
+    if (!PL.yt || !PL.ok) { PL.cho = giay; return; }
+    try { PL.yt.seekTo(Math.max(0, giay - 1), true); PL.yt.playVideo(); } catch (e) {}
+  }
+  // Bấm ô giờ ở một câu ⇒ mở video của ĐỘI BỊ CHẤM câu đó rồi nhảy tới mốc.
+  function plMoDoi(tenDoi, giay){
+    var id = videoTheoDoi(tenDoi);
+    if (!id) { baoToast('Buổi này chưa có link video cho ' + (tenDoi || 'đội đó') + '.'); return; }
+    $('#plHang').hidden = false;
+    if (PL.doi !== tenDoi) { PL.doi = tenDoi; $('#plDoi').textContent = tenDoi; }
+    $('#plChu').textContent = '';
+    if (PL.vid !== id) {
+      PL.vid = id;
+      /* ⛔⛔ BẪY ĐÃ CẮN (đo thật 05/09): đổi sang video đội khác bằng `cueVideoById` rồi gọi
+         `seekTo` NGAY thì lệnh nhảy BỊ NUỐT — video mới còn đang nạp, máy chạy từ 00:00 và
+         không báo lỗi gì (thầy bấm câu ở 02:41 mà nghe từ đầu bài). Dùng `loadVideoById` với
+         `startSeconds`: một lệnh vừa nạp vừa đặt chỗ bắt đầu, không có khe hở nào để lọt. */
+      if (PL.yt && PL.ok) {
+        try { PL.yt.loadVideoById({ videoId: id, startSeconds: Math.max(0, giay - 1) }); } catch (e) {}
+        return;
+      }
+      napYT(); dungPl();
+    }
+    plToiGiay(giay);
+  }
+  var IC_CHAY = '<svg viewBox="0 0 24 24" class="dac"><path d="M7 4l13 8-13 8z"/></svg>';
+  var IC_DUNG = '<svg viewBox="0 0 24 24" class="dac"><rect x="6.5" y="4" width="4" height="16" rx="1"/>' +
+    '<rect x="13.5" y="4" width="4" height="16" rx="1"/></svg>';
+  function nhipPl(){
+    if (!PL.yt || !PL.ok) return;
+    try {
+      var cur = PL.yt.getCurrentTime() || 0, dur = PL.yt.getDuration() || 0;
+      $('#plGio').textContent = mmss(cur) + ' / ' + mmss(dur);
+      if (!PL.keo) $('#plKeo').value = dur ? Math.round(cur / dur * 1000) : 0;
+      var chay = PL.yt.getPlayerState() === 1;
+      var n = $('#plChay');
+      if (n.dataset.chay !== (chay ? '1' : '0')) { n.dataset.chay = chay ? '1' : '0'; n.innerHTML = chay ? IC_DUNG : IC_CHAY; }
+    } catch (e) {}
+  }
+  function noiThanhTieng(){
+    $('#plChay').innerHTML = IC_CHAY;
+    $('#plChay').onclick = function(){
+      if (!PL.yt || !PL.ok) return;
+      try { if (PL.yt.getPlayerState() === 1) PL.yt.pauseVideo(); else PL.yt.playVideo(); } catch (e) {}
+    };
+    $('#plLui').onclick = function(){ nhichPl(-5); };
+    $('#plTien').onclick = function(){ nhichPl(5); };
+    var keo = $('#plKeo');
+    keo.addEventListener('input', function(){ PL.keo = true; });
+    keo.addEventListener('change', function(){
+      PL.keo = false;
+      if (!PL.yt || !PL.ok) return;
+      try { var dur = PL.yt.getDuration() || 0; PL.yt.seekTo(dur * (+keo.value / 1000), true); } catch (e) {}
+    });
+    setInterval(nhipPl, 400);
+    // Bấm ô giờ ở BẤT KỲ khối nào (Cần thầy quyết · hai nửa) — bắt ở tầng document vì các ô
+    // được vẽ lại sau mỗi lần đổi đội, gắn tay bắt vào từng ô là mất ngay lượt vẽ thứ hai.
+    document.addEventListener('click', function(ev){
+      var g = ev.target.closest('[data-giay]');
+      if (g) plMoDoi(g.dataset.pldoi || '', +g.dataset.giay || 0);
+    });
+    // Mở BẢNG CHỐT thì dừng tiếng ở đây — bảng có player riêng của nó, hai nguồn tiếng cùng
+    // chạy là không nghe được gì. (Thêm tay bắt thứ hai, không đụng tay bắt của SPBang.)
+    var xl = $('#btnXuLy');
+    if (xl) xl.addEventListener('click', function(){
+      try { if (PL.yt && PL.ok) PL.yt.pauseVideo(); } catch (e) {}
+    });
+  }
+  function nhichPl(giay){
+    if (!PL.yt || !PL.ok) return;
+    try {
+      var cur = PL.yt.getCurrentTime() || 0, dur = PL.yt.getDuration() || 0;
+      PL.yt.seekTo(Math.max(0, Math.min(dur || 1e9, cur + giay)), true);
+    } catch (e) {}
+  }
+  /* Thanh tiếng ĐI THEO vào màn phóng to (thầy chốt). DỜI phần tử chứ không chép — chép là có
+     hai hàng nút cùng sống và tay bắt sự kiện trỏ nhầm chỗ (cùng cách `pbDungThanh` bên
+     mySpeaking). Khung <iframe> nằm ngoài nên không bị nạp lại. */
+  function doiChoThanh(id){
+    var hang = document.getElementById('plHang');
+    if (!hang) return;
+    var el = id ? document.getElementById(id) : null;
+    if (el) el.insertBefore(hang, el.firstChild);
+    else document.querySelector('header.top').appendChild(hang);
+  }
+
+  // ═══ PHÁN QUYẾT CUỐI CỦA THẦY — ghi thẳng lên kho (v1.72.0) ═══════════════════════════════
+  /* Thầy chốt 05/09 khuya: bấm BỎ LỖI / GIỮ LẠI ngay trên dashboard, và khi app mySpeaking bấm
+     CHỐT KẾT QUẢ mà đá nhau thì **bản dashboard thắng** ⇒ mỗi lượt ghi ở đây đóng thêm dấu
+     nguồn `thayNguon:'bang'` để bên app biết đường nhường (đợt 2 sẽ đọc dấu này).
+     ⛔ Khuôn ghi y hệt `sp-bang.js ghiKetLuan`: đọc bản kho MỚI NHẤT rồi chỉ sửa đúng các lỗi
+     cần sửa, PATCH kèm `updateMask` (LUẬT 9️⃣ — ghi đè cả tài liệu là xoá mất `timers`/`daNop`).
+     ⛔ Luật kho cho phép: nó chỉ khoá danh sách trường CẤP CAO NHẤT và cấm mảng `errors` NGẮN
+     ĐI — thêm trường bên trong một phần tử của mảng thì không vướng, và ta map giữ nguyên số
+     phần tử. Đi bằng khoá công khai, KHÔNG cần khoá quản trị. */
+  function fsMa(v){
+    if (v === null || v === undefined) return { nullValue: null };
+    if (typeof v === 'boolean') return { booleanValue: v };
+    if (typeof v === 'number') return Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v };
+    if (typeof v === 'string') return { stringValue: v };
+    if (Array.isArray(v)) return { arrayValue: { values: v.map(fsMa) } };
+    var f = {}; Object.keys(v).forEach(function(k){ f[k] = fsMa(v[k]); });
+    return { mapValue: { fields: f } };
+  }
+  function spKhoa(){ return '?key=' + encodeURIComponent(((A.CFG && A.CFG.AWORD_DB) || {}).apiKey || ''); }
+  function duongTongLoi(slug){
+    return '/spBuoi/' + encodeURIComponent(BUOI._id) + '/tongLoi/' + encodeURIComponent(slug);
+  }
+  function fsDocMot(duong){
+    return fetch(spFsGoc() + duong + spKhoa(), { cache: 'no-store' }).then(function(r){
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error('FS_' + r.status);
+      return r.json().then(spFsGiaiDoc);
+    });
+  }
+  function fsGhiMot(duong, data, mask){
+    var fields = {}; Object.keys(data).forEach(function(k){ fields[k] = fsMa(data[k]); });
+    var q = spKhoa();
+    (mask || []).forEach(function(f){ q += '&updateMask.fieldPaths=' + encodeURIComponent(f); });
+    return fetch(spFsGoc() + duong + q, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: fields })
+    }).then(function(r){
+      if (r.ok) return true;
+      return r.json().then(function(j){ throw new Error((j.error && j.error.message) || ('FS_' + r.status)); },
+        function(){ throw new Error('FS_' + r.status); });
+    });
+  }
+  // Cụm lỗi trùng chứa câu này (chỉ tính cụm có từ 2 câu trở lên)
+  function cumCua(errId){
+    for (var i = 0; i < CUM.length; i++) {
+      var ids = CUM[i].ids || [];
+      if (ids.indexOf(errId) >= 0 && ids.length > 1) return CUM[i];
+    }
+    return null;
+  }
+  var CQ_LUU = { dang: 0, luc: 0, loi: '' };
+  function veCqLuu(){
+    var el = $('#cqLuu');
+    if (!el) return;
+    if (CQ_LUU.loi) { el.className = 'cq-luu loi'; el.textContent = 'Chưa lưu được — ' + CQ_LUU.loi; return; }
+    if (CQ_LUU.dang) { el.className = 'cq-luu dang'; el.textContent = 'Đang lưu…'; return; }
+    el.className = 'cq-luu';
+    el.textContent = CQ_LUU.luc ? 'Đã lưu ' + mmss2(CQ_LUU.luc) : '';
+  }
+  function mmss2(t){
+    var d2 = new Date(t);
+    return String(d2.getHours()).padStart(2, '0') + ':' + String(d2.getMinutes()).padStart(2, '0');
+  }
+  /* Thầy bấm BỎ LỖI / GIỮ LẠI.
+     ⛔ Một CỤM có thể trải trên NHIỀU tài liệu `tongLoi` (từ ?v=61 web học sinh cho gộp cả hai
+     dòng cùng người chấm, nhưng cụm cũ vẫn có thể vắt qua hai người chấm) ⇒ phải tra từng câu
+     xem nó nằm trong bản chấm của AI rồi gom theo tài liệu mà ghi.
+     ⛔ Cập nhật lạc quan (vẽ ngay) nhưng ghi HỎNG thì LÙI LẠI HẾT + báo đỏ — không được để màn
+     hình nói "xong" trong khi kho vẫn số cũ. */
+  function quyetThay(errId, y){
+    if (!BUOI || !BUOI._id) return;
+    var c = cumCua(errId);
+    var ids = c ? (c.ids || []).slice() : [errId];
+    if (ids.indexOf(errId) < 0) ids.push(errId);
+
+    var oDau = {};
+    TONGLOI.forEach(function(dd){
+      (dd.errors || []).forEach(function(er){ if (er.id) oDau[er.id] = dd._id; });
+    });
+    var theoSlug = {};
+    ids.forEach(function(id){
+      var slug = oDau[id];
+      if (!slug) return;   // câu của cụm không còn trên kho (buổi cũ) — bỏ qua, không dựng chuyện
+      var v = (y === 'bo') ? { trangThai: 'go', thay: 'bo' }
+        : (id === errId ? { trangThai: 'song', thay: 'giu' } : { trangThai: 'go', thay: 'gop' });
+      (theoSlug[slug] = theoSlug[slug] || {})[id] = v;
+    });
+    var slugs = Object.keys(theoSlug);
+    if (!slugs.length) { baoToast('Không tìm thấy bản chấm chứa câu này trên kho.'); return; }
+
+    var nay = Date.now(), lui = [];
+    TONGLOI.forEach(function(dd){
+      var m = theoSlug[dd._id];
+      if (!m) return;
+      (dd.errors || []).forEach(function(er){
+        var v = m[er.id];
+        if (!v) return;
+        lui.push({ er: er, trangThai: er.trangThai, thay: er.thay, thayLuc: er.thayLuc, thayNguon: er.thayNguon });
+        er.trangThai = v.trangThai; er.thay = v.thay; er.thayLuc = nay; er.thayNguon = 'bang';
+      });
+    });
+    DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa();
+    CQ_LUU.dang++; CQ_LUU.loi = ''; veCqLuu();
+
+    Promise.all(slugs.map(function(slug){
+      return fsDocMot(duongTongLoi(slug)).then(function(doc){
+        if (!doc) throw new Error('không thấy bản chấm "' + slug + '"');
+        var m = theoSlug[slug];
+        var errors = (doc.errors || []).map(function(er){
+          var v = m[er.id];
+          if (!v) return er;
+          return Object.assign({}, er, { trangThai: v.trangThai, thay: v.thay, thayLuc: nay, thayNguon: 'bang' });
+        });
+        return fsGhiMot(duongTongLoi(slug), { errors: errors, capNhatLuc: nay }, ['errors', 'capNhatLuc']);
+      });
+    })).then(function(){
+      CQ_LUU.dang--; CQ_LUU.luc = Date.now(); veCqLuu();
+      baoToast(y === 'bo' ? 'Đã BỎ lỗi' + (c ? ' (cả cụm ' + ids.length + ' câu)' : '')
+        : 'Đã GIỮ lỗi' + (c ? ' · ' + (ids.length - 1) + ' câu trùng đánh dấu đã gộp' : ''));
+    }, function(e){
+      CQ_LUU.dang--; CQ_LUU.loi = String((e && e.message) || e); veCqLuu();
+      // Lùi lại đúng như trước khi bấm — thà thầy thấy câu quay về khối "Cần thầy quyết" còn
+      // hơn thấy "đã quyết" mà kho vẫn số cũ. Bản nghe sống sẽ chỉnh lại nếu ghi được một phần.
+      lui.forEach(function(o){
+        o.er.trangThai = o.trangThai; o.er.thay = o.thay; o.er.thayLuc = o.thayLuc; o.er.thayNguon = o.thayNguon;
+      });
+      DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa();
+      baoToast('Chưa lưu được — ' + CQ_LUU.loi);
+    });
+  }
+  document.addEventListener('click', function(ev){
+    var b = ev.target.closest('[data-quyet]');
+    if (b) quyetThay(b.dataset.err, b.dataset.quyet);
+  });
+
+  // ═══ NGHE KHO SỐNG CHO CẢ TRANG (v1.72.0) ════════════════════════════════════════════════
+  /* Thầy chốt: học sinh bấm là số trên trang đổi theo, không phải tải lại.
+     ⭐ Bốn ngăn vào bằng `onSnapshot` NGAY TỪ LƯỢT ĐẦU, THAY HẲN 4 lượt đọc REST cũ ⇒ số lượt
+     đọc KHÔNG tăng (bản chụp đầu tiên chính là lượt đọc mở trang).
+     ⛔ LUẬT 8️⃣: chỉ trang NÀY (thầy mở, vài lượt/ngày) mới được làm vậy — ĐỪNG đem sang
+     `dashboard.html` / `lop.html`.
+     ⛔ Bảo `js/sp-bang.js` ĐỪNG tự nghe nữa (`nghe:false`), không thì mở bảng chốt là nghe hai
+     lần ⇒ gấp đôi lượt đọc; bảng vẽ lại nhờ `SPBang.veBang()`. */
+  var NGHE = [], KHONG_SONG = false, henVeKho = null;
+  function nhanNgan(ngan, ds){
+    if (ngan === 'tongLoi') TONGLOI = ds;
+    else if (ngan === 'phanHoi') PHANHOI = ds;
+    else if (ngan === 'cum') CUM = ds;
+    else CUMPHIEU = ds;
+  }
+  function veSauKhiKhoDoi(){
+    clearTimeout(henVeKho);
+    // Gom 150ms: bốn ngăn thường đổi liền nhau, vẽ bốn lần là trang nhấp nháy.
+    henVeKho = setTimeout(function(){
+      DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa();
+      if (window.SPBang && SPBang.dangMo && SPBang.dangMo() && SPBang.veBang) SPBang.veBang();
+    }, 150);
+  }
+  function batNgheKho(){
+    var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
+    var cfg = (A.CFG && A.CFG.AWORD_DB) || {};
+    return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js')])
+      .then(function(m){
+        var appMod = m[0], fsMod = m[1], app;
+        try { app = appMod.getApp(); }
+        catch (e) { app = appMod.initializeApp({ apiKey: cfg.apiKey, projectId: cfg.projectId }); }
+        var kho = fsMod.getFirestore(app);
+        return Promise.all(['tongLoi', 'phanHoi', 'cum', 'cumPhieu'].map(function(ngan){
+          return new Promise(function(xong, hong){
+            var lanDau = true;
+            NGHE.push(fsMod.onSnapshot(fsMod.collection(kho, 'spBuoi', BUOI._id, ngan), function(snap){
+              if (snap.metadata && snap.metadata.fromCache) return;   // chỉ tin bản từ MÁY CHỦ
+              var ds = [];
+              snap.forEach(function(t){ var o = t.data() || {}; o._id = t.id; ds.push(o); });
+              nhanNgan(ngan, ds);
+              if (lanDau) { lanDau = false; xong(); return; }
+              veSauKhiKhoDoi();
+            }, function(e){
+              // Hai ngăn cụm hỏng thì coi như rỗng (y như bản REST cũ), KHÔNG chặn cả trang.
+              if (lanDau) { lanDau = false; if (ngan === 'cum' || ngan === 'cumPhieu') xong(); else hong(e); return; }
+              CQ_LUU.loi = 'mất kết nối kho (' + ((e && e.code) || '?') + ')'; veCqLuu();
+            }));
+          });
+        }));
+      });
+  }
+  function tatNgheKho(){ NGHE.forEach(function(h){ try { h(); } catch (e) {} }); NGHE = []; }
+
   // ═══ NÚT PHÓNG TO TOÀN MÀN (thầy chốt 02/09 đợt 2) ══════════════════════════════════════
   // Ba khối dùng CHUNG một cơ chế: gắn class `.phong` (CSS lo phần position:fixed) + khoá cuộn
   // trang nền. Bấm lại nút đó, hoặc phím Esc, thì thu về. Mỗi lúc chỉ phóng to MỘT khối.
@@ -1169,6 +1601,7 @@ body.khoa-cuon{overflow:hidden}
     el.classList.toggle('phong', bat);
     DANG_PHONG = bat ? id : '';
     document.body.classList.toggle('khoa-cuon', bat);
+    doiChoThanh(DANG_PHONG);   // ⭐ v1.72.0 — thanh tiếng đi theo vào màn phóng to (thầy chốt)
     datIconPhong();
   }
   document.addEventListener('click', function(ev){

@@ -720,6 +720,11 @@
 
   /* ═══ ③ NGHE KHO SỐNG — chỉ khi bảng mở ═══ */
   function batLive() {
+    /* ⛔ v1.72.0 — trang chủ quản có thể đã nghe kho sống rồi (`sp-chitiet.html` từ v1.72.0):
+       nghe hai lần là GẤP ĐÔI lượt đọc của một lần mở bảng (~1 850 tài liệu/cột). Ai nghe thì
+       người đó gọi `SPBang.veBang()` để bảng vẽ lại. Không truyền `nghe` thì vẫn tự nghe như cũ
+       (tab KẾT QUẢ của app mySpeaking đang dùng bản chép này). */
+    if (ctx.nghe === false) return;
     var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
     Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js')]).then(function (m) {
       if (!ST.mo) return;
@@ -917,6 +922,6 @@
   window.SPBang = { init: function (c) {
       ctx = c; A = c.A; gan();
       if (c.bang) setTimeout(function () { moMotCot(c.bang); }, 0);
-    }, veAcv: veAcv, dem: dem, dangMo: function () { return ST.mo; },
+    }, veAcv: veAcv, dem: dem, dangMo: function () { return ST.mo; }, veBang: henVe,
     _soi: function () { return { L: L(), ST: ST }; } };   // chỉ để bàn thử soi trạng thái, không dùng trong trang
 })();

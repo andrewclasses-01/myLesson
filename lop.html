@@ -1029,6 +1029,10 @@ body.mo-menu .side.trai{transform:none}
   display:flex; align-items:center; justify-content:center;
   border:2.5px solid var(--surface); box-shadow:0 3px 10px rgba(224,87,91,.5);
   font-variant-numeric:tabular-nums; animation:sp-dap 2.6s ease-in-out infinite}
+/* ⭐ 05/09/2026 (thầy chốt) — Ô XANH LÁ cho nút KIỂM TRA TRÙNG. Ô đỏ nghĩa là "còn việc phải
+   làm cho xong"; số cụm đội em ĐÃ GỘP không phải việc phải làm, nó là thành quả — treo màu đỏ
+   là doạ các em vô cớ. Ba nút kia vẫn đỏ. */
+.sp-bad.xanh{background:var(--m-la); box-shadow:0 3px 10px rgba(24,169,87,.5)}
 @keyframes sp-dap{
   0%,88%,100%{transform:scale(1)}
   93%        {transform:scale(1.14)}
@@ -3294,23 +3298,46 @@ function spDemViec(buoiId, tenEm, doiEm){
 /* ⭐ 03/09/2026 — HAI SỐ CỦA HAI NÚT NHỎ (gộp lỗi trùng). Đọc RIÊNG, chạy SAU hai số
    trên để nút to có số trước; kho `cum`/`cumPhieu` chưa dán luật thì phép này ném 403
    và nút nhỏ đứng dấu `!` — hai nút to KHÔNG bị ảnh hưởng.
-     · kiemtratrung = số cụm đội EM đang soạn mà CHƯA GỬI (việc dang dở, phải bấm gửi)
-     · xacnhantrung = số cụm đội em CHẤM đã gửi mà EM chưa bỏ phiếu
+     · kiemtratrung = số cụm đội EM ĐÃ GỘP (ô XANH LÁ — thành quả, không phải việc phải làm)
+     · xacnhantrung = số cụm đội em CHẤM còn HOÀ PHIẾU, tính theo CẢ ĐỘI (ô đỏ)
    ⛔ Đừng đếm "số lỗi chưa gộp" cho nút KIỂM TRA TRÙNG: con số đó luôn hàng trăm và
-      không bao giờ về 0 (phần lớn lỗi vốn không trùng ai), treo lên nút là vô nghĩa. */
+      không bao giờ về 0 (phần lớn lỗi vốn không trùng ai), treo lên nút là vô nghĩa.
+
+   ⭐⭐ 05/09/2026 — HAI CON SỐ NÀY VỪA ĐỔI HẲN Ý NGHĨA, đọc kỹ kẻo sửa ngược lại:
+   ① `kt` TRƯỚC ĐÂY đếm cụm CHƯA GỬI (`!c.daGui`). Web mySpeaking `?v=61` đã **bỏ hẳn bước
+      công bố**, mọi cụm sinh ra đều `daGui:true` ⇒ công thức cũ cho **0 vĩnh viễn**. Nay đếm
+      số cụm đội em đã gộp, và đổi ô sang XANH LÁ vì nó không còn là việc phải làm cho xong.
+   ② `xn` TRƯỚC ĐÂY tính theo TỪNG EM ("em chưa bỏ phiếu") nên mỗi em thấy một số khác nhau.
+      Thầy chốt đổi thành việc CHUNG CỦA ĐỘI: đếm cụm còn **hoà phiếu** (`gop === khong`,
+      kể cả 0–0). **Chỉ cần MỘT phiếu lệch là xong một ô** — không cần cả đội bỏ phiếu, và
+      mọi thành viên trong đội thấy CÙNG một con số. Khớp đúng nút "CẦN BỎ PHIẾU: n" của
+      màn XÁC NHẬN TRÙNG bên mySpeaking (`?v=62`) — sửa một bên phải sửa bên kia. */
 function spDemTrung(buoiId, tenEm, doiEm, doiEmCham){
   return Promise.all([
     spTruyCon(buoiId, 'cum', 'doiBiCham', doiEm),
     spTruyCon(buoiId, 'cum', 'doiBiCham', doiEmCham),
-    spTruyCon(buoiId, 'cumPhieu', 'voter', tenEm)
+    /* ⭐ 05/09/2026 — đọc phiếu của CẢ ĐỘI EM (`voterTeam`), không còn lọc theo tên em nữa:
+       nút XÁC NHẬN TRÙNG nay là việc CHUNG của đội (xem chú thích bên dưới).
+       ⛔ Vẫn phải LỌC, đừng đọc cả kho `cumPhieu`: Firestore tính tiền theo SỐ TÀI LIỆU
+          (LUẬT 8️⃣). Phiếu cho cụm của đội bị chấm chỉ do đội đi chấm bỏ, nên lọc theo
+          `voterTeam == đội em` là vừa đủ tập cần, cỡ (số cụm × 4-5 em). */
+    spTruyCon(buoiId, 'cumPhieu', 'voterTeam', doiEm)
   ]).then(function(kq){
     var song = function(c){ return (c.ids || []).length > 1; };   /* ids rỗng = cụm đã giải tán */
-    var cuaEm = kq[0].filter(song), doiKia = kq[1].filter(song), phieuEm = kq[2];
-    var daBo = {};
-    phieuEm.forEach(function(p){ if (p.y) daBo[p.cumId] = true; });
+    var cuaEm = kq[0].filter(song), doiKia = kq[1].filter(song), phieu = kq[2];
+    var dem = {};
+    phieu.forEach(function(p){
+      if (!p.y) return;                                    /* `y` rỗng = đã rút phiếu */
+      var d = dem[p.cumId] || (dem[p.cumId] = { gop: 0, khong: 0 });
+      if (p.y === 'gop') d.gop++; else if (p.y === 'khong') d.khong++;
+    });
     return {
-      kt: cuaEm.filter(function(c){ return !c.daGui; }).length,
-      xn: doiKia.filter(function(c){ return c.daGui && !daBo[c._id]; }).length
+      kt: cuaEm.length,
+      xn: doiKia.filter(function(c){
+        if (!c.daGui) return false;
+        var d = dem[c._id] || { gop: 0, khong: 0 };
+        return d.gop === d.khong;      /* hoà phiếu (kể cả 0–0) = CHƯA PHÂN ĐỊNH */
+      }).length
     };
   });
 }
@@ -3319,11 +3346,12 @@ function spDemTrung(buoiId, tenEm, doiEm, doiEmCham){
    ⛔ Đọc hỏng thì KHÔNG được im lặng bỏ trống: nút trống có nghĩa là "0 việc"
    (số 0 vốn không vẽ gì), im lặng là nói với em rằng em hết việc — đúng họ bẫy
    "báo ok giả". Dấu `!` để em biết là chưa đọc được chứ không phải hết việc. */
-function spGanSo(viec, n, chuThich){
+function spGanSo(viec, n, chuThich, mau){
   var b = document.querySelector('#spNut button[data-viec="' + viec + '"]');
   if (!b || !n) return;
   var s = document.createElement('span');
-  s.className = 'sp-bad';
+  /* `mau === 'xanh'` (thầy chốt 05/09): ô XANH LÁ, dùng cho nút KIỂM TRA TRÙNG. */
+  s.className = 'sp-bad' + (mau === 'xanh' ? ' xanh' : '');
   s.textContent = (typeof n === 'number' && n > 99) ? '99+' : String(n);
   s.title = chuThich;
   b.appendChild(s);
@@ -3346,8 +3374,8 @@ function spDoSo(buoiId, tenEm, doiEm, doiEmCham){
      to vẫn phải có số đúng — gộp chung một Promise.all là hỏng một cái hỏng cả bốn. */
   spDemTrung(buoiId, tenEm, doiEm, doiEmCham).then(function(v){
     if (luot !== spLuot) return;
-    spGanSo('kt', v.kt, v.kt + ' cụm đội em đang soạn, chưa gửi');
-    spGanSo('xn', v.xn, v.xn + ' cụm đang chờ em bỏ phiếu');
+    spGanSo('kt', v.kt, v.kt + ' cụm đội em đã gộp', 'xanh');
+    spGanSo('xn', v.xn, v.xn + ' cụm cả đội chưa phân định được');
   }).catch(function(e){
     if (luot !== spLuot) return;
     if (window.console) console.warn('speaking: khong dem duoc so cum trung ->', e);

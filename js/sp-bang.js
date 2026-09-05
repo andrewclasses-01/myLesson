@@ -778,12 +778,20 @@
   var N1 = ['1','2','3','4','5','6','7','8','9','0'], N2 = ['-','/',':',';','(',')','$','&','@'], N3 = ['!','+','=','*','%','#','_'];
   function veKbd(c) {
     var k = c.kb, r1 = k.num ? N1 : L1, r2 = k.num ? N2 : L2, r3 = k.num ? N3 : L3;
-    var ph = function (ch) { var v = k.caps && !k.num ? ch.toUpperCase() : ch; return '<button class="k l" data-k="' + esc(v) + '">' + esc(v) + '</button>'; };
+    /* ⭐ v1.71.0 (thầy chốt 5/9): CHỮ TRÊN PHÍM LUÔN IN HOA — đúng mẫu bàn phím AWord, ba bàn phím
+       (AWord · myActivity · bảng chốt) nay nhìn y hệt nhau. Chữ GÕ RA vẫn thường, chỉ hoa khi caps
+       đang bật ⇒ `data-k` giữ nguyên giá trị thật, chỉ nhãn hiển thị mới viết hoa. */
+    var ph = function (ch) {
+      var v = k.caps && !k.num ? ch.toUpperCase() : ch;
+      return '<button class="k l" data-k="' + esc(v) + '">' + esc(v.toUpperCase()) + '</button>';
+    };
     $('kbd' + c.n).innerHTML =
       '<div class="kr">' + ph("'") + r1.map(ph).join('') + '<button class="k back" data-k="⌫">⌫</button></div>' +
       '<div class="kr"><button class="k fn caps' + (k.caps && !k.num ? ' on' : '') + '" data-k="caps"' + (k.num ? ' disabled' : '') + '>caps<i></i></button>' + r2.map(ph).join('') + ph('?') + '</div>' +
       '<div class="kr"><button class="k fn num' + (k.num ? ' on' : '') + '" data-k="num">numbers<i></i></button>' + r3.map(ph).join('') + ph('.') + ph(',') + '</div>' +
-      '<div class="kr"><button class="k fn lang' + (k.vi ? ' vi' : '') + '" data-k="lang">' + (k.vi ? 'VI' : 'ENG') + '<i></i></button><button class="k space" data-k=" ">Space</button><button class="k enter" data-k="⏎">⏎</button></div>';
+      /* v1.71.0: nút ENG|VI báo trạng thái bằng ĐÈN CHẤM (class `on`) y hệt caps/numbers — bỏ nền
+         xanh lá, đúng mẫu AWord (nút chức năng bật thì nền GIỮ NGUYÊN, chỉ sáng chấm). */
+      '<div class="kr"><button class="k fn lang' + (k.vi ? ' on' : '') + '" data-k="lang">' + (k.vi ? 'VI' : 'ENG') + '<i></i></button><button class="k space" data-k=" ">Space</button><button class="k enter" data-k="⏎">⏎</button></div>';
   }
   function bamPhim(e) {
     var kb = e.target.closest('.kbd'), b = e.target.closest('[data-k]'); if (!kb || !b) return;

@@ -74,7 +74,12 @@
 /* ⭐ v1.70.0 — lấy SỐ LỚN HƠN giữa hai nguồn: `--banphim` do app đặt, `--che-duoi` do CHÍNH TRANG
    tự đo thanh của app (`doThanhApp` trong js/sp-bang.js). App đo hụt thì trang vẫn tự cứu được,
    và hai bên không đá nhau. ⛔ Trang kết thúc ĐÚNG ở mép trên thanh: không nội dung nào chui xuống dưới. */
-.bang{position:fixed; inset:0 0 max(var(--banphim,0px), var(--che-duoi,0px)) 0; z-index:60; background:var(--nen); display:flex; flex-direction:column}
+/* ⭐⭐ v1.71.0 (thầy chốt 5/9) — TỪ DƯỚI BÀN PHÍM XUỐNG PHẢI TRẮNG SẠCH, không hở trang nào.
+   Bản cũ CO bảng lên khỏi vùng bị che (`inset:0 0 <che> 0`) ⇒ dải dưới thành một khe NHÌN XUYÊN
+   xuống trang nền (sp-chitiet), thấy lẫn lộn chữ của hai màn, rất xấu (thầy chụp ảnh báo).
+   Nay bảng phủ TRỌN màn, phần chừa cho thanh 3 nút của app đẩy vào TRONG (padding của .bang-cot)
+   ⇒ dải dưới bàn phím là nền bảng chốt, không còn nội dung trang nào lọt ra. */
+.bang{position:fixed; inset:0; z-index:60; background:var(--nen); display:flex; flex-direction:column}
 .bang-dai{flex:none; background:#16232A; color:#fff; padding:10px 16px; display:flex; align-items:center; gap:14px; overflow:hidden}
 .bd-tieu{flex:none; display:flex; flex-direction:column; gap:2px; padding-right:14px; border-right:1px solid rgba(255,255,255,.14)}
 .bd-tieu b{font:800 12px/1.2 var(--font); letter-spacing:.06em; text-transform:uppercase}
@@ -108,7 +113,10 @@
    05/09. Đo thật lúc chưa có dòng này: bàn phím kết thúc ở 608px trong khi khung bảng chỉ tới
    493px, tức thò ra 115px và nằm gọn dưới thanh của app. `minmax(0,…)` để cột được phép co nhỏ
    hơn nội dung tối thiểu của nó. */
-.bang-cot{flex:1; min-height:0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(380px,1fr); grid-template-rows:minmax(0,1fr); gap:12px; padding:12px; overflow-x:auto}
+/* ⭐ v1.71.0: phần chừa cho thanh 3 nút của myActivity nay nằm Ở ĐÂY (trước là `inset` của .bang)
+   ⇒ các cột vẫn kết thúc đúng mép trên thanh, nhưng NỀN BẢNG trải xuống tận đáy màn nên dưới bàn
+   phím là một dải trắng sạch, không hở trang nền. */
+.bang-cot{flex:1; min-height:0; display:grid; grid-auto-flow:column; grid-auto-columns:minmax(380px,1fr); grid-template-rows:minmax(0,1fr); gap:12px; padding:12px; padding-bottom:calc(12px + max(var(--banphim,0px), var(--che-duoi,0px))); overflow-x:auto}
 /* `container-type:size` (không phải `inline-size`): bàn phím cần biết CẢ chiều cao cột để tự kẹp
    cỡ (xem `--u` ở `.kbd`), và nó chặn luôn việc cột phình theo nội dung. */
 .cot{min-width:0; min-height:0; display:flex; flex-direction:column; background:#fff; border:1px solid var(--vien); border-radius:var(--r); box-shadow:var(--bong); overflow:hidden; container-type:size; transition:box-shadow .3s}
@@ -268,9 +276,9 @@ button.gio:hover{background:var(--xanh)}
 .k.fn i{display:none; position:absolute; top:calc(.85 * var(--u)); right:calc(.75 * var(--u)); width:calc(.8 * var(--u)); height:calc(.8 * var(--u)); border-radius:50%; background:#fff; box-shadow:0 0 calc(.6 * var(--u)) rgba(255,255,255,.95), 0 0 calc(1.2 * var(--u)) rgba(255,255,255,.55)}
 .k.fn.on i{display:block}
 .k.fn:disabled{opacity:.5}
-.k.lang.vi{background:#15803d; box-shadow:0 calc(.24 * var(--u)) 0 #0c5228}
-.k.lang.vi:active{box-shadow:0 calc(.06 * var(--u)) 0 #0c5228}
-.k.space{flex:6} .k.enter{flex:2; background:#3b82f6; box-shadow:0 calc(.24 * var(--u)) 0 #2563eb}
+/* v1.71.0: nút VI KHÔNG đổi nền nữa (bỏ xanh lá) — báo bằng đèn chấm `.k.fn.on i` như caps/numbers,
+   đúng mẫu bàn phím AWord. `.k.enter` nới flex 2 -> 2.2 = đúng cỡ nút Submit của mẫu. */
+.k.space{flex:6} .k.enter{flex:2.2; background:#3b82f6; box-shadow:0 calc(.24 * var(--u)) 0 #2563eb}
 .k.enter:active{box-shadow:0 calc(.06 * var(--u)) 0 #2563eb}
 
 @media (prefers-reduced-motion:reduce){.bd-doi.nhay,.di{animation:none !important}}

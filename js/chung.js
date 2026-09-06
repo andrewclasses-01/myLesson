@@ -501,18 +501,23 @@
   }
 
   // Bản nhớ bền trong máy: { luc, soNop, ds }. Trả null khi chưa có / hỏng.
-  function docNho(ma) {
+  // ⛔⛔ v1.74.1 — TÊN PHẢI LÀ `docNhoDiem`, KHÔNG phải `docNho`: cả file là MỘT hàm bao, và
+  // `docNho()` (không tham số) đã tồn tại ở khối "em đang đăng nhập" phía dưới. Bản v1.74.0 đặt
+  // trùng tên ⇒ khai báo sau ĐÈ khai báo trước ⇒ `emDangHoc()` gọi `docNho()` nhận về
+  // `localStorage['awc_diem2_undefined']` = null ⇒ MỌI học sinh bị đá về màn đăng nhập
+  // (thầy báo 06/09 ~10:40, bản lỗi sống ~1 giờ). Thêm hàm vào file này: grep tên trước.
+  function docNhoDiem(ma) {
     try {
       var o = JSON.parse(localStorage.getItem(KHOA_DIEM2 + ma) || 'null');
       return (o && Array.isArray(o.ds)) ? o : null;
     } catch (e) { return null; }
   }
-  function ghiNho(ma, ds, soNop) {
+  function ghiNhoDiem(ma, ds, soNop) {
     try {
       localStorage.setItem(KHOA_DIEM2 + ma, JSON.stringify({ luc: Date.now(), soNop: soNop, ds: ds }));
     } catch (e) {}
   }
-  function xoaNho(ma) {
+  function xoaNhoDiem(ma) {
     try { localStorage.removeItem(KHOA_DIEM2 + ma); sessionStorage.removeItem('awc_diem_' + ma); } catch (e) {}
   }
 
@@ -571,14 +576,14 @@
   function diemCuaAct(ma, epDocLai) {
     ma = String(ma || '').trim();
     if (!ma) return Promise.resolve([]);
-    if (epDocLai) { delete nhoDiem[ma]; xoaNho(ma); }
+    if (epDocLai) { delete nhoDiem[ma]; xoaNhoDiem(ma); }
     if (nhoDiem[ma]) return nhoDiem[ma];
 
-    var nho = epDocLai ? null : docNho(ma);
+    var nho = epDocLai ? null : docNhoDiem(ma);
     if (!nho) {
       // Chưa có bản nhớ (hoặc bấm làm mới): liệt kê + hỏi sổ nộp song song, nhớ lại.
       nhoDiem[ma] = Promise.all([lietKeScores(ma), docSoNop(ma)]).then(function (kq) {
-        ghiNho(ma, kq[0], kq[1]);
+        ghiNhoDiem(ma, kq[0], kq[1]);
         return kq[0];
       });
     } else {
@@ -587,7 +592,7 @@
       nhoDiem[ma] = docSoNop(ma).then(function (so) {
         var conTuoi = (Date.now() - (nho.luc || 0)) < TUOI_TOI_DA_MS;
         if (conTuoi && (so === null || nho.soNop === so)) return nho.ds;
-        return lietKeScores(ma).then(function (ds) { ghiNho(ma, ds, so); return ds; });
+        return lietKeScores(ma).then(function (ds) { ghiNhoDiem(ma, ds, so); return ds; });
       });
     }
 

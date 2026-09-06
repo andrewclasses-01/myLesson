@@ -465,11 +465,26 @@
   //
   // ⛔ CHỈ đọc khi mở trang + khi bấm làm mới, KHÔNG tự nạp lại theo nhịp:
   // Firebase của AWord là gói miễn phí, có hạn mức đọc mỗi ngày.
-  // Nhớ trong RAM + sessionStorage 60 giây để đi qua đi lại giữa trang lớp và
-  // trang bài không đọc lại từ đầu.
+  //
+  // ⭐⭐ v1.74.0 (06/09/2026, rà soát toàn hệ mục L) — NHỚ ĐIỂM THEO SỔ LƯỢT NỘP.
+  // Trước: MỖI lần mở trang lớp, MỖI act = một lượt liệt kê `scores` (tới 300 tài
+  // liệu, Firestore tính 1 lượt đọc/tài liệu) — lớp A1C có 24 act ⇒ vài trăm lượt
+  // đọc cho MỘT em mở trang, kể cả khi không ai nộp thêm gì. Nay:
+  //   1. Điểm đã gộp cất trong localStorage (`awc_diem2_<mã>`) kèm `soNop` =
+  //      `submitCount` của tài liệu bài giao lúc đọc (AWord tự +1 mỗi lần một em
+  //      nộp — luật kho cho học sinh đụng đúng 2 trường `lastSubmitAt`/`submitCount`).
+  //   2. Mở trang chỉ đọc tài liệu bài giao (1 lượt, ~200 byte nhờ `mask` 2 trường).
+  //      `soNop` không đổi và bản nhớ chưa quá 10 phút ⇒ dùng bản nhớ, KHÔNG liệt
+  //      kê scores. Đổi ⇒ liệt kê như cũ rồi nhớ lại.
+  //   3. Thầy chốt 06/09: LÀM MỚI CƯỠNG BỨC mỗi 10 PHÚT (`TUOI_TOI_DA_MS`) — thầy
+  //      XOÁ điểm bên AWord thì sổ nộp không đổi, thiếu mốc này là học sinh thấy
+  //      điểm cũ mãi. Bài giao chưa có `submitCount` (bài cũ) ⇒ chỉ còn mốc 10 phút.
+  //   Nút "làm mới" (`epDocLai`) vẫn liệt kê thẳng như trước. Bản nhớ RAM `nhoDiem`
+  //   giữ cho đi qua đi lại giữa trang lớp ↔ trang bài trong cùng một phiên.
 
   var nhoDiem = {};
-  var CACHE_GIAY = 60;
+  var TUOI_TOI_DA_MS = 10 * 60 * 1000;
+  var KHOA_DIEM2 = 'awc_diem2_';
 
   function urlDiem(ma, token) {
     var db = CFG.AWORD_DB || {};
@@ -485,35 +500,41 @@
     return Number(f.integerValue != null ? f.integerValue : (f.doubleValue || 0));
   }
 
-  function docPhien(ma) {
+  // Bản nhớ bền trong máy: { luc, soNop, ds }. Trả null khi chưa có / hỏng.
+  function docNho(ma) {
     try {
-      var o = JSON.parse(sessionStorage.getItem('awc_diem_' + ma) || 'null');
-      if (o && (Date.now() - o.luc) < CACHE_GIAY * 1000) return o.ds;
+      var o = JSON.parse(localStorage.getItem(KHOA_DIEM2 + ma) || 'null');
+      return (o && Array.isArray(o.ds)) ? o : null;
+    } catch (e) { return null; }
+  }
+  function ghiNho(ma, ds, soNop) {
+    try {
+      localStorage.setItem(KHOA_DIEM2 + ma, JSON.stringify({ luc: Date.now(), soNop: soNop, ds: ds }));
     } catch (e) {}
-    return null;
+  }
+  function xoaNho(ma) {
+    try { localStorage.removeItem(KHOA_DIEM2 + ma); sessionStorage.removeItem('awc_diem_' + ma); } catch (e) {}
   }
 
-  function ghiPhien(ma, ds) {
-    try {
-      sessionStorage.setItem('awc_diem_' + ma, JSON.stringify({ luc: Date.now(), ds: ds }));
-    } catch (e) {}
+  // Sổ lượt nộp của bài giao (1 lượt đọc, chỉ 2 trường). Trả SỐ, hoặc null khi bài
+  // giao chưa có trường / đọc hỏng — null nghĩa là "không biết", không phải 0.
+  function urlSoNop(ma) {
+    var db = CFG.AWORD_DB || {};
+    return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+      '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) +
+      '?key=' + db.apiKey + '&mask.fieldPaths=submitCount&mask.fieldPaths=lastSubmitAt';
+  }
+  function docSoNop(ma) {
+    return fetch(urlSoNop(ma), { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (d) { var f = (d && d.fields) || {}; return f.submitCount ? soF(f.submitCount) : null; })
+      ['catch'](function () { return null; });
   }
 
-  // Trả về danh sách đã GỘP: mỗi em một dòng, lấy lượt TỐT NHẤT.
-  //   [{ ten, diem (0-100), giay, tho: {diem, tong} }]
-  // Ba luật gộp chép y hệt core/assignments.js bên AWord — đổi bên đó phải đổi
-  // cả đây: gộp theo tên thường-hoá · mỗi em lấy lượt tốt nhất · điểm cao trước,
-  // hoà thì ai nhanh hơn đứng trên.
-  function diemCuaAct(ma, epDocLai) {
-    ma = String(ma || '').trim();
-    if (!ma) return Promise.resolve([]);
-    if (epDocLai) { delete nhoDiem[ma]; try { sessionStorage.removeItem('awc_diem_' + ma); } catch (e) {} }
-    if (nhoDiem[ma]) return nhoDiem[ma];
-
-    var sanCo = epDocLai ? null : docPhien(ma);
-    if (sanCo) { nhoDiem[ma] = Promise.resolve(sanCo); return nhoDiem[ma]; }
-
-    nhoDiem[ma] = new Promise(function (xong, hong) {
+  // Liệt kê MỌI lượt của act rồi gộp — chính là đường đọc cũ (trước v1.74.0 nó nằm
+  // thẳng trong diemCuaAct), giữ nguyên từng dòng: phân trang 300, phanh 3 trang.
+  function lietKeScores(ma) {
+    return new Promise(function (xong, hong) {
       var tatCa = [];
       (function trang(token, lan) {
         fetch(urlDiem(ma, token))
@@ -539,11 +560,36 @@
           })
           .catch(hong);
       })(null, 1);
-    }).then(function (tho) {
-      var ds = gopTotNhat(tho);
-      ghiPhien(ma, ds);
-      return ds;
-    });
+    }).then(gopTotNhat);
+  }
+
+  // Trả về danh sách đã GỘP: mỗi em một dòng, lấy lượt TỐT NHẤT.
+  //   [{ ten, diem (0-100), giay, tho: {diem, tong} }]
+  // Ba luật gộp chép y hệt core/assignments.js bên AWord — đổi bên đó phải đổi
+  // cả đây: gộp theo tên thường-hoá · mỗi em lấy lượt tốt nhất · điểm cao trước,
+  // hoà thì ai nhanh hơn đứng trên.
+  function diemCuaAct(ma, epDocLai) {
+    ma = String(ma || '').trim();
+    if (!ma) return Promise.resolve([]);
+    if (epDocLai) { delete nhoDiem[ma]; xoaNho(ma); }
+    if (nhoDiem[ma]) return nhoDiem[ma];
+
+    var nho = epDocLai ? null : docNho(ma);
+    if (!nho) {
+      // Chưa có bản nhớ (hoặc bấm làm mới): liệt kê + hỏi sổ nộp song song, nhớ lại.
+      nhoDiem[ma] = Promise.all([lietKeScores(ma), docSoNop(ma)]).then(function (kq) {
+        ghiNho(ma, kq[0], kq[1]);
+        return kq[0];
+      });
+    } else {
+      // Có bản nhớ: hỏi sổ nộp (1 lượt nhỏ). Sổ không đổi (hoặc không biết) và bản
+      // nhớ chưa quá 10 phút ⇒ dùng lại; còn lại liệt kê như cũ.
+      nhoDiem[ma] = docSoNop(ma).then(function (so) {
+        var conTuoi = (Date.now() - (nho.luc || 0)) < TUOI_TOI_DA_MS;
+        if (conTuoi && (so === null || nho.soNop === so)) return nho.ds;
+        return lietKeScores(ma).then(function (ds) { ghiNho(ma, ds, so); return ds; });
+      });
+    }
 
     // Đọc hỏng thì quên đi, để lần "làm mới" sau còn thử lại được.
     nhoDiem[ma]['catch'](function () { delete nhoDiem[ma]; });

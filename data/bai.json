@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-04 21:59:32",
+  "capNhat": "2026-09-06 20:13:04",
   "bai": {
     "A1C": [
       {
@@ -306,6 +306,28 @@
             "loai": "spcheck",
             "ten": "SPEAKING CHECK",
             "xong": 0
+          }
+        ]
+      }
+    ],
+    "A1A": [
+      {
+        "id": "A1A_6.9_WORDS_LSB1-S1.T1.P1",
+        "tieuDe": "A1A_6.9_WORDS LSB1-S1.T1.P1",
+        "tenHien": "A1A_6.9_WORDS LSB1-S1.T1.P1",
+        "dang": "WORDS",
+        "ngay": "6.9",
+        "han": "2026-09-07T17:30",
+        "maLesson": "LSB1-S1.T1.P1",
+        "taoLuc": "2026-09-06",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "vrrja8",
+            "mau": "QUIZ"
           }
         ]
       }

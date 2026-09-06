@@ -332,9 +332,8 @@ button.gio:active{transform:scale(.94)}
 /* (02/09/2026 — luật CHÍNH CHỦ QUYẾT) hai nhãn phụ trong cột Trạng thái */
 .nhan.tunhan{background:var(--la-nhat); color:var(--m-la); margin-left:4px}
 .nhan.batdong{background:var(--vang-nhat); color:#B5720C; margin-left:4px}
-/* v1.71.0 — hai chiều của khối "Cần thầy quyết": lỗi CỦA đội đang xem ↔ lỗi đội đó BẮT ĐƯỢC */
-.nhan.cuadoi{background:var(--la-nhat); color:var(--m-la)}
-.nhan.batduoc{background:var(--nen); color:var(--mo)}
+/* v1.75.0 — ĐÃ GỠ `.nhan.cuadoi` / `.nhan.batduoc` (badge hai chiều của v1.71.0): khối
+   "Cần thầy quyết" nay chỉ còn MỘT chiều nên không còn gì để phân biệt (xem `cauHtml`). */
 
 /* (Đợt 28/08/2026 khuya) Bảng Phản biện gộp 1 dòng/câu: avatar chữ cái cho ai ĐỒNG Ý, ô riêng
    cho mỗi người PHẢN ĐỐI kèm lý do — thay bảng dài 1 dòng/phiếu cũ. */
@@ -1052,27 +1051,28 @@ button.gio:active{transform:scale(.94)}
        từng câu" (thầy chốt). ⛔ Phải lọc bằng `!x.err.thay` chứ không dựa vào `tranhChap`: khi
        thầy bấm GIỮ LẠI thì `trangThai` vẫn là 'song' và câu vẫn còn phiếu phản đối ⇒ `tranhChap`
        vẫn trả true và câu sẽ nằm lại đây mãi. Bấm BỎ LỖI thì tự rớt (trangThai thành 'go'). */
+    /* ⭐⭐ v1.75.0 (06/09/2026 — THẦY CHỐT) — KHỐI NÀY CHỈ ĐẾM MỘT CHIỀU: câu đội đang chọn **BỊ
+       ĐỘI KHÁC CHẤM** (`doiBiCham`). Câu đội này ĐI BẮT đội khác KHÔNG còn tính ở đây nữa — lỗi
+       đó thuộc về ĐỘI BỊ BẮT và được chữa ở màn của đội đó.
+       ⛔ LỊCH SỬ, ĐỪNG DỰNG LẠI: v1.71.0 (05/09) từng đếm CẢ HAI CHIỀU rồi tách bằng hai con số
+       trên dòng phụ ("N của chính đội · M đội này bắt được"). Vẫn rối, vì con số ở đây không bao
+       giờ khớp tab CHỮA LỖI cùng đội bên mySpeaking.
+       ⛔⛔ BẢN CHÉP: `mySpeaking/src/renderer/js/app.js::kqCanQuyetHtml` phải lọc Y HỆT — sửa một
+       bên là số trên dashboard và số trong app lệch nhau mà không nơi nào báo. */
     var ds = CHAM.filter(tranhChap).filter(function(x){ return !x.err.thay; }).filter(function(x){
-      return !DOI_CHON || x.doiCham === DOI_CHON || x.doiBiCham === DOI_CHON;
+      return !DOI_CHON || x.doiBiCham === DOI_CHON;
     }).sort(mocGio);
     var khoi = $('#khoiCanQuyet');
     if (!ds.length) { khoi.hidden = true; return; }
     khoi.hidden = false;
-    /* ⭐ v1.71.0 (05/09/2026, đồng bộ với mySpeaking app v1.27.1) — TÁCH RÕ HAI CHIỀU.
-       Thầy bắt được khi dùng thật: thẻ TEAM 1 báo "69 câu tranh chấp" mà tab CHỮA LỖI của TEAM 1
-       bên app chỉ có 2 ⇒ tưởng mất câu. Thật ra 2 câu là của CHÍNH TEAM 1 (bị bắt lỗi), 67 câu kia
-       là TEAM 1 ĐI BẮT lỗi TEAM 2 — chúng thuộc về màn chữa lỗi của TEAM 2. Con số 69 không sai,
-       chỉ là gộp hai thứ khác nhau; nay ghi rõ ra. */
-    var cuaDoiNay = function(x){ return x.doiBiCham === DOI_CHON; };
-    var soCua = ds.filter(cuaDoiNay).length, soBat = ds.length - soCua;
-    $('#cqPhu').textContent = ds.length + ' câu · lọc theo ' + DOI_CHON + ' — ' + soCua
-      + ' của chính đội · ' + soBat + ' đội này bắt được (chữa ở màn của đội bị bắt)';
+    $('#cqPhu').textContent = ds.length + ' câu · lỗi CỦA ' + DOI_CHON
+      + ' bị đội khác chấm — chữa ở màn ' + DOI_CHON;
     /* ⭐ v1.72.0 — thay ruột tự vẽ (chỉ có câu + lỗi + phiếu phản đối) bằng ĐÚNG khuôn thẻ câu
        ba tầng của khối "Chi tiết từng câu": mốc giờ bấm nghe được · ai chấm ai · câu gốc · lỗi ·
        giải thích · chính chủ nói gì · TỪNG đồng đội nói gì · người chấm Keep/Accept chưa —
        cộng hàng nút BỎ LỖI / GIỮ LẠI. Một khuôn duy nhất ⇒ sửa một chỗ là cả trang cùng đúng. */
     $('#cqVe').innerHTML = ds.map(function(x){
-      return cauHtml(x, x.doiBiCham === DOI_CHON ? 'bi' : 'bat', 'quyet');
+      return cauHtml(x, 'bi', 'quyet');   // v1.75.0 — lọc một chiều rồi thì luôn là bên "bị chấm"
     }).join('');
   }
 
@@ -1162,12 +1162,11 @@ button.gio:active{transform:scale(.94)}
       '" data-pldoi="' + A.chuAnToan(x.doiBiCham) + '" title="Nghe đoạn này">' + fmtGio(e) + '</button>';
     var nhanTq = e.thay ? '<span class="nhan tq">THẦY QUYẾT · ' +
       (e.thay === 'bo' ? 'ĐÃ BỎ' : e.thay === 'giu' ? 'GIỮ LỖI' : 'ĐÃ GỘP') + '</span>' : '';
-    // Hai badge hai chiều (v1.71.0) chỉ có nghĩa ở khối "Cần thầy quyết" — khối hai nửa đã tự
-    // chia bên trái/bên phải rồi.
-    var nhanChieu = cheDo === 'quyet'
-      ? (x.doiBiCham === DOI_CHON ? '<span class="nhan cuadoi">CỦA ĐỘI NÀY</span>'
-        : '<span class="nhan batduoc">BẮT ĐƯỢC · CHỮA Ở ' + A.chuAnToan(x.doiBiCham) + '</span>')
-      : '';
+    /* ⭐ v1.75.0 — ĐÃ GỠ hai badge hai chiều "CỦA ĐỘI NÀY / BẮT ĐƯỢC · CHỮA Ở Tx" (v1.71.0):
+       chúng chỉ hiện ở `cheDo === 'quyet'`, mà khối "Cần thầy quyết" nay lọc MỘT chiều nên mọi
+       ô đều là "của đội này" ⇒ chữ thừa lặp lại trên từng ô. Khối hai nửa vốn đã tự chia
+       bên trái/bên phải nên chưa bao giờ cần badge này. */
+    var nhanChieu = '';
     /* Hàng nút hiện ở HAI ca: câu đang chờ quyết (khối Cần thầy quyết) VÀ câu thầy ĐÃ quyết
        (đang nằm ở khối hai nửa) — ca sau là đường ĐỔI Ý, không thì bấm nhầm một cái là hết
        đường sửa vì câu đã rớt khỏi khối Cần thầy quyết. */

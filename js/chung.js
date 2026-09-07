@@ -118,7 +118,12 @@
         BO_QUA = bang.boQua || {};
         MO_CHANG = bang.moChang || {};
         NGHI = r[3] || {};
-        return { lop: (r[0] && r[0].lop) || [], bai: (r[1] && r[1].bai) || {} };
+        // ⛔ v1.78.0 — PHẢI mang theo `khoa` (khóa học). Hàm này CHÉP LẠI từng trường
+        // chứ không trả nguyên `r[0]`, nên thêm mảng mới ở `lop.json` mà quên dòng này
+        // là nó rơi mất TẠI ĐÂY — mọi hàm tra cứu vẫn đúng mà trang vẫn hỏng, không một
+        // tiếng động (đã mất một lượt kiểm mới tìm ra, 08/09/2026).
+        return { lop: (r[0] && r[0].lop) || [], khoa: (r[0] && r[0].khoa) || [],
+                 bai: (r[1] && r[1].bai) || {} };
       });
     return nhoDl;
   }
@@ -346,8 +351,22 @@
       .catch(function () { return null; });
   }
 
+  /* ⭐ v1.78.0 (08/09/2026) — KHÓA HỌC nằm ở MẢNG RIÊNG `dl.khoa`.
+     `lop.json` nay có hai mảng cùng hình dạng: `lop` (lớp thường, có lịch/điểm danh)
+     và `khoa` (khóa học thu phí — myStudent v2.69.0, mỗi mục mang `loai:'khoa'`).
+     ⛔ CỐ Ý không gộp sẵn vào `dl.lop`: `dashboard.html` đọc thẳng `DL.lop` ở 8 chỗ để
+     vẽ danh sách lớp của thầy — gộp là đẻ thêm ô lớp lạ trên trang quản lý. Chỉ mấy
+     hàm TRA CỨU dưới đây được nhìn cả hai mảng. */
+  function dsNoiHoc(dl) {
+    return (dl.lop || []).concat(dl.khoa || []);
+  }
+
+  function laKhoa(l) {
+    return !!(l && l.loai === 'khoa');
+  }
+
   function lopTheoMa(dl, maLop) {
-    var ds = dl.lop || [];
+    var ds = dsNoiHoc(dl);
     for (var i = 0; i < ds.length; i++) if (ds[i].maLop === maLop) return ds[i];
     return null;
   }
@@ -380,21 +399,35 @@
     });
   }
 
-  // Tìm em theo mã trên TOÀN BỘ các lớp — mã là duy nhất toàn trung tâm (myStudent
-  // có chặn trùng), nên chỉ cần mã là biết ngay em nào, lớp nào.
-  function timTheoMa(dl, maGo) {
+  /* ⭐⭐ v1.78.0 — MỘT MÃ CÓ THỂ Ở NHIỀU NƠI (thầy chốt 08/09/2026).
+     Trước bản này mã là duy nhất toàn trung tâm nên hàm tra trả về nơi ĐẦU TIÊN rồi
+     dừng — đúng thứ làm em KHỔNG NGỌC LINH vào thẳng A1-C dù em còn ở khóa NỀN TẢNG K9.
+     Nay có ba kiểu em ở hai nơi mà vẫn CÙNG MỘT MÃ:
+       · lớp thường + KHÓA HỌC — myStudent v2.69.0 cho phép trùng mã đúng một cặp như
+         vậy (thầy chốt: em chỉ phải nhớ MỘT mã);
+       · lớp chính + lớp HỌC BỔ SUNG — bản ghi bổ sung mượn mã của lớp chính lúc xuất
+         (myStudent v2.70.0), mang cờ `bs`;
+       · cả ba, nếu em vừa học bổ sung vừa học khóa.
+     ⇒ `moiNoiTheoMa` trả MỌI nơi (theo thứ tự: lớp thường trước, khóa sau).
+     `timTheoMa` giữ nguyên nghĩa cũ (nơi đầu tiên) cho những chỗ chỉ cần biết
+     "mã này có thật không". */
+  function moiNoiTheoMa(dl, maGo) {
     var ma = chuanMa(maGo);
-    if (!ma) return null;
-    for (var i = 0; i < (dl.lop || []).length; i++) {
-      var l = dl.lop[i];
-      var ds = l.hocSinh || [];
-      for (var j = 0; j < ds.length; j++) {
-        if (ds[j].ma && chuanMa(ds[j].ma) === ma) {
-          return { lop: l, em: ds[j] };
-        }
+    var ra = [];
+    if (!ma) return ra;
+    var ds = dsNoiHoc(dl);
+    for (var i = 0; i < ds.length; i++) {
+      var l = ds[i], hs = l.hocSinh || [];
+      for (var j = 0; j < hs.length; j++) {
+        if (hs[j].ma && chuanMa(hs[j].ma) === ma) ra.push({ lop: l, em: hs[j] });
       }
     }
-    return null;
+    return ra;
+  }
+
+  function timTheoMa(dl, maGo) {
+    var ds = moiNoiTheoMa(dl, maGo);
+    return ds.length ? ds[0] : null;
   }
 
   // ---------- em đang đăng nhập ----------
@@ -431,15 +464,28 @@
     }
     var nhu = q.get('nhu');
     if (nhu) {
-      var t = timTheoMa(dl, nhu);
+      // `?nhu=` có thể kèm `?lop=` để thầy xem em đó Ở ĐÚNG NƠI nào (em ở 2 nơi).
+      var ds = moiNoiTheoMa(dl, nhu);
+      var t = noiKhop(ds, q.get('lop')) || ds[0];
       if (t) return { lop: t.lop.maLop, ten: t.em.ten, ma: chuanMa(t.em.ma), xemNhu: true };
     }
     var cu = docNho();
     if (!cu || !cu.ma) return null;
     // Tra lại mã trong danh sách MỚI — thầy đổi/xoá mã thì phiên cũ hết hiệu lực.
-    var thay = timTheoMa(dl, cu.ma);
-    if (!thay) return null;
+    // ⭐ v1.78.0 — mã có thể ở NHIỀU NƠI: phải lấy đúng nơi em đã chọn ở màn chọn lớp
+    // (`docNho().lop`). Bản cũ luôn lấy nơi đầu tiên nên em chọn khóa học xong vẫn bị
+    // đá về lớp thường — chính lỗi thầy gặp 08/09.
+    var moiNoi = moiNoiTheoMa(dl, cu.ma);
+    if (!moiNoi.length) return null;
+    var thay = noiKhop(moiNoi, cu.lop) || moiNoi[0];
     return { lop: thay.lop.maLop, ten: thay.em.ten, ma: chuanMa(thay.em.ma) };
+  }
+
+  // Trong danh sách nơi, lấy nơi có `maLop` khớp (null nếu không có).
+  function noiKhop(ds, maLop) {
+    if (!maLop) return null;
+    for (var i = 0; i < ds.length; i++) if (ds[i].lop.maLop === maLop) return ds[i];
+    return null;
   }
 
   // Trang nào cũng gọi hàm này đầu tiên: chưa đăng nhập thì về màn đăng nhập.
@@ -2131,8 +2177,40 @@
     }
   }
 
+  /* ⭐ v1.78.0 — "CÓ BÀI MỚI" trên nút của MÀN CHỌN LỚP (thầy chốt 08/09/2026):
+     chấm đỏ khi nơi đó còn bài CÒN HẠN mà chính em này chưa làm xong hết.
+
+     ⛔ LUẬT 8️⃣ (Firestore tính tiền theo SỐ TÀI LIỆU): màn chọn hiện MỖI LẦN em mở
+     trang, nên hàm này phải rẻ. Ba chốt chặn:
+       · chỉ xét thẻ CÒN HẠN, tối đa 3 thẻ mới nhất mỗi nơi và 12 act tất cả;
+       · đi qua `diemCuaAct` — hàm đó hỏi `submitCount` (1 tài liệu) và dùng lại bản
+         nhớ trong máy 10 phút, KHÔNG liệt kê cả kho `scores`;
+       · `chuanDiem` nhớ VĨNH VIỄN trong máy.
+     ⛔ Kho lỗi/mất mạng thì coi như KHÔNG có bài mới — thà thiếu một chấm đỏ còn hơn
+     doạ em bằng chấm đỏ oan (cùng tinh thần "đừng lùi mù" của luật 8). */
+  function coBaiChuaXong(dl, maLop, tenEm) {
+    var ds = baiCuaLop(dl, maLop).filter(conHan).slice(0, 3);
+    var acts = [];
+    for (var i = 0; i < ds.length; i++) {
+      var k = actCuaBai(ds[i]);
+      for (var j = 0; j < k.length; j++) if (acts.length < 12) acts.push(k[j]);
+    }
+    if (!acts.length) return Promise.resolve(false);
+    return Promise.all(acts.map(function (k) {
+      return Promise.all([diemCuaAct(k.ma), chuanDiem(k.ma)])
+        .then(function (r) { return !xongAct(r[0], tenEm, r[1]); })
+        ['catch'](function () { return false; });
+    })).then(function (kq) {
+      for (var i = 0; i < kq.length; i++) if (kq[i]) return true;
+      return false;
+    })['catch'](function () { return false; });
+  }
+
   window.AWC = {
     CFG: CFG,
+    // ⭐ v1.78.0 — khóa học + một mã ở nhiều nơi + chấm "CÓ BÀI MỚI"
+    dsNoiHoc: dsNoiHoc, laKhoa: laKhoa, moiNoiTheoMa: moiNoiTheoMa,
+    coBaiChuaXong: coBaiChuaXong,
     // ⭐ v1.48.0 — thẻ "không giao bài" + lịch học + sân chơi
     nghiCua: nghiCua, nghiTt: nghiTt, datNghi: datNghi, napLopHoc: napLopHoc,
     buoiTiepTheo: buoiTiepTheo, thuTuChuoi: thuTuChuoi, gaSanNghi: gaSanNghi,

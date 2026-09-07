@@ -251,6 +251,60 @@ input::placeholder{color:#9fb0ac; font-weight:500}
    phải tự khai rõ như mọi chỗ khác trong file này (.tiny[hidden] v.v). */
 .id-eye svg[hidden]{display:none}
 
+/* ⭐⭐ v1.78.0 (08/09/2026) — MÀN CHỌN LỚP: em có mã ở HAI nơi (lớp thường + khóa
+   học, hoặc lớp chính + lớp học bổ sung) thì không vào thẳng đâu cả, mà chọn.
+   Hoạt ảnh thầy chốt: ô "My ID" TÁCH LÀM ĐÔI bay sang hai bên rồi mờ, cùng lúc
+   các nút lớp TRƯỢT RA từ trên và từ dưới.
+   ⛔ Ô nhập thật không tách đôi được (một thẻ <input> là một khối) — nên hai nửa là
+   hai tấm GIẢ phủ đúng lên ô (cùng nền, cùng viền, cùng bo góc), cắt bằng clip-path;
+   ô thật + con mắt chỉ việc mờ đi dưới chúng. Ô đang là chấm tròn mật khẩu nên
+   không ai thấy chữ biến mất. */
+.id-nua{position:absolute; inset:0; border-radius:12px; background:#fff;
+  border:1.5px solid var(--line); pointer-events:none; opacity:0;
+  transition:transform .62s cubic-bezier(.22,.9,.3,1), opacity .5s ease}
+.id-wrap.tach input,.id-wrap.tach .id-eye{opacity:0; transition:opacity .2s ease}
+.id-wrap.tach .id-nua{opacity:1}
+.id-nua.trai{clip-path:inset(0 50% 0 0)}
+.id-nua.phai{clip-path:inset(0 0 0 50%)}
+.id-wrap.tach.bay .id-nua.trai{transform:translateX(-42px); opacity:0}
+.id-wrap.tach.bay .id-nua.phai{transform:translateX(42px); opacity:0}
+/* Nút SIGN IN mờ tại chỗ rồi mới bị gỡ khỏi luồng (tránh giật chiều cao thẻ). */
+#btnLogin.mo-di{opacity:0; transform:scale(.98); transition:opacity .28s ease, transform .28s ease}
+
+.chon-ds{display:flex; flex-direction:column; gap:12px}
+.chon-ds[hidden]{display:none}
+.chon-nut{position:relative; display:flex; align-items:center; gap:14px; width:100%;
+  padding:16px 18px; border-radius:16px; border:1.5px solid var(--line);
+  background:var(--surface); cursor:pointer; text-align:left;
+  opacity:0; transform:translateY(var(--tu,0)) scale(.98);
+  transition:opacity .46s ease, transform .62s cubic-bezier(.22,.9,.3,1),
+             border-color .18s, box-shadow .22s;
+  box-shadow:0 1px 2px rgba(22,35,42,.05)}
+.chon-nut.vao{opacity:1; transform:none}
+.chon-nut:hover{border-color:var(--accent); box-shadow:0 6px 20px rgba(14,124,110,.16)}
+.chon-nut:active{transform:scale(.975)}
+.cn-ic{flex:none; width:44px; height:44px; border-radius:13px; background:var(--accent-soft);
+  color:var(--accent); display:flex; align-items:center; justify-content:center}
+.cn-ic svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.9;
+  stroke-linecap:round; stroke-linejoin:round}
+.chon-nut.khoa .cn-ic{background:#F1ECFD; color:#5B3FC4}
+.cn-ten{flex:1; min-width:0; font:800 16px/1.25 var(--sans); letter-spacing:.01em;
+  color:var(--ink); overflow:hidden; text-overflow:ellipsis}
+.cn-go{flex:none; color:#B6C6C2; font-size:20px; font-weight:700; line-height:1}
+/* "CÓ BÀI MỚI" — chấm đỏ ở GÓC nút (thầy chốt 08/09), chỉ hiện khi nơi đó còn bài
+   em chưa làm xong. Nhô lên khỏi mép nút nên nút KHÔNG được có overflow:hidden. */
+.cn-moi{position:absolute; top:-8px; right:14px; padding:4px 9px; border-radius:999px;
+  background:#D93B40; color:#fff; font:800 9.5px/1 var(--sans); letter-spacing:.07em;
+  box-shadow:0 2px 8px rgba(217,59,64,.42); animation:cn-moi-nhay 2.6s ease-in-out infinite}
+@keyframes cn-moi-nhay{
+  0%,100%{box-shadow:0 2px 8px rgba(217,59,64,.34)}
+  50%    {box-shadow:0 2px 14px rgba(217,59,64,.72)}
+}
+@media (prefers-reduced-motion: reduce){
+  .cn-moi{animation:none}
+  .chon-nut,.id-nua{transition-duration:.01ms}
+}
+
 .btn{display:inline-flex; align-items:center; justify-content:center; padding:14px 24px;
   border-radius:12px; border:0; font:600 13.5px/1 var(--sans); letter-spacing:.06em;
   text-decoration:none; cursor:pointer; transition:filter .12s, transform .12s}

@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
      không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=18">
+<link rel="stylesheet" href="css/main.css?v=19">
 </head>
 <body>
 
@@ -66,8 +66,14 @@
               <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
             </svg>
           </button>
+          <!-- ⭐ v1.78.0 — hai NỬA GIẢ của ô, chỉ dùng cho hoạt ảnh tách đôi lúc
+               chuyển sang màn chọn lớp (xem .id-nua trong main.css). -->
+          <span class="id-nua trai" aria-hidden="true"></span>
+          <span class="id-nua phai" aria-hidden="true"></span>
         </div>
         <button class="btn primary wide" id="btnLogin">SIGN IN</button>
+        <!-- ⭐ v1.78.0 — MÀN CHỌN LỚP (em có mã ở 2 nơi): JS dựng nút vào đây. -->
+        <div class="chon-ds" id="chonDs" hidden></div>
         <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
         <p class="tiny warn" id="loginNote" hidden></p>
       </div>
@@ -128,8 +134,8 @@
   </div>
 </div>
 
-<script src="config.js?v=65"></script>
-<script src="js/chung.js?v=37"></script>
-<script src="js/dangnhap.js?v=18"></script>
+<script src="config.js?v=66"></script>
+<script src="js/chung.js?v=39"></script>
+<script src="js/dangnhap.js?v=19"></script>
 </body>
 </html>

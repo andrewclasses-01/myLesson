@@ -78,6 +78,85 @@
     }, THOI_GIAN_NGAN);
   }
 
+  /* ============================================================
+     ⭐⭐ v1.78.0 (08/09/2026) — MÀN CHỌN LỚP
+
+     Thầy chốt: em có mã ở HAI nơi (lớp thường + KHÓA HỌC, hoặc lớp chính + lớp HỌC
+     BỔ SUNG) thì phải được chọn vào đâu, và **hỏi lại MỖI LẦN mở trang** — mở
+     andrewclasses.com là ra thẳng màn chọn, không phải gõ mã lại.
+
+     Chữ trên nút = TÊN THẲNG của nơi đó, KHÔNG nhãn phụ (thầy chốt):
+       · lớp thường → "A1C CLASS"  (chữ lớp cho HS xem, xem `A.lopHien`)
+       · khóa học   → "KHÓA NỀN TẢNG K9"
+     Góc nút có chấm đỏ "CÓ BÀI MỚI" khi nơi đó còn bài em chưa làm xong.
+     ============================================================ */
+  var IC_LOP = '<svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/>' +
+               '<path d="M9 21v-6h6v6"/></svg>';
+  var IC_KHOA = '<svg viewBox="0 0 24 24"><path d="M2 8l10-4 10 4-10 4z"/>' +
+                '<path d="M6 10v5c0 1.5 3 3 6 3s6-1.5 6-3v-5M22 8v6"/></svg>';
+
+  function chuNut(l) {
+    if (A.laKhoa(l)) return 'KHÓA ' + (l.tenGoc || l.maLop);
+    return A.lopHien(l.maLop, l.tenGoc) + ' CLASS';
+  }
+
+  function diVao(noi) {
+    A.luuEm({ lop: noi.lop.maLop, ten: noi.em.ten, ma: A.chuanMa(noi.em.ma) });
+    // Khóa học có trang riêng (dựng theo mẫu v3 thầy đã duyệt); lớp thường như cũ.
+    location.href = A.laKhoa(noi.lop) ? 'khoa.html' : 'lop.html';
+  }
+
+  // Đang mở màn chọn thì khoá lại — hai lượt dựng chồng nhau là nút nhân đôi.
+  var dangChon = false;
+
+  function moChon(ds) {
+    if (dangChon) return;
+    dangChon = true;
+    var hop = $('#chonDs');
+    var wrap = document.querySelector('.id-wrap');
+    var nutVao = $('#btnLogin');
+
+    // B1 — ô "My ID" tách đôi bay sang hai bên; nút SIGN IN mờ tại chỗ.
+    wrap.classList.add('tach');
+    nutVao.classList.add('mo-di');
+    setTimeout(function () { wrap.classList.add('bay'); }, 30);
+
+    // B2 — dựng nút (nút ĐẦU trượt từ TRÊN xuống, nút CUỐI từ DƯỚI lên).
+    hop.innerHTML = ds.map(function (n, i) {
+      var tu = i === 0 ? -34 : (i === ds.length - 1 ? 34 : 0);
+      return '<button type="button" class="chon-nut' + (A.laKhoa(n.lop) ? ' khoa' : '') +
+        '" data-i="' + i + '" style="--tu:' + tu + 'px">' +
+        '<span class="cn-ic">' + (A.laKhoa(n.lop) ? IC_KHOA : IC_LOP) + '</span>' +
+        '<span class="cn-ten">' + A.chuAnToan(chuNut(n.lop)) + '</span>' +
+        '<span class="cn-go">›</span></button>';
+    }).join('');
+
+    // B3 — ô bay xong thì nút hiện ra, so le nhau một nhịp ngắn.
+    setTimeout(function () {
+      wrap.style.display = 'none';       // gỡ hẳn ô khỏi luồng, thẻ tự co lại
+      nutVao.hidden = true;
+      hop.hidden = false;
+      var nut = hop.querySelectorAll('.chon-nut');
+      Array.prototype.forEach.call(nut, function (b, i) {
+        setTimeout(function () { b.classList.add('vao'); }, i * 70);
+        b.onclick = function () { diVao(ds[+b.getAttribute('data-i')]); };
+      });
+    }, 260);
+
+    // B4 — chấm "CÓ BÀI MỚI": tính SAU khi nút đã hiện, không chặn hoạt ảnh.
+    // ⛔ Kho lỗi thì `coBaiChuaXong` trả false ⇒ không có chấm, không doạ em bằng
+    // chấm đỏ oan (luật 8️⃣: hàm đó cũng đã tự giới hạn số tài liệu phải đọc).
+    ds.forEach(function (n, i) {
+      A.coBaiChuaXong(DL, n.lop.maLop, n.em.ten).then(function (co) {
+        if (!co) return;
+        var b = hop.querySelector('.chon-nut[data-i="' + i + '"]');
+        if (b && !b.querySelector('.cn-moi')) {
+          b.insertAdjacentHTML('beforeend', '<span class="cn-moi">CÓ BÀI MỚI</span>');
+        }
+      });
+    });
+  }
+
   // ---------- đăng nhập ----------
 
   function vaoHoc() {
@@ -88,12 +167,11 @@
     }
 
     // Mã của học sinh xét TRƯỚC (nhanh, không phải chờ băm) rồi mới tới mã thầy.
-    var thay = A.timTheoMa(DL, go);
-    if (thay) {
-      A.luuEm({ lop: thay.lop.maLop, ten: thay.em.ten, ma: A.chuanMa(thay.em.ma) });
-      location.href = 'lop.html';
-      return;
-    }
+    // ⭐ v1.78.0 — mã có thể ở NHIỀU NƠI (lớp thường + khóa học, hoặc lớp chính +
+    // lớp học bổ sung): hơn một nơi thì cho em chọn, đúng một nơi thì vào thẳng.
+    var noi = A.moiNoiTheoMa(DL, go);
+    if (noi.length > 1) { moChon(noi); return; }
+    if (noi.length === 1) { diVao(noi[0]); return; }
 
     var nut = $('#btnLogin');
     nut.disabled = true;
@@ -128,9 +206,21 @@
       // Máy này từng đăng nhập rồi thì vào thẳng lớp, khỏi gõ lại mã.
       // ⛔ Chỉ tự vào khi KHÔNG có `#/info` trên địa chỉ: thầy/em bấm vào trang
       // thông tin từ ngoài thì phải được xem, không bị đá đi ngay.
-      if (!epGo && location.hash !== '#/info' && A.emDangHoc(dl)) {
-        location.replace('lop.html');
-        return;
+      // ⭐ v1.78.0 — em có mã ở NHIỀU NƠI thì KHÔNG vào thẳng: thầy chốt "hỏi lại mỗi
+      // lần mở trang", và mở andrewclasses.com là ra ngay màn chọn (khỏi gõ mã lại).
+      var chonSau = null;
+      var emCu = (!epGo && location.hash !== '#/info') ? A.emDangHoc(dl) : null;
+      if (emCu) {
+        var noiCu = A.moiNoiTheoMa(dl, emCu.ma);
+        if (noiCu.length > 1) {
+          chonSau = noiCu;                 // dựng SAU khi màn đăng nhập đã bày xong
+        } else {
+          // ⛔ Một nơi: vẫn phải đi ĐÚNG trang của nơi đó — em nhớ khóa học mà đá về
+          // `lop.html` là quay lại đúng lỗi thầy gặp.
+          var mot = noiCu[0];
+          location.replace(mot && A.laKhoa(mot.lop) ? 'khoa.html' : 'lop.html');
+          return;
+        }
       }
       // Máy của thầy (đã gõ đúng mã quản lý lần trước) thì vào thẳng trang quản lý.
       if (!epGo && location.hash !== '#/info' && A.laAdmin()) {
@@ -144,6 +234,9 @@
         $('#loginNote').hidden = false;
       }
       datNgan(location.hash === '#/info' ? 'info' : 'login', true);
+      // Ngăn đăng nhập đã bày xong mới mở màn chọn — không thì hoạt ảnh tách ô chạy
+      // trong lúc ngăn còn đang co giãn, hai chuyển động chồng nhau nhìn rất rối.
+      if (chonSau) setTimeout(function () { moChon(chonSau); }, 60);
     });
 
     $('#inCode').onkeydown = function (e) { if (e.key === 'Enter') vaoHoc(); };

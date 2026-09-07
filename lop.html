@@ -349,8 +349,14 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .t-han{display:flex; flex-direction:column; gap:4px; width:158px;
   padding:6px 12px 7px; border-radius:12px;
   background:var(--amber-soft); border:1px solid #F5E3C0}
-.t-han .han-dong{display:flex; align-items:center; justify-content:center; gap:5px;
+/* ⛔ v1.76.0 — `gap:5px` là khe giữa icon đồng hồ và chữ; icon đã bỏ (thầy chốt
+   07/09) nên gap về 0, không thì chữ lệch phải một nhịp trong ô căn giữa. */
+.t-han .han-dong{display:flex; align-items:center; justify-content:center; gap:0;
   font-size:12px; font-weight:700; color:#9A6A12; white-space:nowrap}
+/* Ô hạn của thẻ STAGE dài ngang hơn: phải chứa "Hạn chặng 2: 23:59 • 13/9". */
+.han-boc.rong{width:236px}
+.han-boc.rong .t-han{width:230px}
+.han-boc.rong .han-dong{font-size:12.5px}
 .t-han .han-dong svg{width:13px; height:13px; stroke:currentColor; stroke-width:2.4;
   fill:none; stroke-linecap:round; stroke-linejoin:round}
 .t-han .han-vach{height:0; border-top:1px dashed #EBD3A6}
@@ -433,6 +439,76 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    (chỉ "QUIZ") cũng được co chứ không rơi về 112px như trước. Xem `canhNhanO()`.
    ⛔ Ai dựng bàn thử `ban-thu-*.html` thì phải bọc đúng `.the-diem`, thiếu là
    biến không tới nơi và cột tên về lại số cứng dưới đây. */
+/* ============================================================================
+   ⭐⭐ v1.76.0 — THẺ CỦA DẠNG BÀI **STAGE** (mẫu v5 thầy duyệt 07/09/2026).
+   Thẻ CÙNG CỠ thẻ thường (200px, thầy chốt bỏ ý tăng chiều cao). Thanh chặng
+   tách khỏi cụm thanh tiến trình 11px, cụm thanh giãn đều ăn hết chỗ còn lại.
+   ⛔ Bề rộng mũi nhọn tỉ lệ theo chiều cao khúc (`--dx`) ⇒ mọi khúc CÙNG MỘT GÓC
+   VÁT, chỗ nối giữa khúc thấp và khúc đang chạy mới song song.
+   ⛔ `clip-path` CẮT `box-shadow` ⇒ hào quang dùng `filter:drop-shadow`.
+   ========================================================================== */
+.the-diem.st{flex-direction:column; align-items:stretch; gap:0; justify-content:flex-start;
+  padding-top:11px; padding-bottom:11px}
+.the-diem.st .st-bar{flex:none; margin-bottom:11px}
+.the-diem.st .st-hang{flex:1; min-height:0; display:flex; align-items:stretch; gap:12px}
+.the-diem.st .khoi-thanh{flex:1; min-width:0; display:flex; flex-direction:column;
+  justify-content:space-around; gap:4px}
+.the-diem.st.n1 .av-thanh{--av:30px}
+.the-diem.st.n2 .av-thanh{--av:26px}
+.the-diem.st.n3 .av-thanh{--av:20px}
+/* Cột "CẢ LỚP ĐANG CHỜ" phải bó chữ: thẻ 200px, hàng thanh chỉ còn ~50px. */
+.the-diem.st .khoi-thieu .tieu{font-size:8px; line-height:1.15; margin-bottom:1px;
+  letter-spacing:.04em}
+.the-diem.st .ds-thieu .ten.cham{font-size:11px; line-height:1.16}
+.the-diem.st .ds-thieu .them{font-size:9px; line-height:1.16}
+.ds-thieu.mot-cot{grid-template-columns:1fr; text-align:center; row-gap:1px}
+.ds-thieu .ten.cham{font-weight:800; color:#D93B40;
+  animation:nhay-ten-do 1.6s ease-in-out infinite}
+.ds-thieu .them{font-size:9.5px; font-weight:700; color:#C0484C; line-height:1.3}
+@keyframes nhay-ten-do{
+  0%,100%{text-shadow:0 0 8px rgba(217,59,64,.26), 0 0 18px rgba(217,59,64,.12)}
+  50%    {text-shadow:0 0 10px rgba(224,87,91,.72), 0 0 22px rgba(217,59,64,.46),
+                      0 0 36px rgba(217,59,64,.26)}
+}
+.st-bar{display:flex; align-items:center; width:100%}
+.st-khuc{--h:26px; --dx:calc(var(--h) * .425);
+  flex:1 1 auto; min-width:0; height:var(--h); position:relative;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  padding-left:calc(var(--dx) + 10px); padding-right:calc(var(--dx) + 5px);
+  font-size:10px; font-weight:800; letter-spacing:.045em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden;
+  clip-path:polygon(0 0, calc(100% - var(--dx)) 0, 100% 50%,
+                    calc(100% - var(--dx)) 100%, 0 100%, var(--dx) 50%);
+  transition:flex-grow .42s var(--em), background .3s var(--em), color .3s}
+.st-khuc + .st-khuc{margin-left:calc(2px - var(--dx))}
+.the-diem.st .st-bar .st-khuc:first-child{padding-left:14px; border-radius:9px 0 0 9px;
+  clip-path:polygon(0 0, calc(100% - var(--dx)) 0, 100% 50%,
+                    calc(100% - var(--dx)) 100%, 0 100%)}
+.the-diem.st .st-bar .st-khuc:last-child{padding-right:calc(var(--dx) + 2px)}
+.st-khuc .lbl{overflow:hidden; text-overflow:ellipsis}
+.st-khuc .tick{font-size:11px; line-height:1}
+.st-khuc.xong{background:var(--m-la); color:#fff; flex-shrink:2}
+.st-khuc.xa{flex-grow:3; flex-shrink:3; background:#E7EDEB; color:#9DAFAB}
+.st-khuc.cho{flex-shrink:0; background:#D8E6FF; color:#2B5FD0}
+.st-khuc.dang{flex-shrink:0; --h:34px; font-size:11px; z-index:2;
+  background:linear-gradient(135deg,#3E7BFA,#5C93FF); color:#fff;
+  animation:st-hao-duong 3.4s ease-in-out infinite}
+.st-khuc.ket{flex-shrink:0; --h:34px; font-size:11px; z-index:2;
+  background:linear-gradient(135deg,#E0575B,#EC7276); color:#fff;
+  animation:st-hao-do 3.4s ease-in-out infinite}
+.st-khuc .kc-dh{font-variant-numeric:tabular-nums}
+@keyframes st-hao-duong{
+  0%,100%{filter:drop-shadow(0 3px 5px rgba(62,123,250,.30))}
+  50%    {filter:drop-shadow(0 7px 12px rgba(62,123,250,.85))}
+}
+@keyframes st-hao-do{
+  0%,100%{filter:drop-shadow(0 3px 5px rgba(224,87,91,.30))}
+  50%    {filter:drop-shadow(0 7px 12px rgba(224,87,91,.85))}
+}
+@media (prefers-reduced-motion: reduce){
+  .st-khuc.dang,.st-khuc.ket,.ds-thieu .ten.cham{animation:none}
+}
+
 .td-dong{display:grid;
   grid-template-columns:minmax(0,var(--cot-ten,112px)) minmax(56px,1fr) 44px 11px;
   align-items:center; gap:8px}
@@ -1372,8 +1448,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=61"></script>
-<script src="js/chung.js?v=35"></script>
+<script src="config.js?v=64"></script>
+<script src="js/chung.js?v=36"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1488,6 +1564,8 @@ var EM = null;
 /* ⭐ (02/09 đợt 4) Bảng điểm TỪNG ACT: { mã act -> danh sách em }. `donDiem()` đổ vào,
    `veDiem()` dùng để biết em nào TOP 1 mà đặt avatar lên thanh tiến trình. */
 var DIEM_ACT = {};
+/* ⭐ v1.76.0 — chuẩn "đủ điểm" từng act, cho thẻ STAGE xét "cả lớp xong chặng chưa". */
+var CHUAN_ACT = {};
 
 var TOI = '';            /* tên em đang đăng nhập (đúng tên trong myStudent) */
 var LOP = '';            /* tên lớp HIỆN cho em xem, kiểu myStudent: "B2-B" */
@@ -1569,6 +1647,10 @@ function theTuBai(b){
       ? [{ ten: 'SPEAKING CHECK', ma: '',
            xong: (b.khoi && b.khoi[0] && +b.khoi[0].xong) || 0 }]
       : acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; }),
+    /* ⭐ v1.76.0 — DẠNG BÀI STAGE: giữ chính bài gốc để `veDiem()` tính chặng
+       (cần `khoi[].han`). Chỉ bật khi thật sự có act mang hạn riêng. */
+    goc: b,
+    stage: A.laBaiStage(b) && A.changCuaBai(b).some(function(c){ return !!c.so; }),
     tay: b.tay || '',
     thieu: []
   };
@@ -1597,6 +1679,9 @@ function donDiem(cacThe){
     /* ⭐ (02/09 đợt 4) Giữ bảng điểm từng act ra NGOÀI để `veDiem()` biết em nào TOP 1 mà đặt
        avatar lên thanh. Trước đây `theoMa` sống và chết trong đúng hàm này. */
     DIEM_ACT = theoMa;
+    /* ⭐ v1.76.0 — giữ luôn CHUẨN ĐỦ ĐIỂM ra ngoài: thẻ STAGE phải tự xét "cả lớp
+       xong chặng chưa" nên cần cả hai bảng, không chỉ điểm. */
+    CHUAN_ACT = chuanMaAct;
 
     cacThe.forEach(function(t){
       var thieu = {};
@@ -1648,7 +1733,88 @@ function tinhHinhThe(b, hetGio){
 
 /* batDo: bài chưa đủ hiện ĐỎ (3 tiếng cuối, và mọi thẻ đã qua hạn).
    hienThieu: mở cột "chưa xong bài" bên phải (chỉ 3 tiếng cuối). */
+/* ⭐⭐ v1.76.0 — VÙNG ĐIỂM CỦA THẺ **STAGE**.
+   Khác thẻ thường ở ba chỗ (thầy chốt 07/09):
+     · có THANH CHẶNG ở trên, khúc đang chạy nhỉnh hơn + hào quang nháy chậm;
+     · chỉ hiện thanh tiến trình của act thuộc CHẶNG ĐANG MỞ (một chặng thường
+       1-2 act), tiêu đề là TÊN ACT chứ không phải "STAGE 1";
+     · quá hạn mà còn em chưa xong thì cột phải đổi thành "CẢ LỚP ĐANG CHỜ" với
+       tên các em đó (đỏ, nhấp nháy) — cả lớp bị giữ lại vì mấy bạn ấy.
+   ⛔ Thẻ chỉ cao 200px: cột chờ phải bó chữ + cắt bớt tên (`vuaCotThieu` lo
+   phần cắt), không thì tên bị đáy thẻ xén ngang. */
+function changCuaThe(b){
+  var lay = {
+    diem: function(ma){ return DIEM_ACT[ma] || []; },
+    chuan: function(ma){ return CHUAN_ACT[ma]; }
+  };
+  return A.xetChang(b.goc, lay, CA_LOP, {
+    boQua: A.boQuaCua(b.goc), moChang: A.moChangCua(b.goc)
+  });
+}
+
+function veThanhChangThe(cac, iXem){
+  return '<span class="st-bar">' + cac.map(function(c, i){
+    var lop = c.tt === 'xong' ? 'xong'
+            : c.tt === 'dang' ? 'dang'
+            : c.tt === 'ket'  ? 'ket'
+            : c.tt === 'cho'  ? 'cho' : 'xa';
+    var chu = 'STAGE ' + (c.so || 1);
+    if (c.tt === 'xong') chu += ': COMPLETED';
+    else if (c.tt === 'dang') chu += ': IN PROGRESS';
+    else if (c.tt === 'ket') chu += ': OVERDUE';
+    else if (c.tt === 'cho') chu += ': OPEN IN <b class="kc-dh" data-moc="' + (c.moLuc || 0) + '">…</b>';
+    return '<span class="st-khuc ' + lop + (i === iXem ? ' dang-xem' : '') + '">' +
+      (c.tt === 'xong' ? '<span class="tick">✓</span>' : '') +
+      '<span class="lbl">' + chu + '</span></span>';
+  }).join('') + '</span>';
+}
+
+function veDiemStage(b, batDo){
+  var cac = b._chang || changCuaThe(b);
+  var iXem = A.changHien(cac);
+  var c = cac[iXem] || { acts: [], thieu: [] };
+  var mas = {};
+  (b.bai || []).forEach(function(x){ mas[x.ma] = x; });
+
+  var thanh = c.acts.map(function(a){
+    var x = mas[a.ma] || { ten: a.ten, ma: a.ma, xong: 0 };
+    var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
+    var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
+    return '<span class="td-dong">' +
+      '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' +
+        A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
+      '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
+        avMocHtml(DIEM_ACT[x.ma], LOP || LOP_DL) + '</span>' +
+      '<span class="td-so ' + m + '">' + x.xong + '/' + SI_SO + '</span>' +
+      '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
+    '</span>';
+  }).join('');
+
+  var lopSo = ' n' + Math.max(1, c.acts.length);
+  var cho = (c.tt === 'ket') ? (c.thieu || []) : [];
+  if (!cho.length) {
+    return '<span class="the-diem st' + lopSo + '">' +
+      veThanhChangThe(cac, iXem) +
+      '<span class="st-hang"><span class="khoi-thanh">' + thanh + '</span></span>' +
+    '</span>';
+  }
+  var o = cho.map(function(t){
+    return '<span class="ten cham">' + tenTat(t) + '</span>';
+  }).join('');
+  return '<span class="the-diem st co-thieu' + lopSo + '">' +
+    veThanhChangThe(cac, iXem) +
+    '<span class="st-hang">' +
+      '<span class="khoi-thanh">' + thanh + '</span>' +
+      '<span class="khoi-thieu" data-tong="' + cho.length + '">' +
+        '<span class="tieu">CẢ LỚP ĐANG CHỜ</span>' +
+        '<span class="ds-thieu mot-cot">' + o + '</span>' +
+      '</span>' +
+    '</span>' +
+  '</span>';
+}
+
 function veDiem(b, batDo, hienThieu){
+  if (b.stage && b.goc) return veDiemStage(b, batDo);
   var thanh = (b.bai || []).map(function(x){
     var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
@@ -2197,14 +2363,34 @@ function tinhHinhGio(b){
   return 'thuong';
 }
 
+/* "2026-09-13T23:59" -> "23:59 • 13/9" */
+function chuHanChang(han){
+  var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
+  return m ? (m[4] + ':' + m[5] + ' • ' + (+m[3]) + '/' + (+m[2])) : '';
+}
+
 function veHan(b, tt){
   var xongHet = (tt === 'xong');
   /* Mốc THẬT của bài. Bài chưa có hạn thì để đồng hồ trống, không bịa giờ. */
   var moc = (b.hanMoc == null) ? 0 : b.hanMoc;
+  /* ⭐ v1.76.0 — THẺ STAGE: ô hạn nói về CHẶNG ĐANG CHẠY, không phải hạn cuối
+     bài (thầy chốt 07/09) — đồng hồ cũng đếm tới hạn chặng đó. */
+  var chu = b.han ? ('Hạn ' + b.han) : 'Chưa đặt hạn';
+  var rong = '';
+  if (b.stage && b._chang) {
+    var i = A.changHien(b._chang), c = b._chang[i];
+    if (c && c.so && c.moc != null) {
+      chu = 'Hạn chặng ' + c.so + ': ' + chuHanChang(c.han);
+      if (!xongHet) moc = c.moc;
+      rong = ' rong';
+    }
+  }
   var lop = 't-han' + (tt === 'gap' ? ' gap-gio' : (xongHet ? ' da-xong' : ''));
-  return '<span class="han-boc"><span class="' + lop + '">' +
-      '<span class="han-dong">' + IC_GIO +
-        (b.han ? ('Hạn ' + b.han) : 'Chưa đặt hạn') + '</span>' +
+  return '<span class="han-boc' + rong + '"><span class="' + lop + '">' +
+      /* ⛔ v1.76.0 — BỎ ICON ĐỒNG HỒ ở ô hạn của MỌI dạng bài (thầy chốt 07/09:
+         "trong mọi dạng bài đều bỏ icon đồng hồ đi cho gọn và cân đối").
+         `.han-dong` có `gap` nên phải để `gap:0`, xem CSS. */
+      '<span class="han-dong">' + chu + '</span>' +
       '<span class="han-vach"></span>' +
       '<span class="dhho" data-moc="' + moc + '" data-xong="' + (xongHet ? 1 : 0) +
         '" data-khoa="' + (b.khoa ? 1 : 0) + '">…</span>' +
@@ -2266,6 +2452,10 @@ function veTheMoi(b, tt){
   var gap = (tt === 'gap');
   var bDung = (tt === 'xong') ? xongHetBai(b) : b;
   var th = tinhHinhThe(bDung, tt === 'xong');
+  /* ⭐ v1.76.0 — tính chặng MỘT LẦN cho cả ô hạn lẫn vùng điểm: `veHan()` chạy
+     TRƯỚC `veDiem()` nên phải gắn sẵn vào thẻ, không thì hai chỗ tính hai lần
+     (và ô hạn không biết chặng nào đang chạy). */
+  if (b.stage && b.goc) { b._chang = changCuaThe(b); bDung._chang = b._chang; }
   /* ⭐ v1.56.0 — thẻ đã đổi hạn riêng: bỏ luôn màu xanh lá "xong hết" + dấu ✓.
      ⛔ Phải chặn Ở ĐÂY nữa: `tinhHinhGio()` đã thôi trả 'xong' nhưng `tinhHinhThe()`
      tự đếm lại `bai[].xong >= SI_SO` nên vẫn ra `du:true` ⇒ thẻ xanh lá mà đồng hồ

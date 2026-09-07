@@ -264,6 +264,84 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 
 /* ---------- BA PHẦN CỦA BÀI ---------- */
 .cac-phan{display:flex; flex-direction:column; gap:18px; padding:18px 0 0}
+
+/* ============================================================================
+   ⭐⭐ v1.76.0 — DẠNG BÀI **STAGE**: thanh chặng + thẻ chờ (mẫu v5 thầy duyệt).
+   ⛔ Bề rộng mũi nhọn KHÔNG được là số cứng: góc vát = atan(dx ÷ (h/2)), nên
+   khúc cao 30px và khúc đang chạy cao 46px mà cùng dx thì ra HAI GÓC khác nhau,
+   chỗ nối nhìn lệch hẳn. Cho dx tỉ lệ theo chiều cao ⇒ mọi khúc CÙNG MỘT GÓC,
+   hai đường vát ở chỗ nối luôn song song, khe hở đều 2px.
+   ⛔ `clip-path` CẮT `box-shadow` ⇒ hào quang phải làm bằng `filter:drop-shadow`.
+   ========================================================================== */
+.st-bar{display:flex; align-items:center; width:100%; margin:2px 0 4px}
+.st-khuc{--h:30px; --dx:calc(var(--h) * .425);
+  flex:1 1 auto; min-width:0; height:var(--h); position:relative; border:0;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  padding-left:calc(var(--dx) + 10px); padding-right:calc(var(--dx) + 5px); cursor:pointer;
+  font-size:11px; font-weight:800; letter-spacing:.045em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden; font-family:inherit;
+  clip-path:polygon(0 0, calc(100% - var(--dx)) 0, 100% 50%,
+                    calc(100% - var(--dx)) 100%, 0 100%, var(--dx) 50%);
+  transition:flex-grow .42s var(--em), background .3s var(--em), color .3s, height .3s var(--em)}
+.st-khuc + .st-khuc{margin-left:calc(2px - var(--dx))}
+.st-bar .st-khuc:first-child{padding-left:16px; border-radius:9px 0 0 9px;
+  clip-path:polygon(0 0, calc(100% - var(--dx)) 0, 100% 50%,
+                    calc(100% - var(--dx)) 100%, 0 100%)}
+.st-bar .st-khuc:last-child{padding-right:calc(var(--dx) + 2px)}
+.st-khuc .lbl{overflow:hidden; text-overflow:ellipsis}
+.st-khuc .tick{font-size:12px; line-height:1}
+.st-khuc.xong{background:var(--m-la); color:#fff; flex-shrink:2}
+.st-khuc.xa{flex-grow:3; flex-shrink:3; background:#E7EDEB; color:#9DAFAB; cursor:default}
+.st-khuc.cho{flex-shrink:0; background:#D8E6FF; color:#2B5FD0; cursor:default}
+.st-khuc.dang{flex-shrink:0; --h:46px; font-size:14px; letter-spacing:.06em; z-index:2;
+  background:linear-gradient(135deg,#3E7BFA,#5C93FF); color:#fff;
+  animation:st-hao-duong 3.4s ease-in-out infinite}
+.st-khuc.ket{flex-shrink:0; --h:46px; font-size:14px; letter-spacing:.06em; z-index:2;
+  background:linear-gradient(135deg,#E0575B,#EC7276); color:#fff;
+  animation:st-hao-do 3.4s ease-in-out infinite}
+.st-khuc.dang-xem::after{content:''; position:absolute; inset:2px 12px 2px 14px;
+  border:1.5px dashed rgba(255,255,255,.75); border-radius:5px; pointer-events:none}
+.st-khuc.xa.dang-xem::after,.st-khuc.cho.dang-xem::after{border-color:rgba(22,35,42,.28)}
+@keyframes st-hao-duong{
+  0%,100%{filter:drop-shadow(0 3px 5px rgba(62,123,250,.30))}
+  50%    {filter:drop-shadow(0 7px 12px rgba(62,123,250,.85))}
+}
+@keyframes st-hao-do{
+  0%,100%{filter:drop-shadow(0 3px 5px rgba(224,87,91,.30))}
+  50%    {filter:drop-shadow(0 7px 12px rgba(224,87,91,.85))}
+}
+
+/* Thẻ CHỜ của chặng chưa tới lượt: chỉ thông tin, không bìa READY, không bảng. */
+.card.st-cho{padding:21px 20px; background:#FBFDFC}
+.card.st-cho.dau-cho{margin-top:16px; position:relative}
+.card.st-cho.dau-cho::before{content:''; position:absolute; left:6px; right:6px; top:-17px;
+  border-top:1px dashed #CBD8D5}
+.st-cho-hang{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.st-nhan{flex:none; padding:9px 15px; border-radius:10px; background:#E7EDEB; color:#6E8480;
+  font-size:12.5px; font-weight:800; letter-spacing:.08em; white-space:nowrap}
+.st-cho.den .st-nhan{background:#FBD9DA; color:#B03A3E}
+.st-cho-chu{min-width:0; flex:1; display:flex; align-items:center; gap:10px; flex-wrap:wrap}
+.st-cho-act{font-size:14.5px; font-weight:800; letter-spacing:.02em; color:#6E8480;
+  white-space:nowrap}
+.st-mui{display:inline-flex; align-items:center; color:#B6C6C2}
+.st-mui svg{width:15px; height:15px; stroke:currentColor; stroke-width:2.6; fill:none;
+  stroke-linecap:round; stroke-linejoin:round}
+.st-cho-tt{flex:none; display:flex; align-items:center; gap:8px; padding:7px 13px;
+  border-radius:11px; font-size:11.5px; font-weight:800; letter-spacing:.06em;
+  text-transform:uppercase; background:#EDF3F1; color:#7B8C89; border:1px solid #DCE7E4}
+.st-cho-tt svg{width:14px; height:14px; stroke:currentColor; stroke-width:2.3; fill:none;
+  stroke-linecap:round; stroke-linejoin:round}
+.st-cho-tt.dem{background:#EAF1FF; color:#2B5FD0; border-color:#CBDCFF}
+.st-cho-tt.dem b{font-variant-numeric:tabular-nums; letter-spacing:.5px}
+.st-cho-tt.ai{background:#FDECEC; color:#B03A3E; border-color:#F6CFCF}
+.st-cho-tt.mo{background:var(--accent-soft); color:var(--accent); border-color:#C9E3DE}
+.card.st-cho.mo-roi{cursor:pointer; transition:border-color .16s, transform .16s}
+.card.st-cho.mo-roi:hover{border-color:var(--accent); transform:translateY(-1px)}
+.card.st-cho.mo-roi .st-cho-act{color:var(--ink)}
+.st-cho-tt.ai .ten-cham{font-size:13px; animation:nhay-ten-do 1.6s ease-in-out infinite}
+@media (prefers-reduced-motion: reduce){
+  .st-khuc.dang,.st-khuc.ket,.st-cho-tt.ai .ten-cham{animation:none}
+}
 /* position:relative để pop-up TỪ ĐIỂN neo được vào thẻ (đợt 8). Không đặt
    z-index ở đây kẻo thành stacking context — hỏng bóng đèn (bẫy 33). */
 .card{position:relative; background:var(--surface); border:1px solid var(--line);
@@ -1251,8 +1329,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=61"></script>
-<script src="js/chung.js?v=35"></script>
+<script src="config.js?v=64"></script>
+<script src="js/chung.js?v=36"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
@@ -1320,6 +1398,15 @@ var DIEM = {};
    bonus (mặc định) chấm theo chữ cái nên chơi hoàn hảo là 200%. Xem chú thích
    dài trong js/chung.js. */
 var CHUAN = {};
+
+/* ⭐⭐ v1.76.0 — DẠNG BÀI **STAGE** (bài chia chặng).
+   `CHANG` = mảng chặng đã xét trạng thái (xem `A.xetChang` trong js/chung.js).
+   `CHANG_XEM` = chặng đang hiện trên trang; mặc định là chặng ĐANG MỞ, em bấm
+   khúc trên thanh chặng để xem lại chặng đã xong (và làm lại act ở đó).
+   ⛔ Chặng đã xong thì ẨN HẲN khỏi trang (thầy chốt) — chỉ vào lại qua thanh. */
+var LA_STAGE = false;
+var CHANG = [];
+var CHANG_XEM = null;
 
 /* ---------- TOAST ---------- */
 var hen = null;
@@ -2701,8 +2788,150 @@ function veCacPhan(){
   document.body.classList.toggle('lop-thieu', thieu);
   var hop = $('#cacPhan');
   hop.innerHTML = '';
+  if (LA_STAGE) { veCacPhanStage(hop); canhLb(); return; }
   KHOI.forEach(function(k, i){ hop.appendChild(veKhoi(k, i + 1)); });
   canhLb();
+}
+
+/* ⭐⭐ v1.76.0 — TRANG BÀI CỦA DẠNG STAGE.
+   · Khối nghe (nếu có) luôn mở, vẽ trước, không thuộc chặng nào.
+   · Thanh chặng: khúc đang mở TO HẲN + hào quang nháy chậm; bấm khúc để xem
+     chặng khác (kể cả chặng đã xong, để làm lại).
+   · Chỉ hiện act của chặng đang xem; các chặng SAU nằm dưới dạng THẺ CHỜ.
+   · Số thứ tự act chạy NỐI TIẾP cả bài: chặng 1 có act 1-2 thì act đầu của
+     chặng 2 mang số 3 (thầy chốt). */
+function tinhChang(){
+  var lay = {
+    diem: function(ma){ return DIEM[ma] || []; },
+    chuan: function(ma){ return CHUAN[ma]; }
+  };
+  return A.xetChang({ id: BAI.id, dang: BAI.dang, khoi: KHOI }, lay, CA_LOP, {
+    boQua: A.boQuaCua(BAI), moChang: A.moChangCua(BAI)
+  });
+}
+
+function soDauChang(i){
+  var s = 1;
+  for (var k = 0; k < i; k++) s += CHANG[k].acts.length;
+  return s;
+}
+
+/* Chữ trên một khúc của thanh chặng. */
+function chuKhuc(c){
+  var ten = 'STAGE ' + (c.so || 1);
+  if (c.tt === 'xong') return ten + ': COMPLETED';
+  if (c.tt === 'dang') return ten + ': IN PROGRESS';
+  if (c.tt === 'ket')  return ten + ': OVERDUE';
+  if (c.tt === 'cho')  return ten + ': OPEN IN <b class="kc-dh" data-moc="' + (c.moLuc || 0) + '">…</b>';
+  return ten;
+}
+
+function veThanhChang(){
+  var el = document.createElement('div');
+  el.className = 'st-bar';
+  el.innerHTML = CHANG.map(function(c, i){
+    var lop = c.tt === 'xong' ? 'xong'
+            : c.tt === 'dang' ? 'dang'
+            : c.tt === 'ket'  ? 'ket'
+            : c.tt === 'cho'  ? 'cho' : 'xa';
+    return '<button type="button" class="st-khuc ' + lop + (i === CHANG_XEM ? ' dang-xem' : '') +
+      '" data-i="' + i + '">' +
+      (c.tt === 'xong' ? '<span class="tick">✓</span>' : '') +
+      '<span class="lbl">' + chuKhuc(c) + '</span></button>';
+  }).join('');
+  el.addEventListener('click', function(e){
+    var k = e.target.closest('.st-khuc');
+    if (!k) return;
+    var i = +k.getAttribute('data-i');
+    if (!CHANG[i] || !CHANG[i].mo) {
+      baoToast(CHANG[i] && CHANG[i].tt === 'cho'
+        ? 'Chặng này sắp mở, chờ tới giờ nhé.'
+        : 'Chặng này chưa tới lượt — làm xong chặng trước đã.');
+      return;
+    }
+    CHANG_XEM = i;
+    veCacPhan();
+  });
+  return el;
+}
+
+/* Thẻ CHỜ của một chặng chưa tới lượt: chỉ thông tin, không bìa READY, không
+   bảng xếp hạng. `dau` = thẻ chờ ĐẦU TIÊN ⇒ có vạch nét đứt ngăn với act ở trên. */
+function veTheCho(c, dau){
+  var el = document.createElement('section');
+  el.className = 'card st-cho' + (dau ? ' dau-cho' : '') + (c.tt === 'ket' ? ' den' : '');
+  var truoc = CHANG[CHANG.indexOf(c) - 1];
+  var acts = c.acts.map(function(a){
+    return '<span class="st-cho-act">' + chuAnToan(A.tenO(a.ten)) + '</span>';
+  }).join('<span class="st-mui"><svg viewBox="0 0 24 24"><path d="M7 6l5 6-5 6M14 6l5 6-5 6"/></svg></span>');
+  var tt;
+  /* ⛔ Chặng ĐÃ MỞ mà em đang xem chặng khác thì KHÔNG phải "đang chờ" — ghi
+     WAITING FOR ở đây là nói dối. Cho bấm thẳng vào thẻ để nhảy tới chặng đó. */
+  if (c.mo) {
+    el.classList.add('mo-roi');
+    el.onclick = function(){ CHANG_XEM = CHANG.indexOf(c); veCacPhan(); };
+    tt = '<div class="st-cho-tt mo">' + IC_MO + 'ĐANG MỞ — bấm để làm</div>';
+    el.innerHTML = '<div class="st-cho-hang"><span class="st-nhan">STAGE ' + (c.so || 1) + '</span>' +
+      '<div class="st-cho-chu">' + acts + '</div>' + tt + '</div>';
+    return el;
+  }
+  if (c.tt === 'cho') {
+    tt = '<div class="st-cho-tt dem">' + IC_KHOA + 'OPEN IN <b class="kc-dh" data-moc="' +
+         (c.moLuc || 0) + '">…</b></div>';
+  } else if (truoc && truoc.tt === 'ket' && truoc.thieu.length) {
+    tt = '<div class="st-cho-tt ai">' + IC_KHOA + 'WAITING FOR: <span class="ten-cham">' +
+         chuAnToan(truoc.thieu.map(function(t){ return A.tenO(t); }).join(' • ')) + '</span></div>';
+  } else {
+    tt = '<div class="st-cho-tt">' + IC_KHOA + 'WAITING FOR STAGE ' + ((c.so || 1) - 1) + '</div>';
+  }
+  el.innerHTML = '<div class="st-cho-hang"><span class="st-nhan">STAGE ' + (c.so || 1) + '</span>' +
+    '<div class="st-cho-chu">' + acts + '</div>' + tt + '</div>';
+  return el;
+}
+
+var IC_KHOA = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/>' +
+              '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1"/></svg>';
+/* Ổ khoá MỞ — chặng đã mở, chỉ là em đang xem chặng khác. */
+var IC_MO = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/>' +
+            '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.3-.9"/></svg>';
+
+function veCacPhanStage(hop){
+  CHANG = tinhChang();
+  if (CHANG_XEM == null || !CHANG[CHANG_XEM] || !CHANG[CHANG_XEM].mo) {
+    CHANG_XEM = A.changHien(CHANG);
+  }
+  /* Khối nghe không thuộc chặng nào — luôn mở, đứng đầu trang. */
+  var nghe = KHOI.filter(function(k){ return k.loai === 'audio'; });
+  nghe.forEach(function(k){ hop.appendChild(veKhoi(k, 0)); });
+
+  hop.appendChild(veThanhChang());
+
+  var c = CHANG[CHANG_XEM];
+  if (c) {
+    var so = soDauChang(CHANG_XEM);
+    c.acts.forEach(function(a, k){ hop.appendChild(veKhoi(a, so + k)); });
+  }
+  var dau = true;
+  CHANG.forEach(function(x, i){
+    if (i > CHANG_XEM) { hop.appendChild(veTheCho(x, dau)); dau = false; }
+  });
+  nhipKhucCho();
+}
+
+/* Đếm lùi trên các khúc/thẻ "OPEN IN". Dùng chung nhịp 1 giây của trang. */
+function chuoiGioChang(ms){
+  var s = Math.floor(ms / 1000);
+  var h = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60), g = s % 60;
+  return h + ':' + ('0' + p).slice(-2) + ':' + ('0' + g).slice(-2);
+}
+
+function nhipKhucCho(){
+  var o = document.querySelectorAll('.kc-dh[data-moc]');
+  for (var i = 0; i < o.length; i++) {
+    var moc = +o[i].getAttribute('data-moc');
+    var con = moc - Date.now();
+    o[i].textContent = con > 0 ? chuoiGioChang(con) : '0:00:00';
+  }
 }
 
 /* ⭐ v1.13.0 — NGHE TIN NỘP BÀI TỪ KHUNG ACT NHÚNG (AWord Đợt 256): học sinh
@@ -2875,10 +3104,18 @@ A.napDuLieu().then(function(dl){
          đây không bê trường đó qua ⇒ không bao giờ hiện. Lộ ra nhờ bản XEM THỬ
          BẢN NHÁP của app v1.17.0 — đo DOM thấy .ch-ma vắng mặt. */
       act: k.act || '',
-      yeuCau: k.yeuCau || '', mau: k.mau || ''
+      yeuCau: k.yeuCau || '', mau: k.mau || '',
+      /* ⭐ v1.76.0 — HẠN RIÊNG của act (dạng bài STAGE). Không bê qua đây thì
+         `A.changCuaBai()` không thấy chặng nào và bài STAGE mở tuột hết. */
+      han: k.han || ''
     };
   });
   if (!KHOI.length) { veTrangLop(); return; }
+
+  /* ⭐ v1.76.0 — bài STAGE: chỉ bật khi thật sự có act mang hạn riêng, không thì
+     cứ vẽ như bài thường (bài STAGE thầy chưa cài chặng cũng mở bình thường). */
+  LA_STAGE = A.laBaiStage(BAI)
+    && A.changCuaBai({ khoi: KHOI }).some(function(c){ return !!c.so; });
 
   HAN_MOC = A.mocHan(BAI);
   tinhConLai();
@@ -2902,7 +3139,19 @@ A.napDuLieu().then(function(dl){
   })).then(function(){ veCacPhan(); });
 })['catch'](function(){ veTrangLop(); });
 
-setInterval(function(){ if (dangChay && conLai > 0) { conLai--; veDongHo(); } }, 1000);
+setInterval(function(){
+  if (dangChay && conLai > 0) { conLai--; veDongHo(); }
+  /* ⭐ v1.76.0 — đếm lùi "OPEN IN" của chặng sắp mở. Tới giờ thì vẽ lại cả
+     trang MỘT LẦN để chặng mới bung ra ngay, không bắt em tải lại trang. */
+  if (LA_STAGE) {
+    var can = false;
+    var o = document.querySelectorAll('.kc-dh[data-moc]');
+    for (var i = 0; i < o.length; i++) {
+      if (+o[i].getAttribute('data-moc') - Date.now() <= 0) { can = true; break; }
+    }
+    if (can) { CHANG_XEM = null; veCacPhan(); } else { nhipKhucCho(); }
+  }
+}, 1000);
 </script>
 </body>
 </html>

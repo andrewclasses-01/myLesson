@@ -114,6 +114,9 @@
         var bang = r[2] || {};
         HAN_SUA = bang.han || {};
         TT_THE = bang.tt || {};
+        // ⭐ v1.76.0 — hai bảng của dạng bài STAGE, cùng tài liệu `lessonHan`.
+        BO_QUA = bang.boQua || {};
+        MO_CHANG = bang.moChang || {};
         NGHI = r[3] || {};
         return { lop: (r[0] && r[0].lop) || [], bai: (r[1] && r[1].bai) || {} };
       });
@@ -154,6 +157,20 @@
   // chung tài liệu với hạn riêng: kho này đã được liệt kê sẵn ở `napHanSua()`,
   // thêm trường = KHÔNG tốn thêm lượt đọc Firestore nào (luật 8️⃣ BAN GIAO.md).
   var TT_THE = {};
+
+  // ⭐ v1.76.0 (07/09/2026) — HAI BẢNG CỦA DẠNG BÀI **STAGE**, cùng tài liệu
+  // `lessonHan` (thêm trường = KHÔNG tốn thêm lượt đọc, đúng luật 8️⃣):
+  //   `boQua`   mảng TÊN em thầy bỏ qua khi xét "cả lớp xong chặng chưa"
+  //             (em nghỉ dài / bỏ lớp / chưa có mã đăng nhập — không thì cả lớp
+  //             kẹt mãi ở một chặng vì một em không bao giờ làm).
+  //   `moChang` số chặng thầy ÉP MỞ trên dashboard (0 = không ép).
+  // ⛔ Luật Firestore đã mở cho hai trường này ngày 07/09 — xem
+  // `myLesson-data/tai-lieu/LUAT FIRESTORE CAN DAN (07-09 THEM STAGE).md`.
+  var BO_QUA = {};
+  var MO_CHANG = {};
+
+  function boQuaCua(b) { return BO_QUA[(b && b.id) || ''] || []; }
+  function moChangCua(b) { return +MO_CHANG[(b && b.id) || ''] || 0; }
 
   // ⭐ v1.29.0 (28/08/2026) — NHỚ ĐỆM 60 GIÂY, cùng nếp `nhoDiem`/`docPhien` ngay dưới.
   //
@@ -205,7 +222,7 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           // ⭐ v1.35.0 — trả HAI bảng {han, tt} thay vì một bảng hạn.
-          var ra = { han: {}, tt: {} };
+          var ra = { han: {}, tt: {}, boQua: {}, moChang: {} };
           var ds = (j && j.documents) || [];
           for (var i = 0; i < ds.length; i++) {
             var f = ds[i].fields || {};
@@ -213,6 +230,17 @@
             if (!id) continue;
             ra.han[id] = String((f.han && f.han.stringValue) || '');
             ra.tt[id] = chuanTt((f.tt && f.tt.stringValue) || '');
+            // ⭐ v1.76.0 — hai trường của dạng STAGE. Firestore REST gói mảng
+            // trong `arrayValue.values[]`, mỗi phần tử lại là một ô có kiểu.
+            var bq = f.boQua && f.boQua.arrayValue && f.boQua.arrayValue.values;
+            if (bq && bq.length) {
+              ra.boQua[id] = bq.map(function (v) {
+                return String((v && v.stringValue) || '');
+              }).filter(Boolean);
+            }
+            var mc = f.moChang && (f.moChang.integerValue != null
+                                   ? f.moChang.integerValue : f.moChang.doubleValue);
+            if (mc != null) ra.moChang[id] = +mc || 0;
           }
           // ⛔ CHỈ ĐỆM KHI ĐỌC ĐƯỢC THẬT (`j` khác null). Đệm cả lượt hỏng là
           // đóng băng bảng rỗng suốt 60 giây — mạng chớp một cái là mọi thẻ
@@ -228,7 +256,8 @@
   // / `datTrangThai`) — không dọn là thầy vừa bấm xong, sang trang khác bản đệm CŨ đè lại.
   function luuDemHan() {
     try { sessionStorage.setItem(KHOA_HAN,
-      JSON.stringify({ luc: Date.now(), bang: { han: HAN_SUA, tt: TT_THE } })); } catch (e) {}
+      JSON.stringify({ luc: Date.now(),
+        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, moChang: MO_CHANG } })); } catch (e) {}
   }
 
   // Chỉ nhận đúng 4 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
@@ -789,6 +818,127 @@
     return (b.khoi || []).filter(function (k) { return k.loai === 'act' && k.ma; });
   }
 
+  /* ==========================================================================
+     ⭐⭐ v1.76.0 — DẠNG BÀI **STAGE**: bài tập chia CHẶNG (thầy chốt 07/09/2026)
+
+     Một bài STAGE có nhiều act, mỗi act mang thêm trường `han` do app ghi ra.
+     Các act LIỀN NHAU CÙNG HẠN là MỘT CHẶNG (act cùng chặng làm song song).
+     Chặng sau chỉ mở khi **CẢ LỚP** xong chặng trước — không phải từng em.
+
+     Luật mở chặng (thầy chốt, đừng suy diễn lại):
+       · Chặng 1 mở ngay.
+       · Chặng k mở khi MỌI em (trừ em thầy bỏ qua) đã xong MỌI act của chặng k−1
+         VÀ đã tới mốc "hạn chặng k−1 trừ 12 tiếng". Xong sớm hơn thì đếm lùi tới
+         mốc đó rồi mở — thầy chốt "mở chặng 2 trong vòng 12 tiếng".
+       · Quá hạn chặng k−1 mà còn em chưa xong ⇒ chặng k KHÔNG mở, hiện tên các em
+         đó; các em ấy xong (hoặc thầy bỏ qua) thì mở ngay.
+       · Thầy bấm "Mở chặng kế" trên dashboard ⇒ `moChang` trong kho `lessonHan`.
+     ⛔ Đây là khoá GIAO DIỆN, không phải khoá bảo mật: em nào biết mã bài giao
+     vẫn mở thẳng AWord được. Thầy đã biết và chốt chấp nhận ở bản đầu.
+     ⛔ KHÔNG tốn thêm lượt đọc Firestore nào: điểm và kho `lessonHan` đều là thứ
+     trang đã đọc sẵn, ở đây chỉ tính thêm.
+     ========================================================================== */
+
+  var CHO_MO_MS = 12 * 60 * 60 * 1000;   // mở sớm nhất là 12 tiếng trước hạn chặng trước
+
+  function laBaiStage(b) {
+    return String((b && b.dang) || '').trim().toUpperCase() === 'STAGE';
+  }
+
+  // "2026-09-12T23:59" -> mốc ms theo giờ máy học sinh (cùng nếp `mocHan` của
+  // hạn bài: chuỗi không có múi giờ nên JS đọc theo giờ máy).
+  function mocActHan(han) {
+    var s = String(han || '').trim();
+    if (!s) return null;
+    var t = Date.parse(s);
+    return isNaN(t) ? null : t;
+  }
+
+  // Gom act của bài thành các chặng. Act KHÔNG có `han` nằm ở chặng số 0 =
+  // LUÔN MỞ (bài thường lẫn vào, hoặc act thầy chưa xếp chặng).
+  function changCuaBai(b) {
+    var ds = actCuaBai(b), ra = [], k = 0;
+    for (var i = 0; i < ds.length; i++) {
+      var han = String(ds[i].han || '').trim();
+      var cuoi = ra[ra.length - 1];
+      if (cuoi && cuoi.han === han) { cuoi.acts.push(ds[i]); continue; }
+      ra.push({ han: han, moc: mocActHan(han), acts: [ds[i]], so: 0 });
+    }
+    for (var j = 0; j < ra.length; j++) if (ra[j].han) ra[j].so = ++k;
+    return ra;
+  }
+
+  // Những em CHƯA xong hết act của một chặng.
+  // `lay` = { diem: function(ma){...}, chuan: function(ma){...} } — lấy từ bảng
+  // điểm trang đã đọc sẵn. `boQua` = mảng tên em thầy đã bỏ qua ở bài này.
+  function emChuaXongChang(chang, lay, caLop, boQua) {
+    var bo = {};
+    (boQua || []).forEach(function (t) { bo[khoaTen(t)] = 1; });
+    var thieu = [];
+    (caLop || []).forEach(function (ten) {
+      if (bo[khoaTen(ten)]) return;
+      for (var i = 0; i < chang.acts.length; i++) {
+        var ma = chang.acts[i].ma;
+        if (!xongAct(lay.diem(ma) || [], ten, lay.chuan(ma))) { thieu.push(ten); return; }
+      }
+    });
+    return thieu;
+  }
+
+  // Xét trạng thái MỌI chặng của một bài.
+  //   tt: 'xong' | 'dang' | 'ket' | 'cho' | 'xa'
+  //     xong = cả lớp đã xong chặng này
+  //     dang = chặng đang mở, còn em chưa xong, CHƯA quá hạn
+  //     ket  = chặng đang mở, còn em chưa xong, ĐÃ quá hạn (giữ cả lớp lại)
+  //     cho  = đủ điều kiện mở nhưng chưa tới mốc (đang đếm lùi tới `moLuc`)
+  //     xa   = chưa tới lượt
+  // opt = { boQua: [tên em], moChang: số chặng thầy ép mở, now: mốc ms }
+  function xetChang(b, lay, caLop, opt) {
+    var o = opt || {};
+    var now = o.now || Date.now();
+    var epMo = +o.moChang || 0;
+    var cac = changCuaBai(b);
+    var moTiep = true;          // chặng đang xét có được mở không
+    for (var i = 0; i < cac.length; i++) {
+      var c = cac[i];
+      c.thieu = emChuaXongChang(c, lay, caLop, o.boQua);
+      c.caLopXong = c.thieu.length === 0;
+      c.quaHan = c.moc != null && now > c.moc;
+
+      // Chặng KHÔNG có hạn (so = 0) luôn mở, không chặn chặng sau.
+      if (!c.so) { c.tt = c.caLopXong ? 'xong' : 'dang'; c.mo = true; continue; }
+
+      var epMoNay = epMo >= c.so;
+      if (!moTiep && !epMoNay) {
+        // Chặng trước chưa xong: chặng này chờ. Chờ vì hết giờ mà còn người
+        // (chặng trước 'ket') thì web hiện tên các em đó ở CHÍNH chặng trước.
+        c.tt = 'xa'; c.mo = false;
+        continue;
+      }
+      // Đủ điều kiện về "chặng trước đã xong" — còn phải tới mốc mở.
+      var truoc = i > 0 ? cac[i - 1] : null;
+      var moLuc = (truoc && truoc.moc != null) ? (truoc.moc - CHO_MO_MS) : null;
+      c.moLuc = moLuc;
+      if (!epMoNay && moLuc != null && now < moLuc) {
+        c.tt = 'cho'; c.mo = false;
+        moTiep = false;          // chặng sau nữa chắc chắn chưa tới lượt
+        continue;
+      }
+      c.mo = true;
+      c.tt = c.caLopXong ? 'xong' : (c.quaHan ? 'ket' : 'dang');
+      if (!c.caLopXong) moTiep = false;   // chưa xong thì chặng sau chưa mở
+    }
+    return cac;
+  }
+
+  // Chặng ĐANG MỞ mới nhất (chặng học sinh đang phải làm). Xong hết thì trả
+  // chặng cuối cùng để thẻ vẫn có gì mà hiện.
+  function changHien(cac) {
+    var i = -1;
+    for (var k = 0; k < cac.length; k++) if (cac[k].mo) i = k;
+    return i < 0 ? 0 : i;
+  }
+
   // Mã lesson để in trên thẻ. App sinh tiêu đề theo khuôn cũ của thầy:
   //   "B2B_21.8_DICTS LSFLY-S1.T3.P1-2-3"  =  LỚP_NGÀY_DẠNG + mã lesson
   // ⇒ phần sau dấu cách đầu tiên chính là mã lesson.
@@ -825,7 +975,9 @@
     'READING': 'READING SKILL',
     'SP': 'SPEAKING SKILL',
     'SP SLIDE': 'SPEAKING SKILL',
-    'SP CHECK': 'SPEAKING CHECK'
+    'SP CHECK': 'SPEAKING CHECK',
+    // v1.76.0 — dạng bài chia chặng: thầy chốt giữ nguyên chữ STAGE
+    'STAGE': 'STAGE'
   };
   function tenDang(d) {
     var k = String(d || '').trim().toUpperCase().replace(/\s+/g, ' ');
@@ -1982,6 +2134,10 @@
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     actCuaBai: actCuaBai, maLesson: maLesson, tenBai: tenBai,
+    // ⭐ v1.76.0 — dạng bài STAGE (chia chặng)
+    laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,
+    changHien: changHien, emChuaXongChang: emChuaXongChang,
+    boQuaCua: boQuaCua, moChangCua: moChangCua, mocActHan: mocActHan,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,
     mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,
     // v1.20.0 — hạn sửa riêng từng thẻ (dashboard ghi, mọi trang đọc)

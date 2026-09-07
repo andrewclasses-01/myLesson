@@ -926,6 +926,52 @@ body.mo-menu .side.trai{transform:none}
   font-size:9px; font-weight:500; letter-spacing:.22em; color:#A9B6B3;
   text-align:center}
 
+/* ============================================================================
+   ⭐⭐ v1.77.0 — POP-UP KẾT QUẢ THEO CHẶNG (bài STAGE).
+   Khung nở theo SỐ ACT của chặng (`--so-cot` do JS đặt), mỗi act một cột nằm
+   ngang — ruột giống hệt bảng xếp hạng bên dashboard.
+   ⛔ Tên class `.xh-*`, KHÔNG chép `.lb-*`: giữ đúng một tên với dashboard để
+   sửa là sửa được cả hai chỗ.
+   ========================================================================== */
+.pop.rong{width:min(calc(var(--so-cot,1) * 244px + 30px), 100%)}
+.pop-thanh{flex:none; padding:12px 15px 6px}
+.pop-thanh[hidden]{display:none}
+.pop-thanh .st-khuc{border:0; font-family:inherit; cursor:pointer}
+.pop-ds.ngang{display:flex; flex-wrap:wrap; align-items:flex-start; gap:0 14px}
+.xh-cot{flex:1 1 214px; min-width:0}
+.xh-cot .doi-vach{margin-left:0; margin-right:0}
+.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch 4.8ch;
+  gap:6px; align-items:center; padding:0 6px; border-radius:7px;
+  height:24px; font-weight:700; font-size:12px; line-height:1}
+/* ⛔ `odd` chứ không `even`: vạch tên act là con ĐẦU TIÊN của cột nên dòng dữ
+   liệu bắt đầu từ nth-child(2) — lấy `odd` mới vằn đúng dòng 2·4·6. */
+.xh-dong:nth-child(odd){background:#F3F8F6}
+.xh-hang{font-weight:800; font-size:10.5px; color:#9AACA8; text-align:center;
+  font-variant-numeric:tabular-nums}
+.xh-hang .huy{display:block; width:19px; height:19px; margin:0 auto}
+.xh-ten{font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.xh-diem{font-weight:800; color:var(--accent); text-align:right;
+  font-variant-numeric:tabular-nums}
+.xh-giay{color:#93A5A1; text-align:right; font-size:11px; font-variant-numeric:tabular-nums}
+.xh-dong.hc .xh-ten{color:#D79B0C; animation:hao-quang-ten-pop 2.4s ease-in-out infinite}
+.xh-dong.du .xh-ten{color:var(--m-la)}
+.xh-dong.co .xh-ten{color:var(--ink)}
+.xh-dong.chua .xh-ten{color:#D93B40}
+.xh-dong.chua .xh-diem,.xh-dong.chua .xh-giay{color:#C9A3A4}
+/* Em đang giữ cả lớp lại: tên to hơn, nền đỏ, nhấp nháy — cùng nhịp với thẻ. */
+.xh-dong.cham{background:#FDECEC}
+.xh-dong.cham .xh-ten{color:#D93B40; font-size:15px;
+  animation:nhay-ten-do 1.6s ease-in-out infinite}
+.xh-dong.cham .xh-hang{color:#D93B40}
+.pop-trong{padding:22px 14px; text-align:center; color:#8AA09C; font-size:12.5px}
+@keyframes hao-quang-ten-pop{
+  0%,100%{text-shadow:0 0 8px rgba(243,178,27,.30), 0 0 18px rgba(243,178,27,.14)}
+  50%    {text-shadow:0 0 10px rgba(247,196,60,.75), 0 0 22px rgba(243,178,27,.50)}
+}
+@media (prefers-reduced-motion: reduce){
+  .xh-dong.hc .xh-ten,.xh-dong.cham .xh-ten{animation:none}
+}
+
 /* ---------- SP CHECK — POP-UP CHI TIẾT TỪNG BẠN THEO TEAM (⭐ 27/08) ----------
    Dùng lại ĐÚNG khung #popNen/.pop-ds có sẵn (bảng cả lớp) — chỉ ruột #popDs
    đổi khuôn: mỗi TEAM một vạch mảnh + tên team nằm giữa vạch, dưới vạch là
@@ -1441,6 +1487,9 @@ body.mo-menu .side.trai{transform:none}
         <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
+    <!-- ⭐ v1.77.0 — thanh chặng của pop-up kết quả (chỉ hiện với bài STAGE):
+         bấm khúc nào thì bảng dưới đổi sang chặng đó. -->
+    <div class="pop-thanh" id="popThanh" hidden></div>
     <div class="pop-ds" id="popDs"></div>
     <div class="pop-foot">ANDREW CLASSES</div>
   </div>
@@ -1448,8 +1497,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=64"></script>
-<script src="js/chung.js?v=36"></script>
+<script src="config.js?v=65"></script>
+<script src="js/chung.js?v=37"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -2291,7 +2340,129 @@ function xepCaLop(b){
 
 var IC_TICH = '✓';
 
+/* ==========================================================================
+   ⭐⭐ v1.77.0 — POP-UP KẾT QUẢ THEO CHẶNG (bài STAGE, thầy chốt 07/09).
+   Bấm vùng thanh tiến trình của thẻ ⇒ mở pop-up có LUÔN thanh chặng ở trên;
+   bấm khúc nào thì hiện bảng xếp hạng của các act thuộc chặng đó, trình bày
+   như bảng xếp hạng bên dashboard (mỗi act một cột nằm ngang).
+   Mở ra là đang ở CHẶNG ĐANG CHẠY. Chặng chưa tới lượt thì bảng trống.
+   ⛔ Tên class phải là `.xh-*` (chép từ dashboard) — ở trang này `.lb-*` chưa
+   dùng nhưng giữ đúng một tên với dashboard cho dễ sửa cả hai.
+   ⛔ KHÔNG tốn lượt đọc nào: `DIEM_ACT` + `CHUAN_ACT` đã đọc sẵn lúc vẽ thẻ.
+   ========================================================================== */
+var popChangB = null;      /* thẻ đang mở pop-up chặng */
+var popChangI = 0;         /* chặng đang xem trong pop-up */
+
+function veHuyPop(hang){
+  var mat = ['#F5BE2A', '#B9C4CC', '#CE8845'][hang - 1];
+  var vien = ['#C98A0B', '#7E8B95', '#9A5D28'][hang - 1];
+  var day = ['#DDA210', '#98A4AE', '#AC6C33'][hang - 1];
+  return '<svg class="huy" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M8.2 2.2 10.9 8.6M15.8 2.2 13.1 8.6" fill="none" stroke="' + day +
+      '" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<circle cx="12" cy="15.4" r="6.9" fill="' + mat + '" stroke="' + vien + '" stroke-width="1.2"/>' +
+    '<circle cx="12" cy="15.4" r="5" fill="none" stroke="' + vien + '" stroke-width=".7" opacity=".55"/>' +
+    '<text x="12" y="15.9" text-anchor="middle" dominant-baseline="middle" ' +
+      'font-family="Montserrat, sans-serif" font-size="7.6" font-weight="800" fill="#FFFFFF">' +
+      hang + '</text></svg>';
+}
+
+function chuGiayPop(g){
+  var s = Math.max(0, Math.round(g || 0));
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+
+/* Xếp hạng một act: em có điểm lên trước (điểm cao, rồi nhanh hơn), em chưa
+   làm dồn xuống cuối. Cùng luật với leaderboard trang bài. */
+function xepActPop(ma){
+  var ds = (DIEM_ACT[ma] || []).filter(function(e){
+    return CA_LOP.some(function(t){ return A.khoaTen(t) === A.khoaTen(e.ten); });
+  }).slice().sort(function(a, b){
+    if (a.diem !== b.diem) return b.diem - a.diem;
+    return (a.giay || 0) - (b.giay || 0);
+  });
+  var daCo = {};
+  ds.forEach(function(e){ daCo[A.khoaTen(e.ten)] = 1; });
+  var chua = CA_LOP.filter(function(t){ return !daCo[A.khoaTen(t)]; })
+    .map(function(t){ return { ten: t, chua: true }; });
+  return ds.concat(chua);
+}
+
+function veCotActPop(a, moAct, cham){
+  var ds = xepActPop(a.ma);
+  var daLam = ds.filter(function(e){ return !e.chua; }).length;
+  var c = CHUAN_ACT[a.ma];
+  var moc = (c && !c.tru) ? c.dinh : 0;
+  var vach = '<span class="doi-vach"><span class="line"></span><span class="lb">' +
+    A.chuAnToan(A.tenO(a.ten, true)) + '<span class="tong">' +
+    (moAct ? daLam : 0) + '/' + SI_SO + ' đã làm</span></span>' +
+    '<span class="line"></span></span>';
+  if (!moAct) {
+    return '<div class="xh-cot">' + vach +
+      '<div class="pop-trong">Chặng này chưa tới lượt.</div></div>';
+  }
+  var hang = ds.map(function(e, i){
+    var full = !e.chua && e.diem >= moc;
+    var huy = full && i < 3;
+    var laCham = cham.indexOf(A.khoaTen(e.ten)) >= 0;
+    var lop = laCham ? 'cham' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
+    return '<span class="xh-dong ' + lop + '">' +
+      '<span class="xh-hang">' + (e.chua ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
+      '<span class="xh-ten">' + A.chuAnToan(tenTat(e.ten)) + '</span>' +
+      '<span class="xh-diem">' + (e.chua ? '—' : Math.round((e.tho && e.tho.diem) || e.diem)) + '</span>' +
+      '<span class="xh-giay">' + (e.chua ? '' : chuGiayPop(e.giay)) + '</span></span>';
+  }).join('');
+  return '<div class="xh-cot">' + vach + hang + '</div>';
+}
+
+function veThanhChangPop(){
+  var cac = popChangB._chang || [];
+  $('#popThanh').innerHTML = '<span class="st-bar">' + cac.map(function(c, i){
+    var lop = c.tt === 'xong' ? 'xong'
+            : c.tt === 'dang' ? 'dang'
+            : c.tt === 'ket'  ? 'ket'
+            : c.tt === 'cho'  ? 'cho' : 'xa';
+    var chu = 'STAGE ' + (c.so || 1);
+    if (c.tt === 'xong') chu += ': COMPLETED';
+    else if (c.tt === 'dang') chu += ': IN PROGRESS';
+    else if (c.tt === 'ket') chu += ': OVERDUE';
+    return '<button type="button" class="st-khuc ' + lop +
+      (i === popChangI ? ' dang-xem' : '') + '" data-i="' + i + '">' +
+      (c.tt === 'xong' ? '<span class="tick">✓</span>' : '') +
+      '<span class="lbl">' + chu + '</span></button>';
+  }).join('') + '</span>';
+}
+
+function vePopChang(){
+  var cac = popChangB._chang || [];
+  var c = cac[popChangI];
+  if (!c) return;
+  veThanhChangPop();
+  var cham = (c.tt === 'ket' ? (c.thieu || []) : []).map(A.khoaTen);
+  $('#popKhung').classList.add('rong');
+  $('#popKhung').style.setProperty('--so-cot', Math.max(1, c.acts.length));
+  $('#popDs').classList.add('ngang');
+  $('#popDs').innerHTML = c.acts.map(function(a){
+    return veCotActPop(a, c.mo, cham);
+  }).join('');
+}
+
+function moPopChang(b){
+  popChangB = b;
+  if (!b._chang) b._chang = changCuaThe(b);
+  popChangI = A.changHien(b._chang);
+  $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
+  $('#popThanh').hidden = false;
+  vePopChang();
+  $('#popNen').classList.add('mo');
+}
+
 function moPopCaLop(b){
+  /* Pop-up thường: trả khung về khổ hẹp, giấu thanh chặng (dùng chung khung). */
+  $('#popKhung').classList.remove('rong');
+  $('#popKhung').style.removeProperty('--so-cot');
+  $('#popDs').classList.remove('ngang');
+  $('#popThanh').hidden = true;
   var ds = xepCaLop(b);
   /* Dòng phụ: tên bài • mã lesson (thầy chốt bỏ phần đếm số em đã xong). */
   $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
@@ -2574,10 +2745,12 @@ function dungCot(){
        từng bạn theo team; chưa có (đang tải/buổi mô hình 1) vẫn mở bảng cả
        lớp cũ như mọi thẻ khác. */
     var spRieng = b.loai === 'spcheck' && b.doiSp && b.doiSp.length;
-    var moPopThe = spRieng ? moPopDoiSp : moPopCaLop;
+    /* ⭐ v1.77.0 — thẻ STAGE mở pop-up KẾT QUẢ THEO CHẶNG. */
+    var moPopThe = b.stage ? moPopChang : (spRieng ? moPopDoiSp : moPopCaLop);
     vung.setAttribute('role', 'button');
     vung.setAttribute('tabindex', '0');
-    vung.setAttribute('title', spRieng ? 'Xem chi tiết từng bạn' : 'Xem bảng xếp hạng cả lớp');
+    vung.setAttribute('title', b.stage ? 'Xem kết quả từng chặng'
+      : (spRieng ? 'Xem chi tiết từng bạn' : 'Xem bảng xếp hạng cả lớp'));
     vung.onclick = function(e){ e.stopPropagation(); moPopThe(b); };
     vung.onkeydown = function(e){
       if (e.key === 'Enter' || e.key === ' ') {
@@ -2967,6 +3140,13 @@ document.querySelectorAll('[data-dong]').forEach(function(b){ b.onclick = dongHe
 /* Pop-up cả lớp: bấm nền (chỉ đúng phần nền, không phải khung) hoặc × để đóng. */
 $('#popDong').onclick = dongPop;
 $('#popNen').onclick = function(e){ if (e.target === this) dongPop(); };
+/* ⭐ v1.77.0 — bấm khúc trên thanh chặng của pop-up để xem chặng khác. */
+$('#popThanh').onclick = function(e){
+  var k = e.target.closest && e.target.closest('.st-khuc');
+  if (!k || !popChangB) return;
+  popChangI = +k.getAttribute('data-i');
+  vePopChang();
+};
 
 /* ⭐ Pop-up SP CHECK: nút X ở góc = Huỷ (chờ) hoặc Đóng (đã xong/lỗi) — spThoi()
    lo cả hai vì chỉ set cờ huỷ rồi đóng, vô hại khi gọi lúc buổi đã xong. */

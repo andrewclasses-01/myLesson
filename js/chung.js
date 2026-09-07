@@ -171,6 +171,18 @@
 
   function boQuaCua(b) { return BO_QUA[(b && b.id) || ''] || []; }
   function moChangCua(b) { return +MO_CHANG[(b && b.id) || ''] || 0; }
+  /* Dashboard gọi sau khi ghi xong (cùng nếp `datHanSua`/`datTrangThai`) — không
+     cập nhật bản nhớ thì thầy vừa bấm xong, vẽ lại vẫn ra số cũ suốt 60 giây. */
+  function datBoQua(id, ds) {
+    if (!id) return;
+    BO_QUA[id] = (ds || []).slice();
+    luuDemHan();
+  }
+  function datMoChang(id, so) {
+    if (!id) return;
+    MO_CHANG[id] = +so || 0;
+    luuDemHan();
+  }
 
   // ⭐ v1.29.0 (28/08/2026) — NHỚ ĐỆM 60 GIÂY, cùng nếp `nhoDiem`/`docPhien` ngay dưới.
   //
@@ -2138,6 +2150,7 @@
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,
     changHien: changHien, emChuaXongChang: emChuaXongChang,
     boQuaCua: boQuaCua, moChangCua: moChangCua, mocActHan: mocActHan,
+    datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,
     mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,
     // v1.20.0 — hạn sửa riêng từng thẻ (dashboard ghi, mọi trang đọc)

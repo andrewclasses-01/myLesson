@@ -487,6 +487,80 @@ a{color:inherit}
 .act-o .tien{margin-top:8px}
 .tay-dong{margin:10px 0 0; padding:9px 12px; border-radius:10px;
   background:var(--vang-nhat); color:#8a5b0e; font-size:12.5px}
+/* ============================================================================
+   ⭐⭐ v1.77.0 — DẠNG BÀI **STAGE** trên dashboard (mẫu v5 thầy duyệt).
+   · Thẻ: thanh chặng ở trên cụm thanh tiến trình, chỉ hiện act của chặng đang mở.
+   · Hộp xem bài: act gom theo CHẶNG, chặng đang giữ cả lớp lại hiện tên em kèm ✕.
+   ⛔ Bề rộng mũi nhọn tỉ lệ chiều cao (`--dx`) ⇒ mọi khúc cùng một góc vát.
+   ⛔ `clip-path` cắt `box-shadow` ⇒ hào quang dùng `filter:drop-shadow`.
+   ========================================================================== */
+.the-diem.st .diem-rows{flex-direction:column; align-items:stretch; justify-content:center; gap:0}
+.the-diem.st .st-bar{flex:none; margin-bottom:10px}
+.the-diem.st .khoi-thanh{display:flex; flex-direction:column;
+  justify-content:space-around; gap:4px}
+.st-bar{display:flex; align-items:center; width:100%}
+.st-khuc{--h:26px; --dx:calc(var(--h) * .425);
+  flex:1 1 auto; min-width:0; height:var(--h); position:relative;
+  display:flex; align-items:center; justify-content:center; gap:5px;
+  padding-left:calc(var(--dx) + 10px); padding-right:calc(var(--dx) + 5px);
+  font-size:10px; font-weight:800; letter-spacing:.045em; text-transform:uppercase;
+  white-space:nowrap; overflow:hidden;
+  clip-path:polygon(0 0, calc(100% - var(--dx)) 0, 100% 50%,
+                    calc(100% - var(--dx)) 100%, 0 100%, var(--dx) 50%)}
+.st-khuc + .st-khuc{margin-left:calc(2px - var(--dx))}
+.st-bar .st-khuc:first-child{padding-left:14px; border-radius:9px 0 0 9px;
+  clip-path:polygon(0 0, calc(100% - var(--dx)) 0, 100% 50%,
+                    calc(100% - var(--dx)) 100%, 0 100%)}
+.st-bar .st-khuc:last-child{padding-right:calc(var(--dx) + 2px)}
+.st-khuc .lbl{overflow:hidden; text-overflow:ellipsis}
+.st-khuc .tick{font-size:11px; line-height:1}
+.st-khuc.xong{background:var(--m-la); color:#fff; flex-shrink:2}
+.st-khuc.xa{flex-grow:3; flex-shrink:3; background:#E7EDEB; color:#9DAFAB}
+.st-khuc.cho{flex-shrink:0; background:#D8E6FF; color:#2B5FD0}
+.st-khuc.dang{flex-shrink:0; --h:34px; font-size:11px; z-index:2;
+  background:linear-gradient(135deg,#3E7BFA,#5C93FF); color:#fff;
+  animation:st-hao-duong 3.4s ease-in-out infinite}
+.st-khuc.ket{flex-shrink:0; --h:34px; font-size:11px; z-index:2;
+  background:linear-gradient(135deg,#E0575B,#EC7276); color:#fff;
+  animation:st-hao-do 3.4s ease-in-out infinite}
+@keyframes st-hao-duong{
+  0%,100%{filter:drop-shadow(0 3px 5px rgba(62,123,250,.30))}
+  50%    {filter:drop-shadow(0 7px 12px rgba(62,123,250,.85))}
+}
+@keyframes st-hao-do{
+  0%,100%{filter:drop-shadow(0 3px 5px rgba(224,87,91,.30))}
+  50%    {filter:drop-shadow(0 7px 12px rgba(224,87,91,.85))}
+}
+/* Khối một chặng trong hộp xem bài */
+.st-khoi{border:1px solid var(--vien); border-radius:13px; padding:11px 13px; margin-top:10px}
+.st-khoi.dang{border-color:#CBDCFF; background:#F7FAFF}
+.st-khoi.xong{border-color:#C9EBD6; background:#F6FCF8}
+.st-khoi.ket{border-color:#F6CFCF; background:#FEF7F7}
+.st-khoi-dau{display:flex; align-items:center; gap:9px; margin-bottom:9px; flex-wrap:wrap}
+.st-khoi-ten{font:800 12px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
+.st-khoi.dang .st-khoi-ten{color:#2B5FD0}
+.st-khoi.xong .st-khoi-ten{color:#1F7A4D}
+.st-khoi.ket .st-khoi-ten{color:#B03A3E}
+.st-khoi-han{font:600 11px/1.3 var(--font); color:var(--mo)}
+.st-khoi-nut{margin-left:auto; display:flex; gap:7px}
+/* Em đang giữ cả lớp lại + nút ✕ bỏ qua */
+.ten-o.cham{background:#F9C9CA; color:#8E2226; font-size:13px; font-weight:800;
+  animation:nhay-ten-do-db 1.6s ease-in-out infinite}
+.ten-o .bo-qua{width:17px; height:17px; border:0; border-radius:50%;
+  background:rgba(255,255,255,.75); color:#8E2226; font:800 11px/1 var(--font);
+  display:grid; place-items:center; cursor:pointer; margin-left:5px}
+.ten-o .bo-qua:hover{background:#fff}
+@keyframes nhay-ten-do-db{
+  0%,100%{text-shadow:0 0 8px rgba(217,59,64,.26)}
+  50%    {text-shadow:0 0 10px rgba(224,87,91,.72), 0 0 22px rgba(217,59,64,.46)}
+}
+/* Ô hạn của thẻ STAGE dài ngang hơn (chứa "Hạn chặng 2: 23:59 · 13/9") */
+.han-boc.rong{width:236px}
+.han-boc.rong .t-han{width:230px}
+@media (prefers-reduced-motion: reduce){
+  .st-khuc.dang,.st-khuc.ket,.ten-o.cham{animation:none}
+}
+
 .chua-nop{margin-top:12px}
 .chua-nop h4{margin:0 0 7px; font:800 11px/1.3 var(--font); letter-spacing:.08em;
   text-transform:uppercase; color:var(--mo)}
@@ -643,7 +717,9 @@ a{color:inherit}
 .han-boc{flex:none; width:176px; display:flex; align-items:center; justify-content:center; gap:10px}
 .t-han{display:flex; flex-direction:column; gap:4px; width:158px; padding:6px 12px 7px;
   border-radius:12px; background:var(--amber-soft); border:1px solid #F5E3C0}
-.t-han .han-dong{display:flex; align-items:center; justify-content:center; gap:5px;
+/* ⛔ v1.77.0 — `gap:5px` là khe giữa icon đồng hồ và chữ; icon đã bỏ (thầy chốt
+   07/09, áp cho mọi dạng bài) nên gap về 0, không thì chữ lệch phải một nhịp. */
+.t-han .han-dong{display:flex; align-items:center; justify-content:center; gap:0;
   font-size:12px; font-weight:700; color:#9A6A12; white-space:nowrap}
 .t-han .han-dong svg{width:13px; height:13px; stroke:currentColor; stroke-width:2.4;
   fill:none; stroke-linecap:round; stroke-linejoin:round}
@@ -1678,8 +1754,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=64"></script>
-<script src="js/chung.js?v=36"></script>
+<script src="config.js?v=65"></script>
+<script src="js/chung.js?v=37"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -1766,10 +1842,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ #2 — thẻ SPEAKING CHECK (nhận theo tên dạng bài, y hệt lop.html
     // theTuBai()): doiSp đổ vào sau khi đọc Firestore, xem capNhatSpeakingChoBai().
     var laSp = /SP\s*CHECK/i.test(b.dang || '');
+    /* ⭐ v1.77.0 — DẠNG BÀI STAGE: xét luôn trạng thái từng chặng để cả thẻ lẫn
+       hộp xem bài dùng chung một kết quả (khỏi tính hai lần).
+       ⛔ Chỉ xét khi ĐÃ ĐỌC XONG kho điểm — chưa đọc thì mọi em đều "chưa xong"
+       và chặng nào cũng hiện kẹt, thầy mở dashboard là thấy báo động giả. */
+    var stage = A.laBaiStage(b)
+      && A.changCuaBai(b).some(function (c) { return !!c.so; });
+    var chang = null;
+    if (stage && daDoc) {
+      chang = A.xetChang(b, {
+        diem: function (ma) { return DIEM[ma] || []; },
+        chuan: function (ma) { return CHUAN[ma]; }
+      }, caLop, { boQua: A.boQuaCua(b), moChang: A.moChangCua(b) });
+    }
     return { bai: b, maLop: maLop, siSo: caLop.length, acts: acts,
              thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop,
              laSp: laSp, doiSp: DOI_SP[b.id] || null,
-             loiSp: DOI_SP_LOI[b.id] || '' };
+             loiSp: DOI_SP_LOI[b.id] || '',
+             stage: stage, chang: chang, boQua: A.boQuaCua(b) };
   }
 
   // ⭐ v1.14.0 — "XONG" = ĐỦ ĐIỂM TỐI ĐA, không còn là "có nộp là được".
@@ -1952,18 +2042,75 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     veChiTiet(muc);
   }
 
+  /* ⭐ v1.77.0 — một ô act trong hộp xem bài (tách ra để khối chặng dùng lại). */
+  function veActODb(a, siSo) {
+    return '<div class="act-o"><div class="ten">' + A.chuAnToan(a.ten) + '</div>' +
+      '<div class="mau">' + A.chuAnToan(a.mau || 'LEADERBOARD') + ' · mã ' +
+        A.chuAnToan(a.ma) + '</div>' +
+      (a.xong === null ? '<div class="mau">đang đọc kết quả…</div>'
+                       : veThanh(a.xong, siSo)) +
+    '</div>';
+  }
+
+  /* "2026-09-13T23:59" -> "23:59 · 13/9" */
+  function chuHanChangDb(han) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
+    return m ? (m[4] + ':' + m[5] + ' · ' + (+m[3]) + '/' + (+m[2])) : '';
+  }
+
+  /* ⭐⭐ v1.77.0 — HỘP XEM BÀI CỦA DẠNG STAGE: act gom theo CHẶNG.
+     Chặng đang giữ cả lớp lại (quá giờ còn em chưa xong) hiện tên các em đó kèm
+     dấu ✕ để BỎ QUA (có hỏi xác nhận), và nút MỞ CHẶNG KẾ cho thầy ép mở. */
+  function veKhoiChangDb(t) {
+    return t.chang.map(function (c, i) {
+      var lop = c.tt === 'xong' ? ' xong' : c.tt === 'ket' ? ' ket'
+              : (c.tt === 'dang' ? ' dang' : '');
+      var nhan = !c.so ? 'Act không thuộc chặng nào'
+        : 'Chặng ' + c.so + ' · ' + (
+            c.tt === 'xong' ? 'cả lớp đã xong' :
+            c.tt === 'dang' ? 'đang làm' :
+            c.tt === 'ket'  ? 'quá giờ, còn ' + c.thieu.length + ' em' :
+            c.tt === 'cho'  ? 'sắp mở' : 'chưa mở');
+      var han = c.han ? '<span class="st-khoi-han">hạn ' + chuHanChangDb(c.han) +
+        (c.acts.length > 1 ? ' · ' + c.acts.length + ' act song song' : '') + '</span>' : '';
+      /* Nút mở chặng kế chỉ có nghĩa khi CÒN chặng sau và chặng sau chưa mở. */
+      var sau = t.chang[i + 1];
+      var nut = (sau && !sau.mo)
+        ? '<span class="st-khoi-nut"><button class="nut nho" data-mochang="' +
+          A.chuAnToan(t.bai.id) + '" data-so="' + (sau.so || 0) + '" data-lop="' +
+          A.chuAnToan(t.maLop) + '">Mở chặng ' + (sau.so || '') + ' ngay</button></span>'
+        : '';
+      var em = '';
+      if (c.tt === 'ket' && c.thieu.length) {
+        em = '<div class="chua-nop"><h4>ĐANG GIỮ CẢ LỚP LẠI (' + c.thieu.length +
+          ') — bấm ✕ để bỏ qua em này ở bài này</h4><div class="ten-ds">' +
+          c.thieu.map(function (ten) {
+            return '<span class="ten-o cham">' + A.chuAnToan(ten) +
+              '<button class="bo-qua" data-boqua="' + A.chuAnToan(ten) + '" data-bai="' +
+              A.chuAnToan(t.bai.id) + '" data-lop="' + A.chuAnToan(t.maLop) +
+              '" title="Bỏ qua em này ở bài này">✕</button></span>';
+          }).join('') + '</div></div>';
+      }
+      return '<div class="st-khoi' + lop + '"><div class="st-khoi-dau">' +
+        '<span class="st-khoi-ten">' + nhan + '</span>' + han + nut + '</div>' +
+        '<div class="act-ds">' + c.acts.map(function (a) {
+          var o = null;
+          for (var k = 0; k < t.acts.length; k++) if (t.acts[k].ma === a.ma) o = t.acts[k];
+          return veActODb(o || { ten: a.ten, ma: a.ma, mau: a.mau, xong: null }, t.siSo);
+        }).join('') + '</div>' + em + '</div>';
+    }).join('');
+  }
+
   function veRuotBai(t) {
     var b = t.bai;
-    var act = t.acts.length
+    /* ⭐ v1.77.0 — bài STAGE (đã đọc xong điểm) thì gom act theo chặng. */
+    var act = (t.stage && t.chang)
+      ? veKhoiChangDb(t)
+      : (t.acts.length
       ? '<div class="act-ds">' + t.acts.map(function (a) {
-          return '<div class="act-o"><div class="ten">' + A.chuAnToan(a.ten) + '</div>' +
-            '<div class="mau">' + A.chuAnToan(a.mau || 'LEADERBOARD') + ' · mã ' +
-              A.chuAnToan(a.ma) + '</div>' +
-            (a.xong === null ? '<div class="mau">đang đọc kết quả…</div>'
-                             : veThanh(a.xong, t.siSo)) +
-          '</div>';
+          return veActODb(a, t.siSo);
         }).join('') + '</div>'
-      : '<p class="mau" style="margin:12px 0 0;color:var(--nhat)">Bài này không có game AWord nào.</p>';
+      : '<p class="mau" style="margin:12px 0 0;color:var(--nhat)">Bài này không có game AWord nào.</p>');
 
     var tay = b.tay ? '<p class="tay-dong">✍️ Bài làm trên giấy: <b>' +
       A.chuAnToan(b.tay) + '</b></p>' : '';
@@ -2077,6 +2224,46 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
   }
 
+  /* ==============================================================
+     ⭐⭐ v1.77.0 — HAI CÚ GHI CỦA DẠNG BÀI STAGE (cùng tài liệu `lessonHan`)
+       `boQua`   thêm/bớt một em khỏi phép xét "cả lớp xong chặng chưa"
+       `moChang` số chặng thầy ÉP MỞ (không chờ đủ điều kiện)
+     ⛔ Luật kho đòi ĐỦ `baiId · han · tt · lop · luc` mỗi lượt ghi (luật 9️⃣:
+     ghi đè cả tài liệu là xoá mất trường của nơi khác) ⇒ phải mang theo hạn +
+     trạng thái đang nhớ trong máy, y hệt `hsGhi`/`ttGhi`.
+     ⛔ Luật Firestore đã mở cho hai trường này ngày 07/09 — chưa dán luật mới
+     thì mọi cú ghi ở đây trả 403.
+     ============================================================== */
+  function stageGhi(id, doi, nut, chuXong) {
+    if (nut) nut.disabled = true;
+    if (chuaThay(nut)) return;
+    var bTt = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
+    var ttCu = bTt ? A.trangThaiThe(bTt) : '';
+    var hanCu = bTt ? (A.hanCua(bTt) || '') : '';
+    var goi = {
+      baiId: String(id), han: String(hanCu), tt: String(ttCu || ''),
+      lop: String(LOP_CHON || ''), luc: Date.now()
+    };
+    if (doi.boQua !== undefined) goi.boQua = doi.boQua;
+    if (doi.moChang !== undefined) goi.moChang = doi.moChang;
+    spDb().then(function (f) {
+      return f.fs.setDoc(f.fs.doc(f.db, 'lessonHan', hsMaTaiLieu(id)), goi, { merge: true });
+    }).then(function () {
+      /* Cập nhật bản nhớ trong máy để vẽ lại thấy ngay, khỏi chờ 60 giây đệm. */
+      if (doi.boQua !== undefined) A.datBoQua(id, doi.boQua);
+      if (doi.moChang !== undefined) A.datMoChang(id, doi.moChang);
+      veKhuThe();
+      if (BM_ID === id) moBaiModal(id);
+      baoToast(chuXong || 'Đã lưu.');
+    })['catch'](function (e) {
+      if (nut) nut.disabled = false;
+      var ma = (e && (e.code || e.message)) || '';
+      baoToast(String(ma).indexOf('permission-denied') >= 0
+        ? loiPhien('Kho từ chối ghi')
+        : 'Chưa ghi được. Thử lại nhé.');
+    });
+  }
+
   // ================================================================
   // ⭐ v1.24.0 — THẺ BÀI TẬP (chỉ bài CÒN HẠN) — markup + luật màu lấy nguyên
   // từ lop.html (".the") để giống 100% thẻ học sinh thấy ở trang lớp.
@@ -2113,15 +2300,27 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return { tt: 'thuong', du: false };
   }
 
-  function veHanCard(b, moc, st) {
+  function veHanCard(b, moc, st, tThe) {
     // ⭐ v1.35.0 — thẻ TẠM KHOÁ không nhận màu gấp; đồng hồ mang cờ `data-khoa`
     // (xem `nhipDongHo`). v1.56.0 — chỉ còn 2 huy hiệu: ẨN và TẠM KHOÁ.
     var tt = A.trangThaiThe(b);
     var khoa = tt === 'khoa';
     var lop = 't-han' + (!khoa && st.tt === 'gap' ? ' gap-gio' : (st.du ? ' da-xong' : ''));
     var chu = A.chuHan(b) || (moc == null ? '' : chuNgay(moc));
-    return '<span class="han-boc"><span class="' + lop + '">' +
-        '<span class="han-dong">' + IC_GIO + (chu ? ('Hạn ' + A.chuAnToan(chu)) : 'Chưa đặt hạn') + '</span>' +
+    /* ⭐ v1.77.0 — thẻ STAGE: ô hạn nói về CHẶNG ĐANG CHẠY (giống hệt trang lớp
+       của học sinh), không phải hạn cuối bài. */
+    var rong = '';
+    if (tThe && tThe.stage && tThe.chang) {
+      var c = tThe.chang[A.changHien(tThe.chang)];
+      if (c && c.so && c.moc != null) {
+        chu = 'chặng ' + c.so + ': ' + chuHanChangDb(c.han);
+        rong = ' rong';
+      }
+    }
+    return '<span class="han-boc' + rong + '"><span class="' + lop + '">' +
+        /* ⛔ v1.77.0 — BỎ ICON ĐỒNG HỒ ở ô hạn (thầy chốt 07/09, áp cho mọi dạng
+           bài ở cả trang lớp lẫn dashboard). `.han-dong` phải `gap:0`. */
+        '<span class="han-dong">' + (chu ? ('Hạn ' + A.chuAnToan(chu)) : 'Chưa đặt hạn') + '</span>' +
         /* ⛔ v1.56.0 — ĐÃ BỎ huy hiệu "đã chỉnh riêng" (thầy chốt 03/09/2026:
            "đã chỉnh rồi là cứ theo như vậy, coi như mới luôn"). `A.daSuaHan()`
            VẪN DÙNG ở chỗ khác — đừng gỡ theo: hộp ⚙ Hạn riêng đổi chữ nút và
@@ -2153,6 +2352,27 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       return { cls: 'chi-tay', html: 'Bài này không có game AWord nào.' };
     }
     var batDo = st.tt === 'gap';
+    /* ⭐ v1.77.0 — thẻ STAGE: thanh chặng ở trên, và CHỈ hiện thanh tiến trình
+       của act thuộc chặng đang mở (y hệt thẻ bên trang lớp của học sinh). */
+    var thanhChang = '';
+    if (t.stage && t.chang) {
+      var iXem = A.changHien(t.chang);
+      thanhChang = '<span class="st-bar">' + t.chang.map(function (c, i) {
+        var lop = c.tt === 'xong' ? 'xong' : c.tt === 'dang' ? 'dang'
+                : c.tt === 'ket' ? 'ket' : c.tt === 'cho' ? 'cho' : 'xa';
+        var chu = 'STAGE ' + (c.so || 1);
+        if (c.tt === 'xong') chu += ': COMPLETED';
+        else if (c.tt === 'dang') chu += ': IN PROGRESS';
+        else if (c.tt === 'ket') chu += ': OVERDUE';
+        return '<span class="st-khuc ' + lop + (i === iXem ? ' dang-xem' : '') + '">' +
+          (c.tt === 'xong' ? '<span class="tick">✓</span>' : '') +
+          '<span class="lbl">' + chu + '</span></span>';
+      }).join('') + '</span>';
+      var maCho = {};
+      (t.chang[iXem] || { acts: [] }).acts.forEach(function (a) { maCho[a.ma] = 1; });
+      acts = acts.filter(function (a) { return maCho[a.ma]; });
+      if (!acts.length) acts = t.acts;
+    }
     // ⭐ 28/08 — nhãn RÚT GỌN y hệt lop.html (A.tenO cờ `true`: "WORD PRACTICE 1"
     // -> "WORDS 1", "PRONUNCIATION" -> "PRONUNC"), tooltip vẫn giữ tên đầy đủ.
     var thanh = acts.map(function (a) {
@@ -2173,6 +2393,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
       '</span>';
     }).join('');
+    /* Thẻ STAGE: thanh chặng đứng trên cụm thanh tiến trình, cách một nhịp. */
+    if (thanhChang) {
+      return { cls: 'st n' + acts.length,
+               html: thanhChang + '<span class="khoi-thanh">' + thanh + '</span>' };
+    }
     return { cls: 'n' + acts.length, html: thanh };
   }
 
@@ -2216,7 +2441,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
               '<span class="ngay">NGÀY ' + A.chuAnToan(ngayGach(b.ngay)) + '</span></span>' +
             '<span class="t-ma">' + A.chuAnToan(A.maLesson(b)) + '</span>' +
           '</span>' +
-          veHanCard(b, moc, st) +
+          veHanCard(b, moc, st, t) +
         '</span>' +
         '<span class="the-diem ' + diem.cls + '">' +
           '<span class="diem-ic">' +
@@ -4723,6 +4948,38 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
       var xem = e.target.closest('[data-xem]');
       if (xem) return void moTrangHs(xem.dataset.xem);
+
+      /* ⭐ v1.77.0 — BỎ QUA MỘT EM ở bài STAGE (có hỏi xác nhận, thầy chốt). */
+      var bq = e.target.closest('[data-boqua]');
+      if (bq) {
+        var idB = bq.dataset.bai, tenEm = bq.dataset.boqua;
+        var bGoc = A.baiCuaLop(DL, bq.dataset.lop || LOP_CHON, 'ql')
+          .filter(function (x) { return x.id === idB; })[0];
+        var ds = (bGoc ? A.boQuaCua(bGoc) : []).slice();
+        if (ds.indexOf(tenEm) < 0) ds.push(tenEm);
+        moXnPop(bq, {
+          tieuDe: 'Bỏ qua em này ở bài này?',
+          chu: 'Em ' + tenEm + ' sẽ không còn được tính khi xét cả lớp đã xong chặng hay chưa. ' +
+               'Chặng kế tiếp mở ra mà không cần chờ em này. Chỉ áp dụng cho bài này.',
+          nutOk: 'Bỏ qua em này', nguy: true,
+          khiOk: function () { stageGhi(idB, { boQua: ds }, null, 'Đã bỏ qua em ' + tenEm + '.'); }
+        });
+        return;
+      }
+
+      /* ⭐ v1.77.0 — MỞ CHẶNG KẾ (ép mở, không chờ đủ điều kiện). */
+      var mc = e.target.closest('[data-mochang]');
+      if (mc) {
+        var idM = mc.dataset.mochang, so = +mc.dataset.so || 0;
+        moXnPop(mc, {
+          tieuDe: 'Mở chặng ' + so + ' ngay?',
+          chu: 'Cả lớp sẽ vào làm được chặng ' + so + ' mà không cần chờ mọi em xong chặng trước. ' +
+               'Bấm lại nút này ở chặng sau nếu muốn mở tiếp.',
+          nutOk: 'Mở chặng ' + so,
+          khiOk: function () { stageGhi(idM, { moChang: so }, null, 'Đã mở chặng ' + so + '.'); }
+        });
+        return;
+      }
 
       /* ⭐ v1.20.0 — sửa hạn riêng cho một thẻ. ⭐ v1.36.0 — hai tay bắt
          `[data-hs-luu]` / `[data-hs-bo]` ĐÃ GỠ: ô hạn không còn nằm trong hộp

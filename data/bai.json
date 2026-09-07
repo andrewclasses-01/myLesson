@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-06 20:13:04",
+  "capNhat": "2026-09-07 15:26:17",
   "bai": {
     "A1C": [
       {
@@ -234,6 +234,42 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_19.9_STAGE_4_SCHOOL_THINGS",
+        "tieuDe": "NNTNG4_19.9_STAGE 4 SCHOOL THINGS",
+        "tenHien": "NNTNG4_19.9_STAGE 4 SCHOOL THINGS",
+        "dang": "STAGE",
+        "ngay": "19.9",
+        "han": "2026-09-12T08:50",
+        "maLesson": "4 SCHOOL THINGS",
+        "taoLuc": "2026-09-07",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "gd3nz5",
+            "mau": "ANAGRAM"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "p9j62t",
+            "mau": "ANAGRAM"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "4 SCHOOL THINGS / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "q4j69c",
+            "mau": "FIND THE MATCH"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_4.9_WORDS_3_FOOD_AND_DRINK",
         "tieuDe": "NNTNG4_4.9_WORDS 3 FOOD AND DRINK",

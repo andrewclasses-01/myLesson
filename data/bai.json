@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-07 15:41:27",
+  "capNhat": "2026-09-07 16:08:59",
   "bai": {
     "A1C": [
       {
@@ -251,7 +251,7 @@
             "yeuCau": "100% requirement",
             "ma": "gd3nz5",
             "mau": "ANAGRAM",
-            "han": "2026-09-08T22:30"
+            "han": "2026-09-09T12:00"
           },
           {
             "loai": "act",
@@ -260,7 +260,7 @@
             "yeuCau": "100% requirement",
             "ma": "p9j62t",
             "mau": "ANAGRAM",
-            "han": "2026-09-14T18:30"
+            "han": "2026-09-12T01:00"
           },
           {
             "loai": "act",
@@ -269,7 +269,16 @@
             "yeuCau": "100% requirement",
             "ma": "q4j69c",
             "mau": "FIND THE MATCH",
-            "han": "2026-09-22T17:00"
+            "han": "2026-09-22T07:00"
+          },
+          {
+            "loai": "act",
+            "ten": "PRONUNCIATION",
+            "act": "4 SCHOOL THINGS / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "2jhsd3",
+            "mau": "TRUE OR FALSE",
+            "han": "2026-09-16T15:30"
           }
         ]
       },

@@ -1131,6 +1131,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 }
 .chat-cho{margin:auto; text-align:center; color:var(--nhat); font-size:12.5px;
   line-height:1.6; padding:16px}
+/* ⭐ v1.80.0 — DẢI CẢNH BÁO "MỘT MÁY NHIỀU MÃ" (xem khối DẤU MÁY ở js/chat.js).
+   ⛔ `flex:none` là BẮT BUỘC: `.chat-body` là flex CỘT, con mặc định co lại
+   được ⇒ tin nhiều thì dải này bị bóp dẹp gần như mất hẳn (cùng họ bẫy
+   "min-height không cấm con co lại" đã trả giá bên myWord 07/09). */
+.chat-may{flex:none; margin:0 0 4px; padding:9px 11px; border-radius:12px;
+  background:#FFF6E5; border:1px solid #F0D9A8; color:#6B4E12;
+  font-size:12px; line-height:1.55}
+.chat-may b{color:#8A5B00}
+.chat-may .may-ds{margin:5px 0 0; padding-left:16px}
+.chat-may .may-ds li{margin:2px 0}
 /* ⭐ 28/08 — HỘP CHAT GV ĐỒNG BỘ VỚI TRANG LỚP: bong bóng, avatar, cụm thả
    cảm xúc, cụm xoá 2 bước (⁝ → "Xoá") port NGUYÊN VĂN từ `lop.html`, chỉ đổi
    biến CSS sang tên bên dashboard (--accent→--xanh, --muted→--nhat,
@@ -3854,6 +3864,48 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         '<div class="hang-bong">' + bong + cumCx + '</div>' +
       '</div></div>';
   }
+  /* ⭐ v1.80.0 — DÒ "MỘT MÁY NHIỀU MÃ".
+     Gom các tin ĐANG HIỆN theo dấu máy; máy nào gắn với từ 2 mã học sinh trở
+     lên thì trả về để cảnh báo. Tin của thầy (`vaiTro==='gv'`) bỏ qua — thầy
+     nhắn cho mọi lớp từ cùng một máy, gộp vào là báo động giả suốt ngày.
+     ⚠️ ĐÂY LÀ DẤU HIỆU ĐỂ HỎI, KHÔNG PHẢI BẰNG CHỨNG: hai anh em ruột dùng
+     chung máy cũng rơi vào đây. Xem đủ ba giới hạn ở khối DẤU MÁY (js/chat.js). */
+  function mayNhieuMa(ds) {
+    var theoMay = {};
+    (ds || []).forEach(function (t) {
+      if (!t.may || t.vaiTro === 'gv') return;
+      var ma = A.chuanMa(t.ma);
+      if (!ma) return;
+      var o = theoMay[t.may] || (theoMay[t.may] = {});
+      (o[ma] || (o[ma] = { ten: t.ten, so: 0 })).so++;
+    });
+    var ra = [];
+    Object.keys(theoMay).forEach(function (may) {
+      var dsMa = Object.keys(theoMay[may]);
+      if (dsMa.length < 2) return;
+      ra.push({
+        may: may,
+        nguoi: dsMa.map(function (m) {
+          return { ma: m, ten: theoMay[may][m].ten, so: theoMay[may][m].so };
+        }).sort(function (a, b) { return b.so - a.so; })
+      });
+    });
+    return ra;
+  }
+
+  function veCanhBaoMay(ds) {
+    var kq = mayNhieuMa(ds);
+    if (!kq.length) return '';
+    return '<div class="chat-may">⚠️ <b>Một máy dùng nhiều mã</b> — trong ' +
+      'các tin đang hiện, có ' + kq.length + ' máy nhắn bằng nhiều mã học sinh khác nhau:' +
+      '<ul class="may-ds">' + kq.map(function (m) {
+        return '<li>' + m.nguoi.map(function (n) {
+          return A.chuAnToan(n.ten) + ' (' + n.so + ')';
+        }).join(' + ') + '</li>';
+      }).join('') + '</ul>' +
+      'Có thể là hai em dùng chung máy ở nhà — thầy hỏi lại cho chắc nhé.</div>';
+  }
+
   function veChat() {
     var hop = $('#chatBody');
     if (!TIN.length) {
@@ -3864,7 +3916,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var l = A.lopTheoMa(DL, LOP_CHON);
     var lopSlug = avSlugLop((l && l.tenGoc) || LOP_CHON);
     var oDay = (hop.scrollHeight - hop.scrollTop - hop.clientHeight) < 60;
-    hop.innerHTML = TIN.map(function (t, i) { return veTinDb(t, i, lopSlug); }).join('');
+    /* ⛔ Dải cảnh báo đứng TRƯỚC danh sách tin, nhưng `data-i` của mỗi tin vẫn
+       là chỉ số trong TIN (veTinDb tự đặt) nên cụm cảm xúc/xoá không lệch. */
+    hop.innerHTML = veCanhBaoMay(TIN) +
+      TIN.map(function (t, i) { return veTinDb(t, i, lopSlug); }).join('');
     if (oDay) hop.scrollTop = hop.scrollHeight;
   }
 

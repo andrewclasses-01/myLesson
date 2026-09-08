@@ -116,6 +116,59 @@
     return _p;
   }
 
+  /* ============================================================
+     ⭐ v1.80.0 — DẤU MÁY (thầy chốt 08/09/2026, "bản gọn")
+
+     VÌ SAO CÓ: thầy hỏi "điều tra được em nào lấy ID của bạn để chat không".
+     Câu trả lời lúc đó là KHÔNG — tin chỉ lưu 5 trường, mà Firestore ghi
+     THẲNG từ máy em nên không có IP, không có thiết bị, không có tài khoản
+     (em chỉ gõ mã, mã lại nằm công khai trong `lop.json`). Google Cloud có
+     loại nhật ký ghi IP nhưng mặc định TẮT và KHÔNG hồi tố.
+
+     ĐÂY LÀ GÌ: một chuỗi ngẫu nhiên vô nghĩa, sinh MỘT LẦN trên mỗi máy rồi
+     cất trong trình duyệt máy đó. KHÔNG phải IP, không lộ danh tính, không
+     lần ra được ai ở đâu. Nó chỉ trả lời đúng một câu:
+         "hai tin này có phải từ CÙNG MỘT MÁY không?"
+     Nhờ vậy dashboard bắt được cảnh "một máy bật hai mã học sinh".
+
+     ⚠️ BA GIỚI HẠN — đã nói với thầy trước khi build, đừng quên:
+       · KHÔNG hồi tố. Mọi tin trước 08/09/2026 vĩnh viễn không có dấu máy.
+       · Xoá dữ liệu duyệt / cửa sổ ẩn danh / đổi máy ⇒ dấu máy đổi theo, em
+         nào rành sẽ né được. (Chiều ngược lại vẫn chắc: một máy hai mã là lộ.)
+       · CÓ THỂ OAN. Hai anh em ruột dùng chung máy cũng bị báo "một máy hai
+         mã". Đây là DẤU HIỆU ĐỂ THẦY XEM VÀ HỎI, không phải bằng chứng kết tội.
+
+     ⛔⛔ LUẬT FIRESTORE: khối `classChat` khoá cứng bằng
+     `hasOnly(['name','code','role','text','createdAt'])` — thêm trường thứ 6
+     mà chưa dán luật mới là Firestore TỪ CHỐI MỌI TIN, cả 10 lớp mất chat.
+     Vì thế `gui()` bên dưới có ĐƯỜNG LÙI: ghi kèm dấu máy mà dính
+     `permission-denied` thì tự ghi lại theo kiểu CŨ (5 trường). Nghĩa là đẩy
+     web lên trước khi dán luật cũng KHÔNG chết chat — chỉ là chưa có dấu máy.
+     Luật cần dán: `myLesson-data/tai-lieu/LUAT FIRESTORE CAN DAN (08-09 THEM DAU MAY).md`
+     ============================================================ */
+  var KHOA_MAY = 'awc_may';
+  var _may = null;
+  function dauMay() {
+    if (_may !== null) return _may;
+    try {
+      var m = localStorage.getItem(KHOA_MAY);
+      if (!m || String(m).length < 6) {
+        // 10 ký tự base36. Không dính gì tới máy thật (không lấy màn hình, font,
+        // card đồ hoạ…) — cố ý: chỉ cần PHÂN BIỆT máy, không cần NHẬN DẠNG máy.
+        m = '';
+        for (var i = 0; i < 10; i++) {
+          m += Math.floor(Math.random() * 36).toString(36);
+        }
+        localStorage.setItem(KHOA_MAY, m);
+      }
+      _may = String(m).slice(0, 20);
+    } catch (e) {
+      // Cửa sổ ẩn danh / trình duyệt chặn lưu: chịu, gửi tin không kèm dấu máy.
+      _may = '';
+    }
+    return _may;
+  }
+
   var dungNghe = null;       // hàm gỡ listener của phòng đang nghe
   var phongDangNghe = '';
 
@@ -141,7 +194,8 @@
             id: d.id, ten: x.name || '?', ma: x.code || '',
             vaiTro: x.role === 'gv' ? 'gv' : 'hs',
             chu: x.text || '', luc: Number(x.createdAt) || 0,
-            cx: x.cx || {}
+            cx: x.cx || {},
+            may: x.may || ''            /* ⭐ v1.80.0 — rỗng với mọi tin cũ */
           });
         });
         ds.reverse();                              // Firestore trả mới->cũ, ta hiện cũ->mới
@@ -163,12 +217,26 @@
     var chu = String(tin.chu || '').trim().slice(0, TOI_DA_CHU);
     if (!chu) return Promise.reject(new Error('trống'));
     return db().then(function (f) {
-      return f.fs.addDoc(f.fs.collection(f.db, 'classChat', maLop, 'messages'), {
+      var oChat = f.fs.collection(f.db, 'classChat', maLop, 'messages');
+      var goc = {
         name: String(tin.ten || '?').slice(0, 60),
         code: String(tin.ma || '').slice(0, 40),
         role: tin.vaiTro === 'gv' ? 'gv' : 'hs',
         text: chu,
         createdAt: Date.now()
+      };
+      var may = dauMay();
+      if (!may) return f.fs.addDoc(oChat, goc);        // ẩn danh: gửi kiểu cũ luôn
+
+      var kem = Object.assign({ may: may }, goc);
+      return f.fs.addDoc(oChat, kem)['catch'](function (e) {
+        /* ⛔ ĐƯỜNG LÙI — xem khối "DẤU MÁY" ở đầu file. CHỈ lùi khi kho từ chối
+           vì luật (`permission-denied`): đó đúng là cảnh "luật cũ còn hasOnly 5
+           trường". Lỗi khác (mất mạng, hết hạn mức…) mà cũng gửi lại là tin
+           HIỆN HAI LẦN — nên để nó ném ra cho nơi gọi báo người dùng. */
+        var ma = String((e && (e.code || e.message)) || '');
+        if (ma.indexOf('permission-denied') < 0) throw e;
+        return f.fs.addDoc(oChat, goc);
       });
     });
   }
@@ -208,7 +276,11 @@
         lop: String(maLop || ''), tenLop: String(tenLop || maLop || ''),
         luc: Date.now(), soTin: (dsTin || []).length,
         tin: (dsTin || []).map(function (t) {
-          return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc, cx: t.cx || {} };
+          /* ⭐ v1.80.0 — giữ luôn dấu máy vào kho lưu trữ, để sau khi "làm mới"
+             phòng chat thầy vẫn tra ngược được. Luật `classChatArchive` KHÔNG
+             cần đổi: nó chỉ kiểm `tin is list`, không soi bên trong. */
+          return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc,
+                   cx: t.cx || {}, may: t.may || '' };
         })
       });
     });
@@ -285,6 +357,7 @@
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU,
+    dauMay: dauMay,                    /* ⭐ v1.80.0 — xem khối "DẤU MÁY" đầu file */
     // ⭐ v1.38.0 — mở CỬA FIREBASE dùng chung cho khối khác (js/vi-qua.js đọc
     // kho quà `quaTang/catalog`). ⛔ Nơi khác ĐỪNG tự `initializeApp` /
     // `getFirestore()` lần nữa: cùng một app gọi hai lần là dính

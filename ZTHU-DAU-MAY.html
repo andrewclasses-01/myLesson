@@ -1,0 +1,71 @@
+<!doctype html>
+<!-- FILE THỬ TẠM — XOÁ SAU KHI THỬ XONG. Không commit. -->
+<meta charset="utf-8">
+<title>Thử dấu máy</title>
+<style>body{font:14px/1.6 system-ui;padding:20px;max-width:900px}
+pre{background:#f4f4f4;padding:10px;border-radius:8px;white-space:pre-wrap}
+.ok{color:#0a7}.xau{color:#c00}</style>
+<h2>Thử DẤU MÁY — web v1.80.0</h2>
+<pre id="ra">Đang chạy…</pre>
+<script src="js/chat.js"></script>
+<script>
+var R = document.getElementById('ra'), dong = [];
+function noi(s, lop) { dong.push(lop ? '<span class="' + lop + '">' + s + '</span>' : s);
+  R.innerHTML = dong.join('\n'); }
+
+var PHONG = 'ZTEST_DAUMAY';   // phòng giả, không lớp nào đọc tới
+
+(async function () {
+  // --- 1. dauMay() có sinh chuỗi và BỀN không? ---
+  var m1 = AWChat.dauMay();
+  var m2 = AWChat.dauMay();
+  noi('1) dauMay() lần 1 = ' + m1);
+  noi('   dauMay() lần 2 = ' + m2 + (m1 === m2 ? '  → BỀN trong phiên' : '  → ĐỔI (SAI)'),
+      m1 === m2 ? 'ok' : 'xau');
+  noi('   localStorage.awc_may = ' + localStorage.getItem('awc_may'),
+      localStorage.getItem('awc_may') === m1 ? 'ok' : 'xau');
+  noi('   dài ' + m1.length + ' ký tự' + (m1.length === 10 ? ' → đúng' : ' → SAI'),
+      m1.length === 10 ? 'ok' : 'xau');
+
+  // --- 2. Luật HIỆN TẠI có chặn trường `may` không? (ghi thô, không qua chat.js) ---
+  var f = await AWChat.kho();
+  var oPhong = f.fs.collection(f.db, 'classChat', PHONG, 'messages');
+  var goc = { name: 'ZTEST', code: 'ZTEST', role: 'hs', text: 'thu dau may',
+              createdAt: Date.now() };
+  noi('\n2) Ghi THÔ kèm trường `may` vào ' + PHONG + ' …');
+  var biChan = false;
+  try {
+    await f.fs.addDoc(oPhong, Object.assign({ may: m1 }, goc));
+    noi('   → GHI ĐƯỢC. Nghĩa là luật MỚI đã dán rồi.', 'ok');
+  } catch (e) {
+    biChan = String(e.code || e.message).indexOf('permission-denied') >= 0;
+    noi('   → bị từ chối: ' + (e.code || e.message)
+        + (biChan ? '  (đúng như dự đoán: luật cũ còn hasOnly 5 trường)' : '  (LỖI LẠ)'),
+        biChan ? 'ok' : 'xau');
+  }
+
+  // --- 3. ĐƯỜNG LÙI: gọi AWChat.gui() thật, chat có sống không? ---
+  noi('\n3) Gọi AWChat.gui() THẬT (đây là đường lùi cần chứng minh) …');
+  try {
+    await AWChat.gui(PHONG, { ten: 'ZTEST', ma: 'ZTEST', vaiTro: 'hs', chu: 'thu duong lui' });
+    noi('   → GỬI ĐƯỢC. Chat KHÔNG chết dù luật chưa dán. ✔', 'ok');
+  } catch (e) {
+    noi('   → HỎNG: ' + (e.code || e.message) + '  ⛔ ĐẨY WEB LÊN LÀ CẢ LỚP MẤT CHAT', 'xau');
+  }
+
+  // --- 4. Đọc lại xem tin vừa gửi có/không có dấu máy ---
+  noi('\n4) Đọc lại phòng thử …');
+  AWChat.nghe(PHONG, function (ds) {
+    noi('   thu được ' + ds.length + ' tin:');
+    ds.forEach(function (t) {
+      noi('   · "' + t.chu + '"  may=' + (t.may ? t.may : '(rỗng)'));
+    });
+    var coMay = ds.some(function (t) { return !!t.may; });
+    noi(biChan
+      ? (coMay ? '   ⛔ LẠ: luật chặn mà vẫn có dấu máy?' : '   → đúng: luật chưa dán nên chưa có dấu máy, chat vẫn chạy.')
+      : (coMay ? '   → đúng: luật đã dán, dấu máy vào kho.' : '   ⛔ LẠ: luật cho phép mà không thấy dấu máy.'),
+      (biChan ? !coMay : coMay) ? 'ok' : 'xau');
+    AWChat.thoi();
+  }, function (e) { noi('   đọc hỏng: ' + (e.code || e.message), 'xau'); });
+})();
+</script>

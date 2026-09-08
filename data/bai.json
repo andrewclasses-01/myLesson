@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-08 20:38:52",
+  "capNhat": "2026-09-08 23:44:48",
   "bai": {
     "A1C": [
       {
@@ -405,6 +405,34 @@
       }
     ],
     "A1A": [
+      {
+        "id": "A1A_7.9_WORDS_LSB1-S1.T1.P1",
+        "tieuDe": "A1A_7.9_WORDS LSB1-S1.T1.P1",
+        "tenHien": "A1A_7.9_WORDS LSB1-S1.T1.P1",
+        "dang": "WORDS",
+        "ngay": "7.9",
+        "han": "2026-09-10T17:30",
+        "maLesson": "LSB1-S1.T1.P1",
+        "taoLuc": "2026-09-08",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "92zej7",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "j94hms",
+            "mau": "TYPE THE ANSWER"
+          }
+        ]
+      },
       {
         "id": "A1A_6.9_WORDS_LSB1-S1.T1.P1",
         "tieuDe": "A1A_6.9_WORDS LSB1-S1.T1.P1",

@@ -596,7 +596,29 @@ a{color:inherit}
    `height` cột thành `min-height`: bình thường (1-2 thẻ) vẫn khớp chat y
    hệt; hoạ hiếm nhiều thẻ cùng lúc thì cột nhỉnh cao hơn chat một chút —
    đổi lấy KHÔNG BAO GIỜ chém quầng sáng, còn hơn thanh nhìn xấu thường trực. */
-.hai-cot{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:18px; align-items:start}
+/* ⭐⭐ v1.79.0 — thầy chốt: **nhiều hơn 1 thẻ thì KHÔNG được dồn lại**. Đo thật
+   trước khi vá (bàn thử `thu-bo-cuc`, đúng khối `<style>` này, màn 1280px):
+     số thẻ | `.cot-the` | `.cot-chat` | `.dn-bay` | bóng avatar tràn ra ngoài
+        1   |   523.0  |   523.5   |  213.8  | −54.5 (vừa đủ)
+        2   |   559.9  |   523.5   |   36.7  | **+28.7 — bị chém cụt**
+        3   |   773.9  |   523.5   |   36.7  | **+28.7**
+        4   |   987.9  |   523.5   |   36.7  | **+28.7**
+   Hai bệnh cùng lộ từ thẻ thứ HAI trở đi:
+   ① `.dn-bay` (HOẠT ĐỘNG GẦN ĐÂY) xẹp xuống còn 36.7px vì nó là `flex:1;
+     min-height:0` — hết phần dư thì không còn gì để ăn. Bóng avatar cao 46px, JS
+     lại đặt `top` tới **61%** (xem `veDangNhapGanDay`) ⇒ khung phải cao
+     ≥ 46 / (1 − .61) ≈ **118px** mới chứa nổi; thấp hơn là `overflow:hidden`
+     cắt đôi mặt các em (đúng ảnh chụp thầy gửi).
+   ② Cột chat đứng yên ở 523.5px trong khi cột thẻ cao dần ⇒ 4 thẻ là hụt
+     464px, trống hoác bên phải.
+   Vá (4 chỗ, đọc cả 4 trước khi sửa một): `align-items` **start → stretch** (hàng
+   grid cao bằng cột cao hơn, cột kia giãn theo) + `.dn-bay` có sàn thật 124px +
+   `.cot-chat .khoi-than` ăn hết chiều cao cột + `.chat-body` đổi `height` cứng
+   thành `flex:1 1 0; min-height:0` (lý do tại chính nó, phải đọc), cộng một dòng
+   trả về luật cũ trong `@media (max-width:900px)`.
+   ⛔ KHÔNG đụng `overflow` của `.khoi-than`/`.the-list` — xem bẫy v1.32.1 ngay trên (quầng sáng đỏ `.the.gap` lan ra NGOÀI khung, tổ tiên
+   nào có `overflow:hidden` là chém cụt thành viền vuông). */
+.hai-cot{display:grid; grid-template-columns:minmax(0,1fr) 380px; gap:18px; align-items:stretch}
 .cot-the, .cot-chat{display:flex; flex-direction:column}
 .cot-the{min-height:calc(var(--cao-the) * 2 + 123px)}
 .cot-the .khoi-than{display:flex; flex-direction:column; gap:14px; flex:1; min-height:0}
@@ -611,7 +633,10 @@ a{color:inherit}
 /* ⭐ v1.33.1 — nền gradient hiện đại hơn (hai quầng màu chéo, xanh của app +
    xanh dương phụ) thay dải xanh-nhạt→trong suốt cũ; bỏ viền đứt nét (không
    còn là ô "để dành" nữa, đã có nội dung thật). */
-.dn-bay{position:relative; flex:1; min-height:0; border:1px solid var(--vien); border-radius:14px;
+/* ⭐ v1.79.0 — `min-height:0` → `124px`: 46px bóng ÷ (1 − 61% `top` tối đa) ≈ 118px
+   là sàn lý thuyết, lấy 124 cho dư một nhịp. Nhiều thẻ thì khung này KHÔNG
+   xẹp nữa, cột thẻ dài ra — đúng cái thầy muốn ("giãn ra bình thường"). */
+.dn-bay{position:relative; flex:1; min-height:124px; border:1px solid var(--vien); border-radius:14px;
   background:
     radial-gradient(120% 100% at 14% 0%, rgba(91,141,239,.20) 0%, transparent 58%),
     radial-gradient(120% 100% at 86% 100%, rgba(14,124,110,.20) 0%, transparent 58%),
@@ -630,7 +655,10 @@ a{color:inherit}
 .dn-b img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 @keyframes dn-bay-nhe{0%,100%{transform:translate(0,0)} 50%{transform:translate(3px,-9px)}}
 @media (prefers-reduced-motion:reduce){.dn-b{animation:none}}
-.cot-chat .khoi-than{display:flex; flex-direction:column; padding:0}
+/* ⭐ v1.79.0 — thêm `flex:1; min-height:0`: cột chat nay bị grid kéo cao bằng cột
+   thẻ, thân khối phải ăn hết phần cao đó thì `.chat-body` bên trong mới giãn theo
+   được (thiếu dòng này thì khối đứng yên ở giữa, để hở một dải trắng dưới chân). */
+.cot-chat .khoi-than{display:flex; flex-direction:column; flex:1; min-height:0; padding:0}
 
 /* ================================================================
    ⭐⭐⭐ v1.34.0 — thầy chốt qua bản xem thử: BỎ HẲN thẻ công cụ rời (cả họ
@@ -1086,8 +1114,19 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 /* ---------- KHUNG TRÒ CHUYỆN CỦA LỚP ---------- */
 .chat-khoi .khoi-than{padding:0}
+/* ⭐ v1.79.0 — `height` cứng (= 2 thẻ) → `flex:1 1 0` + `min-height:0`, để khung
+   chat GIÃN THEO chiều cao hàng grid (tức theo cột thẻ) thay vì đứng yên 400px.
+   ⛔⛔ `min-height:0` (chứ KHÔNG phải `min-height` = 2 thẻ — đã viết thế và SAI) là
+   chỗ duy nhất dễ đi nhầm: `align-items:stretch` khiến chiều cao hàng = cột NÀO CAO
+   HƠN, mà cột chat “cao” bao nhiêu lại do chính đống tin nhắn bên trong quyết định
+   ⇒ để khung tự đo theo nội dung thì **40 tin nhắn kéo CẢ HAI cột dài 2659px và
+   thanh cuộn biến mất** (bàn thử bắt được, không phải suy luận). `flex:1 1 0` +
+   `min-height:0` cắt hẳn phần đóng góp của nội dung chat vào chiều cao hàng:
+   **cột thẻ ra lệnh, chat đi theo**; tin nhiều thì cuộn trong khung như cũ.
+   ⇒ Sàn 400px cũ nay do `.cot-the{min-height: 2 thẻ + 123px}` giữ hộ (523.5 − 123.5
+   phần đầu/chân/viền = **đúng 400px**), nên 0–1 thẻ trông y HỆT trước khi vá. */
 .chat-body{
-  height:calc(var(--cao-the) * 2); flex:none; overflow-y:auto; padding:14px 16px 8px;
+  flex:1 1 0; min-height:0; overflow-y:auto; padding:14px 16px 8px;
   display:flex; flex-direction:column; gap:9px;
 }
 .chat-cho{margin:auto; text-align:center; color:var(--nhat); font-size:12.5px;
@@ -1292,6 +1331,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   .hai-cot{grid-template-columns:1fr}
   .cot-the{order:2}
   .cot-chat{order:1}
+  /* ⛔ v1.79.0 — MỘT CỘT thì KHÔNG có cột thẻ nào để đi theo nữa: mỗi khối là
+     một hàng grid riêng, hàng của chat cao đúng bằng nội dung chính nó ⇒ `.chat-body`
+     không đóng góp chiều cao (`flex:1 1 0; min-height:0`) sẽ **xẹp còn 22px**
+     (bàn thử đo được ở cả 880px lẫn 600px). Ở đây trả về ĐÚNG luật cũ: cao cố
+     định bằng 2 thẻ. Phần “chat giãn theo cột thẻ” chỉ có nghĩa ở bố cục HAI CỘT. */
+  .chat-body{flex:none; height:calc(var(--cao-the) * 2); min-height:0}
 }
 @media (max-width:620px){
   .wrap{padding:0 12px}

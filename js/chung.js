@@ -1139,7 +1139,7 @@
         thì phải ghi thêm mốc thời gian bên app — để đợt sau.
      ============================================================ */
   function avKhongDau(s) {
-    return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '')
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
   }
   function avSlugLop(s) { return avKhongDau(s).replace(/[^a-z0-9]/g, '') || 'lop'; }
@@ -1685,11 +1685,28 @@
   // "T3,T7" -> [2, 6] theo chỉ số getDay(). Cùng bảng chữ với app myLesson
   // (`THU_TEN`) — đừng đổi chữ, đó là chữ myStudent ghi trong cột `days`.
   var THU_TEN = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+  // ⭐⭐ v1.81.0 (09/09/2026) — myStudent GHI HAI KIỂU, không phải một.
+  // Đo thật trên kho ngày 09/09: 8 lớp ghi "T2,T5" nhưng A1-C và B2-B ghi hẳn
+  // chữ "CHỦ NHẬT". Bảng `THU_TEN` chỉ có "CN" nên hai lớp đó trả về MẢNG RỖNG
+  // ⇒ `buoiTiepTheo()` trả rỗng ⇒ pop-up KHÔNG GIAO BÀI của hai lớp này báo
+  // "chưa khai đủ lịch học" dù kho khai đủ. Lỗi CÂM, sống từ v1.48.0.
+  // ⛔ Bỏ dấu trước khi so (`CHỦ NHẬT` → `CHU NHAT`): kho gõ tay nên có ngày ra
+  // "Chủ nhật" / "chu nhat". Đừng so thẳng chuỗi có dấu.
+  var THU_LA = { 'CHU NHAT': 0, 'CHUNHAT': 0, 'T2': 1, 'T3': 2, 'T4': 3,
+                 'T5': 4, 'T6': 5, 'T7': 6 };
+  // ⛔ Dải dấu thanh PHẢI viết bằng mã `\u0300-\u036f`, ĐỪNG gõ dấu thẳng vào
+  // regex: trình soạn thảo tự chuẩn hoá Unicode là hàm này hỏng lặng lẽ (đúng
+  // bẫy đã trả giá ở `khongDau()` bên app myLesson).
+  function khongDauHoa(s) {
+    return avKhongDau(s).replace(/\s+/g, ' ').trim().toUpperCase();
+  }
   function thuTuChuoi(s) {
     var ra = [];
     var phan = String(s || '').split(/[,;/]/);
     for (var i = 0; i < phan.length; i++) {
-      var j = THU_TEN.indexOf(phan[i].trim().toUpperCase());
+      var chu = khongDauHoa(phan[i]);
+      var j = THU_TEN.indexOf(chu);
+      if (j < 0 && THU_LA[chu] !== undefined) j = THU_LA[chu];
       if (j >= 0 && ra.indexOf(j) < 0) ra.push(j);
     }
     return ra;
@@ -1725,6 +1742,103 @@
            + 'T' + hai(d.getHours()) + ':' + hai(d.getMinutes());
     }
     return '';
+  }
+
+  // ============================================================
+  // ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — "LỚP ĐANG HỌC"
+  //
+  // Thẻ vừa tới hạn KHÔNG hiện "HẾT HẠN" đỏ ngay nữa: suốt buổi học nó hiện
+  // "LỚP ĐANG HỌC" + nền xanh lơ, TAN LỚP rồi mới thành HẾT HẠN.
+  //
+  // ⛔ GIỜ HỌC LẤY TỪ `lop.json` (app nhồi vào — xem `lichLopChoWeb()` bên
+  // `app/src/main/lib/web.js`), KHÔNG đọc kho `mystudentRosterClasses` ở trang
+  // học sinh: kho đó tính MỘT LƯỢT ĐỌC CHO MỖI TÀI LIỆU (14 lớp) nhân với mỗi
+  // lượt 156 em mở trang. `lop.json` thì trình duyệt vốn đã tải sẵn. Luật 8️⃣.
+  //
+  // ⛔ ĐƯỜNG LÙI PHẢI GIỮ: bản `lop.json` cũ (app chưa đẩy lại) không có ba
+  // trường `thu`/`gio`/`tan` ⇒ mọi hàm dưới đây trả null/false ⇒ cả bộ web chạy
+  // Y HỆT trước v1.81.0. Đừng bao giờ để nó ném lỗi thay vì trả null.
+  // ============================================================
+
+  // ⭐ CỬA SỔ LÙI 2 TIẾNG — thầy chốt 09/09/2026.
+  // ⛔ VÌ SAO CẦN: giờ hạn thầy khai trong Cài đặt LỆCH giờ vào lớp thật. Đo trên
+  // kho ngày 09/09: A1-A · A2-B · B2-A khai hạn 17:30 mà giờ vào lớp là 17h40;
+  // A2-A khai 19:20 mà vào lớp 19h30. Nếu chỉ nhận "hạn >= giờ vào" thì có đúng
+  // 10 phút thẻ hiện HẾT HẠN ĐỎ rồi mới nhảy sang LỚP ĐANG HỌC — trái hẳn lời
+  // thầy "không hiện chữ HẾT HẠN ngay". Lùi 2 tiếng thì thẻ đổi màu NGAY GIÂY
+  // hết hạn.
+  // ⛔ Lùi 2 tiếng KHÔNG thể quơ nhầm bài của buổi trước: hai buổi của một lớp
+  // luôn cách nhau ít nhất một ngày.
+  var LUI_TRUOC = 2 * 60 * 60 * 1000;
+
+  // Lịch của một lớp trong `lop.json`, hoặc null nếu lớp/khoá đó không có lịch.
+  function lichCua(dl, maLop) {
+    var l = lopTheoMa(dl || {}, String(maLop || ''));
+    if (!l || l.nghi) return null;                 // lớp TẠM NGHỈ: không buổi nào
+    var thu = thuTuChuoi(l.thu);
+    var vao = gioPhut(l.gio), tan = gioPhut(l.tan);
+    if (!thu.length || !vao || !tan) return null;  // thiếu một trong ba thì thôi
+    return { thu: thu, vao: vao, tan: tan };
+  }
+
+  // BUỔI HỌC mà một mốc thời gian `moc` thuộc về: { batDau, ketThuc } tính bằng
+  // ms, hoặc null. "Thuộc về" = `moc` nằm trong [giờ vào − 2 tiếng, giờ tan).
+  //
+  // ⛔ Dò cả ngày HÔM TRƯỚC và HÔM SAU (i = −1 … 1), hai lý do:
+  //   · buổi vắt qua nửa đêm (giờ tan <= giờ vào) — chưa lớp nào thế nhưng cửa
+  //     sổ lùi 2 tiếng thì có thể rơi sang ngày hôm trước thật;
+  //   · hạn 00:30 thứ Sáu là thuộc buổi tối thứ Năm, không phải buổi thứ Sáu.
+  function buoiChuaMoc(dl, maLop, moc) {
+    var c = lichCua(dl, maLop);
+    if (!c || !moc) return null;
+    var g = new Date(moc);
+    for (var i = -1; i <= 1; i++) {
+      var d = new Date(g.getFullYear(), g.getMonth(), g.getDate() + i,
+                       c.vao.h, c.vao.p, 0, 0);
+      if (c.thu.indexOf(d.getDay()) < 0) continue;
+      var batDau = d.getTime();
+      var ketThuc = new Date(g.getFullYear(), g.getMonth(), g.getDate() + i,
+                             c.tan.h, c.tan.p, 0, 0).getTime();
+      if (ketThuc <= batDau) ketThuc += 24 * 60 * 60 * 1000;   // vắt qua nửa đêm
+      if (moc >= batDau - LUI_TRUOC && moc < ketThuc) {
+        return { batDau: batDau, ketThuc: ketThuc };
+      }
+    }
+    return null;
+  }
+
+  // Thẻ này có đang trong buổi học không ⇒ hiện "LỚP ĐANG HỌC" thay "HẾT HẠN".
+  // `hanMoc` = mốc hạn THẬT của thẻ (ms). Ba điều kiện, thiếu một là false:
+  //   1. thẻ ĐÃ tới hạn (chưa tới hạn thì đồng hồ vẫn đếm ngược như thường);
+  //   2. hạn đó thuộc về một buổi học (cửa sổ lùi 2 tiếng ở trên);
+  //   3. buổi đó CHƯA TAN.
+  // ⛔ Bài hết hạn từ buổi TRƯỚC tự rớt ở điều kiện 3 — nó vẫn HẾT HẠN đỏ như cũ,
+  // đúng ý thầy: chỉ thẻ "hết hạn đúng buổi này" mới được đổi màu.
+  function theDangHoc(dl, maLop, hanMoc) {
+    if (!hanMoc) return false;
+    var luc = Date.now();
+    if (hanMoc > luc) return false;
+    var b = buoiChuaMoc(dl, maLop, hanMoc);
+    return !!b && luc < b.ketThuc;
+  }
+
+  // ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — THẺ NGHỈ CÒN HIỆU LỰC VỚI HỌC SINH?
+  //
+  // ⛔ VÌ SAO PHẢI LÀ HÀM CHUNG: trước v1.81.0 trang lớp và dashboard xét thẻ
+  // nghỉ bằng HAI LUẬT KHÁC NHAU — dashboard chỉ vẽ khi `han` chưa qua, trang lớp
+  // thì vẽ mãi kể cả đã qua. Hậu quả đo được ngày 09/09: A1A và A1B kẹt hai thẻ
+  // thầy bấm thử từ 02/09, học sinh thấy suốt một tuần mà thầy KHÔNG có nút nào
+  // để gỡ vì dashboard coi như chúng không tồn tại. Một luật, một hàm.
+  //
+  // Còn hiệu lực = có thẻ · thầy không ẩn · BUỔI ứng với `han` chưa tan.
+  // ⛔ Không tra được buổi (bản `lop.json` cũ chưa có giờ) thì coi như CÒN hiệu
+  // lực — giữ đúng nếp v1.48.0, đừng để lỡ mất thẻ vì thiếu dữ liệu.
+  function nghiConHieuLuc(dl, maLop) {
+    if (nghiTt(maLop) === 'an') return false;
+    var m = nghiCua(maLop);
+    if (m == null) return false;
+    var b = buoiChuaMoc(dl, maLop, m);
+    return !b || Date.now() < b.ketThuc;
   }
 
   // ---------- RUỘT THẺ NGHỈ: BÓNG BAY + GAME KHỦNG LONG ----------
@@ -2214,6 +2328,9 @@
     // ⭐ v1.48.0 — thẻ "không giao bài" + lịch học + sân chơi
     nghiCua: nghiCua, nghiTt: nghiTt, datNghi: datNghi, napLopHoc: napLopHoc,
     buoiTiepTheo: buoiTiepTheo, thuTuChuoi: thuTuChuoi, gaSanNghi: gaSanNghi,
+    // ⭐ v1.81.0 — "LỚP ĐANG HỌC" (giờ học nhồi sẵn trong lop.json)
+    lichCua: lichCua, buoiChuaMoc: buoiChuaMoc, theDangHoc: theDangHoc,
+    nghiConHieuLuc: nghiConHieuLuc,
     theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,
     napDuLieu: napDuLieu, napJson: napJson,

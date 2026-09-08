@@ -5,6 +5,9 @@
     {
       "maLop": "A1A",
       "tenGoc": "A1-A",
+      "thu": "T2,T5",
+      "gio": "17h40",
+      "tan": "19h15",
       "hocSinh": [
         {
           "id": 7,
@@ -119,6 +122,9 @@
     {
       "maLop": "A1B",
       "tenGoc": "A1-B",
+      "thu": "T3,T5",
+      "gio": "19h30",
+      "tan": "21h00",
       "hocSinh": [
         {
           "id": 85,
@@ -221,6 +227,9 @@
     {
       "maLop": "A1C",
       "tenGoc": "A1-C",
+      "thu": "CHỦ NHẬT",
+      "gio": "8h00",
+      "tan": "11h30",
       "hocSinh": [
         {
           "id": 129,
@@ -329,6 +338,9 @@
     {
       "maLop": "A2A",
       "tenGoc": "A2-A",
+      "thu": "T4,T7",
+      "gio": "19h30",
+      "tan": "21h00",
       "hocSinh": [
         {
           "id": 95,
@@ -438,6 +450,9 @@
     {
       "maLop": "A2B",
       "tenGoc": "A2-B",
+      "thu": "T4,T6",
+      "gio": "17h40",
+      "tan": "19h15",
       "hocSinh": [
         {
           "id": 145,
@@ -552,6 +567,9 @@
     {
       "maLop": "B1AH",
       "tenGoc": "B1-A (H)",
+      "thu": "T2,T6",
+      "gio": "19h30",
+      "tan": "21h00",
       "hocSinh": [
         {
           "id": 116,
@@ -624,6 +642,9 @@
     {
       "maLop": "B2A",
       "tenGoc": "B2-A",
+      "thu": "T3,T7",
+      "gio": "17h40",
+      "tan": "19h15",
       "hocSinh": [
         {
           "id": 44,
@@ -726,6 +747,9 @@
     {
       "maLop": "B2B",
       "tenGoc": "B2-B",
+      "thu": "CHỦ NHẬT",
+      "gio": "14h00",
+      "tan": "17h30",
       "hocSinh": [
         {
           "id": 123,
@@ -810,6 +834,10 @@
     {
       "maLop": "BTR",
       "tenGoc": "BỔ TRỢ",
+      "thu": "T2",
+      "gio": "8h00",
+      "tan": "11h30",
+      "nghi": 1,
       "hocSinh": [
         {
           "id": 133,
@@ -828,6 +856,9 @@
     {
       "maLop": "NNTNG4",
       "tenGoc": "NỀN TẢNG 4",
+      "thu": "T7",
+      "gio": "8h00",
+      "tan": "11h00",
       "hocSinh": [
         {
           "id": 161,

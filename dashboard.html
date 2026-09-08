@@ -734,6 +734,25 @@ a{color:inherit}
 @media (prefers-reduced-motion:reduce){
   .the.gap{animation:none; filter:drop-shadow(0 2px 4px rgba(224,87,91,.35)) drop-shadow(0 0 16px rgba(224,87,91,.6))}
 }
+/* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — LỚP ĐANG HỌC: nền + hào quang XANH LƠ.
+   ⛔ CHÉP Y KHỐI NÀY bên `lop.html` — cụm này mỗi trang một khối <style> riêng,
+   không có stylesheet chung; sửa một bên phải sửa bên kia.
+   Đặt SAU mọi luật `.tt-*`, thêm một bậc `.the.dang-hoc` cho hơn điểm riêng, để
+   JS chỉ phải bật/tắt ĐÚNG MỘT class mỗi giây (khỏi phải gỡ đúng cái `.tt-…`
+   đang đeo — gỡ nhầm thì thẻ trắng bệch mà không lỗi nào hiện). */
+.the.dang-hoc .the-in{background:#ECFAFC}
+.the.dang-hoc{animation:hao-quang-lo 3.4s ease-in-out infinite}
+@keyframes hao-quang-lo{
+  0%,100%{filter:drop-shadow(0 2px 4px rgba(14,150,168,.26)) drop-shadow(0 0 8px rgba(14,150,168,.34))}
+  50%{filter:drop-shadow(0 2px 4px rgba(14,150,168,.38)) drop-shadow(0 0 22px rgba(20,184,204,.72))}
+}
+@media (prefers-reduced-motion:reduce){
+  .the.dang-hoc{animation:none; filter:drop-shadow(0 2px 4px rgba(14,150,168,.32)) drop-shadow(0 0 16px rgba(20,184,204,.55))}
+}
+.dhho.lo{color:#0E96A8; letter-spacing:-.02em}
+.the.dang-hoc .han-boc{background:#E4F6F9; border-color:#BCE6EE}
+.the.dang-hoc .han-dong{color:#0B7A89}
+.the.dang-hoc .han-vach{border-color:#BCE6EE}
 .the-body{flex:none; min-width:0; padding:11px 14px 6px 20px; display:flex;
   align-items:center; column-gap:12px; overflow:hidden}
 .t-chu{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
@@ -1030,6 +1049,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 /* ⭐ v1.51.0 — thẻ nghỉ ĐANG ẨN: mờ đi (dùng lại `.the.an` sẵn có) + huy hiệu. */
 .the.nghi.an .nghi-chuoi::after{content:'ĐANG ẨN VỚI HỌC SINH'; display:block;
   margin-top:3px; font:800 8.5px/1.3 var(--font); letter-spacing:.08em; color:var(--do)}
+/* ⭐⭐ v1.81.0 — thẻ nghỉ mà BUỔI ĐÃ TAN: học sinh hết thấy, nhưng thầy VẪN thấy
+   ở đây để còn bấm ⚙ gỡ. Cố ý cho dashboard vẽ nhiều hơn trang học sinh — trước
+   v1.81.0 làm ngược lại nên A1A/A1B kẹt thẻ cả tuần mà thầy không gỡ được.
+   ⛔ Chỉ dùng khi KHÔNG đồng thời `.an` (đang ẩn đã có nhãn đỏ riêng ở trên). */
+.the.nghi.da-tan:not(.an) .nghi-chuoi::after{
+  content:'BUỔI ĐÃ TAN — HỌC SINH KHÔNG CÒN THẤY THẺ NÀY'; display:block;
+  margin-top:3px; font:800 8.5px/1.3 var(--font); letter-spacing:.08em; color:#8A7B5C}
+.the.nghi.da-tan .the-in{background:#F6F6F4}
 .the.nghi.dang-choi:hover .play{background:linear-gradient(135deg,#9A4718,#CE7A2F)}
 
 /* Ruột pop-up GIAO BÀI TẬP — mỗi dạng bài một ô bấm được. */
@@ -2012,11 +2039,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // NAY CHẠY THẬT: lớp có thẻ "không giao bài" còn hạn thì trạng thái là 'khong'.
   // ⛔ Bài thật CÒN HẠN đứng trước — thầy chốt: có bài thật thì thẻ nghỉ tự ẩn.
   function trangThaiBai(l) {
-    var conHan = A.baiCuaLop(DL, l.maLop, 'ql').some(A.conHan);   // v1.35.0
+    var ds = A.baiCuaLop(DL, l.maLop, 'ql');
+    var conHan = ds.some(A.conHan);   // v1.35.0
     if (conHan) return 'giao';
-    var m = A.nghiCua(l.maLop);
+    // ⭐⭐ v1.81.0 — lớp ĐANG TRONG BUỔI HỌC với một thẻ vừa tới hạn thì vẫn là
+    // "Đã giao bài": học sinh đang nhìn thấy thẻ đó xanh lơ trên vạch, ô lớp mà
+    // ghi "Đang chờ bài" là nói ngược với chính trang các em đang mở.
+    for (var i = 0; i < ds.length; i++) {
+      if (A.theDangHoc(DL, l.maLop, A.mocHan(ds[i]))) return 'giao';
+    }
     // ⭐ v1.51.0 — thẻ nghỉ ĐANG ẨN thì học sinh không thấy gì ⇒ lớp vẫn là "đang chờ bài".
-    if (m != null && m > Date.now() && A.nghiTt(l.maLop) !== 'an') return 'khong';
+    // ⭐ v1.81.0 — qua `A.nghiConHieuLuc()`: LUẬT CHUNG với trang lớp (có thẻ ·
+    // không bị ẩn · buổi ứng với `han` chưa tan). Trước đây chỗ này tự so
+    // `m > Date.now()`, chính là nguồn gốc cảnh lệch pha A1A/A1B.
+    if (A.nghiConHieuLuc(DL, l.maLop)) return 'khong';
     return 'cho';
   }
   var TT_NHAN = { giao: 'Đã giao bài', cho: 'Đang chờ bài', khong: 'Không có bài tập' };
@@ -3197,13 +3233,30 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var h = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60), g = s % 60;
     return h + ':' + ('0' + p).slice(-2) + ':' + ('0' + g).slice(-2);
   }
+  // ⭐⭐ v1.81.0 — bộ áo XANH LƠ của thẻ "LỚP ĐANG HỌC". CHÉP Y bên `lop.html`
+  // (cụm này mỗi trang một khối <style> riêng, không có stylesheet chung — sửa
+  // một bên phải sửa bên kia). Tính lại MỖI GIÂY, chỉ đổi class chứ không dựng
+  // lại thẻ (dựng lại giữa chừng = nút bị thay giữa mousedown và click).
+  function aoDangHoc(e, bat) {
+    var the = e.closest && e.closest('.the');
+    if (the) the.classList.toggle('dang-hoc', !!bat);
+  }
   function nhipDongHo() {
     Array.prototype.forEach.call(document.querySelectorAll('.dhho[data-moc]'), function (e) {
       // ⭐ v1.35.0 — thẻ TẠM KHOÁ: đồng hồ DỪNG, không bao giờ HẾT HẠN (thầy chốt).
-      if (e.getAttribute('data-khoa') === '1') { e.textContent = 'TẠM KHOÁ'; e.className = 'dhho khoa'; return; }
-      if (e.getAttribute('data-xong') === '1') { e.textContent = 'COMPLETE'; e.className = 'dhho xong'; return; }
-      var con = (+e.getAttribute('data-moc')) - Date.now();
-      if (con <= 0) { e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return; }
+      if (e.getAttribute('data-khoa') === '1') { aoDangHoc(e, false); e.textContent = 'TẠM KHOÁ'; e.className = 'dhho khoa'; return; }
+      // ⭐ v1.81.0 — XONG HẾT vẫn thắng LỚP ĐANG HỌC (thầy chốt 09/09). Đừng đổi thứ tự.
+      if (e.getAttribute('data-xong') === '1') { aoDangHoc(e, false); e.textContent = 'COMPLETE'; e.className = 'dhho xong'; return; }
+      var moc = +e.getAttribute('data-moc');
+      var con = moc - Date.now();
+      if (con <= 0) {
+        // ⭐⭐ v1.81.0 — LỚP ĐANG HỌC (luật chung ở `A.theDangHoc`, js/chung.js).
+        var hoc = A.theDangHoc(DL, LOP_CHON, moc);
+        aoDangHoc(e, hoc);
+        if (hoc) { e.textContent = 'LỚP ĐANG HỌC'; e.className = 'dhho lo'; return; }
+        e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return;
+      }
+      aoDangHoc(e, false);
       e.textContent = chuoiGio(con);
       var tieng = con / TIENG;
       e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
@@ -3316,13 +3369,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }
     var soConHan = ds.filter(A.conHan).length;
     // ⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI": chỉ dựng khi lớp KHÔNG có bài thật còn
-    // hạn (thầy chốt: có bài thật thì thẻ nghỉ tự biến mất, dữ liệu vẫn còn) và
-    // thẻ nghỉ đó CHƯA tới giờ học.
+    // hạn (thầy chốt: có bài thật thì thẻ nghỉ tự biến mất, dữ liệu vẫn còn).
     var mocNghi = A.nghiCua(LOP_CHON);
     // ⭐ v1.51.0 — thẻ ĐANG ẨN vẫn hiện ở dashboard (mờ đi) để thầy còn bấm
     // "Hiện lại" — đúng nếp thẻ bài; trang học sinh thì không thấy gì.
     var ttNghi = A.nghiTt(LOP_CHON);
-    var coNghi = !conHan && mocNghi != null && mocNghi > Date.now();
+    // ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — DASHBOARD VẼ NHIỀU HƠN TRANG HỌC SINH,
+    // CỐ Ý. Trước đây chỗ này đòi `mocNghi > Date.now()`, nên thẻ nghỉ vừa quá
+    // giờ là biến khỏi mắt thầy trong khi học sinh VẪN THẤY — thầy không còn nút
+    // nào để gỡ (đo thật 09/09: A1A + A1B kẹt thẻ từ 02/09 suốt một tuần).
+    // Nay: còn tài liệu trong kho thì thầy CÒN THẤY và còn gỡ được bằng nút ⚙;
+    // thẻ nào học sinh đã hết thấy thì đeo nhãn "BUỔI ĐÃ TAN" cho thầy biết.
+    var nghiHieuLuc = A.nghiConHieuLuc(DL, LOP_CHON);
+    var nghiDaTan = mocNghi != null && ttNghi !== 'an' && !nghiHieuLuc;
+    var coNghi = !conHan && mocNghi != null;
     // Cây bút chỉ hiện khi lớp đang chờ bài: không có bài còn hạn, cũng chưa
     // giao nghỉ. Đã giao nghỉ rồi thì thẻ nghỉ nằm ngay đó, khỏi giao lại.
     $('#btnGiao').hidden = !(!conHan && !coNghi);
@@ -3330,7 +3390,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       /* ⛔ v1.61.0 — ĐÃ BỎ mẩu "· N đang ẩn": thẻ ẩn không còn nằm trong `ds` nữa
          nên `ds.length` luôn bằng `soConHan`, mẩu chữ đó vĩnh viễn không hiện. */
       (conHan ? (' · ' + soConHan + ' bài còn hạn')
-        : (coNghi ? ' · đã giao: không có bài tập'
+        /* ⭐ v1.81.0 — nói rõ thẻ nghỉ nào học sinh CÒN thấy, thẻ nào hết. */
+        : (coNghi ? (nghiDaTan ? ' · thẻ không giao bài đã hết tác dụng'
+                               : ' · đã giao: không có bài tập')
                   : (ds.length ? ' · bài gần nhất (đã hết hạn)' : '')));
     // ⭐ v1.49.0 — thẻ nghỉ ở dashboard có thêm nút ⚙ (đổi hạn / xoá thẻ). Trang
     // học sinh KHÔNG có nút này — đó là lý do `theNghiHtml` nhận `themHtml` rời.
@@ -3347,6 +3409,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           '<span class="diem-vach"></span>', ttNghi === 'an')
       : (ds.length ? ds.map(veTheCard).join('')
                    : '<div class="trong">Đang chờ bài tập.</div>');
+    // ⭐ v1.81.0 — đeo nhãn cho thẻ nghỉ mà HỌC SINH ĐÃ HẾT THẤY (buổi đã tan).
+    // ⛔ Gắn class SAU khi dựng HTML thay vì thêm tham số cho `theNghiHtml()`:
+    // hàm đó dùng CHUNG với trang học sinh, mà bên đó thẻ này không bao giờ hiện
+    // ⇒ thêm tham số chỉ để một bên dùng là làm hàm chung phình ra vô ích.
+    if (coNghi && nghiDaTan) {
+      var theNghiEl = $('#theListDs').querySelector('.the.nghi');
+      if (theNghiEl) theNghiEl.classList.add('da-tan');
+    }
     nhipDongHo();
     canhNhanO();
     if (coNghi) {

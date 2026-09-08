@@ -322,6 +322,34 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
     filter:drop-shadow(0 2px 4px rgba(224,87,91,.35)) drop-shadow(0 0 16px rgba(224,87,91,.6))}
 }
 
+/* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — LỚP ĐANG HỌC: nền + hào quang XANH LƠ.
+   ⛔ Đặt SAU mọi luật `.tt-*` và dùng thêm một bậc `.the.dang-hoc` cho hơn điểm
+   riêng: nhờ vậy JS chỉ phải BẬT/TẮT đúng một class mỗi giây, khỏi phải gỡ đúng
+   cái `.tt-…` nào đang đeo (gỡ nhầm là thẻ trắng bệch, mà lỗi kiểu đó thì câm).
+   ⛔ `!important` KHÔNG cần và không được dùng — thẻ TẠM KHOÁ / xong hết đã bị
+   chặn từ trong `nhipDongHo()` rồi, thêm !important là cướp luôn của chúng. */
+.the.dang-hoc .the-in{background:#ECFAFC}
+.the.dang-hoc{animation:hao-quang-lo 3.4s ease-in-out infinite}
+@keyframes hao-quang-lo{
+  0%,100%{filter:drop-shadow(0 2px 4px rgba(14,150,168,.26))
+                 drop-shadow(0 0 8px rgba(14,150,168,.34))}
+  50%    {filter:drop-shadow(0 2px 4px rgba(14,150,168,.38))
+                 drop-shadow(0 0 22px rgba(20,184,204,.72))}
+}
+/* Máy bật "giảm chuyển động" thì đứng yên nhưng VẪN xanh lơ — cái thầy cần là
+   MÀU, chuyển động chỉ là phần thêm. */
+@media (prefers-reduced-motion: reduce){
+  .the.dang-hoc{animation:none;
+    filter:drop-shadow(0 2px 4px rgba(14,150,168,.32)) drop-shadow(0 0 16px rgba(20,184,204,.55))}
+}
+/* Chữ LỚP ĐANG HỌC trong ô hạn — cùng họ màu với hào quang. `letter-spacing`
+   âm nhẹ vì chữ này DÀI nhất trong các chữ từng đứng ở ô đó (12 ký tự, hơn cả
+   "TẠM KHOÁ" và "HẾT HẠN"), không siết thì tràn ô trên điện thoại. */
+.dhho.lo{color:#0E96A8; letter-spacing:-.02em}
+.the.dang-hoc .han-boc{background:#E4F6F9; border-color:#BCE6EE}
+.the.dang-hoc .han-dong{color:#0B7A89}
+.the.dang-hoc .han-vach{border-color:#BCE6EE}
+
 /* ---------- RUỘT THẺ ----------
    MỘT BỐ CỤC DÙNG CHUNG cho máy tính lẫn điện thoại (thầy chốt 18/08 — bản
    điện thoại nhìn gọn hơn nên máy tính theo luôn): tên bài + ngày ở trái,
@@ -1688,6 +1716,14 @@ function theTuBai(b){
        Xem `tinhHinhGio()` + `veTheMoi()`. Áp cho MỌI dạng bài, không riêng SP CHECK. */
     suaHan: A.daSuaHan(b),
     conHan: A.conHan(b),
+    /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — LỚP ĐANG HỌC.
+       Thẻ vừa tới hạn thì suốt buổi học KHÔNG hiện "HẾT HẠN" đỏ, mà hiện
+       "LỚP ĐANG HỌC" + nền xanh lơ; tan lớp mới thành HẾT HẠN.
+       ⛔ ĐỪNG viết lại phép so ở đây: cả luật (cửa sổ lùi 2 tiếng · lớp tạm
+       nghỉ · bản lop.json cũ chưa có giờ) nằm gọn trong `A.theDangHoc()` của
+       js/chung.js, và dashboard cũng gọi ĐÚNG hàm đó. Hai nơi tự tính là có
+       ngày hai nơi ra hai kết quả. */
+    dangHoc: A.theDangHoc(DL, LOP_DL, moc),
     /* (Đợt 3 Firebase — PHẦN C′) thẻ SP CHECK: app đẩy MỘT khối giả loai:'spcheck'
        (không phải act AWord). Thanh tiến trình vẫn cần đúng 1 dòng để
        `capNhatTheSpeaking()` đổ số "đã nộp" vào `bai[0].xong`; số `xong` app đẩy
@@ -2584,22 +2620,48 @@ function chuoiGio(ms){
   return h + ':' + ('0' + p).slice(-2) + ':' + ('0' + g).slice(-2);
 }
 
+/* ⭐⭐ v1.81.0 — bật/tắt bộ áo XANH LƠ của cả thẻ (nền + hào quang).
+   ⛔ TÍNH LẠI MỖI GIÂY chứ không đóng đinh lúc vẽ: buổi học TAN vào một mốc giữa
+   chừng (A1-A tan 19h15), mà thẻ chỉ được vẽ lại khi nạp trang. Đóng đinh lúc vẽ
+   là 19h15 trôi qua rồi thẻ vẫn xanh lơ tới khi em bấm F5.
+   ⛔ Chỉ ĐỔI CLASS, tuyệt đối không dựng lại thẻ: dựng lại giữa chừng là nút bị
+   thay mới giữa mousedown và click ⇒ "bấm không có tác dụng gì" (bẫy 07/9). */
+function aoDangHoc(e, bat){
+  var the = e.closest && e.closest('.the');
+  if (the) the.classList.toggle('dang-hoc', !!bat);
+}
+
 var HEN_DH = null;
 function nhipDongHo(){
   document.querySelectorAll('.dhho[data-moc]').forEach(function(e){
     /* ⭐ v1.35.0 — thẻ TẠM KHOÁ: đồng hồ DỪNG, không bao giờ hiện HẾT HẠN (thầy chốt). */
     if (e.getAttribute('data-khoa') === '1') {
+      aoDangHoc(e, false);
       e.textContent = 'TẠM KHOÁ'; e.className = 'dhho khoa'; return;
     }
+    /* ⭐ v1.81.0 — thầy chốt 09/09: CẢ LỚP XONG HẾT vẫn thắng LỚP ĐANG HỌC.
+       Xanh lơ chỉ có ích khi còn bạn chưa xong; xong hết rồi thì xanh lá + ✓
+       là tin vui hơn. Nhánh này đứng TRƯỚC nhánh đang-học, đừng đổi thứ tự. */
     if (e.getAttribute('data-xong') === '1') {
+      aoDangHoc(e, false);
       e.textContent = 'COMPLETE'; e.className = 'dhho xong'; return;
     }
     var moc = +e.getAttribute('data-moc');
     /* moc = 0 nghĩa là bài CHƯA có hạn (app chưa gõ) — để gạch ngang, đừng
        hiện "HẾT HẠN" làm học sinh tưởng đã trễ. */
-    if (!moc) { e.textContent = '—'; e.className = 'dhho'; return; }
+    if (!moc) { aoDangHoc(e, false); e.textContent = '—'; e.className = 'dhho'; return; }
     var con = moc - Date.now();
-    if (con <= 0) { e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return; }
+    if (con <= 0) {
+      /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — LỚP ĐANG HỌC.
+         Vừa tới hạn mà lớp đang trong buổi thì KHÔNG doạ em bằng chữ HẾT HẠN đỏ:
+         hiện "LỚP ĐANG HỌC" xanh lơ cho tới lúc tan lớp. Luật nằm trong
+         `A.theDangHoc()` (js/chung.js) — dashboard gọi ĐÚNG hàm đó. */
+      var hoc = A.theDangHoc(DL, LOP_DL, moc);
+      aoDangHoc(e, hoc);
+      if (hoc) { e.textContent = 'LỚP ĐANG HỌC'; e.className = 'dhho lo'; return; }
+      e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return;
+    }
+    aoDangHoc(e, false);
     e.textContent = chuoiGio(con);
     var tieng = con / TIENG;
     e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
@@ -2696,7 +2758,16 @@ function dungCot(){
      trong kho vẫn còn nguyên, hết bài là nó hiện lại. */
   /* ⭐ v1.51.0 — thầy ẩn thẻ ở dashboard (`tt:'an'`) thì học sinh KHÔNG thấy gì cả;
      dashboard vẫn giữ thẻ (mờ đi) để thầy hiện lại. */
-  var mocNghi = (A.nghiTt(LOP_DL) === 'an') ? null : A.nghiCua(LOP_DL);
+  /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — THẺ NGHỈ TỰ TẮT KHI BUỔI ĐÓ ĐÃ TAN.
+     ⛔ VÌ SAO PHẢI CÓ: `han` chốt cứng lúc thầy bấm và KHÔNG BAO GIỜ tự hết, nên
+     thẻ nghỉ hết hạn sống mãi ở đây — trong khi dashboard lại chỉ vẽ nó lúc CÒN
+     hạn, tức thầy không có nút nào để gỡ. Đo thật 09/09: A1A và A1B kẹt hai thẻ
+     thầy bấm thử từ 02/09, học sinh thấy suốt một tuần. Câu "buổi này không có
+     bài" hết nghĩa ngay khi buổi đó tan ⇒ tắt theo giờ tan là chữa đúng gốc.
+     ⛔ MỘT LUẬT MỘT HÀM: `A.nghiConHieuLuc()` là nơi DUY NHẤT xét việc này —
+     dashboard gọi đúng hàm đó. Đừng viết lại phép so ở đây (chính vì trước đây
+     hai nơi tự xét mà sinh ra cảnh lệch pha trên). */
+  var mocNghi = A.nghiConHieuLuc(DL, LOP_DL) ? A.nghiCua(LOP_DL) : null;
   var nghiConHan = !BAI_MOI && mocNghi != null && mocNghi > Date.now();
   var nghiHetHan = !BAI_MOI && mocNghi != null && mocNghi <= Date.now();
 
@@ -3084,7 +3155,17 @@ A.napDuLieu().then(function(dl){
     var moi = null;
     for (var i = 0; i < cacThe.length; i++) {
       /* v1.35.0 — `conHan` thay phép so mốc viết tay (thẻ TẠM KHOÁ luôn còn hạn). */
-      if (cacThe[i].conHan) { moi = cacThe[i]; break; }
+      /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — thẻ ĐANG TRONG BUỔI HỌC vẫn giữ chỗ
+         TRÊN VẠCH và mở được như thường; tan lớp mới tụt xuống nhóm bài cũ.
+         ⛔ CỐ Ý KHÔNG SỬA `A.conHan()`: sáu nơi khác đang gọi hàm chung đó (bảng
+         lớp của dashboard, đếm "bài còn hạn", chấm đỏ bài mới…). Đổi nghĩa nó là
+         đúng bẫy "đổi nghĩa một trường ⇒ chỗ khác chết câm" — nới ĐÚNG một chỗ
+         cần nới thì gọn và soi được.
+         ⛔ Cờ này chốt lúc VẼ: buổi tan trong khi em đang mở trang thì đồng hồ đã
+         tự đổi sang HẾT HẠN mỗi giây (xem `nhipDongHo`), còn chỗ đứng của thẻ chỉ
+         về đúng nhóm sau lần nạp trang kế. Cố ý — dời thẻ dưới chân em đang đọc
+         thì tệ hơn nhiều. */
+      if (cacThe[i].conHan || cacThe[i].dangHoc) { moi = cacThe[i]; break; }
     }
     BAI_MOI = moi;
     BAI_CU = cacThe.filter(function(t){ return t !== moi; });

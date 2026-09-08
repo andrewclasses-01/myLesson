@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-07 16:08:59",
+  "capNhat": "2026-09-08 20:09:28",
   "bai": {
     "A1C": [
       {
@@ -215,6 +215,32 @@
       }
     ],
     "A2B": [
+      {
+        "id": "A2B_8.9_DICTS_LSA2-S3.T3.P3-4-5",
+        "tieuDe": "A2B_8.9_DICTS LSA2-S3.T3.P3-4-5",
+        "tenHien": "A2B_8.9_DICTS LSA2-S3.T3.P3-4-5",
+        "dang": "DICTS",
+        "ngay": "8.9",
+        "han": "2026-09-09T17:30",
+        "maLesson": "LSA2-S3.T3.P3-4-5",
+        "taoLuc": "2026-09-08",
+        "khoi": [
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSA2-S3.T3.P3-4-5"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSA2-S3.T3.P3-4-5 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "p8d2gp",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "A2B_26.8_SP_CHECK_BEAVERS_AND_DAMS",
         "tieuDe": "A2B_26.8_SP CHECK BEAVERS AND DAMS",

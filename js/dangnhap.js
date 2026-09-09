@@ -272,14 +272,26 @@
       var mo = nut.querySelector('.eye-on');
       var dong = nut.querySelector('.eye-off');
       var dangAn = true;
-      nut.onclick = function () {
-        dangAn = !dangAn;
+      function apDung() {
         inp.type = dangAn ? 'password' : 'text';
         // ⛔ <svg> KHÔNG ăn kiểu gán .hidden=bool (không phản ánh ra thuộc
         // tính thật trên một số trình duyệt) — phải set/removeAttribute.
         mo.toggleAttribute('hidden', !dangAn);
         dong.toggleAttribute('hidden', dangAn);
         nut.setAttribute('aria-label', dangAn ? 'Hiện mã số' : 'Ẩn mã số');
+      }
+      // ⭐ v1.84.0 (thầy báo 09/09/2026: "đôi khi hiện 2 con mắt, đôi khi 1") — TRƯỚC
+      // đây trạng thái BAN ĐẦU chỉ dựa vào thuộc tính `hidden` viết sẵn trong
+      // index.html, JS chỉ đổi khi bấm. `index.html` là trang gốc — KHÔNG có
+      // `?v=` để phá cache như css/js, nên nếu trình duyệt lỡ giữ bản HTML CŨ
+      // (từ trước khi thuộc tính `hidden` này tồn tại) là thiếu hẳn thuộc tính,
+      // cả hai icon cùng hiện. Gọi `apDung()` NGAY một lần ở đây: ép đúng trạng
+      // thái bằng JS (file có `?v=` riêng, luôn tải bản mới), không tin vào HTML
+      // gốc có đúng hay không — tự lành dù trang cache cũ tới đâu.
+      apDung();
+      nut.onclick = function () {
+        dangAn = !dangAn;
+        apDung();
       };
     })();
 

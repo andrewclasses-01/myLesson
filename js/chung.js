@@ -430,6 +430,24 @@
     return ds.length ? ds[0] : null;
   }
 
+  // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (myStudent v2.71.0, thầy chốt 09/09/2026): phụ
+  // huynh xin một mã riêng để luyện bài CÙNG con, đọc từ `l.hsDb` — mảng RIÊNG mà
+  // `web.js` chỉ đẩy khi lớp có ai đó (xem `lib/web.js`), KHÔNG có ở khóa học và
+  // KHÔNG BAO GIỜ lẫn vào `moiNoiTheoMa()`: một người CHỈ CÓ ĐÚNG MỘT nơi (khác hẳn
+  // học sinh thật có thể ở 2 nơi), nên trả về MỘT kết quả (hoặc null), không phải mảng.
+  function emDacBietTheoMa(dl, maGo) {
+    var ma = chuanMa(maGo);
+    if (!ma) return null;
+    var ds = dl.lop || [];
+    for (var i = 0; i < ds.length; i++) {
+      var l = ds[i], hs = l.hsDb || [];
+      for (var j = 0; j < hs.length; j++) {
+        if (hs[j].ma && chuanMa(hs[j].ma) === ma) return { lop: l, em: hs[j] };
+      }
+    }
+    return null;
+  }
+
   // ---------- em đang đăng nhập ----------
 
   function docNho() {
@@ -468,9 +486,21 @@
       var ds = moiNoiTheoMa(dl, nhu);
       var t = noiKhop(ds, q.get('lop')) || ds[0];
       if (t) return { lop: t.lop.maLop, ten: t.em.ten, ma: chuanMa(t.em.ma), xemNhu: true };
+      // v1.82.0 — mã không khớp học sinh thường nào thì thử HỌC SINH ĐẶC BIỆT, để
+      // thầy xem thử đúng trang phụ huynh đang thấy từ app myLesson.
+      var db = emDacBietTheoMa(dl, nhu);
+      if (db) return { lop: db.lop.maLop, ten: db.em.ten, ma: chuanMa(db.em.ma),
+                       xemNhu: true, dacBiet: true };
     }
     var cu = docNho();
     if (!cu || !cu.ma) return null;
+    // v1.82.0 — HỌC SINH ĐẶC BIỆT: mã KHÔNG BAO GIỜ trùng với học sinh thường (myStudent
+    // đã đảm bảo), nên xét thẳng TRƯỚC — tránh gọi `moiNoiTheoMa` rồi phải lo mảng rỗng.
+    if (cu.dacBiet) {
+      var dbCu = emDacBietTheoMa(dl, cu.ma);
+      return dbCu ? { lop: dbCu.lop.maLop, ten: dbCu.em.ten, ma: chuanMa(dbCu.em.ma),
+                      dacBiet: true } : null;
+    }
     // Tra lại mã trong danh sách MỚI — thầy đổi/xoá mã thì phiên cũ hết hiệu lực.
     // ⭐ v1.78.0 — mã có thể ở NHIỀU NƠI: phải lấy đúng nơi em đã chọn ở màn chọn lớp
     // (`docNho().lop`). Bản cũ luôn lấy nơi đầu tiên nên em chọn khóa học xong vẫn bị
@@ -950,7 +980,8 @@
   //     ket  = chặng đang mở, còn em chưa xong, ĐÃ quá hạn (giữ cả lớp lại)
   //     cho  = đủ điều kiện mở nhưng chưa tới mốc (đang đếm lùi tới `moLuc`)
   //     xa   = chưa tới lượt
-  // opt = { boQua: [tên em], moChang: số chặng thầy ép mở, now: mốc ms }
+  // opt = { boQua: [tên em], moChang: số chặng thầy ép mở, now: mốc ms,
+  //         moHet: bỏ qua MỌI khoá thời gian/chờ cả lớp — v1.82.0, xem dưới }
   function xetChang(b, lay, caLop, opt) {
     var o = opt || {};
     var now = o.now || Date.now();
@@ -962,6 +993,12 @@
       c.thieu = emChuaXongChang(c, lay, caLop, o.boQua);
       c.caLopXong = c.thieu.length === 0;
       c.quaHan = c.moc != null && now > c.moc;
+
+      // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT: "mở sẵn mọi chặng" (thầy chốt 09/09/2026),
+      // không chờ cả lớp lẫn không chờ mốc giờ mở — phụ huynh không theo kịp nhịp lớp.
+      // Đặt Ở ĐẦU vòng lặp (không phải nhánh `!c.so`): áp cho MỌI chặng, kể cả chặng
+      // có hạn.
+      if (o.moHet) { c.tt = 'dang'; c.mo = true; continue; }
 
       // Chặng KHÔNG có hạn (so = 0) luôn mở, không chặn chặng sau.
       if (!c.so) { c.tt = c.caLopXong ? 'xong' : 'dang'; c.mo = true; continue; }
@@ -2335,6 +2372,8 @@
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,
     napDuLieu: napDuLieu, napJson: napJson,
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
+    // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (phụ huynh luyện bài cùng con)
+    emDacBietTheoMa: emDacBietTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,
     giuXemNhuQuery: giuXemNhuQuery,
     bam: bam, laMaQuanLy: laMaQuanLy,

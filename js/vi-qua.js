@@ -431,6 +431,24 @@
     var layCtx = opt.layCtx;
     if (!hop) return;
 
+    // ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT: sidebar RÚT GỌN, bấm
+    // avatar chỉ hiện "Đăng xuất" — không Thông tin/Công cụ/Thư viện kỷ niệm/Ví sao,
+    // tránh mọi đường dẫn chạm tới dữ liệu của lớp hay của bạn khác. `lop.html`/
+    // `bai.html`/`bai-sp.html` truyền `opt.donGian = EM.dacBiet` khi dựng menu.
+    if (opt.donGian) {
+      hop.classList.add('vq-truot');
+      hop.innerHTML = '<div class="vq-doi"><div class="vq-trang vq-chinh">' +
+        nutMenu({ nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', ic: IC.ra, khoa: 'ra' }) +
+        '</div></div>';
+      hop.querySelector('[data-khoa="ra"]').onclick = function () {
+        A.thoat(); location.href = 'index.html';
+      };
+      var oSaoDG = opt.oSao || document.querySelector('.vi-to');
+      if (oSaoDG) oSaoDG.hidden = true;   // ô sao đầu sidebar cũng dẫn vào Ví sao — ẩn luôn
+      opt.veChinh = function () {};
+      return opt.veChinh;
+    }
+
     var congCuCon = [
       { nh: 'Máy tính', mo: 'Cộng trừ nhân chia nhanh', ic: IC.mayTinh },
       { nh: 'Lịch', mo: 'Lịch học và ngày quan trọng', ic: IC.lich },

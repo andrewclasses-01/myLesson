@@ -1330,13 +1330,13 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=66"></script>
-<script src="js/chung.js?v=39"></script>
+<script src="js/chung.js?v=40"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=2"></script>
+<script src="js/vi-qua.js?v=3"></script>
 <script>
 /* ============================================================
    TRANG BÀI TẬP — bản THẬT (web v1.9.0, 23/08/2026), dùng chung cho ba dạng
@@ -1364,6 +1364,11 @@ var LOP_DL = '';         /* mã lớp trong lop.json / bai.json: "B2B" */
 var LOP_HIEN = '';
 var MA_HS = '';
 var EM = null;
+/* ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT: xem chú thích đầy đủ ở
+   `lop.html` (cờ trung tâm, giống hệt cách dùng). Ở trang này còn kéo theo: hạn nộp
+   KHÔNG áp dụng, thẻ nhúng AWord mang thêm cờ để BÊN ĐÓ không ghi/không hiện
+   leaderboard chung của lớp — xem chỗ dựng `link`/`nhung` bên dưới. */
+var LA_DAC_BIET = false;
 var BAI = null;          /* chính bài đang mở, đọc từ data/bai.json */
 
 var A = window.AWC;
@@ -1571,7 +1576,35 @@ function xepBang(ma){
    hạng (`veHuy(1/2/3)` giữ nguyên), chỉ đổi màu chữ.
    ⛔ Từ đây `huy` (được đeo huy chương) và `lop` (màu chữ) là HAI CHUYỆN KHÁC
    NHAU — đừng gộp lại thành một biến như bản cũ. */
+/* ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT: không có bảng xếp hạng của
+   lớp (không thấy/không bị thấy) — cột này chỉ còn ĐÚNG MỘT dòng, điểm của riêng
+   người đó trên điểm tối đa của act (cùng khuôn `diem`/`chuan.dinh` mà `veBang()`
+   dùng để xét "full điểm" ở trên — HAI đại lượng CÙNG THANG ĐO, không phải điểm thô
+   `e.tho.diem`, xem chú thích `xongAct`/`chuanDiem` trong js/chung.js). */
+function veBangDacBiet(ma){
+  var ds = DIEM[ma] || [];
+  var minh = null;
+  for (var i = 0; i < ds.length; i++){
+    if (A.khoaTen(ds[i].ten) === A.khoaTen(TOI)) { minh = ds[i]; break; }
+  }
+  var c = CHUAN[ma];
+  var moc = (c && !c.tru) ? c.dinh : 0;
+  if (!minh) {
+    return '<div class="lb-row chua me"><span class="lb-rank">–</span>' +
+      '<span class="lb-name">Em chưa làm</span><span class="lb-score">—</span>' +
+      '<span class="lb-time"></span></div>';
+  }
+  var full = minh.diem >= moc;
+  return '<div class="lb-row ' + (full ? 'hc' : 'co') + ' me">' +
+    '<span class="lb-rank">' + (full ? veHuy(1) : '') + '</span>' +
+    '<span class="lb-name">' + tenTat(TOI) + '</span>' +
+    '<span class="lb-score">' + Math.round(minh.diem) + (moc ? ' / ' + moc : '') + '</span>' +
+    '<span class="lb-time">' + chuGiay(minh.giay) + '</span>' +
+  '</div>';
+}
+
 function veBang(ma){
+  if (LA_DAC_BIET) return veBangDacBiet(ma);
   var ds = xepBang(ma);
   var c = CHUAN[ma];
   var moc = (c && !c.tru) ? c.dinh : 0;      /* 0 = act không đo được ⇒ nộp là full */
@@ -2189,8 +2222,13 @@ function veKhoi(k, so){
      trang đầy đủ của AWord.
      ⚠️ Bản mẫu từng có trường `maThat` (nhúng một mã, tra bảng bằng mã khác) —
      bản thật BỎ HẲN, mỗi act chỉ còn đúng một mã do thầy dán trong app. */
+  // ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT mang cờ `&db=1` sang AWord:
+  // bên đó KHÔNG ghi bài làm vào kho điểm chung của lớp (không tăng lượt nộp, không
+  // vào leaderboard/kết quả của thầy) và màn kết thúc CHỈ hiện dòng điểm của CHÍNH họ.
+  // Xem AWord `web/play.js` (đọc `?db=1`) — sửa ở phiên khác, kho AWord riêng.
   var link  = AWORD + '/play.html?g=' + encodeURIComponent(k.ma) +
-              '&n=' + encodeURIComponent(TOI) + '&lop=' + encodeURIComponent(LOP_HIEN);
+              '&n=' + encodeURIComponent(TOI) + '&lop=' + encodeURIComponent(LOP_HIEN) +
+              (LA_DAC_BIET ? '&db=1' : '');
   var nhung = link + '&nhung=1';
   suoiAWord(nhung);   /* ⭐ v1.54.0 — kéo sẵn trang + mã AWord, bấm READY là có ngay */
   sec.innerHTML = dau.replace('__LINK__', link) +
@@ -3021,7 +3059,8 @@ function veDauTrang(){
   /* Chấm đỏ tin nhắn mới: trang này không mở phòng chat nên phải hỏi kho —
      1 lượt đọc, có đệm 60 giây trong `A.chatChuaDoc`. Bấm được vào khung chat
      chỉ có ở trang lớp, nên ở đây chấm chỉ HIỆN, không tắt. */
-  A.chatChuaDoc(LOP_DL, MA_HS).then(A.veChamDo)['catch'](function(){});
+  // v1.82.0 — HS đặc biệt: không có phòng chat nào để "chưa đọc" cả.
+  if (!LA_DAC_BIET) A.chatChuaDoc(LOP_DL, MA_HS).then(A.veChamDo)['catch'](function(){});
   var tenTren = document.querySelector('.who .ten');
   if (tenTren) tenTren.textContent = TOI;
   var tenSide = document.querySelector('.side-head .ten');
@@ -3058,11 +3097,19 @@ A.napDuLieu().then(function(dl){
   EM = A.batBuocDangNhap(dl);
   if (!EM) return;
   TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop;
+  LA_DAC_BIET = !!EM.dacBiet;
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
   LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
-  CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
+  // v1.82.0 — HS đặc biệt: CA_LOP RỖNG, giống hệt lý do ở lop.html.
+  CA_LOP = LA_DAC_BIET ? [] : ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   TAT = bangVietTat(CA_LOP);
+  // v1.82.0 — sidebar RÚT GỌN, dựng lại NGAY khi biết cờ (lượt đầu ở top-level luôn
+  // là menu đầy đủ vì chạy trước khi có EM) — xem `veMenuChinh` bên dưới.
+  if (LA_DAC_BIET) veMenuChinh = AWVi.dungMenu({
+    hop: $('#dsMenu'), oSao: document.querySelector('.vi-to'), donGian: true,
+    layCtx: function(){ return {}; },
+  });
   /* ⭐ v1.55.0 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em
      (tên đổi được, mã số thì không). Xem chú thích ở lượt gọi trong `lop.html`. */
   A.batAvatarKho(LOP, (l && l.hocSinh) || []);

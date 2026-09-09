@@ -1526,13 +1526,13 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=66"></script>
-<script src="js/chung.js?v=39"></script>
+<script src="js/chung.js?v=40"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=2"></script>
+<script src="js/vi-qua.js?v=3"></script>
 <script>
 /* ============================================================
    TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).
@@ -1658,6 +1658,12 @@ var MA_HS = '';          /* mã đăng nhập của em */
 var CA_LOP = [];         /* tên cả lớp, đúng thứ tự trong lop.json */
 var SI_SO = 0;
 var TAT = {};
+/* ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT: phụ huynh luyện bài CÙNG
+   con bằng ID riêng — không điểm danh, không tính sĩ số, không thấy/bị thấy bởi ai.
+   CỜ NÀY là điểm chốt DUY NHẤT của trang: CA_LOP luôn để RỖNG cho phiên này (kéo theo
+   sĩ số/leaderboard/pop-up cả lớp/STAGE-chờ-cả-lớp tự tắt vì mọi phép đó đọc CA_LOP),
+   chat/menu rút gọn, thẻ SPEAKING CHECK ẩn hẳn. Xem `js/chung.js` (`emDacBietTheoMa`). */
+var LA_DAC_BIET = false;
 function tenTat(t){ return TAT[t] || t; }
 
 var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
@@ -1807,6 +1813,33 @@ function bacMau(pt){
   return 'm-do';
 }
 
+/* ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT không có sĩ số để so ("N/SI_SO"
+   không có nghĩa gì với một mình phụ huynh), nên thanh tiến trình đổi sang ĐIỂM CỦA
+   RIÊNG NGƯỜI ĐÓ / điểm tối đa của act — đọc lại đúng DIEM_ACT/CHUAN_ACT đã có sẵn
+   (donDiem() đã tải cho MỌI em, ở đây chỉ lọc lấy đúng tên TOI). */
+function diemRiengCuaToi(ma){
+  var ds = DIEM_ACT[ma] || [];
+  var minh = null;
+  for (var i = 0; i < ds.length; i++){
+    if (A.khoaTen(ds[i].ten) === A.khoaTen(TOI)) { minh = ds[i]; break; }
+  }
+  var chuan = CHUAN_ACT[ma];
+  var toiDa = (chuan && !chuan.tru) ? chuan.dinh : 0;
+  return { diem: minh ? Math.round(minh.diem) : 0, toiDa: toiDa, daLam: !!minh };
+}
+function dongDiemDacBiet(x){
+  var r = diemRiengCuaToi(x.ma);
+  var pt = r.toiDa > 0 ? Math.min(100, Math.round(r.diem / r.toiDa * 100)) : (r.daLam ? 100 : 0);
+  var m = bacMau(pt);
+  return '<span class="td-dong">' +
+    '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' +
+      A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
+    '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i></span>' +
+    '<span class="td-so ' + m + '">' + r.diem + '/' + (r.toiDa || '—') + '</span>' +
+    '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
+  '</span>';
+}
+
 function tinhHinhThe(b, hetGio){
   var ds = b.bai || [];
   if (!ds.length) {
@@ -1833,7 +1866,7 @@ function changCuaThe(b){
     chuan: function(ma){ return CHUAN_ACT[ma]; }
   };
   return A.xetChang(b.goc, lay, CA_LOP, {
-    boQua: A.boQuaCua(b.goc), moChang: A.moChangCua(b.goc)
+    boQua: A.boQuaCua(b.goc), moChang: A.moChangCua(b.goc), moHet: LA_DAC_BIET
   });
 }
 
@@ -1863,6 +1896,8 @@ function veDiemStage(b, batDo){
 
   var thanh = c.acts.map(function(a){
     var x = mas[a.ma] || { ten: a.ten, ma: a.ma, xong: 0 };
+    // v1.82.0 — HS đặc biệt: điểm riêng / điểm tối đa, xem khai báo ở đầu file.
+    if (LA_DAC_BIET) return dongDiemDacBiet(x);
     var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
@@ -1900,6 +1935,12 @@ function veDiemStage(b, batDo){
 
 function veDiem(b, batDo, hienThieu){
   if (b.stage && b.goc) return veDiemStage(b, batDo);
+  if (LA_DAC_BIET) {
+    var thanhDb = (b.bai || []).map(dongDiemDacBiet).join('');
+    var soBaiDb = (b.bai || []).length;
+    return '<span class="the-diem' + (soBaiDb ? (' n' + soBaiDb) : ' chi-tay') + '">'
+      + thanhDb + '</span>';
+  }
   var thanh = (b.bai || []).map(function(x){
     var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
@@ -3127,11 +3168,20 @@ A.napDuLieu().then(function(dl){
      Tra dữ liệu thì dùng LOP_DL, in ra màn hình thì dùng LOP. */
   TOI = EM.ten; MA_HS = EM.ma;
   LOP_DL = EM.lop;
+  LA_DAC_BIET = !!EM.dacBiet;
+  // v1.82.0 — sidebar RÚT GỌN (chỉ còn "Đăng xuất"): dựng LẠI menu ngay khi biết cờ
+  // này — lượt dựng đầu (top-level, trước khi EM sẵn sàng) luôn là menu ĐẦY ĐỦ.
+  if (LA_DAC_BIET) veMenuChinh = AWVi.dungMenu({
+    hop: $('#dsMenu'), oSao: document.querySelector('.vi-to'), donGian: true,
+    layCtx: function(){ return {}; },
+  });
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
   LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
   LOP_SLUG = avSlugLop(LOP);
-  CA_LOP = ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
+  // v1.82.0 — HS đặc biệt: CA_LOP RỖNG dù lớp có bao nhiêu em thật — đây là cờ trung
+  // tâm mà leaderboard/pop-up cả lớp/STAGE-chờ-cả-lớp đều đọc, xem khai báo LA_DAC_BIET.
+  CA_LOP = LA_DAC_BIET ? [] : ((l && l.hocSinh) || []).map(function(h){ return h.ten; });
   SI_SO = CA_LOP.length;
   TAT = bangVietTat(CA_LOP);
   /* ⭐ v1.55.0 — ảnh đại diện MỚI NHẤT từ kho `lessonAvatar`, đè lên lớp nền là bộ ảnh
@@ -3146,6 +3196,12 @@ A.napDuLieu().then(function(dl){
 
   /* Bài của lớp: app đẩy bài mới lên ĐẦU mảng nên thứ tự này đã đúng. */
   var cacThe = A.baiCuaLop(dl, LOP_DL).map(theTuBai);
+  if (LA_DAC_BIET) {
+    // v1.82.0 — thẻ SPEAKING CHECK ẩn hẳn (cả lớp chấm chéo, không phải chỗ của phụ
+    // huynh) + HẠN NỘP không áp dụng (thầy chốt: phụ huynh không theo kịp giờ lớp).
+    cacThe = cacThe.filter(function(t){ return t.loai !== 'spcheck'; });
+    cacThe.forEach(function(t){ t.conHan = true; t.khoa = false; t.dangHoc = false; });
+  }
   BAI_SP = null;
   for (var i = 0; i < cacThe.length; i++) if (cacThe[i].loai === 'spcheck') { BAI_SP = cacThe[i]; break; }
 
@@ -3177,9 +3233,15 @@ A.napDuLieu().then(function(dl){
       baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.');
     }
     /* Ngầm hỏi bộ não xem buổi speaking này ai đã nộp — KHÔNG chặn gì, thẻ đã hiện rồi. */
-    capNhatTheSpeaking();
+    if (!LA_DAC_BIET) capNhatTheSpeaking();   // v1.82.0 — thẻ SP đã ẩn, khỏi hỏi làm gì
     choTruoc = chupCho();    /* ảnh chụp đầu, để lần đổi bố cục đầu có chỗ chạy từ đó */
-    noiChat();               /* mở phòng trò chuyện của lớp (v1.11.0) */
+    // v1.82.0 — HS đặc biệt: KHÔNG mở phòng chat của lớp (thầy chốt "không có ô chat").
+    if (LA_DAC_BIET) {
+      var chatCot = document.querySelector('.chat-cot');
+      if (chatCot) chatCot.hidden = true;
+    } else {
+      noiChat();             /* mở phòng trò chuyện của lớp (v1.11.0) */
+    }
   });
 })['catch'](function(e){
   dangDocDiem = false;

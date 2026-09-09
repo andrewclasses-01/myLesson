@@ -727,12 +727,12 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=66"></script>
-<script src="js/chung.js?v=39"></script>
+<script src="js/chung.js?v=40"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới. -->
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=2"></script>
+<script src="js/vi-qua.js?v=3"></script>
 <script>
 /* ============================================================
    TRANG SPEAKING SLIDE — bản THẬT (web v1.9.0, 23/08/2026).
@@ -1346,6 +1346,13 @@ function veTrangLop(them){
 A.napDuLieu().then(function(dl){
   EM = A.batBuocDangNhap(dl);
   if (!EM) return;
+  /* ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT không có mặt ở trang này:
+     bài Speaking Check là cả lớp chấm chéo cho nhau (ai đã nộp/chưa nộp, ghi âm của
+     BẠN KHÁC) — đúng thứ "không xuất hiện trên dữ liệu của người khác" thầy chốt.
+     Đá thẳng về lớp, không cần đợi nạp gì thêm. */
+  if (EM.dacBiet) { location.href = 'lop.html' + (function(){
+    var q = A.giuXemNhuQuery(EM, EM.ma, EM.lop); return q ? '?' + q : '';
+  })(); return; }
   TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop;
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;

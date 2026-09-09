@@ -106,6 +106,15 @@
     location.href = A.laKhoa(noi.lop) ? 'khoa.html' : 'lop.html';
   }
 
+  // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (myStudent v2.71.0, thầy chốt 09/09/2026): phụ
+  // huynh vào bằng mã riêng, luôn ĐÚNG MỘT nơi (không có màn chọn như em học 2 lớp) —
+  // xem `A.emDacBietTheoMa` trong `chung.js`. Cờ `dacBiet:true` lưu vào bộ nhớ để
+  // `lop.html`/`bai.html` biết ẩn chat/leaderboard/sĩ số — xem `A.emDangHoc`.
+  function diVaoDacBiet(noi) {
+    A.luuEm({ lop: noi.lop.maLop, ten: noi.em.ten, ma: A.chuanMa(noi.em.ma), dacBiet: true });
+    location.href = 'lop.html';
+  }
+
   // Đang mở màn chọn thì khoá lại — hai lượt dựng chồng nhau là nút nhân đôi.
   var dangChon = false;
 
@@ -173,6 +182,11 @@
     if (noi.length > 1) { moChon(noi); return; }
     if (noi.length === 1) { diVao(noi[0]); return; }
 
+    // v1.82.0 — HỌC SINH ĐẶC BIỆT: xét SAU mã học sinh thường (không đụng mã lớp
+    // thường/khóa nào — myStudent đã đảm bảo không trùng), TRƯỚC mã quản lý của thầy.
+    var db = A.emDacBietTheoMa(DL, go);
+    if (db) { diVaoDacBiet(db); return; }
+
     var nut = $('#btnLogin');
     nut.disabled = true;
     A.laMaQuanLy(go).then(function (dung) {
@@ -210,6 +224,13 @@
       // lần mở trang", và mở andrewclasses.com là ra ngay màn chọn (khỏi gõ mã lại).
       var chonSau = null;
       var emCu = (!epGo && location.hash !== '#/info') ? A.emDangHoc(dl) : null;
+      // v1.82.0 — HỌC SINH ĐẶC BIỆT luôn ĐÚNG MỘT nơi (`lop.html`, không bao giờ
+      // `khoa.html`) — bỏ qua thẳng phép "nhiều nơi" bên dưới, `moiNoiTheoMa` với mã
+      // đặc biệt luôn trả mảng RỖNG nên đi tiếp là `noiCu[0]` ném lỗi (mot undefined).
+      if (emCu && emCu.dacBiet) {
+        location.replace('lop.html');
+        return;
+      }
       if (emCu) {
         var noiCu = A.moiNoiTheoMa(dl, emCu.ma);
         if (noiCu.length > 1) {

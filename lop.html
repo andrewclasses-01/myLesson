@@ -1526,7 +1526,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=66"></script>
-<script src="js/chung.js?v=40"></script>
+<script src="js/chung.js?v=41"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -3134,8 +3134,9 @@ function dienDanhTinh(){
      mà khung chat đang dùng. `A.gaAvatar` chỉ thay chữ + ảnh, giữ nguyên huy
      hiệu số sao và chấm đỏ bên trong (⛔ đừng quay lại `textContent = …`:
      nó xoá sạch thẻ con). Em nào chưa có ảnh thì tự lùi về chữ tắt. */
-  A.gaAvatar($('#nutMenu'), LOP, TOI, chuTat);
-  A.gaAvatar(document.querySelector('.side-head .av'), LOP, TOI, chuTat);
+  // v1.83.0 — HS đặc biệt: KHÔNG tra ảnh (xem chú thích ⭐⭐ ở gaAvatar/js/chung.js).
+  A.gaAvatar($('#nutMenu'), LOP, TOI, chuTat, LA_DAC_BIET);
+  A.gaAvatar(document.querySelector('.side-head .av'), LOP, TOI, chuTat, LA_DAC_BIET);
 
   var tenTren = document.querySelector('.who .ten');
   if (tenTren) tenTren.textContent = TOI;

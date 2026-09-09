@@ -1192,14 +1192,29 @@
   // chấm đỏ tin mới). ⛔ Đừng dùng `el.textContent = …` cho mấy ô này: nó
   // xoá sạch thẻ con — đúng cái bẫy làm mất huy hiệu sao ở bản nháp đầu.
   // Chưa có ảnh cho em nào thì thẻ <img> tự gỡ mình ⇒ hiện chữ tắt như cũ.
-  function gaAvatar(el, lop, ten, chuTat) {
+  function gaAvatar(el, lop, ten, chuTat, khongAnh) {
     if (!el) return;
-    // ⭐ v1.58.0 — tin nhắn cũ còn mang TÊN GỌI NGẮN của người gửi; tra tên đầy đủ theo
-    // danh sách lớp đang theo dõi (`batAvatarKho` đã nạp) trước khi dựng URL lớp nền.
-    if (avDs && avDs.length && avSlugLop(avLop) === avSlugLop(lop)) ten = avTenDayDu(ten, avDs);
     Array.prototype.slice.call(el.childNodes).forEach(function (n) {
       if (n.nodeType === 3) el.removeChild(n);
     });
+    // ⭐⭐ v1.83.0 (thầy chốt 09/09/2026, ca thật) — HỌC SINH ĐẶC BIỆT: không có ảnh,
+    // và việc tra "tên gọi ngắn" (`avTenDayDu` ngay dưới, VÀ `deAvatarKho` chạy NGẦM
+    // theo dõi cả trang) có thể khớp NHẦM sang bạn cùng lớp trùng một phần tên — đo
+    // được thật: "NGUYỄN HẢI" (tên phụ huynh tự gõ) bị khớp thành "NGUYỄN THẾ HẢI"
+    // (bạn cùng lớp), hiện ảnh của bạn đó lên. `khongAnh=true` bỏ HẲN mọi tra cứu:
+    // không `avUrl()`/`avTenDayDu()`, và QUAN TRỌNG NHẤT — KHÔNG đặt `data-av-em`/
+    // `data-av-lop` (thiếu hai thuộc tính này thì `deAvatarKho()` không bao giờ chọn
+    // trúng ô này để đè ẢNH SỐNG lên sau, dù nó quét lại toàn trang liên tục). Chỉ
+    // còn icon tròn + chữ viết tắt, đúng như em chưa có ảnh.
+    if (khongAnh) {
+      var imgCu = el.querySelector('img.av-anh');
+      if (imgCu) imgCu.remove();
+      if (chuTat) el.insertBefore(document.createTextNode(chuTat), el.firstChild);
+      return;
+    }
+    // ⭐ v1.58.0 — tin nhắn cũ còn mang TÊN GỌI NGẮN của người gửi; tra tên đầy đủ theo
+    // danh sách lớp đang theo dõi (`batAvatarKho` đã nạp) trước khi dựng URL lớp nền.
+    if (avDs && avDs.length && avSlugLop(avLop) === avSlugLop(lop)) ten = avTenDayDu(ten, avDs);
     var img = el.querySelector('img.av-anh');
     if (!img) {
       img = document.createElement('img');

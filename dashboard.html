@@ -53,6 +53,21 @@
 <!-- ============================================================
      TRANG QUẢN LÝ CỦA THẦY — web v1.47.0 (02/09/2026)
 
+     ⭐⭐ v1.87.0 (09/09/2026) — VÁ LỖI ĐỒNG HỒ ĐẾM NGƯỢC CỦA THẺ STAGE: thầy báo
+       ô hạn ghi "Hạn chặng 1: 00:00 · 11/9" mà số đếm ngược lại chạy 89 tiếng
+       (đúng bằng khoảng cách tới HẠN CUỐI của cả bài, chặng 3) thay vì ~27 tiếng
+       (đúng khoảng cách tới hạn chặng 1). Gốc bệnh: `veHanCard()` (v1.77.0) chỉ
+       vá CHỮ (`chu`) sang hạn của chặng đang chạy, quên vá luôn `moc` — biến vẫn
+       giữ nguyên `A.mocHan(b)` (hạn CUỐI cả bài) truyền từ `veTheCard()`, nên
+       `data-moc` của đồng hồ `.dhho` tích tắc sai mốc trong khi chữ bên cạnh nói
+       đúng. `lop.html`/`bai.html` (trang lớp + trang bài) đã có sẵn dòng
+       `moc = c.moc` này từ v1.85.0, chỉ riêng dashboard.html (BẢN CHÉP của
+       `veHan()` bên lop.html) là sót. Vá: thêm `if (!st.du) moc = c.moc;` ngay
+       trong nhánh STAGE của `veHanCard()`. Đã rà toàn bộ các nơi khác vẽ đồng hồ
+       đếm ngược của thẻ STAGE (`bai.html`, `lop.html`, `khoa.html`, khối
+       "OPEN IN" chờ mở chặng) — không thấy chỗ nào khác lặp lỗi này; `khoa.html`
+       (trang KHÓA HỌC) cố ý CHƯA hỗ trợ dạng bài STAGE nên không dính.
+
      ⭐⭐ v1.86.0 (09/09/2026) — MỤC KHO: MỘT NÚT ⚙ + CẢ HÀNG BẤM ĐƯỢC.
        Thầy chốt sau khi xem ảnh chụp kho của A2-B: hàng nhều nút chữ (Ẩn · Tạm khoá ·
        Xoá · Xoá hẳn) gộp hết vào MỘT nút ⚙ mở menu `#khoMenu`, và thêm mục ĐỔI HẠN NỘP
@@ -1877,7 +1892,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=67"></script>
+<script src="config.js?v=68"></script>
 <script src="js/chung.js?v=42"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -2446,6 +2461,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var c = tThe.chang[A.changHien(tThe.chang)];
       if (c && c.so && c.moc != null) {
         chu = 'chặng ' + c.so + ': ' + chuHanChangDb(c.han);
+        // ⭐⭐ v1.87.0 (09/09/2026) — VÁ LỖI: chữ đã đổi sang hạn CHẶNG ĐANG CHẠY
+        // nhưng đồng hồ đếm ngược (`data-moc` dưới) quên đổi theo, vẫn tích tắc
+        // tới hạn CUỐI CỦA CẢ BÀI (`moc` = A.mocHan(b) truyền từ `veTheCard`) ⇒
+        // dashboard hiện "Hạn chặng 1: …" nhưng đếm 89h thay vì đúng ~27h. Vá
+        // đúng theo nếp đã có sẵn ở `lop.html veHan()` (`if (!xongHet) moc = c.moc`).
+        if (!st.du) moc = c.moc;
         rong = ' rong';
       }
     }

@@ -302,13 +302,16 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .st-khuc.dang-xem::after{content:''; position:absolute; inset:2px 12px 2px 14px;
   border:1.5px dashed rgba(255,255,255,.75); border-radius:5px; pointer-events:none}
 .st-khuc.xa.dang-xem::after,.st-khuc.cho.dang-xem::after{border-color:rgba(22,35,42,.28)}
+/* ⭐⭐ v1.85.0 — HÀO QUANG NGAY TRÊN NỀN KHÚC, không phải bóng đổ ra ngoài —
+   xem chú thích đầy đủ ở BẢN GỐC `lop.html`. BẢN CHÉP thứ ba (lop.html ·
+   bai.html · dashboard.html), sửa một nơi phải sửa cả ba. */
 @keyframes st-hao-duong{
-  0%,100%{filter:drop-shadow(0 3px 5px rgba(62,123,250,.30))}
-  50%    {filter:drop-shadow(0 7px 12px rgba(62,123,250,.85))}
+  0%,100%{filter:brightness(1) saturate(1)}
+  50%    {filter:brightness(1.45) saturate(1.3)}
 }
 @keyframes st-hao-do{
-  0%,100%{filter:drop-shadow(0 3px 5px rgba(224,87,91,.30))}
-  50%    {filter:drop-shadow(0 7px 12px rgba(224,87,91,.85))}
+  0%,100%{filter:brightness(1) saturate(1)}
+  50%    {filter:brightness(1.4) saturate(1.25)}
 }
 
 /* Thẻ CHỜ của chặng chưa tới lượt: chỉ thông tin, không bìa READY, không bảng. */
@@ -1329,8 +1332,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=66"></script>
-<script src="js/chung.js?v=41"></script>
+<script src="config.js?v=67"></script>
+<script src="js/chung.js?v=42"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
@@ -2826,7 +2829,7 @@ function veCacPhan(){
   document.body.classList.toggle('lop-thieu', thieu);
   var hop = $('#cacPhan');
   hop.innerHTML = '';
-  if (LA_STAGE) { veCacPhanStage(hop); canhLb(); return; }
+  if (LA_STAGE) { veCacPhanStage(hop); veOHan(); canhLb(); return; }
   KHOI.forEach(function(k, i){ hop.appendChild(veKhoi(k, i + 1)); });
   canhLb();
 }
@@ -3077,13 +3080,40 @@ function veDauTrang(){
   var dbMa = document.querySelector('.dau-bai .db-ma');
   if (dbMa) dbMa.textContent = A.maLesson(BAI);
 
-  /* Ô hạn: chữ ở dòng trên (đồng hồ do veDongHo lo). */
+  /* Ô hạn: chữ ở dòng trên (đồng hồ do veDongHo lo). ⭐ v1.85.0 — tách ra
+     `veOHan()` (dưới) để gọi lại được sau khi CHANG sẵn sàng, xem chú thích ở đó. */
+  veOHan();
+  document.title = A.tenBai(BAI) + ' · Lớp ' + LOP_HIEN;
+}
+
+/* ⭐⭐ v1.85.0 (thầy chốt 09/09/2026) — Ô HẠN + ĐỒNG HỒ nói về CHẶNG ĐANG XEM
+   với bài STAGE, đúng nếp `veHan()` bên trang lớp (`lop.html`) — trước đây
+   trang này luôn hiện hạn CHUNG của cả bài (`A.chuHan(BAI)`), sai với dạng
+   STAGE vì mỗi chặng có một hạn riêng. Gọi lại MỖI KHI `CHANG`/`CHANG_XEM` đổi
+   (đọc điểm xong lần đầu, chặng mới mở, em bấm xem chặng khác — xem `veCacPhan`)
+   — không thì ô hạn đứng yên dù dữ liệu bên dưới đã sang chặng khác.
+   ⛔ Chặng KHÔNG có hạn riêng (`so` = 0 — act chưa xếp chặng) thì GIỮ hạn
+   chung như cũ: không phải bài STAGE nào cũng đã cài chặng xong. */
+function veOHan(){
+  var chu = A.chuHan(BAI), moc = A.mocHan(BAI);
+  if (LA_STAGE && CHANG && CHANG[CHANG_XEM]) {
+    var c = CHANG[CHANG_XEM];
+    if (c && c.so && c.moc != null) {
+      chu = 'chặng ' + c.so + ': ' + A.chuHanChang(c.han);
+      moc = c.moc;
+    }
+  }
   var hanChu = document.querySelector('#oHan .han-dong');
   if (hanChu) {
-    var chu = A.chuHan(BAI);
-    datChu(hanChu, chu ? (' Hạn ' + chu) : ' Chưa đặt hạn');
+    Array.prototype.slice.call(hanChu.childNodes).forEach(function(n){
+      if (n.nodeType === 3) hanChu.removeChild(n);
+    });
+    hanChu.insertBefore(document.createTextNode(chu ? (' Hạn ' + chu) : ' Chưa đặt hạn'), hanChu.firstChild);
   }
-  document.title = A.tenBai(BAI) + ' · Lớp ' + LOP_HIEN;
+  HAN_MOC = moc;
+  tinhConLai();
+  dangChay = (HAN_MOC != null);
+  veDongHo();
 }
 
 /* Về trang lớp — giữ nguyên chế độ xem (như một em, hoặc thẳng là thầy). */

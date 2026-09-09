@@ -525,13 +525,19 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   background:linear-gradient(135deg,#E0575B,#EC7276); color:#fff;
   animation:st-hao-do 3.4s ease-in-out infinite}
 .st-khuc .kc-dh{font-variant-numeric:tabular-nums}
+/* ⭐⭐ v1.85.0 (thầy chốt 09/09/2026) — HÀO QUANG NGAY TRÊN NỀN KHÚC, không
+   phải bóng đổ RA NGOÀI nữa. `filter:drop-shadow` cũ bị khúc liền kề che gần
+   hết (các khúc `.st-khuc` xếp SÁT NHAU không có khe hở) — khúc ĐANG CHẠY nằm
+   kẹp giữa hai khúc khác thì gần như không thấy nháy. Đổi sang nhấp nháy SÁNG
+   TỐI ngay trên chính nền gradient của khúc (`brightness`/`saturate`) — luôn
+   thấy được dù khúc đứng ở đâu trong dãy, không phụ thuộc khúc bên cạnh. */
 @keyframes st-hao-duong{
-  0%,100%{filter:drop-shadow(0 3px 5px rgba(62,123,250,.30))}
-  50%    {filter:drop-shadow(0 7px 12px rgba(62,123,250,.85))}
+  0%,100%{filter:brightness(1) saturate(1)}
+  50%    {filter:brightness(1.45) saturate(1.3)}
 }
 @keyframes st-hao-do{
-  0%,100%{filter:drop-shadow(0 3px 5px rgba(224,87,91,.30))}
-  50%    {filter:drop-shadow(0 7px 12px rgba(224,87,91,.85))}
+  0%,100%{filter:brightness(1) saturate(1)}
+  50%    {filter:brightness(1.4) saturate(1.25)}
 }
 @media (prefers-reduced-motion: reduce){
   .st-khuc.dang,.st-khuc.ket,.ds-thieu .ten.cham{animation:none}
@@ -1525,8 +1531,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=66"></script>
-<script src="js/chung.js?v=41"></script>
+<script src="config.js?v=67"></script>
+<script src="js/chung.js?v=42"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -2611,11 +2617,8 @@ function tinhHinhGio(b){
   return 'thuong';
 }
 
-/* "2026-09-13T23:59" -> "23:59 • 13/9" */
-function chuHanChang(han){
-  var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
-  return m ? (m[4] + ':' + m[5] + ' • ' + (+m[3]) + '/' + (+m[2])) : '';
-}
+/* ⭐ v1.85.0 — chuyển vào `A.chuHanChang` (js/chung.js) để `bai.html` dùng
+   CHUNG một bản thay vì chép lần thứ hai — xem chú thích ở đó. */
 
 function veHan(b, tt){
   var xongHet = (tt === 'xong');
@@ -2628,7 +2631,7 @@ function veHan(b, tt){
   if (b.stage && b._chang) {
     var i = A.changHien(b._chang), c = b._chang[i];
     if (c && c.so && c.moc != null) {
-      chu = 'Hạn chặng ' + c.so + ': ' + chuHanChang(c.han);
+      chu = 'Hạn chặng ' + c.so + ': ' + A.chuHanChang(c.han);
       if (!xongHet) moc = c.moc;
       rong = ' rong';
     }

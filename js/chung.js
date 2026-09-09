@@ -1148,6 +1148,16 @@
     return hai(d.getHours()) + ':' + hai(d.getMinutes()) + ' · ' + ngay;
   }
 
+  // ⭐⭐ v1.85.0 (thầy chốt 09/09/2026) — CHỮ HẠN CHẶNG, dùng chung cho thẻ
+  // STAGE ở trang lớp VÀ ô hạn ở đầu trang bài (trước đây trang bài chỉ có
+  // MỘT bản chép ở `lop.html`, trang bài hiện hạn CHUNG CHUNG của cả bài —
+  // sai với dạng STAGE, nơi mỗi chặng một hạn riêng). "2026-09-13T23:59" ->
+  // "23:59 • 13/9".
+  function chuHanChang(han) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
+    return m ? (m[4] + ':' + m[5] + ' • ' + (+m[3]) + '/' + (+m[2])) : '';
+  }
+
   // Dạng bài -> trang nào mở ra khi bấm vào thẻ.
   function trangCuaBai(b) {
     var d = String(b.dang || '').toUpperCase();
@@ -2401,7 +2411,7 @@
     boQuaCua: boQuaCua, moChangCua: moChangCua, mocActHan: mocActHan,
     datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,
-    mocHan: mocHan, chuHan: chuHan, trangCuaBai: trangCuaBai,
+    mocHan: mocHan, chuHan: chuHan, chuHanChang: chuHanChang, trangCuaBai: trangCuaBai,
     // v1.20.0 — hạn sửa riêng từng thẻ (dashboard ghi, mọi trang đọc)
     hanCua: hanCua, daSuaHan: daSuaHan, datHanSua: datHanSua,
     // v1.35.0 — trạng thái thẻ (ẩn / tạm khoá / xoá mềm) + "còn hạn" dùng chung

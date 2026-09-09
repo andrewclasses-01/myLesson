@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-08 23:53:35",
+  "capNhat": "2026-09-09 20:31:42",
   "bai": {
     "A1C": [
       {
@@ -79,6 +79,45 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_9.9_STAGE_IEL-S15.T3.P4",
+        "tieuDe": "B2B_9.9_STAGE IEL-S15.T3.P4",
+        "tenHien": "B2B_9.9_STAGE IEL-S15.T3.P4",
+        "dang": "STAGE",
+        "ngay": "9.9",
+        "han": "2026-09-13T14:00",
+        "maLesson": "IEL-S15.T3.P4",
+        "taoLuc": "2026-09-09",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "2r4bfr",
+            "mau": "QUIZ",
+            "han": "2026-09-11T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "btf6u7",
+            "mau": "QUIZ",
+            "han": "2026-09-12T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "wcv99r",
+            "mau": "ANAGRAM",
+            "han": "2026-09-13T14:00"
+          }
+        ]
+      },
       {
         "id": "B2B_3.9_SP_CHECK_MOLDY_FOOD",
         "tieuDe": "B2B_3.9_SP CHECK MOLDY FOOD",

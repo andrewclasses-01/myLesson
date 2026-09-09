@@ -1135,7 +1135,8 @@ function batDen(khungGame, nutDen, k){
   document.body.classList.add('co-den');
   khungGame.classList.add('sang');
   nutDen.classList.add('sang');
-  nhanDen.innerHTML = '<b>' + k.ten + '</b><span>' + (k.yeuCau || '') + '</span>';
+  /* ⭐ v1.88.0 — bỏ "yeuCau" ("Video Speaking Requirement"), theo mã lesson. */
+  nhanDen.innerHTML = '<b>' + k.ten + '</b><span>' + (A.maLesson(BAI) || '') + '</span>';
   bayRaGiua(khungGame);
   nhanDen.classList.add('hien');
 }
@@ -1178,7 +1179,8 @@ function veKhoi(k, so){
     '<div class="card-head">' +
       '<span class="step">' + so + '</span>' +
       '<div class="ch-chu"><h2>' + k.ten + '</h2>' +
-        (k.yeuCau ? '<div class="ch-ma">' + k.yeuCau + '</div>' : '') +
+        /* ⭐ v1.88.0 — bỏ "yeuCau", dòng dưới nay là mã lesson. */
+        (A.maLesson(BAI) ? '<div class="ch-ma">' + A.maLesson(BAI) + '</div>' : '') +
       '</div>' +
       '<div class="card-nut">' +
         '<button class="ic-nut den" title="Tắt bớt ánh sáng xung quanh">' + IC_DEN + '</button>' +

@@ -1768,8 +1768,12 @@ function batDen(khungGame, nutDen, k){
   document.body.classList.add('co-den');
   khungGame.classList.add('sang');
   nutDen.classList.add('sang');
-  /* Đặt chữ TRƯỚC rồi mới tính chỗ: có chữ mới đo được nhãn cao bao nhiêu. */
-  nhanDen.innerHTML = '<b>' + k.ten + '</b><span>' + (k.yeuCau || '') + '</span>';
+  /* Đặt chữ TRƯỚC rồi mới tính chỗ: có chữ mới đo được nhãn cao bao nhiêu.
+     ⭐ v1.88.0 — bỏ "100% requirement" (`yeuCau`), theo dòng dưới thật của thẻ. */
+  var dongDuoiDen = [A.maLesson(BAI), k.act || k.mau].filter(function(x){
+    return String(x || '').trim();
+  }).join(' • ');
+  nhanDen.innerHTML = '<b>' + k.ten + '</b><span>' + dongDuoiDen + '</span>';
   bayRaGiua(khungGame);
   nhanDen.classList.add('hien');
 }
@@ -2178,7 +2182,7 @@ function veKhoi(k, so){
       '<div class="card-head">' +
         '<span class="step">' + so + '</span>' +
         '<div class="ch-chu"><h2>' + chuAnToan(k.ten) + '</h2>' +
-          (k.yeuCau ? '<div class="ch-ma">' + chuAnToan(k.yeuCau) + '</div>' : '') +
+          (k.maNghe ? '<div class="ch-ma">' + chuAnToan(k.maNghe) + '</div>' : '') +
         '</div>' +
         '<div class="card-nut co-td">' +
           '<button class="nut-tudien" title="Tra từ điển">' + IC_SACH +
@@ -2194,10 +2198,15 @@ function veKhoi(k, so){
   /* Đầu thẻ: tên act ở dòng trên, mã lesson xuống dòng dưới (đợt 5).
      ⭐ v1.12.0 (thầy chốt 24/08/2026) — khối có `act` (tên act AWord đã chọn
      trong myLesson, vd ENG1) thì dòng dưới tiêu đề đổi thành
-     "LSA2-S2.T1.P3-4-5 • ENG1"; khối cũ không có `act` giữ nếp cũ (yeuCau). */
-  var dongDuoi = k.act
-    ? A.maLesson(BAI) + ' • ' + k.act
-    : (k.yeuCau || '');
+     "LSA2-S2.T1.P3-4-5 • ENG1".
+     ⭐ v1.88.0 (thầy chốt 09/09/2026) — BỎ HẲN chữ "100% requirement" (`yeuCau`)
+     khỏi MỌI dạng bài: khối chưa có `act` (thầy chưa gán bộ nghĩa/tên act) thì
+     lùi về `mã lesson • template` (k.mau, giống chữ trên bìa READY, xem
+     `chuBia()`); còn thiếu cả hai thì bỏ hẳn dòng dưới, KHÔNG còn lùi về
+     `yeuCau` nữa. */
+  var dongDuoi = [A.maLesson(BAI), k.act || k.mau].filter(function(x){
+    return String(x || '').trim();
+  }).join(' • ');
   var dau =
     '<div class="card-head">' +
       '<span class="step">' + so + '</span>' +

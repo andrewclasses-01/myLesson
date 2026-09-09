@@ -53,6 +53,23 @@
 <!-- ============================================================
      TRANG QUẢN LÝ CỦA THẦY — web v1.47.0 (02/09/2026)
 
+     ⭐⭐ v1.86.0 (09/09/2026) — MỤC KHO: MỘT NÚT ⚙ + CẢ HÀNG BẤM ĐƯỢC.
+       Thầy chốt sau khi xem ảnh chụp kho của A2-B: hàng nhều nút chữ (Ẩn · Tạm khoá ·
+       Xoá · Xoá hẳn) gộp hết vào MỘT nút ⚙ mở menu `#khoMenu`, và thêm mục ĐỔI HẠN NỘP
+       để kéo một thẻ cũ về lại dashboard + trang của lớp.
+       · `KHO_NUT` ĐÃ GỠ, thay bằng `KHO_MUC` (mục menu theo trạng thái thẻ) + `moKhoMenu`.
+         Mọi mục vẫn mang `data-kho-lam` ⇒ đi ĐÚNG tay bắt cũ ⇒ MỘT đường ghi duy nhất.
+       · BẤM VÀO HÀNG (`data-kho-mo`) = mở KẾT QUẢ của thẻ, y hệt bấm thân thẻ ngoài
+         dashboard: SP CHECK → `sp-chitiet.html`, còn lại → hộp xem bài.
+       · ⛔ `moBaiModal` và `moHanPop` đổi từ cửa 'ql' sang **'tatca'**: cửa 'ql' BỎ thẻ đã
+         xoá, mà kho thì bấm thẳng vào hàng "Đã xoá" — để nguyên là hai hàm lặng lẽ
+         `return`, không một tiếng động (hỏng IM LẶNG).
+       · ⛔ ĐẶT HẠN KHÔNG ĐỦ để thẻ ẨN/KHOÁ/ĐÃ XOÁ về lại với lớp (xem `A.conHan`) —
+         `moHanPop` nói thật điều đó ngay trong hộp; còn thẻ SP CHECK ĐÃ XOÁ thì báo
+         toạt thay vì mở `sp-chitiet.html` (trang đó đọc cửa 'ql', sẽ ra trang trắng).
+       · `#khoMenu` vào chung CỤM với `#rcMenu`/`#xnPop`/`#hanPop` ở tay `pointerdown`
+         (bấm từ menu sang hộp xác nhận mà menu tắt là hỏng nhịp bấm).
+
      ⭐⭐ v1.47.0 — BỐN VIỆC THẦY CHỐT SAU KHI XEM ẢNH CHỤP THẺ CỦA A1-B:
        · `canhNhanO()` ĐO THEO TỪNG THẺ (`--cot-ten` đặt lên `.the-diem`, không
          còn `<html>`); thẻ toàn nhãn lạ (chỉ "QUIZ") nay cũng được co cột thay
@@ -419,9 +436,14 @@ a{color:inherit}
 .the.khoa .play svg{width:20px; height:20px}
 .dhho.khoa{font-size:13.5px; letter-spacing:.7px; color:#7B8C89}
 /* Mục KHO (sidebar): bài đã xoá của lớp đang chọn + nút Khôi phục. */
-.kho-hang{display:flex; flex-direction:column; align-items:stretch; gap:8px;
-  padding:9px 11px; margin-bottom:7px;
-  border:1px solid var(--vien); border-radius:11px; background:#FAFCFC}
+/* ⭐ v1.86.0 — CẢ HÀNG BẤM ĐƯỢC (mở kết quả của thẻ, y hệt bấm thân thẻ ngoài
+   dashboard) + MỘT nút ⚙ duy nhất ở góc phải mở `#khoMenu`. Vì thế trở lại xếp
+   MQT HÀNG NGANG (bản cũ xếp hai tầng để chứa tới 4 nút chữ). */
+.kho-hang{display:flex; flex-direction:row; align-items:center; gap:9px;
+  padding:9px 11px; margin-bottom:7px; cursor:pointer;
+  border:1px solid var(--vien); border-radius:11px; background:#FAFCFC;
+  transition:border-color .16s var(--em), background .16s var(--em)}
+.kho-hang:hover{border-color:var(--xanh); background:var(--xanh-nhat)}
 .kho-hang .kt{flex:1; min-width:0}
 .kho-hang .kt b{display:block; font:800 12px/1.3 var(--font); overflow:hidden;
   text-overflow:ellipsis; white-space:nowrap}
@@ -430,9 +452,16 @@ a{color:inherit}
    Xoá · Xoá hẳn). Panel sidebar chỉ rộng ~250px: để nút NẰM CẠNH chữ thì tên bài
    bị cắt còn dăm chữ. Nay xếp hai tầng — tên + nhãn ở trên, hàng nút căn phải ở
    dưới — nút tự xuống dòng khi chật. */
-.kho-hang .kho-nut{flex:none; display:flex; flex-flow:row wrap; justify-content:flex-end;
-  gap:5px}
-.kho-hang .kho-nut .nut{justify-content:center; white-space:nowrap}
+/* ⭐ v1.86.0 — `.kho-nut` (hàng tới 4 nút chữ) ĐÃ GỠ, thay bằng nút ⚙ này.
+   ⛔ Nó nằm TRONG một hàng đã bấm được: tay bắt phải kiểm `[data-kho-menu]`
+   TRƯỚC `[data-kho-mo]`, không thì bấm ⚙ lại mở luôn hộp kết quả. */
+.kho-ic{flex:none; width:28px; height:28px; display:grid; place-items:center;
+  border:1px solid var(--vien-dam); border-radius:9px; background:#fff;
+  color:var(--nhat); cursor:pointer;
+  transition:border-color .16s var(--em), color .16s var(--em), background .16s var(--em)}
+.kho-ic:hover{border-color:var(--xanh); color:var(--xanh); background:var(--xanh-nhat)}
+.kho-ic svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.1;
+  stroke-linecap:round; stroke-linejoin:round}
 .kho-het{margin-top:10px; display:flex; justify-content:flex-end}
 /* ⭐ v1.60.0 — KHO nay giữ CẢ BÀI CŨ, không riêng bài đã xoá:
    · `.kho-loc`  hàng nút lọc theo trạng thái, có số đếm ngay trong nút;
@@ -1689,6 +1718,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     <div id="sbMucKho" hidden>
       <p class="phu" id="khoPhu" style="margin:0 0 8px"></p>
       <p class="sb-note" style="margin:0 0 11px">Mọi bài đã giao cho lớp này, mới nhất trên đầu.
+        <!-- ⭐ v1.86.0 -->
+        Bấm <b>vào hàng</b> để mở kết quả của thẻ; bấm <b>⚙</b> để đổi hạn nộp, ẩn,
+        tạm khoá hay xoá. Đặt <b>hạn mới</b> là thẻ quay lại dashboard và trang của lớp.<br>
         <b>Ẩn</b> · <b>Tạm khoá</b> · <b>Xoá</b> đều lấy lại được — dữ liệu bài và điểm AWord
         luôn còn nguyên.<br>
         <!-- ⭐ v1.56.0 -->
@@ -1737,6 +1769,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   <div class="chia"></div>
   <button type="button" class="nguy" data-rc="xoa" id="rcXoa"></button>
 </div>
+
+<!-- ⭐ v1.86.0 — MENU ⚙ CỦA MỘT HÀNG TRONG MỤC KHO. Cùng khuôn `.rc-menu`,
+     nhưng RUỘT DỰNG HỤT mỗi lần mở (xem `moKhoMenu`) vì số mục đổi theo trạng
+     thái thẻ: bài đã xoá có "Khôi phục"/"Xoá vĩnh viễn", bài đang giao thì không.
+     ⛔ Mọi mục vẫn mang `data-kho-lam` để đi ĐÚNG tay bắt cũ — MỘT đường ghi duy nhất. -->
+<div class="rc-menu" id="khoMenu"></div>
 
 <!-- ⭐ v1.36.0 — HỘP XÁC NHẬN dùng chung cho MỌI hành động của menu ⚙ (ẩn ·
      hiện lại · tạm khoá · mở khoá · xoá · đặt hạn · về hạn mặc định · khôi
@@ -3571,15 +3609,25 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // một VÍ DỤ (không đụng AWord/điểm thật, an toàn tuyệt đối).
   var BM_ID = null;
   var VI_DU_DAP = ['go', 'goes', 'going'];
+  // ⛔ v1.86.0 — CỬA 'tatca', KHÔNG phải 'ql': mục KHO nay bấm thẳng vào hàng để mở
+  // hộp này, mà cửa 'ql' BỎ thẻ đã xoá ⇒ bấm hàng "Đã xoá" thì hàm lặng lẽ `return`,
+  // không một tiếng động (đúng kiểu lỗi im lặng đã cắn nhiều lần). Cửa 'tatca' chỉ
+  // dashboard được dùng — xem chú thích `baiCuaLop` trong js/chung.js.
   function moBaiModal(id) {
-    var ds = A.baiCuaLop(DL, LOP_CHON, 'ql');
+    var ds = A.baiCuaLop(DL, LOP_CHON, 'tatca');
     var b = null;
     for (var i = 0; i < ds.length; i++) if (ds[i].id === id) { b = ds[i]; break; }
     if (!b) return;
     BM_ID = id;
     var t = tinhBai(b, LOP_CHON);
+    // ⭐ v1.86.0 — thẻ KHÔNG bình thường thì đeo nhãn ngay trong hộp: mở từ mục KHO
+    // là mở được cả thẻ ẩn/tạm khoá/đã xoá, không nói ra thì trông y hệt bài đang giao.
+    var ttBm = A.trangThaiThe(b);
+    var nhanBm = KHO_NHAN[ttBm] || null;
     $('#bmThan').innerHTML =
-      '<div class="bm-baiten">' + A.chuAnToan(A.tenBai(b)) + '</div>' +
+      '<div class="bm-baiten">' + A.chuAnToan(A.tenBai(b)) +
+        (nhanBm ? ' <span class="kho-nhan ' + nhanBm.lop + '">' + nhanBm.chu + '</span>' : '') +
+      '</div>' +
       '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + '</div>' +
       veRuotBai(t) +
       '<button class="nut nho" id="bmXemThu" type="button">👁 Xem thử một ví dụ (không lưu)</button>' +
@@ -4242,14 +4290,25 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       datCanh(pN, neo);
       return;
     }
-    var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
+    // ⛔ v1.86.0 — CỬA 'tatca' (trước là 'ql'): mục KHO nay có mục "Đổi hạn nộp" cho
+    // CẢ thẻ đã xoá, mà cửa 'ql' bỏ thẻ đó ⇒ bấm xong hộp không mở, không báo gì.
+    var b = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === id; })[0];
     if (!b) return;
     HP_ID = id;
     var o = hsTach(b);
     $('#hpTen').textContent = A.tenBai(b);
     $('#hpNgay').value = o.ngay;
     $('#hpGio').value = o.gio;
-    $('#hpGhi').textContent = (A.daSuaHan(b)
+    // ⛔ v1.86.0 — THẺ ẨN / TẠM KHOÁ / ĐÃ XOÁ: đặt hạn mới KHÔNG đủ để thẻ về lại
+    // dashboard và trang lớp (xem `A.conHan`) — phải Hiện lại / Mở khoá / Khôi phục
+    // nữa. Nói thẳng ở đây, kẻo thầy đặt hạn xong tưởng đã giao lại bài mà lớp vẫn
+    // không thấy gì: đúng kiểu hỏng IM LẶNG.
+    var ttHp = A.trangThaiThe(b);
+    var themHp = { an: 'Thẻ đang ẨN — đặt hạn xong vẫn phải bấm ⚙ → “Hiện lại bài” thì lớp mới thấy. ',
+                   khoa: 'Thẻ đang TẠM KHOÁ — đồng hồ dừng cho tới khi bấm ⚙ → “Mở khoá”. ',
+                   xoa: 'Thẻ ĐÃ XOÁ — đặt hạn xong vẫn phải bấm ⚙ → “Khôi phục bài” thì thẻ mới về lớp. '
+                 }[ttHp] || '';
+    $('#hpGhi').textContent = themHp + (A.daSuaHan(b)
       ? 'Thẻ này đang dùng hạn riêng. '
       : 'Thẻ này đang dùng hạn mặc định lúc đẩy bài. ') + 'Bỏ trống giờ thì lấy 23:59.';
     $('#hpBo').hidden = !A.daSuaHan(b);
@@ -4266,6 +4325,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var lam = XN_OK;                 // ⛔ giữ ra biến rồi mới đóng: `dongXnPop`
     dongXnPop();                     //    xoá XN_OK, và `lam()` có thể mở lại hộp.
     dongRcMenu();
+    dongKhoMenu();                   // ⭐ v1.86.0 — menu ⚙ của hàng kho đi cùng nhịp.
     if (lam) lam();
   };
   $('#hpLuu').onclick = function () {
@@ -4809,16 +4869,53 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     khoa: { chu: 'Tạm khoá',  lop: 'tt-khoa' },
     xoa:  { chu: 'Đã xoá',    lop: 'tt-xoa' }
   };
-  // Nút của từng trạng thái: [nhãn, kiểu nút, việc]. `việc` là giá trị `tt` sắp đặt,
-  // riêng 'xvv' và 'xoahan' đi đường riêng (hỏi lời khác hẳn).
-  var KHO_NUT = {
-    bt:   [['Ẩn', '', 'an'], ['Tạm khoá', '', 'khoa'], ['Xoá', 'do', 'xoa']],
-    an:   [['Hiện lại', 'chinh', ''], ['Xoá', 'do', 'xoa']],
-    khoa: [['Mở khoá', 'chinh', ''], ['Xoá', 'do', 'xoa']],
-    xoa:  [['Khôi phục', 'chinh', ''], ['Xoá vĩnh viễn', 'do', 'xvv']]
+  // ⭐ v1.86.0 — MỤC CỦA MENU ⚙, THEO TRẠNG THÁI THẺ (bản cũ `KHO_NUT` vẽ thẳng
+  // 3–4 nút chữ vào từng hàng — thầy chốt 09/09: gộp hết vào MỘT nút).
+  // Mỗi mục: [việc, khoá icon trong `IC_MENU`, chữ, lớp nút] · `['-']` là vạch chia.
+  // `việc` = giá trị `tt` sắp đặt ('' là về bình thường), riêng 'han' mở hộp đổi hạn,
+  // 'xvv' và 'xoahan' đi đường riêng (hỏi lời khác hẳn).
+  // ⛔ Chữ và thứ tự bám theo menu ⚙ của thẻ ngoài dashboard (`moRcMenu`): hai chỗ
+  //    nói khác nhau về cùng một việc là thầy phải đoán chúng có giống nhau không.
+  // ⛔ ĐỔI HẠN CÓ Ở MỌI TRẠNG THÁI, kể cả bài đã ẩn/khoá/xoá — nhưng ở mấy trạng
+  //    thái đó đặt hạn xong thẻ VẪN chưa về với lớp; `moHanPop` nói thật điều đó
+  //    ngay trong hộp, kẻo thầy tưởng đã giao lại bài rồi (hỏng im lặng).
+  var KHO_MUC = {
+    bt:   [['han', 'han', 'Đổi hạn nộp', ''], ['an', 'an', 'Ẩn bài', ''],
+           ['khoa', 'khoa', 'Tạm khoá', ''], ['-'], ['xoa', 'xoa', 'Xoá bài tập', 'nguy']],
+    an:   [['han', 'han', 'Đổi hạn nộp', ''], ['', 'hien', 'Hiện lại bài', ''],
+           ['khoa', 'khoa', 'Tạm khoá', ''], ['-'], ['xoa', 'xoa', 'Xoá bài tập', 'nguy']],
+    khoa: [['han', 'han', 'Đổi hạn nộp', ''], ['an', 'an', 'Ẩn bài', ''],
+           ['', 'mokhoa', 'Mở khoá', ''], ['-'], ['xoa', 'xoa', 'Xoá bài tập', 'nguy']],
+    xoa:  [['han', 'han', 'Đổi hạn nộp', ''], ['', 'hien', 'Khôi phục bài', ''],
+           ['-'], ['xvv', 'xoa', 'Xoá vĩnh viễn', 'nguy']]
   };
   // Trạng thái thẻ → khoá nhóm ('' của `trangThaiThe` là bài bình thường).
   function khoNhom(b) { return A.trangThaiThe(b) || 'bt'; }
+
+  // ⭐ v1.86.0 — MỞ MENU ⚙ CỦA MỘT HÀNG KHO. Ruột dựng lại mỗi lần mở vì số mục
+  // đổi theo trạng thái thẻ (xem `KHO_MUC`). Dùng chung khuôn `.rc-menu` và chung
+  // `datCanh()` với menu ⚙ của thẻ ngoài dashboard.
+  // ⛔ Mọi nút sinh ra ở đây vẫn mang `data-kho-lam`/`data-kho-id` — đi ĐÚNG tay bắt
+  //    cũ (MỘT đường ghi duy nhất, không đẻ đường ghi Firestore thứ hai).
+  function moKhoMenu(btn, id) {
+    var b = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var muc = (KHO_MUC[khoNhom(b)] || KHO_MUC.bt).slice();
+    // Nút XOÁ HẲN chỉ có khi trang chạy trong app myLesson (tab CLASSES): web là trang
+    // tĩnh, tự nó không sửa nổi `data/bai.json` — app mới ghi file và đẩy được.
+    if (window.__mylessonApp) muc = muc.concat([['xoahan', 'xoa', 'Xoá hẳn khỏi dữ liệu', 'nguy']]);
+    var maId = A.chuAnToan(id);
+    var m = $('#khoMenu');
+    m.innerHTML = muc.map(function (n) {
+      if (n[0] === '-') return '<div class="chia"></div>';
+      return '<button type="button"' + (n[3] ? (' class="' + n[3] + '"') : '') +
+        ' data-kho-lam="' + n[0] + '" data-kho-id="' + maId + '">' +
+        (IC_MENU[n[1]] || '') + '<span>' + n[2] + '</span></button>';
+    }).join('');
+    m.classList.add('mo');
+    datCanh(m, btn);
+  }
+  function dongKhoMenu() { $('#khoMenu').classList.remove('mo'); }
 
   function veKho() {
     var hop = $('#khoDs');
@@ -4856,24 +4953,23 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var nhan = KHO_NHAN[nhom];
       var chuHan = A.chuHan(b);
       var id = A.chuAnToan(b.id);
-      var nut = (KHO_NUT[nhom] || []).map(function (n) {
-        return '<button class="nut nho' + (n[1] ? (' ' + n[1]) : '') +
-          '" data-kho-lam="' + n[2] + '" data-kho-id="' + id + '">' + n[0] + '</button>';
-      }).join('');
-      // ⭐ Nút XOÁ HẲN chỉ có khi trang chạy trong app myLesson (tab CLASSES): web là
-      // trang tĩnh, tự nó không sửa nổi `data/bai.json` — app mới ghi file và đẩy được.
-      if (trongApp) {
-        nut += '<button class="nut nho do" data-kho-lam="xoahan" data-kho-id="' + id +
-          '">Xoá hẳn</button>';
-      }
-      return '<div class="kho-hang' + (nhom === 'xoa' ? ' la-xoa' : '') + '">' +
+      // ⭐ v1.86.0 — CẢ HÀNG là một nút mở KẾT QUẢ của thẻ (`data-kho-mo`), còn
+      // MỌI việc quản lý gộp vào đúng MỘT nút ⚙ (`data-kho-menu`) — thầy chốt 09/09.
+      // ⛔ `<div role="button">` chứ không phải `<button>`: bên trong có `<button>` thật
+      //    (nút ⚙), HTML cấm nút lồng trong nút — cùng bài học của `.the[data-id]` ở
+      //    v1.34.0. Bù phím Enter/Space bằng tay `keydown` ở cuối file.
+      return '<div class="kho-hang' + (nhom === 'xoa' ? ' la-xoa' : '') +
+          '" data-kho-mo="' + id + '" role="button" tabindex="0"' +
+          ' title="Bấm để xem kết quả của thẻ này">' +
           '<div class="kt">' +
             '<div class="dau"><b>' + A.chuAnToan(A.tenBai(b)) + '</b>' +
               '<span class="kho-nhan ' + nhan.lop + '">' + nhan.chu + '</span></div>' +
             '<span>' + A.chuAnToan(A.tenDang(b.dang || '') || b.dang || '') +
               ' · ngày ' + A.chuAnToan(ngayGach(b.ngay)) +
               (chuHan ? (' · hạn ' + A.chuAnToan(chuHan)) : '') + '</span></div>' +
-          '<div class="kho-nut">' + nut + '</div>' +
+          '<button type="button" class="kho-ic" data-kho-menu="' + id +
+            '" title="Tuỳ chọn thẻ: đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_NHO +
+          '</button>' +
         '</div>';
     }).join('') +
       // ⭐ v1.56.0 — nút "xoá hết" hiện NGAY CẢ KHI chỉ có 1 bài (đo 03/09: mỗi lớp
@@ -5043,10 +5139,25 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       // ⭐ v1.60.0 — MỘT handler cho MỌI nút của kho (ẩn · khoá · xoá · khôi phục ·
       // hiện lại · mở khoá · xoá vĩnh viễn · xoá hẳn). Lời hỏi mượn đúng `loiHoiTt()`
       // mà menu ⚙ của thẻ đang dùng, nên hai chỗ không bao giờ nói khác nhau.
-      var khoNut = e.target.closest('#khoDs [data-kho-lam]');
+      // ⭐ v1.86.0 — nút ⚙ của một hàng kho: mở menu tuỳ chọn của đúng thẻ đó.
+      // ⛔ Phải đứng TRƯỚC tay bắt `[data-kho-mo]` (cả hàng bấm được) ở dưới.
+      var khoIc = e.target.closest('[data-kho-menu]');
+      if (khoIc) { moKhoMenu(khoIc, khoIc.dataset.khoMenu); return; }
+
+      // ⭐ v1.86.0 — nút trong menu ⚙ (trước v1.86.0 là nút chữ vẽ thẳng trong hàng,
+      // nên tay bắt cũ soi `#khoDs`; nay nút nằm trong `#khoMenu` ⇒ bỏ tiền tố).
+      var khoNut = e.target.closest('[data-kho-lam]');
       if (khoNut) {
         var idK = khoNut.dataset.khoId;
         var lam = khoNut.dataset.khoLam;
+        // "Đổi hạn nộp" đi THẲNG hộp `#hanPop`, không qua hộp xác nhận — y hệt mục
+        // cùng tên ở menu ⚙ của thẻ ngoài dashboard. Định vị TRƯỚC khi đóng menu:
+        // hộp hạn bám vào chỗ menu đang đứng.
+        if (lam === 'han') {
+          moHanPop(idK, $('#khoMenu'));
+          dongKhoMenu();
+          return;
+        }
         var bK = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === idK; })[0];
         var tenK = bK ? A.tenBai(bK) : 'này';
         var hoi;
@@ -5088,6 +5199,29 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         });
         return;
       }
+      // ⭐ v1.86.0 — BẤM VÀO KHOẢNG TRỐNG CỦA MỘT HÀNG KHO = mở KẾT QUẢ của thẻ, y hệt
+      // bấm thân thẻ ngoài dashboard: SP CHECK mở trang chi tiết, còn lại mở hộp xem bài.
+      // ⛔ Đứng SAU hai tay `[data-kho-menu]` / `[data-kho-lam]` ở trên (nút ⚙ và các
+      //    mục menu đều nằm lọt trong vùng bấm này).
+      var khoMo = e.target.closest('[data-kho-mo]');
+      if (khoMo) {
+        var idMo = khoMo.dataset.khoMo;
+        var bMo = A.baiCuaLop(DL, LOP_CHON, 'tatca')
+          .filter(function (x) { return x.id === idMo; })[0];
+        if (bMo && /SP\s*CHECK/i.test(bMo.dang || '')) {
+          // ⛔ `sp-chitiet.html` đọc bài qua cửa 'ql' — thẻ ĐÃ XOÁ không có ở cửa đó,
+          // mở ra chỉ được trang trắng. Nói thật thay vì để thầy nhìn trang hỏng.
+          if (A.trangThaiThe(bMo) === 'xoa') {
+            baoToast('Thẻ đang ở trạng thái ĐÃ XOÁ — bấm ⚙ → “Khôi phục bài” rồi mới mở được trang kết quả chi tiết.');
+            return;
+          }
+          window.open('sp-chitiet.html?lop=' + encodeURIComponent(LOP_CHON) +
+            '&bai=' + encodeURIComponent(bMo.id), '_blank');
+          return;
+        }
+        return void moBaiModal(idMo);
+      }
+
       var gvKho = e.target.closest('[data-gv-kho]');
       if (gvKho) return void gvMoSidebar(gvKho.dataset.gvKho, 'kho');
 
@@ -5257,10 +5391,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (!e.target.closest('.xoa-cum')) dongXoaCum(null);
       // ⭐ v1.36.0 — ba hộp nối nhau (menu ⚙ → hạn → xác nhận): bấm ra NGOÀI CẢ
       // BA mới đóng, kẻo bấm sang hộp bên cạnh là hộp kia tự tắt mất.
+      // ⭐ v1.86.0 — menu ⚙ của hàng kho (`#khoMenu`) và nút mở nó (`[data-kho-menu]`)
+      // vào chung cụm này, kẻo bấm từ menu sang hộp xác nhận là menu tự tắt mất.
       var trongCum = e.target.closest('#rcMenu') || e.target.closest('#xnPop') ||
-                     e.target.closest('#hanPop') || e.target.closest('[data-rail-caidat]');
+                     e.target.closest('#hanPop') || e.target.closest('[data-rail-caidat]') ||
+                     e.target.closest('#khoMenu') || e.target.closest('[data-kho-menu]');
       if (!trongCum) {
         if ($('#rcMenu').classList.contains('mo')) dongRcMenu();
+        if ($('#khoMenu').classList.contains('mo')) dongKhoMenu();
         if ($('#xnPop').classList.contains('mo')) dongXnPop();
         if ($('#hanPop').classList.contains('mo')) dongHanPop();
       }
@@ -5291,6 +5429,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       dongPopCx();
       dongXoaCum(null);
       dongRcMenu();
+      dongKhoMenu();    // v1.86.0
       dongXnPop();      // v1.36.0
       dongHanPop();     // v1.36.0
     });
@@ -5303,7 +5442,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // trong — nút con tự lo phím của nó).
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Enter' && e.key !== ' ') return;
-      var el = e.target.closest('.the[data-id]');
+      // ⭐ v1.86.0 — hàng trong mục KHO cũng là `<div role="button">` (chứa nút ⚙ thật
+      // bên trong), nên cùng cần bù phím y như thẻ bài.
+      var el = e.target.closest('.the[data-id], .kho-hang[data-kho-mo]');
       if (!el || e.target !== el) return;
       e.preventDefault();
       el.click();

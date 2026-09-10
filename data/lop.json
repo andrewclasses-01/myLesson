@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-10 16:24:13",
+  "capNhat": "2026-09-10 19:33:53",
   "nguon": "myStudent",
   "lop": [
     {
@@ -173,13 +173,6 @@
           "ten": "HẢI ĐĂNG",
           "ma": "HOANGLAHAIDANG22042015",
           "sinhNhat": ""
-        },
-        {
-          "id": 210,
-          "ten": "HOÀNG MINH",
-          "ma": "LEHOANGMINH05102015",
-          "sinhNhat": "",
-          "bs": 1
         },
         {
           "id": 71,
@@ -410,7 +403,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 206,
+          "id": 205,
           "ten": "PHÚC DUY",
           "ma": "NGUYENPHUCDUY05122014",
           "sinhNhat": "",
@@ -540,6 +533,12 @@
           "sinhNhat": ""
         },
         {
+          "id": 206,
+          "ten": "NGUYỄN HẢI",
+          "ma": "NGUYENHAI17061987",
+          "sinhNhat": ""
+        },
+        {
           "id": 31,
           "ten": "PHÚ TRỌNG",
           "ma": "CAOPHUTRONG29052012",
@@ -568,13 +567,6 @@
           "ten": "TIẾN ĐẠT",
           "ma": "NGUYENTIENDAT06022013",
           "sinhNhat": ""
-        }
-      ],
-      "hsDb": [
-        {
-          "id": 209,
-          "ten": "NGUYỄN HẢI",
-          "ma": "NGUYENHAI17061987"
         }
       ]
     },
@@ -846,6 +838,24 @@
       ]
     },
     {
+      "maLop": "BTR",
+      "tenGoc": "BỔ TRỢ",
+      "hocSinh": [
+        {
+          "id": 133,
+          "ten": "NGỌC BẢO",
+          "ma": "",
+          "sinhNhat": ""
+        },
+        {
+          "id": 135,
+          "ten": "TIẾN MINH",
+          "ma": "",
+          "sinhNhat": ""
+        }
+      ]
+    },
+    {
       "maLop": "NNTNG4",
       "tenGoc": "NỀN TẢNG 4",
       "thu": "T7",
@@ -871,7 +881,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 203,
+          "id": 204,
           "ten": "CÔNG THÀNH",
           "ma": "PHAMCONGTHANH12062017",
           "sinhNhat": ""
@@ -889,7 +899,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 204,
+          "id": 203,
           "ten": "MINH ĐỨC",
           "ma": "MAIMINHDUC21122017",
           "sinhNhat": ""

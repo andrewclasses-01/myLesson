@@ -1306,6 +1306,18 @@ body.mo-menu .side.trai{transform:none}
 .than-khoa{position:relative}
 .card.khoa .than-khoa .khoa-phu{position:absolute}
 
+/* ⛔⛔ BẪY TRẢ GIÁ NGAY TRÊN BÀN THỬ (11/09/2026): `<svg>` không có width/height
+   CSS lẫn thuộc tính thì trình duyệt cho nó lấp ĐẦY bề ngang khối cha (đo thật:
+   1142×1142px) — thẻ khoá cao vọt hơn 1200px. PHẢI khai kích thước tường minh
+   cho MỌI svg trong `.khoa-phu-tinh` (không được trông chờ `.ic-nut svg`/
+   `.doan .so svg` ở trên — đó là lớp khác). */
+.khoa-phu-tinh{display:flex; align-items:center; gap:12px; padding:12px 2px 2px}
+.khoa-phu-tinh .o{width:40px; height:40px; border-radius:50%; background:var(--ground);
+  display:flex; align-items:center; justify-content:center; flex:none}
+.khoa-phu-tinh .o svg{width:20px; height:20px; fill:none; stroke:#7B8C89; stroke-width:2;
+  stroke-linecap:round; stroke-linejoin:round}
+.khoa-phu-tinh .c1{font-weight:800; font-size:12.5px; color:#3D5450; line-height:1.4}
+
 /* ---------- THẺ SÁCH (chỉ thông tin trang — chưa làm nộp ảnh) ---------- */
 .sach-than{display:grid; grid-template-columns:minmax(0,1fr); gap:10px}
 .sach-info{display:flex; align-items:center; gap:10px; padding:12px 14px; border-radius:12px;

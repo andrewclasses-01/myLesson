@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-10 15:41:42",
+  "capNhat": "2026-09-10 15:54:15",
   "nguon": "myStudent",
   "lop": [
     {
@@ -841,28 +841,6 @@
           "id": 126,
           "ten": "THÙY LINH",
           "ma": "PHAMTHUYLINH16022011",
-          "sinhNhat": ""
-        }
-      ]
-    },
-    {
-      "maLop": "BTR",
-      "tenGoc": "BỔ TRỢ",
-      "thu": "T2",
-      "gio": "8h00",
-      "tan": "11h30",
-      "nghi": 1,
-      "hocSinh": [
-        {
-          "id": 133,
-          "ten": "NGỌC BẢO",
-          "ma": "",
-          "sinhNhat": ""
-        },
-        {
-          "id": 135,
-          "ten": "TIẾN MINH",
-          "ma": "",
           "sinhNhat": ""
         }
       ]

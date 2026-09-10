@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-09 22:56:41",
+  "capNhat": "2026-09-10 12:05:55",
   "bai": {
     "A1C": [
       {
@@ -60,6 +60,34 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_10.9_WORDS_IEL-S15.T4.P1",
+        "tieuDe": "B2A_10.9_WORDS IEL-S15.T4.P1",
+        "tenHien": "B2A_10.9_WORDS IEL-S15.T4.P1",
+        "dang": "WORDS",
+        "ngay": "10.9",
+        "han": "2026-09-12T17:30",
+        "maLesson": "IEL-S15.T4.P1",
+        "taoLuc": "2026-09-10",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "3r8uay",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "wzt8e6",
+            "mau": "ANAGRAM"
+          }
+        ]
+      },
       {
         "id": "B2A_25.8_SP_CHECK_MOLDY_FOOD",
         "tieuDe": "B2A_25.8_SP CHECK MOLDY FOOD",

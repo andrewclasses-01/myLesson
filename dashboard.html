@@ -846,6 +846,25 @@ a{color:inherit}
 .diem-rows{flex:1; min-width:0; overflow:hidden; padding:9px 14px 12px 12px;
   display:flex; flex-direction:column; justify-content:center; gap:5px}
 .the-diem.chi-tay .diem-rows{justify-content:center; text-align:center; color:var(--mo); font-size:12px}
+/* ⭐ v1.88.0 (10/09/2026) — THẺ WORKSHEET (ONLY WSHEET) — CHÉP Y khối này bên
+   lop.html (`.ws-*`), hai trang một khối <style> riêng, sửa một bên phải sửa
+   bên kia. Tiêu đề đảo vai (WORKSHEET lên trên, tên BT ở lớp nhỏ xuống dưới)
+   + dòng nhắc ánh sáng lướt thay thanh điểm (bỏ nút 🏆, không có gì để xếp hạng). */
+.ws-chu .t-ten{color:var(--xanh)}
+.ws-ten{display:block; margin-top:3px; font-size:13px; font-weight:600;
+  color:var(--chu); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ws-diem .diem-rows{align-items:center; justify-content:center; text-align:center}
+.ws-nhac{font-size:13.5px; font-weight:800; letter-spacing:.02em; line-height:1.35;
+  background:linear-gradient(90deg,var(--xanh-la),var(--m-duong),var(--xanh-la));
+  background-size:220% auto; -webkit-background-clip:text; background-clip:text;
+  color:transparent; animation:ws-lap-lanh 3.6s linear infinite}
+@keyframes ws-lap-lanh{
+  0%{background-position:0% center}
+  100%{background-position:220% center}
+}
+@media (prefers-reduced-motion:reduce){
+  .ws-nhac{animation:none; -webkit-text-fill-color:currentColor; background:none; color:var(--xanh-la)}
+}
 .td-dong{display:grid;
   grid-template-columns:minmax(0,var(--cot-ten,112px)) minmax(56px,1fr) 44px 11px;
   align-items:center; gap:8px}
@@ -1893,7 +1912,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=68"></script>
-<script src="js/chung.js?v=42"></script>
+<script src="js/chung.js?v=43"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -2584,25 +2603,39 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var ttThe = A.trangThaiThe(b);
     if (ttThe === 'an') lopThem += ' an';
     if (ttThe === 'khoa') { lopThem = ' khoa'; lopNen = 'tt-duong'; }
+    // ⭐ v1.88.0 (10/09/2026) — WORKSHEET: chỉ bài giấy, không act nào — tiêu đề
+    // đảo vai (WORKSHEET lên trên, tên BT ở lớp xuống dưới, cùng nếp lop.html
+    // `veWorksheetChu`) + dòng nhắc thay thanh điểm. Bỏ nút 🏆 (không có gì để
+    // xếp hạng), giữ nguyên nút ⚙ (vẫn sửa/xoá thẻ như mọi thẻ khác).
+    var laWs = /^WORKSHEET$/i.test(b.dang || '');
     // ⛔ DIV, không phải BUTTON: ⚙/🏆 bên trong là <button> thật, HTML không
     // cho nút lồng trong nút (đã vấp thật ở bản xem thử — xem GHI CHU DU AN.md).
-    return '<div class="the' + lopThem + '" role="button" tabindex="0" data-id="' + id + '">' +
+    return '<div class="the' + lopThem + (laWs ? ' worksheet' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
-          '<span class="t-chu">' +
-            '<span class="t-ten">' + A.chuAnToan(ten) +
-              '<span class="ngay">NGÀY ' + A.chuAnToan(ngayGach(b.ngay)) + '</span></span>' +
-            '<span class="t-ma">' + A.chuAnToan(A.maLesson(b)) + '</span>' +
-          '</span>' +
+          (laWs ? (
+            '<span class="t-chu ws-chu">' +
+              '<span class="t-ten">WORKSHEET<span class="ngay">NGÀY ' + A.chuAnToan(ngayGach(b.ngay)) + '</span></span>' +
+              '<span class="ws-ten">' + A.chuAnToan(ten) + '</span>' +
+            '</span>'
+          ) : (
+            '<span class="t-chu">' +
+              '<span class="t-ten">' + A.chuAnToan(ten) +
+                '<span class="ngay">NGÀY ' + A.chuAnToan(ngayGach(b.ngay)) + '</span></span>' +
+              '<span class="t-ma">' + A.chuAnToan(A.maLesson(b)) + '</span>' +
+            '</span>'
+          )) +
           veHanCard(b, moc, st, t) +
         '</span>' +
-        '<span class="the-diem ' + diem.cls + '">' +
+        '<span class="the-diem ' + diem.cls + (laWs ? ' ws-diem' : '') + '">' +
           '<span class="diem-ic">' +
             '<button type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
-            '<button type="button" data-rail-xephang="' + id + '" title="Bảng xếp hạng">' + IC_CUP_NHO + '</button>' +
+            (laWs ? '' : '<button type="button" data-rail-xephang="' + id + '" title="Bảng xếp hạng">' + IC_CUP_NHO + '</button>') +
           '</span>' +
           '<span class="diem-vach"></span>' +
-          '<span class="diem-rows">' + diem.html + '</span>' +
+          '<span class="diem-rows">' + (laWs
+            ? '<span class="ws-nhac">EM HÃY HOÀN THÀNH<br>BÀI TẬP TRÊN WORKSHEET!</span>'
+            : diem.html) + '</span>' +
         '</span>' +
         '<span class="play">' + (ttThe === 'khoa'
           ? '<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"/>' +
@@ -5255,7 +5288,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         window.open('lop.html?gv=1&lop=' + encodeURIComponent(LOP_CHON), '_blank');
         return;
       }
-      var diemBtn = e.target.closest('.the[data-id] .the-diem');
+      // ⭐ v1.88.0 — WORKSHEET không có điểm nào để mở bảng — vùng nhắc của nó
+      // rơi xuống nhánh chung bên dưới (mở hộp quản lý bài, y hệt bấm thân thẻ).
+      var diemBtn = e.target.closest('.the[data-id]:not(.worksheet) .the-diem');
       if (diemBtn) return void moPopDiem(diemBtn.closest('.the[data-id]').dataset.id);
 
       var theBtn = e.target.closest('.the[data-id]');

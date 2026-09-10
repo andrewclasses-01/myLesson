@@ -417,6 +417,26 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .the-diem.chi-tay{position:absolute; left:0; right:var(--mui); top:0; bottom:0;
   width:auto; border-top:none; padding:0 20px; justify-content:center}
 
+/* ⭐ v1.88.0 (10/09/2026) — THẺ WORKSHEET (ONLY WSHEET): buổi chỉ giao bài
+   giấy, không có bài tập nhóm. Tiêu đề ĐẢO VAI so với thẻ thường — "WORKSHEET"
+   lên trên (đậm), tên phần BT ở lớp nhỏ hơn xuống dưới — và thay thanh tiến
+   trình bằng một dòng nhắc có ánh sáng lướt nhẹ (thầy chốt: "đẹp và ấn tượng"). */
+.ws-chu .t-ten{color:#0E7C6E}
+.ws-ten{display:block; margin-top:3px; font-size:13px; font-weight:600;
+  color:var(--ink); line-height:1.25; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.ws-diem{align-items:center; justify-content:center; text-align:center}
+.ws-nhac{font-size:14px; font-weight:800; letter-spacing:.02em; line-height:1.35;
+  background:linear-gradient(90deg,var(--xanh-la),var(--m-duong),var(--xanh-la));
+  background-size:220% auto; -webkit-background-clip:text; background-clip:text;
+  color:transparent; animation:ws-lap-lanh 3.6s linear infinite}
+@keyframes ws-lap-lanh{
+  0%{background-position:0% center}
+  100%{background-position:220% center}
+}
+@media (prefers-reduced-motion: reduce){
+  .ws-nhac{animation:none; -webkit-text-fill-color:currentColor; background:none; color:var(--xanh-la)}
+}
+
 /* Cột CHƯA XONG BÀI: rộng đúng bằng cột ô hạn phía trên (176px) nên hai khối
    thẳng tâm nhau; chữ thụt vào hai bên cho khỏi dính vạch và mép thẻ. */
 /* overflow:hidden là PHANH AN TOÀN — số dòng thật do JS `vuaCotThieu()` cắt
@@ -1532,7 +1552,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=68"></script>
-<script src="js/chung.js?v=42"></script>
+<script src="js/chung.js?v=43"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1708,10 +1728,11 @@ function theTuBai(b){
   var acts = A.actCuaBai(b);
   var moc = A.mocHan(b);
   var laSp = /SP\s*CHECK/i.test(b.dang || '');
+  var laWs = /^WORKSHEET$/i.test(b.dang || '');
   return {
     id: b.id,
     dang: b.dang || '',
-    loai: laSp ? 'spcheck' : '',
+    loai: laSp ? 'spcheck' : (laWs ? 'wsheet' : ''),
     trang: A.trangCuaBai(b),
     ten: A.tenBai(b),
     ma: A.maLesson(b),
@@ -2650,6 +2671,27 @@ function veHan(b, tt){
   '</span>';
 }
 
+/* ⭐ v1.88.0 (10/09/2026) — THẺ WORKSHEET (ONLY WSHEET): buổi không giao bài
+   nhóm, chỉ có bài tập giấy phát trực tiếp trên lớp. App đẩy nó như MỘT BÀI
+   THẬT trong bai.json (`dang:'WORKSHEET'`, không act nào) nên đi hết đường
+   thẻ bình thường (`theTuBai`/`veTheMoi`/`veTheCu`/Kho bài…) — chỉ khác ở
+   HAI CHỖ: tiêu đề đảo vai (WORKSHEET lên trên, tên BT ở lớp xuống dưới) và
+   không có thanh tiến trình (không có act nào để đếm), thay bằng dòng nhắc.
+   ⛔ Không mở trang bài tập nào khi bấm — không cần code riêng: `trangCuaBai()`
+   (js/chung.js) trả '' cho dạng này, và `dungCot()` đã có sẵn nhánh
+   "!b.trang -> báo thẻ giao trên giấy" cho MỌI thẻ thiếu trang. */
+function veWorksheetChu(b){
+  return '<span class="t-chu ws-chu">' +
+      '<span class="t-ten">WORKSHEET<span class="ngay">NGÀY ' + b.giao + '</span></span>' +
+      (b.ten ? '<span class="ws-ten">' + b.ten + '</span>' : '') +
+    '</span>';
+}
+function veWorksheetKhoi(){
+  return '<span class="the-diem ws-diem">' +
+      '<span class="ws-nhac">EM HÃY HOÀN THÀNH<br>BÀI TẬP TRÊN WORKSHEET!</span>' +
+    '</span>';
+}
+
 /* ⭐ v1.35.0 — mũi bên phải thẻ: tam giác ▶ như cũ, thẻ TẠM KHOÁ thì là ổ khoá. */
 function veMui(khoa){
   return '<span class="play">' + (khoa
@@ -2747,15 +2789,18 @@ function veTheMoi(b, tt){
   else if (tt === '24h'){ lopThem = ' gio-vang';  lopNen = 'tt-vang'; }
   else                  { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
 
-  return '<button class="the moi' + lopThem + '"><span class="the-in ' + lopNen + '">' +
+  var laWs = (b.loai === 'wsheet');
+  return '<button class="the moi' + lopThem + (laWs ? ' worksheet' : '') + '"><span class="the-in ' + lopNen + '">' +
     '<span class="the-body">' +
-      '<span class="t-chu">' +
-        '<span class="t-ten">' + b.ten + '<span class="ngay">NGÀY ' + b.giao + '</span></span>' +
-        (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
-      '</span>' +
+      (laWs ? veWorksheetChu(b) : (
+        '<span class="t-chu">' +
+          '<span class="t-ten">' + b.ten + '<span class="ngay">NGÀY ' + b.giao + '</span></span>' +
+          (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
+        '</span>'
+      )) +
       veHan(b, tt) +
-    '</span>' + (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
-      ? veDoiSpKhoi(bDung) : veDiem(bDung, gap, gap)) +
+    '</span>' + (laWs ? veWorksheetKhoi() : (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
+      ? veDoiSpKhoi(bDung) : veDiem(bDung, gap, gap))) +
     veMui(b.khoa) +
   '</span></button>';
 }
@@ -2769,16 +2814,19 @@ function xongHetBai(b){
 
 function veTheCu(b){
   var th = tinhHinhThe(b, true);
-  return '<button class="the cu' + (th.du ? ' xong-het' : '') + (b.khoa ? ' khoa' : '') + '">' +
+  var laWs = (b.loai === 'wsheet');
+  return '<button class="the cu' + (th.du ? ' xong-het' : '') + (b.khoa ? ' khoa' : '') + (laWs ? ' worksheet' : '') + '">' +
     '<span class="the-in ' + th.lop + '">' +
     '<span class="the-body">' +
-      '<span class="t-chu">' +
-        '<span class="t-ten">' + b.ten +
-          '<span class="khoang">(' + b.giao + ' - ' + b.hanNgan + ')</span></span>' +
-        (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
-      '</span>' +
-    '</span>' + (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
-      ? veDoiSpKhoi(b) : veDiem(b, true, false)) +
+      (laWs ? veWorksheetChu(b) : (
+        '<span class="t-chu">' +
+          '<span class="t-ten">' + b.ten +
+            '<span class="khoang">(' + b.giao + ' - ' + b.hanNgan + ')</span></span>' +
+          (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
+        '</span>'
+      )) +
+    '</span>' + (laWs ? veWorksheetKhoi() : (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
+      ? veDoiSpKhoi(b) : veDiem(b, true, false))) +
     veMui(b.khoa) +
   '</span></button>';
 }

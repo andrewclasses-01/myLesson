@@ -1072,7 +1072,11 @@
     'SP SLIDE': 'SPEAKING SKILL',
     'SP CHECK': 'SPEAKING CHECK',
     // v1.76.0 — dạng bài chia chặng: thầy chốt giữ nguyên chữ STAGE
-    'STAGE': 'STAGE'
+    'STAGE': 'STAGE',
+    // ⭐ v1.88.0 (10/09/2026) — WORKSHEET: chỉ bài giấy, không act nào. Card tự
+    // dựng tiêu đề riêng (`veWorksheetChu` bên lop.html) nên đây chỉ là lưới an
+    // toàn nếu `tenBai()` phải lùi về tên dạng ở chỗ khác (vd Kho bài).
+    'WORKSHEET': 'WORKSHEET'
   };
   function tenDang(d) {
     var k = String(d || '').trim().toUpperCase().replace(/\s+/g, ' ');
@@ -1162,6 +1166,10 @@
   function trangCuaBai(b) {
     var d = String(b.dang || '').toUpperCase();
     if (d.indexOf('SP CHECK') >= 0) return '';     // thẻ speaking check: đi đường riêng
+    // ⭐ v1.88.0 — WORKSHEET: chỉ là thẻ nhắc bài giấy, không có trang bài tập
+    // nào để mở. `dungCot()` bên lop.html đã có sẵn nhánh báo "giao trên giấy"
+    // cho mọi thẻ thiếu `trang` — không cần code thêm gì ở đó.
+    if (d === 'WORKSHEET') return '';
     if (d.indexOf('SP') === 0 || d.indexOf('SLIDE') >= 0) return 'bai-sp.html';
     return 'bai.html';
   }

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-10 20:33:36",
+  "capNhat": "2026-09-10 21:45:14",
   "bai": {
     "A1C": [
       {
@@ -201,6 +201,40 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_10.9_DICTS_LSA2-S3.T2.P3-4-5",
+        "tieuDe": "A1B_10.9_DICTS LSA2-S3.T2.P3-4-5",
+        "tenHien": "A1B_10.9_DICTS LSA2-S3.T2.P3-4-5",
+        "dang": "DICTS",
+        "ngay": "10.9",
+        "han": "2026-09-15T19:30",
+        "maLesson": "LSA2-S3.T2.P3-4-5",
+        "taoLuc": "2026-09-10",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "yrgax2",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSA2-S3.T2.P3-4-5"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ 2",
+            "act": "",
+            "yeuCau": "100% requirement",
+            "ma": "gu7664",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "A1B_8.9_WORDS_LSA2-S3.T2.P3-4-5",
         "tieuDe": "A1B_8.9_WORDS LSA2-S3.T2.P3-4-5",

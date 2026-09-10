@@ -63,9 +63,19 @@ body{background:var(--ground); margin:0; font:500 15px/1.6 var(--sans); color:va
   padding-right:var(--mui); width:100%}
 .the-in.tt-duong{background:#F3F7FE} .the-in.tt-vang{background:#FEFAEE}
 .the-in.tt-do{background:#FDF3F3}    .the-in.tt-la{background:#F2FBF5}
-.play{position:absolute; right:0; top:0; bottom:0; width:var(--mui); display:grid; place-items:center;
+/* ⛔⛔ BẪY TRẢ GIÁ 11/09/2026 — ĐỔI TÊN từ `.play` sang `.kh-play`: `css/main.css`
+   (dùng chung mọi trang) đã có SẴN một luật `.play{width:74px;height:74px;
+   border-radius:50%;...}` cho nút play VIDEO tròn ở nơi khác. Trùng tên lớp mà
+   không cùng độ đặc hiệu để ghi đè hết — CSS GHÉP TỪNG THUỘC TÍNH theo luật nào
+   đứng SAU trong nguồn, nên `height`/`border-radius`/`box-shadow` cũ của
+   main.css LỌT QUA (luật ở đây không nhắc lại các thuộc tính đó), biến mũi tên
+   dài hết chiều cao thẻ thành một chấm tròn xanh 74px kẹt ở góc trên bên phải —
+   đúng con "lá xanh mọc lạc chỗ" thầy chụp ảnh báo. Cùng họ bẫy
+   `bay-css-de-luat-mac-dinh`. Đổi tên là đường chắc chắn nhất — đừng liệt kê
+   từng thuộc tính cần "reset", main.css đổi thêm thuộc tính nào sau này lại vỡ lại. */
+.kh-play{position:absolute; right:0; top:0; bottom:0; width:var(--mui); display:grid; place-items:center;
   background:linear-gradient(135deg,#0E9E85,#22C3A4)}
-.play svg{width:22px; height:22px; fill:#fff; margin-right:30px}
+.kh-play svg{width:22px; height:22px; fill:#fff; margin-right:30px}
 .the.xong-het{filter:drop-shadow(0 2px 4px rgba(24,169,87,.22)) drop-shadow(0 0 16px rgba(24,169,87,.42))}
 .the.gio-duong{filter:drop-shadow(0 2px 4px rgba(62,123,250,.18)) drop-shadow(0 0 15px rgba(62,123,250,.34))}
 .the.gio-vang{filter:drop-shadow(0 2px 4px rgba(224,180,17,.22)) drop-shadow(0 0 15px rgba(224,180,17,.42))}
@@ -283,7 +293,7 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
           '</span>' +
           acts.map(hangEm).join('') + acts.map(hangLop).join('') +
         '</span>' +
-        '<span class="play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
+        '<span class="kh-play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></span>' +
       '</span></button>';
   }
 

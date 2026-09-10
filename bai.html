@@ -1533,6 +1533,14 @@ var LA_KHOA = false;
 var TT_KHOA = null;
 var DOAN_XONG = {};
 var YT_PLAYER = null;
+// ⭐⭐ 12/09/2026 (vá bug thật thầy báo) — `LA_KHOA` chỉ biết khi ĐÃ có `BAI`
+// (đọc được từ `?id=`). Nút "Về trang chính của lớp" (`#nutVe`) và mọi đường lùi
+// `veTrangLop()` còn chạy TRƯỚC/KHÔNG CÓ `BAI` (vd `id` sai, bài đang tạm khoá,
+// mất mạng) — lúc đó `LA_KHOA` vẫn `false` dù em đang ở KHÓA HỌC, `veTrangLop()`
+// đẩy nhầm về `lop.html`, ra đúng thẻ méo (lop.html không biết vẽ thẻ 256px/nút
+// EM-CẢ LỚP của khóa). `EM_LA_KHOA` chốt NGAY SAU khi biết `EM`/`LOP_DL` — sống
+// suốt trang, không phụ thuộc có tìm thấy `BAI` hay không.
+var EM_LA_KHOA = false;
 
 /* ---------- TOAST ---------- */
 var hen = null;
@@ -3619,12 +3627,20 @@ function veOHan(){
   veDongHo();
 }
 
-/* Về trang lớp — giữ nguyên chế độ xem (như một em, hoặc thẳng là thầy). */
+/* Về trang lớp — giữ nguyên chế độ xem (như một em, hoặc thẳng là thầy).
+   ⭐⭐ 12/09/2026 (vá bug thật) — về ĐÚNG `khoa.html` khi em đang ở KHÓA HỌC
+   (`EM_LA_KHOA`/`LA_KHOA`), không phải lúc nào cũng `lop.html`. Trước đây nút
+   "Về trang chính của lớp" (và mọi đường lùi tự động: bài không thấy, bài
+   đang tạm khoá, lỗi đọc dữ liệu) đẩy THẲNG về `lop.html` — trang đó không
+   biết vẽ thẻ khóa học 256px/nút EM-CẢ LỚP, ra đúng thẻ méo mó thầy chụp ảnh
+   báo. Dùng CẢ HAI cờ (ưu tiên `LA_KHOA` vì mới nhất/chắc nhất khi đã có
+   `BAI`; `EM_LA_KHOA` đỡ cho lúc `BAI` chưa/không có). */
 function veTrangLop(them){
   var q = A.giuXemNhuQuery(EM, MA_HS, LOP_DL);
   /* v1.35.0 — `them` (tuỳ chọn): tham số nối thêm, vd 'khoa=1' (bài đang tạm khoá). */
   var cac = [them || '', q || ''].filter(Boolean).join('&');
-  location.href = 'lop.html' + (cac ? ('?' + cac) : '');
+  var trang = (LA_KHOA || EM_LA_KHOA) ? 'khoa.html' : 'lop.html';
+  location.href = trang + (cac ? ('?' + cac) : '');
 }
 
 A.napDuLieu().then(function(dl){
@@ -3633,6 +3649,7 @@ A.napDuLieu().then(function(dl){
   TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop;
   LA_DAC_BIET = !!EM.dacBiet;
   var l = A.lopTheoMa(dl, LOP_DL);
+  EM_LA_KHOA = !!(l && A.laKhoa(l));   /* ⭐ 12/09/2026 — xem chú thích ở khai báo đầu file */
   LOP = (l && l.tenGoc) || EM.lop;
   LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
   // v1.82.0 — HS đặc biệt: CA_LOP RỖNG, giống hệt lý do ở lop.html.

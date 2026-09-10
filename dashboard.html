@@ -349,6 +349,24 @@ a{color:inherit}
 /* ---------- DANH SÁCH LỚP (nút, chia đều bề ngang) — v1.24.0 ---------- */
 .lop-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px;
   margin:18px 0}
+
+/* ⭐⭐ 11/09/2026 — CỘT RIÊNG CHO KHÓA HỌC, tách bằng một vạch dọc (thầy chốt:
+   "1 cột riêng ở bên phải là các nút lớp của các Khóa, phần lớn bên trái là
+   các nút của các lớp thường"). `#khoaKhu` (`hidden` khi chưa có khóa học nào)
+   nên dashboard của trước 11/09 KHÔNG đổi một pixel nào. */
+.lop-hang{display:flex; align-items:flex-start; gap:0}
+.lop-hang>.lop-grid{flex:1 1 auto; min-width:0}
+.lop-vach{flex:none; width:236px; margin:18px 0 18px 24px; padding-left:22px;
+  border-left:1.5px solid var(--vien); display:flex; flex-direction:column}
+.lv-nhan{font:800 10.5px/1.4 var(--font); letter-spacing:.12em; color:var(--nhat);
+  text-transform:uppercase; margin-bottom:10px}
+.lop-grid-khoa{grid-template-columns:1fr; margin:0; gap:10px}
+@media (max-width:860px){
+  .lop-hang{flex-direction:column}
+  .lop-vach{width:auto; margin:14px 0 0; padding:16px 0 0; border-left:0;
+    border-top:1.5px solid var(--vien)}
+  .lop-grid-khoa{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+}
 /* ⭐ #5 — thẻ lớp nay CHIA HAI: cột icon riêng GV bên trái + nút chính chọn lớp. */
 .lop-btn{position:relative; display:flex; align-items:stretch; background:var(--the);
   border:1px solid var(--vien); border-radius:var(--r); box-shadow:var(--bong);
@@ -1594,7 +1612,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <main class="wrap">
 
-  <section class="lop-grid" id="lopGrid"></section>
+  <!-- ⭐⭐ 11/09/2026 — CỘT RIÊNG CHO KHÓA HỌC bên phải một vạch dọc, xem
+       `veKhoaGrid()`. `#khoaKhu` tự ẩn hoàn toàn khi chưa có khóa học nào —
+       dashboard của trước đây (chưa dùng khóa học) không đổi gì hết. -->
+  <div class="lop-hang">
+    <section class="lop-grid" id="lopGrid"></section>
+    <div class="lop-vach" id="khoaKhu" hidden>
+      <span class="lv-nhan">KHÓA HỌC</span>
+      <section class="lop-grid lop-grid-khoa" id="khoaGrid"></section>
+    </div>
+  </div>
 
   <div class="hai-cot">
     <section class="khoi cot-the">
@@ -1911,7 +1938,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=68"></script>
+<script src="config.js?v=69"></script>
 <script src="js/chung.js?v=43"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -2155,6 +2182,44 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   var IC_CAKE_NHO = '<svg viewBox="0 0 24 24"><path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/>' +
     '<path d="M4 20h16"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/><circle cx="12" cy="3.2" r="1"/></svg>';
 
+  // ⭐ 11/09/2026 — rút phần vẽ MỘT nút lớp ra riêng (`theLopBtnHtml`), dùng
+  // CHUNG cho cả `veLopGrid()` (lớp thường, cột trái) lẫn `veKhoaGrid()` (lớp
+  // khóa học, cột phải mới) — một khuôn, không chép đôi. Nút vẽ ra vẫn mang
+  // đúng `.lb-main[data-lop]`/`.lb-cnt[data-gv-lop]`/… nên đi qua ĐÚNG một bộ
+  // nghe `document.addEventListener('click', …)` sẵn có (`chonLop()` và
+  // `gvMoSidebar()` đã tự chạy đúng cho khóa học vì `A.lopTheoMa`/`A.baiCuaLop`
+  // đã đọc cả `DL.khoa` từ trước — không cần sửa gì ở tầng sự kiện).
+  function theLopBtnHtml(l) {
+    var mL = A.chuAnToan(l.maLop);
+    var sn = sinhNhatTuanCuaLop(l);
+    var tt = trangThaiBai(l);
+    return '<div class="lop-btn' + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
+      (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
+      '<div class="lb-gv">' +
+        // ⭐ v1.35.0 (thầy chốt 02/09): số thành viên = NÚT mở "Thiết lập lớp"
+        // (gộp bánh răng cũ); chỗ bánh răng cũ → icon KHO = bài đã xoá của lớp.
+        '<button class="lb-cnt" data-gv-lop="' + mL + '" title="Thiết lập (danh sách em + avatar)">' +
+          '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg>' +
+          '<b>' + (l.hocSinh || []).length + '</b>' +
+        '</button>' +
+        '<button class="lb-ic" data-gv-sn="' + mL + '" title="Sinh nhật sắp tới">' +
+          (sn.length ? '<span class="lb-dot"></span>' : '') + IC_CAKE_NHO +
+        '</button>' +
+        // ⛔ v1.56.0 — KHÔNG có chấm đỏ ở icon KHO nữa (thầy chốt 03/09/2026):
+        // bài đã xoá là chuyện đã xong, không phải việc cần nhắc. Chấm đỏ của
+        // icon SINH NHẬT ngay trên thì GIỮ.
+        '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho bài: mọi bài của lớp/khóa này">' +
+          IC_KHO_NHO +
+        '</button>' +
+      '</div>' +
+      '<button class="lb-main" data-lop="' + mL + '">' +
+        '<div class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</div>' +
+        (sn.length ? '<div class="lb-sn">' + IC_CAKE_NHO + A.chuAnToan(chuSinhNhatDong(sn)) + '</div>' : '') +
+        '<div class="lb-tt ' + tt + '"><i></i>' + TT_NHAN[tt] + '</div>' +
+      '</button>' +
+    '</div>';
+  }
+
   function veLopGrid() {
     var xep = DL.lop.slice().sort(function (a, b) {
       // v1.35.0 — lọc bằng `A.conHan` (thẻ khoá đã qua mốc vẫn là còn hạn → xếp lên đầu)
@@ -2168,36 +2233,25 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // nhật sắp tới (chấm đỏ nếu có, trong 7 ngày) · thiết lập lớp. Bỏ hẳn
     // "sửa hạn" (nay ở ⚙ Cài đặt thẻ của từng bài, xem `.diem-ic`) và "top
     // của lớp" (vẫn có trong menu ☰ khi bấm avatar).
-    $('#lopGrid').innerHTML = xep.map(function (l) {
-      var mL = A.chuAnToan(l.maLop);
-      var sn = sinhNhatTuanCuaLop(l);
-      var tt = trangThaiBai(l);
-      return '<div class="lop-btn' + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
-        (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
-        '<div class="lb-gv">' +
-          // ⭐ v1.35.0 (thầy chốt 02/09): số thành viên = NÚT mở "Thiết lập lớp"
-          // (gộp bánh răng cũ); chỗ bánh răng cũ → icon KHO = bài đã xoá của lớp.
-          '<button class="lb-cnt" data-gv-lop="' + mL + '" title="Thiết lập lớp (danh sách em + avatar)">' +
-            '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg>' +
-            '<b>' + (l.hocSinh || []).length + '</b>' +
-          '</button>' +
-          '<button class="lb-ic" data-gv-sn="' + mL + '" title="Sinh nhật sắp tới">' +
-            (sn.length ? '<span class="lb-dot"></span>' : '') + IC_CAKE_NHO +
-          '</button>' +
-          // ⛔ v1.56.0 — KHÔNG có chấm đỏ ở icon KHO nữa (thầy chốt 03/09/2026):
-          // bài đã xoá là chuyện đã xong, không phải việc cần nhắc. Chấm đỏ của
-          // icon SINH NHẬT ngay trên thì GIỮ.
-          '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho bài: mọi bài của lớp này">' +
-            IC_KHO_NHO +
-          '</button>' +
-        '</div>' +
-        '<button class="lb-main" data-lop="' + mL + '">' +
-          '<div class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</div>' +
-          (sn.length ? '<div class="lb-sn">' + IC_CAKE_NHO + A.chuAnToan(chuSinhNhatDong(sn)) + '</div>' : '') +
-          '<div class="lb-tt ' + tt + '"><i></i>' + TT_NHAN[tt] + '</div>' +
-        '</button>' +
-      '</div>';
-    }).join('');
+    $('#lopGrid').innerHTML = xep.map(theLopBtnHtml).join('');
+    veKhoaGrid();
+  }
+
+  // ⭐⭐ 11/09/2026 — CỘT RIÊNG CHO CÁC LỚP KHÓA HỌC (`DL.khoa`, myStudent
+  // `loai='khoa'`), bên phải một vạch dọc — thầy chốt: "1 cột riêng ở bên phải
+  // là các nút lớp của các Khóa, phần lớn bên trái là các nút của các lớp
+  // thường". Ẩn HẲN khu này (`#khoaKhu`) khi chưa có khóa học nào — dashboard
+  // của những buổi chưa dùng khóa học không đổi gì cả (thầy chốt trong hồ sơ
+  // COURSE: courses hoàn toàn KHÔNG đụng vào phần lớp thường).
+  function veKhoaGrid() {
+    var hopKhu = $('#khoaKhu'), hop = $('#khoaGrid');
+    if (!hop || !hopKhu) return;
+    var ds = (DL.khoa || []).slice().sort(function (a, b) {
+      return a.maLop.localeCompare(b.maLop, 'vi');
+    });
+    hopKhu.hidden = !ds.length;
+    if (!ds.length) { hop.innerHTML = ''; return; }
+    hop.innerHTML = ds.map(theLopBtnHtml).join('');
   }
 
   // ⭐ v1.32.0 — còn lại MỘT hành động icon riêng cho GV trên thẻ lớp (mở

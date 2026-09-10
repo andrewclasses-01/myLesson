@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-10 22:04:08",
+  "capNhat": "2026-09-11 02:04:41",
   "bai": {
     "A1C": [
       {
@@ -743,6 +743,260 @@
             "yeuCau": "100% requirement",
             "ma": "vrrja8",
             "mau": "QUIZ"
+          }
+        ]
+      }
+    ],
+    "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L01",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 17: BÀI GIẢNG 17: TẠO CÂU HỎI XÁC NHẬN CÓ/KHÔNG VÀ CÁCH TRẢ LỜI",
+        "tenBai": "LESSON 17",
+        "maLesson": "LESSON 17",
+        "han": "2026-09-15T23:59",
+        "taoLuc": "2026-09-10",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. TẠO CÂU XÁC NHẬN TỪ CÂU NÓI CÓ",
+            "act": "",
+            "mau": "anagram",
+            "ma": "xyx8mj"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 17: TẠO CÂU HỎI XÁC NHẬN CÓ/KHÔNG VÀ CÁCH TRẢ LỜI",
+          "video": "https://youtu.be/d3gcaAivq4M",
+          "doan": [
+            {
+              "id": "dmtvrsxsplij4",
+              "ten": "Review hành trình hiện tại",
+              "tu": "00:00",
+              "den": "02:11",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspi5gr"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspi5gr",
+              "ten": "Review nguyên liệu cho câu hỏi",
+              "tu": "02:11",
+              "den": "06:44",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspfmg3"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspfmg3",
+              "ten": "Đặt mục tiêu buổi học",
+              "tu": "06:44",
+              "den": "08:33",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspxbr6"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspxbr6",
+              "ten": "Tạo câu hỏi xác nhận (Có/Không) với chủ ngữ dễ tính",
+              "tu": "08:33",
+              "den": "17:55",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspjyyb"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspjyyb",
+              "ten": "Tạo câu hỏi xác nhận (Có/Không) với chủ ngữ khó tính",
+              "tu": "17:55",
+              "den": "22:39",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspic7w"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspic7w",
+              "ten": "Tạo một số ví dụ",
+              "tu": "22:39",
+              "den": "25:43",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspe9gh"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspe9gh",
+              "ten": "HD BT1 - Tạo câu hỏi xác nhận (Có/Không) từ câu nói có",
+              "tu": "25:43",
+              "den": "27:29",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmts0q6vs55u"
+              ]
+            },
+            {
+              "id": "dmtvrsxsphxu1",
+              "ten": "Chú ý về ngôi",
+              "tu": "27:35",
+              "den": "29:33",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspdtej"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspdtej",
+              "ten": "Bí quyết chọn đúng ngôi và tư duy học hiểu",
+              "tu": "29:33",
+              "den": "34:13",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspbu14"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspbu14",
+              "ten": "Lưu ý khi trả lời: không dùng một mình từ Yes hoặc No",
+              "tu": "34:13",
+              "den": "35:42",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspycv1"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxspycv1",
+              "ten": "Cách trả lời Có - Yes",
+              "tu": "35:42",
+              "den": "39:51",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxsp7lya"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxsp7lya",
+              "ten": "Cách trả lời Không - No",
+              "tu": "39:51",
+              "den": "43:13",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxsp0sqg"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmtvrsxsp0sqg",
+              "ten": "HD BT2 - Trả lời \"Yes\" cho câu hỏi xác nhận (Có/Không)",
+              "tu": "43:13",
+              "den": "43:39",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmts9r1ke3zm"
+              ]
+            },
+            {
+              "id": "dmtvrsxspid4g",
+              "ten": "HD BT3 - Trả lời \"No\" cho câu hỏi xác nhận (Có/Không)",
+              "tu": "43:45",
+              "den": "44:57",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmts9r3bx744"
+              ]
+            },
+            {
+              "id": "dmtvrsxsph2vq",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "45:02",
+              "den": "46:39",
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmts0q6vs55u",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. TẠO CÂU XÁC NHẬN TỪ CÂU NÓI CÓ",
+            "actTen": "BT1. TAO CAU HOI XAC NHAN TU CAU NOI CO",
+            "ma": "xyx8mj",
+            "mau": "anagram",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxsphxu1"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmts9r1ke3zm",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. TRA LOI \"CO - YES\" CHO CAU HOI XAC NHAN",
+            "actTen": "BT2. TRA LOI \"CO - YES\" CHO CAU HOI XAC NHAN",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxspid4g"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmts9r3bx744",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT3. TRA LOI \"NO - KHONG\" CHO CAU HOI XAC NHAN",
+            "actTen": "BT3. TRA LOI \"NO - KHONG\" CHO CAU HOI XAC NHAN",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmtvrsxsph2vq"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmts9r4z88a1",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRAC NGHIEM BAI GIANG 17 - CAU HOI XAC NHAN CO KHONG VA CACH TRA LOI",
+            "actTen": "TRAC NGHIEM BAI GIANG 17 - CAU HOI XAC NHAN CO KHONG VA CACH TRA LOI",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
           }
         ]
       }

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-10 14:13:26",
+  "capNhat": "2026-09-10 15:41:40",
   "bai": {
     "A1C": [
       {
@@ -377,6 +377,36 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_5.9_STAGE_4_SCHOOL_THINGS",
+        "tieuDe": "NNTNG4_5.9_STAGE 4 SCHOOL THINGS",
+        "tenHien": "NNTNG4_5.9_STAGE 4 SCHOOL THINGS",
+        "dang": "STAGE",
+        "ngay": "5.9",
+        "han": "2026-09-12T08:00",
+        "maLesson": "4 SCHOOL THINGS",
+        "taoLuc": "2026-09-10",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "aukpph",
+            "mau": "ANAGRAM",
+            "han": "2026-09-11T08:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "4 SCHOOL THINGS / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "mhcn3f",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-09-12T08:00"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_19.9_STAGE_4_SCHOOL_THINGS",
         "tieuDe": "NNTNG4_19.9_STAGE 4 SCHOOL THINGS",

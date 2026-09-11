@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 02:14:45",
+  "capNhat": "2026-09-11 07:41:08",
   "bai": {
     "A1C": [
       {
@@ -755,7 +755,7 @@
         "tenBai": "LESSON 17",
         "maLesson": "LESSON 17",
         "han": "2026-09-15T23:59",
-        "taoLuc": "2026-09-10",
+        "taoLuc": "2026-09-11",
         "khoaTen": "NEN TANG TIENG ANH",
         "khoi": [
           {
@@ -764,6 +764,27 @@
             "act": "",
             "mau": "anagram",
             "ma": "xyx8mj"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. TRA LOI \"CO - YES\" CHO CAU HOI XAC NHAN",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "jv8ncq"
+          },
+          {
+            "loai": "act",
+            "ten": "BT3. TRA LOI \"NO - KHONG\" CHO CAU HOI XAC NHAN",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "m45re9"
+          },
+          {
+            "loai": "act",
+            "ten": "TRAC NGHIEM BAI GIANG 17 - CAU HOI XAC NHAN CO KHONG VA CACH TRA LOI",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "wj747m"
           }
         ],
         "baiGiang": {
@@ -960,8 +981,8 @@
             "trang": "",
             "tieuDe": "BT2. TRA LOI \"CO - YES\" CHO CAU HOI XAC NHAN",
             "actTen": "BT2. TRA LOI \"CO - YES\" CHO CAU HOI XAC NHAN",
-            "ma": "",
-            "mau": "",
+            "ma": "jv8ncq",
+            "mau": "TYPE THE ANSWER",
             "xong": {
               "lam": "moNhay",
               "doanMo": [
@@ -976,8 +997,8 @@
             "trang": "",
             "tieuDe": "BT3. TRA LOI \"NO - KHONG\" CHO CAU HOI XAC NHAN",
             "actTen": "BT3. TRA LOI \"NO - KHONG\" CHO CAU HOI XAC NHAN",
-            "ma": "",
-            "mau": "",
+            "ma": "m45re9",
+            "mau": "TYPE THE ANSWER",
             "xong": {
               "lam": "moNhay",
               "doanMo": [
@@ -992,8 +1013,8 @@
             "trang": "",
             "tieuDe": "TRAC NGHIEM BAI GIANG 17 - CAU HOI XAC NHAN CO KHONG VA CACH TRA LOI",
             "actTen": "TRAC NGHIEM BAI GIANG 17 - CAU HOI XAC NHAN CO KHONG VA CACH TRA LOI",
-            "ma": "",
-            "mau": "",
+            "ma": "wj747m",
+            "mau": "QUIZ",
             "xong": {
               "lam": "moNhay",
               "doanMo": [],

@@ -1253,6 +1253,14 @@ body.mo-menu .side.trai{transform:none}
   box-shadow:0 0 0 1px var(--line), 0 7px 20px rgba(22,35,42,.08)}
 .video-o::before{content:''; display:block; padding-top:56.25%}
 .video-o>#videoOKhoa,.video-o iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+/* ⛔⛔ Bẫy CHỈ lộ trên Chrome thật (không lộ ở bàn thử): Chrome vẽ khung hình
+   video qua "hardware overlay" — vẽ THẲNG lên màn hình, XUYÊN QUA mọi lớp CSS
+   che ở trên dù `z-index`/`getBoundingClientRect`/`elementFromPoint` đều báo
+   đúng lớp che đang ở trên cùng. Cách chặn DUY NHẤT chắc chắn: `visibility:
+   hidden` NGAY TRÊN khung video — ẩn hẳn khỏi lượt vẽ (không phải che đè) —
+   xem `onDoiTrangThaiKhoa()` bật lại đúng lúc PHÁT. Ẩn SẴN từ đầu (trước khi
+   biết trạng thái phát) để không lộ ra dù chỉ một khung hình. */
+#videoOKhoa{visibility:hidden}
 .vk-list-btn{position:absolute; top:10px; right:10px; z-index:4; background:rgba(255,255,255,.92)}
 
 /* pop-up danh sách đoạn — phủ kín khung video */
@@ -1325,10 +1333,15 @@ body.mo-menu .side.trai{transform:none}
 /* ⭐ 13/09/2026 — che phủ khung video khi KHÔNG đang phát: vừa giấu icon chia
    sẻ/"Watch on YouTube" mặc định của YouTube (không có cách tắt qua playerVars),
    vừa cho một nút Phát to-rõ theo đúng phong cách riêng của trang. */
-/* ⛔ Nền phải GẦN NHƯ KÍN (không chỉ tối màu mờ) — icon chia sẻ/"Watch on
-   YouTube" của YouTube màu sáng, nền mờ vẫn thấy xuyên qua rõ mồn một. */
+/* ⛔⛔ Nền phải GẦN NHƯ KÍN (không chỉ tối màu mờ) — icon chia sẻ/"Watch on
+   YouTube" của YouTube màu sáng, nền mờ vẫn thấy xuyên qua rõ mồn một.
+   ⛔⛔ Bẫy trả giá trên Chrome THẬT (không lộ trên bàn thử): Chrome dùng
+   "video overlay" tăng tốc phần cứng cho khung hình YouTube — khung hình đó
+   có thể VẼ ĐÈ LÊN cả những lớp CSS đứng z-index cao hơn nếu lớp che không tự
+   thành MỘT LỚP GHÉP (compositing layer) riêng. `transform:translateZ(0)` ép
+   trình duyệt ghép lớp riêng cho khối che, mới thực sự che kín. */
 .vk-pause-cover{position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
-  background:rgba(11,22,26,.94); cursor:pointer}
+  background:rgba(11,22,26,.94); cursor:pointer; transform:translateZ(0); will-change:transform}
 .vk-pause-cover[hidden]{display:none}
 .vk-pause-play{width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.94);
   display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,.32)}
@@ -3463,18 +3476,22 @@ function moVideoKhoa(bg){
 function onDoiTrangThaiKhoa(e){
   var nutPhat = $('#btnPhatKhoa');
   var che = $('#vkPauseCover');
+  var khungVideo = $('#videoOKhoa');
   clearInterval(ytHenKhoa);
   if (e.data === YT.PlayerState.PLAYING) {
     tatPhuDeKhoa();
     if (nutPhat) nutPhat.innerHTML = IC_DUNG_KHOA;
     if (che) che.hidden = true;
+    if (khungVideo) khungVideo.style.visibility = 'visible';
     GIAY_HIEN_KHOA = YT_PLAYER.getCurrentTime();
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
   } else {
     if (nutPhat) nutPhat.innerHTML = IC_PHAT_KHOA;
-    // ⭐ 13/09/2026 — che LẠI mỗi khi không phát (kể cả lúc mới tải/đang đệm),
-    // giấu luôn icon chia sẻ/"Watch on YouTube" mặc định của YouTube.
+    // ⭐ 13/09/2026 — che LẠI + ẨN HẲN khung video mỗi khi không phát (kể cả
+    // lúc mới tải/đang đệm), giấu luôn icon chia sẻ/"Watch on YouTube" mặc
+    // định của YouTube (xem chú thích "hardware overlay" ở CSS `#videoOKhoa`).
     if (che) che.hidden = false;
+    if (khungVideo) khungVideo.style.visibility = 'hidden';
   }
 }
 

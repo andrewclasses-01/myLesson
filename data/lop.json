@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 02:14:47",
+  "capNhat": "2026-09-11 07:26:44",
   "nguon": "myStudent",
   "lop": [
     {
@@ -789,12 +789,6 @@
           "sinhNhat": ""
         },
         {
-          "id": 151,
-          "ten": "GIANG",
-          "ma": "GIANG",
-          "sinhNhat": ""
-        },
-        {
           "id": 148,
           "ten": "HÀ VY",
           "ma": "TRANHAVY24012011",
@@ -835,6 +829,13 @@
           "ten": "THÙY LINH",
           "ma": "PHAMTHUYLINH16022011",
           "sinhNhat": ""
+        }
+      ],
+      "hsDb": [
+        {
+          "id": 212,
+          "ten": "GIANG",
+          "ma": "GIANG"
         }
       ]
     },

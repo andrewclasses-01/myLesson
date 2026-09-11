@@ -1233,6 +1233,13 @@ body.mo-menu .side.trai{transform:none}
    những lớp MỚI dưới đây (không đụng một dòng CSS nào ở trên, nên tab bài
    thường/STAGE không suy suyển gì).
    ========================================================================== */
+/* ---------- thanh tiến trình BÀI TẬP trong header (thầy chốt 13/09/2026) ----------
+   Tái dùng NGUYÊN `.st-bar`/`.st-khuc` của thanh chặng STAGE (định nghĩa ở
+   trên) — chỉ đổi NHÃN + cách gán trạng thái (xem `veThanhBtKhoa()`), không
+   định nghĩa lại một hình khối nào. */
+.thanh-bt-khoa-wrap{padding:0 20px 10px}
+.thanh-bt-khoa-wrap .st-bar{margin:0}
+
 /* ---------- thẻ BÀI GIẢNG: video full-width + player riêng ---------- */
 /* ⭐ 13/09/2026 — làm lại theo mẫu đã duyệt `MAU KHUNG BAI GIANG v5
    11-09-2026.html`: bỏ cột "CÁC ĐOẠN" bên cạnh (dồn vào pop-up 📋 trên video),
@@ -1274,7 +1281,7 @@ body.mo-menu .side.trai{transform:none}
 .vk-seg-item .kh{flex:none; font-size:10px; color:var(--m-do)}
 
 /* khung player dưới video */
-.vk-player{margin-top:10px; padding:12px 14px 14px; border:1px solid var(--line); border-radius:14px;
+.vk-player{margin-top:16px; padding:12px 14px 14px; border:1px solid var(--line); border-radius:14px;
   background:var(--surface)}
 .vk-grid{display:grid; grid-template-columns:auto 1fr auto; column-gap:10px; row-gap:8px; align-items:center}
 .vk-label{grid-column:2; grid-row:1; display:flex; align-items:center; justify-content:center; gap:7px;
@@ -1282,7 +1289,11 @@ body.mo-menu .side.trai{transform:none}
 .vk-segten{font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden;
   text-overflow:ellipsis}
 .vk-segdot{color:var(--line); font-size:9px}
-.vk-segpct{font-size:12px; font-weight:800; font-variant-numeric:tabular-nums; color:var(--amber)}
+/* ⭐ 13/09/2026 — bề rộng CỐ ĐỊNH (đủ chỗ cho "100%") + canh trái: số đổi từ
+   0→100% không còn làm tên đoạn phía trước bị đẩy qua đẩy lại. Màu xám —
+   thầy chốt bớt nổi bật, đỡ phân tâm lúc đang xem bài giảng. */
+.vk-segpct{flex:none; width:30px; text-align:left; font-size:12px; font-weight:800;
+  font-variant-numeric:tabular-nums; color:var(--muted)}
 .vk-segpct.xong{color:var(--m-la)}
 .vk-khoa-chu{font-size:12px; font-weight:700; color:var(--m-do); letter-spacing:.01em;
   animation:vkNhapNhay 1.1s ease-in-out infinite; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -1308,12 +1319,6 @@ body.mo-menu .side.trai{transform:none}
   pointer-events:none; left:0%}
 .vk-total{grid-column:3; grid-row:2; justify-self:end; font-size:11px; color:var(--muted);
   font-variant-numeric:tabular-nums; font-weight:700}
-
-.luu-y{display:flex; align-items:center; gap:8px; margin-top:10px; padding:8px 12px;
-  border-radius:10px; background:#FFF8E8; border:1px solid #F5E3C0; font-size:12px;
-  font-weight:700; color:#8A6D2F}
-.luu-y svg{width:15px; height:15px; flex:none; stroke:currentColor; stroke-width:2.2; fill:none;
-  stroke-linecap:round; stroke-linejoin:round}
 
 /* chế độ tập trung (đèn) — phóng to cả thẻ BÀI GIẢNG ra giữa màn hình, làm tối phần còn lại */
 .vk-backdrop{position:fixed; inset:0; background:rgba(10,20,20,.55); backdrop-filter:blur(4px); z-index:100;
@@ -1423,6 +1428,14 @@ body.mo-menu .side.trai{transform:none}
       <div class="db-ma"></div>
     </div>
 
+  </div>
+
+  <!-- ⭐ 13/09/2026 — thanh tiến trình BÀI TẬP của bài KHÓA HỌC, y hệt thanh
+       chặng STAGE (`.st-bar`/`.st-khuc`) nhưng CHỈ hiện ở bài KHOA. Nằm TRONG
+       header sticky sẵn có (`.top`) nên tự "luôn hiện khi cuộn" theo, khỏi
+       phải đo/định lại top offset. Ẩn mặc định — `veCacPhanKhoa()` mới hiện. -->
+  <div class="wrap thanh-bt-khoa-wrap" id="thanhBtKhoaWrap" hidden>
+    <div class="st-bar" id="thanhBtKhoa"></div>
   </div>
 </header>
 
@@ -3173,7 +3186,7 @@ function veTheBaiGiangKhoa(bg){
     var t = giayDoanKhoa(d.tu), n = giayDoanKhoa(d.den);
     if (t != null && n != null && n > t) tong += (n - t);
   });
-  var duoi = [tong ? chuoiGioDoanKhoa(tong) : '', doan.length ? (doan.length + ' đoạn') : '']
+  var duoi = [tong ? chuoiGioDoanKhoa(tong) : '', doan.length ? (doan.length + ' phân đoạn') : '']
     .filter(Boolean).map(chuAnToan).join(' • ');
   sec.innerHTML =
     '<div class="card-head">' +
@@ -3208,8 +3221,6 @@ function veTheBaiGiangKhoa(bg){
           '<span class="vk-total" id="vkTongKhoa">00:00 / 00:00</span>' +
         '</div>' +
       '</div>' +
-      '<div class="luu-y"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>' +
-      'Xem đủ 95% một đoạn thì bài tập của đoạn đó mở khoá — đoạn chưa tới lượt vẫn xem tự do, chỉ chưa làm được bài tập thôi.</div>' +
     '</div>';
   return sec;
 }
@@ -3428,15 +3439,54 @@ function nhipVideoKhoa(){
   veNhanDoanKhoa(dHien);
 }
 
+// ---------- thanh tiến trình BÀI TẬP trên header (y hệt thanh chặng STAGE) ----------
+// Nhãn ngắn: "BÀI TẬP N" đếm theo thứ tự (bỏ qua sách/trắc nghiệm khi đếm),
+// "BT SÁCH <trang>" cho loại sách, "TN BÀI GIẢNG" cho mẫu quiz (`x.mau` app đã
+// gán sẵn tên mẫu, vd "QUIZ" — xem `nguon.awActs[].type` bên app).
+function nhanBtKhoa(x, demBt){
+  if (x.loai === 'sach') return 'BT SÁCH' + (x.trang ? ' ' + x.trang : '');
+  if (x.mau && /quiz/i.test(x.mau)) return 'TN BÀI GIẢNG';
+  return 'BÀI TẬP ' + demBt;
+}
+// Chỉ MỘT khúc được "đang chú ý" tại một thời điểm: đi từ đầu, khúc CHƯA XONG
+// đầu tiên gặp phải mới tô màu (đỏ nếu còn khoá — `ket`, xanh dương nếu đã mở
+// mà chưa làm — `dang`); mọi khúc SAU nó, dù cũng đang khoá, chỉ để xám (`xa`)
+// — tránh "cả dàn cùng đỏ" gây rối mắt. Khúc đã xong luôn `xong` (xanh lá).
+function veThanhBtKhoa(){
+  var hop = $('#thanhBtKhoa');
+  if (!hop) return;
+  var demBt = 0, daGanHienTai = false;
+  hop.innerHTML = (BAI.bt || []).map(function(x){
+    var laBt = x.loai !== 'sach' && !(x.mau && /quiz/i.test(x.mau));
+    if (laBt) demBt++;
+    var xong = !!TT_KHOA.xongB[x.id];
+    var lop;
+    if (xong) { lop = 'xong'; }
+    else if (daGanHienTai) { lop = 'xa'; }
+    else { lop = TT_KHOA.moB[x.id] ? 'dang' : 'ket'; daGanHienTai = true; }
+    return '<button type="button" class="st-khuc ' + lop + '" data-btid="' + chuAnToan(x.id) + '">' +
+      (xong ? '<span class="tick">✓</span>' : '') +
+      '<span class="lbl">' + chuAnToan(nhanBtKhoa(x, demBt)) + '</span></button>';
+  }).join('');
+  hop.querySelectorAll('.st-khuc').forEach(function(btn){
+    btn.onclick = function(){
+      var id = btn.getAttribute('data-btid').replace(/[^A-Za-z0-9_-]/g, '');
+      var el = document.querySelector('.card[data-btid="' + id + '"]');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+  });
+}
+
 // Đường đi vừa đổi (đoạn vừa cộng thêm giây xem HOẶC điểm act mới về) — tính
 // lại + sửa TẠI CHỖ những gì đổi. ⛔⛔ CỐ Ý KHÔNG vẽ lại thẻ BÀI GIẢNG
 // (`veTheBaiGiangKhoa`) — nó đang giữ `YT_PLAYER`, đập lại DOM là video
-// restart/mất trạng thái đang phát. Chỉ cập nhật pop-up đoạn + timeline + thẻ
-// BÀI TẬP nào đổi khoá/mở.
+// restart/mất trạng thái đang phát. Chỉ cập nhật pop-up đoạn + timeline + thanh
+// tiến trình + thẻ BÀI TẬP nào đổi khoá/mở.
 function capNhatSauKhiDoiKhoa(){
   TT_KHOA = tinhDuongDiKhoa();
   veDanhSachDoanKhoa(BAI.baiGiang || {}, TT_KHOA);
   veTimelineKhoa(BAI.baiGiang || {}, TT_KHOA);
+  veThanhBtKhoa();
   (BAI.bt || []).forEach(function(x, i){
     var cu = document.querySelector('.card[data-btid="' + x.id.replace(/[^A-Za-z0-9_-]/g, '') + '"]');
     var daKhoa = !cu || cu.classList.contains('khoa');
@@ -3530,6 +3580,8 @@ function ganNutKhoa(){
 function veCacPhanKhoa(hop){
   var bg = BAI.baiGiang || {};
   TT_KHOA = tinhDuongDiKhoa();
+  var thanhWrap = $('#thanhBtKhoaWrap');
+  if (thanhWrap && (BAI.bt || []).length) { thanhWrap.hidden = false; veThanhBtKhoa(); }
   if (bg.video || (bg.doan || []).length) {
     hop.appendChild(veTheBaiGiangKhoa(bg));
     ganNutKhoa();
@@ -3802,7 +3854,16 @@ function veDauTrang(){
   var dbTen = document.querySelector('.dau-bai .db-ten');
   if (dbTen) dbTen.textContent = A.tenBai(BAI);
   var dbMa = document.querySelector('.dau-bai .db-ma');
-  if (dbMa) dbMa.textContent = A.maLesson(BAI);
+  // ⭐ 13/09/2026 — bài KHOA: `A.maLesson(BAI)` trả về TRÙNG với `tenBai` (cả
+  // hai đều "LESSON 17", app xuất vậy) — dòng dưới đổi thành TÊN CHỦ ĐỀ, lấy
+  // từ `bg.tieuDe` dạng "BÀI GIẢNG 17: <chủ đề>" (cắt sau dấu ": " đầu tiên).
+  // Bài thường/STAGE không đụng, vẫn `A.maLesson(BAI)` như cũ.
+  var chuDeKhoa = LA_KHOA && (function(){
+    var t = (BAI.baiGiang && BAI.baiGiang.tieuDe) || '';
+    var m = /:\s*(.+)$/.exec(t);
+    return m ? m[1] : '';
+  })();
+  if (dbMa) dbMa.textContent = chuDeKhoa || A.maLesson(BAI);
 
   /* Ô hạn: chữ ở dòng trên (đồng hồ do veDongHo lo). ⭐ v1.85.0 — tách ra
      `veOHan()` (dưới) để gọi lại được sau khi CHANG sẵn sàng, xem chú thích ở đó. */

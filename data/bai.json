@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 15:38:04",
+  "capNhat": "2026-09-11 20:36:29",
   "bai": {
     "A1C": [
       {
@@ -389,6 +389,45 @@
       }
     ],
     "A2B": [
+      {
+        "id": "A2B_11.9_STAGE_LSB1-S1.T1.P1",
+        "tieuDe": "A2B_11.9_STAGE LSB1-S1.T1.P1",
+        "tenHien": "A2B_11.9_STAGE LSB1-S1.T1.P1",
+        "dang": "STAGE",
+        "ngay": "11.9",
+        "han": "2026-09-16T17:30",
+        "maLesson": "LSB1-S1.T1.P1",
+        "taoLuc": "2026-09-11",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "2qd69c",
+            "mau": "ANAGRAM",
+            "han": "2026-09-12T23:59"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "y4k7cw",
+            "mau": "QUIZ",
+            "han": "2026-09-14T23:59"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "k2whv7",
+            "mau": "OPEN THE BOX",
+            "han": "2026-09-16T17:30"
+          }
+        ]
+      },
       {
         "id": "A2B_9.9_WORKSHEET",
         "tieuDe": "A2B_9.9_WORKSHEET",

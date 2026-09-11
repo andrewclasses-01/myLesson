@@ -75,6 +75,32 @@
   hiệu avatar-top-1 trên thanh tiến trình. Nếu dữ liệu sau này có những dạng
   đó cho khóa học, phải bổ sung riêng — đừng tưởng chúng tự chạy vì đã chạy
   bên lop.html.
+
+  ⭐⭐⭐ 11/09/2026 (v1.93.0) — ĐỢT SỬA THẺ THEO 7 Ý CỦA THẦY (qua nhiều lượt
+  hỏi-đáp, tự kiểm bằng dữ liệu thật LESSON 17/NNTNGK9 mỗi lượt, chưa bấm tay):
+    1. Đầu thẻ ĐẢO VAI TRÒ hai dòng: dòng LỚN nay là SỐ LESSON, chữ lấp lánh
+       (`.t-ten`, dải vàng chạy qua chữ bằng `background-clip:text`) + NGÀY
+       GIAO bên cạnh (xanh lá) — bài khóa không có `b.ngay` nên mượn `taoLuc`
+       (ngày app đẩy) làm ngày giao, qua `ngayCuaISO()`. Dòng dưới (`.t-chude`)
+       là CÂU CHỦ ĐỀ bài giảng đầy đủ, không cắt/không giới hạn dòng, font
+       Cascadia Code CÙNG font mã lesson bên thẻ lớp thường (`.t-ma` cũ).
+    2. Thẻ cao 200→272px (226px điện thoại) — chỗ cho chủ đề xuống 2 dòng +
+       cụm avatar TOP 3 trên hàng CẢ LỚP (port từ lop.html, xem `avMocHtml`/
+       `coAvatarThanh`/`xepAvatarMoc`).
+    3. Nút chuyển về GIỮA, bo góc vuông (trước viên tròn), bỏ dòng chữ "EM ĐÃ
+       XONG x/x". Chữ trái đổi "EM" → TÊN HỌC SINH thật (`TOI`).
+    4. Sidebar bỏ hẳn số sao (phù hiệu trên avatar + khối "SAO ĐANG CÓ") —
+       khóa học không có sao.
+    5. Đổi TÊN EM ⇄ CẢ LỚP có animation TRƯỢT NGANG mượt cho CẢ khối thanh
+       tiến trình lẫn nút bấm — xem khối "`.diem-rows`/`.hang-grp`" trong
+       CSS và `dinhViThumb()` trong JS. ĐỔI HẲN cách dựng: `hangEm()`/
+       `hangLop()` nay trả thẳng `.td-dong` (không còn thẻ bọc riêng từng
+       hàng); MỘT thẻ bọc DUY NHẤT cho cả khối (`.hang-grp-em`/`.hang-grp-
+       lop`) chồng `position:absolute` lên nhau, chỉ đổi `transform`/
+       `opacity` nên CSS chạy mượt được — khác hẳn bản `display:contents`/
+       `none` cũ (đổi phựt, không animate được).
+  ⬜⬜ THẦY CHƯA BẤM TAY bản v1.93.0 này (chỉ tự kiểm trên bàn thử + dữ liệu
+  thật qua `python -m http.server` cục bộ, chưa xem trên andrewclasses.com).
 -->
 <style>
 :root{
@@ -89,7 +115,10 @@
   --mono:"Cascadia Code","Consolas",ui-monospace,monospace;
   --sans:'Montserrat',"Segoe UI",system-ui,sans-serif;
   --em:cubic-bezier(.22,.9,.3,1);
-  --cao-the:200px;
+  /* ⭐ 11/09/2026 (thầy chốt) — cao hơn thẻ thường (200px) để: (1) dòng chủ đề
+     bài giảng không giới hạn số dòng có chỗ xuống 2 dòng, (2) hàng CẢ LỚP có
+     chỗ cho cụm avatar TOP 3 (`--av` ~24-26px) chồng lên vệt tiến trình. */
+  --cao-the:272px;
   --cao-dau:77px;
   --banphim:0px;
   --san-chat:96px;
@@ -118,18 +147,6 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
   position:relative; transition:transform .18s var(--em), box-shadow .18s; overflow:visible}
 .av.me:hover{transform:scale(1.06); box-shadow:0 0 0 4px var(--accent-soft), var(--shadow)}
-.sao-hieu{position:absolute; left:50%; bottom:-2px; transform:translateX(-50%);
-  display:inline-flex; align-items:center; gap:1.5px;
-  padding:0 3.5px; border-radius:99px; background:#fff;
-  box-shadow:0 1px 3px rgba(22,35,42,.20);
-  font-size:9.5px; font-weight:800; white-space:nowrap; line-height:1.45;
-  color:#E5A20D; letter-spacing:.1px; font-variant-numeric:tabular-nums}
-.sao-hieu > svg:not(.lap){width:9.5px; height:9.5px; fill:#F3B21B; flex:none}
-.sao-hieu .lap{position:absolute; fill:#F7CE63; animation:lap-lanh 2.2s ease-in-out infinite}
-.sao-hieu .lap.l1{width:7px; height:7px; left:-10px; top:-4px; animation-delay:0s}
-.sao-hieu .lap.l2{width:6px; height:6px; right:-9px; top:6px; animation-delay:.7s}
-.sao-hieu .lap.l3{width:5px; height:5px; left:6px; top:-9px; animation-delay:1.4s}
-@media (prefers-reduced-motion: reduce){ .sao-hieu .lap{animation:none; opacity:.7} }
 .who{min-width:0}
 .who .ten{font-weight:800; font-size:18px; line-height:1.25; letter-spacing:-.01em;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -204,14 +221,26 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .the-body{flex:none; min-width:0; padding:11px 14px 6px 20px; display:flex;
   align-items:center; column-gap:12px; overflow:hidden}
 .t-chu{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
-.t-ten{font-size:16.5px; font-weight:800; letter-spacing:-.01em; line-height:1.24;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+/* ⭐⭐ 11/09/2026 (thầy chốt) — dòng LỚN nay là SỐ LESSON (`.t-ten`, chữ lấp
+   lánh — dải màu vàng chạy qua chữ bằng `background-clip:text`), dòng dưới
+   (`.t-chude`) là TÊN BÀI GIẢNG ĐẦY ĐỦ, không cắt/không giới hạn số dòng —
+   thẻ cao lên (xem `--cao-the`) để chừa chỗ. */
+.t-ten{position:relative; font-size:19px; font-weight:800; letter-spacing:.005em;
+  line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  background:linear-gradient(100deg, var(--ink) 26%, #E5A20D 42%, #FFE9AE 50%,
+    #E5A20D 58%, var(--ink) 74%);
+  background-size:230% 100%; -webkit-background-clip:text; background-clip:text;
+  color:transparent; animation:lap-lanh-chu 4.4s ease-in-out infinite}
+@keyframes lap-lanh-chu{0%{background-position:190% 0} 60%,100%{background-position:-40% 0}}
+@media (prefers-reduced-motion: reduce){ .t-ten{animation:none; background-position:0 0} }
 .t-ten .ngay{margin-left:8px; color:var(--xanh-la)}
-.t-ten .khoang{margin-left:8px}
-.t-ma{font:600 13.4px/1.28 var(--mono); color:var(--muted); letter-spacing:.01em;
-  max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-/* ⭐ riêng khóa học: nhãn LESSON N tím + tên khóa, dựng sẵn trong `theTuBai()`. */
-.nhan-ls{color:var(--tim); font-weight:800; margin-right:6px}
+.t-ten .khoang{margin-left:8px; font-size:13px; font-weight:700; color:var(--muted)}
+/* ⭐ 11/09/2026 (thầy chốt) — CÙNG font với mã lesson của thẻ lớp thường
+   (`.t-ma` bên `lop.html`, ví dụ "LSA2-S2.T2.P4-5"): `--mono`, 13,4px, màu
+   muted. Chỉ khác một chỗ: ở đây là CÂU CHỦ ĐỀ dài nên cho xuống dòng tự do,
+   không ellipsis một dòng như bên đó. */
+.t-chude{font:600 13.4px/1.4 var(--mono); color:var(--muted); letter-spacing:.01em;
+  white-space:normal; overflow-wrap:break-word}
 
 .han-boc{flex:none; width:176px;
   display:flex; align-items:center; justify-content:center; gap:10px}
@@ -243,25 +272,44 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    gần lề phải hơn (thầy chốt "lề phải đang rộng mất cân đối"). */
 .the-diem{flex:1; min-height:0; width:100%; overflow:hidden;
   border-top:1.5px dashed var(--line);
-  padding:8px 10px 11px 20px; display:flex; flex-direction:column;
-  justify-content:space-around; gap:4px}
+  padding:8px 10px 11px 20px; display:flex; flex-direction:column; gap:4px}
 .the-diem.chi-tay{align-items:center; justify-content:center; text-align:center;
   padding:0 20px}
-.xem-dau{display:flex; align-items:center; justify-content:space-between; gap:8px;
+/* ⭐ 11/09/2026 (thầy chốt) — bỏ hẳn dòng chữ "EM ĐÃ XONG x/x"/"CẢ LỚP • x EM",
+   nút EM/CẢ LỚP chuyển về GIỮA hàng, style vuông bo góc (trước tròn quá), chữ
+   TRÁI đổi thành TÊN HỌC SINH (trước ghi cứng "EM"). Có khối `.chon-thumb`
+   trượt mượt theo nút đang chọn — `dinhViThumb()` bên JS đo `offsetLeft/
+   offsetWidth` của nút rồi đặt `transform`/`width`, không đặt số cứng vì tên
+   dài ngắn mỗi em một khác. */
+.xem-dau{flex:none; display:flex; align-items:center; justify-content:center;
   min-height:20px; margin-bottom:2px}
-.xem-chu{font:800 9.5px/1.2 var(--sans); letter-spacing:.08em; color:#8AA09C; text-transform:uppercase}
-.xem-chu b{color:var(--accent)}
-.chon-xem{display:inline-flex; background:#EDF3F1; border-radius:99px; padding:2px; gap:2px}
-.chon-xem span{padding:2px 10px; border-radius:99px; font:800 9.5px/1.6 var(--sans);
-  letter-spacing:.08em; color:#7B8C89; cursor:pointer; transition:all .18s var(--em)}
-.chon-xem span.on{background:#fff; color:var(--accent); box-shadow:0 1px 2px rgba(22,35,42,.12)}
-/* ⛔⛔ BẪY TRẢ GIÁ 11/09/2026 (xem hangEm/hangLop bên JS) — `display:contents`
-   PHẢI đặt trên khối BỌC NGOÀI (`.hang-em`/`.hang-lop`), `.td-dong` là CON
-   RIÊNG bên trong mới thật sự là hàng lưới. Gộp chung một thẻ là mất cả hàng. */
-.the .hang-lop{display:none} .the .hang-em{display:contents}
-.the .chu-lop{display:none}
-.the.lop .hang-lop{display:contents} .the.lop .hang-em{display:none}
-.the.lop .chu-lop{display:inline} .the.lop .chu-em{display:none}
+.chon-xem{position:relative; display:inline-flex; background:#EDF3F1; border-radius:9px; padding:2px; gap:2px}
+.chon-thumb{position:absolute; top:2px; bottom:2px; left:0; width:0; border-radius:6px;
+  background:#fff; box-shadow:0 1px 2px rgba(22,35,42,.12);
+  transition:transform .34s var(--em), width .34s var(--em)}
+.chon-xem span[data-xem]{position:relative; z-index:1; padding:3px 12px;
+  font:800 9.5px/1.6 var(--sans); letter-spacing:.08em; color:#7B8C89; cursor:pointer;
+  white-space:nowrap; transition:color .18s var(--em)}
+.chon-xem span[data-xem].on{color:var(--accent)}
+/* ⭐⭐ 11/09/2026 (thầy chốt) — CẢ KHỐI thanh tiến trình trượt ngang mượt khi
+   đổi TÊN EM ⇄ CẢ LỚP. ⛔⛔ SUPERSEDES bẫy `display:contents` ghi trước đó ở
+   đây (gộp `hang-em`/`td-dong` chung một thẻ làm mất cả hàng — đổi hẳn cách
+   dựng nên bẫy đó không còn đường tái phạm): nay `hangEm()`/`hangLop()` trả
+   THẲNG `.td-dong`, không còn thẻ bọc riêng từng hàng; MỘT thẻ bọc DUY NHẤT
+   cho cả khối — `.hang-grp-em`/`.hang-grp-lop` — chồng `position:absolute`
+   lên nhau trong `.diem-rows`, chỉ đổi `transform`/`opacity` nên CSS chạy
+   mượt được (không phải bật/tắt `display` giữa chừng như trước). Khối đang ẩn
+   vẫn CÓ KÍCH THƯỚC THẬT (không `display:none`) nên `coAvatarThanh()` đo được
+   NGAY TỪ ĐẦU cả hai khối, không cần đợi bấm mới đo đúng — xem hàm đó. */
+.diem-rows{position:relative; flex:1; min-height:0; overflow:hidden}
+.hang-grp{position:absolute; inset:0; display:flex; flex-direction:column;
+  justify-content:space-around; gap:4px;
+  transition:transform .42s var(--em), opacity .3s var(--em)}
+.hang-grp-em{transform:translateX(0); opacity:1}
+.hang-grp-lop{transform:translateX(100%); opacity:0; pointer-events:none}
+.the.lop .hang-grp-em{transform:translateX(-100%); opacity:0; pointer-events:none}
+.the.lop .hang-grp-lop{transform:translateX(0); opacity:1; pointer-events:auto}
+@media (prefers-reduced-motion: reduce){ .chon-thumb,.hang-grp{transition:none} }
 /* Cột nhãn RẤT hẹp (nhãn dài nhất chỉ "SÁCH 12,13" cỡ 8 ký tự) — chỗ dôi ra
    rơi hết vào thanh tiến trình. Cột số + dấu ✓ ép sát lề phải. */
 .td-dong{display:grid; grid-template-columns:minmax(0,46px) minmax(60px,1fr) minmax(30px,auto) 16px;
@@ -278,6 +326,16 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .td-so.m-la{color:var(--m-la)} .td-so.m-do{color:var(--m-do)}
 i.m-do{background:var(--m-do)} i.m-cam{background:var(--m-cam)} i.m-vang{background:var(--m-vang)}
 i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
+/* ⭐ 11/09/2026 (thầy chốt) — AVATAR TOP 3 trên hàng CẢ LỚP (`hangLop()`),
+   PORT nguyên xi từ lop.html: `coAvatarThanh()` đo chiều cao hàng thật rồi
+   đặt `--av`, `xepAvatarMoc()` xếp chỗ dọc `.td-bar`. Bản sao ở `lop.html`
+   (và `dashboard.html`/`sp-chitiet.html`) — sửa công thức thì sửa cả bên đó. */
+.av-thanh{position:absolute; top:50%; width:var(--av,14px); height:var(--av,14px);
+  border-radius:999px; transform:translate(-50%,-50%); overflow:hidden; background:#CFDCD9;
+  display:grid; place-items:center; font:800 calc(var(--av,14px)*.4)/1 var(--sans); color:#fff;
+  box-shadow:0 0 0 1.5px #fff, 0 1px 2px rgba(22,35,42,.35)}
+.av-thanh img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%}
+.av-moc[data-hang="1"]{z-index:3} .av-moc[data-hang="2"]{z-index:2} .av-moc[data-hang="3"]{z-index:1}
 /* Dòng SÁCH — chưa có act AWord (chưa track điểm), thanh để trống + gạch ngang. */
 .td-dong-sach .td-bar{background:#EEF3F1}
 
@@ -416,31 +474,6 @@ body.mo-menu .side.trai{transform:none}
 .side-ds .mo-ta{font-size:11.5px; color:var(--muted); font-weight:600}
 .side-foot{padding:12px 18px 16px; border-top:1px solid var(--line);
   font-size:11px; color:var(--muted); font-weight:600}
-.vi-to{margin:14px 12px 6px; padding:18px 16px; border-radius:16px; text-align:center;
-  background:linear-gradient(160deg,#FEF6E6,#FCEFD8); border:1px solid #F5E3C0}
-.vi-to .so{font-size:38px; font-weight:800; color:#9A6A12; line-height:1.1}
-.vi-to .nh{font-size:12px; font-weight:700; color:#B08344; letter-spacing:.04em}
-.sao-ve{position:relative; width:104px; height:74px; margin:0 auto 2px}
-.sao-lon{position:absolute; left:50%; top:50%; width:52px; height:52px;
-  margin:-26px 0 0 -26px; fill:#F3B21B;
-  filter:drop-shadow(0 2px 6px rgba(226,160,20,.45));
-  animation:sao-tho 3.6s ease-in-out infinite}
-.sao-con{position:absolute; width:12px; height:12px; fill:#F7CE63;
-  animation:lap-lanh 2.6s ease-in-out infinite}
-.sao-con.c1{left:6px;  top:12px; width:14px; height:14px; animation-delay:0s}
-.sao-con.c2{right:8px; top:6px;                            animation-delay:.45s}
-.sao-con.c3{right:2px; bottom:14px; width:10px; height:10px; animation-delay:.9s}
-.sao-con.c4{left:14px; bottom:6px;  width:10px; height:10px; animation-delay:1.35s}
-.sao-con.c5{left:50%; top:-2px; margin-left:-5px; width:9px; height:9px; animation-delay:1.8s}
-@keyframes sao-tho{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
-@keyframes lap-lanh{
-  0%,100%{opacity:.25; transform:scale(.7) rotate(0deg)}
-  50%    {opacity:1;   transform:scale(1.15) rotate(35deg)}
-}
-@media (prefers-reduced-motion: reduce){
-  .sao-lon,.sao-con{animation:none} .sao-con{opacity:.85}
-}
-
 .toast{position:fixed; left:50%; bottom:26px; z-index:60; transform:translate(-50%,20px);
   background:var(--ink); color:#fff; font-size:13px; font-weight:600;
   border-radius:12px; padding:10px 18px; opacity:0; pointer-events:none;
@@ -460,7 +493,7 @@ body.mo-menu .side.trai{transform:none}
 
 /* ---------- DẠNG ĐIỆN THOẠI DỌC (y hệt lop.html) ---------- */
 @media (max-width:620px){
-  :root{--cao-the:166px}
+  :root{--cao-the:226px}
   .wrap{padding:0 18px}
   .main{gap:12px; padding:12px 18px 14px; grid-template-rows:auto minmax(190px,1fr);
     height:calc(100vh - var(--cao-dau) - var(--banphim));
@@ -470,8 +503,6 @@ body.mo-menu .side.trai{transform:none}
 
   .who .lop{display:none}
   .av.me{width:44px; height:44px; font-size:16px}
-  .sao-hieu{bottom:-2px; font-size:8.5px; padding:0 3px}
-  .sao-hieu > svg:not(.lap){width:8.5px; height:8.5px}
   .who .ten{font-size:15.5px}
   .top-in{gap:10px; padding:10px 18px}
 
@@ -479,8 +510,8 @@ body.mo-menu .side.trai{transform:none}
   .play svg{width:17px; height:17px; margin-right:17px}
   .the-body{padding:9px 8px 5px 10px; column-gap:6px}
   .t-chu{gap:0}
-  .t-ten{font-size:11px}
-  .t-ma{font-size:10.2px}
+  .t-ten{font-size:14px}
+  .t-chude{font-size:10.8px}
   .t-ten .ngay,.t-ten .khoang{margin-left:5px}
   .han-boc{width:106px; gap:5px}
   .t-han{width:100px; min-width:0; padding:3px 6px 4px; border-radius:9px; gap:2px}
@@ -516,7 +547,9 @@ body.mo-menu .side.trai{transform:none}
 
 <header class="top">
   <div class="wrap top-in">
-    <button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg><svg class="lap l1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg></span></button>
+    <!-- ⛔ 11/09/2026 (thầy chốt) — khóa học KHÔNG có sao, bỏ hẳn phù hiệu số
+         sao từng nổi trên avatar (`.sao-hieu`, y hệt `lop.html`). -->
+    <button class="av me" id="nutMenu" title="Mở menu của em"></button>
     <div class="who">
       <div class="ten"></div>
       <div class="lop">&nbsp;</div>
@@ -561,18 +594,9 @@ body.mo-menu .side.trai{transform:none}
       <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
   </div>
-  <div class="vi-to">
-    <div class="sao-ve">
-      <svg class="sao-lon" viewBox="0 0 24 24"><path d="M12 2.2l3 6.2 6.8.9-4.9 4.8 1.2 6.7L12 17.6l-6.1 3.2 1.2-6.7L2.2 9.3l6.8-.9z"/></svg>
-      <svg class="sao-con c1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
-      <svg class="sao-con c2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
-      <svg class="sao-con c3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
-      <svg class="sao-con c4" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
-      <svg class="sao-con c5" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
-    </div>
-    <div class="so">0</div>
-    <div class="nh">SAO ĐANG CÓ</div>
-  </div>
+  <!-- ⛔ 11/09/2026 (thầy chốt) — bỏ hẳn khối "ví sao" đầu sidebar: khóa học
+       không có sao. `AWVi.dungMenu()` gọi bên dưới KHÔNG truyền `oSao` nữa
+       nên tự bỏ qua toàn bộ phần này (xem `js/vi-qua.js`). -->
   <div class="side-ds" id="dsMenu"></div>
   <div class="side-foot">Lesson in Andrew Classes · <span id="verFoot"></span></div>
 </nav>
@@ -641,6 +665,14 @@ function ngayCuaMoc(ms){
   var d = new Date(ms);
   return d.getDate() + '/' + (d.getMonth() + 1);
 }
+/* Bài khóa KHÔNG có `b.ngay` (khác bài thường) — chỉ có `taoLuc` "YYYY-MM-DD"
+   (ngày app đẩy LESSON này lên web, ghi ở `dungBaiKhoaTuDong()`). Đọc bằng
+   regex thẳng trên chuỗi, ĐỪNG `new Date(iso)` — giờ UTC lệch múi giờ máy
+   học sinh là sai ngày (đúng nếp `mocHan()` bên `chung.js` đọc `taoLuc`). */
+function ngayCuaISO(s){
+  var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '').trim());
+  return m ? (Number(m[3]) + '/' + Number(m[2])) : '';
+}
 
 /* Tên bài giảng thật, cắt bỏ "BÀI GIẢNG N:" thầy gõ ở đầu — chỉ giữ phần
    sau dấu ':' đầu tiên. Chưa có `baiGiang.tieuDe` thì lùi về tên dạng bài
@@ -662,10 +694,9 @@ function theTuBai(b){
     dang: b.dang || '',
     loai: '',
     trang: A.trangCuaBai(b),
-    ten: tenBaiGiang(b),
-    ma: (maLs ? '<b class="nhan-ls">' + A.chuAnToan(maLs) + '</b>' : '') +
-        A.chuAnToan(KHOA.tenGoc || KHOA.maLop),
-    giao: ngayGach(b.ngay),
+    lesson: maLs || 'LESSON',   /* dòng LỚN, lấp lánh */
+    chuDe: tenBaiGiang(b),      /* dòng dưới — tên bài giảng đầy đủ, không cắt */
+    giao: ngayGach(b.ngay) || ngayCuaISO(b.taoLuc),
     han: A.chuHan(b),
     hanNgan: ngayCuaMoc(moc),
     hanMoc: moc,
@@ -731,19 +762,140 @@ function mauTheoPhanTram(pt, xong){
   return 'm-do';
 }
 
-function hangSach(k, cum){
-  return '<span class="' + cum + '"><span class="td-dong td-dong-sach">' +
+/* ═══ AVATAR TOP 3 trên hàng CẢ LỚP — PORT nguyên xi từ lop.html (11/09/2026,
+   thầy chốt) ═══ Ba bạn điểm cao nhất của act đó, chụm ở cuối vệt màu, hạng 1
+   ngoài cùng bên phải. Chưa em nào làm (hoặc chưa đọc xong điểm) thì không
+   hiện gì — giống hệt lop.html. ⛔ Bản sao ở `lop.html` — sửa công thức thì
+   sửa cả hai. */
+var AV_MOC_SO = 3;
+function avChuTat(ten){
+  var tu = String(ten || '').trim().split(/\s+/).filter(Boolean);
+  if (!tu.length) return '?';
+  if (tu.length === 1) return tu[0].charAt(0).toUpperCase();
+  return (tu[tu.length - 2].charAt(0) + tu[tu.length - 1].charAt(0)).toUpperCase();
+}
+function avMocHtml(dsDiem, lopGoc){
+  var ds = (dsDiem || []).slice();
+  if (!ds.length) return '';
+  ds.sort(function(a, b){
+    if (b.diem !== a.diem) return b.diem - a.diem;
+    return (a.giay || 0) - (b.giay || 0);
+  });
+  return ds.filter(function(e){ return e && e.ten; }).slice(0, AV_MOC_SO)
+    .map(function(e, i){
+      return '<span class="av-thanh av-moc" data-hang="' + (i + 1) + '" title="' +
+        A.chuAnToan(e.ten) + ' · hạng ' + (i + 1) + ' · ' + e.diem + '%">' +
+        '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, e.ten)) + '" alt="" onerror="this.remove()">' +
+        A.chuAnToan(avChuTat(e.ten)) + '</span>';
+    }).join('');
+}
+/* Đo chiều cao THẬT của mỗi hàng `.td-dong` rồi đặt `--av` — không đặt số
+   cứng, hàng co giãn theo `--cao-the`/số hàng. Trần 40px như lop.html.
+   ⛔ Gộp nhóm theo `h.parentElement` — nay là `.hang-grp-em`/`.hang-grp-lop`
+   (MỘT thẻ bọc CHUNG cho cả khối, xem `veDiem()`), một hộp thật luôn có kích
+   thước (chỉ trượt ra ngoài bằng `transform`, không `display:none`) nên đo
+   được CẢ HAI khối ngay từ lúc mới vẽ — không cần đợi bấm mới đo đúng cỡ,
+   khác hẳn bản trước khi mỗi hàng còn bọc riêng từng thẻ `display:contents`. */
+function coAvatarThanh(goc){
+  var ds = (goc || document).querySelectorAll('.td-dong');
+  if (!ds.length) return;
+  var nhom = [];
+  Array.prototype.forEach.call(ds, function(h){
+    var o = nhom.filter(function(x){ return x.cha === h.parentElement; })[0];
+    if (!o) { o = { cha: h.parentElement, hang: [] }; nhom.push(o); }
+    o.hang.push(h);
+  });
+  nhom.forEach(function(o){
+    var ob = o.cha.getBoundingClientRect();
+    var tam = o.hang.map(function(h){
+      var b = h.getBoundingClientRect();
+      return { giua: b.top + b.height / 2, cao: b.height };
+    });
+    if (!tam.length || !tam[0].cao) return;
+    var co = 999;
+    tam.forEach(function(x, i){
+      if (i > 0) co = Math.min(co, tam[i].giua - tam[i - 1].giua);
+      if (i < tam.length - 1) co = Math.min(co, tam[i + 1].giua - tam[i].giua);
+      co = Math.min(co, (x.giua - ob.top) * 2, (ob.bottom - x.giua) * 2);
+    });
+    var av = Math.max(10, Math.min(40, Math.round(co - 2)));
+    o.hang.forEach(function(h){ h.style.setProperty('--av', av + 'px'); });
+  });
+}
+/* Đặt chỗ cho CỤM avatar MỐC: tâm hạng 1 ghim đúng cuối vệt màu, hạng sau
+   lùi sang trái đều nhau; cả cụm kẹp trong hai mép THANH. */
+function xepAvatarMoc(goc){
+  var bars = (goc || document).querySelectorAll('.td-bar');
+  Array.prototype.forEach.call(bars, function(bar){
+    var av = bar.querySelectorAll('.av-moc');
+    if (!av.length) return;
+    var rong = bar.offsetWidth || bar.getBoundingClientRect().width;
+    var d = av[0].getBoundingClientRect().width || 14;
+    if (!rong || !d) return;
+    var n = av.length, r = d / 2;
+    var buoc = d * 0.85;
+    if (n > 1 && (n - 1) * buoc + d > rong) buoc = Math.max(0, (rong - d) / (n - 1));
+    var vet = bar.querySelector('i');
+    var ptVet = vet ? (parseFloat(vet.style.width) || 0) : 0;
+    var trai = (n - 1) * buoc + r;
+    var p = Math.min(rong - r, Math.max(trai, rong * ptVet / 100));
+    Array.prototype.forEach.call(av, function(x, i){
+      x.style.left = (Math.round((p - buoc * i) * 10) / 10) + 'px';
+    });
+  });
+}
+function veLaiAvatarMoc(goc){ coAvatarThanh(goc); xepAvatarMoc(goc); }
+function henVeLaiAvatarMoc(goc){
+  veLaiAvatarMoc(goc);
+  requestAnimationFrame(function(){ veLaiAvatarMoc(goc); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function(){ veLaiAvatarMoc(goc); });
+  var tre = (typeof THOI_CHUYEN === 'number' ? THOI_CHUYEN : 420) + 100;
+  setTimeout(function(){ veLaiAvatarMoc(goc); }, tre);
+}
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible') veLaiAvatarMoc(document);
+});
+
+/* Khối trắng trượt sau nút EM/CẢ LỚP đang chọn (`.chon-thumb`) — đo
+   `offsetLeft`/`offsetWidth` của nút `.on` rồi đặt `transform`/`width`, vì
+   tên học sinh dài ngắn mỗi em một khác, không đặt số cứng được.
+   `tucThi` = true: đặt vị trí NGAY, không cho chạy animation (lúc mới vẽ thẻ
+   — không thì thumb "bay" từ góc trái vào ngay lần đầu hiện thẻ, không đẹp). */
+function dinhViThumb(hop, tucThi){
+  var thumb = hop && hop.querySelector('.chon-thumb');
+  var on = hop && hop.querySelector('[data-xem].on');
+  if (!thumb || !on) return;
+  if (tucThi) thumb.style.transition = 'none';
+  thumb.style.width = on.offsetWidth + 'px';
+  thumb.style.transform = 'translateX(' + on.offsetLeft + 'px)';
+  if (tucThi) {
+    thumb.getBoundingClientRect();   // ⛔ ép reflow trước khi trả lại transition
+    thumb.style.transition = '';
+  }
+}
+function henDinhViThumb(goc){
+  (goc || document).querySelectorAll('.chon-xem').forEach(function(hop){
+    dinhViThumb(hop, true);
+    requestAnimationFrame(function(){ dinhViThumb(hop, true); });
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(function(){ dinhViThumb(hop, true); });
+    }
+  });
+}
+
+function hangSach(k){
+  return '<span class="td-dong td-dong-sach">' +
     '<span class="td-ten">' + nhanRow(k) + '</span>' +
     '<span class="td-bar"></span>' +
     '<span class="td-so em-chua">—</span>' +
-    '<span class="td-tich"></span></span></span>';
+    '<span class="td-tich"></span></span>';
 }
 
 /* Một hàng ở chế độ EM: SỐ CÂU ĐÚNG / TỔNG SỐ CÂU (thầy chốt, không hiện %).
    Chưa làm thì DUNG=0 và TỔNG lấy từ CHUẨN ĐỦ ĐIỂM của act (không hiện chữ
    "chưa làm" nữa — thầy chốt 11/09/2026). */
 function hangEm(k){
-  if (k.loai === 'sach') return hangSach(k, 'hang-em');
+  if (k.loai === 'sach') return hangSach(k);
   var ds = DIEM[k.ma] || [];
   var toi = null, khoaTen = A.khoaTen(TOI);
   for (var i = 0; i < ds.length; i++) {
@@ -756,27 +908,28 @@ function hangEm(k){
   var tong = (tho && tho.tong > 0) ? tho.tong : toiDa;
   var dung = tho ? tho.diem : 0;
   var pt = tong > 0 ? Math.round(dung / tong * 100) : 0;
-  return '<span class="hang-em"><span class="td-dong">' +
+  return '<span class="td-dong">' +
     '<span class="td-ten">' + nhanRow(k) + '</span>' +
     '<span class="td-bar"><i class="' + mauTheoPhanTram(pt, xong) + '" style="width:' + pt + '%"></i></span>' +
     '<span class="td-so' + (xong ? ' m-la' : '') + '">' + dung + '/' + tong + '</span>' +
-    '<span class="td-tich">' + (xong ? '✓' : '') + '</span></span></span>';
+    '<span class="td-tich">' + (xong ? '✓' : '') + '</span></span>';
 }
 
 /* Một hàng ở chế độ CẢ LỚP: số em (cùng theo khóa này) đã xong / sĩ số. */
 function hangLop(k){
-  if (k.loai === 'sach') return hangSach(k, 'hang-lop');
+  if (k.loai === 'sach') return hangSach(k);
   var ds = DIEM[k.ma] || [], chuan = CHUAN[k.ma], n = 0;
   for (var i = 0; i < CA_LOP.length; i++) {
     if (A.xongAct(ds, CA_LOP[i], chuan)) n++;
   }
   var pt = SI_SO > 0 ? Math.round(n / SI_SO * 100) : 0;
   var du = SI_SO > 0 && n >= SI_SO;
-  return '<span class="hang-lop"><span class="td-dong">' +
+  return '<span class="td-dong">' +
     '<span class="td-ten">' + nhanRow(k) + '</span>' +
-    '<span class="td-bar"><i class="' + mauTheoPhanTram(pt, du) + '" style="width:' + pt + '%"></i></span>' +
+    '<span class="td-bar"><i class="' + mauTheoPhanTram(pt, du) + '" style="width:' + pt + '%"></i>' +
+      avMocHtml(ds, LOP) + '</span>' +
     '<span class="td-so' + (du ? ' m-la' : '') + '">' + n + '/' + SI_SO + '</span>' +
-    '<span class="td-tich">' + (du ? '✓' : '') + '</span></span></span>';
+    '<span class="td-tich">' + (du ? '✓' : '') + '</span></span>';
 }
 
 function veDiem(b){
@@ -784,17 +937,16 @@ function veDiem(b){
   if (!khoi.length) {
     return '<span class="the-diem chi-tay"><span class="xem-chu">Bài giao trên giấy — chưa có bài tập online nào.</span></span>';
   }
-  var acts = khoi.filter(function(k){ return k.loai !== 'sach'; });
-  var emXong = 0;
-  acts.forEach(function(k){ if (A.xongAct(DIEM[k.ma] || [], TOI, CHUAN[k.ma])) emXong++; });
   return '<span class="the-diem">' +
     '<span class="xem-dau">' +
-      '<span class="xem-chu chu-em">EM ĐÃ XONG <b>' + emXong + '/' + acts.length + '</b></span>' +
-      '<span class="xem-chu chu-lop">CẢ LỚP • <b>' + SI_SO + ' EM</b></span>' +
-      '<span class="chon-xem"><span data-xem="em" class="on">EM</span>' +
+      '<span class="chon-xem"><span class="chon-thumb"></span>' +
+      '<span data-xem="em" class="on">' + chuAnToan(TOI) + '</span>' +
       '<span data-xem="lop">CẢ LỚP</span></span>' +
     '</span>' +
-    khoi.map(hangEm).join('') + khoi.map(hangLop).join('') +
+    '<span class="diem-rows">' +
+      '<span class="hang-grp hang-grp-em">' + khoi.map(hangEm).join('') + '</span>' +
+      '<span class="hang-grp hang-grp-lop">' + khoi.map(hangLop).join('') + '</span>' +
+    '</span>' +
   '</span>';
 }
 
@@ -808,8 +960,9 @@ function veTheMoi(b, tt){
   return '<button class="the moi' + lopThem + '"><span class="the-in ' + lopNen + '">' +
     '<span class="the-body">' +
       '<span class="t-chu">' +
-        '<span class="t-ten">' + b.ten + '</span>' +
-        (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
+        '<span class="t-ten">' + chuAnToan(b.lesson) +
+          (b.giao ? '<span class="ngay">NGÀY ' + b.giao + '</span>' : '') + '</span>' +
+        '<span class="t-chude">' + chuAnToan(b.chuDe) + '</span>' +
       '</span>' +
       veHan(b, tt) +
     '</span>' + veDiem(b) +
@@ -823,8 +976,9 @@ function veTheCu(b){
     '<span class="the-in ' + th.lop + '">' +
     '<span class="the-body">' +
       '<span class="t-chu">' +
-        '<span class="t-ten">' + b.ten + '<span class="khoang">(' + b.giao + ' - ' + b.hanNgan + ')</span></span>' +
-        (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
+        '<span class="t-ten">' + chuAnToan(b.lesson) +
+          '<span class="khoang">(' + b.giao + ' - ' + b.hanNgan + ')</span></span>' +
+        '<span class="t-chude">' + chuAnToan(b.chuDe) + '</span>' +
       '</span>' +
     '</span>' + veDiem(b) +
     veMui(b.khoa) +
@@ -889,6 +1043,13 @@ function dungCot(){
         e.preventDefault(); e.stopPropagation();
         t.classList.toggle('lop', n.getAttribute('data-xem') === 'lop');
         t.querySelectorAll('[data-xem]').forEach(function(x){ x.classList.toggle('on', x === n); });
+        /* Trượt khối thumb theo nút vừa bấm — KHÔNG truyền `tucThi` nên chạy
+           animation (`.chon-thumb` đã có transition sẵn trong CSS). */
+        dinhViThumb(n.closest('.chon-xem'));
+        /* Bề ngang thanh có thể đổi rất nhẹ giữa hai khối (viền/scroll khác
+           nhau) — đo lại avatar TOP 3 cho chắc, dù khối CẢ LỚP đã đo sẵn từ
+           lúc vẽ thẻ (khác bản trước: không còn `display:none`). */
+        henVeLaiAvatarMoc(t);
         return;
       }
       if (b.khoa) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
@@ -896,6 +1057,8 @@ function dungCot(){
       location.href = b.trang + '?id=' + encodeURIComponent(b.id);
     };
   });
+  henVeLaiAvatarMoc($('#cotBai'));
+  henDinhViThumb($('#cotBai'));
   chayDongHo();
 }
 
@@ -1055,7 +1218,6 @@ A.napDuLieu().then(function(dl){
 /* ---------- SIDEBAR ---------- */
 var veMenuChinh = AWVi.dungMenu({
   hop: $('#dsMenu'),
-  oSao: document.querySelector('.vi-to'),
   layCtx: function(){
     return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, baoToast: baoToast };
   }

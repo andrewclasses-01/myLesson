@@ -1253,14 +1253,6 @@ body.mo-menu .side.trai{transform:none}
   box-shadow:0 0 0 1px var(--line), 0 7px 20px rgba(22,35,42,.08)}
 .video-o::before{content:''; display:block; padding-top:56.25%}
 .video-o>#videoOKhoa,.video-o iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
-/* ⛔⛔ Bẫy CHỈ lộ trên Chrome thật (không lộ ở bàn thử): Chrome vẽ khung hình
-   video qua "hardware overlay" — vẽ THẲNG lên màn hình, XUYÊN QUA mọi lớp CSS
-   che ở trên dù `z-index`/`getBoundingClientRect`/`elementFromPoint` đều báo
-   đúng lớp che đang ở trên cùng. Cách chặn DUY NHẤT chắc chắn: `visibility:
-   hidden` NGAY TRÊN khung video — ẩn hẳn khỏi lượt vẽ (không phải che đè) —
-   xem `onDoiTrangThaiKhoa()` bật lại đúng lúc PHÁT. Ẩn SẴN từ đầu (trước khi
-   biết trạng thái phát) để không lộ ra dù chỉ một khung hình. */
-#videoOKhoa{visibility:hidden}
 .vk-list-btn{position:absolute; top:10px; right:10px; z-index:4; background:rgba(255,255,255,.92)}
 
 /* pop-up danh sách đoạn — phủ kín khung video */
@@ -1327,25 +1319,12 @@ body.mo-menu .side.trai{transform:none}
 .vk-playhead{position:absolute; top:50%; width:15px; height:15px; border-radius:50%; background:var(--accent);
   border:3px solid #fff; transform:translate(-50%,-50%);
   box-shadow:0 0 0 2px var(--accent), 0 2px 6px rgba(22,35,42,.4); pointer-events:none; left:0%}
-.vk-total{grid-column:3; grid-row:2; justify-self:end; font-size:11px; color:var(--muted);
+/* ⭐ 13/09/2026 (thầy chốt) — bề rộng CỐ ĐỊNH đủ chỗ cho "88:88 / 88:88", canh
+   phải: số giờ đổi vị trí (0:0x -> 0:1x, hết phút lên giờ…) không còn làm cả
+   thanh chia đoạn bên trái co giãn theo (cột lưới `auto` trước đây tự co theo
+   đúng độ dài chữ số hiện tại). */
+.vk-total{grid-column:3; grid-row:2; width:96px; text-align:right; font-size:11px; color:var(--muted);
   font-variant-numeric:tabular-nums; font-weight:700}
-
-/* ⭐ 13/09/2026 — che phủ khung video khi KHÔNG đang phát: vừa giấu icon chia
-   sẻ/"Watch on YouTube" mặc định của YouTube (không có cách tắt qua playerVars),
-   vừa cho một nút Phát to-rõ theo đúng phong cách riêng của trang. */
-/* ⛔⛔ Nền phải GẦN NHƯ KÍN (không chỉ tối màu mờ) — icon chia sẻ/"Watch on
-   YouTube" của YouTube màu sáng, nền mờ vẫn thấy xuyên qua rõ mồn một.
-   ⛔⛔ Bẫy trả giá trên Chrome THẬT (không lộ trên bàn thử): Chrome dùng
-   "video overlay" tăng tốc phần cứng cho khung hình YouTube — khung hình đó
-   có thể VẼ ĐÈ LÊN cả những lớp CSS đứng z-index cao hơn nếu lớp che không tự
-   thành MỘT LỚP GHÉP (compositing layer) riêng. `transform:translateZ(0)` ép
-   trình duyệt ghép lớp riêng cho khối che, mới thực sự che kín. */
-.vk-pause-cover{position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
-  background:rgba(11,22,26,.94); cursor:pointer; transform:translateZ(0); will-change:transform}
-.vk-pause-cover[hidden]{display:none}
-.vk-pause-play{width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.94);
-  display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,.32)}
-.vk-pause-play svg{width:24px; height:24px; fill:var(--accent); margin-left:3px}
 
 /* vạch phân cách bài giảng ‖ bài tập (thầy chốt 13/09/2026) */
 .vk-divider{border:0; border-top:1px dashed var(--line); height:0; margin:0}
@@ -2452,7 +2431,7 @@ function veKhoi(k, so){
           (coTuDien
             ? '<button class="nut-td-nho" title="Tra từ điển">' + IC_SACH + '</button>'
             : '') +
-          '<h3>' + (k.mau || 'LEADERBOARD') + '</h3>' +
+          '<h3>' + (k.mau || 'LEADERBOARD').toUpperCase() + '</h3>' +
           '<button class="lam-moi" title="Làm mới">' + IC_MOI + '</button></div>' +
         '<div class="lb-ds">' + veBang(k.ma) + '</div>' +
       '</div>' + (coTuDien ? veTuDien() : '') + '</div>' +
@@ -3166,46 +3145,6 @@ function lyDoChuaMoDoanKhoa(id, TT){
   return ly;
 }
 
-// ⭐ 13/09/2026 — bản NGẮN GỌN của "vì sao chưa mở", dùng cho pill đỏ
-// "ĐANG CHỜ: …" trên thẻ chờ (khác câu đầy đủ ở khung player phía trên).
-// Rút gọn tên đoạn "HD BT2 - Trả lời…" -> "Hướng dẫn BT2" (CSS tự viết hoa).
-function nhanDoanNganKhoa(ten){
-  var m = /^HD\s+(BT\d+)/i.exec(String(ten || '').trim());
-  return m ? ('Hướng dẫn ' + m[1].toUpperCase()) : String(ten || '');
-}
-// Vì sao ĐOẠN `id` chưa mở, dò tới NGUYÊN NHÂN GẦN NHẤT (nếu cái chặn nó cũng
-// đang khoá vì lý do khác thì lùi tiếp) — dùng đệ quy cùng cặp với `chuChoBt`.
-function chuChoDoan(id, TT){
-  var bg = BAI.baiGiang || {};
-  var doan = bg.doan || [], btArr = BAI.bt || [];
-  var ly = null;
-  doan.forEach(function(d){
-    if (ly || d.lam !== 'moNhay' || (d.doanMo || []).indexOf(id) === -1) return;
-    ly = TT.moD[d.id] ? ('Xem ' + nhanDoanNganKhoa(d.ten)) : chuChoDoan(d.id, TT);
-  });
-  if (ly) return ly;
-  btArr.forEach(function(x){
-    if (ly || !x.xong || x.xong.lam !== 'moNhay' || (x.xong.doanMo || []).indexOf(id) === -1) return;
-    ly = TT.moB[x.id] ? ('Hoàn thành ' + (NHAN_BT_KHOA[x.id] || '')) : chuChoBt(x.id, TT);
-  });
-  return ly;
-}
-// Vì sao BÀI TẬP `id` chưa mở — bản ngắn cho pill "ĐANG CHỜ:".
-function chuChoBt(id, TT){
-  var bg = BAI.baiGiang || {};
-  var doan = bg.doan || [], btArr = BAI.bt || [];
-  var ly = null;
-  doan.forEach(function(d){
-    if (ly || d.lam !== 'moNhay' || (d.bt || []).indexOf(id) === -1) return;
-    ly = TT.moD[d.id] ? ('Xem ' + nhanDoanNganKhoa(d.ten)) : chuChoDoan(d.id, TT);
-  });
-  if (ly) return ly;
-  btArr.forEach(function(x){
-    if (ly || x.id === id || !x.xong || x.xong.lam !== 'moNhay' || (x.xong.bt || []).indexOf(id) === -1) return;
-    ly = TT.moB[x.id] ? ('Hoàn thành ' + (NHAN_BT_KHOA[x.id] || '')) : chuChoBt(x.id, TT);
-  });
-  return ly || 'bước trước';
-}
 // Tên thật của một bài tập, bỏ tiền tố "BTx." / "TRẮC NGHIỆM … -" (tiền tố đã
 // lên nhãn ngắn phía trên rồi, khỏi lặp lại trong tên).
 function tenThatBtKhoa(x){
@@ -3255,7 +3194,8 @@ function veTheBaiGiangKhoa(bg){
     var t = giayDoanKhoa(d.tu), n = giayDoanKhoa(d.den);
     if (t != null && n != null && n > t) tong += (n - t);
   });
-  var duoi = [tong ? chuoiGioDoanKhoa(tong) : '', doan.length ? (doan.length + ' phân đoạn') : '']
+  // ⭐ 13/09/2026 (thầy chốt) — đổi thứ tự: số phân đoạn trước, tổng giờ sau.
+  var duoi = [doan.length ? (doan.length + ' phân đoạn') : '', tong ? chuoiGioDoanKhoa(tong) : '']
     .filter(Boolean).map(chuAnToan).join(' • ');
   sec.innerHTML =
     '<div class="card-head">' +
@@ -3268,7 +3208,6 @@ function veTheBaiGiangKhoa(bg){
     '<div class="than-khoa">' +
       '<div class="video-o">' +
         '<div id="videoOKhoa"></div>' +
-        '<div class="vk-pause-cover" id="vkPauseCover"><div class="vk-pause-play">' + IC_PHAT_KHOA + '</div></div>' +
         '<div class="ic-nut vk-list-btn" id="btnDsDoanKhoa" title="Danh sách đoạn">' + IC_DS_KHOA + '</div>' +
         '<div class="vk-seg-overlay" id="dsDoanKhoaOverlay">' +
           '<div class="vk-seg-head"><b>Các đoạn của bài giảng</b>' +
@@ -3355,7 +3294,9 @@ function veNhanDoanKhoa(d){
     return;
   }
   var pt = Math.round(tyLeXemDoanKhoa(d) * 100), xong = !!TT_KHOA.xongD[d.id];
-  hop.innerHTML = '<span class="vk-segten">' + chuAnToan(d.ten || '') + '</span>' +
+  // ⭐ 13/09/2026 (thầy chốt) — thêm SỐ THỨ TỰ đoạn trước tên, vd "4. Tạo câu…".
+  var idx = ((BAI.baiGiang || {}).doan || []).indexOf(d) + 1;
+  hop.innerHTML = '<span class="vk-segten">' + chuAnToan(idx + '. ' + (d.ten || '')) + '</span>' +
     '<span class="vk-segdot">•</span>' +
     '<span class="vk-segpct' + (xong ? ' xong' : '') + '">' + pt + '%</span>';
 }
@@ -3365,7 +3306,7 @@ function veNhanDoanKhoa(d){
 // chốt xem ảnh mẫu: nhãn ngắn bên trái, tên thật ở giữa, pill đỏ "ĐANG CHỜ: …"
 // bên phải — tái dùng NGUYÊN CSS `.st-cho-hang`/`.st-nhan`/`.st-cho-tt.ai`,
 // không định nghĩa lớp mới nào.
-function veTheChoKhoa(x, so, TT){
+function veTheChoKhoa(x, so){
   var sec = document.createElement('section');
   sec.className = 'card st-cho';
   sec.setAttribute('data-btid', x.id);
@@ -3374,8 +3315,10 @@ function veTheChoKhoa(x, so, TT){
     '<div class="st-cho-hang">' +
       '<span class="st-nhan">' + chuAnToan(nhan) + '</span>' +
       '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(tenThatBtKhoa(x)) + '</span></div>' +
-      '<div class="st-cho-tt ai">' + IC_KHOA_KHOA +
-        '<span>Đang chờ:&nbsp;</span><b class="ten-cham">' + chuAnToan(chuChoBt(x.id, TT)) + '</b></div>' +
+      // ⭐ 13/09/2026 (thầy chốt) — BỎ câu lý do riêng từng thẻ, dùng chung
+      // MỘT chữ "CHƯA MỞ KHOÁ" cho mọi bài tập chưa tới lượt (đơn giản, dễ đọc
+      // hơn — chi tiết "vì sao" đã có đủ ở khung player phía trên rồi).
+      '<div class="st-cho-tt ai">' + IC_KHOA_KHOA + '<b class="ten-cham">Chưa mở khoá</b></div>' +
     '</div>';
   return sec;
 }
@@ -3407,7 +3350,7 @@ function veTheChoGiaoKhoa(x, so){
 }
 
 function dungTheBtKhoa(x, so, TT){
-  if (!TT.moB[x.id]) return veTheChoKhoa(x, so, TT);
+  if (!TT.moB[x.id]) return veTheChoKhoa(x, so);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
   if (!x.ma) return veTheChoGiaoKhoa(x, so);
   var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma }, so);
@@ -3462,8 +3405,12 @@ function moVideoKhoa(bg){
     o.innerHTML = ''; o.appendChild(box);
     YT_PLAYER = new YT.Player('ytHostKhoa', {
       videoId: id,
-      // controls:0 — điều khiển RIÊNG (khung `.vk-player`, xem `ganNutKhoa`).
-      playerVars: { rel: 0, modestbranding: 1, playsinline: 1, controls: 0, disablekb: 1,
+      // ⭐ 13/09/2026 (thầy chốt) — TRẢ VỀ điều khiển GỐC của YouTube
+      // (`controls:1`): bản tự vẽ nút Phát + che khung lúc dừng (để giấu icon
+      // mặc định của YouTube) gây giật/lag thật và nhìn không đẹp — thà chấp
+      // nhận icon gốc còn hơn. Khung `.vk-player` bên dưới (lùi/tiến 10s +
+      // thanh chia đoạn) vẫn giữ, dùng SONG SONG với điều khiển gốc.
+      playerVars: { rel: 0, modestbranding: 1, playsinline: 1,
         cc_load_policy: 0, iv_load_policy: 3 },
       events: {
         onReady: tatPhuDeKhoa,
@@ -3475,23 +3422,14 @@ function moVideoKhoa(bg){
 
 function onDoiTrangThaiKhoa(e){
   var nutPhat = $('#btnPhatKhoa');
-  var che = $('#vkPauseCover');
-  var khungVideo = $('#videoOKhoa');
   clearInterval(ytHenKhoa);
   if (e.data === YT.PlayerState.PLAYING) {
     tatPhuDeKhoa();
     if (nutPhat) nutPhat.innerHTML = IC_DUNG_KHOA;
-    if (che) che.hidden = true;
-    if (khungVideo) khungVideo.style.visibility = 'visible';
     GIAY_HIEN_KHOA = YT_PLAYER.getCurrentTime();
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
-  } else {
-    if (nutPhat) nutPhat.innerHTML = IC_PHAT_KHOA;
-    // ⭐ 13/09/2026 — che LẠI + ẨN HẲN khung video mỗi khi không phát (kể cả
-    // lúc mới tải/đang đệm), giấu luôn icon chia sẻ/"Watch on YouTube" mặc
-    // định của YouTube (xem chú thích "hardware overlay" ở CSS `#videoOKhoa`).
-    if (che) che.hidden = false;
-    if (khungVideo) khungVideo.style.visibility = 'hidden';
+  } else if (nutPhat) {
+    nutPhat.innerHTML = IC_PHAT_KHOA;
   }
 }
 
@@ -3633,16 +3571,8 @@ function capNhatSauKhiDoiKhoa(){
     var nenKhoa = !TT_KHOA.moB[x.id];
     var daKhoa = !cu || cu.classList.contains('st-cho');
     // Còn khoá y như cũ (hoặc đã mở và ĐANG chơi dở — đừng đập card đang mở
-    // chỉ vì tính lại, chỉ đập khi trạng thái khoá THẬT SỰ đổi) -> chỉ cập
-    // nhật lại chữ "ĐANG CHỜ: …" tại chỗ (nguyên nhân gần nhất có thể vừa đổi
-    // dù bản thân thẻ vẫn đang khoá), không đập cả thẻ.
-    if (cu && daKhoa === nenKhoa) {
-      if (nenKhoa) {
-        var ttEl = cu.querySelector('.st-cho-tt b');
-        if (ttEl) ttEl.textContent = chuChoBt(x.id, TT_KHOA);
-      }
-      return;
-    }
+    // chỉ vì tính lại) -> giữ nguyên, chỉ đập khi trạng thái khoá THẬT SỰ đổi.
+    if (cu && daKhoa === nenKhoa) return;
     var moi = dungTheBtKhoa(x, i + 1, TT_KHOA);
     if (cu && cu.parentNode) cu.parentNode.replaceChild(moi, cu);
   });
@@ -3684,9 +3614,6 @@ function ganNutKhoa(){
   var btnDs = $('#btnDsDoanKhoa'), ovDs = $('#dsDoanKhoaOverlay'), btnDong = $('#dsDoanKhoaClose');
   if (btnDs) btnDs.onclick = function(){ if (ovDs) ovDs.classList.add('hien'); };
   if (btnDong) btnDong.onclick = dongDsDoanKhoa;
-
-  var che = $('#vkPauseCover');
-  if (che) che.onclick = function(){ if (YT_PLAYER) YT_PLAYER.playVideo(); };
 
   var btnDen = $('#btnTapTrungKhoa');
   if (btnDen) btnDen.onclick = function(){

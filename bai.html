@@ -1314,11 +1314,44 @@ body.mo-menu .side.trai{transform:none}
 .vk-seg-block.khoa{background:#FBEAEA}
 .vk-seg-block .manh{position:absolute; top:0; bottom:0; background:var(--amber)}
 .vk-seg-block.xong{background:var(--m-la)}
-.vk-playhead{position:absolute; top:50%; width:13px; height:13px; border-radius:50%; background:#fff;
-  border:3px solid var(--accent); transform:translate(-50%,-50%); box-shadow:0 1px 4px rgba(22,35,42,.35);
-  pointer-events:none; left:0%}
+/* ⭐ 13/09/2026 — nổi bật hơn (thầy chốt): đổ màu teal đặc + viền trắng + quầng
+   sáng ngoài, thay vì trắng-viền-teal cũ dễ lẫn vào nền sáng. */
+.vk-playhead{position:absolute; top:50%; width:15px; height:15px; border-radius:50%; background:var(--accent);
+  border:3px solid #fff; transform:translate(-50%,-50%);
+  box-shadow:0 0 0 2px var(--accent), 0 2px 6px rgba(22,35,42,.4); pointer-events:none; left:0%}
 .vk-total{grid-column:3; grid-row:2; justify-self:end; font-size:11px; color:var(--muted);
   font-variant-numeric:tabular-nums; font-weight:700}
+
+/* ⭐ 13/09/2026 — che phủ khung video khi KHÔNG đang phát: vừa giấu icon chia
+   sẻ/"Watch on YouTube" mặc định của YouTube (không có cách tắt qua playerVars),
+   vừa cho một nút Phát to-rõ theo đúng phong cách riêng của trang. */
+/* ⛔ Nền phải GẦN NHƯ KÍN (không chỉ tối màu mờ) — icon chia sẻ/"Watch on
+   YouTube" của YouTube màu sáng, nền mờ vẫn thấy xuyên qua rõ mồn một. */
+.vk-pause-cover{position:absolute; inset:0; z-index:3; display:flex; align-items:center; justify-content:center;
+  background:rgba(11,22,26,.94); cursor:pointer}
+.vk-pause-cover[hidden]{display:none}
+.vk-pause-play{width:60px; height:60px; border-radius:50%; background:rgba(255,255,255,.94);
+  display:flex; align-items:center; justify-content:center; box-shadow:0 6px 20px rgba(0,0,0,.32)}
+.vk-pause-play svg{width:24px; height:24px; fill:var(--accent); margin-left:3px}
+
+/* vạch phân cách bài giảng ‖ bài tập (thầy chốt 13/09/2026) */
+.vk-divider{border:0; border-top:1px dashed var(--line); height:0; margin:0}
+
+/* pop-up "làm lại cho vui" khi bấm một khúc ĐÃ XONG trên thanh tiến trình —
+   trượt xuống giữa màn, nền dim+mờ. Nội dung là CHÍNH thẻ act thật, không vẽ
+   lại gì khác. */
+.vk-bt-backdrop{position:fixed; inset:0; background:rgba(10,20,20,.5); backdrop-filter:blur(5px); z-index:60;
+  opacity:0; pointer-events:none; transition:opacity .25s}
+.vk-bt-backdrop.hien{opacity:1; pointer-events:auto}
+.vk-bt-popup{position:fixed; left:50%; top:50%; width:min(720px,92vw); max-height:calc(100vh - 100px);
+  overflow:auto; z-index:61; opacity:0; pointer-events:none;
+  transform:translate(-50%,-58%) scale(.97); transition:opacity .25s, transform .25s var(--em)}
+.vk-bt-popup.hien{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
+.vk-bt-popup-head{display:flex; align-items:center; justify-content:space-between; padding:0 2px 10px;
+  color:#fff; font-weight:800; font-size:12px; letter-spacing:.05em; text-transform:uppercase}
+.vk-bt-popup-close{width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.16); color:#fff;
+  display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none}
+.vk-bt-popup-close:hover{background:rgba(255,255,255,.3)}
 
 /* chế độ tập trung (đèn) — phóng to cả thẻ BÀI GIẢNG ra giữa màn hình, làm tối phần còn lại */
 .vk-backdrop{position:fixed; inset:0; background:rgba(10,20,20,.55); backdrop-filter:blur(4px); z-index:100;
@@ -1332,34 +1365,6 @@ body.mo-menu .side.trai{transform:none}
 .vk-thoat-tt.hien{display:flex}
 .vk-thoat-tt:hover{border-color:var(--m-do); color:var(--m-do)}
 #btnTapTrungKhoa.bat{background:var(--accent); border-color:var(--accent); color:#fff}
-
-/* ---------- THẺ ACT/SÁCH khoá — chờ xem xong đúng đoạn ---------- */
-.card.khoa .than{filter:grayscale(.55) saturate(.7)}
-.card.khoa .game-cover,.card.khoa .sach-than{filter:blur(2.5px); pointer-events:none}
-.card.khoa .lb{opacity:.45}
-.card.khoa .ic-nut{opacity:.45; pointer-events:none}
-.khoa-phu{position:absolute; inset:0; z-index:3; display:flex; flex-direction:column; align-items:center;
-  justify-content:center; gap:8px; text-align:center; padding:12px;
-  background:rgba(247,250,249,.6); backdrop-filter:blur(1px); border-radius:14px}
-.khoa-phu .o{width:52px; height:52px; border-radius:50%; background:#fff; display:grid; place-items:center;
-  box-shadow:0 4px 14px rgba(22,35,42,.16)}
-.khoa-phu .o svg{width:24px; height:24px; fill:#7B8C89}
-.khoa-phu .c1{font-weight:800; font-size:13px; letter-spacing:.06em; color:#3D5450; text-transform:uppercase}
-.khoa-phu .c2{font-weight:700; font-size:11.5px; color:var(--muted)}
-.than-khoa{position:relative}
-.card.khoa .than-khoa .khoa-phu{position:absolute}
-
-/* ⛔⛔ BẪY TRẢ GIÁ NGAY TRÊN BÀN THỬ (11/09/2026): `<svg>` không có width/height
-   CSS lẫn thuộc tính thì trình duyệt cho nó lấp ĐẦY bề ngang khối cha (đo thật:
-   1142×1142px) — thẻ khoá cao vọt hơn 1200px. PHẢI khai kích thước tường minh
-   cho MỌI svg trong `.khoa-phu-tinh` (không được trông chờ `.ic-nut svg`/
-   `.doan .so svg` ở trên — đó là lớp khác). */
-.khoa-phu-tinh{display:flex; align-items:center; gap:12px; padding:12px 2px 2px}
-.khoa-phu-tinh .o{width:40px; height:40px; border-radius:50%; background:var(--ground);
-  display:flex; align-items:center; justify-content:center; flex:none}
-.khoa-phu-tinh .o svg{width:20px; height:20px; fill:none; stroke:#7B8C89; stroke-width:2;
-  stroke-linecap:round; stroke-linejoin:round}
-.khoa-phu-tinh .c1{font-weight:800; font-size:12.5px; color:#3D5450; line-height:1.4}
 
 /* ---------- THẺ SÁCH (chỉ thông tin trang — chưa làm nộp ảnh) ---------- */
 .sach-than{display:grid; grid-template-columns:minmax(0,1fr); gap:10px}
@@ -3148,6 +3153,57 @@ function lyDoChuaMoDoanKhoa(id, TT){
   return ly;
 }
 
+// ⭐ 13/09/2026 — bản NGẮN GỌN của "vì sao chưa mở", dùng cho pill đỏ
+// "ĐANG CHỜ: …" trên thẻ chờ (khác câu đầy đủ ở khung player phía trên).
+// Rút gọn tên đoạn "HD BT2 - Trả lời…" -> "Hướng dẫn BT2" (CSS tự viết hoa).
+function nhanDoanNganKhoa(ten){
+  var m = /^HD\s+(BT\d+)/i.exec(String(ten || '').trim());
+  return m ? ('Hướng dẫn ' + m[1].toUpperCase()) : String(ten || '');
+}
+// Vì sao ĐOẠN `id` chưa mở, dò tới NGUYÊN NHÂN GẦN NHẤT (nếu cái chặn nó cũng
+// đang khoá vì lý do khác thì lùi tiếp) — dùng đệ quy cùng cặp với `chuChoBt`.
+function chuChoDoan(id, TT){
+  var bg = BAI.baiGiang || {};
+  var doan = bg.doan || [], btArr = BAI.bt || [];
+  var ly = null;
+  doan.forEach(function(d){
+    if (ly || d.lam !== 'moNhay' || (d.doanMo || []).indexOf(id) === -1) return;
+    ly = TT.moD[d.id] ? ('Xem ' + nhanDoanNganKhoa(d.ten)) : chuChoDoan(d.id, TT);
+  });
+  if (ly) return ly;
+  btArr.forEach(function(x){
+    if (ly || !x.xong || x.xong.lam !== 'moNhay' || (x.xong.doanMo || []).indexOf(id) === -1) return;
+    ly = TT.moB[x.id] ? ('Hoàn thành ' + (NHAN_BT_KHOA[x.id] || '')) : chuChoBt(x.id, TT);
+  });
+  return ly;
+}
+// Vì sao BÀI TẬP `id` chưa mở — bản ngắn cho pill "ĐANG CHỜ:".
+function chuChoBt(id, TT){
+  var bg = BAI.baiGiang || {};
+  var doan = bg.doan || [], btArr = BAI.bt || [];
+  var ly = null;
+  doan.forEach(function(d){
+    if (ly || d.lam !== 'moNhay' || (d.bt || []).indexOf(id) === -1) return;
+    ly = TT.moD[d.id] ? ('Xem ' + nhanDoanNganKhoa(d.ten)) : chuChoDoan(d.id, TT);
+  });
+  if (ly) return ly;
+  btArr.forEach(function(x){
+    if (ly || x.id === id || !x.xong || x.xong.lam !== 'moNhay' || (x.xong.bt || []).indexOf(id) === -1) return;
+    ly = TT.moB[x.id] ? ('Hoàn thành ' + (NHAN_BT_KHOA[x.id] || '')) : chuChoBt(x.id, TT);
+  });
+  return ly || 'bước trước';
+}
+// Tên thật của một bài tập, bỏ tiền tố "BTx." / "TRẮC NGHIỆM … -" (tiền tố đã
+// lên nhãn ngắn phía trên rồi, khỏi lặp lại trong tên).
+function tenThatBtKhoa(x){
+  var t = String(x.tieuDe || x.actTen || '').trim();
+  var m = /^BT\d+\.\s*(.+)$/i.exec(t);
+  if (m) return m[1];
+  var m2 = /^TRAC\s*NGHIEM[^-]*-\s*(.+)$/i.exec(t);
+  if (m2) return m2[1];
+  return t;
+}
+
 // ---------- localStorage: các khúc giây em này ĐÃ XEM THẬT theo từng đoạn
 // (⛔ theo MÁY, chưa đồng bộ nhiều máy — xem lời cảnh báo ở khai báo
 // `DOAN_XONG` đầu file) ----------
@@ -3199,6 +3255,7 @@ function veTheBaiGiangKhoa(bg){
     '<div class="than-khoa">' +
       '<div class="video-o">' +
         '<div id="videoOKhoa"></div>' +
+        '<div class="vk-pause-cover" id="vkPauseCover"><div class="vk-pause-play">' + IC_PHAT_KHOA + '</div></div>' +
         '<div class="ic-nut vk-list-btn" id="btnDsDoanKhoa" title="Danh sách đoạn">' + IC_DS_KHOA + '</div>' +
         '<div class="vk-seg-overlay" id="dsDoanKhoaOverlay">' +
           '<div class="vk-seg-head"><b>Các đoạn của bài giảng</b>' +
@@ -3291,22 +3348,22 @@ function veNhanDoanKhoa(d){
 }
 
 // ---------- một thẻ BÀI TẬP của bài khóa học (act · sách · chưa giao · khoá) ----------
-function lyDoKhoaBt(x){
-  var doan = (BAI.baiGiang || {}).doan || [];
-  var nguon = null;
-  doan.forEach(function(d){ (d.bt || []).forEach(function(id){ if (id === x.id) nguon = d; }); });
-  return nguon ? ('Mở khi xem xong "' + (nguon.ten || 'đoạn video') + '"') : 'Chưa tới lượt';
-}
-
-function veTheKhoaBt(x, so){
+// ⭐ 13/09/2026 — thẻ CHỜ đổi hẳn sang kiểu thẻ chờ của STAGE (`.st-cho`), thầy
+// chốt xem ảnh mẫu: nhãn ngắn bên trái, tên thật ở giữa, pill đỏ "ĐANG CHỜ: …"
+// bên phải — tái dùng NGUYÊN CSS `.st-cho-hang`/`.st-nhan`/`.st-cho-tt.ai`,
+// không định nghĩa lớp mới nào.
+function veTheChoKhoa(x, so, TT){
   var sec = document.createElement('section');
-  sec.className = 'card khoa';
+  sec.className = 'card st-cho';
   sec.setAttribute('data-btid', x.id);
+  var nhan = NHAN_BT_KHOA[x.id] || ('BÀI TẬP ' + so);
   sec.innerHTML =
-    '<div class="card-head"><span class="step">' + so + '</span>' +
-      '<div class="ch-chu"><h2>' + chuAnToan(x.tieuDe || x.actTen || 'BÀI TẬP') + '</h2></div></div>' +
-    '<div class="khoa-phu-tinh"><span class="o">' + IC_KHOA_KHOA + '</span>' +
-      '<span class="c1">' + chuAnToan(lyDoKhoaBt(x)) + '</span></div>';
+    '<div class="st-cho-hang">' +
+      '<span class="st-nhan">' + chuAnToan(nhan) + '</span>' +
+      '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(tenThatBtKhoa(x)) + '</span></div>' +
+      '<div class="st-cho-tt ai">' + IC_KHOA_KHOA +
+        '<span>Đang chờ:&nbsp;</span><b class="ten-cham">' + chuAnToan(chuChoBt(x.id, TT)) + '</b></div>' +
+    '</div>';
   return sec;
 }
 
@@ -3337,11 +3394,17 @@ function veTheChoGiaoKhoa(x, so){
 }
 
 function dungTheBtKhoa(x, so, TT){
-  if (!TT.moB[x.id]) return veTheKhoaBt(x, so);
+  if (!TT.moB[x.id]) return veTheChoKhoa(x, so, TT);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
   if (!x.ma) return veTheChoGiaoKhoa(x, so);
   var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma }, so);
   sec.setAttribute('data-btid', x.id);
+  // ⭐ 13/09/2026 — nhãn ngắn ("BÀI TẬP N") lên tiêu đề chính, tên thật (bỏ
+  // "BTx.") xuống dòng phụ — thay cho "LESSON 17 • <mẫu>" mặc định của `veKhoi`.
+  var h2 = sec.querySelector('.card-head h2');
+  var chMa = sec.querySelector('.card-head .ch-ma');
+  if (h2) h2.textContent = NHAN_BT_KHOA[x.id] || h2.textContent;
+  if (chMa) chMa.textContent = tenThatBtKhoa(x) || chMa.textContent;
   return sec;
 }
 
@@ -3399,14 +3462,19 @@ function moVideoKhoa(bg){
 
 function onDoiTrangThaiKhoa(e){
   var nutPhat = $('#btnPhatKhoa');
+  var che = $('#vkPauseCover');
   clearInterval(ytHenKhoa);
   if (e.data === YT.PlayerState.PLAYING) {
     tatPhuDeKhoa();
     if (nutPhat) nutPhat.innerHTML = IC_DUNG_KHOA;
+    if (che) che.hidden = true;
     GIAY_HIEN_KHOA = YT_PLAYER.getCurrentTime();
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
-  } else if (nutPhat) {
-    nutPhat.innerHTML = IC_PHAT_KHOA;
+  } else {
+    if (nutPhat) nutPhat.innerHTML = IC_PHAT_KHOA;
+    // ⭐ 13/09/2026 — che LẠI mỗi khi không phát (kể cả lúc mới tải/đang đệm),
+    // giấu luôn icon chia sẻ/"Watch on YouTube" mặc định của YouTube.
+    if (che) che.hidden = false;
   }
 }
 
@@ -3448,17 +3516,29 @@ function nhanBtKhoa(x, demBt){
   if (x.mau && /quiz/i.test(x.mau)) return 'TN BÀI GIẢNG';
   return 'BÀI TẬP ' + demBt;
 }
+// Nhãn ngắn của MỌI bài tập, tính MỘT LẦN mỗi khi TT_KHOA đổi — dùng chung cho
+// thanh tiến trình, thẻ chờ, tiêu đề thẻ đang làm và câu "ĐANG CHỜ: …".
+var NHAN_BT_KHOA = {};
+function tinhNhanBtKhoa(){
+  var demBt = 0;
+  NHAN_BT_KHOA = {};
+  (BAI.bt || []).forEach(function(x){
+    var laBt = x.loai !== 'sach' && !(x.mau && /quiz/i.test(x.mau));
+    if (laBt) demBt++;
+    NHAN_BT_KHOA[x.id] = nhanBtKhoa(x, demBt);
+  });
+}
 // Chỉ MỘT khúc được "đang chú ý" tại một thời điểm: đi từ đầu, khúc CHƯA XONG
 // đầu tiên gặp phải mới tô màu (đỏ nếu còn khoá — `ket`, xanh dương nếu đã mở
 // mà chưa làm — `dang`); mọi khúc SAU nó, dù cũng đang khoá, chỉ để xám (`xa`)
-// — tránh "cả dàn cùng đỏ" gây rối mắt. Khúc đã xong luôn `xong` (xanh lá).
+// — tránh "cả dàn cùng đỏ" gây rối mắt. Khúc đã xong luôn `xong` (xanh lá),
+// bấm vào khúc đã xong thì mở POP-UP "làm lại cho vui" (thẻ đó đã ẨN khỏi
+// trang), khúc chưa xong thì cuộn tới đúng thẻ.
 function veThanhBtKhoa(){
   var hop = $('#thanhBtKhoa');
   if (!hop) return;
-  var demBt = 0, daGanHienTai = false;
+  var daGanHienTai = false;
   hop.innerHTML = (BAI.bt || []).map(function(x){
-    var laBt = x.loai !== 'sach' && !(x.mau && /quiz/i.test(x.mau));
-    if (laBt) demBt++;
     var xong = !!TT_KHOA.xongB[x.id];
     var lop;
     if (xong) { lop = 'xong'; }
@@ -3466,34 +3546,86 @@ function veThanhBtKhoa(){
     else { lop = TT_KHOA.moB[x.id] ? 'dang' : 'ket'; daGanHienTai = true; }
     return '<button type="button" class="st-khuc ' + lop + '" data-btid="' + chuAnToan(x.id) + '">' +
       (xong ? '<span class="tick">✓</span>' : '') +
-      '<span class="lbl">' + chuAnToan(nhanBtKhoa(x, demBt)) + '</span></button>';
+      '<span class="lbl">' + chuAnToan(NHAN_BT_KHOA[x.id] || '') + '</span></button>';
   }).join('');
   hop.querySelectorAll('.st-khuc').forEach(function(btn){
     btn.onclick = function(){
       var id = btn.getAttribute('data-btid').replace(/[^A-Za-z0-9_-]/g, '');
+      var x = (BAI.bt || []).find(function(b){ return b.id === id; });
+      if (x && TT_KHOA.xongB[x.id]) { moBtPopupKhoa(x); return; }
       var el = document.querySelector('.card[data-btid="' + id + '"]');
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
   });
 }
 
+// ⭐ 13/09/2026 — pop-up "làm lại cho vui" khi bấm một khúc ĐÃ XONG trên thanh
+// tiến trình: bài đó đã ẨN khỏi trang chính (không còn quan trọng), bấm mới
+// hiện — dựng lại ĐÚNG thẻ act thật qua `dungTheBtKhoa` (không vẽ riêng gì
+// khác), trượt vào giữa màn, nền dim+mờ.
+function chuanBiBtPopupKhoa(){
+  if ($('#vkBtBackdrop')) return;
+  var nen = document.createElement('div');
+  nen.id = 'vkBtBackdrop';
+  nen.className = 'vk-bt-backdrop';
+  nen.onclick = dongBtPopupKhoa;
+  document.body.appendChild(nen);
+  var popup = document.createElement('div');
+  popup.id = 'vkBtPopup';
+  popup.className = 'vk-bt-popup';
+  popup.innerHTML = '<div class="vk-bt-popup-head"><span>Đã xong — làm lại cho vui</span>' +
+    '<div class="vk-bt-popup-close" id="vkBtPopupClose">✕</div></div>' +
+    '<div class="vk-bt-popup-body" id="vkBtPopupBody"></div>';
+  document.body.appendChild(popup);
+  $('#vkBtPopupClose').onclick = dongBtPopupKhoa;
+}
+function moBtPopupKhoa(x){
+  chuanBiBtPopupKhoa();
+  var idx = (BAI.bt || []).indexOf(x);
+  var body = $('#vkBtPopupBody');
+  body.innerHTML = '';
+  body.appendChild(dungTheBtKhoa(x, idx + 1, TT_KHOA));
+  $('#vkBtBackdrop').classList.add('hien');
+  $('#vkBtPopup').classList.add('hien');
+}
+function dongBtPopupKhoa(){
+  var nen = $('#vkBtBackdrop'), popup = $('#vkBtPopup');
+  if (nen) nen.classList.remove('hien');
+  if (popup) popup.classList.remove('hien');
+}
+
 // Đường đi vừa đổi (đoạn vừa cộng thêm giây xem HOẶC điểm act mới về) — tính
 // lại + sửa TẠI CHỖ những gì đổi. ⛔⛔ CỐ Ý KHÔNG vẽ lại thẻ BÀI GIẢNG
 // (`veTheBaiGiangKhoa`) — nó đang giữ `YT_PLAYER`, đập lại DOM là video
 // restart/mất trạng thái đang phát. Chỉ cập nhật pop-up đoạn + timeline + thanh
-// tiến trình + thẻ BÀI TẬP nào đổi khoá/mở.
+// tiến trình + thẻ BÀI TẬP nào đổi khoá/mở/xong.
 function capNhatSauKhiDoiKhoa(){
   TT_KHOA = tinhDuongDiKhoa();
+  tinhNhanBtKhoa();
   veDanhSachDoanKhoa(BAI.baiGiang || {}, TT_KHOA);
   veTimelineKhoa(BAI.baiGiang || {}, TT_KHOA);
   veThanhBtKhoa();
   (BAI.bt || []).forEach(function(x, i){
     var cu = document.querySelector('.card[data-btid="' + x.id.replace(/[^A-Za-z0-9_-]/g, '') + '"]');
-    var daKhoa = !cu || cu.classList.contains('khoa');
+    // ⭐ Vừa xong (đủ điểm) — ẨN HẲN khỏi trang chính, xem lại qua pop-up trên
+    // thanh tiến trình (không còn quan trọng, "làm chơi thôi").
+    if (TT_KHOA.xongB[x.id]) {
+      if (cu && cu.parentNode) cu.parentNode.removeChild(cu);
+      return;
+    }
     var nenKhoa = !TT_KHOA.moB[x.id];
+    var daKhoa = !cu || cu.classList.contains('st-cho');
     // Còn khoá y như cũ (hoặc đã mở và ĐANG chơi dở — đừng đập card đang mở
-    // chỉ vì tính lại, chỉ đập khi trạng thái khoá THẬT SỰ đổi) -> giữ nguyên.
-    if (cu && daKhoa === nenKhoa) return;
+    // chỉ vì tính lại, chỉ đập khi trạng thái khoá THẬT SỰ đổi) -> chỉ cập
+    // nhật lại chữ "ĐANG CHỜ: …" tại chỗ (nguyên nhân gần nhất có thể vừa đổi
+    // dù bản thân thẻ vẫn đang khoá), không đập cả thẻ.
+    if (cu && daKhoa === nenKhoa) {
+      if (nenKhoa) {
+        var ttEl = cu.querySelector('.st-cho-tt b');
+        if (ttEl) ttEl.textContent = chuChoBt(x.id, TT_KHOA);
+      }
+      return;
+    }
     var moi = dungTheBtKhoa(x, i + 1, TT_KHOA);
     if (cu && cu.parentNode) cu.parentNode.replaceChild(moi, cu);
   });
@@ -3536,6 +3668,9 @@ function ganNutKhoa(){
   if (btnDs) btnDs.onclick = function(){ if (ovDs) ovDs.classList.add('hien'); };
   if (btnDong) btnDong.onclick = dongDsDoanKhoa;
 
+  var che = $('#vkPauseCover');
+  if (che) che.onclick = function(){ if (YT_PLAYER) YT_PLAYER.playVideo(); };
+
   var btnDen = $('#btnTapTrungKhoa');
   if (btnDen) btnDen.onclick = function(){
     var khung = $('#theBaiGiangKhoa');
@@ -3557,29 +3692,58 @@ function ganNutKhoa(){
     if (YT_PLAYER && YT_PLAYER.seekTo) YT_PLAYER.seekTo(YT_PLAYER.getCurrentTime() + 10, true);
   };
 
-  // Bấm/kéo bất kỳ đâu trên thanh chia đoạn để tua tới đúng vị trí (tua TỰ DO
-  // — không còn giới hạn như bản cũ).
+  // ⭐ 13/09/2026 — bấm/KÉO (như YouTube) bất kỳ đâu trên thanh chia đoạn để
+  // tua tới đúng vị trí, tua TỰ DO. Con trỏ dời theo chuột NGAY LẬP TỨC (không
+  // đợi YouTube phản hồi — trước đây mỗi lần nhích chuột đều gọi `seekTo` nên
+  // giật/lag), lệnh tua thật chỉ dồn tối đa ~8 lần/giây lúc đang kéo, chốt lại
+  // chính xác khi thả tay. LUÔN dừng video ngay khi bắt đầu bấm (dù đang phát
+  // hay đang dừng, thầy chốt) — xem đúng khung hình tại vị trí mới, không tự
+  // phát tiếp.
   var tl = $('#timelineKhoa');
   if (tl) {
-    var dangKeo = false;
-    var tuaTheoChuot = function(clientX){
+    var dangKeoTL = false, lanSeekCuoi = 0;
+    var tongGiayTL = function(){
       var doan = (BAI.baiGiang || {}).doan || [];
-      var tongGiay = 0;
-      doan.forEach(function(d){ var n = giayDoanKhoa(d.den); if (n != null) tongGiay = Math.max(tongGiay, n); });
-      if (!tongGiay || !YT_PLAYER || !YT_PLAYER.seekTo) return;
+      var tong = 0;
+      doan.forEach(function(d){ var n = giayDoanKhoa(d.den); if (n != null) tong = Math.max(tong, n); });
+      return tong;
+    };
+    var veConTroNgay = function(ti, tong){
+      var ph = $('#vkPlayhead'), tongEl = $('#vkTongKhoa');
+      if (ph) ph.style.left = Math.min(100, ti * 100) + '%';
+      GIAY_HIEN_KHOA = ti * tong;
+      if (tongEl) tongEl.textContent = chuoiGioDoanKhoa(GIAY_HIEN_KHOA) + ' / ' + chuoiGioDoanKhoa(tong);
+    };
+    var tuaTheoChuot = function(clientX, chinhXac){
+      var tong = tongGiayTL();
+      if (!tong || !YT_PLAYER || !YT_PLAYER.seekTo) return;
       var r = tl.getBoundingClientRect();
       var ti = Math.min(1, Math.max(0, (clientX - r.left) / r.width));
-      YT_PLAYER.seekTo(ti * tongGiay, true);
+      veConTroNgay(ti, tong);
+      var gio = Date.now();
+      if (chinhXac || gio - lanSeekCuoi > 120) { lanSeekCuoi = gio; YT_PLAYER.seekTo(ti * tong, true); }
     };
-    tl.addEventListener('pointerdown', function(e){ dangKeo = true; tuaTheoChuot(e.clientX); });
-    window.addEventListener('pointermove', function(e){ if (dangKeo) tuaTheoChuot(e.clientX); });
-    window.addEventListener('pointerup', function(){ dangKeo = false; });
+    tl.addEventListener('pointerdown', function(e){
+      dangKeoTL = true;
+      try { tl.setPointerCapture(e.pointerId); } catch (err) {}
+      try { YT_PLAYER.pauseVideo(); } catch (err) {}
+      tuaTheoChuot(e.clientX, true);
+    });
+    tl.addEventListener('pointermove', function(e){ if (dangKeoTL) tuaTheoChuot(e.clientX, false); });
+    window.addEventListener('pointerup', function(e){
+      if (!dangKeoTL) return;
+      dangKeoTL = false;
+      tuaTheoChuot(e.clientX, true);
+      capNhatSauKhiDoiKhoa();
+      veNhanDoanKhoa(doanTaiGiayKhoa((BAI.baiGiang || {}).doan || [], GIAY_HIEN_KHOA));
+    });
   }
 }
 
 function veCacPhanKhoa(hop){
   var bg = BAI.baiGiang || {};
   TT_KHOA = tinhDuongDiKhoa();
+  tinhNhanBtKhoa();
   var thanhWrap = $('#thanhBtKhoaWrap');
   if (thanhWrap && (BAI.bt || []).length) { thanhWrap.hidden = false; veThanhBtKhoa(); }
   if (bg.video || (bg.doan || []).length) {
@@ -3590,7 +3754,18 @@ function veCacPhanKhoa(hop){
     veNhanDoanKhoa(doanTaiGiayKhoa(bg.doan || [], 0));
     moVideoKhoa(bg);
   }
-  (BAI.bt || []).forEach(function(x, i){ hop.appendChild(dungTheBtKhoa(x, i + 1, TT_KHOA)); });
+  // ⭐ 13/09/2026 — vạch nét đứt phân cách bài giảng ‖ bài tập, rồi tới các thẻ
+  // bài tập: BÀI TẬP nào đã XONG thì bỏ qua hẳn (ẩn khỏi trang, xem lại qua
+  // pop-up từ thanh tiến trình — xem `veThanhBtKhoa`).
+  if ((BAI.bt || []).length) {
+    var vach = document.createElement('div');
+    vach.className = 'vk-divider';
+    hop.appendChild(vach);
+  }
+  (BAI.bt || []).forEach(function(x, i){
+    if (TT_KHOA.xongB[x.id]) return;
+    hop.appendChild(dungTheBtKhoa(x, i + 1, TT_KHOA));
+  });
   canhLb();
 }
 

@@ -24,6 +24,18 @@
   ⬜ Bài của khóa học chưa có đường đẩy từ myLesson (`lessonCourseBuoi` chưa xuất ra
   `data/bai.json`) — nên hôm nay trang hiện khối "đang chuẩn bị". Khi myLesson đẩy bài
   vào `bai.json` theo mã khóa thì thẻ hiện ra ngay, không phải sửa gì ở đây.
+
+  ⛔⛔ BẪY TRẢ GIÁ 11/09/2026 (web v1.91.0) — mỗi hàng bài tập RỖNG TOÀN BỘ (tên +
+  thanh tiến độ co bẹt còn ~2px, chỉ "chưa làm"/số còn thấy) — thầy bấm thử LESSON 17
+  thật thì thấy ngay. Gốc: `hangEm()`/`hangLop()` gộp CHUNG một thẻ `<span class=
+  "td-dong hang-em">` (2 lớp trên MỘT phần tử), trong khi CSS `.the .hang-em{display:
+  contents}` (dùng để ẩn/hiện cả CỤM hàng khi đổi EM/CẢ LỚP) đè mất `.td-dong{display:
+  grid}` — hai lớp cùng specificity nhưng `.the .hang-em` có 2 lớp nên THẮNG bất kể
+  thứ tự nguồn. Phần tử lẽ ra là một HÀNG LƯỚI lại biến mất khỏi cây hộp
+  (`display:contents`), các ô con rơi tự do vào `.the-diem{flex-direction:column}`.
+  Mẫu v3 gốc vốn ĐÃ tách đúng — `hang-em`/`hang-lop` là NHÃN CỦA THẺ BỌC NGOÀI,
+  `td-dong` là con riêng bên trong — lúc chuyển sang code thật bị gộp nhầm thành một.
+  Vá: JS bọc lại đúng như mẫu, `<span class="hang-em"><span class="td-dong">…`.
 -->
 <link rel="stylesheet" href="css/main.css?v=19">
 <style>
@@ -227,9 +239,9 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
     var so = tho
       ? '<span class="td-so' + (xong ? ' m-la' : '') + '">' + dung + '/' + tong + '</span>'
       : '<span class="td-so em-chua">chưa làm</span>';
-    return '<span class="td-dong hang-em"><span class="td-ten">' + A.chuAnToan(k.ten || k.act || '') + '</span>' +
+    return '<span class="hang-em"><span class="td-dong"><span class="td-ten">' + A.chuAnToan(k.ten || k.act || '') + '</span>' +
       '<span class="td-bar"><i class="' + mauTheoPhanTram(pt, xong) + '" style="width:' + pt + '%"></i></span>' +
-      so + '<span class="td-tich">' + (xong ? '✓' : '') + '</span></span>';
+      so + '<span class="td-tich">' + (xong ? '✓' : '') + '</span></span></span>';
   }
 
   // Một hàng ở chế độ CẢ LỚP: số em đã xong / sĩ số.
@@ -240,10 +252,10 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
     }
     var pt = SI_SO > 0 ? Math.round(n / SI_SO * 100) : 0;
     var du = SI_SO > 0 && n >= SI_SO;
-    return '<span class="td-dong hang-lop"><span class="td-ten">' + A.chuAnToan(k.ten || k.act || '') + '</span>' +
+    return '<span class="hang-lop"><span class="td-dong"><span class="td-ten">' + A.chuAnToan(k.ten || k.act || '') + '</span>' +
       '<span class="td-bar"><i class="' + mauTheoPhanTram(pt, du) + '" style="width:' + pt + '%"></i></span>' +
       '<span class="td-so' + (du ? ' m-la' : '') + '">' + n + '/' + SI_SO + '</span>' +
-      '<span class="td-tich">' + (du ? '✓' : '') + '</span></span>';
+      '<span class="td-tich">' + (du ? '✓' : '') + '</span></span></span>';
   }
 
   function veThe(b) {

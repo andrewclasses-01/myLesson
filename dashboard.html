@@ -5430,19 +5430,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       });
     };
 
-    // (Đợt D) nút ✎ đổi ảnh — chỉ chạy trong app myLesson (tab CLASSES); ngoài trình
-    // duyệt thì chỉ nhắc, không làm gì (trang tĩnh không tự ghi kho được).
+    // ⭐ v2.72.0 (11/09/2026) — ĐÃ CHUYỂN nơi đặt ảnh đại diện sang myStudent (tab Lớp
+    // học/Khóa học, nháy đúp tên em — có cả kéo-thả + crop vuông, đẩy thẳng lên kho
+    // Firebase dùng chung cho MỌI app). Nút ✎ ở đây giữ lại để dễ thấy nhưng KHÔNG còn
+    // mở hộp chọn ảnh cũ nữa — tránh HAI nơi cùng chỉnh avatar đá nhau (myStudent mới là
+    // nguồn CHÍNH THỨC từ nay). ⛔ Cố tình KHÔNG xoá marker `MYLESSON:AVATAR:DOI:`/
+    // `lib/avatar.js` phía app — chỉ tắt Ở ĐÂY, dễ khôi phục nếu cần.
     $('#avDs').addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-av]') : null;
       if (!b || b.disabled) return;
-      var ten = b.getAttribute('data-av');
-      if (!window.__mylessonApp) {
-        baoToast('Đổi ảnh trong APP myLesson (tab CLASSES) — trang ngoài trình duyệt chỉ xem.');
-        return;
-      }
-      var l = A.lopTheoMa(DL, LOP_CHON);
-      avDatTt(ten, 'đang chọn ảnh…', false, true);
-      console.log('MYLESSON:AVATAR:DOI:' + JSON.stringify({ lop: (l && l.tenGoc) || LOP_CHON, ten: ten }));
+      baoToast('Ảnh đại diện nay đặt trong myStudent (tab Lớp học/Khóa học) — mở myStudent để đổi.');
     });
 
     $('#chatGui').onclick = guiChat;

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 20:36:29",
+  "capNhat": "2026-09-11 22:02:17",
   "bai": {
     "A1C": [
       {
@@ -359,6 +359,36 @@
       }
     ],
     "B1AH": [
+      {
+        "id": "B1AH_11.9_STAGE_IEL-S15.T3.P4",
+        "tieuDe": "B1AH_11.9_STAGE IEL-S15.T3.P4",
+        "tenHien": "B1AH_11.9_STAGE IEL-S15.T3.P4",
+        "dang": "STAGE",
+        "ngay": "11.9",
+        "han": "2026-09-14T19:30",
+        "maLesson": "IEL-S15.T3.P4",
+        "taoLuc": "2026-09-11",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "wb834v",
+            "mau": "ANAGRAM",
+            "han": "2026-09-12T23:59"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "t9xxav",
+            "mau": "OPEN THE BOX",
+            "han": "2026-09-14T19:30"
+          }
+        ]
+      },
       {
         "id": "B1AH_9.9_WORKSHEET",
         "tieuDe": "B1AH_9.9_WORKSHEET",

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 19:27:18",
+  "capNhat": "2026-09-11 19:33:45",
   "nguon": "myStudent",
   "lop": [
     {
@@ -961,5 +961,25 @@
       ]
     }
   ],
-  "khoa": []
+  "khoa": [
+    {
+      "maLop": "NNTNGK9",
+      "tenGoc": "NỀN TẢNG K9",
+      "loai": "khoa",
+      "hocSinh": [
+        {
+          "id": 210,
+          "ten": "BẢO NAM",
+          "ma": "TRANBAONAM16112016",
+          "sinhNhat": ""
+        },
+        {
+          "id": 211,
+          "ten": "ĐỖ MINH KHANG",
+          "ma": "DONGOCMINHKHANG23092015",
+          "sinhNhat": ""
+        }
+      ]
+    }
+  ]
 }

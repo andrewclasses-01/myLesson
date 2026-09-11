@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 07:41:08",
+  "capNhat": "2026-09-11 15:38:04",
   "bai": {
     "A1C": [
       {
@@ -1017,6 +1017,22 @@
             "mau": "QUIZ",
             "xong": {
               "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmtwpd2iqxj7"
+              ]
+            }
+          },
+          {
+            "id": "btmtwpd2iqxj7",
+            "loai": "sach",
+            "trang": "191,192",
+            "tieuDe": "BÀI TẬP TRONG SÁCH",
+            "actTen": "",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "het",
               "doanMo": [],
               "bt": []
             }

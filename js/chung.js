@@ -1470,10 +1470,33 @@
     return khop.length === 1 ? khop[0] : ten;
   }
 
+  // ⭐⭐ v1.94.6 (12/09/2026, thầy chốt) — CHẶN DÒ TÊN CHO HỌC SINH ĐẶC BIỆT.
+  // Sự cố thật: "NGUYỄN HẢI" (tên phụ huynh tự đặt, HS đặc biệt lớp A2-B — không
+  // nằm trong roster nên không có mã số) từng bị `avTenKhop` (so tên kiểu ĐUÔI,
+  // xem chú thích ở hàm đó) khớp NHẦM sang bạn "HẢI" CÓ THẬT cùng lớp, vì "HẢI" là
+  // đuôi của "NGUYỄN HẢI" — đúng luật đuôi nhưng SAI NGƯỜI. Vá 09/09 (`gaAvatar`,
+  // tham số `khongAnh`) chỉ chặn được 2 chỗ avatar TỰ XEM của chính em đặc biệt;
+  // còn bảng xếp hạng/thanh lỗi/chat (dựng từ DỮ LIỆU ĐÃ NỘP, không lọc theo
+  // roster) vẫn tự do gắn `data-av-em="NGUYỄN HẢI"` rồi rơi vào đúng bẫy cũ.
+  // ⇒ Chặn TẬN GỐC ở ĐÂY — hàm DUY NHẤT quét toàn trang để gắn ảnh sống — thay vì
+  // vá từng chỗ dựng HTML: tên nào trùng (chuẩn hoá) với một HS đặc biệt của ĐÚNG
+  // lớp đó thì KHÔNG BAO GIỜ dò ảnh (bỏ qua thẳng, không thử cả tra mã số lẫn so
+  // tên lỏng) — vì đây không phải bạn thật, không có ảnh nào để tìm đúng cả.
+  function avChanDacBiet(dsDb) {
+    var chan = {};
+    (dsDb || []).forEach(function (x) {
+      var t = x && (typeof x === 'object' ? x.ten : x);
+      if (t) chan[avKhongDau(t).replace(/\s+/g, ' ').trim()] = true;
+    });
+    return chan;
+  }
+
   // Đè ảnh mới nhất từ kho lên mọi ô avatar đã vẽ của một lớp.
   // `dsEm` (tuỳ chọn): [{id, ten}] lấy từ lop.json — có thì tra THẲNG theo mã số
   // (chắc chắn nhất); không có thì lùi về so tên lỏng với tên kho đang giữ.
-  function deAvatarKho(lopGoc, dsEm) {
+  // `dsDb` (tuỳ chọn): [{ten}] danh sách HS ĐẶC BIỆT của lớp (`l.hsDb`) — tên nào
+  // trùng danh sách này bị CHẶN dò ảnh hoàn toàn, xem chú thích ⭐⭐ ở trên.
+  function deAvatarKho(lopGoc, dsEm, dsDb) {
     return napAvatarKho(lopGoc).then(function (em) {
       var ids = Object.keys(em);
       if (!ids.length) return 0;
@@ -1482,12 +1505,14 @@
       (dsEm || []).forEach(function (x) {
         if (x && x.id != null) theoTen[avKhongDau(x.ten)] = String(x.id);
       });
+      var chanDb = avChanDacBiet(dsDb);
 
       var o = document.querySelectorAll('[data-av-em]'), de = 0;
       for (var i = 0; i < o.length; i++) {
         var el = o[i];
         if (avSlugLop(el.getAttribute('data-av-lop')) !== avSlugLop(lopGoc)) continue;
         var ten = el.getAttribute('data-av-em');
+        if (chanDb[avKhongDau(ten).replace(/\s+/g, ' ').trim()]) continue;
         var id = theoTen[avKhongDau(ten)];
         if (!(id && em[id])) {                // không có mã số → dò theo tên
           id = null;
@@ -1518,6 +1543,7 @@
       for (var b = 0; b < AV_BONG.length; b++) {
         var q = AV_BONG[b];
         if (avSlugLop(q.lop) !== avSlugLop(lopGoc)) continue;
+        if (chanDb[avKhongDau(q.ten).replace(/\s+/g, ' ').trim()]) continue;
         var qid = theoTen[avKhongDau(q.ten)];
         if (!(qid && em[qid])) {
           qid = null;
@@ -1542,12 +1568,15 @@
   // ⛔ Gọi LẠI với lớp khác là ĐỔI lớp đang theo dõi, KHÔNG phải bị bỏ qua: dashboard
   //    của thầy đổi lớp liên tục trong cùng một trang. Nhưng cái tai nghe DOM chỉ dựng
   //    ĐÚNG MỘT LẦN — dựng thêm mỗi lần đổi lớp thì mỗi lượt vẽ chạy N lượt đè chồng nhau.
-  var avLop = '', avDs = [], avTai = null, avHen = null;
-  function batAvatarKho(lopGoc, dsEm) {
+  // `dsDb` (v1.94.6) — danh sách HS ĐẶC BIỆT của lớp (`l.hsDb`), xem chú thích
+  // ⭐⭐ ở `deAvatarKho`.
+  var avLop = '', avDs = [], avDb = [], avTai = null, avHen = null;
+  function batAvatarKho(lopGoc, dsEm, dsDb) {
     if (!lopGoc) return;
     avLop = lopGoc;
     avDs = dsEm || [];
-    var chay = function () { try { deAvatarKho(avLop, avDs); } catch (e) {} };
+    avDb = dsDb || [];
+    var chay = function () { try { deAvatarKho(avLop, avDs, avDb); } catch (e) {} };
     chay();
     if (avTai) return;
     try {

@@ -3240,7 +3240,7 @@ A.napDuLieu().then(function(dl){
      file tĩnh. Neo theo MÃ SỐ em (`h.id`) chứ không theo tên: 02/09 một lượt đồng bộ
      đổi tên 64 em là 48 em mất ảnh câm lặng. Gọi ở đây — SAU khi đã có danh sách lớp,
      TRƯỚC khi vẽ — nhưng bản thân nó chạy nền, không giữ chân lượt vẽ nào. */
-  A.batAvatarKho(LOP, (l && l.hocSinh) || []);
+  A.batAvatarKho(LOP, (l && l.hocSinh) || [], (l && l.hsDb) || []);
 
   dienDanhTinh();
   doCaoDau(); doSanChat();   /* đo TRƯỚC khi vẽ thẻ, kẻo lần vẽ đầu tính nhầm chỗ */

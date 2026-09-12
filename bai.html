@@ -4056,7 +4056,7 @@ A.napDuLieu().then(function(dl){
   });
   /* ⭐ v1.55.0 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em
      (tên đổi được, mã số thì không). Xem chú thích ở lượt gọi trong `lop.html`. */
-  A.batAvatarKho(LOP, (l && l.hocSinh) || []);
+  A.batAvatarKho(LOP, (l && l.hocSinh) || [], (l && l.hsDb) || []);
 
   var id = new URLSearchParams(location.search).get('id') || '';
   var ds = A.baiCuaLop(dl, LOP_DL);

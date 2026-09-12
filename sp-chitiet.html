@@ -680,7 +680,7 @@ button.gio:active{transform:scale(.94)}
          từ đệm phiên nên KHÔNG tốn thêm lượt đọc kho. Trang này chỉ xem MỘT lớp nên chỉ
          gọi đúng một lần (khác dashboard: đổi lớp thì gọi lại). */
       var lChiTiet = A.lopTheoMa(DL, MA_LOP) || {};
-      A.batAvatarKho(lChiTiet.tenGoc || MA_LOP, lChiTiet.hocSinh || []);
+      A.batAvatarKho(lChiTiet.tenGoc || MA_LOP, lChiTiet.hocSinh || [], lChiTiet.hsDb || []);
       if (!BUOI) return baoLoi('Lớp này chưa có buổi speaking nào đang mở.');
       if (BAI && !spKhopBai(A.maLesson(BAI), BUOI.lesson))
         return baoLoi('Buổi đang mở của lớp là "' + (BUOI.lesson || '?') + '", không khớp bài này.');

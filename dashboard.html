@@ -4756,7 +4756,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
        Gọi ở ĐÂY chứ không phải lúc nạp trang: dashboard đổi lớp liên tục, mỗi lớp
        một gói ảnh riêng. Gọi lại là đổi lớp đang theo dõi (xem `batAvatarKho`). */
     var lQL = A.lopTheoMa(DL, maLop) || {};
-    A.batAvatarKho(lQL.tenGoc || maLop, lQL.hocSinh || []);
+    A.batAvatarKho(lQL.tenGoc || maLop, lQL.hocSinh || [], lQL.hsDb || []);
     danhDauDaXemTin(maLop);
     veTat();
     noiChat();

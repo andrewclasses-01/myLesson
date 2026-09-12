@@ -1181,7 +1181,7 @@ A.napDuLieu().then(function(dl){
   LOP_SLUG = avSlugLop(LOP);
   CA_LOP = (l.hocSinh || []).map(function(h){ return h.ten; });
   SI_SO = CA_LOP.length;
-  A.batAvatarKho(LOP, l.hocSinh || []);
+  A.batAvatarKho(LOP, l.hocSinh || [], l.hsDb || []);
 
   dienDanhTinh();
   doCaoDau(); doSanChat();

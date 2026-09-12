@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-11 22:02:17",
+  "capNhat": "2026-09-12 19:21:09",
   "bai": {
     "A1C": [
       {
@@ -94,6 +94,32 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_12.9_DICTS_IEL-S15.T4.P1",
+        "tieuDe": "B2A_12.9_DICTS IEL-S15.T4.P1",
+        "tenHien": "B2A_12.9_DICTS IEL-S15.T4.P1",
+        "dang": "DICTS",
+        "ngay": "12.9",
+        "han": "2026-09-15T17:30",
+        "maLesson": "IEL-S15.T4.P1",
+        "taoLuc": "2026-09-12",
+        "khoi": [
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "IEL-S15.T4.P1"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "IEL-S15.T4.P1 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "6u9paj",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "B2A_10.9_WORDS_IEL-S15.T4.P1",
         "tieuDe": "B2A_10.9_WORDS IEL-S15.T4.P1",

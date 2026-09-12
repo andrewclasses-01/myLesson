@@ -410,9 +410,12 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 /* Vùng điểm bấm được (mở bảng xếp hạng) — chỉ khi JS gắn role="button". */
 .the-diem[role="button"]{cursor:pointer; transition:background .18s}
 .the-diem[role="button"]:hover{background:rgba(14,124,110,.045)}
-/* Còn dưới 6 tiếng: thanh dồn trái, cột tên còn thiếu mở ra bên phải. */
-.the-diem.co-thieu{flex-direction:row; align-items:center; gap:12px}
-.the-diem.co-thieu .khoi-thanh{flex:1; min-width:0; display:flex; flex-direction:column; gap:5px}
+/* ⭐ v1.94.7 (13/09/2026) — còn học sinh thiếu bài: cột icon avatar đứng bên
+   trái (mượn khuôn dải ⚙/🏆 bên dashboard.html), thanh tiến trình dồn sang
+   phải. Hiện bất cứ lúc nào còn thiếu, không còn chờ gần hạn như bản cũ. */
+.the-diem.co-thieu{flex-direction:row; align-items:center; gap:0}
+.the-diem.co-thieu .khoi-thanh{flex:1; min-width:0; padding-left:12px;
+  display:flex; flex-direction:column; gap:5px}
 /* Chỉ có bài viết tay: dòng CHÚ Ý nằm giữa TOÀN THẺ, bỏ vạch ngăn. */
 .the-diem.chi-tay{position:absolute; left:0; right:var(--mui); top:0; bottom:0;
   width:auto; border-top:none; padding:0 20px; justify-content:center}
@@ -437,28 +440,28 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .ws-nhac{animation:none; -webkit-text-fill-color:currentColor; background:none; color:var(--xanh-la)}
 }
 
-/* Cột CHƯA XONG BÀI: rộng đúng bằng cột ô hạn phía trên (176px) nên hai khối
-   thẳng tâm nhau; chữ thụt vào hai bên cho khỏi dính vạch và mép thẻ. */
-/* overflow:hidden là PHANH AN TOÀN — số dòng thật do JS `vuaCotThieu()` cắt
-   cho vừa chiều cao còn lại, nên bình thường không bao giờ chạm tới phanh. */
-.khoi-thieu{flex:none; width:176px; align-self:stretch; overflow:hidden;
-  display:flex; flex-direction:column; justify-content:center;
-  padding:0 9px; border-left:1px dashed #F0CFCF}
-/* line-height 1.25 chứ không để 1.6 của body: chữ VIẾT HOA 9,5px mà giãn
-   dòng 1,6 thì chỉ tổ ăn mất chỗ của một tên em (v17). */
-.khoi-thieu .tieu{font-size:9.5px; font-weight:800; letter-spacing:.06em; color:#C0484C;
-  line-height:1.25; margin-bottom:2px; text-align:center; white-space:nowrap}
-.ds-thieu{width:100%; display:grid; grid-template-columns:1fr auto;
-  column-gap:10px; row-gap:0; align-items:center}
-.ds-thieu .ten{font-size:11px; font-weight:700; color:#7A4B4C; line-height:1.3;
-  white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-/* ⚠ Chiều cao mỗi dòng do Ô SỐ quyết định chứ không phải chữ tên (ô số cao
-   hơn) — hạ ô số là cách rẻ nhất để thêm được một em vào cột. */
-.ds-thieu .so{min-width:16px; height:13px; padding:0 4px; border-radius:5px;
-  background:#FBE4E4; color:#C0484C; font-size:9.5px; font-weight:800;
-  display:grid; place-items:center}
-.khoi-thieu .them{margin-top:2px; text-align:center; font-size:10.5px; font-weight:700;
-  line-height:1.25; color:#A98B8B; white-space:nowrap}
+/* ⭐ v1.94.7 — CỘT ICON HỌC SINH THIẾU BÀI, thay hẳn khối chữ CHƯA XONG BÀI
+   cũ. Mượn đúng khuôn dải icon ⚙/🏆 của dashboard.html (`.diem-ic`), đổi
+   sang chứa avatar học sinh còn thiếu, viền đỏ phát sáng nhấp nháy.
+   Tối đa 4 icon; từ 5 học sinh trở lên gộp 3 avatar + "+N" ở ô thứ 4.
+   ⛔ `.thieu-ic` KHÔNG stretch theo `.the-diem` (align-items:center ở rule
+   `.co-thieu` phía trên) — cao đúng bằng số icon đang có, để `.thieu-vach`
+   (stretch bên trong `.thieu-block`) tự co ngắn/dài theo, luôn cân đối. */
+.thieu-block{flex:none; display:flex; flex-direction:row; align-items:stretch}
+.thieu-ic{flex:none; width:30px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:7px}
+.thieu-ic .tic{width:22px; height:22px; border-radius:50%; flex:none; overflow:hidden;
+  position:relative; display:grid; place-items:center; font:800 8.5px var(--sans);
+  color:#fff; background:#9AA6A3;
+  box-shadow:0 0 0 2px rgba(224,87,91,.45), 0 0 7px 2px rgba(224,87,91,.6);
+  animation:tic-do 2.6s ease-in-out infinite}
+.thieu-ic .tic .av-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.thieu-ic .tic.more{background:#E36B5C; font-size:9.5px}
+@keyframes tic-do{
+  0%,100%{box-shadow:0 0 0 2px rgba(224,87,91,.4), 0 0 6px 2px rgba(224,87,91,.55)}
+  50%{box-shadow:0 0 0 2px rgba(224,87,91,.62), 0 0 11px 3px rgba(224,87,91,.85)}
+}
+.thieu-vach{flex:none; width:0; border-left:1.5px dashed var(--line)}
 
 /* ⭐ v1.14.0 — CỘT TÊN RỘNG RA, THANH NGẮN LẠI (thầy chốt 24/08/2026).
    Nhãn dài nhất là "PRONUNCIATION": đo thật ở 11,5px/800/letter-spacing .02em
@@ -504,20 +507,17 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .the-diem.st.n1 .av-thanh{--av:30px}
 .the-diem.st.n2 .av-thanh{--av:26px}
 .the-diem.st.n3 .av-thanh{--av:20px}
-/* Cột "CẢ LỚP ĐANG CHỜ" phải bó chữ: thẻ 200px, hàng thanh chỉ còn ~50px. */
-.the-diem.st .khoi-thieu .tieu{font-size:8px; line-height:1.15; margin-bottom:1px;
-  letter-spacing:.04em}
-.the-diem.st .ds-thieu .ten.cham{font-size:11px; line-height:1.16}
-.the-diem.st .ds-thieu .them{font-size:9px; line-height:1.16}
-.ds-thieu.mot-cot{grid-template-columns:1fr; text-align:center; row-gap:1px}
-.ds-thieu .ten.cham{font-weight:800; color:#D93B40;
-  animation:nhay-ten-do 1.6s ease-in-out infinite}
-.ds-thieu .them{font-size:9.5px; font-weight:700; color:#C0484C; line-height:1.3}
-@keyframes nhay-ten-do{
-  0%,100%{text-shadow:0 0 8px rgba(217,59,64,.26), 0 0 18px rgba(217,59,64,.12)}
-  50%    {text-shadow:0 0 10px rgba(224,87,91,.72), 0 0 22px rgba(217,59,64,.46),
-                      0 0 36px rgba(217,59,64,.26)}
-}
+/* ⭐ v1.94.7 — CÒN EM CHƯA XONG CHẶNG: cột icon đứng SÁT TRÁI CẢ VÙNG ĐIỂM
+   (đúng vị trí ⚙/🏆 dashboard, thầy chốt 13/09/2026 — "để cột icon ở sát mép
+   bên trái của thẻ, thanh STAGE ngắn lại một chút nhường chỗ"), thanh chặng +
+   cụm thanh dồn vào `.st-cot` bên phải. Vùng điểm STAGE chỉ cao ~98px (đã đo
+   thật) nên icon phải co còn 19px mới đủ chỗ cho tối đa 4 icon — nhỏ hơn
+   22px của thẻ thường. */
+.the-diem.st.co-thieu{flex-direction:row; align-items:stretch; gap:0}
+.the-diem.st.co-thieu .st-cot{flex:1; min-width:0; padding-left:12px;
+  display:flex; flex-direction:column}
+.the-diem.st.co-thieu .thieu-ic{gap:6px}
+.the-diem.st.co-thieu .thieu-ic .tic{width:19px; height:19px; font-size:7.5px}
 .st-bar{display:flex; align-items:center; width:100%}
 .st-khuc{--h:26px; --dx:calc(var(--h) * .425);
   flex:1 1 auto; min-width:0; height:var(--h); position:relative;
@@ -560,7 +560,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   50%    {filter:brightness(1.4) saturate(1.25)}
 }
 @media (prefers-reduced-motion: reduce){
-  .st-khuc.dang,.st-khuc.ket,.ds-thieu .ten.cham{animation:none}
+  .st-khuc.dang,.st-khuc.ket,.thieu-ic .tic{animation:none}
 }
 
 .td-dong{display:grid;
@@ -1327,8 +1327,7 @@ body.mo-menu .side.trai{transform:none}
 
   .the-in{--mui:42px}
   .play svg{width:17px; height:17px; margin-right:17px}
-  /* Cùng bố cục với máy tính, chỉ thu nhỏ: cột phải 106px (thay 176px) và
-     .khoi-thieu bên dưới cũng 106px để hai khối vẫn thẳng tâm. */
+  /* Cùng bố cục với máy tính, chỉ thu nhỏ: cột phải 106px (thay 176px). */
   /* v17: đầu thẻ nay là MỘT HÀNG NGANG (xem chú thích ở phần dùng chung),
      điện thoại chỉ việc thu nhỏ — cột phải 106px thay 176px. */
   .the-body{padding:9px 8px 5px 10px; column-gap:6px}
@@ -1347,8 +1346,7 @@ body.mo-menu .side.trai{transform:none}
 
   .the-diem{padding:6px 8px 7px 12px; gap:3px}
   .the-diem.chi-tay{padding:0 14px}
-  .the-diem.co-thieu{gap:10px}
-  .the-diem.co-thieu .khoi-thanh{gap:3px}
+  .the-diem.co-thieu .khoi-thanh{gap:3px; padding-left:8px}
   .the-diem.n1 .td-dong{min-height:52px}
   .the-diem.n2 .td-dong{min-height:24.5px}
   /* 4 bài trên điện thoại là ca chật nhất — bó thêm một nấc nữa. */
@@ -1356,12 +1354,9 @@ body.mo-menu .side.trai{transform:none}
   .the-diem.n4:not(.co-thieu){gap:2px}
   .the-diem.co-thieu.n4 .khoi-thanh{gap:2px}
   .the-diem.n4 .td-tay{margin-top:3px; padding-top:4px}
-  .khoi-thieu{width:106px; padding:0 7px}
-  .khoi-thieu .tieu{font-size:8px; letter-spacing:.04em; margin-bottom:1px}
-  .ds-thieu{column-gap:6px}
-  .ds-thieu .ten{font-size:9.5px; line-height:1.32}
-  .ds-thieu .so{min-width:13px; height:12px; padding:0 3px; font-size:8.5px; border-radius:4px}
-  .khoi-thieu .them{margin-top:1px; font-size:9px}
+  /* ⭐ v1.94.7 — thẻ điện thoại thấp hơn (166px): bớt khe giữa icon 1px cho
+     chắc chắn không tràn (đã đo thật 375px: 4 icon 22px vừa khít, dư ~3px). */
+  .thieu-ic{gap:6px}
 
   /* thanh ngắn lại + các cột sát nhau hơn */
   /* v1.14.0 — cùng phép nới (và cùng cặp minmax) như bản rộng: "PRONUNCIATION"
@@ -1551,7 +1546,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=68"></script>
+<script src="config.js?v=70"></script>
 <script src="js/chung.js?v=43"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -1938,24 +1933,22 @@ function veDiemStage(b, batDo){
   }).join('');
 
   var lopSo = ' n' + Math.max(1, c.acts.length);
-  var cho = (c.tt === 'ket') ? (c.thieu || []) : [];
+  /* ⭐ v1.94.7 — bỏ điều kiện "chỉ hiện khi chặng ĐÃ QUÁ HẠN" (`c.tt==='ket'`):
+     `c.thieu` được `A.xetChang` tính cho MỌI chặng (kể cả đang chạy), nên hiện
+     luôn miễn còn em chưa xong — cùng luật với thẻ thường (thầy chốt). */
+  var cho = c.thieu || [];
   if (!cho.length) {
     return '<span class="the-diem st' + lopSo + '">' +
       veThanhChangThe(cac, iXem) +
       '<span class="st-hang"><span class="khoi-thanh">' + thanh + '</span></span>' +
     '</span>';
   }
-  var o = cho.map(function(t){
-    return '<span class="ten cham">' + tenTat(t) + '</span>';
-  }).join('');
+  var lopGoc = LOP || LOP_DL;
   return '<span class="the-diem st co-thieu' + lopSo + '">' +
-    veThanhChangThe(cac, iXem) +
-    '<span class="st-hang">' +
-      '<span class="khoi-thanh">' + thanh + '</span>' +
-      '<span class="khoi-thieu" data-tong="' + cho.length + '">' +
-        '<span class="tieu">CẢ LỚP ĐANG CHỜ</span>' +
-        '<span class="ds-thieu mot-cot">' + o + '</span>' +
-      '</span>' +
+    veThieuRail(cho.map(function(t){ return { ten: t }; }), lopGoc) +
+    '<span class="st-cot">' +
+      veThanhChangThe(cac, iXem) +
+      '<span class="st-hang"><span class="khoi-thanh">' + thanh + '</span></span>' +
     '</span>' +
   '</span>';
 }
@@ -1996,20 +1989,12 @@ function veDiem(b, batDo, hienThieu){
   var dsThieu = hienThieu ? (b.thieu || []) : [];
   if (!dsThieu.length) return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
 
-  /* Dựng ĐỦ tên (thiếu nhiều bài đứng trước); `vuaCotThieu()` chạy ngay sau
-     khi vẽ xong sẽ cắt bớt cho vừa chỗ và tự thêm dòng "+N bạn nữa". */
+  /* Thiếu nhiều bài đứng trước — icon xếp theo thứ tự đó, ai rơi khỏi 4 ô
+     đầu thì gộp vào "+N" (xem `veThieuRail`). */
   var sap = dsThieu.slice().sort(function(a, b2){ return b2.so - a.so; });
-  var o = sap.map(function(e){
-    return '<span class="ten">' + tenTat(e.ten) + '</span>' +
-           '<span class="so">' + e.so + '</span>';
-  }).join('');
-
   return '<span class="the-diem co-thieu' + lopSo + '">' +
+      veThieuRail(sap, LOP || LOP_DL) +
       '<span class="khoi-thanh">' + thanh + '</span>' +
-      '<span class="khoi-thieu" data-tong="' + sap.length + '">' +
-        '<span class="tieu">CHƯA XONG BÀI</span>' +
-        '<span class="ds-thieu">' + o + '</span>' +
-      '</span>' +
     '</span>';
 }
 
@@ -2223,6 +2208,35 @@ function avChuTat(ten){
   return (tu[tu.length - 2].charAt(0) + tu[tu.length - 1].charAt(0)).toUpperCase();
 }
 
+/* ⭐⭐ v1.94.7 (13/09/2026) — CỘT ICON HỌC SINH THIẾU BÀI (`.thieu-block`),
+   thay hẳn khối chữ CHƯA XONG BÀI/CẢ LỚP ĐANG CHỜ. Ảnh avatar đi ĐÚNG đường
+   `avUrl`/`avTenDayDu` + đánh dấu `data-av-em`/`data-av-lop` như `avMocHtml`
+   ngay trên — để `A.deAvatarKho()` (quét ngầm cả trang) tự đổi sang ảnh sống
+   mới nhất, không cần viết thêm đường cập nhật riêng.
+   ⛔ Không gọi khi `LA_DAC_BIET` (HS đặc biệt): `veDiem()` đã return sớm ở
+   nhánh đó, `CA_LOP` rỗng nên không có khái niệm "cả lớp ai thiếu". */
+var THIEU_TOI_DA = 4;   /* tối đa 4 icon; từ 5 học sinh trở lên gộp 3 + "+N" */
+function avThieuHtml(e, lopGoc){
+  var tenDay = A.avTenDayDu(e.ten, CA_LOP);
+  var tip = A.chuAnToan(e.ten) + (e.so ? ' · còn ' + e.so + ' bài' : '');
+  return '<span class="tic" data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' +
+    A.chuAnToan(lopGoc) + '" title="' + tip + '">' +
+    '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
+    A.chuAnToan(avChuTat(e.ten)) +
+  '</span>';
+}
+function veThieuRail(ds, lopGoc){
+  var icons;
+  if (ds.length > THIEU_TOI_DA) {
+    icons = ds.slice(0, THIEU_TOI_DA - 1).map(function(e){ return avThieuHtml(e, lopGoc); }).join('') +
+      '<span class="tic more">+' + (ds.length - (THIEU_TOI_DA - 1)) + '</span>';
+  } else {
+    icons = ds.map(function(e){ return avThieuHtml(e, lopGoc); }).join('');
+  }
+  return '<span class="thieu-block"><span class="thieu-ic">' + icons + '</span>' +
+    '<span class="thieu-vach"></span></span>';
+}
+
 function veDoiSpKhoi(b){
   var doiSp = b.doiSp || [];
   /* ⛔ Ảnh nằm theo TÊN GỐC có gạch ("B2-B") — biến `LOP`, KHÔNG phải `LOP_DL` ("B2B").
@@ -2239,51 +2253,6 @@ function veDoiSpKhoi(b){
 
   var lopSo = ' doi' + Math.min(Math.max(doiSp.length, 2), 5);
   return '<span class="the-diem' + lopSo + '">' + thanh + '</span>';
-}
-
-/* ---------- CẮT CỘT "CHƯA XONG BÀI" CHO VỪA CHỖ (v17) ----------
-   Chiều cao thẻ là cố định, còn phần trên (số dòng act–thanh–số lượng, có
-   hay không có dòng CHÚ Ý) thì đổi theo từng bài ⇒ chỗ trống dành cho cột
-   tên cũng đổi theo. Nên đo chỗ trống THẬT rồi bỏ bớt tên từ dưới lên, chứ
-   không ấn định trước một con số.
-   ⛔ Không dùng scrollHeight để đo: .khoi-thieu căn giữa theo chiều dọc nên
-   phần tràn chia đều hai đầu, scrollHeight chỉ đếm phần tràn xuống dưới —
-   đo kiểu đó là thiếu một nửa. Phải CỘNG chiều cao thật của từng khối con. */
-function caoCaLe(el){
-  if (!el) return 0;
-  var st = getComputedStyle(el);
-  return el.offsetHeight + (parseFloat(st.marginTop) || 0) + (parseFloat(st.marginBottom) || 0);
-}
-function datDongThem(khoi, con){
-  var them = khoi.querySelector('.them');
-  if (con <= 0) { if (them) khoi.removeChild(them); return; }
-  if (!them) {
-    them = document.createElement('span');
-    them.className = 'them';
-    khoi.appendChild(them);
-  }
-  them.textContent = '+' + con + ' bạn nữa';
-}
-function vuaCotThieu(khoi){
-  var ds = khoi.querySelector('.ds-thieu');
-  if (!ds) return;
-  var tong = parseInt(khoi.getAttribute('data-tong'), 10) || (ds.children.length / 2);
-  var canDung = function(){
-    return caoCaLe(khoi.querySelector('.tieu')) + caoCaLe(ds) +
-           caoCaLe(khoi.querySelector('.them'));
-  };
-  var soHang = ds.children.length / 2;
-  datDongThem(khoi, tong - soHang);
-  var vong = 0;
-  while (soHang > 1 && canDung() > khoi.clientHeight && vong++ < 40) {
-    ds.removeChild(ds.lastElementChild);   // ô số
-    ds.removeChild(ds.lastElementChild);   // tên
-    soHang--;
-    datDongThem(khoi, tong - soHang);
-  }
-}
-function vuaMoiCotThieu(){
-  document.querySelectorAll('.khoi-thieu').forEach(vuaCotThieu);
 }
 
 /* ---------- BA NHÃN RỘNG BẰNG NHAU + CỘT TÊN VỪA KHÍT (v1.15.0) ----------
@@ -2399,7 +2368,7 @@ function canhNhanO(){
    fonts.ready là promise ⇒ luôn chạy SAU khi dungCot() vẽ xong. */
 if (document.fonts && document.fonts.ready) {
   document.fonts.ready.then(function(){
-    doCaoDau(); doSanChat(); canhNhanO(); vuaMoiCotThieu();
+    doCaoDau(); doSanChat(); canhNhanO();
   });
 }
 /* (Việc đo lại lúc kéo giãn cửa sổ nay nằm chung trong một trình nghe resize
@@ -2800,7 +2769,10 @@ function veTheMoi(b, tt){
       )) +
       veHan(b, tt) +
     '</span>' + (laWs ? veWorksheetKhoi() : (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
-      ? veDoiSpKhoi(bDung) : veDiem(bDung, gap, gap))) +
+      /* ⭐ v1.94.7 — cột icon thiếu bài hiện bất cứ lúc nào còn thiếu, không
+         còn chờ tới lúc gần hạn (`gap`) như bản cũ — chỉ `batDo` (tô đỏ thanh
+         chưa đủ điểm) vẫn giữ nguyên gắn với `gap`. */
+      ? veDoiSpKhoi(bDung) : veDiem(bDung, gap, true))) +
     veMui(b.khoa) +
   '</span></button>';
 }
@@ -2921,11 +2893,7 @@ function dungCot(){
       }
     };
   });
-  /* ⛔ Căn nhãn TRƯỚC khi cắt cột CHƯA XONG BÀI: `canhNhanO()` đổi bề ngang cột
-     tên ⇒ đổi luôn chỗ còn lại của cụm thanh, mà `vuaCotThieu()` đo chỗ trống
-     thật để cắt tên. Làm ngược thứ tự là đo trên bố cục sắp bị đổi. */
   canhNhanO();
-  vuaMoiCotThieu();
   henVeLaiAvatar($('#cotBai'));  /* ⭐ 02/09 — đo cỡ + xếp chỗ avatar trên thanh đội */
   /* ⭐ v1.48.0 — sân chơi của thẻ nghỉ (bóng bay + trò khủng long).
      ⛔ Ảnh avatar lấy theo `LOP` (TÊN GỐC "B2-B"), KHÔNG phải `LOP_DL` ("B2B") —

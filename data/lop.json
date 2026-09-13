@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-13 10:06:17",
+  "capNhat": "2026-09-13 10:09:02",
   "nguon": "myStudent",
   "lop": [
     {
@@ -233,7 +233,7 @@
     {
       "maLop": "A1C",
       "tenGoc": "A1-C",
-      "thu": "CHỦ NHẬT",
+      "thu": "CN",
       "gio": "8h00",
       "tan": "11h30",
       "hocSinh": [
@@ -338,6 +338,13 @@
           "ten": "TÙNG LÂM",
           "ma": "NGUYENTUNGLAM22062016",
           "sinhNhat": ""
+        }
+      ],
+      "hsDb": [
+        {
+          "id": 212,
+          "ten": "TIẾN DŨNG",
+          "ma": "PHAMDINHTIENDUNG27122014"
         }
       ]
     },
@@ -754,7 +761,7 @@
     {
       "maLop": "B2B",
       "tenGoc": "B2-B",
-      "thu": "CHỦ NHẬT",
+      "thu": "CN",
       "gio": "14h00",
       "tan": "17h30",
       "hocSinh": [

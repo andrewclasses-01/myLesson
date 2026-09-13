@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-13 10:09:02",
+  "capNhat": "2026-09-13 10:14:33",
   "nguon": "myStudent",
   "lop": [
     {
@@ -316,6 +316,12 @@
           "sinhNhat": ""
         },
         {
+          "id": 213,
+          "ten": "TIẾN DŨNG",
+          "ma": "PHAMDINHTIENDUNG27122014",
+          "sinhNhat": ""
+        },
+        {
           "id": 136,
           "ten": "TRÀ MY",
           "ma": "VUTRAMY17062014",
@@ -338,13 +344,6 @@
           "ten": "TÙNG LÂM",
           "ma": "NGUYENTUNGLAM22062016",
           "sinhNhat": ""
-        }
-      ],
-      "hsDb": [
-        {
-          "id": 212,
-          "ten": "TIẾN DŨNG",
-          "ma": "PHAMDINHTIENDUNG27122014"
         }
       ]
     },

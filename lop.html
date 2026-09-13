@@ -306,6 +306,44 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
                      drop-shadow(0 0 16px rgba(24,169,87,.42))}
 .the.cu.xong-het{filter:drop-shadow(0 1px 2px rgba(24,169,87,.16))
                         drop-shadow(0 0 3px rgba(24,169,87,.26))}
+/* ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — THẺ MỚI CẢ LỚP XONG HẾT: hào quang xanh lá
+   NHÁY (trước đây đứng yên). Thầy: "lớp xong bài thì không nháy đỏ nữa mà phải toả ánh
+   sáng nháy xanh lá thể hiện lớp đã hoàn thành xuất sắc". Chỉ thẻ TRÊN VẠCH (`.moi`);
+   thẻ cũ không nháy gì (xem khối `.the.cu.het` ngay dưới).
+   ⛔ CHÉP Y bên `dashboard.html` (`.the.xong-het:not(.het)`) — hai trang hai khối
+   <style> riêng, sửa một bên phải sửa bên kia. */
+.the.moi.xong-het{animation:hao-quang-la 3.4s ease-in-out infinite}
+@keyframes hao-quang-la{
+  0%,100%{filter:drop-shadow(0 2px 4px rgba(24,169,87,.22))
+                 drop-shadow(0 0 8px rgba(24,169,87,.38))}
+  50%    {filter:drop-shadow(0 2px 4px rgba(24,169,87,.36))
+                 drop-shadow(0 0 24px rgba(24,169,87,.85))}
+}
+@media (prefers-reduced-motion: reduce){ .the.moi.xong-het{animation:none} }
+/* ⭐⭐ v1.95.0 (thầy chốt 13/09/2026, duyệt qua bàn thử) — THẺ CŨ ĐÃ HẾT HẠN (`.cu.het`):
+   NHẠT, TRUNG TÍNH, KHÔNG LỘ ĐỦ HAY THIẾU. Nền xám nhạt, chữ dịu, thanh một màu, BỎ ô
+   x/y + dấu ✓ (cột thanh ăn hết chỗ đó ⇒ thanh dài ra), avatar top 3 vẫn giữ, không cột
+   icon thiếu, thanh chặng STAGE xám (khúc đang xem đậm hơn một chút), SP CHECK ẩn số lỗi.
+   ⛔ Chỉ `.cu.het` (hết hạn thật), KHÔNG phải mọi `.cu`: thẻ dưới vạch mà VẪN còn hạn
+   (hai bài cùng còn hạn, hiếm) giữ lối cũ — xem `veTheCu()`.
+   ⛔ `.the.cu.het .td-bar i` (0,3,1) cố ý đặc hiệu hơn `i.m-do` (0,1,1) để đè màu. */
+.the.cu.het{filter:drop-shadow(0 1px 2px rgba(22,35,42,.06)) drop-shadow(0 4px 12px rgba(22,35,42,.04))}
+.the.cu.het .the-in{background:#F4F7F6}
+.the.cu.het .t-ten,.the.cu.het .t-ten .khoang{color:#6B7C79}
+.the.cu.het .t-ma{color:#98A9A5}
+.the.cu.het .the-diem{border-top-color:#E3EAE8}
+.the.cu.het .td-dong{grid-template-columns:minmax(0,var(--cot-ten,112px)) 1fr}
+.the.cu.het .td-so,.the.cu.het .td-tich,.the.cu.het .doi-so{display:none}
+.the.cu.het .doi-dong{grid-template-columns:46px 1fr}
+.the.cu.het .td-ten,.the.cu.het .doi-ten{color:#8A9A97}
+.the.cu.het .td-bar,.the.cu.het .doi-bar{background:#E3EAE8}
+.the.cu.het .td-bar i,.the.cu.het .doi-bar i{background:#B4C8C3}
+.the.cu.het .td-tay{color:#9A8B6E; border-top-color:#E3EAE8}
+.the.cu.het .td-tay svg{stroke:#C4B08A}
+.the.cu.het .st-khuc{background:#E7EDEB; color:#9DAFAB; --h:26px; font-size:10px; animation:none}
+.the.cu.het .st-khuc.dang-xem{background:#D6E0DD; color:#6B7C79}
+.the.cu.het .ws-chu .t-ten{color:#6B7C79}
+.the.cu.het .ws-nhac{animation:none; background:none; color:#9DAFAB; -webkit-text-fill-color:currentColor}
 .the.gio-duong{filter:drop-shadow(0 2px 4px rgba(62,123,250,.18))
                       drop-shadow(0 0 15px rgba(62,123,250,.34))}
 .the.gio-vang{filter:drop-shadow(0 2px 4px rgba(224,180,17,.22))
@@ -1546,8 +1584,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=70"></script>
-<script src="js/chung.js?v=43"></script>
+<script src="config.js?v=71"></script>
+<script src="js/chung.js?v=44"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1678,6 +1716,11 @@ var MA_HS = '';          /* mã đăng nhập của em */
 
 var CA_LOP = [];         /* tên cả lớp, đúng thứ tự trong lop.json */
 var SI_SO = 0;
+/* ⭐⭐ v1.95.0 — bản ghi LỚP (có `hocSinh[].vao`) để `theTuBai()` tính SĨ SỐ RIÊNG TỪNG
+   BÀI qua `A.caLopCuaBai()`: em vào lớp SAU ngày giao bài không thuộc bài đó (thầy chốt
+   13/09). ⛔ Mọi phép đếm/xếp CỦA MỘT THẺ phải đọc `b.caLop`/`b.siSo`, KHÔNG đọc
+   `CA_LOP`/`SI_SO` chung nữa — hai biến chung chỉ còn cho chat/menu/tra tên đầy đủ. */
+var LOP_OBJ = null;
 var TAT = {};
 /* ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT: phụ huynh luyện bài CÙNG
    con bằng ID riêng — không điểm danh, không tính sĩ số, không thấy/bị thấy bởi ai.
@@ -1724,8 +1767,13 @@ function theTuBai(b){
   var moc = A.mocHan(b);
   var laSp = /SP\s*CHECK/i.test(b.dang || '');
   var laWs = /^WORKSHEET$/i.test(b.dang || '');
+  /* ⭐⭐ v1.95.0 — SĨ SỐ RIÊNG CỦA BÀI NÀY: bỏ em vào lớp sau ngày giao (xem chú thích
+     `LOP_OBJ`). HS đặc biệt: rỗng, y hệt `CA_LOP` của phiên đó. */
+  var caLop = LA_DAC_BIET ? [] : A.caLopCuaBai(LOP_OBJ, b);
   return {
     id: b.id,
+    caLop: caLop,
+    siSo: caLop.length,
     dang: b.dang || '',
     loai: laSp ? 'spcheck' : (laWs ? 'wsheet' : ''),
     trang: A.trangCuaBai(b),
@@ -1805,7 +1853,8 @@ function donDiem(cacThe){
         var ds = theoMa[x.ma] || [];
         var chuan = chuanMaAct[x.ma];
         var dem = 0;
-        CA_LOP.forEach(function(ten){
+        /* v1.95.0 — đếm theo SĨ SỐ RIÊNG của thẻ (em vào lớp sau ngày giao không tính). */
+        (t.caLop || CA_LOP).forEach(function(ten){
           if (A.xongAct(ds, ten, chuan)) dem++;
           else thieu[ten] = (thieu[ten] || 0) + 1;
         });
@@ -1867,7 +1916,7 @@ function tinhHinhThe(b, hetGio){
   if (!ds.length) {
     return hetGio ? { lop:'tt-la', du:true } : { lop:'', du:false };
   }
-  var du = ds.every(function(x){ return x.xong >= SI_SO; });
+  var du = ds.every(function(x){ return x.xong >= b.siSo; });   /* v1.95.0 — sĩ số riêng */
   return { lop: du ? 'tt-la' : 'tt-do', du:du };
 }
 
@@ -1887,7 +1936,7 @@ function changCuaThe(b){
     diem: function(ma){ return DIEM_ACT[ma] || []; },
     chuan: function(ma){ return CHUAN_ACT[ma]; }
   };
-  return A.xetChang(b.goc, lay, CA_LOP, {
+  return A.xetChang(b.goc, lay, b.caLop || CA_LOP, {   /* v1.95.0 — sĩ số riêng */
     boQua: A.boQuaCua(b.goc), moChang: A.moChangCua(b.goc), moHet: LA_DAC_BIET
   });
 }
@@ -1909,7 +1958,9 @@ function veThanhChangThe(cac, iXem){
   }).join('') + '</span>';
 }
 
-function veDiemStage(b, batDo){
+/* ⭐ v1.95.0 — thêm `hienThieu`: thẻ CŨ hết hạn (`veTheCu`) truyền false ⇒ không cột
+   icon thiếu (thầy chốt 13/09); thẻ mới vẫn hiện bất cứ lúc nào còn thiếu (v1.94.7). */
+function veDiemStage(b, batDo, hienThieu){
   var cac = b._chang || changCuaThe(b);
   var iXem = A.changHien(cac);
   var c = cac[iXem] || { acts: [], thieu: [] };
@@ -1920,14 +1971,14 @@ function veDiemStage(b, batDo){
     var x = mas[a.ma] || { ten: a.ten, ma: a.ma, xong: 0 };
     // v1.82.0 — HS đặc biệt: điểm riêng / điểm tối đa, xem khai báo ở đầu file.
     if (LA_DAC_BIET) return dongDiemDacBiet(x);
-    var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
+    var pt = Math.min(100, Math.round(x.xong / b.siSo * 100));   /* v1.95.0 — sĩ số riêng */
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
       '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' +
         A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
       '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
         avMocHtml(DIEM_ACT[x.ma], LOP || LOP_DL) + '</span>' +
-      '<span class="td-so ' + m + '">' + x.xong + '/' + SI_SO + '</span>' +
+      '<span class="td-so ' + m + '">' + x.xong + '/' + b.siSo + '</span>' +
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
     '</span>';
   }).join('');
@@ -1936,7 +1987,7 @@ function veDiemStage(b, batDo){
   /* ⭐ v1.94.7 — bỏ điều kiện "chỉ hiện khi chặng ĐÃ QUÁ HẠN" (`c.tt==='ket'`):
      `c.thieu` được `A.xetChang` tính cho MỌI chặng (kể cả đang chạy), nên hiện
      luôn miễn còn em chưa xong — cùng luật với thẻ thường (thầy chốt). */
-  var cho = c.thieu || [];
+  var cho = hienThieu ? (c.thieu || []) : [];
   if (!cho.length) {
     return '<span class="the-diem st' + lopSo + '">' +
       veThanhChangThe(cac, iXem) +
@@ -1954,7 +2005,7 @@ function veDiemStage(b, batDo){
 }
 
 function veDiem(b, batDo, hienThieu){
-  if (b.stage && b.goc) return veDiemStage(b, batDo);
+  if (b.stage && b.goc) return veDiemStage(b, batDo, hienThieu);
   if (LA_DAC_BIET) {
     var thanhDb = (b.bai || []).map(dongDiemDacBiet).join('');
     var soBaiDb = (b.bai || []).length;
@@ -1962,7 +2013,7 @@ function veDiem(b, batDo, hienThieu){
       + thanhDb + '</span>';
   }
   var thanh = (b.bai || []).map(function(x){
-    var pt = Math.min(100, Math.round(x.xong / SI_SO * 100));
+    var pt = Math.min(100, Math.round(x.xong / b.siSo * 100));   /* v1.95.0 — sĩ số riêng */
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
       /* ⭐ v1.14.0 — nhãn RÚT GỌN: "WORD PRACTICE 1" -> "WORDS 1" (A.tenO).
@@ -1972,7 +2023,7 @@ function veDiem(b, batDo, hienThieu){
       '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' + A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
       '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
         avMocHtml(DIEM_ACT[x.ma], LOP || LOP_DL) + '</span>' +
-      '<span class="td-so ' + m + '">' + x.xong + '/' + SI_SO + '</span>' +
+      '<span class="td-so ' + m + '">' + x.xong + '/' + b.siSo + '</span>' +
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
     '</span>';
   }).join('');
@@ -2394,17 +2445,18 @@ if (document.fonts && document.fonts.ready) {
 function xepCaLop(b){
   var conThieu = {};
   (b.thieu || []).forEach(function(e){ conThieu[e.ten] = e.so; });
+  var caLop = b.caLop || CA_LOP;   /* v1.95.0 — sĩ số riêng của thẻ */
 
-  var xong = CA_LOP.filter(function(t){ return !conThieu[t]; }).map(function(t){
+  var xong = caLop.filter(function(t){ return !conThieu[t]; }).map(function(t){
     return { ten:t, du:true, phu:'hoàn thành' };
   });
 
   /* ⛔ Đừng trông vào thứ tự vào mảng: `b.thieu` dựng từ `Object.keys()` nên
-     thứ tự khoá là chuyện của trình duyệt. Chốt lại bằng chỉ số trong CA_LOP. */
+     thứ tự khoá là chuyện của trình duyệt. Chốt lại bằng chỉ số trong caLop. */
   var thieu = (b.thieu || []).slice()
     .sort(function(a, c){
       if (a.so !== c.so) return a.so - c.so;
-      return CA_LOP.indexOf(a.ten) - CA_LOP.indexOf(c.ten);
+      return caLop.indexOf(a.ten) - caLop.indexOf(c.ten);
     })
     .map(function(e){ return { ten:e.ten, du:false, so:e.so, phu:'chưa hoàn thành' }; });
 
@@ -2447,28 +2499,32 @@ function chuGiayPop(g){
 
 /* Xếp hạng một act: em có điểm lên trước (điểm cao, rồi nhanh hơn), em chưa
    làm dồn xuống cuối. Cùng luật với leaderboard trang bài. */
-function xepActPop(ma){
+/* v1.95.0 — `caLop` = danh sách riêng của THẺ (em vào lớp sau ngày giao không có mặt). */
+function xepActPop(ma, caLop){
+  caLop = caLop || CA_LOP;
   var ds = (DIEM_ACT[ma] || []).filter(function(e){
-    return CA_LOP.some(function(t){ return A.khoaTen(t) === A.khoaTen(e.ten); });
+    return caLop.some(function(t){ return A.khoaTen(t) === A.khoaTen(e.ten); });
   }).slice().sort(function(a, b){
     if (a.diem !== b.diem) return b.diem - a.diem;
     return (a.giay || 0) - (b.giay || 0);
   });
   var daCo = {};
   ds.forEach(function(e){ daCo[A.khoaTen(e.ten)] = 1; });
-  var chua = CA_LOP.filter(function(t){ return !daCo[A.khoaTen(t)]; })
+  var chua = caLop.filter(function(t){ return !daCo[A.khoaTen(t)]; })
     .map(function(t){ return { ten: t, chua: true }; });
   return ds.concat(chua);
 }
 
-function veCotActPop(a, moAct, cham){
-  var ds = xepActPop(a.ma);
+function veCotActPop(a, moAct, cham, caLop, siSo){
+  caLop = caLop || CA_LOP;
+  if (siSo == null) siSo = caLop.length;
+  var ds = xepActPop(a.ma, caLop);
   var daLam = ds.filter(function(e){ return !e.chua; }).length;
   var c = CHUAN_ACT[a.ma];
   var moc = (c && !c.tru) ? c.dinh : 0;
   var vach = '<span class="doi-vach"><span class="line"></span><span class="lb">' +
     A.chuAnToan(A.tenO(a.ten, true)) + '<span class="tong">' +
-    (moAct ? daLam : 0) + '/' + SI_SO + ' đã làm</span></span>' +
+    (moAct ? daLam : 0) + '/' + siSo + ' đã làm</span></span>' +
     '<span class="line"></span></span>';
   if (!moAct) {
     return '<div class="xh-cot">' + vach +
@@ -2516,8 +2572,28 @@ function vePopChang(){
   $('#popKhung').style.setProperty('--so-cot', Math.max(1, c.acts.length));
   $('#popDs').classList.add('ngang');
   $('#popDs').innerHTML = c.acts.map(function(a){
-    return veCotActPop(a, c.mo, cham);
+    return veCotActPop(a, c.mo, cham, popChangB.caLop, popChangB.siSo);
   }).join('');
+}
+
+/* ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — BẤM VÙNG THANH CỦA THẺ THƯỜNG ⇒ BẢNG CHI TIẾT
+   TỪNG PHẦN, y khuôn nút 🏆 bên dashboard: mỗi act một cột (điểm thật + thời gian +
+   huy chương 3 hạng đầu, em chưa làm đỏ ở cuối), tên viết tắt như pop-up STAGE. Thay
+   cho bảng "ai xong/chưa" (`moPopCaLop`) — bảng đó chỉ còn cho thẻ SP CHECK chưa có
+   thanh team (buổi mô hình 1). Dựng lại bằng ĐÚNG `veCotActPop` của pop-up STAGE nên
+   hai pop-up không bao giờ lệch nhau. Thẻ cũ hết hạn cũng mở bảng này (thầy chốt). */
+function moPopChiTiet(b){
+  var acts = (b.bai || []).filter(function(x){ return x.ma; });
+  if (!acts.length) return moPopCaLop(b);
+  $('#popThanh').hidden = true;
+  $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
+  $('#popKhung').classList.add('rong');
+  $('#popKhung').style.setProperty('--so-cot', acts.length);
+  $('#popDs').classList.add('ngang');
+  $('#popDs').innerHTML = acts.map(function(a){
+    return veCotActPop(a, true, [], b.caLop, b.siSo);
+  }).join('');
+  $('#popNen').classList.add('mo');
 }
 
 function moPopChang(b){
@@ -2597,8 +2673,8 @@ function tinhHinhGio(b){
   /* ⭐ v1.56.0 — thẻ thầy đã ĐỔI HẠN RIÊNG thì KHÔNG bao giờ ăn trạng thái 'xong':
      đồng hồ chạy lại như thẻ mới cho tới mốc hạn mới (thầy chốt 03/09/2026). */
   if (!b.suaHan &&
-      (b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= SI_SO; })) {
-    return 'xong';
+      (b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= b.siSo; })) {
+    return 'xong';   /* v1.95.0 — so với SĨ SỐ RIÊNG của thẻ (em mới vào không tính) */
   }
   if (b.hanMoc == null) return 'thuong';
   var con = (b.hanMoc - Date.now()) / TIENG;
@@ -2779,15 +2855,24 @@ function veTheMoi(b, tt){
 
 function xongHetBai(b){
   var c = {}; for (var k in b) c[k] = b[k];
-  c.bai = (b.bai || []).map(function(x){ return { ten:x.ten, xong:SI_SO }; });
+  /* ⛔ v1.95.0 — GIỮ `ma` của từng act: bản sao này đi vào `veDiem()` để vẽ thanh, mà
+     `avMocHtml(DIEM_ACT[x.ma])` đọc theo mã — mất mã là thẻ xong hết MẤT avatar top 3. */
+  c.bai = (b.bai || []).map(function(x){ return { ten:x.ten, ma:x.ma, xong:b.siSo }; });
   c.thieu = [];
   return c;
 }
 
+/* ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — THẺ DƯỚI VẠCH:
+   · ĐÃ HẾT HẠN (`het`): nhạt, trung tính — không nền đỏ/xanh, không hào quang, thanh
+     KHÔNG tô đỏ (`batDo=false`), không cột icon thiếu; ô x/y + ✓ do CSS `.the.cu.het`
+     giấu. Bấm thanh vẫn mở bảng chi tiết (xem `dungCot`).
+   · VẪN CÒN HẠN / đang học (hai bài cùng còn hạn — hiếm): giữ lối cũ nguyên vẹn. */
 function veTheCu(b){
-  var th = tinhHinhThe(b, true);
+  var het = !b.conHan && !b.dangHoc;
+  var th = het ? { lop:'', du:false } : tinhHinhThe(b, true);
   var laWs = (b.loai === 'wsheet');
-  return '<button class="the cu' + (th.du ? ' xong-het' : '') + (b.khoa ? ' khoa' : '') + (laWs ? ' worksheet' : '') + '">' +
+  return '<button class="the cu' + (het ? ' het' : '') + (th.du ? ' xong-het' : '') +
+      (b.khoa ? ' khoa' : '') + (laWs ? ' worksheet' : '') + '">' +
     '<span class="the-in ' + th.lop + '">' +
     '<span class="the-body">' +
       (laWs ? veWorksheetChu(b) : (
@@ -2798,7 +2883,7 @@ function veTheCu(b){
         '</span>'
       )) +
     '</span>' + (laWs ? veWorksheetKhoi() : (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
-      ? veDoiSpKhoi(b) : veDiem(b, true, false))) +
+      ? veDoiSpKhoi(b) : veDiem(b, !het, false))) +
     veMui(b.khoa) +
   '</span></button>';
 }
@@ -2876,16 +2961,21 @@ function dungCot(){
        cuối. stopPropagation vì vùng này nằm trong thẻ (một <button>). */
     var vung = t.querySelector('.the-diem');
     if (!vung || !(b.bai || []).length) return;   // thẻ chỉ có bài viết tay thì thôi
+    /* v1.95.0 — HS đặc biệt không có "cả lớp" để xem (CA_LOP rỗng) ⇒ không gắn nút. */
+    if (LA_DAC_BIET) return;
     /* ⭐ 27/08 — SP CHECK đã có thanh team (`b.doiSp`) thì mở bảng chi tiết
        từng bạn theo team; chưa có (đang tải/buổi mô hình 1) vẫn mở bảng cả
        lớp cũ như mọi thẻ khác. */
     var spRieng = b.loai === 'spcheck' && b.doiSp && b.doiSp.length;
-    /* ⭐ v1.77.0 — thẻ STAGE mở pop-up KẾT QUẢ THEO CHẶNG. */
-    var moPopThe = b.stage ? moPopChang : (spRieng ? moPopDoiSp : moPopCaLop);
+    /* ⭐ v1.77.0 — thẻ STAGE mở pop-up KẾT QUẢ THEO CHẶNG (mặc định chặng đang chạy).
+       ⭐ v1.95.0 — thẻ thường mở BẢNG CHI TIẾT TỪNG PHẦN (`moPopChiTiet`, thầy chốt);
+       bảng "ai xong/chưa" chỉ còn cho SP CHECK chưa có thanh team. */
+    var moPopThe = b.stage ? moPopChang
+      : (spRieng ? moPopDoiSp : (b.loai === 'spcheck' ? moPopCaLop : moPopChiTiet));
     vung.setAttribute('role', 'button');
     vung.setAttribute('tabindex', '0');
     vung.setAttribute('title', b.stage ? 'Xem kết quả từng chặng'
-      : (spRieng ? 'Xem chi tiết từng bạn' : 'Xem bảng xếp hạng cả lớp'));
+      : (spRieng ? 'Xem chi tiết từng bạn' : 'Xem kết quả chi tiết cả lớp'));
     vung.onclick = function(e){ e.stopPropagation(); moPopThe(b); };
     vung.onkeydown = function(e){
       if (e.key === 'Enter' || e.key === ' ') {
@@ -3196,6 +3286,7 @@ A.napDuLieu().then(function(dl){
     layCtx: function(){ return {}; },
   });
   var l = A.lopTheoMa(dl, LOP_DL);
+  LOP_OBJ = l;                                   /* v1.95.0 — cho `theTuBai()` tính sĩ số riêng */
   LOP = (l && l.tenGoc) || EM.lop;
   LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */
   LOP_SLUG = avSlugLop(LOP);
@@ -4067,8 +4158,9 @@ function timTenLop(tenBuoi, ds){
 /* Đổ danh sách "ai đã nộp" (từ kho nào cũng chung một khuôn [{ten}]) vào thẻ. */
 function spDoDaNop(dsDaNop){
   var xong = {}, khongGhep = [];
+  var lopSp = BAI_SP.caLop || CA_LOP;   /* v1.95.0 — sĩ số riêng của thẻ SP CHECK */
   dsDaNop.forEach(function(x){
-    var ten = timTenLop(x.ten, CA_LOP);
+    var ten = timTenLop(x.ten, lopSp);
     if (ten) xong[ten] = true; else khongGhep.push(x.ten);
   });
   /* Tên nộp bài không ghép được với em nào trong lớp ⇒ thẻ ĐẾM THIẾU. Ghi ra
@@ -4077,8 +4169,8 @@ function spDoDaNop(dsDaNop){
      luôn rơi vào đây — bản thật danh sách lớp có đủ cả em.) */
   if (khongGhep.length && window.console)
     console.warn('speaking: khong ghep duoc ten ->', khongGhep.join(', '));
-  var chua = CA_LOP.filter(function(t){ return !xong[t]; });
-  BAI_SP.bai[0].xong = CA_LOP.length - chua.length;
+  var chua = lopSp.filter(function(t){ return !xong[t]; });
+  BAI_SP.bai[0].xong = lopSp.length - chua.length;
   BAI_SP.thieu = chua.map(function(t){ return { ten:t, so:1 }; });
   dungCot();
 }

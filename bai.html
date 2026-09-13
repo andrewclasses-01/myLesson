@@ -1486,8 +1486,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=70"></script>
-<script src="js/chung.js?v=43"></script>
+<script src="config.js?v=71"></script>
+<script src="js/chung.js?v=44"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=22"></script>
@@ -4066,6 +4066,13 @@ A.napDuLieu().then(function(dl){
      về trang lớp kèm cờ `khoa=1` để bên đó báo một câu. (Bài ẩn/xoá thì
      `A.baiCuaLop` cửa học sinh đã bỏ sẵn → rơi vào `!BAI` ở trên.) */
   if (A.trangThaiThe(BAI) === 'khoa') { veTrangLop('khoa=1'); return; }
+
+  /* ⭐⭐ v1.95.0 (13/09/2026) — CA_LOP của TRANG NÀY = danh sách em có mặt Ở BÀI NÀY
+     (`A.caLopCuaBai`): em vào lớp SAU ngày giao không tính — cùng luật với thẻ bên
+     lop.html/dashboard. ⛔ Phải đặt lại Ở ĐÂY (sau khi biết BAI), không thì leaderboard
+     bêu em mới "chưa làm" và — nguy hơn — phép xét chặng STAGE (`xetChang` phía dưới)
+     chờ một em không thuộc bài ⇒ chặng mở ở trang lớp mà không mở ở trang bài. */
+  if (!LA_DAC_BIET) { CA_LOP = A.caLopCuaBai(l, BAI); TAT = bangVietTat(CA_LOP); }
 
   /* Bài dạng SP SLIDE có trang riêng — vào nhầm thì chuyển sang đó. */
   var trang = A.trangCuaBai(BAI);

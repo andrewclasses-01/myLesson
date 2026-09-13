@@ -799,6 +799,36 @@ a{color:inherit}
 @media (prefers-reduced-motion:reduce){
   .the.gap{animation:none; filter:drop-shadow(0 2px 4px rgba(224,87,91,.35)) drop-shadow(0 0 16px rgba(224,87,91,.6))}
 }
+/* ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — CẢ LỚP XONG HẾT: hào quang xanh lá NHÁY (trước
+   đứng yên). BẢN CHÉP của `lop.html` (`.the.moi.xong-het`) — hai trang hai khối <style>
+   riêng, sửa một bên phải sửa bên kia. `:not(.het)`: thẻ hết hạn (ca dự phòng "bài gần
+   nhất") không nháy gì. */
+.the.xong-het:not(.het){animation:hao-quang-la 3.4s ease-in-out infinite}
+@keyframes hao-quang-la{
+  0%,100%{filter:drop-shadow(0 2px 4px rgba(24,169,87,.22)) drop-shadow(0 0 8px rgba(24,169,87,.38))}
+  50%{filter:drop-shadow(0 2px 4px rgba(24,169,87,.36)) drop-shadow(0 0 24px rgba(24,169,87,.85))}
+}
+@media (prefers-reduced-motion:reduce){ .the.xong-het:not(.het){animation:none} }
+/* ⭐⭐ v1.95.0 — THẺ ĐÃ HẾT HẠN (`.het`, chỉ gặp ở ca dự phòng "bài gần nhất (đã hết
+   hạn)" của `veKhuThe`): NHẠT, TRUNG TÍNH, KHÔNG LỘ ĐỦ/THIẾU — BẢN CHÉP khối
+   `.the.cu.het` bên `lop.html` (đổi `.cu.het` → `.het`, thêm cột `.diem-rows`). Bỏ ô x/y
+   + ✓ (cột thanh ăn hết chỗ), thanh một màu, avatar top 3 giữ, thanh chặng xám, SP CHECK
+   ẩn số. Dải ⚙ + icon tạm vẫn dùng được (thẻ vẫn là thẻ quản lý). */
+.the.het{filter:drop-shadow(0 1px 2px rgba(22,35,42,.06)) drop-shadow(0 4px 12px rgba(22,35,42,.04))}
+.the.het .the-in{background:#F4F7F6}
+.the.het .t-ten,.the.het .t-ten .ngay{color:#6B7C79}
+.the.het .t-ma{color:#98A9A5}
+.the.het .the-diem,.the.het .diem-vach{border-color:#E3EAE8}
+.the.het .td-dong{grid-template-columns:minmax(0,var(--cot-ten,112px)) 1fr}
+.the.het .td-so,.the.het .td-tich,.the.het .doi-so{display:none}
+.the.het .doi-dong{grid-template-columns:46px 1fr}
+.the.het .td-ten,.the.het .doi-ten{color:#8A9A97}
+.the.het .td-bar,.the.het .doi-bar{background:#E3EAE8}
+.the.het .td-bar i,.the.het .doi-bar i{background:#B4C8C3}
+.the.het .st-khuc{background:#E7EDEB; color:#9DAFAB; --h:26px; font-size:10px; animation:none}
+.the.het .st-khuc.dang-xem{background:#D6E0DD; color:#6B7C79}
+.the.het .ws-chu .t-ten{color:#6B7C79}
+.the.het .ws-nhac{animation:none; background:none; color:#9DAFAB; -webkit-text-fill-color:currentColor}
 /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — LỚP ĐANG HỌC: nền + hào quang XANH LƠ.
    ⛔ CHÉP Y KHỐI NÀY bên `lop.html` — cụm này mỗi trang một khối <style> riêng,
    không có stylesheet chung; sửa một bên phải sửa bên kia.
@@ -1938,8 +1968,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=70"></script>
-<script src="js/chung.js?v=43"></script>
+<script src="config.js?v=71"></script>
+<script src="js/chung.js?v=44"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -1997,7 +2027,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // Trả { bai, maLop, siSo, acts:[{ten,ma,mau,xong}], xong, tong, thieu:[tên em] }
   function tinhBai(b, maLop) {
     var l = A.lopTheoMa(DL, maLop);
-    var caLop = ((l && l.hocSinh) || []).map(function (h) { return h.ten; });
+    // ⭐⭐ v1.95.0 — SĨ SỐ RIÊNG CỦA BÀI: em vào lớp SAU ngày giao (`h.vao`) không thuộc
+    // bài đó — cùng hàm với trang lớp (`A.caLopCuaBai`, js/chung.js), thầy chốt 13/09.
+    var caLop = A.caLopCuaBai(l, b);
     var acts = A.actCuaBai(b).map(function (k) {
       var ds = DIEM[k.ma];
       var xong = null;                       // null = chưa đọc kho điểm
@@ -2636,15 +2668,24 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   var IC_GEAR_NHO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/>' +
     '<path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42' +
     'M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg>';
-  var IC_CUP_NHO = '<svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/>' +
-    '<path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 17h5"/></svg>';
+  // ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — ICON TẠM thay nút 🏆: bấm vùng thanh nay đã mở
+  // đúng bảng xếp hạng (xem `moPopDiem`), ô này thầy CHƯA gán việc — vòng chấm + dấu cộng
+  // (thầy chọn mẫu A qua bàn thử). Bấm chỉ báo một câu. `IC_CUP_NHO` cũ đã gỡ.
+  var IC_TAM_NHO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.6" stroke-dasharray="2.6 2.6"/>' +
+    '<path d="M12 8.6v6.8M8.6 12h6.8"/></svg>';
 
-  function veTheCard(b) {
+  // ⭐ v1.95.0 — `het` = thẻ ĐÃ HẾT HẠN (ca dự phòng "bài gần nhất" của `veKhuThe`):
+  // vẽ NHẠT, trung tính, không tô đỏ thanh (thầy chốt: thẻ cũ không lộ đủ/thiếu).
+  // ⛔ Gọi qua `function (b) { return veTheCard(b, het); }` — `ds.map(veTheCard)` sẽ
+  //    truyền CHỈ SỐ vào tham số này.
+  function veTheCard(b, het) {
     var t = tinhBai(b, LOP_CHON);
     var moc = A.mocHan(b);
     var st = tinhTrangThe(t, moc, A.daSuaHan(b));
+    if (het) st = { tt: 'thuong', du: false };
     var lopThem, lopNen;
-    if (st.du) { lopThem = ' xong-het'; lopNen = 'tt-la'; }
+    if (het) { lopThem = ' het'; lopNen = ''; }
+    else if (st.du) { lopThem = ' xong-het'; lopNen = 'tt-la'; }
     else if (st.tt === 'gap') { lopThem = ' gap'; lopNen = 'tt-do'; }
     else if (st.tt === '24h') { lopThem = ' gio-vang'; lopNen = 'tt-vang'; }
     else { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
@@ -2656,7 +2697,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // + khoá vẫn mang `.gap` nhấp nháy đỏ) — về nền xanh dương nhạt như lop.html.
     var ttThe = A.trangThaiThe(b);
     if (ttThe === 'an') lopThem += ' an';
-    if (ttThe === 'khoa') { lopThem = ' khoa'; lopNen = 'tt-duong'; }
+    if (ttThe === 'khoa' && !het) { lopThem = ' khoa'; lopNen = 'tt-duong'; }
     // ⭐ v1.88.0 (10/09/2026) — WORKSHEET: chỉ bài giấy, không act nào — tiêu đề
     // đảo vai (WORKSHEET lên trên, tên BT ở lớp xuống dưới, cùng nếp lop.html
     // `veWorksheetChu`) + dòng nhắc thay thanh điểm. Bỏ nút 🏆 (không có gì để
@@ -2684,7 +2725,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         '<span class="the-diem ' + diem.cls + (laWs ? ' ws-diem' : '') + '">' +
           '<span class="diem-ic">' +
             '<button type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
-            (laWs ? '' : '<button type="button" data-rail-xephang="' + id + '" title="Bảng xếp hạng">' + IC_CUP_NHO + '</button>') +
+            /* v1.95.0 — icon TẠM (chưa gán việc) thay 🏆; WORKSHEET vẫn không có ô này như trước. */
+            (laWs ? '' : '<button type="button" data-rail-tam="' + id + '" title="Ô này thầy chưa gán tính năng">' + IC_TAM_NHO + '</button>') +
           '</span>' +
           '<span class="diem-vach"></span>' +
           '<span class="diem-rows">' + (laWs
@@ -3369,12 +3411,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ⭐ v1.32.0 — bấm vùng điểm (thanh tiến trình) trong thẻ: bảng gộp CẢ BÀI
   // (xong hết mọi act / còn thiếu act nào đó) — KHÔNG còn dùng chung với
   // icon 🏆 nữa từ v1.34.0 (xem `moPopChiTietAct` ở trên).
+  // ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — bấm vùng điểm nay mở ĐÚNG bảng của nút 🏆 cũ
+  // (`moPopChiTietAct`: mỗi act một cột, điểm thật + thời gian + huy chương), cùng một bảng
+  // với trang học sinh (`lop.html moPopChiTiet`). Bảng "ai xong/chưa" (`moPopCaLop`) chỉ
+  // còn cho thẻ SP CHECK chưa có thanh team.
   function moPopDiem(id) {
     var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
     if (!b) return;
     var t = tinhBai(b, LOP_CHON);
-    if (t.laSp && t.doiSp && t.doiSp.length) moPopDoiSp(b, t);
-    else if (t.acts.length) moPopCaLop(b, t);
+    if (t.laSp) {
+      if (t.doiSp && t.doiSp.length) moPopDoiSp(b, t);
+      else if (t.acts.length) moPopCaLop(b, t);
+      return;
+    }
+    moPopChiTietAct(b, t);
   }
 
   function chuoiGio(ms) {
@@ -3556,7 +3606,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           '<span class="diem-ic"><button type="button" data-rail-caidat="@nghi" ' +
           'title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button></span>' +
           '<span class="diem-vach"></span>', ttNghi === 'an')
-      : (ds.length ? ds.map(veTheCard).join('')
+      : (ds.length ? ds.map(function (b) {
+          /* ⭐ v1.95.0 — thẻ dự phòng ĐÃ HẾT HẠN (không còn hạn, cũng không trong buổi
+             học) vẽ nhạt như thẻ cũ bên trang lớp (thầy chốt 13/09). */
+          var het = !A.conHan(b) && !A.theDangHoc(DL, LOP_CHON, A.mocHan(b));
+          return veTheCard(b, het);
+        }).join('')
                    : '<div class="trong">Đang chờ bài tập.</div>');
     // ⭐ v1.81.0 — đeo nhãn cho thẻ nghỉ mà HỌC SINH ĐÃ HẾT THẤY (buổi đã tan).
     // ⛔ Gắn class SAU khi dựng HTML thay vì thêm tham số cho `theNghiHtml()`:
@@ -5142,7 +5197,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       // Đọc điểm: mọi bài CÒN HẠN của mọi lớp — cho số "em thiếu bài" trên nút
       // lớp ngay từ lúc mở trang (phạm vi hẹp hơn "Cần nhắc" cũ, vẫn tiết kiệm
       // hạn mức Firebase). Thẻ nào đang mở modal cũng nằm trong tập này rồi.
-      docDiemCuaCacBai(dsBaiConHanMoiLop()).then(veTat);
+      // ⭐ v1.95.0 — CỘNG THÊM mọi bài của LỚP ĐANG CHỌN (y hệt `chonLop()`): lớp không
+      // còn bài nào còn hạn thì thẻ dự phòng "bài gần nhất (đã hết hạn)" trước đây đứng
+      // ở "…" tới khi thầy bấm lại nút lớp — nay x/y đã ẩn (thẻ hết hạn nhạt) nên phải
+      // có điểm ngay để còn avatar top 3. `docDiemCuaCacBai` tự gạt mã trùng; điểm đã có
+      // sổ lượt nộp (v1.74.0) nên tốn ít lượt đọc.
+      docDiemCuaCacBai(dsBaiConHanMoiLop().concat(
+        A.baiCuaLop(DL, LOP_CHON, 'ql').map(function (b) { return { b: b, maLop: LOP_CHON }; })
+      )).then(veTat);
     })['catch'](function () {
       $('#theListDs').innerHTML = '<div class="trong">Chưa đọc được dữ liệu.</div>';
     });
@@ -5170,18 +5232,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       // ACT (`moPopChiTietAct` — KHÁC bấm vùng điểm, xem hàm đó).
       var railCd = e.target.closest('[data-rail-caidat]');
       if (railCd) return void moRcMenu(railCd, railCd.dataset.railCaidat);
-      var railXh = e.target.closest('[data-rail-xephang]');
-      if (railXh) {
-        var idXh = railXh.dataset.railXephang;
-        var bXh = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === idXh; })[0];
-        if (!bXh) return;
-        var tXh = tinhBai(bXh, LOP_CHON);
-        // ⭐ v1.34.0 — SP CHECK vẫn dùng bảng team chi tiết có sẵn; bài
-        // thường thì trophy hiện XẾP HẠNG TỪNG ACT (khác bấm vùng điểm).
-        if (tXh.laSp && tXh.doiSp && tXh.doiSp.length) moPopDoiSp(bXh, tXh);
-        else moPopChiTietAct(bXh, tXh);
-        return;
-      }
+      // ⭐ v1.95.0 — icon TẠM (chỗ nút 🏆 cũ): thầy chưa gán việc, bấm chỉ báo một câu.
+      // Nút 🏆 cũ (`data-rail-xephang`) ĐÃ GỠ — bảng xếp hạng nay mở bằng bấm vùng điểm.
+      var railTam = e.target.closest('[data-rail-tam]');
+      if (railTam) return void baoToast('Ô này thầy chưa gán tính năng.');
       // ⭐ v1.36.0 — "Đổi hạn nộp" nay mở HỘP NHỎ `#hanPop` (một việc duy nhất),
       // không còn mở nguyên hộp xem bài. Định vị TRƯỚC khi đóng menu — hộp bám
       // vào chỗ menu đang đứng.

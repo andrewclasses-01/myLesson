@@ -371,6 +371,35 @@
     return null;
   }
 
+  /* ⭐⭐ v1.95.0 (13/09/2026) — EM NÀO CÓ MẶT Ở MỘT BÀI (thầy chốt).
+     Vì sao: lớp 17 em, bài cũ đã xong 17/17; hôm sau thêm 1 em (myStudent → PUSH) thì
+     thẻ CŨ báo 17/18 và bêu em mới "thiếu bài" dù lúc giao bài em chưa vào lớp — còn kéo
+     theo thẻ nháy đỏ gần giờ học vì "chưa xong hết".
+     Luật: `h.vao` ('YYYY-MM-DD', app v2.66.0 ghi từ myStudent `created_at`) SAU ngày giao
+     bài ⇒ em KHÔNG thuộc bài đó. Không có `vao` (em cũ / bản myStudent cũ) = có từ đầu.
+     Mốc "ngày giao" = `b.taoLuc` (32/32 bài đang có), lùi về ngày trong hạn, không có
+     nữa thì coi mọi em đều có mặt (không bao giờ bỏ nhầm ai vì thiếu dữ liệu).
+     ⛔ SĨ SỐ CỦA MỘT BÀI = `caLopCuaBai(l, b).length`, KHÔNG phải `l.hocSinh.length` —
+     lop.html (`theTuBai`) và dashboard (`tinhBai`) đều lấy từ đây; thanh x/y, cột icon
+     thiếu, bảng kết quả, xét chặng STAGE đều đọc danh sách này. So chuỗi 'YYYY-MM-DD'
+     là đủ (cùng khuôn, không cần Date). */
+  function ngayGiaoBai(b) {
+    var t = String((b && b.taoLuc) || '').slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
+    var h = String(hanCua(b) || '').slice(0, 10);
+    return /^\d{4}-\d{2}-\d{2}$/.test(h) ? h : '';
+  }
+  function emCoMatOBai(h, b) {
+    var vao = String((h && h.vao) || '').slice(0, 10);
+    if (!vao) return true;
+    var giao = ngayGiaoBai(b);
+    return !giao || vao <= giao;
+  }
+  function caLopCuaBai(l, b) {
+    return ((l && l.hocSinh) || []).filter(function (h) { return emCoMatOBai(h, b); })
+      .map(function (h) { return h.ten; });
+  }
+
   // ⭐ v1.35.0 — BA CỬA lấy bài của một lớp, theo trạng thái thẻ (`trangThaiThe`):
   //   (không truyền)  cửa HỌC SINH: bỏ thẻ ẨN + thẻ ĐÃ XOÁ. Đây là cửa mặc định —
   //                   lop/bai/bai-sp và cả "xem như học sinh" của dashboard đều
@@ -2434,6 +2463,8 @@
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,
     napDuLieu: napDuLieu, napJson: napJson,
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
+    // ⭐⭐ v1.95.0 — em nào có mặt ở một bài (bỏ em vào lớp sau ngày giao)
+    ngayGiaoBai: ngayGiaoBai, emCoMatOBai: emCoMatOBai, caLopCuaBai: caLopCuaBai,
     // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (phụ huynh luyện bài cùng con)
     emDacBietTheoMa: emDacBietTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,

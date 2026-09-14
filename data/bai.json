@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-14 09:33:40",
+  "capNhat": "2026-09-14 09:44:32",
   "bai": {
     "A1C": [
       {
@@ -540,6 +540,54 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_12.9_STAGE_5_ANIMALS",
+        "tieuDe": "NNTNG4_12.9_STAGE 5 ANIMALS",
+        "tenHien": "NNTNG4_12.9_STAGE 5 ANIMALS",
+        "dang": "STAGE",
+        "ngay": "12.9",
+        "han": "2026-09-19T08:00",
+        "maLesson": "5 ANIMALS",
+        "taoLuc": "2026-09-14",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "3kuv6g",
+            "mau": "ANAGRAM",
+            "han": "2026-09-15T23:59"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "5 ANIMALS / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "59n6v2",
+            "mau": "TRUE OR FALSE",
+            "han": "2026-09-16T23:59"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "5 ANIMALS / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "2dxssr",
+            "mau": "FIND THE MATCH",
+            "han": "2026-09-17T23:59"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 4",
+            "act": "5 ANIMALS / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "hhjt9c",
+            "mau": "QUIZ",
+            "han": "2026-09-19T08:00"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_5.9_STAGE_4_SCHOOL_THINGS",
         "tieuDe": "NNTNG4_5.9_STAGE 4 SCHOOL THINGS",

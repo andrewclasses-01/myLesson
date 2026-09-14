@@ -2754,7 +2754,7 @@ function veWorksheetChu(b){
 function veWorksheetKhoi(b){
   var ten = (b && b.ws && b.ws.length) ? b.ws.map(A.chuAnToan).join(' · ') : '';
   return '<span class="the-diem ws-diem">' +
-      '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP' +
+      '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP GIẤY' +
         (ten ? '<br><span class="ws-nhac-ten">' + ten + '</span>!' : '<br>TRÊN WORKSHEET!') +
       '</span>' +
     '</span>';

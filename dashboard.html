@@ -938,6 +938,10 @@ a{color:inherit}
   0%{background-position:0% center}
   100%{background-position:220% center}
 }
+/* ⭐ v1.103.0 — dòng nhắc in TIÊU ĐỀ THẬT (`.ws-nhac-ten`): kẹp tối đa 3 dòng, dài quá thì cắt …
+   (tên đầy đủ nằm ở `title`). Phần tên chữ thường, không ép hoa — thầy gõ sao hiện vậy. */
+.ws-nhac{display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; max-width:100%; padding:0 6px}
+.ws-nhac-ten{font-weight:700; letter-spacing:0}
 @media (prefers-reduced-motion:reduce){
   .ws-nhac{animation:none; -webkit-text-fill-color:currentColor; background:none; color:var(--xanh-la)}
 }
@@ -1997,7 +2001,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=80"></script>
-<script src="js/chung.js?v=44"></script>
+<script src="js/chung.js?v=45"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -2704,6 +2708,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
   // ⭐ v1.95.0 — `het` = thẻ ĐÃ HẾT HẠN (ca dự phòng "bài gần nhất" của `veKhuThe`):
   // vẽ NHẠT, trung tính, không tô đỏ thanh (thầy chốt: thẻ cũ không lộ đủ/thiếu).
+  // ⭐ v1.103.0 (15/09/2026) — dòng nhắc thẻ WORKSHEET in TIÊU ĐỀ THẬT: app v2.70.0
+  // đẩy mỗi ô worksheet thành khối `{loai:'ws', ten}`, `A.tenWorksheet(b)` gom lại
+  // (bài cũ `khoi` rỗng thì lùi về `tenBai`). BẢN CHÉP của `veWorksheetKhoi` bên
+  // lop.html — sửa là sửa cả hai.
+  function wsNhac(b) {
+    var ten = A.tenWorksheet(b).map(A.chuAnToan).join(' · ');
+    return '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP' +
+      (ten ? '<br><span class="ws-nhac-ten">' + ten + '</span>!' : '<br>TRÊN WORKSHEET!') + '</span>';
+  }
+
   // ⛔ Gọi qua `function (b) { return veTheCard(b, het); }` — `ds.map(veTheCard)` sẽ
   //    truyền CHỈ SỐ vào tham số này.
   function veTheCard(b, het) {
@@ -2742,10 +2756,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return '<div class="the' + lopThem + (laWs ? ' worksheet' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
+          /* ⭐ v1.103.0 — dòng nhỏ dưới WORKSHEET = MÃ LESSON (tên bài nay in trong
+             dòng nhắc, xem `wsNhac` bên dưới). BẢN CHÉP của `veWorksheetChu` lop.html. */
           (laWs ? (
             '<span class="t-chu ws-chu">' +
               '<span class="t-ten">WORKSHEET<span class="ngay">NGÀY ' + A.chuAnToan(ngayGach(b.ngay)) + '</span></span>' +
-              '<span class="ws-ten">' + A.chuAnToan(ten) + '</span>' +
+              (A.maLesson(b) ? '<span class="ws-ten">' + A.chuAnToan(A.maLesson(b)) + '</span>' : '') +
             '</span>'
           ) : (
             '<span class="t-chu">' +
@@ -2764,9 +2780,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           '</span>' +
           '<span class="diem-vach"></span>' +
           railThieu +
-          '<span class="diem-rows">' + (laWs
-            ? '<span class="ws-nhac">EM HÃY HOÀN THÀNH<br>BÀI TẬP TRÊN WORKSHEET!</span>'
-            : diem.html) + '</span>' +
+          '<span class="diem-rows">' + (laWs ? wsNhac(b) : diem.html) + '</span>' +
         '</span>' +
         '<span class="play">' + (ttThe === 'khoa'
           ? '<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"/>' +

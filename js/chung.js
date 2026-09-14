@@ -1127,6 +1127,22 @@
     return tenDang(b && b.dang) || 'BÀI TẬP';
   }
 
+  // ⭐ v1.103.0 (15/09/2026) — TIÊU ĐỀ CÁC WORKSHEET của một bài, theo đúng thứ
+  // tự ô thầy xếp trong app. App myLesson v2.70.0 đẩy mỗi ô worksheet thành
+  // một khối `{loai:'ws', ten}` trong `b.khoi` (chỉ TÊN — không có đường dẫn
+  // file). Bài WORKSHEET đẩy TRƯỚC v2.70.0 (v2.48.0, `khoi` rỗng) thì lùi về
+  // `tenBai` (hồi đó là dòng "BT ở lớp"). Trả về mảng — thẻ tự nối.
+  // ⛔ Dùng ở `lop.html` + `dashboard.html` (thẻ WORKSHEET: "EM HÃY HOÀN THÀNH
+  // BÀI TẬP <tên>!"). `bai.html` cố ý BỎ QUA khối `ws` (không có gì để làm).
+  function tenWorksheet(b) {
+    var ds = (b && b.khoi || []).filter(function (k) {
+      return k && k.loai === 'ws' && String(k.ten || '').trim();
+    }).map(function (k) { return String(k.ten).trim(); });
+    if (ds.length) return ds;
+    var t = String((b && b.tenBai) || '').trim();
+    return t ? [t] : [];
+  }
+
   // Nhãn ngắn của MỘT ô bài trên thanh tiến trình của thẻ lớp (thầy chốt
   // 24/08/2026): "WORD PRACTICE 1" -> "WORDS 1", "PRONUNCIATION" giữ nguyên.
   //
@@ -2473,6 +2489,7 @@
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     actCuaBai: actCuaBai, maLesson: maLesson, tenBai: tenBai,
+    tenWorksheet: tenWorksheet,   // ⭐ v1.103.0 — tiêu đề các worksheet (thẻ WORKSHEET)
     // ⭐ v1.76.0 — dạng bài STAGE (chia chặng)
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,
     changHien: changHien, emChuaXongChang: emChuaXongChang,

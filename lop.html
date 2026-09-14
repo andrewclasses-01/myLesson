@@ -476,6 +476,10 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   0%{background-position:0% center}
   100%{background-position:220% center}
 }
+/* ⭐ v1.103.0 — dòng nhắc in TIÊU ĐỀ THẬT (`.ws-nhac-ten`): kẹp tối đa 3 dòng, dài quá thì cắt …
+   (tên đầy đủ nằm ở `title`). Phần tên chữ thường, không ép hoa — thầy gõ sao hiện vậy. */
+.ws-nhac{display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; max-width:100%; padding:0 6px}
+.ws-nhac-ten{font-weight:700; letter-spacing:0}
 @media (prefers-reduced-motion: reduce){
   .ws-nhac{animation:none; -webkit-text-fill-color:currentColor; background:none; color:var(--xanh-la)}
 }
@@ -1590,7 +1594,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=80"></script>
-<script src="js/chung.js?v=44"></script>
+<script src="js/chung.js?v=45"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1781,6 +1785,9 @@ function theTuBai(b){
     siSo: caLop.length,
     dang: b.dang || '',
     loai: laSp ? 'spcheck' : (laWs ? 'wsheet' : ''),
+    /* ⭐ v1.103.0 — tiêu đề các worksheet (app v2.70.0 đẩy khối `ws`), cho dòng
+       nhắc "EM HÃY HOÀN THÀNH BÀI TẬP <tên>!" (`veWorksheetKhoi`). */
+    ws: laWs ? A.tenWorksheet(b) : [],
     trang: A.trangCuaBai(b),
     ten: A.tenBai(b),
     ma: A.maLesson(b),
@@ -2730,15 +2737,26 @@ function veHan(b, tt){
    ⛔ Không mở trang bài tập nào khi bấm — không cần code riêng: `trangCuaBai()`
    (js/chung.js) trả '' cho dạng này, và `dungCot()` đã có sẵn nhánh
    "!b.trang -> báo thẻ giao trên giấy" cho MỌI thẻ thiếu trang. */
+/* ⭐ v1.103.0 (15/09/2026, thầy chốt) — app v2.70.0: WORKSHEET là một LOẠI cả
+   dòng với dãy ô số, mỗi ô = một file/tiêu đề; đẩy web thành khối `{loai:'ws',
+   ten}`. Dòng nhắc nay in TIÊU ĐỀ THẬT: "EM HÃY HOÀN THÀNH BÀI TẬP <tên>!" (nhiều
+   ô thì nối " · "). Dòng nhỏ dưới chữ WORKSHEET đổi từ tên bài (nay đã nằm
+   trong dòng nhắc) sang MÃ LESSON thầy gõ ở ô nội dung (`b.ma`), có thì hiện.
+   Bài WORKSHEET đẩy trước v2.70.0 (`khoi` rỗng): `A.tenWorksheet` lùi về `tenBai`.
+   ⛔ Bản chép của cặp hàm này nằm trong `veTheCard()` bên dashboard.html — sửa
+   là sửa cả hai. */
 function veWorksheetChu(b){
   return '<span class="t-chu ws-chu">' +
       '<span class="t-ten">WORKSHEET<span class="ngay">NGÀY ' + b.giao + '</span></span>' +
-      (b.ten ? '<span class="ws-ten">' + b.ten + '</span>' : '') +
+      (b.ma ? '<span class="ws-ten">' + A.chuAnToan(b.ma) + '</span>' : '') +
     '</span>';
 }
-function veWorksheetKhoi(){
+function veWorksheetKhoi(b){
+  var ten = (b && b.ws && b.ws.length) ? b.ws.map(A.chuAnToan).join(' · ') : '';
   return '<span class="the-diem ws-diem">' +
-      '<span class="ws-nhac">EM HÃY HOÀN THÀNH<br>BÀI TẬP TRÊN WORKSHEET!</span>' +
+      '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP' +
+        (ten ? '<br><span class="ws-nhac-ten">' + ten + '</span>!' : '<br>TRÊN WORKSHEET!') +
+      '</span>' +
     '</span>';
 }
 
@@ -2849,7 +2867,7 @@ function veTheMoi(b, tt){
         '</span>'
       )) +
       veHan(b, tt) +
-    '</span>' + (laWs ? veWorksheetKhoi() : (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
+    '</span>' + (laWs ? veWorksheetKhoi(b) : (b.loai === 'spcheck' && bDung.doiSp && bDung.doiSp.length
       /* ⭐ v1.94.7 — cột icon thiếu bài hiện bất cứ lúc nào còn thiếu, không
          còn chờ tới lúc gần hạn (`gap`) như bản cũ — chỉ `batDo` (tô đỏ thanh
          chưa đủ điểm) vẫn giữ nguyên gắn với `gap`. */
@@ -2887,7 +2905,7 @@ function veTheCu(b){
           (b.ma ? '<span class="t-ma">' + b.ma + '</span>' : '') +
         '</span>'
       )) +
-    '</span>' + (laWs ? veWorksheetKhoi() : (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
+    '</span>' + (laWs ? veWorksheetKhoi(b) : (b.loai === 'spcheck' && b.doiSp && b.doiSp.length
       ? veDoiSpKhoi(b) : veDiem(b, !het, false))) +
     veMui(b.khoa) +
   '</span></button>';

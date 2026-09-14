@@ -960,6 +960,12 @@ a{color:inherit}
 .td-so{font-size:11.5px; font-weight:800; text-align:right; color:#54706B; white-space:nowrap;
   font-variant-numeric:tabular-nums}
 .td-tich{font-size:11px; font-weight:800; color:var(--m-la); text-align:left}
+/* ⭐ v1.105.0 — hàng SHEET: tên worksheet chiếm hết vùng bar+so+tich (cột 2
+   tới hết lưới `.td-dong`), bắt đầu ĐÚNG vị trí thanh tiến trình bắt đầu.
+   Bản chép của `.td-sheet-ten` bên lop.html (đổi biến màu/font cho khớp
+   token của trang này: `--mo`/`--font` thay `--muted`/`--sans`). */
+.td-sheet-ten{grid-column:2 / -1; font:700 11px var(--font); color:var(--mo);
+  text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 i.m-do{background:var(--m-do)} i.m-cam{background:var(--m-cam)}
 i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
 .td-so.m-la{color:var(--m-la)} .td-so.m-do{color:var(--m-do)}
@@ -2001,7 +2007,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=80"></script>
-<script src="js/chung.js?v=45"></script>
+<script src="js/chung.js?v=46"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -2103,7 +2109,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         chuan: function (ma) { return CHUAN[ma]; }
       }, caLop, { boQua: A.boQuaCua(b), moChang: A.moChangCua(b) });
     }
-    return { bai: b, maLop: maLop, siSo: caLop.length, acts: acts,
+    // ⭐ v1.105.0 (15/09/2026, thầy chốt) — HÀNG "SHEET": các ô worksheet xen
+    // trong dòng act thường (`loai:'ws'`, app v2.70.0), tách riêng khỏi `acts`
+    // vì không có điểm/sĩ số gì để đọc — chỉ hiện TÊN, xem `dongSheet()`.
+    var sheets = A.wsCuaBai(b);
+    return { bai: b, maLop: maLop, siSo: caLop.length, acts: acts, sheets: sheets,
              thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop,
              laSp: laSp, doiSp: DOI_SP[b.id] || null,
              loiSp: DOI_SP_LOI[b.id] || '',
@@ -2629,6 +2639,17 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // `cls` gắn lên `.the-diem` (chi-tay/n{N}/doi{N}), `html` là RUỘT đặt vào
   // `.diem-rows` — vỏ ngoài (dải icon + vạch) nay do `veTheCard()` dựng CHUNG
   // cho mọi trạng thái, khỏi lặp lại ở từng nhánh.
+  // ⭐ v1.105.0 (15/09/2026, thầy chốt) — HÀNG "SHEET" (bản chép NGUYÊN VĂN
+  // của `dongSheet()` bên `lop.html` — sửa là sửa cả hai). Xem chú thích đầy
+  // đủ ở đó: nhãn "SHEET" tái dùng `.td-ten`, tên bắt đầu đúng cột thanh tiến
+  // trình bắt đầu, luôn đứng SAU CÙNG trong dãy.
+  function dongSheet(ten) {
+    return '<span class="td-dong">' +
+        '<span class="td-ten">SHEET</span>' +
+        '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + '</span>' +
+      '</span>';
+  }
+
   function veDiemCardThat(t, st) {
     // ⭐ #2 — thẻ SPEAKING CHECK: MỘT DÒNG MỖI TEAM thay dòng chung, y hệt
     // trang lớp. Chưa đọc xong Firestore thì báo hiền, không phải lỗi.
@@ -2638,7 +2659,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       return { cls: 'chi-tay', html: A.chuAnToan(t.loiSp || 'Đang đọc dữ liệu speaking…') };
     }
     var acts = t.acts;
-    if (!acts.length) {
+    // ⭐ v1.105.0 — bài CHỈ có worksheet (không act AWord nào) vẫn phải hiện
+    // được hàng SHEET, không rơi vào nhánh "không có game nào".
+    if (!acts.length && !(t.sheets || []).length) {
       return { cls: 'chi-tay', html: 'Bài này không có game AWord nào.' };
     }
     var batDo = st.tt === 'gap';
@@ -2683,12 +2706,18 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
       '</span>';
     }).join('');
+    // ⭐ v1.105.0 — hàng SHEET LUÔN đứng SAU CÙNG (thầy chốt qua bàn thử), bất
+    // kể worksheet nằm ô nào trong dãy ô act của app. Đếm chung vào `soDong`
+    // để `.the-diem.n{N}` (CSS đo chỗ chứa) canh đúng chiều cao cả cụm.
+    var sheets = t.sheets || [];
+    thanh += sheets.map(function (s) { return dongSheet(s.ten); }).join('');
+    var soDong = acts.length + sheets.length;
     /* Thẻ STAGE: thanh chặng đứng trên cụm thanh tiến trình, cách một nhịp. */
     if (thanhChang) {
-      return { cls: 'st n' + acts.length,
+      return { cls: 'st n' + soDong,
                html: thanhChang + '<span class="khoi-thanh">' + thanh + '</span>' };
     }
-    return { cls: 'n' + acts.length, html: thanh };
+    return { cls: 'n' + soDong, html: thanh };
   }
 
   // ⭐ v1.34.0 — dải icon riêng cho từng thẻ bài, nay nằm NGAY TRONG khu vực

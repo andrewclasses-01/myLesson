@@ -640,6 +640,10 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .td-so{font-size:11.5px; font-weight:800; text-align:right; color:#54706B;
   white-space:nowrap; font-variant-numeric:tabular-nums}
 .td-tich{font-size:11px; font-weight:800; color:var(--m-la); text-align:left}
+/* ⭐ v1.105.0 — hàng SHEET: tên worksheet chiếm hết vùng bar+so+tich (cột 2
+   tới hết lưới `.td-dong`), bắt đầu ĐÚNG vị trí thanh tiến trình bắt đầu. */
+.td-sheet-ten{grid-column:2 / -1; font:700 11px var(--sans); color:var(--muted);
+  text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 i.m-do{background:var(--m-do)}      i.m-cam{background:var(--m-cam)}
 i.m-vang{background:var(--m-vang)}  i.m-duong{background:var(--m-duong)}
 i.m-la{background:var(--m-la)}
@@ -1594,7 +1598,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=80"></script>
-<script src="js/chung.js?v=45"></script>
+<script src="js/chung.js?v=46"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1819,7 +1823,15 @@ function theTuBai(b){
     bai: laSp
       ? [{ ten: 'SPEAKING CHECK', ma: '',
            xong: (b.khoi && b.khoi[0] && +b.khoi[0].xong) || 0 }]
-      : acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; }),
+      // ⭐ v1.105.0 (15/09/2026, thầy chốt) — HÀNG "SHEET": ô worksheet xen
+      // trong dòng act thường (khối `loai:'ws'`, app v2.70.0) nay có thêm một
+      // hàng CHỈ TÊN, không thanh điểm, LUÔN đứng SAU CÙNG trong dãy thanh
+      // tiến trình — bất kể worksheet nằm ô nào trong dãy ô act của app (thầy
+      // chốt qua bàn thử: "để dòng sheet ở hàng cuối cùng"). Đánh dấu `ws:true`
+      // để `veDiem()` vẽ khác; KHÔNG có `ma` nên `donDiem()` tự bỏ qua (đúng
+      // luật `if (!x.ma) return;` đã có sẵn cho dòng giả SP CHECK).
+      : acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; })
+          .concat(A.wsCuaBai(b).map(function(k){ return { ten:k.ten, ws:true }; })),
     /* ⭐ v1.76.0 — DẠNG BÀI STAGE: giữ chính bài gốc để `veDiem()` tính chặng
        (cần `khoi[].han`). Chỉ bật khi thật sự có act mang hạn riêng. */
     goc: b,
@@ -2016,6 +2028,23 @@ function veDiemStage(b, batDo, hienThieu){
   '</span>';
 }
 
+/* ⭐ v1.105.0 (15/09/2026, thầy chốt qua bàn thử) — HÀNG "SHEET": ô worksheet
+   xen trong dòng act thường (`loai:'ws'`, app v2.70.0) có thêm một hàng CHỈ
+   TÊN trong vùng điểm, không thanh/không số, LUÔN đứng SAU CÙNG trong dãy dù
+   worksheet nằm ô nào trong dãy ô act của app (thầy chốt: "để dòng sheet ở
+   hàng cuối cùng" — xem `.concat(...)` ở `theTuBai()`).
+   Nhãn "SHEET" TÁI DÙNG NGUYÊN `.td-ten` — cùng màu/cỡ chữ/độ đậm với
+   "QUIZ"/"WORDS 1"…, KHÔNG tô riêng (thầy chốt qua bàn thử, bản đầu tô hổ
+   phách bị từ chối). Tên worksheet bắt đầu ĐÚNG cột thanh tiến trình bắt đầu
+   (`.td-sheet-ten`, `grid-column:2/-1`, xem CSS) — căn trái, không thanh/số.
+   ⛔ Bản chép của hàm này ở `dashboard.html` (`dongSheet`) — sửa là sửa cả hai. */
+function dongSheet(ten){
+  return '<span class="td-dong">' +
+      '<span class="td-ten">SHEET</span>' +
+      '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + '</span>' +
+    '</span>';
+}
+
 function veDiem(b, batDo, hienThieu){
   if (b.stage && b.goc) return veDiemStage(b, batDo, hienThieu);
   if (LA_DAC_BIET) {
@@ -2025,6 +2054,7 @@ function veDiem(b, batDo, hienThieu){
       + thanhDb + '</span>';
   }
   var thanh = (b.bai || []).map(function(x){
+    if (x.ws) return dongSheet(x.ten);   // ⭐ v1.105.0 — hàng SHEET, xem `dongSheet()`
     var pt = Math.min(100, Math.round(x.xong / b.siSo * 100));   /* v1.95.0 — sĩ số riêng */
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +

@@ -1289,11 +1289,16 @@ body.mo-menu .side.trai{transform:none}
      · tầng DƯỚI  = MỘT VỆT MẢNH chia đoạn TOÀN VIDEO trải hết bề ngang — bỏ
        hẳn 3 nút + đồng hồ + nét ngăn (thầy: "xem bài giảng nên tập trung,
        không cần đếm giờ"); vẫn bấm/kéo tua được.
-   Lưới 3 cột (nút | thanh | %), hàng 1 nhãn, 2 tầng trên, 3 vệt tổng. */
-.vk-player{margin-top:16px; padding:12px 14px 14px; border:1px solid var(--line); border-radius:14px;
-  background:var(--surface)}
-.vk-grid{display:grid; grid-template-columns:auto 1fr auto; column-gap:12px; row-gap:8px; align-items:center}
-.vk-label{grid-column:2; grid-row:1; display:flex; align-items:center; justify-content:center; gap:7px;
+   Lưới 3 cột (nút | thanh | %), hàng 1 nhãn, 2 tầng trên, 3 vệt tổng.
+   ⭐ 14/09/2026 (thầy chốt) — HAI CỘT BIÊN RỘNG BẰNG NHAU (`--vk-bien` = đúng
+   bề rộng cụm 3 nút: 3×32 + 2×7 = 110px) để thanh đoạn nằm CHÍNH GIỮA player;
+   ô % canh trái trong cột phải nên dịch vào sát thanh. Dòng tên đoạn trải hết
+   3 cột rồi canh giữa ⇒ chính giữa player tuyệt đối. */
+.vk-player{--vk-bien:110px; margin-top:16px; padding:12px 14px 14px; border:1px solid var(--line);
+  border-radius:14px; background:var(--surface)}
+.vk-grid{display:grid; grid-template-columns:var(--vk-bien) 1fr var(--vk-bien); column-gap:12px; row-gap:8px;
+  align-items:center}
+.vk-label{grid-column:1 / -1; grid-row:1; display:flex; align-items:center; justify-content:center; gap:7px;
   min-height:15px; min-width:0}
 .vk-segten{font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden;
   text-overflow:ellipsis}
@@ -1329,9 +1334,9 @@ body.mo-menu .side.trai{transform:none}
 .vk-playhead{position:absolute; top:50%; width:15px; height:15px; border-radius:50%; background:var(--accent);
   border:3px solid #fff; transform:translate(-50%,-50%);
   box-shadow:0 0 0 2px var(--accent), 0 2px 6px rgba(22,35,42,.4); pointer-events:none; left:0%}
-/* ô % của đoạn đang phát — bề rộng CỐ ĐỊNH đủ "100%", canh phải: số nhảy
-   0→100% không làm thanh bên trái co giãn theo. */
-.vk-total{grid-column:3; grid-row:2; width:34px; text-align:right; font-size:12px; color:var(--muted);
+/* ô % của đoạn đang phát — nằm trong cột phải rộng bằng cột nút, canh TRÁI
+   (sát thanh); cột cố định nên số nhảy 0→100% không làm thanh co giãn theo. */
+.vk-total{grid-column:3; grid-row:2; text-align:left; font-size:12px; color:var(--muted);
   font-variant-numeric:tabular-nums; font-weight:800}
 .vk-total.xong{color:var(--m-la)}
 
@@ -1495,7 +1500,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=76"></script>
+<script src="config.js?v=77"></script>
 <script src="js/chung.js?v=44"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->

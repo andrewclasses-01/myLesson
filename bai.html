@@ -1486,7 +1486,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=73"></script>
+<script src="config.js?v=74"></script>
 <script src="js/chung.js?v=44"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3191,6 +3191,39 @@ function luuDoanXongKhoa(){
 var TIEN_DO_FS_BAN = false;        // có khúc mới trong máy chưa đẩy lên Firestore
 var tienDoFsHen = null;
 var TIEN_DO_FS_NHIP_MS = 20000;
+/* ⭐⭐ v1.97.0 (14/09/2026, thầy chốt "chỗ dừng lần trước") — VỊ TRÍ ĐANG DỪNG
+   của em ở bài này: `{t: giây, luc: ms}`. Nhớ trong localStorage (khoá riêng,
+   KHÔNG nhét vào `DOAN_XONG` vì `khucPhang` duyệt mọi khoá của nó) và đi kèm
+   gói Firestore (`vt`/`vtLuc`) — máy nào mốc `luc` MỚI HƠN thì thắng (chỉ quyết
+   con trỏ đứng đâu, không phải dữ liệu tiến độ nên lệch đồng hồ chút không sao).
+   Lúc mở bài: con trỏ + nhãn đoạn + % đặt sẵn ở đó, player YouTube tạo với
+   `start` = giây đó (đứng sẵn, KHÔNG tự phát — trình duyệt điện thoại chặn tự
+   phát, và giữ tinh thần "để học sinh tự do"). Bỏ qua nếu < 3s hoặc đã tới
+   sát cuối video (5s cuối) — coi như xem từ đầu. */
+var VI_TRI_KHOA = { t: 0, luc: 0 };
+function khoaViTriKho(){ return 'awc_khoa_vt_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
+function napViTriKhoa(){
+  VI_TRI_KHOA = { t: 0, luc: 0 };
+  try {
+    var o = JSON.parse(localStorage.getItem(khoaViTriKho()) || 'null');
+    if (o && isFinite(o.t) && isFinite(o.luc)) VI_TRI_KHOA = { t: +o.t, luc: +o.luc };
+  } catch (e) {}
+}
+function ghiViTriKhoa(t){
+  if (!isFinite(t) || t < 0) return;
+  VI_TRI_KHOA = { t: Math.round(t * 10) / 10, luc: Date.now() };
+  try { localStorage.setItem(khoaViTriKho(), JSON.stringify(VI_TRI_KHOA)); } catch (e) {}
+  TIEN_DO_FS_BAN = true;
+}
+// Giây để đặt sẵn lúc mở bài (0 = xem từ đầu).
+function viTriBatDauKhoa(){
+  var doan = (BAI.baiGiang || {}).doan || [], tong = 0;
+  doan.forEach(function(d){ var n = giayDoanKhoa(d.den); if (n != null) tong = Math.max(tong, n); });
+  var t = VI_TRI_KHOA.t || 0;
+  if (t < 3) return 0;
+  if (tong && t > tong - 5) return 0;
+  return t;
+}
 function urlTienDoFs(){
   var db = (A.CFG && A.CFG.AWORD_DB) || {};
   if (!db.projectId || !db.apiKey || !BAI || !BAI.id || !MA_HS) return '';
@@ -3257,6 +3290,16 @@ function napTienDoFs(){
         chung[id].forEach(function(r){ chungPhang[id].push(r[0], r[1]); });
       });
       if (sau !== JSON.stringify(chungPhang)) TIEN_DO_FS_BAN = true;
+      // v1.97.0 — vị trí dừng: bản CHUNG mới hơn thì lấy, cũ hơn thì đẩy bản máy lên
+      try {
+        var f = (j && j.fields) || {};
+        var vt = f.vt && Number(f.vt.doubleValue != null ? f.vt.doubleValue : f.vt.integerValue);
+        var vtLuc = f.vtLuc && Number(f.vtLuc.integerValue != null ? f.vtLuc.integerValue : f.vtLuc.doubleValue);
+        if (isFinite(vt) && isFinite(vtLuc) && vtLuc > (VI_TRI_KHOA.luc || 0)) {
+          VI_TRI_KHOA = { t: vt, luc: vtLuc };
+          try { localStorage.setItem(khoaViTriKho(), JSON.stringify(VI_TRI_KHOA)); } catch (e) {}
+        } else if (VI_TRI_KHOA.luc && (!isFinite(vtLuc) || VI_TRI_KHOA.luc > vtLuc)) TIEN_DO_FS_BAN = true;
+      } catch (e) {}
       return sau !== truoc;
     })['catch'](function(){ return false; });
 }
@@ -3266,13 +3309,18 @@ function dayTienDoFs(gap){
   if (!TIEN_DO_FS_BAN) return;
   var u = urlTienDoFs();
   if (!u) return;
-  var than = JSON.stringify({ fields: {
+  var than = { fields: {
     ma:   { stringValue: MA_HS },
     bai:  { stringValue: String(BAI.id) },
     lop:  { stringValue: String(LOP_DL || '') },
     khuc: { mapValue: { fields: khucRaFs() } },
     luc:  { integerValue: String(Date.now()) }
-  } });
+  } };
+  if (VI_TRI_KHOA.luc) {   // v1.97.0
+    than.fields.vt = { doubleValue: VI_TRI_KHOA.t };
+    than.fields.vtLuc = { integerValue: String(VI_TRI_KHOA.luc) };
+  }
+  than = JSON.stringify(than);
   TIEN_DO_FS_BAN = false;
   try {
     fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
@@ -3521,8 +3569,9 @@ function moVideoKhoa(bg){
       // mặc định của YouTube) gây giật/lag thật và nhìn không đẹp — thà chấp
       // nhận icon gốc còn hơn. Khung `.vk-player` bên dưới (lùi/tiến 10s +
       // thanh chia đoạn) vẫn giữ, dùng SONG SONG với điều khiển gốc.
+      // v1.97.0 — `start`: video ĐỨNG SẴN ở chỗ dừng lần trước, bấm phát là chạy tiếp.
       playerVars: { rel: 0, modestbranding: 1, playsinline: 1,
-        cc_load_policy: 0, iv_load_policy: 3 },
+        cc_load_policy: 0, iv_load_policy: 3, start: Math.floor(viTriBatDauKhoa()) },
       events: {
         onReady: tatPhuDeKhoa,
         onStateChange: onDoiTrangThaiKhoa,
@@ -3542,6 +3591,7 @@ function onDoiTrangThaiKhoa(e){
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
     tienDoFsHen = setInterval(dayTienDoFs, TIEN_DO_FS_NHIP_MS);   // v1.96.0 — ghi THƯA
   } else {
+    try { if (YT_PLAYER && YT_PLAYER.getCurrentTime) ghiViTriKhoa(YT_PLAYER.getCurrentTime()); } catch (err) {}   // v1.97.0
     dayTienDoFs();   // v1.96.0 — dừng/hết video: đẩy phần vừa xem lên ngay
     if (nutPhat) nutPhat.innerHTML = IC_PHAT_KHOA;
   }
@@ -3573,6 +3623,7 @@ function nhipVideoKhoa(){
     TIEN_DO_FS_BAN = true;   // v1.96.0 — đẩy lên Firestore ở nhịp 20s kế
   }
   GIAY_HIEN_KHOA = now;
+  ghiViTriKhoa(now);   // v1.97.0
   capNhatSauKhiDoiKhoa();
   veNhanDoanKhoa(dHien);
 }
@@ -3771,6 +3822,7 @@ function ganNutKhoa(){
       var ph = $('#vkPlayhead'), tongEl = $('#vkTongKhoa');
       if (ph) ph.style.left = Math.min(100, ti * 100) + '%';
       GIAY_HIEN_KHOA = ti * tong;
+      ghiViTriKhoa(GIAY_HIEN_KHOA);   // v1.97.0
       if (tongEl) tongEl.textContent = chuoiGioDoanKhoa(GIAY_HIEN_KHOA) + ' / ' + chuoiGioDoanKhoa(tong);
     };
     var tuaTheoChuot = function(clientX, chinhXac){
@@ -3809,8 +3861,9 @@ function veCacPhanKhoa(hop){
     hop.appendChild(veTheBaiGiangKhoa(bg));
     ganNutKhoa();
     veDanhSachDoanKhoa(bg, TT_KHOA);
+    GIAY_HIEN_KHOA = viTriBatDauKhoa();   // v1.97.0 — con trỏ đứng sẵn chỗ dừng lần trước
     veTimelineKhoa(bg, TT_KHOA);
-    veNhanDoanKhoa(doanTaiGiayKhoa(bg.doan || [], 0));
+    veNhanDoanKhoa(doanTaiGiayKhoa(bg.doan || [], GIAY_HIEN_KHOA));
     moVideoKhoa(bg);
   }
   // ⭐ 13/09/2026 — vạch nét đứt phân cách bài giảng ‖ bài tập, rồi tới các thẻ
@@ -4232,7 +4285,7 @@ A.napDuLieu().then(function(dl){
   var bgKhoa = LA_KHOA ? (BAI.baiGiang || {}) : {};
   var trongKhoa = LA_KHOA && !KHOI.length && !(bgKhoa.doan || []).length && !(BAI.bt || []).length;
   if ((!KHOI.length && !LA_KHOA) || trongKhoa) { veTrangLop(); return; }
-  if (LA_KHOA) napDoanXongKhoa();
+  if (LA_KHOA) { napDoanXongKhoa(); napViTriKhoa(); }   // v1.97.0 thêm vị trí
 
   /* ⭐ v1.76.0 — bài STAGE: chỉ bật khi thật sự có act mang hạn riêng, không thì
      cứ vẽ như bài thường (bài STAGE thầy chưa cài chặng cũng mở bình thường). */

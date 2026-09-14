@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-14 09:44:33",
+  "capNhat": "2026-09-14 14:03:53",
   "nguon": "myStudent",
   "lop": [
     {
@@ -9,12 +9,6 @@
       "gio": "17h40",
       "tan": "19h15",
       "hocSinh": [
-        {
-          "id": 7,
-          "ten": "BẢO NGỌC",
-          "ma": "NGUYENCHAUBAONGOC24122014",
-          "sinhNhat": ""
-        },
         {
           "id": 10,
           "ten": "BẢO TRÂN",

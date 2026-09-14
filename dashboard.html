@@ -853,7 +853,9 @@ a{color:inherit}
 .t-chu{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
 .t-ten{font-size:16.5px; font-weight:800; letter-spacing:-.01em; line-height:1.24;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--chu)}
-.t-ten .ngay{margin-left:8px; color:var(--xanh-la); font-size:11.5px}
+/* ⭐ v1.96.1 (14/09/2026) — bỏ `font-size:11.5px` riêng: chữ NGÀY to bằng tên bài,
+   y hệt thẻ trang học sinh (lop.html `.t-ten .ngay`) — thầy chốt. */
+.t-ten .ngay{margin-left:8px; color:var(--xanh-la)}
 .t-ma{font:600 13.4px/1.28 var(--mono); color:var(--mo); letter-spacing:.01em;
   max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .han-boc{flex:none; width:176px; display:flex; align-items:center; justify-content:center; gap:10px}
@@ -891,6 +893,32 @@ a{color:inherit}
 .diem-ic button svg{width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.1;
   stroke-linecap:round; stroke-linejoin:round}
 .diem-vach{flex:none; width:0; border-left:1.5px dashed var(--line); margin:9px 0}
+/* ⭐ v1.96.1 (14/09/2026, thầy chốt) — CỘT ICON HỌC SINH THIẾU BÀI trên thẻ
+   dashboard, đứng GIỮA cột ⚙/⊕ và các thanh: `⚙⊕ │ icon thiếu │ thanh` (hai
+   vạch). CHÉP Y khối `.thieu-*` của lop.html (v1.94.7 + v1.96.1) — sửa một bên
+   phải sửa bên kia. Khối kéo suốt chiều cao (`.the-diem` vốn `align-items:
+   stretch`), icon tự căn giữa dọc; tối đa 4 icon, ≥5 em thì 3 avatar + "+N".
+   Thẻ STAGE (`.the-diem.st`) icon co 19px như bên lop.html (vùng điểm thấp hơn
+   vì có hàng chặng). Thẻ hết hạn/WORKSHEET/SP CHECK không có cột này (xem
+   `veTheCard`). Token đổi tên: --sans→--font, --line giữ nguyên. */
+.thieu-block{flex:none; align-self:stretch; display:flex; flex-direction:row; align-items:stretch}
+.thieu-ic{flex:none; width:38px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:7px}
+.thieu-ic .tic{width:22px; height:22px; border-radius:50%; flex:none; overflow:hidden;
+  position:relative; display:grid; place-items:center; font:800 8.5px var(--font);
+  color:#fff; background:#9AA6A3;
+  box-shadow:0 0 0 2px rgba(224,87,91,.45), 0 0 7px 2px rgba(224,87,91,.6);
+  animation:tic-do 2.6s ease-in-out infinite}
+.thieu-ic .tic .av-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.thieu-ic .tic.more{background:#E36B5C; font-size:9.5px}
+@keyframes tic-do{
+  0%,100%{box-shadow:0 0 0 2px rgba(224,87,91,.4), 0 0 6px 2px rgba(224,87,91,.55)}
+  50%{box-shadow:0 0 0 2px rgba(224,87,91,.62), 0 0 11px 3px rgba(224,87,91,.85)}
+}
+@media (prefers-reduced-motion:reduce){ .thieu-ic .tic{animation:none} }
+.thieu-vach{flex:none; width:0; border-left:1.5px dashed var(--line); margin:9px 0}
+.the-diem.st .thieu-ic{gap:6px}
+.the-diem.st .thieu-ic .tic{width:19px; height:19px; font-size:7.5px}
 .diem-rows{flex:1; min-width:0; overflow:hidden; padding:9px 14px 12px 12px;
   display:flex; flex-direction:column; justify-content:center; gap:5px}
 .the-diem.chi-tay .diem-rows{justify-content:center; text-align:center; color:var(--mo); font-size:12px}
@@ -1968,7 +1996,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=71"></script>
+<script src="config.js?v=73"></script>
 <script src="js/chung.js?v=44"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -2703,6 +2731,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // `veWorksheetChu`) + dòng nhắc thay thanh điểm. Bỏ nút 🏆 (không có gì để
     // xếp hạng), giữ nguyên nút ⚙ (vẫn sửa/xoá thẻ như mọi thẻ khác).
     var laWs = /^WORKSHEET$/i.test(b.dang || '');
+    /* ⭐ v1.96.1 — cột icon học sinh thiếu bài (giữa ⚙/⊕ và các thanh). Không vẽ ở
+       thẻ hết hạn (thẻ nhạt không lộ đủ/thiếu — luật v1.95.0), WORKSHEET (không act),
+       SP CHECK (thầy chốt 28/08: không bao giờ hiện cột thiếu). Chưa đọc xong kho
+       điểm thì `t.thieu` rỗng ⇒ tự trống, đổ lại khi vẽ lại thẻ. */
+    var railThieu = (het || laWs || t.laSp) ? '' :
+      veThieuRail(dsThieuCuaThe(t), (A.lopTheoMa(DL, LOP_CHON) || {}).tenGoc || LOP_CHON);
     // ⛔ DIV, không phải BUTTON: ⚙/🏆 bên trong là <button> thật, HTML không
     // cho nút lồng trong nút (đã vấp thật ở bản xem thử — xem GHI CHU DU AN.md).
     return '<div class="the' + lopThem + (laWs ? ' worksheet' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
@@ -2729,6 +2763,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
             (laWs ? '' : '<button type="button" data-rail-tam="' + id + '" title="Ô này thầy chưa gán tính năng">' + IC_TAM_NHO + '</button>') +
           '</span>' +
           '<span class="diem-vach"></span>' +
+          railThieu +
           '<span class="diem-rows">' + (laWs
             ? '<span class="ws-nhac">EM HÃY HOÀN THÀNH<br>BÀI TẬP TRÊN WORKSHEET!</span>'
             : diem.html) + '</span>' +
@@ -2959,6 +2994,44 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ⛔ Đừng nhầm hai thứ trên cùng một thanh: VỆT MÀU đo "bao nhiêu em đã xong / sĩ số",
   // còn AVATAR là "ba em điểm cao nhất". Thầy biết và chọn đặt ở cuối vệt (02/09).
   // ⛔ Bản sao của cặp hàm này ở `lop.html` — sửa là sửa cả hai.
+  // ⭐ v1.96.1 (14/09/2026) — CỘT ICON HỌC SINH THIẾU BÀI (`.thieu-block`), chép từ
+  // lop.html `avThieuHtml`/`veThieuRail` (⛔ bản chép — sửa là sửa cả hai). Ảnh đi
+  // đúng đường `avUrl`/`avTenDayDu` + dấu `data-av-em`/`data-av-lop` để
+  // `A.deAvatarKho()` tự đè ảnh sống, y hệt `avMocHtml` ngay dưới.
+  var THIEU_TOI_DA = 4;   // tối đa 4 icon; từ 5 học sinh trở lên gộp 3 + "+N"
+  function avThieuHtml(e, lopGoc, dsEm) {
+    var tenDay = A.avTenDayDu(e.ten, dsEm);
+    var tip = A.chuAnToan(e.ten) + (e.so ? ' · còn ' + e.so + ' bài' : '');
+    return '<span class="tic" data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' +
+      A.chuAnToan(lopGoc) + '" title="' + tip + '">' +
+      '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
+      A.chuAnToan(avChuTat(e.ten)) +
+    '</span>';
+  }
+  function veThieuRail(ds, lopGoc) {
+    if (!ds || !ds.length) return '';
+    var dsEm = (A.lopTheoMa(DL, LOP_CHON) || {}).hocSinh || [];
+    var icons;
+    if (ds.length > THIEU_TOI_DA) {
+      icons = ds.slice(0, THIEU_TOI_DA - 1).map(function (e) { return avThieuHtml(e, lopGoc, dsEm); }).join('') +
+        '<span class="tic more">+' + (ds.length - (THIEU_TOI_DA - 1)) + '</span>';
+    } else {
+      icons = ds.map(function (e) { return avThieuHtml(e, lopGoc, dsEm); }).join('');
+    }
+    return '<span class="thieu-block"><span class="thieu-ic">' + icons + '</span>' +
+      '<span class="thieu-vach"></span></span>';
+  }
+  // Danh sách em còn thiếu của THẺ: thẻ STAGE lấy theo chặng đang xem (`c.thieu` là
+  // mảng TÊN, do A.xetChang tính cho mọi chặng); thẻ thường lấy `t.thieu` (đã có số
+  // bài còn thiếu `so`), thiếu nhiều đứng trước — cùng luật với lop.html `veDiem`.
+  function dsThieuCuaThe(t) {
+    if (t.stage && t.chang) {
+      var c = t.chang[A.changHien(t.chang)] || {};
+      return (c.thieu || []).map(function (ten) { return { ten: ten }; });
+    }
+    return (t.thieu || []).slice().sort(function (a, b) { return b.so - a.so; });
+  }
+
   var AV_MOC_SO = 3;   // v1.61.0 — bao nhiêu bạn trên một thanh
   function avMocHtml(dsDiem, lopGoc) {
     var ds = (dsDiem || []).slice();

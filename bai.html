@@ -1486,7 +1486,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=71"></script>
+<script src="config.js?v=73"></script>
 <script src="js/chung.js?v=44"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3173,6 +3173,117 @@ function luuDoanXongKhoa(){
   try { localStorage.setItem(khoaDoanXongKho(), JSON.stringify(DOAN_XONG)); } catch (e) {}
 }
 
+/* ⭐⭐⭐ v1.96.0 (14/09/2026) — ĐỒNG BỘ TIẾN ĐỘ XEM VIDEO NHIỀU MÁY qua Firestore.
+   Thầy phát hiện: xem 9% trên Edge, mở trình duyệt khác lại về 0% — vì
+   `DOAN_XONG` chỉ nằm trong localStorage của TỪNG trình duyệt. Nay thêm kho
+   `lessonVideoTienDo`: MỘT tài liệu mỗi em × mỗi bài (id = `<mã HS>__<id bài>`),
+   theo đúng kế hoạch BAN GIAO mục `0🎓` việc 3 (luật 8️⃣ tiết kiệm lượt đọc/ghi):
+   - ĐỌC: đúng 1 lượt lúc mở bài, đi SONG SONG với lượt đọc điểm act (không
+     chậm thêm), rồi GỘP với bản trong máy bằng chính `congKhucXemKhoa` — lấy
+     HỢP hai bên, máy nào cũng không mất tiến độ.
+   - GHI: THƯA — mỗi 20 giây lúc đang phát nếu có khúc mới + lúc tạm dừng/hết
+     + lúc rời tab/đóng trang (`keepalive`). KHÔNG `onSnapshot`.
+   - localStorage vẫn giữ y nguyên: bản dự phòng lúc mất mạng / luật chưa lan,
+     và là bản đọc nhanh; Firestore chỉ là bản CHUNG để các máy chia nhau.
+   ⛔ Firestore CẤM mảng lồng mảng ⇒ `khuc` lưu PHẲNG `{[id đoạn]: [a1,b1,a2,b2,…]}`,
+   quy đổi hai chiều ở `khucRaFs`/`khucTuFs`. Luật Firestore: khối
+   `lessonVideoTienDo` (đăng 14/09/2026 qua API firebaserules). */
+var TIEN_DO_FS_BAN = false;        // có khúc mới trong máy chưa đẩy lên Firestore
+var tienDoFsHen = null;
+var TIEN_DO_FS_NHIP_MS = 20000;
+function urlTienDoFs(){
+  var db = (A.CFG && A.CFG.AWORD_DB) || {};
+  if (!db.projectId || !db.apiKey || !BAI || !BAI.id || !MA_HS) return '';
+  return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+    '/databases/(default)/documents/lessonVideoTienDo/' +
+    encodeURIComponent(MA_HS + '__' + BAI.id) + '?key=' + encodeURIComponent(db.apiKey);
+}
+// {id: [[a,b],...]} -> {id: [a,b,a,b,...]} (phẳng, đã làm tròn 0,1 giây cho gọn)
+function khucPhang(){
+  var ra = {};
+  Object.keys(DOAN_XONG).forEach(function(id){
+    var ds = DOAN_XONG[id] || [];
+    if (!ds.length) return;
+    ra[id] = [];
+    ds.forEach(function(r){ ra[id].push(Math.round(r[0] * 10) / 10, Math.round(r[1] * 10) / 10); });
+  });
+  return ra;
+}
+function khucRaFs(){
+  var phang = khucPhang(), fields = {};
+  Object.keys(phang).forEach(function(id){
+    fields[id] = { arrayValue: { values: phang[id].map(function(x){ return { doubleValue: x }; }) } };
+  });
+  return fields;
+}
+// fields.khuc (Firestore JSON) -> {id: [[a,b],...]}; dữ liệu lạ thì bỏ qua êm
+function khucTuFs(fields){
+  var ra = {};
+  try {
+    var m = fields.khuc && fields.khuc.mapValue && fields.khuc.mapValue.fields;
+    if (!m) return ra;
+    Object.keys(m).forEach(function(id){
+      var v = (m[id].arrayValue && m[id].arrayValue.values) || [];
+      var ds = [];
+      for (var i = 0; i + 1 < v.length; i += 2) {
+        var a = Number(v[i].doubleValue != null ? v[i].doubleValue : v[i].integerValue);
+        var b = Number(v[i + 1].doubleValue != null ? v[i + 1].doubleValue : v[i + 1].integerValue);
+        if (isFinite(a) && isFinite(b) && b > a) ds.push([a, b]);
+      }
+      if (ds.length) ra[id] = ds;
+    });
+  } catch (e) {}
+  return ra;
+}
+// Đọc bản CHUNG rồi gộp vào máy. Không bao giờ reject (404 = em chưa xem ở
+// máy nào, 403 = luật chưa lan, mất mạng… đều coi như "không có gì thêm").
+function napTienDoFs(){
+  var u = urlTienDoFs();
+  if (!u) return Promise.resolve(false);
+  return fetch(u, { cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var chung = khucTuFs((j && j.fields) || {});
+      var truoc = JSON.stringify(khucPhang());
+      Object.keys(chung).forEach(function(id){
+        chung[id].forEach(function(r){ congKhucXemKhoa(id, r[0], r[1]); });
+      });
+      var sau = JSON.stringify(khucPhang());
+      if (sau !== truoc) luuDoanXongKhoa();
+      // máy này có khúc mà bản chung chưa có -> đẩy lên ở nhịp kế
+      var chungPhang = {};
+      Object.keys(chung).forEach(function(id){
+        chungPhang[id] = [];
+        chung[id].forEach(function(r){ chungPhang[id].push(r[0], r[1]); });
+      });
+      if (sau !== JSON.stringify(chungPhang)) TIEN_DO_FS_BAN = true;
+      return sau !== truoc;
+    })['catch'](function(){ return false; });
+}
+// Đẩy bản máy lên Firestore (chỉ khi có gì mới). `gap` = đang rời trang ->
+// dùng keepalive để yêu cầu sống sót sau khi tab đóng.
+function dayTienDoFs(gap){
+  if (!TIEN_DO_FS_BAN) return;
+  var u = urlTienDoFs();
+  if (!u) return;
+  var than = JSON.stringify({ fields: {
+    ma:   { stringValue: MA_HS },
+    bai:  { stringValue: String(BAI.id) },
+    lop:  { stringValue: String(LOP_DL || '') },
+    khuc: { mapValue: { fields: khucRaFs() } },
+    luc:  { integerValue: String(Date.now()) }
+  } });
+  TIEN_DO_FS_BAN = false;
+  try {
+    fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+               body: than, keepalive: !!gap })
+      .then(function(r){ if (!r.ok) TIEN_DO_FS_BAN = true; })
+      ['catch'](function(){ TIEN_DO_FS_BAN = true; });
+  } catch (e) { TIEN_DO_FS_BAN = true; }
+}
+document.addEventListener('visibilitychange', function(){ if (document.hidden) dayTienDoFs(true); });
+window.addEventListener('pagehide', function(){ dayTienDoFs(true); });
+
 // ---------- icon dùng trong khung player (SVG nét mảnh — không icon-font) ----------
 var IC_DEN_KHOA = '<svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5A6 6 0 1 0 6 8c0 1.3.5 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>';
 var IC_DS_KHOA  = '<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>';
@@ -3423,13 +3534,16 @@ function moVideoKhoa(bg){
 function onDoiTrangThaiKhoa(e){
   var nutPhat = $('#btnPhatKhoa');
   clearInterval(ytHenKhoa);
+  clearInterval(tienDoFsHen);   // v1.96.0
   if (e.data === YT.PlayerState.PLAYING) {
     tatPhuDeKhoa();
     if (nutPhat) nutPhat.innerHTML = IC_DUNG_KHOA;
     GIAY_HIEN_KHOA = YT_PLAYER.getCurrentTime();
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
-  } else if (nutPhat) {
-    nutPhat.innerHTML = IC_PHAT_KHOA;
+    tienDoFsHen = setInterval(dayTienDoFs, TIEN_DO_FS_NHIP_MS);   // v1.96.0 — ghi THƯA
+  } else {
+    dayTienDoFs();   // v1.96.0 — dừng/hết video: đẩy phần vừa xem lên ngay
+    if (nutPhat) nutPhat.innerHTML = IC_PHAT_KHOA;
   }
 }
 
@@ -3456,6 +3570,7 @@ function nhipVideoKhoa(){
   if (dHien && TT_KHOA.moD[dHien.id] && delta > 0.05 && delta < 1.8) {
     congKhucXemKhoa(dHien.id, GIAY_HIEN_KHOA, now);
     luuDoanXongKhoa();
+    TIEN_DO_FS_BAN = true;   // v1.96.0 — đẩy lên Firestore ở nhịp 20s kế
   }
   GIAY_HIEN_KHOA = now;
   capNhatSauKhiDoiKhoa();
@@ -4135,7 +4250,11 @@ A.napDuLieu().then(function(dl){
      rồi nhảy số một nhịp, nhìn như trang lỗi. */
   var maAct = [];
   KHOI.forEach(function(k){ if (k.loai === 'act' && k.ma && maAct.indexOf(k.ma) < 0) maAct.push(k.ma); });
-  return Promise.all(maAct.map(function(ma){
+  /* ⭐ v1.96.0 — bài KHÓA: đọc luôn bản tiến độ CHUNG trên Firestore (1 lượt), đi
+     song song với điểm act; gộp vào `DOAN_XONG` xong mới vẽ để % và khoá dây
+     chuyền đúng ngay từ khung hình đầu, không nhảy số. */
+  var choTienDoKhoa = LA_KHOA ? napTienDoFs() : Promise.resolve(false);
+  return Promise.all([choTienDoKhoa].concat(maAct.map(function(ma){
     /* ⭐ v1.14.0 — đọc SONG SONG điểm + chuẩn đủ điểm. Chuẩn nằm hẳn trong
        localStorage sau lần đầu nên không thêm lượt đọc Firestore nào ở các
        lần sau (tuỳ chọn bài giao là bản chụp đóng băng). */
@@ -4143,7 +4262,7 @@ A.napDuLieu().then(function(dl){
       A.diemCuaAct(ma)['catch'](function(){ return []; }),
       A.chuanDiem(ma)
     ]).then(function(r){ DIEM[ma] = r[0]; CHUAN[ma] = r[1]; });
-  })).then(function(){ veCacPhan(); });
+  }))).then(function(){ veCacPhan(); });
 })['catch'](function(){ veTrangLop(); });
 
 setInterval(function(){

@@ -451,7 +451,9 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 /* ⭐ v1.94.7 (13/09/2026) — còn học sinh thiếu bài: cột icon avatar đứng bên
    trái (mượn khuôn dải ⚙/🏆 bên dashboard.html), thanh tiến trình dồn sang
    phải. Hiện bất cứ lúc nào còn thiếu, không còn chờ gần hạn như bản cũ. */
-.the-diem.co-thieu{flex-direction:row; align-items:center; gap:0}
+/* ⭐ v1.96.1 (14/09/2026, thầy chốt) — cột icon đặt ĐÚNG khuôn dashboard: bỏ lề
+   trái 20px của vùng điểm, cột rộng 38px sát mép thẻ (xem `.thieu-ic`). */
+.the-diem.co-thieu{flex-direction:row; align-items:center; gap:0; padding-left:0}
 .the-diem.co-thieu .khoi-thanh{flex:1; min-width:0; padding-left:12px;
   display:flex; flex-direction:column; gap:5px}
 /* Chỉ có bài viết tay: dòng CHÚ Ý nằm giữa TOÀN THẺ, bỏ vạch ngăn. */
@@ -482,11 +484,14 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    cũ. Mượn đúng khuôn dải icon ⚙/🏆 của dashboard.html (`.diem-ic`), đổi
    sang chứa avatar học sinh còn thiếu, viền đỏ phát sáng nhấp nháy.
    Tối đa 4 icon; từ 5 học sinh trở lên gộp 3 avatar + "+N" ở ô thứ 4.
-   ⛔ `.thieu-ic` KHÔNG stretch theo `.the-diem` (align-items:center ở rule
-   `.co-thieu` phía trên) — cao đúng bằng số icon đang có, để `.thieu-vach`
-   (stretch bên trong `.thieu-block`) tự co ngắn/dài theo, luôn cân đối. */
-.thieu-block{flex:none; display:flex; flex-direction:row; align-items:stretch}
-.thieu-ic{flex:none; width:30px; display:flex; flex-direction:column;
+   ⭐ v1.96.1 (14/09/2026) — ĐẢO luật v1.94.7 (thầy chốt): `.thieu-block` nay
+   `align-self:stretch` ⇒ vạch `.thieu-vach` LUÔN chạy suốt chiều cao vùng điểm,
+   không co ngắn theo số icon; icon tự dồn vào GIỮA cột theo chiều dọc
+   (`justify-content:center`). Cột rộng 38px = đúng `.diem-ic` dashboard, vùng
+   điểm bỏ lề trái (xem `.the-diem.co-thieu`) nên icon cách mép thẻ ~8px.
+   ⛔ Bản chép của khối `.thieu-*` này nằm ở dashboard.html — sửa là sửa cả hai. */
+.thieu-block{flex:none; align-self:stretch; display:flex; flex-direction:row; align-items:stretch}
+.thieu-ic{flex:none; width:38px; display:flex; flex-direction:column;
   align-items:center; justify-content:center; gap:7px}
 .thieu-ic .tic{width:22px; height:22px; border-radius:50%; flex:none; overflow:hidden;
   position:relative; display:grid; place-items:center; font:800 8.5px var(--sans);
@@ -551,7 +556,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    cụm thanh dồn vào `.st-cot` bên phải. Vùng điểm STAGE chỉ cao ~98px (đã đo
    thật) nên icon phải co còn 19px mới đủ chỗ cho tối đa 4 icon — nhỏ hơn
    22px của thẻ thường. */
-.the-diem.st.co-thieu{flex-direction:row; align-items:stretch; gap:0}
+.the-diem.st.co-thieu{flex-direction:row; align-items:stretch; gap:0; padding-left:0}
 .the-diem.st.co-thieu .st-cot{flex:1; min-width:0; padding-left:12px;
   display:flex; flex-direction:column}
 .the-diem.st.co-thieu .thieu-ic{gap:6px}
@@ -1584,7 +1589,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=71"></script>
+<script src="config.js?v=73"></script>
 <script src="js/chung.js?v=44"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->

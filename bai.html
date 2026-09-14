@@ -2013,10 +2013,32 @@ $('#nenToi').onclick = tatDen;
    ⚠️ `k.act` (bộ nghĩa) và `k.mau` (template) đến từ phép map lúc boot ở cuối
    file — thêm trường mới vào bìa thì SOI LẠI phép map đó (bẫy đã cắn ở v1.12.0,
    dòng "mã lesson • ENG1" render sẵn mà không bao giờ hiện vì `act` rơi mất). */
-function chuBia(k){
-  var o = [A.maLesson(BAI), k.act, k.mau].filter(function(x){
-    return String(x || '').trim();
+/* ⭐ v1.104.0 (15/09/2026, thầy chốt — ảnh chụp "IEL-S15.T3.P4 • IEL-S15.T3.P4 /
+   QUIZ • QUIZ" quá dài) — GHÉP KHÔNG LẶP: bỏ một segment nếu nó đã NẰM TRỌN
+   (không phân biệt hoa/thường) trong một segment KHÁC đang giữ; ngược lại, một
+   segment MỚI mà CHỨA TRỌN segment đã giữ trước đó thì THAY THẾ hẳn segment cũ
+   (segment mới đã đầy đủ hơn). Xử lý đúng ca act/actTen tự AWord đặt tên đã
+   MANG SẴN mã lesson (và cả tên template) trong chính nó — vd act =
+   "IEL-S15.T3.P4 / QUIZ" thì đừng ghép thêm "IEL-S15.T3.P4 •" ở đầu lẫn
+   "• QUIZ" ở cuối nữa, chỉ còn đúng "IEL-S15.T3.P4 / QUIZ". Ca bình thường
+   (act = "ENG1", không mang mã lesson) thì chạy y hệt trước, không đổi gì. */
+function ghepKhongLap(list){
+  var ra = [];
+  (list || []).forEach(function(s){
+    s = String(s || '').trim();
+    if (!s) return;
+    var sHoa = s.toUpperCase();
+    // segment MỚI đã chứa trọn segment CŨ đứng cuối -> segment cũ dư thừa, bỏ nó
+    while (ra.length && sHoa.indexOf(ra[ra.length - 1].toUpperCase()) >= 0) ra.pop();
+    // segment MỚI đã NẰM TRỌN trong một segment ĐANG GIỮ -> chính nó dư thừa, bỏ qua
+    if (ra.some(function(x){ return x.toUpperCase().indexOf(sHoa) >= 0; })) return;
+    ra.push(s);
   });
+  return ra;
+}
+
+function chuBia(k){
+  var o = ghepKhongLap([A.maLesson(BAI), k.act, k.mau]);
   return o.length ? o.join(' • ') : (k.ten || '');
 }
 
@@ -2419,9 +2441,7 @@ function veKhoi(k, so){
      lùi về `mã lesson • template` (k.mau, giống chữ trên bìa READY, xem
      `chuBia()`); còn thiếu cả hai thì bỏ hẳn dòng dưới, KHÔNG còn lùi về
      `yeuCau` nữa. */
-  var dongDuoi = [A.maLesson(BAI), k.act || k.mau].filter(function(x){
-    return String(x || '').trim();
-  }).join(' • ');
+  var dongDuoi = ghepKhongLap([A.maLesson(BAI), k.act || k.mau]).join(' • ');
   var dau =
     '<div class="card-head">' +
       '<span class="step">' + so + '</span>' +

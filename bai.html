@@ -1280,19 +1280,19 @@ body.mo-menu .side.trai{transform:none}
 .vk-seg-item .moc{flex:none; font:600 10.5px/1 var(--mono); color:var(--muted)}
 .vk-seg-item .kh{flex:none; font-size:10px; color:var(--m-do)}
 
-/* khung player dưới video — ⭐ 14/09/2026 (thầy chốt) chia HAI TẦNG, ngăn bằng
-   một nét mảnh (`.vk-vach`):
-     · tầng TRÊN  = player của ĐOẠN ĐANG PHÁT: nút lùi/tiến ĐOẠN + thanh MỘT
-       đoạn dãn hết bề ngang (màu y hệt khúc đó ở thanh dưới, dễ nhìn/dễ kéo
-       hơn vì khúc ở thanh dưới quá ngắn) + ô %; dòng tên đoạn nằm phía trên.
-     · tầng DƯỚI  = player TOÀN VIDEO như cũ: lùi/tiến 10s + thanh chia đoạn +
-       ô giờ.
-   Cả hai tầng nằm trong CÙNG MỘT lưới 3 cột (nút | thanh | ô số) nên dóng
-   thẳng hàng nhau tuyệt đối — hàng 1 nhãn, 2 tầng trên, 3 nét ngăn, 4 tầng
-   dưới. */
+/* khung player dưới video — ⭐ 14/09/2026 (thầy chốt qua bản mẫu `MAU PLAYER
+   HAI TANG v1 14-09-2026.html`, PHIÊN BẢN A) — HAI TẦNG:
+     · tầng TRÊN  = player của ĐOẠN ĐANG PHÁT: nút lùi/tiến ĐOẠN + Phát/Dừng,
+       thanh MỘT đoạn dãn hết bề ngang (màu y hệt khúc đó ở vệt dưới, dễ nhìn/
+       dễ kéo hơn vì khúc ở vệt dưới quá ngắn), ô % ở cuối hàng; dòng tên
+       đoạn nằm phía trên thanh.
+     · tầng DƯỚI  = MỘT VỆT MẢNH chia đoạn TOÀN VIDEO trải hết bề ngang — bỏ
+       hẳn 3 nút + đồng hồ + nét ngăn (thầy: "xem bài giảng nên tập trung,
+       không cần đếm giờ"); vẫn bấm/kéo tua được.
+   Lưới 3 cột (nút | thanh | %), hàng 1 nhãn, 2 tầng trên, 3 vệt tổng. */
 .vk-player{margin-top:16px; padding:12px 14px 14px; border:1px solid var(--line); border-radius:14px;
   background:var(--surface)}
-.vk-grid{display:grid; grid-template-columns:auto 1fr auto; column-gap:10px; row-gap:8px; align-items:center}
+.vk-grid{display:grid; grid-template-columns:auto 1fr auto; column-gap:12px; row-gap:8px; align-items:center}
 .vk-label{grid-column:2; grid-row:1; display:flex; align-items:center; justify-content:center; gap:7px;
   min-height:15px; min-width:0}
 .vk-segten{font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden;
@@ -1301,9 +1301,7 @@ body.mo-menu .side.trai{transform:none}
   animation:vkNhapNhay 1.1s ease-in-out infinite; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   max-width:100%}
 @keyframes vkNhapNhay{0%,100%{opacity:1} 50%{opacity:.32}}
-.vk-icons{grid-column:1; display:flex; align-items:center; gap:7px}
-.vk-icons.doan{grid-row:2}
-.vk-icons.video{grid-row:4}
+.vk-icons{grid-column:1; grid-row:2; display:flex; align-items:center; gap:7px}
 .vk-ic{width:32px; height:32px; border-radius:50%; background:var(--ground); border:1px solid var(--line);
   color:var(--ink); display:flex; align-items:center; justify-content:center; cursor:pointer;
   transition:border-color .15s, color .15s, opacity .15s}
@@ -1314,10 +1312,12 @@ body.mo-menu .side.trai{transform:none}
 .vk-ic.phat svg{fill:currentColor; stroke:none}
 /* lùi/tiến đoạn mờ đi khi đang ở đoạn đầu/cuối */
 .vk-ic.mo{opacity:.3; pointer-events:none}
-.vk-timeline{grid-column:2; position:relative; height:20px; display:flex; align-items:center; cursor:pointer}
-.vk-timeline.doan{grid-row:2}
-.vk-timeline.video{grid-row:4}
-.vk-vach{grid-column:1 / -1; grid-row:3; height:0; border-top:1px solid var(--line)}
+.vk-timeline{grid-column:2; grid-row:2; position:relative; height:20px; display:flex; align-items:center; cursor:pointer}
+/* vệt tổng toàn video (tầng dưới): trải hết 3 cột, mảnh 5px, con trỏ nhỏ */
+.vk-timeline.tong{grid-column:1 / -1; grid-row:3; height:14px; margin-top:6px}
+.vk-timeline.tong .vk-seg-track{height:5px}
+.vk-timeline.tong .vk-seg-block{border-radius:3px}
+.vk-timeline.tong .vk-playhead{width:9px; height:9px; border-width:2px; box-shadow:0 0 0 1.5px var(--accent)}
 .vk-seg-track{position:absolute; left:0; right:0; top:50%; transform:translateY(-50%); height:8px;
   display:flex; gap:2px; width:100%; pointer-events:none}
 .vk-seg-block{position:relative; height:100%; background:#E5EAE8; border-radius:4px; overflow:hidden; flex:none}
@@ -1329,14 +1329,10 @@ body.mo-menu .side.trai{transform:none}
 .vk-playhead{position:absolute; top:50%; width:15px; height:15px; border-radius:50%; background:var(--accent);
   border:3px solid #fff; transform:translate(-50%,-50%);
   box-shadow:0 0 0 2px var(--accent), 0 2px 6px rgba(22,35,42,.4); pointer-events:none; left:0%}
-/* ⭐ 13/09/2026 (thầy chốt) — bề rộng CỐ ĐỊNH, canh phải: số đổi vị trí không
-   làm thanh bên trái co giãn theo. ⭐ 14/09/2026 — giờ luôn `mm:ss / mm:ss`
-   (phút 2 chữ số, không sang giờ vì video < 100 phút) nên rút còn 78px cho
-   thanh sát đồng hồ hơn; ô % tầng trên dùng chung bề rộng để dóng cột. */
-.vk-total{grid-column:3; width:78px; text-align:right; font-size:11px; color:var(--muted);
-  font-variant-numeric:tabular-nums; font-weight:700}
-.vk-total.doan{grid-row:2; font-size:12px}
-.vk-total.video{grid-row:4}
+/* ô % của đoạn đang phát — bề rộng CỐ ĐỊNH đủ "100%", canh phải: số nhảy
+   0→100% không làm thanh bên trái co giãn theo. */
+.vk-total{grid-column:3; grid-row:2; width:34px; text-align:right; font-size:12px; color:var(--muted);
+  font-variant-numeric:tabular-nums; font-weight:800}
 .vk-total.xong{color:var(--m-la)}
 
 /* vạch phân cách bài giảng ‖ bài tập (thầy chốt 13/09/2026) */
@@ -1499,7 +1495,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=75"></script>
+<script src="config.js?v=76"></script>
 <script src="js/chung.js?v=44"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3057,13 +3053,6 @@ function chuoiGioDoanKhoa(giay){
   var h = Math.floor(g / 3600), p = Math.floor((g % 3600) / 60), s = g % 60;
   return (h ? (h + ':' + ('0' + p).slice(-2)) : String(p)) + ':' + ('0' + s).slice(-2);
 }
-// ⭐ 14/09/2026 (thầy chốt) — ô giờ trên player: LUÔN `mm:ss`, phút 2 chữ số,
-// KHÔNG chuyển sang giờ (61:05, 62:30… — video bài giảng < 100 phút). Bề rộng
-// chữ vì thế cố định, con số nhảy không làm gì xê dịch.
-function chuoiPhutKhoa(giay){
-  var g = Math.max(0, Math.round(giay || 0));
-  return ('0' + Math.floor(g / 60)).slice(-2) + ':' + ('0' + (g % 60)).slice(-2);
-}
 
 // Em này đã đạt điểm tối đa của act `x.ma` chưa — dùng LẠI đúng `DIEM`/`CHUAN`
 // mà `boot` đã đọc cho mọi act trong `KHOI` (không đọc thêm gì).
@@ -3355,8 +3344,6 @@ window.addEventListener('pagehide', function(){ dayTienDoFs(true); });
 // ---------- icon dùng trong khung player (SVG nét mảnh — không icon-font) ----------
 var IC_DEN_KHOA = '<svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5A6 6 0 1 0 6 8c0 1.3.5 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>';
 var IC_DS_KHOA  = '<svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>';
-var IC_LUI10_KHOA = '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
-var IC_TIEN10_KHOA = '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 4v5h-5"/></svg>';
 var IC_PHAT_KHOA = '<svg viewBox="0 0 24 24"><polygon points="6,4 20,12 6,20"/></svg>';
 var IC_DOAN_TRUOC_KHOA = '<svg viewBox="0 0 24 24"><polygon points="19,20 9,12 19,4" fill="currentColor" stroke="none"/><line x1="5" y1="19" x2="5" y2="5"/></svg>';
 var IC_DOAN_SAU_KHOA   = '<svg viewBox="0 0 24 24"><polygon points="5,4 15,12 5,20" fill="currentColor" stroke="none"/><line x1="19" y1="5" x2="19" y2="19"/></svg>';
@@ -3396,33 +3383,26 @@ function veTheBaiGiangKhoa(bg){
           '<div class="vk-seg-list" id="dsDoanKhoa"></div>' +
         '</div>' +
       '</div>' +
-      // ⭐ 14/09/2026 — player HAI TẦNG (xem chú CSS `.vk-player`): tầng trên =
-      // đoạn đang phát (lùi/tiến ĐOẠN + thanh một đoạn + %), nét ngăn, tầng
-      // dưới = toàn video (lùi/tiến 10s + thanh chia đoạn + giờ).
+      // ⭐ 14/09/2026 — player HAI TẦNG, PHIÊN BẢN A của bản mẫu (xem chú CSS
+      // `.vk-player`): tầng trên = đoạn đang phát (⏮ ▶ ⏭ + thanh một đoạn + %),
+      // tầng dưới = vệt mảnh chia đoạn toàn video (chỉ để nhìn + tua).
       '<div class="vk-player">' +
         '<div class="vk-grid">' +
           '<div class="vk-label" id="nhanDoanKhoa"></div>' +
-          '<div class="vk-icons doan">' +
+          '<div class="vk-icons">' +
             '<div class="vk-ic" id="btnDoanTruocKhoa" title="Đoạn trước">' + IC_DOAN_TRUOC_KHOA + '</div>' +
             '<div class="vk-ic phat" id="btnPhatDoanKhoa" title="Phát/Dừng">' + IC_PHAT_KHOA + '</div>' +
             '<div class="vk-ic" id="btnDoanSauKhoa" title="Đoạn sau">' + IC_DOAN_SAU_KHOA + '</div>' +
           '</div>' +
-          '<div class="vk-timeline doan" id="timelineDoanKhoa">' +
+          '<div class="vk-timeline" id="timelineDoanKhoa">' +
             '<div class="vk-seg-track" id="vkDoanTrack"></div>' +
             '<div class="vk-playhead" id="vkDoanPlayhead"></div>' +
           '</div>' +
-          '<span class="vk-total doan" id="vkPhanTramKhoa">0%</span>' +
-          '<div class="vk-vach"></div>' +
-          '<div class="vk-icons video">' +
-            '<div class="vk-ic" id="btnLui10Khoa" title="Lùi 10 giây">' + IC_LUI10_KHOA + '</div>' +
-            '<div class="vk-ic phat" id="btnPhatKhoa" title="Phát/Dừng">' + IC_PHAT_KHOA + '</div>' +
-            '<div class="vk-ic" id="btnTien10Khoa" title="Tiến 10 giây">' + IC_TIEN10_KHOA + '</div>' +
-          '</div>' +
-          '<div class="vk-timeline video" id="timelineKhoa">' +
+          '<span class="vk-total" id="vkPhanTramKhoa">0%</span>' +
+          '<div class="vk-timeline tong" id="timelineKhoa">' +
             '<div class="vk-seg-track" id="vkSegTrack"></div>' +
             '<div class="vk-playhead" id="vkPlayhead"></div>' +
           '</div>' +
-          '<span class="vk-total video" id="vkTongKhoa">00:00 / 00:00</span>' +
         '</div>' +
       '</div>' +
     '</div>';
@@ -3455,7 +3435,7 @@ function dongDsDoanKhoa(){ var ov = $('#dsDoanKhoaOverlay'); if (ov) ov.classLis
 
 // ---------- thanh chia đoạn dưới player + dòng tên đoạn/% ở giữa ----------
 function veTimelineKhoa(bg, TT){
-  var track = $('#vkSegTrack'), ph = $('#vkPlayhead'), tongEl = $('#vkTongKhoa');
+  var track = $('#vkSegTrack'), ph = $('#vkPlayhead');
   if (!track) return;
   var doan = bg.doan || [];
   var tongGiay = 0;
@@ -3465,7 +3445,6 @@ function veTimelineKhoa(bg, TT){
   });
   track.innerHTML = doan.map(function(d){ return khoiDoanKhoaHtml(d, TT, null); }).join('');
   if (ph) ph.style.left = tongGiay ? (Math.min(100, (GIAY_HIEN_KHOA / tongGiay) * 100) + '%') : '0%';
-  if (tongEl) tongEl.textContent = chuoiPhutKhoa(GIAY_HIEN_KHOA) + ' / ' + chuoiPhutKhoa(tongGiay);
 }
 
 // Một KHỐI đoạn trên thanh (xám/vàng-đã-xem/xanh-xong/hồng-khoá) — dùng CHUNG
@@ -3524,19 +3503,17 @@ function nhayDoanKeKhoa(buoc){
   veConTroNgayKhoa(t);
 }
 
-// Dời MỌI con trỏ/ô số theo mốc giây `giay` NGAY LẬP TỨC (không đợi YouTube):
-// con trỏ tầng dưới + ô giờ + cả tầng trên (thanh đoạn, %, tên đoạn — đoạn
-// có thể vừa đổi khi kéo ngang qua ranh giới). Dùng lúc kéo thanh, lùi/tiến
-// đoạn.
+// Dời MỌI con trỏ theo mốc giây `giay` NGAY LẬP TỨC (không đợi YouTube): con
+// trỏ vệt tổng + cả tầng trên (thanh đoạn, %, tên đoạn — đoạn có thể vừa đổi
+// khi kéo ngang qua ranh giới). Dùng lúc kéo thanh, lùi/tiến đoạn.
 function veConTroNgayKhoa(giay){
   var doan = (BAI.baiGiang || {}).doan || [];
   var tong = 0;
   doan.forEach(function(d){ var n = giayDoanKhoa(d.den); if (n != null) tong = Math.max(tong, n); });
   GIAY_HIEN_KHOA = giay;
   ghiViTriKhoa(GIAY_HIEN_KHOA);   // v1.97.0
-  var ph = $('#vkPlayhead'), tongEl = $('#vkTongKhoa');
+  var ph = $('#vkPlayhead');
   if (ph) ph.style.left = (tong ? Math.min(100, giay / tong * 100) : 0) + '%';
-  if (tongEl) tongEl.textContent = chuoiPhutKhoa(giay) + ' / ' + chuoiPhutKhoa(tong);
   veNhanDoanKhoa(doanTaiGiayKhoa(doan, giay));
 }
 
@@ -3679,8 +3656,7 @@ function moVideoKhoa(bg){
 }
 
 function onDoiTrangThaiKhoa(e){
-  // 14/09/2026 — hai nút Phát (tầng đoạn + tầng video) đổi icon cùng lúc
-  var nutPhat = document.querySelectorAll('#btnPhatKhoa,#btnPhatDoanKhoa');
+  var nutPhat = document.querySelectorAll('#btnPhatDoanKhoa');
   clearInterval(ytHenKhoa);
   clearInterval(tienDoFsHen);   // v1.96.0
   if (e.data === YT.PlayerState.PLAYING) {
@@ -3888,26 +3864,16 @@ function ganNutKhoa(){
     moDongTapTrungKhoa(!(khung && khung.classList.contains('vk-tap-trung')));
   };
 
-  // 14/09/2026 — hai nút Phát/Dừng (tầng đoạn + tầng video) cùng một việc
-  document.querySelectorAll('#btnPhatKhoa,#btnPhatDoanKhoa').forEach(function(btnPhat){
-    btnPhat.onclick = function(){
-      if (!YT_PLAYER || !YT_PLAYER.getPlayerState) return;
-      if (YT_PLAYER.getPlayerState() === YT.PlayerState.PLAYING) YT_PLAYER.pauseVideo();
-      else YT_PLAYER.playVideo();
-    };
-  });
+  var btnPhat = $('#btnPhatDoanKhoa');
+  if (btnPhat) btnPhat.onclick = function(){
+    if (!YT_PLAYER || !YT_PLAYER.getPlayerState) return;
+    if (YT_PLAYER.getPlayerState() === YT.PlayerState.PLAYING) YT_PLAYER.pauseVideo();
+    else YT_PLAYER.playVideo();
+  };
   var btnDTruoc = $('#btnDoanTruocKhoa');
   if (btnDTruoc) btnDTruoc.onclick = function(){ nhayDoanKeKhoa(-1); };
   var btnDSau = $('#btnDoanSauKhoa');
   if (btnDSau) btnDSau.onclick = function(){ nhayDoanKeKhoa(1); };
-  var btnLui = $('#btnLui10Khoa');
-  if (btnLui) btnLui.onclick = function(){
-    if (YT_PLAYER && YT_PLAYER.seekTo) YT_PLAYER.seekTo(Math.max(0, YT_PLAYER.getCurrentTime() - 10), true);
-  };
-  var btnTien = $('#btnTien10Khoa');
-  if (btnTien) btnTien.onclick = function(){
-    if (YT_PLAYER && YT_PLAYER.seekTo) YT_PLAYER.seekTo(YT_PLAYER.getCurrentTime() + 10, true);
-  };
 
   // ⭐ 13/09/2026 — bấm/KÉO (như YouTube) bất kỳ đâu trên thanh chia đoạn để
   // tua tới đúng vị trí, tua TỰ DO. Con trỏ dời theo chuột NGAY LẬP TỨC (không
@@ -3917,7 +3883,7 @@ function ganNutKhoa(){
   // hay đang dừng, thầy chốt) — xem đúng khung hình tại vị trí mới, không tự
   // phát tiếp.
   // ⭐ 14/09/2026 — cùng một bộ tay bắt cho CẢ HAI thanh: `khoang()` trả về
-  // khoảng giây mà thanh đó trải ra (tầng dưới = 0…tổng video; tầng trên =
+  // khoảng giây mà thanh đó trải ra (vệt tổng = 0…tổng video; tầng trên =
   // đầu…cuối đoạn đang phát, CHỐT một lần lúc bấm xuống để kéo tới mép phải
   // không trượt sang đoạn kế).
   var tongGiayTL = function(){

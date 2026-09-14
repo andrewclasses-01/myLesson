@@ -1314,6 +1314,9 @@ body.mo-menu .side.trai{transform:none}
 }
 .vk-segten{font-size:12px; font-weight:700; color:var(--ink); white-space:nowrap; overflow:hidden;
   text-overflow:ellipsis}
+/* ⚡ nhịp vừa rồi video trôi nhanh hơn mức cho phép (tăng tốc bằng tiện ích
+   ngoài YouTube) — báo cạnh tên đoạn, không cộng % */
+.vk-nhanh{font-size:11px; font-weight:800; color:var(--m-do); white-space:nowrap; flex:none}
 .vk-khoa-chu{font-size:12px; font-weight:700; color:var(--m-do); letter-spacing:.01em;
   animation:vkNhapNhay 1.1s ease-in-out infinite; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   max-width:100%}
@@ -1521,7 +1524,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=79"></script>
+<script src="config.js?v=80"></script>
 <script src="js/chung.js?v=44"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3576,7 +3579,8 @@ function veNhanDoanKhoa(d){
   }
   // ⭐ 13/09/2026 (thầy chốt) — thêm SỐ THỨ TỰ đoạn trước tên, vd "4. Tạo câu…".
   var idx = ((BAI.baiGiang || {}).doan || []).indexOf(d) + 1;
-  hop.innerHTML = '<span class="vk-segten">' + chuAnToan(idx + '. ' + (d.ten || '')) + '</span>';
+  hop.innerHTML = '<span class="vk-segten">' + chuAnToan(idx + '. ' + (d.ten || '')) + '</span>' +
+    ((Date.now() - NHANH_LUC_KHOA) < 2000 ? '<span class="vk-nhanh">⚡ quá nhanh — không tính</span>' : '');
 }
 
 // ---------- một thẻ BÀI TẬP của bài khóa học (act · sách · chưa giao · khoá) ----------
@@ -3694,6 +3698,7 @@ function moVideoKhoa(bg){
       events: {
         onReady: tatPhuDeKhoa,
         onStateChange: onDoiTrangThaiKhoa,
+        onPlaybackRateChange: onDoiTocDoKhoa,   // v1.102.0 — trần tốc độ 1.5x
       },
     });
   });
@@ -3707,12 +3712,15 @@ function onDoiTrangThaiKhoa(e){
     tatPhuDeKhoa();
     nutPhat.forEach(function(n){ n.innerHTML = IC_DUNG_KHOA; });
     GIAY_HIEN_KHOA = YT_PLAYER.getCurrentTime();
+    NHIP_LUC_KHOA = Date.now();   // v1.102.0
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
     tienDoFsHen = setInterval(dayTienDoFs, TIEN_DO_FS_NHIP_MS);   // v1.96.0 — ghi THƯA
   } else {
     try { if (YT_PLAYER && YT_PLAYER.getCurrentTime) ghiViTriKhoa(YT_PLAYER.getCurrentTime()); } catch (err) {}   // v1.97.0
     dayTienDoFs();   // v1.96.0 — dừng/hết video: đẩy phần vừa xem lên ngay
     nutPhat.forEach(function(n){ n.innerHTML = IC_PHAT_KHOA; });
+    // v1.102.0 — dừng thì gỡ nhãn "⚡ quá nhanh" (nhãn chỉ tự tắt theo nhịp phát)
+    if (NHANH_LUC_KHOA) { NHANH_LUC_KHOA = 0; veNhanDoanKhoa(doanTaiGiayKhoa((BAI.baiGiang || {}).doan || [], GIAY_HIEN_KHOA)); }
   }
 }
 
@@ -3730,13 +3738,35 @@ function nhayToiDoanKhoa(d){
 // delta hợp lý theo nhịp poll) vào ĐÚNG đoạn đang đứng, miễn đoạn đó đã "mở"
 // (đoạn chưa mở thì KHÔNG đếm, dù vẫn cho xem tự do) — rồi vẽ lại timeline +
 // dòng tên đoạn/% + tính lại đường đi (bài tập/đoạn kế có thể vừa mở ra).
+/* ⭐ v1.102.0 (14/09/2026, thầy phát hiện lỗ hổng: bật 2x trong YouTube mà %
+   vẫn chạy đủ) — TRẦN TỐC ĐỘ 1.5x, chặn ở HAI lớp:
+   (1) `onDoiTocDoKhoa`: YouTube báo em đổi tốc độ > 1.5x ⇒ ép về 1.5x + toast.
+   (2) Lưới ĐỒNG HỒ THẬT trong `nhipVideoKhoa`: mỗi nhịp so giây video trôi với
+       giây thật trôi (`NHIP_LUC_KHOA`); nhanh hơn 1.5x (+15% dung sai cho nhịp
+       timer lệch) thì KHÔNG cộng khúc đó + báo "⚡" cạnh tên đoạn. Lớp này bắt
+       cả tiện ích tăng tốc ngoài YouTube (chỉnh thẳng thẻ video, API vẫn báo
+       1x) nên là lưới chính; lớp (1) chỉ để em không phải thắc mắc. */
+var TOC_DO_MAX_KHOA = 1.5;
+var NHIP_LUC_KHOA = 0;
+var NHANH_LUC_KHOA = 0;   // lần cuối bị chặn vì nhanh (để nhãn ⚡ hiện ~2s)
+function onDoiTocDoKhoa(e){
+  var rate = (e && typeof e.data === 'number') ? e.data : 1;
+  if (rate <= TOC_DO_MAX_KHOA) return;
+  try { YT_PLAYER.setPlaybackRate(TOC_DO_MAX_KHOA); } catch (err) {}
+  baoToast('Bài giảng chỉ xem tối đa ' + TOC_DO_MAX_KHOA + 'x — đã đưa về ' + TOC_DO_MAX_KHOA + 'x');
+}
 function nhipVideoKhoa(){
   if (!YT_PLAYER || !YT_PLAYER.getCurrentTime) return;
   var now = YT_PLAYER.getCurrentTime();
   var delta = now - GIAY_HIEN_KHOA;
+  var lucNay = Date.now();
+  var deltaThat = NHIP_LUC_KHOA ? (lucNay - NHIP_LUC_KHOA) / 1000 : 0.5;
+  NHIP_LUC_KHOA = lucNay;
+  var quaNhanh = delta > deltaThat * TOC_DO_MAX_KHOA * 1.15;
+  if (quaNhanh && delta < 1.8) NHANH_LUC_KHOA = lucNay;
   var doan = (BAI.baiGiang || {}).doan || [];
   var dHien = doanTaiGiayKhoa(doan, now);
-  if (dHien && TT_KHOA.moD[dHien.id] && delta > 0.05 && delta < 1.8) {
+  if (dHien && TT_KHOA.moD[dHien.id] && delta > 0.05 && delta < 1.8 && !quaNhanh) {
     congKhucXemKhoa(dHien.id, GIAY_HIEN_KHOA, now);
     luuDoanXongKhoa();
     TIEN_DO_FS_BAN = true;   // v1.96.0 — đẩy lên Firestore ở nhịp 20s kế

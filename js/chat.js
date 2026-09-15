@@ -69,6 +69,24 @@
    ⚠️ Luật này cho AI CŨNG ĐỌC VÀ GỬI ĐƯỢC (không đòi đăng nhập) — đúng mức tin
    cậy mà cả hệ này đang có: mã học sinh vốn nằm công khai trong `lop.json`.
    ============================================================ */
+
+/* ============================================================
+   ⭐ QUY ĐỊNH GIAO DIỆN KHUNG CHAT (thầy chốt 15/09/2026) — đọc trước khi build
+   tính năng chat mới, kể cả `dmChat` riêng tư sau này nếu có:
+
+   Khung chat của GIÁO VIÊN (`dashboard.html`) và HỌC SINH (`lop.html`) dùng
+   GẦN NHƯ Y HỆT một khuôn giao diện + hành vi (bong bóng, avatar, gửi/đọc tin,
+   thả cảm xúc). GV chỉ có thêm một số tính năng PHỤ, NHỎ, nằm NGOÀI phần cốt
+   lõi đó:
+     · Gắn thông báo (ghim một tin lên đầu phòng)
+     · Lưu trữ cuộc trò chuyện (nút 🗄 "Lưu trữ & làm mới" → `luuKho()`)
+
+   Ngoài hai việc phụ này, KHÔNG tách riêng khuôn/luồng dữ liệu cho GV lẫn HS.
+   Bất kỳ tính năng chat nào thêm sau này đều nên dùng CHUNG một hàm/khuôn cho
+   cả hai trang (như `nghe()`/`gui()`/`suaCx()` hiện tại), chỉ ẩn/hiện nút phụ
+   theo `vaiTro==='gv'` ở tầng giao diện — ĐỪNG viết hai bản logic chat khác
+   nhau cho hai vai trò.
+   ============================================================ */
 (function () {
   'use strict';
 
@@ -94,8 +112,14 @@
   // A2B (thẻ speaking đứng ở "Đang đọc dữ liệu…", em bấm vào thì báo oan
   // "Lớp mình chưa có buổi speaking nào đang mở").
   // 👉 Tin cũ hơn 30 không mất đi đâu cả — thầy có nút "🗄 Lưu trữ & làm mới"
-  //    bên dashboard để cất nguyên phòng vào `classChatArchive` rồi xem lại.
+  //    bên dashboard để cất nguyên phòng vào `classChatArchive` rồi xem lại,
+  //    và từ v1.109.x hai trang chat còn có "kéo lên tải thêm" (`taiThem()`
+  //    bên dưới) — CHỈ tốn lượt đọc khi có người thật sự kéo lên xem.
   var TOI_DA_TIN = 30;       // chỉ kéo về 30 tin gần nhất (xem khối ⛔ trên)
+  // ⭐ "Kéo lên tải thêm" (15/09/2026) — mỗi lần kéo lên đầu khung chat thì tải
+  // thêm đúng ngần này tin CŨ HƠN, một lần, KHÔNG mở thêm kênh sống (xem
+  // `taiThem()` bên dưới). Thầy chốt 20/lần — nhẹ tay hơn cả bản tải đầu.
+  var TOI_DA_TIN_THEM = 20;
 
   // Nạp SDK kiểu lười: trang nào không mở chat thì không tải gì cả (~120KB).
   // (v1.17.0) ⛔ KHÔNG initializeApp mù quáng: khối SPEAKING của dashboard cũng
@@ -210,6 +234,45 @@
     if (dungNghe) { try { dungNghe(); } catch (e) {} }
     dungNghe = null;
     phongDangNghe = '';
+  }
+
+  // ⭐ "Kéo lên tải thêm" (15/09/2026) — lấy MỘT LẦN (getDocs, KHÔNG onSnapshot)
+  // một trang tin CŨ HƠN mốc `truoc` (= createdAt của tin cũ nhất đang hiện
+  // trên màn). Trang gọi hàm này khi người dùng cuộn lên sát đầu khung chat —
+  // xem hai trang `lop.html`/`dashboard.html` (`taiThemCu()`).
+  //
+  // ⛔ Cố ý KHÔNG mở thêm onSnapshot cho từng trang cũ: tin cũ gần như đứng
+  // yên, mở kênh sống cho nó là tốn thêm một lượt đọc MỖI KHI có ai thả cảm
+  // xúc/GV xoá tin trong đó — cùng đúng bài học "CON SỐ NÀY LÀ TIỀN" của
+  // `TOI_DA_TIN` ở trên, chỉ khác là bài học đó nói về listener chính chứ
+  // không phải trang phân trang này.
+  //
+  // Trả Promise<mảng ds> (khuôn y hệt `nghe()`, xếp CŨ -> MỚI); mảng rỗng
+  // nghĩa là đã chạm tin đầu tiên của phòng — nơi gọi tự khoá không hỏi nữa.
+  function taiThem(maLop, truoc, khiCo, khiLoi) {
+    return db().then(function (f) {
+      var q = f.fs.query(
+        f.fs.collection(f.db, 'classChat', maLop, 'messages'),
+        f.fs.orderBy('createdAt', 'desc'),
+        f.fs.where('createdAt', '<', Number(truoc) || 0),
+        f.fs.limit(TOI_DA_TIN_THEM)
+      );
+      return f.fs.getDocs(q);
+    }).then(function (snap) {
+      var ds = [];
+      snap.forEach(function (d) {
+        var x = d.data() || {};
+        ds.push({
+          id: d.id, ten: x.name || '?', ma: x.code || '',
+          vaiTro: x.role === 'gv' ? 'gv' : 'hs',
+          chu: x.text || '', luc: Number(x.createdAt) || 0,
+          cx: x.cx || {}, may: x.may || ''
+        });
+      });
+      ds.reverse();
+      if (khiCo) khiCo(ds);
+      return ds;
+    })['catch'](function (e) { if (khiLoi) khiLoi(e); throw e; });
   }
 
   // Gửi một tin. Trả Promise; hỏng thì reject để nơi gọi báo cho người dùng.
@@ -355,6 +418,7 @@
 
   window.AWChat = {
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
+    taiThem: taiThem, TOI_DA_TIN_THEM: TOI_DA_TIN_THEM,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU,
     dauMay: dauMay,                    /* ⭐ v1.80.0 — xem khối "DẤU MÁY" đầu file */

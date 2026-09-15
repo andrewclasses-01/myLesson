@@ -356,6 +356,7 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
   flex-direction:column; gap:11px; scroll-behavior:smooth}
 .chat-cho{margin:auto; padding:22px 18px; text-align:center; font-size:12.5px;
   line-height:1.55; color:#7b8a97}
+.tai-cu{flex:none; text-align:center; font-size:11.5px; padding:4px 0 2px; color:#7b8a97}
 .msg{display:flex; gap:9px; max-width:88%}
 .msg .av{width:32px; height:32px; font-size:12px; margin-top:14px}
 .msg-c{min-width:0}
@@ -603,9 +604,9 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=83"></script>
+<script src="config.js?v=84"></script>
 <script src="js/chung.js?v=46"></script>
-<script src="js/chat.js?v=22"></script>
+<script src="js/chat.js?v=23"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
@@ -1236,6 +1237,11 @@ document.addEventListener('keydown', function(e){
 
 /* ---------- CHAT (kho tin thật — dùng chung js/chat.js với lop.html) ---------- */
 var TIN_MAU = [];
+// ⭐ "Kéo lên tải thêm" (15/09/2026) — BẢN CHÉP nguyên văn từ lop.html, xem đó
+// để hiểu đủ (TIN_SONG = phần sống AWChat.nghe(), TIN_CU = trang cũ đã tải
+// thêm bằng AWChat.taiThem(), tĩnh). Sửa bên nào phải copy sang bên kia.
+var TIN_SONG = [], TIN_CU = [], hetCu = false, dangTaiCu = false;
+function gopTinMau(){ TIN_MAU = TIN_CU.concat(TIN_SONG); }
 function coTheXoaTin(t){ return !!(t.id && MA_HS === 'GV'); }
 function veTin(t, i){
   var laToi = !!(t.ma && MA_HS && t.ma === MA_HS);
@@ -1268,15 +1274,52 @@ function veTin(t, i){
 }
 
 var khung = $('#khungChat');
+function veDauTrangCu(){
+  if (dangTaiCu) return '<div class="tai-cu">Đang tải tin cũ hơn…</div>';
+  if (hetCu) return '<div class="tai-cu">— Đã đến tin đầu tiên —</div>';
+  return '';
+}
 function veChat(){
   if (!TIN_MAU.length) {
     khung.innerHTML = '<div class="chat-cho">Khóa mình chưa ai nhắn gì.<br>Em mở lời trước nhé!</div>';
     return;
   }
   var oDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60;
-  khung.innerHTML = TIN_MAU.map(veTin).join('');
-  if (oDay) khung.scrollTop = khung.scrollHeight;
+  khung.innerHTML = veDauTrangCu() + TIN_MAU.map(veTin).join('');
+  if (oDay) {
+    // ⛔⛔ BẢN CHÉP từ lop.html — xem đó: `.chat-body` có scroll-behavior:smooth,
+    // cuộn "về đáy" phải TỨC THÌ kẻo đi ngang mốc <60px của taiThemCu() và tự
+    // bắn tải thêm oan.
+    var kieuCuonCu = khung.style.scrollBehavior;
+    khung.style.scrollBehavior = 'auto';
+    khung.scrollTop = khung.scrollHeight;
+    khung.style.scrollBehavior = kieuCuonCu;
+  }
 }
+function taiThemCu(){
+  if (dangTaiCu || hetCu || !TIN_MAU.length) return;
+  var caoTruoc = khung.scrollHeight, cuonTruoc = khung.scrollTop;  // đo TRƯỚC banner
+  dangTaiCu = true;
+  veChat();
+  AWChat.taiThem(LOP_DL, TIN_MAU[0].luc, function(ds){
+    dangTaiCu = false;
+    if (!ds.length) { hetCu = true; veChat(); return; }
+    TIN_CU = ds.concat(TIN_CU);
+    gopTinMau();
+    var kieuCuonCu = khung.style.scrollBehavior;
+    khung.style.scrollBehavior = 'auto';
+    veChat();
+    khung.scrollTop = khung.scrollHeight - caoTruoc + cuonTruoc;
+    khung.style.scrollBehavior = kieuCuonCu;
+  }, function(e){
+    dangTaiCu = false;
+    veChat();
+    baoToast(AWChat.chuLoi(e));
+  });
+}
+khung.addEventListener('scroll', function(){
+  if (khung.scrollTop < 60) taiThemCu();
+});
 function mocTinCuoi(){
   var l = 0;
   TIN_MAU.forEach(function(t){ var x = Number(t.luc) || 0; if (x > l) l = x; });
@@ -1294,9 +1337,11 @@ function danhDauDocChat(){
   A.veChamDo(false);
 }
 function noiChat(){
+  TIN_CU = []; hetCu = false; dangTaiCu = false;
   khung.innerHTML = '<div class="chat-cho">Đang mở phòng trò chuyện…</div>';
   AWChat.nghe(LOP_DL, function(ds){
-    TIN_MAU = ds;
+    TIN_SONG = ds;
+    gopTinMau();
     veChat();
     capNhatChamTin();
   }, function(e){

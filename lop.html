@@ -1458,6 +1458,12 @@ body.mo-menu .side.trai{transform:none}
 .chat-cho{margin:auto; padding:22px 18px; text-align:center; font-size:12.5px;
   line-height:1.55; color:var(--chu-mo, #7b8a97)}
 
+/* ⭐ Dải nhỏ đầu khung chat khi "kéo lên tải thêm" (taiThemCu(), 15/09/2026):
+   KHÔNG dùng margin:auto như .chat-cho (cái đó chỉ đúng khi là con DUY NHẤT
+   của khung flex-cột — ở đây luôn có tin nhắn theo ngay sau). */
+.tai-cu{flex:none; text-align:center; font-size:11.5px; padding:4px 0 2px;
+  color:var(--chu-mo, #7b8a97)}
+
 /* Tin của THẦY: nhãn nhỏ + bóng nền xanh nhạt cho các em nhìn ra ngay. */
 .msg.cua-thay .bong{background:#E7F2F0; border-color:#BFDCD6}
 .nhan-thay{display:inline-block; margin-left:5px; padding:1px 6px; border-radius:6px;
@@ -1597,9 +1603,9 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=83"></script>
+<script src="config.js?v=84"></script>
 <script src="js/chung.js?v=46"></script>
-<script src="js/chat.js?v=22"></script>
+<script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -4275,8 +4281,15 @@ function capNhatTheSpeakingGas(){
    xem `js/chat.js` (kèm đoạn LUẬT FIRESTORE thầy cần dán một lần).
    ⛔ Chưa dán luật thì khung báo hiền một dòng, KHÔNG để trống trơn khiến em
    nào cũng tưởng "lớp chưa ai nhắn gì". */
-var TIN_MAU = [];          /* tin đang hiện, đổ về từ kho (giữ tên cũ cho các
-                              hàm cảm xúc bên dưới không phải sửa) */
+var TIN_MAU = [];          /* tin đang hiện = TIN_CU nối TIN_SONG (giữ tên cũ
+                              cho các hàm cảm xúc bên dưới không phải sửa) */
+// ⭐ "Kéo lên tải thêm" (15/09/2026) — TIN_SONG là phần SỐNG do AWChat.nghe()
+// đổ về (luôn đúng TOI_DA_TIN tin gần nhất, tự cập nhật); TIN_CU là các trang
+// tin CŨ HƠN đã tải thêm bằng AWChat.taiThem() — TĨNH, không tự cập nhật, chỉ
+// đổi khi kéo lên tải thêm nữa. Xem khối "QUY ĐỊNH GIAO DIỆN KHUNG CHAT" +
+// nghiên cứu phân trang ở đầu `js/chat.js`.
+var TIN_SONG = [], TIN_CU = [], hetCu = false, dangTaiCu = false;
+function gopTinMau(){ TIN_MAU = TIN_CU.concat(TIN_SONG); }
 
 // ⭐ v1.52.0 (gói bảo mật C) — CHỈ THẦY xoá được tin (luật Firestore `delete: if laThay()`).
 // Trước (Đợt D) em tự xoá tin của mình được; nay luật chặn ⇒ giấu nút kẻo bấm là 403.
@@ -4322,6 +4335,14 @@ function veTin(t, i){
 
 var khung = $('#khungChat');
 
+// ⭐ Dải nhỏ ở ĐẦU khung: "Đang tải tin cũ hơn…" trong lúc taiThemCu() đang
+// chờ kho trả lời, hoặc "— Đã đến tin đầu tiên —" khi hết lịch sử phòng.
+// KHÔNG tính vào TIN_MAU nên `data-i` của các tin vẫn đúng chỉ số cũ.
+function veDauTrangCu(){
+  if (dangTaiCu) return '<div class="tai-cu">Đang tải tin cũ hơn…</div>';
+  if (hetCu) return '<div class="tai-cu">— Đã đến tin đầu tiên —</div>';
+  return '';
+}
 function veChat(){
   if (!TIN_MAU.length) {
     khung.innerHTML = '<div class="chat-cho">Lớp mình chưa ai nhắn gì.<br>' +
@@ -4331,9 +4352,51 @@ function veChat(){
   /* Đang ở sát đáy thì sau khi vẽ lại vẫn giữ ở đáy (tin mới về);
      em đang cuộn đọc tin cũ thì KHÔNG giật xuống. */
   var oDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60;
-  khung.innerHTML = TIN_MAU.map(veTin).join('');
-  if (oDay) khung.scrollTop = khung.scrollHeight;
+  khung.innerHTML = veDauTrangCu() + TIN_MAU.map(veTin).join('');
+  if (oDay) {
+    // ⛔⛔ `.chat-body` có `scroll-behavior:smooth` (hiệu ứng cuộn mượt khi em
+    // tự kéo) — nếu để nguyên, cú "về đáy" này ĐI QUA từng mili-giây từ 0
+    // xuống đáy, ngang mốc <60px của `taiThemCu()` ở dưới, TỰ BẮN tải thêm
+    // oan mỗi lần mở phòng/có tin mới (đo thật 15/09, bắt bằng cách đọc biến
+    // TIN_CU giữa chừng). Cuộn "về đáy" luôn phải TỨC THÌ, không mượt.
+    var kieuCuonCu = khung.style.scrollBehavior;
+    khung.style.scrollBehavior = 'auto';
+    khung.scrollTop = khung.scrollHeight;
+    khung.style.scrollBehavior = kieuCuonCu;
+  }
 }
+
+// Kéo lên sát đầu khung chat → tải thêm TOI_DA_TIN_THEM tin cũ hơn, MỘT LẦN
+// (không phải kênh sống — xem `AWChat.taiThem()`). Giữ nguyên vị trí đang đọc
+// bằng cách đo chiều cao TRƯỚC/SAU rồi bù lại `scrollTop`, kẻo chèn tin lên
+// đầu làm màn "giật" xuống dưới ngay chỗ em đang xem.
+function taiThemCu(){
+  if (dangTaiCu || hetCu || !TIN_MAU.length) return;
+  // ⛔ Đo NGAY LÚC NÀY, TRƯỚC khi vẽ banner "Đang tải…" — đo sau lúc đó thì
+  // banner (rồi biến mất ở lần vẽ cuối) làm phép bù lệch đúng bằng chiều cao
+  // của chính nó (đã đo thật 15/09: lệch ~33px, một dòng chữ nhỏ).
+  var caoTruoc = khung.scrollHeight, cuonTruoc = khung.scrollTop;
+  dangTaiCu = true;
+  veChat();                                   // hiện "Đang tải tin cũ hơn…"
+  AWChat.taiThem(LOP_DL, TIN_MAU[0].luc, function(ds){
+    dangTaiCu = false;
+    if (!ds.length) { hetCu = true; veChat(); return; }
+    TIN_CU = ds.concat(TIN_CU);
+    gopTinMau();
+    var kieuCuonCu = khung.style.scrollBehavior;
+    khung.style.scrollBehavior = 'auto';      // chèn tin cũ không được cuộn mượt
+    veChat();
+    khung.scrollTop = khung.scrollHeight - caoTruoc + cuonTruoc;
+    khung.style.scrollBehavior = kieuCuonCu;
+  }, function(e){
+    dangTaiCu = false;
+    veChat();
+    baoToast(AWChat.chuLoi(e));
+  });
+}
+khung.addEventListener('scroll', function(){
+  if (khung.scrollTop < 60) taiThemCu();
+});
 
 /* ⭐ v1.37.0 — CHẤM ĐỎ "lớp có tin nhắn mới".
    Trang này đã mở KÊNH CHAT SỐNG nên biết mốc tin cuối MIỄN PHÍ (không tốn
@@ -4357,9 +4420,11 @@ function danhDauDocChat(){
 }
 
 function noiChat(){
+  TIN_CU = []; hetCu = false; dangTaiCu = false;   // phòng mới, quên trang cũ đã tải
   khung.innerHTML = '<div class="chat-cho">Đang mở phòng trò chuyện…</div>';
   AWChat.nghe(LOP_DL, function(ds){
-    TIN_MAU = ds;
+    TIN_SONG = ds;
+    gopTinMau();
     veChat();
     capNhatChamTin();
   }, function(e){

@@ -1416,6 +1416,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 }
 .chat-cho{margin:auto; text-align:center; color:var(--nhat); font-size:12.5px;
   line-height:1.6; padding:16px}
+/* ⭐ Dải "kéo lên tải thêm" đầu khung — xem .tai-cu bên lop.html, cùng khuôn. */
+.tai-cu{flex:none; text-align:center; font-size:11.5px; padding:4px 0 2px;
+  color:var(--nhat)}
 /* ⭐ v1.80.0 — DẢI CẢNH BÁO "MỘT MÁY NHIỀU MÃ" (xem khối DẤU MÁY ở js/chat.js).
    ⛔ `flex:none` là BẮT BUỘC: `.chat-body` là flex CỘT, con mặc định co lại
    được ⇒ tin nhiều thì dải này bị bóp dẹp gần như mất hẳn (cùng họ bẫy
@@ -2115,9 +2118,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=85"></script>
+<script src="config.js?v=86"></script>
 <script src="js/chung.js?v=46"></script>
-<script src="js/chat.js?v=22"></script>
+<script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
 <script>
@@ -4525,6 +4528,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
 
   var TIN = [];
+  // ⭐ "Kéo lên tải thêm" (15/09/2026) — TIN = TIN_CU nối TIN_SONG, y hệt nếp
+  // bên `lop.html`. TIN_SONG là phần SỐNG do AWChat.nghe() đổ về; TIN_CU là
+  // các trang tin CŨ HƠN đã tải thêm bằng AWChat.taiThem() — TĨNH. Xem khối
+  // "QUY ĐỊNH GIAO DIỆN KHUNG CHAT" đầu `js/chat.js`.
+  var TIN_SONG = [], TIN_CU = [], hetCu = false, dangTaiCu = false;
+  function gopTin(){ TIN = TIN_CU.concat(TIN_SONG); }
 
   // ⭐ 28/08 — GV luôn xoá được MỌI tin (không riêng của mình — khác học sinh).
   function coTheXoaTin(t) { return !!t.id; }
@@ -4600,6 +4609,13 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       'Có thể là hai em dùng chung máy ở nhà — thầy hỏi lại cho chắc nhé.</div>';
   }
 
+  // ⭐ Dải nhỏ đầu khung (xem bản gốc bên `lop.html` — `veDauTrangCu()`):
+  // "Đang tải tin cũ hơn…" / "— Đã đến tin đầu tiên —". KHÔNG tính vào TIN.
+  function veDauTrangCu() {
+    if (dangTaiCu) return '<div class="tai-cu">Đang tải tin cũ hơn…</div>';
+    if (hetCu) return '<div class="tai-cu">— Đã đến tin đầu tiên —</div>';
+    return '';
+  }
   function veChat() {
     var hop = $('#chatBody');
     if (!TIN.length) {
@@ -4612,10 +4628,50 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var oDay = (hop.scrollHeight - hop.scrollTop - hop.clientHeight) < 60;
     /* ⛔ Dải cảnh báo đứng TRƯỚC danh sách tin, nhưng `data-i` của mỗi tin vẫn
        là chỉ số trong TIN (veTinDb tự đặt) nên cụm cảm xúc/xoá không lệch. */
-    hop.innerHTML = veCanhBaoMay(TIN) +
+    hop.innerHTML = veDauTrangCu() + veCanhBaoMay(TIN) +
       TIN.map(function (t, i) { return veTinDb(t, i, lopSlug); }).join('');
-    if (oDay) hop.scrollTop = hop.scrollHeight;
+    if (oDay) {
+      // ⛔ Phòng hờ như bên lop.html: nếu sau này `.chat-body` bên đây cũng
+      // có scroll-behavior:smooth thì cú "về đáy" vẫn phải TỨC THÌ, không đi
+      // ngang mốc <60px của taiThemCu() mà tự bắn tải thêm oan.
+      var kieuCuonCu = hop.style.scrollBehavior;
+      hop.style.scrollBehavior = 'auto';
+      hop.scrollTop = hop.scrollHeight;
+      hop.style.scrollBehavior = kieuCuonCu;
+    }
   }
+
+  // Kéo lên sát đầu `#chatBody` → tải thêm TOI_DA_TIN_THEM tin cũ hơn, MỘT
+  // LẦN (không kênh sống — xem `AWChat.taiThem()` trong js/chat.js). Giữ
+  // nguyên vị trí đang đọc bằng cách bù `scrollTop` theo chênh lệch chiều cao
+  // trước/sau khi chèn — y hệt kỹ thuật bên `lop.html`.
+  function taiThemCu() {
+    if (dangTaiCu || hetCu || !TIN.length) return;
+    var hop = $('#chatBody');
+    var caoTruoc = hop.scrollHeight, cuonTruoc = hop.scrollTop;  // đo TRƯỚC banner
+    dangTaiCu = true;
+    veChat();
+    AWChat.taiThem(LOP_CHON, TIN[0].luc, function (ds) {
+      dangTaiCu = false;
+      if (!ds.length) { hetCu = true; veChat(); return; }
+      TIN_CU = ds.concat(TIN_CU);
+      gopTin();
+      var kieuCuonCu = hop.style.scrollBehavior;
+      hop.style.scrollBehavior = 'auto';
+      veChat();
+      hop.scrollTop = hop.scrollHeight - caoTruoc + cuonTruoc;
+      hop.style.scrollBehavior = kieuCuonCu;
+    }, function (e) {
+      dangTaiCu = false;
+      veChat();
+      baoToast(AWChat.chuLoi(e));
+    });
+  }
+  // ⛔ Gắn MỘT LẦN lúc nạp trang (không phải mỗi lần đổi lớp) — `#chatBody`
+  // là cùng một phần tử DOM suốt vòng đời trang, `noiChat()` chỉ đổi TIN/kênh.
+  $('#chatBody').addEventListener('scroll', function () {
+    if (this.scrollTop < 60) taiThemCu();
+  });
 
   // ---------- CỤM THẢ CẢM XÚC (port nguyên văn từ lop.html) ----------
   // GV thả cảm xúc y hệt học sinh: khoá 'GV' + tên hiển thị 'Thầy Andrew'.
@@ -5086,11 +5142,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var l = A.lopTheoMa(DL, LOP_CHON);
     $('#chatPhu').textContent = 'lớp ' + ((l && l.tenGoc) || LOP_CHON);
     $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
-    TIN = [];
+    TIN = []; TIN_CU = []; hetCu = false; dangTaiCu = false;   // đổi lớp, quên trang cũ đã tải
     $('#chatO').disabled = false;
     $('#chatGui').disabled = false;
     AWChat.nghe(LOP_CHON, function (ds) {
-      TIN = ds;
+      TIN_SONG = ds;
+      gopTin();
       veChat();
       veDangNhapGanDay();   // ⭐ v1.33.0 — tin/cảm xúc mới cũng là dấu vết hoạt động
     }, function (e) {
@@ -5141,6 +5198,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         }));
       })
       .then(function () {
+        // ⛔ `dsXoa` gồm CẢ tin trong TIN_CU (nếu thầy đã "kéo lên tải thêm"
+        // trước đó) — xoá xong mà không quên TIN_CU thì lượt snapshot kế tiếp
+        // của kênh sống sẽ gopTin() nối NÓ trở lại, tin đã xoá lại hiện ra.
+        TIN_CU = []; hetCu = false;
         nut.disabled = false;
         baoToast('Đã lưu trữ và làm mới khung chat.');
       })['catch'](function (e) {

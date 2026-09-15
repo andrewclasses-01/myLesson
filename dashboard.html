@@ -53,6 +53,38 @@
 <!-- ============================================================
      TRANG QUẢN LÝ CỦA THẦY — web v1.47.0 (02/09/2026)
 
+     ⭐⭐⭐ v1.108.0 (15/09/2026) — 8 CHỈNH DASHBOARD (thầy chốt qua chat, xong hết
+     mới "ok build"): (1) 5 thẻ lớp chính/hàng thay vì 4 — `.lop-grid` đổi
+     `auto-fit,minmax(210px,1fr)` sang `repeat(5,1fr)` (co ngắn bề ngang thẻ),
+     màn hẹp co dần 3 rồi 2 cột. (2) Bỏ chữ nhãn "KHÓA HỌC" (`.lv-nhan`) trên cột
+     phải. (3) Đường kẻ dọc `#khoaKhu` nay cao BẰNG cột lớp chính mọi lúc —
+     `.lop-hang` đổi `align-items:flex-start` → `stretch` (đo thật bằng
+     `getBoundingClientRect`: cả hai khối cùng 249px dù khóa học chỉ 1 thẻ).
+     (4) "Đang chờ bài" (`.lb-tt.cho`) nhấp nháy vàng (chấm `i` phát ping +
+     chữ mờ-tỏ, keyframes `lbChoPing`/`lbChoMo`) để giục giao bài. (5) Bỏ dải số
+     đầu trang (Bài đang giao/Lớp chờ bài/Bài đã giao, `#hdSo`/`veDaiSo()`) + bỏ
+     icon reload `#btnMoi` — hai hàm giữ nguyên, tự `if (!$(...)) return` nên
+     không lỗi khi thiếu phần tử. (6) Bỏ dòng chú thích chân trang "Số liệu đọc
+     thẳng từ…". (7) ⭐⭐ MỚI: SẮP XẾP THẺ LỚP BẰNG KÉO-THẢ — giữ chuột/tay
+     ~450ms một thẻ (`sxBatDauGiu`, hủy nếu di quá 8px trước khi đủ giờ) vào
+     "chế độ sắp xếp" (`moSapXep`): mọi thẻ (CẢ lớp chính lẫn khóa học) thành
+     `draggable`, thanh nổi `#sxBar` hiện Lưu/Hủy; kéo đổi chỗ bằng HTML5
+     dragover/drop thật (`sxKhuCua` chặn kéo chéo giữa hai khu bằng
+     `dropEffect='none'`). Lưu (`luuSapXep`) ghi MỘT tài liệu Firestore
+     `dashLopThuTu/mac_dinh` {dsLop,dsKhoa,luc} qua `spDb()` có sẵn (đã dán +
+     publish luật mới, xem `myLesson-data/tai-lieu/LUAT FIRESTORE CAN DAN
+     (15-09 THEM THU TU LOP).md`); `veLopGrid()`/`veKhoaGrid()` ưu tiên thứ tự
+     đã lưu qua `apDungThuTu()`, lớp mới chưa từng sắp xếp rơi vào cuối theo
+     thứ tự mặc định cũ — không tự nhảy lung tung. Hủy quay lại đúng thứ tự
+     lúc VỪA giữ chuột (`SX_LOP_GOC`/`SX_KHOA_GOC`). Ghi cần phiên Firebase Auth
+     của thầy (nút 🔐), giống mọi nút ghi khác trên trang — chưa đăng nhập thì
+     báo "Kho chưa mở khoá…" chứ không hỏng gì. (8) Bỏ dòng chú thích chân
+     trang cũ (gộp chung mục 6). Đã kiểm cục bộ (server `python -m http.server`
+     + Browser pane): giả lập giữ chuột/kéo-thả bằng sự kiện thật, đo
+     `getBoundingClientRect`/`getComputedStyle` chứ không chỉ nhìn ảnh, kiểm cả
+     màn điện thoại (2 cột) — không có lỗi console. ⬜ Thầy CHƯA bấm tay bản
+     live sau khi đẩy.
+
      ⭐⭐ v1.87.0 (09/09/2026) — VÁ LỖI ĐỒNG HỒ ĐẾM NGƯỢC CỦA THẺ STAGE: thầy báo
        ô hạn ghi "Hạn chặng 1: 00:00 · 11/9" mà số đếm ngược lại chạy 89 tiếng
        (đúng bằng khoảng cách tới HẠN CUỐI của cả bài, chặng 3) thay vì ~27 tiếng
@@ -347,25 +379,47 @@ a{color:inherit}
 .trong{padding:26px 18px; text-align:center; color:var(--nhat); font-size:13px}
 
 /* ---------- DANH SÁCH LỚP (nút, chia đều bề ngang) — v1.24.0 ---------- */
-.lop-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:12px;
+/* ⭐ 15/09/2026 — CỐ ĐỊNH 5 CỘT/HÀNG (thầy chốt): trước là `auto-fit,minmax(210px,…)`
+   nên bề ngang khung hiện có chỉ vừa 4 thẻ/hàng. Đổi sang `repeat(5,1fr)` — thẻ tự co
+   ngắn lại để luôn đủ 5/hàng, KHÔNG còn phụ thuộc bề ngang khung. */
+.lop-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:12px;
   margin:18px 0}
 
 /* ⭐⭐ 11/09/2026 — CỘT RIÊNG CHO KHÓA HỌC, tách bằng một vạch dọc (thầy chốt:
    "1 cột riêng ở bên phải là các nút lớp của các Khóa, phần lớn bên trái là
    các nút của các lớp thường"). `#khoaKhu` (`hidden` khi chưa có khóa học nào)
    nên dashboard của trước 11/09 KHÔNG đổi một pixel nào. */
-.lop-hang{display:flex; align-items:flex-start; gap:0}
+/* ⭐ 15/09/2026 — `align-items:stretch` (trước `flex-start`) để `.lop-vach` (đường kẻ +
+   cột khóa học) LUÔN cao bằng cột lớp chính bên trái, dù cột lớp chính đang 1 hay 2
+   hàng, dù khóa học chỉ có 1 thẻ — thầy chốt "kéo dài đường kẻ dài bằng 2 hàng". */
+.lop-hang{display:flex; align-items:stretch; gap:0}
 .lop-hang>.lop-grid{flex:1 1 auto; min-width:0}
 .lop-vach{flex:none; width:236px; margin:18px 0 18px 24px; padding-left:22px;
   border-left:1.5px solid var(--vien); display:flex; flex-direction:column}
 .lv-nhan{font:800 10.5px/1.4 var(--font); letter-spacing:.12em; color:var(--nhat);
   text-transform:uppercase; margin-bottom:10px}
 .lop-grid-khoa{grid-template-columns:1fr; margin:0; gap:10px}
+/* ⭐⭐ 15/09/2026 — CHẾ ĐỘ SẮP XẾP THẺ LỚP (kéo-thả, thầy chốt). Viền đứt + con trỏ
+   "kéo được" trên MỌI thẻ (cả hai khu) khi `body.dang-sap-xep`; `.sx-keo` là thẻ
+   đang được kéo (mờ đi cho dễ thấy chỗ thả). */
+body.dang-sap-xep .lop-btn{cursor:grab; outline:1.5px dashed var(--vien-dam); outline-offset:2px}
+body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
+.lop-btn.sx-keo{opacity:.4; cursor:grabbing}
+.sx-bar{position:fixed; left:50%; bottom:22px; transform:translateX(-50%); z-index:60;
+  display:flex; align-items:center; gap:10px; padding:10px 12px 10px 16px;
+  background:#fff; border:1px solid var(--vien-dam); border-radius:14px; box-shadow:var(--bong)}
+.sx-bar .sx-nhan{font:700 12.5px/1.3 var(--font); color:var(--mo)}
 @media (max-width:860px){
   .lop-hang{flex-direction:column}
   .lop-vach{width:auto; margin:14px 0 0; padding:16px 0 0; border-left:0;
     border-top:1.5px solid var(--vien)}
   .lop-grid-khoa{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+  /* ⭐ 15/09/2026 — 5 cột cố định (xem `.lop-grid` phía trên) chỉ hợp màn rộng; màn
+     hẹp co về 3 rồi 2 cột (breakpoint dưới) để thẻ không bị bóp quá nhỏ. */
+  .lop-grid{grid-template-columns:repeat(3,1fr)}
+}
+@media (max-width:620px){
+  .lop-grid{grid-template-columns:repeat(2,1fr)}
 }
 /* ⭐ #5 — thẻ lớp nay CHIA HAI: cột icon riêng GV bên trái + nút chính chọn lớp. */
 .lop-btn{position:relative; display:flex; align-items:stretch; background:var(--the);
@@ -425,6 +479,13 @@ a{color:inherit}
 .lb-tt.giao{color:#1f7a4d} .lb-tt.giao i{background:var(--la)}
 .lb-tt.cho{color:#9A6A12} .lb-tt.cho i{background:var(--vang)}
 .lb-tt.khong{color:var(--nhat)} .lb-tt.khong i{background:var(--nhat)}
+/* ⭐ 15/09/2026 — "Đang chờ bài" NHẤP NHÁY VÀNG để giục GV giao bài (thầy chốt): chấm
+   tròn phát nhẫn sóng (ping) + chữ mờ tỏ theo nhịp. Chỉ riêng `.cho` — `.giao`/`.khong`
+   đứng yên như cũ. */
+@keyframes lbChoPing{0%{box-shadow:0 0 0 0 rgba(242,169,59,.65)} 70%{box-shadow:0 0 0 6px rgba(242,169,59,0)} 100%{box-shadow:0 0 0 0 rgba(242,169,59,0)}}
+@keyframes lbChoMo{0%,100%{opacity:1} 50%{opacity:.45}}
+.lb-tt.cho{animation:lbChoMo 1.6s ease-in-out infinite}
+.lb-tt.cho i{animation:lbChoPing 1.6s ease-out infinite}
 .lop-btn.chon .lb-tt.giao{color:#D3F5E4} .lop-btn.chon .lb-tt.giao i{background:#7FEAB4}
 .lop-btn.chon .lb-tt.cho{color:#FDECC9} .lop-btn.chon .lb-tt.cho i{background:var(--vang)}
 .lop-btn.chon .lb-tt.khong{color:rgba(255,255,255,.78)} .lop-btn.chon .lb-tt.khong i{background:rgba(255,255,255,.6)}
@@ -1669,12 +1730,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       </div>
     </button>
     <div class="day"></div>
-    <!-- ⭐ v1.32.0 — dải số cũ dời hẳn vào đây (bỏ số lớp/học sinh/em chưa có
-         mã, chỉ giữ 3 số cần dùng ngay) — xem `veDaiSo()`. -->
-    <div class="hd-so-cum" id="hdSo"></div>
-    <button class="icon-btn" id="btnMoi" title="Đọc lại kết quả mới nhất từ kho điểm" aria-label="Làm mới">
-      <svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 5.5V11h-5.5"/></svg>
-    </button>
+    <!-- ⭐⭐ 15/09/2026 — thầy chốt BỎ dải số (Bài đang giao/Lớp chờ bài/Bài đã giao) +
+         BỎ icon reload ở thanh đầu. `#hdSo`/`#btnMoi` xoá khỏi HTML; `veDaiSo()` và tay
+         bắt `#btnMoi` bên dưới đã tự bọc "nếu còn phần tử mới chạy" nên không lỗi. -->
   </div>
 </header>
 
@@ -1686,9 +1744,18 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   <div class="lop-hang">
     <section class="lop-grid" id="lopGrid"></section>
     <div class="lop-vach" id="khoaKhu" hidden>
-      <span class="lv-nhan">KHÓA HỌC</span>
+      <!-- ⭐ 15/09/2026 — thầy chốt bỏ chữ "KHÓA HỌC": đường kẻ dọc đã đủ tách khu vực,
+           chữ nhãn thừa. `.lv-nhan` giữ trong CSS phòng khi cần lại, không dùng nữa. -->
       <section class="lop-grid lop-grid-khoa" id="khoaGrid"></section>
     </div>
+  </div>
+
+  <!-- ⭐ 15/09/2026 — thanh nổi Lưu/Hủy khi đang kéo-thả sắp xếp thẻ lớp, xem
+       moSapXep()/luuSapXep()/huySapXep(). -->
+  <div class="sx-bar" id="sxBar" hidden>
+    <span class="sx-nhan">Đang sắp xếp — kéo thẻ để đổi vị trí</span>
+    <button class="nut nho" data-sx-huy>Hủy</button>
+    <button class="nut chinh nho" id="sxLuu" data-sx-luu>Lưu vị trí</button>
   </div>
 
   <div class="hai-cot">
@@ -1735,10 +1802,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     </section>
   </div>
 
-  <p class="chan">
-    Số liệu đọc thẳng từ <code>data/lop.json</code> + <code>data/bai.json</code> (app myLesson đẩy lên
-    mỗi lần bấm PUSH) và kho điểm AWord. Trang này chỉ ĐỌC — sửa bài thì sửa trong app.
-  </p>
+  <!-- ⭐ 15/09/2026 — thầy chốt bỏ dòng chú thích "Số liệu đọc thẳng từ…" ở chân trang. -->
 </main>
 
 <!-- ============ SIDEBAR: Quản lý mã · Thiết lập lớp · Sinh nhật · Top · Đăng xuất ============ -->
@@ -2006,7 +2070,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=83"></script>
+<script src="config.js?v=84"></script>
 <script src="js/chung.js?v=46"></script>
 <script src="js/chat.js?v=22"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -2016,9 +2080,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   'use strict';
   var A = window.AWC;
   var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
 
   var DL = { lop: [], bai: {} };
   var LOP_CHON = '';
+  // ⭐ 15/09/2026 — THỨ TỰ SẮP XẾP THẺ LỚP đã lưu trên Firestore (kéo-thả, xem khối
+  // "SẮP XẾP THẺ LỚP" phía dưới). null = chưa đọc xong/chưa có; {dsLop, dsKhoa} = mảng
+  // mã lớp theo đúng thứ tự thầy đã kéo. Rỗng thì vẫn xếp theo hạn gần nhất như cũ.
+  var THU_TU_LOP = null;
+  var DANG_SAP_XEP = false;   // đang ở chế độ kéo-thả hay không
+  var SX_LOP_GOC = null, SX_KHOA_GOC = null; // thứ tự lúc VÀO chế độ (để "Hủy" quay lại đúng)
   var DIEM = {};          // mã act -> [{ten, diem, giay, luc}]
   // ⭐ v1.14.0 — chuẩn ĐỦ ĐIỂM của từng act: mã act -> {tru, dinh}. Dùng CHUNG
   // luật với trang lớp + trang bài (js/chung.js), không thì dashboard đếm "đã
@@ -2162,6 +2233,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // MỚI: đếm lớp KHÔNG có bài nào còn hạn — cùng luật còn-hạn với
   // `dsBaiConHanMoiLop()`, chỉ đổi góc nhìn từ "bài" sang "lớp".
   function veDaiSo() {
+    // ⭐ 15/09/2026 — `#hdSo` đã bỏ khỏi HTML (thầy chốt bỏ dải số trên cùng); hàm
+    // giữ nguyên (vẫn được gọi trong veTat(), vô hại) nhưng tự thoát sớm.
+    if (!$('#hdSo')) return;
     var tongBai = 0, dangGiao = 0;
     // v1.35.0 — `moiBai` đã bỏ bài xoá mềm; "đang giao" theo `A.conHan` (ẩn không tính).
     moiBai(function (b) {
@@ -2267,7 +2341,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var mL = A.chuAnToan(l.maLop);
     var sn = sinhNhatTuanCuaLop(l);
     var tt = trangThaiBai(l);
-    return '<div class="lop-btn' + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
+    // ⭐ 15/09/2026 — `data-malop` (mã THẬT, không lách qua chuAnToan) để tay kéo-thả
+    // sắp xếp (`sxBatDau`/`sxLuu`) đọc thứ tự trực tiếp từ DOM, tách khỏi `data-lop`
+    // mà `chonLop()` đang dùng (tránh đụng luồng bấm chọn lớp sẵn có).
+    return '<div class="lop-btn' + (l.maLop === LOP_CHON ? ' chon' : '') + '" data-malop="' + mL + '">' +
       (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
       '<div class="lb-gv">' +
         // ⭐ v1.35.0 (thầy chốt 02/09): số thành viên = NÚT mở "Thiết lập lớp"
@@ -2303,6 +2380,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       var mb = db.length ? Math.min.apply(null, db.map(function (m) { return m == null ? Infinity : m; })) : Infinity;
       return ma - mb;
     });
+    // ⭐ 15/09/2026 — thầy đã kéo-thả sắp xếp tay thì DÙNG thứ tự đó thay vì tự động
+    // theo hạn gần nhất (xem `apDungThuTu`). Lớp MỚI chưa từng nằm trong thứ tự đã
+    // lưu vẫn rơi vào đúng chỗ theo hạn gần nhất, không biến mất/lạc chỗ.
+    if (THU_TU_LOP && THU_TU_LOP.dsLop.length) xep = apDungThuTu(xep, THU_TU_LOP.dsLop);
     // ⭐ v1.32.0 — cột icon trái rút còn 3 mục: số học sinh (chỉ xem) · sinh
     // nhật sắp tới (chấm đỏ nếu có, trong 7 ngày) · thiết lập lớp. Bỏ hẳn
     // "sửa hạn" (nay ở ⚙ Cài đặt thẻ của từng bài, xem `.diem-ic`) và "top
@@ -2323,10 +2404,175 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var ds = (DL.khoa || []).slice().sort(function (a, b) {
       return a.maLop.localeCompare(b.maLop, 'vi');
     });
+    // ⭐ 15/09/2026 — cùng nếp `veLopGrid()`: thứ tự tay kéo (nếu có) thắng thứ tự
+    // theo tên mặc định.
+    if (THU_TU_LOP && THU_TU_LOP.dsKhoa.length) ds = apDungThuTu(ds, THU_TU_LOP.dsKhoa);
     hopKhu.hidden = !ds.length;
     if (!ds.length) { hop.innerHTML = ''; return; }
     hop.innerHTML = ds.map(theLopBtnHtml).join('');
   }
+
+  // Xếp `ds` (mảng lớp) theo mảng mã lớp `thuTu` đã lưu — lớp có mặt trong `thuTu` lên
+  // trước theo ĐÚNG vị trí đã lưu; lớp KHÔNG có (mới thêm sau khi thầy sắp xếp lần
+  // cuối) giữ nguyên thứ tự tương đối cũ (mặc định theo hạn/tên) và rơi vào CUỐI dãy.
+  function apDungThuTu(ds, thuTu) {
+    if (!thuTu || !thuTu.length) return ds;
+    var theo = {};
+    thuTu.forEach(function (m, i) { theo[m] = i; });
+    return ds.map(function (l, i) { return { l: l, i: i }; }).sort(function (a, b) {
+      var ia = theo.hasOwnProperty(a.l.maLop) ? theo[a.l.maLop] : 100000 + a.i;
+      var ib = theo.hasOwnProperty(b.l.maLop) ? theo[b.l.maLop] : 100000 + b.i;
+      return ia - ib;
+    }).map(function (x) { return x.l; });
+  }
+
+  /* ==============================================================
+     ⭐⭐ 15/09/2026 — SẮP XẾP THẺ LỚP BẰNG KÉO-THẢ (thầy chốt)
+
+     Giữ chuột/tay ~450ms trên MỘT thẻ lớp (lớp chính HOẶC khóa học) là vào
+     "chế độ sắp xếp": mọi thẻ (cả hai khu) hiện viền đứt + con trỏ "kéo được",
+     một thanh nổi dưới màn hình hiện Lưu/Hủy. Kéo thẻ đổi chỗ ngay trong khu
+     của nó — ⛔ KHÔNG cho kéo chéo giữa lớp chính ↔ khóa học (kiểm origin lúc
+     dragover, chặn bằng dropEffect='none').
+
+     Lưu = ghi MỘT tài liệu Firestore `dashLopThuTu/mac_dinh` {dsLop, dsKhoa,
+     luc} (đọc/ghi qua REST-free SDK `spDb()` đã có sẵn cho hạn riêng/chat).
+     ⛔ Chưa dán luật Firestore (xem `myLesson-data/tai-lieu/LUAT FIRESTORE CAN
+     DAN (15-09 THEM THU TU LOP).md`) thì bấm Lưu báo "Kho chưa mở khoá…" —
+     kéo-thả trong phiên vẫn xem được, chỉ là không nhớ lại lần sau.
+     Hủy = vẽ lại đúng thứ tự lúc VỪA vào chế độ (SX_LOP_GOC/SX_KHOA_GOC).
+  ============================================================== */
+  var SX_DOC = 'mac_dinh';
+
+  function napThuTuLop() {
+    return spDb().then(function (f) {
+      return f.fs.getDoc(f.fs.doc(f.db, 'dashLopThuTu', SX_DOC));
+    }).then(function (snap) {
+      var d = (snap && snap.exists && snap.exists()) ? snap.data() : null;
+      THU_TU_LOP = { dsLop: (d && d.dsLop) || [], dsKhoa: (d && d.dsKhoa) || [] };
+    })['catch'](function () {
+      // ⛔ Nuốt lỗi y hệt napHanSua(): chưa dán luật/mạng hỏng thì trang vẫn
+      // chạy như chưa từng có tính năng này — xếp theo hạn gần nhất như cũ.
+      THU_TU_LOP = { dsLop: [], dsKhoa: [] };
+    });
+  }
+
+  function ghiThuTuLop(dsLop, dsKhoa) {
+    return spDb().then(function (f) {
+      return f.fs.setDoc(f.fs.doc(f.db, 'dashLopThuTu', SX_DOC),
+        { dsLop: dsLop, dsKhoa: dsKhoa, luc: Date.now() }, { merge: true });
+    }).then(function () {
+      THU_TU_LOP = { dsLop: dsLop, dsKhoa: dsKhoa };
+    });
+  }
+
+  // Đọc thứ tự ĐANG HIỆN trên DOM của một khu (`#lopGrid`/`#khoaGrid`) — dùng cả lúc
+  // vào chế độ (để nhớ SX_*_GOC) lẫn lúc bấm Lưu (để ghi xuống kho).
+  function doiSxDsMa(idGrid) {
+    var hop = document.getElementById(idGrid);
+    if (!hop) return [];
+    return Array.prototype.map.call(
+      hop.querySelectorAll('.lop-btn[data-malop]'),
+      function (el) { return el.dataset.malop; }
+    );
+  }
+
+  function moSapXep() {
+    if (DANG_SAP_XEP) return;
+    DANG_SAP_XEP = true;
+    SX_LOP_GOC = doiSxDsMa('lopGrid');
+    SX_KHOA_GOC = doiSxDsMa('khoaGrid');
+    document.body.classList.add('dang-sap-xep');
+    $$('.lop-btn').forEach(function (el) { el.setAttribute('draggable', 'true'); });
+    var bar = $('#sxBar');
+    if (bar) bar.hidden = false;
+  }
+
+  function dongSapXep() {
+    DANG_SAP_XEP = false;
+    document.body.classList.remove('dang-sap-xep');
+    $$('.lop-btn').forEach(function (el) { el.removeAttribute('draggable'); });
+    var bar = $('#sxBar');
+    if (bar) bar.hidden = true;
+    SX_LOP_GOC = SX_KHOA_GOC = null;
+  }
+
+  function huySapXep() {
+    if (!DANG_SAP_XEP) return;
+    // Vẽ lại từ THU_TU_LOP hiện có (chưa đổi vì Hủy = bỏ mọi kéo-thả trong phiên này)
+    // — đúng bằng thứ tự lúc vừa vào chế độ.
+    dongSapXep();
+    veLopGrid();
+    baoToast('Đã hủy, giữ nguyên thứ tự cũ.');
+  }
+
+  function luuSapXep() {
+    if (!DANG_SAP_XEP) return;
+    var dsLop = doiSxDsMa('lopGrid'), dsKhoa = doiSxDsMa('khoaGrid');
+    var nut = $('#sxLuu');
+    if (nut) nut.disabled = true;
+    ghiThuTuLop(dsLop, dsKhoa).then(function () {
+      dongSapXep();
+      veLopGrid();
+      baoToast('Đã lưu thứ tự — mọi máy sẽ thấy đúng thứ tự này.');
+    })['catch'](function (e) {
+      if (nut) nut.disabled = false;
+      var ma = (e && (e.code || e.message)) || '';
+      baoToast(String(ma).indexOf('permission-denied') >= 0
+        ? loiPhien('Kho chưa mở khoá cho thứ tự lớp')
+        : 'Chưa lưu được thứ tự. Thử lại nhé.');
+    });
+  }
+
+  // ---------- giữ-để-vào-chế-độ (long press) ----------
+  var SX_HEN = null, SX_X0 = 0, SX_Y0 = 0;
+  function sxHuyHen() { clearTimeout(SX_HEN); SX_HEN = null; }
+  function sxBatDauGiu(x, y) {
+    sxHuyHen();
+    SX_X0 = x; SX_Y0 = y;
+    SX_HEN = setTimeout(function () { SX_HEN = null; moSapXep(); }, 450);
+  }
+  function sxDiChuyenGiu(x, y) {
+    if (SX_HEN && (Math.abs(x - SX_X0) > 8 || Math.abs(y - SX_Y0) > 8)) sxHuyHen();
+  }
+
+  // ---------- kéo để đổi chỗ (native HTML5 drag-and-drop) ----------
+  var SX_KEO = null;      // phần tử <.lop-btn> đang kéo
+  var SX_KEO_KHU = null;  // 'lopGrid' | 'khoaGrid' — khu GỐC của phần tử đang kéo
+
+  function sxKhuCua(el) {
+    return el.closest('#lopGrid') ? 'lopGrid' : (el.closest('#khoaGrid') ? 'khoaGrid' : null);
+  }
+
+  document.addEventListener('dragstart', function (e) {
+    var el = e.target.closest('.lop-btn[draggable="true"]');
+    if (!el || !DANG_SAP_XEP) return;
+    SX_KEO = el; SX_KEO_KHU = sxKhuCua(el);
+    el.classList.add('sx-keo');
+    e.dataTransfer.effectAllowed = 'move';
+    try { e.dataTransfer.setData('text/plain', el.dataset.malop || ''); } catch (er) {}
+  });
+  document.addEventListener('dragover', function (e) {
+    if (!DANG_SAP_XEP || !SX_KEO) return;
+    var qua = e.target.closest('.lop-btn');
+    if (!qua || qua === SX_KEO || sxKhuCua(qua) !== SX_KEO_KHU) {
+      // ⛔ Ngoài thẻ, hoặc thẻ này thuộc KHU KHÁC (lớp chính ↔ khóa học) — không cho thả.
+      e.dataTransfer.dropEffect = 'none';
+      return;
+    }
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    var r = qua.getBoundingClientRect();
+    var truoc = (e.clientX - r.left) < r.width / 2;
+    qua.parentNode.insertBefore(SX_KEO, truoc ? qua : qua.nextSibling);
+  });
+  document.addEventListener('dragend', function () {
+    if (SX_KEO) SX_KEO.classList.remove('sx-keo');
+    SX_KEO = null; SX_KEO_KHU = null;
+  });
+  document.addEventListener('drop', function (e) {
+    if (DANG_SAP_XEP) e.preventDefault();
+  });
 
   // ⭐ v1.32.0 — còn lại MỘT hành động icon riêng cho GV trên thẻ lớp (mở
   // đúng mục "sinh nhật" hoặc "lớp" trong sidebar).
@@ -5297,6 +5543,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     $('#ver').textContent = 'web v' + (A.CFG.PHIEN_BAN || '?');
     document.title = 'Trang quản lý · Andrew Classes';
 
+    // ⭐ 15/09/2026 — nạp thứ tự sắp xếp SONG SONG với napDuLieu (không chặn nhau);
+    // trang vẫn vẽ ngay theo thứ tự-theo-hạn quen thuộc, rồi vẽ lại ĐÚNG MỘT LẦN nữa
+    // nếu thứ tự tay kéo về sau (thường về cùng lúc/trước, nên hiếm khi nháy lại).
+    napThuTuLop().then(function () { if (DL.lop.length) veLopGrid(); });
+
     A.napDuLieu().then(function (dl) {
       DL = dl;
       var cu = '';
@@ -5331,9 +5582,37 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (e.target.matches('[data-hs-gio]')) epGio24(e.target);
     });
 
+    // ⭐ 15/09/2026 — GIỮ CHUỘT/TAY ~450ms trên một thẻ lớp để vào chế độ sắp xếp.
+    // Bấm-thả bình thường (chưa đủ 450ms, hoặc di chuyển quá 8px — cuộn trang) thì
+    // huỷ hẹn, thẻ hoạt động y như cũ (chọn lớp/mở sinh nhật…).
+    document.addEventListener('mousedown', function (e) {
+      if (DANG_SAP_XEP) return;              // đang sắp xếp thì mousedown là để KÉO, không phải để MỞ chế độ
+      var el = e.target.closest('.lop-btn');
+      if (el) sxBatDauGiu(e.clientX, e.clientY);
+    });
+    document.addEventListener('mousemove', function (e) { sxDiChuyenGiu(e.clientX, e.clientY); });
+    document.addEventListener('mouseup', sxHuyHen);
+    document.addEventListener('touchstart', function (e) {
+      if (DANG_SAP_XEP) return;
+      var el = e.target.closest('.lop-btn');
+      if (el && e.touches[0]) sxBatDauGiu(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (e.touches[0]) sxDiChuyenGiu(e.touches[0].clientX, e.touches[0].clientY);
+    }, { passive: true });
+    document.addEventListener('touchend', sxHuyHen);
+
     // Bấm ở đâu cũng bắt bằng MỘT tay trên document: mấy khối trên vẽ đi vẽ lại
     // liên tục, gắn listener vào từng nút là mất sạch sau mỗi lần vẽ.
     document.addEventListener('click', function (e) {
+      // ⭐ 15/09/2026 — ĐANG SẮP XẾP thì mọi thao tác TRÊN THẺ LỚP (chọn lớp/mở
+      // sinh nhật/mở kho…) tạm khoá — tránh vừa kéo xong lại lỡ mở nhầm trang.
+      // Nút Lưu/Hủy của thanh sắp xếp KHÔNG đi qua nhánh này (bắt riêng bên dưới).
+      if (DANG_SAP_XEP && e.target.closest('.lop-btn')) return;
+
+      if (e.target.closest('[data-sx-luu]')) return void luuSapXep();
+      if (e.target.closest('[data-sx-huy]')) return void huySapXep();
+
       var lopBtn = e.target.closest('.lb-main[data-lop]');
       if (lopBtn) return void chonLop(lopBtn.dataset.lop);
 
@@ -5591,7 +5870,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       }
     });
 
-    $('#btnMoi').onclick = function () {
+    // ⭐ 15/09/2026 — `#btnMoi` (icon reload thanh đầu) đã bỏ khỏi HTML (thầy chốt).
+    // Giữ tay bắt bọc `if` phòng khi cần bật lại, không xoá hẳn logic đọc lại điểm.
+    if ($('#btnMoi')) $('#btnMoi').onclick = function () {
       $('#btnMoi').disabled = true;
       docDiemCuaCacBai(dsBaiConHanMoiLop(), true).then(function () {
         veTat();

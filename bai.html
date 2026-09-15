@@ -485,8 +485,10 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   background:var(--accent-soft);
   box-shadow:0 0 0 1px var(--line), 0 2px 6px rgba(22,35,42,.05),
              0 7px 20px rgba(22,35,42,.06);
-  transition:transform .44s var(--em)}   /* ⛔ để ở đây, không để trong .sang —
-     đặt trong .sang thì lúc tắt đèn class mất luôn, khung giật về chỗ cũ */
+  transition:transform .44s var(--em), box-shadow .3s var(--em)}
+  /* ⛔ để ở đây, không để trong .sang — đặt trong .sang thì lúc tắt đèn class
+     mất luôn, khung giật về chỗ cũ. v1.109.1: vòng sáng (box-shadow) cũng mờ
+     dần cùng nhịp nền tối. */
 /* Hộp giữ chỗ theo tỉ lệ. `content` rỗng + `display:block` là đủ; nó nằm
    TRONG LUỒNG nên chính nó quyết chiều cao của `.game`. */
 .game::before{content:''; display:block; padding-top:var(--ti-le)}
@@ -623,9 +625,18 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   backdrop-filter:blur(14px); opacity:0; pointer-events:none; transition:opacity .3s var(--em)}
 body.co-den .nen-toi{opacity:1; pointer-events:auto}
 body.co-den{overflow:hidden}          /* khoá cuộn cho khung khỏi trôi */
-.game.sang{z-index:46;
-  box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 30px 80px rgba(0,0,0,.55)}
-.ic-nut.sang{position:relative; z-index:46; background:var(--accent); color:#fff;
+/* ⭐ v1.109.1 (thầy báo 15/09: bật/tắt đèn "giật khựng") — TÁCH HAI CLASS:
+     .sang → CHỈ nâng z-index (đứng trên nền tối);
+     .ro   → phần NHÌN THẤY (vòng sáng, màu nút, tấm nền đầu thẻ) — có transition.
+   Bật: gắn cả hai cùng lúc ⇒ phần nhìn thấy mờ dần LÊN cùng nhịp nền tối (.3s).
+   Tắt: gỡ `.ro` ngay (mờ dần XUỐNG) nhưng GIỮ `.sang` thêm ~460ms (`tatDen`) —
+   trước đây z-index mất tức thì nên khung act/đầu thẻ bị thả xuống DƯỚI nền tối
+   trong lúc nền còn đang tan ⇒ nháy tối một cái rồi mới sáng lại = cái "khựng". */
+.game.sang{z-index:46}
+.game.sang.ro{box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 30px 80px rgba(0,0,0,.55)}
+.ic-nut.sang{position:relative; z-index:46; transition:background .3s var(--em),
+  border-color .3s var(--em), color .3s var(--em), box-shadow .3s var(--em)}
+.ic-nut.sang.ro{background:var(--accent); color:#fff;
   border-color:var(--accent); box-shadow:0 0 0 4px rgba(255,255,255,.35)}
 /* Tên phần + mã lesson nổi trên nền tối, ngay phía trên khung act. */
 .den-nhan{position:fixed; left:0; right:0; z-index:47; text-align:center;
@@ -642,10 +653,15 @@ body.co-den{overflow:hidden}          /* khoá cuộn cho khung khỏi trôi */
    thẳng cử chỉ vuốt). Đầu thẻ vốn trong suốt nên kê một tấm nền `::before`
    (z-index:-1 trong stacking context của chính nó) — chữ tối vẫn đọc được
    trên nền tối. Áp cho MỌI dạng bài (chung một hàm `batDen`). */
-.card-head.sang{position:relative; z-index:46}
-.card-head.sang::before{content:''; position:absolute; inset:-7px -9px; z-index:-1;
-  background:var(--surface); border-radius:12px;
-  box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 20px 50px rgba(0,0,0,.45)}
+/* v1.109.1: tấm nền `::before` LUÔN có sẵn (opacity 0) để transition chạy được
+   — pseudo sinh ra cùng lúc với class thì không có trạng thái cũ để mờ dần từ đó. */
+.card-head{position:relative}
+.card-head::before{content:''; position:absolute; inset:-7px -9px; z-index:-1;
+  background:var(--surface); border-radius:12px; opacity:0; pointer-events:none;
+  box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 20px 50px rgba(0,0,0,.45);
+  transition:opacity .3s var(--em)}
+.card-head.sang{z-index:46}
+.card-head.sang.ro::before{opacity:1}
 body.co-den-dt{touch-action:none; overscroll-behavior:none}
 .den-nhan b{display:block; color:#fff; font-weight:800; font-size:16px;
   letter-spacing:.06em}
@@ -1617,7 +1633,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=86"></script>
+<script src="config.js?v=87"></script>
 <script src="js/chung.js?v=46"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -2033,16 +2049,23 @@ var nhanDen = document.createElement('div');
 nhanDen.className = 'den-nhan';
 document.body.appendChild(nhanDen);
 
-function tatDen(){
+/* v1.109.1 — `ngay === true` (chỉ `batDen` gọi khi chuyển sang thẻ khác): hạ
+   z-index tức thì. Mặc định: gỡ phần nhìn thấy `.ro` ngay để mờ dần, còn `.sang`
+   (z-index) giữ thêm 460ms ≥ transform .44s/nền .3s — xem chú thích CSS `.sang`/`.ro`.
+   ⛔ `$('#nenToi').onclick = tatDen` truyền event vào tham số ⇒ phải so `=== true`. */
+var HEN_TAT_DEN = null;
+function tatDen(ngay){
+  clearTimeout(HEN_TAT_DEN); HEN_TAT_DEN = null;
   document.body.classList.remove('co-den');
   document.body.classList.remove('co-den-dt');
   nhanDen.classList.remove('hien');
   document.querySelectorAll('.game.sang').forEach(function(e){
     e.style.transform = '';
   });
-  document.querySelectorAll('.game.sang,.ic-nut.sang,.card-head.sang').forEach(function(e){
-    e.classList.remove('sang');
-  });
+  var ds = document.querySelectorAll('.game.sang,.ic-nut.sang,.card-head.sang');
+  ds.forEach(function(e){ e.classList.remove('ro'); });
+  function ha(){ ds.forEach(function(e){ e.classList.remove('sang'); }); }
+  if (ngay === true) ha(); else HEN_TAT_DEN = setTimeout(ha, 460);
 }
 
 /* ⭐⭐ v1.109.0 — ĐIỆN THOẠI: đèn KHÔNG bứng khung ra phủ màn nữa (xem chú thích
@@ -2051,7 +2074,7 @@ function tatDen(){
 function batDenDienThoai(khung){
   var the = khung.closest('.card');
   var dau = the ? the.querySelector('.card-head') : null;
-  if (dau) dau.classList.add('sang');
+  if (dau) { dau.classList.add('sang'); dau.classList.add('ro'); }
   var le = 8, vh = window.innerHeight;
   var tren = (dau || khung).getBoundingClientRect().top - (dau ? 7 : 0);
   var duoi = khung.getBoundingClientRect().bottom;
@@ -2095,10 +2118,10 @@ function bayRaGiua(khung){
 }
 
 function batDen(khungGame, nutDen, k){
-  tatDen();
+  tatDen(true);
   document.body.classList.add('co-den');
-  khungGame.classList.add('sang');
-  nutDen.classList.add('sang');
+  khungGame.classList.add('sang'); khungGame.classList.add('ro');
+  nutDen.classList.add('sang');    nutDen.classList.add('ro');
   if (laDienThoai()) { batDenDienThoai(khungGame); return; }   /* v1.109.0 — không nhãn nổi, không phóng */
   /* Đặt chữ TRƯỚC rồi mới tính chỗ: có chữ mới đo được nhãn cao bao nhiêu.
      ⭐ v1.88.0 — bỏ "100% requirement" (`yeuCau`), theo dòng dưới thật của thẻ. */
@@ -2113,7 +2136,8 @@ function batDen(khungGame, nutDen, k){
 /* Kéo giãn cửa sổ lúc đang bật đèn thì tính lại chỗ đứng. */
 window.addEventListener('resize', function(){
   var dangSang = document.querySelector('.game.sang');
-  if (dangSang) bayRaGiua(dangSang);
+  /* v1.109.1: `.sang` còn nán 460ms sau khi tắt — chỉ tính lại khi đèn THẬT SỰ đang bật */
+  if (dangSang && document.body.classList.contains('co-den')) bayRaGiua(dangSang);
 });
 $('#nenToi').onclick = tatDen;
 

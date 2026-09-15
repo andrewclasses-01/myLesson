@@ -102,6 +102,10 @@
 
   function diVao(noi) {
     A.luuEm({ lop: noi.lop.maLop, ten: noi.em.ten, ma: A.chuanMa(noi.em.ma) });
+    // ⭐ v1.112.0 — cờ THEO TAB "đã bấm chọn nơi này": em ≥2 nơi mở tab mới (kể cả mở
+    // thẳng lop/khoa) là không có cờ ⇒ `emDangHoc` trả null ⇒ về đây chọn lại (thầy chốt
+    // 15/09: luôn hỏi khi mở trang, dù đã chọn + đã lưu đăng nhập).
+    A.danhDauDaChon(noi.lop.maLop);
     // Khóa học có trang riêng (dựng theo mẫu v3 thầy đã duyệt); lớp thường như cũ.
     location.href = A.laKhoa(noi.lop) ? 'khoa.html' : 'lop.html';
   }
@@ -118,12 +122,46 @@
   // Đang mở màn chọn thì khoá lại — hai lượt dựng chồng nhau là nút nhân đôi.
   var dangChon = false;
 
+  /* ⭐ v1.111.0 (thầy chốt 15/09/2026, phương án A) — ĐẦU THẺ Ở MÀN CHỌN LÀ EM.
+     Avatar thầy + chữ "Andrew Classes" đổi thành AVATAR EM + TÊN EM, cùng khối
+     `.brand`, cùng cỡ ảnh/chữ ⇒ thẻ không đổi chiều cao, hoạt ảnh tách ô không giật;
+     hạt lấp lánh giữ nguyên (thầy chốt). Ảnh lấy ở nơi LỚP THƯỜNG đầu tiên (khóa học
+     không có thư mục avatar — `assets/avatar/<lớp>/`), không có ảnh thì chữ tắt trên
+     nền màu theo tên (cùng luật `chuTatBong`/`itMau` của bóng bay). Ảnh + chữ mờ đi
+     rồi mới đổi, tránh "nhảy" ảnh giữa chừng.
+     ⛔ Chỉ đổi RUỘT của `.brand-ava`/`.brand-txt`, KHÔNG dời/dựng lại `.brand` — 9 hạt
+     `.spark` sống trong đó, dựng lại là hoạt ảnh reset (bài học v1.8.2). */
+  function doiBrandSangEm(ds) {
+    var brand = $('#btnBrand');
+    var ava = brand.querySelector('.brand-ava');
+    var txt = brand.querySelector('.brand-txt');
+    if (!ava || !txt) return;
+    var noi = null;
+    for (var i = 0; i < ds.length; i++) if (!A.laKhoa(ds[i].lop)) { noi = ds[i]; break; }
+    noi = noi || ds[0];
+    var ten = noi.em.ten;
+    brand.classList.add('doi');
+    setTimeout(function () {
+      brand.classList.add('em-chon');
+      ava.style.background = A.itMau(ten);
+      ava.innerHTML = '<span class="av-chu">' + A.chuAnToan(A.chuTatBong(ten)) + '</span>' +
+        '<img class="av-anh" alt="" src="' +
+        A.chuAnToan(A.avUrl(noi.lop.tenGoc || noi.lop.maLop, ten)) +
+        '" onerror="this.remove()">';
+      txt.textContent = ten;
+      brand.classList.remove('doi');
+    }, 230);
+  }
+
   function moChon(ds) {
     if (dangChon) return;
     dangChon = true;
     var hop = $('#chonDs');
     var wrap = document.querySelector('.id-wrap');
     var nutVao = $('#btnLogin');
+
+    // B0 — đầu thẻ đổi sang avatar + tên em (v1.111.0).
+    doiBrandSangEm(ds);
 
     // B1 — ô "My ID" tách đôi bay sang hai bên; nút SIGN IN mờ tại chỗ.
     wrap.classList.add('tach');
@@ -179,7 +217,15 @@
     // ⭐ v1.78.0 — mã có thể ở NHIỀU NƠI (lớp thường + khóa học, hoặc lớp chính +
     // lớp học bổ sung): hơn một nơi thì cho em chọn, đúng một nơi thì vào thẳng.
     var noi = A.moiNoiTheoMa(DL, go);
-    if (noi.length > 1) { moChon(noi); return; }
+    if (noi.length > 1) {
+      // ⭐ v1.111.0 (thầy chốt 15/09/2026) — gõ mã + SIGN IN là ĐÃ ĐĂNG NHẬP: nhớ
+      // ngay vào máy (`lop:''` = chưa chọn nơi) rồi mới mở màn chọn. Lần sau mở
+      // andrewclasses.com là ra thẳng màn chọn, không phải gõ lại mã. Bản cũ chỉ
+      // nhớ khi em bấm một nơi — em đóng tab giữa chừng là mất phiên.
+      A.luuEm({ lop: '', ten: noi[0].em.ten, ma: A.chuanMa(go) });
+      moChon(noi);
+      return;
+    }
     if (noi.length === 1) { diVao(noi[0]); return; }
 
     // v1.82.0 — HỌC SINH ĐẶC BIỆT: xét SAU mã học sinh thường (không đụng mã lớp
@@ -223,23 +269,24 @@
       // ⭐ v1.78.0 — em có mã ở NHIỀU NƠI thì KHÔNG vào thẳng: thầy chốt "hỏi lại mỗi
       // lần mở trang", và mở andrewclasses.com là ra ngay màn chọn (khỏi gõ mã lại).
       var chonSau = null;
-      var emCu = (!epGo && location.hash !== '#/info') ? A.emDangHoc(dl) : null;
+      // ⭐ v1.111.0 — đọc bản ghi nhớ THÔ (`docNho`) thay vì `emDangHoc`: từ bản này
+      // `emDangHoc` trả null cho em nhiều nơi CHƯA CHỌN (lưu `lop:''` ngay lúc SIGN IN),
+      // mà đúng ca đó lại là ca cần bày màn chọn ở đây. Mã không còn ở đâu (thầy đổi/
+      // xoá) thì rơi xuống màn gõ mã như cũ.
+      var nho = (!epGo && location.hash !== '#/info') ? A.docNho() : null;
       // v1.82.0 — HỌC SINH ĐẶC BIỆT luôn ĐÚNG MỘT nơi (`lop.html`, không bao giờ
       // `khoa.html`) — bỏ qua thẳng phép "nhiều nơi" bên dưới, `moiNoiTheoMa` với mã
       // đặc biệt luôn trả mảng RỖNG nên đi tiếp là `noiCu[0]` ném lỗi (mot undefined).
-      if (emCu && emCu.dacBiet) {
-        location.replace('lop.html');
-        return;
-      }
-      if (emCu) {
-        var noiCu = A.moiNoiTheoMa(dl, emCu.ma);
+      if (nho && nho.ma && nho.dacBiet) {
+        if (A.emDacBietTheoMa(dl, nho.ma)) { location.replace('lop.html'); return; }
+      } else if (nho && nho.ma) {
+        var noiCu = A.moiNoiTheoMa(dl, nho.ma);
         if (noiCu.length > 1) {
           chonSau = noiCu;                 // dựng SAU khi màn đăng nhập đã bày xong
-        } else {
+        } else if (noiCu.length === 1) {
           // ⛔ Một nơi: vẫn phải đi ĐÚNG trang của nơi đó — em nhớ khóa học mà đá về
           // `lop.html` là quay lại đúng lỗi thầy gặp.
-          var mot = noiCu[0];
-          location.replace(mot && A.laKhoa(mot.lop) ? 'khoa.html' : 'lop.html');
+          location.replace(A.laKhoa(noiCu[0].lop) ? 'khoa.html' : 'lop.html');
           return;
         }
       }

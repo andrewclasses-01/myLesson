@@ -490,6 +490,24 @@
 
   function thoat() {
     try { localStorage.removeItem(KHOA_EM); } catch (e) {}
+    try { sessionStorage.removeItem(KHOA_CHON); } catch (e) {}
+  }
+
+  /* ⭐⭐ v1.112.0 (15/09/2026, thầy chốt) — EM Ở ≥2 NƠI: MỖI LẦN MỞ TRANG LÀ MÀN CHỌN,
+     KỂ CẢ KHI ĐÃ CHỌN + ĐÃ LƯU ĐĂNG NHẬP. `index.html` vốn đã hỏi lại (v1.78.0); cửa
+     còn hở là em mở THẲNG `lop.html`/`khoa.html` (bookmark, lịch sử, tab mới) thì vào
+     luôn nơi đã chọn lần trước. Nay nơi đã chọn được ghi thêm vào `sessionStorage`
+     (sống THEO TAB: tab mới/cửa sổ mới là rỗng, chuyển trang trong cùng tab thì còn) —
+     `emDangHoc` ở em ≥2 nơi CHỈ chấp nhận nơi trong `docNho().lop` khi tab này ĐÃ BẤM
+     CHỌN nó; không thì trả null → về `index.html` → màn chọn. Em đúng 1 nơi không đụng gì.
+     ⛔ `?nhu=`/`?gv=` (thầy xem như em) đứng trước đoạn này trong `emDangHoc`, không dính. */
+  var KHOA_CHON = 'mylesson_da_chon';
+  function danhDauDaChon(maLop) {
+    try { sessionStorage.setItem(KHOA_CHON, String(maLop || '')); } catch (e) {}
+  }
+  function daChonTabNay(maLop) {
+    try { return !!maLop && sessionStorage.getItem(KHOA_CHON) === String(maLop); }
+    catch (e) { return false; }
   }
 
   // Trả về { lop, ten, ma, nickname } của em đang mở trang, hoặc null.
@@ -536,7 +554,19 @@
     // đá về lớp thường — chính lỗi thầy gặp 08/09.
     var moiNoi = moiNoiTheoMa(dl, cu.ma);
     if (!moiNoi.length) return null;
-    var thay = noiKhop(moiNoi, cu.lop) || moiNoi[0];
+    var thay = noiKhop(moiNoi, cu.lop);
+    // ⭐ v1.111.0 (15/09/2026, thầy chốt) — gõ mã + SIGN IN là ĐÃ ĐĂNG NHẬP kể cả khi
+    // em còn ở nhiều nơi (`dangnhap.js` lưu `lop:''` rồi mới mở màn chọn). Em NHIỀU
+    // nơi mà CHƯA CHỌN (hoặc nơi đã chọn không còn) thì ở đây trả `null` để lop/khoa
+    // đá về `index.html` — nơi đó đọc `docNho()` và bày màn chọn. ⛔ Không được lùi
+    // về `moiNoi[0]` như bản cũ: mở thẳng `khoa.html` sẽ vẽ lớp thường như một khóa.
+    if (!thay) {
+      if (moiNoi.length > 1) return null;
+      thay = moiNoi[0];
+    }
+    // ⭐⭐ v1.112.0 — em ≥2 nơi: nơi đã lưu chỉ có giá trị trong TAB đã bấm chọn nó
+    // (xem `danhDauDaChon`). Tab mới mở thẳng lop/khoa ⇒ null ⇒ về màn chọn.
+    if (moiNoi.length > 1 && !daChonTabNay(thay.lop.maLop)) return null;
     return { lop: thay.lop.maLop, ten: thay.em.ten, ma: chuanMa(thay.em.ma) };
   }
 
@@ -2492,6 +2522,11 @@
     // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (phụ huynh luyện bài cùng con)
     emDacBietTheoMa: emDacBietTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,
+    // ⭐ v1.111.0 — bản ghi nhớ THÔ (index.html cần biết "máy này nhớ mã nào" ngay cả
+    // khi `emDangHoc` trả null vì em nhiều nơi chưa chọn) + chữ tắt/màu tên cho đầu thẻ
+    docNho: docNho, chuTatBong: chuTatBong, itMau: itMau,
+    // ⭐ v1.112.0 — cờ "tab này đã bấm chọn nơi" (em ≥2 nơi luôn qua màn chọn khi mở trang)
+    danhDauDaChon: danhDauDaChon, daChonTabNay: daChonTabNay,
     giuXemNhuQuery: giuXemNhuQuery,
     bam: bam, laMaQuanLy: laMaQuanLy,
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,

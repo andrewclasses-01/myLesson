@@ -369,12 +369,23 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .st-cho-vien{background:var(--line); border-radius:18px;
   clip-path:polygon(0 0, calc(100% - var(--bat)) 0, 100% 50%,
                     calc(100% - var(--bat)) 100%, 0 100%)}
-.card.st-cho.kh.xong .st-cho-vien{background:#BFE0CC}
 .st-cho-clip{margin:var(--vien); background:#FBFDFC; padding:20px 33px 20px 19px;
   border-radius:17px;
   clip-path:polygon(0 0, calc(100% - var(--bat) + var(--vien)) 0, 100% 50%,
                     calc(100% - var(--bat) + var(--vien)) 100%, 0 100%)}
-.card.st-cho.kh.xong .st-cho-clip{background:#EFFAF3}
+/* ⭐ v1.106.1 (thầy chốt 15/09 chiều) — hai loại thẻ phải KHÁC HẲN NHAU:
+   · CHƯA MỞ KHOÁ: nền đỏ nhạt rõ (không còn trắng), chữ tông đỏ sẫm.
+   · ĐÃ XONG: nền xanh lá ĐẬM hẳn, MỌI chữ đổi sang TRẮNG cho tương phản. */
+.card.st-cho.kh .st-cho-vien{background:#F0B9BB}
+.card.st-cho.kh .st-cho-clip{background:#FBE1E2}
+.card.st-cho.kh .st-nhan{background:#F4C4C6; color:#9E2F33}
+.card.st-cho.kh .st-cho-act{color:#7A3B3E}
+.card.st-cho.kh.xong .st-cho-vien{background:#0E7C3F}
+.card.st-cho.kh.xong .st-cho-clip{background:linear-gradient(135deg,#12934B,#1FB160)}
+.card.st-cho.kh.xong .st-nhan{background:rgba(255,255,255,.22); color:#fff}
+.card.st-cho.kh.xong .st-kq-o{color:#fff}
+.card.st-cho.kh.xong .st-kq-sep{background:rgba(255,255,255,.6)}
+.card.st-cho.kh.xong .st-trang.xong{color:#fff}
 .card.st-cho.kh .st-cho-chu{flex-direction:column; align-items:flex-start; gap:6px}
 /* tên bài được XUỐNG DÒNG (bản gốc nowrap ⇒ trên điện thoại chữ tràn đè lên chữ
    trạng thái — đo thật 375px khi build v1.106.0) */
@@ -387,7 +398,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .card.st-cho.kh .st-cho-chu{grid-column:1 / -1}
   .card.st-cho.kh .st-trang{grid-row:1; grid-column:2; justify-self:end}
 }
-.card.st-cho.kh.xong .st-cho-act{color:var(--ink)}
+.card.st-cho.kh.xong .st-cho-act{color:#fff}
 .card.st-cho.kh.xong{cursor:pointer}
 .st-trang{flex:none; display:flex; align-items:center; gap:6px; font-size:12px;
   font-weight:800; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap}
@@ -1580,7 +1591,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=81"></script>
+<script src="config.js?v=82"></script>
 <script src="js/chung.js?v=46"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->

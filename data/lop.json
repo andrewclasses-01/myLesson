@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-14 21:49:41",
+  "capNhat": "2026-09-15 19:34:34",
   "nguon": "myStudent",
   "lop": [
     {
@@ -133,12 +133,6 @@
           "sinhNhat": ""
         },
         {
-          "id": 86,
-          "ten": "BEN",
-          "ma": "NGUYENDUCBINH16042014",
-          "sinhNhat": ""
-        },
-        {
           "id": 73,
           "ten": "CẨM ANH",
           "ma": "DOANCAMANH12012016",
@@ -148,6 +142,12 @@
           "id": 83,
           "ten": "CHÍ THÀNH",
           "ma": "TACHITHANH21042015",
+          "sinhNhat": ""
+        },
+        {
+          "id": 86,
+          "ten": "ĐỨC BÌNH",
+          "ma": "NGUYENDUCBINH16042014",
           "sinhNhat": ""
         },
         {
@@ -771,12 +771,6 @@
           "sinhNhat": ""
         },
         {
-          "id": 128,
-          "ten": "BENTLY",
-          "ma": "PHAMHAIBINH19102011",
-          "sinhNhat": ""
-        },
-        {
           "id": 117,
           "ten": "BÌNH MINH",
           "ma": "PHAMBINHMINH18122011",
@@ -792,6 +786,12 @@
           "id": 148,
           "ten": "HÀ VY",
           "ma": "TRANHAVY24012011",
+          "sinhNhat": ""
+        },
+        {
+          "id": 128,
+          "ten": "HẢI BÌNH",
+          "ma": "PHAMHAIBINH19102011",
           "sinhNhat": ""
         },
         {

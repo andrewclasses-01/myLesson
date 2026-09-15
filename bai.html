@@ -345,6 +345,62 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 @media (prefers-reduced-motion: reduce){
   .st-khuc.dang,.st-khuc.ket,.st-cho-tt.ai .ten-cham{animation:none}
 }
+
+/* ⭐⭐ v1.106.0 (15/09/2026, thầy duyệt mẫu `MAU THE BAI TAP KHOA HOC v4`) — THẺ
+   BÀI TẬP KHÓA HỌC ở hai trạng thái TĨNH (chưa mở khoá · đã xong đủ điểm):
+   · cả thẻ VÁT NHẸ một góc tù ở cạnh phải (--bat 20px trên thẻ cao ~80-95px —
+     chỉ hớt khoé, không nhọn thành mũi tên);
+   · viền + nền + bóng KHỚP Y thẻ thường (viền 1px --line, nền #FBFDFC, bóng
+     --shadow) — nhưng clip-path CẮT MẤT box-shadow lẫn border, nên xếp BA LỚP:
+       .card.st-cho.kh   → chỉ giữ bóng (filter:drop-shadow, đặt NGOÀI lớp cắt
+                           kẻo bóng cũng bị cắt — thứ tự spec: filter rồi mới clip)
+       .st-cho-vien      → tô MÀU VIỀN, cắt clip-path to, bo 18px
+       .st-cho-clip      → thụt vào 1px, tô NỀN thật, cắt clip-path nhỏ hơn đúng
+                           1px ⇒ hở ra một viền 1px đều khắp, KỂ CẢ cạnh vát.
+     Góc TRÁI vẫn bo tròn vì điểm polygon đặt đúng tại (0,0)/(0,100%) — border-
+     radius của box thắng ở đó, chỉ góc PHẢI mới bị vát.
+   · chữ trạng thái CHỈ LÀ CHỮ MÀU trơn (`.st-trang`), không còn nút `.st-cho-tt`;
+   · thẻ ĐÃ XONG: nền xanh lá TĨNH (thầy bỏ nháy hào quang) + dòng kết quả
+     (số câu đúng/tổng · thời gian) ngay dưới tên bài.
+   ⛔ Chỉ áp cho `.kh` (khóa học) — thẻ chờ STAGE dùng chung `.st-cho` KHÔNG đổi. */
+.card.st-cho.kh{padding:0; border:0; background:transparent; box-shadow:none;
+  --bat:20px; --vien:1px;
+  filter:drop-shadow(0 1px 3px rgba(22,35,42,.07)) drop-shadow(0 8px 24px rgba(22,35,42,.06))}
+.st-cho-vien{background:var(--line); border-radius:18px;
+  clip-path:polygon(0 0, calc(100% - var(--bat)) 0, 100% 50%,
+                    calc(100% - var(--bat)) 100%, 0 100%)}
+.card.st-cho.kh.xong .st-cho-vien{background:#BFE0CC}
+.st-cho-clip{margin:var(--vien); background:#FBFDFC; padding:20px 33px 20px 19px;
+  border-radius:17px;
+  clip-path:polygon(0 0, calc(100% - var(--bat) + var(--vien)) 0, 100% 50%,
+                    calc(100% - var(--bat) + var(--vien)) 100%, 0 100%)}
+.card.st-cho.kh.xong .st-cho-clip{background:#EFFAF3}
+.card.st-cho.kh .st-cho-chu{flex-direction:column; align-items:flex-start; gap:6px}
+/* tên bài được XUỐNG DÒNG (bản gốc nowrap ⇒ trên điện thoại chữ tràn đè lên chữ
+   trạng thái — đo thật 375px khi build v1.106.0) */
+.card.st-cho.kh .st-cho-act{white-space:normal}
+/* Điện thoại: nhãn + chữ trạng thái chung HÀNG TRÊN, tên bài + kết quả xuống
+   HÀNG DƯỚI trải hết bề ngang — đo 375px thấy tên bài bị ép còn một từ/dòng
+   khi ba thứ chen một hàng. */
+@media (max-width:620px){
+  .card.st-cho.kh .st-cho-hang{display:grid; grid-template-columns:auto 1fr; gap:10px 12px}
+  .card.st-cho.kh .st-cho-chu{grid-column:1 / -1}
+  .card.st-cho.kh .st-trang{grid-row:1; grid-column:2; justify-self:end}
+}
+.card.st-cho.kh.xong .st-cho-act{color:var(--ink)}
+.card.st-cho.kh.xong{cursor:pointer}
+.st-trang{flex:none; display:flex; align-items:center; gap:6px; font-size:12px;
+  font-weight:800; letter-spacing:.05em; text-transform:uppercase; white-space:nowrap}
+.st-trang svg{width:15px; height:15px; stroke:currentColor; stroke-width:2.4; fill:none;
+  stroke-linecap:round; stroke-linejoin:round}
+.st-trang.khoa{color:#C23F44}
+.st-trang.xong{color:#0E7C4E}
+.st-ketqua{display:flex; align-items:center; gap:16px; flex-wrap:wrap}
+.st-kq-o{display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:700; color:#2C6B4A}
+.st-kq-o svg{width:16px; height:16px; stroke:currentColor; stroke-width:2.3; fill:none;
+  stroke-linecap:round; stroke-linejoin:round}
+.st-kq-o b{font-variant-numeric:tabular-nums; font-size:15px; font-weight:800}
+.st-kq-sep{width:4px; height:4px; border-radius:50%; background:#9DC9AE}
 /* position:relative để pop-up TỪ ĐIỂN neo được vào thẻ (đợt 8). Không đặt
    z-index ở đây kẻo thành stacking context — hỏng bóng đèn (bẫy 33). */
 .card{position:relative; background:var(--surface); border:1px solid var(--line);
@@ -1524,7 +1580,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=80"></script>
+<script src="config.js?v=81"></script>
 <script src="js/chung.js?v=46"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3608,20 +3664,68 @@ function veNhanDoanKhoa(d){
 // chốt xem ảnh mẫu: nhãn ngắn bên trái, tên thật ở giữa, pill đỏ "ĐANG CHỜ: …"
 // bên phải — tái dùng NGUYÊN CSS `.st-cho-hang`/`.st-nhan`/`.st-cho-tt.ai`,
 // không định nghĩa lớp mới nào.
+// ⭐ v1.106.0 (15/09/2026) — bọc 3 lớp `.st-cho-vien` > `.st-cho-clip` (cả thẻ
+// vát góc phải, xem chú thích CSS `.card.st-cho.kh`); chữ "CHƯA MỞ KHOÁ" thành
+// chữ trơn `.st-trang`, không còn nút `.st-cho-tt.ai` + nháy `ten-cham` nữa.
 function veTheChoKhoa(x, so){
   var sec = document.createElement('section');
-  sec.className = 'card st-cho';
+  sec.className = 'card st-cho kh';
   sec.setAttribute('data-btid', x.id);
   var nhan = NHAN_BT_KHOA[x.id] || ('BÀI TẬP ' + so);
   sec.innerHTML =
-    '<div class="st-cho-hang">' +
+    '<div class="st-cho-vien"><div class="st-cho-clip"><div class="st-cho-hang">' +
       '<span class="st-nhan">' + chuAnToan(nhan) + '</span>' +
       '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(tenThatBtKhoa(x)) + '</span></div>' +
       // ⭐ 13/09/2026 (thầy chốt) — BỎ câu lý do riêng từng thẻ, dùng chung
       // MỘT chữ "CHƯA MỞ KHOÁ" cho mọi bài tập chưa tới lượt (đơn giản, dễ đọc
       // hơn — chi tiết "vì sao" đã có đủ ở khung player phía trên rồi).
-      '<div class="st-cho-tt ai">' + IC_KHOA_KHOA + '<b class="ten-cham">Chưa mở khoá</b></div>' +
+      '<span class="st-trang khoa">' + IC_KHOA_KHOA + 'Chưa mở khoá</span>' +
+    '</div></div></div>';
+  return sec;
+}
+
+// ⭐⭐ v1.106.0 (15/09/2026, thầy chốt) — THẺ ĐÃ XONG (đủ điểm tối đa) ĐỨNG NGUYÊN
+// TẠI CHỖ thay vì ẩn khỏi trang như bản 13/09: nền xanh lá tĩnh, dòng kết quả
+// [số câu đúng/tổng · thời gian] + chữ "COMPLETED". Số liệu lấy từ CHÍNH
+// `DIEM[x.ma]` đã đọc sẵn (bản gộp tốt nhất mỗi em — `gopTotNhat` bên chung.js:
+// `tho.diem`/`tho.tong` = điểm thô/mẫu số thật, `giay` = thời gian lượt đó),
+// không tốn thêm lượt đọc nào. Bấm thẻ → pop-up làm lại cho vui (như bấm khúc
+// ✓ trên thanh tiến trình). ⛔ Trạng thái "xong" vẫn là `TT_KHOA.xongB` (đủ điểm
+// tối đa theo `A.xongAct`) — chưa đủ điểm thì thẻ này KHÔNG xuất hiện, trang vẫn
+// hiện khung act READY thật như cũ.
+function ketQuaCuaToiKhoa(ma){
+  var ds = DIEM[ma] || [];
+  for (var i = 0; i < ds.length; i++) {
+    if (A.khoaTen(ds[i].ten) === A.khoaTen(TOI)) return ds[i];
+  }
+  return null;
+}
+var IC_TICK_KHOA = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+var IC_GIO_KHOA = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>';
+function veTheXongKhoa(x, so){
+  var sec = document.createElement('section');
+  sec.className = 'card st-cho kh xong';
+  sec.setAttribute('data-btid', x.id);
+  var nhan = NHAN_BT_KHOA[x.id] || ('BÀI TẬP ' + so);
+  var kq = x.ma ? ketQuaCuaToiKhoa(x.ma) : null;
+  var tho = (kq && kq.tho) || {};
+  var diemChu = (tho.tong > 0) ? (Math.round(tho.diem) + '/' + tho.tong) : '';
+  var gioChu = (kq && kq.giay > 0) ? chuGiay(kq.giay) : '';
+  var ketQua = '';
+  if (diemChu || gioChu) {
+    ketQua = '<div class="st-ketqua">' +
+      (diemChu ? '<div class="st-kq-o">' + IC_TICK_KHOA + '<b>' + chuAnToan(diemChu) + '</b>&nbsp;câu đúng</div>' : '') +
+      (diemChu && gioChu ? '<span class="st-kq-sep"></span>' : '') +
+      (gioChu ? '<div class="st-kq-o">' + IC_GIO_KHOA + '<b>' + chuAnToan(gioChu) + '</b></div>' : '') +
     '</div>';
+  }
+  sec.innerHTML =
+    '<div class="st-cho-vien"><div class="st-cho-clip"><div class="st-cho-hang">' +
+      '<span class="st-nhan">' + chuAnToan(nhan) + '</span>' +
+      '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(tenThatBtKhoa(x)) + '</span>' + ketQua + '</div>' +
+      '<span class="st-trang xong">' + IC_TICK_KHOA + 'Completed</span>' +
+    '</div></div></div>';
+  sec.onclick = function(){ moBtPopupKhoa(x); };
   return sec;
 }
 
@@ -3652,9 +3756,16 @@ function veTheChoGiaoKhoa(x, so){
 }
 
 function dungTheBtKhoa(x, so, TT){
+  if (TT.xongB[x.id]) return veTheXongKhoa(x, so);   // v1.106.0 — xong thì thẻ xanh, không ẩn
   if (!TT.moB[x.id]) return veTheChoKhoa(x, so);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
   if (!x.ma) return veTheChoGiaoKhoa(x, so);
+  return dungTheActKhoa(x, so);
+}
+// Khung act THẬT (bìa READY + game AWord) — tách riêng (v1.106.0) vì pop-up
+// "làm lại cho vui" cần đúng khung này kể cả khi bài đã xong (`dungTheBtKhoa`
+// lúc đó trả thẻ xanh, mà thẻ xanh bấm vào lại mở pop-up ⇒ vòng lặp).
+function dungTheActKhoa(x, so){
   var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma }, so);
   sec.setAttribute('data-btid', x.id);
   // ⭐ 13/09/2026 — nhãn ngắn ("BÀI TẬP N") lên tiêu đề chính, tên thật (bỏ
@@ -3873,7 +3984,11 @@ function moBtPopupKhoa(x){
   var idx = (BAI.bt || []).indexOf(x);
   var body = $('#vkBtPopupBody');
   body.innerHTML = '';
-  body.appendChild(dungTheBtKhoa(x, idx + 1, TT_KHOA));
+  // v1.106.0 — luôn là khung act thật; gỡ data-btid kẻo `capNhatSauKhiDoiKhoa`
+  // querySelector nhầm sang bản trong pop-up thay vì thẻ trên trang.
+  var khung = dungTheActKhoa(x, idx + 1);
+  khung.removeAttribute('data-btid');
+  body.appendChild(khung);
   $('#vkBtBackdrop').classList.add('hien');
   $('#vkBtPopup').classList.add('hien');
 }
@@ -3899,18 +4014,19 @@ function capNhatSauKhiDoiKhoa(){
   veThanhBtKhoa();
   (BAI.bt || []).forEach(function(x, i){
     var cu = document.querySelector('.card[data-btid="' + x.id.replace(/[^A-Za-z0-9_-]/g, '') + '"]');
-    // ⭐ Vừa xong (đủ điểm) — ẨN HẲN khỏi trang chính, xem lại qua pop-up trên
-    // thanh tiến trình (không còn quan trọng, "làm chơi thôi").
-    if (TT_KHOA.xongB[x.id]) {
-      if (cu && cu.parentNode) cu.parentNode.removeChild(cu);
-      return;
-    }
-    var nenKhoa = !TT_KHOA.moB[x.id];
-    var daKhoa = !cu || cu.classList.contains('st-cho');
-    // Còn khoá y như cũ (hoặc đã mở và ĐANG chơi dở — đừng đập card đang mở
-    // chỉ vì tính lại) -> giữ nguyên, chỉ đập khi trạng thái khoá THẬT SỰ đổi.
-    if (cu && daKhoa === nenKhoa) return;
+    // ⭐ v1.106.0 — ba trạng thái thẻ: 'xong' (thẻ xanh đứng tại chỗ — bản 13/09
+    // từng ẨN HẲN, thầy đổi ý 15/09) · 'khoa' (thẻ chờ) · 'mo' (khung act thật).
+    // Thẻ đang đúng trạng thái -> giữ nguyên (đừng đập khung act đang chơi dở
+    // chỉ vì tính lại); chỉ đập khi trạng thái THẬT SỰ đổi.
+    var muon = TT_KHOA.xongB[x.id] ? 'xong' : (TT_KHOA.moB[x.id] ? 'mo' : 'khoa');
+    var dang = !cu ? '' : (cu.classList.contains('xong') ? 'xong'
+                : (cu.classList.contains('st-cho') ? 'khoa' : 'mo'));
+    // Thẻ xanh thì vẽ lại luôn (tĩnh, không mất gì) — để số câu/thời gian cập
+    // nhật khi em làm lại trong pop-up mà lên điểm/nhanh hơn.
+    if (cu && dang === muon && muon !== 'xong') return;
     var moi = dungTheBtKhoa(x, i + 1, TT_KHOA);
+    // (hàm này chạy 2 lần/giây lúc phát video — thẻ xanh không đổi chữ thì thôi)
+    if (cu && dang === 'xong' && muon === 'xong' && cu.innerHTML === moi.innerHTML) return;
     if (cu && cu.parentNode) cu.parentNode.replaceChild(moi, cu);
   });
   canhLb();
@@ -4045,15 +4161,14 @@ function veCacPhanKhoa(hop){
     moVideoKhoa(bg);
   }
   // ⭐ 13/09/2026 — vạch nét đứt phân cách bài giảng ‖ bài tập, rồi tới các thẻ
-  // bài tập: BÀI TẬP nào đã XONG thì bỏ qua hẳn (ẩn khỏi trang, xem lại qua
-  // pop-up từ thanh tiến trình — xem `veThanhBtKhoa`).
+  // bài tập. v1.106.0: BÀI TẬP đã XONG cũng vẽ (thẻ xanh `veTheXongKhoa`) —
+  // không ẩn nữa; pop-up làm lại vẫn mở được từ chính thẻ lẫn thanh tiến trình.
   if ((BAI.bt || []).length) {
     var vach = document.createElement('div');
     vach.className = 'vk-divider';
     hop.appendChild(vach);
   }
   (BAI.bt || []).forEach(function(x, i){
-    if (TT_KHOA.xongB[x.id]) return;
     hop.appendChild(dungTheBtKhoa(x, i + 1, TT_KHOA));
   });
   canhLb();

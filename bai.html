@@ -1434,21 +1434,33 @@ body.mo-menu .side.trai{transform:none}
 /* vạch phân cách bài giảng ‖ bài tập (thầy chốt 13/09/2026) */
 .vk-divider{border:0; border-top:1px dashed var(--line); height:0; margin:0}
 
-/* pop-up "làm lại cho vui" khi bấm một khúc ĐÃ XONG trên thanh tiến trình —
-   trượt xuống giữa màn, nền dim+mờ. Nội dung là CHÍNH thẻ act thật, không vẽ
-   lại gì khác. */
-.vk-bt-backdrop{position:fixed; inset:0; background:rgba(10,20,20,.5); backdrop-filter:blur(5px); z-index:60;
-  opacity:0; pointer-events:none; transition:opacity .25s}
-.vk-bt-backdrop.hien{opacity:1; pointer-events:auto}
-.vk-bt-popup{position:fixed; left:50%; top:50%; width:min(720px,92vw); max-height:calc(100vh - 100px);
-  overflow:auto; z-index:61; opacity:0; pointer-events:none;
-  transform:translate(-50%,-58%) scale(.97); transition:opacity .25s, transform .25s var(--em)}
-.vk-bt-popup.hien{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
-.vk-bt-popup-head{display:flex; align-items:center; justify-content:space-between; padding:0 2px 10px;
-  color:#fff; font-weight:800; font-size:12px; letter-spacing:.05em; text-transform:uppercase}
-.vk-bt-popup-close{width:28px; height:28px; border-radius:8px; background:rgba(255,255,255,.16); color:#fff;
-  display:flex; align-items:center; justify-content:center; cursor:pointer; flex:none}
-.vk-bt-popup-close:hover{background:rgba(255,255,255,.3)}
+/* ⭐ v1.107.0 (15/09/2026) — bấm khúc trên thanh tiến trình: CUỘN TỚI thẻ + nháy
+   một nhịp (KHÔNG mở pop-up nữa — pop-up "làm lại cho vui" đã bỏ, xem lý do ở
+   `nhayTheKhoa`/`veThanhBtKhoa`). Thẻ đích có thể là BỐN kiểu khác hẳn nhau
+   (`.st-cho.kh` khoá/xong dùng clip-path · `.card` act thật của `veKhoi` ·
+   sách · chưa giao) — dùng LỚP PHỦ `::after` mờ dần thay vì `filter`/box-shadow
+   để MỘT công thức chạy được trên mọi kiểu; `nhayTheKhoa` tự chọn đúng phần tử
+   mang hình dạng thật (`.st-cho-vien` nếu có — clip-path ở đó tự cắt lớp phủ
+   theo đúng góc vát, khỏi lộ ra ngoài) để gắn class `.nhay`. */
+.nhay{position:relative}
+.nhay::after{content:''; position:absolute; inset:0; z-index:5; pointer-events:none;
+  border-radius:inherit; background:var(--accent); opacity:0;
+  animation:nhay-the-khoa .8s ease-out}
+@keyframes nhay-the-khoa{
+  0%,100%{opacity:0}
+  28%    {opacity:.24}
+}
+@media (prefers-reduced-motion: reduce){ .nhay::after{animation:none} }
+
+/* ⭐ v1.107.0 — thẻ ĐÃ XONG bấm vào: "đẩy ra" thành khung act thật (READY +
+   leaderboard) NGAY TẠI CHỖ thay thế thẻ xanh (không phải pop-up nữa) — lớn
+   dần từ trên xuống, mô phỏng cảm giác "trồi ra" từ đúng vị trí thẻ cũ. */
+@keyframes mo-rong-tu-the-khoa{
+  from{transform:scaleY(.1); transform-origin:top; opacity:.35}
+  to  {transform:scaleY(1); transform-origin:top; opacity:1}
+}
+.card.act-mo-rong-khoa{animation:mo-rong-tu-the-khoa .38s var(--em)}
+@media (prefers-reduced-motion: reduce){ .card.act-mo-rong-khoa{animation:none} }
 
 /* chế độ tập trung (đèn) — phóng to cả thẻ BÀI GIẢNG ra giữa màn hình, làm tối phần còn lại */
 .vk-backdrop{position:fixed; inset:0; background:rgba(10,20,20,.55); backdrop-filter:blur(4px); z-index:100;
@@ -1591,7 +1603,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=82"></script>
+<script src="config.js?v=83"></script>
 <script src="js/chung.js?v=46"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3736,8 +3748,23 @@ function veTheXongKhoa(x, so){
       '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(tenThatBtKhoa(x)) + '</span>' + ketQua + '</div>' +
       '<span class="st-trang xong">' + IC_TICK_KHOA + 'Completed</span>' +
     '</div></div></div>';
-  sec.onclick = function(){ moBtPopupKhoa(x); };
+  // ⭐ v1.107.0 (thầy chốt 15/09) — bấm thẻ xanh: KHÔNG mở pop-up nữa, thay bằng
+  // "đẩy ra" khung act thật (READY + leaderboard) NGAY TẠI CHỖ, thẻ xanh biến
+  // mất luôn (thay thế trong DOM, không phải lớp phủ) — xem `moRongTheXongKhoa`.
+  sec.onclick = function(){ moRongTheXongKhoa(x, so, sec); };
   return sec;
+}
+
+// Nhớ NHỮNG BÀI đã bấm mở rộng (chỉ sống trong bộ nhớ trang — tải lại trang là
+// mất, tự thu lại thành thẻ, đúng ý thầy). `dungTheBtKhoa`/`capNhatSauKhiDoiKhoa`
+// đều tra bảng này TRƯỚC khi quyết định vẽ thẻ xanh hay khung act thật, để mở
+// tiếp bài khác không đụng tới các khung đã mở trước đó.
+var MO_ROI_KHOA = {};
+function moRongTheXongKhoa(x, so, theCu){
+  MO_ROI_KHOA[x.id] = true;
+  var khung = dungTheActKhoa(x, so);
+  khung.classList.add('act-mo-rong-khoa');
+  if (theCu && theCu.parentNode) theCu.parentNode.replaceChild(khung, theCu);
 }
 
 function veTheSachKhoa(x, so){
@@ -3767,6 +3794,10 @@ function veTheChoGiaoKhoa(x, so){
 }
 
 function dungTheBtKhoa(x, so, TT){
+  // v1.107.0 — đã bấm mở rộng thì LUÔN là khung act thật (đừng thu lại thành
+  // thẻ xanh chỉ vì tính lại đường đi — thầy chốt "mở tiếp bài khác thì khung
+  // đã mở vẫn còn nguyên, chỉ tải lại trang mới thu về thẻ").
+  if (MO_ROI_KHOA[x.id]) return dungTheActKhoa(x, so);
   if (TT.xongB[x.id]) return veTheXongKhoa(x, so);   // v1.106.0 — xong thì thẻ xanh, không ẩn
   if (!TT.moB[x.id]) return veTheChoKhoa(x, so);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
@@ -3939,12 +3970,26 @@ function tinhNhanBtKhoa(){
     NHAN_BT_KHOA[x.id] = nhanBtKhoa(x, demBt);
   });
 }
+// ⭐ v1.107.0 (thầy chốt 15/09) — bấm bất kỳ khúc nào trên thanh tiến trình:
+// CUỘN TỚI đúng thẻ + NHÁY một nhịp để biết thẻ nào (không phân biệt xong/khoá/
+// mở nữa — thẻ xong giờ ĐỨNG NGUYÊN tại chỗ, không cần pop-up riêng để xem).
+function nhayTheKhoa(el){
+  // `.st-cho.kh` (khoá/xong) đặt hình dạng thật (kể cả góc vát) ở con
+  // `.st-cho-vien`, không phải ở chính `.card` — gắn `.nhay` NHẦM chỗ thì lớp
+  // phủ vẽ ra hình chữ nhật trần, lộ ra ngoài góc vát.
+  var muc = el.querySelector('.st-cho-vien') || el;
+  muc.classList.remove('nhay');
+  void muc.offsetWidth;               // reflow — bấm liên tiếp vẫn nháy lại được
+  muc.classList.add('nhay');
+  muc.addEventListener('animationend', function xong(){
+    muc.classList.remove('nhay');
+    muc.removeEventListener('animationend', xong);
+  });
+}
 // Chỉ MỘT khúc được "đang chú ý" tại một thời điểm: đi từ đầu, khúc CHƯA XONG
 // đầu tiên gặp phải mới tô màu (đỏ nếu còn khoá — `ket`, xanh dương nếu đã mở
 // mà chưa làm — `dang`); mọi khúc SAU nó, dù cũng đang khoá, chỉ để xám (`xa`)
-// — tránh "cả dàn cùng đỏ" gây rối mắt. Khúc đã xong luôn `xong` (xanh lá),
-// bấm vào khúc đã xong thì mở POP-UP "làm lại cho vui" (thẻ đó đã ẨN khỏi
-// trang), khúc chưa xong thì cuộn tới đúng thẻ.
+// — tránh "cả dàn cùng đỏ" gây rối mắt. Khúc đã xong luôn `xong` (xanh lá).
 function veThanhBtKhoa(){
   var hop = $('#thanhBtKhoa');
   if (!hop) return;
@@ -3962,51 +4007,12 @@ function veThanhBtKhoa(){
   hop.querySelectorAll('.st-khuc').forEach(function(btn){
     btn.onclick = function(){
       var id = btn.getAttribute('data-btid').replace(/[^A-Za-z0-9_-]/g, '');
-      var x = (BAI.bt || []).find(function(b){ return b.id === id; });
-      if (x && TT_KHOA.xongB[x.id]) { moBtPopupKhoa(x); return; }
       var el = document.querySelector('.card[data-btid="' + id + '"]');
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      nhayTheKhoa(el);
     };
   });
-}
-
-// ⭐ 13/09/2026 — pop-up "làm lại cho vui" khi bấm một khúc ĐÃ XONG trên thanh
-// tiến trình: bài đó đã ẨN khỏi trang chính (không còn quan trọng), bấm mới
-// hiện — dựng lại ĐÚNG thẻ act thật qua `dungTheBtKhoa` (không vẽ riêng gì
-// khác), trượt vào giữa màn, nền dim+mờ.
-function chuanBiBtPopupKhoa(){
-  if ($('#vkBtBackdrop')) return;
-  var nen = document.createElement('div');
-  nen.id = 'vkBtBackdrop';
-  nen.className = 'vk-bt-backdrop';
-  nen.onclick = dongBtPopupKhoa;
-  document.body.appendChild(nen);
-  var popup = document.createElement('div');
-  popup.id = 'vkBtPopup';
-  popup.className = 'vk-bt-popup';
-  popup.innerHTML = '<div class="vk-bt-popup-head"><span>Đã xong — làm lại cho vui</span>' +
-    '<div class="vk-bt-popup-close" id="vkBtPopupClose">✕</div></div>' +
-    '<div class="vk-bt-popup-body" id="vkBtPopupBody"></div>';
-  document.body.appendChild(popup);
-  $('#vkBtPopupClose').onclick = dongBtPopupKhoa;
-}
-function moBtPopupKhoa(x){
-  chuanBiBtPopupKhoa();
-  var idx = (BAI.bt || []).indexOf(x);
-  var body = $('#vkBtPopupBody');
-  body.innerHTML = '';
-  // v1.106.0 — luôn là khung act thật; gỡ data-btid kẻo `capNhatSauKhiDoiKhoa`
-  // querySelector nhầm sang bản trong pop-up thay vì thẻ trên trang.
-  var khung = dungTheActKhoa(x, idx + 1);
-  khung.removeAttribute('data-btid');
-  body.appendChild(khung);
-  $('#vkBtBackdrop').classList.add('hien');
-  $('#vkBtPopup').classList.add('hien');
-}
-function dongBtPopupKhoa(){
-  var nen = $('#vkBtBackdrop'), popup = $('#vkBtPopup');
-  if (nen) nen.classList.remove('hien');
-  if (popup) popup.classList.remove('hien');
 }
 
 // Đường đi vừa đổi (đoạn vừa cộng thêm giây xem HOẶC điểm act mới về) — tính
@@ -4029,7 +4035,10 @@ function capNhatSauKhiDoiKhoa(){
     // từng ẨN HẲN, thầy đổi ý 15/09) · 'khoa' (thẻ chờ) · 'mo' (khung act thật).
     // Thẻ đang đúng trạng thái -> giữ nguyên (đừng đập khung act đang chơi dở
     // chỉ vì tính lại); chỉ đập khi trạng thái THẬT SỰ đổi.
-    var muon = TT_KHOA.xongB[x.id] ? 'xong' : (TT_KHOA.moB[x.id] ? 'mo' : 'khoa');
+    // ⭐ v1.107.0 — đã bấm "mở rộng" (`MO_ROI_KHOA`) thì LUÔN coi là 'mo', dù
+    // `xongB` mãi mãi vẫn true — không thì hàm này (chạy 2 lần/giây lúc phát
+    // video) sẽ thu khung act vừa mở lại về thẻ xanh ngay nhịp kế tiếp.
+    var muon = MO_ROI_KHOA[x.id] ? 'mo' : (TT_KHOA.xongB[x.id] ? 'xong' : (TT_KHOA.moB[x.id] ? 'mo' : 'khoa'));
     var dang = !cu ? '' : (cu.classList.contains('xong') ? 'xong'
                 : (cu.classList.contains('st-cho') ? 'khoa' : 'mo'));
     // Thẻ xanh thì vẽ lại luôn (tĩnh, không mất gì) — để số câu/thời gian cập

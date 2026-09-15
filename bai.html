@@ -397,6 +397,16 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .card.st-cho.kh .st-cho-hang{display:grid; grid-template-columns:auto 1fr; gap:10px 12px}
   .card.st-cho.kh .st-cho-chu{grid-column:1 / -1}
   .card.st-cho.kh .st-trang{grid-row:1; grid-column:2; justify-self:end}
+  /* ⭐ v1.109.0 (thầy chốt 15/09 chiều, xem ảnh iPhone) — HÀNG DƯỚI CĂN GIỮA +
+     tên bài ĐÚNG MỘT DÒNG: cỡ chữ do JS `canhTenTheKhoaDT` ĐO rồi co tới khi
+     vừa (đặt vào biến `--co-ten` trên chính thẻ — KHÔNG ghi inline vào span,
+     vì `capNhatSauKhiDoiKhoa` so `innerHTML` thẻ cũ/mới 2 lần/giây để quyết
+     có vẽ lại hay không; ghi vào span là thẻ bị đập rồi vẽ lại liên tục).
+     Thầy chốt: co TIẾP cho tới khi vừa, không đặt sàn cỡ chữ. */
+  .card.st-cho.kh .st-cho-chu{align-items:center; text-align:center}
+  .card.st-cho.kh .st-cho-act{width:100%; white-space:nowrap; overflow:hidden;
+    font-size:var(--co-ten, 13.5px)}
+  .card.st-cho.kh .st-ketqua{justify-content:center}
 }
 .card.st-cho.kh.xong .st-cho-act{color:#fff}
 .card.st-cho.kh.xong{cursor:pointer}
@@ -622,17 +632,21 @@ body.co-den{overflow:hidden}          /* khoá cuộn cho khung khỏi trôi */
   pointer-events:none; opacity:0; transform:translateY(6px);
   transition:opacity .3s var(--em), transform .3s var(--em)}
 .den-nhan.hien{opacity:1; transform:none}
-/* ⭐ ĐIỆN THOẠI — không phóng to theo tỉ lệ mà cho khung act chiếm TRỌN màn:
-   act ngang 16:10,5 mà màn dọc, phóng hết bề ngang thì cao có 236px, thừa hơn
-   nửa màn hình. Đổi hẳn kích cỡ khung, game bên AWord tự bày lại theo khung. */
-.game.sang.toan-man{position:fixed; left:6px; right:6px; top:58px; bottom:6px;
-  width:auto; height:auto; border-radius:12px;
-  /* ⛔ Toàn màn thì chiều cao do `top/bottom` quyết ⇒ phải TẮT đệm tỉ lệ,
-     không thì nó cộng thêm một cục vào giữa khung. `aspect-ratio:auto` cũ bỏ
-     đi cùng lúc với `aspect-ratio` ở `.game` (không còn gì để huỷ). */
-  --ti-le:0;
-  animation:no-ra .34s var(--em)}
-@keyframes no-ra{from{transform:scale(.93); opacity:.55} to{transform:none; opacity:1}}
+/* ⭐⭐ v1.109.0 (thầy chốt 15/09 chiều) — ĐIỆN THOẠI KHÔNG "PHỦ TRỌN MÀN" NỮA.
+   Bản cũ (`.game.sang.toan-man`, position:fixed) bứng khung act ra phủ kín màn
+   như một pop-up — thầy thấy trên iPhone khung act chỉ chiếm phần trên, dưới
+   thừa cả nửa màn trống, mất luôn tiêu đề + nút. Nay: khung act + ĐẦU THẺ
+   (tiêu đề · nút đèn · nút mở tab mới) ĐỨNG NGUYÊN TẠI CHỖ và nổi sáng lên
+   trên nền tối; leaderboard, thanh đầu, mọi thứ khác chìm trong tối; trang bị
+   KHOÁ CUỘN (xem `chanVuotDT` — iPhone không nghe `overflow:hidden`, phải chặn
+   thẳng cử chỉ vuốt). Đầu thẻ vốn trong suốt nên kê một tấm nền `::before`
+   (z-index:-1 trong stacking context của chính nó) — chữ tối vẫn đọc được
+   trên nền tối. Áp cho MỌI dạng bài (chung một hàm `batDen`). */
+.card-head.sang{position:relative; z-index:46}
+.card-head.sang::before{content:''; position:absolute; inset:-7px -9px; z-index:-1;
+  background:var(--surface); border-radius:12px;
+  box-shadow:0 0 0 3px rgba(255,255,255,.9), 0 20px 50px rgba(0,0,0,.45)}
+body.co-den-dt{touch-action:none; overscroll-behavior:none}
 .den-nhan b{display:block; color:#fff; font-weight:800; font-size:16px;
   letter-spacing:.06em}
 .den-nhan span{display:block; margin-top:2px; font:600 12.5px/1.3 var(--mono);
@@ -1603,7 +1617,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=83"></script>
+<script src="config.js?v=86"></script>
 <script src="js/chung.js?v=46"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -2021,24 +2035,47 @@ document.body.appendChild(nhanDen);
 
 function tatDen(){
   document.body.classList.remove('co-den');
+  document.body.classList.remove('co-den-dt');
   nhanDen.classList.remove('hien');
   document.querySelectorAll('.game.sang').forEach(function(e){
     e.style.transform = '';
-    e.classList.remove('toan-man');
   });
-  document.querySelectorAll('.game.sang,.ic-nut.sang').forEach(function(e){
+  document.querySelectorAll('.game.sang,.ic-nut.sang,.card-head.sang').forEach(function(e){
     e.classList.remove('sang');
   });
 }
 
+/* ⭐⭐ v1.109.0 — ĐIỆN THOẠI: đèn KHÔNG bứng khung ra phủ màn nữa (xem chú thích
+   CSS `.card-head.sang`). Đầu thẻ + khung act sáng tại chỗ; trang đứng nguyên,
+   CHỈ cuộn (vừa đủ) khi khung act đang bị cắt khỏi màn — thầy chốt 15/09. */
+function batDenDienThoai(khung){
+  var the = khung.closest('.card');
+  var dau = the ? the.querySelector('.card-head') : null;
+  if (dau) dau.classList.add('sang');
+  var le = 8, vh = window.innerHeight;
+  var tren = (dau || khung).getBoundingClientRect().top - (dau ? 7 : 0);
+  var duoi = khung.getBoundingClientRect().bottom;
+  var dich = 0;
+  if (tren < le) dich = tren - le;                                   /* đầu thẻ lòi lên trên */
+  else if (duoi > vh - le) dich = Math.min(duoi - (vh - le), tren - le); /* khung lòi xuống dưới */
+  if (dich) window.scrollBy({ top: dich, left: 0, behavior: 'smooth' });
+  document.body.classList.add('co-den-dt');
+}
+/* iPhone KHÔNG nghe `overflow:hidden` trên body — phải chặn thẳng cử chỉ vuốt
+   (listener non-passive). Chỉ chặn lúc đèn điện thoại đang bật; cử chỉ TRONG
+   khung game (iframe AWord) là của tài liệu con, không lọt lên đây ⇒ game vẫn
+   chơi bình thường. */
+function chanVuotDT(e){
+  if (document.body.classList.contains('co-den-dt')) e.preventDefault();
+}
+document.addEventListener('touchmove', chanVuotDT, { passive: false });
+/* Đổi ngưỡng điện thoại ↔ máy tính (xoay máy tính bảng) lúc đang sáng: tắt
+   đèn cho sạch, hai kiểu bố cục khác hẳn nhau. */
+MAN_DT.addEventListener('change', tatDen);
+
 function bayRaGiua(khung){
   khung.style.transform = '';                 /* đo ở đúng chỗ thật của nó */
-  if (laDienThoai()) {                        /* điện thoại: trọn màn */
-    khung.classList.add('toan-man');
-    nhanDen.style.top = '10px';
-    return;
-  }
-  khung.classList.remove('toan-man');
+  if (laDienThoai()) return;                  /* điện thoại: đứng tại chỗ (v1.109.0) */
   var r  = khung.getBoundingClientRect();
   var vw = window.innerWidth, vh = window.innerHeight;
   /* ⛔ Phải CHỪA CHỖ cho nhãn tên phần rồi mới tính tỉ lệ, và căn giữa cả cụm
@@ -2062,6 +2099,7 @@ function batDen(khungGame, nutDen, k){
   document.body.classList.add('co-den');
   khungGame.classList.add('sang');
   nutDen.classList.add('sang');
+  if (laDienThoai()) { batDenDienThoai(khungGame); return; }   /* v1.109.0 — không nhãn nổi, không phóng */
   /* Đặt chữ TRƯỚC rồi mới tính chỗ: có chữ mới đo được nhãn cao bao nhiêu.
      ⭐ v1.88.0 — bỏ "100% requirement" (`yeuCau`), theo dòng dưới thật của thẻ. */
   var dongDuoiDen = [A.maLesson(BAI), k.act || k.mau].filter(function(x){
@@ -3973,6 +4011,34 @@ function tinhNhanBtKhoa(){
 // ⭐ v1.107.0 (thầy chốt 15/09) — bấm bất kỳ khúc nào trên thanh tiến trình:
 // CUỘN TỚI đúng thẻ + NHÁY một nhịp để biết thẻ nào (không phân biệt xong/khoá/
 // mở nữa — thẻ xong giờ ĐỨNG NGUYÊN tại chỗ, không cần pop-up riêng để xem).
+// ⭐ v1.109.0 (thầy chốt 15/09 chiều) — ĐIỆN THOẠI: tên bài trên thẻ khoá/xong
+// ĐÚNG MỘT DÒNG. Đo `scrollWidth` so `clientWidth` của span (đã blockified vì là
+// con của flex), co theo TỈ LỆ một phát rồi dò thêm từng 0,25px cho chắc; ghi
+// vào biến `--co-ten` trên CHÍNH THẺ (không inline vào span — xem chú thích CSS).
+// Không đặt sàn cỡ chữ (thầy chốt "co tiếp cho tới khi vừa"); sàn 3px chỉ là
+// chốt an toàn chống vòng lặp. Gọi lại khi: vẽ thẻ · font tải xong · xoay máy.
+function canhTenTheKhoaDT(){
+  if (!LA_KHOA) return;
+  document.querySelectorAll('.card.st-cho.kh').forEach(function(sec){
+    var el = sec.querySelector('.st-cho-act');
+    if (!el) return;
+    sec.style.removeProperty('--co-ten');
+    if (!laDienThoai()) return;
+    var rong = el.clientWidth, can = el.scrollWidth;
+    if (!rong || can <= rong) return;
+    var co = parseFloat(getComputedStyle(el).fontSize) || 13.5;
+    co = Math.floor(co * rong / can * 20) / 20;
+    sec.style.setProperty('--co-ten', co + 'px');
+    var lan = 0;
+    while (el.scrollWidth > el.clientWidth && co > 3 && lan++ < 40) {
+      co -= 0.25;
+      sec.style.setProperty('--co-ten', co + 'px');
+    }
+  });
+}
+window.addEventListener('resize', canhTenTheKhoaDT);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(canhTenTheKhoaDT);
+
 function nhayTheKhoa(el){
   // `.st-cho.kh` (khoá/xong) đặt hình dạng thật (kể cả góc vát) ở con
   // `.st-cho-vien`, không phải ở chính `.card` — gắn `.nhay` NHẦM chỗ thì lớp
@@ -4050,6 +4116,7 @@ function capNhatSauKhiDoiKhoa(){
     if (cu && cu.parentNode) cu.parentNode.replaceChild(moi, cu);
   });
   canhLb();
+  canhTenTheKhoaDT();   // v1.109.0 — thẻ vừa thay thì đo lại cỡ tên (điện thoại)
 }
 
 // Chế độ "tập trung" (đèn 💡): phóng cả thẻ BÀI GIẢNG ra giữa màn hình, làm
@@ -4192,6 +4259,7 @@ function veCacPhanKhoa(hop){
     hop.appendChild(dungTheBtKhoa(x, i + 1, TT_KHOA));
   });
   canhLb();
+  canhTenTheKhoaDT();   // v1.109.0 — đo ngay + đo lại ở `fonts.ready` (font chưa về thì số sai)
 }
 
 // ⭐ Điểm act vừa đổi (nộp bài / AWord báo NOP) trong khi đang xem bài khóa

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-14 21:49:39",
+  "capNhat": "2026-09-16 11:44:21",
   "bai": {
     "A1C": [
       {
@@ -964,6 +964,249 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L02",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 18: BÀI GIẢNG 18: TẠO CÂU HỎI XIN THÔNG TIN CƠ BẢN",
+        "tenBai": "LESSON 18",
+        "maLesson": "LESSON 18",
+        "han": "2016-09-20T23:59",
+        "taoLuc": "2026-09-16",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. PHÂN BIỆT 7 DẠNG THÔNG TIN CƠ BẢN",
+            "act": "",
+            "mau": "SPEED SORTING",
+            "ma": "pq4tk5"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. LOẠI TỪ ĐỂ HỎI CƠ BẢN",
+            "act": "",
+            "mau": "SPEED SORTING",
+            "ma": "uk8f24"
+          },
+          {
+            "loai": "act",
+            "ten": "BT3. SẮP XẾP CÂU HỎI XIN THÔNG TIN",
+            "act": "",
+            "mau": "UNJUMBLE",
+            "ma": "64pg2v"
+          },
+          {
+            "loai": "act",
+            "ten": "BT4. TẠO CÂU HỎI XIN THÔNG TIN",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "hxbvb5"
+          },
+          {
+            "loai": "act",
+            "ten": "BT5. TRẮC NGHIỆM BÀI GIẢNG 18",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "t9cwux"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 18: TẠO CÂU HỎI XIN THÔNG TIN CƠ BẢN",
+          "video": "https://www.youtube.com/watch?v=Z6E6J612gnM",
+          "doan": [
+            {
+              "id": "dmu2u6c32hej3",
+              "ten": "Review hành trình hiện tại",
+              "tu": "00:00",
+              "den": "04:02",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c3251aj"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmu2u6c3251aj",
+              "ten": "Ôn tập 7 dạng xin thông tin cơ bản",
+              "tu": "04:02",
+              "den": "09:44",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c3225qr"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmu2u6c3225qr",
+              "ten": "HD BT1 - 7 dạng thông tin cơ bản",
+              "tu": "09:44",
+              "den": "10:44",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmu3kq7mzzh4"
+              ]
+            },
+            {
+              "id": "dmu2u6c32tgtp",
+              "ten": "Đặt mục tiêu buổi học và những lưu ý",
+              "tu": "10:50",
+              "den": "13:44",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c32ynkb"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmu2u6c32ynkb",
+              "ten": "Thêm nguyên liệu quan trọng",
+              "tu": "13:44",
+              "den": "23:06",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c32loza"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmu2u6c32loza",
+              "ten": "HD BT2 - từ để hỏi",
+              "tu": "23:06",
+              "den": "25:33",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmu3kq8sqesv"
+              ]
+            },
+            {
+              "id": "dmu2u6c32vq4j",
+              "ten": "Chốt 2 nguyên liệu quan trọng trước khi tạo câu hỏi xin thông tin",
+              "tu": "25:38",
+              "den": "32:56",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c32g2gs"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmu2u6c32g2gs",
+              "ten": "Cách tạo câu hỏi xin thông tin",
+              "tu": "32:56",
+              "den": "40:06",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c32br4p"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmu2u6c32br4p",
+              "ten": "HD BT3 - sắp xếp câu hỏi xin thông tin",
+              "tu": "40:06",
+              "den": "43:29",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmu3kq9a9dnw"
+              ]
+            },
+            {
+              "id": "dmu2u6c327y0r",
+              "ten": "HD BT4 - tạo câu hỏi xin thông tin",
+              "tu": "43:34",
+              "den": "45:57",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmu3kq9q1o4s"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmu3kq7mzzh4",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. PHÂN BIỆT 7 DẠNG THÔNG TIN CƠ BẢN",
+            "actTen": "BT1. PHAN BIET 7 DANG THONG TIN CO BAN",
+            "ma": "pq4tk5",
+            "mau": "SPEED SORTING",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c32tgtp"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmu3kq8sqesv",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. LOẠI TỪ ĐỂ HỎI CƠ BẢN",
+            "actTen": "BT2. 7 LOAI TU DE HOI CO BAN",
+            "ma": "uk8f24",
+            "mau": "SPEED SORTING",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c32vq4j"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmu3kq9a9dnw",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT3. SẮP XẾP CÂU HỎI XIN THÔNG TIN",
+            "actTen": "BT3. SAP XEP CAU HOI XIN THONG TIN",
+            "ma": "64pg2v",
+            "mau": "UNJUMBLE",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmu2u6c327y0r"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmu3kq9q1o4s",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT4. TẠO CÂU HỎI XIN THÔNG TIN",
+            "actTen": "BT4. TAO CAU HOI XIN THONG TIN",
+            "ma": "hxbvb5",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmu3kqa74j9x"
+              ]
+            }
+          },
+          {
+            "id": "btmu3kqa74j9x",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT5. TRẮC NGHIỆM BÀI GIẢNG 18",
+            "actTen": "TRAC NGHIEM BAI GIANG 18 - CAU HOI XIN THONG TIN",
+            "ma": "t9cwux",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ]
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L01",
         "dang": "KHOA",

@@ -698,8 +698,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=86"></script>
-<script src="js/chung.js?v=49"></script>
+<script src="config.js?v=87"></script>
+<script src="js/chung.js?v=50"></script>
 <script src="js/chat.js?v=23"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
@@ -986,8 +986,19 @@ function hangSach(k){
     '<span class="td-tich"></span></span>';
 }
 
+/* ⭐ v1.114.0 (16/09/2026, thầy báo "BT 40 câu mà thẻ hiện 0/100") — MẪU SỐ KHI EM CHƯA
+   LÀM = SỐ CÂU/ĐIỂM TỐI ĐA CỦA ĐỀ (`chuan.soCau`, đếm từ nội dung bài giao, luật từng
+   template chép theo AWord — xem `soCauTuDoc` trong js/chung.js). Trước đó lùi về
+   `chuan.dinh` = 100 là thang PHẦN TRĂM ⇒ đề 40 câu hiện "0/100". Đề không đếm được
+   (soCau = 0) mới lùi về `dinh` như cũ. Em đã làm thì vẫn `tho.tong` (mẫu số THẬT của lượt). */
+function mauSoDe(chuan){
+  if (!chuan) return 0;
+  if (chuan.soCau > 0) return chuan.soCau;
+  return (!chuan.tru && chuan.dinh > 0) ? chuan.dinh : 0;
+}
+
 /* Một hàng ở chế độ EM: SỐ CÂU ĐÚNG / TỔNG SỐ CÂU (thầy chốt, không hiện %).
-   Chưa làm thì DUNG=0 và TỔNG lấy từ CHUẨN ĐỦ ĐIỂM của act (không hiện chữ
+   Chưa làm thì DUNG=0 và TỔNG = số câu của đề (`mauSoDe`, v1.114.0; không hiện chữ
    "chưa làm" nữa — thầy chốt 11/09/2026). */
 function hangEm(k){
   if (k.loai === 'sach') return hangSach(k);
@@ -998,9 +1009,8 @@ function hangEm(k){
   }
   var chuan = CHUAN[k.ma];
   var xong = A.xongAct(ds, TOI, chuan);
-  var toiDa = (chuan && !chuan.tru && chuan.dinh > 0) ? chuan.dinh : 0;
   var tho = toi && toi.tho ? toi.tho : null;
-  var tong = (tho && tho.tong > 0) ? tho.tong : toiDa;
+  var tong = (tho && tho.tong > 0) ? tho.tong : mauSoDe(chuan);
   var dung = tho ? tho.diem : 0;
   var pt = tong > 0 ? Math.round(dung / tong * 100) : 0;
   return '<span class="td-dong">' +
@@ -1156,9 +1166,8 @@ function ketQuaEm(k){
     if (A.khoaTen(ds[i].ten) === khoaTen) { toi = ds[i]; break; }
   }
   var xong = A.xongAct(ds, TOI, chuan);
-  var toiDa = (chuan && !chuan.tru && chuan.dinh > 0) ? chuan.dinh : 0;
   var tho = toi && toi.tho ? toi.tho : null;
-  var tong = (tho && tho.tong > 0) ? tho.tong : toiDa;
+  var tong = (tho && tho.tong > 0) ? tho.tong : mauSoDe(chuan);
   var dung = tho ? tho.diem : 0;
   var hang = 0;
   if (toi) {

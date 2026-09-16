@@ -874,21 +874,64 @@
   // VIỄN trong localStorage: tuỳ chọn của bài giao là bản chụp ĐÓNG BĂNG lúc
   // tạo, không bao giờ đổi ⇒ mỗi máy chỉ đọc đúng một lần cho mỗi act.
 
-  var KHOA_CHUAN = 'awc_chuan_';
+  // ⭐ v1.114.0 (16/09/2026) — khoá đệm đổi `awc_chuan_` → `awc_chuan2_`: bản ghi nay
+  // mang thêm `soCau` (xem `soCauTuDoc`), bản cũ trong localStorage không có ⇒ mỗi máy
+  // đọc lại đúng MỘT lần cho mỗi act rồi lại nhớ vĩnh viễn như trước.
+  var KHOA_CHUAN = 'awc_chuan2_';
   var nhoChuan = {};
   var TRU_KHOA = ['pointsOff', 'minusAmount', 'letterPenalty', 'timeCost'];
-  var CHUAN_LUI = { tru: true, dinh: 100 };     // đọc hỏng -> giữ nếp cũ, không phạt em nào
+  var CHUAN_LUI = { tru: true, dinh: 100, soCau: 0 };     // đọc hỏng -> giữ nếp cũ, không phạt em nào
 
   function urlBaiGiao(ma) {
     var db = CFG.AWORD_DB || {};
+    // v1.114.0 — đọc thêm `activity.content` để ĐẾM SỐ CÂU của đề (mẫu số khi em chưa làm).
+    // Gói tin to hơn (đề 50 câu ~ vài chục KB) nhưng vẫn chỉ MỘT lần cho mỗi act mỗi máy.
     return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
       '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) +
       '?key=' + db.apiKey +
-      '&mask.fieldPaths=activityType&mask.fieldPaths=activity.options';
+      '&mask.fieldPaths=activityType&mask.fieldPaths=activity.options&mask.fieldPaths=activity.content';
   }
 
   function ruotMap(f) { return (f && f.mapValue && f.mapValue.fields) || {}; }
   function chuF(f) { return (f && f.stringValue) || ''; }
+  function mangF(f) { return (f && f.arrayValue && f.arrayValue.values) || []; }
+
+  // ⭐⭐ v1.114.0 (16/09/2026, thầy báo) — SỐ CÂU / ĐIỂM TỐI ĐA CỦA ĐỀ, tính từ nội dung
+  // bài giao — để thẻ hiện "0/40" đúng ngay cả khi CHƯA EM NÀO LÀM (trước đó lùi về
+  // `dinh` = 100 là thang PHẦN TRĂM, thẻ khóa học hiện "0/100" cho đề 40 câu).
+  // Luật CHÉP theo AWord: mảng câu = `content[itemsKey]` của từng template
+  // (`tpl.itemsKey`, dự phòng `ITEM_KEYS` của core/engine.js `playItemCount`), và mẫu số
+  // AWord nộp lên (`total`/`items`, xem core/scoring.js Đợt 294) lệch số câu ở hai chỗ:
+  //   · unjumble: chế độ bonus (mặc định) = 2 điểm/câu ⇒ ×2; "submit" = 1 điểm/câu.
+  //   · anagram: bonus/bonusMinus (mặc định) chấm theo CHỮ CÁI ⇒ tổng = số chữ cái
+  //     (không đếm dấu cách, đúng `prepareItem`); "submit" = 1 điểm/từ.
+  // Template không có mảng câu (running word, whack-a-mole…) ⇒ 0 ⇒ nơi hiển thị tự lùi.
+  // ⛔ AWord đổi cách nộp `total` của template nào thì sửa đúng hàm này.
+  var KHOA_MANG_CAU = { quiz: 'questions', gameshow: 'questions', maze_chase: 'questions',
+    true_false: 'statements', find_the_match: 'pairs', crossword: 'words' };
+  var MANG_CAU_DU_PHONG = ['items', 'questions', 'cards', 'words', 'statements', 'pairs'];
+  function soCauTuDoc(loai, act, opt) {
+    var content = ruotMap(act.content);
+    var k = KHOA_MANG_CAU[loai] || 'items';
+    if (!(content[k] && content[k].arrayValue)) {
+      k = null;
+      for (var i = 0; i < MANG_CAU_DU_PHONG.length; i++) {
+        if (content[MANG_CAU_DU_PHONG[i]] && content[MANG_CAU_DU_PHONG[i]].arrayValue) { k = MANG_CAU_DU_PHONG[i]; break; }
+      }
+    }
+    if (!k) return 0;
+    var ds = mangF(content[k]);
+    var n = ds.length;
+    if (loai === 'unjumble') return (chuF(opt.unjumbleMode) === 'submit') ? n : 2 * n;
+    if (loai === 'anagram' && chuF(opt.anagramMode) !== 'submit') {
+      var chuCai = 0;
+      ds.forEach(function (it) {
+        chuCai += String(chuF(ruotMap(it).word) || '').replace(/ /g, '').length;
+      });
+      return chuCai;
+    }
+    return n;
+  }
 
   function chuanTuDoc(f) {
     var loai = chuF(f.activityType);
@@ -908,7 +951,9 @@
       }
       // "submit" = 1 điểm/từ ⇒ giữ 100.
     }
-    return { tru: tru, dinh: dinh };
+    var soCau = 0;
+    try { soCau = soCauTuDoc(loai, ruotMap(f.activity), opt); } catch (e) { soCau = 0; }
+    return { tru: tru, dinh: dinh, soCau: soCau };
   }
 
   // Trả về { tru, dinh } của một act. Không bao giờ reject.
@@ -918,7 +963,7 @@
     if (nhoChuan[ma]) return nhoChuan[ma];
     try {
       var cu = JSON.parse(localStorage.getItem(KHOA_CHUAN + ma) || 'null');
-      if (cu && typeof cu.dinh === 'number') {
+      if (cu && typeof cu.dinh === 'number' && typeof cu.soCau === 'number') {
         nhoChuan[ma] = Promise.resolve(cu);
         return nhoChuan[ma];
       }

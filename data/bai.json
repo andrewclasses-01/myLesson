@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-16 11:59:52",
+  "capNhat": "2026-09-16 15:52:42",
   "bai": {
     "A1C": [
       {
@@ -167,6 +167,36 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_13.9_DICTS_IEL-S15.T3.P4",
+        "tieuDe": "B2B_13.9_DICTS IEL-S15.T3.P4",
+        "tenHien": "B2B_13.9_DICTS IEL-S15.T3.P4",
+        "dang": "DICTS",
+        "ngay": "13.9",
+        "han": "2026-09-20T14:00",
+        "maLesson": "IEL-S15.T3.P4",
+        "taoLuc": "2026-09-16",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "IEL-S15.T3.P4"
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "IEL-S15.T3.P4"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "IEL-S15.T3.P4 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "at96ym",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "B2B_9.9_STAGE_IEL-S15.T3.P4",
         "tieuDe": "B2B_9.9_STAGE IEL-S15.T3.P4",

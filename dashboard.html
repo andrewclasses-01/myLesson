@@ -647,12 +647,20 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
   padding:7px 9px; font:700 12px/1.3 var(--font); color:inherit; background:#fff}
 .hp-hang input:focus{outline:none; border-color:var(--xanh)}
 .hp-hang input[data-hs-gio]{flex:none; width:70px; text-align:center}
-.act-ds{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
-  gap:10px; margin:12px 0}
-.act-o{border:1px solid var(--vien); border-radius:11px; padding:10px 12px}
-.act-o .ten{font:800 12.5px/1.3 var(--font)}
-.act-o .mau{font:600 10.5px/1.3 var(--font); color:var(--nhat); letter-spacing:.05em}
-.act-o .tien{margin-top:8px}
+/* ⭐ v1.115.0 — hộp xem bài: bài tập LIỆT KÊ THEO HÀNG (thay lưới thẻ cũ
+   `.act-ds`/`.act-o`, đã gỡ) — `.bm-bt-rows` dùng CHUNG cho cả bài STAGE (nằm
+   trong từng khối `.st-khoi`, không viền riêng — khối chặng đã là viền) lẫn
+   bài thường (bọc thêm `.bm-bt-box` cho có viền). Xem `veBtHangDb()`. */
+.bm-bt-box{border:1px solid var(--vien); border-radius:14px; background:var(--the); padding:2px 14px 4px; margin:12px 0}
+.bm-bt-rows{display:flex; flex-direction:column}
+.bm-bt-hang{display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px dashed var(--vien); flex-wrap:wrap}
+.bm-bt-hang:first-child{border-top:0}
+.bm-bt-so{flex:none; width:18px; font:800 12px var(--mono); color:var(--nhat); text-align:right}
+.bm-bt-chu{flex:1 1 220px; min-width:0; display:flex; align-items:baseline; gap:7px; flex-wrap:wrap}
+.bm-bt-ten{font:800 12.5px/1.35 var(--font)}
+.bm-bt-mau{font:600 10.5px/1.4 var(--font); color:var(--nhat); letter-spacing:.02em}
+.bm-bt-mau code{font:600 10.3px var(--mono); color:var(--mo)}
+.bm-bt-hang .tien{margin-left:auto; flex:none}
 .tay-dong{margin:10px 0 0; padding:9px 12px; border-radius:10px;
   background:var(--vang-nhat); color:#8a5b0e; font-size:12.5px}
 /* ============================================================================
@@ -738,9 +746,30 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .ten-ds{display:flex; flex-wrap:wrap; gap:6px}
 .ten-o{padding:4px 9px; border-radius:8px; background:var(--do-nhat); color:#a33a2c;
   font:700 12px/1.4 var(--font)}
-.ten-o.du{background:var(--la-nhat); color:#1f7a4d}
-.ten-o i{font-style:normal; opacity:.65; margin-left:4px}
-.bai-nut{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+
+/* ⭐ v1.115.0 — "Chưa xong/Đã xong" đổi từ dải chữ (`.ten-ds`/`.ten-o`, GIỮ
+   NGUYÊN cho riêng khối "ĐANG GIỮ CẢ LỚP LẠI" trong `veKhoiChangDb`) sang HAI
+   Ô AVATAR cạnh nhau — xem `veEmLuoiDb()`/`veEmAvDb()`. Icon tự nhỏ lại khi
+   lớp đông em (biến `--em-d`, đổi qua class `.vua`/`.nho`) để không tràn khung. */
+.bm-xong-doi{display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:12px}
+@media (max-width:560px){ .bm-xong-doi{grid-template-columns:1fr} }
+.bm-xong-o{border-radius:14px; padding:13px 13px 14px; border:1px solid var(--vien); background:var(--the)}
+.bm-xong-o.chua{border-color:#F4D6D2; background:#FDF8F7}
+.bm-xong-o.du{border-color:#CFEAD9; background:#F7FCFA}
+.bm-xong-nhan{font:800 11px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase}
+.bm-xong-o.chua .bm-xong-nhan{color:#B0402F}
+.bm-xong-o.du .bm-xong-nhan{color:#1F7A4D}
+.bm-em-luoi{--em-d:48px; display:flex; flex-wrap:wrap; gap:10px 8px; margin-top:11px}
+.bm-em-luoi.vua{--em-d:42px}
+.bm-em-luoi.nho{--em-d:36px}
+.bm-em{width:calc(var(--em-d) + 8px); display:flex; flex-direction:column; align-items:center; gap:4px}
+.bm-em-av{position:relative; width:var(--em-d); height:var(--em-d); border-radius:50%; overflow:hidden;
+  display:grid; place-items:center; color:#fff; font:800 calc(var(--em-d) * .32)/1 var(--font); flex:none;
+  box-shadow:0 2px 5px rgba(16,40,36,.16)}
+.bm-em-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.bm-em-ten{font:700 calc(var(--em-d) * .2 + 2.5px)/1.2 var(--font); color:var(--mo); text-align:center;
+  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%}
+.bm-em-trong{font:700 12px/1.5 var(--font); color:var(--nhat); padding:6px 2px 2px}
 .tien{display:flex; align-items:center; gap:8px}
 .thanh{flex:1; height:8px; border-radius:99px; background:#EDF2F1; overflow:hidden}
 .thanh i{display:block; height:100%; border-radius:99px; background:var(--la);
@@ -1421,26 +1450,17 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   box-shadow:0 0 0 2px #fff, 0 0 0 3.5px var(--xanh-nhat)}
 .bm-ten{font:800 14.5px/1.3 var(--font)}
 .bm-nho{font:600 11px/1.3 var(--font); color:var(--nhat)}
-.bm-dong{margin-left:auto; flex:none; width:32px; height:32px; border-radius:9px; border:0;
+/* ⭐ v1.115.0 — tên/mã bài dời từ đầu `.bm-than` LÊN `.bm-dau`, đứng góc phải
+   (đẩy bằng margin-left:auto trên chính `.bm-bai-tag`, nút Đóng theo sau cách
+   bằng `gap` sẵn có của `.bm-dau`) — xem `#bmBaiTag` trong `moBaiModal()`. */
+.bm-bai-tag{margin-left:auto; text-align:right; flex:0 1 46%; min-width:0}
+.bm-dong{flex:none; width:32px; height:32px; border-radius:9px; border:0;
   background:transparent; color:var(--nhat); display:flex; align-items:center; justify-content:center}
 .bm-dong:hover{background:var(--do-nhat); color:var(--do)}
 .bm-dong svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round}
 .bm-than{flex:1; overflow-y:auto; padding:16px 18px}
-.bm-baiten{font:800 17px/1.3 var(--font)}
-.bm-baima{font:600 12px/1.3 Consolas,monospace; color:var(--mo); margin-top:2px}
-.bm-vi-du{margin-top:14px; padding:14px; border-radius:12px; background:var(--xanh-nhat);
-  border:1px solid #BFDCD6}
-.bm-vi-du h4{margin:0 0 10px; font:800 12px/1.3 var(--font); letter-spacing:.05em;
-  text-transform:uppercase; color:var(--xanh)}
-.bm-cauhoi{font:700 14px/1.5 var(--font); margin-bottom:10px}
-.bm-dapan{display:grid; gap:8px}
-.bm-dapan button{padding:9px 12px; border-radius:10px; border:1px solid var(--vien-dam);
-  background:#fff; font:700 12.5px/1.3 var(--font); text-align:left}
-.bm-dapan button:hover{border-color:var(--xanh)}
-.bm-dapan button.chon{border-color:var(--xanh)}
-.bm-dapan button[disabled]{opacity:.55}
-.bm-ket{margin-top:10px; font:700 12.5px/1.4 var(--font); color:var(--xanh); display:none}
-.bm-ket.hien{display:block}
+.bm-baiten{font:800 14px/1.3 var(--font); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bm-baima{font:600 10.5px/1.3 Consolas,monospace; color:var(--mo); margin-top:1px}
 
 /* ---------- KHUNG TRÒ CHUYỆN CỦA LỚP ---------- */
 .chat-khoi .khoi-than{padding:0}
@@ -2032,6 +2052,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   <div class="bm-dau">
     <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
     <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
+    <div class="bm-bai-tag" id="bmBaiTag"></div>
     <button class="bm-dong" id="bmDong" title="Đóng">
       <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -2680,14 +2701,52 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     veChiTiet(muc);
   }
 
-  /* ⭐ v1.77.0 — một ô act trong hộp xem bài (tách ra để khối chặng dùng lại). */
-  function veActODb(a, siSo) {
-    return '<div class="act-o"><div class="ten">' + A.chuAnToan(a.ten) + '</div>' +
-      '<div class="mau">' + A.chuAnToan(a.mau || 'LEADERBOARD') + ' · mã ' +
-        A.chuAnToan(a.ma) + '</div>' +
-      (a.xong === null ? '<div class="mau">đang đọc kết quả…</div>'
-                       : veThanh(a.xong, siSo)) +
+  /* ⭐ v1.115.0 — MỘT HÀNG bài tập trong hộp xem bài (thay ô lưới `.act-o` cũ) —
+     dùng CHUNG cho bài thường (`veRuotBai`) lẫn từng khối chặng (`veKhoiChangDb`).
+     `idx` là số thứ tự HIỂN THỊ, đếm lại từ 1 trong phạm vi danh sách đang vẽ
+     (cả bài thường lẫn từng chặng riêng — không đếm xuyên suốt nhiều chặng). */
+  function veBtHangDb(a, siSo, idx) {
+    var thanh = (a.xong === null) ? '<span class="mau">đang đọc kết quả…</span>' : veThanh(a.xong, siSo);
+    return '<div class="bm-bt-hang">' +
+      '<span class="bm-bt-so">' + idx + '.</span>' +
+      '<span class="bm-bt-chu"><span class="bm-bt-ten">' + A.chuAnToan(a.ten) + '</span>' +
+        '<span class="bm-bt-mau">' + A.chuAnToan(a.mau || 'LEADERBOARD') + ' · mã <code>' +
+          A.chuAnToan(a.ma) + '</code></span></span>' +
+      thanh +
     '</div>';
+  }
+
+  // ⭐ v1.115.0 — thầy chốt: LUÔN viết tắt họ + tên đệm, giữ nguyên tên chính,
+  // dùng cho nhãn tên dưới icon avatar (tên đầy đủ vẫn xem được khi rê chuột).
+  // "Mạc Minh Khang" -> "M.M.Khang" · "Bảo Trâm" -> "B.Trâm"
+  function vietTat(ten) {
+    var tu = String(ten || '').trim().split(/\s+/);
+    if (tu.length < 2) return ten;
+    var chinh = tu.pop();
+    return tu.map(function (w) { return w.charAt(0).toUpperCase() + '.'; }).join('') + chinh;
+  }
+
+  // Một icon avatar tròn (ảnh thật nếu có, rơi về chữ tắt màu — y hệt nếp
+  // `veAv()`/`veHocSinh()` — chỉ đổi CLASS để không đụng cỡ/khung của hai nơi kia).
+  function veEmAvDb(ten, lopSlug, tenGocLop) {
+    var i = 0;
+    for (var j = 0; j < ten.length; j++) i += ten.charCodeAt(j);
+    return '<span class="bm-em-av" data-av-em="' + A.chuAnToan(ten) + '" data-av-lop="' +
+      A.chuAnToan(tenGocLop) + '" style="background:' + MAU_AV[i % MAU_AV.length] + '">' +
+      A.chuAnToan(avChuTat(ten).toUpperCase()) +
+      '<img class="bm-em-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(ten) +
+      '.jpg" alt="" onerror="this.remove()"></span>';
+  }
+
+  // Lưới avatar cho MỘT ô (chưa xong / đã xong) — rỗng thì hiện chữ thay vì để trống trơn.
+  function veEmLuoiDb(dsTen, lopSlug, tenGocLop) {
+    if (!dsTen.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
+    var co = dsTen.length > 24 ? ' nho' : (dsTen.length > 12 ? ' vua' : '');
+    return '<div class="bm-em-luoi' + co + '">' + dsTen.map(function (ten) {
+      return '<div class="bm-em">' + veEmAvDb(ten, lopSlug, tenGocLop) +
+        '<span class="bm-em-ten" title="' + A.chuAnToan(ten) + '">' +
+        A.chuAnToan(vietTat(ten)) + '</span></div>';
+    }).join('') + '</div>';
   }
 
   /* "2026-09-13T23:59" -> "23:59 · 13/9" */
@@ -2731,10 +2790,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       }
       return '<div class="st-khoi' + lop + '"><div class="st-khoi-dau">' +
         '<span class="st-khoi-ten">' + nhan + '</span>' + han + nut + '</div>' +
-        '<div class="act-ds">' + c.acts.map(function (a) {
+        '<div class="bm-bt-rows">' + c.acts.map(function (a, k) {
           var o = null;
-          for (var k = 0; k < t.acts.length; k++) if (t.acts[k].ma === a.ma) o = t.acts[k];
-          return veActODb(o || { ten: a.ten, ma: a.ma, mau: a.mau, xong: null }, t.siSo);
+          for (var j2 = 0; j2 < t.acts.length; j2++) if (t.acts[j2].ma === a.ma) o = t.acts[j2];
+          return veBtHangDb(o || { ten: a.ten, ma: a.ma, mau: a.mau, xong: null }, t.siSo, k + 1);
         }).join('') + '</div>' + em + '</div>';
     }).join('');
   }
@@ -2745,44 +2804,39 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var act = (t.stage && t.chang)
       ? veKhoiChangDb(t)
       : (t.acts.length
-      ? '<div class="act-ds">' + t.acts.map(function (a) {
-          return veActODb(a, t.siSo);
-        }).join('') + '</div>'
+      ? '<div class="bm-bt-box"><div class="bm-bt-rows">' + t.acts.map(function (a, i) {
+          return veBtHangDb(a, t.siSo, i + 1);
+        }).join('') + '</div></div>'
       : '<p class="mau" style="margin:12px 0 0;color:var(--nhat)">Bài này không có game AWord nào.</p>');
 
     var tay = b.tay ? '<p class="tay-dong">✍️ Bài làm trên giấy: <b>' +
       A.chuAnToan(b.tay) + '</b></p>' : '';
 
+    // ⭐ v1.115.0 — "Chưa xong/Đã xong" đổi từ dải chữ sang HAI Ô AVATAR cạnh
+    // nhau (thầy chốt) — xem `veEmLuoiDb()`. Bỏ hẳn 3 nút cuối hộp cũ (Xem
+    // trang của học sinh / Chép tên em chưa xong / Xem thử một ví dụ).
     var em = '';
     if (t.daDoc) {
+      var l = A.lopTheoMa(DL, t.maLop);
+      var tenGocLop = (l && l.tenGoc) || t.maLop;
+      var lopSlug = avSlugLop(tenGocLop);
       var xong = t.caLop.filter(function (ten) {
         return !t.thieu.some(function (x) { return x.ten === ten; });
       });
-      em = '<div class="chua-nop">' +
-        '<h4>Chưa xong (' + t.thieu.length + ')</h4>' +
-        (t.thieu.length
-          ? '<div class="ten-ds">' + t.thieu.slice().sort(function (a, c) { return c.so - a.so; })
-              .map(function (x) {
-                return '<span class="ten-o">' + A.chuAnToan(x.ten) +
-                       (t.acts.length > 1 ? '<i>thiếu ' + x.so + '</i>' : '') + '</span>';
-              }).join('') + '</div>'
-          : '<p class="mau" style="color:var(--la)">Cả lớp đã làm xong. 🎉</p>') +
-        (xong.length ? '<h4 style="margin-top:11px">Đã xong (' + xong.length + ')</h4>' +
-          '<div class="ten-ds">' + xong.map(function (n) {
-            return '<span class="ten-o du">' + A.chuAnToan(n) + '</span>';
-          }).join('') + '</div>' : '') +
+      var thieuTen = t.thieu.slice().sort(function (a, c) { return c.so - a.so; })
+        .map(function (x) { return x.ten; });
+      em = '<div class="bm-xong-doi">' +
+        '<div class="bm-xong-o chua"><div class="bm-xong-nhan">Chưa xong (' + thieuTen.length + ')</div>' +
+          veEmLuoiDb(thieuTen, lopSlug, tenGocLop) + '</div>' +
+        '<div class="bm-xong-o du"><div class="bm-xong-nhan">Đã xong (' + xong.length + ')</div>' +
+          veEmLuoiDb(xong, lopSlug, tenGocLop) + '</div>' +
       '</div>';
     }
 
     // ⭐ v1.36.0 — BỎ ô "Hạn riêng cho thẻ này" khỏi hộp xem bài (thầy chốt
     // 02/09: đổi hạn phải là một hộp nhỏ riêng). Đường duy nhất nay là
     // ⚙ Cài đặt thẻ → Đổi hạn nộp → `#hanPop`.
-    return act + tay + em +
-      '<div class="bai-nut">' +
-        '<button class="nut nho" data-xem="' + A.chuAnToan(b.id) + '">Xem trang của học sinh</button>' +
-        (t.thieu.length ? '<button class="nut nho" data-chep="' + A.chuAnToan(b.id) +
-          '" data-lop="' + A.chuAnToan(t.maLop) + '">Chép tên em chưa xong</button>' : '') +
-      '</div>';
+    return act + tay + em;
   }
 
   // ---------- ⭐ v1.20.0 — SỬA HẠN RIÊNG CHO MỘT THẺ ----------
@@ -4393,11 +4447,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
 
   // ---------- BẤM THẺ BÀI: mở nội dung như bình thường (Thầy Andrew xem) ----------
-  // Tái dùng NGUYÊN VẸN veRuotBai() (act/chưa xong/đã xong/sửa hạn/mở trang học
-  // sinh) — hộp này chỉ là VỎ khác cho đúng nội dung đó, cộng thêm nút xem thử
-  // một VÍ DỤ (không đụng AWord/điểm thật, an toàn tuyệt đối).
+  // Tái dùng NGUYÊN VẸN veRuotBai() (act/chưa xong/đã xong) — hộp này chỉ là VỎ
+  // khác cho đúng nội dung đó.
+  // ⭐ v1.115.0 — tên/mã bài dời sang `#bmBaiTag` (đứng trong `.bm-dau`, góc
+  // phải, xem CSS `.bm-bai-tag`) — `#bmThan` giờ CHỈ còn `veRuotBai(t)`. Bỏ hẳn
+  // nút "Xem thử một ví dụ" cùng `veViDu()`/`VI_DU_DAP` (thầy chốt gỡ).
   var BM_ID = null;
-  var VI_DU_DAP = ['go', 'goes', 'going'];
   // ⛔ v1.86.0 — CỬA 'tatca', KHÔNG phải 'ql': mục KHO nay bấm thẳng vào hàng để mở
   // hộp này, mà cửa 'ql' BỎ thẻ đã xoá ⇒ bấm hàng "Đã xoá" thì hàm lặng lẽ `return`,
   // không một tiếng động (đúng kiểu lỗi im lặng đã cắn nhiều lần). Cửa 'tatca' chỉ
@@ -4413,35 +4468,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // là mở được cả thẻ ẩn/tạm khoá/đã xoá, không nói ra thì trông y hệt bài đang giao.
     var ttBm = A.trangThaiThe(b);
     var nhanBm = KHO_NHAN[ttBm] || null;
-    $('#bmThan').innerHTML =
+    $('#bmBaiTag').innerHTML =
       '<div class="bm-baiten">' + A.chuAnToan(A.tenBai(b)) +
         (nhanBm ? ' <span class="kho-nhan ' + nhanBm.lop + '">' + nhanBm.chu + '</span>' : '') +
       '</div>' +
-      '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + '</div>' +
-      veRuotBai(t) +
-      '<button class="nut nho" id="bmXemThu" type="button">👁 Xem thử một ví dụ (không lưu)</button>' +
-      '<div class="bm-vi-du" id="bmViDu" hidden></div>';
-    $('#bmXemThu').addEventListener('click', veViDu);
+      '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + '</div>';
+    $('#bmThan').innerHTML = veRuotBai(t);
     $('#bmNen').classList.add('mo');
     $('#bmHop').classList.add('mo');
-  }
-  function veViDu() {
-    var o = $('#bmViDu');
-    o.hidden = false;
-    o.innerHTML =
-      '<h4>Ví dụ minh hoạ</h4>' +
-      '<div class="bm-cauhoi">Chọn từ đúng: "She ___ to school every day."</div>' +
-      '<div class="bm-dapan" id="bmDapAn">' +
-        VI_DU_DAP.map(function (w, i) { return '<button type="button" data-w="' + i + '">' + A.chuAnToan(w) + '</button>'; }).join('') +
-      '</div>' +
-      '<div class="bm-ket" id="bmKet">✓ Đây là ví dụ minh hoạ — không lưu kết quả.</div>';
-    Array.prototype.forEach.call(o.querySelectorAll('#bmDapAn button'), function (btn) {
-      btn.addEventListener('click', function () {
-        Array.prototype.forEach.call(o.querySelectorAll('#bmDapAn button'), function (x) { x.disabled = true; });
-        btn.classList.add('chon');
-        $('#bmKet').classList.add('hien');
-      });
-    });
   }
   function dongBaiModal() {
     $('#bmNen').classList.remove('mo');
@@ -4607,20 +4641,6 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }).join('');
   }
 
-  // ---------- chép danh sách em chưa xong ----------
-  function chepThieu(id, maLop) {
-    var ds = A.baiCuaLop(DL, maLop, 'ql');
-    var b = null;
-    for (var i = 0; i < ds.length; i++) if (ds[i].id === id) { b = ds[i]; break; }
-    if (!b) return;
-    var t = tinhBai(b, maLop);
-    if (!t.daDoc) return baoToast('Chờ đọc xong kết quả rồi chép nhé.');
-    var chu = 'Lớp ' + maLop + ' — chưa xong "' + A.tenBai(b) + '"'
-      + (A.chuHan(b) ? (' (hạn ' + A.chuHan(b) + ')') : '') + ': '
-      + t.thieu.map(function (x) { return x.ten; }).join(', ');
-    thuChep(chu, t.thieu.length);
-  }
-
   // Chép vào bộ nhớ tạm; KHÔNG được thì mở hộp cho thầy bôi đen chép tay.
   // ⛔ Đừng chỉ báo "không chép được" rồi thôi — thầy vẫn cần cái danh sách đó
   // để dán vào Zalo. Trình duyệt chặn chép tự động là chuyện thường (trang chưa
@@ -4643,25 +4663,6 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var o = $('#chepChu');
     o.focus();
     o.setSelectionRange(0, chu.length);
-  }
-
-  // Mở trang học sinh (xem như một em có mã trong lớp đó) — lấy em ĐẦU TIÊN
-  // có mã trong lớp (nút "Xem trang của học sinh" trong hộp quản lý bài).
-  function maEmCuaLop(maLop) {
-    var l = A.lopTheoMa(DL, maLop);
-    var em = ((l && l.hocSinh) || []).filter(function (h) { return String(h.ma || '').trim(); })[0];
-    return em ? A.chuanMa(em.ma) : '';
-  }
-
-  function moTrangHs(id) {
-    var ma = maEmCuaLop(LOP_CHON);
-    if (!ma) return baoToast('Lớp này chưa em nào có mã đăng nhập.');
-    var ds = A.baiCuaLop(DL, LOP_CHON, 'ql');
-    var b = null;
-    for (var i = 0; i < ds.length; i++) if (ds[i].id === id) { b = ds[i]; break; }
-    if (!b) return;
-    window.open(A.trangCuaBai(b) + '?id=' + encodeURIComponent(id) +
-      '&nhu=' + encodeURIComponent(ma), '_blank');
   }
 
   // ⭐ #10 — sidebar "Xem như học sinh": CHỈ để kiểm tính năng (không phải lối
@@ -6130,12 +6131,6 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         }
         return void moBaiModal(theBtn.dataset.id);
       }
-
-      var chep = e.target.closest('[data-chep]');
-      if (chep) return void chepThieu(chep.dataset.chep, chep.dataset.lop || LOP_CHON);
-
-      var xem = e.target.closest('[data-xem]');
-      if (xem) return void moTrangHs(xem.dataset.xem);
 
       /* ⭐ v1.77.0 — BỎ QUA MỘT EM ở bài STAGE (có hỏi xác nhận, thầy chốt). */
       var bq = e.target.closest('[data-boqua]');

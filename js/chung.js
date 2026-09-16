@@ -396,6 +396,12 @@
     return !giao || vao <= giao;
   }
   function caLopCuaBai(l, b) {
+    // ⭐ v1.113.0 (16/09/2026) — KHÓA HỌC: MỌI em trong khóa đều thuộc MỌI lesson, bất
+    // kể ngày vào. Luật `vao` ở trên là của lớp thường (bài giao theo buổi, em vào sau
+    // buổi đó không phải làm); khóa học thì lesson mở dần và em nào cũng học từ đầu —
+    // 17 em vào K9 ngày 15/09 mà LESSON 17 giao 14/09 ⇒ dashboard đếm 3/3 trong khi
+    // `khoa.html` (đọc thẳng `l.hocSinh`) đếm 20 — hai trang lệch nhau. Nay cùng một số.
+    if (l && l.loai === 'khoa') return (l.hocSinh || []).map(function (h) { return h.ten; });
     return ((l && l.hocSinh) || []).filter(function (h) { return emCoMatOBai(h, b); })
       .map(function (h) { return h.ten; });
   }

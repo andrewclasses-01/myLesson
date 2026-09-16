@@ -1205,6 +1205,51 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hs-so{font-size:12px; font-weight:800; color:var(--chu); font-variant-numeric:tabular-nums}
 
 /* ================================================================
+   ⭐⭐ v1.113.0 (16/09/2026, thầy chốt) — THẺ KHÓA HỌC TRÊN DASHBOARD Y HỆT THẺ
+   TRÊN TRANG HỌC SINH (`khoa.html`). Khác đúng hai chỗ: KHÔNG có nút TÊN EM/CẢ LỚP
+   (dashboard mặc định là CẢ LỚP) và GIỮ cột ⚙ Cài đặt thẻ (thầy chốt "chỉ bỏ cột
+   icon thiếu bài, nút cài đặt vẫn có cột riêng"). Cao 272px, rộng tối đa 698px
+   (= thẻ bên trang học sinh trong khung 1180px). Vẽ bởi `veTheCardKhoa()`.
+   ⛔ BẢN CHÉP số đo từ `khoa.html` (`--cao-the:272px`, `.t-ten` lấp lánh,
+   `.t-chude`, `.td-dong` cột nhãn 46px, `mauTheoPhanTram`) — sửa bên đó thì sửa cả đây.
+   ================================================================ */
+.the.khoa-hoc{max-width:698px}
+.the.khoa-hoc .the-in{height:272px}
+.the.khoa-hoc .t-ten{font-size:19px; letter-spacing:.005em; line-height:1.2;
+  background:linear-gradient(100deg, var(--chu) 26%, #E5A20D 42%, #FFE9AE 50%,
+    #E5A20D 58%, var(--chu) 74%);
+  background-size:230% 100%; -webkit-background-clip:text; background-clip:text;
+  color:transparent; animation:lap-lanh-chu-kh 4.4s ease-in-out infinite}
+@keyframes lap-lanh-chu-kh{0%{background-position:190% 0} 60%,100%{background-position:-40% 0}}
+@media (prefers-reduced-motion:reduce){ .the.khoa-hoc .t-ten{animation:none; background-position:0 0} }
+.the.khoa-hoc .t-chude{font:600 13.4px/1.4 var(--mono); color:var(--mo); letter-spacing:.01em;
+  white-space:normal; overflow-wrap:break-word}
+.the.khoa-hoc .diem-rows{justify-content:space-around; gap:4px; padding:8px 10px 11px 12px}
+.the.khoa-hoc .td-dong{grid-template-columns:minmax(0,46px) minmax(60px,1fr) minmax(30px,auto) 16px;
+  column-gap:8px; min-height:0}
+.the.khoa-hoc .td-ten{font-size:11px; line-height:1.3}
+.the.khoa-hoc .td-bar{height:8px}
+.the.khoa-hoc .td-so{font-size:11.5px}
+.the.khoa-hoc .td-so.em-chua{color:#A9B6B3}
+.the.khoa-hoc .td-dong-sach .td-bar{background:#EEF3F1}
+
+/* ⭐⭐ v1.113.0 — POP-UP KẾT QUẢ DẠNG TAB (thẻ khóa học, thầy chốt "Tab từng BT"):
+   mỗi BT một tab, ruột = bảng xếp hạng MỘT act (đúng `.xh-dong` của pop-up 🏆).
+   Thay cho 5 cột nằm ngang — tên act khóa học dài (`white-space:nowrap`) tràn sang
+   cột bên, đo thật 16/09: cột 235px mà nhãn 348px. `khoa.html` có bản chép cùng
+   tên class — sửa một bên phải sửa bên kia. */
+.pop.tab{width:min(440px,100%)}
+.pop-tabs{flex:none; display:flex; gap:6px; padding:10px 12px 2px; overflow-x:auto; scrollbar-width:none}
+.pop-tabs[hidden]{display:none}
+.pop-tab{flex:1 0 auto; min-width:56px; padding:6px 10px; border:0; border-radius:10px; background:#EDF3F1;
+  font:800 11px/1.3 var(--font); letter-spacing:.06em; color:#7B8C89; cursor:pointer; white-space:nowrap;
+  transition:background .18s var(--em), color .18s var(--em)}
+.pop-tab:hover{background:#E1EBE8}
+.pop-tab.on{background:var(--xanh); color:#fff}
+.pop-tab .tab-so{display:block; font-size:9.5px; font-weight:700; letter-spacing:.02em; opacity:.75; margin-top:1px}
+.pop-tab.on .tab-so{opacity:.92}
+
+/* ================================================================
    ⭐⭐ v1.47.0 — POP-UP 🏆 XẾP HẠNG: MỖI ACT MỘT CỘT NẰM NGANG, ruột giống hệt
    leaderboard trong trang bài tập của học sinh (`bai.html`). Thầy chốt 02/09:
    "hiện các cột bài theo chiều ngang, mở rộng bề ngang pop-up cho vừa mọi act,
@@ -2062,6 +2107,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
     </div>
+    <!-- v1.113.0 — dải TAB (BT1 · BT2 …) cho pop-up kết quả thẻ khóa học, xem `moPopTabAct` -->
+    <div class="pop-tabs" id="popTabs" hidden></div>
     <div class="pop-ds" id="popDs"></div>
     <div class="pop-foot">ANDREW CLASSES</div>
   </div>
@@ -2118,8 +2165,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=87"></script>
-<script src="js/chung.js?v=48"></script>
+<script src="config.js?v=88"></script>
+<script src="js/chung.js?v=49"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -3044,9 +3091,121 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       (ten ? '<br><span class="ws-nhac-ten">' + ten + '</span>!' : '<br>TRÊN WORKSHEET!') + '</span>';
   }
 
+
+  // ================================================================
+  // ⭐⭐ v1.113.0 (16/09/2026, thầy chốt) — THẺ KHÓA HỌC: Y HỆT THẺ `khoa.html`
+  // (dòng lớn = SỐ LESSON lấp lánh + NGÀY, dòng dưới = tên bài giảng đầy đủ, nhãn
+  // hàng BT1/TNBG/SÁCH, thanh kéo dài hết cỡ, 272px), chỉ khác: KHÔNG có nút
+  // TÊN EM/CẢ LỚP (mặc định CẢ LỚP) và GIỮ cột ⚙ (bỏ cột icon thiếu bài).
+  // ⛔ BẢN CHÉP của `theTuBai`/`tenBaiGiang`/`nhanRow`/`hangLop`/`mauTheoPhanTram`
+  // bên `khoa.html` — sửa luật ở đó thì sửa cả đây.
+  // ================================================================
+  function laKhoaHoc() {
+    var l = A.lopTheoMa(DL, LOP_CHON);
+    return !!(l && l.loai === 'khoa');
+  }
+  /* Bài khóa KHÔNG có `b.ngay` — chỉ có `taoLuc` "YYYY-MM-DD". Đọc bằng regex thẳng
+     trên chuỗi, ĐỪNG `new Date(iso)` (múi giờ làm lệch ngày — đúng nếp `khoa.html`). */
+  function ngayCuaISOKh(s) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '').trim());
+    return m ? (Number(m[3]) + '/' + Number(m[2])) : '';
+  }
+  function tenBaiGiangKh(b) {
+    var bg = b.baiGiang || {};
+    var t = String(bg.tieuDe || '').trim();
+    if (!t) return A.tenBai(b);
+    var i = t.indexOf(':');
+    return (i >= 0 ? t.slice(i + 1).trim() : t) || A.tenBai(b);
+  }
+  function nhanRowKh(k) {
+    if (k.loai === 'sach') return 'SÁCH' + (k.trang ? ' ' + A.chuAnToan(k.trang) : '');
+    var ten = String(k.ten || '').trim();
+    var m = /^BT\s*0*([0-9]+)/i.exec(ten);
+    if (m) return 'BT' + m[1];
+    if (/QUIZ/i.test(k.mau || '') || /TR[ẮA]C\s*NGHI[ỆE]M/i.test(ten)) return 'TNBG';
+    return A.chuAnToan(ten) || 'BT';
+  }
+  function mauTheoPhanTramKh(pt, xong) {
+    if (xong) return 'm-la';
+    if (pt >= 70) return 'm-vang';
+    if (pt > 0) return 'm-cam';
+    return 'm-do';
+  }
+  // Một hàng CẢ LỚP: số em (trong sĩ số của bài) đã xong / sĩ số — y `hangLop()` khoa.html.
+  function hangKhoa(k, t) {
+    var nhan = nhanRowKh(k);
+    if (k.loai === 'sach' || !k.ma) {
+      return '<span class="td-dong td-dong-sach"><span class="td-ten">' + nhan + '</span>' +
+        '<span class="td-bar"></span><span class="td-so em-chua">—</span><span class="td-tich"></span></span>';
+    }
+    var a = t.acts.filter(function (x) { return x.ma === k.ma; })[0];
+    if (!a || a.xong === null) {
+      return '<span class="td-dong"><span class="td-ten" title="' + A.chuAnToan(k.ten) + '">' + nhan + '</span>' +
+        '<span class="td-bar"><i style="width:0%"></i></span>' +
+        '<span class="td-so" style="color:var(--nhat)">…</span><span class="td-tich"></span></span>';
+    }
+    var pt = t.siSo ? Math.min(100, Math.round(a.xong / t.siSo * 100)) : 0;
+    var du = t.siSo > 0 && a.xong >= t.siSo;
+    var m = mauTheoPhanTramKh(pt, du);
+    var lopGocMoc = (A.lopTheoMa(DL, LOP_CHON) || {}).tenGoc || LOP_CHON;
+    return '<span class="td-dong">' +
+      '<span class="td-ten" title="' + A.chuAnToan(k.ten) + '">' + nhan + '</span>' +
+      '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
+        avMocHtml(DIEM[a.ma], lopGocMoc) + '</span>' +
+      '<span class="td-so' + (du ? ' m-la' : '') + '">' + a.xong + '/' + t.siSo + '</span>' +
+      '<span class="td-tich">' + (du ? '✓' : '') + '</span>' +
+    '</span>';
+  }
+  function veTheCardKhoa(b, het) {
+    var t = tinhBai(b, LOP_CHON);
+    var moc = A.mocHan(b);
+    var st = tinhTrangThe(t, moc, A.daSuaHan(b));
+    if (het) st = { tt: 'thuong', du: false };
+    var lopThem, lopNen;
+    if (het) { lopThem = ' het'; lopNen = ''; }
+    else if (st.du) { lopThem = ' xong-het'; lopNen = 'tt-la'; }
+    else if (st.tt === 'gap') { lopThem = ' gap'; lopNen = 'tt-do'; }
+    else if (st.tt === '24h') { lopThem = ' gio-vang'; lopNen = 'tt-vang'; }
+    else { lopThem = ' gio-duong'; lopNen = 'tt-duong'; }
+    var ttThe = A.trangThaiThe(b);
+    if (ttThe === 'an') lopThem += ' an';
+    if (ttThe === 'khoa' && !het) { lopThem = ' khoa'; lopNen = 'tt-duong'; }
+    var id = A.chuAnToan(b.id);
+    var khoi = (b.khoi || []).filter(function (k) { return k.loai !== 'ws'; });
+    var giao = ngayGach(b.ngay) || ngayCuaISOKh(b.taoLuc);
+    var ruot = khoi.length
+      ? khoi.map(function (k) { return hangKhoa(k, t); }).join('')
+      : 'Bài giao trên giấy — chưa có bài tập online nào.';
+    return '<div class="the khoa-hoc' + lopThem + '" role="button" tabindex="0" data-id="' + id + '">' +
+      '<span class="the-in ' + lopNen + '">' +
+        '<span class="the-body">' +
+          '<span class="t-chu">' +
+            '<span class="t-ten">' + A.chuAnToan(A.maLesson(b) || 'LESSON') +
+              (giao ? '<span class="ngay">NGÀY ' + A.chuAnToan(giao) + '</span>' : '') + '</span>' +
+            '<span class="t-chude">' + A.chuAnToan(tenBaiGiangKh(b)) + '</span>' +
+          '</span>' +
+          veHanCard(b, moc, st, t) +
+        '</span>' +
+        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + '">' +
+          '<span class="diem-ic">' +
+            '<button type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
+            '<button type="button" data-rail-tam="' + id + '" title="Ô này thầy chưa gán tính năng">' + IC_TAM_NHO + '</button>' +
+          '</span>' +
+          '<span class="diem-vach"></span>' +
+          '<span class="diem-rows">' + ruot + '</span>' +
+        '</span>' +
+        '<span class="play">' + (ttThe === 'khoa'
+          ? '<svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10.5" rx="2.2"/>' +
+            '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.6 0v3.1" fill="none" stroke="#fff" stroke-width="2.2"/></svg>'
+          : '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>') + '</span>' +
+      '</span></div>';
+  }
+
   // ⛔ Gọi qua `function (b) { return veTheCard(b, het); }` — `ds.map(veTheCard)` sẽ
   //    truyền CHỈ SỐ vào tham số này.
   function veTheCard(b, het) {
+    // ⭐ v1.113.0 — lớp đang chọn là KHÓA HỌC ⇒ thẻ khóa học riêng (xem `veTheCardKhoa`).
+    if (laKhoaHoc()) return veTheCardKhoa(b, het);
     var t = tinhBai(b, LOP_CHON);
     var moc = A.mocHan(b);
     var st = tinhTrangThe(t, moc, A.daSuaHan(b));
@@ -3600,6 +3759,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // ⛔ Phải gọi ở CẢ BA lối mở, không thì khung rộng của lần trước còn nguyên.
   function popRong(n) {
     var k = $('#popKhung'), d = $('#popDs');
+    // v1.113.0 — mọi pop-up khác đi qua đây: tắt dạng TAB (thẻ khóa học) nếu đang bật.
+    k.classList.remove('tab');
+    $('#popTabs').hidden = true;
     k.classList.toggle('rong', n > 0);
     d.classList.toggle('ngang', n > 0);
     if (n > 0) k.style.setProperty('--so-cot', n);
@@ -3785,6 +3947,77 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return co.concat(chua);
   }
 
+
+  // ================================================================
+  // ⭐⭐ v1.113.0 (16/09/2026, thầy chốt "Tab từng BT") — POP-UP KẾT QUẢ DẠNG TAB cho
+  // THẺ KHÓA HỌC: mỗi act một TAB (BT1 · BT2 · TNBG…), ruột là bảng xếp hạng MỘT act
+  // (`veCotActDb` — đúng ruột từng cột của pop-up 🏆). Vì sao không dùng pop-up 5 cột
+  // ngang: tên act khóa học dài ("BT1. PHÂN BIỆT 7 DẠNG THÔNG TIN CƠ BẢN") + luật
+  // `white-space:nowrap` ⇒ chữ tràn sang cột bên, đo thật: cột 235px, nhãn 348px.
+  // `khoa.html` có bản chép (`moPopKetQua`) — sửa hình dạng thì sửa cả hai.
+  // ================================================================
+  var POP_TAB = { b: null, t: null, i: 0 };
+  function veCotActDb(a, t) {
+    var ds = xepActDb(a.ma, t.caLop || []);
+    var daLam = ds.filter(function (e) { return !e.chua; }).length;
+    var c = CHUAN[a.ma];
+    var moc = (c && !c.tru) ? c.dinh : 0;   // 0 = act không đo được ⇒ nộp là full
+    var vach = '<span class="doi-vach"><span class="line"></span>' +
+      '<span class="lb">' + A.chuAnToan(A.tenO(a.ten, true)) +
+        '<span class="tong">' + daLam + '/' + t.siSo + ' đã làm</span></span>' +
+      '<span class="line"></span></span>';
+    var hang = ds.map(function (e, i) {
+      var full = !e.chua && e.diem >= moc;
+      var huy = full && i < 3;               // huy chương: ba hạng đầu, phải full
+      var lop = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
+      var o = e.chua ? '–' : (huy ? veHuyDb(i + 1) : (i + 1));
+      return '<span class="xh-dong ' + lop + '">' +
+        '<span class="xh-hang">' + o + '</span>' +
+        '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
+        '<span class="xh-diem">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +
+        '<span class="xh-giay">' + (e.chua ? '' : chuGiayDb(e.giay)) + '</span>' +
+      '</span>';
+    }).join('');
+    return '<div class="xh-cot">' + vach + hang + '</div>';
+  }
+  function veTabsDb() {
+    var t = POP_TAB.t;
+    $('#popTabs').innerHTML = t.acts.map(function (a, i) {
+      var ds = DIEM[a.ma] ? xepActDb(a.ma, t.caLop || []) : [];
+      var daLam = ds.filter(function (e) { return !e.chua; }).length;
+      return '<button type="button" class="pop-tab' + (i === POP_TAB.i ? ' on' : '') + '" data-i="' + i + '">' +
+        nhanRowKh(a) + '<span class="tab-so">' + daLam + '/' + t.siSo + '</span></button>';
+    }).join('');
+  }
+  function veRuotTabDb() {
+    var a = POP_TAB.t.acts[POP_TAB.i];
+    $('#popDs').innerHTML = a ? veCotActDb(a, POP_TAB.t) : '';
+  }
+  function moPopTabAct(b, t) {
+    $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
+    if (!t.acts.length) {
+      popRong(0);
+      $('#popDs').innerHTML = '<div class="trong">Bài này không có game AWord nào để xếp hạng.</div>';
+      $('#popNen').classList.add('mo');
+      return;
+    }
+    popRong(0);
+    var k = $('#popKhung');
+    k.classList.add('tab');
+    $('#popTabs').hidden = false;
+    POP_TAB = { b: b, t: t, i: 0 };
+    veTabsDb();
+    veRuotTabDb();
+    $('#popNen').classList.add('mo');
+  }
+  function bamTabPop(e) {
+    var n = e.target.closest('.pop-tab');
+    if (!n || !POP_TAB.t) return;
+    POP_TAB.i = Number(n.dataset.i) || 0;
+    veTabsDb();
+    veRuotTabDb();
+  }
+
   function moPopChiTietAct(b, t) {
     $('#popPhu').textContent = A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
     if (!t.acts.length) {
@@ -3794,30 +4027,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       return;
     }
     popRong(t.acts.length);
-    var caLop = t.caLop || [];
-    $('#popDs').innerHTML = t.acts.map(function (a) {
-      var ds = xepActDb(a.ma, caLop);
-      var daLam = ds.filter(function (e) { return !e.chua; }).length;
-      var c = CHUAN[a.ma];
-      var moc = (c && !c.tru) ? c.dinh : 0;   // 0 = act không đo được ⇒ nộp là full
-      var vach = '<span class="doi-vach"><span class="line"></span>' +
-        '<span class="lb">' + A.chuAnToan(A.tenO(a.ten, true)) +
-          '<span class="tong">' + daLam + '/' + t.siSo + ' đã làm</span></span>' +
-        '<span class="line"></span></span>';
-      var hang = ds.map(function (e, i) {
-        var full = !e.chua && e.diem >= moc;
-        var huy = full && i < 3;               // huy chương: ba hạng đầu, phải full
-        var lop = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
-        var o = e.chua ? '–' : (huy ? veHuyDb(i + 1) : (i + 1));
-        return '<span class="xh-dong ' + lop + '">' +
-          '<span class="xh-hang">' + o + '</span>' +
-          '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
-          '<span class="xh-diem">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +
-          '<span class="xh-giay">' + (e.chua ? '' : chuGiayDb(e.giay)) + '</span>' +
-        '</span>';
-      }).join('');
-      return '<div class="xh-cot">' + vach + hang + '</div>';
-    }).join('');
+    // v1.113.0 — ruột từng cột tách ra `veCotActDb` (dùng chung với pop-up dạng TAB).
+    $('#popDs').innerHTML = t.acts.map(function (a) { return veCotActDb(a, t); }).join('');
     $('#popNen').classList.add('mo');
   }
 
@@ -3837,6 +4048,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       else if (t.acts.length) moPopCaLop(b, t);
       return;
     }
+    // ⭐ v1.113.0 — thẻ khóa học mở pop-up dạng TAB (mỗi BT một tab), xem `moPopTabAct`.
+    if (laKhoaHoc()) return moPopTabAct(b, t);
     moPopChiTietAct(b, t);
   }
 
@@ -6099,6 +6312,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       dongKhoMenu();    // v1.86.0
       dongXnPop();      // v1.36.0
       dongHanPop();     // v1.36.0
+      dongPop();        // v1.113.0 — pop-up kết quả cũng đóng bằng Esc (như lop/khoa)
     });
 
     // ⭐ v1.34.0 — `.the[data-id]` đổi từ <button> sang <div role="button">
@@ -6154,6 +6368,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ---------- #4 — POP-UP BẢNG XẾP HẠNG / CHI TIẾT SP CHECK ----------
     $('#popDong').onclick = dongPop;
     $('#popNen').onclick = function (e) { if (e.target === this) dongPop(); };
+    $('#popTabs').onclick = bamTabPop;   // v1.113.0 — đổi tab BT trong pop-up thẻ khóa học
 
     // ---------- ⭐ v1.48.0 — GIAO BÀI TẬP (cây bút) ----------
     $('#btnGiao').addEventListener('click', moGiao);

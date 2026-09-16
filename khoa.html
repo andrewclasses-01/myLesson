@@ -339,6 +339,82 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
 /* Dòng SÁCH — chưa có act AWord (chưa track điểm), thanh để trống + gạch ngang. */
 .td-dong-sach .td-bar{background:#EEF3F1}
 
+/* ---------- ⭐⭐ v1.113.0 (16/09/2026, thầy chốt) — POP-UP KẾT QUẢ DẠNG TAB ----------
+   Bấm VÙNG THANH của thẻ ⇒ pop-up: mỗi BT một TAB. Đang ở nút TÊN EM ⇒ tab hiện kết
+   quả RIÊNG của em (số câu đúng/tổng · thời gian · hạng trong khóa); đang ở CẢ LỚP ⇒
+   bảng xếp hạng cả khóa của act đó (đúng `.xh-dong` như trang lớp/dashboard).
+   Khung `.pop-*`/`.xh-*`/`.doi-vach` chép từ lop.html; `.pop-tabs`/`.pop-tab`/`.kq-*`
+   là bản chép với dashboard.html — sửa một bên phải sửa bên kia. */
+.pop-nen{position:fixed; inset:0; z-index:55; display:grid; place-items:center;
+  padding:20px; background:rgba(22,35,42,.42); backdrop-filter:blur(2px);
+  opacity:0; pointer-events:none; transition:opacity .26s var(--em)}
+.pop-nen.mo{opacity:1; pointer-events:auto}
+.pop{width:min(440px,100%); max-height:92vh; background:var(--surface);
+  border-radius:20px; box-shadow:0 24px 60px rgba(22,35,42,.28);
+  display:flex; flex-direction:column; overflow:hidden;
+  transform:translateY(18px) scale(.96); opacity:0;
+  transition:transform .3s var(--em), opacity .26s var(--em)}
+.pop-nen.mo .pop{transform:none; opacity:1}
+.pop-head{flex:none; display:flex; align-items:center; gap:10px;
+  padding:13px 15px 11px; border-bottom:1px solid var(--line)}
+.pop-head h3{margin:0; font-size:14px; font-weight:800; letter-spacing:.03em}
+.pop-head .phu{font-size:10.5px; font-weight:600; color:var(--muted); margin-top:1px}
+.pop-head .dong{margin-left:auto; width:32px; height:32px; border-radius:10px;
+  display:grid; place-items:center; background:var(--ground)}
+.pop-head .dong svg{width:16px; height:16px; stroke:var(--muted); stroke-width:2.4;
+  fill:none; stroke-linecap:round}
+.pop-tabs{flex:none; display:flex; gap:6px; padding:10px 12px 2px; overflow-x:auto; scrollbar-width:none}
+.pop-tab{flex:1 0 auto; min-width:56px; padding:6px 10px; border-radius:10px; background:#EDF3F1;
+  font:800 11px/1.3 var(--sans); letter-spacing:.06em; color:#7B8C89; white-space:nowrap;
+  transition:background .18s var(--em), color .18s var(--em)}
+.pop-tab:hover{background:#E1EBE8}
+.pop-tab.on{background:var(--accent); color:#fff}
+.pop-tab .tab-so{display:block; font-size:9.5px; font-weight:700; letter-spacing:.02em; opacity:.75; margin-top:1px}
+.pop-tab.on .tab-so{opacity:.92}
+.pop-ds{flex:1; min-height:0; overflow-y:auto; padding:6px 9px 8px}
+.pop-foot{flex:none; padding:8px 16px 11px; border-top:1px solid var(--line);
+  font-size:9px; font-weight:500; letter-spacing:.22em; color:#A9B6B3; text-align:center}
+.pop-trong{padding:22px 14px; text-align:center; color:#8AA09C; font-size:12.5px; line-height:1.5}
+.doi-vach{display:flex; align-items:center; gap:10px; margin:14px 9px 6px}
+.doi-vach:first-child{margin-top:6px}
+.doi-vach .line{flex:1; height:1px; background:var(--line)}
+.doi-vach .lb{font-size:10.5px; font-weight:800; letter-spacing:.06em; color:var(--accent);
+  white-space:normal; text-align:center; line-height:1.35}
+.doi-vach .lb .tong{margin-left:6px; font-weight:700; letter-spacing:.03em; color:var(--muted); white-space:nowrap}
+.doi-vach .lb .tong::before{content:'•'; margin-right:6px; color:var(--line)}
+.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch 4.8ch;
+  gap:6px; align-items:center; padding:0 6px; border-radius:7px;
+  height:24px; font-weight:700; font-size:12px; line-height:1}
+.xh-dong:nth-child(odd){background:#F3F8F6}
+.xh-dong.toi{box-shadow:inset 0 0 0 1.5px var(--accent)}
+.xh-hang{font-weight:800; font-size:10.5px; color:#9AACA8; text-align:center; font-variant-numeric:tabular-nums}
+.xh-hang .huy{display:block; width:19px; height:19px; margin:0 auto}
+.xh-ten{font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.xh-diem{font-weight:800; color:var(--accent); text-align:right; font-variant-numeric:tabular-nums}
+.xh-giay{color:#93A5A1; text-align:right; font-size:11px; font-variant-numeric:tabular-nums}
+.xh-dong.hc .xh-ten{color:#D79B0C; animation:hao-quang-ten-pop 2.4s ease-in-out infinite}
+.xh-dong.du .xh-ten{color:var(--m-la)}
+.xh-dong.co .xh-ten{color:var(--ink)}
+.xh-dong.chua .xh-ten{color:#D93B40}
+.xh-dong.chua .xh-diem,.xh-dong.chua .xh-giay{color:#C9A3A4}
+@keyframes hao-quang-ten-pop{
+  0%,100%{text-shadow:0 0 8px rgba(243,178,27,.30), 0 0 18px rgba(243,178,27,.14)}
+  50%    {text-shadow:0 0 10px rgba(247,196,60,.75), 0 0 22px rgba(243,178,27,.50)}
+}
+@media (prefers-reduced-motion:reduce){ .xh-dong.hc .xh-ten{animation:none} }
+/* Ô kết quả RIÊNG CỦA EM (chế độ TÊN EM): số câu đúng to, thanh %, thời gian + hạng. */
+.kq-em{padding:10px 12px 14px; display:flex; flex-direction:column; align-items:center; gap:10px}
+.kq-so{display:flex; align-items:baseline; gap:4px; font-weight:800; color:var(--ink)}
+.kq-so b{font-size:38px; line-height:1; color:var(--accent)}
+.kq-so span{font-size:18px; color:var(--muted)}
+.kq-so em{font-style:normal; font-size:11px; letter-spacing:.08em; color:var(--muted); margin-left:6px}
+.kq-so.du b{color:var(--m-la)}
+.kq-bar{position:relative; width:100%; max-width:300px; height:10px; border-radius:99px; background:#E7EDEB}
+.kq-bar i{position:absolute; inset:0 auto 0 0; height:100%; border-radius:99px}
+.kq-phu{display:flex; gap:18px; font:800 12px/1.4 var(--sans); color:#54706B; font-variant-numeric:tabular-nums}
+.kq-phu .hang{color:var(--accent)}
+.kq-phu .hang.top{color:#D79B0C}
+
 /* ---------- CHAT (y hệt lop.html) ---------- */
 .chat-cot{min-width:0; min-height:0}
 @media (min-width:1041px){
@@ -602,10 +678,28 @@ body.mo-menu .side.trai{transform:none}
   <div class="side-foot">Lesson in Andrew Classes · <span id="verFoot"></span></div>
 </nav>
 
+<!-- ⭐⭐ v1.113.0 — POP-UP KẾT QUẢ DẠNG TAB (bấm vùng thanh của thẻ), xem `moPopKetQua()` -->
+<div class="pop-nen" id="popNen">
+  <div class="pop" id="popKhung">
+    <div class="pop-head">
+      <div>
+        <h3 id="popTieu">KẾT QUẢ</h3>
+        <div class="phu" id="popPhu"></div>
+      </div>
+      <button class="dong" id="popDong" title="Đóng">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="pop-tabs" id="popTabs"></div>
+    <div class="pop-ds" id="popDs"></div>
+    <div class="pop-foot">ANDREW CLASSES</div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=85"></script>
-<script src="js/chung.js?v=48"></script>
+<script src="config.js?v=86"></script>
+<script src="js/chung.js?v=49"></script>
 <script src="js/chat.js?v=23"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
@@ -986,6 +1080,151 @@ function veTheCu(b){
   '</span></button>';
 }
 
+/* ---------- ⭐⭐ v1.113.0 (16/09/2026, thầy chốt "Tab từng BT") — POP-UP KẾT QUẢ ----------
+   Bấm VÙNG THANH của thẻ (không phải nút TÊN EM/CẢ LỚP, không phải phần đầu thẻ) ⇒
+   pop-up với mỗi act một TAB. Chế độ theo nút đang bật trên thẻ:
+     - TÊN EM  ⇒ `veKetQuaEm()`: số câu đúng/tổng (thầy chốt không hiện %), thời gian,
+                 hạng của em trong khóa (xếp theo điểm rồi nhanh hơn — cùng luật leaderboard).
+     - CẢ LỚP  ⇒ `veCotActPop()`: bảng xếp hạng cả khóa của act đó, em chưa làm đỏ ở cuối,
+                 dòng của chính em viền xanh (`.toi`).
+   Dashboard có bản chép (`moPopTabAct` — chỉ chế độ CẢ LỚP) — sửa hình dạng thì sửa cả hai. */
+var POP = { b: null, acts: [], i: 0, che: 'em' };
+function actsCuaThe(b){
+  return (b.khoi || []).filter(function(k){ return k.loai === 'act' && k.ma; });
+}
+function veHuyPop(hang){
+  var mat = ['#F5BE2A', '#B9C4CC', '#CE8845'][hang - 1];
+  var vien = ['#C98A0B', '#7E8B95', '#9A5D28'][hang - 1];
+  var day = ['#DDA210', '#98A4AE', '#AC6C33'][hang - 1];
+  return '<svg class="huy" viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M8.2 2.2 10.9 8.6M15.8 2.2 13.1 8.6" fill="none" stroke="' + day +
+      '" stroke-width="2.4" stroke-linecap="round"/>' +
+    '<circle cx="12" cy="15.4" r="6.9" fill="' + mat + '" stroke="' + vien + '" stroke-width="1.2"/>' +
+    '<circle cx="12" cy="15.4" r="5" fill="none" stroke="' + vien + '" stroke-width=".7" opacity=".55"/>' +
+    '<text x="12" y="15.9" text-anchor="middle" dominant-baseline="middle" ' +
+      'font-family="Montserrat, sans-serif" font-size="7.6" font-weight="800" fill="#FFFFFF">' +
+      hang + '</text></svg>';
+}
+function chuGiayPop(g){
+  var s = Math.max(0, Math.round(g || 0));
+  return Math.floor(s / 60) + ':' + ('0' + (s % 60)).slice(-2);
+}
+/* Xếp hạng một act trong khóa: có điểm lên trước (điểm cao, rồi nhanh hơn), chưa làm
+   dồn xuống cuối. Cùng luật với leaderboard trang bài. */
+function xepActPop(ma){
+  var ds = (DIEM[ma] || []).filter(function(e){
+    return CA_LOP.some(function(t){ return A.khoaTen(t) === A.khoaTen(e.ten); });
+  }).slice().sort(function(a, b){
+    if (a.diem !== b.diem) return b.diem - a.diem;
+    return (a.giay || 0) - (b.giay || 0);
+  });
+  var daCo = {};
+  ds.forEach(function(e){ daCo[A.khoaTen(e.ten)] = 1; });
+  var chua = CA_LOP.filter(function(t){ return !daCo[A.khoaTen(t)]; })
+    .map(function(t){ return { ten: t, chua: true }; });
+  return ds.concat(chua);
+}
+function vachActPop(k, phu){
+  return '<span class="doi-vach"><span class="line"></span><span class="lb">' +
+    A.chuAnToan(k.ten) + '<span class="tong">' + phu + '</span></span>' +
+    '<span class="line"></span></span>';
+}
+function veCotActPop(k){
+  var ds = xepActPop(k.ma);
+  var daLam = ds.filter(function(e){ return !e.chua; }).length;
+  var c = CHUAN[k.ma];
+  var moc = (c && !c.tru) ? c.dinh : 0;
+  var toi = A.khoaTen(TOI);
+  var hang = ds.map(function(e, i){
+    var full = !e.chua && e.diem >= moc;
+    var huy = full && i < 3;
+    var lop = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
+    if (A.khoaTen(e.ten) === toi) lop += ' toi';
+    return '<span class="xh-dong ' + lop + '">' +
+      '<span class="xh-hang">' + (e.chua ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
+      '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
+      '<span class="xh-diem">' + (e.chua ? '—' : Math.round((e.tho && e.tho.diem) || e.diem)) + '</span>' +
+      '<span class="xh-giay">' + (e.chua ? '' : chuGiayPop(e.giay)) + '</span></span>';
+  }).join('');
+  return vachActPop(k, daLam + '/' + SI_SO + ' đã làm') + hang;
+}
+/* Kết quả RIÊNG của em ở một act. Mẫu số = CHUẨN ĐỦ ĐIỂM (như hàng trên thẻ). */
+function ketQuaEm(k){
+  var ds = DIEM[k.ma] || [], chuan = CHUAN[k.ma];
+  var toi = null, khoaTen = A.khoaTen(TOI);
+  for (var i = 0; i < ds.length; i++) {
+    if (A.khoaTen(ds[i].ten) === khoaTen) { toi = ds[i]; break; }
+  }
+  var xong = A.xongAct(ds, TOI, chuan);
+  var toiDa = (chuan && !chuan.tru && chuan.dinh > 0) ? chuan.dinh : 0;
+  var tho = toi && toi.tho ? toi.tho : null;
+  var tong = (tho && tho.tong > 0) ? tho.tong : toiDa;
+  var dung = tho ? tho.diem : 0;
+  var hang = 0;
+  if (toi) {
+    var xep = xepActPop(k.ma);
+    for (var j = 0; j < xep.length; j++) {
+      if (!xep[j].chua && A.khoaTen(xep[j].ten) === khoaTen) { hang = j + 1; break; }
+    }
+  }
+  return { co: !!toi, dung: dung, tong: tong, xong: xong, giay: toi ? toi.giay : 0, hang: hang };
+}
+function veKetQuaEm(k){
+  var q = ketQuaEm(k);
+  if (!q.co) {
+    return vachActPop(k, 'chưa làm') +
+      '<div class="pop-trong">Em chưa làm bài này.<br>Bấm vào phần đầu thẻ để mở bài nhé.</div>';
+  }
+  var pt = q.tong > 0 ? Math.round(q.dung / q.tong * 100) : 0;
+  return vachActPop(k, q.dung + '/' + q.tong) +
+    '<div class="kq-em">' +
+      '<div class="kq-so' + (q.xong ? ' du' : '') + '"><b>' + q.dung + '</b><span>/' + q.tong + '</span><em>CÂU ĐÚNG</em></div>' +
+      '<div class="kq-bar"><i class="' + mauTheoPhanTram(pt, q.xong) + '" style="width:' + pt + '%"></i></div>' +
+      '<div class="kq-phu"><span>⏱ ' + chuGiayPop(q.giay) + '</span>' +
+        '<span class="hang' + (q.hang && q.hang <= 3 ? ' top' : '') + '">Hạng ' + q.hang + '/' + SI_SO + '</span></div>' +
+    '</div>';
+}
+function veTabsPop(){
+  $('#popTabs').innerHTML = POP.acts.map(function(k, i){
+    var phu;
+    if (POP.che === 'lop') {
+      var daLam = xepActPop(k.ma).filter(function(e){ return !e.chua; }).length;
+      phu = daLam + '/' + SI_SO;
+    } else {
+      var q = ketQuaEm(k);
+      phu = q.co ? (q.dung + '/' + q.tong) : '—';
+    }
+    return '<button type="button" class="pop-tab' + (i === POP.i ? ' on' : '') + '" data-i="' + i + '">' +
+      nhanRow(k) + '<span class="tab-so">' + phu + '</span></button>';
+  }).join('');
+}
+function veRuotPop(){
+  var k = POP.acts[POP.i];
+  if (!k) { $('#popDs').innerHTML = ''; return; }
+  $('#popDs').innerHTML = POP.che === 'lop' ? veCotActPop(k) : veKetQuaEm(k);
+  $('#popDs').scrollTop = 0;
+}
+function moPopKetQua(b, che){
+  var acts = actsCuaThe(b);
+  if (!acts.length) { baoToast('Bài này chưa có bài tập online nào.'); return; }
+  POP = { b: b, acts: acts, i: 0, che: che === 'lop' ? 'lop' : 'em' };
+  $('#popTieu').textContent = POP.che === 'lop' ? 'KẾT QUẢ CẢ LỚP' : 'KẾT QUẢ CỦA ' + chuAnToan(TOI);
+  $('#popPhu').textContent = b.lesson + (b.chuDe ? ' • ' + b.chuDe : '');
+  veTabsPop();
+  veRuotPop();
+  $('#popNen').classList.add('mo');
+}
+function dongPop(){ $('#popNen').classList.remove('mo'); }
+$('#popDong').onclick = dongPop;
+$('#popNen').onclick = function(e){ if (e.target === this) dongPop(); };
+$('#popTabs').onclick = function(e){
+  var n = e.target.closest('.pop-tab');
+  if (!n || !POP.acts.length) return;
+  POP.i = Number(n.getAttribute('data-i')) || 0;
+  veTabsPop();
+  veRuotPop();
+};
+
 function chuoiGio(ms){
   var s = Math.floor(ms / 1000);
   var h = Math.floor(s / 3600), p = Math.floor((s % 3600) / 60), g = s % 60;
@@ -1057,6 +1296,20 @@ function dungCot(){
       if (!b.id || !b.trang) { baoToast('Bài này thầy giao trên giấy, không có trang trên web.'); return; }
       location.href = b.trang + '?id=' + encodeURIComponent(b.id);
     };
+    /* ⭐⭐ v1.113.0 (thầy chốt) — BẤM VÙNG THANH ⇒ POP-UP KẾT QUẢ (không mở bài nữa).
+       Nút TÊN EM/CẢ LỚP nằm TRONG vùng này: để cú bấm đó nổi lên `t.onclick` ở trên
+       (không chặn), còn lại chặn nổi bọt và mở pop-up theo chế độ đang bật. Phần đầu thẻ
+       (tên bài, ô hạn) và mũi tên vẫn mở trang bài như cũ. Thẻ cũ cũng mở được. */
+    var vung = t.querySelector('.the-diem');
+    if (vung && actsCuaThe(b).length) {
+      vung.setAttribute('role', 'button');
+      vung.setAttribute('title', 'Xem kết quả');
+      vung.onclick = function(e){
+        if (e.target.closest('[data-xem]')) return;
+        e.preventDefault(); e.stopPropagation();
+        moPopKetQua(b, t.classList.contains('lop') ? 'lop' : 'em');
+      };
+    }
   });
   henVeLaiAvatarMoc($('#cotBai'));
   henDinhViThumb($('#cotBai'));
@@ -1232,7 +1485,7 @@ $('#phuMo').onclick = dongHet;
 document.querySelectorAll('[data-dong]').forEach(function(b){ b.onclick = dongHet; });
 
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') { dongHet(); dongBangCx(); dongPopCx(); dongXoaCum(null); }
+  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); dongXoaCum(null); }
 });
 
 /* ---------- CHAT (kho tin thật — dùng chung js/chat.js với lop.html) ---------- */

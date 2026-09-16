@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-16 22:38:00",
+  "capNhat": "2026-09-16 22:47:51",
   "bai": {
     "A1C": [
       {
@@ -128,6 +128,23 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_15.9_WORKSHEET_IEL-S15.T4.P1",
+        "tieuDe": "B2A_15.9_WORKSHEET IEL-S15.T4.P1",
+        "tenHien": "B2A_15.9_WORKSHEET IEL-S15.T4.P1",
+        "dang": "WORKSHEET",
+        "ngay": "15.9",
+        "tenBai": "IEL-S15.T4.P1 / ANAGRAM ENG1",
+        "han": "2026-09-19T17:30",
+        "maLesson": "IEL-S15.T4.P1",
+        "taoLuc": "2026-09-16",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "IEL-S15.T4.P1 / ANAGRAM ENG1"
+          }
+        ]
+      },
       {
         "id": "B2A_12.9_DICTS_IEL-S15.T4.P1",
         "tieuDe": "B2A_12.9_DICTS IEL-S15.T4.P1",

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-16 15:52:42",
+  "capNhat": "2026-09-16 16:04:47",
   "bai": {
     "A1C": [
       {
@@ -291,6 +291,23 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_15.9_WORKSHEET_LSA2-S3.T3.P1-2",
+        "tieuDe": "A1B_15.9_WORKSHEET LSA2-S3.T3.P1-2",
+        "tenHien": "A1B_15.9_WORKSHEET LSA2-S3.T3.P1-2",
+        "dang": "WORKSHEET",
+        "ngay": "15.9",
+        "tenBai": "ANAGRAM WORKSHEET",
+        "han": "2026-09-17T19:30",
+        "maLesson": "LSA2-S3.T3.P1-2",
+        "taoLuc": "2026-09-16",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "ANAGRAM WORKSHEET"
+          }
+        ]
+      },
       {
         "id": "A1B_10.9_DICTS_LSA2-S3.T2.P3-4-5",
         "tieuDe": "A1B_10.9_DICTS LSA2-S3.T2.P3-4-5",

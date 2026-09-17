@@ -1024,6 +1024,15 @@
     return (b.khoi || []).filter(function (k) { return k.loai === 'ws' && k.ten; });
   }
 
+  // ⭐ v1.116.1 (17/09/2026) — Các khối BÀI NGHE (`loai:'audio'|'nghe'`, dạng
+  // DICTS) của một bài — mỗi khối mang `maNghe` (mã file mp3, dùng làm KHOÁ
+  // trong kho tiến độ nghe `lessonAudioTienDo`, xem `bai.html` + `dashboard.html`).
+  function ngheCuaBai(b) {
+    return (b.khoi || []).filter(function (k) {
+      return (k.loai === 'audio' || k.loai === 'nghe') && k.maNghe;
+    });
+  }
+
   /* ==========================================================================
      ⭐⭐ v1.76.0 — DẠNG BÀI **STAGE**: bài tập chia CHẶNG (thầy chốt 07/09/2026)
 
@@ -2582,7 +2591,7 @@
     bam: bam, laMaQuanLy: laMaQuanLy,
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
-    actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, maLesson: maLesson, tenBai: tenBai,
+    actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, ngheCuaBai: ngheCuaBai, maLesson: maLesson, tenBai: tenBai,
     tenWorksheet: tenWorksheet,   // ⭐ v1.103.0 — tiêu đề các worksheet (thẻ WORKSHEET)
     // ⭐ v1.76.0 — dạng bài STAGE (chia chặng)
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,

@@ -2234,7 +2234,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=88"></script>
-<script src="js/chung.js?v=50"></script>
+<script src="js/chung.js?v=51"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -2925,6 +2925,121 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
   }
 
+  /* ⭐⭐⭐ v1.117.0 (17/09/2026) — ĐO THỜI LƯỢNG NGHE cho thẻ DICTS (lớp chính),
+     chép NGUYÊN khuôn cột "Thời lượng" bên video — chỉ khác NGUỒN dữ liệu:
+     đọc kho `lessonAudioTienDo` (schema `bai.html` ghi: ma·bai·lop·khuc·tong·
+     luc — `khuc` khoá theo `maNghe`, `tong` = duration từng file do CHÍNH em
+     đo được lúc nghe, lấy giá trị KHÔNG-RỖNG ĐẦU TIÊN thấy được làm chuẩn vì
+     mọi em nghe cùng một file thì duration phải như nhau).
+     ⛔⛔ Kho `lessonAudioTienDo` CẦN ĐĂNG LUẬT FIRESTORE riêng (7 phép kiểm y
+     hệt kho video) TRƯỚC KHI DÙNG THẬT — xem chú thích đầu khối tương ứng bên
+     `bai.html`. Chưa đăng thì code này vẫn chạy an toàn (không lỗi gì cho
+     thầy thấy) nhưng mọi em đều hiện 0 phút vì Firestore từ chối âm thầm. */
+  var NGHE_TD = { giay: {}, tong: {} }, NGHE_TD_BAI = null;
+
+  function coBaiNgheKh(b) { return A.ngheCuaBai(b).length > 0; }
+  function urlTienDoNgheDb(maChuan, baiId) {
+    var db = (A.CFG && A.CFG.AWORD_DB) || {};
+    if (!db.projectId || !db.apiKey || !maChuan || !baiId) return '';
+    return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+      '/databases/(default)/documents/lessonAudioTienDo/' +
+      encodeURIComponent(maChuan + '__' + baiId) + '?key=' + encodeURIComponent(db.apiKey);
+  }
+  function giayNgheTuFs(fields) {
+    var giay = 0, tong = {};
+    try {
+      var mk = fields.khuc && fields.khuc.mapValue && fields.khuc.mapValue.fields;
+      if (mk) Object.keys(mk).forEach(function (id) {
+        var v = (mk[id].arrayValue && mk[id].arrayValue.values) || [];
+        for (var i = 0; i + 1 < v.length; i += 2) {
+          var a = Number(v[i].doubleValue != null ? v[i].doubleValue : v[i].integerValue);
+          var b2 = Number(v[i + 1].doubleValue != null ? v[i + 1].doubleValue : v[i + 1].integerValue);
+          if (isFinite(a) && isFinite(b2) && b2 > a) giay += (b2 - a);
+        }
+      });
+      var mt = fields.tong && fields.tong.mapValue && fields.tong.mapValue.fields;
+      if (mt) Object.keys(mt).forEach(function (id) {
+        var n = Number(mt[id].doubleValue != null ? mt[id].doubleValue : mt[id].integerValue);
+        if (isFinite(n) && n > 0) tong[id] = n;
+      });
+    } catch (e) {}
+    return { giay: giay, tong: tong };
+  }
+  function docTienDoNgheCuaBai(baiId, hocSinh) {
+    var ds = hocSinh.filter(function (h) { return String(h.ma || '').trim(); });
+    var giay = {}, tong = {};
+    if (!ds.length) return Promise.resolve({ giay: giay, tong: tong });
+    var i = 0;
+    function ke() {
+      if (i >= ds.length) return Promise.resolve();
+      var h = ds[i++];
+      var u = urlTienDoNgheDb(A.chuanMa(h.ma), baiId);
+      if (!u) return ke();
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+          var kq = giayNgheTuFs((j && j.fields) || {});
+          giay[h.ten] = kq.giay;
+          Object.keys(kq.tong).forEach(function (id) { if (!tong[id]) tong[id] = kq.tong[id]; });
+        })
+        ['catch'](function () { giay[h.ten] = 0; })
+        .then(ke);
+    }
+    var chay = [];
+    for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
+    return Promise.all(chay).then(function () { return { giay: giay, tong: tong }; });
+  }
+  var IC_LOA_DB = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/>' +
+    '<path d="M16.3 8.3a5.2 5.2 0 010 7.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+  // Ruột cột "Thời lượng" bản NGHE — `ketQua` null = chưa đọc xong.
+  function veNgheColDb(b, t, lopSlug, tenGocLop, ketQua) {
+    var dau = '<div class="bm-khoi-dau"><span class="bm-video-nhan"><span class="bm-video-ic">' + IC_LOA_DB +
+      '</span><span class="bm-khoi-nhan">Thời lượng</span></span></div>';
+    var rows, tongChu;
+    if (!ketQua) {
+      rows = '<p class="mau" style="margin:6px 2px">đang đọc kết quả…</p>';
+      tongChu = '—';
+    } else if (!t.caLop.length) {
+      rows = '<div class="bm-em-trong">Chưa có em nào</div>';
+      tongChu = '—';
+    } else {
+      var tongGiay = 0;
+      Object.keys(ketQua.tong).forEach(function (id) { tongGiay += ketQua.tong[id]; });
+      var ds = t.caLop.slice().sort(function (x, y) { return (ketQua.giay[y] || 0) - (ketQua.giay[x] || 0); });
+      rows = ds.map(function (ten) {
+        var giay = ketQua.giay[ten] || 0;
+        var phut = Math.round(giay / 60);
+        var pt = tongGiay ? Math.round(giay / tongGiay * 100) : 0;
+        return '<div class="bm-video-hang">' + veEmAvDb(ten, lopSlug, tenGocLop) +
+          '<span class="bm-video-ten" title="' + A.chuAnToan(ten) + '">' +
+            A.chuAnToan(vietTat(ten)) + '</span>' +
+          '<span class="bm-video-thanh"><i style="width:' + Math.min(100, pt) + '%"></i></span>' +
+          '<span class="bm-video-phut">' + phut + ' phút</span></div>';
+      }).join('');
+      tongChu = tongGiay ? (Math.round(tongGiay / 60) + ' phút') : 'chưa rõ';
+    }
+    return dau + '<div class="bm-video-khoi"><div class="bm-video-head"><span>Học sinh</span><span>Đã nghe</span></div>' +
+      '<div class="bm-video-rows">' + rows + '</div>' +
+      '<div class="bm-video-tong">Bài nghe: <b>' + tongChu + '</b></div></div>';
+  }
+  function napNgheChoModal(b, t) {
+    var l = A.lopTheoMa(DL, t.maLop);
+    var tenGocLop = (l && l.tenGoc) || t.maLop;
+    var lopSlug = avSlugLop(tenGocLop);
+    if (NGHE_TD_BAI === b.id) {
+      var elCo = $('#bmVideoCol');
+      if (elCo) elCo.innerHTML = veNgheColDb(b, t, lopSlug, tenGocLop, NGHE_TD);
+      return;
+    }
+    var hocSinh = ((l && l.hocSinh) || []).filter(function (h) { return t.caLop.indexOf(h.ten) >= 0; });
+    docTienDoNgheCuaBai(b.id, hocSinh).then(function (kq) {
+      NGHE_TD = kq; NGHE_TD_BAI = b.id;
+      if (BM_ID !== b.id) return;
+      var el = $('#bmVideoCol');
+      if (el) el.innerHTML = veNgheColDb(b, t, lopSlug, tenGocLop, NGHE_TD);
+    });
+  }
+
   /* "2026-09-13T23:59" -> "23:59 · 13/9" */
   function chuHanChangDb(han) {
     var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
@@ -3017,14 +3132,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⚙ Cài đặt thẻ → Đổi hạn nộp → `#hanPop`.
     var noiDung = act + tay + em;
 
-    // ⭐ v1.116.0 (17/09/2026) — thẻ khóa học (có `b.baiGiang`) thêm CỘT TRÁI
-    // "Thời lượng xem" — xem `veVideoColDb()`/`napVideoChoModal()`. `#bmVideoCol`
-    // khởi đầu ở trạng thái "đang đọc kết quả…" (video=null), `napVideoChoModal`
-    // gọi NGAY sau khi hộp mở (từ `moBaiModal`) rồi tự vẽ lại đúng ô đó khi có
-    // dữ liệu — không vẽ lại NGUYÊN hộp (đỡ giật khi em đang cuộn khối bài tập).
+    // ⭐ v1.116.0/v1.117.0 — thẻ khóa học (có `b.baiGiang`) hoặc thẻ DICTS (có
+    // khối nghe) thêm CỘT TRÁI "Thời lượng" — xem `veVideoColDb()`/`veNgheColDb()`
+    // + `napVideoChoModal()`/`napNgheChoModal()`. Cột khởi đầu ở trạng thái
+    // "đang đọc kết quả…" (đối số cuối = null), hàm `napXxxChoModal` gọi NGAY
+    // sau khi hộp mở (từ `moBaiModal`) rồi tự vẽ lại đúng ô đó khi có dữ liệu
+    // — không vẽ lại NGUYÊN hộp (đỡ giật khi em đang cuộn khối bài tập).
     if (coBaiGiangKh(b)) {
       return '<div class="bm-grid-2"><div class="bm-video-col" id="bmVideoCol">' +
         veVideoColDb(b, t, lopSlug, tenGocLop, null) +
+        '</div><div class="bm-rest-col">' + noiDung + '</div></div>';
+    }
+    if (coBaiNgheKh(b)) {
+      return '<div class="bm-grid-2"><div class="bm-video-col" id="bmVideoCol">' +
+        veNgheColDb(b, t, lopSlug, tenGocLop, null) +
         '</div><div class="bm-rest-col">' + noiDung + '</div></div>';
     }
     return noiDung;
@@ -4665,11 +4786,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       '</div>' +
       '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + '</div>';
     $('#bmThan').innerHTML = veRuotBai(t);
-    // ⭐ v1.116.0 — thẻ khóa học rộng hơn (chừa chỗ cột "Thời lượng") + đọc
-    // thật tiến độ xem video ngay sau khi hộp đã hiện nội dung.
-    var coVideo = coBaiGiangKh(b);
-    $('#bmHop').classList.toggle('rong', coVideo);
+    // ⭐ v1.116.0/v1.117.0 — thẻ khóa học/DICTS rộng hơn (chừa chỗ cột "Thời
+    // lượng") + đọc thật tiến độ xem/nghe ngay sau khi hộp đã hiện nội dung.
+    var coVideo = coBaiGiangKh(b), coNghe = !coVideo && coBaiNgheKh(b);
+    $('#bmHop').classList.toggle('rong', coVideo || coNghe);
     if (coVideo) napVideoChoModal(b, t);
+    else if (coNghe) napNgheChoModal(b, t);
     $('#bmNen').classList.add('mo');
     $('#bmHop').classList.add('mo');
   }

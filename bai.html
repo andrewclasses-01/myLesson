@@ -1634,7 +1634,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=89"></script>
-<script src="js/chung.js?v=50"></script>
+<script src="js/chung.js?v=51"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=23"></script>
@@ -2568,7 +2568,7 @@ function veKhoi(k, so){
         '</div>' +
       '</div>' +
       '<div class="than mot">' + veTrinhPhat(k) + '</div>' + veTuDien();
-    noiTrinhPhat(sec);
+    noiTrinhPhat(sec, k.maNghe || ('nghe-' + so));
     noiTuDien(sec, k.maNghe || ('nghe-' + so));
     return sec;
   }
@@ -2697,7 +2697,7 @@ function veTrinhPhat(k){
   '</div>';
 }
 
-function noiTrinhPhat(sec){
+function noiTrinhPhat(sec, maNghe){
   var am   = sec.querySelector('audio'),
       hop  = sec.querySelector('.nghe'),
       bao  = sec.querySelector('.ng-bao'),
@@ -2808,6 +2808,27 @@ function noiTrinhPhat(sec){
   am.addEventListener('ended', function(){
     hop.classList.remove('chay');
     nut.innerHTML = IC_PLAY; nut.classList.add('dung'); nut.title = 'Phát';
+  });
+
+  /* ⭐ v1.116.0 — đo thời lượng nghe (nhánh RIÊNG, không đụng các listener
+     ở trên): mỗi audio element nhận nhiều listener cùng loại vẫn chạy được
+     bình thường, đây chỉ THÊM chứ không thay các hàm đã có. */
+  am.addEventListener('loadedmetadata', function(){
+    if (am.duration && isFinite(am.duration)) NGHE_TONG[maNghe] = Math.round(am.duration);
+  });
+  am.addEventListener('timeupdate', function(){ nhipNghe(maNghe, am); });
+  am.addEventListener('seeked', function(){ GIAY_HIEN_NGHE[maNghe] = am.currentTime; });
+  am.addEventListener('play', function(){
+    if (ngheFsHen) clearInterval(ngheFsHen);
+    ngheFsHen = setInterval(function(){ dayTienDoNgheFs(); }, NGHE_FS_NHIP_MS);
+  });
+  am.addEventListener('pause', function(){
+    if (ngheFsHen) { clearInterval(ngheFsHen); ngheFsHen = null; }
+    dayTienDoNgheFs();
+  });
+  am.addEventListener('ended', function(){
+    if (ngheFsHen) { clearInterval(ngheFsHen); ngheFsHen = null; }
+    dayTienDoNgheFs();
   });
 
   nut.onclick = function(){
@@ -3530,6 +3551,144 @@ function dayTienDoFs(gap){
 }
 document.addEventListener('visibilitychange', function(){ if (document.hidden) dayTienDoFs(true); });
 window.addEventListener('pagehide', function(){ dayTienDoFs(true); });
+
+/* ⭐⭐⭐ v1.116.0 (17/09/2026) — ĐO THỜI LƯỢNG NGHE cho khối BÀI NGHE (DICTS) —
+   chép NGUYÊN khuôn "tiến độ xem video" ở trên (gộp khúc/ghi thưa/đọc 1 lượt)
+   sang cho audio, kho RIÊNG `lessonAudioTienDo` (không đụng kho/luật video).
+   Khác video ở hai chỗ CỐ Ý:
+   - KHÔNG có đoạn/khoá-mở gì cho bài nghe (chỉ để thầy xem "em nào đã nghe bao
+     lâu" trên dashboard) nên KHÔNG hiện % cho em, KHÔNG chặn tốc độ (bài nghe
+     đã có nút chọn tốc độ 0.5x-2x sẵn, tốc độ nào cũng tính đúng nhờ đo trên
+     CHÍNH `audio.currentTime`, không đo đồng hồ thật).
+   - Một bài có thể có NHIỀU khối nghe (hiếm nhưng khung cho phép) → `khuc` vẫn
+     là map NHIỀU khoá như bên video, khoá là `maNghe` thay vì id đoạn.
+   ⛔⛔ CẦN ĐĂNG LUẬT FIRESTORE cho kho `lessonAudioTienDo` (7 phép kiểm y hệt
+   kho video: tạo·cập nhật·chặn trường lạ·chặn id lệch·chặn khuc sai kiểu·đọc·
+   chặn xoá) TRƯỚC KHI DÙNG THẬT — chưa đăng thì mọi lượt đọc/ghi ở đây đều bị
+   Firestore từ chối ÂM THẦM (catch nuốt lỗi, đúng tinh thần "không bao giờ
+   reject" của cả khối video/audio) — xem phần trao đổi trong GHI CHU DU AN.md. */
+var NGHE_XONG = {};          // {maNghe: [[a,b],...]} đã gộp/khử trùng (giống DOAN_XONG)
+var NGHE_TONG = {};          // {maNghe: giây} — duration đo được từ `audio.duration`
+var GIAY_HIEN_NGHE = {};     // {maNghe: giây lúc nhịp trước} — mốc để tính delta
+var NGHE_FS_BAN = false;
+var ngheFsHen = null;
+var NGHE_FS_NHIP_MS = 20000;
+
+function congKhucNghe(maNghe, a, b){
+  if (b <= a) return;
+  var ds = (NGHE_XONG[maNghe] || []).slice();
+  ds.push([a, b]);
+  ds.sort(function(x, y){ return x[0] - y[0]; });
+  var gop = [];
+  ds.forEach(function(r){
+    if (gop.length && r[0] <= gop[gop.length - 1][1] + 0.05) {
+      gop[gop.length - 1][1] = Math.max(gop[gop.length - 1][1], r[1]);
+    } else gop.push(r.slice());
+  });
+  NGHE_XONG[maNghe] = gop;
+}
+// Nhịp `timeupdate` của MỘT audio — cộng khúc nếu tiến TỚI một đoạn hợp lý
+// (không phải tua/nhảy): 0,05s < delta < 3s (nới hơn video vì bài nghe có nút
+// tốc độ tới 2x, delta media-time theo đó cũng lớn hơn khi phát nhanh).
+function nhipNghe(maNghe, am){
+  var truoc = GIAY_HIEN_NGHE[maNghe];
+  var now = am.currentTime;
+  if (truoc != null) {
+    var delta = now - truoc;
+    if (delta > 0.05 && delta < 3) { congKhucNghe(maNghe, truoc, now); NGHE_FS_BAN = true; }
+  }
+  GIAY_HIEN_NGHE[maNghe] = now;
+}
+function urlTienDoNgheFs(){
+  var db = (A.CFG && A.CFG.AWORD_DB) || {};
+  if (!db.projectId || !db.apiKey || !BAI || !BAI.id || !MA_HS) return '';
+  return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+    '/databases/(default)/documents/lessonAudioTienDo/' +
+    encodeURIComponent(MA_HS + '__' + BAI.id) + '?key=' + encodeURIComponent(db.apiKey);
+}
+function ngheKhucRaFs(){
+  var fields = {};
+  Object.keys(NGHE_XONG).forEach(function(id){
+    var ds = NGHE_XONG[id] || [];
+    if (!ds.length) return;
+    var phang = [];
+    ds.forEach(function(r){ phang.push(Math.round(r[0] * 10) / 10, Math.round(r[1] * 10) / 10); });
+    fields[id] = { arrayValue: { values: phang.map(function(x){ return { doubleValue: x }; }) } };
+  });
+  return fields;
+}
+function ngheKhucTuFs(fields){
+  var ra = {};
+  try {
+    var m = fields.khuc && fields.khuc.mapValue && fields.khuc.mapValue.fields;
+    if (!m) return ra;
+    Object.keys(m).forEach(function(id){
+      var v = (m[id].arrayValue && m[id].arrayValue.values) || [];
+      var ds = [];
+      for (var i = 0; i + 1 < v.length; i += 2) {
+        var a = Number(v[i].doubleValue != null ? v[i].doubleValue : v[i].integerValue);
+        var b = Number(v[i + 1].doubleValue != null ? v[i + 1].doubleValue : v[i + 1].integerValue);
+        if (isFinite(a) && isFinite(b) && b > a) ds.push([a, b]);
+      }
+      if (ds.length) ra[id] = ds;
+    });
+  } catch (e) {}
+  return ra;
+}
+function ngheTongTuFs(fields){
+  var ra = {};
+  try {
+    var m = fields.tong && fields.tong.mapValue && fields.tong.mapValue.fields;
+    if (!m) return ra;
+    Object.keys(m).forEach(function(id){
+      var n = Number(m[id].doubleValue != null ? m[id].doubleValue : m[id].integerValue);
+      if (isFinite(n) && n > 0) ra[id] = n;
+    });
+  } catch (e) {}
+  return ra;
+}
+// Đọc bản CHUNG rồi gộp vào máy — 1 lượt lúc mở bài, KHÔNG bao giờ reject.
+function napTienDoNgheFs(){
+  var u = urlTienDoNgheFs();
+  if (!u) return Promise.resolve(false);
+  return fetch(u, { cache: 'no-store' })
+    .then(function(r){ return r.ok ? r.json() : null; })
+    .then(function(j){
+      var f = (j && j.fields) || {};
+      var chung = ngheKhucTuFs(f);
+      Object.keys(chung).forEach(function(id){
+        chung[id].forEach(function(r){ congKhucNghe(id, r[0], r[1]); });
+      });
+      var tongCu = ngheTongTuFs(f);
+      Object.keys(tongCu).forEach(function(id){ if (!NGHE_TONG[id]) NGHE_TONG[id] = tongCu[id]; });
+      return true;
+    })['catch'](function(){ return false; });
+}
+// Ghi THƯA lên Firestore (chỉ khi có gì mới) — y hệt tinh thần `dayTienDoFs`.
+function dayTienDoNgheFs(gap){
+  if (!NGHE_FS_BAN) return;
+  var u = urlTienDoNgheFs();
+  if (!u) return;
+  var tongFields = {};
+  Object.keys(NGHE_TONG).forEach(function(id){ tongFields[id] = { doubleValue: NGHE_TONG[id] }; });
+  var than = JSON.stringify({ fields: {
+    ma:   { stringValue: MA_HS },
+    bai:  { stringValue: String(BAI.id) },
+    lop:  { stringValue: String(LOP_DL || '') },
+    khuc: { mapValue: { fields: ngheKhucRaFs() } },
+    tong: { mapValue: { fields: tongFields } },
+    luc:  { integerValue: String(Date.now()) }
+  } });
+  NGHE_FS_BAN = false;
+  try {
+    fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+               body: than, keepalive: !!gap })
+      .then(function(r){ if (!r.ok) NGHE_FS_BAN = true; })
+      ['catch'](function(){ NGHE_FS_BAN = true; });
+  } catch (e) { NGHE_FS_BAN = true; }
+}
+document.addEventListener('visibilitychange', function(){ if (document.hidden) dayTienDoNgheFs(true); });
+window.addEventListener('pagehide', function(){ dayTienDoNgheFs(true); });
 
 // ---------- icon dùng trong khung player (SVG nét mảnh — không icon-font) ----------
 var IC_DEN_KHOA = '<svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5A6 6 0 1 0 6 8c0 1.3.5 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>';
@@ -4712,7 +4871,11 @@ A.napDuLieu().then(function(dl){
      song song với điểm act; gộp vào `DOAN_XONG` xong mới vẽ để % và khoá dây
      chuyền đúng ngay từ khung hình đầu, không nhảy số. */
   var choTienDoKhoa = LA_KHOA ? napTienDoFs() : Promise.resolve(false);
-  return Promise.all([choTienDoKhoa].concat(maAct.map(function(ma){
+  // ⭐ v1.116.0 — bài có khối NGHE (DICTS) thì đọc luôn tiến độ nghe, SONG SONG
+  // với điểm act/tiến độ video — 1 lượt lúc mở bài, đúng luật 8️⃣.
+  var coNghe = KHOI.some(function(k){ return k.loai === 'audio'; });
+  var choTienDoNghe = coNghe ? napTienDoNgheFs() : Promise.resolve(false);
+  return Promise.all([choTienDoKhoa, choTienDoNghe].concat(maAct.map(function(ma){
     /* ⭐ v1.14.0 — đọc SONG SONG điểm + chuẩn đủ điểm. Chuẩn nằm hẳn trong
        localStorage sau lần đầu nên không thêm lượt đọc Firestore nào ở các
        lần sau (tuỳ chọn bài giao là bản chụp đóng băng). */

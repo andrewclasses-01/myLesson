@@ -770,6 +770,49 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .bm-em-ten{font:700 calc(var(--em-d) * .2 + 2.5px)/1.2 var(--font); color:var(--mo); text-align:center;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%}
 .bm-em-trong{font:700 12px/1.5 var(--font); color:var(--nhat); padding:6px 2px 2px}
+
+/* ⭐ v1.115.0/v1.116.0 — nhãn khối trong hộp xem bài ("Bài tập" / "Thời lượng"),
+   `min-height` bằng đúng icon (22px) để HAI CỘT ngang hàng nhau dù dựng riêng —
+   xem `.bm-grid-2` ngay dưới. */
+.bm-khoi-dau{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 9px; min-height:22px}
+.bm-khoi-nhan{font:800 11px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
+.bm-khoi-phu{font:600 11px/1.3 var(--font); color:var(--nhat)}
+
+/* ⭐ v1.116.0 — bố cục 2 cột của thẻ khóa học: "Thời lượng" BÊN TRÁI, phần còn
+   lại (bài tập + 2 ô xong) BÊN PHẢI, ở màn máy tính. Màn hẹp tự xếp dọc, cột
+   thời lượng xuống DƯỚI (`order`, không phải thứ tự HTML — xem `veRuotBai`). */
+.bm-grid-2{display:grid; grid-template-columns:1fr; gap:16px}
+.bm-video-col{order:2}
+.bm-rest-col{order:1; display:flex; flex-direction:column; gap:16px}
+@media (min-width:820px){
+  .bm-grid-2{grid-template-columns:240px 1fr; gap:18px; align-items:stretch}
+  .bm-video-col{order:1; display:flex; flex-direction:column}
+  .bm-rest-col{order:2}
+}
+.bm-video-nhan{display:flex; align-items:center; gap:8px}
+.bm-video-ic{width:22px; height:22px; border-radius:7px; flex:none; display:grid; place-items:center;
+  background:#E6EEFF; color:#2B5FD0}
+.bm-video-ic svg{width:12px; height:12px; fill:currentColor}
+.bm-video-khoi{border:1px solid var(--vien); border-radius:14px; padding:11px 12px 4px; background:var(--the);
+  display:flex; flex-direction:column}
+@media (min-width:820px){ .bm-video-khoi{flex:1} }
+.bm-video-head{display:flex; justify-content:space-between; padding-bottom:6px; margin-bottom:2px;
+  border-bottom:1px solid var(--vien); font:800 9.5px/1.3 var(--font); letter-spacing:.06em;
+  text-transform:uppercase; color:var(--nhat)}
+.bm-video-hang{display:flex; align-items:center; gap:7px; padding:6px 0; border-top:1px dashed var(--vien)}
+.bm-video-hang:first-child{border-top:0}
+.bm-video-hang .bm-em-av{width:21px; height:21px; font-size:9px}
+.bm-video-ten{flex:0 0 72px; min-width:0; font:700 11.3px/1.3 var(--font); overflow:hidden;
+  text-overflow:ellipsis; white-space:nowrap}
+.bm-video-thanh{flex:1; height:6px; border-radius:99px; background:#EDF2F1; overflow:hidden; min-width:22px}
+.bm-video-thanh i{display:block; height:100%; border-radius:99px; background:var(--duong)}
+.bm-video-phut{flex:none; width:50px; text-align:right; font:800 11.3px var(--font); color:var(--chu);
+  white-space:nowrap; font-variant-numeric:tabular-nums}
+.bm-video-tong{margin-top:auto; padding:10px 0 3px; border-top:1px solid var(--vien);
+  font:700 10.5px/1.4 var(--font); color:var(--mo); text-align:center; letter-spacing:.03em;
+  text-transform:uppercase}
+.bm-video-tong b{color:var(--chu); font-weight:800}
+
 .tien{display:flex; align-items:center; gap:8px}
 .thanh{flex:1; height:8px; border-radius:99px; background:#EDF2F1; overflow:hidden}
 .thanh i{display:block; height:100%; border-radius:99px; background:var(--la);
@@ -1444,6 +1487,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   border-radius:18px; box-shadow:0 24px 70px rgba(16,40,36,.35); opacity:0; pointer-events:none;
   transition:opacity .2s ease, transform .2s ease; display:flex; flex-direction:column}
 .bm-hop.mo{opacity:1; pointer-events:auto; transform:translate(-50%,-50%) scale(1)}
+/* ⭐ v1.116.0 — thẻ khóa học rộng hơn để chừa cột "Thời lượng" bên trái (xem
+   `.bm-grid-2` cuối file CSS này) — bật qua JS (`moBaiModal`) khi bài có
+   `baiGiang`, KHÔNG áp cho thẻ thường. */
+.bm-hop.rong{width:min(920px,94vw)}
 .bm-dau{flex:none; display:flex; align-items:center; gap:11px; padding:16px 18px;
   background:var(--the); border-bottom:1px solid var(--vien)}
 .bm-av{width:40px; height:40px; border-radius:50%; object-fit:cover; flex:none;
@@ -2749,6 +2796,135 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }).join('') + '</div>';
   }
 
+  /* ⭐⭐⭐ v1.116.0 (17/09/2026) — CỘT "THỜI LƯỢNG XEM" cho thẻ khóa học, đọc
+     THẬT kho `lessonVideoTienDo` (Firestore) — đúng schema `bai.html` đang ghi
+     (`ma·bai·lop·khuc·luc`, xem hàm `dayTienDoFs()` bên đó, ĐỪNG đổi tên trường
+     ở đây mà không sửa cả hai nơi). Luật 8️⃣ — tiết kiệm lượt đọc:
+     - Đọc tối đa 6 lượt song song (y hệt `docDiemCuaCacBai`), MỘT LẦT mỗi bài
+       (nhớ ở `VIDEO_TD`/`VIDEO_TD_BAI`, đổi bài mới đọc lại — đủ dùng, thầy mở
+       đi mở lại một bài trong phiên không tốn thêm lượt).
+     - CHỈ đọc lúc thầy thật sự MỞ đúng thẻ khóa học đó (`napVideoChoModal`,
+       gọi từ `moBaiModal`), không đọc trước/đọc ngầm cho cả lớp.
+     - Không dùng `:runQuery`/list dù tài liệu có trường `bai` để lọc — LUẬT
+       FIRESTORE của kho này (đăng 14/09) chỉ xác nhận **get** từng tài liệu,
+       chưa kiểm **list**; đi an toàn theo đúng cách `bai.html` đã dùng thật. */
+  var VIDEO_TD = {}, VIDEO_TD_BAI = null;   // {tên: giây}, chỉ giữ CỦA BÀI ĐANG MỞ
+
+  function coBaiGiangKh(b) {
+    return !!(b && b.baiGiang && (b.baiGiang.doan || []).length);
+  }
+  // "mm:ss" | "h:mm:ss" -> giây (y hệt `giayDoanKhoa` trong bai.html).
+  function giayDoanDb(s) {
+    var m = /^(?:(\d{1,2}):)?([0-5]?\d):([0-5]\d)$/.exec(String(s || '').trim());
+    return m ? ((m[1] ? (+m[1]) * 3600 : 0) + (+m[2]) * 60 + (+m[3])) : null;
+  }
+  function tongGiayBaiGiangDb(b) {
+    var tong = 0;
+    ((b.baiGiang || {}).doan || []).forEach(function (d) {
+      var n = giayDoanDb(d.den);
+      if (n != null) tong = Math.max(tong, n);
+    });
+    return tong;
+  }
+  function urlTienDoVideoDb(maChuan, baiId) {
+    var db = (A.CFG && A.CFG.AWORD_DB) || {};
+    if (!db.projectId || !db.apiKey || !maChuan || !baiId) return '';
+    return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+      '/databases/(default)/documents/lessonVideoTienDo/' +
+      encodeURIComponent(maChuan + '__' + baiId) + '?key=' + encodeURIComponent(db.apiKey);
+  }
+  // Tổng giây đã xem THẬT của một tài liệu (cộng mọi khúc của mọi đoạn — không
+  // cần biết ranh giới đoạn, `khuc` mỗi đoạn ĐÃ được gộp/khử trùng từ trước
+  // bên bai.html rồi, xem `congKhucXemKhoa`).
+  function giayXemTuFs(fields) {
+    var tong = 0;
+    try {
+      var m = fields.khuc && fields.khuc.mapValue && fields.khuc.mapValue.fields;
+      if (!m) return 0;
+      Object.keys(m).forEach(function (id) {
+        var v = (m[id].arrayValue && m[id].arrayValue.values) || [];
+        for (var i = 0; i + 1 < v.length; i += 2) {
+          var a = Number(v[i].doubleValue != null ? v[i].doubleValue : v[i].integerValue);
+          var b2 = Number(v[i + 1].doubleValue != null ? v[i + 1].doubleValue : v[i + 1].integerValue);
+          if (isFinite(a) && isFinite(b2) && b2 > a) tong += (b2 - a);
+        }
+      });
+    } catch (e) {}
+    return tong;
+  }
+  // Đọc tiến độ xem của CẢ LỚP cho một bài — tối đa 6 lượt song song, không
+  // bao giờ reject (404/403/mất mạng đều coi là 0 giây, y hệt tinh thần
+  // `napTienDoFs` bên bai.html).
+  function docTienDoVideoCuaBai(baiId, hocSinh) {
+    var ds = hocSinh.filter(function (h) { return String(h.ma || '').trim(); });
+    var ra = {};
+    if (!ds.length) return Promise.resolve(ra);
+    var i = 0;
+    function ke() {
+      if (i >= ds.length) return Promise.resolve();
+      var h = ds[i++];
+      var u = urlTienDoVideoDb(A.chuanMa(h.ma), baiId);
+      if (!u) return ke();
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { ra[h.ten] = giayXemTuFs((j && j.fields) || {}); })
+        ['catch'](function () { ra[h.ten] = 0; })
+        .then(ke);
+    }
+    var chay = [];
+    for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
+    return Promise.all(chay).then(function () { return ra; });
+  }
+  // Ruột cột "Thời lượng" — `tienDo` null = chưa đọc xong (hiện "đang đọc…").
+  function veVideoColDb(b, t, lopSlug, tenGocLop, tienDo) {
+    var tongGiay = tongGiayBaiGiangDb(b);
+    var tongPhut = Math.round(tongGiay / 60);
+    var dau = '<div class="bm-khoi-dau"><span class="bm-video-nhan">' +
+      '<span class="bm-video-ic"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></svg></span>' +
+      '<span class="bm-khoi-nhan">Thời lượng</span></span></div>';
+    var rows;
+    if (!tienDo) {
+      rows = '<p class="mau" style="margin:6px 2px">đang đọc kết quả…</p>';
+    } else if (!t.caLop.length) {
+      rows = '<div class="bm-em-trong">Chưa có em nào</div>';
+    } else {
+      var ds = t.caLop.slice().sort(function (x, y) { return (tienDo[y] || 0) - (tienDo[x] || 0); });
+      rows = ds.map(function (ten) {
+        var giay = tienDo[ten] || 0;
+        var phut = Math.round(giay / 60);
+        var pt = tongGiay ? Math.round(giay / tongGiay * 100) : 0;
+        return '<div class="bm-video-hang">' + veEmAvDb(ten, lopSlug, tenGocLop) +
+          '<span class="bm-video-ten" title="' + A.chuAnToan(ten) + '">' +
+            A.chuAnToan(vietTat(ten)) + '</span>' +
+          '<span class="bm-video-thanh"><i style="width:' + Math.min(100, pt) + '%"></i></span>' +
+          '<span class="bm-video-phut">' + phut + ' phút</span></div>';
+      }).join('');
+    }
+    return dau + '<div class="bm-video-khoi"><div class="bm-video-head"><span>Học sinh</span><span>Đã xem</span></div>' +
+      '<div class="bm-video-rows">' + rows + '</div>' +
+      '<div class="bm-video-tong">Bài giảng: <b>' + tongPhut + ' phút</b></div></div>';
+  }
+  // Gọi từ `moBaiModal()` NGAY sau khi hộp đã hiện — đọc thật rồi vẽ lại ĐÚNG
+  // `#bmVideoCol` (không vẽ lại cả hộp). `BM_ID === b.id` chặn ghi đè nhầm khi
+  // thầy đã đóng hộp hoặc mở sang thẻ khác trước khi kịp đọc xong.
+  function napVideoChoModal(b, t) {
+    var l = A.lopTheoMa(DL, t.maLop);
+    var tenGocLop = (l && l.tenGoc) || t.maLop;
+    var lopSlug = avSlugLop(tenGocLop);
+    if (VIDEO_TD_BAI === b.id) {
+      var elCo = $('#bmVideoCol');
+      if (elCo) elCo.innerHTML = veVideoColDb(b, t, lopSlug, tenGocLop, VIDEO_TD);
+      return;
+    }
+    var hocSinh = ((l && l.hocSinh) || []).filter(function (h) { return t.caLop.indexOf(h.ten) >= 0; });
+    docTienDoVideoCuaBai(b.id, hocSinh).then(function (map) {
+      VIDEO_TD = map; VIDEO_TD_BAI = b.id;
+      if (BM_ID !== b.id) return;
+      var el = $('#bmVideoCol');
+      if (el) el.innerHTML = veVideoColDb(b, t, lopSlug, tenGocLop, VIDEO_TD);
+    });
+  }
+
   /* "2026-09-13T23:59" -> "23:59 · 13/9" */
   function chuHanChangDb(han) {
     var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
@@ -2800,11 +2976,17 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
   function veRuotBai(t) {
     var b = t.bai;
+    var l = A.lopTheoMa(DL, t.maLop);
+    var tenGocLop = (l && l.tenGoc) || t.maLop;
+    var lopSlug = avSlugLop(tenGocLop);
+
     /* ⭐ v1.77.0 — bài STAGE (đã đọc xong điểm) thì gom act theo chặng. */
     var act = (t.stage && t.chang)
       ? veKhoiChangDb(t)
       : (t.acts.length
-      ? '<div class="bm-bt-box"><div class="bm-bt-rows">' + t.acts.map(function (a, i) {
+      ? '<div class="bm-khoi-dau"><span class="bm-khoi-nhan">Bài tập</span>' +
+          '<span class="bm-khoi-phu">sĩ số ' + t.siSo + '</span></div>' +
+        '<div class="bm-bt-box"><div class="bm-bt-rows">' + t.acts.map(function (a, i) {
           return veBtHangDb(a, t.siSo, i + 1);
         }).join('') + '</div></div>'
       : '<p class="mau" style="margin:12px 0 0;color:var(--nhat)">Bài này không có game AWord nào.</p>');
@@ -2817,9 +2999,6 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // trang của học sinh / Chép tên em chưa xong / Xem thử một ví dụ).
     var em = '';
     if (t.daDoc) {
-      var l = A.lopTheoMa(DL, t.maLop);
-      var tenGocLop = (l && l.tenGoc) || t.maLop;
-      var lopSlug = avSlugLop(tenGocLop);
       var xong = t.caLop.filter(function (ten) {
         return !t.thieu.some(function (x) { return x.ten === ten; });
       });
@@ -2836,7 +3015,19 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ v1.36.0 — BỎ ô "Hạn riêng cho thẻ này" khỏi hộp xem bài (thầy chốt
     // 02/09: đổi hạn phải là một hộp nhỏ riêng). Đường duy nhất nay là
     // ⚙ Cài đặt thẻ → Đổi hạn nộp → `#hanPop`.
-    return act + tay + em;
+    var noiDung = act + tay + em;
+
+    // ⭐ v1.116.0 (17/09/2026) — thẻ khóa học (có `b.baiGiang`) thêm CỘT TRÁI
+    // "Thời lượng xem" — xem `veVideoColDb()`/`napVideoChoModal()`. `#bmVideoCol`
+    // khởi đầu ở trạng thái "đang đọc kết quả…" (video=null), `napVideoChoModal`
+    // gọi NGAY sau khi hộp mở (từ `moBaiModal`) rồi tự vẽ lại đúng ô đó khi có
+    // dữ liệu — không vẽ lại NGUYÊN hộp (đỡ giật khi em đang cuộn khối bài tập).
+    if (coBaiGiangKh(b)) {
+      return '<div class="bm-grid-2"><div class="bm-video-col" id="bmVideoCol">' +
+        veVideoColDb(b, t, lopSlug, tenGocLop, null) +
+        '</div><div class="bm-rest-col">' + noiDung + '</div></div>';
+    }
+    return noiDung;
   }
 
   // ---------- ⭐ v1.20.0 — SỬA HẠN RIÊNG CHO MỘT THẺ ----------
@@ -4474,6 +4665,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       '</div>' +
       '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + '</div>';
     $('#bmThan').innerHTML = veRuotBai(t);
+    // ⭐ v1.116.0 — thẻ khóa học rộng hơn (chừa chỗ cột "Thời lượng") + đọc
+    // thật tiến độ xem video ngay sau khi hộp đã hiện nội dung.
+    var coVideo = coBaiGiangKh(b);
+    $('#bmHop').classList.toggle('rong', coVideo);
+    if (coVideo) napVideoChoModal(b, t);
     $('#bmNen').classList.add('mo');
     $('#bmHop').classList.add('mo');
   }

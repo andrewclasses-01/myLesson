@@ -3798,7 +3798,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           ' data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
           A.chuAnToan(h.ten) + ' · ' + h.so + ' lỗi bắt được">' +
           '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
-          A.chuAnToan(avChuTat(h.ten)) + '</span>';
+          A.chuAnToan(avChuTatHaiTuCuoi(h.ten)) + '</span>';
       }).join('');
   }
 
@@ -3870,7 +3870,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     return '<span class="tic" data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' +
       A.chuAnToan(lopGoc) + '" title="' + tip + '">' +
       '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
-      A.chuAnToan(avChuTat(e.ten)) +
+      A.chuAnToan(avChuTatHaiTuCuoi(e.ten)) +
     '</span>';
   }
   function veThieuRail(ds, lopGoc) {
@@ -3914,7 +3914,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           A.chuAnToan(tenDay) + '" data-av-lop="' + A.chuAnToan(lopGoc) + '" title="' +
           A.chuAnToan(e.ten) + ' · hạng ' + (i + 1) + ' · ' + e.diem + '%">' +
           '<img class="av-anh" src="' + A.chuAnToan(A.avUrl(lopGoc, tenDay)) + '" alt="" onerror="this.remove()">' +
-          A.chuAnToan(avChuTat(e.ten)) + '</span>';
+          A.chuAnToan(avChuTatHaiTuCuoi(e.ten)) + '</span>';
       }).join('');
   }
 
@@ -4011,7 +4011,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     });
   }
   // Chữ tắt khi em chưa có ảnh: 2 chữ đầu của HAI TỪ CUỐI ("HOÀNG CHI" → "HC")
-  function avChuTat(ten) {
+  // ⭐ v1.117.1 (17/09/2026) — TÁCH TÊN khỏi `avChuTat` (đổi tên thành
+  // `avChuTatHaiTuCuoi`): hai hàm cùng tên `avChuTat` từng tồn tại trong cùng
+  // scope (hàm này + bản "họ + tên chính" ở dưới gần `veHocSinh`) — bản khai
+  // SAU thắng lặng lẽ, khiến avThanhHtml/avThieuHtml/avMocHtml (3 chỗ gọi
+  // KHÔNG tự .toUpperCase() — đúng dấu hiệu chúng trông cậy vào hàm NÀY, hàm
+  // này đã tự viết hoa sẵn) bị đổi sang công thức "họ+tên chính" từ lúc nào
+  // không ai biết. Xem memory [[ham-trung-ten-thang-am-tham]]. ĐỪNG đặt lại
+  // trùng tên `avChuTat` — hàm đó ở dưới dành cho `veHocSinh`/`veEmAvDb`/
+  // `veDangNhapGanDay` (3 chỗ gọi CÓ tự `.toUpperCase()`, đừng đổi 3 chỗ đó).
+  function avChuTatHaiTuCuoi(ten) {
     var tu = String(ten || '').trim().split(/\s+/).filter(Boolean);
     if (!tu.length) return '?';
     if (tu.length === 1) return tu[0].charAt(0).toUpperCase();

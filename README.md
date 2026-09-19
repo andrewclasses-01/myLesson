@@ -30,6 +30,10 @@ Thầy duyệt mẫu 19/09 rồi build. Ca: chặng đang chạy đã HẾT HẠ
 - ⛔ `lop.html` · `bai.html` · `dashboard.html` **không nạp `css/main.css`** (chỉ `index.html`) — dựng mẫu mà nạp
   thêm là mũi ▶ của thẻ bị `.play` màn đăng nhập đè cụt.
 - `config.js` `PHIEN_BAN` 1.115.1 → **1.118.0** (hai đợt v1.116/v1.117 quên bump), tag `config.js?v=91`.
+- **v1.118.1** (thầy test thật): ô hạn đầu trang bài in **"STAGE 1: 00:00 • 19/9"** thay "Hạn chặng 1: …" (tràn ô
+  86–92px điện thoại; class `.stage-han` co chữ riêng dòng này ở ≤620/≤380px); chip avatar trên bìa: ảnh
+  `position:absolute` phủ kín ô tròn (trước nửa ảnh nửa chữ); **BỎ** nháy nền đỏ cột icon thiếu bài (thầy: quá
+  xấu) — cột icon về hào quang `tic-do` cũ. `?v=92`.
 
 ## ⭐ v1.20.0 (26/08/2026) — SỬA HẠN RIÊNG TỪNG THẺ TRÊN DASHBOARD *(bản mới nhất)*
 

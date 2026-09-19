@@ -249,6 +249,19 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .t-han.gap-gio .han-vach{border-color:#F3CACA}
 .t-han.het-gio{background:var(--ground)}
 .t-han.het-gio .han-dong{color:#93A5A1}
+/* ⭐⭐ v1.118.0 (thầy duyệt mẫu 19/09/2026) — CHỜ MỞ KHÓA ở ô hạn đầu trang: bài
+   STAGE, chặng đang xem quá hạn còn em chưa xong, chặng kế chưa mở. Nháy CỨNG 2
+   pha như thẻ trang lớp (đỏ/chữ trắng ↔ hồng nhạt/chữ đỏ), chữ "Hạn chặng…" đổi
+   theo pha. Ô này KHÔNG có border/bo góc (nằm trong `.han-khoi` clip-path). */
+.t-han.cho-mo{animation:nhay-cho-mo 1.2s steps(1,end) infinite}
+@keyframes nhay-cho-mo{
+  0%,100%{background:#E23B41; color:#fff}
+  50%{background:#FDECEC; color:#C0262C}
+}
+.t-han.cho-mo .han-dong,.t-han.cho-mo .dhho{color:inherit}
+.t-han.cho-mo .han-vach{border-color:rgba(255,255,255,.55)}
+.dhho.chomo{font-size:13.5px; letter-spacing:.6px}
+@media (prefers-reduced-motion:reduce){.t-han.cho-mo{animation:none; background:#E23B41; color:#fff}}
 
 /* ---------- KHỐI PHẢI: tên bài + mã lesson (căn phải) ---------- */
 .dau-bai{min-width:0; text-align:right}
@@ -551,6 +564,43 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   color:var(--ink); text-transform:uppercase}
 .bia-em{font-weight:700; font-size:max(10px, 1.6cqw); letter-spacing:.2cqw; color:#7f93a5;
   text-transform:uppercase}
+
+/* ⭐⭐ v1.118.0 (thầy duyệt mẫu 19/09/2026) — BÌA READY KHI CHẶNG QUÁ HẠN, CHỜ MỞ
+   KHÓA (`.game-cover.cho-mo`, xem `veBia`). Bố cục đổi: tên act ghim mờ TRÊN ·
+   nội dung GIỮA (`.bia-cho`) · hàng đáy `.bia-day`: READY thu nhỏ góc dưới TRÁI +
+   tên em góc dưới PHẢI. Hai ruột: em CHƯA XONG — "CẢ LỚP ĐANG CHỜ EM," đỏ to thở
+   nhẹ; em ĐÃ XONG — "ĐANG CHỜ MỞ KHÓA BỞI:" + chip avatar+tên các bạn chưa xong.
+   ⛔ Bấm READY (nút) mới nạp act — bấm chỗ khác trên bìa không ăn (khác bìa thường),
+   xem `onclick` trong `veKhoi`. Hiệu ứng bay/nổ giữ nguyên, chỉ đổi đích + chỗ nổ
+   (xem `moAct`). */
+.game-cover.cho-mo{justify-content:space-between; cursor:default}
+.game-cover.cho-mo .bia-ten{margin:0; font-size:max(11px,1.6cqw); color:#8b93a1; font-weight:700; letter-spacing:.06em}
+.game-cover.cho-mo .bia-cho{margin:auto 0; display:flex; flex-direction:column; align-items:center;
+  gap:max(12px,1.9cqw); max-width:88%; text-transform:uppercase}
+.bc-nhan{font-weight:800; font-size:max(12px,1.9cqw); letter-spacing:.14em; color:#C0262C}
+.bc-ten{display:flex; flex-wrap:wrap; justify-content:center; gap:max(6px,1cqw)}
+.bc-ten .chip{display:inline-flex; align-items:center; gap:max(6px,.8cqw);
+  padding:max(3px,.45cqw) max(12px,1.5cqw) max(3px,.45cqw) max(4px,.5cqw); border-radius:999px;
+  background:#FDECEC; border:1.5px solid #F3B9BB; color:#B01E24; font-weight:800;
+  font-size:max(12px,2cqw); letter-spacing:.02em}
+.bc-ten .chip .av{width:max(22px,3.3cqw); height:max(22px,3.3cqw); border-radius:50%; overflow:hidden;
+  background:#E8B4B6; color:#8a1d22; display:flex; align-items:center; justify-content:center;
+  font-size:max(9px,1.2cqw); flex:none}
+.bc-ten .chip .av img{width:100%; height:100%; object-fit:cover; display:block}
+.bc-loi{font-weight:800; font-size:max(12px,2.1cqw); color:var(--ink); line-height:1.35}
+.bc-to{font-weight:800; font-size:max(19px,3.7cqw); color:#C0262C; line-height:1.15; letter-spacing:.01em;
+  animation:bc-tho 1.6s ease-in-out infinite}
+@keyframes bc-tho{0%,100%{opacity:1; transform:scale(1)} 50%{opacity:.78; transform:scale(1.03)}}
+.bia-day{width:100%; display:flex; align-items:flex-end; justify-content:space-between; gap:12px}
+.game-cover.cho-mo .bia-o-nut{cursor:pointer}
+.game-cover.cho-mo .bia-ready{font-size:max(11px,1.7cqw); padding:max(7px,1.1cqw) max(18px,3cqw);
+  letter-spacing:.12em; border-radius:max(8px,1.2cqw)}
+.game-cover.cho-mo .bia-em{margin:0}
+/* hover/active của bìa thường là `.game-cover:hover .bia-ready` — bìa này chỉ nút mới bấm được */
+.game-cover.cho-mo:hover .bia-ready{transform:none; filter:none}
+.game-cover.cho-mo .bia-o-nut:hover .bia-ready{transform:scale(1.06); filter:brightness(1.1)}
+.game-cover.cho-mo .bia-o-nut:active .bia-ready{transform:scale(.96)}
+@media (prefers-reduced-motion:reduce){.bc-to{animation:none}}
 
 /* ---------- HIỆU ỨNG NẠP ACT (đợt 6 · ⭐ LÀM LẠI ĐỢT 7: VA CHẠM VẬT LÝ) -----
    Thầy chốt ở đợt 7:
@@ -1221,6 +1271,7 @@ body.mo-menu .side.trai{transform:none}
   .t-han .han-dong svg{width:10px; height:10px}
   .dhho{font-size:13px; letter-spacing:.2px; line-height:15.5px}
   .dhho.het{font-size:11px}
+  .dhho.chomo{font-size:10.5px; letter-spacing:0}   /* v1.118.0 — ô 92px: đo 80px */
   .dau-bai .db-ten{font-size:12.5px; letter-spacing:0}
   .dau-bai .db-ma{font-size:9.4px}
   .hoi-ve{width:196px}
@@ -1304,6 +1355,7 @@ body.mo-menu .side.trai{transform:none}
   .t-han{width:86px; padding:4px 5px 5px}
   .t-han .han-dong{font-size:8.6px}
   .dhho{font-size:12px; line-height:15.5px}
+  .dhho.chomo{font-size:9.5px; letter-spacing:0}   /* v1.118.0 — ô 86px, đo ~72px */
   .lb-row{grid-template-columns:14px minmax(0,1fr) 3.2ch; gap:2px}
   .lb-name{font-size:8.8px}
   .lb-rank .huy{width:13px; height:13px}
@@ -1633,8 +1685,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=89"></script>
-<script src="js/chung.js?v=51"></script>
+<script src="config.js?v=91"></script>
+<script src="js/chung.js?v=52"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=23"></script>
@@ -2184,6 +2236,8 @@ function chuBia(k){
 }
 
 function veBia(k){
+  var choMo = changChoMoCuaAct(k);
+  if (choMo) return veBiaChoMo(k, choMo);
   return '<div class="game-cover">' +
     '<div class="bia-th">ANDREW CLASSES</div>' +
     '<div class="bia-giua">' +
@@ -2192,6 +2246,57 @@ function veBia(k){
       '<div class="bia-em">' + TOI + ' \u2022 ' + LOP_HIEN + '</div>' +
     '</div>' +
   '</div>';
+}
+
+/* ⭐⭐ v1.118.0 (thầy chốt 19/09/2026) — act này có thuộc CHẶNG ĐANG CHỜ MỞ KHÓA
+   không: bài STAGE, chặng chứa act đúng là chặng `A.changChoMo(CHANG)` (còn em
+   chưa xong + còn chặng sau) VÀ ĐÃ quá hạn (`c.quaHan` — bìa quyết lúc vẽ, không
+   có đồng hồ riêng; chặng tới hạn trong lúc em đang mở trang thì ô hạn đầu trang
+   đổi ngay còn bìa đổi ở lần vẽ lại kế — cố ý, dựng lại bìa giữa chừng là mất
+   act đang chơi). Trả về chặng đó hoặc null. */
+function changChoMoCuaAct(k){
+  if (!LA_STAGE || !CHANG || !CHANG.length || !k || k.loai !== 'act') return null;
+  var c = A.changChoMo(CHANG);
+  if (!c || !c.quaHan) return null;
+  var thuoc = c.acts.some(function(a){ return a.ma === k.ma; });
+  return thuoc ? c : null;
+}
+
+/* Bìa READY của act trong chặng chờ mở khoá — hai ruột theo em ĐÃ/CHƯA xong hết
+   act của chặng (tính theo CHẶNG, không theo từng act — thầy chốt). Tên các bạn
+   chưa xong = chip avatar (cùng kho ảnh `A.avUrl`, thiếu ảnh thì chữ tắt) + tên. */
+function veBiaChoMo(k, c){
+  var toiKhoa = A.khoaTen(TOI);
+  var toiChuaXong = (c.thieu || []).some(function(t){ return A.khoaTen(t) === toiKhoa; });
+  var giua;
+  if (toiChuaXong) {
+    giua = '<div class="bc-to">Cả lớp đang chờ em,</div>' +
+           '<div class="bc-loi">Hãy hoàn thành bài tập của mình nhé!</div>';
+  } else {
+    var chips = (c.thieu || []).map(function(t){
+      var tenDay = A.avTenDayDu(t, CA_LOP);
+      return '<span class="chip"><span class="av">' +
+        (LA_DAC_BIET ? '' : '<img src="' + chuAnToan(A.avUrl(LOP, tenDay)) + '" alt="" onerror="this.remove()">') +
+        chuAnToan(chuTatTen(t)) + '</span>' + chuAnToan(A.tenO(t)) + '</span>';
+    }).join('');
+    giua = '<div class="bc-nhan">Đang chờ mở khóa bởi:</div>' +
+           '<div class="bc-ten">' + chips + '</div>' +
+           '<div class="bc-loi">Em hãy nhắc nhở và hướng dẫn giúp bạn nhé!</div>';
+  }
+  return '<div class="game-cover cho-mo">' +
+    '<div class="bia-th">ANDREW CLASSES</div>' +
+    '<div class="bia-ten">' + chuAnToan(chuBia(k)) + '</div>' +
+    '<div class="bia-cho">' + giua + '</div>' +
+    '<div class="bia-day">' +
+      '<div class="bia-o-nut"><button class="bia-ready" type="button">READY</button></div>' +
+      '<div class="bia-em">' + TOI + ' \u2022 ' + LOP_HIEN + '</div>' +
+    '</div>' +
+  '</div>';
+}
+/* Chữ tắt 2 chữ cuối của tên ("MAI DƯƠNG 2" -> "D2"), cùng nếp `avChuTat` bên lop.html. */
+function chuTatTen(ten){
+  var tu = String(ten || '').trim().split(/\s+/).filter(Boolean);
+  return tu.slice(-2).map(function(t){ return t[0]; }).join('').toUpperCase();
 }
 
 /* ---------- ÂM THANH HIỆU ỨNG (⭐ đợt 9) ----------
@@ -2381,16 +2486,22 @@ function moAct(khung){
   var brNua = nua(brand);
 
   /* Ba cái đích, xếp từ trên xuống — cũng đúng thứ tự chữ sẽ húc phải. */
-  var muc = [bia.querySelector('.bia-ten'), bia.querySelector('.bia-o-nut'),
-             bia.querySelector('.bia-em')]
+  /* ⭐ v1.118.0 — bìa CHỜ MỞ KHÓA có bố cục khác: đích = [tên act (trên) · khối
+     nội dung giữa · CẢ HÀNG ĐÁY (READY + tên em, cùng độ cao nên nuốt một lượt —
+     tách hai đích ngang hàng thì cú thứ hai trúng tức thì, trông như trượt)]. */
+  var choMo = bia.classList.contains('cho-mo');
+  var muc = (choMo
+      ? [bia.querySelector('.bia-ten'), bia.querySelector('.bia-cho'), bia.querySelector('.bia-day')]
+      : [bia.querySelector('.bia-ten'), bia.querySelector('.bia-o-nut'), bia.querySelector('.bia-em')])
     .filter(Boolean)
     .map(function(el){ return { el: el, tam: tam(el), nua: nua(el) }; });
 
   /* ⭐ ĐỢT 13 — CHỖ NỔ là ĐÚNG CHỖ NÚT READY đang đứng (tức là chỗ nút START
      của màn AWord phía sau), chứ không phải "cao hơn tâm 11%" như đợt 12 —
-     thầy thấy bay lên cao quá. Nút READY là cái đích thứ hai trong `muc`. */
+     thầy thấy bay lên cao quá. Nút READY là cái đích thứ hai trong `muc`.
+     v1.118.0 — bìa CHỜ MỞ KHÓA nút READY nằm góc nên nổ ở TÂM KHUNG. */
   var giua = { x: oBia.width / 2,
-               y: muc[1] ? muc[1].tam.y : oBia.height / 2 };
+               y: (!choMo && muc[1]) ? muc[1].tam.y : oBia.height / 2 };
 
   var bx = 0, by = dauY, vx = 0, vy = 0, bs = 1;
   var pha = 'lao', iMuc = 0, mocPha = 0, veLuc = 0;
@@ -2637,7 +2748,11 @@ function veKhoi(k, so){
     '</div>';
 
   var khung = sec.querySelector('.game');
-  khung.querySelector('.game-cover').onclick = function(){ moAct(khung); };
+  /* v1.118.0 — bìa CHỜ MỞ KHÓA: chỉ NÚT READY mới nạp act (bìa thường: bấm đâu cũng chạy). */
+  khung.querySelector('.game-cover').onclick = function(e){
+    if (this.classList.contains('cho-mo') && !(e.target.closest && e.target.closest('.bia-ready'))) return;
+    moAct(khung);
+  };
 
   var nutDen = sec.querySelector('.ic-nut.den');
   nutDen.onclick = function(){
@@ -4628,6 +4743,7 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(doLb);
    ⭐ v1.9.0 — đếm tới HẠN THẬT của bài (`mocHan` trong js/chung.js).
    Bài chưa có hạn thì đồng hồ để gạch ngang, KHÔNG bịa giờ. */
 var HAN_MOC = null;      /* mốc hạn (ms) — null = bài chưa đặt hạn */
+var HAN_CHO_MO = false;  /* v1.118.0 — chặng đang xem chờ mở khoá (xem `veOHan`) */
 var conLai = 0;
 var dangChay = false;
 
@@ -4638,8 +4754,8 @@ function tinhConLai(){
 
 function veDongHo(){
   var o = $('#oHan'), d = $('#dhho');
-  o.classList.remove('gap-gio','het-gio');
-  d.classList.remove('xanh','cam','do','het');
+  o.classList.remove('gap-gio','het-gio','cho-mo');
+  d.classList.remove('xanh','cam','do','het','chomo');
   if (HAN_MOC == null) {           /* bài chưa có hạn: không cảnh báo gì cả */
     document.body.classList.remove('gio-gap','gio-vang','gio-het');
     d.textContent = '--:--:--';
@@ -4654,6 +4770,11 @@ function veDongHo(){
      y như mốc 6 tiếng (trước đây hết giờ là tắt sạch, nhìn như đã xong hết). */
   document.body.classList.toggle('gio-het', conLai <= 0);
   if (conLai <= 0) {
+    /* ⭐⭐ v1.118.0 — CHỜ MỞ KHÓA thay HẾT HẠN khi chặng đang xem chờ mở khoá. */
+    if (HAN_CHO_MO) {
+      o.classList.add('cho-mo'); d.classList.add('chomo');
+      d.textContent = 'CHỜ MỞ KHÓA'; return;
+    }
     o.classList.add('het-gio'); d.classList.add('het');
     d.textContent = 'HẾT HẠN'; return;
   }
@@ -4732,11 +4853,15 @@ function veDauTrang(){
    chung như cũ: không phải bài STAGE nào cũng đã cài chặng xong. */
 function veOHan(){
   var chu = A.chuHan(BAI), moc = A.mocHan(BAI);
+  HAN_CHO_MO = false;
   if (LA_STAGE && CHANG && CHANG[CHANG_XEM]) {
     var c = CHANG[CHANG_XEM];
     if (c && c.so && c.moc != null) {
       chu = 'chặng ' + c.so + ': ' + A.chuHanChang(c.han);
       moc = c.moc;
+      /* ⭐⭐ v1.118.0 — chặng đang xem là chặng CHỜ MỞ KHÓA (còn em chưa xong, còn
+         chặng sau): tới hạn thì `veDongHo` in "CHỜ MỞ KHÓA" nháy đỏ thay HẾT HẠN. */
+      HAN_CHO_MO = (A.changChoMo(CHANG) === c);
     }
   }
   var hanChu = document.querySelector('#oHan .han-dong');

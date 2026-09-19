@@ -1161,6 +1161,21 @@
     return i < 0 ? 0 : i;
   }
 
+  // ⭐⭐ v1.118.0 (thầy chốt 19/09/2026) — CHẶNG "CHỜ MỞ KHÓA": chặng đang chạy
+  // CÒN em chưa xong VÀ còn chặng sau để mở. Trả về chính chặng đó, không thì null.
+  // ⛔ CỐ Ý KHÔNG xét giờ ở đây: đồng hồ mỗi giây (`nhipDongHo`/`veDongHo` ở ba
+  // trang) tự quyết "đã quá hạn hay chưa" — chặng tới hạn trong lúc em đang mở
+  // trang thì ô hạn đổi sang CHỜ MỞ KHÓA ngay giây đó, không phải chờ vẽ lại thẻ.
+  // Bên gọi chỉ hỏi thêm `c.quaHan` khi cần quyết ngay lúc vẽ (bìa READY).
+  // Chặng CUỐI quá hạn thì KHÔNG phải "chờ mở khoá" (không còn gì để mở) — vẫn
+  // HẾT HẠN như cũ (thầy chốt).
+  function changChoMo(cac) {
+    if (!cac || !cac.length) return null;
+    var i = changHien(cac), c = cac[i];
+    if (!c || !c.so || i >= cac.length - 1) return null;
+    return (c.thieu && c.thieu.length) ? c : null;
+  }
+
   // Mã lesson để in trên thẻ. App sinh tiêu đề theo khuôn cũ của thầy:
   //   "B2B_21.8_DICTS LSFLY-S1.T3.P1-2-3"  =  LỚP_NGÀY_DẠNG + mã lesson
   // ⇒ phần sau dấu cách đầu tiên chính là mã lesson.
@@ -2596,6 +2611,7 @@
     // ⭐ v1.76.0 — dạng bài STAGE (chia chặng)
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,
     changHien: changHien, emChuaXongChang: emChuaXongChang,
+    changChoMo: changChoMo,   // ⭐ v1.118.0 — chặng quá hạn còn em chưa xong, chờ mở chặng kế
     boQuaCua: boQuaCua, moChangCua: moChangCua, mocActHan: mocActHan,
     datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,

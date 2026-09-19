@@ -1026,6 +1026,31 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .the.dang-hoc .t-han{background:#E4F6F9; border-color:#BCE6EE}
 .the.dang-hoc .t-han .han-dong{color:#0B7A89}
 .the.dang-hoc .t-han .han-vach{border-color:#BCE6EE}
+
+/* ⭐⭐ v1.118.0 (thầy duyệt mẫu 19/09/2026) — CHỜ MỞ KHÓA (thẻ STAGE: chặng quá
+   hạn còn em chưa xong, chặng kế chưa mở). CHÉP Y khối cùng tên bên lop.html —
+   hai trang hai khối <style> riêng, sửa một bên phải sửa bên kia. Ô hạn nháy
+   CỨNG 2 pha (chu kỳ 1,2s: đỏ/chữ trắng ↔ hồng nhạt/chữ đỏ); cột icon học sinh
+   thiếu bài nháy nền đỏ dữ dội hơn (0,7s). Class do `aoChoMo()` bật/tắt mỗi giây. */
+.t-han.cho-mo{animation:nhay-cho-mo 1.2s steps(1,end) infinite}
+@keyframes nhay-cho-mo{
+  0%,100%{background:#E23B41; border-color:#C9262C; color:#fff}
+  50%{background:#FDECEC; border-color:#F3B9BB; color:#C0262C}
+}
+.t-han.cho-mo .han-dong,.t-han.cho-mo .dhho.chomo{color:inherit}
+.t-han.cho-mo .han-vach{border-color:rgba(255,255,255,.55)}
+.dhho.chomo{font-size:16px; letter-spacing:.02em}
+.the.cho-mo .thieu-ic{animation:thieu-nhay .7s steps(1,end) infinite}
+@keyframes thieu-nhay{
+  0%,100%{background:#E23B41}
+  50%{background:#FDECEC}
+}
+.the.cho-mo .thieu-ic .tic{animation:none;
+  box-shadow:0 0 0 2px #fff, 0 0 10px 3px rgba(224,87,91,.9)}
+@media (prefers-reduced-motion:reduce){
+  .t-han.cho-mo{animation:none; background:#E23B41; border-color:#C9262C; color:#fff}
+  .the.cho-mo .thieu-ic{animation:none; background:#E23B41}
+}
 .the-body{flex:none; min-width:0; padding:11px 14px 6px 20px; display:flex;
   align-items:center; column-gap:12px; overflow:hidden}
 .t-chu{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
@@ -2233,8 +2258,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=88"></script>
-<script src="js/chung.js?v=51"></script>
+<script src="config.js?v=91"></script>
+<script src="js/chung.js?v=52"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -3313,11 +3338,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var chu = A.chuHan(b) || (moc == null ? '' : chuNgay(moc));
     /* ⭐ v1.77.0 — thẻ STAGE: ô hạn nói về CHẶNG ĐANG CHẠY (giống hệt trang lớp
        của học sinh), không phải hạn cuối bài. */
-    var rong = '';
+    var rong = '', choMo = 0;
     if (tThe && tThe.stage && tThe.chang) {
       var c = tThe.chang[A.changHien(tThe.chang)];
       if (c && c.so && c.moc != null) {
         chu = 'chặng ' + c.so + ': ' + chuHanChangDb(c.han);
+        /* ⭐⭐ v1.118.0 — CHỜ MỞ KHÓA: cờ `data-chomo` cho đồng hồ (cùng nếp
+           `veHan()` bên lop.html); tới hạn thì `nhipDongHo` in chữ + nháy đỏ. */
+        if (!st.du && !khoa && A.changChoMo(tThe.chang) === c) choMo = 1;
         // ⭐⭐ v1.87.0 (09/09/2026) — VÁ LỖI: chữ đã đổi sang hạn CHẶNG ĐANG CHẠY
         // nhưng đồng hồ đếm ngược (`data-moc` dưới) quên đổi theo, vẫn tích tắc
         // tới hạn CUỐI CỦA CẢ BÀI (`moc` = A.mocHan(b) truyền từ `veTheCard`) ⇒
@@ -3340,7 +3368,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         (khoa ? '<em class="han-doi tt-khoa">🔒 đồng hồ đang dừng</em>' : '') +
         '<span class="han-vach"></span>' +
         '<span class="dhho" data-moc="' + (moc == null ? 0 : moc) + '" data-xong="' + (st.du ? 1 : 0) +
-          '" data-khoa="' + (khoa ? 1 : 0) + '">…</span>' +
+          '" data-khoa="' + (khoa ? 1 : 0) + '" data-chomo="' + choMo + '">…</span>' +
       '</span>' + (st.du ? '<span class="tich-to">✓</span>' : '') +
     '</span>';
   }
@@ -4441,8 +4469,17 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var the = e.closest && e.closest('.the');
     if (the) the.classList.toggle('dang-hoc', !!bat);
   }
+  // ⭐⭐ v1.118.0 — bộ áo CHỜ MỞ KHÓA (ô hạn + cột icon thiếu bài nháy đỏ). CHÉP Y
+  // `aoChoMo()` bên lop.html: chỉ đổi class mỗi giây, không dựng lại thẻ.
+  function aoChoMo(e, bat) {
+    var oHan = e.closest && e.closest('.t-han');
+    if (oHan) oHan.classList.toggle('cho-mo', !!bat);
+    var the = e.closest && e.closest('.the');
+    if (the) the.classList.toggle('cho-mo', !!bat);
+  }
   function nhipDongHo() {
     Array.prototype.forEach.call(document.querySelectorAll('.dhho[data-moc]'), function (e) {
+      aoChoMo(e, false);   // v1.118.0 — mặc định tắt; chỉ nhánh quá hạn bật lại
       // ⭐ v1.35.0 — thẻ TẠM KHOÁ: đồng hồ DỪNG, không bao giờ HẾT HẠN (thầy chốt).
       if (e.getAttribute('data-khoa') === '1') { aoDangHoc(e, false); e.textContent = 'TẠM KHOÁ'; e.className = 'dhho khoa'; return; }
       // ⭐ v1.81.0 — XONG HẾT vẫn thắng LỚP ĐANG HỌC (thầy chốt 09/09). Đừng đổi thứ tự.
@@ -4454,6 +4491,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         var hoc = A.theDangHoc(DL, LOP_CHON, moc);
         aoDangHoc(e, hoc);
         if (hoc) { e.textContent = 'LỚP ĐANG HỌC'; e.className = 'dhho lo'; return; }
+        // ⭐⭐ v1.118.0 — thẻ STAGE chờ mở khoá (cờ đặt ở `veHanCard`), đứng SAU LỚP ĐANG HỌC.
+        if (e.getAttribute('data-chomo') === '1') {
+          aoChoMo(e, true);
+          e.textContent = 'CHỜ MỞ KHÓA'; e.className = 'dhho chomo'; return;
+        }
         e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return;
       }
       aoDangHoc(e, false);

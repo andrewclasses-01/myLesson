@@ -14,6 +14,23 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
+## ⭐ v1.118.0 (19/09/2026) — "CHỜ MỞ KHÓA" cho bài STAGE quá hạn còn em chưa xong *(bản mới nhất)*
+
+Thầy duyệt mẫu 19/09 rồi build. Ca: chặng đang chạy đã HẾT HẠN, còn em chưa xong nên chặng kế chưa mở.
+
+- **Luật chung** `A.changChoMo(cac)` (`js/chung.js?v=52`, cả 6 trang): chặng đang chạy còn em thiếu **và còn chặng
+  sau** ⇒ "chờ mở khoá"; chặng CUỐI quá hạn vẫn HẾT HẠN. Giờ do ĐỒNG HỒ quyết (cờ `data-chomo` đặt lúc vẽ, tới 0
+  mới đổi chữ) — đứng SAU "LỚP ĐANG HỌC".
+- **Thẻ trang lớp + dashboard**: ô hạn "CHỜ MỞ KHÓA" nháy cứng 2 pha (đỏ/chữ trắng ↔ hồng/chữ đỏ, 1,2 s); cột icon
+  học sinh thiếu bài nháy nền đỏ 0,7 s. Class `.t-han.cho-mo` / `.the.cho-mo` do `aoChoMo()` bật mỗi giây.
+- **Trang bài**: ô hạn đầu trang cùng nếp (`HAN_CHO_MO`); bìa READY của act thuộc chặng đó (`.game-cover.cho-mo`):
+  READY góc dưới trái, tên em góc dưới phải, giữa = "CẢ LỚP ĐANG CHỜ EM, HÃY HOÀN THÀNH BÀI TẬP CỦA MÌNH NHÉ!"
+  (em chưa xong) hoặc "ĐANG CHỜ MỞ KHÓA BỞI:" + chip avatar các bạn + "EM HÃY NHẮC NHỞ VÀ HƯỚNG DẪN GIÚP BẠN NHÉ!"
+  (em đã xong hết act của chặng). Chỉ bấm NÚT READY mới nạp act.
+- ⛔ `lop.html` · `bai.html` · `dashboard.html` **không nạp `css/main.css`** (chỉ `index.html`) — dựng mẫu mà nạp
+  thêm là mũi ▶ của thẻ bị `.play` màn đăng nhập đè cụt.
+- `config.js` `PHIEN_BAN` 1.115.1 → **1.118.0** (hai đợt v1.116/v1.117 quên bump), tag `config.js?v=91`.
+
 ## ⭐ v1.20.0 (26/08/2026) — SỬA HẠN RIÊNG TỪNG THẺ TRÊN DASHBOARD *(bản mới nhất)*
 
 > ⚠️ Nhãn *"(bản đang chạy)"* ở mục v1.15.0 bên dưới là **nhãn cũ chưa gỡ** — các mục

@@ -388,6 +388,34 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .the.dang-hoc .t-han .han-dong{color:#0B7A89}
 .the.dang-hoc .t-han .han-vach{border-color:#BCE6EE}
 
+/* ⭐⭐ v1.118.0 (thầy duyệt mẫu 19/09/2026) — CHỜ MỞ KHÓA (thẻ STAGE: chặng quá
+   hạn còn em chưa xong, chặng kế chưa mở). Ô hạn nháy CỨNG 2 pha (`steps`, chu
+   kỳ 1,2s): pha 1 nền đỏ + chữ trắng ↔ pha 2 nền hồng nhạt + chữ đỏ — nháy cứng
+   để cả hai pha đều đọc rõ (loang mềm có khoảnh khắc chữ đỏ trên nền đỏ nhạt).
+   Class do `aoChoMo()` bật/tắt mỗi giây, xem `nhipDongHo`. Bản chép ở
+   dashboard.html — sửa là sửa cả hai. */
+.t-han.cho-mo{animation:nhay-cho-mo 1.2s steps(1,end) infinite}
+@keyframes nhay-cho-mo{
+  0%,100%{background:#E23B41; border-color:#C9262C; color:#fff}
+  50%{background:#FDECEC; border-color:#F3B9BB; color:#C0262C}
+}
+.t-han.cho-mo .han-dong,.t-han.cho-mo .dhho.chomo{color:inherit}
+.t-han.cho-mo .han-vach{border-color:rgba(255,255,255,.55)}
+.dhho.chomo{font-size:16px; letter-spacing:.02em}
+/* Cột icon học sinh thiếu bài nháy NỀN ĐỎ rõ và dữ dội hơn ô hạn (thầy thêm khi
+   duyệt): chu kỳ 0,7s, cả cột đỏ đặc ↔ hồng; icon viền trắng để nổi trên nền đỏ. */
+.the.cho-mo .thieu-ic{animation:thieu-nhay .7s steps(1,end) infinite}
+@keyframes thieu-nhay{
+  0%,100%{background:#E23B41}
+  50%{background:#FDECEC}
+}
+.the.cho-mo .thieu-ic .tic{animation:none;
+  box-shadow:0 0 0 2px #fff, 0 0 10px 3px rgba(224,87,91,.9)}
+@media (prefers-reduced-motion: reduce){
+  .t-han.cho-mo{animation:none; background:#E23B41; border-color:#C9262C; color:#fff}
+  .the.cho-mo .thieu-ic{animation:none; background:#E23B41}
+}
+
 /* ---------- RUỘT THẺ ----------
    MỘT BỐ CỤC DÙNG CHUNG cho máy tính lẫn điện thoại (thầy chốt 18/08 — bản
    điện thoại nhìn gọn hơn nên máy tính theo luôn): tên bài + ngày ở trái,
@@ -1394,6 +1422,7 @@ body.mo-menu .side.trai{transform:none}
   .dhho.xong{font-size:11px; letter-spacing:.4px}
   .dhho.khoa{font-size:10px; letter-spacing:.3px}
   .dhho.lo{font-size:10.5px; letter-spacing:-.02em}
+  .dhho.chomo{font-size:10.5px; letter-spacing:0}   /* v1.118.0 */
   .tich-to{font-size:20px}
 
   .the-diem{padding:6px 8px 7px 12px; gap:3px}
@@ -1604,8 +1633,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=85"></script>
-<script src="js/chung.js?v=51"></script>
+<script src="config.js?v=91"></script>
+<script src="js/chung.js?v=52"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -2742,13 +2771,18 @@ function veHan(b, tt){
   /* ⭐ v1.76.0 — THẺ STAGE: ô hạn nói về CHẶNG ĐANG CHẠY, không phải hạn cuối
      bài (thầy chốt 07/09) — đồng hồ cũng đếm tới hạn chặng đó. */
   var chu = b.han ? ('Hạn ' + b.han) : 'Chưa đặt hạn';
-  var rong = '';
+  var rong = '', choMo = 0;
   if (b.stage && b._chang) {
     var i = A.changHien(b._chang), c = b._chang[i];
     if (c && c.so && c.moc != null) {
       chu = 'Hạn chặng ' + c.so + ': ' + A.chuHanChang(c.han);
       if (!xongHet) moc = c.moc;
       rong = ' rong';
+      /* ⭐⭐ v1.118.0 (thầy chốt 19/09/2026) — CHỜ MỞ KHÓA: chặng đang chạy còn em
+         chưa xong mà còn chặng sau ⇒ đồng hồ mang cờ `data-chomo`; TỚI HẠN thì
+         `nhipDongHo` in "CHỜ MỞ KHÓA" + nháy đỏ thay vì "HẾT HẠN" (chặng cuối
+         không có cờ này — vẫn HẾT HẠN). Giờ do đồng hồ quyết, xem `A.changChoMo`. */
+      if (!xongHet && !b.khoa && A.changChoMo(b._chang) === c) choMo = 1;
     }
   }
   var lop = 't-han' + (tt === 'gap' ? ' gap-gio' : (xongHet ? ' da-xong' : ''));
@@ -2759,7 +2793,7 @@ function veHan(b, tt){
       '<span class="han-dong">' + chu + '</span>' +
       '<span class="han-vach"></span>' +
       '<span class="dhho" data-moc="' + moc + '" data-xong="' + (xongHet ? 1 : 0) +
-        '" data-khoa="' + (b.khoa ? 1 : 0) + '">…</span>' +
+        '" data-khoa="' + (b.khoa ? 1 : 0) + '" data-chomo="' + choMo + '">…</span>' +
     '</span>' +
     (xongHet ? '<span class="tich-to">✓</span>' : '') +
   '</span>';
@@ -2821,10 +2855,22 @@ function aoDangHoc(e, bat){
   var the = e.closest && e.closest('.the');
   if (the) the.classList.toggle('dang-hoc', !!bat);
 }
+/* ⭐⭐ v1.118.0 (thầy chốt 19/09/2026) — bộ áo CHỜ MỞ KHÓA của thẻ STAGE quá hạn
+   mà còn em chưa xong: ô hạn nháy đỏ (`.t-han.cho-mo`) + cột icon học sinh thiếu
+   bài nháy nền đỏ dữ dội (`.the.cho-mo .thieu-ic`). Cùng nếp `aoDangHoc`: tính
+   lại MỖI GIÂY, chỉ đổi class, không dựng lại thẻ. Bản chép ở dashboard.html. */
+function aoChoMo(e, bat){
+  var oHan = e.closest && e.closest('.t-han');
+  if (oHan) oHan.classList.toggle('cho-mo', !!bat);
+  var the = e.closest && e.closest('.the');
+  if (the) the.classList.toggle('cho-mo', !!bat);
+}
 
 var HEN_DH = null;
 function nhipDongHo(){
   document.querySelectorAll('.dhho[data-moc]').forEach(function(e){
+    /* v1.118.0 — mặc định tắt áo CHỜ MỞ KHÓA; chỉ nhánh quá hạn bên dưới bật lại. */
+    aoChoMo(e, false);
     /* ⭐ v1.35.0 — thẻ TẠM KHOÁ: đồng hồ DỪNG, không bao giờ hiện HẾT HẠN (thầy chốt). */
     if (e.getAttribute('data-khoa') === '1') {
       aoDangHoc(e, false);
@@ -2850,6 +2896,13 @@ function nhipDongHo(){
       var hoc = A.theDangHoc(DL, LOP_DL, moc);
       aoDangHoc(e, hoc);
       if (hoc) { e.textContent = 'LỚP ĐANG HỌC'; e.className = 'dhho lo'; return; }
+      /* ⭐⭐ v1.118.0 — thẻ STAGE: chặng quá hạn còn em chưa xong, còn chặng sau
+         ⇒ "CHỜ MỞ KHÓA" nháy đỏ thay "HẾT HẠN" (cờ đặt ở `veHan`). Đứng SAU
+         LỚP ĐANG HỌC (thầy chốt: chỉ thay chữ HẾT HẠN, tan lớp mới hiện). */
+      if (e.getAttribute('data-chomo') === '1') {
+        aoChoMo(e, true);
+        e.textContent = 'CHỜ MỞ KHÓA'; e.className = 'dhho chomo'; return;
+      }
       e.textContent = 'HẾT HẠN'; e.className = 'dhho do'; return;
     }
     aoDangHoc(e, false);

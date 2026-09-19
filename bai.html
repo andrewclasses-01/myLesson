@@ -585,8 +585,11 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   font-size:max(12px,2cqw); letter-spacing:.02em}
 .bc-ten .chip .av{width:max(22px,3.3cqw); height:max(22px,3.3cqw); border-radius:50%; overflow:hidden;
   background:#E8B4B6; color:#8a1d22; display:flex; align-items:center; justify-content:center;
-  font-size:max(9px,1.2cqw); flex:none}
-.bc-ten .chip .av img{width:100%; height:100%; object-fit:cover; display:block}
+  font-size:max(9px,1.2cqw); flex:none; position:relative}
+/* ⛔ v1.118.1 — ảnh phải `position:absolute; inset:0` ĐÈ LÊN chữ tắt (đúng nếp
+   `.tic .av-anh`): bản v1.118.0 để ảnh nằm CẠNH chữ trong flex ⇒ ô tròn nửa ảnh
+   nửa chữ (thầy chụp). Thiếu ảnh thì `onerror` gỡ <img>, chữ tắt lộ ra như cũ. */
+.bc-ten .chip .av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
 .bc-loi{font-weight:800; font-size:max(12px,2.1cqw); color:var(--ink); line-height:1.35}
 .bc-to{font-weight:800; font-size:max(19px,3.7cqw); color:#C0262C; line-height:1.15; letter-spacing:.01em;
   animation:bc-tho 1.6s ease-in-out infinite}
@@ -1272,6 +1275,9 @@ body.mo-menu .side.trai{transform:none}
   .dhho{font-size:13px; letter-spacing:.2px; line-height:15.5px}
   .dhho.het{font-size:11px}
   .dhho.chomo{font-size:10.5px; letter-spacing:0}   /* v1.118.0 — ô 92px: đo 80px */
+  /* v1.118.1 — dòng "STAGE 1: 00:00 • 19/9" (bài STAGE, `.stage-han` do veOHan gắn)
+     đo 93px ở 8,6px ⇒ tràn ô 92/86px hai đầu; co riêng dòng này, bài thường giữ cỡ. */
+  .t-han.stage-han .han-dong{font-size:8.2px; letter-spacing:-.01em}
   .dau-bai .db-ten{font-size:12.5px; letter-spacing:0}
   .dau-bai .db-ma{font-size:9.4px}
   .hoi-ve{width:196px}
@@ -1356,6 +1362,7 @@ body.mo-menu .side.trai{transform:none}
   .t-han .han-dong{font-size:8.6px}
   .dhho{font-size:12px; line-height:15.5px}
   .dhho.chomo{font-size:9.5px; letter-spacing:0}   /* v1.118.0 — ô 86px, đo ~72px */
+  .t-han.stage-han .han-dong{font-size:7.6px}   /* v1.118.1 — đo ~82px trong ô 86px */
   .lb-row{grid-template-columns:14px minmax(0,1fr) 3.2ch; gap:2px}
   .lb-name{font-size:8.8px}
   .lb-rank .huy{width:13px; height:13px}
@@ -4852,24 +4859,30 @@ function veDauTrang(){
    ⛔ Chặng KHÔNG có hạn riêng (`so` = 0 — act chưa xếp chặng) thì GIỮ hạn
    chung như cũ: không phải bài STAGE nào cũng đã cài chặng xong. */
 function veOHan(){
-  var chu = A.chuHan(BAI), moc = A.mocHan(BAI);
+  var chu = A.chuHan(BAI), moc = A.mocHan(BAI), khongHan = false;
   HAN_CHO_MO = false;
   if (LA_STAGE && CHANG && CHANG[CHANG_XEM]) {
     var c = CHANG[CHANG_XEM];
     if (c && c.so && c.moc != null) {
-      chu = 'chặng ' + c.so + ': ' + A.chuHanChang(c.han);
+      /* ⭐ v1.118.1 (thầy chốt sau test thật) — "STAGE 1: 00:00 • 19/9" thay
+         "Hạn chặng 1: …": chữ cũ 25 ký tự tràn ô 86–92px trên điện thoại. Cờ
+         `khongHan` để bên dưới KHÔNG nối thêm "Hạn " đằng trước. */
+      chu = 'STAGE ' + c.so + ': ' + A.chuHanChang(c.han);
+      khongHan = true;
       moc = c.moc;
       /* ⭐⭐ v1.118.0 — chặng đang xem là chặng CHỜ MỞ KHÓA (còn em chưa xong, còn
          chặng sau): tới hạn thì `veDongHo` in "CHỜ MỞ KHÓA" nháy đỏ thay HẾT HẠN. */
       HAN_CHO_MO = (A.changChoMo(CHANG) === c);
     }
   }
+  var oHanEl = document.querySelector('#oHan');
+  if (oHanEl) oHanEl.classList.toggle('stage-han', khongHan);   // v1.118.1 — co chữ trên điện thoại
   var hanChu = document.querySelector('#oHan .han-dong');
   if (hanChu) {
     Array.prototype.slice.call(hanChu.childNodes).forEach(function(n){
       if (n.nodeType === 3) hanChu.removeChild(n);
     });
-    hanChu.insertBefore(document.createTextNode(chu ? (' Hạn ' + chu) : ' Chưa đặt hạn'), hanChu.firstChild);
+    hanChu.insertBefore(document.createTextNode(chu ? ((khongHan ? ' ' : ' Hạn ') + chu) : ' Chưa đặt hạn'), hanChu.firstChild);
   }
   HAN_MOC = moc;
   tinhConLai();

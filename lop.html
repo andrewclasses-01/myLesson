@@ -402,18 +402,11 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .t-han.cho-mo .han-dong,.t-han.cho-mo .dhho.chomo{color:inherit}
 .t-han.cho-mo .han-vach{border-color:rgba(255,255,255,.55)}
 .dhho.chomo{font-size:16px; letter-spacing:.02em}
-/* Cột icon học sinh thiếu bài nháy NỀN ĐỎ rõ và dữ dội hơn ô hạn (thầy thêm khi
-   duyệt): chu kỳ 0,7s, cả cột đỏ đặc ↔ hồng; icon viền trắng để nổi trên nền đỏ. */
-.the.cho-mo .thieu-ic{animation:thieu-nhay .7s steps(1,end) infinite}
-@keyframes thieu-nhay{
-  0%,100%{background:#E23B41}
-  50%{background:#FDECEC}
-}
-.the.cho-mo .thieu-ic .tic{animation:none;
-  box-shadow:0 0 0 2px #fff, 0 0 10px 3px rgba(224,87,91,.9)}
+/* ⛔ v1.118.1 — đã BỎ "cột icon thiếu bài nháy nền đỏ 0,7s" của v1.118.0 (thầy
+   test thật: "quá xấu, để trở lại như cũ") — cột icon giữ nguyên hào quang `tic-do`
+   cũ; `.the.cho-mo` vẫn được gắn (không CSS nào dùng, để dành). */
 @media (prefers-reduced-motion: reduce){
   .t-han.cho-mo{animation:none; background:#E23B41; border-color:#C9262C; color:#fff}
-  .the.cho-mo .thieu-ic{animation:none; background:#E23B41}
 }
 
 /* ---------- RUỘT THẺ ----------
@@ -2857,7 +2850,7 @@ function aoDangHoc(e, bat){
 }
 /* ⭐⭐ v1.118.0 (thầy chốt 19/09/2026) — bộ áo CHỜ MỞ KHÓA của thẻ STAGE quá hạn
    mà còn em chưa xong: ô hạn nháy đỏ (`.t-han.cho-mo`) + cột icon học sinh thiếu
-   bài nháy nền đỏ dữ dội (`.the.cho-mo .thieu-ic`). Cùng nếp `aoDangHoc`: tính
+   bài — v1.118.1 ĐÃ BỎ nháy cột icon, chỉ còn ô hạn. Cùng nếp `aoDangHoc`: tính
    lại MỖI GIÂY, chỉ đổi class, không dựng lại thẻ. Bản chép ở dashboard.html. */
 function aoChoMo(e, bat){
   var oHan = e.closest && e.closest('.t-han');

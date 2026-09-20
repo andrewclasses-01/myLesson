@@ -146,6 +146,12 @@ data/lop.json   ← lớp + học sinh (app lấy từ myStudent)
 data/bai.json   ← bài của từng lớp
 ```
 
+⭐ **Từ web v1.119.0 (21/09/2026)** hai file trên còn có **bản sao sống trên Firestore** — kho `lessonWeb`
+(`lessonWeb/lop` + `lessonWeb/bai_<LỚP>`, ruột trong trường chuỗi `json`). App ghi kho này TRƯỚC (1–3 giây
+là học sinh thấy), GitHub Pages chỉ còn là sao lưu + lịch sử. `js/chung.js napDuLieu()` đọc cả hai nguồn và
+lấy bản có `capNhat` mới hơn; Firestore hỏng thì trang chạy y như trước bằng hai file tĩnh. Phép thử:
+`node tools/thu-kho-web.js`. Hồ sơ: `app/BAN GIAO.md` ➕ 21/09 đợt 20.
+
 Mọi file còn lại (`index.html`, `css/`, `js/`, `assets/`) là khung trang, rất ít khi đổi.
 
 ## Cấu trúc

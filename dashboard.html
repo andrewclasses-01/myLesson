@@ -31,11 +31,21 @@
       ? 'https://firestore.googleapis.com/v1/projects/' + db.projectId + '/databases/(default)/documents/'
       : '';
     var khoa = goc ? '&key=' + encodeURIComponent(db.apiKey) : '';
+    // v1.119.0 — lớp đoán trước để xin sớm tài liệu bài của lớp (PHẢI y hệt chung.js doanLop)
+    var lopDoan = '';
+    try {
+      lopDoan = new URLSearchParams(location.search).get('lop') || '';
+      if (!lopDoan) { var em = JSON.parse(localStorage.getItem('mylesson_hs') || 'null'); lopDoan = (em && em.lop) || ''; }
+      lopDoan = String(lopDoan).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    } catch (e) { lopDoan = ''; }
     window.__napSom = {
       'data/lop.json': lay('data/lop.json?t=' + t),
       'data/bai.json': lay('data/bai.json?t=' + t),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
-      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null
+      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
+      'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
+      lessonWebBaiLop: lopDoan,
+      lessonWebBai: (goc && lopDoan) ? lay(goc + 'lessonWeb/bai_' + lopDoan + '?key=' + encodeURIComponent(db.apiKey)) : null
     };
   } catch (e) { /* im lặng — chung.js tự lo */ }
 })();
@@ -2251,8 +2261,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=92"></script>
-<script src="js/chung.js?v=52"></script>
+<script src="config.js?v=93"></script>
+<script src="js/chung.js?v=53"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>

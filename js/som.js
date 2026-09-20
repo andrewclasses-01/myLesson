@@ -26,6 +26,10 @@
      · khoá đệm phiên: 'awc_hansua2' · 'awc_nghi2' — còn hạn (60 giây) thì
        KHÔNG đọc sớm, kẻo mỗi lần chuyển trang là tốn thêm một lượt đọc
        Firestore vô ích (luật 8️⃣: tính tiền theo số tài liệu).
+     · ⭐ v1.119.0 (21/09/2026) KHO WEB TỨC THÌ `lessonWeb`: xin sớm `lessonWeb/lop`
+       và `lessonWeb/bai_<LỚP>` (LỚP đoán từ `?lop=` rồi `localStorage
+       'mylesson_hs'.lop` — y hệt `doanLop()` bên chung.js). Đoán sai/không đoán
+       được thì chung.js tự xin sau, không hỏng gì. KHÔNG đệm: mục đích là tươi.
    ⛔ Viết kiểu ES5 (var, function) — giống mọi file của web này.
    ============================================================ */
 (function () {
@@ -46,11 +50,21 @@
       ? 'https://firestore.googleapis.com/v1/projects/' + db.projectId + '/databases/(default)/documents/'
       : '';
     var khoa = goc ? '&key=' + encodeURIComponent(db.apiKey) : '';
+    // v1.119.0 — lớp đoán trước để xin sớm tài liệu bài của lớp (PHẢI y hệt chung.js doanLop)
+    var lopDoan = '';
+    try {
+      lopDoan = new URLSearchParams(location.search).get('lop') || '';
+      if (!lopDoan) { var em = JSON.parse(localStorage.getItem('mylesson_hs') || 'null'); lopDoan = (em && em.lop) || ''; }
+      lopDoan = String(lopDoan).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    } catch (e) { lopDoan = ''; }
     window.__napSom = {
       'data/lop.json': lay('data/lop.json?t=' + t),
       'data/bai.json': lay('data/bai.json?t=' + t),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
-      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null
+      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
+      'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
+      lessonWebBaiLop: lopDoan,
+      lessonWebBai: (goc && lopDoan) ? lay(goc + 'lessonWeb/bai_' + lopDoan + '?key=' + encodeURIComponent(db.apiKey)) : null
     };
   } catch (e) { /* im lặng — chung.js tự lo */ }
 })();

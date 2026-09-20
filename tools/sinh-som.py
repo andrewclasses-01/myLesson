@@ -23,7 +23,8 @@ try: sys.stdout.reconfigure(encoding="utf-8")
 except Exception: pass
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))   # .../web
-PAGES = ["lop.html", "bai.html", "bai-sp.html", "sp-chitiet.html", "dashboard.html"]
+# 21/09/2026 (web v1.119.0): thêm khoa.html — trang khóa học có mốc SOM từ v1.78.0 mà generator bỏ sót.
+PAGES = ["lop.html", "bai.html", "bai-sp.html", "sp-chitiet.html", "dashboard.html", "khoa.html"]
 BEGIN, END = "<!-- SOM:BEGIN -->", "<!-- SOM:END -->"
 
 def read(rel): return io.open(os.path.join(ROOT, rel), encoding="utf-8", newline="").read()
@@ -62,6 +63,10 @@ def main():
         a, b = html.find(BEGIN), html.find(END)
         if a < 0 or b < 0: raise SystemExit(f"{page}: thiếu mốc SOM:BEGIN/END")
         have = html[a:b + len(END)]
+        # 21/09/2026: so + dập theo ĐÚNG kiểu xuống dòng của trang (kho trộn CRLF/LF —
+        # trước đây khối dập ra LF lẫn CRLF nên --check báo LỆCH cả 5 trang dù mã khớp).
+        nl = "\r\n" if "\r\n" in html else "\n"
+        want = block().replace("\r\n", "\n").replace("\n", nl)
         ok = have == want
         print(f"{page}: {'KHỚP' if ok else 'LỆCH'}")
         if not ok:

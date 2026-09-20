@@ -95,6 +95,105 @@
 
   var nhoDl = null;
 
+  /* ⭐⭐⭐ v1.119.0 (21/09/2026, thầy chốt "ok build") — KHO WEB TỨC THÌ `lessonWeb`.
+     Vì sao: bài/lớp thầy đẩy chỉ tới học sinh sau khi GitHub Pages DỰNG LẠI trang
+     (đo thật 32 giây → 11 phút). Nay app myLesson (v2.87.0) ghi thêm một BẢN SAO SỐNG
+     lên Firestore: `lessonWeb/lop` (y hệt lop.json) + `lessonWeb/bai_<LỚP>` (bài của
+     MỘT lớp — tách theo lớp vì trần 1 MB/tài liệu). Ruột nằm trong trường chuỗi `json`
+     ⇒ JSON.parse là có đúng vật thể như đọc file.
+     Trang đọc SONG SONG cả hai nguồn và với mỗi thứ LẤY BẢN CÓ `capNhat` MỚI HƠN:
+       · lớp : lop.json  ⟷ lessonWeb/lop
+       · bài : bai.json (mốc chung cả file) ⟷ lessonWeb/bai_<LỚP> (mốc riêng lớp)
+     Firestore hỏng/chưa có ⇒ y như trước v1.119.0 (bản GitHub). GitHub vẫn được app
+     đẩy nhưng chỉ còn là sao lưu + lịch sử.
+     ⛔ Kết quả trả về GIỮ NGUYÊN hình `{lop, khoa, bai}` — không trang nào phải sửa.
+     ⛔ Bài của lớp nào? Trang học sinh chỉ cần MỘT lớp (`doanLop()`: `?lop=` → phiên
+        đã lưu; đoán sai thì tra lại bằng `emDangHoc` rồi xin thêm một lượt); dashboard
+        (`?gv=`/trang quản lý) cần MỌI lớp ⇒ list cả kho (≈11 tài liệu, chỉ thầy).
+     ⛔ KHÔNG đệm sessionStorage hai tài liệu này — mục đích chính là TƯƠI. Chi phí: +2
+        lượt đọc mỗi lần mở trang (nền hiện ~18: lessonHan 15 + lessonNghi 2 + avatar 1). */
+  var KHO_WEB = 'lessonWeb';
+  function gocFs() {
+    var db = CFG.AWORD_DB || {};
+    if (!db.projectId || !db.apiKey) return null;
+    return { u: 'https://firestore.googleapis.com/v1/projects/' + db.projectId
+                + '/databases/(default)/documents/', k: '?key=' + encodeURIComponent(db.apiKey) };
+  }
+  // Ruột một tài liệu lessonWeb (REST) → vật thể JSON, hoặc null khi thiếu/hỏng.
+  function boKhoWeb(d) {
+    try {
+      var f = d && d.fields;
+      var s = f && f.json && f.json.stringValue;
+      if (!s) return null;
+      var o = JSON.parse(s);
+      if (!o || typeof o !== 'object') return null;
+      if (!o.capNhat && f.capNhat && f.capNhat.stringValue) o.capNhat = f.capNhat.stringValue;
+      return o;
+    } catch (e) { return null; }
+  }
+  function docKhoWeb(id) {
+    try {
+      var g = gocFs();
+      if (!g) return Promise.resolve(null);
+      var p = laySom(KHO_WEB + '/' + id) || fetch(g.u + KHO_WEB + '/' + encodeURIComponent(id) + g.k, { cache: 'no-store' });
+      return p.then(function (r) { return r && r.ok ? r.json() : null; })
+              .then(boKhoWeb).catch(function () { return null; });
+    } catch (e) { return Promise.resolve(null); }
+  }
+  // Dashboard: mọi tài liệu bài trong kho (bỏ `lop`).
+  function docMoiBaiKhoWeb() {
+    try {
+      var g = gocFs();
+      if (!g) return Promise.resolve([]);
+      return fetch(g.u + KHO_WEB + g.k + '&pageSize=100', { cache: 'no-store' })
+        .then(function (r) { return r && r.ok ? r.json() : null; })
+        .then(function (j) {
+          var ds = (j && j.documents) || [], ra = [];
+          for (var i = 0; i < ds.length; i++) {
+            var id = String(ds[i].name || '').split('/').pop();
+            if (id.indexOf('bai_') !== 0) continue;
+            var o = boKhoWeb(ds[i]);
+            if (o) ra.push(o);
+          }
+          return ra;
+        }).catch(function () { return []; });
+    } catch (e) { return Promise.resolve([]); }
+  }
+  // Lớp đoán trước khi có dữ liệu (PHẢI y hệt js/som.js): `?lop=` → phiên đã lưu.
+  function doanLop() {
+    try {
+      var q = new URLSearchParams(location.search);
+      var l = q.get('lop') || '';
+      if (!l) { var cu = docNho(); l = (cu && cu.lop) || ''; }
+      return String(l).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+    } catch (e) { return ''; }
+  }
+  // Chỉ dashboard mới cần MỌI lớp. `?gv=1&lop=…` (thầy xem trang lớp) vẫn là một lớp.
+  function laTrangQuanLy() {
+    try { return /dashboard\.html$/i.test(location.pathname); } catch (e) { return false; }
+  }
+  // Bản nào có `capNhat` mới hơn thì lấy (chuỗi 'YYYY-MM-DD HH:MM:SS' so được thẳng).
+  function moiHon(a, b) {
+    if (!a) return b || null;
+    if (!b) return a;
+    return String(b.capNhat || '') >= String(a.capNhat || '') ? b : a;
+  }
+  // Đè mảng bài của MỘT lớp từ kho lên `dl.bai` khi kho mới hơn mốc chung của bai.json
+  // (hoặc bai.json chưa có lớp đó).
+  function apBaiKho(dl, mocTinh, doc) {
+    if (!doc || !doc.lop || !Array.isArray(doc.bai)) return;
+    if (String(doc.capNhat || '') >= String(mocTinh || '') || !dl.bai[doc.lop]) dl.bai[doc.lop] = doc.bai;
+  }
+  // Tài liệu bài xin sớm ở som.js chỉ dùng được khi đoán ĐÚNG lớp.
+  function baiSomCua(maLop) {
+    try {
+      var s = window.__napSom;
+      if (!s || !s.lessonWebBai || s.lessonWebBaiLop !== maLop) return null;
+      var p = s.lessonWebBai; s.lessonWebBai = null;
+      return p.then(function (r) { return r && r.ok ? r.json() : null; }).then(boKhoWeb).catch(function () { return null; });
+    } catch (e) { return null; }
+  }
+
   // Đọc lop.json + bai.json. `?t=` + no-store để không dính bản cũ trong máy —
   // GitHub Pages giữ cache ~10 phút, thiếu chốt này là thầy đẩy bài mới mà học
   // sinh vẫn thấy bài cũ.
@@ -107,8 +206,13 @@
     // Firestore thì trang phải chạy y như trước v1.20.0 chứ không được trắng bảng.
     // ⭐ v1.48.0 — nạp kèm kho `lessonNghi` (thẻ "không giao bài"). Cùng lý do
     // đặt ở đây với `napHanSua()`: mọi trang vào dữ liệu qua đúng cửa này.
+    // ⭐ v1.119.0 — xin thêm 2 nguồn kho web tức thì, song song với 4 lượt cũ.
+    var lopDoan = doanLop();
+    var quanLy = laTrangQuanLy();
     nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json'),
-                         napHanSua(), napNghi()])
+                         napHanSua(), napNghi(),
+                         docKhoWeb('lop'),
+                         quanLy ? docMoiBaiKhoWeb() : (lopDoan ? (baiSomCua(lopDoan) || docKhoWeb('bai_' + lopDoan)) : null)])
       .then(function (r) {
         // ⭐ v1.35.0 — kho `lessonHan` nay mang HAI bảng: hạn riêng + trạng thái thẻ.
         var bang = r[2] || {};
@@ -118,12 +222,27 @@
         BO_QUA = bang.boQua || {};
         MO_CHANG = bang.moChang || {};
         NGHI = r[3] || {};
+        // ⭐ v1.119.0 — LỚP: bản mới hơn giữa lop.json và lessonWeb/lop.
+        var lopDung = moiHon(r[0], r[4]) || {};
+        var baiTinh = r[1] || {};
         // ⛔ v1.78.0 — PHẢI mang theo `khoa` (khóa học). Hàm này CHÉP LẠI từng trường
         // chứ không trả nguyên `r[0]`, nên thêm mảng mới ở `lop.json` mà quên dòng này
         // là nó rơi mất TẠI ĐÂY — mọi hàm tra cứu vẫn đúng mà trang vẫn hỏng, không một
         // tiếng động (đã mất một lượt kiểm mới tìm ra, 08/09/2026).
-        return { lop: (r[0] && r[0].lop) || [], khoa: (r[0] && r[0].khoa) || [],
-                 bai: (r[1] && r[1].bai) || {} };
+        var dl = { lop: lopDung.lop || [], khoa: lopDung.khoa || [], bai: baiTinh.bai || {} };
+        var mocTinh = baiTinh.capNhat || '';
+        // ⭐ v1.119.0 — BÀI: dashboard đè mọi lớp; trang học sinh đè đúng lớp của em.
+        if (quanLy) {
+          var ds = r[5] || [];
+          for (var i = 0; i < ds.length; i++) apBaiKho(dl, mocTinh, ds[i]);
+          return dl;
+        }
+        var maLop = lopDoan;
+        try { var em = emDangHoc(dl); if (em && em.lop) maLop = em.lop; } catch (e) { /* chưa đăng nhập */ }
+        if (!maLop) return dl;                       // màn đăng nhập: không cần bài
+        if (maLop === lopDoan) { apBaiKho(dl, mocTinh, r[5]); return dl; }
+        // đoán sai lớp (em ở 2 nơi vừa đổi nơi, `?nhu=` không kèm `?lop=`) ⇒ xin thêm 1 lượt
+        return docKhoWeb('bai_' + maLop).then(function (doc) { apBaiKho(dl, mocTinh, doc); return dl; });
       });
     return nhoDl;
   }

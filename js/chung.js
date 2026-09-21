@@ -1305,6 +1305,23 @@
     return (c.thieu && c.thieu.length) ? c : null;
   }
 
+  // ⭐⭐ v1.128.0 (thầy chốt 21/09/2026) — CHẶNG CŨ CÒN EM CHƯA XONG: thầy bấm
+  // "Mở chặng X ngay" trên dashboard ⇒ `changHien` nhảy sang chặng kế, nhưng chặng
+  // trước vẫn còn em thiếu bài. Trước đây trang bài ẨN HẲN chặng đó (chỉ vào lại
+  // qua thanh chặng) ⇒ em không thấy ai còn thiếu. Trả về MẢNG các chặng ĐÃ MỞ
+  // đứng TRƯỚC chặng đang chạy mà còn `thieu` (chặng 0 không hạn không tính).
+  // Bên gọi (bai.html) vẽ các chặng này ĐẦY ĐỦ (bìa + bảng xếp hạng) phía trên
+  // chặng đang chạy; bìa READY của act thuộc chặng này vẫn hỏi `c.quaHan`.
+  function changCuConThieu(cac) {
+    if (!cac || !cac.length) return [];
+    var hien = changHien(cac), ra = [];
+    for (var i = 0; i < hien; i++) {
+      var c = cac[i];
+      if (c && c.so && c.mo && c.thieu && c.thieu.length) ra.push(c);
+    }
+    return ra;
+  }
+
   // Mã lesson để in trên thẻ. App sinh tiêu đề theo khuôn cũ của thầy:
   //   "B2B_21.8_DICTS LSFLY-S1.T3.P1-2-3"  =  LỚP_NGÀY_DẠNG + mã lesson
   // ⇒ phần sau dấu cách đầu tiên chính là mã lesson.
@@ -2954,6 +2971,7 @@
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,
     changHien: changHien, emChuaXongChang: emChuaXongChang,
     changChoMo: changChoMo,   // ⭐ v1.118.0 — chặng quá hạn còn em chưa xong, chờ mở chặng kế
+    changCuConThieu: changCuConThieu,   // ⭐ v1.128.0 — chặng cũ (trước chặng đang chạy) còn em chưa xong
     boQuaCua: boQuaCua, moChangCua: moChangCua, mocActHan: mocActHan,
     datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,

@@ -368,6 +368,29 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 @media (prefers-reduced-motion: reduce){
   .st-khuc.dang,.st-khuc.ket,.st-cho-tt.ai .ten-cham{animation:none}
 }
+/* ⭐ v1.128.0 — DẢI TÊN NHÓM CHẶNG khi trang hiện NHIỀU chặng cùng lúc (chặng cũ còn
+   em chưa xong + chặng đang xem, xem `veCacPhanStage`/`veNhanNhomChang`). Dùng lại
+   `.st-nhan` (ô STAGE n) + `.st-cho-tt` (nút trạng thái) của thẻ chờ; nhóm SAU
+   cách nhóm trước bằng vạch nét đứt như `.dau-cho`. Không phải thẻ, không viền. */
+.st-nhom{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:0 4px;
+  margin-bottom:-6px}
+.st-nhom.cach{margin-top:10px; position:relative}
+.st-nhom.cach::before{content:''; position:absolute; left:6px; right:6px; top:-15px;
+  border-top:1px dashed #CBD8D5}
+.st-nhom.den .st-nhan{background:#FBD9DA; color:#B03A3E}
+.st-nhom.dang .st-nhan{background:#D8E6FF; color:#2B5FD0}
+.st-nhom .st-cho-tt.ai .ten-cham{text-transform:none; letter-spacing:.02em}
+.st-nhom .st-cho-tt.dang{background:#EAF1FF; color:#2B5FD0; border-color:#CBDCFF}
+/* Tên các em thiếu bài có thể dài (5–6 tên) ⇒ nút được CO + XUỐNG DÒNG, không tràn
+   ngang trang (đo 375px: bản `white-space:nowrap` thừa kế từ `.st-cho-tt` rộng 721px). */
+.st-nhom .st-cho-tt{flex:0 1 auto; min-width:0; white-space:normal; line-height:1.35;
+  display:inline; padding:6px 12px}
+.st-nhom .st-cho-tt svg{display:inline-block; vertical-align:-2px; margin-right:6px}
+/* Điện thoại: thầy ép mở chặng kế ⇒ thanh có HAI khúc to (OVERDUE + IN PROGRESS) cùng
+   `flex-shrink:0` ⇒ tràn ngang (đo 375px: 444px). Cho khúc to được co, chữ nhỏ lại. */
+@media (max-width:620px){
+  .st-khuc.dang,.st-khuc.ket{flex-shrink:1; min-width:0; font-size:12px; letter-spacing:.03em}
+}
 
 /* ⭐⭐ v1.106.0 (15/09/2026, thầy duyệt mẫu `MAU THE BAI TAP KHOA HOC v4`) — THẺ
    BÀI TẬP KHÓA HỌC ở hai trạng thái TĨNH (chưa mở khoá · đã xong đủ điểm):
@@ -1839,8 +1862,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=95"></script>
-<script src="js/chung.js?v=55"></script>
+<script src="config.js?v=96"></script>
+<script src="js/chung.js?v=56"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=23"></script>
@@ -1918,7 +1941,9 @@ var CHUAN = {};
    `CHANG` = mảng chặng đã xét trạng thái (xem `A.xetChang` trong js/chung.js).
    `CHANG_XEM` = chặng đang hiện trên trang; mặc định là chặng ĐANG MỞ, em bấm
    khúc trên thanh chặng để xem lại chặng đã xong (và làm lại act ở đó).
-   ⛔ Chặng đã xong thì ẨN HẲN khỏi trang (thầy chốt) — chỉ vào lại qua thanh. */
+   ⛔ Chặng đã xong thì ẨN HẲN khỏi trang (thầy chốt) — chỉ vào lại qua thanh.
+   ⭐ v1.128.0 — NGOẠI LỆ: chặng cũ CÒN em chưa xong (thầy ép mở chặng kế) vẫn hiện
+   đầy đủ phía trên chặng đang xem — xem `veCacPhanStage`. */
 var LA_STAGE = false;
 var CHANG = [];
 var CHANG_XEM = null;
@@ -2407,13 +2432,19 @@ function veBia(k){
    chưa xong + còn chặng sau) VÀ ĐÃ quá hạn (`c.quaHan` — bìa quyết lúc vẽ, không
    có đồng hồ riêng; chặng tới hạn trong lúc em đang mở trang thì ô hạn đầu trang
    đổi ngay còn bìa đổi ở lần vẽ lại kế — cố ý, dựng lại bìa giữa chừng là mất
-   act đang chơi). Trả về chặng đó hoặc null. */
+   act đang chơi). Trả về chặng đó hoặc null.
+   ⭐ v1.128.0 (thầy chốt 21/09/2026) — CẢ CHẶNG CŨ thầy đã ép mở chặng kế mà còn
+   em chưa xong (`A.changCuConThieu`): act của chặng đó cũng lên bìa "Đang chờ mở
+   khóa bởi…" (đã quá hạn) để em thấy ai còn thiếu, dù chặng kế đã mở. */
 function changChoMoCuaAct(k){
   if (!LA_STAGE || !CHANG || !CHANG.length || !k || k.loai !== 'act') return null;
-  var c = A.changChoMo(CHANG);
-  if (!c || !c.quaHan) return null;
-  var thuoc = c.acts.some(function(a){ return a.ma === k.ma; });
-  return thuoc ? c : null;
+  var ds = A.changCuConThieu(CHANG).concat([A.changChoMo(CHANG)]);
+  for (var i = 0; i < ds.length; i++) {
+    var c = ds[i];
+    if (!c || !c.quaHan) continue;
+    if (c.acts.some(function(a){ return a.ma === k.ma; })) return c;
+  }
+  return null;
 }
 
 /* Bìa READY của act trong chặng chờ mở khoá — hai ruột theo em ĐÃ/CHƯA xong hết
@@ -5545,6 +5576,27 @@ var IC_KHOA = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="
 var IC_MO = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/>' +
             '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.3-.9"/></svg>';
 
+/* ⭐ v1.128.0 — DẢI TÊN NHÓM CHẶNG đứng trước nhóm act khi trang hiện NHIỀU chặng
+   (chặng cũ còn em chưa xong + chặng đang xem). `laDangXem` = nhóm của chặng đang
+   xem (đứng SAU các chặng cũ ⇒ có vạch nét đứt ngăn). Chặng cũ: ô STAGE n đỏ +
+   OVERDUE/IN PROGRESS + "WAITING FOR: tên các em" nháy đỏ (cùng nếp thẻ chờ). */
+function veNhanNhomChang(c, laDangXem){
+  var el = document.createElement('div');
+  var quaHan = c.tt === 'ket';
+  el.className = 'st-nhom ' + (laDangXem ? 'dang cach' : (quaHan ? 'den' : 'dang'));
+  var tt;
+  if (laDangXem) {
+    tt = '<div class="st-cho-tt ' + (c.tt === 'xong' ? 'mo' : (quaHan ? 'ai' : 'dang')) + '">' + IC_MO +
+         (c.tt === 'xong' ? 'COMPLETED' : (quaHan ? 'OVERDUE' : 'IN PROGRESS')) + '</div>';
+  } else {
+    tt = '<div class="st-cho-tt ai">' + IC_KHOA + (quaHan ? 'OVERDUE' : 'IN PROGRESS') +
+         ' — WAITING FOR: <span class="ten-cham">' +
+         chuAnToan((c.thieu || []).map(function(t){ return A.tenO(t); }).join(' • ')) + '</span></div>';
+  }
+  el.innerHTML = '<span class="st-nhan">STAGE ' + (c.so || 1) + '</span>' + tt;
+  return el;
+}
+
 /* ⭐⭐ v1.120.0 (thầy chốt 21/09/2026) — khối KHÔNG PHẢI act (máy nghe, worksheet,
    video) đi VÀO ĐÚNG CHẶNG của act đứng ngay sau nó (app đẩy khối nghe ngay
    trước act nó gắn); không có act sau thì theo act trước; bài không act nào thì
@@ -5571,15 +5623,26 @@ function veCacPhanStage(hop){
   hop.appendChild(veThanhChang());
 
   var cua = changCuaKhoi();
-  var c = CHANG[CHANG_XEM];
-  if (c) {
-    var so = soDauChang(CHANG_XEM);
+  /* ⭐⭐ v1.128.0 (thầy chốt 21/09/2026) — CHẶNG CŨ CÒN EM CHƯA XONG VẪN HIỆN.
+     Thầy bấm "Mở chặng X ngay" ⇒ chặng đang chạy nhảy sang X, nhưng chặng trước
+     còn em thiếu bài thì trước đây bị ẨN HẲN (chỉ vào lại qua thanh chặng) — em
+     không thấy ai đang thiếu. Nay: các chặng ĐÃ MỞ đứng TRƯỚC chặng đang xem mà còn
+     `thieu` (`A.changCuConThieu`) vẽ ĐẦY ĐỦ (bìa READY "chờ mở khóa bởi…" + bảng
+     xếp hạng) phía TRÊN chặng đang xem, mỗi nhóm có một dải tên chặng
+     (`veNhanNhomChang`). Em bấm thanh chặng xem một chặng CŨ thì chỉ hiện chặng đó
+     (chỉ gom chặng đứng trước CHẶNG ĐANG XEM). Số thứ tự act vẫn nối tiếp cả bài. */
+  var cuThieu = A.changCuConThieu(CHANG).filter(function(x){ return CHANG.indexOf(x) < CHANG_XEM; });
+  var nhom = cuThieu.map(function(x){ return CHANG.indexOf(x); });
+  if (CHANG[CHANG_XEM]) nhom.push(CHANG_XEM);
+  nhom.forEach(function(ci){
+    if (nhom.length > 1) hop.appendChild(veNhanNhomChang(CHANG[ci], ci === CHANG_XEM));
+    var so = soDauChang(ci);
     KHOI.forEach(function(k, i){
-      if (cua[i] !== CHANG_XEM) return;
+      if (cua[i] !== ci) return;
       if (k.loai === 'audio') { hop.appendChild(veKhoi(k, 0)); return; }
       hop.appendChild(veKhoi(k, so++));
     });
-  }
+  });
   var dau = true;
   CHANG.forEach(function(x, i){
     if (i > CHANG_XEM) { hop.appendChild(veTheCho(x, dau)); dau = false; }

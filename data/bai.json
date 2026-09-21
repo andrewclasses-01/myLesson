@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-21 18:01:23",
+  "capNhat": "2026-09-21 22:08:35",
   "bai": {
     "A1C": [
       {
@@ -1057,9 +1057,9 @@
         "tenHien": "A1A_17.9_STAGE LSB1-S1.T1.P2",
         "dang": "STAGE",
         "ngay": "17.9",
-        "han": "2026-09-21T17:30",
+        "han": "2026-09-24T17:30",
         "maLesson": "LSB1-S1.T1.P2",
-        "taoLuc": "2026-09-17",
+        "taoLuc": "2026-09-21",
         "khoi": [
           {
             "loai": "act",
@@ -1068,7 +1068,7 @@
             "yeuCau": "100% requirement",
             "ma": "vbv8fm",
             "mau": "TYPE THE ANSWER",
-            "han": "2026-09-19T00:00"
+            "han": "2026-09-20T00:00"
           },
           {
             "loai": "act",
@@ -1077,7 +1077,7 @@
             "yeuCau": "100% requirement",
             "ma": "6xz54t",
             "mau": "ANAGRAM",
-            "han": "2026-09-20T00:00"
+            "han": "2026-09-21T00:00"
           },
           {
             "loai": "act",
@@ -1086,7 +1086,7 @@
             "yeuCau": "100% requirement",
             "ma": "dcmrya",
             "mau": "TYPE THE ANSWER",
-            "han": "2026-09-21T19:45"
+            "han": "2026-09-24T19:45"
           }
         ]
       },

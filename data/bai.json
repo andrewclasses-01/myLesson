@@ -1,7 +1,60 @@
 {
-  "capNhat": "2026-09-21 11:09:30",
+  "capNhat": "2026-09-21 11:18:31",
   "bai": {
     "A1C": [
+      {
+        "id": "A1C_20.9_STAGE_LSA2-S2.T3.P3-4-5",
+        "tieuDe": "A1C_20.9_STAGE LSA2-S2.T3.P3-4-5",
+        "tenHien": "A1C_20.9_STAGE LSA2-S2.T3.P3-4-5",
+        "dang": "STAGE",
+        "ngay": "20.9",
+        "han": "2026-09-27T08:00",
+        "maLesson": "LSA2-S2.T3.P3-4-5",
+        "taoLuc": "2026-09-21",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "p84jzd",
+            "mau": "ANAGRAM",
+            "han": "2026-09-23T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "x3sgz3",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-09-25T00:00"
+          },
+          {
+            "loai": "nghe",
+            "ten": "DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSA2-S2.T3.P3-4-5",
+            "han": "2026-09-27T08:00"
+          },
+          {
+            "loai": "ws",
+            "ten": "DICTS LSA2-S2.T3.P3-4-5",
+            "o": 3,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1C%2FA1C_20.9_STAGE_LSA2-S2.T3.P3-4-5%2F3.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSA2-S2.T3.P3-4-5 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "8te49v",
+            "mau": "QUIZ",
+            "han": "2026-09-27T08:00"
+          }
+        ]
+      },
       {
         "id": "A1C_16.9_DICTS_LSA2-S2.T3.P1-2",
         "tieuDe": "A1C_16.9_DICTS LSA2-S2.T3.P1-2",

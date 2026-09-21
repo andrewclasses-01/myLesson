@@ -1190,13 +1190,23 @@
 
   // Gom act của bài thành các chặng. Act KHÔNG có `han` nằm ở chặng số 0 =
   // LUÔN MỞ (bài thường lẫn vào, hoặc act thầy chưa xếp chặng).
+  // ⭐ v1.121.0 (thầy chốt 21/09/2026) — MỤC CHẶNG = act có mã + khối NGHE/WORKSHEET mang `han`
+  // (app v2.90.0 đẩy `han` cho ô audio/worksheet của dòng STAGE). `acts` vẫn CHỈ act có mã (mọi phép
+  // xong/thiếu/thanh điểm ở lop/dashboard giữ nguyên); `muc` = đủ thành viên để trang bài vẽ/khoá.
+  function mucChangCuaBai(b) {
+    return (b.khoi || []).filter(function (k) {
+      if (k.loai === 'act') return !!k.ma;
+      return (k.loai === 'nghe' || k.loai === 'audio' || k.loai === 'ws') && !!String(k.han || '').trim();
+    });
+  }
   function changCuaBai(b) {
-    var ds = actCuaBai(b), ra = [], k = 0;
+    var ds = mucChangCuaBai(b), ra = [], k = 0;
     for (var i = 0; i < ds.length; i++) {
       var han = String(ds[i].han || '').trim();
+      var laAct = ds[i].loai === 'act';
       var cuoi = ra[ra.length - 1];
-      if (cuoi && cuoi.han === han) { cuoi.acts.push(ds[i]); continue; }
-      ra.push({ han: han, moc: mocActHan(han), acts: [ds[i]], so: 0 });
+      if (cuoi && cuoi.han === han) { cuoi.muc.push(ds[i]); if (laAct) cuoi.acts.push(ds[i]); continue; }
+      ra.push({ han: han, moc: mocActHan(han), acts: laAct ? [ds[i]] : [], muc: [ds[i]], so: 0 });
     }
     for (var j = 0; j < ra.length; j++) if (ra[j].han) ra[j].so = ++k;
     return ra;

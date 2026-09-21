@@ -1767,8 +1767,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=94"></script>
-<script src="js/chung.js?v=54"></script>
+<script src="config.js?v=95"></script>
+<script src="js/chung.js?v=55"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=23"></script>
@@ -4982,7 +4982,8 @@ function veTheCho(c, dau){
   var el = document.createElement('section');
   el.className = 'card st-cho' + (dau ? ' dau-cho' : '') + (c.tt === 'ket' ? ' den' : '');
   var truoc = CHANG[CHANG.indexOf(c) - 1];
-  var acts = c.acts.map(function(a){
+  /* v1.121.0 — thẻ chờ liệt kê ĐỦ thành viên chặng (act + DICTATION + worksheet), theo thứ tự ô. */
+  var acts = (c.muc || c.acts).map(function(a){
     return '<span class="st-cho-act">' + chuAnToan(A.tenO(a.ten)) + '</span>';
   }).join('<span class="st-mui"><svg viewBox="0 0 24 24"><path d="M7 6l5 6-5 6M14 6l5 6-5 6"/></svg></span>');
   var tt;
@@ -5022,7 +5023,7 @@ var IC_MO = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10
    chặng đầu. Trước đây máy nghe dồn hết lên đầu trang, ngoài mọi chặng. */
 function changCuaKhoi(){
   var ra = new Array(KHOI.length), idx = {};
-  CHANG.forEach(function(c, ci){ c.acts.forEach(function(a){ idx[KHOI.indexOf(a)] = ci; }); });
+  CHANG.forEach(function(c, ci){ (c.muc || c.acts).forEach(function(a){ idx[KHOI.indexOf(a)] = ci; }); });   // v1.121.0: cả nghe/ws mang hạn
   var sau = null;
   for (var i = KHOI.length - 1; i >= 0; i--) {
     if (idx[i] != null) { ra[i] = idx[i]; sau = idx[i]; }

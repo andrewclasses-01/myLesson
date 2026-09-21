@@ -103,6 +103,25 @@ function kt(ten, thuc, mong) {
   kt('nguồn không phải ảnh ⇒ lỗi hiền', kq2.ok, false);
   kt('có câu lỗi', typeof kq2.loi === 'string' && kq2.loi.length > 0, true);
 
+  console.log('=== 5. v1.121.0 — chặng STAGE: khối NGHE/WORKSHEET mang `han` là MỤC CHẶNG, act vẫn quyết xong/thiếu ===');
+  const bai = { id: 'B', dang: 'STAGE', khoi: [
+    { loai: 'act', ten: 'ACT 1', ma: 'a1', han: '2026-09-23T00:00' },
+    { loai: 'nghe', ten: 'DICTATION', maNghe: 'X', han: '2026-09-24T12:00' },
+    { loai: 'act', ten: 'ACT 2', ma: 'a2', han: '2026-09-26T00:00' },
+    { loai: 'ws', ten: 'Sheet', o: 3, han: '2026-09-26T00:00' },
+    { loai: 'nghe', ten: 'CU', maNghe: 'Y' },                       // bài cũ: không hạn ⇒ không phải mục chặng
+  ] };
+  const cac = t.A.changCuaBai(bai);
+  kt('3 chặng', cac.map(c => c.so), [1, 2, 3]);
+  kt('acts chỉ act có mã', cac.map(c => c.acts.map(a => a.ten)), [['ACT 1'], [], ['ACT 2']]);
+  kt('muc đủ thành viên', cac.map(c => c.muc.map(a => a.ten)), [['ACT 1'], ['DICTATION'], ['ACT 2', 'Sheet']]);
+  const lay = { diem: () => [], chuan: () => ({ dinh: 100 }) };
+  const xet = t.A.xetChang(bai, lay, ['AN', 'BI'], { now: Date.parse('2026-09-22T10:00') });
+  kt('chặng 1 đang chạy, chặng 2 (chỉ nghe) chưa tới lượt', xet.map(c => c.tt), ['dang', 'xa', 'xa']);
+  const xet2 = t.A.xetChang(bai, { diem: (ma) => (ma === 'a1' ? [{ ten: 'AN', diem: 100, giay: 1 }, { ten: 'BI', diem: 100, giay: 1 }] : []), chuan: () => ({ dinh: 100 }) }, ['AN', 'BI'], { now: Date.parse('2026-09-22T20:00') });
+  kt('cả lớp xong act 1 ⇒ chặng nghe mở, không có act ⇒ coi như xong ⇒ chặng 3 CHỜ tới 12h trước hạn chặng 2', xet2.map(c => c.tt), ['xong', 'xong', 'cho']);
+  kt('thiếu chặng 3 = cả lớp (act 2 chưa ai làm)', xet2[2].thieu, ['AN', 'BI']);
+
   console.log(soLoi ? `\n✗ ${soLoi} ca sai` : '\n✓ Tất cả đúng');
   process.exit(soLoi ? 1 : 0);
 })();

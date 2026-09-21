@@ -1191,10 +1191,22 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .nop-ten{font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px}
 .nop-dong.du .nop-ten{color:#0E7C3F} .nop-dong.chua .nop-ten{color:#8FA3A0}
 .nop-tre{font:800 9px/1 var(--font); padding:3px 6px; border-radius:99px; background:#FDE2E2; color:#B42323}
-.nop-luoi{display:flex; gap:6px}
+.nop-luoi{display:flex; gap:6px; flex-wrap:wrap; max-width:360px}
 .nop-o{width:50px; height:68px; border-radius:6px; border:1.5px dashed #CFD8D6; background:#F7FAF9 center/cover no-repeat; position:relative; padding:0; cursor:default}
 .nop-o b{position:absolute; left:2px; top:2px; font:800 9px/1 var(--font); color:#8FA3A0; background:rgba(255,255,255,.85); padding:2px 4px; border-radius:99px}
 .nop-o.co{border:1.5px solid #BFD3CE; cursor:zoom-in} .nop-o.co:hover{transform:scale(1.06)}
+/* ⭐ v1.123.0 — ô THỪA (em nộp quá N trang chuẩn, PDF nhiều trang): viền vàng để
+   thầy nhận ra ngay đây là trang phát sinh, không phải trang thầy quy định. */
+.nop-o.thua{border-color:#F0C374}
+.nop-o.thua b{background:var(--amber-soft); color:#9A6A12}
+/* ⭐ v1.124.0 — ô em ĐÃ HUỶ (không xoá — thầy vẫn xem lại được, bấm vẫn mở to ảnh)
+   — ảnh mờ đi + gạch chéo xám hai chiều, không tính vào "đã nộp đủ"/TRỄ nữa. */
+.nop-o.huy{filter:grayscale(.6) brightness(1.08); opacity:.75}
+.nop-o.huy::after{content:''; position:absolute; inset:0;
+  background:
+    linear-gradient(to top right, transparent calc(50% - 1.5px), rgba(120,132,130,.85) calc(50% - 1.5px), rgba(120,132,130,.85) calc(50% + 1.5px), transparent calc(50% + 1.5px)),
+    linear-gradient(to top left,  transparent calc(50% - 1.5px), rgba(120,132,130,.85) calc(50% - 1.5px), rgba(120,132,130,.85) calc(50% + 1.5px), transparent calc(50% + 1.5px));
+}
 .nop-so{font:800 11px/1.2 var(--font); text-align:right; min-width:52px; color:var(--ink)} .nop-so i{display:block; font:600 9.5px/1.3 var(--font); color:var(--mo)}
 .nop-lb{position:fixed; inset:0; z-index:9500; background:rgba(10,20,24,.86); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:16px}
 .nop-lb img{max-width:min(96vw, 900px); max-height:80vh; border-radius:10px; background:#fff}
@@ -3527,16 +3539,27 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         var trang = (d && d.trang) || {};
         var da = 0, muon = 0, lucCuoi = 0;
         var oHtml = '';
-        for (var i = 1; i <= n; i++) {
-          var tr = trang[String(i)];
-          if (tr && tr.url) {
-            da++; lucCuoi = Math.max(lucCuoi, +tr.luc || 0);
-            if (moc != null && +tr.luc > moc) muon++;
-            oHtml += '<button type="button" class="nop-o co" data-url="' + A.chuAnToan(tr.url) + '" title="Trang ' + i + ' — nộp ' + gioNop(tr.luc) + '" style="background-image:url(&quot;' + A.chuAnToan(tr.nho || tr.url) + '&quot;)"><b>' + i + '</b></button>';
-          } else {
-            oHtml += '<span class="nop-o"><b>' + i + '</b></span>';
-          }
-        }
+        /* ⭐ v1.125.0 — SỐ HIỂN THỊ khớp đúng thứ tự em đã kéo-thả sắp xếp bên trang em
+           (`thuTu`), KHÔNG còn theo khoá lưu trữ thô nữa (khoá chỉ để trỏ ảnh Storage,
+           không còn nói lên thứ tự) — trang huỷ trước (như bên em), rồi tới trang chủ
+           động theo `thuTu`. Còn thiếu so N thì vẽ thêm Ô TRỐNG cho thầy thấy rõ hụt bao
+           nhiêu (thừa thì đã nằm trong danh sách, tự có nhãn "thừa" theo chỉ số > n). */
+        var dsSap = [];
+        Object.keys(trang).forEach(function (kk) { var tr = trang[kk]; if (tr && tr.url) dsSap.push({ n: kk, tr: tr }); });
+        dsSap.sort(function (a, b) {
+          var ga = a.tr.huy ? 0 : 1, gb = b.tr.huy ? 0 : 1;
+          if (ga !== gb) return ga - gb;
+          return (+a.tr.thuTu || 0) - (+b.tr.thuTu || 0);
+        });
+        dsSap.forEach(function (x, idx) {
+          var tr = x.tr, i = idx + 1, thua = i > n;
+          /* trang em đã HUỶ vẫn hiện (thầy xem lại bình thường, bấm vẫn mở to được) nhưng
+             có dấu gạch chéo xám + KHÔNG tính vào "đã nộp đủ"/TRỄ — khớp đúng cách trang
+             em tự tính (`wsSoChuDong`), không thì hai bên lệch số nhau. */
+          if (!tr.huy) { da++; lucCuoi = Math.max(lucCuoi, +tr.luc || 0); if (moc != null && +tr.luc > moc) muon++; }
+          oHtml += '<button type="button" class="nop-o co' + (thua ? ' thua' : '') + (tr.huy ? ' huy' : '') + '" data-url="' + A.chuAnToan(tr.url) + '" title="Trang ' + i + (thua ? ' (thừa)' : '') + (tr.huy ? ' (em đã huỷ)' : '') + ' — nộp ' + gioNop(tr.luc) + '" style="background-image:url(&quot;' + A.chuAnToan(tr.nho || tr.url) + '&quot;)"><b>' + i + '</b></button>';
+        });
+        for (var iTrong = da + 1; iTrong <= n; iTrong++) oHtml += '<span class="nop-o"><b>' + iTrong + '</b></span>';
         return { ten: h.ten, da: da, muon: muon, luc: lucCuoi, html: oHtml };
       });
       hang.sort(function (a, b2) { return (b2.da - a.da) || a.ten.localeCompare(b2.ten, 'vi'); });

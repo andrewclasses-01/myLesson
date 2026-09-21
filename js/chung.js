@@ -2754,7 +2754,14 @@
     Object.keys(mv).forEach(function (n) {
       var g = (mv[n].mapValue && mv[n].mapValue.fields) || {};
       trang[n] = { luc: +((g.luc || {}).integerValue || (g.luc || {}).doubleValue || 0),
-                   url: String((g.url || {}).stringValue || ''), nho: String((g.nho || {}).stringValue || '') };
+                   url: String((g.url || {}).stringValue || ''), nho: String((g.nho || {}).stringValue || ''),
+                   // ⭐ v1.124.0 — `huy` = em đã bấm HUỶ trang này (không xoá, chỉ đánh dấu; luật
+                   // Firestore chỉ hasOnly 7 TRƯỜNG CẤP TÀI LIỆU, không khoá hình trong `trang` nên
+                   // thêm cờ này vào từng trang không đụng luật đã đăng — xem dang-luat-nop-anh.js).
+                   huy: !!(g.huy && g.huy.booleanValue),
+                   // ⭐ v1.125.0 — `thuTu` = vị trí em SẮP XẾP bằng kéo-thả (KHÁC khoá lưu trữ `n`,
+                   // vốn phải đứng yên vì đã gắn với đường dẫn ảnh trên Storage `t<n>.jpg`).
+                   thuTu: +((g.thuTu || {}).integerValue || (g.thuTu || {}).doubleValue || 0) };
     });
     return { lop: String((f.lop || {}).stringValue || ''), bai: String((f.bai || {}).stringValue || ''),
              o: +((f.o || {}).integerValue || 0), ma: String((f.ma || {}).stringValue || ''),
@@ -2767,7 +2774,9 @@
       var t = d.trang[n] || {};
       trang[String(n)] = { mapValue: { fields: {
         luc: { integerValue: String(Math.round(+t.luc || 0)) },
-        url: { stringValue: String(t.url || '') }, nho: { stringValue: String(t.nho || '') } } } };
+        url: { stringValue: String(t.url || '') }, nho: { stringValue: String(t.nho || '') },
+        huy: { booleanValue: !!t.huy },
+        thuTu: { integerValue: String(Math.round(+t.thuTu || 0)) } } } };
     });
     return { fields: {
       lop: { stringValue: nopLopChuan(d.lop) }, bai: { stringValue: nopBaiChuan(d.bai) },
@@ -2842,8 +2851,10 @@
     return new Promise(function (res) { cv.toBlob(function (b) { res(b); }, 'image/jpeg', q); });
   }
 
-  // NỘP MỘT TRANG: nén → đẩy 2 ảnh → đọc tài liệu hiện có → ghi lại. Trả {ok, trang, loi}.
-  function nopTrang(ctx, n, nguon) {
+  // NỘP MỘT TRANG: nén → đẩy 2 ảnh → đọc tài liệu hiện có → ghi lại. `thuTu` = vị trí
+  // hiện tại trên lưới em đang xếp (mặc định "bây giờ" nếu không truyền — chỉ dùng khi
+  // gọi tay). Trả {ok, trang, loi}.
+  function nopTrang(ctx, n, nguon, thuTu) {
     var lop = ctx.lop, bai = ctx.bai, o = ctx.o, ma = ctx.ma, ten = ctx.ten;
     return nopNenAnh(nguon).then(function (b) {
       if (b.lon.size >= 1.5 * 1024 * 1024) throw new Error('Ảnh quá nặng sau khi nén');
@@ -2854,7 +2865,8 @@
       return nopDoc(lop, bai, o, ma).then(function (cu) {
         var d = cu || { lop: lop, bai: bai, o: o, ma: ma, ten: ten, trang: {}, luc: 0 };
         d.ten = ten || d.ten; d.trang = d.trang || {};
-        d.trang[String(n)] = { luc: Date.now(), url: urls[0], nho: urls[1] || urls[0] };
+        d.trang[String(n)] = { luc: Date.now(), url: urls[0], nho: urls[1] || urls[0],
+                                thuTu: thuTu != null ? +thuTu : Date.now() };
         d.luc = Date.now();
         return nopGhi(d).then(function (ok) {
           if (!ok) throw new Error('Kho từ chối ghi bài nộp');
@@ -2864,8 +2876,47 @@
     })['catch'](function (e) { return { ok: false, loi: (e && e.message) || String(e) }; });
   }
 
+  // ⭐ v1.125.0 — GHI LẠI THỨ TỰ sau khi em kéo-thả sắp xếp lại các trang đã NỘP THẬT
+  // (trang đang chờ/`WS_CHO` chỉ nằm ở trình duyệt, không cần gọi hàm này). `doiFs` =
+  // {n: thuTuMoi, ...} — chỉ những trang thật sự đổi vị trí. Trả {ok, trang, loi}.
+  function nopDatThuTu(ctx, doiFs) {
+    var lop = ctx.lop, bai = ctx.bai, o = ctx.o, ma = ctx.ma, ten = ctx.ten;
+    return nopDoc(lop, bai, o, ma).then(function (cu) {
+      var d = cu || { lop: lop, bai: bai, o: o, ma: ma, ten: ten, trang: {}, luc: 0 };
+      d.ten = ten || d.ten; d.trang = d.trang || {};
+      Object.keys(doiFs || {}).forEach(function (n) { if (d.trang[n]) d.trang[n].thuTu = +doiFs[n]; });
+      d.luc = Date.now();
+      return nopGhi(d).then(function (ok) {
+        if (!ok) throw new Error('Kho từ chối ghi thứ tự');
+        return { ok: true, trang: d.trang };
+      });
+    })['catch'](function (e) { return { ok: false, loi: (e && e.message) || String(e) }; });
+  }
+
+  // ⭐ v1.124.0 (thầy chốt) — HUỶ MỘT TRANG đã nộp (nút tròn nhỏ trên ô): đọc tài liệu
+  // hiện có → đánh dấu `trang[n].huy = true` → ghi ĐÈ lại (đúng nếp `nopGhi`, hasOnly 7
+  // trường cấp tài liệu, KHÔNG đụng luật). ⛔ KHÔNG xoá — ảnh/`url` vẫn còn nguyên để
+  // thầy xem lại bình thường trên dashboard; trang huỷ chỉ không tính vào "đủ" nữa bên
+  // trang em (`wsSoChuDong`). Trả {ok, trang, loi}.
+  function nopHuyTrang(ctx, n) {
+    var lop = ctx.lop, bai = ctx.bai, o = ctx.o, ma = ctx.ma, ten = ctx.ten;
+    return nopDoc(lop, bai, o, ma).then(function (cu) {
+      var d = cu || { lop: lop, bai: bai, o: o, ma: ma, ten: ten, trang: {}, luc: 0 };
+      d.ten = ten || d.ten; d.trang = d.trang || {};
+      var t = d.trang[String(n)];
+      if (!t || !t.url) throw new Error('Trang này chưa nộp gì để huỷ');
+      t.huy = true;
+      d.luc = Date.now();
+      return nopGhi(d).then(function (ok) {
+        if (!ok) throw new Error('Kho từ chối ghi bài huỷ');
+        return { ok: true, trang: d.trang };
+      });
+    })['catch'](function (e) { return { ok: false, loi: (e && e.message) || String(e) }; });
+  }
+
   var nopBai = { id: nopId, doc: nopDoc, ghi: nopGhi, dayBlob: nopDayBlob, nenAnh: nopNenAnh,
-                 tenObject: nopTenObject, nopTrang: nopTrang, tuFs: nopTuFs, BUCKET: NOP_BUCKET };
+                 tenObject: nopTenObject, nopTrang: nopTrang, huyTrang: nopHuyTrang, datThuTu: nopDatThuTu,
+                 tuFs: nopTuFs, BUCKET: NOP_BUCKET };
 
   window.AWC = {
     CFG: CFG,

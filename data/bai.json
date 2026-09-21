@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-21 11:43:01",
+  "capNhat": "2026-09-21 18:01:23",
   "bai": {
     "A1C": [
       {
@@ -1050,182 +1050,6 @@
         ]
       }
     ],
-    "A2A": [
-      {
-        "id": "A2A_19.9_STAGE_LSB1-S1.T1.P2",
-        "tieuDe": "A2A_19.9_STAGE LSB1-S1.T1.P2",
-        "tenHien": "A2A_19.9_STAGE LSB1-S1.T1.P2",
-        "dang": "STAGE",
-        "ngay": "19.9",
-        "han": "2026-09-23T19:30",
-        "maLesson": "LSB1-S1.T1.P2",
-        "taoLuc": "2026-09-19",
-        "khoi": [
-          {
-            "loai": "act",
-            "ten": "WORD PRACTICE 1",
-            "act": "VI2",
-            "yeuCau": "100% requirement",
-            "ma": "m66gey",
-            "mau": "TYPE THE ANSWER",
-            "han": "2026-09-21T00:00"
-          },
-          {
-            "loai": "act",
-            "ten": "WORD PRACTICE 2",
-            "act": "ENG1",
-            "yeuCau": "100% requirement",
-            "ma": "pxc542",
-            "mau": "QUIZ",
-            "han": "2026-09-22T00:00"
-          },
-          {
-            "loai": "act",
-            "ten": "WORD PRACTICE 3",
-            "act": "ENG2",
-            "yeuCau": "100% requirement",
-            "ma": "j4j2kp",
-            "mau": "TYPE THE ANSWER",
-            "han": "2026-09-23T19:30"
-          }
-        ]
-      },
-      {
-        "id": "A2A_16.9_WORDS_LSB1-S3.T2.P3-4",
-        "tieuDe": "A2A_16.9_WORDS LSB1-S3.T2.P3-4",
-        "tenHien": "A2A_16.9_WORDS LSB1-S3.T2.P3-4",
-        "dang": "WORDS",
-        "ngay": "16.9",
-        "han": "2026-09-19T19:30",
-        "maLesson": "LSB1-S3.T2.P3-4",
-        "taoLuc": "2026-09-17",
-        "khoi": [
-          {
-            "loai": "act",
-            "ten": "WORD PRACTICE",
-            "act": "VI1",
-            "yeuCau": "100% requirement",
-            "ma": "6gg84r",
-            "mau": "ANAGRAM"
-          }
-        ]
-      },
-      {
-        "id": "A2A_12.9_DICTS_LSB1-S3.T2.P2",
-        "tieuDe": "A2A_12.9_DICTS LSB1-S3.T2.P2",
-        "tenHien": "A2A_12.9_DICTS LSB1-S3.T2.P2",
-        "dang": "DICTS",
-        "ngay": "12.9",
-        "han": "2026-09-16T19:30",
-        "maLesson": "LSB1-S3.T2.P2",
-        "taoLuc": "2026-09-14",
-        "khoi": [
-          {
-            "loai": "nghe",
-            "ten": "LISTENING DICTATION",
-            "yeuCau": "100% requirement",
-            "maNghe": "LSB1-S3.T2.P2"
-          },
-          {
-            "loai": "act",
-            "ten": "QUIZ",
-            "act": "",
-            "yeuCau": "100% requirement",
-            "ma": "rqwuv7",
-            "mau": "QUIZ"
-          }
-        ]
-      },
-      {
-        "id": "A2A_9.9_DICTS_LSB1-S3.T2.P1",
-        "tieuDe": "A2A_9.9_DICTS LSB1-S3.T2.P1",
-        "tenHien": "A2A_9.9_DICTS LSB1-S3.T2.P1",
-        "dang": "DICTS",
-        "ngay": "9.9",
-        "han": "2026-09-12T19:30",
-        "maLesson": "LSB1-S3.T2.P1",
-        "taoLuc": "2026-09-10",
-        "khoi": [
-          {
-            "loai": "nghe",
-            "ten": "LISTENING DICTATION",
-            "yeuCau": "100% requirement",
-            "maNghe": "LSB1-S3.T2.P1"
-          },
-          {
-            "loai": "act",
-            "ten": "QUIZ",
-            "act": "LSB1-S3.T2.P1 / QUIZ",
-            "yeuCau": "100% requirement",
-            "ma": "y5f9rv",
-            "mau": "QUIZ"
-          }
-        ]
-      },
-      {
-        "id": "A2A_9.9_DICTS_LSB1-S1.T1.P1",
-        "tieuDe": "A2A_9.9_DICTS LSB1-S1.T1.P1",
-        "tenHien": "A2A_9.9_DICTS LSB1-S1.T1.P1",
-        "dang": "DICTS",
-        "ngay": "9.9",
-        "han": "2026-09-12T19:20",
-        "maLesson": "LSB1-S1.T1.P1",
-        "taoLuc": "2026-09-09",
-        "khoi": [
-          {
-            "loai": "nghe",
-            "ten": "LISTENING DICTATION",
-            "yeuCau": "100% requirement",
-            "maNghe": "LSB1-S1.T1.P1"
-          },
-          {
-            "loai": "act",
-            "ten": "QUIZ",
-            "act": "",
-            "yeuCau": "100% requirement",
-            "ma": "mkrh5a",
-            "mau": "QUIZ"
-          }
-        ]
-      },
-      {
-        "id": "A2A_8.9_WORDS_LSB1-S3.T2.P1",
-        "tieuDe": "A2A_8.9_WORDS LSB1-S3.T2.P1",
-        "tenHien": "A2A_8.9_WORDS LSB1-S3.T2.P1",
-        "dang": "WORDS",
-        "ngay": "8.9",
-        "han": "2026-09-09T19:20",
-        "maLesson": "LSB1-S3.T2.P1",
-        "taoLuc": "2026-09-08",
-        "khoi": [
-          {
-            "loai": "act",
-            "ten": "WORD PRACTICE 1",
-            "act": "VI2",
-            "yeuCau": "100% requirement",
-            "ma": "xykh69",
-            "mau": "ANAGRAM"
-          }
-        ]
-      },
-      {
-        "id": "A2A_2.9_SP_CHECK_SEEDS_TURN_INTO_TREES",
-        "tieuDe": "A2A_2.9_SP CHECK SEEDS TURN INTO TREES",
-        "tenHien": "A2A_2.9_SP CHECK SEEDS TURN INTO TREES",
-        "dang": "SP CHECK",
-        "ngay": "2.9",
-        "han": "2026-09-05T19:20",
-        "maLesson": "SEEDS TURN INTO TREES",
-        "taoLuc": "2026-09-03",
-        "khoi": [
-          {
-            "loai": "spcheck",
-            "ten": "SPEAKING CHECK",
-            "xong": 0
-          }
-        ]
-      }
-    ],
     "A1A": [
       {
         "id": "A1A_17.9_STAGE_LSB1-S1.T1.P2",
@@ -2093,6 +1917,182 @@
               "doanMo": [],
               "bt": []
             }
+          }
+        ]
+      }
+    ],
+    "B1B": [
+      {
+        "id": "B1B_19.9_STAGE_LSB1-S1.T1.P2",
+        "tieuDe": "B1B_19.9_STAGE LSB1-S1.T1.P2",
+        "tenHien": "B1B_19.9_STAGE LSB1-S1.T1.P2",
+        "dang": "STAGE",
+        "ngay": "19.9",
+        "han": "2026-09-23T19:30",
+        "maLesson": "LSB1-S1.T1.P2",
+        "taoLuc": "2026-09-19",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "m66gey",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-09-21T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "pxc542",
+            "mau": "QUIZ",
+            "han": "2026-09-22T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "j4j2kp",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-09-23T19:30"
+          }
+        ]
+      },
+      {
+        "id": "B1B_16.9_WORDS_LSB1-S3.T2.P3-4",
+        "tieuDe": "B1B_16.9_WORDS LSB1-S3.T2.P3-4",
+        "tenHien": "B1B_16.9_WORDS LSB1-S3.T2.P3-4",
+        "dang": "WORDS",
+        "ngay": "16.9",
+        "han": "2026-09-19T19:30",
+        "maLesson": "LSB1-S3.T2.P3-4",
+        "taoLuc": "2026-09-17",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "6gg84r",
+            "mau": "ANAGRAM"
+          }
+        ]
+      },
+      {
+        "id": "B1B_12.9_DICTS_LSB1-S3.T2.P2",
+        "tieuDe": "B1B_12.9_DICTS LSB1-S3.T2.P2",
+        "tenHien": "B1B_12.9_DICTS LSB1-S3.T2.P2",
+        "dang": "DICTS",
+        "ngay": "12.9",
+        "han": "2026-09-16T19:30",
+        "maLesson": "LSB1-S3.T2.P2",
+        "taoLuc": "2026-09-14",
+        "khoi": [
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S3.T2.P2"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "",
+            "yeuCau": "100% requirement",
+            "ma": "rqwuv7",
+            "mau": "QUIZ"
+          }
+        ]
+      },
+      {
+        "id": "B1B_9.9_DICTS_LSB1-S3.T2.P1",
+        "tieuDe": "B1B_9.9_DICTS LSB1-S3.T2.P1",
+        "tenHien": "B1B_9.9_DICTS LSB1-S3.T2.P1",
+        "dang": "DICTS",
+        "ngay": "9.9",
+        "han": "2026-09-12T19:30",
+        "maLesson": "LSB1-S3.T2.P1",
+        "taoLuc": "2026-09-10",
+        "khoi": [
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S3.T2.P1"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSB1-S3.T2.P1 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "y5f9rv",
+            "mau": "QUIZ"
+          }
+        ]
+      },
+      {
+        "id": "B1B_9.9_DICTS_LSB1-S1.T1.P1",
+        "tieuDe": "B1B_9.9_DICTS LSB1-S1.T1.P1",
+        "tenHien": "B1B_9.9_DICTS LSB1-S1.T1.P1",
+        "dang": "DICTS",
+        "ngay": "9.9",
+        "han": "2026-09-12T19:20",
+        "maLesson": "LSB1-S1.T1.P1",
+        "taoLuc": "2026-09-09",
+        "khoi": [
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S1.T1.P1"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "",
+            "yeuCau": "100% requirement",
+            "ma": "mkrh5a",
+            "mau": "QUIZ"
+          }
+        ]
+      },
+      {
+        "id": "B1B_8.9_WORDS_LSB1-S3.T2.P1",
+        "tieuDe": "B1B_8.9_WORDS LSB1-S3.T2.P1",
+        "tenHien": "B1B_8.9_WORDS LSB1-S3.T2.P1",
+        "dang": "WORDS",
+        "ngay": "8.9",
+        "han": "2026-09-09T19:20",
+        "maLesson": "LSB1-S3.T2.P1",
+        "taoLuc": "2026-09-08",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "xykh69",
+            "mau": "ANAGRAM"
+          }
+        ]
+      },
+      {
+        "id": "B1B_2.9_SP_CHECK_SEEDS_TURN_INTO_TREES",
+        "tieuDe": "B1B_2.9_SP CHECK SEEDS TURN INTO TREES",
+        "tenHien": "B1B_2.9_SP CHECK SEEDS TURN INTO TREES",
+        "dang": "SP CHECK",
+        "ngay": "2.9",
+        "han": "2026-09-05T19:20",
+        "maLesson": "SEEDS TURN INTO TREES",
+        "taoLuc": "2026-09-03",
+        "khoi": [
+          {
+            "loai": "spcheck",
+            "ten": "SPEAKING CHECK",
+            "xong": 0
           }
         ]
       }

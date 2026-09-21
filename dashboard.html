@@ -1171,7 +1171,27 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
    Bản chép của `.td-sheet-ten` bên lop.html (đổi biến màu/font cho khớp
    token của trang này: `--mo`/`--font` thay `--muted`/`--sans`). */
 .td-sheet-ten{grid-column:2 / -1; font:700 11px var(--font); color:var(--mo);
-  text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px; min-width:0}
+/* ⭐ v1.120.0 — hàng SHEET bấm được + huy hiệu số em đã nộp + pop-up bài nộp ảnh */
+.td-dong-ws{cursor:pointer} .td-dong-ws:hover .td-sheet-ten{color:var(--ink)}
+.td-nop{flex:none; margin-left:auto; font:800 9.5px/1 var(--font); padding:3px 7px; border-radius:99px; background:#EEF1F3; color:var(--mo)}
+.td-nop.du{background:#DCF3E8; color:#0E7C3F} .td-nop.mot-phan{background:#FCF3E2; color:#9A6A12}
+.pop.nop{width:min(96vw, 760px); max-width:none}
+.nop-cho{padding:18px; text-align:center; color:var(--mo); font-weight:700; font-size:12.5px}
+.nop-dong{display:grid; grid-template-columns:24px minmax(120px,1fr) auto auto; align-items:center; gap:10px; padding:6px 4px; border-bottom:1px solid #EEF2F1}
+.nop-hang{font-size:10.5px; font-weight:800; color:#8FA3A0; text-align:center}
+.nop-ten{font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px}
+.nop-dong.du .nop-ten{color:#0E7C3F} .nop-dong.chua .nop-ten{color:#8FA3A0}
+.nop-tre{font:800 9px/1 var(--font); padding:3px 6px; border-radius:99px; background:#FDE2E2; color:#B42323}
+.nop-luoi{display:flex; gap:6px}
+.nop-o{width:50px; height:68px; border-radius:6px; border:1.5px dashed #CFD8D6; background:#F7FAF9 center/cover no-repeat; position:relative; padding:0; cursor:default}
+.nop-o b{position:absolute; left:2px; top:2px; font:800 9px/1 var(--font); color:#8FA3A0; background:rgba(255,255,255,.85); padding:2px 4px; border-radius:99px}
+.nop-o.co{border:1.5px solid #BFD3CE; cursor:zoom-in} .nop-o.co:hover{transform:scale(1.06)}
+.nop-so{font:800 11px/1.2 var(--font); text-align:right; min-width:52px; color:var(--ink)} .nop-so i{display:block; font:600 9.5px/1.3 var(--font); color:var(--mo)}
+.nop-lb{position:fixed; inset:0; z-index:9500; background:rgba(10,20,24,.86); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:12px; padding:16px}
+.nop-lb img{max-width:min(96vw, 900px); max-height:80vh; border-radius:10px; background:#fff}
+.nop-lb-chu{color:#fff; font-weight:700; font-size:13px}
+.nop-lb-nut{display:flex; gap:10px} .nop-lb-nut a,.nop-lb-nut button{height:38px; padding:0 14px; border-radius:10px; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.12); color:#fff; font:800 12.5px/38px var(--font); cursor:pointer; text-decoration:none}
 i.m-do{background:var(--m-do)} i.m-cam{background:var(--m-cam)}
 i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
 .td-so.m-la{color:var(--m-la)} .td-so.m-do{color:var(--m-do)}
@@ -2261,8 +2281,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=93"></script>
-<script src="js/chung.js?v=53"></script>
+<script src="config.js?v=94"></script>
+<script src="js/chung.js?v=54"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -3384,12 +3404,128 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   // của `dongSheet()` bên `lop.html` — sửa là sửa cả hai). Xem chú thích đầy
   // đủ ở đó: nhãn "SHEET" tái dùng `.td-ten`, tên bắt đầu đúng cột thanh tiến
   // trình bắt đầu, luôn đứng SAU CÙNG trong dãy.
-  function dongSheet(ten) {
-    return '<span class="td-dong">' +
+  function dongSheet(ten, s, t, j) {
+    /* ⭐ v1.120.0 — hàng SHEET: số em ĐÃ NỘP ẢNH (đổ sau bằng `napNopBai`), bấm = pop-up xem ảnh. */
+    var o = (s && s.o != null && +s.o >= 0) ? +s.o : (j || 0);
+    var nop = t ? '<span class="td-nop" data-nop="' + A.chuAnToan(t.bai.id) + '|' + o + '|' + (Math.max(1, +(s && s.soTrang) || 1)) + '|' + t.siSo + '">…</span>' : '';
+    return '<span class="td-dong td-dong-ws" data-ws="' + (t ? A.chuAnToan(t.bai.id) + '|' + o : '') + '">' +
         '<span class="td-ten">SHEET</span>' +
-        '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + '</span>' +
+        '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + nop + '</span>' +
       '</span>';
   }
+
+  // ============================================================
+  // ⭐⭐ v1.120.0 (21/09/2026, thầy chốt) — BÀI NỘP ẢNH WORKSHEET TRÊN DASHBOARD
+  // Kho `lessonNop` (1 tài liệu/em/ô), `list` chỉ thầy (luật `laThay()`) ⇒ đi qua
+  // SDK `spDb()` với phiên 🔐 của thầy; chưa đăng nhập thì huy hiệu ghi 🔐.
+  // Một truy vấn mỗi (bài, ô) — chỉ bài có worksheet; nhớ 60 giây (`NOP_KHO`).
+  // Pop-up: mỗi em một hàng · N ô ảnh nhỏ · giờ nộp · nhãn TRỄ đỏ khi nộp sau
+  // hạn bài (thầy chốt "vẫn cho nộp, đánh dấu TRỄ"). Bấm ảnh = xem to.
+  // ============================================================
+  var NOP_KHO = {};   // 'baiId|o' -> { luc, ds: [docs] }
+  function docNopBai(baiId, o, ep) {
+    var khoa = baiId + '|' + o, cu = NOP_KHO[khoa];
+    if (!ep && cu && Date.now() - cu.luc < 60000) return Promise.resolve(cu.ds);
+    return spDb().then(function (f) {
+      var q = f.fs.query(f.fs.collection(f.db, 'lessonNop'), f.fs.where('bai', '==', String(baiId)), f.fs.where('o', '==', +o));
+      return f.fs.getDocs(q);
+    }).then(function (snap) {
+      var ds = [];
+      snap.forEach(function (d) { ds.push(d.data()); });
+      NOP_KHO[khoa] = { luc: Date.now(), ds: ds };
+      return ds;
+    });
+  }
+  function demEmNop(ds) {
+    return ds.filter(function (d) { return Object.keys(d.trang || {}).some(function (k) { return d.trang[k] && d.trang[k].url; }); }).length;
+  }
+  function napNopBai() {
+    document.querySelectorAll('.td-nop[data-nop]').forEach(function (el) {
+      var p = el.dataset.nop.split('|'), baiId = p[0], o = +p[1], siSo = +p[3] || 0;
+      docNopBai(baiId, o).then(function (ds) {
+        var n = demEmNop(ds);
+        el.textContent = n + '/' + siSo + ' em';
+        el.className = 'td-nop ' + (siSo && n >= siSo ? 'du' : (n ? 'mot-phan' : 'chua'));
+        el.title = n + ' em đã nộp ảnh — bấm để xem';
+      })['catch'](function (e) {
+        var ma = String((e && (e.code || e.message)) || '');
+        el.textContent = ma.indexOf('permission') >= 0 ? '🔐' : '?';
+        el.title = ma.indexOf('permission') >= 0 ? 'Cần phiên thầy (🔐) để xem bài nộp' : 'Chưa đọc được: ' + ma;
+      });
+    });
+  }
+  function moPopNop(baiId, o) {
+    var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === baiId; })[0];
+    if (!b) return;
+    var ws = A.wsCuaBai(b).filter(function (k, j) { return ((k.o != null && +k.o >= 0) ? +k.o : j) === o; })[0] || {};
+    var n = Math.max(1, +ws.soTrang || 1);
+    var t = tinhBai(b, LOP_CHON);
+    var moc = A.mocHan(b);
+    popRong(0);
+    $('#popKhung').classList.add('nop');
+    $('#popPhu').textContent = (ws.ten || 'WORKSHEET') + ' • ' + n + ' trang' + (ws.tep ? '' : ' • chưa gắn file');
+    $('#popDs').innerHTML = '<div class="nop-cho">Đang đọc bài nộp…</div>';
+    $('#popNen').classList.add('mo');
+    docNopBai(baiId, o, true).then(function (ds) {
+      var theoMa = {};
+      ds.forEach(function (d) { theoMa[String(d.ma || '').trim()] = d; });
+      var lQ = A.lopTheoMa(DL, LOP_CHON) || {};
+      var hs = (lQ.hocSinh || []).filter(function (h) { return t.caLop.indexOf(h.ten) >= 0; });
+      var hang = hs.map(function (h) {
+        var d = theoMa[A.chuanMa(h.ma)] || null;
+        var trang = (d && d.trang) || {};
+        var da = 0, muon = 0, lucCuoi = 0;
+        var oHtml = '';
+        for (var i = 1; i <= n; i++) {
+          var tr = trang[String(i)];
+          if (tr && tr.url) {
+            da++; lucCuoi = Math.max(lucCuoi, +tr.luc || 0);
+            if (moc != null && +tr.luc > moc) muon++;
+            oHtml += '<button type="button" class="nop-o co" data-url="' + A.chuAnToan(tr.url) + '" title="Trang ' + i + ' — nộp ' + gioNop(tr.luc) + '" style="background-image:url(&quot;' + A.chuAnToan(tr.nho || tr.url) + '&quot;)"><b>' + i + '</b></button>';
+          } else {
+            oHtml += '<span class="nop-o"><b>' + i + '</b></span>';
+          }
+        }
+        return { ten: h.ten, da: da, muon: muon, luc: lucCuoi, html: oHtml };
+      });
+      hang.sort(function (a, b2) { return (b2.da - a.da) || a.ten.localeCompare(b2.ten, 'vi'); });
+      var soDu = hang.filter(function (x) { return x.da >= n; }).length;
+      $('#popPhu').textContent = (ws.ten || 'WORKSHEET') + ' • ' + n + ' trang • ' + soDu + '/' + hang.length + ' em nộp đủ';
+      $('#popDs').innerHTML = hang.map(function (x, i) {
+        var tt = x.da >= n ? 'du' : (x.da ? 'mot-phan' : 'chua');
+        return '<div class="nop-dong ' + tt + '">' +
+          '<span class="nop-hang">' + (i + 1) + '</span>' +
+          '<span class="nop-ten">' + A.chuAnToan(x.ten) +
+            (x.muon ? '<b class="nop-tre">TRỄ</b>' : '') + '</span>' +
+          '<span class="nop-luoi">' + x.html + '</span>' +
+          '<span class="nop-so">' + (x.da ? x.da + '/' + n : '—') + (x.luc ? '<i>' + gioNop(x.luc) + '</i>' : '') + '</span>' +
+        '</div>';
+      }).join('') || '<div class="nop-cho">Lớp chưa có em nào.</div>';
+    })['catch'](function (e) {
+      var ma = String((e && (e.code || e.message)) || '');
+      $('#popDs').innerHTML = '<div class="nop-cho">' + (ma.indexOf('permission') >= 0
+        ? 'Cần đăng nhập phiên thầy (nút 🔐 góc trên) mới xem được bài nộp.' : 'Chưa đọc được: ' + A.chuAnToan(ma)) + '</div>';
+    });
+  }
+  function gioNop(ms) {
+    var d = new Date(+ms || 0);
+    if (!(+ms)) return '';
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + ' ' + d.getDate() + '/' + (d.getMonth() + 1);
+  }
+  function moAnhNop(url, tieuDe) {
+    var cu = document.querySelector('.nop-lb'); if (cu) cu.remove();
+    var lb = document.createElement('div');
+    lb.className = 'nop-lb';
+    lb.innerHTML = '<div class="nop-lb-chu">' + A.chuAnToan(tieuDe || '') + '</div><img src="' + A.chuAnToan(url) + '" alt="">' +
+      '<div class="nop-lb-nut"><a href="' + A.chuAnToan(url) + '" target="_blank" rel="noopener">Mở ảnh gốc</a><button type="button">Đóng</button></div>';
+    lb.onclick = function (e) { if (e.target === lb || e.target.tagName === 'BUTTON') lb.remove(); };
+    document.body.appendChild(lb);
+    document.addEventListener('keydown', function esc(e) { if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); } });
+  }
+  document.addEventListener('click', function (e) {
+    var oAnh = e.target.closest('.nop-o.co[data-url]');
+    if (oAnh) { e.stopPropagation(); moAnhNop(oAnh.dataset.url, oAnh.title); return; }
+  }, true);
 
   function veDiemCardThat(t, st) {
     // ⭐ #2 — thẻ SPEAKING CHECK: MỘT DÒNG MỖI TEAM thay dòng chung, y hệt
@@ -3451,7 +3587,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // kể worksheet nằm ô nào trong dãy ô act của app. Đếm chung vào `soDong`
     // để `.the-diem.n{N}` (CSS đo chỗ chứa) canh đúng chiều cao cả cụm.
     var sheets = t.sheets || [];
-    thanh += sheets.map(function (s) { return dongSheet(s.ten); }).join('');
+    thanh += sheets.map(function (s, j) { return dongSheet(s.ten, s, t, j); }).join('');
     var soDong = acts.length + sheets.length;
     /* Thẻ STAGE: thanh chặng đứng trên cụm thanh tiến trình, cách một nhịp. */
     if (thanhChang) {
@@ -4167,6 +4303,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     var k = $('#popKhung'), d = $('#popDs');
     // v1.113.0 — mọi pop-up khác đi qua đây: tắt dạng TAB (thẻ khóa học) nếu đang bật.
     k.classList.remove('tab');
+    k.classList.remove('nop');   // v1.120.0 — pop-up bài nộp ảnh
     $('#popTabs').hidden = true;
     k.classList.toggle('rong', n > 0);
     d.classList.toggle('ngang', n > 0);
@@ -4669,6 +4806,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }
     nhipDongHo();
     canhNhanO();
+    napNopBai();   // ⭐ v1.120.0 — số em đã nộp ảnh trên hàng SHEET
     if (coNghi) {
       A.nhipNghi($('#theListDs'));
       A.gaTheNghi($('#theListDs'), ((l && l.hocSinh) || []).map(function (h) { return h.ten; }),
@@ -6488,6 +6626,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       }
       // ⭐ v1.88.0 — WORKSHEET không có điểm nào để mở bảng — vùng nhắc của nó
       // rơi xuống nhánh chung bên dưới (mở hộp quản lý bài, y hệt bấm thân thẻ).
+      // ⭐ v1.120.0 — hàng SHEET: mở pop-up bài nộp ảnh (trước nhánh vùng điểm chung).
+      var wsBtn = e.target.closest('.the[data-id] .td-dong-ws[data-ws]');
+      if (wsBtn && wsBtn.dataset.ws) { var pw = wsBtn.dataset.ws.split('|'); return void moPopNop(pw[0], +pw[1]); }
       var diemBtn = e.target.closest('.the[data-id]:not(.worksheet) .the-diem');
       if (diemBtn) return void moPopDiem(diemBtn.closest('.the[data-id]').dataset.id);
 

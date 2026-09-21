@@ -2696,6 +2696,167 @@
     })['catch'](function () { return false; });
   }
 
+
+  /* ==========================================================================
+     ⭐⭐ v1.120.0 (21/09/2026, thầy chốt "ok build") — HỌC SINH NỘP ẢNH WORKSHEET
+     Khối `ws` trên trang bài (`bai.html`) có N ô nộp = N trang PDF của thầy. Mỗi ô
+     một ảnh JPEG (chụp/chọn ảnh, hoặc PDF em nộp được pdf.js tách trang ngay trên máy
+     em). Ảnh nén TRƯỚC khi lên (nếp [[nen-media-truoc-khi-luu]]): cạnh dài 1600 px
+     q0.82 (~200-350 KB) + ảnh nhỏ 320 px cho ô xem trước/dashboard.
+       Storage : nopBai/<LỚP>/<id bài>/<ô>/<mã HS>/t<n>.jpg (+ t<n>_nho.jpg) — luật chỉ
+                 nhận image/jpeg < 1,5 MB; ĐỌC ĐÓNG ⇒ xem bằng URL có token tải mà
+                 Storage trả về lúc upload (thầy chốt: đóng đọc, dùng token).
+       Firestore: lessonNop/<LỚP>__<id bài>__<ô>__<mã HS> = {lop, bai, o, ma, ten, trang, luc}
+                 `trang` = {"1": {luc, url, nho}, ...}; `get` mở, `list` chỉ thầy, hasOnly 7 trường.
+     Luật đăng 21/09 qua `app/tools/dang-luat-nop-anh.js` (15/15 kiểm bằng khoá công khai).
+     ⛔ Neo theo MÃ HS ([[bay-neo-vao-ten]]) — tên chỉ để thầy đọc trên dashboard.
+     ⛔ Upload là ĐÈ theo tên object: nộp lại trang n thì ảnh cũ mất (không có lịch sử).
+     ========================================================================== */
+  var NOP_BUCKET = 'aword-70dae.firebasestorage.app';
+  var NOP_MAX_CANH = 1600, NOP_NHO_CANH = 320, NOP_CHAT = 0.82;
+
+  function nopLopChuan(lop) { return String(lop || '').toUpperCase().replace(/[^A-Z0-9_.-]/g, '').slice(0, 30) || 'LOP'; }
+  function nopBaiChuan(bai) { return String(bai || '').replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 200) || 'BAI'; }
+  function nopMaChuan(ma) { return String(ma || '').trim().replace(/[^A-Za-z0-9_.-]/g, '_').slice(0, 60); }
+  function nopId(lop, bai, o, ma) { return nopLopChuan(lop) + '__' + nopBaiChuan(bai) + '__' + (Math.max(0, +o || 0)) + '__' + nopMaChuan(ma); }
+  function nopTenObject(lop, bai, o, ma, n, nho) {
+    return 'nopBai/' + nopLopChuan(lop) + '/' + nopBaiChuan(bai) + '/' + (Math.max(0, +o || 0)) + '/' + nopMaChuan(ma) + '/t' + (+n || 1) + (nho ? '_nho' : '') + '.jpg';
+  }
+  function nopUrlFs(id) {
+    var g = gocFs();
+    return g ? (g.u + 'lessonNop/' + encodeURIComponent(id) + g.k) : '';
+  }
+
+  // Đọc bài nộp của MỘT em ở MỘT ô — trả {trang:{n:{luc,url,nho}}, luc} hoặc null (chưa nộp / lỗi).
+  function nopDoc(lop, bai, o, ma) {
+    var u = nopUrlFs(nopId(lop, bai, o, ma));
+    if (!u || !ma) return Promise.resolve(null);
+    return fetch(u, { cache: 'no-store' }).then(function (r) {
+      if (r.status === 404) return null;
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) { return j ? nopTuFs(j) : null; })['catch'](function () { return null; });
+  }
+  function nopTuFs(doc) {
+    var f = (doc && doc.fields) || {};
+    var trang = {};
+    var mv = f.trang && f.trang.mapValue && f.trang.mapValue.fields || {};
+    Object.keys(mv).forEach(function (n) {
+      var g = (mv[n].mapValue && mv[n].mapValue.fields) || {};
+      trang[n] = { luc: +((g.luc || {}).integerValue || (g.luc || {}).doubleValue || 0),
+                   url: String((g.url || {}).stringValue || ''), nho: String((g.nho || {}).stringValue || '') };
+    });
+    return { lop: String((f.lop || {}).stringValue || ''), bai: String((f.bai || {}).stringValue || ''),
+             o: +((f.o || {}).integerValue || 0), ma: String((f.ma || {}).stringValue || ''),
+             ten: String((f.ten || {}).stringValue || ''), trang: trang,
+             luc: +((f.luc || {}).integerValue || (f.luc || {}).doubleValue || 0) };
+  }
+  function nopRaFs(d) {
+    var trang = {};
+    Object.keys(d.trang || {}).forEach(function (n) {
+      var t = d.trang[n] || {};
+      trang[String(n)] = { mapValue: { fields: {
+        luc: { integerValue: String(Math.round(+t.luc || 0)) },
+        url: { stringValue: String(t.url || '') }, nho: { stringValue: String(t.nho || '') } } } };
+    });
+    return { fields: {
+      lop: { stringValue: nopLopChuan(d.lop) }, bai: { stringValue: nopBaiChuan(d.bai) },
+      o: { integerValue: String(Math.max(0, +d.o || 0)) }, ma: { stringValue: nopMaChuan(d.ma) },
+      ten: { stringValue: String(d.ten || '').slice(0, 120) },
+      trang: { mapValue: { fields: trang } }, luc: { integerValue: String(Math.round(+d.luc || Date.now())) } } };
+  }
+  // Ghi ĐÈ trọn tài liệu (7 trường, đúng hasOnly). Trả Promise<true|false>.
+  function nopGhi(d) {
+    var id = nopId(d.lop, d.bai, d.o, d.ma);
+    var u = nopUrlFs(id);
+    if (!u) return Promise.resolve(false);
+    return fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nopRaFs(d)) })
+      .then(function (r) { return r.ok; })['catch'](function () { return false; });
+  }
+
+  // Đẩy MỘT blob JPEG lên Storage — trả URL CÓ TOKEN (đọc được dù luật đóng), hoặc '' khi hỏng.
+  function nopDayBlob(ten, blob) {
+    var u = 'https://firebasestorage.googleapis.com/v0/b/' + NOP_BUCKET + '/o?uploadType=media&name=' + encodeURIComponent(ten);
+    return fetch(u, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob })
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+      .then(function (j) {
+        var tk = String((j && j.downloadTokens) || '').split(',')[0];
+        if (!tk) return '';
+        return 'https://firebasestorage.googleapis.com/v0/b/' + NOP_BUCKET + '/o/' + encodeURIComponent(ten) + '?alt=media&token=' + encodeURIComponent(tk);
+      })['catch'](function () { return ''; });
+  }
+
+  // Nén ảnh: nguồn là Blob/File ảnh hoặc HTMLCanvasElement/ImageBitmap → {lon: Blob, nho: Blob}.
+  // Dùng canvas (mọi máy có), KHÔNG giữ ảnh gốc trong RAM sau khi vẽ (điện thoại yếu).
+  function nopNenAnh(nguon) {
+    return nopVeLenCanvas(nguon).then(function (cv) {
+      var lon = nopThuNho(cv, NOP_MAX_CANH), nho = nopThuNho(cv, NOP_NHO_CANH);
+      return Promise.all([nopToBlob(lon, NOP_CHAT), nopToBlob(nho, 0.72)]).then(function (bs) {
+        try { cv.width = 1; cv.height = 1; } catch (e) {}
+        return { lon: bs[0], nho: bs[1] };
+      });
+    });
+  }
+  function nopVeLenCanvas(nguon) {
+    if (nguon && nguon.getContext) return Promise.resolve(nguon);
+    if (typeof createImageBitmap === 'function' && nguon instanceof Blob) {
+      return createImageBitmap(nguon).then(function (bm) {
+        var cv = document.createElement('canvas'); cv.width = bm.width; cv.height = bm.height;
+        cv.getContext('2d').drawImage(bm, 0, 0); try { bm.close(); } catch (e) {}
+        return cv;
+      })['catch'](function () { return nopVeQuaImg(nguon); });
+    }
+    return nopVeQuaImg(nguon);
+  }
+  function nopVeQuaImg(blob) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(blob), im = new Image();
+      im.onload = function () {
+        var cv = document.createElement('canvas'); cv.width = im.naturalWidth; cv.height = im.naturalHeight;
+        cv.getContext('2d').drawImage(im, 0, 0); URL.revokeObjectURL(url); res(cv);
+      };
+      im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Không đọc được ảnh')); };
+      im.src = url;
+    });
+  }
+  function nopThuNho(cv, canhMax) {
+    var w = cv.width, h = cv.height, ti = Math.min(1, canhMax / Math.max(w, h));
+    if (ti >= 1) return cv;
+    var ra = document.createElement('canvas');
+    ra.width = Math.max(1, Math.round(w * ti)); ra.height = Math.max(1, Math.round(h * ti));
+    var c = ra.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, ra.width, ra.height);
+    c.drawImage(cv, 0, 0, ra.width, ra.height);
+    return ra;
+  }
+  function nopToBlob(cv, q) {
+    return new Promise(function (res) { cv.toBlob(function (b) { res(b); }, 'image/jpeg', q); });
+  }
+
+  // NỘP MỘT TRANG: nén → đẩy 2 ảnh → đọc tài liệu hiện có → ghi lại. Trả {ok, trang, loi}.
+  function nopTrang(ctx, n, nguon) {
+    var lop = ctx.lop, bai = ctx.bai, o = ctx.o, ma = ctx.ma, ten = ctx.ten;
+    return nopNenAnh(nguon).then(function (b) {
+      if (b.lon.size >= 1.5 * 1024 * 1024) throw new Error('Ảnh quá nặng sau khi nén');
+      return Promise.all([nopDayBlob(nopTenObject(lop, bai, o, ma, n, false), b.lon),
+                          nopDayBlob(nopTenObject(lop, bai, o, ma, n, true), b.nho)]);
+    }).then(function (urls) {
+      if (!urls[0]) throw new Error('Kho ảnh từ chối (mạng hoặc luật)');
+      return nopDoc(lop, bai, o, ma).then(function (cu) {
+        var d = cu || { lop: lop, bai: bai, o: o, ma: ma, ten: ten, trang: {}, luc: 0 };
+        d.ten = ten || d.ten; d.trang = d.trang || {};
+        d.trang[String(n)] = { luc: Date.now(), url: urls[0], nho: urls[1] || urls[0] };
+        d.luc = Date.now();
+        return nopGhi(d).then(function (ok) {
+          if (!ok) throw new Error('Kho từ chối ghi bài nộp');
+          return { ok: true, trang: d.trang };
+        });
+      });
+    })['catch'](function (e) { return { ok: false, loi: (e && e.message) || String(e) }; });
+  }
+
+  var nopBai = { id: nopId, doc: nopDoc, ghi: nopGhi, dayBlob: nopDayBlob, nenAnh: nopNenAnh,
+                 tenObject: nopTenObject, nopTrang: nopTrang, tuFs: nopTuFs, BUCKET: NOP_BUCKET };
+
   window.AWC = {
     CFG: CFG,
     // ⭐ v1.78.0 — khóa học + một mã ở nhiều nơi + chấm "CÓ BÀI MỚI"
@@ -2727,6 +2888,7 @@
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, ngheCuaBai: ngheCuaBai, maLesson: maLesson, tenBai: tenBai,
     tenWorksheet: tenWorksheet,   // ⭐ v1.103.0 — tiêu đề các worksheet (thẻ WORKSHEET)
+    nopBai: nopBai,               // ⭐ v1.120.0 — học sinh nộp ảnh worksheet (lessonNop + Storage)
     // ⭐ v1.76.0 — dạng bài STAGE (chia chặng)
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,
     changHien: changHien, emChuaXongChang: emChuaXongChang,

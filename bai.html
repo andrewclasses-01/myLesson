@@ -482,6 +482,71 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 /* Thẻ BÀI NGHE: không có bảng xếp hạng nên chỉ MỘT cột (chép từ mẫu DICTS). */
 .than.mot{grid-template-columns:minmax(0,1fr)}
 
+/* ⭐⭐ v1.120.0 (21/09/2026, thầy chốt) — THẺ WORKSHEET: vùng TẢI PDF + N Ô NỘP ẢNH (N = số trang
+   PDF của thầy). Ô nộp: chưa có ảnh = nét đứt + máy ảnh; đang lên = vòng xoay; có ảnh = ảnh nhỏ
+   320px (Storage, URL có token) + tích xanh; bấm ảnh = xem to (lightbox) có nút THAY. */
+.ws-tai{display:inline-flex; align-items:center; gap:8px; height:34px; padding:0 13px; border-radius:10px;
+  background:var(--accent); color:#fff; font-weight:800; font-size:12.5px; letter-spacing:.03em; text-decoration:none;
+  border:1px solid var(--accent); transition:transform .15s, filter .15s; white-space:nowrap}
+.ws-tai:hover{transform:translateY(-1px); filter:brightness(1.06)}
+.ws-tai svg{width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.ws-khong{font-size:12px; color:var(--muted); font-weight:600; white-space:nowrap}
+.ws-nop{border:1px solid var(--line); border-radius:14px; padding:14px 16px 16px; background:#FBFDFC}
+.ws-nop-dau{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.ws-nop-dau b{font-size:13px; letter-spacing:.06em}
+.ws-nop-huong{font-size:12px; color:var(--muted); font-weight:600}
+.ws-nop-tt{margin-left:auto; font-size:12px; font-weight:800; padding:4px 10px; border-radius:99px;
+  background:var(--amber-soft); color:#9A6A12}
+.ws-nop-tt.du{background:var(--accent-soft); color:var(--accent)}
+.ws-nop-tt.khoa{background:#EEF1F3; color:var(--muted)}
+.ws-o-luoi{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:12px}
+.ws-o{position:relative; aspect-ratio:210/297; border-radius:12px; border:2px dashed #BFD3CE; background:#fff;
+  cursor:pointer; overflow:hidden; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; padding:0; font:inherit; color:var(--muted); transition:border-color .16s, transform .16s, box-shadow .16s}
+.ws-o:hover{border-color:var(--accent); transform:translateY(-2px); box-shadow:var(--shadow)}
+.ws-o:disabled{cursor:default; opacity:.6; transform:none; box-shadow:none}
+.ws-o-so{position:absolute; left:8px; top:7px; font:800 11px/1 var(--sans); letter-spacing:.06em; color:var(--muted);
+  background:rgba(255,255,255,.88); padding:4px 7px; border-radius:99px; z-index:2}
+.ws-o-nhan{display:flex; flex-direction:column; align-items:center; gap:6px; font-weight:700; font-size:12px; text-align:center; padding:0 10px}
+.ws-o-nhan svg{width:30px; height:30px; stroke:currentColor; stroke-width:1.8; fill:none; stroke-linecap:round; stroke-linejoin:round; color:var(--accent)}
+.ws-o-anh{position:absolute; inset:0; background-size:cover; background-position:center top; display:none}
+.ws-o.co{border-style:solid; border-color:var(--line)}
+.ws-o.co .ws-o-anh{display:block}
+.ws-o.co .ws-o-nhan{display:none}
+.ws-o-tich{position:absolute; right:8px; top:7px; width:24px; height:24px; border-radius:50%; background:var(--xanh-la); color:#fff;
+  display:none; place-items:center; font-weight:900; font-size:14px; z-index:2; box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.ws-o.co .ws-o-tich{display:grid}
+.ws-o-luc{position:absolute; left:0; right:0; bottom:0; font:700 10.5px/1 var(--sans); color:#fff; padding:6px 8px;
+  background:linear-gradient(transparent, rgba(0,0,0,.55)); display:none; text-align:left}
+.ws-o.co .ws-o-luc{display:block}
+.ws-o.dang{border-style:solid; border-color:var(--accent)}
+.ws-o.dang::after{content:''; position:absolute; inset:0; margin:auto; width:34px; height:34px; border-radius:50%;
+  border:3px solid var(--accent-soft); border-top-color:var(--accent); animation:ws-xoay .8s linear infinite; z-index:3}
+.ws-o.dang .ws-o-nhan{visibility:hidden}
+.ws-o.loi{border-color:var(--m-do)}
+@keyframes ws-xoay{to{transform:rotate(360deg)}}
+.ws-loi{margin-top:10px; font-size:12px; font-weight:700; color:var(--m-do)}
+.ws-loi:empty{display:none}
+/* Lightbox xem ảnh đã nộp */
+.ws-lb{position:fixed; inset:0; z-index:9000; background:rgba(10,20,24,.86); display:flex; flex-direction:column; align-items:center;
+  justify-content:center; gap:12px; padding:16px}
+.ws-lb img{max-width:min(96vw, 900px); max-height:78vh; border-radius:10px; background:#fff; box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.ws-lb-nut{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+.ws-lb-nut button{height:40px; padding:0 16px; border-radius:10px; border:1px solid rgba(255,255,255,.3); background:rgba(255,255,255,.12);
+  color:#fff; font:800 13px/1 var(--sans); cursor:pointer}
+.ws-lb-nut button.chinh{background:var(--accent); border-color:var(--accent)}
+.ws-lb-chu{color:#fff; font-weight:700; font-size:13px}
+/* Khối VIDEO Drive (bài cũ) — khung 16:9 */
+.video-khung{position:relative; border-radius:14px; overflow:hidden; background:#000; padding-top:56.25%}
+.video-khung iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+/* Khối loại chưa biết — không biến mất câm */
+.card.khoi-la .than{color:var(--muted); font-weight:600; font-size:13px}
+@media (max-width:640px){
+  .ws-o-luoi{grid-template-columns:repeat(2, 1fr); gap:10px}
+  .ws-tai span{display:none}
+  .ws-tai{padding:0 10px}
+}
+
 /* ⭐ 16:10,5 cho khớp khung act bên AWord — sai tỉ lệ là game bị thanh cuộn. */
 /* ⛔ KHÔNG viền 1px thật ở đây: viền ăn vào lòng ô (box-sizing:border-box) nên
    khung game bên trong sẽ cao hơn lòng ô 0,7px — đủ để sinh thanh cuộn.
@@ -1702,8 +1767,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=93"></script>
-<script src="js/chung.js?v=53"></script>
+<script src="config.js?v=94"></script>
+<script src="js/chung.js?v=54"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=23"></script>
@@ -2665,13 +2730,23 @@ function conThieu(ma){
   return xepBang(ma).some(function(e){ return e.chua || e.diem < 100; });
 }
 
+/* ⭐⭐ v1.120.0 (21/09/2026, thầy chốt) — BẢNG VẼ THEO LOẠI KHỐI. Trước đây
+   trang chỉ biết act + nghe, khối khác (worksheet, video Drive) bị LỌC BỎ CÂM.
+   Nay: `ws` → thẻ tải PDF + N ô nộp ảnh · `video` → khung Drive · loại lạ →
+   thẻ xám "chưa hỗ trợ" (thêm loại mới = thêm một dòng ở đây + ở `napBai`). */
+var VE_KHOI_THEO_LOAI = {
+  ws: function(k, so){ return veKhoiWs(k, so); },
+  video: function(k, so){ return veKhoiVideo(k, so); }
+};
 function veKhoi(k, so){
+  if (VE_KHOI_THEO_LOAI[k.loai]) return VE_KHOI_THEO_LOAI[k.loai](k, so);
+  if (k.loai !== 'act' && k.loai !== 'audio' && k.loai !== 'nghe') return veKhoiLa(k, so);
   var sec = document.createElement('section');
   sec.className = 'card';
   /* v1.13.0 — thẻ act mang mã của mình, để bộ nghe tin nộp bài (AWORD:NOP)
      tìm đúng thẻ mà làm mới bảng. */
   if (k.loai === 'act' && k.ma) sec.setAttribute('data-ma', k.ma);
-  if (conThieu(k.ma)) sec.classList.add('con-thieu');
+  if (k.loai === 'act' && conThieu(k.ma)) sec.classList.add('con-thieu');
 
   /* ⭐ WORDS đợt 2 — CẢ BA THẺ đều có từ điển RIÊNG: kho từ riêng, mở/đóng
      riêng, không cái nào ảnh hưởng cái nào (thầy chốt). Trước đợt này chỉ thẻ
@@ -2686,7 +2761,8 @@ function veKhoi(k, so){
   if (k.loai === 'audio' || k.loai === 'nghe') {
     sec.innerHTML =
       '<div class="card-head">' +
-        '<span class="step">' + so + '</span>' +
+        /* v1.120.0 — máy nghe trong chặng STAGE không đánh số (so = 0) ⇒ bỏ ô số. */
+        (so ? '<span class="step">' + so + '</span>' : '') +
         '<div class="ch-chu"><h2>' + chuAnToan(k.ten) + '</h2>' +
           (k.maNghe ? '<div class="ch-ma">' + chuAnToan(k.maNghe) + '</div>' : '') +
         '</div>' +
@@ -2780,6 +2856,250 @@ function veKhoi(k, so){
   nutMoi.onclick = function(){ lamMoiBang(sec, k.ma, nutMoi); };
 
   if (coTuDien) noiTuDien(sec, k.ma);
+  return sec;
+}
+
+
+/* ============================================================================
+   ⭐⭐ v1.120.0 (21/09/2026) — THẺ WORKSHEET: TẢI PDF CỦA THẦY + HỌC SINH NỘP ẢNH
+   Khối `{loai:'ws', ten, tep, soTrang, o}` do app v2.88.0 đẩy (`tep` = URL PDF
+   công khai trên Storage, `soTrang` = số trang Word/Excel đếm được, `o` = ô
+   worksheet trong dòng của thầy — khoá ổn định của bài nộp).
+   Mỗi trang PDF = MỘT Ô NỘP. Em bấm ô → chọn/chụp ảnh (điện thoại mở camera)
+   hoặc chọn file PDF (pdf.js tách từng trang, rót từ ô đang bấm trở đi).
+   Kho: `A.nopBai` (chung.js) — Storage `nopBai/…` + Firestore `lessonNop`.
+   Nộp lại sau hạn VẪN ĐƯỢC (thầy chốt) — dashboard đánh dấu TRỄ, trang em không chặn.
+   `EM.xemNhu` (thầy xem như một em) ⇒ ô khoá, không nộp thay em.
+   ========================================================================== */
+var IC_TAI_WS = '<svg viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M4 19h16"/></svg>';
+var IC_CAM_WS = '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+var WS_NOP = {};           // o -> { trang:{n:{luc,url,nho}} } bản đọc từ kho + vừa nộp
+var WS_PDFJS = null;       // pdf.js nạp lười từ CDN khi em nộp PDF
+var WS_PDFJS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs';
+var WS_PDFJS_WORKER = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
+
+function wsKhoaNop(){ return !!(EM && EM.xemNhu) || !MA_HS; }
+function wsGioNop(ms){
+  var d = new Date(+ms || 0);
+  if (!(+ms)) return '';
+  var hh = ('0' + d.getHours()).slice(-2), mm = ('0' + d.getMinutes()).slice(-2);
+  return hh + ':' + mm + ' ' + d.getDate() + '/' + (d.getMonth() + 1);
+}
+function veKhoiWs(k, so){
+  var sec = document.createElement('section');
+  sec.className = 'card ws-card';
+  sec.setAttribute('data-ws-o', k.o);
+  var n = Math.max(1, +k.soTrang || 1);
+  var oHtml = '';
+  for (var i = 1; i <= n; i++) {
+    oHtml += '<button type="button" class="ws-o" data-n="' + i + '"' + (wsKhoaNop() ? ' disabled' : '') + '>' +
+      '<span class="ws-o-so">TRANG ' + i + '</span>' +
+      '<span class="ws-o-anh"></span>' +
+      '<span class="ws-o-nhan">' + IC_CAM_WS + (wsKhoaNop() ? 'Chỉ xem' : 'Chụp / chọn ảnh') + '</span>' +
+      '<span class="ws-o-tich">✓</span><span class="ws-o-luc"></span>' +
+    '</button>';
+  }
+  sec.innerHTML =
+    '<div class="card-head">' +
+      '<span class="step">' + so + '</span>' +
+      '<div class="ch-chu"><h2>' + chuAnToan(k.ten) + '</h2>' +
+        '<div class="ch-ma">WORKSHEET • ' + n + ' TRANG' + (k.tep ? '' : ' • NHẬN BÀI TRÊN LỚP') + '</div></div>' +
+      '<div class="card-nut">' +
+        (k.tep
+          ? '<a class="ws-tai" target="_blank" rel="noopener" href="' + chuAnToan(k.tep) + '" title="Mở / tải file bài tập (PDF)">' + IC_TAI_WS + '<span>TẢI BÀI (PDF)</span></a>'
+          : '<span class="ws-khong">Thầy chưa gắn file</span>') +
+      '</div>' +
+    '</div>' +
+    '<div class="than mot"><div class="ws-nop">' +
+      '<div class="ws-nop-dau"><b>NỘP BÀI LÀM</b>' +
+        '<span class="ws-nop-huong">' + (wsKhoaNop() ? 'Đang xem như học sinh — không nộp thay được.' : 'Bấm từng ô để chụp ảnh trang đó, hoặc chọn file PDF/ảnh.') + '</span>' +
+        '<span class="ws-nop-tt' + (wsKhoaNop() ? ' khoa' : '') + '">ĐÃ NỘP 0/' + n + '</span></div>' +
+      '<div class="ws-o-luoi">' + oHtml + '</div>' +
+      '<div class="ws-loi"></div>' +
+      '<input type="file" accept="image/*,application/pdf" multiple hidden>' +
+    '</div></div>';
+  var input = sec.querySelector('input[type=file]');
+  var oDangChon = 1;
+  sec.querySelectorAll('.ws-o').forEach(function(nut){
+    nut.onclick = function(){
+      var i = +nut.dataset.n;
+      var t = wsTrangCua(k.o, i);
+      if (t && t.url) return wsMoLightbox(sec, k, i);
+      if (wsKhoaNop()) return;
+      oDangChon = i;
+      input.value = '';
+      input.click();
+    };
+  });
+  input.onchange = function(){
+    var files = Array.prototype.slice.call(input.files || []);
+    if (!files.length) return;
+    wsNopFiles(sec, k, oDangChon, files);
+  };
+  /* Đọc bài đã nộp (1 lượt get) rồi vẽ lại ảnh nhỏ. */
+  if (MA_HS) {
+    A.nopBai.doc(LOP_DL, BAI.id, k.o, MA_HS).then(function(d){
+      WS_NOP[k.o] = { trang: (d && d.trang) || {} };
+      wsVeTrangThai(sec, k);
+    });
+  }
+  return sec;
+}
+function wsTrangCua(o, n){ return ((WS_NOP[o] || {}).trang || {})[String(n)] || null; }
+function wsVeTrangThai(sec, k){
+  var n = Math.max(1, +k.soTrang || 1), da = 0;
+  sec.querySelectorAll('.ws-o').forEach(function(nut){
+    var i = +nut.dataset.n, t = wsTrangCua(k.o, i);
+    nut.classList.toggle('co', !!(t && t.url));
+    if (t && t.url) {
+      da++;
+      nut.querySelector('.ws-o-anh').style.backgroundImage = 'url("' + (t.nho || t.url).replace(/"/g, '%22') + '")';
+      nut.querySelector('.ws-o-luc').textContent = 'Nộp ' + wsGioNop(t.luc);
+      nut.disabled = false;
+    }
+  });
+  var tt = sec.querySelector('.ws-nop-tt');
+  tt.textContent = 'ĐÃ NỘP ' + da + '/' + n;
+  tt.classList.toggle('du', da >= n);
+}
+function wsBaoLoi(sec, chu){ sec.querySelector('.ws-loi').textContent = chu || ''; }
+
+/* Nộp một dãy file bắt đầu từ ô `tuO`: PDF → tách trang; ảnh → mỗi ảnh một ô. */
+function wsNopFiles(sec, k, tuO, files){
+  var n = Math.max(1, +k.soTrang || 1);
+  wsBaoLoi(sec, '');
+  var nguon = [];   // [{n, blobOrCanvas}]
+  var chuoi = Promise.resolve();
+  files.forEach(function(f){
+    chuoi = chuoi.then(function(){
+      if (/pdf$/i.test(f.type) || /\.pdf$/i.test(f.name)) {
+        return wsTachPdf(f).then(function(cvs){ cvs.forEach(function(cv){ nguon.push(cv); }); });
+      }
+      nguon.push(f);
+    });
+  });
+  chuoi.then(function(){
+    var viec = [];
+    nguon.forEach(function(ng, idx){
+      var o = tuO + idx;
+      if (o > n) return;
+      viec.push({ n: o, ng: ng });
+    });
+    if (!viec.length) { wsBaoLoi(sec, 'Không có trang nào để nộp.'); return; }
+    if (nguon.length > viec.length) wsBaoLoi(sec, 'Bài chỉ có ' + n + ' trang — ' + (nguon.length - viec.length) + ' ảnh thừa không nộp.');
+    var ctx = { lop: LOP_DL, bai: BAI.id, o: k.o, ma: MA_HS, ten: TOI };
+    var day = Promise.resolve();
+    viec.forEach(function(v){
+      var nut = sec.querySelector('.ws-o[data-n="' + v.n + '"]');
+      day = day.then(function(){
+        if (nut) { nut.classList.add('dang'); nut.classList.remove('loi'); nut.disabled = true; }
+        return A.nopBai.nopTrang(ctx, v.n, v.ng).then(function(kq){
+          if (nut) { nut.classList.remove('dang'); nut.disabled = false; }
+          if (!kq.ok) { if (nut) nut.classList.add('loi'); wsBaoLoi(sec, 'Trang ' + v.n + ': ' + kq.loi + ' — thử lại nhé.'); return; }
+          WS_NOP[k.o] = { trang: kq.trang };
+          wsVeTrangThai(sec, k);
+        });
+      });
+    });
+    return day;
+  })['catch'](function(e){ wsBaoLoi(sec, (e && e.message) || 'Không đọc được file.'); });
+}
+
+/* PDF em nộp → mảng canvas từng trang (cạnh dài ~1600px), pdf.js nạp lười từ CDN. */
+function wsNapPdfjs(){
+  if (WS_PDFJS) return Promise.resolve(WS_PDFJS);
+  return import(WS_PDFJS_URL).then(function(m){
+    m.GlobalWorkerOptions.workerSrc = WS_PDFJS_WORKER;
+    WS_PDFJS = m;
+    return m;
+  });
+}
+function wsTachPdf(file){
+  return wsNapPdfjs().then(function(pdfjs){
+    return file.arrayBuffer().then(function(buf){ return pdfjs.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise; });
+  }).then(function(doc){
+    var ra = [], chuoi = Promise.resolve();
+    var so = Math.min(doc.numPages, 40);
+    for (var i = 1; i <= so; i++) (function(i){
+      chuoi = chuoi.then(function(){
+        return doc.getPage(i).then(function(page){
+          var vp1 = page.getViewport({ scale: 1 });
+          var ti = 1600 / Math.max(vp1.width, vp1.height);
+          var vp = page.getViewport({ scale: ti });
+          var cv = document.createElement('canvas');
+          cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+          var c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height);
+          return page.render({ canvasContext: c, viewport: vp }).promise.then(function(){ ra.push(cv); });
+        });
+      });
+    })(i);
+    return chuoi.then(function(){ return ra; });
+  });
+}
+
+/* Lightbox: xem to ảnh đã nộp, lật trang, nút THAY ảnh (nộp lại trang đó). */
+function wsMoLightbox(sec, k, n){
+  var cu = document.querySelector('.ws-lb'); if (cu) cu.remove();
+  var lb = document.createElement('div');
+  lb.className = 'ws-lb';
+  var tong = Math.max(1, +k.soTrang || 1);
+  function ve(i){
+    var t = wsTrangCua(k.o, i);
+    lb.innerHTML = '<div class="ws-lb-chu">' + chuAnToan(k.ten) + ' — TRANG ' + i + '/' + tong + (t ? ' • nộp ' + wsGioNop(t.luc) : ' • chưa nộp') + '</div>' +
+      (t && t.url ? '<img src="' + chuAnToan(t.url) + '" alt="">' : '<div class="ws-lb-chu">Chưa có ảnh trang này</div>') +
+      '<div class="ws-lb-nut">' +
+        (i > 1 ? '<button data-v="truoc">◀ Trang trước</button>' : '') +
+        (i < tong ? '<button data-v="sau">Trang sau ▶</button>' : '') +
+        (wsKhoaNop() ? '' : '<button class="chinh" data-v="thay">' + (t && t.url ? 'Thay ảnh trang này' : 'Nộp trang này') + '</button>') +
+        '<button data-v="dong">Đóng</button>' +
+      '</div>';
+    lb.onclick = function(e){
+      var nut = e.target.closest('[data-v]');
+      if (!nut) { if (e.target === lb) lb.remove(); return; }
+      var v = nut.dataset.v;
+      if (v === 'dong') return lb.remove();
+      if (v === 'truoc') return ve(i - 1);
+      if (v === 'sau') return ve(i + 1);
+      if (v === 'thay') {
+        lb.remove();
+        var input = sec.querySelector('input[type=file]');
+        input.value = '';
+        input.onchange = function(){
+          var files = Array.prototype.slice.call(input.files || []);
+          if (files.length) wsNopFiles(sec, k, i, files);
+          /* trả lại onchange mặc định của thẻ */
+          input.onchange = function(){
+            var fs2 = Array.prototype.slice.call(input.files || []);
+            if (fs2.length) wsNopFiles(sec, k, i, fs2);
+          };
+        };
+        input.click();
+      }
+    };
+  }
+  ve(n);
+  document.body.appendChild(lb);
+  document.addEventListener('keydown', function esc(e){ if (e.key === 'Escape') { lb.remove(); document.removeEventListener('keydown', esc); } });
+}
+
+/* Khối VIDEO Drive (bài soạn trước 19/08/2026) — trước đây bị bỏ qua; nay nhúng khung xem. */
+function veKhoiVideo(k, so){
+  var sec = document.createElement('section');
+  sec.className = 'card';
+  sec.innerHTML =
+    '<div class="card-head"><span class="step">' + so + '</span>' +
+      '<div class="ch-chu"><h2>' + chuAnToan(k.ten || 'VIDEO') + '</h2><div class="ch-ma">VIDEO</div></div></div>' +
+    '<div class="than mot"><div class="video-khung"><iframe src="https://drive.google.com/file/d/' + encodeURIComponent(k.driveId) + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div></div>';
+  return sec;
+}
+/* Khối loại chưa biết — hiện thẻ xám thay vì biến mất câm (bẫy cũ: khối bị lọc, không ai biết). */
+function veKhoiLa(k, so){
+  var sec = document.createElement('section');
+  sec.className = 'card khoi-la';
+  sec.innerHTML =
+    '<div class="card-head"><span class="step">' + so + '</span>' +
+      '<div class="ch-chu"><h2>' + chuAnToan(k.ten || String(k.loai || '').toUpperCase()) + '</h2><div class="ch-ma">' + chuAnToan(String(k.loai || '')) + '</div></div></div>' +
+    '<div class="than mot">Phần này trang web chưa hỗ trợ hiển thị — em hỏi thầy nhé.</div>';
   return sec;
 }
 
@@ -4611,8 +4931,9 @@ function tinhChang(){
 }
 
 function soDauChang(i){
-  var s = 1;
-  for (var k = 0; k < i; k++) s += CHANG[k].acts.length;
+  /* v1.120.0 — đếm cả act lẫn worksheet của các chặng trước (máy nghe không số). */
+  var s = 1, cua = changCuaKhoi();
+  KHOI.forEach(function(k, j){ if (cua[j] < i && k.loai !== 'audio') s++; });
   return s;
 }
 
@@ -4695,21 +5016,40 @@ var IC_KHOA = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="
 var IC_MO = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/>' +
             '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.3-.9"/></svg>';
 
+/* ⭐⭐ v1.120.0 (thầy chốt 21/09/2026) — khối KHÔNG PHẢI act (máy nghe, worksheet,
+   video) đi VÀO ĐÚNG CHẶNG của act đứng ngay sau nó (app đẩy khối nghe ngay
+   trước act nó gắn); không có act sau thì theo act trước; bài không act nào thì
+   chặng đầu. Trước đây máy nghe dồn hết lên đầu trang, ngoài mọi chặng. */
+function changCuaKhoi(){
+  var ra = new Array(KHOI.length), idx = {};
+  CHANG.forEach(function(c, ci){ c.acts.forEach(function(a){ idx[KHOI.indexOf(a)] = ci; }); });
+  var sau = null;
+  for (var i = KHOI.length - 1; i >= 0; i--) {
+    if (idx[i] != null) { ra[i] = idx[i]; sau = idx[i]; }
+    else ra[i] = sau;
+  }
+  var truoc = 0;
+  for (var j = 0; j < KHOI.length; j++) {
+    if (ra[j] == null) ra[j] = truoc; else truoc = ra[j];
+  }
+  return ra;
+}
 function veCacPhanStage(hop){
   CHANG = tinhChang();
   if (CHANG_XEM == null || !CHANG[CHANG_XEM] || !CHANG[CHANG_XEM].mo) {
     CHANG_XEM = A.changHien(CHANG);
   }
-  /* Khối nghe không thuộc chặng nào — luôn mở, đứng đầu trang. */
-  var nghe = KHOI.filter(function(k){ return k.loai === 'audio'; });
-  nghe.forEach(function(k){ hop.appendChild(veKhoi(k, 0)); });
-
   hop.appendChild(veThanhChang());
 
+  var cua = changCuaKhoi();
   var c = CHANG[CHANG_XEM];
   if (c) {
     var so = soDauChang(CHANG_XEM);
-    c.acts.forEach(function(a, k){ hop.appendChild(veKhoi(a, so + k)); });
+    KHOI.forEach(function(k, i){
+      if (cua[i] !== CHANG_XEM) return;
+      if (k.loai === 'audio') { hop.appendChild(veKhoi(k, 0)); return; }
+      hop.appendChild(veKhoi(k, so++));
+    });
   }
   var dau = true;
   CHANG.forEach(function(x, i){
@@ -4970,10 +5310,20 @@ A.napDuLieu().then(function(dl){
      chỉ nằm trong mấy bài cũ của lớp chưa có mã đăng nhập, không em nào mở tới.
      ⚠️ Bỏ qua âm thầm ⇒ act nào không có mã cũng bị loại luôn, khỏi hiện một
      khung game trống. */
-  KHOI = (BAI.khoi || []).filter(function(k){
+  /* ⭐⭐ v1.120.0 — nhận thêm `ws` (worksheet: tải PDF + nộp ảnh) và `video`
+     (Drive, bài cũ). Loại khác vẫn bỏ; muốn hiện thì thêm vào đây + `VE_KHOI_THEO_LOAI`. */
+  var _viTriKhoi = 0;
+  KHOI = (BAI.khoi || []).map(function(k, i){ k._vt = i; return k; }).filter(function(k){
     if (k.loai === 'nghe' || k.loai === 'audio') return !!k.maNghe;
+    if (k.loai === 'ws') return !!String(k.ten || '').trim();
+    if (k.loai === 'video') return !!k.driveId;
     return k.loai === 'act' && !!k.ma;
   }).map(function(k){
+    if (k.loai === 'ws') {
+      return { loai: 'ws', ten: k.ten || '', tep: String(k.tep || ''), soTrang: Math.max(1, +k.soTrang || 1),
+               o: (k.o != null && +k.o >= 0) ? +k.o : k._vt, han: k.han || '' };
+    }
+    if (k.loai === 'video') return { loai: 'video', ten: k.ten || '', driveId: String(k.driveId || '') };
     return {
       loai: (k.loai === 'nghe' || k.loai === 'audio') ? 'audio' : 'act',
       ten: k.ten || '', ma: k.ma || '', maNghe: k.maNghe || '',

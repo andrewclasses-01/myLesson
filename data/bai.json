@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-21 11:18:31",
+  "capNhat": "2026-09-21 11:43:01",
   "bai": {
     "A1C": [
       {
@@ -828,6 +828,45 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_19.9_STAGE_6_CLOTHES",
+        "tieuDe": "NNTNG4_19.9_STAGE 6 CLOTHES",
+        "tenHien": "NNTNG4_19.9_STAGE 6 CLOTHES",
+        "dang": "STAGE",
+        "ngay": "19.9",
+        "han": "2026-09-26T08:00",
+        "maLesson": "6 CLOTHES",
+        "taoLuc": "2026-09-21",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "6b6gp3",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-09-23T08:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "bw4q96",
+            "mau": "QUIZ",
+            "han": "2026-09-25T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "2x8bc8",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-09-26T08:00"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_12.9_STAGE_5_ANIMALS",
         "tieuDe": "NNTNG4_12.9_STAGE 5 ANIMALS",

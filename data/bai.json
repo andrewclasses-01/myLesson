@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-19 21:53:10",
+  "capNhat": "2026-09-21 11:09:30",
   "bai": {
     "A1C": [
       {
@@ -1267,6 +1267,225 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L03",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 19: BÀI GIẢNG 19: TẠO CÂU HỎI XIN THÔNG TIN NÂNG CAO",
+        "tenBai": "LESSON 19",
+        "maLesson": "LESSON 19",
+        "han": "2026-09-24T23:59",
+        "taoLuc": "2026-09-21",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. TÌM CỤM TỪ ĐỂ HỎI TRONG CÂU",
+            "act": "",
+            "mau": "ANAGRAM",
+            "ma": "m9zhsu"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. TẠO CÂU HỎI XIN THÔNG TIN NÂNG CAO",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "bjxk6g"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 19. TẠO CÂU HỎI XIN THÔNG TIN NÂNG CAO",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "dm5sjy"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 19: TẠO CÂU HỎI XIN THÔNG TIN NÂNG CAO",
+          "video": "https://www.youtube.com/watch?v=AT77FZ4QcXQ",
+          "doan": [
+            {
+              "id": "dmua37gdliym9",
+              "ten": "Review nguyên liệu quan trọng sẽ dùng trong bài học hôm nay",
+              "tu": "00:00",
+              "den": "05:42",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlkxdu"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlkxdu",
+              "ten": "Sự cần thiết của câu hỏi nâng cao - Ví dụ 1",
+              "tu": "05:42",
+              "den": "09:58",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlaybu"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlaybu",
+              "ten": "Sự cần thiết của câu hỏi nâng cao - Ví dụ 2",
+              "tu": "09:58",
+              "den": "12:19",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdloalr"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdloalr",
+              "ten": "Xem lại nguyên tắc của câu hỏi xin thông tin cơ bản",
+              "tu": "12:19",
+              "den": "13:49",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlj9fz"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlj9fz",
+              "ten": "Phát triển cụm từ để hỏi chi tiết hơn một cách tổng quát",
+              "tu": "13:49",
+              "den": "20:32",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlwrz6"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlwrz6",
+              "ten": "Phát triển thêm cụm từ để hỏi về giờ cụ thể",
+              "tu": "20:32",
+              "den": "21:48",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlkq4j"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlkq4j",
+              "ten": "Phát triển thêm cụm từ để hỏi về lượng - số lượng",
+              "tu": "21:48",
+              "den": "28:53",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdll1k2"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdll1k2",
+              "ten": "Phát triển thêm một số cụm từ để hỏi khác",
+              "tu": "28:53",
+              "den": "31:22",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlxymp"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlxymp",
+              "ten": "Tổng kết nội dung trong cả buổi học",
+              "tu": "31:22",
+              "den": "34:01",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlgjyo"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmua37gdlgjyo",
+              "ten": "HD BT1 - Tìm cụm từ để hỏi trong câu",
+              "tu": "34:01",
+              "den": "35:22",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmua3bhngpg8"
+              ]
+            },
+            {
+              "id": "dmua37gdlhgwo",
+              "ten": "HD BT2 - Tạo câu xin thông tin với cụm từ để hỏi chi tiết",
+              "tu": "35:28",
+              "den": "36:35",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmua3bicckvw"
+              ]
+            },
+            {
+              "id": "dmua37gdlcd16",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "36:40",
+              "den": "37:23",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmua3birgivn"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmua3bhngpg8",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. TÌM CỤM TỪ ĐỂ HỎI TRONG CÂU",
+            "actTen": "BT1. TIM CUM TU DE HOI TRONG CAU",
+            "ma": "m9zhsu",
+            "mau": "ANAGRAM",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlhgwo"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmua3bicckvw",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. TẠO CÂU HỎI XIN THÔNG TIN NÂNG CAO",
+            "actTen": "BT2. TAO CAU HOI XIN THONG TIN NANG CAO",
+            "ma": "bjxk6g",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmua37gdlcd16"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmua3birgivn",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 19. TẠO CÂU HỎI XIN THÔNG TIN NÂNG CAO",
+            "actTen": "TRAC NGHIEM BAI GIANG 19 - CAU HOI XIN THONG TIN NANG CAO",
+            "ma": "dm5sjy",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ]
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L02",
         "dang": "KHOA",

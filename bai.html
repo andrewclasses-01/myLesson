@@ -368,24 +368,44 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 @media (prefers-reduced-motion: reduce){
   .st-khuc.dang,.st-khuc.ket,.st-cho-tt.ai .ten-cham{animation:none}
 }
-/* ⭐ v1.128.0 — DẢI TÊN NHÓM CHẶNG khi trang hiện NHIỀU chặng cùng lúc (chặng cũ còn
-   em chưa xong + chặng đang xem, xem `veCacPhanStage`/`veNhanNhomChang`). Dùng lại
-   `.st-nhan` (ô STAGE n) + `.st-cho-tt` (nút trạng thái) của thẻ chờ; nhóm SAU
-   cách nhóm trước bằng vạch nét đứt như `.dau-cho`. Không phải thẻ, không viền. */
-.st-nhom{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:0 4px;
-  margin-bottom:-6px}
-.st-nhom.cach{margin-top:10px; position:relative}
-.st-nhom.cach::before{content:''; position:absolute; left:6px; right:6px; top:-15px;
-  border-top:1px dashed #CBD8D5}
-.st-nhom.den .st-nhan{background:#FBD9DA; color:#B03A3E}
-.st-nhom.dang .st-nhan{background:#D8E6FF; color:#2B5FD0}
-.st-nhom .st-cho-tt.ai .ten-cham{text-transform:none; letter-spacing:.02em}
-.st-nhom .st-cho-tt.dang{background:#EAF1FF; color:#2B5FD0; border-color:#CBDCFF}
-/* Tên các em thiếu bài có thể dài (5–6 tên) ⇒ nút được CO + XUỐNG DÒNG, không tràn
-   ngang trang (đo 375px: bản `white-space:nowrap` thừa kế từ `.st-cho-tt` rộng 721px). */
-.st-nhom .st-cho-tt{flex:0 1 auto; min-width:0; white-space:normal; line-height:1.35;
-  display:inline; padding:6px 12px}
-.st-nhom .st-cho-tt svg{display:inline-block; vertical-align:-2px; margin-right:6px}
+/* ⭐ v1.129.0 (thầy chọn mẫu D, 21/09/2026) — BĂNG MÀU TRONG ĐẦU THẺ khi trang hiện
+   NHIỀU chặng cùng lúc (chặng cũ còn em chưa xong + chặng đang xem, xem
+   `veCacPhanStage`/`bangNhomChang`). Không có gì nằm NGOÀI thẻ: băng chạy sát mép
+   trên bên trong thẻ (kéo âm đúng padding thẻ 16/18px, bo góc 17px = 18px − viền),
+   thẻ đeo viền cùng màu. Ô `STAGE n` đặc · trạng thái · chip avatar các em thiếu dồn
+   phải (chỉ thẻ ĐẦU của nhóm mang chip — nhóm 2–3 act mà lặp 5 chip thì nặng).
+   ⛔ KHÔNG `overflow:hidden` trên thẻ: pop-up từ điển/bóng đèn neo vào `.card`. */
+.card.co-bang{border-color:#F2B9BB}
+.card.co-bang.bang-duong{border-color:#BDD3FF}
+.card.co-bang.bang-la{border-color:#BFE3CC}
+.bang-nhom{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px;
+  margin:-16px -18px 14px; padding:9px 18px; border-radius:17px 17px 0 0;
+  font-weight:800; font-size:11px; letter-spacing:.08em; text-transform:uppercase;
+  background:linear-gradient(90deg,#FDECEC,#FFF6F6); color:#B03A3E; border-bottom:1px solid #F6CFCF}
+.bang-nhom .bn-so{flex:none; display:inline-flex; align-items:center; padding:4px 11px; border-radius:8px;
+  color:#fff; background:#E0575B; font-size:12px; letter-spacing:.1em; white-space:nowrap}
+.bang-nhom .bn-tt{display:inline-flex; align-items:center; gap:7px; white-space:nowrap}
+.bang-nhom .bn-tt svg{width:13px; height:13px; stroke:currentColor; stroke-width:2.4; fill:none;
+  stroke-linecap:round; stroke-linejoin:round}
+.bang-nhom .bn-ten{display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-left:auto;
+  min-width:0; text-transform:none; letter-spacing:.02em; font-size:12.5px}
+.bang-nhom .chip{display:inline-flex; align-items:center; gap:6px; padding:2px 9px 2px 2px;
+  border-radius:999px; background:rgba(255,255,255,.85); color:#C0262C; white-space:nowrap;
+  animation:nhay-ten-do 1.6s ease-in-out infinite}
+.bang-nhom .chip .av{width:22px; height:22px; border-radius:50%; overflow:hidden; position:relative;
+  flex:none; display:inline-grid; place-items:center; background:#F4C4C6; color:#9E2F33;
+  font-size:9px; font-weight:800; border:1.5px solid #fff; box-shadow:0 0 0 1px rgba(0,0,0,.05)}
+.bang-nhom .chip .av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+.bang-duong .bang-nhom{background:linear-gradient(90deg,#EAF1FF,#F4F8FF); color:#2B5FD0; border-bottom-color:#CBDCFF}
+.bang-duong .bang-nhom .bn-so{background:#3E7BFA}
+.bang-la .bang-nhom{background:linear-gradient(90deg,#E3F1EE,#F1F8F6); color:#0E7C6E; border-bottom-color:#C9E3DE}
+.bang-la .bang-nhom .bn-so{background:#18A957}
+@media (prefers-reduced-motion:reduce){.bang-nhom .chip{animation:none}}
+@media (max-width:620px){
+  /* thẻ điện thoại padding 13px 12px, bo 16px (xem @media 620 dưới) ⇒ kéo âm đúng số đó */
+  .bang-nhom{margin:-13px -12px 12px; padding:8px 12px; border-radius:15px 15px 0 0}
+  .bang-nhom .bn-ten{margin-left:0}
+}
 /* Điện thoại: thầy ép mở chặng kế ⇒ thanh có HAI khúc to (OVERDUE + IN PROGRESS) cùng
    `flex-shrink:0` ⇒ tràn ngang (đo 375px: 444px). Cho khúc to được co, chữ nhỏ lại. */
 @media (max-width:620px){
@@ -1862,7 +1882,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=96"></script>
+<script src="config.js?v=97"></script>
 <script src="js/chung.js?v=56"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -5576,25 +5596,37 @@ var IC_KHOA = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="
 var IC_MO = '<svg viewBox="0 0 24 24"><rect x="4" y="10.5" width="16" height="10.5" rx="2.2"/>' +
             '<path d="M8.2 10.5V7.4a3.8 3.8 0 0 1 7.3-.9"/></svg>';
 
-/* ⭐ v1.128.0 — DẢI TÊN NHÓM CHẶNG đứng trước nhóm act khi trang hiện NHIỀU chặng
-   (chặng cũ còn em chưa xong + chặng đang xem). `laDangXem` = nhóm của chặng đang
-   xem (đứng SAU các chặng cũ ⇒ có vạch nét đứt ngăn). Chặng cũ: ô STAGE n đỏ +
-   OVERDUE/IN PROGRESS + "WAITING FOR: tên các em" nháy đỏ (cùng nếp thẻ chờ). */
-function veNhanNhomChang(c, laDangXem){
-  var el = document.createElement('div');
-  var quaHan = c.tt === 'ket';
-  el.className = 'st-nhom ' + (laDangXem ? 'dang cach' : (quaHan ? 'den' : 'dang'));
-  var tt;
-  if (laDangXem) {
-    tt = '<div class="st-cho-tt ' + (c.tt === 'xong' ? 'mo' : (quaHan ? 'ai' : 'dang')) + '">' + IC_MO +
-         (c.tt === 'xong' ? 'COMPLETED' : (quaHan ? 'OVERDUE' : 'IN PROGRESS')) + '</div>';
-  } else {
-    tt = '<div class="st-cho-tt ai">' + IC_KHOA + (quaHan ? 'OVERDUE' : 'IN PROGRESS') +
-         ' — WAITING FOR: <span class="ten-cham">' +
-         chuAnToan((c.thieu || []).map(function(t){ return A.tenO(t); }).join(' • ')) + '</span></div>';
+/* ⭐ v1.129.0 (thầy chọn mẫu D) — BĂNG MÀU TRONG ĐẦU THẺ, gắn vào TỪNG thẻ của nhóm
+   khi trang hiện NHIỀU chặng (chặng cũ còn em chưa xong + chặng đang xem). Trả HTML
+   băng; `ganBangNhom` chèn vào đầu thẻ + đeo class màu. Chặng cũ: đỏ, 🔒 OVERDUE/
+   IN PROGRESS · WAITING FOR + chip avatar các em thiếu (chỉ thẻ đầu nhóm, `coTen`).
+   Chặng đang xem: 🔓 xanh dương IN PROGRESS / đỏ OVERDUE / xanh lá COMPLETED.
+   Chip avatar cùng kho ảnh `A.avUrl` (HS đặc biệt không tra ảnh, như bìa READY). */
+function bangNhomChang(c, laDangXem, coTen){
+  var quaHan = c.tt === 'ket', xong = c.tt === 'xong';
+  var tt = xong ? 'COMPLETED' : (quaHan ? 'OVERDUE' : 'IN PROGRESS');
+  var h = '<div class="bang-nhom"><span class="bn-so">STAGE ' + (c.so || 1) + '</span>' +
+          '<span class="bn-tt">' + (laDangXem ? IC_MO : IC_KHOA) + tt +
+          (!laDangXem && coTen ? ' \u00b7 WAITING FOR' : '') + '</span>';
+  if (!laDangXem && coTen) {
+    h += '<div class="bn-ten">' + (c.thieu || []).map(function(t){
+      var tenDay = A.avTenDayDu(t, CA_LOP);
+      return '<span class="chip"><span class="av">' +
+        (LA_DAC_BIET ? '' : '<img src="' + chuAnToan(A.avUrl(LOP, tenDay)) + '" alt="" onerror="this.remove()">') +
+        chuAnToan(chuTatTen(t)) + '</span>' + chuAnToan(A.tenO(t)) + '</span>';
+    }).join('') + '</div>';
   }
-  el.innerHTML = '<span class="st-nhan">STAGE ' + (c.so || 1) + '</span>' + tt;
-  return el;
+  return h + '</div>';
+}
+function mauBangNhom(c, laDangXem){
+  if (!laDangXem) return '';                       /* chặng cũ: đỏ (mặc định) */
+  return c.tt === 'xong' ? 'bang-la' : (c.tt === 'ket' ? '' : 'bang-duong');
+}
+function ganBangNhom(sec, c, laDangXem, coTen){
+  sec.classList.add('co-bang');
+  var m = mauBangNhom(c, laDangXem);
+  if (m) sec.classList.add(m);
+  sec.insertAdjacentHTML('afterbegin', bangNhomChang(c, laDangXem, coTen));
 }
 
 /* ⭐⭐ v1.120.0 (thầy chốt 21/09/2026) — khối KHÔNG PHẢI act (máy nghe, worksheet,
@@ -5628,19 +5660,20 @@ function veCacPhanStage(hop){
      còn em thiếu bài thì trước đây bị ẨN HẲN (chỉ vào lại qua thanh chặng) — em
      không thấy ai đang thiếu. Nay: các chặng ĐÃ MỞ đứng TRƯỚC chặng đang xem mà còn
      `thieu` (`A.changCuConThieu`) vẽ ĐẦY ĐỦ (bìa READY "chờ mở khóa bởi…" + bảng
-     xếp hạng) phía TRÊN chặng đang xem, mỗi nhóm có một dải tên chặng
-     (`veNhanNhomChang`). Em bấm thanh chặng xem một chặng CŨ thì chỉ hiện chặng đó
+     xếp hạng) phía TRÊN chặng đang xem, mỗi thẻ đeo băng màu tên chặng
+     (`ganBangNhom`, mẫu D). Em bấm thanh chặng xem một chặng CŨ thì chỉ hiện chặng đó
      (chỉ gom chặng đứng trước CHẶNG ĐANG XEM). Số thứ tự act vẫn nối tiếp cả bài. */
   var cuThieu = A.changCuConThieu(CHANG).filter(function(x){ return CHANG.indexOf(x) < CHANG_XEM; });
   var nhom = cuThieu.map(function(x){ return CHANG.indexOf(x); });
   if (CHANG[CHANG_XEM]) nhom.push(CHANG_XEM);
   nhom.forEach(function(ci){
-    if (nhom.length > 1) hop.appendChild(veNhanNhomChang(CHANG[ci], ci === CHANG_XEM));
-    var so = soDauChang(ci);
+    var so = soDauChang(ci), dauNhom = true;
     KHOI.forEach(function(k, i){
       if (cua[i] !== ci) return;
-      if (k.loai === 'audio') { hop.appendChild(veKhoi(k, 0)); return; }
-      hop.appendChild(veKhoi(k, so++));
+      var sec = veKhoi(k, k.loai === 'audio' ? 0 : so++);
+      /* v1.129.0 — băng màu trong đầu thẻ (mẫu D), chỉ khi trang hiện ≥2 nhóm. */
+      if (nhom.length > 1) { ganBangNhom(sec, CHANG[ci], ci === CHANG_XEM, dauNhom); dauNhom = false; }
+      hop.appendChild(sec);
     });
   });
   var dau = true;

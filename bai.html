@@ -3271,6 +3271,7 @@ function noiTrinhPhat(sec, maNghe){
   am.addEventListener('timeupdate', function(){ nhipNghe(maNghe, am); });
   am.addEventListener('seeked', function(){ GIAY_HIEN_NGHE[maNghe] = am.currentTime; });
   am.addEventListener('play', function(){
+    chamLan('nghe'); CHAM_LUC_NGHE[maNghe] = Date.now();   // v1.122.0
     if (ngheFsHen) clearInterval(ngheFsHen);
     ngheFsHen = setInterval(function(){ dayTienDoNgheFs(); }, NGHE_FS_NHIP_MS);
   });
@@ -3949,6 +3950,7 @@ function napTienDoFs(){
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(j){
       var chung = khucTuFs((j && j.fields) || {});
+      chamGopTuFs('video', (j && j.fields) || {});   // v1.122.0
       var truoc = JSON.stringify(khucPhang());
       Object.keys(chung).forEach(function(id){
         chung[id].forEach(function(r){ congKhucXemKhoa(id, r[0], r[1]); });
@@ -3992,12 +3994,22 @@ function dayTienDoFs(gap){
     than.fields.vt = { doubleValue: VI_TRI_KHOA.t };
     than.fields.vtLuc = { integerValue: String(VI_TRI_KHOA.luc) };
   }
-  than = JSON.stringify(than);
+  var thanCu = JSON.stringify(than);                       // gói CŨ (đường lùi)
+  var goi = chamGanVaoGoi('video', than);                  // v1.122.0 — kèm cham của máy này
+  than = JSON.stringify(goi.than);
   TIEN_DO_FS_BAN = false;
   try {
-    fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    fetch(u + goi.mask, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                body: than, keepalive: !!gap })
-      .then(function(r){ if (!r.ok) TIEN_DO_FS_BAN = true; })
+      .then(function(r){
+        if (r.ok) return;
+        if (goi.coCham && r.status === 403) {   // luật chưa lan: gửi lại gói cũ, tắt cham
+          CHAM_TAT = true;
+          return fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: thanCu, keepalive: !!gap })
+            .then(function(r2){ if (!r2.ok) TIEN_DO_FS_BAN = true; });
+        }
+        TIEN_DO_FS_BAN = true;
+      })
       ['catch'](function(){ TIEN_DO_FS_BAN = true; });
   } catch (e) { TIEN_DO_FS_BAN = true; }
 }
@@ -4014,11 +4026,10 @@ window.addEventListener('pagehide', function(){ dayTienDoFs(true); });
      CHÍNH `audio.currentTime`, không đo đồng hồ thật).
    - Một bài có thể có NHIỀU khối nghe (hiếm nhưng khung cho phép) → `khuc` vẫn
      là map NHIỀU khoá như bên video, khoá là `maNghe` thay vì id đoạn.
-   ⛔⛔ CẦN ĐĂNG LUẬT FIRESTORE cho kho `lessonAudioTienDo` (7 phép kiểm y hệt
-   kho video: tạo·cập nhật·chặn trường lạ·chặn id lệch·chặn khuc sai kiểu·đọc·
-   chặn xoá) TRƯỚC KHI DÙNG THẬT — chưa đăng thì mọi lượt đọc/ghi ở đây đều bị
-   Firestore từ chối ÂM THẦM (catch nuốt lỗi, đúng tinh thần "không bao giờ
-   reject" của cả khối video/audio) — xem phần trao đổi trong GHI CHU DU AN.md. */
+   ✅ (21/09/2026) Luật Firestore kho `lessonAudioTienDo` ĐÃ ĐĂNG và kiểm thật
+   (đọc bằng khoá công khai = 404 đúng luật, kho đã có dữ liệu thật); ghi chú
+   "cần đăng luật" cũ của v1.116.0 không còn đúng. Từ v1.122.0 luật cho thêm
+   trường `cham` (xem khối ĐO ĐỘ CHĂM bên dưới). */
 var NGHE_XONG = {};          // {maNghe: [[a,b],...]} đã gộp/khử trùng (giống DOAN_XONG)
 var NGHE_TONG = {};          // {maNghe: giây} — duration đo được từ `audio.duration`
 var GIAY_HIEN_NGHE = {};     // {maNghe: giây lúc nhịp trước} — mốc để tính delta
@@ -4045,11 +4056,18 @@ function congKhucNghe(maNghe, a, b){
 function nhipNghe(maNghe, am){
   var truoc = GIAY_HIEN_NGHE[maNghe];
   var now = am.currentTime;
+  var lucNay = Date.now();
   if (truoc != null) {
     var delta = now - truoc;
-    if (delta > 0.05 && delta < 3) { congKhucNghe(maNghe, truoc, now); NGHE_FS_BAN = true; }
+    if (delta > 0.05 && delta < 3) {
+      congKhucNghe(maNghe, truoc, now); NGHE_FS_BAN = true;
+      // v1.122.0 — độ chăm: giây băng + giây thật (trần 3s, phòng mốc cũ sau khi tạm dừng lâu)
+      var that = CHAM_LUC_NGHE[maNghe] ? (lucNay - CHAM_LUC_NGHE[maNghe]) / 1000 : delta;
+      chamCong('nghe', delta, Math.min(Math.max(that, 0), 3));
+    }
   }
   GIAY_HIEN_NGHE[maNghe] = now;
+  CHAM_LUC_NGHE[maNghe] = lucNay;
 }
 function urlTienDoNgheFs(){
   var db = (A.CFG && A.CFG.AWORD_DB) || {};
@@ -4107,6 +4125,7 @@ function napTienDoNgheFs(){
     .then(function(r){ return r.ok ? r.json() : null; })
     .then(function(j){
       var f = (j && j.fields) || {};
+      chamGopTuFs('nghe', f);   // v1.122.0
       var chung = ngheKhucTuFs(f);
       Object.keys(chung).forEach(function(id){
         chung[id].forEach(function(r){ congKhucNghe(id, r[0], r[1]); });
@@ -4123,24 +4142,147 @@ function dayTienDoNgheFs(gap){
   if (!u) return;
   var tongFields = {};
   Object.keys(NGHE_TONG).forEach(function(id){ tongFields[id] = { doubleValue: NGHE_TONG[id] }; });
-  var than = JSON.stringify({ fields: {
+  var thanObj = { fields: {
     ma:   { stringValue: MA_HS },
     bai:  { stringValue: String(BAI.id) },
     lop:  { stringValue: String(LOP_DL || '') },
     khuc: { mapValue: { fields: ngheKhucRaFs() } },
     tong: { mapValue: { fields: tongFields } },
     luc:  { integerValue: String(Date.now()) }
-  } });
+  } };
+  var thanCu = JSON.stringify(thanObj);                    // gói CŨ (đường lùi)
+  var goi = chamGanVaoGoi('nghe', thanObj);                // v1.122.0 — kèm cham của máy này
+  var than = JSON.stringify(goi.than);
   NGHE_FS_BAN = false;
   try {
-    fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    fetch(u + goi.mask, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
                body: than, keepalive: !!gap })
-      .then(function(r){ if (!r.ok) NGHE_FS_BAN = true; })
+      .then(function(r){
+        if (r.ok) return;
+        if (goi.coCham && r.status === 403) {
+          CHAM_TAT = true;
+          return fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: thanCu, keepalive: !!gap })
+            .then(function(r2){ if (!r2.ok) NGHE_FS_BAN = true; });
+        }
+        NGHE_FS_BAN = true;
+      })
       ['catch'](function(){ NGHE_FS_BAN = true; });
   } catch (e) { NGHE_FS_BAN = true; }
 }
 document.addEventListener('visibilitychange', function(){ if (document.hidden) dayTienDoNgheFs(true); });
 window.addEventListener('pagehide', function(){ dayTienDoNgheFs(true); });
+
+/* ⭐⭐⭐ v1.122.0 (21/09/2026, thầy chốt qua 3 câu AskUserQuestion) — ĐO ĐỘ CHĂM:
+   TỔNG THỜI GIAN đã phát video/audio KỂ CẢ XEM LẠI. Khác hẳn `DOAN_XONG`/
+   `NGHE_XONG` (gộp khúc chồng nhau ⇒ chỉ đo "PHỦ" tới đâu, xem lại không cộng).
+   - Mỗi MÁY (dấu máy `AWChat.dauMay()`, khoá `m<dấu máy>`) giữ bộ đếm RIÊNG
+     {giay: giây BĂNG đã phát, that: giây ĐỒNG HỒ THẬT lúc phát, lan: số lượt
+     bấm phát, ngay: {"YYYY-MM-DD": giây băng}} trong localStorage
+     `awc_cham_<video|nghe>_<id bài>_<mã HS>`; lên Firestore ở CHÍNH tài liệu
+     tiến độ đang có (`lessonVideoTienDo` / `lessonAudioTienDo`, trường `cham`)
+     bằng PATCH có `updateMask` chỉ ĐÚNG khoá máy mình ⇒ máy khác không đè
+     nhau, gửi lại nhiều lần vô hại (giá trị TUYỆT ĐỐI, không phải +=).
+     Dashboard cộng mọi máy lại (`dashboard.html` `chamTuFs`).
+   - Lúc mở bài: lấy bản kho của CHÍNH máy này nếu `giay` lớn hơn bản máy (em xoá
+     dữ liệu duyệt thì dấu máy đổi ⇒ khoá cũ vẫn nằm trong kho, tổng không mất).
+   - Cộng ở ĐÚNG chỗ đang cộng khúc (đã qua lưới tua/1.5x của video) — nhưng
+     KHÔNG đòi đoạn phải "mở": em xem đoạn chưa tới lượt vẫn là đang xem.
+   - ĐƯỜNG LÙI: luật chưa lan mà gói kèm `cham` bị 403 ⇒ gửi lại NGAY gói CŨ
+     (không cham, không updateMask) + tắt cham cho tới khi tải lại trang — đồng
+     bộ % KHÔNG BAO GIỜ vì cham mà chết. Luật đã đăng 21/09 (ruleset fba064e2…,
+     `tools/dang-luat-do-cham.js`). Ngày lấy theo đồng hồ máy em (chỉ để đếm
+     "mấy ngày có xem", lệch chút không sao). */
+var CHAM = { video: null, nghe: null };
+var CHAM_TAT = false;                 // 403 vì cham ⇒ tắt tới khi tải lại trang
+var CHAM_DANG_PHAT_VIDEO = false;     // đếm `lan` video 1 lần/lượt phát (BUFFERING giữa chừng không tính)
+var CHAM_LUC_NGHE = {};               // {maNghe: ms} mốc đồng hồ thật của nhịp trước
+var _chamMay = '';
+function chamMay(){
+  if (_chamMay) return _chamMay;
+  var m = '';
+  try { m = (window.AWChat && AWChat.dauMay && AWChat.dauMay()) || ''; } catch (e) {}
+  if (!m) { m = 'x' + Math.random().toString(36).slice(2, 11); }   // ẩn danh: khoá tạm trong phiên
+  _chamMay = 'm' + String(m).replace(/[^a-z0-9]/gi, '').slice(0, 20);
+  return _chamMay;
+}
+function chamKhoaKho(loai){ return 'awc_cham_' + loai + '_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
+function chamRong(){ return { giay: 0, that: 0, lan: 0, ngay: {} }; }
+function chamCua(loai){
+  if (CHAM[loai]) return CHAM[loai];
+  var c = chamRong();
+  try {
+    var o = JSON.parse(localStorage.getItem(chamKhoaKho(loai)) || 'null');
+    if (o && isFinite(o.giay)) c = { giay: +o.giay || 0, that: +o.that || 0, lan: Math.round(+o.lan || 0), ngay: (o.ngay && typeof o.ngay === 'object') ? o.ngay : {} };
+  } catch (e) {}
+  CHAM[loai] = c;
+  return c;
+}
+function chamLuu(loai){
+  try { localStorage.setItem(chamKhoaKho(loai), JSON.stringify(CHAM[loai])); } catch (e) {}
+}
+function chamHomNay(){
+  var d = new Date(), p = function(n){ return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+// Cộng một nhịp phát THẬT: `giay` giây băng, `that` giây đồng hồ (đã chặn trần ở nơi gọi).
+function chamCong(loai, giay, that){
+  if (!(giay > 0)) return;
+  var c = chamCua(loai);
+  c.giay += giay;
+  c.that += Math.max(0, that || 0);
+  var k = chamHomNay();
+  c.ngay[k] = (c.ngay[k] || 0) + giay;
+  // giữ tối đa 60 ngày gần nhất (khoá ISO sắp theo chữ = theo thời gian)
+  var ks = Object.keys(c.ngay).sort();
+  while (ks.length > 60) delete c.ngay[ks.shift()];
+  chamLuu(loai);
+}
+function chamLan(loai){
+  var c = chamCua(loai); c.lan += 1; chamLuu(loai);
+  if (loai === 'video') TIEN_DO_FS_BAN = true; else NGHE_FS_BAN = true;   // bấm phát rồi dừng ngay vẫn lên kho
+}
+// Bộ đếm máy này -> Firestore mapValue (làm tròn 0,1 giây).
+function chamRaFs(loai){
+  var c = chamCua(loai), ngay = {};
+  Object.keys(c.ngay).forEach(function(k){ ngay[k] = { doubleValue: Math.round(c.ngay[k] * 10) / 10 }; });
+  return { mapValue: { fields: {
+    giay: { doubleValue: Math.round(c.giay * 10) / 10 },
+    that: { doubleValue: Math.round(c.that * 10) / 10 },
+    lan:  { integerValue: String(c.lan) },
+    ngay: { mapValue: { fields: ngay } }
+  } } };
+}
+// Lúc mở bài: bản kho của CHÍNH máy này lớn hơn bản máy (localStorage bị xoá /
+// trình duyệt khác cùng dấu máy không thể có) ⇒ lấy bản kho.
+function chamGopTuFs(loai, fields){
+  try {
+    var m = fields.cham && fields.cham.mapValue && fields.cham.mapValue.fields;
+    var f = m && m[chamMay()] && m[chamMay()].mapValue && m[chamMay()].mapValue.fields;
+    if (!f) return;
+    var so = function(v){ return v ? Number(v.doubleValue != null ? v.doubleValue : v.integerValue) : 0; };
+    var kho = { giay: so(f.giay), that: so(f.that), lan: Math.round(so(f.lan)), ngay: {} };
+    var mn = f.ngay && f.ngay.mapValue && f.ngay.mapValue.fields;
+    if (mn) Object.keys(mn).forEach(function(k){ var n = so(mn[k]); if (isFinite(n) && n > 0) kho.ngay[k] = n; });
+    var may = chamCua(loai);
+    if (isFinite(kho.giay) && kho.giay > may.giay) { CHAM[loai] = kho; chamLuu(loai); }
+  } catch (e) {}
+}
+// Gói PATCH: thân + chuỗi updateMask (chỉ khoá máy mình trong `cham`).
+// `than` = object {fields:{...}} ĐÃ có các trường cũ; trả về {than, mask}.
+function chamGanVaoGoi(loai, than){
+  // ⛔ LUÔN có updateMask cho các trường cũ (kể cả khi máy này chưa phát gì hay
+  // cham đã tắt): PATCH trần ghi đè CẢ tài liệu ⇒ xoá mất `cham` của máy khác
+  // (đo bằng --kiem 21/09). Chỉ đường lùi 403 mới đi gói trần.
+  var mask = Object.keys(than.fields).map(function(k){ return 'updateMask.fieldPaths=' + k; });
+  var c = chamCua(loai), coCham = false;
+  if (!CHAM_TAT && (c.giay || c.lan)) {
+    var cham = {}; cham[chamMay()] = chamRaFs(loai);
+    than.fields.cham = { mapValue: { fields: cham } };
+    mask.push('updateMask.fieldPaths=cham.' + chamMay());
+    coCham = true;
+  }
+  return { than: than, mask: '&' + mask.join('&'), coCham: coCham };
+}
 
 // ---------- icon dùng trong khung player (SVG nét mảnh — không icon-font) ----------
 var IC_DEN_KHOA = '<svg viewBox="0 0 24 24"><path d="M15 14c.2-1 .7-1.7 1.5-2.5A6 6 0 1 0 6 8c0 1.3.5 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>';
@@ -4555,6 +4697,7 @@ function onDoiTrangThaiKhoa(e){
   clearInterval(ytHenKhoa);
   clearInterval(tienDoFsHen);   // v1.96.0
   if (e.data === YT.PlayerState.PLAYING) {
+    if (!CHAM_DANG_PHAT_VIDEO) { CHAM_DANG_PHAT_VIDEO = true; chamLan('video'); }   // v1.122.0
     tatPhuDeKhoa();
     nutPhat.forEach(function(n){ n.innerHTML = IC_DUNG_KHOA; });
     GIAY_HIEN_KHOA = YT_PLAYER.getCurrentTime();
@@ -4562,6 +4705,7 @@ function onDoiTrangThaiKhoa(e){
     ytHenKhoa = setInterval(nhipVideoKhoa, 500);
     tienDoFsHen = setInterval(dayTienDoFs, TIEN_DO_FS_NHIP_MS);   // v1.96.0 — ghi THƯA
   } else {
+    if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) CHAM_DANG_PHAT_VIDEO = false;   // v1.122.0
     try { if (YT_PLAYER && YT_PLAYER.getCurrentTime) ghiViTriKhoa(YT_PLAYER.getCurrentTime()); } catch (err) {}   // v1.97.0
     dayTienDoFs();   // v1.96.0 — dừng/hết video: đẩy phần vừa xem lên ngay
     nutPhat.forEach(function(n){ n.innerHTML = IC_PHAT_KHOA; });
@@ -4612,6 +4756,10 @@ function nhipVideoKhoa(){
   if (quaNhanh && delta < 1.8) NHANH_LUC_KHOA = lucNay;
   var doan = (BAI.baiGiang || {}).doan || [];
   var dHien = doanTaiGiayKhoa(doan, now);
+  if (delta > 0.05 && delta < 1.8 && !quaNhanh) {
+    chamCong('video', delta, Math.min(deltaThat, 2));   // v1.122.0 — độ chăm: MỌI nhịp phát thật
+    TIEN_DO_FS_BAN = true;
+  }
   if (dHien && TT_KHOA.moD[dHien.id] && delta > 0.05 && delta < 1.8 && !quaNhanh) {
     congKhucXemKhoa(dHien.id, GIAY_HIEN_KHOA, now);
     luuDoanXongKhoa();

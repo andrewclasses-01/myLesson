@@ -818,6 +818,14 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .bm-video-thanh i{display:block; height:100%; border-radius:99px; background:var(--duong)}
 .bm-video-phut{flex:none; width:50px; text-align:right; font:800 11.3px var(--font); color:var(--chu);
   white-space:nowrap; font-variant-numeric:tabular-nums}
+/* ⭐ v1.122.0 — ô số HAI TẦNG: to = TỔNG phút đã phát (kể cả xem lại, đo độ chăm),
+   nhỏ = "phủ N%" (đã xem tới bao nhiêu phần của băng). Thanh vẫn là phủ. */
+.bm-video-so{flex:none; width:58px; display:flex; flex-direction:column; align-items:flex-end; line-height:1.1}
+.bm-video-so .bm-video-phut{width:auto; line-height:1.1}
+.bm-video-phu{font:700 9.2px/1.2 var(--font); color:var(--nhat); white-space:nowrap; letter-spacing:.02em;
+  font-variant-numeric:tabular-nums}
+.bm-video-phu.du{color:var(--duong)}
+.bm-video-hang[title]{cursor:help}
 .bm-video-tong{margin-top:auto; padding:10px 0 3px; border-top:1px solid var(--vien);
   font:700 10.5px/1.4 var(--font); color:var(--mo); text-align:center; letter-spacing:.03em;
   text-transform:uppercase}
@@ -2900,9 +2908,54 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     } catch (e) {}
     return tong;
   }
+  /* ⭐⭐⭐ v1.122.0 (21/09/2026, thầy chốt) — ĐỘ CHĂM: trường `cham` trong CÙNG tài
+     liệu, `{m<dấu máy>: {giay, that, lan, ngay:{YYYY-MM-DD: giây}}}` — mỗi máy
+     của em một khoá (bai.html `chamGanVaoGoi` ghi bằng updateMask). Ở đây CỘNG
+     mọi máy: `giay` = tổng giây BĂNG đã phát kể cả xem lại, `that` = giây đồng
+     hồ thật, `lan` = số lượt bấm phát, `ngay` = SỐ NGÀY có xem (hợp các máy).
+     `co=false` = tài liệu chưa có cham (bài xem trước 21/09) ⇒ cột hiện tổng =
+     phủ như cũ, không tụt về 0. */
+  function chamTuFs(fields) {
+    var ra = { giay: 0, that: 0, lan: 0, ngay: 0, co: false };
+    try {
+      var m = fields.cham && fields.cham.mapValue && fields.cham.mapValue.fields;
+      if (!m) return ra;
+      var so = function (v) { return v ? Number(v.doubleValue != null ? v.doubleValue : v.integerValue) || 0 : 0; };
+      var ngay = {};
+      Object.keys(m).forEach(function (may) {
+        var f = m[may].mapValue && m[may].mapValue.fields;
+        if (!f) return;
+        ra.co = true;
+        ra.giay += so(f.giay); ra.that += so(f.that); ra.lan += Math.round(so(f.lan));
+        var mn = f.ngay && f.ngay.mapValue && f.ngay.mapValue.fields;
+        if (mn) Object.keys(mn).forEach(function (k) { if (so(mn[k]) > 0) ngay[k] = 1; });
+      });
+      ra.ngay = Object.keys(ngay).length;
+    } catch (e) {}
+    return ra;
+  }
+  // Tổng phút hiện cho MỘT em = max(tổng cham, phủ) — tổng không bao giờ nhỏ hơn phủ.
+  function giayTongCuaEm(phu, cham) { return Math.max(phu || 0, (cham && cham.giay) || 0); }
+  function phutChu(giay) { return Math.round((giay || 0) / 60) + ' phút'; }
+  // Một hàng em trong cột Thời lượng (dùng chung video/nghe). `tongBai` = giây cả bài (0 = chưa rõ).
+  function veHangThoiLuongDb(ten, avHtml, phu, cham, tongBai, chuBai) {
+    var tong = giayTongCuaEm(phu, cham);
+    var pt = tongBai ? Math.round((phu || 0) / tongBai * 100) : 0;
+    var tip = 'Tổng đã ' + chuBai + ' ' + phutChu(tong) + ' (kể cả xem lại)';
+    if (cham && cham.co) {
+      if (cham.that) tip += ' · ' + phutChu(cham.that) + ' đồng hồ thật';
+      tip += ' · ' + cham.lan + ' lần phát · ' + cham.ngay + ' ngày';
+    } else if (tong) tip += ' · chưa có số lần/ngày (xem trước 21/09)';
+    tip += (tongBai ? ' · phủ ' + pt + '% bài' : '');
+    return '<div class="bm-video-hang" title="' + A.chuAnToan(tip) + '">' + avHtml +
+      '<span class="bm-video-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(vietTat(ten)) + '</span>' +
+      '<span class="bm-video-thanh"><i style="width:' + Math.min(100, pt) + '%"></i></span>' +
+      '<span class="bm-video-so"><span class="bm-video-phut">' + phutChu(tong) + '</span>' +
+      (tongBai ? '<span class="bm-video-phu' + (pt >= 95 ? ' du' : '') + '">phủ ' + pt + '%</span>' : '') + '</span></div>';
+  }
   // Đọc tiến độ xem của CẢ LỚP cho một bài — tối đa 6 lượt song song, không
   // bao giờ reject (404/403/mất mạng đều coi là 0 giây, y hệt tinh thần
-  // `napTienDoFs` bên bai.html).
+  // `napTienDoFs` bên bai.html). Mỗi em: {phu: giây phủ, cham} (v1.122.0).
   function docTienDoVideoCuaBai(baiId, hocSinh) {
     var ds = hocSinh.filter(function (h) { return String(h.ma || '').trim(); });
     var ra = {};
@@ -2915,8 +2968,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       if (!u) return ke();
       return fetch(u, { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) { ra[h.ten] = giayXemTuFs((j && j.fields) || {}); })
-        ['catch'](function () { ra[h.ten] = 0; })
+        .then(function (j) {
+          var f = (j && j.fields) || {};
+          ra[h.ten] = { phu: giayXemTuFs(f), cham: chamTuFs(f) };
+        })
+        ['catch'](function () { ra[h.ten] = { phu: 0, cham: chamTuFs({}) }; })
         .then(ke);
     }
     var chay = [];
@@ -2936,16 +2992,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     } else if (!t.caLop.length) {
       rows = '<div class="bm-em-trong">Chưa có em nào</div>';
     } else {
-      var ds = t.caLop.slice().sort(function (x, y) { return (tienDo[y] || 0) - (tienDo[x] || 0); });
+      // v1.122.0 — xếp theo TỔNG phút (kể cả xem lại), hoà thì theo phủ
+      var tongEm = function (ten) { var d = tienDo[ten] || {}; return giayTongCuaEm(d.phu, d.cham); };
+      var ds = t.caLop.slice().sort(function (x, y) {
+        return (tongEm(y) - tongEm(x)) || (((tienDo[y] || {}).phu || 0) - ((tienDo[x] || {}).phu || 0));
+      });
       rows = ds.map(function (ten) {
-        var giay = tienDo[ten] || 0;
-        var phut = Math.round(giay / 60);
-        var pt = tongGiay ? Math.round(giay / tongGiay * 100) : 0;
-        return '<div class="bm-video-hang">' + veEmAvDb(ten, lopSlug, tenGocLop) +
-          '<span class="bm-video-ten" title="' + A.chuAnToan(ten) + '">' +
-            A.chuAnToan(vietTat(ten)) + '</span>' +
-          '<span class="bm-video-thanh"><i style="width:' + Math.min(100, pt) + '%"></i></span>' +
-          '<span class="bm-video-phut">' + phut + ' phút</span></div>';
+        var d = tienDo[ten] || {};
+        return veHangThoiLuongDb(ten, veEmAvDb(ten, lopSlug, tenGocLop), d.phu, d.cham, tongGiay, 'xem');
       }).join('');
     }
     return dau + '<div class="bm-video-khoi"><div class="bm-video-head"><span>Học sinh</span><span>Đã xem</span></div>' +
@@ -2979,11 +3033,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
      luc — `khuc` khoá theo `maNghe`, `tong` = duration từng file do CHÍNH em
      đo được lúc nghe, lấy giá trị KHÔNG-RỖNG ĐẦU TIÊN thấy được làm chuẩn vì
      mọi em nghe cùng một file thì duration phải như nhau).
-     ⛔⛔ Kho `lessonAudioTienDo` CẦN ĐĂNG LUẬT FIRESTORE riêng (7 phép kiểm y
-     hệt kho video) TRƯỚC KHI DÙNG THẬT — xem chú thích đầu khối tương ứng bên
-     `bai.html`. Chưa đăng thì code này vẫn chạy an toàn (không lỗi gì cho
-     thầy thấy) nhưng mọi em đều hiện 0 phút vì Firestore từ chối âm thầm. */
-  var NGHE_TD = { giay: {}, tong: {} }, NGHE_TD_BAI = null;
+     ✅ (21/09/2026) Luật kho `lessonAudioTienDo` ĐÃ ĐĂNG + kiểm thật; từ
+     v1.122.0 hai kho có thêm trường `cham` (độ chăm) — xem `chamTuFs` bên trên. */
+  var NGHE_TD = { giay: {}, tong: {}, cham: {} }, NGHE_TD_BAI = null;   // cham: v1.122.0
 
   function coBaiNgheKh(b) { return A.ngheCuaBai(b).length > 0; }
   function urlTienDoNgheDb(maChuan, baiId) {
@@ -3015,8 +3067,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   }
   function docTienDoNgheCuaBai(baiId, hocSinh) {
     var ds = hocSinh.filter(function (h) { return String(h.ma || '').trim(); });
-    var giay = {}, tong = {};
-    if (!ds.length) return Promise.resolve({ giay: giay, tong: tong });
+    var giay = {}, tong = {}, cham = {};
+    if (!ds.length) return Promise.resolve({ giay: giay, tong: tong, cham: cham });
     var i = 0;
     function ke() {
       if (i >= ds.length) return Promise.resolve();
@@ -3028,6 +3080,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         .then(function (j) {
           var kq = giayNgheTuFs((j && j.fields) || {});
           giay[h.ten] = kq.giay;
+          cham[h.ten] = chamTuFs((j && j.fields) || {});   // v1.122.0
           Object.keys(kq.tong).forEach(function (id) { if (!tong[id]) tong[id] = kq.tong[id]; });
         })
         ['catch'](function () { giay[h.ten] = 0; })
@@ -3035,7 +3088,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     }
     var chay = [];
     for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
-    return Promise.all(chay).then(function () { return { giay: giay, tong: tong }; });
+    return Promise.all(chay).then(function () { return { giay: giay, tong: tong, cham: cham }; });
   }
   var IC_LOA_DB = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/>' +
     '<path d="M16.3 8.3a5.2 5.2 0 010 7.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
@@ -3053,16 +3106,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     } else {
       var tongGiay = 0;
       Object.keys(ketQua.tong).forEach(function (id) { tongGiay += ketQua.tong[id]; });
-      var ds = t.caLop.slice().sort(function (x, y) { return (ketQua.giay[y] || 0) - (ketQua.giay[x] || 0); });
+      // v1.122.0 — xếp theo TỔNG phút (kể cả nghe lại), hoà thì theo phủ
+      var chamEm = function (ten) { return (ketQua.cham || {})[ten]; };
+      var tongEm = function (ten) { return giayTongCuaEm(ketQua.giay[ten], chamEm(ten)); };
+      var ds = t.caLop.slice().sort(function (x, y) {
+        return (tongEm(y) - tongEm(x)) || ((ketQua.giay[y] || 0) - (ketQua.giay[x] || 0));
+      });
       rows = ds.map(function (ten) {
-        var giay = ketQua.giay[ten] || 0;
-        var phut = Math.round(giay / 60);
-        var pt = tongGiay ? Math.round(giay / tongGiay * 100) : 0;
-        return '<div class="bm-video-hang">' + veEmAvDb(ten, lopSlug, tenGocLop) +
-          '<span class="bm-video-ten" title="' + A.chuAnToan(ten) + '">' +
-            A.chuAnToan(vietTat(ten)) + '</span>' +
-          '<span class="bm-video-thanh"><i style="width:' + Math.min(100, pt) + '%"></i></span>' +
-          '<span class="bm-video-phut">' + phut + ' phút</span></div>';
+        return veHangThoiLuongDb(ten, veEmAvDb(ten, lopSlug, tenGocLop), ketQua.giay[ten], chamEm(ten), tongGiay, 'nghe');
       }).join('');
       tongChu = tongGiay ? (Math.round(tongGiay / 60) + ' phút') : 'chưa rõ';
     }

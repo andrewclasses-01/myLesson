@@ -852,6 +852,7 @@
             (d.documents || []).forEach(function (doc) {
               var f = doc.fields || {};
               tatCa.push({
+                id: String(doc.name || '').split('/').pop(),   // v1.131.0 — khớp `attemptId` của practiceLog
                 ten: (f.name && f.name.stringValue) || '?',
                 diem: soF(f.score), tong: soF(f.total), ms: soF(f.timeMs),
                 // `createdAt` = lúc nộp (mốc mili giây, AWord ghi bằng Date.now()).
@@ -940,13 +941,16 @@
       if (!k) return;
       var pt = mau > 0 ? Math.round(r.diem / mau * 100) : 0;
       var cu = theo[k];
+      // ⭐ v1.131.0 — giữ MỌI lượt (`luot`) để hộp quản lý cộng tổng thời gian nộp
+      // (dashboard tab THỜI LƯỢNG); phần gộp "lượt tốt nhất" bên dưới không đổi.
+      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, diem: r.diem, tong: r.tong };
       if (!cu) {
         theo[k] = { ten: r.ten, diem: pt, giay: Math.round((r.ms || 0) / 1000),
-                    luc: r.luc || 0, cacTen: [r.ten],
+                    luc: r.luc || 0, cacTen: [r.ten], luot: [lu],
                     tho: { diem: r.diem, tong: r.tong } };
         return;
       }
-      cu.cacTen.push(r.ten);
+      cu.cacTen.push(r.ten); cu.luot.push(lu);
       var g = Math.round((r.ms || 0) / 1000);
       // Lượt NỘP ĐẦU TIÊN mới là mốc "em ấy nộp lúc mấy giờ" — em làm lại lần
       // hai để lên điểm thì không vì thế mà thành người nộp muộn.

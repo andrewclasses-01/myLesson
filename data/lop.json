@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-22 16:51:28",
+  "capNhat": "2026-09-22 22:10:52",
   "nguon": "myStudent",
   "lop": [
     {
@@ -19,10 +19,7 @@
           "id": 11,
           "ten": "GIA KHIÊM",
           "ma": "QUACHGIAKHIEM24072015",
-          "sinhNhat": "",
-          "tenCu": [
-            "KHIÊM"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 17,
@@ -64,10 +61,7 @@
           "id": 6,
           "ten": "NGỌC DIỆP",
           "ma": "DONGOCDIEP26042014",
-          "sinhNhat": "",
-          "tenCu": [
-            "DIỆP"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 15,
@@ -148,28 +142,19 @@
           "id": 83,
           "ten": "CHÍ THÀNH",
           "ma": "TACHITHANH21042015",
-          "sinhNhat": "",
-          "tenCu": [
-            "THÀNH"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 86,
           "ten": "ĐỨC BÌNH",
           "ma": "NGUYENDUCBINH16042014",
-          "sinhNhat": "",
-          "tenCu": [
-            "BEN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 70,
           "ten": "GIA PHƯỚC",
           "ma": "PHAMGIAPHUOC24042015",
-          "sinhNhat": "",
-          "tenCu": [
-            "PHƯỚC"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 76,
@@ -181,10 +166,7 @@
           "id": 81,
           "ten": "HẢI ĐĂNG",
           "ma": "HOANGLAHAIDANG22042015",
-          "sinhNhat": "",
-          "tenCu": [
-            "ĐĂNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 147,
@@ -202,19 +184,13 @@
           "id": 79,
           "ten": "MINH PHÚC",
           "ma": "LEMINHPHUC01062016",
-          "sinhNhat": "",
-          "tenCu": [
-            "PHÚC"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 87,
           "ten": "NGỌC DIỆP",
           "ma": "BUINGOCDIEP17082014",
-          "sinhNhat": "",
-          "tenCu": [
-            "DIỆP"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 75,
@@ -226,10 +202,7 @@
           "id": 84,
           "ten": "TRÍ CÔNG",
           "ma": "NGUYENTRICONG07052015",
-          "sinhNhat": "",
-          "tenCu": [
-            "CÔNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 82,
@@ -310,10 +283,7 @@
           "id": 143,
           "ten": "NGỌC LINH",
           "ma": "KHONGNGOCLINH31032014",
-          "sinhNhat": "",
-          "tenCu": [
-            "KHỔNG NGỌC LINH"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 59,
@@ -325,10 +295,7 @@
           "id": 55,
           "ten": "QUỲNH HƯƠNG",
           "ma": "VUNGOCQUYNHHUONG21052013",
-          "sinhNhat": "",
-          "tenCu": [
-            "HƯƠNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 141,
@@ -337,7 +304,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 216,
+          "id": 213,
           "ten": "TIẾN DŨNG",
           "ma": "PHAMDINHTIENDUNG27122014",
           "sinhNhat": ""
@@ -349,7 +316,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 213,
+          "id": 208,
           "ten": "TRANG ANH",
           "ma": "PHAMTRANGANH01092014",
           "sinhNhat": ""
@@ -379,28 +346,19 @@
           "id": 145,
           "ten": "DUY",
           "ma": "NGUYENHOANGDUY03092012",
-          "sinhNhat": "",
-          "tenCu": [
-            "KHÁNH"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 28,
           "ten": "GIA HÂN",
           "ma": "NGUYENTHIGIAHAN25122013",
-          "sinhNhat": "",
-          "tenCu": [
-            "HÂN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 25,
           "ten": "HÀ MY",
           "ma": "DAOHAMY09102012",
-          "sinhNhat": "",
-          "tenCu": [
-            "MY"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 27,
@@ -454,69 +412,48 @@
           "id": 24,
           "ten": "MINH ÁNH",
           "ma": "NGUYENBINHMINHANH24122012",
-          "sinhNhat": "",
-          "tenCu": [
-            "ÁNH"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 19,
           "ten": "MINH THƯ",
           "ma": "PHAMMINHTHU11112012",
-          "sinhNhat": "",
-          "tenCu": [
-            "THƯ"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 31,
           "ten": "PHÚ TRỌNG",
           "ma": "CAOPHUTRONG29052012",
-          "sinhNhat": "",
-          "tenCu": [
-            "TRỌNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 22,
           "ten": "PHÚC HƯNG",
           "ma": "NGUYENPHUCHUNG06072013",
-          "sinhNhat": "",
-          "tenCu": [
-            "HƯNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 144,
           "ten": "THẢO NHI",
           "ma": "PHINGUYENTHAONHI24122012",
-          "sinhNhat": "",
-          "tenCu": [
-            "NHI"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 32,
           "ten": "THẾ PHONG",
           "ma": "HOANGTHEPHONG01122013",
-          "sinhNhat": "",
-          "tenCu": [
-            "PHONG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 23,
           "ten": "TIẾN ĐẠT",
           "ma": "NGUYENTIENDAT06022013",
-          "sinhNhat": "",
-          "tenCu": [
-            "ĐẠT"
-          ]
+          "sinhNhat": ""
         }
       ],
       "hsDb": [
         {
-          "id": 209,
+          "id": 206,
           "ten": "NGUYỄN HẢI",
           "ma": "NGUYENHAI17061987"
         }
@@ -545,10 +482,7 @@
           "id": 90,
           "ten": "ĐĂNG KHOA",
           "ma": "LEDANGKHOA06112013",
-          "sinhNhat": "",
-          "tenCu": [
-            "KHOA"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 104,
@@ -560,10 +494,7 @@
           "id": 102,
           "ten": "GIA PHÚC",
           "ma": "PHAMLEGIAPHUC04032014",
-          "sinhNhat": "",
-          "tenCu": [
-            "PHÚC"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 96,
@@ -593,20 +524,13 @@
           "id": 64,
           "ten": "PHÚC DUY",
           "ma": "NGUYENPHUCDUY05122014",
-          "sinhNhat": "",
-          "vao": "2026-09-14",
-          "tenCu": [
-            "DUY"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 89,
           "ten": "PHƯƠNG CHI",
           "ma": "NGOPHUONGCHI23102013",
-          "sinhNhat": "",
-          "tenCu": [
-            "CHI"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 69,
@@ -624,11 +548,7 @@
           "id": 112,
           "ten": "THANH TRÚC",
           "ma": "DAOTHANHTRUC14122013",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "TRÚC"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 101,
@@ -640,30 +560,19 @@
           "id": 100,
           "ten": "TIẾN DŨNG",
           "ma": "VUTIENDUNG29052014",
-          "sinhNhat": "",
-          "tenCu": [
-            "DŨNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 110,
           "ten": "TRUNG QUÂN",
           "ma": "HOANGTRUNGQUAN09112013",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "QUÂN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 111,
           "ten": "VIỆT CƯỜNG",
           "ma": "PHAMVIETCUONG06092013",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "CƯỜNG"
-          ]
+          "sinhNhat": ""
         }
       ]
     },
@@ -678,11 +587,7 @@
           "id": 123,
           "ten": "ANH DŨNG",
           "ma": "TRANANHDUNG23072011",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "DŨNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 50,
@@ -694,18 +599,13 @@
           "id": 116,
           "ten": "BẢO CHÂU",
           "ma": "BUIBAOCHAU01112012",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 121,
           "ten": "BẢO HÂN",
           "ma": "NGUYENDOBAOHAN31052011",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "HÂN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 40,
@@ -717,17 +617,13 @@
           "id": 93,
           "ten": "ĐÌNH ĐỨC",
           "ma": "LUUDINHDUC07082012",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 45,
           "ten": "GIA HƯNG",
           "ma": "BUIDUCGIAHUNG19112012",
-          "sinhNhat": "",
-          "tenCu": [
-            "HƯNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 42,
@@ -745,21 +641,13 @@
           "id": 108,
           "ten": "MINH HOÀNG",
           "ma": "LEMINHHOANG07102012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "HOÀNG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 125,
           "ten": "NGÂN HÀ",
           "ma": "NGUYENTHINGANHA17032011",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "HÀ"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 51,
@@ -771,20 +659,13 @@
           "id": 35,
           "ten": "PHƯƠNG NHI",
           "ma": "DANGPHUONGNHI15032012",
-          "sinhNhat": "",
-          "tenCu": [
-            "NHI"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 92,
           "ten": "QUỲNH NHƯ",
           "ma": "VUQUYNHNHU19032012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "NHƯ"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 41,
@@ -802,17 +683,13 @@
           "id": 48,
           "ten": "THANH HUYỀN",
           "ma": "NGUYENLETHANHHUYEN15092013",
-          "sinhNhat": "",
-          "tenCu": [
-            "HUYỀN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 119,
           "ten": "THANH MAI",
           "ma": "PHAMTHITHANHMAI02042011",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         }
       ]
     },
@@ -827,35 +704,25 @@
           "id": 44,
           "ten": "ANNA",
           "ma": "NGUYENDOANMINHCHAU14042012",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 107,
           "ten": "BẢO NGÂN",
           "ma": "PHAMVUBAONGAN27012012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "NGÂN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 37,
           "ten": "BẢO NGỌC",
           "ma": "PHAMVUBAONGOC27012012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "NGỌC"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 36,
           "ten": "BEE",
           "ma": "DOANHANGAN23032012",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 117,
@@ -867,8 +734,7 @@
           "id": 106,
           "ten": "DIỄM MY",
           "ma": "DODIEMMY01032013",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 122,
@@ -880,64 +746,43 @@
           "id": 39,
           "ten": "ĐĂNG MINH",
           "ma": "NGUYENDANGMINH27012012",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 114,
           "ten": "ĐÌNH PHONG",
           "ma": "DUONGDINHPHONG02122012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "PHONG"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 115,
           "ten": "HÀ AN",
           "ma": "NGHIEMHAAN09042013",
-          "sinhNhat": "",
-          "vao": "2026-09-21"
+          "sinhNhat": ""
         },
         {
           "id": 128,
           "ten": "HẢI BÌNH",
           "ma": "PHAMHAIBINH19102011",
-          "sinhNhat": "",
-          "tenCu": [
-            "BENTLY"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 46,
           "ten": "MAI HÂN",
           "ma": "DANGMAIHAN20042012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "HÂN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 109,
           "ten": "MẠNH TIẾN",
           "ma": "PHAMMANHTIEN26052012",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "TIẾN"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 113,
           "ten": "MINH KHÔI",
           "ma": "NGUYENNGOCMINHKHOI24092013",
-          "sinhNhat": "",
-          "vao": "2026-09-21",
-          "tenCu": [
-            "KHÔI"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 124,
@@ -955,24 +800,18 @@
           "id": 120,
           "ten": "PHƯƠNG THẢO",
           "ma": "DOPHUONGTHAO17012011",
-          "sinhNhat": "",
-          "tenCu": [
-            "THẢO"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 126,
           "ten": "THÙY LINH",
           "ma": "PHAMTHUYLINH16022011",
-          "sinhNhat": "",
-          "tenCu": [
-            "LINH"
-          ]
+          "sinhNhat": ""
         }
       ],
       "hsDb": [
         {
-          "id": 212,
+          "id": 209,
           "ten": "GIANG",
           "ma": "GIANG"
         }
@@ -1004,7 +843,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 203,
+          "id": 204,
           "ten": "CÔNG THÀNH",
           "ma": "PHAMCONGTHANH12062017",
           "sinhNhat": ""
@@ -1022,7 +861,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 204,
+          "id": 203,
           "ten": "MINH ĐỨC",
           "ma": "MAIMINHDUC21122017",
           "sinhNhat": ""
@@ -1085,10 +924,7 @@
           "id": 153,
           "ten": "XUÂN ĐỨC",
           "ma": "DAMXUANDUC22032017",
-          "sinhNhat": "",
-          "tenCu": [
-            "ĐỨC"
-          ]
+          "sinhNhat": ""
         },
         {
           "id": 166,
@@ -1106,145 +942,145 @@
       "loai": "khoa",
       "hocSinh": [
         {
-          "id": 221,
+          "id": 226,
           "ten": "ÁNH NGỌC",
           "ma": "MACTHIANHNGOC28052015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 217,
+          "id": 210,
           "ten": "BẢO NAM",
           "ma": "TRANBAONAM16112016",
           "sinhNhat": ""
         },
         {
-          "id": 227,
+          "id": 228,
           "ten": "BẢO TRÂM",
           "ma": "VUNGOCAOBAOTRAM27012014",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 220,
+          "id": 218,
           "ten": "DIỆU CHI",
           "ma": "VUDIEUCHI24012015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 222,
+          "id": 215,
           "ten": "DUY AN",
           "ma": "NGUYENDUYAN19072014",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 215,
+          "id": 211,
           "ten": "ĐỖ NGỌC MINH KHANG",
           "ma": "DONGOCMINHKHANG23092015",
           "sinhNhat": ""
         },
         {
-          "id": 224,
+          "id": 225,
           "ten": "ĐỨC MINH",
           "ma": "VUDUCMINH04072014",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 223,
+          "id": 216,
           "ten": "HÀ ANH",
           "ma": "NGUYENHAANH12092015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 232,
+          "id": 221,
           "ten": "HOÀNG KHÁNH",
           "ma": "NGUYENHOANGKHANH30032016",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 228,
+          "id": 229,
           "ten": "LAN VY",
           "ma": "NGUYENNGOCLANVY03012015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 236,
+          "id": 232,
           "ten": "LONG",
           "ma": "LONG12052016",
           "sinhNhat": "",
           "vao": "2026-09-17"
         },
         {
-          "id": 218,
+          "id": 214,
           "ten": "MẠC MINH KHANG",
           "ma": "MACMINHKHANG29052017",
           "sinhNhat": "",
           "vao": "2026-09-14"
         },
         {
-          "id": 235,
+          "id": 217,
           "ten": "MAI ANH",
           "ma": "DAOMAIANH29052016",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 234,
+          "id": 231,
           "ten": "MINH HOÀNG",
           "ma": "BUIMINHHOANG03112014",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 225,
+          "id": 230,
           "ten": "MỘC TRÀ",
           "ma": "VUMOCTRA20032016",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 230,
+          "id": 219,
           "ten": "NGÂN HÀ",
           "ma": "TANGNGANHA01112015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 233,
+          "id": 224,
           "ten": "NGỌC LINH",
           "ma": "KHONGNGOCLINH31032014",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 219,
+          "id": 227,
           "ten": "THẾ PHONG",
           "ma": "NGUYENTHEPHONG09052015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 231,
+          "id": 223,
           "ten": "TRÚC LINH",
           "ma": "DONGTRUCLINH13102016",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 226,
+          "id": 220,
           "ten": "TRUNG HẢI",
           "ma": "HOANGTRUNGHAI18032015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },
         {
-          "id": 229,
+          "id": 222,
           "ten": "TUẤN KIỆT",
           "ma": "TOTUANKIET21122014",
           "sinhNhat": "",

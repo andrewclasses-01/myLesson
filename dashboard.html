@@ -1587,6 +1587,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   font:800 8.5px/1 var(--font); letter-spacing:.02em; text-transform:uppercase;
   padding:3px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo);
   border:2px solid var(--the); white-space:nowrap}
+.xh-dong.mien .xh-ten,.xh-dong.mien .xh-diem,.xh-dong.mien .xh-giay,.xh-dong.mien .xh-hang{color:#9AA7A2}
 .hq-tl .hs .kt{margin-left:6px; font:800 8.5px/1 var(--font); font-style:normal; text-transform:uppercase;
   padding:2px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo)}
 /* tab THỜI LƯỢNG */
@@ -2431,7 +2432,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=105"></script>
+<script src="config.js?v=106"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -4427,21 +4428,15 @@ table.hq-tl{width:100%; border-collapse:collapse}
     return p + ':' + (s < 10 ? '0' : '') + s;
   }
 
-  // Một act -> danh sách xếp sẵn: có điểm (điểm ↓, hoà thì nhanh hơn trước),
-  // rồi tới em chưa làm theo đúng thứ tự myStudent. Y hệt `xepBang()` bai.html.
-  function xepActDb(ma, caLop) {
-    var co = (DIEM[ma] || []).filter(function (e) {
-      return caLop.some(function (t) { return A.khoaTen(t) === A.khoaTen(e.ten); });
-    }).slice().sort(function (a, b) {
-      if (a.diem !== b.diem) return b.diem - a.diem;
-      return a.giay - b.giay;
-    });
-    var daCo = {};
-    co.forEach(function (e) { daCo[A.khoaTen(e.ten)] = 1; });
-    var chua = caLop.filter(function (t) { return !daCo[A.khoaTen(t)]; })
-      .map(function (t) { return { ten: t, chua: true }; });
-    return co.concat(chua);
+  // Một act -> danh sách xếp sẵn. ⭐ v1.136.0 — gọi thẳng `A.xepHangAct` (luật DUY NHẤT,
+  // dùng chung với bai.html/lop.html/khoa.html): em không tính vẫn hiện đủ kết quả nhưng
+  // luôn xuống cuối kèm cờ `mien` để tô xám.
+  function xepActDb(ma, t) {
+    return A.xepHangAct(DIEM[ma] || [], (t && (t.caLopDu || t.caLop)) || [],
+                        ((t && t.khongTinh) || []).map(function (x) { return x.ten; }));
   }
+  var laMienDb = function (e) { return !!e.mien; };
+  var daLamDb = function (ds) { return ds.filter(function (e) { return !e.chua && !e.mien; }).length; };
 
   // ================================================================
   // ⭐⭐ v1.113.0 (16/09/2026, thầy chốt "Tab từng BT") — POP-UP KẾT QUẢ DẠNG TAB cho
@@ -4453,8 +4448,8 @@ table.hq-tl{width:100%; border-collapse:collapse}
   // ================================================================
   var POP_TAB = { b: null, t: null, i: 0 };
   function veCotActDb(a, t) {
-    var ds = xepActDb(a.ma, t.caLop || []);
-    var daLam = ds.filter(function (e) { return !e.chua; }).length;
+    var ds = xepActDb(a.ma, t);
+    var daLam = daLamDb(ds);
     var c = CHUAN[a.ma];
     var moc = (c && !c.tru) ? c.dinh : 0;   // 0 = act không đo được ⇒ nộp là full
     var vach = '<span class="doi-vach"><span class="line"></span>' +
@@ -4462,11 +4457,12 @@ table.hq-tl{width:100%; border-collapse:collapse}
         '<span class="tong">' + daLam + '/' + t.siSo + ' đã làm</span></span>' +
       '<span class="line"></span></span>';
     var hang = ds.map(function (e, i) {
-      var full = !e.chua && e.diem >= moc;
+      // v1.136.0 — em `mien`: không hạng/huy chương, chữ xám, điểm + thời gian vẫn hiện.
+      var full = !e.chua && !e.mien && e.diem >= moc;
       var huy = full && i < 3;               // huy chương: ba hạng đầu, phải full
-      var lop = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
-      var o = e.chua ? '–' : (huy ? veHuyDb(i + 1) : (i + 1));
-      return '<span class="xh-dong ' + lop + '">' +
+      var lop = e.mien ? 'mien' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
+      var o = (e.chua || e.mien) ? '–' : (huy ? veHuyDb(i + 1) : (i + 1));
+      return '<span class="xh-dong ' + lop + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
         '<span class="xh-hang">' + o + '</span>' +
         '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
         '<span class="xh-diem">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +
@@ -4478,8 +4474,8 @@ table.hq-tl{width:100%; border-collapse:collapse}
   function veTabsDb() {
     var t = POP_TAB.t;
     $('#popTabs').innerHTML = t.acts.map(function (a, i) {
-      var ds = DIEM[a.ma] ? xepActDb(a.ma, t.caLop || []) : [];
-      var daLam = ds.filter(function (e) { return !e.chua; }).length;
+      var ds = DIEM[a.ma] ? xepActDb(a.ma, t) : [];
+      var daLam = daLamDb(ds);
       return '<button type="button" class="pop-tab' + (i === POP_TAB.i ? ' on' : '') + '" data-i="' + i + '">' +
         nhanRowKh(a) + '<span class="tab-so">' + daLam + '/' + t.siSo + '</span></button>';
     }).join('');

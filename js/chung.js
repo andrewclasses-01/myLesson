@@ -629,6 +629,39 @@
     });
     return ra;
   }
+  /* ⭐⭐ v1.136.0 (22/09/2026, thầy chốt) — XẾP HẠNG MỘT ACT, DÙNG CHUNG cho: leaderboard
+     trang bài (`bai.html xepBang`), pop-up 🏆 dashboard (`xepActDb`), pop-up thẻ/chặng trang
+     lớp và trang khóa (`xepActPop`). Trước bản này là BỐN BẢN CHÉP gần giống nhau — sửa luật
+     một chỗ là ba chỗ kia lệch câm.
+
+     Thứ tự (thầy chốt): ① em ĐANG TÍNH có điểm (điểm ↓, hoà thì nhanh hơn đứng trước) ·
+     ② em ĐANG TÍNH chưa làm · ③ em KHÔNG TÍNH ở bài này — **LUÔN CUỐI** (có điểm trước,
+     chưa làm sau). Dòng ③ mang cờ `mien`: giao diện tô XÁM, KHÔNG đánh số hạng, KHÔNG huy
+     chương — nhưng **vẫn hiện điểm + thời gian** ("không mất dấu vết", thầy chốt 22/09).
+     `dsDiem` = dòng điểm của act (kho AWord) · `caLopDu` = TRỌN lớp (`caLopDayDu`) ·
+     `khongTinh` = tên em không tính (`emKhongTinh(l, b).map(x => x.ten)`).
+     ⛔ KHÔNG sửa dòng gốc trong kho điểm: dòng của em ③ được CHÉP NÔNG rồi mới gắn cờ. */
+  function xepHangAct(dsDiem, caLopDu, khongTinh) {
+    var mien = {}, trong = {};
+    (khongTinh || []).forEach(function (t) { mien[khoaTen(t)] = 1; });
+    (caLopDu || []).forEach(function (t) { trong[khoaTen(t)] = 1; });
+    var nhanhHon = function (a, b) {
+      if (a.diem !== b.diem) return b.diem - a.diem;
+      return (a.giay || 0) - (b.giay || 0);
+    };
+    var co = (dsDiem || []).filter(function (e) { return trong[khoaEm(e)]; }).slice().sort(nhanhHon);
+    var daCo = {};
+    co.forEach(function (e) { daCo[khoaEm(e)] = 1; });
+    var chua = (caLopDu || []).filter(function (t) { return !daCo[khoaTen(t)]; })
+      .map(function (t) { return { ten: t, chua: true }; });
+    var laMien = function (e) { return !!mien[khoaEm(e)]; };
+    var deCo = function (e) { var o = {}; for (var k in e) if (Object.prototype.hasOwnProperty.call(e, k)) o[k] = e[k]; o.mien = true; return o; };
+    return co.filter(function (e) { return !laMien(e); })
+      .concat(chua.filter(function (e) { return !laMien(e); }))
+      .concat(co.filter(laMien).map(deCo))
+      .concat(chua.filter(laMien).map(deCo));
+  }
+
   function caLopCuaBai(l, b) {
     // ⭐ v1.113.0 (16/09/2026) — KHÓA HỌC: MỌI em trong khóa đều thuộc MỌI lesson, bất
     // kể ngày vào. Luật `vao` là của lớp thường (bài giao theo buổi, em vào sau buổi đó
@@ -3100,6 +3133,7 @@
     // ⭐⭐ v1.95.0 — em nào có mặt ở một bài (bỏ em vào lớp sau ngày giao)
     ngayGiaoBai: ngayGiaoBai, emCoMatOBai: emCoMatOBai, caLopCuaBai: caLopCuaBai,
     caLopDayDu: caLopDayDu, emKhongTinh: emKhongTinh, emVaoMuon: emVaoMuon,
+    xepHangAct: xepHangAct,
     // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (phụ huynh luyện bài cùng con)
     emDacBietTheoMa: emDacBietTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,

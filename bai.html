@@ -1885,7 +1885,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=105"></script>
+<script src="config.js?v=106"></script>
 <script src="js/chung.js?v=58"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -1954,6 +1954,7 @@ var KHOI = [];
    khỏi leaderboard. */
 var CA_LOP = [];
 var CA_LOP_TINH = [];
+var KHONG_TINH = [];   /* tên em không tính ở BÀI ĐANG MỞ (bỏ qua tay / vào lớp muộn) */
 
 /* Điểm thật của từng act: { mã act: [{ten, diem, giay}] } — đọc kho AWord.
    Dạng dữ liệu giữ NGUYÊN như bộ mẫu nên `xepBang()`/`veBang()` không phải sửa. */
@@ -2138,23 +2139,10 @@ function tenTat(t){ return TAT[t] || t; }
    Hiện ĐỦ CẢ LỚP, không có nút "xem cả lớp" nữa (thầy chốt đợt 3): ai có điểm
    xếp trên theo điểm rồi tới thời gian, ai chưa làm xuống dưới. */
 function xepBang(ma){
-  var co = (DIEM[ma] || []).filter(function(e){ return CA_LOP.indexOf(e.ten) >= 0; })
-    .slice().sort(function(a, b){
-      if (a.diem !== b.diem) return b.diem - a.diem;
-      return a.giay - b.giay;
-    });
-  var daCo = {};
-  co.forEach(function(e){ daCo[e.ten] = 1; });
-  /* ⭐ v1.135.0 — em CHƯA LÀM mà lại KHÔNG TÍNH ở bài này (thầy bỏ qua / vào lớp sau ngày
-     giao) thì vẫn có tên nhưng mang cờ `mien`: xếp cuối, chữ xám, KHÔNG bị bêu đỏ "chưa
-     làm" và không kéo hào quang "lớp còn thiếu" (`conThieu`). Em nào ĐÃ có điểm thì xếp
-     hạng bình thường — công của em, không liên quan phép đếm. */
-  var mien = {};
-  CA_LOP.forEach(function(t){ if (CA_LOP_TINH.indexOf(t) < 0) mien[t] = 1; });
-  var chua = CA_LOP.filter(function(t){ return !daCo[t]; })
-    .map(function(t){ return { ten:t, chua:true, mien: !!mien[t] }; });
-  chua.sort(function(a, b){ return (a.mien ? 1 : 0) - (b.mien ? 1 : 0); });
-  return co.concat(chua);
+  /* ⭐ v1.136.0 — một luật xếp hạng DUY NHẤT cho cả bốn bảng (xem `A.xepHangAct`): em KHÔNG
+     TÍNH ở bài này (thầy ✕ / vào lớp sau ngày giao) vẫn hiện ĐỦ điểm + thời gian nhưng luôn
+     xuống CUỐI và mang cờ `mien` để tô xám, không đánh hạng. */
+  return A.xepHangAct(DIEM[ma] || [], CA_LOP, KHONG_TINH);
 }
 
 /* Bốn mức màu tên (thầy chốt đợt 4):
@@ -2204,15 +2192,17 @@ function veBang(ma){
   var c = CHUAN[ma];
   var moc = (c && !c.tru) ? c.dinh : 0;      /* 0 = act không đo được ⇒ nộp là full */
   return ds.map(function(e, i){
-    var full = !e.chua && e.diem >= moc;
+    /* v1.136.0 — em `mien` (không tính ở bài này): KHÔNG hạng, KHÔNG huy chương, chữ xám,
+       nhưng điểm + thời gian hiện ĐỦ như mọi em. */
+    var full = !e.chua && !e.mien && e.diem >= moc;
     var huy  = full && i < 3;                /* huy chương: ba hạng đầu, phải full */
     var lop  = e.mien ? 'mien' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
-    var hang = e.chua ? '–' : (huy ? veHuy(i + 1) : (i + 1));
+    var hang = (e.chua || e.mien) ? '–' : (huy ? veHuy(i + 1) : (i + 1));
     return '<div class="lb-row ' + lop + (e.ten === TOI ? ' me' : '') + '"' +
       (e.mien ? ' title="Bài này không tính cho em"' : '') + '>' +
       '<span class="lb-rank">' + hang + '</span>' +
       '<span class="lb-name">' + tenTat(e.ten) + '</span>' +
-      '<span class="lb-score">' + (e.mien ? '–' : (e.chua ? '—' : Math.round(e.tho.diem))) + '</span>' +
+      '<span class="lb-score">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +
       '<span class="lb-time">' + (e.chua ? '' : chuGiay(e.giay)) + '</span>' +
     '</div>';
   }).join('');
@@ -5915,6 +5905,7 @@ A.napDuLieu().then(function(dl){
   // v1.82.0 — HS đặc biệt: CA_LOP RỖNG, giống hệt lý do ở lop.html.
   CA_LOP = LA_DAC_BIET ? [] : A.caLopDayDu(l);
   CA_LOP_TINH = CA_LOP;
+  KHONG_TINH = [];
   TAT = bangVietTat(CA_LOP);
   // v1.82.0 — sidebar RÚT GỌN, dựng lại NGAY khi biết cờ (lượt đầu ở top-level luôn
   // là menu đầy đủ vì chạy trước khi có EM) — xem `veMenuChinh` bên dưới.
@@ -5941,7 +5932,10 @@ A.napDuLieu().then(function(dl){
      chờ một em không thuộc bài ⇒ chặng mở ở trang lớp mà không mở ở trang bài.
      ⭐ v1.135.0 — chỉ `CA_LOP_TINH` bị trừ; `CA_LOP` (leaderboard/viết tắt/avatar) giữ TRỌN
      lớp, em không tính hiện chữ xám cuối bảng (`mien`, xem `xepBang`). */
-  if (!LA_DAC_BIET) { CA_LOP_TINH = A.caLopCuaBai(l, BAI); }
+  if (!LA_DAC_BIET) {
+    CA_LOP_TINH = A.caLopCuaBai(l, BAI);
+    KHONG_TINH = A.emKhongTinh(l, BAI).map(function(x){ return x.ten; });
+  }
 
   /* Bài dạng SP SLIDE có trang riêng — vào nhầm thì chuyển sang đó. */
   var trang = A.trangCuaBai(BAI);

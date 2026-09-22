@@ -408,6 +408,8 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
 .xh-dong.co .xh-ten{color:var(--ink)}
 .xh-dong.chua .xh-ten{color:#D93B40}
 .xh-dong.chua .xh-diem,.xh-dong.chua .xh-giay{color:#C9A3A4}
+/* v1.136.0 — em KHÔNG TÍNH ở bài này: xám toàn dòng, luôn nằm cuối bảng */
+.xh-dong.mien .xh-ten,.xh-dong.mien .xh-diem,.xh-dong.mien .xh-giay,.xh-dong.mien .xh-hang{color:#9AA7A2}
 @keyframes hao-quang-ten-pop{
   0%,100%{text-shadow:0 0 8px rgba(243,178,27,.30), 0 0 18px rgba(243,178,27,.14)}
   50%    {text-shadow:0 0 10px rgba(247,196,60,.75), 0 0 22px rgba(243,178,27,.50)}
@@ -709,7 +711,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=105"></script>
+<script src="config.js?v=106"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <script src="js/vi-qua.js?v=3"></script>
@@ -751,6 +753,7 @@ var LOP_DL = '';         /* mã khóa trong lop.json/bai.json, vd "NNTNGK9" */
 var MA_HS = '';
 var KHOA = null;         /* bản ghi khóa học ({maLop,tenGoc,hocSinh,loai:'khoa'}) */
 var CA_LOP = [];         /* tên cả khóa (những em cùng theo khóa này) */
+var LOP_OBJ = null;      /* v1.136.0 — đối tượng khóa (cần cho `A.emKhongTinh`) */
 var SI_SO = 0;
 var DIEM = {}, CHUAN = {};   /* mã act -> danh sách điểm / chuẩn đủ điểm */
 var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
@@ -1132,18 +1135,13 @@ function chuGiayPop(g){
 }
 /* Xếp hạng một act trong khóa: có điểm lên trước (điểm cao, rồi nhanh hơn), chưa làm
    dồn xuống cuối. Cùng luật với leaderboard trang bài. */
+/* ⭐ v1.136.0 — gọi thẳng `A.xepHangAct` (luật xếp hạng DUY NHẤT của cả bốn bảng). Khóa học
+   không có luật "vào lớp sau ngày giao", nhưng thầy vẫn ✕ bỏ qua được một em ở một lesson. */
+function khongTinhPop(){
+  return POP.b ? A.emKhongTinh(LOP_OBJ, POP.b).map(function(x){ return x.ten; }) : [];
+}
 function xepActPop(ma){
-  var ds = (DIEM[ma] || []).filter(function(e){
-    return CA_LOP.some(function(t){ return A.khoaTen(t) === A.khoaTen(e.ten); });
-  }).slice().sort(function(a, b){
-    if (a.diem !== b.diem) return b.diem - a.diem;
-    return (a.giay || 0) - (b.giay || 0);
-  });
-  var daCo = {};
-  ds.forEach(function(e){ daCo[A.khoaTen(e.ten)] = 1; });
-  var chua = CA_LOP.filter(function(t){ return !daCo[A.khoaTen(t)]; })
-    .map(function(t){ return { ten: t, chua: true }; });
-  return ds.concat(chua);
+  return A.xepHangAct(DIEM[ma] || [], CA_LOP, khongTinhPop());
 }
 function vachActPop(k, phu){
   return '<span class="doi-vach"><span class="line"></span><span class="lb">' +
@@ -1152,17 +1150,18 @@ function vachActPop(k, phu){
 }
 function veCotActPop(k){
   var ds = xepActPop(k.ma);
-  var daLam = ds.filter(function(e){ return !e.chua; }).length;
+  var daLam = ds.filter(function(e){ return !e.chua && !e.mien; }).length;
   var c = CHUAN[k.ma];
   var moc = (c && !c.tru) ? c.dinh : 0;
   var toi = A.khoaTen(TOI);
   var hang = ds.map(function(e, i){
-    var full = !e.chua && e.diem >= moc;
+    // v1.136.0 — em `mien` (thầy ✕ ở lesson này): xám, không hạng, điểm vẫn hiện.
+    var full = !e.chua && !e.mien && e.diem >= moc;
     var huy = full && i < 3;
-    var lop = e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'));
+    var lop = e.mien ? 'mien' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
     if (A.khoaTen(e.ten) === toi) lop += ' toi';
-    return '<span class="xh-dong ' + lop + '">' +
-      '<span class="xh-hang">' + (e.chua ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
+    return '<span class="xh-dong ' + lop + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
+      '<span class="xh-hang">' + ((e.chua || e.mien) ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
       '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
       '<span class="xh-diem">' + (e.chua ? '—' : Math.round((e.tho && e.tho.diem) || e.diem)) + '</span>' +
       '<span class="xh-giay">' + (e.chua ? '' : chuGiayPop(e.giay)) + '</span></span>';
@@ -1453,7 +1452,8 @@ A.napDuLieu().then(function(dl){
   KHOA = l;
   LOP = l.tenGoc || EM.lop;
   LOP_SLUG = avSlugLop(LOP);
-  CA_LOP = (l.hocSinh || []).map(function(h){ return h.ten; });
+  LOP_OBJ = l;
+  CA_LOP = A.caLopDayDu(l);
   SI_SO = CA_LOP.length;
   A.batAvatarKho(LOP, l.hocSinh || [], l.hsDb || []);
 

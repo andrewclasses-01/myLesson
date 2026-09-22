@@ -1095,6 +1095,8 @@ body.mo-menu .side.trai{transform:none}
 .xh-dong.co .xh-ten{color:var(--ink)}
 .xh-dong.chua .xh-ten{color:#D93B40}
 .xh-dong.chua .xh-diem,.xh-dong.chua .xh-giay{color:#C9A3A4}
+/* v1.136.0 — em KHÔNG TÍNH ở bài này: xám toàn dòng, luôn nằm cuối bảng */
+.xh-dong.mien .xh-ten,.xh-dong.mien .xh-diem,.xh-dong.mien .xh-giay,.xh-dong.mien .xh-hang{color:#9AA7A2}
 /* Em đang giữ cả lớp lại: tên to hơn, nền đỏ, nhấp nháy — cùng nhịp với thẻ. */
 .xh-dong.cham{background:#FDECEC}
 .xh-dong.cham .xh-ten{color:#D93B40; font-size:15px;
@@ -1637,7 +1639,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=105"></script>
+<script src="config.js?v=106"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -1823,9 +1825,14 @@ function theTuBai(b){
   /* ⭐⭐ v1.95.0 — SĨ SỐ RIÊNG CỦA BÀI NÀY: bỏ em vào lớp sau ngày giao (xem chú thích
      `LOP_OBJ`). HS đặc biệt: rỗng, y hệt `CA_LOP` của phiên đó. */
   var caLop = LA_DAC_BIET ? [] : A.caLopCuaBai(LOP_OBJ, b);
+  var caLopDu = LA_DAC_BIET ? [] : A.caLopDayDu(LOP_OBJ);
+  var khongTinh = LA_DAC_BIET ? [] : A.emKhongTinh(LOP_OBJ, b).map(function(x){ return x.ten; });
   return {
     id: b.id,
     caLop: caLop,
+    /* v1.136.0 — TRỌN lớp + tên em không tính: pop-up kết quả vẫn hiện các em ấy (xám, cuối). */
+    caLopDu: caLopDu,
+    khongTinh: khongTinh,
     /* v1.135.0 — sĩ số thẻ = em ĐANG TÍNH: trừ cả em vào lớp sau ngày giao (từ v1.95.0)
        lẫn em thầy bấm ✕ bỏ qua trên dashboard (mới). Trước đây em bị ✕ vẫn nằm trong mẫu
        số nên thanh không bao giờ đầy dù thầy đã bỏ qua em — trái với chính câu chữ trong
@@ -2599,26 +2606,16 @@ function chuGiayPop(g){
 /* Xếp hạng một act: em có điểm lên trước (điểm cao, rồi nhanh hơn), em chưa
    làm dồn xuống cuối. Cùng luật với leaderboard trang bài. */
 /* v1.95.0 — `caLop` = danh sách riêng của THẺ (em vào lớp sau ngày giao không có mặt). */
-function xepActPop(ma, caLop){
-  caLop = caLop || CA_LOP;
-  var ds = (DIEM_ACT[ma] || []).filter(function(e){
-    return caLop.some(function(t){ return A.khoaTen(t) === A.khoaTen(e.ten); });
-  }).slice().sort(function(a, b){
-    if (a.diem !== b.diem) return b.diem - a.diem;
-    return (a.giay || 0) - (b.giay || 0);
-  });
-  var daCo = {};
-  ds.forEach(function(e){ daCo[A.khoaTen(e.ten)] = 1; });
-  var chua = caLop.filter(function(t){ return !daCo[A.khoaTen(t)]; })
-    .map(function(t){ return { ten: t, chua: true }; });
-  return ds.concat(chua);
+/* ⭐ v1.136.0 — gọi thẳng `A.xepHangAct` (luật xếp hạng DUY NHẤT của cả bốn bảng). */
+function xepActPop(ma, caLopDu, khongTinh){
+  return A.xepHangAct(DIEM_ACT[ma] || [], caLopDu || CA_LOP, khongTinh || []);
 }
 
-function veCotActPop(a, moAct, cham, caLop, siSo){
+function veCotActPop(a, moAct, cham, caLop, siSo, caLopDu, khongTinh){
   caLop = caLop || CA_LOP;
   if (siSo == null) siSo = caLop.length;
-  var ds = xepActPop(a.ma, caLop);
-  var daLam = ds.filter(function(e){ return !e.chua; }).length;
+  var ds = xepActPop(a.ma, caLopDu || caLop, khongTinh);
+  var daLam = ds.filter(function(e){ return !e.chua && !e.mien; }).length;
   var c = CHUAN_ACT[a.ma];
   var moc = (c && !c.tru) ? c.dinh : 0;
   var vach = '<span class="doi-vach"><span class="line"></span><span class="lb">' +
@@ -2630,12 +2627,13 @@ function veCotActPop(a, moAct, cham, caLop, siSo){
       '<div class="pop-trong">Chặng này chưa tới lượt.</div></div>';
   }
   var hang = ds.map(function(e, i){
-    var full = !e.chua && e.diem >= moc;
+    // v1.136.0 — em `mien` (không tính ở bài này): xám, không hạng, điểm vẫn hiện.
+    var full = !e.chua && !e.mien && e.diem >= moc;
     var huy = full && i < 3;
-    var laCham = cham.indexOf(A.khoaTen(e.ten)) >= 0;
-    var lop = laCham ? 'cham' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
-    return '<span class="xh-dong ' + lop + '">' +
-      '<span class="xh-hang">' + (e.chua ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
+    var laCham = !e.mien && cham.indexOf(A.khoaTen(e.ten)) >= 0;
+    var lop = e.mien ? 'mien' : (laCham ? 'cham' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co'))));
+    return '<span class="xh-dong ' + lop + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
+      '<span class="xh-hang">' + ((e.chua || e.mien) ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
       '<span class="xh-ten">' + A.chuAnToan(tenTat(e.ten)) + '</span>' +
       '<span class="xh-diem">' + (e.chua ? '—' : Math.round((e.tho && e.tho.diem) || e.diem)) + '</span>' +
       '<span class="xh-giay">' + (e.chua ? '' : chuGiayPop(e.giay)) + '</span></span>';
@@ -2671,7 +2669,7 @@ function vePopChang(){
   $('#popKhung').style.setProperty('--so-cot', Math.max(1, c.acts.length));
   $('#popDs').classList.add('ngang');
   $('#popDs').innerHTML = c.acts.map(function(a){
-    return veCotActPop(a, c.mo, cham, popChangB.caLop, popChangB.siSo);
+    return veCotActPop(a, c.mo, cham, popChangB.caLop, popChangB.siSo, popChangB.caLopDu, popChangB.khongTinh);
   }).join('');
 }
 
@@ -2690,7 +2688,7 @@ function moPopChiTiet(b){
   $('#popKhung').style.setProperty('--so-cot', acts.length);
   $('#popDs').classList.add('ngang');
   $('#popDs').innerHTML = acts.map(function(a){
-    return veCotActPop(a, true, [], b.caLop, b.siSo);
+    return veCotActPop(a, true, [], b.caLop, b.siSo, b.caLopDu, b.khongTinh);
   }).join('');
   $('#popNen').classList.add('mo');
 }

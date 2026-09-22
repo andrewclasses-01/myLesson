@@ -676,9 +676,6 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .td-sheet-ten{grid-column:2 / -1; font:700 11px var(--sans); color:var(--muted);
   text-align:left; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; display:flex; align-items:center; gap:6px; min-width:0}
 /* ⭐ v1.120.0 — huy hiệu ĐÃ NỘP x/N của em trên hàng SHEET */
-.td-nop{flex:none; margin-left:auto; font:800 9.5px/1 var(--sans); padding:3px 7px; border-radius:99px; background:#EEF1F3; color:var(--muted)}
-.td-nop.du{background:var(--accent-soft); color:var(--accent)}
-.td-nop.mot-phan{background:var(--amber-soft); color:#9A6A12}
 i.m-do{background:var(--m-do)}      i.m-cam{background:var(--m-cam)}
 i.m-vang{background:var(--m-vang)}  i.m-duong{background:var(--m-duong)}
 i.m-la{background:var(--m-la)}
@@ -1640,8 +1637,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=97"></script>
-<script src="js/chung.js?v=56"></script>
+<script src="config.js?v=98"></script>
+<script src="js/chung.js?v=57"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1874,9 +1871,11 @@ function theTuBai(b){
       // để `veDiem()` vẽ khác; KHÔNG có `ma` nên `donDiem()` tự bỏ qua (đúng
       // luật `if (!x.ma) return;` đã có sẵn cho dòng giả SP CHECK).
       : acts.map(function(k){ return { ten:k.ten, ma:k.ma, xong:0 }; })
-          .concat(A.wsCuaBai(b).map(function(k, j){
-            /* ⭐ v1.120.0 — mang `o`/`soTrang` để hàng SHEET in "ĐÃ NỘP x/N" của em (`napNopSheet`). */
-            return { ten:k.ten, ws:true, baiId:b.id, o:(k.o != null && +k.o >= 0) ? +k.o : j, soTrang:Math.max(1, +k.soTrang || 1) };
+          .concat(A.wsCuaBai(b).map(function(k){
+            /* ⭐ v1.130.0 (22/09/2026, thầy chốt) — BỎ huy hiệu "ĐÃ NỘP x/N" trên thẻ: mọi thẻ
+               HS chỉ còn dòng SHEET (khớp dashboard); số nộp của em vẫn thấy ở trang bài
+               (bai.html). Đỡ luôn 1 lượt đọc kho `lessonNop` mỗi ô sheet mỗi lần mở trang. */
+            return { ten:k.ten, ws:true };
           })),
     /* ⭐ v1.76.0 — DẠNG BÀI STAGE: giữ chính bài gốc để `veDiem()` tính chặng
        (cần `khoi[].han`). Chỉ bật khi thật sự có act mang hạn riêng. */
@@ -2052,8 +2051,14 @@ function veDiemStage(b, batDo, hienThieu){
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
     '</span>';
   }).join('');
+  /* ⭐ v1.130.0 (22/09/2026, thầy chốt) — HÀNG SHEET trên thẻ STAGE (trước đây THIẾU HẲN, chỉ
+     thẻ thường có): chỉ worksheet THUỘC CHẶNG ĐANG MỞ + worksheet chưa xếp chặng — luật chung
+     `A.wsHienCuaThe` (dashboard dùng đúng hàm đó). Luôn đứng SAU CÙNG; đếm vào `n{N}` để cỡ
+     avatar/khoảng cách hàng tính đúng như dashboard. */
+  var sheets = A.wsHienCuaThe(b.goc, cac);
+  thanh += sheets.map(function(s){ return dongSheet(s.ten); }).join('');
 
-  var lopSo = ' n' + Math.max(1, c.acts.length);
+  var lopSo = ' n' + Math.max(1, c.acts.length + sheets.length);
   /* ⭐ v1.94.7 — bỏ điều kiện "chỉ hiện khi chặng ĐÃ QUÁ HẠN" (`c.tt==='ket'`):
      `c.thieu` được `A.xetChang` tính cho MỌI chặng (kể cả đang chạy), nên hiện
      luôn miễn còn em chưa xong — cùng luật với thẻ thường (thầy chốt). */
@@ -2084,30 +2089,13 @@ function veDiemStage(b, batDo, hienThieu){
    phách bị từ chối). Tên worksheet bắt đầu ĐÚNG cột thanh tiến trình bắt đầu
    (`.td-sheet-ten`, `grid-column:2/-1`, xem CSS) — căn trái, không thanh/số.
    ⛔ Bản chép của hàm này ở `dashboard.html` (`dongSheet`) — sửa là sửa cả hai. */
-function dongSheet(ten, x){
-  /* ⭐ v1.120.0 — huy hiệu "ĐÃ NỘP x/N" của CHÍNH EM (đổ sau bằng `napNopSheet`, 1 lượt get/ô). */
-  var nop = (x && x.baiId != null)
-    ? '<span class="td-nop" data-nop="' + A.chuAnToan(x.baiId) + '|' + x.o + '|' + x.soTrang + '">…</span>' : '';
+function dongSheet(ten){
+  /* ⭐ v1.130.0 (thầy chốt 22/09) — BỎ huy hiệu "ĐÃ NỘP x/N" (`napNopSheet`/`NOP_DA_DOC` đã gỡ):
+     thẻ HS chỉ còn tên sheet. Dashboard cũng hàng này nhưng thêm SỐ EM đã nộp (chỉ thầy). */
   return '<span class="td-dong">' +
       '<span class="td-ten">SHEET</span>' +
-      '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + nop + '</span>' +
+      '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + '</span>' +
     '</span>';
-}
-/* ⭐ v1.120.0 — đổ số trang em đã nộp vào từng huy hiệu `.td-nop` (kho `lessonNop`, `A.nopBai.doc`). */
-var NOP_DA_DOC = {};
-function napNopSheet(){
-  if (!MA_HS || !A.nopBai) return;
-  document.querySelectorAll('.td-nop[data-nop]').forEach(function(el){
-    var p = el.dataset.nop.split('|'), baiId = p[0], o = +p[1], n = +p[2] || 1;
-    var khoa = baiId + '|' + o;
-    var xong = function(d){
-      var da = d ? Object.keys(d.trang || {}).filter(function(k){ return d.trang[k] && d.trang[k].url; }).length : 0;
-      el.textContent = 'ĐÃ NỘP ' + da + '/' + n;
-      el.className = 'td-nop ' + (da >= n ? 'du' : (da ? 'mot-phan' : 'chua'));
-    };
-    if (NOP_DA_DOC[khoa]) return xong(NOP_DA_DOC[khoa].d);
-    A.nopBai.doc(LOP_DL, baiId, o, MA_HS).then(function(d){ NOP_DA_DOC[khoa] = { d: d }; xong(d); });
-  });
 }
 
 function veDiem(b, batDo, hienThieu){
@@ -2119,7 +2107,7 @@ function veDiem(b, batDo, hienThieu){
       + thanhDb + '</span>';
   }
   var thanh = (b.bai || []).map(function(x){
-    if (x.ws) return dongSheet(x.ten, x);   // ⭐ v1.105.0 — hàng SHEET, xem `dongSheet()`
+    if (x.ws) return dongSheet(x.ten);   // ⭐ v1.105.0 — hàng SHEET, xem `dongSheet()`
     var pt = Math.min(100, Math.round(x.xong / b.siSo * 100));   /* v1.95.0 — sĩ số riêng */
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
@@ -2940,6 +2928,24 @@ function nhipDongHo(){
     e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
   });
   A.nhipNghi(document);          /* ⭐ v1.48.0 — đồng hồ của thẻ "không giao bài" */
+  nhipKhucCho();                 /* ⭐ v1.130.0 — khúc "OPEN IN" của thẻ STAGE */
+}
+/* ⭐ v1.130.0 (22/09/2026) — VÁ LỖI CŨ: `veThanhChangThe` in "STAGE 2: OPEN IN …" từ v1.76.0
+   nhưng KHÔNG AI cập nhật `.kc-dh` ở trang này (chỉ bai.html có `nhipKhucCho`) ⇒ đứng "…" mãi.
+   Nay đếm lùi h:mm:ss; tới giờ thì VẼ LẠI CỘT MỘT LẦN để chặng mới bung ra (chặn lặp bằng mốc
+   60 giây — lỡ trạng thái không đổi thì không vẽ lại liên tục mỗi giây). */
+var KC_VE_LAI_LUC = 0;
+function nhipKhucCho(){
+  var o = document.querySelectorAll('.kc-dh[data-moc]');
+  if (!o.length) return;
+  var can = false;
+  for (var i = 0; i < o.length; i++) {
+    var con = +o[i].getAttribute('data-moc') - Date.now();
+    if (con <= 0) { o[i].textContent = '0:00:00'; can = true; continue; }
+    var sg = Math.floor(con / 1000);
+    o[i].textContent = Math.floor(sg / 3600) + ':' + ('0' + Math.floor((sg % 3600) / 60)).slice(-2) + ':' + ('0' + (sg % 60)).slice(-2);
+  }
+  if (can && Date.now() - KC_VE_LAI_LUC > 60000) { KC_VE_LAI_LUC = Date.now(); try { dungCot(); } catch (e) {} }
 }
 function chayDongHo(){
   clearInterval(HEN_DH);
@@ -3126,7 +3132,6 @@ function dungCot(){
     };
   });
   canhNhanO();
-  napNopSheet();   /* ⭐ v1.120.0 — ĐÃ NỘP x/N trên hàng SHEET */
   henVeLaiAvatar($('#cotBai'));  /* ⭐ 02/09 — đo cỡ + xếp chỗ avatar trên thanh đội */
   /* ⭐ v1.48.0 — sân chơi của thẻ nghỉ (bóng bay + trò khủng long).
      ⛔ Ảnh avatar lấy theo `LOP` (TÊN GỐC "B2-B"), KHÔNG phải `LOP_DL` ("B2B") —

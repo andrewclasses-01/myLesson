@@ -671,6 +671,10 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .bm-bt-mau{font:600 10.5px/1.4 var(--font); color:var(--nhat); letter-spacing:.02em}
 .bm-bt-mau code{font:600 10.3px var(--mono); color:var(--mo)}
 .bm-bt-hang .tien{margin-left:auto; flex:none}
+.bm-ws-hang .bm-bt-so{width:auto; font:800 10.5px var(--font); letter-spacing:.04em; color:var(--xanh)}
+.bm-nop-xem{border:1.5px solid var(--line); background:var(--the); color:var(--xanh); font:800 11px var(--font);
+  padding:6px 10px; border-radius:9px; cursor:pointer}
+.bm-nop-xem:hover{background:rgba(14,124,110,.08)}
 .tay-dong{margin:10px 0 0; padding:9px 12px; border-radius:10px;
   background:var(--vang-nhat); color:#8a5b0e; font-size:12.5px}
 /* ============================================================================
@@ -1133,8 +1137,12 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .thieu-vach{flex:none; width:0; border-left:1.5px dashed var(--line); margin:9px 0}
 .the-diem.st .thieu-ic{gap:6px}
 .the-diem.st .thieu-ic .tic{width:19px; height:19px; font-size:7.5px}
-.diem-rows{flex:1; min-width:0; overflow:hidden; padding:9px 14px 12px 12px;
+/* ⭐ v1.130.0 — hết cột icon: lề trái 20px như `.the-diem` lop.html; có cột avatar thiếu bài
+   (`.co-thieu`) thì 12px sau vạch, y `.khoi-thanh` bên đó. Thẻ NGHỈ vẫn còn `.diem-ic` riêng. */
+.diem-rows{flex:1; min-width:0; overflow:hidden; padding:9px 14px 12px 20px;
   display:flex; flex-direction:column; justify-content:center; gap:5px}
+.the-diem.co-thieu .diem-rows{padding-left:12px}
+.st-khuc .kc-dh{font-variant-numeric:tabular-nums}
 .the-diem.chi-tay .diem-rows{justify-content:center; text-align:center; color:var(--mo); font-size:12px}
 /* ⭐ v1.88.0 (10/09/2026) — THẺ WORKSHEET (ONLY WSHEET) — CHÉP Y khối này bên
    lop.html (`.ws-*`), hai trang một khối <style> riêng, sửa một bên phải sửa
@@ -1364,7 +1372,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 @media (prefers-reduced-motion:reduce){ .the.khoa-hoc .t-ten{animation:none; background-position:0 0} }
 .the.khoa-hoc .t-chude{font:600 13.4px/1.4 var(--mono); color:var(--mo); letter-spacing:.01em;
   white-space:normal; overflow-wrap:break-word}
-.the.khoa-hoc .diem-rows{justify-content:space-around; gap:4px; padding:8px 10px 11px 12px}
+.the.khoa-hoc .diem-rows{justify-content:space-around; gap:4px; padding:8px 10px 11px 20px}   /* v1.130.0 — hết cột icon: lề trái 20px y khoa.html */
 .the.khoa-hoc .td-dong{grid-template-columns:minmax(0,46px) minmax(60px,1fr) minmax(30px,auto) 16px;
   column-gap:8px; min-height:0}
 .the.khoa-hoc .td-ten{font-size:11px; line-height:1.3}
@@ -1572,6 +1580,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .bm-dong{flex:none; width:32px; height:32px; border-radius:9px; border:0;
   background:transparent; color:var(--nhat); display:flex; align-items:center; justify-content:center}
 .bm-dong:hover{background:var(--do-nhat); color:var(--do)}
+.bm-caidat:hover{background:rgba(14,124,110,.1); color:var(--xanh)}
+.bm-caidat svg{fill:none; stroke-width:2.1; stroke-linejoin:round}
 .bm-dong svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round}
 .bm-than{flex:1; overflow-y:auto; padding:16px 18px}
 .bm-baiten{font:800 14px/1.3 var(--font); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -2168,6 +2178,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
     <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
     <div class="bm-bai-tag" id="bmBaiTag"></div>
+    <!-- ⭐ v1.130.0 — nút ⚙ Cài đặt bài (Đổi hạn / Ẩn / Tạm khoá / Xoá) dời từ thẻ vào đây;
+         `data-rail-caidat` gán lúc mở hộp (`moBaiModal`) → đi chung tay bắt `moRcMenu`. -->
+    <button class="bm-dong bm-caidat" id="bmCaiDat" title="Cài đặt bài (đổi hạn · ẩn · tạm khoá · xoá)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/><path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg>
+    </button>
     <button class="bm-dong" id="bmDong" title="Đóng">
       <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
@@ -2301,8 +2316,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=97"></script>
-<script src="js/chung.js?v=56"></script>
+<script src="config.js?v=98"></script>
+<script src="js/chung.js?v=57"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -3241,7 +3256,20 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ v1.36.0 — BỎ ô "Hạn riêng cho thẻ này" khỏi hộp xem bài (thầy chốt
     // 02/09: đổi hạn phải là một hộp nhỏ riêng). Đường duy nhất nay là
     // ⚙ Cài đặt thẻ → Đổi hạn nộp → `#hanPop`.
-    var noiDung = act + tay + em;
+    /* ⭐ v1.130.0 (tạm, đợt 2 sẽ thiết kế lại hộp) — BÀI NỘP SHEET: mỗi ô worksheet một dòng
+       "SHEET · tên · N em nộp · Xem" (mở pop-up ảnh nộp `moPopNop` — trước đây bấm hàng SHEET
+       trên thẻ). Số em đổ sau bằng `napNopHop()`. */
+    var nopWs = A.wsHienCuaThe(b, null);
+    var sheetHop = nopWs.length
+      ? '<div class="bm-khoi-dau"><span class="bm-khoi-nhan">Bài nộp sheet</span></div>' +
+        '<div class="bm-bt-box"><div class="bm-bt-rows">' + nopWs.map(function (w) {
+          return '<div class="bm-bt-hang bm-ws-hang"><span class="bm-bt-so">SHEET</span>' +
+            '<span class="bm-bt-chu"><span class="bm-bt-ten">' + A.chuAnToan(w.ten) + '</span>' +
+            '<span class="bm-bt-mau">' + w.soTrang + ' trang · <b class="bm-nop-so" data-bm-nop-so="' + A.chuAnToan(b.id) + '|' + w.o + '">…</b></span></span>' +
+            '<button type="button" class="tien bm-nop-xem" data-bm-nop="' + A.chuAnToan(b.id) + '|' + w.o + '">Xem bài nộp</button></div>';
+        }).join('') + '</div></div>'
+      : '';
+    var noiDung = act + tay + sheetHop + em;
 
     // ⭐ v1.116.0/v1.117.0 — thẻ khóa học (có `b.baiGiang`) hoặc thẻ DICTS (có
     // khối nghe) thêm CỘT TRÁI "Thời lượng" — xem `veVideoColDb()`/`veNgheColDb()`
@@ -3470,8 +3498,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function dongSheet(ten, s, t, j) {
     /* ⭐ v1.120.0 — hàng SHEET: số em ĐÃ NỘP ẢNH (đổ sau bằng `napNopBai`), bấm = pop-up xem ảnh. */
     var o = (s && s.o != null && +s.o >= 0) ? +s.o : (j || 0);
-    var nop = t ? '<span class="td-nop" data-nop="' + A.chuAnToan(t.bai.id) + '|' + o + '|' + (Math.max(1, +(s && s.soTrang) || 1)) + '|' + t.siSo + '">…</span>' : '';
-    return '<span class="td-dong td-dong-ws" data-ws="' + (t ? A.chuAnToan(t.bai.id) + '|' + o : '') + '">' +
+    /* ⭐ v1.130.0 (thầy chốt 22/09) — chỉ SỐ EM ĐÃ NỘP (không "/sĩ số", không chữ "em"), 0 thì để
+       trống. Bấm hàng SHEET nay = bấm vùng điểm (bảng xếp hạng) — xem ảnh nộp ở HỘP QUẢN LÝ BÀI. */
+    var nop = t ? '<span class="td-nop" data-nop="' + A.chuAnToan(t.bai.id) + '|' + o + '|' + (Math.max(1, +(s && s.soTrang) || 1)) + '|' + t.siSo + '"></span>' : '';
+    return '<span class="td-dong td-dong-ws">' +
         '<span class="td-ten">SHEET</span>' +
         '<span class="td-sheet-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(ten) + nop + '</span>' +
       '</span>';
@@ -3502,14 +3532,26 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   function demEmNop(ds) {
     return ds.filter(function (d) { return Object.keys(d.trang || {}).some(function (k) { return d.trang[k] && d.trang[k].url; }); }).length;
   }
+  // ⭐ v1.130.0 — số em nộp trong HỘP QUẢN LÝ BÀI ("N em nộp"); cùng kho 60 giây với thẻ.
+  function napNopHop() {
+    document.querySelectorAll('.bm-nop-so[data-bm-nop-so]').forEach(function (el) {
+      var p = el.dataset.bmNopSo.split('|');
+      docNopBai(p[0], +p[1]).then(function (ds) {
+        el.textContent = demEmNop(ds) + ' em nộp';
+      })['catch'](function (e) {
+        var ma = String((e && (e.code || e.message)) || '');
+        el.textContent = ma.indexOf('permission') >= 0 ? '🔐 cần phiên thầy' : 'chưa đọc được';
+      });
+    });
+  }
   function napNopBai() {
     document.querySelectorAll('.td-nop[data-nop]').forEach(function (el) {
       var p = el.dataset.nop.split('|'), baiId = p[0], o = +p[1], siSo = +p[3] || 0;
       docNopBai(baiId, o).then(function (ds) {
         var n = demEmNop(ds);
-        el.textContent = n + '/' + siSo + ' em';
+        el.textContent = n ? String(n) : '';   // v1.130.0 — chỉ số, 0 thì trống
         el.className = 'td-nop ' + (siSo && n >= siSo ? 'du' : (n ? 'mot-phan' : 'chua'));
-        el.title = n + ' em đã nộp ảnh — bấm để xem';
+        el.title = n + ' em đã nộp ảnh — xem trong hộp quản lý bài';
       })['catch'](function (e) {
         var ma = String((e && (e.code || e.message)) || '');
         el.textContent = ma.indexOf('permission') >= 0 ? '🔐' : '?';
@@ -3628,6 +3670,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
         if (c.tt === 'xong') chu += ': COMPLETED';
         else if (c.tt === 'dang') chu += ': IN PROGRESS';
         else if (c.tt === 'ket') chu += ': OVERDUE';
+        /* ⭐ v1.130.0 (thầy chốt 22/09) — khúc CHỜ MỞ đếm lùi "OPEN IN h:mm:ss" y trang lớp (`nhipKhucCho`). */
+        else if (c.tt === 'cho') chu += ': OPEN IN <b class="kc-dh" data-moc="' + (c.moLuc || 0) + '">…</b>';
         return '<span class="st-khuc ' + lop + (i === iXem ? ' dang-xem' : '') + '">' +
           (c.tt === 'xong' ? '<span class="tick">✓</span>' : '') +
           '<span class="lbl">' + chu + '</span></span>';
@@ -3660,8 +3704,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     // ⭐ v1.105.0 — hàng SHEET LUÔN đứng SAU CÙNG (thầy chốt qua bàn thử), bất
     // kể worksheet nằm ô nào trong dãy ô act của app. Đếm chung vào `soDong`
     // để `.the-diem.n{N}` (CSS đo chỗ chứa) canh đúng chiều cao cả cụm.
-    var sheets = t.sheets || [];
-    thanh += sheets.map(function (s, j) { return dongSheet(s.ten, s, t, j); }).join('');
+    /* ⭐ v1.130.0 (22/09/2026, thầy chốt) — thẻ STAGE: chỉ sheet THUỘC CHẶNG ĐANG MỞ + sheet chưa
+       xếp chặng; thẻ thường: mọi sheet — MỘT luật `A.wsHienCuaThe`, trang lớp dùng đúng hàm đó. */
+    var sheets = A.wsHienCuaThe(t.bai, (t.stage && t.chang) ? t.chang : null);
+    thanh += sheets.map(function (s) { return dongSheet(s.ten, s.k, t, s.o); }).join('');
     var soDong = acts.length + sheets.length;
     /* Thẻ STAGE: thanh chặng đứng trên cụm thanh tiến trình, cách một nhịp. */
     if (thanhChang) {
@@ -3793,12 +3839,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           '</span>' +
           veHanCard(b, moc, st, t) +
         '</span>' +
+        /* v1.130.0 — bỏ cột icon ⚙/⊕ (xem `veTheCard`); menu ⚙ nay ở đầu hộp quản lý bài. */
         '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + '">' +
-          '<span class="diem-ic">' +
-            '<button type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
-            '<button type="button" data-rail-tam="' + id + '" title="Ô này thầy chưa gán tính năng">' + IC_TAM_NHO + '</button>' +
-          '</span>' +
-          '<span class="diem-vach"></span>' +
           '<span class="diem-rows">' + ruot + '</span>' +
         '</span>' +
         '<span class="play">' + (ttThe === 'khoa'
@@ -3864,13 +3906,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
           )) +
           veHanCard(b, moc, st, t) +
         '</span>' +
-        '<span class="the-diem ' + diem.cls + (laWs ? ' ws-diem' : '') + '">' +
-          '<span class="diem-ic">' +
-            '<button type="button" data-rail-caidat="' + id + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button>' +
-            /* v1.95.0 — icon TẠM (chưa gán việc) thay 🏆; WORKSHEET vẫn không có ô này như trước. */
-            (laWs ? '' : '<button type="button" data-rail-tam="' + id + '" title="Ô này thầy chưa gán tính năng">' + IC_TAM_NHO + '</button>') +
-          '</span>' +
-          '<span class="diem-vach"></span>' +
+        /* ⭐ v1.130.0 (22/09/2026, thầy chốt) — BỎ CỘT ICON ⚙/⊕ trên thẻ (khớp thẻ trang lớp);
+           menu ⚙ dời lên đầu HỘP QUẢN LÝ BÀI (nút `#bmCaiDat`, cùng `data-rail-caidat`).
+           `co-thieu` để CSS bỏ lề trái như lop.html khi có cột avatar thiếu bài. */
+        '<span class="the-diem ' + diem.cls + (laWs ? ' ws-diem' : '') + (railThieu ? ' co-thieu' : '') + '">' +
           railThieu +
           '<span class="diem-rows">' + (laWs ? wsNhac(b) : diem.html) + '</span>' +
         '</span>' +
@@ -4718,6 +4757,22 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
     });
     A.nhipNghi(document);          // ⭐ v1.48.0 — đồng hồ của thẻ "không giao bài"
+    nhipKhucCho();                 // ⭐ v1.130.0 — khúc "OPEN IN" của thẻ STAGE
+  }
+  // ⭐ v1.130.0 — đếm lùi "OPEN IN h:mm:ss" trên khúc chặng chờ mở (y lop.html `nhipKhucCho`);
+  // tới giờ thì vẽ lại khu thẻ MỘT LẦN (chặn lặp 60 giây) để chặng mới bung ra.
+  var KC_VE_LAI_LUC = 0;
+  function nhipKhucCho() {
+    var o = document.querySelectorAll('.kc-dh[data-moc]');
+    if (!o.length) return;
+    var can = false;
+    for (var i = 0; i < o.length; i++) {
+      var con = +o[i].getAttribute('data-moc') - Date.now();
+      if (con <= 0) { o[i].textContent = '0:00:00'; can = true; continue; }
+      var sg = Math.floor(con / 1000);
+      o[i].textContent = Math.floor(sg / 3600) + ':' + ('0' + Math.floor((sg % 3600) / 60)).slice(-2) + ':' + ('0' + (sg % 60)).slice(-2);
+    }
+    if (can && Date.now() - KC_VE_LAI_LUC > 60000) { KC_VE_LAI_LUC = Date.now(); try { veKhuThe(); } catch (e) {} }
   }
   setInterval(nhipDongHo, 1000);
 
@@ -5041,6 +5096,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     for (var i = 0; i < ds.length; i++) if (ds[i].id === id) { b = ds[i]; break; }
     if (!b) return;
     BM_ID = id;
+    $('#bmCaiDat').setAttribute('data-rail-caidat', id);   // v1.130.0 — menu ⚙ của bài này
     var t = tinhBai(b, LOP_CHON);
     // ⭐ v1.86.0 — thẻ KHÔNG bình thường thì đeo nhãn ngay trong hộp: mở từ mục KHO
     // là mở được cả thẻ ẩn/tạm khoá/đã xoá, không nói ra thì trông y hệt bài đang giao.
@@ -5060,6 +5116,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     else if (coNghe) napNgheChoModal(b, t);
     $('#bmNen').classList.add('mo');
     $('#bmHop').classList.add('mo');
+    napNopHop();   // v1.130.0 — số em nộp sheet trong hộp
   }
   function dongBaiModal() {
     $('#bmNen').classList.remove('mo');
@@ -6700,9 +6757,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
       }
       // ⭐ v1.88.0 — WORKSHEET không có điểm nào để mở bảng — vùng nhắc của nó
       // rơi xuống nhánh chung bên dưới (mở hộp quản lý bài, y hệt bấm thân thẻ).
-      // ⭐ v1.120.0 — hàng SHEET: mở pop-up bài nộp ảnh (trước nhánh vùng điểm chung).
-      var wsBtn = e.target.closest('.the[data-id] .td-dong-ws[data-ws]');
-      if (wsBtn && wsBtn.dataset.ws) { var pw = wsBtn.dataset.ws.split('|'); return void moPopNop(pw[0], +pw[1]); }
+      // ⭐ v1.130.0 — hàng SHEET không còn mở pop-up riêng (thầy chốt: như bấm vùng điểm);
+      // pop-up bài nộp nay gọi từ HỘP QUẢN LÝ BÀI (`[data-bm-nop]`).
+      var bmNop = e.target.closest('[data-bm-nop]');
+      if (bmNop) { var pw = bmNop.dataset.bmNop.split('|'); return void moPopNop(pw[0], +pw[1]); }
       var diemBtn = e.target.closest('.the[data-id]:not(.worksheet) .the-diem');
       if (diemBtn) return void moPopDiem(diemBtn.closest('.the[data-id]').dataset.id);
 

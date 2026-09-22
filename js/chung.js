@@ -1142,6 +1142,24 @@
   function wsCuaBai(b) {
     return (b.khoi || []).filter(function (k) { return k.loai === 'ws' && k.ten; });
   }
+  // ⭐ v1.130.0 (22/09/2026, thầy chốt) — WORKSHEET HIỆN TRÊN THẺ (hàng "SHEET"), MỘT LUẬT
+  // cho cả dashboard lẫn trang lớp:
+  //   · bài thường (không `cac`): mọi worksheet của bài;
+  //   · bài STAGE: chỉ worksheet THUỘC CHẶNG ĐANG MỞ (cùng `han` với chặng) + worksheet
+  //     CHƯA XẾP CHẶNG (không `han`) — y luật act: thẻ chỉ nói về chặng đang chạy.
+  // Trả về { ten, k (khối gốc), o (chỉ số ô trong dãy ws — khoá kho nộp `lessonNop`), soTrang }.
+  function wsHienCuaThe(b, cac) {
+    var tatCa = wsCuaBai(b).map(function (k, j) {
+      return { ten: k.ten, k: k, o: (k.o != null && +k.o >= 0) ? +k.o : j, soTrang: Math.max(1, +k.soTrang || 1) };
+    });
+    if (!cac || !cac.length) return tatCa;
+    var c = cac[changHien(cac)] || {};
+    var hanChang = String(c.han || '').trim();
+    return tatCa.filter(function (x) {
+      var han = String(x.k.han || '').trim();
+      return !han || han === hanChang;
+    });
+  }
 
   // ⭐ v1.116.1 (17/09/2026) — Các khối BÀI NGHE (`loai:'audio'|'nghe'`, dạng
   // DICTS) của một bài — mỗi khối mang `maNghe` (mã file mp3, dùng làm KHOÁ
@@ -2966,6 +2984,7 @@
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, ngheCuaBai: ngheCuaBai, maLesson: maLesson, tenBai: tenBai,
     tenWorksheet: tenWorksheet,   // ⭐ v1.103.0 — tiêu đề các worksheet (thẻ WORKSHEET)
+    wsHienCuaThe: wsHienCuaThe,   // ⭐ v1.130.0 — worksheet hiện trên thẻ: theo chặng đang mở
     nopBai: nopBai,               // ⭐ v1.120.0 — học sinh nộp ảnh worksheet (lessonNop + Storage)
     // ⭐ v1.76.0 — dạng bài STAGE (chia chặng)
     laBaiStage: laBaiStage, changCuaBai: changCuaBai, xetChang: xetChang,

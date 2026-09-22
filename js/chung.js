@@ -1151,10 +1151,17 @@
   //   · bài thường (không `cac`): mọi worksheet của bài;
   //   · bài STAGE: chỉ worksheet THUỘC CHẶNG ĐANG MỞ (cùng `han` với chặng) + worksheet
   //     CHƯA XẾP CHẶNG (không `han`) — y luật act: thẻ chỉ nói về chặng đang chạy.
-  // Trả về { ten, k (khối gốc), o (chỉ số ô trong dãy ws — khoá kho nộp `lessonNop`), soTrang }.
+  // Trả về { ten, k (khối gốc), o (khoá ô của kho nộp `lessonNop`), soTrang }.
+  // ⭐ `o` = `k.o` app đẩy (v2.88+); THIẾU thì lùi về VỊ TRÍ KHỐI TRONG `b.khoi` — PHẢI cùng luật
+  // với `bai.html` (`k._vt`), vì trang em nộp ghi `lessonNop/<LỚP>__<bài>__<o>__<mã>` theo số đó.
+  // 🐛 v1.133.1 (22/09/2026): trước đây lùi về chỉ số TRONG DÃY WS (0,1,2…) ⇒ bài A1B_17.9_DICTS
+  // (ws đứng SAU act "WORD PRACTICE 1", đẩy từ app cũ chưa có `o`) 5 em nộp vào ô 1 mà dashboard
+  // hỏi ô 0 ⇒ "chưa em nào nộp". Bài có ws đứng đầu (0 = 0) không lộ nên bàn thử không bắt được.
   function wsHienCuaThe(b, cac) {
-    var tatCa = wsCuaBai(b).map(function (k, j) {
-      return { ten: k.ten, k: k, o: (k.o != null && +k.o >= 0) ? +k.o : j, soTrang: Math.max(1, +k.soTrang || 1) };
+    var tatCa = [];
+    (b.khoi || []).forEach(function (k, vt) {
+      if (k.loai !== 'ws' || !k.ten) return;
+      tatCa.push({ ten: k.ten, k: k, o: (k.o != null && +k.o >= 0) ? +k.o : vt, soTrang: Math.max(1, +k.soTrang || 1) });
     });
     if (!cac || !cac.length) return tatCa;
     var c = cac[changHien(cac)] || {};

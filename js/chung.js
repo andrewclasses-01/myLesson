@@ -279,6 +279,7 @@
         TT_THE = bang.tt || {};
         // ⭐ v1.76.0 — hai bảng của dạng bài STAGE, cùng tài liệu `lessonHan`.
         BO_QUA = bang.boQua || {};
+        TINH_CA = bang.tinhCa || {};
         MO_CHANG = bang.moChang || {};
         NGHI = r[3] || {};
         // ⭐ v1.119.0 — LỚP: bản mới hơn giữa lop.json và lessonWeb/lop.
@@ -352,14 +353,23 @@
   // `myLesson-data/tai-lieu/LUAT FIRESTORE CAN DAN (07-09 THEM STAGE).md`.
   var BO_QUA = {};
   var MO_CHANG = {};
+  // ⭐ v1.135.0 (22/09/2026) — `tinhCa` = mảng TÊN em VÀO LỚP SAU NGÀY GIAO mà thầy bấm ↩
+  // "vẫn tính em này ở bài này" (ngược với `boQua`). Cùng tài liệu `lessonHan`.
+  var TINH_CA = {};
 
   function boQuaCua(b) { return BO_QUA[(b && b.id) || ''] || []; }
+  function tinhCaCua(b) { return TINH_CA[(b && b.id) || ''] || []; }
   function moChangCua(b) { return +MO_CHANG[(b && b.id) || ''] || 0; }
   /* Dashboard gọi sau khi ghi xong (cùng nếp `datHanSua`/`datTrangThai`) — không
      cập nhật bản nhớ thì thầy vừa bấm xong, vẽ lại vẫn ra số cũ suốt 60 giây. */
   function datBoQua(id, ds) {
     if (!id) return;
     BO_QUA[id] = (ds || []).slice();
+    luuDemHan();
+  }
+  function datTinhCa(id, ds) {
+    if (!id) return;
+    TINH_CA[id] = (ds || []).slice();
     luuDemHan();
   }
   function datMoChang(id, so) {
@@ -418,7 +428,7 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           // ⭐ v1.35.0 — trả HAI bảng {han, tt} thay vì một bảng hạn.
-          var ra = { han: {}, tt: {}, boQua: {}, moChang: {} };
+          var ra = { han: {}, tt: {}, boQua: {}, tinhCa: {}, moChang: {} };
           var ds = (j && j.documents) || [];
           for (var i = 0; i < ds.length; i++) {
             var f = ds[i].fields || {};
@@ -431,6 +441,13 @@
             var bq = f.boQua && f.boQua.arrayValue && f.boQua.arrayValue.values;
             if (bq && bq.length) {
               ra.boQua[id] = bq.map(function (v) {
+                return String((v && v.stringValue) || '');
+              }).filter(Boolean);
+            }
+            // v1.135.0 — `tinhCa` (đọc cùng khuôn `boQua`).
+            var tc = f.tinhCa && f.tinhCa.arrayValue && f.tinhCa.arrayValue.values;
+            if (tc && tc.length) {
+              ra.tinhCa[id] = tc.map(function (v) {
                 return String((v && v.stringValue) || '');
               }).filter(Boolean);
             }
@@ -453,7 +470,7 @@
   function luuDemHan() {
     try { sessionStorage.setItem(KHOA_HAN,
       JSON.stringify({ luc: Date.now(),
-        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, moChang: MO_CHANG } })); } catch (e) {}
+        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, tinhCa: TINH_CA, moChang: MO_CHANG } })); } catch (e) {}
   }
 
   // Chỉ nhận đúng 4 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
@@ -574,15 +591,54 @@
     var giao = ngayGiaoBai(b);
     return !giao || vao <= giao;
   }
+  /* ⭐⭐ v1.135.0 (22/09/2026, thầy chốt) — "EM KHÔNG TÍNH Ở BÀI NÀY" GỘP HAI ĐƯỜNG.
+
+     Sự cố: B1-B có 3 em vào lớp 21/9, bài giao 19/9. Thầy ĐÃ bấm ✕ bỏ qua các em từ trước
+     (kho `lessonHan.boQua` vẫn còn đủ tên), nhưng 22/9 myStudent mới đẩy `vao` lên web ⇒
+     luật `emCoMatOBai` gạch luôn các em khỏi danh sách lớp CỦA BÀI ⇒ các em BIẾN MẤT khỏi
+     lưới em, khỏi ô "Đã bỏ qua" (không còn nút ↩), khỏi tab THỜI LƯỢNG và khỏi leaderboard.
+     Thầy chốt: hai đường chỉ được làm MỘT việc — KHÔNG TÍNH vào thanh x/N và không giữ
+     chặng lại — chứ KHÔNG được xoá dấu vết em.
+
+     Từ đây:
+       `caLopDayDu(l)`    = TRỌN danh sách lớp — lưới em, THỜI LƯỢNG, leaderboard, avatar.
+       `emKhongTinh(l,b)` = [{ten, ly:'tay'|'muon', vao}] — ô "Không tính ở bài này".
+       `caLopCuaBai(l,b)` = em ĐANG TÍNH (đầy đủ trừ không tính) — x/N, "thiếu", xét chặng.
+     ⛔ `caLopCuaBai` GIỮ NGUYÊN TÊN vì 4 trang đang gọi nó cho phép ĐẾM; chỗ nào cần
+     "cả lớp để HIỆN" thì gọi `caLopDayDu`. Đổi nhầm hai cái là hoặc bêu em không thuộc bài,
+     hoặc lại làm em biến mất như lần này.
+     ⛔ So tên qua `khoaTen` (v1.134.0: quy về MÃ em, biết cả tên cũ) — thầy đổi tên em rồi
+     thì tên trong `boQua` vẫn khớp đúng em. */
+  function caLopDayDu(l) {
+    return ((l && l.hocSinh) || []).map(function (h) { return h.ten; });
+  }
+  // Em vào lớp SAU ngày giao (chỉ lớp thường — xem chú thích KHÓA HỌC ở dưới).
+  function emVaoMuon(h, b, l) {
+    if (l && l.loai === 'khoa') return false;
+    return !emCoMatOBai(h, b);
+  }
+  function emKhongTinh(l, b) {
+    var bo = {}, tinh = {}, ra = [];
+    boQuaCua(b).forEach(function (t) { bo[khoaTen(t)] = 1; });
+    tinhCaCua(b).forEach(function (t) { tinh[khoaTen(t)] = 1; });
+    ((l && l.hocSinh) || []).forEach(function (h) {
+      var k = khoaTen(h.ten);
+      if (bo[k]) { ra.push({ ten: h.ten, ly: 'tay', vao: String(h.vao || '') }); return; }
+      // ↩ của thầy (`tinhCa`) thắng luật ngày vào lớp.
+      if (emVaoMuon(h, b, l) && !tinh[k]) ra.push({ ten: h.ten, ly: 'muon', vao: String(h.vao || '') });
+    });
+    return ra;
+  }
   function caLopCuaBai(l, b) {
     // ⭐ v1.113.0 (16/09/2026) — KHÓA HỌC: MỌI em trong khóa đều thuộc MỌI lesson, bất
-    // kể ngày vào. Luật `vao` ở trên là của lớp thường (bài giao theo buổi, em vào sau
-    // buổi đó không phải làm); khóa học thì lesson mở dần và em nào cũng học từ đầu —
-    // 17 em vào K9 ngày 15/09 mà LESSON 17 giao 14/09 ⇒ dashboard đếm 3/3 trong khi
-    // `khoa.html` (đọc thẳng `l.hocSinh`) đếm 20 — hai trang lệch nhau. Nay cùng một số.
-    if (l && l.loai === 'khoa') return (l.hocSinh || []).map(function (h) { return h.ten; });
-    return ((l && l.hocSinh) || []).filter(function (h) { return emCoMatOBai(h, b); })
-      .map(function (h) { return h.ten; });
+    // kể ngày vào. Luật `vao` là của lớp thường (bài giao theo buổi, em vào sau buổi đó
+    // không phải làm); khóa học thì lesson mở dần và em nào cũng học từ đầu — 17 em vào
+    // K9 ngày 15/09 mà LESSON 17 giao 14/09 ⇒ dashboard đếm 3/3 trong khi `khoa.html`
+    // (đọc thẳng `l.hocSinh`) đếm 20 — hai trang lệch nhau. Nay cùng một số.
+    // (v1.135.0: khóa học vẫn bỏ được em bằng nút ✕ — `boQua` áp cho cả hai loại.)
+    var bo = {};
+    emKhongTinh(l, b).forEach(function (x) { bo[khoaTen(x.ten)] = 1; });
+    return caLopDayDu(l).filter(function (t) { return !bo[khoaTen(t)]; });
   }
 
   // ⭐ v1.35.0 — BA CỬA lấy bài của một lớp, theo trạng thái thẻ (`trangThaiThe`):
@@ -3043,6 +3099,7 @@
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
     // ⭐⭐ v1.95.0 — em nào có mặt ở một bài (bỏ em vào lớp sau ngày giao)
     ngayGiaoBai: ngayGiaoBai, emCoMatOBai: emCoMatOBai, caLopCuaBai: caLopCuaBai,
+    caLopDayDu: caLopDayDu, emKhongTinh: emKhongTinh, emVaoMuon: emVaoMuon,
     // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (phụ huynh luyện bài cùng con)
     emDacBietTheoMa: emDacBietTheoMa,
     emDangHoc: emDangHoc, batBuocDangNhap: batBuocDangNhap, luuEm: luuEm, thoat: thoat,
@@ -3064,7 +3121,8 @@
     changHien: changHien, emChuaXongChang: emChuaXongChang,
     changChoMo: changChoMo,   // ⭐ v1.118.0 — chặng quá hạn còn em chưa xong, chờ mở chặng kế
     changCuConThieu: changCuConThieu,   // ⭐ v1.128.0 — chặng cũ (trước chặng đang chạy) còn em chưa xong
-    boQuaCua: boQuaCua, moChangCua: moChangCua, mocActHan: mocActHan,
+    boQuaCua: boQuaCua, tinhCaCua: tinhCaCua, datTinhCa: datTinhCa,
+    moChangCua: moChangCua, mocActHan: mocActHan,
     datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,
     mocHan: mocHan, chuHan: chuHan, chuHanChang: chuHanChang, trangCuaBai: trangCuaBai,

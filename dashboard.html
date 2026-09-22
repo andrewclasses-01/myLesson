@@ -1582,6 +1582,13 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-bq{margin-top:14px; padding:11px 12px; border-radius:12px; border:1px dashed var(--vien-dam); background:#F7F9F8}
 .hq-bq h4 .so{font:800 10px/1 var(--font); padding:3px 6px; border-radius:99px; background:#E3E9E7; color:var(--mo); margin-left:4px; text-transform:none}
 .hq-bq .hq-em .av{filter:grayscale(1); opacity:.7}
+/* v1.135.0 — dấu LÝ DO không tính (góc dưới ô em) + dấu nhỏ ở bảng THỜI LƯỢNG */
+.hq-bq .hq-em .ly{position:absolute; top:-4px; right:2px; z-index:1;
+  font:800 8.5px/1 var(--font); letter-spacing:.02em; text-transform:uppercase;
+  padding:3px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo);
+  border:2px solid var(--the); white-space:nowrap}
+.hq-tl .hs .kt{margin-left:6px; font:800 8.5px/1 var(--font); font-style:normal; text-transform:uppercase;
+  padding:2px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo)}
 /* tab THỜI LƯỢNG */
 .hq-loi{margin:0 0 10px; padding:8px 11px; border-radius:9px; background:var(--vang-nhat); color:#8a5b0e; font:600 11px/1.4 var(--font)}
 table.hq-tl{width:100%; border-collapse:collapse}
@@ -2424,7 +2431,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=104"></script>
+<script src="config.js?v=105"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -2493,6 +2500,10 @@ table.hq-tl{width:100%; border-collapse:collapse}
     // ⭐⭐ v1.95.0 — SĨ SỐ RIÊNG CỦA BÀI: em vào lớp SAU ngày giao (`h.vao`) không thuộc
     // bài đó — cùng hàm với trang lớp (`A.caLopCuaBai`, js/chung.js), thầy chốt 13/09.
     var caLop = A.caLopCuaBai(l, b);
+    // ⭐ v1.135.0 — `caLop` ở trên là em ĐANG TÍNH (đã trừ em thầy bỏ qua ✕ lẫn em vào lớp
+    // sau ngày giao). Hai danh sách dưới đây để HIỆN: lưới em, THỜI LƯỢNG, ô "không tính".
+    var caLopDu = A.caLopDayDu(l);
+    var khongTinh = A.emKhongTinh(l, b);
     var acts = A.actCuaBai(b).map(function (k) {
       var ds = DIEM[k.ma];
       var xong = null;                       // null = chưa đọc kho điểm
@@ -2540,9 +2551,10 @@ table.hq-tl{width:100%; border-collapse:collapse}
     var sheets = A.wsCuaBai(b);
     return { bai: b, maLop: maLop, siSo: caLop.length, acts: acts, sheets: sheets,
              thieu: thieu, xongHet: xongHet, daDoc: daDoc, caLop: caLop,
+             caLopDu: caLopDu, khongTinh: khongTinh,
              laSp: laSp, doiSp: DOI_SP[b.id] || null,
              loiSp: DOI_SP_LOI[b.id] || '',
-             stage: stage, chang: chang, boQua: A.boQuaCua(b) };
+             stage: stage, chang: chang, boQua: A.boQuaCua(b), tinhCa: A.tinhCaCua(b) };
   }
 
   // ⭐ v1.14.0 — "XONG" = ĐỦ ĐIỂM TỐI ĐA, không còn là "có nộp là được".
@@ -3219,7 +3231,8 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
   /* ==============================================================
      ⭐⭐ v1.77.0 — HAI CÚ GHI CỦA DẠNG BÀI STAGE (cùng tài liệu `lessonHan`)
-       `boQua`   thêm/bớt một em khỏi phép xét "cả lớp xong chặng chưa"
+       `boQua`   thêm/bớt một em khỏi phép xét "cả lớp xong chặng chưa" + khỏi x/N
+       `tinhCa`  (v1.135.0) em vào lớp SAU ngày giao mà thầy bấm ↩ "vẫn tính em này"
        `moChang` số chặng thầy ÉP MỞ (không chờ đủ điều kiện)
      ⛔ Luật kho đòi ĐỦ `baiId · han · tt · lop · luc` mỗi lượt ghi (luật 9️⃣:
      ghi đè cả tài liệu là xoá mất trường của nơi khác) ⇒ phải mang theo hạn +
@@ -3238,12 +3251,14 @@ table.hq-tl{width:100%; border-collapse:collapse}
       lop: String(LOP_CHON || ''), luc: Date.now()
     };
     if (doi.boQua !== undefined) goi.boQua = doi.boQua;
+    if (doi.tinhCa !== undefined) goi.tinhCa = doi.tinhCa;   // v1.135.0
     if (doi.moChang !== undefined) goi.moChang = doi.moChang;
     spDb().then(function (f) {
       return f.fs.setDoc(f.fs.doc(f.db, 'lessonHan', hsMaTaiLieu(id)), goi, { merge: true });
     }).then(function () {
       /* Cập nhật bản nhớ trong máy để vẽ lại thấy ngay, khỏi chờ 60 giây đệm. */
       if (doi.boQua !== undefined) A.datBoQua(id, doi.boQua);
+      if (doi.tinhCa !== undefined) A.datTinhCa(id, doi.tinhCa);
       if (doi.moChang !== undefined) A.datMoChang(id, doi.moChang);
       veKhuThe();
       if (BM_ID === id) moBaiModal(id);
@@ -4954,9 +4969,19 @@ table.hq-tl{width:100%; border-collapse:collapse}
       return ds;
     });
   }
+  // ⭐ v1.135.0 — TRỌN danh sách lớp (không phải riêng em đang tính): em bị bỏ qua / vào lớp
+  // muộn vẫn phải thấy được ở lưới em, ô "không tính" và tab THỜI LƯỢNG. Chỗ nào ĐẾM thì
+  // dùng `t.caLop` (đã trừ), xem chú thích `caLopCuaBai` trong js/chung.js.
   function hqHocSinh(t) {
     var l = A.lopTheoMa(DL, t.maLop);
-    return ((l && l.hocSinh) || []).filter(function (h) { return t.caLop.indexOf(h.ten) >= 0; });
+    var du = t.caLopDu || t.caLop || [];
+    return ((l && l.hocSinh) || []).filter(function (h) { return du.indexOf(h.ten) >= 0; });
+  }
+  // Bảng khoá tên -> lý do không tính ('tay' = thầy bấm ✕ · 'muon' = vào lớp sau ngày giao).
+  function hqKhongTinh(t) {
+    var m = {};
+    (t.khongTinh || []).forEach(function (x) { m[A.khoaTen(x.ten)] = x; });
+    return m;
   }
   function hqLopGoc(t) { var l = A.lopTheoMa(DL, t.maLop); return (l && l.tenGoc) || t.maLop; }
   // Ngày giao: `b.ngay` "D.M" (lớp chính) — bài khóa học không có `ngay`, lấy ngày trong `taoLuc`.
@@ -5294,32 +5319,46 @@ table.hq-tl{width:100%; border-collapse:collapse}
         muc.map(function (k) { return hqHangMuc(k, danhSo(k)); }).join('') + '</div>';
     }).join('');
   }
+  /* ⭐⭐ v1.135.0 (22/09/2026, thầy chốt) — LƯỚI EM vẽ TRỌN LỚP; em KHÔNG TÍNH rơi xuống ô
+     riêng bên dưới KÈM LÝ DO, vẫn có nút ↩. Trước bản này em vào lớp sau ngày giao bị
+     `caLopCuaBai` gạch khỏi danh sách nên BIẾN MẤT khỏi cả hai ô — thầy không còn đường đưa
+     em quay lại (sự cố B1-B 22/09: 3 em vào lớp 21/9 của bài giao 19/9). Xem `emKhongTinh`. */
   function hqLuoiEm() {
     var b = HQ.b, t = HQ.t, hs = hqHocSinh(t), muc = hqMucDangMo(), N = muc.length;
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
-    var boQua = t.stage ? A.boQuaCua(b) : [];
-    var bq = {}; boQua.forEach(function (x) { bq[A.khoaTen(x)] = 1; });
+    var kt = hqKhongTinh(t);
     var daDoc = t.daDoc && muc.every(function (m) { return m.loai !== 'ws' || HQ.nop[m.o]; });
-    var oEm = function (h, daBo) {
+    var chuLy = function (x) {
+      if (!x) return '';
+      // 'YYYY-MM-DD' -> 'd/m' (khỏi gọi Date cho một cái nhãn).
+      var v = String(x.vao || '');
+      var g = /^\d{4}-(\d{2})-(\d{2})$/.exec(v);
+      return x.ly === 'muon' ? ('vào lớp ' + (g ? (+g[2] + '/' + (+g[1])) : v)) : 'thầy bỏ qua';
+    };
+    var oEm = function (h, x) {
       var n = 0; muc.forEach(function (m) { if (hqEmXongMuc(m, h)) n++; });
       var cls = !N ? '' : (n >= N ? 'du' : (n ? 'mot' : 'chua'));
-      return '<div class="hq-em ' + cls + '" title="' + A.chuAnToan(h.ten) + ' · ' + n + '/' + N + (daBo ? ' · đã bỏ qua' : '') + '" data-hq-em="' + A.chuAnToan(h.ten) + '">' +
-        (t.stage && !daBo && n < N ? '<button type="button" class="bq" data-boqua="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" data-lop="' + A.chuAnToan(t.maLop) + '" title="Bỏ qua em này ở bài này">✕</button>' : '') +
-        (daBo ? '<button type="button" class="tl" data-boqua-lai="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" title="Đưa em quay lại danh sách đang tính">↩</button>' : '') +
+      return '<div class="hq-em ' + cls + '" title="' + A.chuAnToan(h.ten) + ' · ' + n + '/' + N + (x ? ' · không tính ở bài này (' + A.chuAnToan(chuLy(x)) + ')' : '') + '" data-hq-em="' + A.chuAnToan(h.ten) + '">' +
+        (t.stage && !x && n < N ? '<button type="button" class="bq" data-boqua="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" data-lop="' + A.chuAnToan(t.maLop) + '" title="Bỏ qua em này ở bài này">✕</button>' : '') +
+        (x ? '<button type="button" class="tl" data-boqua-lai="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" data-lop="' + A.chuAnToan(t.maLop) + '" title="Đưa em quay lại danh sách đang tính">↩</button>' : '') +
         '<div class="av">' + veEmAvDb(h.ten, slug, lopGoc) + '</div>' +
-        (N && !daBo ? '<span class="hh">' + n + '/' + N + '</span>' : '') +
+        (N && !x ? '<span class="hh">' + n + '/' + N + '</span>' : '') +
+        (x ? '<span class="ly">' + A.chuAnToan(x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</span>' : '') +
         '<div class="tn">' + A.chuAnToan(vietTat(h.ten)) + '</div></div>';
     };
-    var dangTinh = hs.filter(function (h) { return !bq[A.khoaTen(h.ten)]; });
-    var daBo = hs.filter(function (h) { return bq[A.khoaTen(h.ten)]; });
+    var dangTinh = hs.filter(function (h) { return !kt[A.khoaTen(h.ten)]; });
+    var daBo = hs.filter(function (h) { return !!kt[A.khoaTen(h.ten)]; });
     var chu = hqPhamVi().chu;
+    var soMuon = daBo.filter(function (h) { return kt[A.khoaTen(h.ten)].ly === 'muon'; }).length;
     return '<div class="hq-em-khoi"><h4>Mỗi em đã xong bao nhiêu mục <span>· ' + chu + (N ? ' · ' + N + ' mục' : '') + '</span></h4>' +
       '<div class="chu-thich">Viền xanh = đủ · vàng = một phần · đỏ = chưa làm' + (t.stage ? '. Di chuột vào em chưa xong → ✕ bỏ qua em ở bài này.' : '.') +
         (daDoc ? '' : ' <i>(' + A.chuAnToan(HQ.nopLoi || 'đang đọc kết quả…') + ')</i>') + '</div>' +
-      (dangTinh.length ? '<div class="hq-em-luoi">' + dangTinh.map(function (h) { return oEm(h, false); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>') +
-      (t.stage ? '<div class="hq-bq"><h4>Đã bỏ qua ở bài này <span class="so">' + daBo.length + '</span></h4>' +
-        '<div class="chu-thich">Em trong ô này không giữ cả lớp lại và không tính vào x/' + t.siSo + '. Bấm ↩ để đưa em quay lại.</div>' +
-        (daBo.length ? '<div class="hq-em-luoi">' + daBo.map(function (h) { return oEm(h, true); }).join('') + '</div>' : '<div class="chu-thich" style="margin:0">Chưa bỏ qua em nào.</div>') + '</div>' : '') +
+      (dangTinh.length ? '<div class="hq-em-luoi">' + dangTinh.map(function (h) { return oEm(h, null); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>') +
+      ((t.stage || daBo.length) ? '<div class="hq-bq"><h4>Không tính ở bài này <span class="so">' + daBo.length + '</span></h4>' +
+        '<div class="chu-thich">Em trong ô này KHÔNG tính vào x/' + t.siSo + (t.stage ? ' và không giữ cả lớp lại ở chặng nào' : '') +
+          ' — nhưng vẫn ở trong lớp, vẫn có trong THỜI LƯỢNG và bảng xếp hạng. Bấm ↩ để tính em trở lại.' +
+          (soMuon ? ' (“vào sau” = em vào lớp sau ngày giao bài, app tự trừ.)' : '') + '</div>' +
+        (daBo.length ? '<div class="hq-em-luoi">' + daBo.map(function (h) { return oEm(h, kt[A.khoaTen(h.ten)]); }).join('') + '</div>' : '<div class="chu-thich" style="margin:0">Không có em nào.</div>') + '</div>' : '') +
     '</div>';
   }
   function hqTabBaiTap() {
@@ -5331,7 +5370,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
   // ---- TAB THỜI LƯỢNG ----
   function hqTabThoiLuong() {
-    var b = HQ.b, t = HQ.t, hs = hqHocSinh(t), pv = hqPhamVi();
+    var b = HQ.b, t = HQ.t, hs = hqHocSinh(t), pv = hqPhamVi(), kt = hqKhongTinh(t);
     var coVideo = coBaiGiangKh(b), coNghe = pv.nghe;
     var tongVideo = coVideo ? tongGiayBaiGiangDb(b) : 0, tongNghe = hqTongNgheBai();
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
@@ -5355,7 +5394,10 @@ table.hq-tl{width:100%; border-collapse:collapse}
       pv.acts.map(function (a) { return th(A.chuAnToan(hqNhanAct(a)), A.chuAnToan(mauChu(a.mau)), a.ten); }).join('') + th('Tổng', A.chuAnToan(pv.chu)) + '</tr>';
     var body = rows.map(function (r, k) {
       var h = r.h;
-      return '<tr' + (k < 3 && r.tong ? ' class="top"' : '') + '><td><span class="hs" data-hq-em="' + A.chuAnToan(h.ten) + '" title="Đúp để xem chi tiết">' + veEmAvDb(h.ten, slug, lopGoc) + A.chuAnToan(h.ten) + '</span></td>' +
+      // v1.135.0 — em không tính vẫn có hàng (dữ liệu luyện tập là của em, không liên quan
+      // tới phép đếm), chỉ thêm dấu nhỏ để thầy khỏi thắc mắc sao thẻ đếm ít hơn số hàng.
+      var x = kt[A.khoaTen(h.ten)];
+      return '<tr' + (k < 3 && r.tong ? ' class="top"' : '') + '><td><span class="hs" data-hq-em="' + A.chuAnToan(h.ten) + '" title="Đúp để xem chi tiết">' + veEmAvDb(h.ten, slug, lopGoc) + A.chuAnToan(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span></td>' +
         (coVideo ? oPhut(hqGioVideo(h.ten), tongVideo, 'vd', !HQ.video) : '') +
         (coNghe ? oPhut(hqGioNghe(h.ten), tongNghe, 'ng', !HQ.nghe) : '') +
         pv.acts.map(function (a) { return oAct(hqGioAct(a.ma, h.ten), !HQ.act[a.ma]); }).join('') +
@@ -7201,10 +7243,15 @@ table.hq-tl{width:100%; border-collapse:collapse}
       if (hqLoc && HQ.ct) { HQ.ct.loc = hqLoc.dataset.hqloc; hqVeChiTiet(); return; }
       var bqLai = e.target.closest('[data-boqua-lai]');
       if (bqLai) {
+        /* ⭐ v1.135.0 — ↩ làm ĐỦ HAI VIỆC trong một lượt ghi: bỏ tên khỏi `boQua` (em thầy
+           bấm ✕) VÀ thêm vào `tinhCa` (em vào lớp sau ngày giao). Em có thể dính CẢ HAI —
+           đúng ca B1-B 22/09 — nên chỉ làm một nửa là bấm ↩ mà em vẫn nằm nguyên trong ô. */
         var idL = bqLai.dataset.bai, tenL = bqLai.dataset.boquaLai;
-        var bL = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === idL; })[0];
+        var bL = A.baiCuaLop(DL, bqLai.dataset.lop || LOP_CHON, 'ql').filter(function (x) { return x.id === idL; })[0];
         var dsL = (bL ? A.boQuaCua(bL) : []).filter(function (x) { return A.khoaTen(x) !== A.khoaTen(tenL); });
-        stageGhi(idL, { boQua: dsL }, bqLai, 'Em ' + tenL + ' đã quay lại danh sách đang tính.');
+        var tcL = (bL ? A.tinhCaCua(bL) : []).slice();
+        if (!tcL.some(function (x) { return A.khoaTen(x) === A.khoaTen(tenL); })) tcL.push(tenL);
+        stageGhi(idL, { boQua: dsL, tinhCa: tcL }, bqLai, 'Em ' + tenL + ' đã quay lại danh sách đang tính.');
         return;
       }
       if (e.target.closest('#hqCtDong') || e.target === $('#hqCtNen')) { dongHqChiTiet(); return; }
@@ -7216,13 +7263,16 @@ table.hq-tl{width:100%; border-collapse:collapse}
         var bGoc = A.baiCuaLop(DL, bq.dataset.lop || LOP_CHON, 'ql')
           .filter(function (x) { return x.id === idB; })[0];
         var ds = (bGoc ? A.boQuaCua(bGoc) : []).slice();
-        if (ds.indexOf(tenEm) < 0) ds.push(tenEm);
+        if (!ds.some(function (x) { return A.khoaTen(x) === A.khoaTen(tenEm); })) ds.push(tenEm);
+        // v1.135.0 — ✕ gỡ luôn khỏi `tinhCa` (ngược lại với ↩), không thì hai bảng đá nhau.
+        var tcB = (bGoc ? A.tinhCaCua(bGoc) : []).filter(function (x) { return A.khoaTen(x) !== A.khoaTen(tenEm); });
         moXnPop(bq, {
           tieuDe: 'Bỏ qua em này ở bài này?',
-          chu: 'Em ' + tenEm + ' sẽ không còn được tính khi xét cả lớp đã xong chặng hay chưa. ' +
-               'Chặng kế tiếp mở ra mà không cần chờ em này. Chỉ áp dụng cho bài này.',
+          chu: 'Em ' + tenEm + ' sẽ không còn được tính khi xét cả lớp đã xong chặng hay chưa, ' +
+               'và không tính vào thanh x/' + (HQ.t ? HQ.t.siSo : '') + '. Em vẫn ở trong lớp, vẫn có ' +
+               'trong THỜI LƯỢNG và bảng xếp hạng. Chỉ áp dụng cho bài này.',
           nutOk: 'Bỏ qua em này', nguy: true,
-          khiOk: function () { stageGhi(idB, { boQua: ds }, null, 'Đã bỏ qua em ' + tenEm + '.'); }
+          khiOk: function () { stageGhi(idB, { boQua: ds, tinhCa: tcB }, null, 'Đã bỏ qua em ' + tenEm + '.'); }
         });
         return;
       }

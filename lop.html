@@ -1637,7 +1637,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=104"></script>
+<script src="config.js?v=105"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -1826,6 +1826,10 @@ function theTuBai(b){
   return {
     id: b.id,
     caLop: caLop,
+    /* v1.135.0 — sĩ số thẻ = em ĐANG TÍNH: trừ cả em vào lớp sau ngày giao (từ v1.95.0)
+       lẫn em thầy bấm ✕ bỏ qua trên dashboard (mới). Trước đây em bị ✕ vẫn nằm trong mẫu
+       số nên thanh không bao giờ đầy dù thầy đã bỏ qua em — trái với chính câu chữ trong
+       hộp quản lý ("không tính vào x/N"). */
     siSo: caLop.length,
     dang: b.dang || '',
     loai: laSp ? 'spcheck' : (laWs ? 'wsheet' : ''),

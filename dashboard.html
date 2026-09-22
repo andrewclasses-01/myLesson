@@ -661,20 +661,7 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
    `.act-ds`/`.act-o`, đã gỡ) — `.bm-bt-rows` dùng CHUNG cho cả bài STAGE (nằm
    trong từng khối `.st-khoi`, không viền riêng — khối chặng đã là viền) lẫn
    bài thường (bọc thêm `.bm-bt-box` cho có viền). Xem `veBtHangDb()`. */
-.bm-bt-box{border:1px solid var(--vien); border-radius:14px; background:var(--the); padding:2px 14px 4px; margin:12px 0}
-.bm-bt-rows{display:flex; flex-direction:column}
-.bm-bt-hang{display:flex; align-items:center; gap:10px; padding:11px 0; border-top:1px dashed var(--vien); flex-wrap:wrap}
-.bm-bt-hang:first-child{border-top:0}
-.bm-bt-so{flex:none; width:18px; font:800 12px var(--mono); color:var(--nhat); text-align:right}
-.bm-bt-chu{flex:1 1 220px; min-width:0; display:flex; align-items:baseline; gap:7px; flex-wrap:wrap}
-.bm-bt-ten{font:800 12.5px/1.35 var(--font)}
-.bm-bt-mau{font:600 10.5px/1.4 var(--font); color:var(--nhat); letter-spacing:.02em}
-.bm-bt-mau code{font:600 10.3px var(--mono); color:var(--mo)}
-.bm-bt-hang .tien{margin-left:auto; flex:none}
-.bm-ws-hang .bm-bt-so{width:auto; font:800 10.5px var(--font); letter-spacing:.04em; color:var(--xanh)}
-.bm-nop-xem{border:1.5px solid var(--line); background:var(--the); color:var(--xanh); font:800 11px var(--font);
-  padding:6px 10px; border-radius:9px; cursor:pointer}
-.bm-nop-xem:hover{background:rgba(14,124,110,.08)}
+
 .tay-dong{margin:10px 0 0; padding:9px 12px; border-radius:10px;
   background:var(--vang-nhat); color:#8a5b0e; font-size:12.5px}
 /* ============================================================================
@@ -725,17 +712,7 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
   50%    {filter:brightness(1.4) saturate(1.25)}
 }
 /* Khối một chặng trong hộp xem bài */
-.st-khoi{border:1px solid var(--vien); border-radius:13px; padding:11px 13px; margin-top:10px}
-.st-khoi.dang{border-color:#CBDCFF; background:#F7FAFF}
-.st-khoi.xong{border-color:#C9EBD6; background:#F6FCF8}
-.st-khoi.ket{border-color:#F6CFCF; background:#FEF7F7}
-.st-khoi-dau{display:flex; align-items:center; gap:9px; margin-bottom:9px; flex-wrap:wrap}
-.st-khoi-ten{font:800 12px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
-.st-khoi.dang .st-khoi-ten{color:#2B5FD0}
-.st-khoi.xong .st-khoi-ten{color:#1F7A4D}
-.st-khoi.ket .st-khoi-ten{color:#B03A3E}
-.st-khoi-han{font:600 11px/1.3 var(--font); color:var(--mo)}
-.st-khoi-nut{margin-left:auto; display:flex; gap:7px}
+
 /* Em đang giữ cả lớp lại + nút ✕ bỏ qua */
 .ten-o.cham{background:#F9C9CA; color:#8E2226; font-size:13px; font-weight:800;
   animation:nhay-ten-do-db 1.6s ease-in-out infinite}
@@ -765,75 +742,24 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
    NGUYÊN cho riêng khối "ĐANG GIỮ CẢ LỚP LẠI" trong `veKhoiChangDb`) sang HAI
    Ô AVATAR cạnh nhau — xem `veEmLuoiDb()`/`veEmAvDb()`. Icon tự nhỏ lại khi
    lớp đông em (biến `--em-d`, đổi qua class `.vua`/`.nho`) để không tràn khung. */
-.bm-xong-doi{display:grid; grid-template-columns:1fr 1fr; gap:11px; margin-top:12px}
-@media (max-width:560px){ .bm-xong-doi{grid-template-columns:1fr} }
-.bm-xong-o{border-radius:14px; padding:13px 13px 14px; border:1px solid var(--vien); background:var(--the)}
-.bm-xong-o.chua{border-color:#F4D6D2; background:#FDF8F7}
-.bm-xong-o.du{border-color:#CFEAD9; background:#F7FCFA}
-.bm-xong-nhan{font:800 11px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase}
-.bm-xong-o.chua .bm-xong-nhan{color:#B0402F}
-.bm-xong-o.du .bm-xong-nhan{color:#1F7A4D}
-.bm-em-luoi{--em-d:48px; display:flex; flex-wrap:wrap; gap:10px 8px; margin-top:11px}
-.bm-em-luoi.vua{--em-d:42px}
-.bm-em-luoi.nho{--em-d:36px}
-.bm-em{width:calc(var(--em-d) + 8px); display:flex; flex-direction:column; align-items:center; gap:4px}
+
 .bm-em-av{position:relative; width:var(--em-d); height:var(--em-d); border-radius:50%; overflow:hidden;
   display:grid; place-items:center; color:#fff; font:800 calc(var(--em-d) * .32)/1 var(--font); flex:none;
   box-shadow:0 2px 5px rgba(16,40,36,.16)}
 .bm-em-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
-.bm-em-ten{font:700 calc(var(--em-d) * .2 + 2.5px)/1.2 var(--font); color:var(--mo); text-align:center;
-  overflow:hidden; text-overflow:ellipsis; white-space:nowrap; width:100%}
+
 .bm-em-trong{font:700 12px/1.5 var(--font); color:var(--nhat); padding:6px 2px 2px}
 
 /* ⭐ v1.115.0/v1.116.0 — nhãn khối trong hộp xem bài ("Bài tập" / "Thời lượng"),
    `min-height` bằng đúng icon (22px) để HAI CỘT ngang hàng nhau dù dựng riêng —
    xem `.bm-grid-2` ngay dưới. */
-.bm-khoi-dau{display:flex; align-items:center; justify-content:space-between; gap:10px; margin:0 0 9px; min-height:22px}
-.bm-khoi-nhan{font:800 11px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
-.bm-khoi-phu{font:600 11px/1.3 var(--font); color:var(--nhat)}
 
 /* ⭐ v1.116.0 — bố cục 2 cột của thẻ khóa học: "Thời lượng" BÊN TRÁI, phần còn
    lại (bài tập + 2 ô xong) BÊN PHẢI, ở màn máy tính. Màn hẹp tự xếp dọc, cột
    thời lượng xuống DƯỚI (`order`, không phải thứ tự HTML — xem `veRuotBai`). */
-.bm-grid-2{display:grid; grid-template-columns:1fr; gap:16px}
-.bm-video-col{order:2}
-.bm-rest-col{order:1; display:flex; flex-direction:column; gap:16px}
-@media (min-width:820px){
-  .bm-grid-2{grid-template-columns:240px 1fr; gap:18px; align-items:stretch}
-  .bm-video-col{order:1; display:flex; flex-direction:column}
-  .bm-rest-col{order:2}
-}
-.bm-video-nhan{display:flex; align-items:center; gap:8px}
-.bm-video-ic{width:22px; height:22px; border-radius:7px; flex:none; display:grid; place-items:center;
-  background:#E6EEFF; color:#2B5FD0}
-.bm-video-ic svg{width:12px; height:12px; fill:currentColor}
-.bm-video-khoi{border:1px solid var(--vien); border-radius:14px; padding:11px 12px 4px; background:var(--the);
-  display:flex; flex-direction:column}
-@media (min-width:820px){ .bm-video-khoi{flex:1} }
-.bm-video-head{display:flex; justify-content:space-between; padding-bottom:6px; margin-bottom:2px;
-  border-bottom:1px solid var(--vien); font:800 9.5px/1.3 var(--font); letter-spacing:.06em;
-  text-transform:uppercase; color:var(--nhat)}
-.bm-video-hang{display:flex; align-items:center; gap:7px; padding:6px 0; border-top:1px dashed var(--vien)}
-.bm-video-hang:first-child{border-top:0}
-.bm-video-hang .bm-em-av{width:21px; height:21px; font-size:9px}
-.bm-video-ten{flex:0 0 72px; min-width:0; font:700 11.3px/1.3 var(--font); overflow:hidden;
-  text-overflow:ellipsis; white-space:nowrap}
-.bm-video-thanh{flex:1; height:6px; border-radius:99px; background:#EDF2F1; overflow:hidden; min-width:22px}
-.bm-video-thanh i{display:block; height:100%; border-radius:99px; background:var(--duong)}
-.bm-video-phut{flex:none; width:50px; text-align:right; font:800 11.3px var(--font); color:var(--chu);
-  white-space:nowrap; font-variant-numeric:tabular-nums}
+
 /* ⭐ v1.122.0 — ô số HAI TẦNG: to = TỔNG phút đã phát (kể cả xem lại, đo độ chăm),
    nhỏ = "phủ N%" (đã xem tới bao nhiêu phần của băng). Thanh vẫn là phủ. */
-.bm-video-so{flex:none; width:58px; display:flex; flex-direction:column; align-items:flex-end; line-height:1.1}
-.bm-video-so .bm-video-phut{width:auto; line-height:1.1}
-.bm-video-phu{font:700 9.2px/1.2 var(--font); color:var(--nhat); white-space:nowrap; letter-spacing:.02em;
-  font-variant-numeric:tabular-nums}
-.bm-video-phu.du{color:var(--duong)}
-.bm-video-hang[title]{cursor:help}
-.bm-video-tong{margin-top:auto; padding:10px 0 3px; border-top:1px solid var(--vien);
-  font:700 10.5px/1.4 var(--font); color:var(--mo); text-align:center; letter-spacing:.03em;
-  text-transform:uppercase}
-.bm-video-tong b{color:var(--chu); font-weight:800}
 
 .tien{display:flex; align-items:center; gap:8px}
 .thanh{flex:1; height:8px; border-radius:99px; background:#EDF2F1; overflow:hidden}
@@ -1566,7 +1492,6 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 /* ⭐ v1.116.0 — thẻ khóa học rộng hơn để chừa cột "Thời lượng" bên trái (xem
    `.bm-grid-2` cuối file CSS này) — bật qua JS (`moBaiModal`) khi bài có
    `baiGiang`, KHÔNG áp cho thẻ thường. */
-.bm-hop.rong{width:min(920px,94vw)}
 /* ⭐⭐ v1.131.0 (22/09/2026, thầy duyệt mẫu v2) — HỘP QUẢN LÝ 3 TAB: rộng 1040, cao cố định
    (ít cuộn), thân không lề (thanh tổng quan + dải tab tự lo). CSS chép từ
    `D:\OTHERS\CLAUDE\myLesson - thiet ke hop quan ly\mau-v2.html`, đổi token. */
@@ -1575,26 +1500,31 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 /* ⭐⭐ v1.132.0 (22/09/2026, thầy duyệt mẫu v4) — THANH TỔNG QUAN RIÊNG BỎ: ô hạn + THANH CHẶNG mũi tên + nút ⚙
    dời lên GIỮA HÀNG ĐẦU HỘP (`#bmGiua`, giữa "Thầy Andrew" và tên bài) để tiết kiệm chiều cao cho ruột.
    Mẫu: `D:\OTHERS\CLAUDE\myLesson - thiet ke hop quan ly\mau-v4.html` (v1–v3 giữ để so). */
-.bm-hop.hq .bm-dau{padding:12px 18px; gap:12px}
-.bm-hop.hq .bm-bai-tag{margin-left:0; flex:0 1 24%}
-.bm-hop.hq .bm-dau > .bm-av + div{flex:none}   /* khối "Thầy Andrew" không bị ép cụt khi ô hạn dài */
+/* ⭐ v1.133.0 — đầu hộp = LƯỚI 3 CỘT BẰNG NHAU: cụm giữa đứng đúng tâm hộp (thầy chốt). Hai cột bên
+   `minmax(0,1fr)` nên khi cụm giữa quá rộng thì hai bên co đều, tên bài cắt "…". */
+.bm-hop.hq .bm-dau{padding:12px 18px; gap:12px; display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); align-items:center}
+.bm-trai{display:flex; align-items:center; gap:11px; min-width:0}
+.bm-trai > div{flex:none}
+.bm-phai{display:flex; align-items:center; justify-content:flex-end; gap:11px; min-width:0}
+.bm-hop.hq .bm-bai-tag{margin-left:0; flex:0 1 auto; min-width:0}
 /* ⭐ v1.132.1 — thầy báo ĐÈ CHỮ (ảnh 22/09): `justify-content:center` mà ruột rộng hơn ô thì tràn CẢ HAI PHÍA, đè lên
    "Thầy Andrew". Nay ô giữa `overflow:hidden` + ruột `.bm-giua-ruot{margin:0 auto}` = "safe center": đủ chỗ thì đứng giữa,
    thiếu chỗ thì bám mép trái và thanh chặng CO LẠI (`flex:0 1 300px; min-width:150px`) chứ không đè. */
-.bm-giua{flex:1 1 0; min-width:0; display:none; align-items:center; overflow:hidden}
+.bm-giua{min-width:0; max-width:100%; display:none; align-items:center; overflow:hidden; justify-self:center}
 .bm-hop.hq .bm-giua{display:flex}
-.bm-giua-ruot{display:flex; align-items:center; gap:8px; margin:0 auto; min-width:0; max-width:100%}
-.hq-han{display:flex; align-items:center; gap:9px; padding:5px 11px; border-radius:10px; background:var(--vang-nhat); border:1px solid #F5DDB0; white-space:nowrap; flex:none}
-.hq-han b{font:800 10.5px/1.2 var(--font); color:#8a5b0e; letter-spacing:.04em}
+.bm-giua-ruot{display:flex; align-items:center; gap:10px; margin:0 auto; min-width:0; max-width:100%}
+/* v1.133.0 — thầy chốt: cụm giữa TO hơn (ô hạn chữ 12/đồng hồ 16, thanh chặng cao 32 chữ 10.5). */
+.hq-han{display:flex; align-items:center; gap:10px; padding:6px 13px; border-radius:11px; background:var(--vang-nhat); border:1px solid #F5DDB0; white-space:nowrap; flex:none}
+.hq-han b{font:800 12px/1.2 var(--font); color:#8a5b0e; letter-spacing:.04em}
 .hq-han b i{font-style:normal; font-weight:700; color:#B08A3E}
-.hq-han .dhho{font-size:14px; line-height:1}
+.hq-han .dhho{font-size:16px; line-height:1}
 .hq-han.gap{background:var(--do-nhat); border-color:#F3C4BE} .hq-han.gap b{color:#B03A3E}
 /* Thanh chặng trong đầu hộp: TÁI DÙNG `.st-bar`/`.st-khuc` (CSS chung phía trên, bản chép thứ ba của lop/bai),
    ép mọi khúc CÙNG cao 28 (khúc đang/kết không nhô), khúc là <button>. */
-.bm-giua .st-bar{width:auto; flex:0 1 300px; min-width:150px}
-.bm-giua .st-khuc{--h:28px; flex:1 1 auto; border:0; font:800 9.5px/1 var(--font); letter-spacing:.05em; cursor:pointer;
-  padding-left:calc(var(--dx) + 8px); padding-right:calc(var(--dx) + 4px); transition:opacity .25s, filter .25s}
-.bm-giua .st-khuc.dang, .bm-giua .st-khuc.ket{--h:28px; font-size:9.5px}
+.bm-giua .st-bar{width:auto; flex:0 1 340px; min-width:170px}
+.bm-giua .st-khuc{--h:32px; flex:1 1 auto; border:0; font:800 10.5px/1 var(--font); letter-spacing:.05em; cursor:pointer;
+  padding-left:calc(var(--dx) + 9px); padding-right:calc(var(--dx) + 5px); transition:opacity .25s, filter .25s}
+.bm-giua .st-khuc.dang, .bm-giua .st-khuc.ket{--h:32px; font-size:10.5px}
 .bm-giua .st-khuc.xa{flex-grow:1}
 .bm-giua .st-khuc:hover{filter:brightness(1.08)}
 /* Bấm MỘT chặng ⇒ chặng đó sáng + viền nét đứt bên trong, còn lại mờ (`.st-bar.chon`); ĐÚP ⇒ bỏ `chon` = sáng hết. */
@@ -1623,7 +1553,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-khoi-ten{font:800 12px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
 .hq-khoi.dang .hq-khoi-ten{color:#2B5FD0} .hq-khoi.xong .hq-khoi-ten{color:#1F7A4D} .hq-khoi.ket .hq-khoi-ten{color:#B03A3E}
 .hq-khoi-han{font:600 11px/1.3 var(--font); color:var(--mo)}
-.hq-khoi-nut{margin-left:auto}
+.hq-khoi-nut{margin-left:auto; display:flex; gap:6px}
 .hq-muc{display:grid; grid-template-columns:22px 1fr 150px 60px; align-items:center; gap:10px; padding:8px 0; border-top:1px dashed var(--vien)}
 .hq-muc:first-of-type{border-top:0}
 .hq-muc .so{font:800 12px var(--font); color:var(--nhat); text-align:right}
@@ -1754,8 +1684,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 .bm-dong{flex:none; width:32px; height:32px; border-radius:9px; border:0;
   background:transparent; color:var(--nhat); display:flex; align-items:center; justify-content:center}
 .bm-dong:hover{background:var(--do-nhat); color:var(--do)}
-.bm-caidat:hover{background:rgba(14,124,110,.1); color:var(--xanh)}
-.bm-caidat svg{fill:none; stroke-width:2.1; stroke-linejoin:round}
+
 .bm-dong svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linecap:round}
 .bm-than{flex:1; overflow-y:auto; padding:16px 18px}
 .bm-baiten{font:800 14px/1.3 var(--font); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -2349,14 +2278,20 @@ table.hq-tl{width:100%; border-collapse:collapse}
 <div class="bm-nen" id="bmNen"></div>
 <div class="bm-hop" id="bmHop">
   <div class="bm-dau">
-    <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
-    <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
+    <!-- ⭐ v1.133.0 — đầu hộp là LƯỚI 3 CỘT bằng nhau (`.bm-trai` · `#bmGiua` · `.bm-phai`) để cụm hạn + thanh chặng
+         đứng CHÍNH GIỮA so với hai mép hộp (thầy chốt), không phải giữa khoảng trống còn lại. -->
+    <div class="bm-trai">
+      <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
+      <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
+    </div>
     <!-- ⭐ v1.132.0 — GIỮA hàng đầu: ô hạn + thanh chặng mũi tên (bấm/đúp), xem `hqVeDauGiua`; ⚙ Cài đặt bài từ v1.132.1 ở cuối dải tab (`hqTabsRuot`) -->
     <div class="bm-giua" id="bmGiua"></div>
-    <div class="bm-bai-tag" id="bmBaiTag"></div>
-    <button class="bm-dong" id="bmDong" title="Đóng">
-      <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
-    </button>
+    <div class="bm-phai">
+      <div class="bm-bai-tag" id="bmBaiTag"></div>
+      <button class="bm-dong" id="bmDong" title="Đóng">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
   </div>
   <div class="bm-than" id="bmThan"></div>
 </div>
@@ -2489,7 +2424,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=101"></script>
+<script src="config.js?v=102"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -3004,21 +2939,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
     veChiTiet(muc);
   }
 
-  /* ⭐ v1.115.0 — MỘT HÀNG bài tập trong hộp xem bài (thay ô lưới `.act-o` cũ) —
-     dùng CHUNG cho bài thường (`veRuotBai`) lẫn từng khối chặng (`veKhoiChangDb`).
-     `idx` là số thứ tự HIỂN THỊ, đếm lại từ 1 trong phạm vi danh sách đang vẽ
-     (cả bài thường lẫn từng chặng riêng — không đếm xuyên suốt nhiều chặng). */
-  function veBtHangDb(a, siSo, idx) {
-    var thanh = (a.xong === null) ? '<span class="mau">đang đọc kết quả…</span>' : veThanh(a.xong, siSo);
-    return '<div class="bm-bt-hang">' +
-      '<span class="bm-bt-so">' + idx + '.</span>' +
-      '<span class="bm-bt-chu"><span class="bm-bt-ten">' + A.chuAnToan(a.ten) + '</span>' +
-        '<span class="bm-bt-mau">' + A.chuAnToan(a.mau || 'LEADERBOARD') + ' · mã <code>' +
-          A.chuAnToan(a.ma) + '</code></span></span>' +
-      thanh +
-    '</div>';
-  }
-
   // ⭐ v1.115.0 — thầy chốt: LUÔN viết tắt họ + tên đệm, giữ nguyên tên chính,
   // dùng cho nhãn tên dưới icon avatar (tên đầy đủ vẫn xem được khi rê chuột).
   // "Mạc Minh Khang" -> "M.M.Khang" · "Bảo Trâm" -> "B.Trâm"
@@ -3041,30 +2961,17 @@ table.hq-tl{width:100%; border-collapse:collapse}
       '.jpg" alt="" onerror="this.remove()"></span>';
   }
 
-  // Lưới avatar cho MỘT ô (chưa xong / đã xong) — rỗng thì hiện chữ thay vì để trống trơn.
-  function veEmLuoiDb(dsTen, lopSlug, tenGocLop) {
-    if (!dsTen.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
-    var co = dsTen.length > 24 ? ' nho' : (dsTen.length > 12 ? ' vua' : '');
-    return '<div class="bm-em-luoi' + co + '">' + dsTen.map(function (ten) {
-      return '<div class="bm-em">' + veEmAvDb(ten, lopSlug, tenGocLop) +
-        '<span class="bm-em-ten" title="' + A.chuAnToan(ten) + '">' +
-        A.chuAnToan(vietTat(ten)) + '</span></div>';
-    }).join('') + '</div>';
-  }
-
   /* ⭐⭐⭐ v1.116.0 (17/09/2026) — CỘT "THỜI LƯỢNG XEM" cho thẻ khóa học, đọc
      THẬT kho `lessonVideoTienDo` (Firestore) — đúng schema `bai.html` đang ghi
      (`ma·bai·lop·khuc·luc`, xem hàm `dayTienDoFs()` bên đó, ĐỪNG đổi tên trường
      ở đây mà không sửa cả hai nơi). Luật 8️⃣ — tiết kiệm lượt đọc:
-     - Đọc tối đa 6 lượt song song (y hệt `docDiemCuaCacBai`), MỘT LẦT mỗi bài
-       (nhớ ở `VIDEO_TD`/`VIDEO_TD_BAI`, đổi bài mới đọc lại — đủ dùng, thầy mở
-       đi mở lại một bài trong phiên không tốn thêm lượt).
-     - CHỈ đọc lúc thầy thật sự MỞ đúng thẻ khóa học đó (`napVideoChoModal`,
-       gọi từ `moBaiModal`), không đọc trước/đọc ngầm cho cả lớp.
+     - Đọc tối đa 6 lượt song song (y hệt `docDiemCuaCacBai`), MỘT LẦN mỗi lần mở
+       hộp (kết quả nhớ trong `HQ.video` — v1.133.0 xoá cột/biến `VIDEO_TD` của hộp cũ).
+     - CHỈ đọc lúc thầy thật sự MỞ đúng thẻ khóa học đó (`hqNap`, gọi từ
+       `moBaiModal`), không đọc trước/đọc ngầm cho cả lớp.
      - Không dùng `:runQuery`/list dù tài liệu có trường `bai` để lọc — LUẬT
        FIRESTORE của kho này (đăng 14/09) chỉ xác nhận **get** từng tài liệu,
        chưa kiểm **list**; đi an toàn theo đúng cách `bai.html` đã dùng thật. */
-  var VIDEO_TD = {}, VIDEO_TD_BAI = null;   // {tên: giây}, chỉ giữ CỦA BÀI ĐANG MỞ
 
   function coBaiGiangKh(b) {
     return !!(b && b.baiGiang && (b.baiGiang.doan || []).length);
@@ -3136,23 +3043,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
   }
   // Tổng phút hiện cho MỘT em = max(tổng cham, phủ) — tổng không bao giờ nhỏ hơn phủ.
   function giayTongCuaEm(phu, cham) { return Math.max(phu || 0, (cham && cham.giay) || 0); }
-  function phutChu(giay) { return Math.round((giay || 0) / 60) + ' phút'; }
-  // Một hàng em trong cột Thời lượng (dùng chung video/nghe). `tongBai` = giây cả bài (0 = chưa rõ).
-  function veHangThoiLuongDb(ten, avHtml, phu, cham, tongBai, chuBai) {
-    var tong = giayTongCuaEm(phu, cham);
-    var pt = tongBai ? Math.round((phu || 0) / tongBai * 100) : 0;
-    var tip = 'Tổng đã ' + chuBai + ' ' + phutChu(tong) + ' (kể cả xem lại)';
-    if (cham && cham.co) {
-      if (cham.that) tip += ' · ' + phutChu(cham.that) + ' đồng hồ thật';
-      tip += ' · ' + cham.lan + ' lần phát · ' + cham.ngay + ' ngày';
-    } else if (tong) tip += ' · chưa có số lần/ngày (xem trước 21/09)';
-    tip += (tongBai ? ' · phủ ' + pt + '% bài' : '');
-    return '<div class="bm-video-hang" title="' + A.chuAnToan(tip) + '">' + avHtml +
-      '<span class="bm-video-ten" title="' + A.chuAnToan(ten) + '">' + A.chuAnToan(vietTat(ten)) + '</span>' +
-      '<span class="bm-video-thanh"><i style="width:' + Math.min(100, pt) + '%"></i></span>' +
-      '<span class="bm-video-so"><span class="bm-video-phut">' + phutChu(tong) + '</span>' +
-      (tongBai ? '<span class="bm-video-phu' + (pt >= 95 ? ' du' : '') + '">phủ ' + pt + '%</span>' : '') + '</span></div>';
-  }
   // Đọc tiến độ xem của CẢ LỚP cho một bài — tối đa 6 lượt song song, không
   // bao giờ reject (404/403/mất mạng đều coi là 0 giây, y hệt tinh thần
   // `napTienDoFs` bên bai.html). Mỗi em: {phu: giây phủ, cham} (v1.122.0).
@@ -3180,52 +3070,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
     return Promise.all(chay).then(function () { return ra; });
   }
   // Ruột cột "Thời lượng" — `tienDo` null = chưa đọc xong (hiện "đang đọc…").
-  function veVideoColDb(b, t, lopSlug, tenGocLop, tienDo) {
-    var tongGiay = tongGiayBaiGiangDb(b);
-    var tongPhut = Math.round(tongGiay / 60);
-    var dau = '<div class="bm-khoi-dau"><span class="bm-video-nhan">' +
-      '<span class="bm-video-ic"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></svg></span>' +
-      '<span class="bm-khoi-nhan">Thời lượng</span></span></div>';
-    var rows;
-    if (!tienDo) {
-      rows = '<p class="mau" style="margin:6px 2px">đang đọc kết quả…</p>';
-    } else if (!t.caLop.length) {
-      rows = '<div class="bm-em-trong">Chưa có em nào</div>';
-    } else {
-      // v1.122.0 — xếp theo TỔNG phút (kể cả xem lại), hoà thì theo phủ
-      var tongEm = function (ten) { var d = tienDo[ten] || {}; return giayTongCuaEm(d.phu, d.cham); };
-      var ds = t.caLop.slice().sort(function (x, y) {
-        return (tongEm(y) - tongEm(x)) || (((tienDo[y] || {}).phu || 0) - ((tienDo[x] || {}).phu || 0));
-      });
-      rows = ds.map(function (ten) {
-        var d = tienDo[ten] || {};
-        return veHangThoiLuongDb(ten, veEmAvDb(ten, lopSlug, tenGocLop), d.phu, d.cham, tongGiay, 'xem');
-      }).join('');
-    }
-    return dau + '<div class="bm-video-khoi"><div class="bm-video-head"><span>Học sinh</span><span>Đã xem</span></div>' +
-      '<div class="bm-video-rows">' + rows + '</div>' +
-      '<div class="bm-video-tong">Bài giảng: <b>' + tongPhut + ' phút</b></div></div>';
-  }
-  // Gọi từ `moBaiModal()` NGAY sau khi hộp đã hiện — đọc thật rồi vẽ lại ĐÚNG
-  // `#bmVideoCol` (không vẽ lại cả hộp). `BM_ID === b.id` chặn ghi đè nhầm khi
-  // thầy đã đóng hộp hoặc mở sang thẻ khác trước khi kịp đọc xong.
-  function napVideoChoModal(b, t) {
-    var l = A.lopTheoMa(DL, t.maLop);
-    var tenGocLop = (l && l.tenGoc) || t.maLop;
-    var lopSlug = avSlugLop(tenGocLop);
-    if (VIDEO_TD_BAI === b.id) {
-      var elCo = $('#bmVideoCol');
-      if (elCo) elCo.innerHTML = veVideoColDb(b, t, lopSlug, tenGocLop, VIDEO_TD);
-      return;
-    }
-    var hocSinh = ((l && l.hocSinh) || []).filter(function (h) { return t.caLop.indexOf(h.ten) >= 0; });
-    docTienDoVideoCuaBai(b.id, hocSinh).then(function (map) {
-      VIDEO_TD = map; VIDEO_TD_BAI = b.id;
-      if (BM_ID !== b.id) return;
-      var el = $('#bmVideoCol');
-      if (el) el.innerHTML = veVideoColDb(b, t, lopSlug, tenGocLop, VIDEO_TD);
-    });
-  }
 
   /* ⭐⭐⭐ v1.117.0 (17/09/2026) — ĐO THỜI LƯỢNG NGHE cho thẻ DICTS (lớp chính),
      chép NGUYÊN khuôn cột "Thời lượng" bên video — chỉ khác NGUỒN dữ liệu:
@@ -3235,7 +3079,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
      mọi em nghe cùng một file thì duration phải như nhau).
      ✅ (21/09/2026) Luật kho `lessonAudioTienDo` ĐÃ ĐĂNG + kiểm thật; từ
      v1.122.0 hai kho có thêm trường `cham` (độ chăm) — xem `chamTuFs` bên trên. */
-  var NGHE_TD = { giay: {}, tong: {}, cham: {} }, NGHE_TD_BAI = null;   // cham: v1.122.0
 
   function coBaiNgheKh(b) { return A.ngheCuaBai(b).length > 0; }
   function urlTienDoNgheDb(maChuan, baiId) {
@@ -3290,180 +3133,11 @@ table.hq-tl{width:100%; border-collapse:collapse}
     for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
     return Promise.all(chay).then(function () { return { giay: giay, tong: tong, cham: cham }; });
   }
-  var IC_LOA_DB = '<svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 5V4L8 9H4z"/>' +
-    '<path d="M16.3 8.3a5.2 5.2 0 010 7.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
-  // Ruột cột "Thời lượng" bản NGHE — `ketQua` null = chưa đọc xong.
-  function veNgheColDb(b, t, lopSlug, tenGocLop, ketQua) {
-    var dau = '<div class="bm-khoi-dau"><span class="bm-video-nhan"><span class="bm-video-ic">' + IC_LOA_DB +
-      '</span><span class="bm-khoi-nhan">Thời lượng</span></span></div>';
-    var rows, tongChu;
-    if (!ketQua) {
-      rows = '<p class="mau" style="margin:6px 2px">đang đọc kết quả…</p>';
-      tongChu = '—';
-    } else if (!t.caLop.length) {
-      rows = '<div class="bm-em-trong">Chưa có em nào</div>';
-      tongChu = '—';
-    } else {
-      var tongGiay = 0;
-      Object.keys(ketQua.tong).forEach(function (id) { tongGiay += ketQua.tong[id]; });
-      // v1.122.0 — xếp theo TỔNG phút (kể cả nghe lại), hoà thì theo phủ
-      var chamEm = function (ten) { return (ketQua.cham || {})[ten]; };
-      var tongEm = function (ten) { return giayTongCuaEm(ketQua.giay[ten], chamEm(ten)); };
-      var ds = t.caLop.slice().sort(function (x, y) {
-        return (tongEm(y) - tongEm(x)) || ((ketQua.giay[y] || 0) - (ketQua.giay[x] || 0));
-      });
-      rows = ds.map(function (ten) {
-        return veHangThoiLuongDb(ten, veEmAvDb(ten, lopSlug, tenGocLop), ketQua.giay[ten], chamEm(ten), tongGiay, 'nghe');
-      }).join('');
-      tongChu = tongGiay ? (Math.round(tongGiay / 60) + ' phút') : 'chưa rõ';
-    }
-    return dau + '<div class="bm-video-khoi"><div class="bm-video-head"><span>Học sinh</span><span>Đã nghe</span></div>' +
-      '<div class="bm-video-rows">' + rows + '</div>' +
-      '<div class="bm-video-tong">Bài nghe: <b>' + tongChu + '</b></div></div>';
-  }
-  function napNgheChoModal(b, t) {
-    var l = A.lopTheoMa(DL, t.maLop);
-    var tenGocLop = (l && l.tenGoc) || t.maLop;
-    var lopSlug = avSlugLop(tenGocLop);
-    if (NGHE_TD_BAI === b.id) {
-      var elCo = $('#bmVideoCol');
-      if (elCo) elCo.innerHTML = veNgheColDb(b, t, lopSlug, tenGocLop, NGHE_TD);
-      return;
-    }
-    var hocSinh = ((l && l.hocSinh) || []).filter(function (h) { return t.caLop.indexOf(h.ten) >= 0; });
-    docTienDoNgheCuaBai(b.id, hocSinh).then(function (kq) {
-      NGHE_TD = kq; NGHE_TD_BAI = b.id;
-      if (BM_ID !== b.id) return;
-      var el = $('#bmVideoCol');
-      if (el) el.innerHTML = veNgheColDb(b, t, lopSlug, tenGocLop, NGHE_TD);
-    });
-  }
 
   /* "2026-09-13T23:59" -> "23:59 · 13/9" */
   function chuHanChangDb(han) {
     var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/.exec(String(han || '').trim());
     return m ? (m[4] + ':' + m[5] + ' · ' + (+m[3]) + '/' + (+m[2])) : '';
-  }
-
-  /* ⭐⭐ v1.77.0 — HỘP XEM BÀI CỦA DẠNG STAGE: act gom theo CHẶNG.
-     Chặng đang giữ cả lớp lại (quá giờ còn em chưa xong) hiện tên các em đó kèm
-     dấu ✕ để BỎ QUA (có hỏi xác nhận), và nút MỞ CHẶNG KẾ cho thầy ép mở. */
-  function veKhoiChangDb(t) {
-    return t.chang.map(function (c, i) {
-      var lop = c.tt === 'xong' ? ' xong' : c.tt === 'ket' ? ' ket'
-              : (c.tt === 'dang' ? ' dang' : '');
-      var nhan = !c.so ? 'Act không thuộc chặng nào'
-        : 'Chặng ' + c.so + ' · ' + (
-            c.tt === 'xong' ? 'cả lớp đã xong' :
-            c.tt === 'dang' ? 'đang làm' :
-            c.tt === 'ket'  ? 'quá giờ, còn ' + c.thieu.length + ' em' :
-            c.tt === 'cho'  ? 'sắp mở' : 'chưa mở');
-      var han = c.han ? '<span class="st-khoi-han">hạn ' + chuHanChangDb(c.han) +
-        (c.acts.length > 1 ? ' · ' + c.acts.length + ' act song song' : '') + '</span>' : '';
-      /* Nút mở chặng kế chỉ có nghĩa khi CÒN chặng sau và chặng sau chưa mở. */
-      var sau = t.chang[i + 1];
-      var nut = (sau && !sau.mo)
-        ? '<span class="st-khoi-nut"><button class="nut nho" data-mochang="' +
-          A.chuAnToan(t.bai.id) + '" data-so="' + (sau.so || 0) + '" data-lop="' +
-          A.chuAnToan(t.maLop) + '">Mở chặng ' + (sau.so || '') + ' ngay</button></span>'
-        : '';
-      var em = '';
-      if (c.tt === 'ket' && c.thieu.length) {
-        em = '<div class="chua-nop"><h4>ĐANG GIỮ CẢ LỚP LẠI (' + c.thieu.length +
-          ') — bấm ✕ để bỏ qua em này ở bài này</h4><div class="ten-ds">' +
-          c.thieu.map(function (ten) {
-            return '<span class="ten-o cham">' + A.chuAnToan(ten) +
-              '<button class="bo-qua" data-boqua="' + A.chuAnToan(ten) + '" data-bai="' +
-              A.chuAnToan(t.bai.id) + '" data-lop="' + A.chuAnToan(t.maLop) +
-              '" title="Bỏ qua em này ở bài này">✕</button></span>';
-          }).join('') + '</div></div>';
-      }
-      return '<div class="st-khoi' + lop + '"><div class="st-khoi-dau">' +
-        '<span class="st-khoi-ten">' + nhan + '</span>' + han + nut + '</div>' +
-        '<div class="bm-bt-rows">' + c.acts.map(function (a, k) {
-          var o = null;
-          for (var j2 = 0; j2 < t.acts.length; j2++) if (t.acts[j2].ma === a.ma) o = t.acts[j2];
-          return veBtHangDb(o || { ten: a.ten, ma: a.ma, mau: a.mau, xong: null }, t.siSo, k + 1);
-        }).join('') + '</div>' + em + '</div>';
-    }).join('');
-  }
-
-  // ⛔ v1.131.0 — HỘP CŨ (veRuotBai · veKhoiChangDb · veVideoColDb · veNgheColDb · napXxxChoModal ·
-  // napNopHop) KHÔNG CÒN ĐƯỢC GỌI — thay bằng khối `hq*` (hộp 3 tab). Giữ tới khi thầy duyệt live
-  // rồi xoá ở đợt sau; các hàm đọc dữ liệu (docTienDoVideoCuaBai/docTienDoNgheCuaBai/chamTuFs…) vẫn dùng.
-  function veRuotBai(t) {
-    var b = t.bai;
-    var l = A.lopTheoMa(DL, t.maLop);
-    var tenGocLop = (l && l.tenGoc) || t.maLop;
-    var lopSlug = avSlugLop(tenGocLop);
-
-    /* ⭐ v1.77.0 — bài STAGE (đã đọc xong điểm) thì gom act theo chặng. */
-    var act = (t.stage && t.chang)
-      ? veKhoiChangDb(t)
-      : (t.acts.length
-      ? '<div class="bm-khoi-dau"><span class="bm-khoi-nhan">Bài tập</span>' +
-          '<span class="bm-khoi-phu">sĩ số ' + t.siSo + '</span></div>' +
-        '<div class="bm-bt-box"><div class="bm-bt-rows">' + t.acts.map(function (a, i) {
-          return veBtHangDb(a, t.siSo, i + 1);
-        }).join('') + '</div></div>'
-      : '<p class="mau" style="margin:12px 0 0;color:var(--nhat)">Bài này không có game AWord nào.</p>');
-
-    var tay = b.tay ? '<p class="tay-dong">✍️ Bài làm trên giấy: <b>' +
-      A.chuAnToan(b.tay) + '</b></p>' : '';
-
-    // ⭐ v1.115.0 — "Chưa xong/Đã xong" đổi từ dải chữ sang HAI Ô AVATAR cạnh
-    // nhau (thầy chốt) — xem `veEmLuoiDb()`. Bỏ hẳn 3 nút cuối hộp cũ (Xem
-    // trang của học sinh / Chép tên em chưa xong / Xem thử một ví dụ).
-    var em = '';
-    if (t.daDoc) {
-      var xong = t.caLop.filter(function (ten) {
-        return !t.thieu.some(function (x) { return x.ten === ten; });
-      });
-      var thieuTen = t.thieu.slice().sort(function (a, c) { return c.so - a.so; })
-        .map(function (x) { return x.ten; });
-      em = '<div class="bm-xong-doi">' +
-        '<div class="bm-xong-o chua"><div class="bm-xong-nhan">Chưa xong (' + thieuTen.length + ')</div>' +
-          veEmLuoiDb(thieuTen, lopSlug, tenGocLop) + '</div>' +
-        '<div class="bm-xong-o du"><div class="bm-xong-nhan">Đã xong (' + xong.length + ')</div>' +
-          veEmLuoiDb(xong, lopSlug, tenGocLop) + '</div>' +
-      '</div>';
-    }
-
-    // ⭐ v1.36.0 — BỎ ô "Hạn riêng cho thẻ này" khỏi hộp xem bài (thầy chốt
-    // 02/09: đổi hạn phải là một hộp nhỏ riêng). Đường duy nhất nay là
-    // ⚙ Cài đặt thẻ → Đổi hạn nộp → `#hanPop`.
-    /* ⭐ v1.130.0 (tạm, đợt 2 sẽ thiết kế lại hộp) — BÀI NỘP SHEET: mỗi ô worksheet một dòng
-       "SHEET · tên · N em nộp · Xem" (mở pop-up ảnh nộp `moPopNop` — trước đây bấm hàng SHEET
-       trên thẻ). Số em đổ sau bằng `napNopHop()`. */
-    var nopWs = A.wsHienCuaThe(b, null);
-    var sheetHop = nopWs.length
-      ? '<div class="bm-khoi-dau"><span class="bm-khoi-nhan">Bài nộp sheet</span></div>' +
-        '<div class="bm-bt-box"><div class="bm-bt-rows">' + nopWs.map(function (w) {
-          return '<div class="bm-bt-hang bm-ws-hang"><span class="bm-bt-so">SHEET</span>' +
-            '<span class="bm-bt-chu"><span class="bm-bt-ten">' + A.chuAnToan(w.ten) + '</span>' +
-            '<span class="bm-bt-mau">' + w.soTrang + ' trang · <b class="bm-nop-so" data-bm-nop-so="' + A.chuAnToan(b.id) + '|' + w.o + '">…</b></span></span>' +
-            '<button type="button" class="tien bm-nop-xem" data-bm-nop="' + A.chuAnToan(b.id) + '|' + w.o + '">Xem bài nộp</button></div>';
-        }).join('') + '</div></div>'
-      : '';
-    var noiDung = act + tay + sheetHop + em;
-
-    // ⭐ v1.116.0/v1.117.0 — thẻ khóa học (có `b.baiGiang`) hoặc thẻ DICTS (có
-    // khối nghe) thêm CỘT TRÁI "Thời lượng" — xem `veVideoColDb()`/`veNgheColDb()`
-    // + `napVideoChoModal()`/`napNgheChoModal()`. Cột khởi đầu ở trạng thái
-    // "đang đọc kết quả…" (đối số cuối = null), hàm `napXxxChoModal` gọi NGAY
-    // sau khi hộp mở (từ `moBaiModal`) rồi tự vẽ lại đúng ô đó khi có dữ liệu
-    // — không vẽ lại NGUYÊN hộp (đỡ giật khi em đang cuộn khối bài tập).
-    if (coBaiGiangKh(b)) {
-      return '<div class="bm-grid-2"><div class="bm-video-col" id="bmVideoCol">' +
-        veVideoColDb(b, t, lopSlug, tenGocLop, null) +
-        '</div><div class="bm-rest-col">' + noiDung + '</div></div>';
-    }
-    if (coBaiNgheKh(b)) {
-      return '<div class="bm-grid-2"><div class="bm-video-col" id="bmVideoCol">' +
-        veNgheColDb(b, t, lopSlug, tenGocLop, null) +
-        '</div><div class="bm-rest-col">' + noiDung + '</div></div>';
-    }
-    return noiDung;
   }
 
   // ---------- ⭐ v1.20.0 — SỬA HẠN RIÊNG CHO MỘT THẺ ----------
@@ -3708,18 +3382,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
   function demEmNop(ds) {
     return ds.filter(function (d) { return Object.keys(d.trang || {}).some(function (k) { return d.trang[k] && d.trang[k].url; }); }).length;
   }
-  // ⭐ v1.130.0 — số em nộp trong HỘP QUẢN LÝ BÀI ("N em nộp"); cùng kho 60 giây với thẻ.
-  function napNopHop() {
-    document.querySelectorAll('.bm-nop-so[data-bm-nop-so]').forEach(function (el) {
-      var p = el.dataset.bmNopSo.split('|');
-      docNopBai(p[0], +p[1]).then(function (ds) {
-        el.textContent = demEmNop(ds) + ' em nộp';
-      })['catch'](function (e) {
-        var ma = String((e && (e.code || e.message)) || '');
-        el.textContent = ma.indexOf('permission') >= 0 ? '🔐 cần phiên thầy' : 'chưa đọc được';
-      });
-    });
-  }
   function napNopBai() {
     document.querySelectorAll('.td-nop[data-nop]').forEach(function (el) {
       var p = el.dataset.nop.split('|'), baiId = p[0], o = +p[1], siSo = +p[3] || 0;
@@ -3735,8 +3397,8 @@ table.hq-tl{width:100%; border-collapse:collapse}
       });
     });
   }
-  // ⭐ v1.131.0 — RUỘT bảng bài nộp tách ra dùng CHUNG: pop-up cũ `moPopNop` + tab BÀI NỘP của
-  // hộp quản lý (`hqTabBaiNop`). `ds` = tài liệu lessonNop của ô `o`; trả {hang, soDu, html}.
+  // ⭐ v1.131.0 — RUỘT bảng bài nộp dùng cho tab BÀI NỘP của hộp quản lý (`hqTabBaiNop`; pop-up cũ
+  // `moPopNop` đã xoá v1.133.0). `ds` = tài liệu lessonNop của ô `o`; trả {hang, soDu, html}.
   function dungHangNop(b, ws, o, n, t, ds) {
     var moc = A.mocHan(b);
       var theoMa = {};
@@ -3784,28 +3446,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
         '</div>';
       }).join('') || '<div class="nop-cho">Lớp chưa có em nào.</div>';
       return { hang: hang, soDu: soDu, html: html };
-  }
-  function moPopNop(baiId, o) {
-    var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === baiId; })[0];
-    if (!b) return;
-    var ws = A.wsCuaBai(b).filter(function (k, j) { return ((k.o != null && +k.o >= 0) ? +k.o : j) === o; })[0] || {};
-    var n = Math.max(1, +ws.soTrang || 1);
-    var t = tinhBai(b, LOP_CHON);
-    var moc = A.mocHan(b);
-    popRong(0);
-    $('#popKhung').classList.add('nop');
-    $('#popPhu').textContent = (ws.ten || 'WORKSHEET') + ' • ' + n + ' trang' + (ws.tep ? '' : ' • chưa gắn file');
-    $('#popDs').innerHTML = '<div class="nop-cho">Đang đọc bài nộp…</div>';
-    $('#popNen').classList.add('mo');
-    docNopBai(baiId, o, true).then(function (ds) {
-      var kq = dungHangNop(b, ws, o, n, t, ds);
-      $('#popPhu').textContent = (ws.ten || 'WORKSHEET') + ' • ' + n + ' trang • ' + kq.soDu + '/' + kq.hang.length + ' em nộp đủ';
-      $('#popDs').innerHTML = kq.html;
-    })['catch'](function (e) {
-      var ma = String((e && (e.code || e.message)) || '');
-      $('#popDs').innerHTML = '<div class="nop-cho">' + (ma.indexOf('permission') >= 0
-        ? 'Cần đăng nhập phiên thầy (nút 🔐 góc trên) mới xem được bài nộp.' : 'Chưa đọc được: ' + A.chuAnToan(ma)) + '</div>';
-    });
   }
   function gioNop(ms) {
     var d = new Date(+ms || 0);
@@ -3929,7 +3569,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
     return '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP GIẤY' +
       (ten ? '<br><span class="ws-nhac-ten">' + ten + '</span>!' : '<br>TRÊN WORKSHEET!') + '</span>';
   }
-
 
   // ================================================================
   // ⭐⭐ v1.113.0 (16/09/2026, thầy chốt) — THẺ KHÓA HỌC: Y HỆT THẺ `khoa.html`
@@ -4789,7 +4428,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
     return co.concat(chua);
   }
 
-
   // ================================================================
   // ⭐⭐ v1.113.0 (16/09/2026, thầy chốt "Tab từng BT") — POP-UP KẾT QUẢ DẠNG TAB cho
   // THẺ KHÓA HỌC: mỗi act một TAB (BT1 · BT2 · TNBG…), ruột là bảng xếp hạng MỘT act
@@ -5296,8 +4934,8 @@ table.hq-tl{width:100%; border-collapse:collapse}
   //     trang (bấm xem to), TRỄ, giờ nộp — dùng chung `dungHangNop` với pop-up cũ.
   //   Dữ liệu nạp SAU khi hộp hiện (nếp "hiện trước, đổ sau"), mỗi nguồn xong tự vẽ lại tab:
   //   scores tươi (có `luot` từng lượt, chung.js v1.131.0) · video · nghe · practiceLog (phiên
-  //   🔐 của thầy, luật `laThay`) · lessonNop. Hộp cũ (`veRuotBai` + cột) KHÔNG còn gọi — giữ
-  //   tới khi thầy duyệt live rồi xoá đợt sau.
+  //   🔐 của thầy, luật `laThay`) · lessonNop. ✅ v1.133.0 (thầy chốt) — HỘP CŨ (`veRuotBai`,
+  //   `veKhoiChangDb`, cột `veVideoColDb/veNgheColDb`, `napXxxChoModal`, `napNopHop`, `moPopNop`) ĐÃ XOÁ.
   // ================================================================
   var HQ = { id: null, tab: 'bt', b: null, t: null, video: null, nghe: null, act: {}, actLoi: '', nop: {}, nopLoi: '', chang: null, ct: null };
   var MAU_TT = ['#128A6E', '#3E7BFA', '#E0A400', '#C2410C', '#7C3AED', '#0E96A8', '#B03A3E'];   // v1.132.0 — mỗi act một màu ở đồ thị tiến triển
@@ -5476,7 +5114,15 @@ table.hq-tl{width:100%; border-collapse:collapse}
     }
     if (thanh) {
       thanh.classList.toggle('chon', HQ.chang !== 'all');
-      Array.prototype.forEach.call(thanh.querySelectorAll('[data-hqchang]'), function (k) { k.classList.toggle('xem', +k.getAttribute('data-hqchang') === HQ.chang); });
+      // v1.133.0 — làm mới MÀU trạng thái + dấu ✓ của từng khúc (chặng vừa được ép mở/xong thì đổi ngay), vẫn KHÔNG tạo nút mới.
+      Array.prototype.forEach.call(thanh.querySelectorAll('[data-hqchang]'), function (k) {
+        var i2 = +k.getAttribute('data-hqchang'), c3 = t.chang[i2] || {};
+        var lop2 = c3.tt === 'xong' ? 'xong' : c3.tt === 'dang' ? 'dang' : c3.tt === 'ket' ? 'ket' : c3.tt === 'cho' ? 'cho' : 'xa';
+        k.className = 'st-khuc ' + lop2 + (i2 === HQ.chang ? ' xem' : '');
+        var tick = k.querySelector('.tick');
+        if (c3.tt === 'xong' && !tick) k.insertAdjacentHTML('afterbegin', '<span class="tick">✓</span>');
+        else if (c3.tt !== 'xong' && tick) tick.remove();
+      });
     }
     nhipDongHo();   // điền đồng hồ ngay, khỏi chờ nhịp 1 giây
   }
@@ -5632,8 +5278,15 @@ table.hq-tl{width:100%; border-collapse:collapse}
             c.tt === 'ket' ? 'quá giờ, còn ' + c.thieu.length + ' em' : c.tt === 'cho' ? 'sắp mở' : 'chưa mở');
       var han = c.han ? '<span class="hq-khoi-han">hạn ' + chuHanChangDb(c.han) + '</span>' : '';
       var sau = t.chang[i + 1];
-      var nut = (sau && !sau.mo)
-        ? '<span class="hq-khoi-nut"><button class="nut nho" data-mochang="' + A.chuAnToan(t.bai.id) + '" data-so="' + (sau.so || 0) + '" data-lop="' + A.chuAnToan(t.maLop) + '">Mở chặng ' + (sau.so || '') + ' ngay</button></span>' : '';
+      // ⭐ v1.133.0 (thầy chốt) — sau khi bấm "Mở chặng X ngay", chính KHỐI CHẶNG X (chặng đang bị ép mở, `moChang` = X)
+      // có nút "Chặng X về mặc định": trả `moChang` về X−1 (chặng trước đã ép thì vẫn giữ), chặng X lại CHỜ cả lớp
+      // xong chặng trước như luật ban đầu. Đặt ở khối X vì hộp mặc định đang mở đúng chặng X — thầy thấy ngay.
+      var nut = '';
+      if (c.so && c.so === A.moChangCua(b))
+        nut += '<button class="nut nho" data-huymochang="' + A.chuAnToan(t.bai.id) + '" data-so="' + c.so + '" title="Bỏ ép mở: chặng ' + c.so + ' đóng lại, chờ cả lớp xong chặng trước">Chặng ' + c.so + ' về mặc định</button>';
+      if (sau && !sau.mo)
+        nut += '<button class="nut nho" data-mochang="' + A.chuAnToan(t.bai.id) + '" data-so="' + (sau.so || 0) + '" data-lop="' + A.chuAnToan(t.maLop) + '">Mở chặng ' + (sau.so || '') + ' ngay</button>';
+      if (nut) nut = '<span class="hq-khoi-nut">' + nut + '</span>';
       var muc = (c.muc || c.acts || []).filter(laMuc);
       // worksheet CHƯA xếp chặng (không `han`) không thuộc chặng nào ⇒ ghi ở khối chặng ĐANG MỞ (y thẻ).
       if (i === A.changHien(t.chang)) khoi.forEach(function (k) { if (k.loai === 'ws' && k.ten && !String(k.han || '').trim()) muc = muc.concat([k]); });
@@ -7520,10 +7173,6 @@ table.hq-tl{width:100%; border-collapse:collapse}
       }
       // ⭐ v1.88.0 — WORKSHEET không có điểm nào để mở bảng — vùng nhắc của nó
       // rơi xuống nhánh chung bên dưới (mở hộp quản lý bài, y hệt bấm thân thẻ).
-      // ⭐ v1.130.0 — hàng SHEET không còn mở pop-up riêng (thầy chốt: như bấm vùng điểm);
-      // pop-up bài nộp nay gọi từ HỘP QUẢN LÝ BÀI (`[data-bm-nop]`).
-      var bmNop = e.target.closest('[data-bm-nop]');
-      if (bmNop) { var pw = bmNop.dataset.bmNop.split('|'); return void moPopNop(pw[0], +pw[1]); }
       var diemBtn = e.target.closest('.the[data-id]:not(.worksheet) .the-diem');
       if (diemBtn) return void moPopDiem(diemBtn.closest('.the[data-id]').dataset.id);
 
@@ -7578,6 +7227,19 @@ table.hq-tl{width:100%; border-collapse:collapse}
         return;
       }
 
+      /* ⭐ v1.133.0 — CHẶNG X VỀ MẶC ĐỊNH: bỏ ép mở, `moChang` = X−1 (chặng trước đã ép thì vẫn giữ). */
+      var hmc = e.target.closest('[data-huymochang]');
+      if (hmc) {
+        var idH = hmc.dataset.huymochang, soH = +hmc.dataset.so || 0;
+        moXnPop(hmc, {
+          tieuDe: 'Chặng ' + soH + ' về mặc định?',
+          chu: 'Chặng ' + soH + ' sẽ đóng lại và chỉ mở khi CẢ LỚP xong chặng trước (đúng luật ban đầu). ' +
+               'Em nào đã làm bài ở chặng ' + soH + ' vẫn giữ điểm.',
+          nutOk: 'Về mặc định',
+          khiOk: function () { stageGhi(idH, { moChang: Math.max(0, soH - 1) }, null, 'Chặng ' + soH + ' đã về mặc định — chờ cả lớp xong chặng trước.'); }
+        });
+        return;
+      }
       /* ⭐ v1.77.0 — MỞ CHẶNG KẾ (ép mở, không chờ đủ điều kiện). */
       var mc = e.target.closest('[data-mochang]');
       if (mc) {

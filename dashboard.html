@@ -1576,10 +1576,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
    dời lên GIỮA HÀNG ĐẦU HỘP (`#bmGiua`, giữa "Thầy Andrew" và tên bài) để tiết kiệm chiều cao cho ruột.
    Mẫu: `D:\OTHERS\CLAUDE\myLesson - thiet ke hop quan ly\mau-v4.html` (v1–v3 giữ để so). */
 .bm-hop.hq .bm-dau{padding:12px 18px; gap:12px}
-.bm-hop.hq .bm-bai-tag{margin-left:0; flex:0 1 28%}
+.bm-hop.hq .bm-bai-tag{margin-left:0; flex:0 1 24%}
 .bm-hop.hq .bm-dau > .bm-av + div{flex:none}   /* khối "Thầy Andrew" không bị ép cụt khi ô hạn dài */
-.bm-giua{flex:1; min-width:0; display:none; align-items:center; justify-content:center; gap:8px}
+/* ⭐ v1.132.1 — thầy báo ĐÈ CHỮ (ảnh 22/09): `justify-content:center` mà ruột rộng hơn ô thì tràn CẢ HAI PHÍA, đè lên
+   "Thầy Andrew". Nay ô giữa `overflow:hidden` + ruột `.bm-giua-ruot{margin:0 auto}` = "safe center": đủ chỗ thì đứng giữa,
+   thiếu chỗ thì bám mép trái và thanh chặng CO LẠI (`flex:0 1 300px; min-width:150px`) chứ không đè. */
+.bm-giua{flex:1 1 0; min-width:0; display:none; align-items:center; overflow:hidden}
 .bm-hop.hq .bm-giua{display:flex}
+.bm-giua-ruot{display:flex; align-items:center; gap:8px; margin:0 auto; min-width:0; max-width:100%}
 .hq-han{display:flex; align-items:center; gap:9px; padding:5px 11px; border-radius:10px; background:var(--vang-nhat); border:1px solid #F5DDB0; white-space:nowrap; flex:none}
 .hq-han b{font:800 10.5px/1.2 var(--font); color:#8a5b0e; letter-spacing:.04em}
 .hq-han b i{font-style:normal; font-weight:700; color:#B08A3E}
@@ -1587,7 +1591,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-han.gap{background:var(--do-nhat); border-color:#F3C4BE} .hq-han.gap b{color:#B03A3E}
 /* Thanh chặng trong đầu hộp: TÁI DÙNG `.st-bar`/`.st-khuc` (CSS chung phía trên, bản chép thứ ba của lop/bai),
    ép mọi khúc CÙNG cao 28 (khúc đang/kết không nhô), khúc là <button>. */
-.bm-giua .st-bar{width:min(300px,30vw); flex:0 1 auto}
+.bm-giua .st-bar{width:auto; flex:0 1 300px; min-width:150px}
 .bm-giua .st-khuc{--h:28px; flex:1 1 auto; border:0; font:800 9.5px/1 var(--font); letter-spacing:.05em; cursor:pointer;
   padding-left:calc(var(--dx) + 8px); padding-right:calc(var(--dx) + 4px); transition:opacity .25s, filter .25s}
 .bm-giua .st-khuc.dang, .bm-giua .st-khuc.ket{--h:28px; font-size:9.5px}
@@ -1597,10 +1601,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .bm-giua .st-bar.chon .st-khuc:not(.xem){opacity:.38; filter:saturate(.4); animation:none}
 .bm-giua .st-khuc.xem::after{content:''; position:absolute; inset:2px 11px; border:1.5px dashed rgba(255,255,255,.8); border-radius:4px; pointer-events:none}
 .bm-giua .st-khuc.xa.xem::after, .bm-giua .st-khuc.cho.xem::after{border-color:rgba(22,35,42,.3)}
-/* Nút ⚙ chỉ icon, bánh răng Lucide `settings` (thầy chốt "bánh răng hiện đại"), rê chuột xoay nhẹ. */
-.hq-cd{width:32px; height:32px; flex:none; border-radius:10px; border:1px solid var(--vien); background:var(--the); color:var(--mo); display:grid; place-items:center; cursor:pointer; transition:transform .25s ease, color .15s, border-color .15s, background .15s}
-.hq-cd:hover{border-color:var(--xanh); color:var(--xanh); background:var(--xanh-nhat); transform:rotate(30deg)}
-.hq-cd svg{width:17px; height:17px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+/* Nút ⚙ chỉ icon, bánh răng Lucide `settings`, rê chuột xoay nhẹ. ⭐ v1.132.1 (thầy chốt): KHÔNG nền/viền, đứng CUỐI
+   dải tab BÀI TẬP · THỜI LƯỢNG · BÀI NỘP (`hqTabsRuot`), không còn ở đầu hộp. */
+.hq-cd{width:32px; height:32px; flex:none; margin-left:auto; align-self:center; margin-bottom:4px; border-radius:10px; border:0; background:transparent; color:var(--mo); display:grid; place-items:center; cursor:pointer; transition:transform .25s ease, color .15s}
+.hq-cd:hover{color:var(--xanh); transform:rotate(30deg)}
+.hq-cd svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 .hq-tabs{flex:none; display:flex; gap:6px; padding:12px 18px 0; background:var(--nen)}
 .hq-tab{border:1px solid transparent; border-bottom:0; background:transparent; color:var(--mo); font:800 11.5px/1 var(--font);
   letter-spacing:.07em; text-transform:uppercase; padding:11px 16px 12px; border-radius:12px 12px 0 0; cursor:pointer; display:inline-flex; align-items:center; gap:8px}
@@ -2346,7 +2351,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
   <div class="bm-dau">
     <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
     <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
-    <!-- ⭐ v1.132.0 — GIỮA hàng đầu: ô hạn + thanh chặng mũi tên (bấm/đúp) + nút ⚙ Cài đặt bài (`.hq-cd`), xem `hqVeDauGiua` -->
+    <!-- ⭐ v1.132.0 — GIỮA hàng đầu: ô hạn + thanh chặng mũi tên (bấm/đúp), xem `hqVeDauGiua`; ⚙ Cài đặt bài từ v1.132.1 ở cuối dải tab (`hqTabsRuot`) -->
     <div class="bm-giua" id="bmGiua"></div>
     <div class="bm-bai-tag" id="bmBaiTag"></div>
     <button class="bm-dong" id="bmDong" title="Đóng">
@@ -2484,7 +2489,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=100"></script>
+<script src="config.js?v=101"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5345,7 +5350,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
       '<div class="bm-baiten">' + A.chuAnToan(A.tenBai(b)) +
         (nhanBm ? ' <span class="kho-nhan ' + nhanBm.lop + '">' + nhanBm.chu + '</span>' : '') +
       '</div>' +
-      '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + ' · ' + A.chuAnToan(t.maLop) + ' · sĩ số ' + t.siSo + '</div>';
+      '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + ' · ' + A.chuAnToan(hqLopGoc(t)) + '</div>';   // v1.132.1 — tên lớp GỐC (NỀN TẢNG 4), bỏ sĩ số (thầy chốt)
     var giuTab = (BM_ID === id && HQ.id === id) ? HQ.tab : 'bt';
     var giuNap = (HQ.id === id);
     BM_ID = id;
@@ -5425,7 +5430,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
     return { acts: t.acts.filter(function (a) { return maCho[a.ma]; }), ws: ws, nghe: coNghe && coBaiNgheKh(b),
              chu: c.so ? 'chặng ' + c.so : 'mục không thuộc chặng' };
   }
-  // ---- ⭐ v1.132.0 — GIỮA HÀNG ĐẦU HỘP: ô hạn + thanh chặng mũi tên + ⚙ (thay thanh tổng quan riêng của v1.131) ----
+  // ---- ⭐ v1.132.0 — GIỮA HÀNG ĐẦU HỘP: ô hạn + thanh chặng mũi tên (thay thanh tổng quan riêng của v1.131; ⚙ từ v1.132.1 dời xuống cuối dải tab) ----
   // ⛔ Thanh chặng chỉ VẼ MỘT LẦN cho mỗi bài, về sau chỉ đổi class: nếu vẽ lại innerHTML ngay ở cú bấm thứ nhất
   // thì cú thứ hai rơi vào nút MỚI ⇒ trình duyệt không bắn `dblclick` (đã cắn ở mẫu v4).
   function hqVeDauGiua() {
@@ -5465,9 +5470,8 @@ table.hq-tl{width:100%; border-collapse:collapse}
           (c2.tt === 'xong' ? '<span class="tick">✓</span>' : '') + '<span class="lbl">STAGE ' + c2.so + '</span></button>';
       }).join('') : '';
       hop.setAttribute('data-id', b.id);
-      hop.innerHTML = '<span id="hqHanO" style="display:contents">' + han + '</span>' +
-        (laStage ? '<span class="st-bar" id="hqThanhChang" title="Bấm một chặng = xem riêng chặng đó · Đúp = xem cả hành trình">' + khuc + '</span>' : '') +
-        '<button type="button" class="hq-cd" data-rail-caidat="' + A.chuAnToan(b.id) + '" title="Cài đặt bài · đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_HQ + '</button>';
+      hop.innerHTML = '<span class="bm-giua-ruot"><span id="hqHanO" style="display:contents">' + han + '</span>' +
+        (laStage ? '<span class="st-bar" id="hqThanhChang" title="Bấm một chặng = xem riêng chặng đó · Đúp = xem cả hành trình">' + khuc + '</span>' : '') + '</span>';
       thanh = hop.querySelector('#hqThanhChang');
     }
     if (thanh) {
@@ -5493,7 +5497,9 @@ table.hq-tl{width:100%; border-collapse:collapse}
         (so != null ? '<span class="so' + (coSo ? ' co' : '') + '">' + so + '</span>' : '') + '</button>';
     };
     return tab('bt', 'Bài tập', soAct ? soAct + ' act' : null) + tab('tl', 'Thời lượng', null) +
-      (ws.length ? tab('nop', 'Bài nộp', nopSo == null ? '…' : nopSo, true) : '');
+      (ws.length ? tab('nop', 'Bài nộp', nopSo == null ? '…' : nopSo, true) : '') +
+      // ⭐ v1.132.1 — nút ⚙ Cài đặt bài (chỉ icon) đứng CUỐI dải tab (thầy chốt), menu vẫn qua `data-rail-caidat`.
+      '<button type="button" class="hq-cd" data-rail-caidat="' + A.chuAnToan(HQ.b.id) + '" title="Cài đặt bài · đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_HQ + '</button>';
   }
   function hqVeTab() {
     if (HQ.tab === 'tl') return hqTabThoiLuong();

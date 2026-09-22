@@ -1882,7 +1882,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=103"></script>
+<script src="config.js?v=104"></script>
 <script src="js/chung.js?v=58"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -2941,8 +2941,11 @@ function veKhoi(k, so){
   // bên đó KHÔNG ghi bài làm vào kho điểm chung của lớp (không tăng lượt nộp, không
   // vào leaderboard/kết quả của thầy) và màn kết thúc CHỈ hiện dòng điểm của CHÍNH họ.
   // Xem AWord `web/play.js` (đọc `?db=1`) — sửa ở phiên khác, kho AWord riêng.
+  // ⭐ v1.134.0 — gửi kèm MÃ em (`&ma=`): AWord (Đợt 367) ghi `ma` vào scores/results/practiceLog ⇒ đổi
+  // tên em không làm điểm "lạc" (web khớp theo mã trước, tên sau — `A.khoaEm`). HS đặc biệt không có mã roster.
   var link  = AWORD + '/play.html?g=' + encodeURIComponent(k.ma) +
               '&n=' + encodeURIComponent(TOI) + '&lop=' + encodeURIComponent(LOP_HIEN) +
+              (MA_HS && !LA_DAC_BIET ? '&ma=' + encodeURIComponent(MA_HS) : '') +
               (LA_DAC_BIET ? '&db=1' : '');
   var nhung = link + '&nhung=1';
   suoiAWord(nhung);   /* ⭐ v1.54.0 — kéo sẵn trang + mã AWord, bấm READY là có ngay */

@@ -48,7 +48,7 @@
   // (0x300-0x36F là dải dấu thanh). Viết dải đó vào regex là phải gõ ký tự dấu
   // vào mã nguồn, mà mọi công cụ sửa file đều tự chuẩn hoá Unicode ⇒ hàm hỏng
   // lặng lẽ, không báo lỗi gì. Đã vấp đúng bẫy này ngay trong phiên 23/08.
-  function khoaTen(t) {
+  function chuanTen(t) {
     var d = String(t || '').normalize('NFD'), ra = '';
     for (var i = 0; i < d.length; i++) {
       var c = d.charCodeAt(i);
@@ -56,6 +56,65 @@
       ra += (c === 0x111 || c === 0x110) ? 'd' : d.charAt(i);   // đ / Đ -> d
     }
     return ra.trim().toLowerCase().replace(/\s+/g, ' ');
+  }
+
+  /* ⭐⭐ v1.134.0 (22/09/2026, thầy chốt "bịt kín 4 việc, không ID lớp") — KHOÁ EM THEO MÃ + TÊN CŨ.
+     Điểm AWord (`assignments/<act>/scores`), lượt luyện (`practiceLog`), danh sách "em chưa xong chặng"
+     và `boQua` của STAGE đều ghi theo TÊN. Thầy đổi tên em bên myStudent (giữ mã) ⇒ trước đây
+     `khoaTen('MINH THƯ') !== khoaTen('THƯ')` ⇒ điểm cũ "mất", thẻ báo chưa làm, STAGE chặn cả
+     lớp chờ em. Nay:
+       · `BANG_EM` dựng từ roster lúc `napDuLieu()` (`datBangEm`): tên hiện tại + MỌI tên cũ
+         (`hocSinh[].tenCu`, myStudent ghi lại mỗi lần thầy đổi tên) → MÃ em. Tên nào 2 em
+         khác mã cùng mang (trùng tên trong trung tâm) thì KHÔNG gắn mã — giữ so chữ như cũ.
+       · `khoaTen(tên)` = '#<mã>' khi tên (hoặc tên cũ) tra ra đúng một em, không thì chuỗi
+         chuẩn hoá như cũ ⇒ 40+ chỗ so tên trên 5 trang tự khớp tên cũ ↔ tên mới, không sửa từng chỗ.
+       · `khoaEm(bản ghi)` cho dòng điểm/lượt luyện: có `ma` (AWord ghi từ Đợt 367, web gửi `&ma=`)
+         và mã đó là em có tên duy nhất ⇒ '#<mã>' ngay, không cần tên; không thì lùi về `khoaTen`.
+         Hai vế luôn qua CÙNG một luật nên "bằng nhau" được giữ (tên trùng ⇒ cả hai vế đều là chữ).
+     ⛔ Chỉ tra tên CHÍNH XÁC sau chuẩn hoá — KHÔNG so lỏng kiểu đuôi tên (bẫy 12/09: "HẢI" là
+     đuôi của "NGUYỄN HẢI" phụ huynh ⇒ gắn nhầm; xem [[bay-neo-vao-ten]]).
+     ⛔ `lopHien()` (tên lớp hiển thị) dùng `chuanTen` thuần — không phải tên em. */
+  var BANG_EM = { ten: {}, mo: {} };   // ten[tên chuẩn] = mã ('' = trùng tên) · mo[mã] = tên hiện tại duy nhất
+  function datBangEm(dl) {
+    var ten = {}, dem = {}, tenHien = {};
+    var hs = [];
+    ['lop', 'khoa'].forEach(function (k) {
+      ((dl && dl[k]) || []).forEach(function (l) { hs = hs.concat((l && l.hocSinh) || []); });
+    });
+    hs.forEach(function (h) {
+      var ma = String((h && h.ma) || '').trim(), k = chuanTen(h && h.ten);
+      if (!ma || !k) return;
+      if (!dem[k]) dem[k] = {};
+      dem[k][ma] = 1; tenHien[k] = 1;
+    });
+    Object.keys(dem).forEach(function (k) {
+      var cac = Object.keys(dem[k]);
+      ten[k] = cac.length === 1 ? cac[0] : '';
+    });
+    hs.forEach(function (h) {
+      var ma = String((h && h.ma) || '').trim();
+      if (!ma) return;
+      ((h && h.tenCu) || []).forEach(function (t) {
+        var k = chuanTen(t);
+        if (!k || tenHien[k]) return;            // tên cũ trùng tên hiện tại của ai đó ⇒ không gắn
+        if (ten[k] == null) ten[k] = ma;
+        else if (ten[k] !== ma) ten[k] = '';     // hai em từng cùng mang tên này ⇒ mập mờ
+      });
+    });
+    var mo = {};
+    Object.keys(ten).forEach(function (k) { if (ten[k] && tenHien[k]) mo[ten[k]] = 1; });
+    BANG_EM = { ten: ten, mo: mo };
+  }
+  function khoaTen(t) {
+    var k = chuanTen(t);
+    var ma = k && BANG_EM.ten[k];
+    return ma ? '#' + ma : k;
+  }
+  function khoaEm(x) {
+    if (!x || typeof x !== 'object') return khoaTen(x);
+    var ma = String(x.ma || '').trim();
+    if (ma && BANG_EM.mo[ma]) return '#' + ma;
+    return khoaTen(x.ten != null ? x.ten : x.name);
   }
 
   // ⭐⭐ v1.64.0 (05/09/2026, thầy chốt) — CHỮ LỚP ĐƯA CHO HỌC SINH XEM.
@@ -86,7 +145,7 @@
     var ma = String(maLop || '').trim();
     var goc = String(tenGoc || '').trim();
     if (!goc) return ma;
-    var chu = khoaTen(goc).toUpperCase();          // bỏ dấu + gom khoảng trắng
+    var chu = chuanTen(goc).toUpperCase();         // bỏ dấu + gom khoảng trắng (tên LỚP, không qua bảng em)
     if (!/[A-Z]{3,}/.test(chu)) return ma;         // tên kiểu mã -> dùng mã lớp
     return chu.replace(/^NEN\s+/, 'N.');           // "NEN TANG 4" -> "N.TANG 4"
   }
@@ -224,6 +283,7 @@
         NGHI = r[3] || {};
         // ⭐ v1.119.0 — LỚP: bản mới hơn giữa lop.json và lessonWeb/lop.
         var lopDung = moiHon(r[0], r[4]) || {};
+        datBangEm(lopDung);                          // v1.134.0 — tên (+ tên cũ) → mã, cho khoaTen/khoaEm
         var baiTinh = r[1] || {};
         // ⛔ v1.78.0 — PHẢI mang theo `khoa` (khóa học). Hàm này CHÉP LẠI từng trường
         // chứ không trả nguyên `r[0]`, nên thêm mảng mới ở `lop.json` mà quên dòng này
@@ -854,6 +914,7 @@
               tatCa.push({
                 id: String(doc.name || '').split('/').pop(),   // v1.131.0 — khớp `attemptId` của practiceLog
                 ten: (f.name && f.name.stringValue) || '?',
+                ma: (f.ma && f.ma.stringValue) || '',           // v1.134.0 — mã em (AWord Đợt 367, web gửi &ma=)
                 diem: soF(f.score), tong: soF(f.total), ms: soF(f.timeMs),
                 // `createdAt` = lúc nộp (mốc mili giây, AWord ghi bằng Date.now()).
                 // Dùng làm "nộp lúc" trong bảng cả lớp; thiếu thì coi như 0.
@@ -937,7 +998,7 @@
     var theo = {};
     var mau = mauChuan(ds);
     ds.forEach(function (r) {
-      var k = khoaTen(r.ten);
+      var k = khoaEm(r);                            // v1.134.0 — mã trước, tên (kể cả tên cũ) sau
       if (!k) return;
       var pt = mau > 0 ? Math.round(r.diem / mau * 100) : 0;
       var cu = theo[k];
@@ -945,12 +1006,13 @@
       // (dashboard tab THỜI LƯỢNG); phần gộp "lượt tốt nhất" bên dưới không đổi.
       var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, diem: r.diem, tong: r.tong };
       if (!cu) {
-        theo[k] = { ten: r.ten, diem: pt, giay: Math.round((r.ms || 0) / 1000),
+        theo[k] = { ten: r.ten, ma: r.ma || '', diem: pt, giay: Math.round((r.ms || 0) / 1000),
                     luc: r.luc || 0, cacTen: [r.ten], luot: [lu],
                     tho: { diem: r.diem, tong: r.tong } };
         return;
       }
       cu.cacTen.push(r.ten); cu.luot.push(lu);
+      if (!cu.ma && r.ma) cu.ma = r.ma;
       var g = Math.round((r.ms || 0) / 1000);
       // Lượt NỘP ĐẦU TIÊN mới là mốc "em ấy nộp lúc mấy giờ" — em làm lại lần
       // hai để lên điểm thì không vì thế mà thành người nộp muộn.
@@ -1116,7 +1178,7 @@
   function xongAct(dsDiem, ten, chuan) {
     var k = khoaTen(ten);
     for (var i = 0; i < (dsDiem || []).length; i++) {
-      if (khoaTen(dsDiem[i].ten) !== k) continue;
+      if (khoaEm(dsDiem[i]) !== k) continue;       // v1.134.0 — dòng điểm có `ma` thì khớp theo mã
       if (!chuan || chuan.tru) return true;
       return dsDiem[i].diem >= chuan.dinh;
     }
@@ -2976,7 +3038,7 @@
     lichCua: lichCua, buoiChuaMoc: buoiChuaMoc, theDangHoc: theDangHoc,
     nghiConHieuLuc: nghiConHieuLuc,
     theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
-    chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, lopHien: lopHien,
+    chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, chuanTen: chuanTen, khoaEm: khoaEm, datBangEm: datBangEm, lopHien: lopHien,
     napDuLieu: napDuLieu, napJson: napJson,
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
     // ⭐⭐ v1.95.0 — em nào có mặt ở một bài (bỏ em vào lớp sau ngày giao)

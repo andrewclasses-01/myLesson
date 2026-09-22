@@ -2424,7 +2424,7 @@ table.hq-tl{width:100%; border-collapse:collapse}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=103"></script>
+<script src="config.js?v=104"></script>
 <script src="js/chung.js?v=58"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5179,13 +5179,13 @@ table.hq-tl{width:100%; border-collapse:collapse}
   function hqGioAct(ma, ten) {
     var k = A.khoaTen(ten), luot = [], daCo = {};
     (HQ.act[ma] || []).forEach(function (d) {
-      if (A.khoaTen(d.name) !== k) return;
+      if (A.khoaEm(d) !== k) return;               // v1.134.0 — lượt luyện có `ma` thì theo mã
       luot.push({ luc: +d.createdAt || 0, giay: Math.round((+d.timeMs || 0) / 1000),
                   loai: d.done ? (d.mode === 'submit' ? 'nop' : 'luyen') : 'do',
                   diem: +d.score || 0, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes });
       if (d.attemptId) daCo[d.attemptId] = 1;
     });
-    var em = (DIEM[ma] || []).filter(function (e) { return A.khoaTen(e.ten) === k; })[0];
+    var em = (DIEM[ma] || []).filter(function (e) { return A.khoaEm(e) === k; })[0];
     ((em && em.luot) || []).forEach(function (l) {
       if (l.id && daCo[l.id]) return;
       luot.push({ luc: +l.luc || 0, giay: Math.round((+l.ms || 0) / 1000), loai: 'nop', diem: +l.diem || 0, tong: +l.tong || 0 });

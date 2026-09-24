@@ -1837,9 +1837,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .bxh-dong.chua .ten{color:#DC2626}
 .bxh-dong.chua .diem, .bxh-dong.chua .tg{color:#D3DCDA}
 .hq-xh-phai{--f:13px; --av:26px; min-width:0; min-height:0; border:1px solid var(--vien); border-radius:14px; background:var(--the); display:flex; flex-direction:column; overflow:hidden}
-.bd-dau{flex:none; display:flex; align-items:baseline; gap:10px; padding:10px 14px 8px; border-bottom:1px solid var(--vien)}
+.bd-dau{flex:none; display:flex; align-items:baseline; justify-content:center; gap:10px; padding:10px 14px 8px; border-bottom:1px solid var(--vien)}
 .bd-dau b{font:800 calc(var(--f)*.95)/1.2 var(--font); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap}
-.bd-dau .tb{margin-left:auto; font:700 calc(var(--f)*.8)/1 var(--font); color:var(--mo); white-space:nowrap}
 .bd-than{flex:1; min-height:0; position:relative; padding:6px 14px 4px}
 .bd-ds{position:relative; height:100%; display:grid; grid-template-rows:repeat(var(--n),minmax(0,1fr))}
 .bd-dong{display:grid; grid-template-columns:calc(var(--f)*1.5) var(--av) var(--wten,9em) minmax(0,1fr) calc(var(--f)*7.4); align-items:center; gap:calc(var(--f)*.55); min-height:0; cursor:pointer; border-radius:8px; padding-right:4px}
@@ -2691,7 +2690,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=116"></script>
+<script src="config.js?v=117"></script>
 <script src="js/chung.js?v=61"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5961,7 +5960,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   // TRÁI: mỗi act của phạm vi đang xem một BẢNG XẾP HẠNG (đặt cạnh nhau; 4 act trở lên xuống 2 hàng). Mỗi em lấy lượt NỘP TỐT NHẤT
   //   (điểm cao nhất, bằng điểm thì nhanh hơn); dòng = hạng (top 3 huy chương) · tên · điểm x/y (đủ điểm xanh) · thời gian làm lượt đó.
   //   Em chưa nộp lượt nào: tên đỏ, "—", cuối bảng. Góc bảng "x/y đã xong" = số em ĐỦ ĐIỂM (`coTrongDiem`).
-  // PHẢI: cột ngang TỔNG THỜI GIAN luyện (video + nghe + act của phạm vi), nhiều → ít, giờ bên phải, trục giờ + trung bình lớp.
+  // PHẢI: cột ngang TỔNG THỜI GIAN luyện (video + nghe + act của phạm vi), nhiều → ít, giờ bên phải, trục giờ (v1.144.2: bỏ "trung bình", tiêu đề ra giữa — thầy chốt).
   // Em KHÔNG TÍNH ở phạm vi đang xem không vào hai bảng này. Không đọc thêm Firestore: dùng lượt đã nạp cho THỜI LƯỢNG.
   function hqBxhAct(a, hs, j) {
     var dong = hs.map(function (h) {
@@ -6002,9 +6001,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var trai = soA ? pv.acts.map(function (a) { return hqBxhAct(a, hs, t.acts.indexOf(a)); }).join('') : '<div class="bm-em-trong">Phạm vi này không có game AWord.</div>';
     var rows = hs.map(function (h) { return { h: h, tong: hqTongEm(h.ten, pv) }; });
     rows.sort(function (x, y) { return (y.tong - x.tong) || x.h.ten.localeCompare(y.h.ten, 'vi'); });
-    var max = Math.max(60, rows[0].tong), coLam = rows.filter(function (r) { return r.tong; }), tb = coLam.length ? coLam.reduce(function (s2, r) { return s2 + r.tong; }, 0) / coLam.length : 0;
+    var max = Math.max(60, rows[0].tong);
     var buoc = max > 36000 ? 7200 : max > 14400 ? 3600 : 1800, dinh = Math.ceil(max / buoc) * buoc;
-    var phai = '<div class="bd-dau"><b>Tổng thời gian luyện tập</b><span class="tb">trung bình ' + hqChuPhut(tb) + '</span></div>' +
+    var phai = '<div class="bd-dau"><b>Tổng thời gian luyện tập</b></div>' +
       '<div class="bd-than"><div class="bd-luoi" id="hqXhLuoi"></div><div class="bd-ds" style="--n:' + rows.length + '">' +
       rows.map(function (r, k) {
         return '<div class="bd-dong' + (r.tong ? '' : ' chua') + '" data-hq-em="' + A.chuAnToan(r.h.ten) + '" title="Đúp để xem chi tiết"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(r.h.ten, slug, lopGoc) +

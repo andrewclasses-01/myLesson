@@ -1815,8 +1815,13 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
    XẾP HẠNG: 1 act ⇒ hai nửa bằng nhau (bảng act · tổng thời gian); chữ to hơn (trần 26px, tự co cho tên hiện trọn); giờ ĐẬM.
    POP-UP EM: chấm đồ thị nhỏ lại, bấm chấm ⇄ bấm dòng (chấm SÁNG lên), bảng lượt gọn bề ngang + giãn dòng, chữ "hạn" trên đầu vạch.
    ĐÚP một dòng lượt ⇒ POP-UP BÀI LÀM từng câu (`hqMoBaiLam`). */
-.bxh-dong .tg{font-weight:800; color:var(--chu); font-size:calc(var(--f)*.98)}
-.bxh-dong .diem{font-size:calc(var(--f)*1.05)}
+.hq-xh .bxh-dong .tg{font-weight:800; color:var(--chu); font-size:calc(var(--f)*.98)}   /* .hq-xh = thắng luật .bxh-dong gốc viết SAU khối này */
+.hq-xh .bxh-dong .diem{font-size:calc(var(--f)*1.05)}
+.hq-xh .bxh-dong.chua .tg, .hq-xh .bxh-dong.chua .diem{color:#D3DCDA}
+/* dòng báo (vd "Cần phiên thầy") nằm TRÊN bảng ⇒ bảng lấp phần còn lại, không đòi đủ 100% rồi tràn đáy */
+.hq-than.vua-xh{display:flex; flex-direction:column}
+.hq-than.vua-xh > .hq-xh{flex:1; min-height:0; height:auto}
+.hq-than.vua-xh > .hq-loi{flex:none}
 .bxh-dong .hang:not(.hc), .bd-dong .stt{color:var(--mo)}
 .hq-xh-phai .bd-dong .gio{font-weight:800; color:var(--chu); font-size:calc(var(--f)*.95)}
 .hq-xh-phai .bd-dong .gio .dv{opacity:1; color:var(--mo); font-weight:700; font-size:.78em}

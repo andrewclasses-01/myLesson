@@ -1017,13 +1017,19 @@
 
   var nhoDiem = {};
   var TUOI_TOI_DA_MS = 10 * 60 * 1000;
-  var KHOA_DIEM2 = 'awc_diem2_';
+  // ⭐ v1.147.0 (25/09/2026, GỘP PRACTICE + SUBMIT) — khoá đệm `awc_diem2_` → `awc_diem3_`: mỗi lượt nay
+  // mang thêm `dd` (lượt DỞ DANG) + `pt`, bản cũ trong localStorage không có ⇒ mỗi máy đọc lại MỘT lần/act.
+  var KHOA_DIEM2 = 'awc_diem3_';
 
+  // ⭐ v1.147.0 — `orderBy=createdAt desc`: đọc lượt MỚI NHẤT trước. Trước đây liệt kê theo mã tài liệu
+  // (`hw<mốc>…` = CŨ trước) nên khi chạm phanh số trang, lượt bị bỏ lại là lượt MỚI NHẤT — đúng lượt cần
+  // nhất. AWord gộp PRACTICE/SUBMIT ⇒ lượt nào có điểm cũng nộp, kho `scores` dày lên nhiều lần.
+  // ⚠️ `orderBy` bỏ qua tài liệu THIẾU `createdAt` — luật kho bắt buộc trường này (int) nên không có.
   function urlDiem(ma, token) {
     var db = CFG.AWORD_DB || {};
     var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
             '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) +
-            '/scores?pageSize=300&key=' + db.apiKey;
+            '/scores?pageSize=300&orderBy=createdAt%20desc&key=' + db.apiKey;
     if (token) u += '&pageToken=' + encodeURIComponent(token);
     return u;
   }
@@ -1091,11 +1097,14 @@
                 // `createdAt` = lúc nộp (mốc mili giây, AWord ghi bằng Date.now()).
                 // Dùng làm "nộp lúc" trong bảng cả lớp; thiếu thì coi như 0.
                 luc: soF(f.createdAt),
+                // ⭐ v1.147.0 — lượt DỞ DANG (AWord Đợt 383: em bấm Start again / tải lại trang / đóng tab
+                // giữa ván). Điểm thật nhưng mẫu số KHÔNG chắc ⇒ không làm mẫu chuẩn, không tính "nộp là xong".
+                dd: !!(f.doDang && f.doDang.booleanValue),
               });
             });
-            // Mỗi trang 300 lượt; quá 3 trang thì dừng — một bài giao của một
-            // lớp không thể tới 900 lượt, đây chỉ là phanh an toàn.
-            if (d.nextPageToken && lan < 3) trang(d.nextPageToken, lan + 1);
+            // Mỗi trang 300 lượt; quá 10 trang (3.000 lượt) thì dừng — phanh an toàn. v1.147.0: 3 → 10 trang
+            // vì lượt nào có điểm cũng nộp; đọc MỚI trước nên chạm phanh thì lượt bị bỏ là lượt CŨ nhất.
+            if (d.nextPageToken && lan < 10) trang(d.nextPageToken, lan + 1);
             else xong(tatCa);
           })
           .catch(hong);
@@ -1158,9 +1167,13 @@
   // cả 14 act đang chạy của 8 lớp trước và sau khi sửa, chỉ act OPEN THE BOX đổi.
   // ⛔ ĐỪNG đổi sang mẫu số PHỔ BIẾN NHẤT hay LỚN NHẤT: lớn nhất là lượt sai
   // nhiều nhất lớp, lấy nó thì không em nào đủ điểm nữa.
+  // ⛔ v1.147.0 — lượt DỞ DANG (`dd`) KHÔNG được làm mẫu: AWord chỉ biết điểm lúc em bỏ, mẫu số của nó là
+  // số câu của lượt chơi chứ không phải cách template chấm (anagram chấm theo CHỮ CÁI) ⇒ lấy nó là tụt mẫu,
+  // cả lớp thành "xong" oan.
   function mauChuan(ds) {
     var m = 0;
     ds.forEach(function (r) {
+      if (r.dd) return;
       if (r.tong > 0 && (m === 0 || r.tong < m)) m = r.tong;
     });
     return m;
@@ -1176,25 +1189,36 @@
       var cu = theo[k];
       // ⭐ v1.131.0 — giữ MỌI lượt (`luot`) để hộp quản lý cộng tổng thời gian nộp
       // (dashboard tab THỜI LƯỢNG); phần gộp "lượt tốt nhất" bên dưới không đổi.
-      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, diem: r.diem, tong: r.tong };
+      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, diem: r.diem, tong: r.tong, dd: !!r.dd, pt: pt };
+      var g = Math.round((r.ms || 0) / 1000);
+      // ⭐ v1.147.0 (thầy chốt 24/09) — "NỘP LÚC" = lượt ĐẦU TIÊN em ĐẠT điểm tối đa (`lucDat`); chưa đạt thì
+      // lấy lúc của lượt TỐT NHẤT (`lucTot`). Trước đây là lượt nộp đầu tiên bất kỳ — nay lượt dở cũng nộp,
+      // lượt đầu có thể chỉ là vài câu rồi bỏ. `lucCuoi` = lượt gần nhất (hoạt động gần đây ở dashboard).
+      var dat = pt >= 100 && r.luc ? r.luc : 0;
+      // Lượt dở hiện điểm trên MẪU CHUẨN của act (mẫu số riêng của nó không chắc — xem mauChuan).
+      var tongHien = (r.dd && mau > 0) ? mau : r.tong;
       if (!cu) {
-        theo[k] = { ten: r.ten, ma: r.ma || '', diem: pt, giay: Math.round((r.ms || 0) / 1000),
-                    luc: r.luc || 0, cacTen: [r.ten], luot: [lu],
-                    tho: { diem: r.diem, tong: r.tong } };
+        theo[k] = { ten: r.ten, ma: r.ma || '', diem: pt, giay: g,
+                    lucDat: dat, lucTot: r.luc || 0, lucCuoi: r.luc || 0, coLuotDu: !r.dd,
+                    cacTen: [r.ten], luot: [lu],
+                    tho: { diem: r.diem, tong: tongHien } };
         return;
       }
       cu.cacTen.push(r.ten); cu.luot.push(lu);
       if (!cu.ma && r.ma) cu.ma = r.ma;
-      var g = Math.round((r.ms || 0) / 1000);
-      // Lượt NỘP ĐẦU TIÊN mới là mốc "em ấy nộp lúc mấy giờ" — em làm lại lần
-      // hai để lên điểm thì không vì thế mà thành người nộp muộn.
-      if (r.luc && (!cu.luc || r.luc < cu.luc)) cu.luc = r.luc;
+      if (!r.dd) cu.coLuotDu = true;
+      if (dat && (!cu.lucDat || dat < cu.lucDat)) cu.lucDat = dat;
+      if (r.luc > cu.lucCuoi) cu.lucCuoi = r.luc;
       if (pt > cu.diem || (pt === cu.diem && g < cu.giay)) {
-        cu.diem = pt; cu.giay = g; cu.tho = { diem: r.diem, tong: r.tong };
+        cu.diem = pt; cu.giay = g; cu.tho = { diem: r.diem, tong: tongHien }; cu.lucTot = r.luc || 0;
       }
     });
     var ra = [];
-    for (var k in theo) { theo[k].ten = tenDepNhat(theo[k].cacTen); ra.push(theo[k]); }
+    for (var k in theo) {
+      theo[k].ten = tenDepNhat(theo[k].cacTen);
+      theo[k].luc = theo[k].lucDat || theo[k].lucTot;
+      ra.push(theo[k]);
+    }
     ra.sort(function (a, b) {
       if (b.diem !== a.diem) return b.diem - a.diem;
       return a.giay - b.giay;
@@ -1351,7 +1375,10 @@
     var k = khoaTen(ten);
     for (var i = 0; i < (dsDiem || []).length; i++) {
       if (khoaEm(dsDiem[i]) !== k) continue;       // v1.134.0 — dòng điểm có `ma` thì khớp theo mã
-      if (!chuan || chuan.tru) return true;
+      // ⛔ v1.147.0 — bài chấm "nộp là xong" (Gameshow / có trừ điểm) đòi ít nhất MỘT lượt KHÔNG dở dang:
+      // em làm 1 câu rồi bấm Start again cũng được nộp (lượt dở), nhưng chưa phải là làm xong bài.
+      // `coLuotDu` thiếu = bản nhớ cũ (trước v1.147.0, chưa có lượt dở) ⇒ coi như có.
+      if (!chuan || chuan.tru) return dsDiem[i].coLuotDu !== false;
       return dsDiem[i].diem >= chuan.dinh;
     }
     return false;

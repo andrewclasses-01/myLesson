@@ -1567,20 +1567,21 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-muc .kq small{display:block; font:600 9.5px/1.3 var(--font); color:var(--nhat); margin-top:2px}
 .hq-muc .kq.du{color:var(--m-la)} .hq-muc .kq.thieu{color:var(--m-do)} .hq-muc .kq.ws{color:var(--xanh); font-size:10.5px; letter-spacing:.05em}
 .hq-em-khoi{border:1px solid var(--vien); border-radius:14px; padding:13px; background:var(--the)}
-.hq-em-khoi h4, .hq-bq h4{margin:0 0 4px; font:800 11px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
+/* ⭐ v1.138.0 (thầy duyệt mẫu v11) — tiêu đề GỌN ("TỔNG QUAN • CHẶNG 1" · "KHÔNG TÍNH • CHẶNG 1"), BỎ mọi câu hướng dẫn, ảnh em TO hơn. */
+.hq-em-khoi h4, .hq-bq h4{margin:0 0 14px; font:800 12.5px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
 .hq-em-khoi h4 span{color:var(--nhat); font-weight:700; text-transform:none; letter-spacing:0}
 .hq-em-khoi .chu-thich, .hq-bq .chu-thich{font:600 10.5px/1.4 var(--font); color:var(--nhat); margin-bottom:10px}
-.hq-em-luoi{display:grid; grid-template-columns:repeat(5,1fr); gap:12px 6px}
+.hq-em-luoi{display:grid; grid-template-columns:repeat(auto-fill,minmax(78px,1fr)); gap:16px 8px}
 .hq-em{position:relative; text-align:center}
-.hq-em .av{position:relative; width:46px; height:46px; margin:0 auto; border-radius:50%; box-shadow:0 0 0 2.5px var(--vien)}
-.hq-em .av .bm-em-av{width:46px; height:46px; font-size:14px}
+.hq-em .av{position:relative; width:62px; height:62px; margin:0 auto; border-radius:50%; box-shadow:0 0 0 2.5px var(--vien)}
+.hq-em .av .bm-em-av{--em-d:62px; width:62px; height:62px; font-size:18px}
 .hq-em.du .av{box-shadow:0 0 0 2.5px var(--m-la)} .hq-em.mot .av{box-shadow:0 0 0 2.5px var(--m-vang)} .hq-em.chua .av{box-shadow:0 0 0 2.5px var(--m-do)}
-.hq-em .hh{position:absolute; top:-4px; right:8px; font:800 9.5px/1 var(--font); padding:3px 5px; border-radius:99px; color:#fff; background:var(--m-do); border:2px solid var(--the); z-index:1}
+.hq-em .hh{position:absolute; top:-5px; right:2px; font:800 11px/1 var(--font); padding:3px 6px; border-radius:99px; color:#fff; background:var(--m-do); border:2px solid var(--the); z-index:1}
 .hq-em.du .hh{background:var(--m-la)} .hq-em.mot .hh{background:var(--m-vang)}
-.hq-em .tn{font:700 9.5px/1.2 var(--font); color:var(--mo); margin-top:5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
-.hq-em .bq{position:absolute; top:-5px; left:8px; width:18px; height:18px; border-radius:50%; border:0; background:#8E2226; color:#fff; font:800 10px/1 var(--font); display:none; cursor:pointer; z-index:2}
+.hq-em .tn{font:800 11px/1.2 var(--font); color:var(--chu); margin-top:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hq-em .bq{position:absolute; top:-5px; left:2px; width:20px; height:20px; border-radius:50%; border:0; background:#8E2226; color:#fff; font:800 10px/1 var(--font); display:none; cursor:pointer; z-index:2}
 .hq-em:hover .bq{display:block}
-.hq-em .tl{position:absolute; top:-5px; right:6px; width:18px; height:18px; border-radius:50%; border:0; background:var(--xanh); color:#fff; font:800 11px/1 var(--font); cursor:pointer; z-index:2}
+.hq-em .tl{position:absolute; top:-5px; right:2px; width:20px; height:20px; border-radius:50%; border:0; background:var(--xanh); color:#fff; font:800 11px/1 var(--font); cursor:pointer; z-index:2}
 .hq-bq{margin-top:14px; padding:11px 12px; border-radius:12px; border:1px dashed var(--vien-dam); background:#F7F9F8}
 .hq-bq h4 .so{font:800 10px/1 var(--font); padding:3px 6px; border-radius:99px; background:#E3E9E7; color:var(--mo); margin-left:4px; text-transform:none}
 .hq-bq .hq-em .av{filter:grayscale(1); opacity:.7}
@@ -1594,35 +1595,66 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   padding:2px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo)}
 /* tab THỜI LƯỢNG */
 .hq-loi{margin:0 0 10px; padding:8px 11px; border-radius:9px; background:var(--vang-nhat); color:#8a5b0e; font:600 11px/1.4 var(--font)}
-/* ⭐⭐ v1.137.0 (thầy duyệt mẫu v5–v6) — BẢNG TỰ CO GIÃN VỪA CẢ LỚP: `hqVuaTl()` tính chiều cao hàng --h = (chỗ trống −
-   tiêu đề) ÷ số em (kẹp 26–76px), chữ --f, ảnh --av, tiêu đề --f1/--f2 lớn theo ⇒ thấy ĐỦ cả lớp, không cuộn (hàng < 26px
-   mới cho cuộn). Ô act MỘT DÒNG, chỉ số phút ("20 p", ≥ 60 phút ghi "2:10 p"); từ 1 giờ bọc viên thuốc xanh ngọc đậm dần. */
+/* ⭐⭐ v1.137.0 — BẢNG TỰ CO GIÃN VỪA CẢ LỚP: `hqVuaTl()` tính --h (hàng) = (chỗ trống − tiêu đề) ÷ số em, --f chữ, --av ảnh.
+   ⭐⭐ v1.138.0 (thầy duyệt mẫu v11→v17): tiêu đề + ô CĂN TRÁI · tiêu đề act "WORDS 1 • 50" (số câu), "VIDEO • 32p" · đúp tiêu đề =
+   SẮP XẾP (▼/▲) · mọi ô có phút là NÚT giờ:phút ("0:55 p"):
+     - act: nút ngắn [giờ | đuôi]; đủ bài ⇒ ✓ xanh, chưa đủ ⇒ SỐ CÂU đã làm được (đỏ nhạt) — ✓ và số thẳng một cột.
+     - video / nghe: CHÍNH NÚT là thanh tiến độ (nền tô tới % đã phủ, màu theo mức, ≥95% xanh lá), không dấu.
+     - Tổng: chỉ giờ, chữ giữa nút.
+   Màu nút theo SỐ GIỜ: dưới 1 giờ cực mờ · 1–2 giờ xanh ngọc · từ 3 giờ XANH LÁ đậm dần (5 giờ+ nền đậm chữ trắng). */
 .hq-than.vua{overflow:hidden; padding-top:8px; padding-bottom:8px}
 table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; border-collapse:collapse}
-.hq-tl th{padding:4px calc(var(--f) * .6) 6px; border-bottom:1.5px solid var(--vien-dam); white-space:nowrap; text-align:right; vertical-align:bottom}
-.hq-tl th:first-child{text-align:left; width:1%}
+.hq-tl th{padding:4px calc(var(--f) * .6) 6px; border-bottom:1.5px solid var(--vien-dam); white-space:nowrap; text-align:left; vertical-align:bottom}
+.hq-tl th:first-child{width:1%}
 .hq-tl th .l1{display:block; font:800 var(--f1)/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
 .hq-tl th .l2{display:block; font:600 var(--f2)/1.3 var(--font); color:var(--nhat); margin-top:1px}
-.hq-tl td{height:var(--h); padding:0 calc(var(--f) * .6); border-bottom:1px dashed var(--vien); font:700 var(--f)/1.1 var(--font); text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap}
-.hq-tl td:first-child{text-align:left; padding-right:calc(var(--f) * 1.4)}
-.hq-tl td.tong{font-weight:800; color:var(--xanh); font-size:calc(var(--f) * 1.08)} .hq-tl td.trong{color:var(--vien-dam)}
+.hq-tl th[data-hqsx]{cursor:pointer; user-select:none}
+.hq-tl th[data-hqsx]:hover .l1, .hq-tl th.dang-xep .l1{color:var(--xanh)}
+.hq-tl th .mt{display:inline-block; margin-left:.35em; font-size:.95em; color:var(--xanh)}
+.hq-tl td{height:var(--h); padding:0 calc(var(--f) * .6); border-bottom:1px dashed var(--vien); font:700 var(--f)/1.1 var(--font); text-align:left; font-variant-numeric:tabular-nums; white-space:nowrap}
+.hq-tl td:first-child{padding-right:calc(var(--f) * 1.4)}
+.hq-tl td.trong{color:var(--vien-dam)}
 .hq-tl .hs{display:inline-flex; align-items:center; gap:calc(var(--f) * .65); cursor:pointer; user-select:none; border-radius:99px; padding:2px 10px 2px 2px}
 .hq-tl .hs:hover{background:var(--xanh-nhat)}
 .hq-tl .hs .stt{display:inline-block; min-width:1.6em; text-align:right; font:700 calc(var(--f) * .72)/1 var(--font); color:var(--nhat)}
 .hq-tl .hs .bm-em-av{--em-d:var(--av); width:var(--av); height:var(--av); font-size:calc(var(--av) * .36); flex:none}
 .hq-tl .hs .kt{margin-left:6px; font:800 calc(var(--f) * .6)/1 var(--font); font-style:normal; text-transform:uppercase;
   padding:2px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo)}
-.hq-tl .mini{display:inline-block; width:calc(var(--f) * 4.6); height:calc(var(--f) * .36); border-radius:99px; background:#EDF2F1; overflow:hidden; vertical-align:middle; margin-left:.6em}
-.hq-tl .mini i{display:block; height:100%; background:#3E7BFA} .hq-tl td.ng .mini i{background:#E0A400}
 .hq-tl tbody tr:nth-child(even) td{background:#FAFCFB}
 .hq-tl tr.top td{background:#F2FAF7}
 .hq-tl tbody tr:hover td{background:var(--xanh-nhat)}
-/* màu theo SỐ GIỜ: dưới 1 giờ trơn; từ 1 giờ cùng tông xanh ngọc, mỗi giờ đậm thêm một nấc (5 giờ+ giữ nấc cuối) */
-.hq-tl .gio{display:inline-block; padding:.22em .55em; border-radius:99px; line-height:1}
-.hq-tl .gio.g1{background:#E8F4F1; color:#1F6F63} .hq-tl .gio.g2{background:#D5ECE6; color:#16645A}
-.hq-tl .gio.g3{background:#BFE1D8; color:#0F5A50} .hq-tl .gio.g4{background:#A6D4C8; color:#0A4F46}
-.hq-tl .gio.g5{background:#8CC6B7; color:#06443C}
+.hq-tl .gio{display:inline-grid; grid-template-columns:3.9em 1.6em; column-gap:.35em; align-items:center; box-sizing:border-box; padding:.34em .5em; border-radius:99px; line-height:1; font-size:var(--f); font-weight:700; font-variant-numeric:tabular-nums; vertical-align:middle}
+.hq-tl .gio .tg{text-align:right}
+.hq-tl .gio .duoi{display:inline-flex; align-items:center; justify-content:center; width:100%; font:800 .74em/1 var(--font)}
+.hq-tl .gio .duoi.so{color:#E58A8A}
+.hq-tl .gio .duoi.ok{color:#16A34A; font-size:.8em; font-weight:900}
+.hq-tl .gio.g5 .duoi.ok{color:#fff}
+.hq-tl .gio.chay{grid-template-columns:7.4em; justify-items:center; color:#1F2A2E; background:linear-gradient(90deg, var(--mf) 0 var(--p), #EEF2F1 var(--p) 100%)}
+.hq-tl .gio.chay .tg, .hq-tl .gio.tongn .tg{text-align:center}
+.hq-tl .gio.tongn{grid-template-columns:5.2em; justify-items:center; font-weight:800}
+.hq-tl .gio.g0{background:#F3F6F5; color:#8A9A97}
+.hq-tl .gio.g1{background:#E3F2EE; color:#1F6F63}
+.hq-tl .gio.g2{background:#CBE7DF; color:#135E53}
+.hq-tl .gio.g3{background:#D1FADF; color:#067647}
+.hq-tl .gio.g4{background:#86EFAC; color:#05603A}
+.hq-tl .gio.g5{background:#22C55E; color:#fff}
 .hq-than .ghi{font:600 10.5px/1.5 var(--font); color:var(--nhat); margin-top:8px}
+/* ⭐ v1.138.0 (thầy duyệt mẫu v17) — ĐÚP "Thầy Andrew" ⇒ chụp ảnh CẢ HỘP vào clipboard (`hqChupHop`) */
+.bm-hop.hq .bm-trai{cursor:pointer; border-radius:12px; padding:3px 8px 3px 3px; margin:-3px 0 -3px -3px; transition:background .15s}
+.bm-hop.hq .bm-trai:hover{background:var(--xanh-nhat)}
+.hq-tab, .bm-ten, .bm-nho, .bm-baiten, .bm-baima, .hq-han{white-space:nowrap}   /* ảnh chụp vẽ lại chữ hơi rộng ⇒ khoá xuống dòng */
+.chup-nhay{position:fixed; inset:0; background:#fff; opacity:0; pointer-events:none; z-index:9600; transition:opacity .35s ease}
+.chup-nhay.mo{opacity:.55; transition:none}
+.chup-bao{position:fixed; left:50%; top:22px; transform:translateX(-50%); z-index:9700; background:#16232A; color:#fff; font:700 13px/1.3 var(--font);
+  padding:10px 16px; border-radius:12px; box-shadow:0 10px 30px rgba(0,0,0,.25); display:none; align-items:center; gap:10px}
+.chup-bao.mo{display:flex}
+.chup-bao img{height:44px; border-radius:6px; border:1px solid rgba(255,255,255,.25)}
+.chup-xem{position:fixed; inset:0; z-index:9650; background:rgba(10,20,24,.8); display:none; place-items:center; padding:24px}
+.chup-xem.mo{display:grid}
+.chup-khung{max-width:92vw; display:flex; flex-direction:column; gap:12px; align-items:center}
+.chup-khung img{max-width:92vw; max-height:78vh; border-radius:12px; box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.chup-nut{display:flex; gap:10px; align-items:center; color:#fff; font:600 13px/1.4 var(--font)}
+.chup-nut .nut{text-decoration:none}
 /* tab BÀI NỘP */
 .hq-nop-sheet{border:1px solid var(--vien); border-radius:14px; padding:12px 13px; background:var(--the); margin-bottom:12px}
 .hq-nop-dau{display:flex; align-items:center; gap:10px; margin-bottom:8px}
@@ -1686,7 +1718,8 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
 /* ⭐ v1.137.0 (thầy duyệt mẫu v10) — BỎ QUA THEO TỪNG CHẶNG: nhãn "bỏ qua S1·S2" dưới tên em (xem cả hành trình) */
 .hq-em .bqc{display:block; margin:3px auto 0; width:max-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; font:800 8.5px/1 var(--font); letter-spacing:.03em; padding:3px 5px; border-radius:99px; background:#E3E9E7; color:var(--mo)}
 .hq-em.het .av{filter:grayscale(1); opacity:.6; box-shadow:0 0 0 2.5px var(--vien)}
-.hq-bq h4 b{color:#2B5FD0}
+.hq-bq h4 b, .hq-em-khoi h4 b{color:var(--xanh)}
+.hq-bq{margin-top:16px}
 /* pop-up chi tiết một em (đè lên hộp: bm-hop z 86, rc-menu 95) */
 .hq-ct-nen{position:fixed; inset:0; background:rgba(16,35,42,.55); display:none; place-items:center; z-index:94}
 .hq-ct-nen.mo{display:grid}
@@ -2361,7 +2394,7 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
   <div class="bm-dau">
     <!-- ⭐ v1.133.0 — đầu hộp là LƯỚI 3 CỘT bằng nhau (`.bm-trai` · `#bmGiua` · `.bm-phai`) để cụm hạn + thanh chặng
          đứng CHÍNH GIỮA so với hai mép hộp (thầy chốt), không phải giữa khoảng trống còn lại. -->
-    <div class="bm-trai">
+    <div class="bm-trai" id="bmTrai" title="Đúp = chép ẢNH cả hộp này để dán (Ctrl+V) gửi người khác">
       <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
       <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
     </div>
@@ -2378,6 +2411,8 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
 </div>
 <!-- ⭐ v1.131.0 — pop-up CHI TIẾT MỘT EM (đúp tên/ảnh ở tab THỜI LƯỢNG), xem `hqChiTiet`/`hqVeChiTiet` (v1.132.0: Zoom + đồ thị tiến triển) -->
 <div class="hq-ct-nen" id="hqCtNen"><div class="hq-ct-hop" id="hqCtHop"></div></div>
+<!-- ⭐ v1.138.0 — chụp ảnh cả hộp (đúp "Thầy Andrew"), xem `hqChupHop` -->
+<div class="chup-nhay" id="chupNhay"></div><div class="chup-xem" id="chupXem"></div><div class="chup-bao" id="chupBao"></div>
 
 <!-- ⭐ 28/08 — cụm thả cảm xúc (port từ lop.html), dùng chung cho hộp chat GV -->
 <div class="cx-menu" id="cxMenu"></div>
@@ -2505,7 +2540,7 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=107"></script>
+<script src="config.js?v=108"></script>
 <script src="js/chung.js?v=59"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5056,7 +5091,7 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
   //   🔐 của thầy, luật `laThay`) · lessonNop. ✅ v1.133.0 (thầy chốt) — HỘP CŨ (`veRuotBai`,
   //   `veKhoiChangDb`, cột `veVideoColDb/veNgheColDb`, `napXxxChoModal`, `napNopHop`, `moPopNop`) ĐÃ XOÁ.
   // ================================================================
-  var HQ = { id: null, tab: 'bt', b: null, t: null, video: null, nghe: null, act: {}, actLoi: '', nop: {}, nopLoi: '', chang: null, ct: null, nopSheet: 0 };
+  var HQ = { id: null, tab: 'bt', b: null, t: null, video: null, nghe: null, act: {}, actLoi: '', nop: {}, nopLoi: '', chang: null, ct: null, nopSheet: 0, sx: { cot: 'tong', giam: true } };
   var HQ_KT = null;   // v1.137.0 — đệm "em không tính" theo chặng cho MỘT lượt vẽ (`hqKt`), xoá ở mỗi lượt vẽ lại
   var MAU_TT = ['#128A6E', '#3E7BFA', '#E0A400', '#C2410C', '#7C3AED', '#0E96A8', '#B03A3E'];   // v1.132.0 — mỗi act một màu ở đồ thị tiến triển
   var LUYEN_KHO = {};   // code -> { luc, ds }  (practiceLog, nhớ 60 giây)
@@ -5125,7 +5160,8 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
     HQ = { id: id, tab: giuTab, b: b, t: t,
            video: giuNap ? HQ.video : null, nghe: giuNap ? HQ.nghe : null,
            act: giuNap ? HQ.act : {}, actLoi: '', nop: giuNap ? HQ.nop : {}, nopLoi: '',
-           chang: giuNap ? HQ.chang : null, ct: null, nopSheet: giuNap ? (HQ.nopSheet || 0) : 0 };
+           chang: giuNap ? HQ.chang : null, ct: null, nopSheet: giuNap ? (HQ.nopSheet || 0) : 0,
+           sx: (giuNap && HQ.sx) ? HQ.sx : { cot: 'tong', giam: true } };   // v1.138.0 — cách xếp THỜI LƯỢNG giữ khi vẽ lại, mở bài khác thì về mặc định
     // ⭐ v1.132.0 — phạm vi mặc định = CHẶNG ĐANG MỞ (thầy chốt); bài không STAGE = cả bài.
     if (HQ.chang == null || (HQ.chang !== 'all' && !(t.chang && t.chang[HQ.chang]))) HQ.chang = (t.stage && t.chang) ? A.changHien(t.chang) : 'all';
     $('#bmHop').classList.add('hq');
@@ -5133,6 +5169,7 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
     $('#bmNen').classList.add('mo');
     $('#bmHop').classList.add('mo');
     setTimeout(hqVuaKhung, 260);   // v1.137.0 — đo lại sau hiệu ứng mở hộp (scale .97 → 1)
+    setTimeout(hqChupKhoiDong, 1500);   // v1.138.0 — tải sẵn thư viện chụp ảnh + font, lần đúp đầu khỏi chờ ~9 giây
     hqNap(b, t);
   }
   function hqVeKhung() {
@@ -5510,9 +5547,8 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
   function hqLuoiEm() {
     var b = HQ.b, t = HQ.t, hs = hqHocSinh(t), muc = hqMucDangMo(), N = muc.length;
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
-    var daDoc = t.daDoc && muc.every(function (m) { return m.loai !== 'ws' || HQ.nop[m.o]; });
-    var chuDoc = daDoc ? '' : ' <i>(' + A.chuAnToan(HQ.nopLoi || 'đang đọc kết quả…') + ')</i>';
-    if (t.stage && t.chang) return '<div class="hq-em-khoi" id="hqLuoiEm">' + hqLuoiEmStage(hs, muc, slug, lopGoc, chuDoc) + '</div>';
+    if (t.stage && t.chang) return '<div class="hq-em-khoi" id="hqLuoiEm">' + hqLuoiEmStage(hs, muc, slug, lopGoc) + '</div>';
+    // ⭐ v1.138.0 (thầy duyệt mẫu v11) — chỉ tiêu đề gọn, KHÔNG câu hướng dẫn; ảnh em to (CSS).
     var kt = hqKhongTinh(t);
     var chuLy = function (x) {
       if (!x) return '';
@@ -5533,21 +5569,15 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
     };
     var dangTinh = hs.filter(function (h) { return !kt[A.khoaTen(h.ten)]; });
     var daBo = hs.filter(function (h) { return !!kt[A.khoaTen(h.ten)]; });
-    var chu = hqPhamVi().chu;
-    var soMuon = daBo.filter(function (h) { return kt[A.khoaTen(h.ten)].ly === 'muon'; }).length;
-    return '<div class="hq-em-khoi" id="hqLuoiEm"><h4>Mỗi em đã xong bao nhiêu mục <span>· ' + chu + (N ? ' · ' + N + ' mục' : '') + '</span></h4>' +
-      '<div class="chu-thich">Viền xanh = đủ · vàng = một phần · đỏ = chưa làm.' + chuDoc + '</div>' +
+    return '<div class="hq-em-khoi" id="hqLuoiEm"><h4>TỔNG QUAN • <b>CẢ BÀI</b></h4>' +
       (dangTinh.length ? '<div class="hq-em-luoi">' + dangTinh.map(function (h) { return oEm(h, null); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>') +
-      (daBo.length ? '<div class="hq-bq"><h4>Không tính ở bài này <span class="so">' + daBo.length + '</span></h4>' +
-        '<div class="chu-thich">Em trong ô này KHÔNG tính vào x/' + t.siSo +
-          ' — nhưng vẫn ở trong lớp, vẫn có trong THỜI LƯỢNG và bảng xếp hạng. Bấm ↩ để tính em trở lại.' +
-          (soMuon ? ' (“vào sau” = em vào lớp sau ngày giao bài, app tự trừ.)' : '') + '</div>' +
+      (daBo.length ? '<div class="hq-bq"><h4>KHÔNG TÍNH • <b>CẢ BÀI</b> <span class="so">' + daBo.length + '</span></h4>' +
         '<div class="hq-em-luoi">' + daBo.map(function (h) { return oEm(h, kt[A.khoaTen(h.ten)]); }).join('') + '</div></div>' : '') +
     '</div>';
   }
-  // Bài STAGE: xem MỘT chặng ⇒ ✕ bỏ qua em ở ĐÚNG chặng đó + ô "Không tính ở chặng N" (↩ chỉ chặng đó);
+  // Bài STAGE: xem MỘT chặng ⇒ ✕ bỏ qua em ở ĐÚNG chặng đó + ô "KHÔNG TÍNH • CHẶNG N" (↩ chỉ chặng đó);
   // xem CẢ HÀNH TRÌNH ⇒ không có ✕ (thầy chốt), em mang nhãn "bỏ qua S1·S2" / "mọi chặng".
-  function hqLuoiEmStage(hs, muc, slug, lopGoc, chuDoc) {
+  function hqLuoiEmStage(hs, muc, slug, lopGoc) {
     var b = HQ.b, t = HQ.t, so = hqSoDangXem(), mot = so != null;
     var ktX = mot ? hqKt(so) : {}, ktHet = hqKt(null);
     var cacSo = t.chang.filter(function (c) { return c.so; }).map(function (c) { return c.so; });
@@ -5566,19 +5596,18 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
         (boS.length ? '<span class="bqc">bỏ qua ' + (het ? 'mọi chặng' : boS.map(function (s2) { return 'S' + s2; }).join('·')) + '</span>' : '') +
       '</div>';
     };
-    var chu = hqPhamVi().chu, N = muc.length;
-    var dau = '<h4>Mỗi em đã xong bao nhiêu mục <span>· ' + chu + (N ? ' · ' + N + ' mục' : '') + '</span></h4>';
+    // ⭐ v1.138.0 (thầy duyệt mẫu v11) — tiêu đề gọn "TỔNG QUAN • CHẶNG 1 / CẢ HÀNH TRÌNH", "KHÔNG TÍNH • CHẶNG 1"; bỏ MỌI câu hướng dẫn.
+    var nhanSo = mot ? (so ? 'CHẶNG ' + so : 'MỤC KHÔNG THUỘC CHẶNG') : 'CẢ HÀNH TRÌNH';
+    var dau = '<h4>TỔNG QUAN • <b>' + nhanSo + '</b></h4>';
     if (!mot) {
-      return dau + '<div class="chu-thich">Cả hành trình: n/N = mục đã xong trên các chặng em đang được tính. Muốn bỏ qua em ở một chặng → bấm chọn chặng đó rồi bấm ✕.' + chuDoc + '</div>' +
-        (hs.length ? '<div class="hq-em-luoi">' + hs.map(function (h) { return oEm(h, false); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>');
+      return dau + (hs.length ? '<div class="hq-em-luoi">' + hs.map(function (h) { return oEm(h, false); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>');
     }
     var dang = hs.filter(function (h) { return !ktX[A.khoaTen(h.ten)]; });
     var bo = hs.filter(function (h) { return !!ktX[A.khoaTen(h.ten)]; });
-    return dau + '<div class="chu-thich">Viền xanh = đủ · vàng = một phần · đỏ = chưa làm. Di chuột vào em chưa xong → ✕ bỏ qua em ở ' + chuSo + ' (chặng khác vẫn tính).' + chuDoc + '</div>' +
+    return dau +
       (dang.length ? '<div class="hq-em-luoi">' + dang.map(function (h) { return oEm(h, false); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>') +
-      '<div class="hq-bq"><h4>Không tính ở <b>' + chuSo + '</b> <span class="so">' + bo.length + '</span></h4>' +
-        '<div class="chu-thich">Em trong ô này không giữ lớp lại ở ' + chuSo + ' và không tính vào x/N của chặng này — các chặng khác em vẫn được tính bình thường. Vẫn có trong THỜI LƯỢNG và bảng xếp hạng (chữ xám). Bấm ↩ để tính em lại ở chặng này.</div>' +
-        (bo.length ? '<div class="hq-em-luoi">' + bo.map(function (h) { return oEm(h, true); }).join('') + '</div>' : '<div class="chu-thich" style="margin:0">Không có em nào.</div>') +
+      '<div class="hq-bq"><h4>KHÔNG TÍNH • <b>' + nhanSo + '</b> <span class="so">' + bo.length + '</span></h4>' +
+        (bo.length ? '<div class="hq-em-luoi">' + bo.map(function (h) { return oEm(h, true); }).join('') + '</div>' : '') +
       '</div>';
   }
   function hqTabBaiTap() {
@@ -5589,14 +5618,28 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
   }
 
   // ---- TAB THỜI LƯỢNG ----
-  // ⭐ v1.137.0 (thầy chốt mẫu v6) — "20 p"; từ 60 phút ghi giờ:phút "2:10 p"; từ 1 giờ bọc viên thuốc đậm dần theo số giờ.
+  // ⭐⭐ v1.138.0 (thầy duyệt mẫu v11→v17) — MỌI ô có phút là NÚT "giờ:phút p" (kể cả "0:55 p"), màu theo số giờ (g0…g5).
   function hqChuPhut(giay) {
     var m = hqPhut(giay);
-    return m < 60 ? m + ' p' : Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2) + ' p';
+    return Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2) + ' p';
   }
-  function hqSoPhut(giay) {
-    var g = Math.min(5, Math.floor(hqPhut(giay) / 60));
-    return g ? '<span class="gio g' + g + '">' + hqChuPhut(giay) + '</span>' : hqChuPhut(giay);
+  function hqBacGio(giay) { return Math.min(5, Math.floor(hqPhut(giay) / 60)); }
+  // Nút act: đủ bài ⇒ ✓; chưa đủ ⇒ SỐ CÂU đã làm được (đỏ nhạt); chưa có lượt có điểm ⇒ đuôi trống (vẫn giữ chỗ cho thẳng hàng).
+  function hqNutAct(giay, du, soCau) {
+    var d = du ? '<span class="duoi ok">✓</span>' : (soCau != null ? '<span class="duoi so">' + soCau + '</span>' : '<span class="duoi"></span>');
+    return '<span class="gio g' + hqBacGio(giay) + '"><span class="tg">' + hqChuPhut(giay) + '</span>' + d + '</span>';
+  }
+  // Nút video / nghe = THANH TIẾN ĐỘ: nền tô tới % đã phủ; <40 hồng · 40–70 cam · 70–95 xanh dương · ≥95 xanh lá.
+  function hqNutChay(giay, pt) {
+    var mf = pt >= 95 ? '#86EFAC' : pt >= 70 ? '#C9DCFF' : pt >= 40 ? '#FDE1AE' : '#FBD3CF';
+    return '<span class="gio chay" style="--p:' + pt + '%;--mf:' + mf + '" title="đã phủ ' + pt + '%"><span class="tg">' + hqChuPhut(giay) + '</span></span>';
+  }
+  function hqNutTong(giay) { return '<span class="gio tongn g' + hqBacGio(giay) + '"><span class="tg">' + hqChuPhut(giay) + '</span></span>'; }
+  // Số câu em đã làm được ở một act = số câu đúng CAO NHẤT trong mọi lượt (nộp + luyện) — `diem` của lượt là số câu đúng.
+  function hqSoCauLam(g) {
+    var mx = null;
+    g.luot.forEach(function (l) { if (l.loai !== 'do' && l.tong) mx = Math.max(mx == null ? 0 : mx, +l.diem || 0); });
+    return mx;
   }
   function hqTabThoiLuong() {
     var b = HQ.b, t = HQ.t, hs = hqHocSinh(t), pv = hqPhamVi(), kt = hqKt(hqSoDangXem());
@@ -5604,37 +5647,106 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
     var tongVideo = coVideo ? tongGiayBaiGiangDb(b) : 0, tongNghe = hqTongNgheBai();
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
     if (!hs.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
-    var rows = hs.map(function (h) { return { h: h, tong: hqTongEm(h.ten, pv) }; })
-      .sort(function (x, y) { return (y.tong - x.tong) || x.h.ten.localeCompare(y.h.ten, 'vi'); });
-    var oPhut = function (giay, mx, cls, dangDoc) {
-      if (dangDoc) return '<td class="trong">…</td>';
-      if (!giay) return '<td class="trong">—</td>';
-      return '<td class="' + cls + '">' + hqSoPhut(giay) + '<span class="mini"><i style="width:' + (mx ? Math.min(100, Math.round(giay / mx * 100)) : 0) + '%"></i></span></td>';
+    var phuVd = function (ten) { var d = (HQ.video || {})[ten]; return tongVideo ? Math.min(100, Math.round(((d && d.phu) || 0) / tongVideo * 100)) : 0; };
+    var phuNg = function (ten) { return (HQ.nghe && tongNghe) ? Math.min(100, Math.round((HQ.nghe.giay[ten] || 0) / tongNghe * 100)) : 0; };
+    var rows = hs.map(function (h) {
+      return { h: h, tong: hqTongEm(h.ten, pv), vd: coVideo ? hqGioVideo(h.ten) : 0, ng: coNghe ? hqGioNghe(h.ten) : 0,
+               act: pv.acts.map(function (a) { return hqGioAct(a.ma, h.ten); }) };
+    });
+    // ⭐ v1.138.0 (thầy duyệt mẫu v16) — SẮP XẾP: mặc định Tổng nhiều → ít; đúp tiêu đề = xếp theo cột đó, đúp lại = đảo chiều.
+    // Cột Học sinh A→Z trước; ô 0 phút ("—") LUÔN cuối; hoà ⇒ theo tên.
+    var sx = HQ.sx || { cot: 'tong', giam: true };
+    var giaTri = function (r) {
+      if (sx.cot === 'vd') return r.vd; if (sx.cot === 'ng') return r.ng; if (sx.cot === 'tong') return r.tong;
+      if (/^a\d+$/.test(sx.cot)) { var g = r.act[+sx.cot.slice(1)]; return g ? g.giay : 0; }
+      return 0;
     };
-    // v1.137.0 (thầy chốt) — ô act CHỈ số phút; bỏ "2n · 3l · 1d" (số lượt xem ở pop-up chi tiết em).
-    var oAct = function (g, dangDoc) {
-      if (!g.giay && !g.luot.length) return dangDoc ? '<td class="trong">…</td>' : '<td class="trong">—</td>';
-      return '<td>' + hqSoPhut(g.giay) + '</td>';
+    rows.sort(function (x, y) {
+      if (sx.cot === 'ten') return (sx.giam ? -1 : 1) * x.h.ten.localeCompare(y.h.ten, 'vi');
+      var gx = giaTri(x), gy = giaTri(y);
+      if (!gx !== !gy) return gx ? -1 : 1;
+      var d = gy - gx; if (!sx.giam) d = -d;
+      return d || x.h.ten.localeCompare(y.h.ten, 'vi');
+    });
+    var th = function (khoa, l1, l2, title) {
+      var dang = sx.cot === khoa, mt = dang ? '<span class="mt">' + (sx.giam ? '▼' : '▲') + '</span>' : '';
+      return '<th data-hqsx="' + khoa + '"' + (dang ? ' class="dang-xep"' : '') + ' title="' + A.chuAnToan((title ? title + ' · ' : '') + 'Đúp để sắp xếp theo cột này') + '">' +
+        '<span class="l1">' + l1 + mt + '</span>' + (l2 ? '<span class="l2">' + l2 + '</span>' : '') + '</th>';
     };
-    // ⭐ v1.132.0 — tiêu đề 2 dòng cùng canh phải; độ dài bài giảng/băng ghi ở dòng nhỏ; KHÔNG câu giải thích (thầy chốt).
-    var th = function (l1, l2, title) { return '<th' + (title ? ' title="' + A.chuAnToan(title) + '"' : '') + '><span class="l1">' + l1 + '</span>' + (l2 ? '<span class="l2">' + l2 + '</span>' : '') + '</th>'; };
     var mauChu = function (m) { m = String(m || '').trim(); return m ? m.charAt(0).toUpperCase() + m.slice(1).toLowerCase() : ''; };
-    var head = '<tr>' + th('Học sinh', 'đúp tên → chi tiết') +
-      (coVideo ? th('Video', 'bài giảng ' + hqPhut(tongVideo) + ' phút') : '') + (coNghe ? th('Nghe', 'băng ' + hqPhut(tongNghe) + ' phút') : '') +
-      pv.acts.map(function (a) { return th(A.chuAnToan(hqNhanAct(a)), A.chuAnToan(mauChu(a.mau)), a.ten); }).join('') + th('Tổng', A.chuAnToan(pv.chu)) + '</tr>';
+    var soCauAct = function (a) { var c = CHUAN[a.ma]; return (c && +c.soCau > 0) ? ' • ' + (+c.soCau) : ''; };
+    var head = '<tr>' + th('ten', 'Học sinh', 'đúp tên → chi tiết') +
+      (coVideo ? th('vd', 'Video • ' + hqPhut(tongVideo) + 'p', 'bài giảng') : '') + (coNghe ? th('ng', 'Nghe • ' + hqPhut(tongNghe) + 'p', 'băng') : '') +
+      pv.acts.map(function (a, j) { return th('a' + j, A.chuAnToan(hqNhanAct(a)) + soCauAct(a), A.chuAnToan(mauChu(a.mau)), a.ten); }).join('') +
+      th('tong', 'Tổng', A.chuAnToan(pv.chu)) + '</tr>';
     var body = rows.map(function (r, k) {
       var h = r.h;
-      // v1.135.0 — em không tính vẫn có hàng (dữ liệu luyện tập là của em, không liên quan
-      // tới phép đếm), chỉ thêm dấu nhỏ để thầy khỏi thắc mắc sao thẻ đếm ít hơn số hàng.
+      // v1.135.0 — em không tính vẫn có hàng (dữ liệu luyện tập là của em), chỉ thêm dấu nhỏ.
       var x = kt[A.khoaTen(h.ten)];
-      return '<tr' + (k < 3 && r.tong ? ' class="top"' : '') + '><td><span class="hs" data-hq-em="' + A.chuAnToan(h.ten) + '" title="Đúp để xem chi tiết"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(h.ten, slug, lopGoc) + A.chuAnToan(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span></td>' +
-        (coVideo ? oPhut(hqGioVideo(h.ten), tongVideo, 'vd', !HQ.video) : '') +
-        (coNghe ? oPhut(hqGioNghe(h.ten), tongNghe, 'ng', !HQ.nghe) : '') +
-        pv.acts.map(function (a) { return oAct(hqGioAct(a.ma, h.ten), !HQ.act[a.ma]); }).join('') +
-        '<td class="tong">' + (r.tong ? hqSoPhut(r.tong) : '—') + '</td></tr>';
+      var oChay = function (giay, pt, dangDoc) { return dangDoc ? '<td class="trong">…</td>' : (giay ? '<td>' + hqNutChay(giay, pt) + '</td>' : '<td class="trong">—</td>'); };
+      var oAct = function (a, g) {
+        if (!g.giay && !g.luot.length) return !HQ.act[a.ma] ? '<td class="trong">…</td>' : '<td class="trong">—</td>';
+        return '<td>' + hqNutAct(g.giay, coTrongDiem(DIEM[a.ma] || [], h.ten, a.ma), hqSoCauLam(g)) + '</td>';
+      };
+      return '<tr' + (k < 3 && r.tong && sx.cot === 'tong' && sx.giam ? ' class="top"' : '') + '><td><span class="hs" data-hq-em="' + A.chuAnToan(h.ten) + '" title="Đúp để xem chi tiết"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(h.ten, slug, lopGoc) + A.chuAnToan(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span></td>' +
+        (coVideo ? oChay(r.vd, phuVd(h.ten), !HQ.video) : '') +
+        (coNghe ? oChay(r.ng, phuNg(h.ten), !HQ.nghe) : '') +
+        pv.acts.map(function (a, j) { return oAct(a, r.act[j]); }).join('') +
+        '<td class="tong">' + (r.tong ? hqNutTong(r.tong) : '—') + '</td></tr>';
     }).join('');
     var loi = HQ.actLoi ? '<div class="hq-loi">' + A.chuAnToan(HQ.actLoi) + '</div>' : '';
     return loi + '<table class="hq-tl"><thead>' + head + '</thead><tbody>' + body + '</tbody></table>';
+  }
+
+  // ---- ⭐ v1.138.0 (thầy duyệt mẫu v17) — ĐÚP "Thầy Andrew" ⇒ CHỤP ẢNH CẢ HỘP vào clipboard ----
+  // `modern-screenshot` (trình duyệt tự vẽ lại hộp qua SVG ⇒ giữ đúng thanh chặng mũi tên, gradient, font web).
+  // ⛔ Clipboard ảnh đòi "cử chỉ người dùng": đưa PROMISE ảnh vào ClipboardItem NGAY trong lượt đúp (Chrome/Safari cho phép),
+  //    đừng chờ vẽ xong mới gọi clipboard.write. Máy không cho chép ⇒ KHÔNG tự tải: hiện ảnh + nút "Tải ảnh về" để thầy tự quyết.
+  // ⛔ #bmHop là `position:fixed` + `transform` ⇒ bản sao để chụp phải trả về tĩnh (`style`), không thì ảnh lệch khỏi khung.
+  var HQ_MS = null;
+  function hqChupHop() {
+    var hop = $('#bmHop');
+    HQ_MS = HQ_MS || import('https://cdn.jsdelivr.net/npm/modern-screenshot@4/+esm');
+    return HQ_MS.then(function (m) {
+      return m.domToBlob(hop, {
+        scale: Math.max(2, window.devicePixelRatio || 1), backgroundColor: '#F1F5F4',
+        style: { position: 'static', left: 'auto', top: 'auto', transform: 'none', margin: '0', opacity: '1' }
+      });
+    });
+  }
+  // Chụp thử NGẦM một góc nhỏ (không chép, không hiện gì) để thư viện + font web vào bộ nhớ đệm: đo thật lần đầu ~9,5 s, lần sau ~0,7 s.
+  function hqChupKhoiDong() {
+    if (hqChupKhoiDong.xong || !BM_ID) return;
+    hqChupKhoiDong.xong = true;
+    HQ_MS = HQ_MS || import('https://cdn.jsdelivr.net/npm/modern-screenshot@4/+esm');
+    HQ_MS.then(function (m) { var n = $('#bmTrai'); return n ? m.domToBlob(n, { scale: 1 }) : null; })['catch'](function () { hqChupKhoiDong.xong = false; });
+  }
+  function hqBaoChup(chu, blob) {
+    var b = $('#chupBao');
+    b.innerHTML = (blob ? '<img src="' + URL.createObjectURL(blob) + '" alt="">' : '') + '<span>' + A.chuAnToan(chu) + '</span>';
+    b.classList.add('mo'); clearTimeout(hqBaoChup.h); hqBaoChup.h = setTimeout(function () { b.classList.remove('mo'); }, 3200);
+  }
+  function hqXemAnhChup(blob) {
+    var u = URL.createObjectURL(blob), k = $('#chupXem');
+    k.innerHTML = '<div class="chup-khung"><img src="' + u + '" alt=""><div class="chup-nut"><span>Máy chưa cho chép thẳng — bấm chuột phải vào ảnh → <b>Sao chép hình ảnh</b>, hoặc</span>' +
+      '<a class="nut nho" href="' + u + '" download="hop-quan-ly-bai.png">Tải ảnh về</a><button type="button" class="nut nho" id="chupDong">Đóng</button></div></div>';
+    k.classList.add('mo');
+    $('#chupDong').onclick = function () { k.classList.remove('mo'); };
+  }
+  function hqChupVaChep() {
+    var nhay = $('#chupNhay'); nhay.classList.add('mo');
+    requestAnimationFrame(function () { requestAnimationFrame(function () { nhay.classList.remove('mo'); }); });
+    var hua = hqChupHop();
+    var duPhong = function () {
+      hua.then(function (blob) { hqXemAnhChup(blob); hqBaoChup('Chưa chép được thẳng — xem ảnh bên dưới.', null); })
+        ['catch'](function (e) { hqBaoChup('Chưa chụp được ảnh: ' + ((e && e.message) || e), null); });
+    };
+    try {
+      if (!navigator.clipboard || !window.ClipboardItem) throw new Error('khong-ho-tro');
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': hua })]).then(function () {
+        hua.then(function (blob) { hqBaoChup('Đã chép ảnh cả hộp — dán (Ctrl+V) vào Zalo / Messenger để gửi.', blob); });
+      }, duPhong);
+    } catch (err) { duPhong(); }
   }
 
   // ---- TAB BÀI NỘP ----
@@ -7867,6 +7979,20 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
       if (!(BM_ID && HQ.id === BM_ID)) return;
       // ⭐ v1.132.0 — ĐÚP khúc thanh chặng ⇒ sáng hết, xem CẢ HÀNH TRÌNH.
       if (e.target.closest('[data-hqchang]')) { e.preventDefault(); hqDoiChang('all'); return; }
+      // ⭐ v1.138.0 — ĐÚP tiêu đề cột THỜI LƯỢNG ⇒ sắp xếp theo cột đó (đúp lại cùng cột ⇒ đảo chiều).
+      var thSx = e.target.closest('th[data-hqsx]');
+      if (thSx) {
+        e.preventDefault();
+        var kSx = thSx.getAttribute('data-hqsx'), sx = HQ.sx || { cot: 'tong', giam: true };
+        HQ.sx = sx.cot === kSx ? { cot: kSx, giam: !sx.giam } : { cot: kSx, giam: kSx !== 'ten' };
+        var sel = window.getSelection && window.getSelection(); if (sel) sel.removeAllRanges();
+        hqVeLai(); return;
+      }
+      // ⭐ v1.138.0 — ĐÚP "Thầy Andrew" (góc trái đầu hộp) ⇒ chụp ảnh cả hộp vào clipboard.
+      if (e.target.closest('#bmTrai')) {
+        e.preventDefault(); var sel2 = window.getSelection && window.getSelection(); if (sel2) sel2.removeAllRanges();
+        hqChupVaChep(); return;
+      }
       // ⭐ v1.137.0 — ĐÚP một khối chặng ở tab BÀI TẬP ⇒ cả hành trình.
       if (e.target.closest('[data-hqkhoi]') && !e.target.closest('button, a')) { e.preventDefault(); hqDoiChang('all'); return; }
       var em = e.target.closest('[data-hq-em]');

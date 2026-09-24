@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-24 22:01:46",
+  "capNhat": "2026-09-24 22:18:08",
   "bai": {
     "A1C": [
       {
@@ -1113,6 +1113,50 @@
       }
     ],
     "A1A": [
+      {
+        "id": "A1A_24.9_STAGE_LSB1-S1.T1.P2",
+        "tieuDe": "A1A_24.9_STAGE LSB1-S1.T1.P2",
+        "tenHien": "A1A_24.9_STAGE LSB1-S1.T1.P2",
+        "dang": "STAGE",
+        "ngay": "24.9",
+        "han": "2026-09-28T17:30",
+        "maLesson": "LSB1-S1.T1.P2",
+        "taoLuc": "2026-09-24",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "abkkvf",
+            "mau": "QUIZ",
+            "han": "2026-09-26T00:00"
+          },
+          {
+            "loai": "nghe",
+            "ten": "DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S1.T1.P2",
+            "han": "2026-09-27T00:00"
+          },
+          {
+            "loai": "ws",
+            "ten": "LSB1-S1.T1.P2",
+            "o": 2,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1A%2FA1A_24.9_STAGE_LSB1-S1.T1.P2%2F2.pdf?alt=media",
+            "soTrang": 3
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSB1-S1.T1.P2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "tbfhpb",
+            "mau": "QUIZ",
+            "han": "2026-09-28T17:30"
+          }
+        ]
+      },
       {
         "id": "A1A_17.9_STAGE_LSB1-S1.T1.P2",
         "tieuDe": "A1A_17.9_STAGE LSB1-S1.T1.P2",

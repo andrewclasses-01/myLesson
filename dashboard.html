@@ -1604,6 +1604,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
    Màu nút theo SỐ GIỜ: dưới 1 giờ cực mờ · 1–2 giờ xanh ngọc · từ 3 giờ XANH LÁ đậm dần (5 giờ+ nền đậm chữ trắng). */
 .hq-than.vua{overflow:hidden; padding-top:8px; padding-bottom:8px}
 table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; border-collapse:collapse}
+/* ⭐ v1.139.0 (thầy duyệt mẫu v18) — CỘT ĐỀU: cột Học sinh vừa đúng tên dài nhất, MỌI cột số rộng BẰNG NHAU (tối đa 240px);
+   bảng ít cột (xem chặng lẻ) thu gọn và đứng GIỮA hộp — xem cuối `hqVuaTl()`. */
+table.hq-tl.deu{table-layout:fixed; margin:0 auto}
+table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
+/* ⭐ v1.139.0 — STAGE: chặng đã mở mà em chưa đụng bài nào của chặng (mọi ô act/nghe của chặng là "—") ⇒ TÊN ĐỎ */
+.hq-tl .hs .ten.chua-lam{color:#DC2626; font-weight:800}
 .hq-tl th{padding:4px calc(var(--f) * .6) 6px; border-bottom:1.5px solid var(--vien-dam); white-space:nowrap; text-align:left; vertical-align:bottom}
 .hq-tl th:first-child{width:1%}
 .hq-tl th .l1{display:block; font:800 var(--f1)/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
@@ -2540,7 +2546,7 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=108"></script>
+<script src="config.js?v=109"></script>
 <script src="js/chung.js?v=59"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5648,6 +5654,19 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
     if (!hs.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
     var phuVd = function (ten) { var d = (HQ.video || {})[ten]; return tongVideo ? Math.min(100, Math.round(((d && d.phu) || 0) / tongVideo * 100)) : 0; };
+    // ⭐ v1.139.0 (thầy duyệt mẫu v18) — TÊN ĐỎ: bài STAGE, chặng xét (chặng đang xem; xem cả hành trình ⇒ chặng ĐANG MỞ) đã mở mà em
+    // chưa đụng bài nào của chặng: mọi act của chặng 0 phút + không lượt nào, và (nếu chặng có bài nghe) 0 phút nghe. Video không tính
+    // (video là của cả bài). Em đang được bỏ qua ở chặng đó không tô. Chưa đọc xong dữ liệu chặng ⇒ chưa tô (khỏi báo động giả).
+    var cXet = (t.stage && t.chang) ? t.chang[HQ.chang === 'all' ? A.changHien(t.chang) : HQ.chang] : null;
+    var moCX = !!(cXet && (cXet.mo || /^(dang|ket|xong)$/.test(cXet.tt || '')));
+    var actCX = moCX ? (cXet.acts || []) : [];
+    var ngheCX = moCX && (cXet.muc || []).some(function (k) { return k.loai === 'audio' || k.loai === 'nghe'; }) && coBaiNgheKh(b);
+    var docXongCX = moCX && actCX.every(function (a) { return !!HQ.act[a.ma]; }) && (!ngheCX || !!HQ.nghe) && (actCX.length || ngheCX);
+    var ktCX = docXongCX ? hqKt(cXet.so) : {};
+    var chuaLam = function (ten) {
+      if (!docXongCX || ktCX[A.khoaTen(ten)]) return false;
+      return actCX.every(function (a) { var g = hqGioAct(a.ma, ten); return !g.giay && !g.luot.length; }) && (!ngheCX || !hqGioNghe(ten));
+    };
     var phuNg = function (ten) { return (HQ.nghe && tongNghe) ? Math.min(100, Math.round((HQ.nghe.giay[ten] || 0) / tongNghe * 100)) : 0; };
     var rows = hs.map(function (h) {
       return { h: h, tong: hqTongEm(h.ten, pv), vd: coVideo ? hqGioVideo(h.ten) : 0, ng: coNghe ? hqGioNghe(h.ten) : 0,
@@ -5688,7 +5707,7 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
         if (!g.giay && !g.luot.length) return !HQ.act[a.ma] ? '<td class="trong">…</td>' : '<td class="trong">—</td>';
         return '<td>' + hqNutAct(g.giay, coTrongDiem(DIEM[a.ma] || [], h.ten, a.ma), hqSoCauLam(g)) + '</td>';
       };
-      return '<tr' + (k < 3 && r.tong && sx.cot === 'tong' && sx.giam ? ' class="top"' : '') + '><td><span class="hs" data-hq-em="' + A.chuAnToan(h.ten) + '" title="Đúp để xem chi tiết"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(h.ten, slug, lopGoc) + A.chuAnToan(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span></td>' +
+      return '<tr' + (k < 3 && r.tong && sx.cot === 'tong' && sx.giam ? ' class="top"' : '') + '><td><span class="hs" data-hq-em="' + A.chuAnToan(h.ten) + '" title="Đúp để xem chi tiết' + (chuaLam(h.ten) ? ' · CHƯA ĐỤNG BÀI NÀO của chặng ' + cXet.so : '') + '"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(h.ten, slug, lopGoc) + '<span class="ten' + (chuaLam(h.ten) ? ' chua-lam' : '') + '">' + A.chuAnToan(h.ten) + '</span>' + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span></td>' +
         (coVideo ? oChay(r.vd, phuVd(h.ten), !HQ.video) : '') +
         (coNghe ? oChay(r.ng, phuNg(h.ten), !HQ.nghe) : '') +
         pv.acts.map(function (a, j) { return oAct(a, r.act[j]); }).join('') +
@@ -5837,6 +5856,19 @@ table.hq-tl{--h:40px; --f:13px; --av:28px; --f1:10px; --f2:9px; width:100%; bord
     for (var k = 0; k < 2; k++) { h = Math.max(MIN, Math.min(MAX, Math.floor(h))); dat(h); h = (cho - bang.tHead.offsetHeight) / n; }
     h = Math.max(MIN, Math.min(MAX, Math.floor(h))); dat(h);
     while (bang.offsetHeight > cho && h > MIN) { h--; dat(h); }
+    // v1.139.0 — cột Học sinh = tên dài nhất (+ lề); mỗi cột số = min(240px, chia đều phần còn lại); bảng ít cột đứng giữa.
+    var ths = [].slice.call(bang.tHead.rows[0].cells), th0 = ths[0], f2 = parseFloat(getComputedStyle(bang).getPropertyValue('--f')) || 13;
+    bang.classList.remove('deu'); bang.style.width = ''; ths.forEach(function (x) { x.style.width = ''; });
+    var rongTen = 0; [].forEach.call(bang.querySelectorAll('tbody .hs'), function (x) { rongTen = Math.max(rongTen, x.scrollWidth); });
+    var wTen = Math.ceil(rongTen + f2 * 0.6 + f2 * 1.4 + 2), soCot = ths.length - 1;
+    var rongKhung = than.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+    var wCot = Math.floor(Math.min(240, (rongKhung - wTen) / Math.max(1, soCot)));
+    if (wCot > 40) {
+      th0.style.width = wTen + 'px';
+      ths.slice(1).forEach(function (x) { x.style.width = wCot + 'px'; });
+      bang.style.width = (wTen + wCot * soCot) + 'px';
+      bang.classList.add('deu');
+    }
     than.style.overflowY = bang.offsetHeight > cho + 1 ? 'auto' : 'hidden';
   }
   // Thử MỌI số cột c = 1…N và CẢ HAI kiểu thẻ (DỌC: tên trên, trang dưới · NGANG: trang trái, tên phải); với mỗi cách

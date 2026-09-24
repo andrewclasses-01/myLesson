@@ -1885,7 +1885,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=119"></script>
+<script src="config.js?v=120"></script>
 <script src="js/chung.js?v=61"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -4653,13 +4653,31 @@ function chamMay(){
   return _chamMay;
 }
 function chamKhoaKho(loai){ return 'awc_cham_' + loai + '_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
-function chamRong(){ return { giay: 0, that: 0, lan: 0, ngay: {} }; }
+function chamRong(){ return { giay: 0, that: 0, lan: 0, ngay: {}, phien: [] }; }
+/* ⭐ v1.146.0 (24/09/2026, thầy chốt "giờ thật và chuẩn") — PHIÊN XEM/NGHE CÓ GIỜ THẬT.
+   Trước đây kho chỉ có tổng giây theo NGÀY ⇒ dashboard không biết em xem lúc mấy giờ
+   (bảng lượt từng in giờ giả 23:59). Nay mỗi máy giữ thêm `phien` = [{b: ms bắt đầu,
+   k: ms nhịp phát cuối, g: giây băng}] — một phiên = các nhịp phát THẬT liền nhau;
+   dừng quá PHIEN_NGAT_MS hoặc qua ngày mới ⇒ mở phiên mới. Tổng `g` các phiên của một
+   ngày = đúng `ngay[ngày]` (cùng cộng ở chamCong) — dữ liệu trước v1.146.0 không có phiên,
+   dashboard hiện phần dư đó là "cả ngày". Giữ tối đa PHIEN_TOI_DA phiên mới nhất.
+   Nằm TRONG `cham.<máy>` nên luật Firestore (cham is map, ≤30 khoá) không phải đổi. */
+var PHIEN_NGAT_MS = 3 * 60 * 1000;
+var PHIEN_TOI_DA = 200;
+function chamNgayCua(ms){
+  var d = new Date(ms), p = function(n){ return (n < 10 ? '0' : '') + n; };
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+}
+function chamPhienSach(ds){
+  return (Array.isArray(ds) ? ds : []).filter(function(x){ return x && isFinite(x.b) && isFinite(x.k) && isFinite(x.g) && x.k >= x.b; })
+    .map(function(x){ return { b: +x.b, k: +x.k, g: +x.g }; });
+}
 function chamCua(loai){
   if (CHAM[loai]) return CHAM[loai];
   var c = chamRong();
   try {
     var o = JSON.parse(localStorage.getItem(chamKhoaKho(loai)) || 'null');
-    if (o && isFinite(o.giay)) c = { giay: +o.giay || 0, that: +o.that || 0, lan: Math.round(+o.lan || 0), ngay: (o.ngay && typeof o.ngay === 'object') ? o.ngay : {} };
+    if (o && isFinite(o.giay)) c = { giay: +o.giay || 0, that: +o.that || 0, lan: Math.round(+o.lan || 0), ngay: (o.ngay && typeof o.ngay === 'object') ? o.ngay : {}, phien: chamPhienSach(o.phien) };
   } catch (e) {}
   CHAM[loai] = c;
   return c;
@@ -4667,10 +4685,7 @@ function chamCua(loai){
 function chamLuu(loai){
   try { localStorage.setItem(chamKhoaKho(loai), JSON.stringify(CHAM[loai])); } catch (e) {}
 }
-function chamHomNay(){
-  var d = new Date(), p = function(n){ return (n < 10 ? '0' : '') + n; };
-  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
-}
+function chamHomNay(){ return chamNgayCua(Date.now()); }
 // Cộng một nhịp phát THẬT: `giay` giây băng, `that` giây đồng hồ (đã chặn trần ở nơi gọi).
 function chamCong(loai, giay, that){
   if (!(giay > 0)) return;
@@ -4682,6 +4697,15 @@ function chamCong(loai, giay, that){
   // giữ tối đa 60 ngày gần nhất (khoá ISO sắp theo chữ = theo thời gian)
   var ks = Object.keys(c.ngay).sort();
   while (ks.length > 60) delete c.ngay[ks.shift()];
+  // v1.146.0 — phiên có giờ thật: nối vào phiên cuối nếu còn liền mạch + cùng ngày, không thì mở phiên mới
+  var now = Date.now(), cuoi = c.phien[c.phien.length - 1];
+  if (cuoi && now - cuoi.k <= PHIEN_NGAT_MS && chamNgayCua(cuoi.b) === k) { cuoi.k = now; cuoi.g += giay; }
+  else {
+    var bd = now - Math.max(giay, that || 0) * 1000;
+    if (chamNgayCua(bd) !== k) bd = new Date(new Date(now).setHours(0, 0, 0, 0)).getTime();
+    c.phien.push({ b: Math.round(bd), k: now, g: giay });
+    while (c.phien.length > PHIEN_TOI_DA) c.phien.shift();
+  }
   chamLuu(loai);
 }
 function chamLan(loai){
@@ -4696,7 +4720,10 @@ function chamRaFs(loai){
     giay: { doubleValue: Math.round(c.giay * 10) / 10 },
     that: { doubleValue: Math.round(c.that * 10) / 10 },
     lan:  { integerValue: String(c.lan) },
-    ngay: { mapValue: { fields: ngay } }
+    ngay: { mapValue: { fields: ngay } },
+    phien: { arrayValue: { values: c.phien.map(function(x){ return { mapValue: { fields: {
+      b: { integerValue: String(Math.round(x.b)) }, k: { integerValue: String(Math.round(x.k)) },
+      g: { doubleValue: Math.round(x.g * 10) / 10 } } } }; }) } }
   } } };
 }
 // Lúc mở bài: bản kho của CHÍNH máy này lớn hơn bản máy (localStorage bị xoá /
@@ -4710,6 +4737,8 @@ function chamGopTuFs(loai, fields){
     var kho = { giay: so(f.giay), that: so(f.that), lan: Math.round(so(f.lan)), ngay: {} };
     var mn = f.ngay && f.ngay.mapValue && f.ngay.mapValue.fields;
     if (mn) Object.keys(mn).forEach(function(k){ var n = so(mn[k]); if (isFinite(n) && n > 0) kho.ngay[k] = n; });
+    var mp = f.phien && f.phien.arrayValue && f.phien.arrayValue.values;   // v1.146.0
+    kho.phien = chamPhienSach((mp || []).map(function(v){ var g = v.mapValue && v.mapValue.fields; return g ? { b: so(g.b), k: so(g.k), g: so(g.g) } : null; }));
     var may = chamCua(loai);
     if (isFinite(kho.giay) && kho.giay > may.giay) { CHAM[loai] = kho; chamLuu(loai); }
   } catch (e) {}

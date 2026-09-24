@@ -2693,7 +2693,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=119"></script>
+<script src="config.js?v=120"></script>
 <script src="js/chung.js?v=61"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -3308,7 +3308,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
      `co=false` = tài liệu chưa có cham (bài xem trước 21/09) ⇒ cột hiện tổng =
      phủ như cũ, không tụt về 0. */
   function chamTuFs(fields) {
-    var ra = { giay: 0, that: 0, lan: 0, ngay: 0, co: false, theoNgay: {} };   // v1.131.0 — theoNgay {YYYY-MM-DD: giây}
+    var ra = { giay: 0, that: 0, lan: 0, ngay: 0, co: false, theoNgay: {}, phien: [] };   // v1.131.0 — theoNgay {YYYY-MM-DD: giây} · v1.146.0 phien [{b,k,g}] mọi máy
     try {
       var m = fields.cham && fields.cham.mapValue && fields.cham.mapValue.fields;
       if (!m) return ra;
@@ -3321,6 +3321,13 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
         ra.giay += so(f.giay); ra.that += so(f.that); ra.lan += Math.round(so(f.lan));
         var mn = f.ngay && f.ngay.mapValue && f.ngay.mapValue.fields;
         if (mn) Object.keys(mn).forEach(function (k) { if (so(mn[k]) > 0) { ngay[k] = 1; ra.theoNgay[k] = (ra.theoNgay[k] || 0) + so(mn[k]); } });
+        // v1.146.0 — phiên xem/nghe có GIỜ THẬT (bai.html `chamCong`); bài xem trước 24/09 không có
+        var mp = f.phien && f.phien.arrayValue && f.phien.arrayValue.values;
+        (mp || []).forEach(function (v) {
+          var g = v && v.mapValue && v.mapValue.fields; if (!g) return;
+          var p = { b: so(g.b), k: so(g.k), g: so(g.g) };
+          if (p.b > 0 && p.k >= p.b && p.g > 0) ra.phien.push(p);
+        });
       });
       ra.ngay = Object.keys(ngay).length;
     } catch (e) {}
@@ -6327,7 +6334,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var muc = acts.map(function (x) { return { k: x.k, ten: x.nhan, mau: x.mau }; });
     if (coBaiGiangKh(b)) muc.push({ k: 'video', ten: 'VIDEO', mau: MAU_HQ.video });
     if (coBaiNgheKh(b)) muc.push({ k: 'nghe', ten: 'NGHE', mau: MAU_HQ.nghe });
-    return { ten: ten, h: h, b: b, t: t, nay: nay, giao: giao, moc: moc, cuoi: cuoi, acts: acts, theo: theo, muc: muc, vd: vd };
+    return { ten: ten, h: h, b: b, t: t, nay: nay, giao: giao, moc: moc, cuoi: cuoi, acts: acts, theo: theo, muc: muc, vd: vd, ngCham: ngCham };
   }
   // Mục đang chọn ở hàng chip: tắt hết hoặc bật hết ⇒ tất cả.
   function hqCtChon(dl) {
@@ -6352,10 +6359,21 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
                     pt: l.mistakes ? '—' : (l.pt != null ? l.pt + '%' : ''), mo: l.mistakes || (l.loai === 'do' && !l.dung), full: !l.mistakes && l.pt >= 100 });
       });
     });
-    Object.keys(dl.theo).forEach(function (kh) {
-      var n = dl.theo[kh], luc = Date.parse(kh + 'T23:59:00');
-      if (n[0] && mc.co('video')) dong.push({ luc: luc, muc: 'VIDEO', mau: MAU_HQ.video, loai: 'video', nhan: 'XEM', giay: n[0], xy: 'cả ngày', pt: '', mo: true });
-      if (n[1] && mc.co('nghe')) dong.push({ luc: luc, muc: 'NGHE', mau: MAU_HQ.nghe, loai: 'nghe', nhan: 'NGHE', giay: n[1], xy: 'cả ngày', pt: '', mo: true });
+    // v1.146.0 — video/nghe: mỗi PHIÊN một dòng, Lúc = giờ bắt đầu THẬT, kết quả = khoảng giờ.
+    // Ngày nào tổng phiên còn thiếu so với tổng ngày (xem trước 24/09 chưa ghi giờ) ⇒ phần dư
+    // hiện một dòng "cả ngày" KHÔNG giờ (Lúc chỉ in ngày) — không còn giờ giả 23:59.
+    [['video', 0, 'VIDEO', 'XEM', dl.vd && dl.vd.cham], ['nghe', 1, 'NGHE', 'NGHE', dl.ngCham]].forEach(function (m) {
+      if (!mc.co(m[0])) return;
+      var mau = MAU_HQ[m[0]], daCoNgay = {};
+      ((m[4] && m[4].phien) || []).forEach(function (p) {
+        var kh = hqNgayKhoa(new Date(p.b));
+        daCoNgay[kh] = (daCoNgay[kh] || 0) + p.g;
+        dong.push({ luc: p.b, muc: m[2], mau: mau, loai: m[0], nhan: m[3], giay: p.g, xy: hqGioPhutLuc(p.b) + '–' + hqGioPhutLuc(p.k), pt: '', mo: true });
+      });
+      Object.keys(dl.theo).forEach(function (kh) {
+        var du = (dl.theo[kh][m[1]] || 0) - (daCoNgay[kh] || 0);
+        if (du >= 30) dong.push({ luc: Date.parse(kh + 'T00:00:00'), caNgay: true, muc: m[2], mau: mau, loai: m[0], nhan: m[3], giay: du, xy: 'cả ngày', pt: '', mo: true });
+      });
     });
     dong.sort(function (a, c) { return (c.luc || 0) - (a.luc || 0); });
     return dong;
@@ -6364,7 +6382,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     if (!dong.length) return '<div class="bm-em-trong">Chưa có lượt nào.</div>';
     return '<table class="hq-ct-bang"><tr><th>Lúc</th><th>Mục</th><th>Loại</th><th class="r">Phút</th><th class="r" colspan="2">Kết quả</th></tr>' +
       dong.slice(0, 300).map(function (l) {
-        return '<tr><td>' + hqChuLuc(l.luc) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + '">' + l.nhan + '</span></td>' +
+        var dLuc = new Date(l.luc || 0);
+        return '<tr><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + '">' + l.nhan + '</span></td>' +
           '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '">' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }

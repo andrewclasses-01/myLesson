@@ -1885,8 +1885,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=106"></script>
-<script src="js/chung.js?v=58"></script>
+<script src="config.js?v=107"></script>
+<script src="js/chung.js?v=59"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=23"></script>
@@ -1955,6 +1955,7 @@ var KHOI = [];
 var CA_LOP = [];
 var CA_LOP_TINH = [];
 var KHONG_TINH = [];   /* tên em không tính ở BÀI ĐANG MỞ (bỏ qua tay / vào lớp muộn) */
+var LOP_BAI = null;    /* v1.137.0 — đối tượng lớp của bài đang mở (cần cho `A.khongTinhCuaAct`) */
 
 /* Điểm thật của từng act: { mã act: [{ten, diem, giay}] } — đọc kho AWord.
    Dạng dữ liệu giữ NGUYÊN như bộ mẫu nên `xepBang()`/`veBang()` không phải sửa. */
@@ -2142,7 +2143,9 @@ function xepBang(ma){
   /* ⭐ v1.136.0 — một luật xếp hạng DUY NHẤT cho cả bốn bảng (xem `A.xepHangAct`): em KHÔNG
      TÍNH ở bài này (thầy ✕ / vào lớp sau ngày giao) vẫn hiện ĐỦ điểm + thời gian nhưng luôn
      xuống CUỐI và mang cờ `mien` để tô xám, không đánh hạng. */
-  return A.xepHangAct(DIEM[ma] || [], CA_LOP, KHONG_TINH);
+  /* v1.137.0 — bài STAGE: "không tính" theo CHẶNG của act này (thầy bỏ qua em ở chặng 1 thì
+     leaderboard act chặng 2 vẫn xếp hạng em bình thường). */
+  return A.xepHangAct(DIEM[ma] || [], CA_LOP, LOP_BAI ? A.khongTinhCuaAct(LOP_BAI, BAI, ma) : KHONG_TINH);
 }
 
 /* Bốn mức màu tên (thầy chốt đợt 4):
@@ -5935,6 +5938,7 @@ A.napDuLieu().then(function(dl){
   if (!LA_DAC_BIET) {
     CA_LOP_TINH = A.caLopCuaBai(l, BAI);
     KHONG_TINH = A.emKhongTinh(l, BAI).map(function(x){ return x.ten; });
+    LOP_BAI = l;
   }
 
   /* Bài dạng SP SLIDE có trang riêng — vào nhầm thì chuyển sang đó. */

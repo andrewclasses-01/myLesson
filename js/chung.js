@@ -280,6 +280,7 @@
         // ⭐ v1.76.0 — hai bảng của dạng bài STAGE, cùng tài liệu `lessonHan`.
         BO_QUA = bang.boQua || {};
         TINH_CA = bang.tinhCa || {};
+        BO_QUA_CHANG = bang.boQuaChang || {};   // v1.137.0
         MO_CHANG = bang.moChang || {};
         NGHI = r[3] || {};
         // ⭐ v1.119.0 — LỚP: bản mới hơn giữa lop.json và lessonWeb/lop.
@@ -356,8 +357,26 @@
   // ⭐ v1.135.0 (22/09/2026) — `tinhCa` = mảng TÊN em VÀO LỚP SAU NGÀY GIAO mà thầy bấm ↩
   // "vẫn tính em này ở bài này" (ngược với `boQua`). Cùng tài liệu `lessonHan`.
   var TINH_CA = {};
+  // ⭐⭐ v1.137.0 (24/09/2026, thầy chốt) — BỎ QUA EM THEO TỪNG CHẶNG: `boQuaChang` = map
+  // { "<số chặng>": [TÊN em] } cùng tài liệu `lessonHan`. Bỏ qua ở chặng 1 KHÔNG có nghĩa là bỏ
+  // qua ở chặng 2. `boQua` cũ (mảng, theo cả bài) VẪN ĐỌC và được hiểu = bỏ qua ở MỌI chặng
+  // (thầy chốt "giữ nghĩa cũ") — xem `boQuaChangCua`. Luật Firestore: `app/tools/dang-luat-bo-qua-chang.js`.
+  var BO_QUA_CHANG = {};
 
   function boQuaCua(b) { return BO_QUA[(b && b.id) || ''] || []; }
+  function boQuaChangGoc(b) { return BO_QUA_CHANG[(b && b.id) || ''] || {}; }
+  // Tên em KHÔNG TÍNH ở chặng số `so` của bài STAGE = bảng của chặng đó ∪ `boQua` cũ (mọi chặng).
+  function boQuaChangCua(b, so) {
+    var ds = (boQuaChangGoc(b)[String(+so || 0)] || []).slice(), co = {};
+    ds.forEach(function (t) { co[khoaTen(t)] = 1; });
+    boQuaCua(b).forEach(function (t) { if (!co[khoaTen(t)]) { co[khoaTen(t)] = 1; ds.push(t); } });
+    return ds;
+  }
+  function datBoQuaChang(id, m) {
+    if (!id) return;
+    BO_QUA_CHANG[id] = m || {};
+    luuDemHan();
+  }
   function tinhCaCua(b) { return TINH_CA[(b && b.id) || ''] || []; }
   function moChangCua(b) { return +MO_CHANG[(b && b.id) || ''] || 0; }
   /* Dashboard gọi sau khi ghi xong (cùng nếp `datHanSua`/`datTrangThai`) — không
@@ -428,7 +447,7 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           // ⭐ v1.35.0 — trả HAI bảng {han, tt} thay vì một bảng hạn.
-          var ra = { han: {}, tt: {}, boQua: {}, tinhCa: {}, moChang: {} };
+          var ra = { han: {}, tt: {}, boQua: {}, tinhCa: {}, moChang: {}, boQuaChang: {} };
           var ds = (j && j.documents) || [];
           for (var i = 0; i < ds.length; i++) {
             var f = ds[i].fields || {};
@@ -451,6 +470,17 @@
                 return String((v && v.stringValue) || '');
               }).filter(Boolean);
             }
+            // v1.137.0 — `boQuaChang`: REST gói map trong `mapValue.fields`, mỗi khoá là một mảng tên.
+            var bqc = f.boQuaChang && f.boQuaChang.mapValue && f.boQuaChang.mapValue.fields;
+            if (bqc) {
+              var m = {};
+              Object.keys(bqc).forEach(function (so) {
+                var vs = bqc[so] && bqc[so].arrayValue && bqc[so].arrayValue.values;
+                var ten = (vs || []).map(function (v) { return String((v && v.stringValue) || ''); }).filter(Boolean);
+                if (ten.length) m[so] = ten;
+              });
+              if (Object.keys(m).length) ra.boQuaChang[id] = m;
+            }
             var mc = f.moChang && (f.moChang.integerValue != null
                                    ? f.moChang.integerValue : f.moChang.doubleValue);
             if (mc != null) ra.moChang[id] = +mc || 0;
@@ -470,7 +500,7 @@
   function luuDemHan() {
     try { sessionStorage.setItem(KHOA_HAN,
       JSON.stringify({ luc: Date.now(),
-        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, tinhCa: TINH_CA, moChang: MO_CHANG } })); } catch (e) {}
+        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, tinhCa: TINH_CA, moChang: MO_CHANG, boQuaChang: BO_QUA_CHANG } })); } catch (e) {}
   }
 
   // Chỉ nhận đúng 4 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
@@ -617,7 +647,26 @@
     if (l && l.loai === 'khoa') return false;
     return !emCoMatOBai(h, b);
   }
-  function emKhongTinh(l, b) {
+  /* ⭐⭐ v1.137.0 (24/09/2026, thầy chốt) — BÀI STAGE: "không tính" đi theo TỪNG CHẶNG.
+       `emKhongTinh(l, b, so)`  = em thầy bỏ qua ở chặng số `so` (bảng `boQuaChang` + `boQua` cũ).
+       `emKhongTinh(l, b)`      = em bị bỏ qua ở MỌI chặng của bài (chỉ những em này mới rời hẳn
+                                  mẫu số x/N của cả thẻ — em bỏ qua một chặng vẫn còn ở chặng khác).
+     ⛔ Bài STAGE KHÔNG còn tự trừ em VÀO LỚP SAU NGÀY GIAO (thầy chốt: "tính cả bài, tôi sẽ bỏ
+     khỏi chặng bằng tay") — luật `muon` + `tinhCa` chỉ còn cho bài thường. */
+  function laStageCoChang(b) {
+    return laBaiStage(b) && changCuaBai(b).some(function (c) { return !!c.so; });
+  }
+  function emKhongTinh(l, b, so) {
+    if (laStageCoChang(b)) {
+      var cac = so == null ? changCuaBai(b).map(function (c) { return c.so; }) : [+so || 0];
+      var bang = cac.map(function (s) {
+        var m = {}; boQuaChangCua(b, s).forEach(function (t) { m[khoaTen(t)] = 1; }); return m;
+      });
+      return ((l && l.hocSinh) || []).filter(function (h) {
+        var k = khoaTen(h.ten);
+        return bang.length && bang.every(function (m) { return m[k]; });
+      }).map(function (h) { return { ten: h.ten, ly: 'tay', vao: String(h.vao || '') }; });
+    }
     var bo = {}, tinh = {}, ra = [];
     boQuaCua(b).forEach(function (t) { bo[khoaTen(t)] = 1; });
     tinhCaCua(b).forEach(function (t) { tinh[khoaTen(t)] = 1; });
@@ -662,7 +711,8 @@
       .concat(chua.filter(laMien).map(deCo));
   }
 
-  function caLopCuaBai(l, b) {
+  // v1.137.0 — `so` (tuỳ chọn): số chặng của bài STAGE ⇒ em đang tính Ở CHẶNG ĐÓ.
+  function caLopCuaBai(l, b, so) {
     // ⭐ v1.113.0 (16/09/2026) — KHÓA HỌC: MỌI em trong khóa đều thuộc MỌI lesson, bất
     // kể ngày vào. Luật `vao` là của lớp thường (bài giao theo buổi, em vào sau buổi đó
     // không phải làm); khóa học thì lesson mở dần và em nào cũng học từ đầu — 17 em vào
@@ -670,8 +720,19 @@
     // (đọc thẳng `l.hocSinh`) đếm 20 — hai trang lệch nhau. Nay cùng một số.
     // (v1.135.0: khóa học vẫn bỏ được em bằng nút ✕ — `boQua` áp cho cả hai loại.)
     var bo = {};
-    emKhongTinh(l, b).forEach(function (x) { bo[khoaTen(x.ten)] = 1; });
+    emKhongTinh(l, b, so).forEach(function (x) { bo[khoaTen(x.ten)] = 1; });
     return caLopDayDu(l).filter(function (t) { return !bo[khoaTen(t)]; });
+  }
+  /* ⭐ v1.137.0 — THEO MỘT ACT: act thuộc chặng nào thì dùng "không tính" của chặng đó (bài STAGE);
+     bài thường / act không tìm thấy chặng ⇒ y như cả bài. Dùng cho x/N từng dòng act và leaderboard. */
+  function soChangCuaAct(b, ma) {
+    if (!laStageCoChang(b)) return null;
+    var c = changCuaBai(b).filter(function (x) { return x.acts.some(function (a) { return a.ma === ma; }); })[0];
+    return c ? c.so : null;
+  }
+  function caLopCuaAct(l, b, ma) { return caLopCuaBai(l, b, soChangCuaAct(b, ma)); }
+  function khongTinhCuaAct(l, b, ma) {
+    return emKhongTinh(l, b, soChangCuaAct(b, ma)).map(function (x) { return x.ten; });
   }
 
   // ⭐ v1.35.0 — BA CỬA lấy bài của một lớp, theo trạng thái thẻ (`trangThaiThe`):
@@ -1426,7 +1487,8 @@
     var moTiep = true;          // chặng đang xét có được mở không
     for (var i = 0; i < cac.length; i++) {
       var c = cac[i];
-      c.thieu = emChuaXongChang(c, lay, caLop, o.boQua);
+      // v1.137.0 — bài STAGE: mỗi chặng chỉ trừ em thầy bỏ qua Ở CHẶNG ĐÓ (`boQuaChangCua` đã gồm `boQua` cũ).
+      c.thieu = emChuaXongChang(c, lay, caLop, (b && b.id && laBaiStage(b)) ? boQuaChangCua(b, c.so) : o.boQua);
       c.caLopXong = c.thieu.length === 0;
       c.quaHan = c.moc != null && now > c.moc;
 
@@ -3156,6 +3218,10 @@
     changChoMo: changChoMo,   // ⭐ v1.118.0 — chặng quá hạn còn em chưa xong, chờ mở chặng kế
     changCuConThieu: changCuConThieu,   // ⭐ v1.128.0 — chặng cũ (trước chặng đang chạy) còn em chưa xong
     boQuaCua: boQuaCua, tinhCaCua: tinhCaCua, datTinhCa: datTinhCa,
+    // ⭐ v1.137.0 — bỏ qua em THEO TỪNG CHẶNG
+    boQuaChangGoc: boQuaChangGoc, boQuaChangCua: boQuaChangCua, datBoQuaChang: datBoQuaChang,
+    laStageCoChang: laStageCoChang, soChangCuaAct: soChangCuaAct,
+    caLopCuaAct: caLopCuaAct, khongTinhCuaAct: khongTinhCuaAct,
     moChangCua: moChangCua, mocActHan: mocActHan,
     datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,

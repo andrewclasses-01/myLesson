@@ -1639,8 +1639,8 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=106"></script>
-<script src="js/chung.js?v=58"></script>
+<script src="config.js?v=107"></script>
+<script src="js/chung.js?v=59"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=1"></script>
@@ -1933,8 +1933,14 @@ function donDiem(cacThe){
         var ds = theoMa[x.ma] || [];
         var chuan = chuanMaAct[x.ma];
         var dem = 0;
-        /* v1.95.0 — đếm theo SĨ SỐ RIÊNG của thẻ (em vào lớp sau ngày giao không tính). */
-        (t.caLop || CA_LOP).forEach(function(ten){
+        /* v1.95.0 — đếm theo SĨ SỐ RIÊNG của thẻ (em vào lớp sau ngày giao không tính).
+           ⭐ v1.137.0 — bài STAGE: sĩ số RIÊNG CỦA CHẶNG chứa act này (thầy bỏ qua em ở từng
+           chặng, xem `A.caLopCuaAct`). `x.siSo`/`x.caLop`/`x.khongTinh` đi theo từng dòng act. */
+        var caX = (!LA_DAC_BIET && t.goc && LOP_OBJ && A.laStageCoChang(t.goc))
+          ? A.caLopCuaAct(LOP_OBJ, t.goc, x.ma) : (t.caLop || CA_LOP);
+        x.caLop = caX; x.siSo = caX.length;
+        x.khongTinh = (caX === t.caLop || caX === CA_LOP) ? null : A.khongTinhCuaAct(LOP_OBJ, t.goc, x.ma);
+        caX.forEach(function(ten){
           if (A.xongAct(ds, ten, chuan)) dem++;
           else thieu[ten] = (thieu[ten] || 0) + 1;
         });
@@ -1996,7 +2002,7 @@ function tinhHinhThe(b, hetGio){
   if (!ds.length) {
     return hetGio ? { lop:'tt-la', du:true } : { lop:'', du:false };
   }
-  var du = ds.every(function(x){ return x.xong >= b.siSo; });   /* v1.95.0 — sĩ số riêng */
+  var du = ds.every(function(x){ return x.xong >= (x.siSo != null ? x.siSo : b.siSo); });   /* v1.137.0 — sĩ số theo chặng */   /* v1.95.0 — sĩ số riêng */
   return { lop: du ? 'tt-la' : 'tt-do', du:du };
 }
 
@@ -2051,14 +2057,15 @@ function veDiemStage(b, batDo, hienThieu){
     var x = mas[a.ma] || { ten: a.ten, ma: a.ma, xong: 0 };
     // v1.82.0 — HS đặc biệt: điểm riêng / điểm tối đa, xem khai báo ở đầu file.
     if (LA_DAC_BIET) return dongDiemDacBiet(x);
-    var pt = Math.min(100, Math.round(x.xong / b.siSo * 100));   /* v1.95.0 — sĩ số riêng */
+    var siX = x.siSo != null ? x.siSo : b.siSo;   /* v1.137.0 — sĩ số theo chặng của act */
+    var pt = Math.min(100, Math.round(x.xong / siX * 100));   /* v1.95.0 — sĩ số riêng */
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
       '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' +
         A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
       '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
         avMocHtml(DIEM_ACT[x.ma], LOP || LOP_DL) + '</span>' +
-      '<span class="td-so ' + m + '">' + x.xong + '/' + b.siSo + '</span>' +
+      '<span class="td-so ' + m + '">' + x.xong + '/' + siX + '</span>' +
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
     '</span>';
   }).join('');
@@ -2119,7 +2126,8 @@ function veDiem(b, batDo, hienThieu){
   }
   var thanh = (b.bai || []).map(function(x){
     if (x.ws) return dongSheet(x.ten);   // ⭐ v1.105.0 — hàng SHEET, xem `dongSheet()`
-    var pt = Math.min(100, Math.round(x.xong / b.siSo * 100));   /* v1.95.0 — sĩ số riêng */
+    var siX = x.siSo != null ? x.siSo : b.siSo;   /* v1.137.0 — sĩ số theo chặng của act */
+    var pt = Math.min(100, Math.round(x.xong / siX * 100));   /* v1.95.0 — sĩ số riêng */
     var m = (batDo && pt < 100) ? 'm-do' : bacMau(pt);
     return '<span class="td-dong">' +
       /* ⭐ v1.14.0 — nhãn RÚT GỌN: "WORD PRACTICE 1" -> "WORDS 1" (A.tenO).
@@ -2129,7 +2137,7 @@ function veDiem(b, batDo, hienThieu){
       '<span class="td-ten" title="' + A.chuAnToan(x.ten) + '">' + A.chuAnToan(A.tenO(x.ten, true)) + '</span>' +
       '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
         avMocHtml(DIEM_ACT[x.ma], LOP || LOP_DL) + '</span>' +
-      '<span class="td-so ' + m + '">' + x.xong + '/' + b.siSo + '</span>' +
+      '<span class="td-so ' + m + '">' + x.xong + '/' + siX + '</span>' +
       '<span class="td-tich">' + (pt >= 100 ? '✓' : '') + '</span>' +
     '</span>';
   }).join('');
@@ -2669,7 +2677,8 @@ function vePopChang(){
   $('#popKhung').style.setProperty('--so-cot', Math.max(1, c.acts.length));
   $('#popDs').classList.add('ngang');
   $('#popDs').innerHTML = c.acts.map(function(a){
-    return veCotActPop(a, c.mo, cham, popChangB.caLop, popChangB.siSo, popChangB.caLopDu, popChangB.khongTinh);
+    var x = (popChangB.bai || []).filter(function(y){ return y.ma === a.ma; })[0] || {};   /* v1.137.0 — theo chặng */
+    return veCotActPop(a, c.mo, cham, x.caLop || popChangB.caLop, x.siSo != null ? x.siSo : popChangB.siSo, popChangB.caLopDu, x.khongTinh || popChangB.khongTinh);
   }).join('');
 }
 
@@ -2688,7 +2697,7 @@ function moPopChiTiet(b){
   $('#popKhung').style.setProperty('--so-cot', acts.length);
   $('#popDs').classList.add('ngang');
   $('#popDs').innerHTML = acts.map(function(a){
-    return veCotActPop(a, true, [], b.caLop, b.siSo, b.caLopDu, b.khongTinh);
+    return veCotActPop(a, true, [], a.caLop || b.caLop, a.siSo != null ? a.siSo : b.siSo, b.caLopDu, a.khongTinh || b.khongTinh);   /* v1.137.0 */
   }).join('');
   $('#popNen').classList.add('mo');
 }
@@ -2770,7 +2779,7 @@ function tinhHinhGio(b){
   /* ⭐ v1.56.0 — thẻ thầy đã ĐỔI HẠN RIÊNG thì KHÔNG bao giờ ăn trạng thái 'xong':
      đồng hồ chạy lại như thẻ mới cho tới mốc hạn mới (thầy chốt 03/09/2026). */
   if (!b.suaHan &&
-      (b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= b.siSo; })) {
+      (b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= (x.siSo != null ? x.siSo : b.siSo); })) {
     return 'xong';   /* v1.95.0 — so với SĨ SỐ RIÊNG của thẻ (em mới vào không tính) */
   }
   if (b.hanMoc == null) return 'thuong';

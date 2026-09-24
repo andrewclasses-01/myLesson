@@ -2690,7 +2690,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=117"></script>
+<script src="config.js?v=118"></script>
 <script src="js/chung.js?v=61"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -3225,6 +3225,11 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var chinh = tu.pop();
     return tu.map(function (w) { return w.charAt(0).toUpperCase() + '.'; }).join('') + chinh;
   }
+  // v1.144.3 (thầy chốt 24/09) — tên trong hộp quản lý: quá 10 ký tự thì viết tắt họ + đệm (ĐỖ NGỌC MINH KHANG → Đ.N.M.KHANG).
+  // Trả HTML đã thoát; tên gốc đi vào `title` của thẻ bọc qua `tenGonTitle`.
+  var TEN_GON_MAX = 10;
+  function tenGon(ten) { ten = String(ten || '').trim(); return A.chuAnToan(ten.length > TEN_GON_MAX ? vietTat(ten) : ten); }
+  function tenGonTitle(ten) { ten = String(ten || '').trim(); return ten.length > TEN_GON_MAX ? ' title="' + A.chuAnToan(ten) + '"' : ''; }
 
   // Một icon avatar tròn (ảnh thật nếu có, rơi về chữ tắt màu — y hệt nếp
   // `veAv()`/`veHocSinh()` — chỉ đổi CLASS để không đụng cỡ/khung của hai nơi kia).
@@ -5918,7 +5923,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       }).join('');
       return '<div class="bd-dong' + (chua ? ' chua' : '') + '" data-hq-em="' + A.chuAnToan(h.ten) + '" data-tl2="' + k + '"' + (chua ? ' title="CHƯA ĐỤNG BÀI NÀO của chặng ' + cXet.so + '"' : '') + '>' +
         '<span class="stt">' + (k + 1) + '</span>' + veEmAvDb(h.ten, slug, lopGoc) +
-        '<span class="ten">' + A.chuAnToan(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span>' +
+        '<span class="ten"' + tenGonTitle(h.ten) + '>' + tenGon(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span>' +
         '<span class="bd-ray"><span class="thanh" style="animation-delay:' + (k * 25) + 'ms">' + doan + '</span><span class="gach-noi"></span></span>' +
         '<span class="gio">' + (gHang(r) ? hqChuGio(gHang(r)) : '—') + '</span></div>';
     }).join('');
@@ -5986,7 +5991,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       '<span class="dem' + (n && xong === n ? ' du' : '') + '">' + (dangDoc ? '…' : xong + '/' + n + ' đã xong') + '</span></div><div class="bxh-ds">' +
       dong.map(function (d, k) {
         var hang = d.tot ? (k < 3 ? '<span class="hang hc h' + (k + 1) + '">' + (k + 1) + '</span>' : '<span class="hang">' + (k + 1) + '</span>') : '<span class="hang">–</span>';
-        return '<div class="bxh-dong' + (d.tot ? '' : ' chua') + '" data-hq-em="' + A.chuAnToan(d.h.ten) + '" title="Đúp để xem chi tiết">' + hang + '<span class="ten">' + A.chuAnToan(d.h.ten) + '</span>' +
+        return '<div class="bxh-dong' + (d.tot ? '' : ' chua') + '" data-hq-em="' + A.chuAnToan(d.h.ten) + '" title="Đúp để xem chi tiết">' + hang + '<span class="ten"' + tenGonTitle(d.h.ten) + '>' + tenGon(d.h.ten) + '</span>' +
           '<span class="diem' + (d.full ? ' full' : '') + '">' + (d.tot ? d.tot.diem + (d.tot.mau ? '<small>/' + d.tot.mau + '</small>' : '') : '—') + '</span>' +
           '<span class="tg">' + (d.tot && d.tot.giay ? mmss(d.tot.giay) : '—') + '</span></div>';
       }).join('') + '</div></div>';
@@ -6007,7 +6012,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       '<div class="bd-than"><div class="bd-luoi" id="hqXhLuoi"></div><div class="bd-ds" style="--n:' + rows.length + '">' +
       rows.map(function (r, k) {
         return '<div class="bd-dong' + (r.tong ? '' : ' chua') + '" data-hq-em="' + A.chuAnToan(r.h.ten) + '" title="Đúp để xem chi tiết"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(r.h.ten, slug, lopGoc) +
-          '<span class="ten">' + A.chuAnToan(r.h.ten) + '</span><span class="bd-ray">' + (r.tong ? '<span class="bd-cot" style="width:' + (r.tong / dinh * 100).toFixed(2) + '%;animation-delay:' + (k * 25) + 'ms"></span>' : '') + '</span>' +
+          '<span class="ten"' + tenGonTitle(r.h.ten) + '>' + tenGon(r.h.ten) + '</span><span class="bd-ray">' + (r.tong ? '<span class="bd-cot" style="width:' + (r.tong / dinh * 100).toFixed(2) + '%;animation-delay:' + (k * 25) + 'ms"></span>' : '') + '</span>' +
           '<span class="gio">' + (r.tong ? hqChuGio(r.tong) : '—') + '</span></div>';
       }).join('') + '</div></div><div class="bd-truc" id="hqXhTruc"></div>';
     var loi = HQ.actLoi ? '<div class="hq-loi">' + A.chuAnToan(HQ.actLoi) + '</div>' : '';
@@ -6115,7 +6120,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       });
       for (var iT = x.sap.length + 1; iT <= n; iT++) pg += '<span class="np-pg"><b>' + iT + '</b></span>';
       return '<div class="nc ' + cls + '" title="' + A.chuAnToan(x.h.ten) + '"><div class="nc-info"><div class="nc-dau"><span class="stt">' + (k + 1) + '</span>' + veEmAvDb(x.h.ten, slug, lopGoc) +
-        '<span class="ten">' + A.chuAnToan(x.h.ten) + '</span><span class="so">' + (x.da ? x.da + '/' + n : '—') + '</span></div>' +
+        '<span class="ten"' + tenGonTitle(x.h.ten) + '>' + tenGon(x.h.ten) + '</span><span class="so">' + (x.da ? x.da + '/' + n : '—') + '</span></div>' +
         '<div class="nc-duoi">' + (x.luc ? gioNop(x.luc) : '&nbsp;') + (x.muon ? '<span class="tre">TRỄ</span>' : '') + (x.kt ? '<span class="ktc">KHÔNG TÍNH</span>' : '') + '</div></div>' +
         '<div class="nc-trang">' + pg + '</div></div>';
     }).join('');

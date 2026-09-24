@@ -1805,6 +1805,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-ct-chip button{cursor:pointer; border:1.5px solid var(--vien); background:#fff; color:var(--mo); font:800 calc(10px*var(--k))/1 var(--font); letter-spacing:.05em; text-transform:uppercase; padding:calc(6px*var(--k)) calc(11px*var(--k)); border-radius:99px; display:inline-flex; align-items:center; gap:6px; transition:background .18s, color .18s, border-color .18s}
 .hq-ct-chip button i{width:calc(9px*var(--k)); height:calc(9px*var(--k)); border-radius:50%; display:inline-block}
 .hq-ct-chip button:hover{border-color:var(--vien-dam); color:var(--chu)}
+/* v1.145.0 — chặn bôi chọn chữ trong hộp quản lý + pop-up chi tiết em (ô gõ vẫn chọn được) */
+#bmHop, #hqCtNen{-webkit-user-select:none; user-select:none}
+#bmHop :is(input, textarea, [contenteditable="true"]), #hqCtNen :is(input, textarea, [contenteditable="true"]){-webkit-user-select:text; user-select:text}
 .hq-ct-chip button.bat{background:var(--chu); border-color:var(--chu); color:#fff}
 .hq-ct-chip{justify-content:center}   /* v1.143.0 — chip mục ra giữa; số lượt lên hàng tiêu đề */
 .hq-ct-khoi h4 .dem{margin-left:auto; letter-spacing:.04em; color:var(--mo)}
@@ -2690,7 +2693,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=118"></script>
+<script src="config.js?v=119"></script>
 <script src="js/chung.js?v=61"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -6269,7 +6272,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   //   ĐÚP ẢNH hoặc TÊN em ⇒ chép ẢNH pop-up vào clipboard (`hqChupVaChep`).
   // • TỔNG QUAN: [4 ô số 2×2 + đồ thị phút theo ngày] | [bảng từng lượt].  CHI TIẾT: đồ thị tiến triển THEO THỜI GIAN | bảng.
   // • Hàng CHIP dưới bảng (các act + VIDEO + NGHE): bật mục nào ⇒ bảng + đồ thị cột + đồ thị tiến triển chỉ còn mục đó;
-  //   bật 2 ⇒ 2; tắt hết = bật hết = tất cả; ĐÚP chip bất kỳ ⇒ tắt hết. Bật/tắt CHỈ vẽ lại phần đổi (`hqCtCapNhatMuc`) —
+  //   v1.145.0: CHỈ MỘT mục một lúc — bấm mục khác = CHUYỂN, bấm lại mục đang bật = về tổng quan (tất cả); ĐÚP chip ⇒ tắt hết. Bật/tắt CHỈ vẽ lại phần đổi (`hqCtCapNhatMuc`) —
   //   vẽ lại cả hàng chip giữa hai cú bấm là trình duyệt không bắn `dblclick`.
   // • Điểm: lượt NỘP/LUYỆN = score/total của lượt; lượt BỎ DỞ (em bấm START AGAIN giữa ván, AWord Đợt 379 gửi số câu đúng
   //   tới lúc dừng, total 0) = score / số câu của act (`CHUAN[ma].soCau`). Lượt START WITH MISTAKES không vẽ, không tính điểm
@@ -8280,7 +8283,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       var hqMuc = e.target.closest('[data-hqmuc]');
       if (hqMuc && HQ.ct) {
         var kMuc = hqMuc.getAttribute('data-hqmuc'), iMuc = HQ.ct.chon.indexOf(kMuc);
-        if (iMuc >= 0) HQ.ct.chon.splice(iMuc, 1); else HQ.ct.chon.push(kMuc);
+        HQ.ct.chon = iMuc >= 0 ? [] : [kMuc];   /* v1.145.0 — MỘT mục một lúc: bấm lại = tổng quan, bấm mục khác = chuyển */
         hqCtCapNhatMuc(); return;
       }
       var bqLai = e.target.closest('[data-boqua-lai]');

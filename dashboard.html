@@ -2693,7 +2693,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=121"></script>
+<script src="config.js?v=122"></script>
 <script src="js/chung.js?v=62"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5635,7 +5635,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   // ⭐ Thầy chốt 24/09: lượt ĐIỂM 0 chỉ tính THỜI GIAN khi ≥ 2 phút HOẠT ĐỘNG THẬT (`activeMs`), CHỈ áp cho lượt từ
   // mốc gộp `HQ_MOC_GOP` (lượt cũ tính như cũ). Dưới 2 phút thì lượt bị BỎ HẲN (không hiện, không cộng).
   // ⛔ `HQ_MOC_GOP` = lúc AWord Đợt 383 lên sống; 0 = chưa áp (mọi lượt tính như cũ).
-  var HQ_MOC_GOP = 0;
+  var HQ_MOC_GOP = 1790271900000;   // v1.147.1 — 25/09/2026 00:45 (+07): AWord Đợt 383 `ba22cd1` lên sống 00:45:15
   var HQ_GIAY_DIEM0_TOI_THIEU = 120;
   // Mẫu số chuẩn của act cho lượt DỞ (mẫu số riêng của lượt dở không chắc — xem `mauChuan` bên chung.js):
   // tổng NHỎ NHẤT trong các lượt KHÔNG dở của kho scores; chưa có thì số câu của đề.

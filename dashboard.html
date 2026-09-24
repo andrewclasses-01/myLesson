@@ -1555,6 +1555,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-khoi-ten{font:800 12px/1.3 var(--font); letter-spacing:.07em; text-transform:uppercase}
 .hq-khoi.dang .hq-khoi-ten{color:#2B5FD0} .hq-khoi.xong .hq-khoi-ten{color:#1F7A4D} .hq-khoi.ket .hq-khoi-ten{color:#B03A3E}
 .hq-khoi-han{font:600 11px/1.3 var(--font); color:var(--mo)}
+/* ⭐ v1.142.0 (thầy chốt 24/09) — icon ĐỔI HẠN của TỪNG CHẶNG, đứng ngay sau chữ "hạn …" (chỉ icon). */
+.hq-han-nut{width:26px; height:26px; margin-left:-4px; flex:none; border:0; border-radius:8px; background:transparent; color:var(--mo); display:grid; place-items:center; cursor:pointer; transition:background .15s, color .15s}
+.hq-han-nut:hover{background:#E7EEFF; color:#3E7BFA}
+.hq-han-nut svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 .hq-khoi-nut{margin-left:auto; display:flex; gap:6px}
 .hq-muc{display:grid; grid-template-columns:22px 1fr 150px 60px; align-items:center; gap:10px; padding:8px 0; border-top:1px dashed var(--vien)}
 .hq-muc:first-of-type{border-top:0}
@@ -2587,8 +2591,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=112"></script>
-<script src="js/chung.js?v=60"></script>
+<script src="config.js?v=113"></script>
+<script src="js/chung.js?v=61"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=1"></script>
@@ -3414,6 +3418,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     };
     if (doi.boQua !== undefined) goi.boQua = doi.boQua;
     if (doi.boQuaChang !== undefined) goi.boQuaChang = doi.boQuaChang;   // v1.137.0
+    if (doi.hanChang !== undefined) goi.hanChang = doi.hanChang;         // v1.142.0
     if (doi.tinhCa !== undefined) goi.tinhCa = doi.tinhCa;   // v1.135.0
     if (doi.moChang !== undefined) goi.moChang = doi.moChang;
     spDb().then(function (f) {
@@ -3422,6 +3427,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       /* Cập nhật bản nhớ trong máy để vẽ lại thấy ngay, khỏi chờ 60 giây đệm. */
       if (doi.boQua !== undefined) A.datBoQua(id, doi.boQua);
       if (doi.boQuaChang !== undefined) A.datBoQuaChang(id, doi.boQuaChang);
+      if (doi.hanChang !== undefined) A.datHanChang(id, doi.hanChang);
       if (doi.tinhCa !== undefined) A.datTinhCa(id, doi.tinhCa);
       if (doi.moChang !== undefined) A.datMoChang(id, doi.moChang);
       veKhuThe();
@@ -3752,6 +3758,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   // xem `moPopChiTietAct()`).
   // ⭐ v1.132.0 — bánh răng Lucide `settings` cho nút ⚙ chỉ-icon ở đầu HỘP QUẢN LÝ (thầy chốt "bánh răng hiện đại").
   var IC_GEAR_HQ = '<svg viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>';
+  // ⭐ v1.142.0 — Lucide `calendar-clock`: nút đổi hạn trên từng khối chặng (hộp quản lý, tab BÀI TẬP).
+  var IC_HAN_CHANG = '<svg viewBox="0 0 24 24"><path d="M21 7.5V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h3.5"/><path d="M16 2v4"/><path d="M8 2v4"/><path d="M3 10h5"/><path d="M17.5 17.5 16 16.3V14"/><circle cx="16" cy="16" r="6"/></svg>';
   var IC_GEAR_NHO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="2.6"/>' +
     '<path d="M12 4.4v2M12 17.6v2M19.6 12h-2M6.4 12h-2M17.36 6.64l-1.42 1.42M8.06 15.94l-1.42 1.42' +
     'M17.36 17.36l-1.42-1.42M8.06 8.06 6.64 6.64"/></svg>';
@@ -5593,6 +5601,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
         : 'Chặng ' + c.so + ' · ' + (c.tt === 'xong' ? 'cả lớp đã xong' : c.tt === 'dang' ? 'đang làm' :
             c.tt === 'ket' ? 'quá giờ, còn ' + c.thieu.length + ' em' : c.tt === 'cho' ? 'sắp mở' : 'chưa mở');
       var han = c.hanHien ? '<span class="hq-khoi-han">hạn ' + chuHanChangDb(c.hanHien) + '</span>' : '';
+      // ⭐ v1.142.0 (thầy chốt) — đổi hạn TỪNG CHẶNG ngay trên khối (mục "Đổi hạn nộp" trong ⚙ đã bỏ với bài STAGE).
+      if (c.so) han += '<button type="button" class="hq-han-nut" data-hqhan="' + c.so + '" title="Đổi hạn chặng ' + c.so + '">' + IC_HAN_CHANG + '</button>';
       var soKt = Object.keys(hqKt(c.so)).length;
       var ktChip = soKt ? '<span class="hq-kt-chip">không tính ' + soKt + ' em</span>' : '';
       var sau = t.chang[i + 1];
@@ -5671,6 +5681,17 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       '</div>';
     };
     // ⭐ v1.138.0 (thầy duyệt mẫu v11) — tiêu đề gọn "TỔNG QUAN • CHẶNG 1 / CẢ HÀNH TRÌNH", "KHÔNG TÍNH • CHẶNG 1"; bỏ MỌI câu hướng dẫn.
+    // ⭐ v1.142.0 (thầy chốt 24/09) — xếp em: CHƯA XONG lên đầu (ít bài xong nhất trước), ĐÃ XONG về sau,
+    // em bỏ qua mọi chặng (xem cả hành trình) cuối cùng. Cùng hạng thì giữ thứ tự cũ (sort ổn định theo vị trí).
+    var xep = function (ds) {
+      return ds.map(function (h, vt) {
+        var d = hqDemEm(h, muc), het = !mot && !!ktHet[A.khoaTen(h.ten)];
+        var nhom = het ? 2 : (!d.N || d.n >= d.N) ? 1 : 0;
+        return { h: h, vt: vt, nhom: nhom, n: nhom ? 0 : d.n };
+      }).sort(function (x, y) { return (x.nhom - y.nhom) || (x.n - y.n) || (x.vt - y.vt); })
+        .map(function (x) { return x.h; });
+    };
+    hs = xep(hs);
     var nhanSo = mot ? (so ? 'CHẶNG ' + so : 'MỤC KHÔNG THUỘC CHẶNG') : 'CẢ HÀNH TRÌNH';
     var dau = '<h4>TỔNG QUAN • <b>' + nhanSo + '</b></h4>';
     if (!mot) {
@@ -6820,6 +6841,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
           ttN === 'an' ? 'Hiện lại thẻ' : 'Ẩn thẻ');
       muc('#rcXoa', IC_MENU.xoa, 'Xoá thẻ này');
       $('#rcKhoa').hidden = true;
+      $('#rcHan').hidden = false;
       m.classList.add('mo');
       datCanh(m, btn);
       return;
@@ -6828,6 +6850,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var bRc = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
     var tt = bRc ? A.trangThaiThe(bRc) : '';
     muc('#rcHan', IC_MENU.han, 'Đổi hạn nộp');
+    // ⭐ v1.142.0 (thầy chốt 24/09) — bài STAGE: BỎ "Đổi hạn nộp" khỏi ⚙; đổi hạn bằng icon trên TỪNG khối chặng (tab BÀI TẬP).
+    $('#rcHan').hidden = !!(bRc && A.laBaiStage(bRc) && A.changCuaBai(bRc).some(function (c) { return !!c.so; }));
     muc('#rcAn', tt === 'an' ? IC_MENU.hien : IC_MENU.an, tt === 'an' ? 'Hiện lại bài' : 'Ẩn bài');
     muc('#rcKhoa', tt === 'khoa' ? IC_MENU.mokhoa : IC_MENU.khoa, tt === 'khoa' ? 'Mở khoá' : 'Tạm khoá');
     muc('#rcXoa', IC_MENU.xoa, 'Xoá bài tập');
@@ -6890,7 +6914,10 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   // Ô giờ vẫn ăn `epGio24()` nhờ thuộc tính `data-hs-gio` (bắt ở tầng document).
   // ================================================================
   var HP_ID = null;
+  var HP_CHANG = 0;   // ⭐ v1.142.0 — ≠ 0: hộp đang đổi hạn CHẶNG số này (xem `moHanPopChang`)
   function moHanPop(id, neo) {
+    HP_CHANG = 0;
+    $('#hanPop h4').textContent = 'Đổi hạn nộp';
     // ⭐ v1.51.0 — thẻ nghỉ: cùng hộp, chỉ đổi chữ. Nút "Về mặc định" ẩn đi vì
     // thẻ nghỉ không có hạn mặc định nào để quay về.
     if (laNghi(id)) {
@@ -6935,7 +6962,48 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     p.classList.add('mo');
     datCanh(p, neo);
   }
-  function dongHanPop() { $('#hanPop').classList.remove('mo'); HP_ID = null; }
+  function dongHanPop() { $('#hanPop').classList.remove('mo'); HP_ID = null; HP_CHANG = 0; }
+
+  // ⭐⭐ v1.142.0 (thầy chốt 24/09/2026) — ĐỔI HẠN MỘT CHẶNG (icon trên khối chặng, hộp quản lý).
+  // Cùng hộp `#hanPop`. Chặng CUỐI ghi trường `han` cũ (`hsGhi`) — hạn chặng cuối cũng là hạn cả thẻ,
+  // thẻ còn/hết hạn theo nó; các chặng TRƯỚC ghi map `hanChang` (`ghiHanChang`).
+  function hpChang(id, so) {
+    var b = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === id; })[0];
+    if (!b) return null;
+    var cac = A.changCuaBai(b).filter(function (c) { return !!c.so; });
+    for (var i = 0; i < cac.length; i++) if (cac[i].so === so)
+      return { b: b, c: cac[i], truoc: cac[i - 1] || null, sau: cac[i + 1] || null, laCuoi: i === cac.length - 1 };
+    return null;
+  }
+  function hpChangDaSua(x) { return x.laCuoi ? A.daSuaHan(x.b) : !!A.hanChangGoc(x.b)[String(x.c.so)]; }
+  function moHanPopChang(id, so, neo) {
+    var x = hpChang(id, so);
+    if (!x) return;
+    HP_ID = id; HP_CHANG = so;
+    var m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(String(x.c.hanHien || ''));
+    $('#hanPop h4').textContent = 'Đổi hạn chặng ' + so;
+    $('#hpTen').textContent = A.tenBai(x.b);
+    $('#hpNgay').value = m ? m[1] : '';
+    $('#hpGio').value = m ? m[2] : '';
+    var sua = hpChangDaSua(x);
+    $('#hpGhi').textContent = (sua ? 'Chặng này đang dùng hạn riêng (hạn lúc đẩy bài: ' + chuHanChangDb(x.c.han) + '). '
+                                    : 'Chặng này đang dùng hạn lúc đẩy bài. ') +
+      (x.laCuoi ? 'Đây là chặng cuối: hạn này cũng là hạn của cả thẻ. '
+                : 'Chặng ' + x.sau.so + ' mở sớm nhất 12 tiếng trước hạn này. ') + 'Bỏ trống giờ thì lấy 23:59.';
+    $('#hpBo').hidden = !sua;
+    var p = $('#hanPop');
+    p.classList.add('mo');
+    datCanh(p, neo);
+  }
+  // Ghi CẢ map `hanChang` (khoá chặng này = `han`, '' = gỡ) — `setDoc merge` không xoá được khoá nên gỡ = chuỗi rỗng.
+  function ghiHanChang(id, so, han) {
+    var b = A.baiCuaLop(DL, LOP_CHON, 'tatca').filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    var m = {}, goc = A.hanChangGoc(b);
+    Object.keys(goc).forEach(function (k) { m[k] = String(goc[k] || ''); });
+    m[String(so)] = String(han || '');
+    stageGhi(id, { hanChang: m }, null, han ? 'Đã đặt hạn riêng cho chặng ' + so + '.' : 'Chặng ' + so + ' đã về hạn lúc đẩy bài.');
+  }
 
   // Ba nút của hai hộp nhỏ. Gắn thẳng (không qua tay bắt chung trên document)
   // vì đây là phần tử TĨNH, không bị vẽ lại bao giờ.
@@ -6971,6 +7039,24 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
         }
       });
     }
+    if (HP_CHANG) {
+      var so = HP_CHANG, x = hpChang(id, so);
+      if (!x) return;
+      var mMoi = Date.parse(moc);
+      // Thầy chốt: CHẶN khi thứ tự chặng bị đảo (hạn chặng phải nằm giữa chặng trước và chặng sau).
+      if (x.truoc && x.truoc.moc != null && mMoi <= x.truoc.moc)
+        return void baoToast('Hạn chặng ' + so + ' phải SAU hạn chặng ' + x.truoc.so + ' (' + chuHanChangDb(x.truoc.hanHien) + ').');
+      if (x.sau && x.sau.moc != null && mMoi >= x.sau.moc)
+        return void baoToast('Hạn chặng ' + so + ' phải TRƯỚC hạn chặng ' + x.sau.so + ' (' + chuHanChangDb(x.sau.hanHien) + ').');
+      return void moXnPop($('#hanPop'), {
+        tieuDe: 'Đặt hạn chặng ' + so + '?',
+        chu: 'Hạn chặng ' + so + ' thành ' + gio + ' ngày ' + (+d[2]) + '/' + (+d[1]) + '/' + d[0] + '. ' +
+             (x.laCuoi ? 'Đây là chặng cuối nên hạn của cả thẻ cũng đổi theo. ' : 'Chặng ' + x.sau.so + ' mở sớm nhất 12 tiếng trước mốc này. ') +
+             'Muốn bỏ thì bấm “Về mặc định”.',
+        nutOk: 'Đặt hạn này',
+        khiOk: function () { dongHanPop(); if (x.laCuoi) hsGhi(id, moc); else ghiHanChang(id, so, moc); }
+      });
+    }
     moXnPop($('#hanPop'), {
       tieuDe: 'Đặt hạn nộp mới?',
       chu: 'Hạn của thẻ này thành ' + gio + ' ngày ' + (+d[2]) + '/' + (+d[1]) + '/' + d[0] +
@@ -6982,6 +7068,16 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   $('#hpBo').onclick = function () {
     var id = HP_ID;
     if (!id) return;
+    if (HP_CHANG) {
+      var so = HP_CHANG, x = hpChang(id, so);
+      if (!x) return;
+      return void moXnPop($('#hanPop'), {
+        tieuDe: 'Chặng ' + so + ' về hạn mặc định?',
+        chu: 'Bỏ hạn riêng của chặng ' + so + ', quay lại đúng hạn lúc đẩy bài từ app (' + chuHanChangDb(x.c.han) + ').',
+        nutOk: 'Về mặc định',
+        khiOk: function () { dongHanPop(); if (x.laCuoi) hsGhi(id, ''); else ghiHanChang(id, so, ''); }
+      });
+    }
     moXnPop($('#hanPop'), {
       tieuDe: 'Về hạn mặc định?',
       chu: 'Bỏ hạn riêng của thẻ này, quay lại đúng hạn thầy đặt lúc đẩy bài từ app.',
@@ -7981,6 +8077,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
         return;
       }
 
+      /* ⭐ v1.142.0 — icon ĐỔI HẠN trên khối chặng (hộp quản lý, tab BÀI TẬP). */
+      var hqHan = e.target.closest('[data-hqhan]');
+      if (hqHan) { if (HQ.b) moHanPopChang(HQ.b.id, +hqHan.getAttribute('data-hqhan'), hqHan); return; }
       /* ⭐ v1.133.0 — CHẶNG X VỀ MẶC ĐỊNH: bỏ ép mở, `moChang` = X−1 (chặng trước đã ép thì vẫn giữ). */
       var hmc = e.target.closest('[data-huymochang]');
       if (hmc) {
@@ -8113,7 +8212,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       // ⭐ v1.86.0 — menu ⚙ của hàng kho (`#khoMenu`) và nút mở nó (`[data-kho-menu]`)
       // vào chung cụm này, kẻo bấm từ menu sang hộp xác nhận là menu tự tắt mất.
       var trongCum = e.target.closest('#rcMenu') || e.target.closest('#xnPop') ||
-                     e.target.closest('#hanPop') || e.target.closest('[data-rail-caidat]') ||
+                     e.target.closest('#hanPop') || e.target.closest('[data-rail-caidat]') || e.target.closest('[data-hqhan]') ||
                      e.target.closest('#khoMenu') || e.target.closest('[data-kho-menu]');
       if (!trongCum) {
         if ($('#rcMenu').classList.contains('mo')) dongRcMenu();

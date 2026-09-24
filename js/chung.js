@@ -281,6 +281,7 @@
         BO_QUA = bang.boQua || {};
         TINH_CA = bang.tinhCa || {};
         BO_QUA_CHANG = bang.boQuaChang || {};   // v1.137.0
+        HAN_CHANG = bang.hanChang || {};        // v1.142.0
         MO_CHANG = bang.moChang || {};
         NGHI = r[3] || {};
         // ⭐ v1.119.0 — LỚP: bản mới hơn giữa lop.json và lessonWeb/lop.
@@ -362,6 +363,17 @@
   // qua ở chặng 2. `boQua` cũ (mảng, theo cả bài) VẪN ĐỌC và được hiểu = bỏ qua ở MỌI chặng
   // (thầy chốt "giữ nghĩa cũ") — xem `boQuaChangCua`. Luật Firestore: `app/tools/dang-luat-bo-qua-chang.js`.
   var BO_QUA_CHANG = {};
+  // ⭐⭐ v1.142.0 (24/09/2026, thầy chốt) — HẠN RIÊNG TỪNG CHẶNG: `hanChang` = map
+  // { "<số chặng>": "YYYY-MM-DDTHH:MM" } cùng tài liệu `lessonHan` (chuỗi RỖNG = đã gỡ, vì `setDoc merge`
+  // không xoá được khoá). CHỈ dùng cho các chặng TRƯỚC chặng cuối — chặng CUỐI đi bằng trường `han` cũ
+  // (`HAN_SUA`) để thẻ còn/hết hạn (`conHan`) đổi theo. Đè ở `changCuaBai`. Luật: `dang-luat-han-chang.js`.
+  var HAN_CHANG = {};
+  function hanChangGoc(b) { return HAN_CHANG[(b && b.id) || ''] || {}; }
+  function datHanChang(id, m) {
+    if (!id) return;
+    HAN_CHANG[id] = m || {};
+    luuDemHan();
+  }
 
   function boQuaCua(b) { return BO_QUA[(b && b.id) || ''] || []; }
   function boQuaChangGoc(b) { return BO_QUA_CHANG[(b && b.id) || ''] || {}; }
@@ -447,7 +459,7 @@
         .then(function (r) { return r.ok ? r.json() : null; })
         .then(function (j) {
           // ⭐ v1.35.0 — trả HAI bảng {han, tt} thay vì một bảng hạn.
-          var ra = { han: {}, tt: {}, boQua: {}, tinhCa: {}, moChang: {}, boQuaChang: {} };
+          var ra = { han: {}, tt: {}, boQua: {}, tinhCa: {}, moChang: {}, boQuaChang: {}, hanChang: {} };
           var ds = (j && j.documents) || [];
           for (var i = 0; i < ds.length; i++) {
             var f = ds[i].fields || {};
@@ -481,6 +493,16 @@
               });
               if (Object.keys(m).length) ra.boQuaChang[id] = m;
             }
+            // v1.142.0 — `hanChang`: map { số chặng: chuỗi hạn } (chuỗi rỗng = đã gỡ, bỏ đi).
+            var hc = f.hanChang && f.hanChang.mapValue && f.hanChang.mapValue.fields;
+            if (hc) {
+              var mh = {};
+              Object.keys(hc).forEach(function (so) {
+                var v = String((hc[so] && hc[so].stringValue) || '');
+                if (v) mh[so] = v;
+              });
+              if (Object.keys(mh).length) ra.hanChang[id] = mh;
+            }
             var mc = f.moChang && (f.moChang.integerValue != null
                                    ? f.moChang.integerValue : f.moChang.doubleValue);
             if (mc != null) ra.moChang[id] = +mc || 0;
@@ -500,7 +522,7 @@
   function luuDemHan() {
     try { sessionStorage.setItem(KHOA_HAN,
       JSON.stringify({ luc: Date.now(),
-        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, tinhCa: TINH_CA, moChang: MO_CHANG, boQuaChang: BO_QUA_CHANG } })); } catch (e) {}
+        bang: { han: HAN_SUA, tt: TT_THE, boQua: BO_QUA, tinhCa: TINH_CA, moChang: MO_CHANG, boQuaChang: BO_QUA_CHANG, hanChang: HAN_CHANG } })); } catch (e) {}
   }
 
   // Chỉ nhận đúng 4 chữ; chữ lạ (kho bị ghi tay sai) coi như bình thường.
@@ -1455,7 +1477,15 @@
     // ⇒ thầy đổi A2-B 18/9 sang 25/9 mà thẻ vẫn HẾT HẠN (chặng 3 vẫn 23/9). Nay hạn riêng = HẠN CHẶNG
     // CUỐI: đè `moc` + `hanHien` (chữ trên ô hạn). ⛔ `han` GIỮ NGUYÊN — nó là KHOÁ ghép worksheet/nghe
     // vào chặng (`wsHienCuaThe`, `hqPhamVi`, `hqSoChangWs`); chỗ nào HIỆN chữ hạn thì đọc `hanHien`.
-    var sua = (b && b.id && laBaiStage(b)) ? HAN_SUA[b.id] : '';
+    // ⭐ v1.142.0 — rồi tới hạn riêng TỪNG CHẶNG (`hanChang`, các chặng trước chặng cuối).
+    var laSt = !!(b && b.id && laBaiStage(b));
+    var hcg = laSt ? hanChangGoc(b) : {};
+    for (var q = 0; q < ra.length; q++) {
+      var hq = ra[q].so ? hcg[String(ra[q].so)] : '';
+      var mq = hq ? mocActHan(hq) : null;
+      if (mq != null) { ra[q].moc = mq; ra[q].hanHien = hq; }
+    }
+    var sua = laSt ? HAN_SUA[b.id] : '';
     if (typeof sua === 'string' && sua && k) {
       for (var n = ra.length - 1; n >= 0; n--) {
         if (!ra[n].so) continue;
@@ -3233,6 +3263,7 @@
     changCuConThieu: changCuConThieu,   // ⭐ v1.128.0 — chặng cũ (trước chặng đang chạy) còn em chưa xong
     boQuaCua: boQuaCua, tinhCaCua: tinhCaCua, datTinhCa: datTinhCa,
     // ⭐ v1.137.0 — bỏ qua em THEO TỪNG CHẶNG
+    hanChangGoc: hanChangGoc, datHanChang: datHanChang,
     boQuaChangGoc: boQuaChangGoc, boQuaChangCua: boQuaChangCua, datBoQuaChang: datBoQuaChang,
     laStageCoChang: laStageCoChang, soChangCuaAct: soChangCuaAct,
     caLopCuaAct: caLopCuaAct, khongTinhCuaAct: khongTinhCuaAct,

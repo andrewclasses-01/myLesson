@@ -1449,7 +1449,21 @@
       if (cuoi && cuoi.han === han) { cuoi.muc.push(ds[i]); if (laAct) cuoi.acts.push(ds[i]); continue; }
       ra.push({ han: han, moc: mocActHan(han), acts: laAct ? [ds[i]] : [], muc: [ds[i]], so: 0 });
     }
-    for (var j = 0; j < ra.length; j++) if (ra[j].han) ra[j].so = ++k;
+    for (var j = 0; j < ra.length; j++) { ra[j].hanHien = ra[j].han; if (ra[j].han) ra[j].so = ++k; }
+    // 🐛 v1.141.1 (24/09/2026) — "ĐỔI HẠN NỘP" trên dashboard với bài STAGE: hạn riêng (`HAN_SUA`)
+    // trước chỉ đổi `b.han` (= hạn chặng CUỐI lúc đẩy bài), còn chặng lấy hạn từ `han` của từng act
+    // ⇒ thầy đổi A2-B 18/9 sang 25/9 mà thẻ vẫn HẾT HẠN (chặng 3 vẫn 23/9). Nay hạn riêng = HẠN CHẶNG
+    // CUỐI: đè `moc` + `hanHien` (chữ trên ô hạn). ⛔ `han` GIỮ NGUYÊN — nó là KHOÁ ghép worksheet/nghe
+    // vào chặng (`wsHienCuaThe`, `hqPhamVi`, `hqSoChangWs`); chỗ nào HIỆN chữ hạn thì đọc `hanHien`.
+    var sua = (b && b.id && laBaiStage(b)) ? HAN_SUA[b.id] : '';
+    if (typeof sua === 'string' && sua && k) {
+      for (var n = ra.length - 1; n >= 0; n--) {
+        if (!ra[n].so) continue;
+        var mSua = mocActHan(sua);
+        if (mSua != null) { ra[n].moc = mSua; ra[n].hanHien = sua; }
+        break;
+      }
+    }
     return ra;
   }
 

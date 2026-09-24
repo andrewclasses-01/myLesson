@@ -1506,21 +1506,16 @@ body.mo-menu .side.trai{transform:none}
   background:#0E7C6E; color:#fff; font:800 9px/1.5 var(--sans, inherit);
   letter-spacing:.08em; vertical-align:1px}
 </style>
+<link rel="stylesheet" href="css/nw-thanh.css?v=6">
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap top-in">
-    <!-- ⛔ v1.9.0 — KHÔNG gõ sẵn tên/lớp vào đây nữa: file này công khai trên
-         GitHub, và chữ gõ sẵn còn loé lên một nhịp trước khi JS điền tên thật.
-         `dienDanhTinh()` điền cả bốn chỗ (avatar · tên · lớp · sidebar). -->
-    <button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg><svg class="lap l1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg></span></button>
-    <div class="who">
-      <div class="ten"></div>
-      <div class="lop">&nbsp;</div>
-    </div>
-    <!-- Chỗ này bên trang bài tập là ô HẠN + tên bài; ở trang chính thầy để
-         dành cho quảng cáo / thông báo, nên tạm bỏ trống. -->
+<header class="top nwb">
+  <!-- v1.140.0 (24/09): thanh myNetwork - avatar = trang ca nhan (sap ra mat) · 6 icon giua · nut menu mo sidebar phai -->
+  <div class="nwb-in">
+    <div class="nwb-trai"><button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg><svg class="lap l1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg></span></button></div>
+    <nav class="nwb-tabs"></nav>
+    <div class="nwb-phai"><button class="nwb-menu" id="nwbMenu" title="Menu" aria-label="Menu"></button></div>
   </div>
 </header>
 
@@ -1560,7 +1555,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="phu-mo" id="phuMo"></div>
 
-<nav class="side trai" id="sideMenu">
+<nav class="side phai" id="sideMenu">
   <div class="side-head">
     <span class="av"></span>
     <div>
@@ -1639,7 +1634,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=109"></script>
+<script src="config.js?v=110"></script>
 <script src="js/chung.js?v=59"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -4801,5 +4796,6 @@ function baoToast(chu){
   henToast = setTimeout(function(){ t.classList.remove('hien'); }, 2600);
 }
 </script>
+<script src="js/nw-thanh.js?v=6"></script>
 </body>
 </html>

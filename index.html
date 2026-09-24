@@ -1,141 +1,73 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lesson in Andrew Classes</title>
+<title>Andrew Classes</title>
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
-<!-- ?v= là số chống cache: MỖI lần sửa css/js/config PHẢI tăng số này,
-     không thì máy học sinh chạy bản cũ tới 10 phút (bài học bên mySpeaking). -->
-<link rel="stylesheet" href="css/main.css?v=20">
+<link rel="stylesheet" href="nw/nw.css?v=1">
+<link rel="stylesheet" href="css/nw-thanh.css?v=6">
+<style>
+/* mẫu v29 (24/09): ô mật khẩu KHOÁ tạm thời — thầy chốt "để trống vẫn đăng nhập được", mở sau khi myNetwork xong */
+.dn-o.khoa input{background:#F1F5F4; border-color:var(--line); cursor:not-allowed; padding-right:46px}
+.dn-o.khoa input::placeholder{color:#7C8E8A; font-weight:600}
+.dn-o.khoa .o-khoa{position:absolute; right:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:#9fb0ac; pointer-events:none}
+/* màn chọn nơi học (em có mã ở 2 nơi) */
+.dn-chao{display:flex; flex-direction:column; align-items:center; text-align:center; margin:-4px 0 16px}
+.dn-chao .av{width:64px; height:64px; font-size:22px; margin-bottom:10px; box-shadow:0 6px 18px rgba(14,124,110,.22)}
+.dn-chao h2{margin:0; font-size:18px}
+.chon-nut{width:100%; display:flex; align-items:center; gap:12px; padding:13px 14px; margin-bottom:10px; border-radius:14px;
+  background:#fff; border:1.5px solid var(--line); text-align:left; transition:border-color .15s, background-color .15s; position:relative}
+.chon-nut:hover{border-color:var(--accent); background:var(--accent-soft)}
+.chon-nut .cn-ic{width:38px; height:38px; border-radius:11px; display:grid; place-items:center; background:var(--accent-soft); color:var(--accent); flex:none}
+.chon-nut .cn-ic svg{width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.9; stroke-linecap:round; stroke-linejoin:round}
+.chon-nut .cn-ten{flex:1; font-weight:800; font-size:14.5px}
+.chon-nut .cn-go{font-size:22px; color:var(--muted); line-height:1}
+.dn-dk{margin-top:16px; font-size:13.5px; display:flex; justify-content:center; align-items:center; gap:14px}
+.dn-dk button{color:var(--accent); font-weight:800}
+.dn-dk .gach{width:1px; height:14px; background:var(--line)}
+.dn-dk button:hover{text-decoration:underline}
+.chon-nut .cn-moi{position:absolute; top:-8px; right:12px; padding:2px 8px; border-radius:99px; background:var(--do); color:#fff; font-size:9.5px; font-weight:800; letter-spacing:.06em}
+</style>
 </head>
-<body>
+<body class="dn">
+<div class="login-bg"></div>
+<div class="dn-khung">
+  <aside class="dn-trai">
+    <img class="dn-hinh" src="nw/dang-nhap-2.webp" alt="" width="960" height="960">
+    <p class="dn-slogan">Cùng khám phá những <span class="xanh">bài học thú vị.</span></p>
+  </aside>
 
-<!-- Nền loang màu — TÁCH RIÊNG khỏi từng màn, luôn sống một chỗ, không bị
-     dựng lại (nên không "giật"/chạy lại) mỗi lần đăng nhập ↔ thông tin đổi
-     qua lại. dangnhap.js chỉ ẩn/hiện khối này theo đúng nhóm màn hình. -->
-<div class="login-bg" id="loginBg"></div>
+  <div class="dn-phai">
+    <div class="card login-card dn-card">
+      <div class="brand dn-brand-nho"><img src="assets/avatar-tron.jpg" alt=""><h1>Andrew Classes<small>NETWORK</small></h1></div>
 
-<!-- ===== SCREEN 1: SIGN IN + TRANG THÔNG TIN (CHUNG MỘT THẺ) =====
-     ⛔ v1.8.2: hai màn GỘP LÀM MỘT thẻ, KHÔNG còn #scInfo riêng. Lý do: khi
-     tách 2 thẻ thì khối .brand phải bị DỜI DOM qua lại, mà dời DOM thì brand
-     "nhảy" tức thì trong khi khung co giãn mượt ⇒ phải bù bằng hoạt ảnh FLIP
-     riêng, và hai hoạt ảnh khác nguồn KHÔNG BAO GIỜ khớp tuyệt đối (thầy bắt
-     lỗi 2 lần). Nay brand nằm YÊN một chỗ, chỉ hai "ngăn" bên dưới đóng/mở —
-     thẻ cao lên thấp xuống thì trình duyệt TỰ đẩy brand đi theo từng khung
-     hình. Một nguồn chuyển động duy nhất ⇒ khớp 100% theo định nghĩa.
-     .man-hien dùng visibility (KHÔNG dùng hidden/display:none) vì display:none
-     làm mọi CSS animation bên trong (9 sparkle) bị TRÌNH DUYỆT TỰ RESET. -->
-<section class="screen man-hien" id="scLogin">
-  <div class="login-wrap">
-    <div class="card login-card">
+      <section class="man" id="manVao">
+        <label class="dn-o gon"><input id="inMa" type="text" autocomplete="username" placeholder="Andrew Classes ID" data-goi="Andrew Classes ID" autocapitalize="characters" spellcheck="false"></label>
+        <label class="dn-o gon khoa"><input id="inMk" type="password" placeholder="Để trống ô này" disabled tabindex="-1">
+          <svg class="o-khoa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></label>
+        <button class="btn primary wide" id="btnVao">ĐĂNG NHẬP</button>
+        <p class="tiny warn" id="loiVao" hidden></p>
+        <!-- thầy 24/09: chỗ để sau này mở MÀN ĐĂNG KÝ cho học sinh mới — tạm "sắp ra mắt" -->
+        <div class="nut-thay dn-dk"><button type="button" id="btnDangKy">Đăng ký</button><i class="gach"></i><button type="button" id="btnLienHe">Liên hệ</button></div>
+      </section>
 
-      <!-- Icon + tên trường: bấm để mở/đóng ngăn thông tin. KHÔNG BAO GIỜ dời
-           khỏi đây ⇒ sparkle chạy liên tục, không reset. -->
-      <div class="brand" id="btnBrand" role="button" tabindex="0" aria-label="Mở trang thông tin">
-        <span class="brand-ava">
-          <img src="assets/avatar-tron.jpg" alt="">
-        </span>
-        <h1 class="brand-txt">Andrew Classes</h1>
-        <i class="spark s1"></i><i class="spark s2"></i><i class="spark s3"></i>
-        <i class="spark s4"></i><i class="spark s5"></i><i class="spark s6"></i>
-        <i class="spark s7"></i><i class="spark s8"></i><i class="spark s9"></i>
-      </div>
+      <section class="man" id="manChon">
+        <div class="dn-chao"><span class="av" id="chonAv"></span><h2 id="chonTen"></h2></div>
+        <div id="chonDs"></div>
+        <div class="nut-thay"><button type="button" id="btnKhac">Không phải em? Đăng nhập ID khác</button></div>
+      </section>
 
-      <!-- Hai ngăn thay nhau đóng/mở (app.js đặt max-height BẰNG ĐÚNG chiều
-           cao thật, xem datNgan) — chính chúng làm thẻ cao/thấp, kéo brand đi. -->
-      <div class="ngan" id="nganLogin">
-        <!-- Mặc định ẩn mã số (type=password → chấm tròn chuẩn trình duyệt,
-             chạy chắc trên MỌI máy). Con mắt chỉ đổi type qua lại, không tự
-             viết code che ký tự riêng — tránh rủi ro lộ/lỗi khi HS sửa. -->
-        <div class="id-wrap">
-          <input id="inCode" type="password" autocomplete="off" placeholder="My ID"
-            autocapitalize="characters" spellcheck="false">
-          <button type="button" class="id-eye" id="btnEye" aria-label="Hiện mã số">
-            <svg class="eye-on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/>
-              <circle cx="12" cy="12" r="3"/>
-            </svg>
-            <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round" hidden>
-              <path d="M3 3l18 18"/>
-              <path d="M10.6 5.2A11 11 0 0 1 12 5c7 0 11 7 11 7a13.2 13.2 0 0 1-3.4 4"/>
-              <path d="M6.6 6.6C3.9 8.3 2 12 2 12s4 7 11 7a10.4 10.4 0 0 0 5.4-1.6"/>
-              <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>
-            </svg>
-          </button>
-          <!-- ⭐ v1.78.0 — hai NỬA GIẢ của ô, chỉ dùng cho hoạt ảnh tách đôi lúc
-               chuyển sang màn chọn lớp (xem .id-nua trong main.css). -->
-          <span class="id-nua trai" aria-hidden="true"></span>
-          <span class="id-nua phai" aria-hidden="true"></span>
-        </div>
-        <button class="btn primary wide" id="btnLogin">SIGN IN</button>
-        <!-- ⭐ v1.78.0 — MÀN CHỌN LỚP (em có mã ở 2 nơi): JS dựng nút vào đây. -->
-        <div class="chon-ds" id="chonDs" hidden></div>
-        <!-- Chỉ hiện khi trang chưa nạp được danh sách lớp (app.js bật lên). -->
-        <p class="tiny warn" id="loginNote" hidden></p>
-      </div>
-
-      <!-- Ba mục chỉ có giao diện — thầy đưa nội dung/link ở đợt sau. -->
-      <nav class="ngan ngan-dong info-list" id="nganInfo">
-        <button type="button" class="info-row" id="mnTrial">
-          <span class="ir-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="9" cy="8.2" r="3.4"/>
-              <path d="M3.4 20c0-3.6 2.9-6 5.6-6s5.6 2.4 5.6 6"/>
-              <path d="M18.6 7.6v5M16.1 10.1h5"/>
-            </svg>
-          </span>
-          <span class="ir-txt">ĐĂNG KÝ KIỂM TRA/HỌC THỬ</span>
-          <span class="ir-go">›</span>
-        </button>
-        <button type="button" class="info-row" id="mnInfo">
-          <span class="ir-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M12 6.6c-1.7-1.3-3.8-1.8-6-1.8-.9 0-1.6.7-1.6 1.6v10.9c0 .9.7 1.6 1.6 1.6
-                2.2 0 4.3.5 6 1.8 1.7-1.3 3.8-1.8 6-1.8.9 0 1.6-.7 1.6-1.6V6.4c0-.9-.7-1.6-1.6-1.6
-                -2.2 0-4.3.5-6 1.8z"/>
-              <path d="M12 6.6v13.4"/>
-            </svg>
-          </span>
-          <span class="ir-txt">THÔNG TIN LỚP HỌC</span>
-          <span class="ir-go">›</span>
-        </button>
-        <button type="button" class="info-row" id="mnContact">
-          <span class="ir-ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-              stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 12.4C4 7.8 7.8 4 12.5 4S21 7.8 21 12.4s-3.8 8.4-8.5 8.4c-1.2 0-2.4-.2-3.4-.7
-                L4.5 21.4l1.1-3.9C4.6 16.2 4 14.4 4 12.4z"/>
-            </svg>
-          </span>
-          <span class="ir-txt">LIÊN HỆ VỚI THẦY</span>
-          <span class="ir-go">›</span>
-        </button>
-      </nav>
+      <section class="man hien" id="manCho"><div class="dn-cho"><div class="xoay"></div><p class="tiny">Đang mở…</p></div></section>
     </div>
-
-    <footer class="login-foot">
-      <p>Copyright © 2016 - 2026 by ANDREW</p>
-      <p>Phone &amp; Zalo: 0359.769.765</p>
-    </footer>
-  </div>
-</section>
-
-<div class="modal" id="modal" hidden>
-  <div class="modal-card">
-    <h2 id="modalTitle">Oops</h2>
-    <p id="modalText"></p>
-    <button class="btn primary" id="modalOk">OK</button>
+    <footer class="login-foot dn-foot"><p>Copyright © 2016 - 2026 by ANDREW · Phone &amp; Zalo: 0359.769.765</p></footer>
   </div>
 </div>
 
-<script src="config.js?v=109"></script>
+<script src="config.js?v=110"></script>
 <script src="js/chung.js?v=59"></script>
-<script src="js/dangnhap.js?v=23"></script>
+<script src="js/nw-dangnhap.js?v=1"></script>
+<script src="js/nw-thanh.js?v=6"></script>
 </body>
 </html>

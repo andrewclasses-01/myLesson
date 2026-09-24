@@ -632,18 +632,16 @@ body.mo-menu .side.trai{transform:none}
   .chat-foot button{width:40px}
 }
 </style>
+<link rel="stylesheet" href="css/nw-thanh.css?v=6">
 </head>
 <body>
 
-<header class="top">
-  <div class="wrap top-in">
-    <!-- ⛔ 11/09/2026 (thầy chốt) — khóa học KHÔNG có sao, bỏ hẳn phù hiệu số
-         sao từng nổi trên avatar (`.sao-hieu`, y hệt `lop.html`). -->
-    <button class="av me" id="nutMenu" title="Mở menu của em"></button>
-    <div class="who">
-      <div class="ten"></div>
-      <div class="lop">&nbsp;</div>
-    </div>
+<header class="top nwb">
+  <!-- v1.140.0 (24/09): thanh myNetwork - avatar = trang ca nhan (sap ra mat) · 6 icon giua · nut menu mo sidebar phai -->
+  <div class="nwb-in">
+    <div class="nwb-trai"><button class="av me" id="nutMenu" title="Mở menu của em"></button></div>
+    <nav class="nwb-tabs"></nav>
+    <div class="nwb-phai"><button class="nwb-menu" id="nwbMenu" title="Menu" aria-label="Menu"></button></div>
   </div>
 </header>
 
@@ -673,7 +671,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="phu-mo" id="phuMo"></div>
 
-<nav class="side trai" id="sideMenu">
+<nav class="side phai" id="sideMenu">
   <div class="side-head">
     <span class="av"></span>
     <div>
@@ -711,7 +709,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=109"></script>
+<script src="config.js?v=110"></script>
 <script src="js/chung.js?v=59"></script>
 <script src="js/chat.js?v=23"></script>
 <script src="js/vi-qua.js?v=3"></script>
@@ -1841,5 +1839,6 @@ function baoToast(chu){
 
 setInterval(nhipDongHo, 1000);
 </script>
+<script src="js/nw-thanh.js?v=6"></script>
 </body>
 </html>

@@ -1,0 +1,138 @@
+/* ============================================================
+   nw-thanh.css — THANH myNetwork trên trang LỚP + trang KHÓA (mẫu v29, 24/09/2026)
+   Thầy chốt: andrewclasses.com đổi sang giao diện myNetwork, CHỈ mở TRANG BÀI TẬP;
+   5 icon còn lại + avatar (trang cá nhân) bấm vào = hộp nhỏ giữa màn "sắp ra mắt".
+   Hình chép y myNetwork css/nw.css khối "THANH TRÊN CÙNG" — tiền tố nwb- để
+   không đụng class sẵn có của lop.html/khoa.html (.tab, .tabs...).
+   ============================================================ */
+/* bảng màu myNetwork — dashboard.html dùng tên màu riêng (--nen/--chu/--xanh…) nên khai lại ở đây,
+   CHỈ trong phạm vi thanh + hộp + cột quản lý (không đè màu cũ của trang) */
+.top.nwb,.nwb-sap,.nwb-ql-cot{--accent:#0E7C6E; --accent-soft:#E3F1EE; --ink:#16232A; --muted:#5F7370; --ground:#F7FAF9;
+  --line:#E0EAE7; --do:#E0575B; --shadow:0 1px 3px rgba(22,35,42,.07), 0 8px 24px rgba(22,35,42,.06);
+  --sans:'Montserrat',"Segoe UI",system-ui,sans-serif}
+.top.nwb{height:62px; padding:0}
+.nwb-in{max-width:1120px; margin:0 auto; height:100%; display:grid; grid-template-columns:1fr auto 1fr;
+  align-items:center; padding:0 14px}
+.nwb-trai{display:flex; align-items:center}
+.nwb-phai{display:flex; align-items:center; justify-content:flex-end}
+.top.nwb .av.me{width:46px; height:46px; font-size:17px}
+.nwb-tabs{display:flex; align-items:stretch; gap:2px; height:62px}
+.nwb-tab{position:relative; display:grid; place-items:center; width:58px; color:var(--muted); border-radius:12px 12px 0 0;
+  transition:color .15s, background-color .15s; text-decoration:none; cursor:pointer}
+.nwb-tab svg,.nwb-menu svg,.nwb-sap svg{fill:none; stroke:currentColor; stroke-linecap:round; stroke-linejoin:round; overflow:visible}
+.nwb-tab svg{padding:8px; width:42px; height:42px; border-radius:50%; stroke-width:1.55; box-sizing:border-box;
+  transition:background-color .18s, box-shadow .18s, transform .18s cubic-bezier(.22,.9,.3,1)}
+.nwb-tab:hover{color:var(--ink); background:rgba(14,124,110,.06)}
+.nwb-tab.chon{color:var(--accent)}
+.nwb-tab.chon svg{stroke-width:1.9; background:var(--accent-soft);
+  box-shadow:0 0 0 3px rgba(14,124,110,.12), 0 4px 14px rgba(14,124,110,.28); transform:translateY(-1px)}
+/* tooltip chữ nhỏ khi rê chuột (tab không có chữ) */
+.nwb-tab::before{content:attr(data-nh); position:absolute; top:calc(100% + 4px); left:50%; z-index:5;
+  transform:translateX(-50%) translateY(-4px); padding:4px 8px; border-radius:7px; background:var(--ink); color:#fff;
+  font-size:10px; font-weight:800; letter-spacing:.06em; white-space:nowrap; opacity:0; pointer-events:none;
+  transition:opacity .15s, transform .15s}
+.nwb-tab:hover::before{opacity:1; transform:translateX(-50%) translateY(0)}
+.nwb-menu{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:var(--ink); background:#fff;
+  border:1px solid var(--line); box-shadow:var(--shadow); transition:background-color .15s, color .15s; cursor:pointer; padding:0}
+.nwb-menu:hover{background:var(--accent-soft); color:var(--accent)}
+.nwb-menu svg{width:24px; height:24px; stroke-width:2.2}
+
+/* sidebar: myNetwork mở bằng ☰ và TRƯỢT TỪ PHẢI. lop.html có sẵn .side.phai (thiếu trạng thái mở),
+   khoa.html KHÔNG có ⇒ khai đủ ở đây (⛔ thiếu là sidebar nằm phơi bên trái, mở sẵn). */
+.side.phai{left:auto; right:0; transform:translateX(105%); box-shadow:-12px 0 40px rgba(22,35,42,.14)}
+body.mo-menu .side.phai{transform:none}
+
+/* Điện thoại: CẢ thanh xuống ĐÁY như myNetwork.
+   ⛔ bẫy myNetwork: .top có backdrop-filter ⇒ mọi con fixed neo vào nó — dời CẢ .top, bỏ blur. */
+@media (max-width:640px){
+  .top.nwb{position:fixed; top:auto; bottom:0; left:0; right:0; z-index:40; height:66px; border-bottom:none;
+    border-top:1px solid var(--line); background:rgba(255,255,255,.97); backdrop-filter:none;
+    box-shadow:0 -6px 20px rgba(22,35,42,.06); padding-bottom:env(safe-area-inset-bottom); box-sizing:content-box}
+  .nwb-in{display:flex; align-items:center; justify-content:space-between; gap:4px; padding:0 6px}
+  .nwb-tabs{flex:1; justify-content:space-around; gap:0; height:100%}
+  .nwb-tab{width:auto; flex:1; min-width:0; border-radius:12px}
+  .nwb-tab svg{width:38px; height:38px; padding:7px}
+  .nwb-tab::before{display:none}
+  .top.nwb .av.me{width:40px; height:40px; font-size:14px; box-shadow:none}
+  .nwb-menu{width:40px; height:40px; box-shadow:none; background:var(--ground)}
+  body.co-nwb{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  body.co-nwb .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+}
+
+/* ---------- HỘP "SẮP RA MẮT" (thầy chốt: hộp nhỏ giữa màn) ---------- */
+.nwb-sap{position:fixed; inset:0; z-index:90; display:grid; place-items:center; padding:20px;
+  background:rgba(22,35,42,.38); opacity:0; pointer-events:none; transition:opacity .2s}
+.nwb-sap.mo{opacity:1; pointer-events:auto}
+.nwb-sap-hop{width:min(340px,100%); background:#fff; border-radius:20px; padding:26px 22px 20px; text-align:center;
+  box-shadow:0 20px 60px rgba(22,35,42,.25); transform:translateY(10px) scale(.96);
+  transition:transform .28s cubic-bezier(.22,.9,.3,1)}
+.nwb-sap.mo .nwb-sap-hop{transform:none}
+.nwb-sap-ic{position:relative; width:74px; height:74px; margin:0 auto 14px; border-radius:50%; display:grid; place-items:center;
+  color:var(--accent); background:var(--accent-soft); box-shadow:0 0 0 6px rgba(14,124,110,.07)}
+.nwb-sap-ic svg{width:36px; height:36px; stroke-width:1.7}
+.nwb-sap-ic .lap{position:absolute; fill:#F3B21B; stroke:none; animation:nwb-lap 2.2s ease-in-out infinite}
+.nwb-sap-ic .lap.a{width:12px; height:12px; right:-4px; top:2px}
+.nwb-sap-ic .lap.b{width:8px; height:8px; left:-2px; bottom:8px; animation-delay:.8s}
+@keyframes nwb-lap{0%,100%{opacity:.3; transform:scale(.7) rotate(0deg)} 50%{opacity:1; transform:scale(1.15) rotate(20deg)}}
+.nwb-sap-ten{margin:0; font-size:13px; font-weight:800; letter-spacing:.14em; color:var(--accent)}
+.nwb-sap-chu{margin:6px 0 18px; font-size:18px; font-weight:800; line-height:1.35; color:var(--ink)}
+.nwb-sap-nut{width:100%; padding:13px; border:none; border-radius:12px; background:var(--accent); color:#fff;
+  font:800 14px/1 var(--sans, inherit); letter-spacing:.06em; cursor:pointer}
+.nwb-sap-nut:hover{filter:brightness(1.08)}
+@media (prefers-reduced-motion: reduce){ .nwb-sap-ic .lap{animation:none} }
+
+/* ---------- giới thiệu + ĐẾM NGƯỢC (thầy 24/09: ra mắt 00:00 01/10/2026) ---------- */
+.nwb-sap .nwb-sap-hop{width:min(380px,100%); max-height:calc(100dvh - 32px); overflow-y:auto}
+.nwb-sap-chu{margin:6px 0 12px}
+.nwb-sap-ds{list-style:none; margin:0 0 16px; padding:0; text-align:left; display:flex; flex-direction:column; gap:7px}
+.nwb-sap-ds li{position:relative; padding-left:24px; font-size:13.5px; font-weight:600; line-height:1.45; color:var(--ink)}
+.nwb-sap-ds li::before{content:""; position:absolute; left:4px; top:5px; width:11px; height:11px; background:#F3B21B;
+  clip-path:polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%)}
+.nwb-dem{margin:0 0 16px; padding:12px 10px 10px; border-radius:16px; background:linear-gradient(160deg,#E9F5F2,#DCEFEA)}
+.nwb-dem-nh{margin:0 0 8px; font-size:10.5px; font-weight:800; letter-spacing:.18em; color:var(--accent)}
+.nwb-dem-o{display:flex; justify-content:center; gap:8px}
+.nwb-dem-o span{width:58px; padding:8px 0 6px; border-radius:12px; background:#fff; box-shadow:0 2px 8px rgba(14,124,110,.12); display:flex; flex-direction:column; align-items:center}
+.nwb-dem-o b{font-size:24px; font-weight:800; line-height:1.1; color:var(--ink); font-variant-numeric:tabular-nums}
+.nwb-dem-o i{font-style:normal; font-size:9px; font-weight:800; letter-spacing:.1em; color:var(--muted); margin-top:2px}
+.nwb-dem-ngay{margin:9px 0 0; font-size:11.5px; font-weight:700; color:var(--muted)}
+@media (max-width:380px){ .nwb-dem-o{gap:6px} .nwb-dem-o span{width:52px} .nwb-dem-o b{font-size:21px} }
+
+/* ---------- DASHBOARD CỦA THẦY (thầy chốt 24/09 = thiết kế QUẢN LÝ myNetwork 22/09) ---------- */
+.nwb-av{width:46px; height:46px; border-radius:50%; padding:0; border:0; overflow:hidden; cursor:pointer; background:var(--accent);
+  box-shadow:var(--shadow); transition:transform .18s cubic-bezier(.22,.9,.3,1), box-shadow .18s}
+.nwb-av img{width:100%; height:100%; object-fit:cover; display:block}
+.nwb-av:hover{transform:scale(1.06); box-shadow:0 0 0 4px var(--accent-soft), var(--shadow)}
+/* lưới: cột trái danh mục 228px + dashboard (bỏ max-width/lề của .wrap cũ để dashboard ăn hết phần còn lại) */
+.nwb-ql{max-width:1560px; margin:0 auto; padding:14px 16px 0; display:grid; grid-template-columns:228px minmax(0,1fr); gap:18px; align-items:start}
+.nwb-ql > main.wrap{max-width:none; margin:0; padding:0; min-width:0}
+/* thầy 24/09: kiểu thanh bên Facebook — KHÔNG khung (không nền/viền/bóng), dòng to thoáng, icon màu, vạch mảnh ngăn nhóm */
+.nwb-ql-cot{position:sticky; top:62px; max-height:calc(100dvh - 62px); overflow-y:auto; padding:6px 0 16px; font-family:var(--sans); scrollbar-width:thin}
+.nwb-ql-nhom{font-size:16px; font-weight:600; color:var(--muted); padding:6px 10px 6px}
+.nwb-ql-vach{border:0; border-top:1px solid #D5DEDC; margin:8px 10px}
+.nwb-ql-muc{display:flex; align-items:center; gap:12px; width:100%; padding:8px 10px; border:0; background:none; border-radius:10px;
+  font:600 15px/1.3 var(--sans); color:var(--ink); text-align:left; cursor:pointer; transition:background .15s}
+.nwb-ql-muc svg{width:28px; height:28px; flex:none; fill:none; stroke:var(--muted); stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round}
+.nwb-ql-av{width:36px; height:36px; border-radius:50%; object-fit:cover; flex:none; margin:-4px 0 -4px -4px}
+.nwb-ql-muc:hover{background:rgba(22,35,42,.06)}
+.nwb-ql-muc.chon{background:rgba(14,124,110,.10)}
+/* menu quản lý cũ (.sb-panel) trượt từ PHẢI như myNetwork */
+body.nwb-thay .sb-panel{left:auto; right:0; transform:translateX(100%); box-shadow:-10px 0 34px rgba(16,40,36,.22)}
+body.nwb-thay .sb-panel.mo{transform:translateX(0)}
+/* màn hẹp: cột trái thành dải chip cuộn ngang trên đầu */
+@media (max-width:900px){
+  .nwb-ql{grid-template-columns:minmax(0,1fr); gap:12px}
+  .nwb-ql-cot{position:static; display:flex; gap:4px; overflow-x:auto; max-height:none; padding:2px 0 6px}
+  .nwb-ql-nhom,.nwb-ql-vach{display:none}
+  .nwb-ql-muc svg{width:22px; height:22px}
+  .nwb-ql-av{width:28px; height:28px; margin:0}
+  .nwb-ql-muc{width:auto; flex:none; white-space:nowrap}
+}
+@media (max-width:640px){ .top.nwb .nwb-av{width:40px; height:40px; box-shadow:none} }
+
+/* ---------- HỘP LIÊN HỆ (màn đăng nhập) — cùng khung hộp "sắp ra mắt" ---------- */
+.nwb-lh-av{width:74px; height:74px; border-radius:50%; margin:0 auto 12px; display:block; box-shadow:0 8px 22px rgba(14,124,110,.25)}
+.nwb-lh-ten{margin:4px 0 2px; font-size:19px; font-weight:800; color:var(--ink)}
+.nwb-lh-sdt{margin:0 0 18px; font-size:17px; font-weight:700; color:var(--muted); letter-spacing:.04em; font-variant-numeric:tabular-nums}
+.nwb-lh-nut{display:flex; gap:10px}
+.nwb-lh-nut .nwb-sap-nut{flex:1; display:block; text-decoration:none; text-align:center}
+.nwb-sap-nut.phu{background:var(--accent-soft); color:var(--accent)}

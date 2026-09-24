@@ -2161,6 +2161,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .qq-hang.dau{display:none}
 }
 </style>
+<link rel="stylesheet" href="css/nw-thanh.css?v=6">
 </head>
 <body>
 
@@ -2177,25 +2178,17 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div id="trang" hidden>
 
-<header class="top">
-  <div class="wrap top-in">
-    <!-- ⭐ v1.24.0 — avatar giờ là NÚT mở menu quản lý (sidebar); "Thoát" dời
-         xuống làm "Đăng xuất" ở cuối menu đó. -->
-    <button class="brand" id="moSb" title="Mở menu quản lý">
-      <img src="assets/avatar-tron.jpg" alt="">
-      <div>
-        <div class="ten">Andrew Classes</div>
-        <div class="phu">Trang quản lý · <span id="ver"></span>
-          <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>
-        </div>
-      </div>
-    </button>
-    <div class="day"></div>
-    <!-- ⭐⭐ 15/09/2026 — thầy chốt BỎ dải số (Bài đang giao/Lớp chờ bài/Bài đã giao) +
-         BỎ icon reload ở thanh đầu. `#hdSo`/`#btnMoi` xoá khỏi HTML; `veDaiSo()` và tay
-         bắt `#btnMoi` bên dưới đã tự bọc "nếu còn phần tử mới chạy" nên không lỗi. -->
+<header class="top nwb" data-vai="thay">
+  <!-- v1.140.0 (24/09, thay chot): thanh myNetwork cho THAY - tab dau = QUAN LY; nut menu (id moSb) mo menu quan ly cu, truot tu PHAI -->
+  <div class="nwb-in">
+    <div class="nwb-trai"><button class="nwb-av" id="nwbAv" title="Trang cá nhân"><img src="assets/avatar-tron.jpg" alt=""></button></div>
+    <nav class="nwb-tabs"></nav>
+    <div class="nwb-phai"><button class="nwb-menu" id="moSb" title="Menu quản lý" aria-label="Menu quản lý"></button><span id="ver" hidden></span></div>
   </div>
 </header>
+
+<div class="nwb-ql">
+<aside class="nwb-ql-cot" id="nwbQlCot"></aside>
 
 <main class="wrap">
 
@@ -2265,6 +2258,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
   <!-- ⭐ 15/09/2026 — thầy chốt bỏ dòng chú thích "Số liệu đọc thẳng từ…" ở chân trang. -->
 </main>
+</div><!-- /nwb-ql -->
 
 <!-- ============ SIDEBAR: Quản lý mã · Thiết lập lớp · Sinh nhật · Top · Đăng xuất ============ -->
 <div class="sb-nen" id="sbNen"></div>
@@ -2546,7 +2540,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=109"></script>
+<script src="config.js?v=110"></script>
 <script src="js/chung.js?v=59"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -8121,5 +8115,6 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   else moCong();
 })();
 </script>
+<script src="js/nw-thanh.js?v=6"></script>
 </body>
 </html>

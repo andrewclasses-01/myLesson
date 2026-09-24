@@ -1905,6 +1905,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-tl2-the .dg em u{text-decoration:none; color:#4ADE80}
 .hq-tl2-the .dg.rong{opacity:.45}
 .hq-tl2-the .dg.tong{grid-template-columns:1fr auto; border-top:1px solid rgba(255,255,255,.18); margin-top:5px; padding-top:7px; color:#7EE0CF}
+.hq-tl2-the .dg-treo{margin:-1px 0 3px 21px; font-size:.82em; color:#FBBF24; opacity:.9}   /* v1.144.0 — phần mở tab mà không làm */
+.hq-tl2-the .dg.tong.treo{border-top:0; margin-top:0; padding-top:2px; color:#FBBF24}
 /* CHI TIẾT: tóm tắt "● WORDS 1 • 100%" + chú thích */
 .hq-tt-tom{flex:none; display:flex; gap:calc(16px*var(--k)); align-items:center; margin:0 0 calc(4px*var(--k)); flex-wrap:wrap; min-height:calc(20px*var(--k))}
 .hq-tt-tom .act{display:inline-flex; align-items:center; gap:6px; font:800 calc(11px*var(--k))/1.3 var(--font); color:var(--chu); letter-spacing:.03em}
@@ -2689,7 +2691,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=114"></script>
+<script src="config.js?v=115"></script>
 <script src="js/chung.js?v=61"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -5597,11 +5599,40 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     return false;
   }
   // Thời gian AWord của MỘT em ở MỘT act: gộp practiceLog (mọi lượt, kể cả dở) + scores không có trong log.
+  // ⭐⭐ v1.144.0 (thầy chốt 24/09) — THỜI GIAN HOẠT ĐỘNG: mỗi lượt `giay` = thời gian em THẬT SỰ làm
+  // (`activeMs` — AWord Đợt 380: tab hiện + có chạm/gõ trong 60 s, dạng đọc 180 s, hoặc đang phát âm),
+  // `moTab` = đồng hồ tường `timeMs` (mở tab bao lâu, gồm cả lúc treo). Lượt CŨ chưa có `activeMs`:
+  // lượt BỎ DỞ ước lượng (`uoc` ⇒ "≈"): (1) CẮT tại lúc em mở lượt KẾ TIẾP (ở bất kỳ act nào của bài — một em không
+  // làm hai lượt cùng lúc; lượt cũ còn "chạy" là tab bị bỏ ẩn: đo thật BẢO NAM K9 L19 một lượt 92 phút chồng 14 lượt sau),
+  // rồi (2) trần số câu × 60 s + 2 phút. Lượt nộp / luyện xong GIỮ NGUYÊN.
+  // `giayGame` = giờ trên đồng hồ game em thấy (XẾP HẠNG dùng, không đổi).
+  var HQ_GIAY_MOI_CAU = 60, HQ_GIAY_THEM = 120, HQ_MOC = null;
+  // Mốc bắt đầu (createdAt) mọi lượt của em khoá `k` ở MỌI act đã nạp của bài, xếp tăng — nhớ tới khi HQ.act đổi.
+  function hqMocEm(k) {
+    var ky = Object.keys(HQ.act).map(function (m) { return m + ':' + (HQ.act[m] || []).length; }).join('|');
+    if (!HQ_MOC || HQ_MOC.act !== HQ.act || HQ_MOC.ky !== ky) {
+      var m = {};
+      Object.keys(HQ.act).forEach(function (ma) { (HQ.act[ma] || []).forEach(function (d) { var kk = A.khoaEm(d); (m[kk] = m[kk] || []).push(+d.createdAt || 0); }); });
+      Object.keys(m).forEach(function (kk) { m[kk].sort(function (a, b) { return a - b; }); });
+      HQ_MOC = { act: HQ.act, ky: ky, m: m };
+    }
+    return HQ_MOC.m[k] || [];
+  }
+  function hqLuotKe(k, luc) { var ds = hqMocEm(k); for (var i = 0; i < ds.length; i++) if (ds[i] > luc) return ds[i]; return 0; }
   function hqGioAct(ma, ten) {
     var k = A.khoaTen(ten), luot = [], daCo = {};
+    var soCau = (CHUAN[ma] && +CHUAN[ma].soCau > 0) ? +CHUAN[ma].soCau : 0;
     (HQ.act[ma] || []).forEach(function (d) {
       if (A.khoaEm(d) !== k) return;               // v1.134.0 — lượt luyện có `ma` thì theo mã
-      luot.push({ luc: +d.createdAt || 0, giay: Math.round((+d.timeMs || 0) / 1000),
+      var moTab = Math.round((+d.timeMs || 0) / 1000), giay = moTab, uoc = false;
+      if (d.activeMs != null && isFinite(+d.activeMs)) giay = Math.min(moTab || Infinity, Math.round(+d.activeMs / 1000));
+      else if (!d.done) {
+        var ke = hqLuotKe(k, +d.createdAt || 0);
+        if (ke && (ke - (+d.createdAt || 0)) / 1000 < giay) { giay = Math.max(0, Math.round((ke - (+d.createdAt || 0)) / 1000)); uoc = true; }
+        var tran = (soCau || +d.total || 0) * HQ_GIAY_MOI_CAU + HQ_GIAY_THEM;
+        if ((soCau || +d.total) && giay > tran) { giay = tran; uoc = true; }
+      }
+      luot.push({ luc: +d.createdAt || 0, giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc,
                   loai: d.done ? (d.mode === 'submit' ? 'nop' : 'luyen') : 'do',
                   diem: +d.score || 0, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes });
       if (d.attemptId) daCo[d.attemptId] = 1;
@@ -5609,10 +5640,11 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var em = (DIEM[ma] || []).filter(function (e) { return A.khoaEm(e) === k; })[0];
     ((em && em.luot) || []).forEach(function (l) {
       if (l.id && daCo[l.id]) return;
-      luot.push({ luc: +l.luc || 0, giay: Math.round((+l.ms || 0) / 1000), loai: 'nop', diem: +l.diem || 0, tong: +l.tong || 0 });
+      var g = Math.round((+l.ms || 0) / 1000);
+      luot.push({ luc: +l.luc || 0, giay: g, moTab: g, giayGame: g, uoc: false, loai: 'nop', diem: +l.diem || 0, tong: +l.tong || 0 });
     });
-    var ra = { giay: 0, nop: 0, luyen: 0, do: 0, luot: luot };
-    luot.forEach(function (l) { ra.giay += l.giay; ra[l.loai]++; });
+    var ra = { giay: 0, moTab: 0, uoc: false, nop: 0, luyen: 0, do: 0, luot: luot };
+    luot.forEach(function (l) { ra.giay += l.giay; ra.moTab += Math.max(l.moTab, l.giay); if (l.uoc) ra.uoc = true; ra[l.loai]++; });
     return ra;
   }
   function hqGioVideo(ten) { var d = (HQ.video || {})[ten]; return d ? giayTongCuaEm(d.phu, d.cham) : 0; }
@@ -5870,6 +5902,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     // + ✓ xanh lá (act đủ điểm · video/nghe phủ ≥ 95%); ngoài cột = TỔNG "7 giờ 31 phút" + vạch đứt nối sang. Bề ngang đoạn tính
     // bằng pixel ở `hqVuaTl2`. Bấm chip chú thích = xếp theo mục đó (các đoạn khác mờ), bấm lại = về xếp theo tổng.
     // Rê chuột một hàng = thẻ chi tiết từng mục. Đúp em = pop-up chi tiết.
+    // ⭐ v1.144.0 (thầy chốt 24/09) — bấm chip = CHỈ CÒN mục đó: mỗi hàng một đoạn, cột + trục giờ tính lại theo
+    // mục đó (`hqVuaTl2` đọc `data-p` nên tự đúng), cột giờ bên phải = giờ mục đó, tiêu đề "THỜI LƯỢNG · VIDEO".
     var mauChu = function (m) { m = String(m || '').trim(); return m ? m.charAt(0).toUpperCase() + m.slice(1).toLowerCase() : ''; };
     var muc = [];
     if (coVideo) muc.push({ k: 'vd', ten: 'Video', phu: hqPhut(tongVideo) + ' phút' });
@@ -5880,6 +5914,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var gia = function (r, k) { return k === 'vd' ? r.vd : k === 'ng' ? r.ng : r.act[+k.slice(1)].giay; };
     var xong = function (r, m) { var ten = r.h.ten; return m.k === 'vd' ? phuVd(ten) >= 95 : m.k === 'ng' ? phuNg(ten) >= 95 : coTrongDiem(DIEM[m.ma] || [], ten, m.ma); };
     var loc = /^(vd|ng|a\d+)$/.test(sx.cot) ? sx.cot : null;
+    var mucLoc = loc ? muc.filter(function (m) { return m.k === loc; })[0] : null;
+    if (loc && !mucLoc) loc = null;
+    var gHang = function (r) { return loc ? gia(r, loc) : r.tong; };
     HQ.tl2 = { muc: muc, rows: rows, gia: gia, xong: xong };
     var chip = muc.map(function (m) {
       return '<button type="button" class="chip' + (loc === m.k ? ' xep' : '') + '" data-hqtl2="' + m.k + '" title="' + A.chuAnToan((m.title ? m.title + ' · ' : '') + 'Bấm = xếp theo mục này · bấm lại = xếp theo tổng') + '">' +
@@ -5888,18 +5925,19 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var body = rows.map(function (r, k) {
       var h = r.h, x = kt[A.khoaTen(h.ten)], chua = chuaLam(h.ten);
       var doan = muc.map(function (m) {
+        if (loc && loc !== m.k) return '';
         var g = gia(r, m.k); if (!g) return '';
-        return '<span class="dn' + (loc && loc !== m.k ? ' tap' : '') + '" data-p="' + (g / 60).toFixed(2) + '" data-c="' + m.mau + '" style="background:' + m.mau + '">' +
+        return '<span class="dn" data-p="' + (g / 60).toFixed(2) + '" data-c="' + m.mau + '" style="background:' + m.mau + '">' +
           '<span class="chu">' + hqChuDoan(g) + '</span>' + (xong(r, m) ? '<span class="ok">✓</span>' : '') + '</span>';
       }).join('');
       return '<div class="bd-dong' + (chua ? ' chua' : '') + '" data-hq-em="' + A.chuAnToan(h.ten) + '" data-tl2="' + k + '"' + (chua ? ' title="CHƯA ĐỤNG BÀI NÀO của chặng ' + cXet.so + '"' : '') + '>' +
         '<span class="stt">' + (k + 1) + '</span>' + veEmAvDb(h.ten, slug, lopGoc) +
         '<span class="ten">' + A.chuAnToan(h.ten) + (x ? '<i class="kt">' + (x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</i>' : '') + '</span>' +
         '<span class="bd-ray"><span class="thanh" style="animation-delay:' + (k * 25) + 'ms">' + doan + '</span><span class="gach-noi"></span></span>' +
-        '<span class="gio">' + (r.tong ? hqChuGio(r.tong) : '—') + '</span></div>';
+        '<span class="gio">' + (gHang(r) ? hqChuGio(gHang(r)) : '—') + '</span></div>';
     }).join('');
     var loi = HQ.actLoi ? '<div class="hq-loi">' + A.chuAnToan(HQ.actLoi) + '</div>' : '';
-    return loi + '<div class="tl2' + (HQ.hieu ? ' anim' : '') + '" id="hqTl2"><div class="tl2-dau"><span class="tl2-chu-thich">' + chip + '</span><span class="tl2-tde" id="hqTl2Tde">Thời lượng</span></div>' +
+    return loi + '<div class="tl2' + (HQ.hieu ? ' anim' : '') + '" id="hqTl2"><div class="tl2-dau"><span class="tl2-chu-thich">' + chip + '</span><span class="tl2-tde" id="hqTl2Tde">Thời lượng' + (mucLoc ? ' · ' + A.chuAnToan(mucLoc.ten) : '') + '</span></div>' +
       '<div class="bd-than"><div class="bd-ds" style="--n:' + rows.length + '">' + body + '</div></div><div class="bd-truc" id="hqTl2Truc"></div></div>';
   }
   // Chữ trong đoạn: "58 m" · "3 h 20 m" · "3 h" (đoạn có giây mà chưa tròn phút ghi "1 m").
@@ -5915,10 +5953,15 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var T = HQ.tl2, r = T.rows[+d.getAttribute('data-tl2')]; if (!r) return;
     if (the.getAttribute('data-k') !== d.getAttribute('data-tl2') + '|' + r.h.ten) {
       the.setAttribute('data-k', d.getAttribute('data-tl2') + '|' + r.h.ten);
+      var treoTong = 0;
       the.innerHTML = '<b>' + A.chuAnToan(r.h.ten) + '</b>' + T.muc.map(function (m) {
-        var g = T.gia(r, m.k);
-        return '<div class="dg' + (g ? '' : ' rong') + '"><i style="background:' + m.mau + '"></i><span>' + A.chuAnToan(m.ten) + '</span><em>' + (g ? hqChuPhut(g) : '—') + (g && T.xong(r, m) ? ' <u>✓</u>' : '') + '</em></div>';
-      }).join('') + '<div class="dg tong"><span>Tổng</span><em>' + (r.tong ? hqChuPhut(r.tong) : '—') + '</em></div>';
+        var g = T.gia(r, m.k), a = /^a\d+$/.test(m.k) ? r.act[+m.k.slice(1)] : null;
+        // v1.144.0 — act: phần TREO (mở tab mà không làm) ≥ 1 phút ⇒ dòng nhỏ "mở tab … · treo …"; lượt cũ ước lượng ⇒ "≈"
+        var treo = a ? Math.max(0, a.moTab - a.giay) : 0; treoTong += treo;
+        return '<div class="dg' + (g ? '' : ' rong') + '"><i style="background:' + m.mau + '"></i><span>' + A.chuAnToan(m.ten) + '</span><em>' + (g ? (a && a.uoc ? '≈ ' : '') + hqChuPhut(g) : '—') + (g && T.xong(r, m) ? ' <u>✓</u>' : '') + '</em></div>' +
+          (treo >= 60 ? '<div class="dg-treo">mở tab ' + hqChuPhut(a.moTab) + ' · treo ' + hqChuPhut(treo) + '</div>' : '');
+      }).join('') + '<div class="dg tong"><span>Tổng làm thật</span><em>' + (r.tong ? hqChuPhut(r.tong) : '—') + '</em></div>' +
+        (treoTong >= 60 ? '<div class="dg tong treo"><span>Treo (không tính)</span><em>' + hqChuPhut(treoTong) + '</em></div>' : '');
     }
     the.classList.add('mo');
     var x = e.clientX + 18, y = e.clientY + 14, w = the.offsetWidth, hh = the.offsetHeight;
@@ -5939,7 +5982,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       g.luot.forEach(function (l) {
         if (l.loai !== 'nop' || l.mistakes) return;
         var mau = (+l.tong || soCau), r = mau ? (+l.diem || 0) / mau : 0;
-        if (!tot || r > tot.r || (r === tot.r && l.giay < tot.giay)) tot = { r: r, diem: +l.diem || 0, mau: mau, giay: l.giay };
+        var gG = l.giayGame != null ? l.giayGame : l.giay;   // v1.144.0 — giờ đồng hồ game em thấy, không phải giờ hoạt động
+        if (!tot || r > tot.r || (r === tot.r && gG < tot.giay)) tot = { r: r, diem: +l.diem || 0, mau: mau, giay: gG };
       });
       return { h: h, tot: tot, full: coTrongDiem(DIEM[a.ma] || [], h.ten, a.ma) };
     });
@@ -6272,7 +6316,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       var luot = hqGioAct(a.ma, ten).luot.slice().sort(function (x, y) { return (x.luc || 0) - (y.luc || 0); }).map(function (l) {
         var dung = Math.max(0, +l.diem || 0), mauSo = l.loai === 'do' ? soCau : (+l.tong || null);
         var pt = mauSo ? Math.min(100, Math.round(dung / mauSo * 100)) : null;
-        return { luc: l.luc, giay: l.giay, loai: l.loai, dung: dung, mauSo: mauSo, pt: pt, mistakes: !!l.mistakes,
+        return { luc: l.luc, giay: l.giay, moTab: l.moTab, uoc: l.uoc, loai: l.loai, dung: dung, mauSo: mauSo, pt: pt, mistakes: !!l.mistakes,
                  ve: !l.mistakes && pt != null && (l.loai !== 'do' || dung > 0) };
       });
       return { k: 'a' + j, ma: a.ma, nhan: hqNhanAct(a), mau: MAU_TT[j % MAU_TT.length], soCau: soCau, luot: luot };
@@ -6309,7 +6353,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     dl.acts.forEach(function (x) {
       if (!mc.co(x.k)) return;
       x.luot.forEach(function (l) {
-        dong.push({ luc: l.luc, muc: x.nhan, mau: x.mau, loai: l.loai, nhan: nhanLoai[l.loai] + (l.mistakes ? ' MISTAKES' : ''), giay: l.giay,
+        dong.push({ luc: l.luc, muc: x.nhan, mau: x.mau, loai: l.loai, nhan: nhanLoai[l.loai] + (l.mistakes ? ' MISTAKES' : ''), giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
                     xy: l.mauSo ? l.dung + '/' + l.mauSo : (l.loai === 'do' ? (l.dung ? l.dung + ' câu' : '—') : '—'),
                     pt: l.mistakes ? '—' : (l.pt != null ? l.pt + '%' : ''), mo: l.mistakes || (l.loai === 'do' && !l.dung), full: !l.mistakes && l.pt >= 100 });
       });
@@ -6327,7 +6371,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     return '<table class="hq-ct-bang"><tr><th>Lúc</th><th>Mục</th><th>Loại</th><th class="r">Phút</th><th class="r" colspan="2">Kết quả</th></tr>' +
       dong.slice(0, 300).map(function (l) {
         return '<tr><td>' + hqChuLuc(l.luc) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + '">' + l.nhan + '</span></td>' +
-          '<td class="r">' + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '">' + l.pt + '</td></tr>';
+          '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng — lượt bỏ dở trước 24/09)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '">' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }
   function hqCtChip(dl, mc, soDong) {

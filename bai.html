@@ -1885,7 +1885,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=114"></script>
+<script src="config.js?v=115"></script>
 <script src="js/chung.js?v=61"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -4509,7 +4509,8 @@ function nhipNghe(maNghe, am){
       congKhucNghe(maNghe, truoc, now); NGHE_FS_BAN = true;
       // v1.122.0 — độ chăm: giây băng + giây thật (trần 3s, phòng mốc cũ sau khi tạm dừng lâu)
       var that = CHAM_LUC_NGHE[maNghe] ? (lucNay - CHAM_LUC_NGHE[maNghe]) / 1000 : delta;
-      chamCong('nghe', delta, Math.min(Math.max(that, 0), 3));
+      // v1.144.0 (thầy chốt 24/09) — audio TẮT TIẾNG không cộng giờ; tab ẩn / tắt màn hình VẪN cộng (nghe thật).
+      if (!am.muted && am.volume > 0) chamCong('nghe', delta, Math.min(Math.max(that, 0), 3));
     }
   }
   GIAY_HIEN_NGHE[maNghe] = now;
@@ -5191,6 +5192,9 @@ function onDoiTocDoKhoa(e){
   try { YT_PLAYER.setPlaybackRate(TOC_DO_MAX_KHOA); } catch (err) {}
   baoToast('Bài giảng chỉ xem tối đa ' + TOC_DO_MAX_KHOA + 'x — đã đưa về ' + TOC_DO_MAX_KHOA + 'x');
 }
+function videoTatTieng(){
+  try { return !!(YT_PLAYER && ((YT_PLAYER.isMuted && YT_PLAYER.isMuted()) || (YT_PLAYER.getVolume && YT_PLAYER.getVolume() === 0))); } catch (e) { return false; }
+}
 function nhipVideoKhoa(){
   if (!YT_PLAYER || !YT_PLAYER.getCurrentTime) return;
   var now = YT_PLAYER.getCurrentTime();
@@ -5202,7 +5206,10 @@ function nhipVideoKhoa(){
   if (quaNhanh && delta < 1.8) NHANH_LUC_KHOA = lucNay;
   var doan = (BAI.baiGiang || {}).doan || [];
   var dHien = doanTaiGiayKhoa(doan, now);
-  if (delta > 0.05 && delta < 1.8 && !quaNhanh) {
+  // v1.144.0 (thầy chốt 24/09) — THỜI GIAN HOẠT ĐỘNG: video chạy ở tab ẨN (không ai xem được) hoặc TẮT TIẾNG không cộng giờ.
+  // Chỉ chặn đồng hồ giờ; phần PHỦ (% đã xem, mở đoạn) giữ luật cũ để không đổi đường mở khoá bài.
+  var coNguoiXem = document.visibilityState === 'visible' && !videoTatTieng();
+  if (delta > 0.05 && delta < 1.8 && !quaNhanh && coNguoiXem) {
     chamCong('video', delta, Math.min(deltaThat, 2));   // v1.122.0 — độ chăm: MỌI nhịp phát thật
     TIEN_DO_FS_BAN = true;
   }

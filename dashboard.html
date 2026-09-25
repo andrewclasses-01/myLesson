@@ -1762,6 +1762,16 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-tile b{display:block; font:800 calc(25px*var(--k))/1.1 var(--font); color:var(--chu); margin-top:3px} .hq-tile b small{font:800 calc(14px*var(--k)) var(--font); color:var(--mo)}
 .hq-tile b .dv{font-size:.56em}
 .hq-tile i{display:block; font:600 calc(11.5px*var(--k))/1.35 var(--font); color:var(--nhat); font-style:normal; margin-top:3px}
+/* v1.153.0 — thẻ ĐIỂM TỐT NHẤT: mỗi act một dòng (chấm màu · tên · %), > 3 act chia 2 cột */
+.hq-tot-ds{display:grid; grid-template-columns:1fr; gap:calc(3px*var(--k)) calc(14px*var(--k)); margin-top:calc(6px*var(--k))}
+.hq-tot-ds.hai{grid-template-columns:1fr 1fr}
+.hq-tot-ds > div{display:flex; align-items:center; gap:calc(7px*var(--k)); min-width:0}
+.hq-tot-ds i{flex:none; width:calc(9px*var(--k)); height:calc(9px*var(--k)); border-radius:50%; margin:0}
+.hq-tot-ds em{flex:1; min-width:0; font:700 calc(13px*var(--k))/1.3 var(--font); color:var(--chu); font-style:normal; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hq-tile .hq-tot-ds b{display:inline; margin:0; font:800 calc(16px*var(--k))/1.3 var(--font); color:var(--chu)}
+.hq-tile .hq-tot-ds b small{font-size:calc(10px*var(--k))}
+.hq-tile .hq-tot-ds b.full{color:#16A34A} .hq-tile .hq-tot-ds b.dang{color:var(--nhat)} .hq-tile .hq-tot-ds b.rong{color:var(--nhat); font-weight:600}
+.hq-tot-ds > .rong{font:600 calc(11.5px*var(--k)) var(--font); color:var(--nhat)}
 .hq-ct-khoi{border:1px solid var(--vien); border-radius:14px; padding:calc(12px*var(--k)) calc(14px*var(--k)); display:flex; flex-direction:column; min-height:0; min-width:0}
 .hq-ct-trai .hq-ct-khoi{flex:1}
 .hq-ct-hop.zoom .hq-ct-khoi{padding:calc(9px*var(--k)) calc(12px*var(--k))}
@@ -2842,7 +2852,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=128"></script>
+<script src="config.js?v=129"></script>
 <script src="js/chung.js?v=62"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -6034,12 +6044,15 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   // ⭐⭐ v1.138.0 (thầy duyệt mẫu v11→v17) — MỌI ô có phút là NÚT thời gian, màu theo số giờ (g0…g5).
   // ⭐ v1.141.0 (thầy chọn kiểu E, mẫu v24) — "2:36 p" dễ đọc nhầm thành 2 phút ⇒ ghi "2 giờ 36 phút" / "55 phút".
   // `hqChuPhut` = chữ trơn (đồ thị, tiêu đề); `hqChuGio` = HTML cho nút/ô số (số giờ đậm, đơn vị nhỏ nhạt).
+  // ⭐ v1.153.0 — có giây mà chưa tròn phút ⇒ "<1 phút" (trước ghi "0 phút" trong khi đoạn cột ghi "1 m" — MINH ĐỨC).
   function hqChuPhut(giay) {
     var m = hqPhut(giay), g = Math.floor(m / 60);
+    if (!m && giay > 0) return '&lt;1 phút';   // mọi nơi gọi đều ghép vào chuỗi HTML/SVG
     return g ? g + ' giờ ' + (m % 60) + ' phút' : m + ' phút';
   }
   function hqChuGio(giay) {
     var m = hqPhut(giay), g = Math.floor(m / 60);
+    if (!m && giay > 0) return '&lt;1<span class="dv"> phút</span>';
     return g ? '<span class="sg">' + g + '</span><span class="dv"> giờ</span> ' + (m % 60) + '<span class="dv"> phút</span>' : m + '<span class="dv"> phút</span>';
   }
   function hqTabThoiLuong() {
@@ -6125,9 +6138,10 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     return loi + '<div class="tl2' + (HQ.hieu ? ' anim' : '') + '" id="hqTl2"><div class="tl2-dau"><span class="tl2-chu-thich">' + chip + '</span><span class="tl2-tde" id="hqTl2Tde">Thời lượng' + (mucLoc ? ' · ' + A.chuAnToan(mucLoc.ten) : '') + '</span></div>' +
       '<div class="bd-than"><div class="bd-ds" style="--n:' + rows.length + '">' + body + '</div></div><div class="bd-truc" id="hqTl2Truc"></div></div>';
   }
-  // Chữ trong đoạn: "58 m" · "3 h 20 m" · "3 h" (đoạn có giây mà chưa tròn phút ghi "1 m").
+  // Chữ trong đoạn: "58 m" · "3 h 20 m" · "3 h" (đoạn có giây mà chưa tròn phút ghi "<1 m" — v1.153.0 khớp cột tổng, trước ghi "1 m").
   function hqChuDoan(giay) {
-    var m = Math.max(1, hqPhut(giay)), g = Math.floor(m / 60), p = m % 60, dv = function (t) { return '<span class="dv"> ' + t + '</span>'; };
+    var m = hqPhut(giay), g = Math.floor(m / 60), p = m % 60, dv = function (t) { return '<span class="dv"> ' + t + '</span>'; };
+    if (!m) return '&lt;1' + dv('m');
     return g ? g + dv('h') + (p ? ' ' + p + dv('m') : '') : p + dv('m');
   }
   // Thẻ chi tiết khi rê chuột vào một hàng THỜI LƯỢNG: từng mục (ô màu · tên · giờ · ✓) + tổng.
@@ -6580,17 +6594,21 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     // v1.146.0 — video/nghe: mỗi PHIÊN một dòng, Lúc = giờ bắt đầu THẬT, kết quả = khoảng giờ.
     // Ngày nào tổng phiên còn thiếu so với tổng ngày (xem trước 24/09 chưa ghi giờ) ⇒ phần dư
     // hiện một dòng "cả ngày" KHÔNG giờ (Lúc chỉ in ngày) — không còn giờ giả 23:59.
+    // ⭐ v1.153.0 (thầy chốt 25/09) — bỏ khoảng giờ "18:42–19:29" (giờ bắt đầu đã ở cột Lúc); Kết quả chỉ còn % gọn
+    // = phút xem phiên đó / độ dài băng (trần 100%, ≥ 95% xanh lá). Rê chuột ô % thấy khoảng giờ.
+    var dai = [coBaiGiangKh(dl.b) ? tongGiayBaiGiangDb(dl.b) : 0, hqTongNgheBai()];
     [['video', 0, 'VIDEO', 'XEM', dl.vd && dl.vd.cham], ['nghe', 1, 'NGHE', 'NGHE', dl.ngCham]].forEach(function (m) {
       if (!mc.co(m[0])) return;
-      var mau = MAU_HQ[m[0]], daCoNgay = {};
+      var mau = MAU_HQ[m[0]], daCoNgay = {}, L = dai[m[1]];
+      var pt = function (g) { return L ? Math.min(100, Math.round(g / L * 100)) : null; };
       ((m[4] && m[4].phien) || []).forEach(function (p) {
-        var kh = hqNgayKhoa(new Date(p.b));
+        var kh = hqNgayKhoa(new Date(p.b)), q = pt(p.g);
         daCoNgay[kh] = (daCoNgay[kh] || 0) + p.g;
-        dong.push({ luc: p.b, muc: m[2], mau: mau, loai: m[0], nhan: m[3], giay: p.g, xy: hqGioPhutLuc(p.b) + '–' + hqGioPhutLuc(p.k), pt: '', mo: true });
+        dong.push({ luc: p.b, muc: m[2], mau: mau, loai: m[0], nhan: m[3], giay: p.g, xy: '', pt: q != null ? q + '%' : '', full: q >= 95, tPt: hqGioPhutLuc(p.b) + '–' + hqGioPhutLuc(p.k) + (L ? ' · ' + hqPhut(p.g) + '/' + hqPhut(L) + ' phút băng' : '') });
       });
       Object.keys(dl.theo).forEach(function (kh) {
-        var du = (dl.theo[kh][m[1]] || 0) - (daCoNgay[kh] || 0);
-        if (du >= 30) dong.push({ luc: Date.parse(kh + 'T00:00:00'), caNgay: true, muc: m[2], mau: mau, loai: m[0], nhan: m[3], giay: du, xy: 'cả ngày', pt: '', mo: true });
+        var du = (dl.theo[kh][m[1]] || 0) - (daCoNgay[kh] || 0), q = pt(du);
+        if (du >= 30) dong.push({ luc: Date.parse(kh + 'T00:00:00'), caNgay: true, muc: m[2], mau: mau, loai: m[0], nhan: m[3], giay: du, xy: '', pt: q != null ? q + '%' : '', full: q >= 95, tPt: 'cả ngày (trước 24/09 chưa ghi giờ)' });
       });
     });
     dong.sort(function (a, c) { return (c.luc || 0) - (a.luc || 0); });
@@ -6611,7 +6629,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       dong.slice(0, 300).map(function (l) {
         var dLuc = new Date(l.luc || 0);
         return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (l.id && HQ.ct && HQ.ct.chonId === l.id ? ' class="chon"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + '">' + l.nhan + '</span></td>' +
-          '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '">' + l.pt + '</td></tr>';
+          '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '"' + (l.tPt ? ' title="' + A.chuAnToan(l.tPt) + '"' : '') + '>' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }
   function hqCtChip(dl, mc, soDong) {
@@ -6869,8 +6887,14 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'nop') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else doo++; }); });
       Object.keys(dl.theo).forEach(function (kh) { var n = dl.theo[kh], a2 = 0; Object.keys(n[2]).forEach(function (kk) { a2 += n[2][kk]; }); if (n[0] + n[1] + a2 > 0) soNgay++; });
       var tong = gVideo + gNghe + gAct, soNgayToiNay = Math.max(1, Math.round((dl.nay - dl.giao) / 86400000) + 1);
-      var tot = null;
-      t.acts.forEach(function (a) { var em = (DIEM[a.ma] || []).filter(function (e) { return A.khoaTen(e.ten) === A.khoaTen(ten); })[0]; if (em && (!tot || em.diem > tot.diem)) tot = { diem: em.diem, act: hqNhanAct(a), tho: em.tho }; });
+      // ⭐ v1.153.0 (thầy chốt 25/09) — ĐIỂM TỐT NHẤT của TỪNG act (không chỉ act cao nhất; video/nghe không tính):
+      // điểm nộp chính thức (DIEM); chưa nộp mà có lượt dở ⇒ % lượt dở cao nhất, chữ nhạt; chưa đụng ⇒ "—".
+      var totDs = dl.acts.map(function (x, j) {
+        var a = t.acts[j], em = (DIEM[a.ma] || []).filter(function (e) { return A.khoaTen(e.ten) === A.khoaTen(ten); })[0];
+        if (em) return { x: x, pt: +em.diem || 0, tit: em.tho ? em.tho.diem + '/' + em.tho.tong + ' câu' : '' };
+        var dang = x.luot.filter(function (l) { return l.ve; }).map(function (l) { return l.pt; });
+        return { x: x, pt: dang.length ? Math.max.apply(null, dang) : null, dang: true, tit: dang.length ? 'chưa nộp — lượt dở cao nhất' : 'chưa làm' };
+      });
       var tongVideo = coBaiGiangKh(b) ? tongGiayBaiGiangDb(b) : 0, tongNghe = hqTongNgheBai();
       var phuVd = tongVideo ? Math.min(100, Math.round(((dl.vd && dl.vd.phu) || 0) / tongVideo * 100)) : null;
       var phuNg = tongNghe ? Math.min(100, Math.round(((HQ.nghe && HQ.nghe.giay[ten]) || 0) / tongNghe * 100)) : null;
@@ -6879,7 +6903,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
           tile('Tổng luyện tập', hqChuGio(tong), (coBaiGiangKh(b) ? 'video ' + hqPhut(gVideo) + 'p' + (phuVd != null ? ' (phủ ' + phuVd + '%)' : '') + ' · ' : '') + (coBaiNgheKh(b) ? 'nghe ' + hqPhut(gNghe) + 'p' + (phuNg != null ? ' (' + phuNg + '%)' : '') + ' · ' : '') + 'act ' + hqPhut(gAct) + 'p') +
           tile('Ngày có luyện', soNgay + ' <small>/ ' + soNgayToiNay + ' ngày</small>', 'trung bình ' + Math.round(hqPhut(tong) / soNgayToiNay) + ' phút/ngày') +
           tile('Lượt AWord', String(nop + luyen + doo), nop + ' nộp · ' + luyen + ' luyện tập · ' + doo + ' bỏ dở') +
-          tile('Điểm tốt nhất', tot ? tot.diem + '<small>%</small>' : '—', tot ? A.chuAnToan(tot.act) + (tot.tho ? ' · ' + tot.tho.diem + '/' + tot.tho.tong + ' câu' : '') : 'chưa nộp act nào') +
+          '<div class="hq-tile hq-tot"><span>Điểm tốt nhất</span><div class="hq-tot-ds' + (totDs.length > 3 ? ' hai' : '') + '">' + (totDs.length ? totDs.map(function (d) {
+            return '<div' + (d.tit ? ' title="' + A.chuAnToan(d.tit) + '"' : '') + '><i style="background:' + d.x.mau + '"></i><em>' + A.chuAnToan(d.x.nhan) + '</em><b class="' + (d.pt == null ? 'rong' : d.dang ? 'dang' : d.pt >= 100 ? 'full' : '') + '">' + (d.pt == null ? '—' : d.pt + '<small>%</small>') + '</b></div>';
+          }).join('') : '<div class="rong">chưa có act</div>') + '</div></div>' +
         '</div><div class="hq-ct-khoi"><h4>Phút luyện theo ngày <span class="hq-legend">' + (coBaiGiangKh(b) ? '<span><i style="background:' + MAU_HQ.video + '"></i>Video</span>' : '') + (coBaiNgheKh(b) ? '<span><i style="background:' + MAU_HQ.nghe + '"></i>Nghe</span>' : '') + '<span><i style="background:' + MAU_HQ.act + '"></i>Act AWord</span></span></h4>' +
           '<div class="hq-ct-ve" id="hqCtVe"></div></div></div>' + bang + '</div>';
     } else {

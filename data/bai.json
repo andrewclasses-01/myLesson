@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-24 22:18:08",
+  "capNhat": "2026-09-25 10:31:08",
   "bai": {
     "A1C": [
       {
@@ -1289,6 +1289,280 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L04",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 20: TẠO CÂU CÓ ĐỘNG TỪ KHUYẾT THIẾU \"CAN\"",
+        "tenBai": "LESSON 20",
+        "maLesson": "LESSON 20",
+        "han": "2026-09-29T23:59",
+        "taoLuc": "2026-09-25",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. PHÂN BIỆT CÂU CÓ ĐỘNG TỪ KHUYẾT THIẾU",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "6tkxsv"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. TẠO CÂU CÓ ĐỘNG TỪ KHUYẾT THIẾU \"CAN\"",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "djrp47"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 20",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "vhc2ns"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "TẠO CÂU CÓ ĐỘNG TỪ KHUYẾT THIẾU \"CAN\"",
+          "video": "https://www.youtube.com/watch?v=zJAx3G_hXDM",
+          "doan": [
+            {
+              "id": "dmugds6ympwzc",
+              "ten": "Review hành trình hiện tại",
+              "tu": "00:00:00",
+              "den": "00:06:51",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ym1m4m"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ym1m4m",
+              "ten": "Các dạng động từ có thể xuất hiện trong câu",
+              "tu": "00:06:51",
+              "den": "00:10:23",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ym1ir6"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ym1ir6",
+              "ten": "Lưu ý về tư duy khi tạo câu",
+              "tu": "00:10:23",
+              "den": "00:11:30",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymzln9"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymzln9",
+              "ten": "Số lượng động từ đặc biệt so với động từ thường",
+              "tu": "00:11:30",
+              "den": "00:12:39",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymgtmr"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymgtmr",
+              "ten": "Nghiên cứu sâu về động từ đặc biệt đầu tiên: Can - Có thể",
+              "tu": "00:12:39",
+              "den": "00:22:27",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymrm3i"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymrm3i",
+              "ten": "Chốt sơ đồ các dạng động từ",
+              "tu": "00:22:27",
+              "den": "00:24:42",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ym9f5i"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ym9f5i",
+              "ten": "Câu chỉ có động từ thường và câu có thêm động từ khuyết thiếu khác nhau",
+              "tu": "00:24:42",
+              "den": "00:25:53",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymgdki"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymgdki",
+              "ten": "Hình dung về câu khi có xuất hiện động từ khuyết thiếu",
+              "tu": "00:25:53",
+              "den": "00:28:59",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ympht5"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ympht5",
+              "ten": "HD BT1 - Phân biệt câu chỉ có ĐT thường và câu có thêm ĐT khuyết thiếu",
+              "tu": "00:28:59",
+              "den": "30:23",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmugdx7t6rxx"
+              ]
+            },
+            {
+              "id": "dmugds6ymdcws",
+              "ten": "Ý nghĩa của động từ khuyết thiếu \"can\"",
+              "tu": "30:29",
+              "den": "00:32:10",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymchar"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymchar",
+              "ten": "Sự khác nhau cốt lõi giữa động từ khuyết thiếu và động từ thường",
+              "tu": "00:32:10",
+              "den": "00:36:19",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ym5cys"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ym5cys",
+              "ten": "Đặc tính thứ 1 của \"can\" (và ĐT khuyết thiếu nói chung): rảnh",
+              "tu": "00:36:19",
+              "den": "00:43:07",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ym4uwj"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ym4uwj",
+              "ten": "Đặc tính thứ 2 của \"can\" (và ĐT khuyết thiếu nói chung): lì",
+              "tu": "00:43:07",
+              "den": "00:47:03",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymz5ke"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymz5ke",
+              "ten": "Đặc tính thứ 3 của \"can\" (và ĐT khuyết thiếu nói chung): bế được cả em bé \"NOT\"",
+              "tu": "00:47:03",
+              "den": "00:50:24",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ym0tbg"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ym0tbg",
+              "ten": "Đặc tính thứ 4 của \"can\" (và ĐT khuyết thiếu nói chung): gánh cả tạo câu hỏi luôn",
+              "tu": "00:50:24",
+              "den": "00:58:35",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymbei1"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmugds6ymbei1",
+              "ten": "HD BT2 - Tạo câu sử dụng động từ khuyết thiếu",
+              "tu": "00:58:35",
+              "den": "59:59",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmugdx99sj33"
+              ]
+            },
+            {
+              "id": "dmugds6ympm3c",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "01:00:06",
+              "den": "01:00:35",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmugdx9psd2o"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmugdx7t6rxx",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. PHÂN BIỆT CÂU CÓ ĐỘNG TỪ KHUYẾT THIẾU",
+            "actTen": "BT1. PHAN BIET CAU CO DONG TU KHUYET THIEU",
+            "ma": "6tkxsv",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ymdcws"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmugdx99sj33",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. TẠO CÂU CÓ ĐỘNG TỪ KHUYẾT THIẾU \"CAN\"",
+            "actTen": "BT2. TAO CAU CO DONG TU KHUYET THIEU: CAN",
+            "ma": "djrp47",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmugds6ympm3c"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmugdx9psd2o",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 20",
+            "actTen": "TRAC NGHIEM BAI GIANG 20 - DONG TU KHUYET THIEU CAN",
+            "ma": "vhc2ns",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ]
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L03",
         "dang": "KHOA",

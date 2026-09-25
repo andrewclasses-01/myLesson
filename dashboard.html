@@ -2410,6 +2410,37 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .qq-hang{grid-template-columns:48px 1fr 84px; grid-auto-rows:auto}
   .qq-hang.dau{display:none}
 }
+/* ⭐ v1.152.0 — HỘP ĐĂNG KÝ (phiếu từ nentangtienganh.andrewclasses.com, kho dangKyKNT) */
+.dk-hop{width:min(1120px,100%)}
+.dk-hang{display:grid; grid-template-columns:92px 1.25fr 1.1fr 1fr 128px 1.2fr 34px; gap:10px;
+  align-items:center; padding:10px 13px; font:600 12.5px/1.35 var(--font)}
+.dk-hang + .dk-hang{border-top:1px solid var(--vien)}
+.dk-hang.dau{background:var(--nen); font:800 10.5px var(--font); color:var(--nhat); letter-spacing:.06em}
+.dk-hang.moi{background:#FFF7EA}
+.dk-hang b{font-weight:800; color:var(--chu); display:block}
+.dk-hang small{display:block; color:var(--nhat); font-weight:600; font-size:11.5px}
+.dk-gio{color:var(--mo); font-size:12px}
+.dk-gio i{display:inline-block; font-style:normal; font:800 9.5px var(--font); color:#fff; background:#F0821E;
+  padding:2px 6px; border-radius:6px; margin-top:4px; letter-spacing:.05em}
+.dk-lh{display:flex; gap:6px; margin-top:5px; flex-wrap:wrap}
+.dk-lh a{display:inline-flex; align-items:center; gap:4px; padding:4px 9px; border-radius:8px; font:700 11.5px var(--font);
+  text-decoration:none; border:1px solid var(--vien); color:var(--xanh); background:var(--the)}
+.dk-lh a:hover{border-color:var(--xanh)}
+.dk-lh a.zalo{color:#0068FF}
+.dk-hang select, .dk-hang input{width:100%; padding:7px 9px; border-radius:10px; border:1px solid var(--vien);
+  background:var(--nen); font:700 12px var(--font); color:var(--chu)}
+.dk-hang select:focus, .dk-hang input:focus{outline:none; border-color:var(--xanh); background:var(--the)}
+.dk-hang select[data-tt="daGoi"]{color:#3E7BFA}
+.dk-hang select[data-tt="daXep"]{color:#18A957}
+.dk-hang select[data-tt="khongHoc"]{color:var(--nhat)}
+.dk-hang select[data-tt="moi"]{color:#F0821E}
+.nwb-ql-muc .dk-so{margin-left:auto; min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#E0575B;
+  color:#fff; font:800 11px/20px var(--font); text-align:center}
+@media (max-width:820px){
+  .dk-hang{grid-template-columns:1fr 1fr; grid-auto-rows:auto}
+  .dk-hang.dau{display:none}
+  .dk-hang > :nth-child(1){grid-column:1/-1}
+}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=6">
 </head>
@@ -2790,9 +2821,28 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   </div>
 </div>
 
+<!-- ⭐ v1.152.0 — HỘP ĐĂNG KÝ (mở từ mục "Đăng ký" ở cột trái, dưới "Trang bài tập") -->
+<div class="qq-nen" id="dkNen">
+  <div class="qq-hop dk-hop" role="dialog" aria-modal="true" aria-label="Đăng ký">
+    <div class="qq-dau">
+      <span class="qq-ic" style="background:#FFF1E0"><svg viewBox="0 0 24 24" style="stroke:#F0821E"><circle cx="9" cy="8.2" r="3.4"/><path d="M3.4 20c0-3.6 2.9-6 5.6-6s5.6 2.4 5.6 6"/><path d="M18.6 7.6v5M16.1 10.1h5"/></svg></span>
+      <div><h3>ĐĂNG KÝ KHÓA NỀN TẢNG</h3><p id="dkPhu">Phiếu phụ huynh gửi từ nentangtienganh.andrewclasses.com</p></div>
+      <button class="qq-dong" id="dkDong" title="Đóng" aria-label="Đóng">
+        <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+    </div>
+    <div class="qq-than" id="dkThan"></div>
+    <div class="qq-chan">
+      <span class="qq-tin" id="dkTin"></span>
+      <a class="qq-nut phu" href="https://nentangtienganh.andrewclasses.com" target="_blank" rel="noopener" style="text-decoration:none">Mở trang đăng ký ↗</a>
+      <button class="qq-nut" type="button" id="dkExcel">Xuất Excel</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=127"></script>
+<script src="config.js?v=128"></script>
 <script src="js/chung.js?v=62"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -9032,14 +9082,169 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       baoToast((e && e.message) || 'Không đăng nhập được.');
     });
   });
-  AWThay.theoDoi(function (u) { THAY_PHIEN = u; veThayDn(); })['catch'](function () {
+  AWThay.theoDoi(function (u) { THAY_PHIEN = u; veThayDn(); if (u) dkDemMoi(); })['catch'](function () {
     THAY_PHIEN = null; veThayDn();
   });
+
+  // ---------- ⭐ v1.152.0 — HỘP ĐĂNG KÝ (kho dangKyKNT) ----------
+  // Phiếu phụ huynh gửi từ trang nentangtienganh.andrewclasses.com (repo andrewclasses-01/nentangtienganh).
+  // Luật (app/tools/dang-luat-dang-ky-knt.js): ai cũng TẠO, chỉ laThay() đọc / xoá / sửa
+  // trangThai · ghiChu · daXem · capNhat. id = <sdt>_<ten-con-khong-dau> (trùng ⇒ web báo "đã nhận").
+  // Số đỏ trên mục = số phiếu daXem==false (đếm bằng aggregation, rẻ); mở hộp ⇒ đánh dấu đã xem.
+  var DK = null, DK_LOC = 'tatCa', DK_MOI = {};
+  var DK_TT = [['moi', 'Chưa liên hệ'], ['daGoi', 'Đã gọi'], ['daXep', 'Đã xếp lớp'], ['khongHoc', 'Không học']];
+  function dkTenTT(ma) { for (var i = 0; i < DK_TT.length; i++) if (DK_TT[i][0] === ma) return DK_TT[i][1]; return 'Chưa liên hệ'; }
+  function dkNgay(v) {
+    var d = v && v.toDate ? v.toDate() : (v ? new Date(v) : null);
+    if (!d || isNaN(d)) return '';
+    var p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return p(d.getDate()) + '/' + p(d.getMonth() + 1) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes());
+  }
+  function dkNgaySinh(s) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(s || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : A.chuAnToan(s || ''); }
+  function dkDatSo(n, lan) {
+    var nut = document.querySelector('.nwb-ql-muc[data-muc="dangKy"]');
+    if (!nut) { if ((lan || 0) < 20) setTimeout(function () { dkDatSo(n, (lan || 0) + 1); }, 300); return; }
+    var so = nut.querySelector('.dk-so');
+    if (!n) { if (so) so.remove(); return; }
+    if (!so) { so = document.createElement('b'); so.className = 'dk-so'; nut.appendChild(so); }
+    so.textContent = n > 99 ? '99+' : String(n);
+  }
+  function dkDemMoi() {
+    spDb().then(function (f) {
+      return f.fs.getCountFromServer(f.fs.query(f.fs.collection(f.db, 'dangKyKNT'), f.fs.where('daXem', '==', false)));
+    }).then(function (s) { if (!$('#dkNen').classList.contains('mo')) dkDatSo(s.data().count); })['catch'](function () { /* chưa có phiên / mạng: bỏ qua, không làm phiền */ });
+  }
+  function moDangKyHop() {
+    dongSb();
+    $('#dkNen').classList.add('mo');
+    document.body.style.overflow = 'hidden';
+    $('#dkTin').textContent = '';
+    if (THAY_PHIEN === null) {
+      DK = null;
+      $('#dkThan').innerHTML = '<div class="qq-trong">Danh sách đăng ký chỉ thầy xem được — ' + A.chuAnToan(AWThay.CAN_DANG_NHAP) + '</div>';
+      return;
+    }
+    $('#dkThan').innerHTML = '<div class="qq-trong">Đang đọc danh sách đăng ký…</div>';
+    spDb().then(function (f) {
+      return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'dangKyKNT'), f.fs.orderBy('guiLuc', 'desc'), f.fs.limit(500)))
+        .then(function (snap) {
+          DK = [];
+          snap.forEach(function (d) { var o = d.data(); o._id = d.id; DK.push(o); });
+          var chuaXem = DK.filter(function (o) { return o.daXem === false; });
+          chuaXem.forEach(function (o) { DK_MOI[o._id] = 1; });
+          dkVe();
+          if (!chuaXem.length) return;
+          var b = f.fs.writeBatch(f.db);
+          chuaXem.forEach(function (o) { b.update(f.fs.doc(f.db, 'dangKyKNT', o._id), { daXem: true }); o.daXem = true; });
+          return b.commit().then(function () { dkDatSo(0); });
+        });
+    })['catch'](function (e) {
+      var ma = String((e && (e.code || e.message)) || '');
+      DK = null;
+      $('#dkThan').innerHTML = '<div class="qq-trong">' + (ma.indexOf('permission') >= 0
+        ? A.chuAnToan(loiPhien('Chưa đọc được danh sách đăng ký'))
+        : 'Chưa đọc được danh sách đăng ký (mạng?) — đóng hộp rồi mở lại.') + '</div>';
+    });
+  }
+  function dongDangKyHop() {
+    $('#dkNen').classList.remove('mo');
+    document.body.style.overflow = '';
+  }
+  function dkVe() {
+    if (!DK) return;
+    var dem = { tatCa: DK.length };
+    DK_TT.forEach(function (t) { dem[t[0]] = 0; });
+    DK.forEach(function (o) { dem[o.trangThai || 'moi']++; });
+    var ds = DK.filter(function (o) { return DK_LOC === 'tatCa' || (o.trangThai || 'moi') === DK_LOC; });
+    $('#dkPhu').textContent = DK.length + ' phiếu · ' + dem.moi + ' chưa liên hệ · ' + dem.daXep + ' đã xếp lớp';
+    var tab = '<div class="qq-thanh"><div class="qq-tab">' +
+      [['tatCa', 'Tất cả']].concat(DK_TT).map(function (t) {
+        return '<button type="button" data-dkloc="' + t[0] + '"' + (DK_LOC === t[0] ? ' class="chon"' : '') + '>' + t[1] + ' · ' + dem[t[0]] + '</button>';
+      }).join('') + '</div></div>';
+    if (!DK.length) { $('#dkThan').innerHTML = tab + '<div class="qq-trong">Chưa có phụ huynh nào đăng ký.</div>'; return; }
+    var dau = '<div class="dk-hang dau"><span>GỬI LÚC</span><span>PHỤ HUYNH</span><span>CON</span><span>TRƯỜNG · LỚP</span><span>TRẠNG THÁI</span><span>GHI CHÚ</span><span></span></div>';
+    var hang = ds.map(function (o) {
+      var id = A.chuAnToan(o._id), sdt = A.chuAnToan(o.soDienThoai || ''), tt = o.trangThai || 'moi';
+      return '<div class="dk-hang' + (DK_MOI[o._id] ? ' moi' : '') + '" data-dkid="' + id + '">' +
+        '<span class="dk-gio">' + dkNgay(o.guiLuc) + (DK_MOI[o._id] ? '<br><i>MỚI</i>' : '') + '</span>' +
+        '<span><b>' + A.chuAnToan(o.phuHuynh || '') + '</b><span class="dk-lh">' +
+          '<a href="tel:' + sdt + '">☎ ' + sdt + '</a><a class="zalo" href="https://zalo.me/' + sdt + '" target="_blank" rel="noopener">Zalo</a></span></span>' +
+        '<span><b>' + A.chuAnToan(o.tenCon || '') + '</b><small>' + dkNgaySinh(o.ngaySinh) + '</small></span>' +
+        '<span>' + A.chuAnToan(o.truong || '') + '<small>Lớp ' + A.chuAnToan(o.lop || '') + '</small></span>' +
+        '<span><select data-tt="' + tt + '">' + DK_TT.map(function (t) {
+          return '<option value="' + t[0] + '"' + (t[0] === tt ? ' selected' : '') + '>' + t[1] + '</option>';
+        }).join('') + '</select></span>' +
+        '<span><input type="text" maxlength="300" placeholder="Ghi chú…" value="' + A.chuAnToan(o.ghiChu || '') + '"></span>' +
+        '<span><button type="button" class="qq-xoa" title="Xoá phiếu này"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></span>' +
+      '</div>';
+    }).join('');
+    $('#dkThan').innerHTML = tab + '<div class="qq-bang">' + dau + (hang || '<div class="qq-trong">Không có phiếu ở mục này.</div>') + '</div>';
+  }
+  function dkTim(id) { for (var i = 0; i < (DK || []).length; i++) if (DK[i]._id === id) return DK[i]; return null; }
+  function dkGhi(id, du, xong) {
+    if (chuaThay()) return;
+    du.capNhat = Date.now();
+    spDb().then(function (f) { return f.fs.updateDoc(f.fs.doc(f.db, 'dangKyKNT', id), du); })
+      .then(function () { var o = dkTim(id); if (o) for (var k in du) o[k] = du[k]; if (xong) xong(); $('#dkTin').textContent = 'Đã lưu.'; })
+      ['catch'](function (e) { $('#dkTin').textContent = String((e && e.code) || '').indexOf('permission') >= 0 ? loiPhien('Chưa lưu được') : 'Chưa lưu được (mạng?) — thử lại.'; });
+  }
+  function dkXuatExcel() {
+    if (!DK || !DK.length) { baoToast('Chưa có phiếu nào để xuất.'); return; }
+    $('#dkTin').textContent = 'Đang tạo file Excel…';
+    var xong = function () {
+      var rows = DK.map(function (o) {
+        var d = o.guiLuc && o.guiLuc.toDate ? o.guiLuc.toDate() : null;
+        return { 'Gửi lúc': d ? d.toLocaleString('vi-VN') : '', 'Phụ huynh': o.phuHuynh || '', 'SĐT / Zalo': o.soDienThoai || '',
+          'Tên con': o.tenCon || '', 'Ngày sinh': dkNgaySinh(o.ngaySinh), 'Trường': o.truong || '', 'Lớp': o.lop || '',
+          'Trạng thái': dkTenTT(o.trangThai), 'Ghi chú': o.ghiChu || '' };
+      });
+      var ws = window.XLSX.utils.json_to_sheet(rows), wb = window.XLSX.utils.book_new();
+      ws['!cols'] = [{ wch: 18 }, { wch: 22 }, { wch: 13 }, { wch: 22 }, { wch: 11 }, { wch: 24 }, { wch: 8 }, { wch: 14 }, { wch: 30 }];
+      window.XLSX.utils.book_append_sheet(wb, ws, 'Dang ky');
+      var n = new Date(), p = function (x) { return (x < 10 ? '0' : '') + x; };
+      window.XLSX.writeFile(wb, 'Dang ky Nen Tang ' + n.getFullYear() + '-' + p(n.getMonth() + 1) + '-' + p(n.getDate()) + '.xlsx');
+      $('#dkTin').textContent = 'Đã tải file Excel (' + rows.length + ' phiếu).';
+    };
+    if (window.XLSX) return xong();
+    var s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload = xong;
+    s.onerror = function () { $('#dkTin').textContent = 'Không tải được bộ tạo Excel (mạng?).'; };
+    document.head.appendChild(s);
+  }
+  $('#dkDong').addEventListener('click', dongDangKyHop);
+  $('#dkNen').addEventListener('click', function (e) { if (e.target === this) dongDangKyHop(); });
+  $('#dkExcel').addEventListener('click', dkXuatExcel);
+  // uỷ quyền trên khung cha — khối vẽ lại bằng innerHTML (bẫy "khối vẽ lại giữa cú bấm")
+  $('#dkThan').addEventListener('click', function (e) {
+    var loc = e.target.closest('[data-dkloc]');
+    if (loc) { DK_LOC = loc.getAttribute('data-dkloc'); dkVe(); return; }
+    var xoa = e.target.closest('.qq-xoa');
+    if (!xoa) return;
+    var h = xoa.closest('[data-dkid]'), id = h.getAttribute('data-dkid'), o = dkTim(id);
+    if (!o || !window.confirm('Xoá hẳn phiếu đăng ký của ' + (o.phuHuynh || '') + ' (con ' + (o.tenCon || '') + ')? Không khôi phục được.')) return;
+    if (chuaThay()) return;
+    spDb().then(function (f) { return f.fs.deleteDoc(f.fs.doc(f.db, 'dangKyKNT', id)); })
+      .then(function () { DK = DK.filter(function (x) { return x._id !== id; }); dkVe(); $('#dkTin').textContent = 'Đã xoá phiếu.'; })
+      ['catch'](function () { $('#dkTin').textContent = loiPhien('Chưa xoá được'); });
+  });
+  $('#dkThan').addEventListener('change', function (e) {
+    var h = e.target.closest('[data-dkid]');
+    if (!h) return;
+    var id = h.getAttribute('data-dkid');
+    if (e.target.tagName === 'SELECT') {
+      var tt = e.target.value;
+      dkGhi(id, { trangThai: tt }, function () { e.target.setAttribute('data-tt', tt); });
+    } else if (e.target.tagName === 'INPUT') {
+      dkGhi(id, { ghiChu: e.target.value.trim().slice(0, 300) });
+    }
+  });
+  window.qlMoDangKy = moDangKyHop;   // cầu cho js/nw-thanh.js (nạp SAU IIFE này)
 
   if (A.laAdmin()) { $('#trang').hidden = false; batDau(); }
   else moCong();
 })();
 </script>
-<script src="js/nw-thanh.js?v=6"></script>
+<script src="js/nw-thanh.js?v=7"></script>
 </body>
 </html>

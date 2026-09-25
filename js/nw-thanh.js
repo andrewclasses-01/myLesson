@@ -158,6 +158,7 @@
     { ma: 'caNhan', chu: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg' },
     { nhom: 'Bài tập', vach: true },
     { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap, mau: '#0E7C6E' },
+    { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, mau: '#F0821E' },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
     { nhom: 'Network', vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, mau: '#3E7BFA', mo: 'Lập và quản lý nhóm chat các lớp' },
     { ma: 'baiDang', chu: 'Bài đăng', ic: IC.bangTin, mau: '#18A957', mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
@@ -184,6 +185,7 @@
     if (!b) return;
     var ma = b.getAttribute('data-muc');
     if (ma === 'baiTap') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (ma === 'dangKy' && window.qlMoDangKy) { window.qlMoDangKy(); return; }
     moSap(ma);
   });
 })();

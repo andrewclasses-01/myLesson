@@ -1806,7 +1806,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-ct-bang td.mo{color:#B5C2BF}
 .hq-ct-bang td i.m{display:inline-block; width:calc(9px*var(--k)); height:calc(9px*var(--k)); border-radius:50%; margin-right:7px}
 .hq-loai{font:800 calc(9.5px*var(--k))/1 var(--font); letter-spacing:.05em; padding:calc(4px*var(--k)) calc(7px*var(--k)); border-radius:99px}
-.hq-loai.nop{background:var(--la-nhat); color:#1F7A4D} .hq-loai.dodang{background:var(--duong-nhat); color:#2B5FD0} .hq-loai.causai{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.luyen{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.do{background:var(--do-nhat); color:#B03A3E} .hq-loai.video{background:var(--duong-nhat); color:#2B5FD0} .hq-loai.nghe{background:var(--vang-nhat); color:#8a5b0e}
+.hq-loai.nop{background:var(--la-nhat); color:#1F7A4D} .hq-loai.dodang{background:var(--do-nhat); color:#B03A3E} .hq-loai.causai{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.luyen{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.do{background:var(--do-nhat); color:#B03A3E} .hq-loai.video{background:var(--duong-nhat); color:#2B5FD0} .hq-loai.nghe{background:var(--vang-nhat); color:#8a5b0e}
 /* hàng CHIP mục dưới bảng */
 .hq-ct-chip{flex:none; display:flex; gap:calc(6px*var(--k)); flex-wrap:wrap; align-items:center; margin-top:calc(8px*var(--k))}
 .hq-ct-chip button{cursor:pointer; border:1.5px solid var(--vien); background:#fff; color:var(--mo); font:800 calc(10px*var(--k))/1 var(--font); letter-spacing:.05em; text-transform:uppercase; padding:calc(6px*var(--k)) calc(11px*var(--k)); border-radius:99px; display:inline-flex; align-items:center; gap:6px; transition:background .18s, color .18s, border-color .18s}
@@ -2792,7 +2792,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=126"></script>
+<script src="config.js?v=127"></script>
 <script src="js/chung.js?v=62"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -6517,7 +6517,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   }
   // Bảng từng lượt (mới nhất trước) — Kết quả tách 2 cột thẳng hàng: "x/y" | "%".
   function hqCtDong(dl, mc) {
-    var nhanLoai = { nop: 'NỘP', dodang: 'NỘP DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', nghe: 'NGHE', video: 'XEM' };   // v1.148.0 — CÂU SAI / LUYỆN ⇒ LUYỆN TẬP (thầy chốt)
+    var nhanLoai = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', nghe: 'NGHE', video: 'XEM' };   // v1.148.0 — CÂU SAI / LUYỆN ⇒ LUYỆN TẬP · v1.151.0 — NỘP DỞ ⇒ BỎ DỞ (thầy chốt)
     var dong = [];
     dl.acts.forEach(function (x) {
       if (!mc.co(x.k)) return;
@@ -6633,7 +6633,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       xx += bw;
     });
     [0, 25, 50, 75, 100].forEach(function (v) { var y = T + gh * (1 - v / 100); svg += '<line class="luoi" x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (L - 8 * k) + '" y="' + (y + f * .35) + '" text-anchor="end">' + v + '%</text>'; });
-    var nhanLoai = { nop: 'NỘP', dodang: 'NỘP DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ' };
+    var nhanLoai = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ' };
     acts.forEach(function (x, j) {
       var ls = x.luot.filter(function (l) { return l.ve && pos.has(l); }); if (!ls.length) return;
       var full = ls.some(function (l) { return l.pt >= 100; }), mau = full ? XANH_FULL : x.mau;
@@ -6758,7 +6758,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   function veBaiLam() {
     var hop = $('#blHop'); if (!hop || !BL.t) return;
     var t = BL.t, l = t.l, x = t.x, dl = t.dl, lopGoc = hqLopGoc(dl.t), slug = avSlugLop(lopGoc);
-    var tenLoai = { nop: 'NỘP', dodang: 'NỘP DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ' }[l.loai] || '';
+    var tenLoai = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ' }[l.loai] || '';
     var mau = String((CHUAN[x.ma] && CHUAN[x.ma].mau) || (dl.t.acts.filter(function (a) { return a.ma === x.ma; })[0] || {}).mau || '');
     var goChu = !/quiz|true.?false|gameshow|balloon|whack|open.?the.?box|find.?the.?match|group|maze|flying|rocket/i.test(mau);
     var dau = '<div class="bl-dau">' + veEmAvDb(dl.ten, slug, lopGoc) + '<div><div class="t1">' + A.chuAnToan(dl.ten) + ' · BÀI LÀM</div><div class="t2"><i style="background:' + x.mau + '"></i>' +
@@ -6774,12 +6774,12 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var nDung = rv.filter(function (q) { return trang(q) === 'dung'; }).length, nTrong = rv.filter(function (q) { return trang(q) === 'trong'; }).length, nSai = n - nDung - nTrong;
     var pt = n ? Math.round(nDung / n * 100) : 0;
     var o = rv.map(function (q, k) { return '<button type="button" class="' + trang(q) + '" data-blcau="' + k + '" title="Câu ' + (k + 1) + '">' + (k + 1) + '</button>'; }).join('');
-    var loc = [['tat', 'Tất cả', n], ['sai', 'Sai', nSai + nTrong], ['dung', 'Đúng', nDung]].map(function (b) {
+    var loc = [['tat', 'Tất cả', n], ['sai', 'Sai', nSai], ['dung', 'Đúng', nDung], ['chua', 'Chưa làm', nTrong]].map(function (b) {
       return '<button type="button" data-blloc="' + b[0] + '"' + (BL.loc === b[0] ? ' class="bat"' : '') + '>' + b[1] + ' · ' + b[2] + '</button>';
     }).join('');
     var hang = rv.map(function (q, k) {
-      var tt = trang(q); if (BL.loc === 'sai' && tt === 'dung') return ''; if (BL.loc === 'dung' && tt !== 'dung') return '';
-      var em = !q.answered ? 'không trả lời (hết giờ)' : A.chuAnToan(q.yourText == null ? '' : q.yourText);   // v1.149.0 — NGUYÊN VĂN chữ em gõ (thầy chốt: bỏ tô thừa/thiếu)
+      var tt = trang(q); if (BL.loc !== 'tat' && BL.loc !== ({ dung: 'dung', sai: 'sai', trong: 'chua' })[tt]) return '';   // v1.151.0 — mỗi nút lọc đúng MỘT loại câu
+      var em = !q.answered ? 'không có câu trả lời' : A.chuAnToan(q.yourText == null ? '' : q.yourText);   // v1.149.0 — NGUYÊN VĂN chữ em gõ (thầy chốt: bỏ tô thừa/thiếu)
       // lựa chọn Quiz: results giữ `src.answers`; practiceLog (bản rút gọn AWord Đợt 384) giữ `opts` = mảng chữ
       var opts = Array.isArray(q.opts) ? q.opts.map(function (t) { return { text: String(t) }; }) : (q.src && Array.isArray(q.src.answers) ? q.src.answers.filter(function (a) { return a && typeof a.text === 'string'; }) : []);
       var cau = A.chuAnToan(q.question || '') + blAnh(q.img ? { image: q.img } : q.src) + (!goChu && opts.length > 1 ? '<div class="qz">' + opts.map(function (a) {
@@ -6815,8 +6815,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var bang = '<div class="hq-ct-khoi"><h4>Lượt luyện tập<span id="hqCtNgayO">' + hqCtNhanNgay() + '</span><span class="dem" id="hqCtDem">' + dong.length + ' lượt</span></h4><div class="hq-ct-cuon">' + hqCtBang(dong) + '</div>' + hqCtChip(dl, mc, dong.length) + '</div>';
     if (!ct.zoom) {
       var gVideo = hqGioVideo(ten), gNghe = hqGioNghe(ten), gAct = 0, nop = 0, luyen = 0, doo = 0, soNgay = 0;
-      // v1.147.0 — "nộp" gồm cả NỘP DỞ; "luyện" gồm LUYỆN cũ + CÂU SAI.
-      dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'nop' || l.loai === 'dodang') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else doo++; }); });
+      // v1.147.0 — "luyện" gồm LUYỆN cũ + CÂU SAI. v1.151.0 — lượt dở (dodang) nay hiện là BỎ DỞ ⇒ đếm vào "bỏ dở" cho khớp bảng.
+      dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'nop') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else doo++; }); });
       Object.keys(dl.theo).forEach(function (kh) { var n = dl.theo[kh], a2 = 0; Object.keys(n[2]).forEach(function (kk) { a2 += n[2][kk]; }); if (n[0] + n[1] + a2 > 0) soNgay++; });
       var tong = gVideo + gNghe + gAct, soNgayToiNay = Math.max(1, Math.round((dl.nay - dl.giao) / 86400000) + 1);
       var tot = null;

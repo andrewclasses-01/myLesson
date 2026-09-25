@@ -1885,7 +1885,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=123"></script>
+<script src="config.js?v=124"></script>
 <script src="js/chung.js?v=62"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -5256,10 +5256,27 @@ function nhipVideoKhoa(){
 // Nhãn ngắn: "BÀI TẬP N" đếm theo thứ tự (bỏ qua sách/trắc nghiệm khi đếm),
 // "BT SÁCH <trang>" cho loại sách, "TN BÀI GIẢNG" cho mẫu quiz (`x.mau` app đã
 // gán sẵn tên mẫu, vd "QUIZ" — xem `nguon.awActs[].type` bên app).
+// ⭐ v1.148.1 (thầy chốt 25/09) — nhãn đọc theo TIÊU ĐỀ, KHÔNG theo mẫu game nữa:
+// LESSON 20 có BT1 dùng mẫu QUIZ ⇒ luật cũ "mẫu quiz = TN BÀI GIẢNG" gọi nhầm BT1 là
+// TN BÀI GIẢNG và đếm BT2 thành BÀI TẬP 1. Nay: tiêu đề "BTn…" ⇒ BÀI TẬP n; tiêu đề có
+// "TRẮC NGHIỆM" (có/không dấu) ⇒ TN BÀI GIẢNG; còn lại mới đếm như cũ.
+function chuKhongDauKhoa(s){
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    .replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
+}
+function loaiNhanBtKhoa(x){
+  if (x.loai === 'sach') return { k: 'sach' };
+  var t = chuKhongDauKhoa(x.tieuDe || x.actTen);
+  var m = /^\s*BT\s*(\d{1,3})\b/.exec(t);
+  if (m) return { k: 'bt', so: +m[1] };
+  if (/TRAC\s+NGHIEM/.test(t)) return { k: 'tn' };
+  return { k: 'dem' };
+}
 function nhanBtKhoa(x, demBt){
-  if (x.loai === 'sach') return 'BT SÁCH' + (x.trang ? ' ' + x.trang : '');
-  if (x.mau && /quiz/i.test(x.mau)) return 'TN BÀI GIẢNG';
-  return 'BÀI TẬP ' + demBt;
+  var l = loaiNhanBtKhoa(x);
+  if (l.k === 'sach') return 'BT SÁCH' + (x.trang ? ' ' + x.trang : '');
+  if (l.k === 'tn') return 'TN BÀI GIẢNG';
+  return 'BÀI TẬP ' + (l.k === 'bt' ? l.so : demBt);
 }
 // Nhãn ngắn của MỌI bài tập, tính MỘT LẦN mỗi khi TT_KHOA đổi — dùng chung cho
 // thanh tiến trình, thẻ chờ, tiêu đề thẻ đang làm và câu "ĐANG CHỜ: …".
@@ -5268,8 +5285,9 @@ function tinhNhanBtKhoa(){
   var demBt = 0;
   NHAN_BT_KHOA = {};
   (BAI.bt || []).forEach(function(x){
-    var laBt = x.loai !== 'sach' && !(x.mau && /quiz/i.test(x.mau));
-    if (laBt) demBt++;
+    var l = loaiNhanBtKhoa(x);
+    if (l.k === 'bt') demBt = l.so;          // đếm tiếp sau số đã ghi sẵn trong tiêu đề
+    else if (l.k === 'dem') demBt++;
     NHAN_BT_KHOA[x.id] = nhanBtKhoa(x, demBt);
   });
 }

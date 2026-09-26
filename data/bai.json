@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-25 10:31:08",
+  "capNhat": "2026-09-26 17:06:53",
   "bai": {
     "A1C": [
       {
@@ -271,6 +271,52 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_25.9_STAGE_IEL-S15.T4.P2",
+        "tieuDe": "B2B_25.9_STAGE IEL-S15.T4.P2",
+        "tenHien": "B2B_25.9_STAGE IEL-S15.T4.P2",
+        "dang": "STAGE",
+        "ngay": "25.9",
+        "han": "2026-09-28T14:00",
+        "maLesson": "IEL-S15.T4.P2",
+        "taoLuc": "2026-09-26",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "IEL-S15.T4.P2 WORDS ADVANCE",
+            "o": 0,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB2B%2FB2B_25.9_STAGE_IEL-S15.T4.P2%2F0.pdf?alt=media",
+            "soTrang": 5
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "wk35jr",
+            "mau": "ANAGRAM",
+            "han": "2026-09-27T12:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "u9rd3h",
+            "mau": "QUIZ",
+            "han": "2026-09-28T17:30"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "rv3guc",
+            "mau": "QUIZ",
+            "han": "2026-09-28T17:30"
+          }
+        ]
+      },
       {
         "id": "B2B_13.9_DICTS_IEL-S15.T3.P4",
         "tieuDe": "B2B_13.9_DICTS IEL-S15.T3.P4",

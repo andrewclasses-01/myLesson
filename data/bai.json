@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-26 17:06:53",
+  "capNhat": "2026-09-26 19:45:54",
   "bai": {
     "A1C": [
       {
@@ -181,6 +181,26 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_26.9_WORDS_IEL-S15.T4.P2",
+        "tieuDe": "B2A_26.9_WORDS IEL-S15.T4.P2",
+        "tenHien": "B2A_26.9_WORDS IEL-S15.T4.P2",
+        "dang": "WORDS",
+        "ngay": "26.9",
+        "han": "2026-09-27T14:00",
+        "maLesson": "IEL-S15.T4.P2",
+        "taoLuc": "2026-09-26",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "rbdn6a",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "B2A_15.9_WORKSHEET_IEL-S15.T4.P1",
         "tieuDe": "B2A_15.9_WORKSHEET IEL-S15.T4.P1",

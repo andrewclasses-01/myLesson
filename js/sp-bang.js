@@ -729,7 +729,7 @@
     Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js')]).then(function (m) {
       if (!ST.mo) return;
       var appMod = m[0], fsMod = m[1], app;
-      try { app = appMod.getApp(); } catch (e) { app = appMod.initializeApp({ apiKey: ctx.db.apiKey, projectId: ctx.db.projectId }); }
+      try { app = appMod.getApp(); } catch (e) { app = appMod.initializeApp({ apiKey: ctx.db.apiKey, projectId: ctx.db.projectId, appId: '1:399279049436:web:b9b34dcfb34732aa744219', messagingSenderId: '399279049436' }); }   /* 27/09/2026: appId cho App Check */
       var db = fsMod.getFirestore(app);
       ['tongLoi', 'phanHoi', 'cum', 'cumPhieu'].forEach(function (ngan) {
         ST.nghe.push(fsMod.onSnapshot(fsMod.collection(db, 'spBuoi', ctx.buoiId, ngan), function (snap) {

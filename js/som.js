@@ -32,6 +32,38 @@
        được thì chung.js tự xin sau, không hỏng gì. KHÔNG đệm: mục đích là tươi.
    ⛔ Viết kiểu ES5 (var, function) — giống mọi file của web này.
    ============================================================ */
+// ⭐ 27/09/2026 (v1.157.0) APP CHECK — BỌC fetch: gắn header X-Firebase-AppCheck (mã cất ở localStorage
+// 'awc_ac' bởi js/app-check.js) cho lượt gọi REST tới firestore/firebasestorage.googleapis.com — kể cả mấy
+// lượt xin SỚM ngay dưới đây. ⛔ BẢN CHÉP y hệt phần 1 của js/app-check.js. Không có mã ⇒ gửi như cũ.
+(function () {
+  try {
+    if (!window.__acBoc && window.fetch) {
+      window.__acBoc = true;
+      var gocFetch = window.fetch;
+      var HOST_AC = /^https:\/\/(firestore|firebasestorage)\.googleapis\.com\//;
+      window.fetch = function (vao, tuyChon) {
+        try {
+          var url = typeof vao === 'string' ? vao : (vao && vao.url) || '';
+          if (HOST_AC.test(url)) {
+            var o = JSON.parse(localStorage.getItem('awc_ac') || 'null');
+            if (o && o.t && o.het > Date.now() + 60000) {
+              if (typeof vao === 'string') {
+                tuyChon = Object.assign({}, tuyChon || {});
+                var h = new Headers(tuyChon.headers || {});
+                if (!h.has('X-Firebase-AppCheck')) h.set('X-Firebase-AppCheck', o.t);
+                tuyChon.headers = h;
+              } else if (!vao.headers.has('X-Firebase-AppCheck')) {
+                var h2 = new Headers(vao.headers); h2.set('X-Firebase-AppCheck', o.t);
+                vao = new Request(vao, { headers: h2 });
+              }
+            }
+          }
+        } catch (e) { /* hỏng gì cũng gửi như cũ */ }
+        return gocFetch.call(this, vao, tuyChon);
+      };
+    }
+  } catch (e) { /* im lặng */ }
+})();
 (function () {
   try {
     var C = window.MYLESSON_CONFIG || {};

@@ -2540,11 +2540,10 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .dk-hang > :nth-child(1){grid-column:1/-1}
 }
 /* 🚨 27/09/2026 — NÚT + DẢI + HỘP KHẨN CẤP (sau tấn công Tr0ngX) */
-.kc-nut{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; margin-right:8px;
-  background:#fff; border:1.5px solid #f3c4c4; color:#c62828; font-size:20px; cursor:pointer}
-.kc-nut:hover{background:#fdecec}
-.kc-nut.bat{background:#d32f2f; border-color:#d32f2f; color:#fff; animation:kcNhay 1.2s ease-in-out infinite}
-@keyframes kcNhay{50%{box-shadow:0 0 0 6px rgba(211,47,47,.25)}}
+/* mục "Khẩn cấp" ở cột trái (js/nw-thanh.js) + menu ☰ (#sbKhanCap): đỏ + nhấp nháy khi đang bật */
+.nwb-ql-muc.kc-dang, #sbKhanCap.kc-dang{background:#fdecec; color:#c62828; font-weight:700; animation:kcNhay 1.2s ease-in-out infinite}
+@keyframes kcNhay{50%{box-shadow:inset 0 0 0 2px rgba(211,47,47,.55)}}
+#sbKhanCap .ic svg{stroke:#D32F2F}
 #khanCapDai{background:#d32f2f; color:#fff; font-weight:700; text-align:center; padding:8px 16px; font-size:14px; cursor:pointer}
 #khanCapDai[hidden]{display:none}
 .kc-nen{position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:9000; display:grid; place-items:center; padding:16px}
@@ -2584,7 +2583,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   <div class="nwb-in">
     <div class="nwb-trai"><button class="nwb-av" id="nwbAv" title="Trang cá nhân"><img src="assets/avatar-tron.jpg" alt=""></button></div>
     <nav class="nwb-tabs"></nav>
-    <div class="nwb-phai"><button class="kc-nut" id="khanCapNut" type="button" title="Khẩn cấp: khoá chat / khoá điểm khi bị tấn công" aria-label="Khẩn cấp">🚨</button><button class="nwb-menu" id="moSb" title="Menu quản lý" aria-label="Menu quản lý"></button><span id="ver" hidden></span></div>
+    <div class="nwb-phai"><button class="nwb-menu" id="moSb" title="Menu quản lý" aria-label="Menu quản lý"></button><span id="ver" hidden></span></div>
   </div>
 </header>
 <div id="khanCapDai" hidden></div>
@@ -2729,6 +2728,11 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       <!-- ⭐ v1.52.0 (gói bảo mật C) — PHIÊN THẦY trên Firebase Auth: luật kho nay đòi
            phiên này mới GHI được (hạn/ẩn/xoá thẻ · thẻ nghỉ · kho quà · xoá tin · tin THẦY).
            Trong app myLesson phiên được app tiêm sẵn; ngoài app bấm nút này → Google. -->
+      <!-- 🚨 27/09/2026 — KHẨN CẤP (khoá chat / khoá điểm). Cùng hộp với mục "Khẩn cấp" ở cột trái. -->
+      <button class="sb-item" id="sbKhanCap" title="Khoá chat / khoá ghi điểm khi bị tấn công">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
+        <span class="chu"><span class="ten" id="sbKhanCapChu">Khẩn cấp</span></span>
+      </button>
       <button class="sb-item" id="thayDn" title="Phiên ghi kho của thầy">
         <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
         <span class="chu"><span class="ten" id="thayDnChu">Đang kiểm phiên thầy…</span></span>
@@ -2963,7 +2967,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=134"></script>
+<script src="config.js?v=135"></script>
 <script src="js/chung.js?v=62"></script>
 <script src="js/chat.js?v=24"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -9573,11 +9577,12 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   }
   function veKhanCap() {
     var bat = KHAN_CAP.khoaChat || KHAN_CAP.khoaDiem;
-    var n = $('#khanCapNut');
-    if (n) {
-      n.classList.toggle('bat', bat);
-      n.title = bat ? 'KHẨN CẤP: ' + chuKhanCap() + ' — bấm để xem / mở lại' : 'Khẩn cấp: khoá chat / khoá điểm khi bị tấn công';
-    }
+    document.querySelectorAll('.nwb-ql-muc[data-muc="khanCap"], #sbKhanCap').forEach(function (n) {
+      n.classList.toggle('kc-dang', bat);
+      n.title = bat ? 'KHẨN CẤP: ' + chuKhanCap() + ' — bấm để xem / mở lại' : 'Khoá chat / khoá ghi điểm khi bị tấn công';
+    });
+    var chuSb = $('#sbKhanCapChu');
+    if (chuSb) chuSb.textContent = bat ? 'ĐANG KHẨN CẤP' : 'Khẩn cấp';
     var dai = $('#khanCapDai');
     if (dai) {
       dai.hidden = !bat;
@@ -9626,9 +9631,10 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     });
   }
   (function () {
-    var n = $('#khanCapNut'), dai = $('#khanCapDai');
+    var n = $('#sbKhanCap'), dai = $('#khanCapDai');
     if (n) n.onclick = moHopKhanCap;
     if (dai) dai.onclick = moHopKhanCap;
+    window.qlMoKhanCap = moHopKhanCap;     // mục "Khẩn cấp" cột trái (js/nw-thanh.js) gọi
     if (window.AWChat && AWChat.ngheKhanCap) AWChat.ngheKhanCap(function (k) { KHAN_CAP = k; veKhanCap(); });
   })();
   function veThayDn() {
@@ -9819,6 +9825,6 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   else moCong();
 })();
 </script>
-<script src="js/nw-thanh.js?v=7"></script>
+<script src="js/nw-thanh.js?v=8"></script>
 </body>
 </html>

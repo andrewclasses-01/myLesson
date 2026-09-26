@@ -151,6 +151,7 @@
     baoCao: P2('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>'),
     an: P2('<path d="M17.9 17.9A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a20 20 0 0 1 5.1-6"/><path d="M9.9 4.2A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a20 20 0 0 1-2.2 3.2"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><line x1="1" y1="1" x2="23" y2="23"/>'),
     tuCam: P2('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'),
+    khanCap: P2('<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'),   // 27/09/2026 — nút KHẨN CẤP (dashboard window.qlMoKhanCap)
     lop: P2('<path d="M3 10.8 12 6l9 4.8-9 4.8z"/><path d="M6.5 12.6v4.4c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5v-4.4"/><path d="M21 10.8V16"/>')
   };
   // thầy 24/09: cột trái kiểu Facebook — không khung, dòng đầu = avatar + tên, icon to có MÀU riêng, nhóm ngăn bằng vạch mảnh
@@ -159,6 +160,7 @@
     { nhom: 'Bài tập', vach: true },
     { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap, mau: '#0E7C6E' },
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, mau: '#F0821E' },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
+    { ma: 'khanCap', chu: 'Khẩn cấp', ic: ICQ.khanCap, mau: '#D32F2F' },   // 27/09/2026 — hộp khoá chat/điểm (dashboard window.qlMoKhanCap)
     { nhom: 'Network', vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, mau: '#3E7BFA', mo: 'Lập và quản lý nhóm chat các lớp' },
     { ma: 'baiDang', chu: 'Bài đăng', ic: IC.bangTin, mau: '#18A957', mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
@@ -186,6 +188,7 @@
     var ma = b.getAttribute('data-muc');
     if (ma === 'baiTap') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     if (ma === 'dangKy' && window.qlMoDangKy) { window.qlMoDangKy(); return; }
+    if (ma === 'khanCap') { if (window.qlMoKhanCap) window.qlMoKhanCap(); return; }
     moSap(ma);
   });
 })();

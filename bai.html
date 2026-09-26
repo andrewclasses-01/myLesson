@@ -659,8 +659,10 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    lời nhắc đỏ. Mọi dạng bài; bài CHỈ có worksheet thì bảng tự mở sẵn.
    ⛔ Bảng nằm NGOÀI `.top` (đặt ở <body>): `.top` có backdrop-filter ⇒ `position:fixed` bên
    trong sẽ neo theo header chứ không theo màn hình (bẫy "fixed trong .glass"). */
-.cot-phai{display:flex; align-items:center; gap:14px; min-width:0}
+.cot-phai{display:flex; align-items:center; min-width:0}
 .cot-phai .dau-bai{margin-left:auto}
+/* v1.155.1 — khối WORKSHEET đứng CHUNG cụm giữa (◀ + ô hạn + WORKSHEET) ⇒ cả cụm chính giữa thanh */
+.giua{gap:14px}
 .wsb{position:relative; flex:none; height:57px; display:flex; align-items:center; gap:10px;
   padding:0 12px 0 9px; border-radius:13px; background:var(--amber-soft); border:1px solid #EBD3A6;
   cursor:pointer; text-align:left; font:inherit; color:inherit;
@@ -738,17 +740,17 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .wsb{height:50px; padding:0 8px; gap:0}
   .wsb .wsb-chu,.wsb .wsb-mui{display:none}
   .wsb .wsb-so-gon{display:block}
-  .cot-phai{gap:10px}
+  .giua{gap:10px}
 }
 @media (max-width:620px){
   .wsb{height:44px; padding:0 6px; border-radius:10px}
   .wsb-giay{width:26px; height:34px}
   .wsb-giay i{width:22px; height:31px}
   .wsb-cham{width:12px; height:12px; top:-4px; right:-4px}
-  .cot-phai{gap:6px}
+  .giua{gap:6px}
   /* khối worksheet ăn ~46px của cột phải ⇒ mã lesson nhỏ lại (đo 390px: cần 72px, còn 67px) */
-  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ma{font-size:8.6px; letter-spacing:-.02em}
-  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11.8px}
+  .top-in:has(.wsb:not([hidden])) .dau-bai .db-ma{font-size:8.6px; letter-spacing:-.02em}
+  .top-in:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11.8px}
   /* bảng thành tấm trượt từ đáy */
   .wsp{left:0 !important; right:0; top:auto !important; bottom:0; width:auto; max-height:86vh; z-index:45;
     border-radius:18px 18px 0 0; padding:14px 14px 20px; transform:translateY(30px)}
@@ -761,9 +763,9 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .wsb{padding:0 4px}
   .wsb-giay{width:23px}
   .wsb-giay i{width:20px; height:29px}
-  .cot-phai{gap:4px}
-  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ma{font-size:7.9px; letter-spacing:-.03em}
-  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11px}
+  .giua{gap:5px}
+  .top-in:has(.wsb:not([hidden])) .dau-bai .db-ma{font-size:7.9px; letter-spacing:-.03em}
+  .top-in:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11px}
 }
 /* Khối VIDEO Drive (bài cũ) — khung 16:9 */
 .video-khung{position:relative; border-radius:14px; overflow:hidden; background:#000; padding-top:56.25%}
@@ -1918,6 +1920,9 @@ body.mo-menu .side.trai{transform:none}
           </div>
         </div>
       </div>
+      <!-- ⭐ v1.155.0 khối WORKSHEET (ẩn khi bài không có worksheet — `veWsThanh`). v1.155.1 (thầy chốt
+           26/09): nằm CHUNG cụm giữa với ◀ + ô hạn ⇒ cả cụm đứng chính giữa thanh. -->
+      <button type="button" class="wsb" id="wsThanh" hidden></button>
       <!-- ⭐ WORDS đợt 3 — pop-up hỏi lại phải nằm NGOÀI `.han-khoi`: khối đó có
            `clip-path` để mũi tên ◀ liền một miếng (đợt 5), mà clip-path CẮT LUÔN
            phần tử con thò ra ngoài ⇒ trước đây pop-up bị xén mất. Nó vốn đã neo
@@ -1932,10 +1937,8 @@ body.mo-menu .side.trai{transform:none}
       </div>
     </div>
 
-    <!-- PHẢI: ⭐ v1.155.0 khối WORKSHEET (sát ô hạn, ẩn khi bài không có worksheet — `veWsThanh`)
-         + tên thẻ bài tập bên trang chính + mã lesson -->
+    <!-- PHẢI: tên thẻ bài tập bên trang chính + mã lesson -->
     <div class="cot-phai">
-      <button type="button" class="wsb" id="wsThanh" hidden></button>
       <div class="dau-bai">
         <div class="db-ten"></div>
         <div class="db-ma"></div>
@@ -2008,7 +2011,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=132"></script>
+<script src="config.js?v=133"></script>
 <script src="js/chung.js?v=62"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3705,7 +3708,8 @@ function wsMoBang(mo){
 }
 function wsDatViTriBang(){
   var bang = $('#wsBang'), r = $('#wsThanh').getBoundingClientRect();
-  var trai = Math.min(r.left, window.innerWidth - bang.offsetWidth - 14);
+  /* v1.155.1 — khối đã ở giữa thanh ⇒ bảng canh giữa ngay dưới khối, chạm mép thì dừng ở mép */
+  var trai = Math.min(r.left + r.width / 2 - bang.offsetWidth / 2, window.innerWidth - bang.offsetWidth - 14);
   bang.style.left = Math.max(14, trai) + 'px';
   bang.style.top = Math.round(r.bottom + 10) + 'px';
 }

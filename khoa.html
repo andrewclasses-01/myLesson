@@ -709,9 +709,9 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=133"></script>
+<script src="config.js?v=134"></script>
 <script src="js/chung.js?v=62"></script>
-<script src="js/chat.js?v=23"></script>
+<script src="js/chat.js?v=24"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
@@ -1607,6 +1607,21 @@ function danhDauDocChat(){
   A.danhDauDaXem(LOP_DL, MA_HS, l);
   A.veChamDo(false);
 }
+/* 🚨 27/09/2026 — CÔNG TẮC KHẨN CẤP (js/chat.js khối "CÔNG TẮC KHẨN CẤP"): thầy khoá chat
+   mọi lớp ⇒ ô nhắn chỉ đọc + chữ báo, nút gửi tắt. Mở khoá là tự trở lại, không cần tải trang. */
+var KHAN_CAP_CHAT = false;
+(function(){
+  if (!window.AWChat || !AWChat.ngheKhanCap) return;
+  var goc = $('#oChat').placeholder;
+  AWChat.ngheKhanCap(function(k){
+    KHAN_CAP_CHAT = k.khoaChat;
+    var o = $('#oChat');
+    o.placeholder = k.khoaChat ? 'Chat đang tạm khoá, em quay lại sau nhé.' : goc;
+    o.readOnly = k.khoaChat;
+    $('#nutGui').disabled = k.khoaChat;
+  });
+})();
+
 function noiChat(){
   TIN_CU = []; hetCu = false; dangTaiCu = false;
   khung.innerHTML = '<div class="chat-cho">Đang mở phòng trò chuyện…</div>';
@@ -1810,6 +1825,7 @@ function guiTin(){
   var o = $('#oChat');
   var chu = o.value.trim();
   if (!chu) return;
+  if (KHAN_CAP_CHAT) { baoToast('Chat đang tạm khoá, em quay lại sau nhé.'); return; }   /* 🚨 27/09/2026 */
   o.disabled = true;
   AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu })
     .then(function(){ o.value = ''; noOChat(); })

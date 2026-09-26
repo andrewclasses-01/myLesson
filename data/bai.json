@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-26 19:45:54",
+  "capNhat": "2026-09-26 21:58:37",
   "bai": {
     "A1C": [
       {
@@ -2368,6 +2368,47 @@
       }
     ],
     "B1B": [
+      {
+        "id": "B1B_26.9_DICTS_LSB1-S1.T1.P2",
+        "tieuDe": "B1B_26.9_DICTS LSB1-S1.T1.P2",
+        "tenHien": "B1B_26.9_DICTS LSB1-S1.T1.P2",
+        "dang": "DICTS",
+        "ngay": "26.9",
+        "han": "2026-09-30T19:30",
+        "maLesson": "LSB1-S1.T1.P2",
+        "taoLuc": "2026-09-26",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSB1-S1.T1.P2",
+            "o": 0,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB1B%2FB1B_26.9_DICTS_LSB1-S1.T1.P2%2F0.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "g9qu7b",
+            "mau": "A SHOW SPEED"
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S1.T1.P2"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSB1-S1.T1.P2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "e66wcu",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "B1B_19.9_STAGE_LSB1-S1.T1.P2",
         "tieuDe": "B1B_19.9_STAGE LSB1-S1.T1.P2",

@@ -651,6 +651,120 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   color:#fff; font:800 13px/1 var(--sans); cursor:pointer}
 .ws-lb-nut button.chinh{background:var(--accent); border-color:var(--accent)}
 .ws-lb-chu{color:#fff; font-weight:700; font-size:13px}
+
+/* ⭐⭐ v1.155.0 (thầy duyệt mẫu `myLesson - thiet ke worksheet thanh tren\mau-v1.html`, kiểu A,
+   26/09/2026) — WORKSHEET RỜI DÃY THẺ, LÊN THANH ĐẦU TRANG: khối nút gọn ngay bên phải ô hạn ◀
+   (ảnh giấy nhỏ + "WORKSHEET" + "x/N TRANG ĐÃ NỘP" + chấm đỏ khi còn thiếu). Bấm ⇒ BẢNG THẢ XUỐNG
+   chứa nguyên thẻ worksheet cũ (tải PDF + nộp ảnh, không đổi luồng) + dải XEM TRƯỚC từng trang +
+   lời nhắc đỏ. Mọi dạng bài; bài CHỈ có worksheet thì bảng tự mở sẵn.
+   ⛔ Bảng nằm NGOÀI `.top` (đặt ở <body>): `.top` có backdrop-filter ⇒ `position:fixed` bên
+   trong sẽ neo theo header chứ không theo màn hình (bẫy "fixed trong .glass"). */
+.cot-phai{display:flex; align-items:center; gap:14px; min-width:0}
+.cot-phai .dau-bai{margin-left:auto}
+.wsb{position:relative; flex:none; height:57px; display:flex; align-items:center; gap:10px;
+  padding:0 12px 0 9px; border-radius:13px; background:var(--amber-soft); border:1px solid #EBD3A6;
+  cursor:pointer; text-align:left; font:inherit; color:inherit;
+  filter:drop-shadow(0 1px 2px rgba(22,35,42,.10)) drop-shadow(0 6px 16px rgba(22,35,42,.10));
+  transition:transform .16s var(--em), background .16s, border-color .16s}
+.wsb[hidden]{display:none}
+.wsb:hover{transform:translateY(-1px)}
+.wsb.mo{background:#fff; border-color:var(--accent)}
+.wsb-giay{position:relative; width:32px; height:42px; flex:none}
+.wsb-giay i{position:absolute; width:28px; height:39px; border-radius:3px; background:#fff center top/cover no-repeat;
+  border:1px solid #D9CBAE; box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.wsb-giay i:nth-child(1){left:4px; top:0; transform:rotate(6deg)}
+.wsb-giay i:nth-child(2){left:0; top:3px; transform:rotate(-4deg)}
+/* chưa có ảnh xem trước (PDF đang tải / không có file) ⇒ giấy trắng kẻ dòng */
+.wsb-giay i.trang{background-image:repeating-linear-gradient(#fff 0 5px, #E7DECC 5px 6px); background-size:70% 100%;
+  background-position:center 6px; background-color:#fff}
+.wsb-chu{display:flex; flex-direction:column; gap:2px; line-height:1}
+.wsb-nhan{font-size:11px; font-weight:800; letter-spacing:.06em; color:#9A6A12; white-space:nowrap}
+.wsb-so{font-size:16px; font-weight:800; color:var(--ink); white-space:nowrap; font-variant-numeric:tabular-nums}
+.wsb-so small{font-size:11px; font-weight:700; color:var(--muted); letter-spacing:.04em}
+.wsb-mui{width:14px; height:14px; flex:none; stroke:#9A6A12; stroke-width:2.6; fill:none; stroke-linecap:round; stroke-linejoin:round;
+  transition:transform .2s var(--em)}
+.wsb.mo .wsb-mui{transform:rotate(180deg)}
+.wsb-cham{position:absolute; top:-5px; right:-5px; width:14px; height:14px; border-radius:50%;
+  background:var(--m-do); border:2.5px solid #fff; animation:wsb-dap 1.6s ease-in-out infinite}
+@keyframes wsb-dap{0%,100%{transform:scale(1)} 50%{transform:scale(1.25)}}
+.wsb-so-gon{display:none; position:absolute; left:50%; bottom:-7px; transform:translateX(-50%); font:800 10px/1 var(--sans);
+  background:var(--ink); color:#fff; padding:3px 6px; border-radius:99px; white-space:nowrap}
+.wsb.cho .wsb-so{color:#C2410C}
+.wsb.du{background:#E6F6EC; border-color:#A9DDBC}
+.wsb.du .wsb-nhan{color:#157A43}
+.wsb.du .wsb-mui{stroke:#157A43}
+.wsb.du .wsb-so{color:#157A43}
+.wsb.du .wsb-so-gon{background:#157A43}
+.wsb.du .wsb-cham,.wsb.xem-nhu .wsb-cham{display:none}
+@media (prefers-reduced-motion:reduce){.wsb-cham{animation:none}}
+
+.wsp{position:fixed; z-index:37; width:min(660px, calc(100vw - 28px)); max-height:calc(100vh - 100px); overflow:auto;
+  background:var(--surface); border:1px solid var(--line); border-radius:16px;
+  box-shadow:0 18px 48px rgba(22,35,42,.22); padding:16px 18px 18px;
+  opacity:0; transform:translateY(-8px); pointer-events:none; visibility:hidden;
+  transition:opacity .2s, transform .22s var(--em), visibility 0s linear .22s}
+.wsp.mo{opacity:1; transform:none; pointer-events:auto; visibility:visible; transition:opacity .2s, transform .22s var(--em)}
+.wsp-nen{display:none}
+/* thẻ worksheet cũ đặt TRONG bảng: bỏ vỏ thẻ (bảng đã là vỏ) + bỏ ô số thứ tự */
+.wsp .ws-card{border:0; box-shadow:none; padding:0; background:none; border-radius:0}
+.wsp .ws-card[hidden]{display:none}
+.wsp .ws-card .step{display:none}
+.wsp .ws-o-luoi{grid-template-columns:repeat(auto-fill, minmax(120px, 1fr))}
+.wsp-dong{width:34px; height:34px; border-radius:9px; display:grid; place-items:center; color:var(--muted); flex:none}
+.wsp-dong:hover{background:var(--ground)}
+.wsp-dong svg{width:16px; height:16px; stroke:currentColor; stroke-width:2.4; fill:none; stroke-linecap:round}
+.wsp-tab{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px}
+.wsp-tab button{padding:6px 12px; border-radius:99px; font-size:11.5px; font-weight:800; letter-spacing:.03em;
+  border:1px solid var(--line); background:var(--ground); color:var(--muted)}
+.wsp-tab button.chon{background:var(--accent); border-color:var(--accent); color:#fff}
+.wsp-tab button .so{opacity:.8; margin-left:4px}
+.wsp-xt{margin-bottom:14px}
+.wsp-xt > b{display:block; font-size:12px; letter-spacing:.06em; margin-bottom:8px; color:var(--muted)}
+.wsp-xt-hang{display:flex; gap:10px; overflow-x:auto; padding:2px 2px 4px}
+.wsp-xt-hang button{flex:none; width:84px; aspect-ratio:210/297; border-radius:8px; border:1px solid var(--line);
+  background:#fff center top/cover no-repeat; box-shadow:0 1px 3px rgba(0,0,0,.08); position:relative; cursor:zoom-in;
+  transition:transform .15s, box-shadow .15s}
+.wsp-xt-hang button:hover{transform:translateY(-2px); box-shadow:var(--shadow)}
+.wsp-xt-hang button span{position:absolute; left:50%; bottom:5px; transform:translateX(-50%); font:800 9.5px/1 var(--sans);
+  background:rgba(255,255,255,.92); padding:3px 6px; border-radius:99px; color:var(--muted); white-space:nowrap}
+.wsp-xt-cho{font-size:12px; color:var(--muted); font-weight:600}
+/* lời nhắc thầy chốt 26/09: nộp online CHỈ khi vắng buổi học */
+.wsp-luu-y{display:flex; align-items:center; gap:10px; margin:0 0 12px; padding:10px 14px; border-radius:12px;
+  background:#FDECEC; border:1px solid #F3CACA; color:#B03A3E; font-size:12.5px; font-weight:800; letter-spacing:.02em; line-height:1.35}
+.wsp-luu-y svg{width:20px; height:20px; flex:none; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round}
+/* bài / chặng không còn thẻ nào ngoài worksheet ⇒ lời chỉ đường thay chỗ trống */
+.ws-chi-nhac{text-align:center; padding:34px 20px; color:var(--muted); font-weight:700; font-size:14px}
+@media (max-width:980px){
+  .wsb{height:50px; padding:0 8px; gap:0}
+  .wsb .wsb-chu,.wsb .wsb-mui{display:none}
+  .wsb .wsb-so-gon{display:block}
+  .cot-phai{gap:10px}
+}
+@media (max-width:620px){
+  .wsb{height:44px; padding:0 6px; border-radius:10px}
+  .wsb-giay{width:26px; height:34px}
+  .wsb-giay i{width:22px; height:31px}
+  .wsb-cham{width:12px; height:12px; top:-4px; right:-4px}
+  .cot-phai{gap:6px}
+  /* khối worksheet ăn ~46px của cột phải ⇒ mã lesson nhỏ lại (đo 390px: cần 72px, còn 67px) */
+  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ma{font-size:8.6px; letter-spacing:-.02em}
+  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11.8px}
+  /* bảng thành tấm trượt từ đáy */
+  .wsp{left:0 !important; right:0; top:auto !important; bottom:0; width:auto; max-height:86vh; z-index:45;
+    border-radius:18px 18px 0 0; padding:14px 14px 20px; transform:translateY(30px)}
+  .wsp.mo{transform:none}
+  .wsp-nen.mo{display:block; position:fixed; inset:0; z-index:44; background:rgba(10,18,20,.38)}
+  .wsp .ws-o-luoi{grid-template-columns:repeat(2, 1fr)}
+}
+@media (max-width:380px){
+  /* Android 360px: cột phải chỉ ~100px — khối + mã lesson cùng bóp (đo: mã cần 63px, còn 56px) */
+  .wsb{padding:0 4px}
+  .wsb-giay{width:23px}
+  .wsb-giay i{width:20px; height:29px}
+  .cot-phai{gap:4px}
+  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ma{font-size:7.9px; letter-spacing:-.03em}
+  .cot-phai:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11px}
+}
 /* Khối VIDEO Drive (bài cũ) — khung 16:9 */
 .video-khung{position:relative; border-radius:14px; overflow:hidden; background:#000; padding-top:56.25%}
 .video-khung iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
@@ -1818,10 +1932,14 @@ body.mo-menu .side.trai{transform:none}
       </div>
     </div>
 
-    <!-- PHẢI: tên thẻ bài tập bên trang chính + mã lesson -->
-    <div class="dau-bai">
-      <div class="db-ten"></div>
-      <div class="db-ma"></div>
+    <!-- PHẢI: ⭐ v1.155.0 khối WORKSHEET (sát ô hạn, ẩn khi bài không có worksheet — `veWsThanh`)
+         + tên thẻ bài tập bên trang chính + mã lesson -->
+    <div class="cot-phai">
+      <button type="button" class="wsb" id="wsThanh" hidden></button>
+      <div class="dau-bai">
+        <div class="db-ten"></div>
+        <div class="db-ma"></div>
+      </div>
     </div>
 
   </div>
@@ -1834,6 +1952,11 @@ body.mo-menu .side.trai{transform:none}
     <div class="st-bar" id="thanhBtKhoa"></div>
   </div>
 </header>
+
+<!-- ⭐ v1.155.0 — bảng WORKSHEET thả xuống (máy tính) / trượt từ đáy (điện thoại). ⛔ Phải nằm NGOÀI
+     `.top` — xem chú thích CSS `.wsp`. -->
+<div class="wsp-nen" id="wsNen"></div>
+<div class="wsp" id="wsBang" role="dialog" aria-label="Worksheet"></div>
 
 <div class="wrap main">
 
@@ -1885,7 +2008,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=131"></script>
+<script src="config.js?v=132"></script>
 <script src="js/chung.js?v=62"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3140,6 +3263,7 @@ function wsVeLuoi(sec, k){
   wsGanKeo(sec, k);
   wsVeThongBao(sec, k);
   wsVeNutNop(sec, k);
+  wsCapNhatThanh();   // v1.155.0 — số x/N + màu của khối WORKSHEET trên thanh đầu trang
 }
 /* ⭐ Dòng hướng dẫn tĩnh cũ nay là THÔNG BÁO ĐỦ/THIẾU sống (thầy chốt "chuyển từ
    dưới lên trên", bỏ hẳn khối cảnh báo rời + bỏ luôn pill "ĐÃ NỘP x/y"). */
@@ -3452,6 +3576,220 @@ function veKhoiWs(k, so){
   }
   return sec;
 }
+
+/* ============================================================================
+   ⭐⭐ v1.155.0 (thầy duyệt mẫu v1 kiểu A, 26/09/2026) — WORKSHEET TRÊN THANH ĐẦU TRANG.
+   Thẻ worksheet rời dãy thẻ (mọi dạng bài) ⇒ khối nút `#wsThanh` bên phải ô hạn ◀ + bảng
+   `#wsBang` (thả xuống / trượt từ đáy ở điện thoại). Trong bảng là NGUYÊN thẻ `veKhoiWs`
+   cũ — luồng chọn → NỘP BÀI, HỦY, kéo-thả, lightbox, `WS_NOP`/`WS_CHO` KHÔNG đổi — chỉ bọc
+   thêm: nút ✕, dải XEM TRƯỚC (pdf.js vẽ từ PDF trên kho — cần CORS bucket, đặt 26/09 bằng
+   `app/tools/dat-cors-storage.js`), lời nhắc đỏ, và tab khi bài có ≥2 worksheet.
+   Bảng dựng MỘT lần mỗi bài (`WS_THANH.khoa`) — `veCacPhan` chạy lại (đổi chặng, làm mới)
+   không đụng tới, nên em đang chọn/kéo dở không bị vẽ lại mất.
+   Bài không còn thẻ nào ngoài worksheet ⇒ thẻ chỉ đường + bảng TỰ MỞ một lần.
+   ========================================================================== */
+var WS_THANH = { khoa: '', ds: [], tab: 0, mo: false, tuMo: false, anh: null };
+var WS_XT = {};            // url PDF -> Promise<[dataURL từng trang]> (ảnh xem trước, vẽ một lần)
+var IC_DONG_WS = '<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+var IC_LUU_Y_WS = '<svg viewBox="0 0 24 24"><path d="M12 3 2 20h20z"/><path d="M12 10v4M12 17h.01"/></svg>';
+var IC_MUI_WS = '<svg class="wsb-mui" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></svg>';
+
+function wsTheChiDuong(html){
+  var sec = document.createElement('section');
+  sec.className = 'card ws-chi-nhac';
+  sec.innerHTML = '<div>' + html + '</div>';
+  return sec;
+}
+function wsDaNop(k){
+  var da = 0, tr = ((WS_NOP[k.o] || {}).trang) || {};
+  Object.keys(tr).forEach(function(kk){ if (tr[kk] && tr[kk].url && !tr[kk].huy) da++; });
+  return da;
+}
+function veWsThanh(hop){
+  var nut = $('#wsThanh');
+  var ds = KHOI.filter(function(k){ return k.loai === 'ws'; });
+  if (!ds.length) { nut.hidden = true; if (WS_THANH.mo) wsMoBang(false); WS_THANH.khoa = ''; return; }
+  nut.hidden = false;
+  var khoa = BAI.id + '|' + ds.map(function(k){ return k.o + ':' + k.tep + ':' + k.soTrang + ':' + k.ten; }).join(',');
+  if (WS_THANH.khoa !== khoa) { WS_THANH.khoa = khoa; wsDungBang(ds); }
+  wsCapNhatThanh();
+  if (!hop.querySelector('.card')) {
+    hop.appendChild(wsTheChiDuong('Bài này là bài <b>WORKSHEET</b> — bấm khối WORKSHEET ở đầu trang để tải bài và nộp bài làm.'));
+    if (!WS_THANH.tuMo) { WS_THANH.tuMo = true; setTimeout(function(){ wsMoBang(true); }, 250); }
+  }
+  /* Ảnh giấy trên khối + dải xem trước: nạp NGẦM sau khi trang yên (PDF ~vài trăm KB). */
+  setTimeout(function(){ ds.forEach(function(k){ wsNapXemTruoc(k); }); }, 1500);
+}
+function wsDungBang(ds){
+  var bang = $('#wsBang');
+  bang.innerHTML = '';
+  WS_THANH.ds = ds;
+  if (WS_THANH.tab > ds.length - 1) WS_THANH.tab = 0;
+  if (ds.length > 1) {
+    var tab = document.createElement('div');
+    tab.className = 'wsp-tab';
+    tab.onclick = function(e){
+      var b = e.target.closest('[data-tab]'); if (!b) return;
+      WS_THANH.tab = +b.dataset.tab;
+      Array.prototype.forEach.call(bang.querySelectorAll('.ws-card'), function(s, i){ s.hidden = i !== WS_THANH.tab; });
+      wsCapNhatThanh();
+    };
+    bang.appendChild(tab);
+  }
+  ds.forEach(function(k, i){
+    var sec = veKhoiWs(k, 0);
+    sec.hidden = i !== WS_THANH.tab;
+    /* nút ✕ cuối đầu thẻ */
+    var nutDong = document.createElement('button');
+    nutDong.type = 'button'; nutDong.className = 'wsp-dong'; nutDong.title = 'Đóng';
+    nutDong.innerHTML = IC_DONG_WS;
+    nutDong.onclick = function(){ wsMoBang(false); };
+    sec.querySelector('.card-nut').appendChild(nutDong);
+    /* dải XEM TRƯỚC + lời nhắc, chen giữa đầu thẻ và khu NỘP BÀI LÀM */
+    var than = sec.querySelector('.than');
+    if (k.tep) {
+      var xt = document.createElement('div');
+      xt.className = 'wsp-xt';
+      xt.innerHTML = '<b>XEM TRƯỚC BÀI TẬP</b><div class="wsp-xt-hang"><span class="wsp-xt-cho">Đang tải xem trước…</span></div>';
+      xt.onclick = function(e){
+        var b = e.target.closest('[data-trang]'); if (!b) return;
+        wsXemTrangTo(k, +b.dataset.trang);
+      };
+      sec.insertBefore(xt, than);
+    }
+    var ly = document.createElement('div');
+    ly.className = 'wsp-luu-y';
+    ly.innerHTML = IC_LUU_Y_WS + '<span>CHỈ NỘP BÀI ONLINE KHI EM KHÔNG THAM GIA ĐƯỢC BUỔI HỌC!</span>';
+    sec.insertBefore(ly, than);
+    bang.appendChild(sec);
+  });
+}
+/* Số trên khối + tab. Gọi sau mọi lần lưới nộp vẽ lại (`wsVeLuoi`). */
+function wsCapNhatThanh(){
+  var nut = $('#wsThanh'), ds = WS_THANH.ds;
+  if (!nut || nut.hidden || !ds.length) return;
+  var nop = 0, can = 0, cho = 0, du = true;
+  ds.forEach(function(k){
+    var n = Math.max(1, +k.soTrang || 1), da = wsDaNop(k);
+    nop += Math.min(da, n); can += n;
+    cho += Object.keys(WS_CHO[k.o] || {}).length;
+    if (da < n) du = false;
+  });
+  var anh = WS_THANH.anh || [];
+  var giay = [anh[1] || anh[0], anh[0]].map(function(a){
+    return a ? '<i style="background-image:url(' + a + ')"></i>' : '<i class="trang"></i>';
+  }).join('');
+  var so = (du ? '✓ ' : '') + nop + '/' + can;
+  var nho = du ? 'ĐÃ NỘP' : (cho ? 'CHƯA BẤM NỘP' : 'TRANG ĐÃ NỘP');
+  nut.className = 'wsb' + (du ? ' du' : (cho ? ' cho' : '')) + (WS_THANH.mo ? ' mo' : '') + (wsKhoaNop() ? ' xem-nhu' : '');
+  nut.title = 'Worksheet: tải bài tập + nộp bài làm';
+  nut.innerHTML = '<span class="wsb-giay">' + giay + '</span>' +
+    '<span class="wsb-chu"><span class="wsb-nhan">' + (ds.length > 1 ? ds.length + ' WORKSHEETS' : 'WORKSHEET') + '</span>' +
+    '<span class="wsb-so">' + so + ' <small>' + nho + '</small></span></span>' +
+    IC_MUI_WS + '<span class="wsb-cham"></span><span class="wsb-so-gon">' + nop + '/' + can + '</span>';
+  var tab = document.querySelector('#wsBang .wsp-tab');
+  if (tab) tab.innerHTML = ds.map(function(k, i){
+    return '<button type="button" data-tab="' + i + '" class="' + (i === WS_THANH.tab ? 'chon' : '') + '">' + chuAnToan(k.ten) +
+      '<span class="so">' + Math.min(wsDaNop(k), Math.max(1, +k.soTrang || 1)) + '/' + Math.max(1, +k.soTrang || 1) + '</span></button>';
+  }).join('');
+}
+function wsMoBang(mo){
+  WS_THANH.mo = !!mo;
+  $('#wsBang').classList.toggle('mo', WS_THANH.mo);
+  $('#wsNen').classList.toggle('mo', WS_THANH.mo);
+  $('#wsThanh').classList.toggle('mo', WS_THANH.mo);
+  if (WS_THANH.mo) {
+    wsDatViTriBang();
+    WS_THANH.ds.forEach(function(k){ wsNapXemTruoc(k); });
+  }
+}
+function wsDatViTriBang(){
+  var bang = $('#wsBang'), r = $('#wsThanh').getBoundingClientRect();
+  var trai = Math.min(r.left, window.innerWidth - bang.offsetWidth - 14);
+  bang.style.left = Math.max(14, trai) + 'px';
+  bang.style.top = Math.round(r.bottom + 10) + 'px';
+}
+/* PDF của thầy → ảnh từng trang (cạnh ngang 760px, đủ cho cả ô nhỏ lẫn xem to). Một lần mỗi URL. */
+function wsVeTrangPdf(url){
+  if (WS_XT[url]) return WS_XT[url];
+  WS_XT[url] = wsNapPdfjs().then(function(pdfjs){
+    return fetch(url).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+      .then(function(buf){ return pdfjs.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise; });
+  }).then(function(doc){
+    var ra = [], chuoi = Promise.resolve();
+    for (var i = 1; i <= Math.min(doc.numPages, 12); i++) (function(so){
+      chuoi = chuoi.then(function(){ return doc.getPage(so); }).then(function(p){
+        var vp0 = p.getViewport({ scale: 1 });
+        var vp = p.getViewport({ scale: 760 / vp0.width });
+        var cv = document.createElement('canvas');
+        cv.width = Math.round(vp.width); cv.height = Math.round(vp.height);
+        return p.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise.then(function(){ ra.push(cv.toDataURL('image/jpeg', 0.8)); });
+      });
+    })(i);
+    return chuoi.then(function(){ return ra; });
+  });
+  WS_XT[url]['catch'](function(){ delete WS_XT[url]; });   // hỏng mạng ⇒ lần mở sau thử lại
+  return WS_XT[url];
+}
+function wsNapXemTruoc(k){
+  if (!k.tep) return;
+  wsVeTrangPdf(k.tep).then(function(ds){
+    if (k === WS_THANH.ds[0] && !WS_THANH.anh) { WS_THANH.anh = ds.slice(0, 2); wsCapNhatThanh(); }
+    var sec = document.querySelector('#wsBang .ws-card[data-ws-o="' + k.o + '"]');
+    var hang = sec && sec.querySelector('.wsp-xt-hang');
+    if (!hang || hang.getAttribute('data-xong')) return;
+    hang.setAttribute('data-xong', '1');
+    hang.innerHTML = ds.map(function(a, i){
+      return '<button type="button" data-trang="' + i + '" style="background-image:url(' + a + ')" title="Xem to trang ' + (i + 1) + '"><span>TRANG ' + (i + 1) + '</span></button>';
+    }).join('');
+  })['catch'](function(){
+    var sec = document.querySelector('#wsBang .ws-card[data-ws-o="' + k.o + '"]');
+    var xt = sec && sec.querySelector('.wsp-xt');
+    if (xt) xt.hidden = true;   // không vẽ được thì thôi — nút TẢI BÀI TẬP XUỐNG vẫn còn
+  });
+}
+function wsXemTrangTo(k, idx){
+  wsVeTrangPdf(k.tep).then(function(ds){
+    var cu = document.querySelector('.ws-lb'); if (cu) cu.remove();
+    var lb = document.createElement('div');
+    lb.className = 'ws-lb';
+    function ve(i){
+      i = Math.max(0, Math.min(ds.length - 1, i));
+      lb.innerHTML = '<div class="ws-lb-chu">' + chuAnToan(k.ten) + ' — TRANG ' + (i + 1) + '/' + ds.length + '</div>' +
+        '<img src="' + ds[i] + '" alt="">' +
+        '<div class="ws-lb-nut">' +
+          (i > 0 ? '<button type="button" data-v="truoc">◀ Trang trước</button>' : '') +
+          (i < ds.length - 1 ? '<button type="button" data-v="sau">Trang sau ▶</button>' : '') +
+          '<button type="button" data-v="dong">Đóng</button>' +
+        '</div>';
+      lb.onclick = function(e){
+        var b = e.target.closest('[data-v]');
+        if (!b) { if (e.target === lb) lb.remove(); return; }
+        if (b.dataset.v === 'truoc') ve(i - 1);
+        else if (b.dataset.v === 'sau') ve(i + 1);
+        else lb.remove();
+      };
+    }
+    ve(idx);
+    document.body.appendChild(lb);
+  });
+}
+$('#wsThanh').onclick = function(){ wsMoBang(!WS_THANH.mo); };
+$('#wsNen').onclick = function(){ wsMoBang(false); };
+/* Bấm ra ngoài thì đóng — trừ lightbox / hộp hỏi HỦY (hai thứ đó mở ra từ chính bảng). */
+document.addEventListener('pointerdown', function(e){
+  if (!WS_THANH.mo || matchMedia('(max-width:620px)').matches) return;   // điện thoại: đóng bằng nền mờ
+  if (e.target.closest('#wsBang, #wsThanh, .ws-lb, .ws-xn')) return;
+  wsMoBang(false);
+}, true);
+document.addEventListener('keydown', function(e){
+  if (e.key !== 'Escape' || !WS_THANH.mo) return;
+  var lb = document.querySelector('.ws-lb');
+  if (lb) { lb.remove(); return; }                         // Esc đóng lớp trên cùng trước
+  if (document.querySelector('.ws-xn')) return;
+  wsMoBang(false);
+});
+window.addEventListener('resize', function(){ if (WS_THANH.mo) wsDatViTriBang(); });
 
 /* PDF em chọn → mảng canvas từng trang (cạnh dài ~1600px), pdf.js nạp lười từ CDN. */
 function wsNapPdfjs(){
@@ -4134,9 +4472,12 @@ function veCacPhan(){
   document.body.classList.toggle('lop-thieu', thieu);
   var hop = $('#cacPhan');
   hop.innerHTML = '';
-  if (LA_KHOA) { veCacPhanKhoa(hop); veOHan(); return; }
-  if (LA_STAGE) { veCacPhanStage(hop); veOHan(); canhLb(); return; }
-  KHOI.forEach(function(k, i){ hop.appendChild(veKhoi(k, i + 1)); });
+  /* ⭐ v1.155.0 — worksheet KHÔNG còn là thẻ trong dãy: lên thanh đầu trang (`veWsThanh`). */
+  if (LA_KHOA) { veCacPhanKhoa(hop); veOHan(); veWsThanh(hop); return; }
+  if (LA_STAGE) { veCacPhanStage(hop); veOHan(); veWsThanh(hop); canhLb(); return; }
+  var so = 0;
+  KHOI.forEach(function(k){ if (k.loai !== 'ws') hop.appendChild(veKhoi(k, ++so)); });
+  veWsThanh(hop);
   canhLb();
 }
 
@@ -5579,9 +5920,10 @@ function tinhChang(){
 }
 
 function soDauChang(i){
-  /* v1.120.0 — đếm cả act lẫn worksheet của các chặng trước (máy nghe không số). */
+  /* v1.120.0 — đếm act của các chặng trước (máy nghe không số). v1.155.0: worksheet cũng
+     không số nữa — nó đã lên thanh đầu trang, không còn thẻ trong dãy. */
   var s = 1, cua = changCuaKhoi();
-  KHOI.forEach(function(k, j){ if (cua[j] < i && k.loai !== 'audio') s++; });
+  KHOI.forEach(function(k, j){ if (cua[j] < i && k.loai !== 'audio' && k.loai !== 'ws') s++; });
   return s;
 }
 
@@ -5736,14 +6078,22 @@ function veCacPhanStage(hop){
   var nhom = cuThieu.map(function(x){ return CHANG.indexOf(x); });
   if (CHANG[CHANG_XEM]) nhom.push(CHANG_XEM);
   nhom.forEach(function(ci){
-    var so = soDauChang(ci), dauNhom = true;
+    var so = soDauChang(ci), dauNhom = true, coWs = false, soThe = 0;
     KHOI.forEach(function(k, i){
       if (cua[i] !== ci) return;
+      if (k.loai === 'ws') { coWs = true; return; }   // v1.155.0 — worksheet ở thanh đầu trang
+      soThe++;
       var sec = veKhoi(k, k.loai === 'audio' ? 0 : so++);
       /* v1.129.0 — băng màu trong đầu thẻ (mẫu D), chỉ khi trang hiện ≥2 nhóm. */
       if (nhom.length > 1) { ganBangNhom(sec, CHANG[ci], ci === CHANG_XEM, dauNhom); dauNhom = false; }
       hop.appendChild(sec);
     });
+    /* v1.155.0 — chặng CHỈ có worksheet (ws mang hạn riêng) ⇒ không còn thẻ nào: chỉ đường lên thanh. */
+    if (coWs && !soThe) {
+      var nhac = wsTheChiDuong('Chặng này là bài <b>WORKSHEET</b> — bấm khối WORKSHEET ở đầu trang để tải bài và nộp bài làm.');
+      if (nhom.length > 1) ganBangNhom(nhac, CHANG[ci], ci === CHANG_XEM, true);
+      hop.appendChild(nhac);
+    }
   });
   var dau = true;
   CHANG.forEach(function(x, i){

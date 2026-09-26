@@ -2940,7 +2940,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=130"></script>
+<script src="config.js?v=131"></script>
 <script src="js/chung.js?v=62"></script>
 <script src="js/chat.js?v=23"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -6471,7 +6471,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var t = HQ.t;
     if (t.laSp) return '<p class="mau" style="margin:4px 0">Thẻ SPEAKING CHECK: bấm thân thẻ mở trang chấm riêng.</p>';
     var hs = hqEmTinh(); if (!hs.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
-    var pv = hqPhamVi(), muc = hqMucDangMo(), lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
+    var pv = hqPhamVi(), muc = hqMucGame(), lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
     var tat = hqGdLuot(hs, pv), tu = hqGdTu(), ds = tat.filter(function (x) { return x.luc >= tu; });
     var nay = hqNgayDau(Date.now()).getTime(), homNay = tat.filter(function (x) { return x.luc >= nay; });
     var emNay = {}, gNay = 0, datNay = 0, cuoi = {};
@@ -6495,7 +6495,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       var gio = (Date.now() - x.c) / 3600000;
       return '<div data-hq-em="' + A.chuAnToan(x.h.ten) + '" title="Đúp để xem chi tiết em">' + veEmAvDb(x.h.ten, slug, lopGoc) + '<span' + tenGonTitle(x.h.ten) + '>' + tenGon(x.h.ten) + '</span>' +
         '<span class="t ' + (!x.c || gio > 48 ? 'dx' : gio > 24 ? 'vg' : '') + '">' + (x.c ? hqTruoc(x.c) : 'chưa làm lượt nào') + '</span></div>';
-    }).join('') + '</div>' : '<div class="hq-gd-trong">Cả lớp đã xong đủ mục.</div>';
+    }).join('') + '</div>' : '<div class="hq-gd-trong">Cả lớp đã xong đủ game.</div>';
     var loi = HQ.actLoi ? '<div class="hq-loi">' + A.chuAnToan(HQ.actLoi) + '</div>' : '';
     return loi + soO + loc + '<div class="hq-gd hq-gd-luoi" style="grid-template-columns:minmax(0,1.45fr) minmax(0,1fr)">' +
       '<div class="hq-gd-khoi"><div class="hq-gd-khoi-dau"><b>Lượt mới nhất</b><small>' + ds.length + ' lượt · mới nhất ở trên</small></div><div class="hq-gd-khoi-than">' + hqGdBang(ds, slug, lopGoc) + '</div></div>' +
@@ -6503,9 +6503,13 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       '<div class="hq-gd-khoi" style="flex:1"><div class="hq-gd-khoi-dau"><b>Chưa xong · lâu chưa quay lại</b><small>' + chua.length + ' em · em đã xong không hiện</small></div><div class="hq-gd-khoi-than">' + imHtml + '</div></div></div></div>';
   }
 
+  // ⭐ v1.154.1 (thầy chốt 26/09) — "ĐÃ XONG ĐỦ" của 2 tab GẦN ĐÂY / HIỆU SUẤT CHỈ tính game AWord, BỎ worksheet
+  // (khác tab BÀI TẬP vẫn đếm cả sheet): chặng có SHEET chưa nộp ảnh không còn kéo cả lớp xuống nhóm "chưa xong".
+  function hqMucGame() { return hqMucDangMo().filter(function (m) { return m.loai === 'act'; }); }
+
   // ---- HIỆU SUẤT ----
   function hqHsDuLieu() {
-    var t = HQ.t, pv = hqPhamVi(), hs = hqEmTinh(), muc = hqMucDangMo();
+    var t = HQ.t, pv = hqPhamVi(), hs = hqEmTinh(), muc = hqMucGame();
     var r = hs.map(function (h) {
       var g = 0, cau = 0, soL = 0, causai = 0, toi = [], thu = [], dau = [], ngay = {}, gio = {}, chuoi = [];
       pv.acts.forEach(function (a) {
@@ -6582,7 +6586,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       x.causai ? 'Em luyện lại câu sai (Start with mistakes) lúc nào, mấy lần mới nhớ?' : 'Em ôn câu sai bằng cách nào — làm lại cả bài hay ghi ra giấy?'
     ];
     return '<div class="dau">' + veEmAvDb(x.h.ten, slug, lopGoc) + '<div><b>' + A.chuAnToan(x.h.ten) + '</b><small>Hạng ' + x.hang + '/' + dl.r.length +
-      (x.biKip ? ' · <span class="hq-hs-bk">BÍ KÍP</span>' : '') + ' · ' + (x.xong ? 'đã xong đủ ' + x.N + ' mục' : 'xong ' + x.n + '/' + x.N + ' mục') + '</small></div></div>' +
+      (x.biKip ? ' · <span class="hq-hs-bk">BÍ KÍP</span>' : '') + ' · ' + (x.xong ? 'đã xong đủ ' + x.N + ' game' : 'xong ' + x.n + '/' + x.N + ' game') + '</small></div></div>' +
       '<div class="hq-hs-so">' +
         '<div><small>Câu đúng / phút</small><b>' + (x.g ? hqSo1(x.cpm) : '—') + '</b>' + (x.g >= 60 ? hqHsSoSanh(x.cpm, dl.tvCpm) : '') + '</div>' +
         '<div><small>Thời gian làm game</small><b>' + (x.g ? hqChuPhut(x.g) : '—') + '</b>' + (x.g >= 60 ? hqHsSoSanh(x.g, dl.tvG, true) : '') + '</div>' +
@@ -6632,7 +6636,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   function hqHsDs(dl) {
     var lopGoc = hqLopGoc(HQ.t), slug = avSlugLop(lopGoc), h = '', ngan = false;
     dl.r.forEach(function (x) {
-      if (!x.xong && !ngan) { ngan = true; h += '<div class="hq-hs-ngan">Chưa xong đủ bài</div>'; }
+      if (!x.xong && !ngan) { ngan = true; h += '<div class="hq-hs-ngan">Chưa xong đủ game</div>'; }
       h += '<div class="hq-hs-dong' + (x.xong ? '' : ' chua') + (HQ.hsEm === x.h.ten ? ' chon' : '') + '" data-hqhs="' + A.chuAnToan(x.h.ten) + '" data-hq-em="' + A.chuAnToan(x.h.ten) + '" title="' + A.chuAnToan(x.h.ten) + ' · bấm = hồ sơ · đúp = chi tiết em">' +
         '<span class="hq-hs-hang' + (x.xong && x.hang <= 3 && x.g ? ' h' + x.hang : '') + '">' + x.hang + '</span>' + veEmAvDb(x.h.ten, slug, lopGoc) +
         '<span class="ten">' + tenGon(x.h.ten) + (x.biKip ? '<span class="hq-hs-bk">BÍ KÍP</span>' : '') + '</span>' +
@@ -6652,7 +6656,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     var x = dl.r.filter(function (q) { return q.h.ten === HQ.hsEm; })[0];
     var loi = HQ.actLoi ? '<div class="hq-loi">' + A.chuAnToan(HQ.actLoi) + '</div>' : '';
     return loi + '<div class="hq-gd-loc"><span class="giai"><b>Hiệu suất = câu đúng / phút làm thật</b> (mọi lượt game: nộp · luyện câu sai · bỏ dở; anagram quy về số từ) · ' +
-      '<b>đã xong đủ mục xếp trước</b>, còn thiếu xếp sau · BÍ KÍP = top 3 đã xong · chấm rỗng viền đứt = chưa xong · đường đứt = giữa lớp · phạm vi: ' + A.chuAnToan(pv.chu) + '</span></div>' +
+      '<b>xong đủ game AWord xếp trước</b> (không tính worksheet), còn thiếu xếp sau · BÍ KÍP = top 3 đã xong · chấm rỗng viền đứt = chưa xong · đường đứt = giữa lớp · phạm vi: ' + A.chuAnToan(pv.chu) + '</span></div>' +
       '<div class="hq-hs hq-hs-luoi">' +
         '<div class="hq-gd-khoi"><div class="hq-gd-khoi-dau"><b>Thời gian × tốc độ xử lý</b><small>bấm = hồ sơ · đúp = chi tiết em</small></div><div class="hq-gd-khoi-than hq-hs-ve">' + hqHsVe(dl) + '</div></div>' +
         '<div class="hq-gd-khoi"><div class="hq-gd-khoi-dau"><b>Xếp hạng</b><small>câu đúng/phút</small></div><div class="hq-gd-khoi-than">' + hqHsDs(dl) + '</div></div>' +

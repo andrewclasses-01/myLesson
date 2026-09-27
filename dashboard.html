@@ -2569,10 +2569,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .dk-hang > :nth-child(1){grid-column:1/-1}
 }
 /* 🚨 27/09/2026 — NÚT + DẢI + HỘP KHẨN CẤP (sau tấn công Tr0ngX) */
-/* mục "Khẩn cấp" ở cột trái (js/nw-thanh.js) + menu ☰ (#sbKhanCap): đỏ + nhấp nháy khi đang bật */
-.nwb-ql-muc.kc-dang, #sbKhanCap.kc-dang{background:#fdecec; color:#c62828; font-weight:700; animation:kcNhay 1.2s ease-in-out infinite}
+/* dòng "Quản lý & bảo mật" cột trái (js/nw-thanh.js) + mục Khẩn cấp trong hộp (.qm-tab): đỏ + nhấp nháy khi đang bật */
+.nwb-ql-muc.kc-dang{background:#fdecec; color:#c62828; font-weight:700; animation:kcNhay 1.2s ease-in-out infinite}
 @keyframes kcNhay{50%{box-shadow:inset 0 0 0 2px rgba(211,47,47,.55)}}
-#sbKhanCap .ic svg{stroke:#D32F2F}
 #khanCapDai{background:#d32f2f; color:#fff; font-weight:700; text-align:center; padding:8px 16px; font-size:14px; cursor:pointer}
 #khanCapDai[hidden]{display:none}
 .kc-nen{position:fixed; inset:0; background:rgba(15,23,42,.45); z-index:9000; display:grid; place-items:center; padding:16px}
@@ -2613,6 +2612,167 @@ button.mk-em:hover{border-color:currentColor}
 .mk-tam code{font:800 24px/1 ui-monospace,Consolas,monospace; letter-spacing:.12em; padding:8px 14px; border-radius:10px; background:#fff; border:1.5px dashed #0E7C6E; color:#0E7C6E; user-select:all}
 .kc-chan{display:flex; justify-content:flex-end; margin-top:10px}
 .kc-chan button{padding:9px 16px; border-radius:12px; border:0; background:#eef2f7; cursor:pointer; font-weight:600}
+/* ⭐⭐ v1.166.0 (28/09/2026, mẫu v4 thầy chốt) — THẺ LỚP 3 DÒNG, 5 thẻ/hàng, lớp + khóa CHUNG một lưới.
+   `.lop-grid`/`.lop-vach`/`.lop-grid-khoa` thành display:contents ⇒ thẻ của cả hai khu rơi vào CÙNG lưới `.lop-hang`,
+   nhưng DOM vẫn hai khu như cũ (kéo-thả sắp xếp + thứ tự dsLop/dsKhoa không đổi). Khóa nhận ra bằng nhãn KHÓA. */
+.lop-hang{display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px; margin:6px 0 18px}
+.lop-hang>.lop-grid, .lop-hang .lop-vach, .lop-hang .lop-grid-khoa{display:contents}
+.lop-hang .lop-vach[hidden]{display:none}
+.lop-hang .lop-vach::before{display:none}
+@media (max-width:1100px){ .lop-hang{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (max-width:620px){ .lop-hang{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.lop-btn.lb3{flex-direction:column; align-items:stretch; gap:7px; padding:11px 10px 11px 14px; min-width:0; border-radius:12px}
+.lb3 .lb-main{position:absolute; inset:0; z-index:1; padding:0; border-radius:inherit; background:none; cursor:pointer}
+.lb3 .lb-main:active{transform:none}
+.lb3 .lb-main:focus-visible{outline:2px solid var(--xanh); outline-offset:2px}
+.lb3 .lb-h1, .lb3 .lb-h2, .lb3 .lb-h3{position:relative; display:flex; align-items:center; gap:6px; min-width:0; pointer-events:none}
+.lb3 .lb-h1 button{pointer-events:auto; position:relative; z-index:2}
+.lb3 .lb-h1{margin:-3px 0}
+.lb3 .lb-ten{font:800 15px/1.1 var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+.lb3 .lb-day{flex:1}
+.lb3 .lb-cnt{flex-direction:row; gap:3px; padding:4px 5px}
+.lb3 .lb-cnt b{font-size:12px}
+.lb3 .lb-ic{width:26px; height:26px}
+.lb3 .lb-h2{font:700 12px/1.1 var(--font); white-space:nowrap}
+.lb3 .lb-h2 i{width:8px; height:8px; border-radius:50%; flex:none}
+.lb3 .lb-h2.giao{color:#1f7a4d} .lb3 .lb-h2.giao i{background:var(--la)}
+.lb3 .lb-h2.cho{color:#9A6A12} .lb3 .lb-h2.cho i{background:var(--vang)}
+.lb3 .lb-h2.khong{color:var(--nhat)} .lb3 .lb-h2.khong i{background:var(--nhat)}
+.lb3 .lb-luc{color:var(--nhat); font-weight:600; overflow:hidden; text-overflow:ellipsis}
+.lb3 .lb-khoa{margin:-3px 0 -3px auto; flex:none; font:800 9px/1 var(--font); letter-spacing:.08em; color:#B45309; background:#FFF1E0; border-radius:4px; padding:3px 5px}
+.lb3 .lb-dang{flex:none; font:800 9.5px/1 var(--font); letter-spacing:.06em; padding:4px 6px; border-radius:5px; background:var(--xanh-nhat); color:var(--xanh)}
+.lb3 .lb-ma{font:700 12px/1.15 ui-monospace,Consolas,monospace; color:#2B3D3A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
+.lb3 .lb-ma.trong{font-family:var(--font); color:var(--nhat); font-weight:600}
+.lop-btn.lb3.cho .lb-dang{background:#F1F4F3; color:#A3B1AE}
+.lop-btn.lb3.cho .lb-ma{color:#A3B1AE}
+.lb3 .lb-cham{top:5px; right:5px; width:8px; height:8px}
+.lop-btn.lb3.chon .lb-ten{color:#fff}
+.lop-btn.lb3.chon .lb-h2, .lop-btn.lb3.chon .lb-luc, .lop-btn.lb3.chon .lb-ma{color:#E6F6F2}
+.lop-btn.lb3.chon .lb-h2 i{background:#9FF0C8}
+.lop-btn.lb3.chon .lb-dang{background:rgba(255,255,255,.18); color:#fff}
+.lop-btn.lb3.chon .lb-khoa{background:rgba(255,255,255,.2); color:#fff}
+
+/* ⭐ v1.166.0 — dòng "Quản lý & bảo mật" (cuối cột trái) + số hồng mục Sinh nhật */
+.nwb-ql-muc[data-muc="baoMat"]{background:linear-gradient(90deg,#FFF4F2,#FFFBEA); box-shadow:inset 0 0 0 1px #F6D9CF; white-space:nowrap}
+.nwb-ql-muc[data-muc="baoMat"]:hover{filter:brightness(.98)}
+.nwb-ql-muc .dk-so.sn-so{background:#EC4899}
+.nwb-ql-muc[data-muc="baoMat"].kc-dang{background:#fdecec; box-shadow:none}
+
+/* ⭐⭐ v1.166.0 — HỘP "QUẢN LÝ & BẢO MẬT" */
+.qm-nen{position:fixed; inset:0; z-index:9000; background:rgba(16,30,28,.45); display:flex; align-items:center; justify-content:center; padding:24px}
+.qm-nen[hidden]{display:none}
+.qm-hop{width:min(1180px,100%); height:min(780px,calc(100dvh - 48px)); background:#fff; border-radius:18px; box-shadow:0 20px 60px rgba(0,0,0,.25);
+  display:grid; grid-template-columns:230px minmax(0,1fr); overflow:hidden; font-family:var(--font); color:var(--chu)}
+.qm-trai{background:#F6F9F8; border-right:1px solid var(--vien); padding:18px 12px; display:flex; flex-direction:column; gap:2px; min-height:0; overflow:auto}
+.qm-trai h3{margin:0 8px 12px; font:800 16px/1.3 var(--font); display:flex; align-items:center; gap:8px}
+.qm-trai h3 svg, .qm-tab svg{fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none}
+.qm-trai h3 svg{width:22px; height:22px; color:var(--xanh)}
+.qm-tab{display:flex; align-items:center; gap:10px; padding:10px; border:0; border-radius:10px; background:none; font:600 14px var(--font); color:var(--chu); text-align:left; cursor:pointer}
+.qm-tab svg{width:20px; height:20px}
+.qm-tab[data-qm-tab="kc"] svg{color:#D32F2F}
+.qm-tab:hover{background:rgba(22,35,42,.06)}
+.qm-tab.chon{background:#fff; box-shadow:var(--bong); color:var(--xanh)}
+.qm-tab em{margin-left:auto; font:700 11px var(--font); font-style:normal; color:var(--nhat)}
+.qm-tab em.tat{color:#fff; background:var(--la); border-radius:8px; padding:2px 7px}
+.qm-tab em.bat{color:#fff; background:#D32F2F; border-radius:8px; padding:2px 7px}
+.qm-tab.kc-dang{background:#fdecec; color:#c62828; font-weight:700; animation:kcNhay 1.2s ease-in-out infinite}
+.qm-gian{flex:1}
+.qm-phien{display:flex; align-items:center; gap:10px; margin:0 2px; border:1px solid var(--vien); background:#fff; border-radius:12px; padding:10px; text-align:left; cursor:pointer; font-family:var(--font)}
+.qm-phien i{width:10px; height:10px; border-radius:50%; background:#CBD6D3; flex:none}
+.qm-phien.co i{background:var(--la); box-shadow:0 0 0 3px #E6F6EE}
+.qm-phien.chua i{background:var(--vang); box-shadow:0 0 0 3px #FFF4DC}
+.qm-phien b{display:block; font:700 12px var(--font); color:var(--chu)}
+.qm-phien small{display:block; font:600 10.5px/1.4 var(--font); color:var(--nhat); word-break:break-all}
+.qm-chu{font:600 11px/1.5 var(--font); color:var(--nhat); padding:10px 8px 0}
+.qm-phai{display:flex; flex-direction:column; min-width:0; min-height:0}
+.qm-dau{display:flex; align-items:center; gap:12px; padding:16px 22px; border-bottom:1px solid var(--vien)}
+.qm-dau-chu{flex:1; min-width:0}
+.qm-dau h4{margin:0; font:800 18px var(--font)}
+.qm-phu{font:600 12.5px var(--font); color:var(--nhat); margin-top:2px}
+.qm-dong{width:36px; height:36px; border-radius:50%; border:0; background:var(--nen); display:grid; place-items:center; cursor:pointer; flex:none}
+.qm-dong svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round}
+.qm-than{flex:1; overflow:auto; padding:16px 22px 22px; min-height:0}
+.qm-p{margin:0 0 12px; color:#555; font-size:13.5px; line-height:1.5}
+.qm-thanh{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
+.qm-phan{display:inline-flex; background:var(--nen); border-radius:10px; padding:3px}
+.qm-phan button{border:0; background:none; border-radius:8px; padding:7px 14px; font:700 12.5px var(--font); color:var(--nhat); cursor:pointer}
+.qm-phan button.chon{background:#fff; color:var(--chu); box-shadow:var(--bong)}
+.qm-ghi{font:600 11.5px var(--font); color:#9a6a00; background:#FFF8E1; border:1px dashed #F2C94C; border-radius:8px; padding:5px 9px}
+.qm-loc{display:flex; align-items:center; gap:10px; margin-bottom:8px}
+.qm-tim{flex:1; max-width:420px; display:flex; align-items:center; gap:8px; border:1px solid var(--vien-dam); border-radius:10px; padding:0 12px; height:38px; background:#fff}
+.qm-tim svg{width:17px; height:17px; fill:none; stroke:var(--nhat); stroke-width:2; stroke-linecap:round; flex:none}
+.qm-tim input{border:0; outline:0; flex:1; min-width:0; font:600 13px var(--font); background:none; color:var(--chu)}
+.qm-dem{font:700 12px var(--font); color:var(--nhat)}
+.qm-chips{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:10px}
+.qm-chip{border:1px solid var(--vien-dam); background:#fff; border-radius:999px; height:30px; padding:0 12px; font:700 12px var(--font); color:var(--chu); cursor:pointer}
+.qm-chip.chon{background:var(--chu); border-color:var(--chu); color:#fff}
+.qm-bang{width:100%; border-collapse:collapse}
+.qm-bang th{font:800 10.5px var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--nhat); text-align:left; padding:8px 10px; border-bottom:1px solid var(--vien); position:sticky; top:-16px; background:#fff; z-index:1}
+.qm-bang td{padding:8px 10px; border-bottom:1px solid #EEF2F1; font:600 13px var(--font); vertical-align:middle}
+.qm-bang-hs tbody tr{cursor:pointer}
+.qm-bang tbody tr:hover td{background:#FAFCFB}
+.qm-trong{text-align:center; color:var(--nhat); padding:26px 10px !important}
+.qm-em{display:flex; align-items:center; gap:10px}
+.qm-em i, .qm-hs-dau i, .sn-em i{width:32px; height:32px; border-radius:50%; background:#D7E2DF; flex:none; display:grid; place-items:center; font:800 12px var(--font); color:#5F7370; font-style:normal}
+.qm-em b{font-weight:700}
+.qm-em small{display:block; font:600 11px var(--font); color:var(--nhat)}
+.qm-lop{display:inline-block; font:700 11px var(--font); padding:3px 8px; border-radius:6px; background:var(--xanh-nhat); color:var(--xanh); margin:1px 4px 1px 0; white-space:nowrap}
+.qm-lop.khoa{background:#FFF1E0; color:#B45309}
+.qm-ma{font:700 12px ui-monospace,Consolas,monospace; color:#384B48}
+.qm-chua-ma{font:800 10.5px var(--font); color:#b71c1c}
+.qm-mk, .qm-tt{font:700 11.5px var(--font); display:inline-flex; align-items:center; gap:6px; white-space:nowrap}
+.qm-mk::before, .qm-tt::before{content:''; width:8px; height:8px; border-radius:50%; background:currentColor}
+.qm-mk.da, .qm-tt.giao{color:var(--la)} .qm-mk.chua, .qm-tt.cho{color:var(--vang)} .qm-mk.khoa{color:#D32F2F}
+.qm-mk.nho, .qm-tt.khong{color:var(--nhat); font-weight:600}
+.qm-mk.nho::before{display:none}
+.qm-hd{display:flex; gap:6px; justify-content:flex-end; flex-wrap:wrap}
+.qm-nut{display:inline-flex; align-items:center; padding:5px 9px; border-radius:8px; border:1px solid var(--vien-dam); background:#fff; font:700 11.5px var(--font); color:var(--chu); white-space:nowrap; cursor:pointer}
+.qm-nut:hover{background:var(--xanh-nhat); border-color:var(--xanh)}
+.qm-than .mk-hoi{margin:0 0 12px}
+.qm-mk-ds{border-top:1px solid #eee}
+.qm-quay{border:0; background:none; font:700 12.5px var(--font); color:var(--xanh); padding:0; margin-bottom:12px; cursor:pointer}
+.qm-hs-dau{display:flex; align-items:center; gap:14px; margin-bottom:16px}
+.qm-hs-dau i{width:60px; height:60px; font-size:22px}
+.qm-hs-dau h5{margin:0; font:800 20px var(--font)}
+.qm-hs-dau small{font:600 12.5px var(--font); color:var(--nhat)}
+.qm-luoi{display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:14px}
+.qm-o{border:1px solid var(--vien); border-radius:14px; padding:14px 16px; min-width:0}
+.qm-o h6{margin:0 0 10px; font:800 11px/1 var(--font); letter-spacing:.1em; text-transform:uppercase; color:var(--nhat)}
+.qm-gd{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid #EEF2F1; flex-wrap:wrap}
+.qm-gd:first-of-type{border-top:0}
+.qm-gd-ngay{flex:1; font:600 12px var(--font); color:var(--nhat)}
+.qm-dong-tt{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 0; border-top:1px solid #EEF2F1; font:600 12.5px var(--font); color:var(--nhat)}
+.qm-dong-tt:first-of-type{border-top:0}
+.qm-dong-tt b{color:var(--chu)}
+.qm-sap{margin-top:14px; font:600 12.5px/1.55 var(--font); color:#6b5a1e; background:#FFF8E1; border:1px dashed #F2C94C; border-radius:12px; padding:12px 14px}
+.qm-kc .kc-dong b{font-size:15px}
+.qm-gt{flex:none; font:800 12px var(--font); padding:5px 10px; border-radius:999px; background:var(--nen); color:var(--chu)}
+@media (max-width:760px){
+  .qm-nen{padding:0}
+  .qm-hop{height:100dvh; border-radius:0; grid-template-columns:1fr; grid-template-rows:auto minmax(0,1fr)}
+  .qm-trai{flex-direction:row; overflow-x:auto; padding:8px; border-right:0; border-bottom:1px solid var(--vien)}
+  .qm-trai h3, .qm-gian, .qm-chu, .qm-phien, .qm-tab em{display:none}
+  .qm-tab{flex:none; white-space:nowrap}
+  .qm-luoi{grid-template-columns:1fr}
+  .qm-bang-hs th:nth-child(3), .qm-bang-hs td:nth-child(3){display:none}
+  .qm-bang td, .qm-bang th{padding:7px 6px}
+  .qm-hd{flex-direction:column; align-items:flex-end}
+  .qm-ghi{font-size:11px}
+}
+
+/* ⭐ v1.166.0 — HỘP SINH NHẬT (mục Sinh nhật cột trái; dùng chung khung .kc-nen/.kc-hop) */
+.sn-hop{width:min(480px,100%); max-height:86vh; display:flex; flex-direction:column}
+.sn-hop h3{color:#BE185D}
+.sn-ds{overflow:auto; margin:0 -8px}
+.sn-nhom{font:800 10.5px var(--font); letter-spacing:.1em; text-transform:uppercase; color:var(--nhat); padding:10px 8px 4px}
+.sn-em{display:flex; align-items:center; gap:10px; padding:8px; border-radius:10px}
+.sn-em:hover{background:#F6F9F8}
+.sn-em b{font:700 13.5px var(--font)}
+.sn-em small{display:block; font:600 11.5px var(--font); color:var(--nhat)}
+.sn-khi{margin-left:auto; flex:none; font:800 11.5px var(--font); padding:4px 9px; border-radius:999px; background:#F1F4F3; color:var(--nhat)}
+.sn-khi.nay{background:#EC4899; color:#fff}
+.sn-khi.gan{background:#FCE7F3; color:#BE185D}
+.sn-chan{margin:10px 0 0 !important; font-size:12px !important; color:var(--nhat) !important}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=6">
 </head>
@@ -2722,8 +2882,8 @@ button.mk-em:hover{border-color:currentColor}
       <svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>
     </button>
     <div class="sb-dau-chu">
-      <div class="ten" id="sbTieuDe">Menu quản lý</div>
-      <div class="phu" id="sbPhu">Quản lý mã, lớp và hơn thế</div>
+      <div class="ten" id="sbTieuDe">Tài khoản</div>
+      <div class="phu" id="sbPhu">Thầy Andrew</div>
     </div>
     <button class="sb-dong" id="sbDong" title="Đóng">
       <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
@@ -2735,57 +2895,9 @@ button.mk-em:hover{border-color:currentColor}
        CHỖ hiển thị. -->
   <div class="sb-than" id="sbThan">
     <div class="sb-menu" id="sbMenu">
-      <button class="sb-item" data-muc="ma">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M6 11V8a6 6 0 1 1 12 0v3"/><rect x="4" y="11" width="16" height="10" rx="2.5"/></svg></span>
-        <span class="chu"><span class="ten">Quản lý mã</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <button class="sb-item" data-muc="lop">
-        <span class="ic"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg></span>
-        <span class="chu"><span class="ten">Thiết lập lớp</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <button class="sb-item" data-muc="sinhnhat">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/><path d="M4 20h16"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/><circle cx="12" cy="3.2" r="1"/></svg></span>
-        <span class="chu"><span class="ten">Sinh nhật sắp tới</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <button class="sb-item" data-muc="top">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 5H4v2a3 3 0 0 0 3 3M17 5h3v2a3 3 0 0 1-3 3"/><path d="M12 14v3M9 20h6M9.5 17h5"/></svg></span>
-        <span class="chu"><span class="ten">Top của lớp</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <button class="sb-item" data-muc="kholuutru">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M3 7l1.5-3h15L21 7"/><rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9.5 11.5h5"/></svg></span>
-        <span class="chu"><span class="ten">Kho trò chuyện</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <button class="sb-item" data-muc="kho">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M2.5 4h19v3h-19z"/><path d="M10 11h4"/></svg></span>
-        <span class="chu"><span class="ten">Bài đã xoá</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <!-- ⭐ v1.39.0 — KHÔNG có `data-muc`: mục này không vẽ trong panel mà mở
-           HỘP LỚN giữa màn (xem #qqNen), vì bảng quà nhiều cột. -->
-      <button class="sb-item" id="sbQua">
-        <span class="ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4.5"/><path d="M5 12.5h14V21H5zM12 8v13M12 8s-1-4.5-4-4.5S5.5 8 8.5 8M12 8s1-4.5 4-4.5S18.5 8 15.5 8"/></svg></span>
-        <span class="chu"><span class="ten">Quản lý quà</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <button class="sb-item" data-muc="hocsinh">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M2 12l10-6 10 6-10 6-10-6z"/><path d="M6 14v5c0 1 2.7 2 6 2s6-1 6-2v-5"/></svg></span>
-        <span class="chu"><span class="ten">Xem như học sinh</span></span>
-        <span class="mui"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span>
-      </button>
-      <div class="sb-chia"></div>
-      <!-- ⭐ v1.52.0 (gói bảo mật C) — PHIÊN THẦY trên Firebase Auth: luật kho nay đòi
-           phiên này mới GHI được (hạn/ẩn/xoá thẻ · thẻ nghỉ · kho quà · xoá tin · tin THẦY).
-           Trong app myLesson phiên được app tiêm sẵn; ngoài app bấm nút này → Google. -->
-      <!-- 🚨 27/09/2026 — KHẨN CẤP (khoá chat / khoá điểm). Cùng hộp với mục "Khẩn cấp" ở cột trái. -->
-      <button class="sb-item" id="sbKhanCap" title="Khoá chat / khoá ghi điểm khi bị tấn công">
-        <span class="ic"><svg viewBox="0 0 24 24"><path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/></svg></span>
-        <span class="chu"><span class="ten" id="sbKhanCapChu">Khẩn cấp</span></span>
-      </button>
+      <!-- ⭐ v1.166.0 (28/09/2026, mẫu v4) — menu ☰ CHỈ còn tài khoản thầy. Quản lý mã / Thiết lập lớp / Xem như học sinh
+           ⇒ hộp "Quản lý & bảo mật" (mục Học sinh & lớp); Sinh nhật ⇒ mục Sinh nhật (Network); Top / Kho trò chuyện /
+           Bài đã xoá / Quà ⇒ nhóm QUẢN LÝ cột trái; Khẩn cấp ⇒ hộp "Quản lý & bảo mật". -->
       <button class="sb-item" id="thayDn" title="Phiên ghi kho của thầy">
         <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
         <span class="chu"><span class="ten" id="thayDnChu">Đang kiểm phiên thầy…</span></span>
@@ -3020,12 +3132,12 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=144"></script>
+<script src="config.js?v=145"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=64"></script>
 <script src="js/chat.js?v=26"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
-<script src="js/thay.js?v=1"></script>
+<script src="js/thay.js?v=2"></script>
 <script>
 (function () {
   'use strict';
@@ -3267,30 +3379,9 @@ button.mk-em:hover{border-color:currentColor}
     if (A.nghiConHieuLuc(DL, l.maLop)) return 'khong';
     return 'cho';
   }
-  var TT_NHAN = { giao: 'Đã giao bài', cho: 'Đang chờ bài', khong: 'Không có bài tập' };
-
-  // Sinh nhật trong 7 ngày tới CỦA RIÊNG một lớp — dùng chung `conMayNgay()`
-  // với sidebar "Sinh nhật sắp tới" (định nghĩa ở khối CỘT PHẢI phía dưới,
-  // hàm được hoisted nên gọi trước vị trí định nghĩa vẫn an toàn).
-  function sinhNhatTuanCuaLop(l) {
-    var ds = [];
-    (l.hocSinh || []).forEach(function (h) {
-      var con = conMayNgay(h.sinhNhat);
-      if (con !== null && con <= 7) ds.push({ ten: h.ten, con: con });
-    });
-    ds.sort(function (a, b) { return a.con - b.con; });
-    return ds;
-  }
-  function chuSinhNhatDong(ds) {
-    if (!ds.length) return '';
-    if (ds.length > 1) return ds[0].ten + ' +' + (ds.length - 1) + ' bạn khác';
-    return ds[0].ten + (ds[0].con === 0 ? ' · hôm nay' : ' · còn ' + ds[0].con + ' ngày');
-  }
   // ⭐ v1.35.0 — icon KHO (thùng lưu trữ) trên nút lớp: bài đã xoá mềm của lớp đó.
   var IC_KHO_NHO = '<svg viewBox="0 0 24 24"><path d="M3 7l1.5-3h15L21 7"/>' +
     '<rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9.5 11.5h5"/></svg>';
-  var IC_CAKE_NHO = '<svg viewBox="0 0 24 24"><path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/>' +
-    '<path d="M4 20h16"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/><circle cx="12" cy="3.2" r="1"/></svg>';
 
   // ⭐ 11/09/2026 — rút phần vẽ MỘT nút lớp ra riêng (`theLopBtnHtml`), dùng
   // CHUNG cho cả `veLopGrid()` (lớp thường, cột trái) lẫn `veKhoaGrid()` (lớp
@@ -3299,43 +3390,87 @@ button.mk-em:hover{border-color:currentColor}
   // nghe `document.addEventListener('click', …)` sẵn có (`chonLop()` và
   // `gvMoSidebar()` đã tự chạy đúng cho khóa học vì `A.lopTheoMa`/`A.baiCuaLop`
   // đã đọc cả `DL.khoa` từ trước — không cần sửa gì ở tầng sự kiện).
+  // ⭐⭐ v1.166.0 (28/09/2026, mẫu v4 thầy chốt) — THẺ LỚP 3 DÒNG, 5 thẻ/hàng (lớp + khóa chung một lưới):
+  //   dòng 1: tên + sĩ số (mở Thiết lập lớp) + kho bài — BỎ nút sinh nhật (nay là mục "Sinh nhật" cột trái)
+  //   dòng 2: "Đã giao • còn 2 ngày / 15 giờ / 30 phút" · "Chờ • 2 ngày 3 tiếng" (tự chạy mỗi phút, `capNhatLucThe`)
+  //   dòng 3: dạng + mã bài — bài ĐANG GIAO; lớp đang chờ ⇒ bài cũ gần nhất, CHỈ nhạt màu (thầy: không chữ "bài trước")
+  // `.lb-main` phủ CẢ THẺ (position:absolute) ⇒ bấm chỗ nào cũng chọn lớp; hai nút nhỏ nổi lên trên (z-index).
+  var PH_MS = 60000, GIO_MS = 3600000, NGAY_MS = 86400000;
+  function chuCon(ms) {
+    if (ms >= NGAY_MS) return 'còn ' + Math.floor(ms / NGAY_MS) + ' ngày';
+    if (ms >= GIO_MS) return 'còn ' + Math.floor(ms / GIO_MS) + ' giờ';
+    return 'còn ' + Math.max(1, Math.ceil(ms / PH_MS)) + ' phút';
+  }
+  function chuCho(ms) {
+    var p = Math.floor(ms / PH_MS), g = Math.floor(p / 60), n = Math.floor(g / 24);
+    if (n >= 1) return n + ' ngày' + (g % 24 ? ' ' + (g % 24) + ' tiếng' : '');
+    if (g >= 1) return g + ' tiếng';
+    return Math.max(1, p) + ' phút';
+  }
+  function chuLucThe(kieu, moc) {
+    if (kieu === 'con') return moc - Date.now() > 0 ? chuCon(moc - Date.now()) : 'đang trong buổi học';
+    if (kieu === 'cho') return chuCho(Date.now() - moc);
+    return '';
+  }
+  // Bài để in ở dòng 3 + mốc cho dòng 2. giao ⇒ bài còn hạn gần hạn nhất · cho ⇒ bài có hạn MUỘN NHẤT đã qua.
+  function baiTheLop(l, tt) {
+    var ds = A.baiCuaLop(DL, l.maLop, 'ql');
+    var chon = null, moc = null;
+    if (tt === 'giao') {
+      ds.forEach(function (b) {
+        var m = A.mocHan(b);
+        if (!A.conHan(b) && !(m != null && A.theDangHoc(DL, l.maLop, m))) return;
+        var k = m == null ? Infinity : m;
+        if (!chon || k < (moc == null ? Infinity : moc)) { chon = b; moc = m; }
+      });
+    } else {
+      ds.forEach(function (b) {
+        var m = A.mocHan(b);
+        if (m == null || m > Date.now()) return;
+        if (moc == null || m > moc) { chon = b; moc = m; }
+      });
+    }
+    return { b: chon, moc: moc };
+  }
+  function dangNgan(d) {
+    var k = String(d || '').trim().toUpperCase();
+    return k === 'WORKSHEET' ? 'WS' : k;
+  }
   function theLopBtnHtml(l) {
     var mL = A.chuAnToan(l.maLop);
-    var sn = sinhNhatTuanCuaLop(l);
     var tt = trangThaiBai(l);
-    // ⭐ 15/09/2026 — `data-malop` (mã THẬT, không lách qua chuAnToan) để tay kéo-thả
-    // sắp xếp (`sxBatDau`/`sxLuu`) đọc thứ tự trực tiếp từ DOM, tách khỏi `data-lop`
-    // mà `chonLop()` đang dùng (tránh đụng luồng bấm chọn lớp sẵn có).
-    // ⭐ 15/09/2026 (đợt 9) — class `.cho` (trạng thái "Đang chờ bài") đặt NGAY TRÊN
-    // thẻ ngoài để nhấp nháy nền vàng + hào quang CẢ THẺ (thầy chốt: trước chỉ nhấp
-    // nháy mỗi chữ nhỏ, chưa đủ giục) — xem `.lop-btn.cho` trong CSS.
-    return '<div class="lop-btn' + (l.maLop === LOP_CHON ? ' chon' : '') + (tt === 'cho' ? ' cho' : '') + '" data-malop="' + mL + '">' +
+    var x = baiTheLop(l, tt), b = x.b;
+    var kieu = tt === 'giao' ? (x.moc != null ? 'con' : '') : (tt === 'cho' && x.moc != null ? 'cho' : '');
+    var chu2 = tt === 'giao' ? 'Đã giao' : (tt === 'cho' ? 'Chờ' : 'Không giao bài');
+    var luc = kieu ? chuLucThe(kieu, x.moc) : (tt === 'giao' ? 'chưa đặt hạn' : '');
+    var maBai = b ? (A.maLesson(b) || (b.tenBai ? b.tenBai : '') || A.tenBai(b)) : '';
+    return '<div class="lop-btn lb3' + (l.maLop === LOP_CHON ? ' chon' : '') + (tt === 'cho' ? ' cho' : '') + '" data-malop="' + mL + '">' +
+      '<button class="lb-main" data-lop="' + mL + '" aria-label="Chọn ' + A.chuAnToan(l.tenGoc || l.maLop) + '"></button>' +
       (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
-      '<div class="lb-gv">' +
-        // ⭐ v1.35.0 (thầy chốt 02/09): số thành viên = NÚT mở "Thiết lập lớp"
-        // (gộp bánh răng cũ); chỗ bánh răng cũ → icon KHO = bài đã xoá của lớp.
+      '<div class="lb-h1"><span class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</span><span class="lb-day"></span>' +
         '<button class="lb-cnt" data-gv-lop="' + mL + '" title="Thiết lập (danh sách em + avatar)">' +
           '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg>' +
           '<b>' + (l.hocSinh || []).length + '</b>' +
         '</button>' +
-        '<button class="lb-ic" data-gv-sn="' + mL + '" title="Sinh nhật sắp tới">' +
-          (sn.length ? '<span class="lb-dot"></span>' : '') + IC_CAKE_NHO +
-        '</button>' +
-        // ⛔ v1.56.0 — KHÔNG có chấm đỏ ở icon KHO nữa (thầy chốt 03/09/2026):
-        // bài đã xoá là chuyện đã xong, không phải việc cần nhắc. Chấm đỏ của
-        // icon SINH NHẬT ngay trên thì GIỮ.
-        '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho bài: mọi bài của lớp/khóa này">' +
-          IC_KHO_NHO +
-        '</button>' +
+        '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho bài: mọi bài của lớp/khóa này">' + IC_KHO_NHO + '</button>' +
       '</div>' +
-      '<button class="lb-main" data-lop="' + mL + '">' +
-        '<div class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</div>' +
-        (sn.length ? '<div class="lb-sn">' + IC_CAKE_NHO + A.chuAnToan(chuSinhNhatDong(sn)) + '</div>' : '') +
-        '<div class="lb-tt ' + tt + '"><i></i>' + TT_NHAN[tt] + '</div>' +
-      '</button>' +
+      '<div class="lb-h2 ' + tt + '"><i></i>' + chu2 +
+        (luc ? ' <span class="lb-luc"' + (kieu ? ' data-kieu="' + kieu + '" data-moc="' + x.moc + '"' : '') + '>• ' + A.chuAnToan(luc) + '</span>' : '') +
+        (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') +
+      '</div>' +
+      '<div class="lb-h3">' + (b ? '<span class="lb-dang">' + A.chuAnToan(dangNgan(b.dang)) + '</span>' +
+        '<span class="lb-ma" title="' + A.chuAnToan(A.tenBai(b) + (maBai ? ' · ' + maBai : '')) + '">' + A.chuAnToan(maBai) + '</span>'
+        : '<span class="lb-ma trong">Chưa có bài</span>') + '</div>' +
     '</div>';
   }
-
+  // Dòng 2 tự chạy: chỉ đổi CHỮ trong `.lb-luc` (không vẽ lại thẻ — tránh bẫy "khối vẽ lại giữa cú bấm").
+  function capNhatLucThe() {
+    document.querySelectorAll('.lb-luc[data-kieu]').forEach(function (s) {
+      var t = '• ' + chuLucThe(s.getAttribute('data-kieu'), +s.getAttribute('data-moc'));
+      if (s.textContent !== t) s.textContent = t;
+    });
+  }
+  setInterval(capNhatLucThe, 30000);
   function veLopGrid() {
     var xep = DL.lop.slice().sort(function (a, b) {
       // v1.35.0 — lọc bằng `A.conHan` (thẻ khoá đã qua mốc vẫn là còn hạn → xếp lên đầu)
@@ -8883,7 +9018,7 @@ button.mk-em:hover{border-color:currentColor}
     // ⭐ v1.60.0 — mở mục KHO là luôn bắt đầu ở "Tất cả"; bộ lọc chỉ giữ trong lúc
     // thầy đang làm việc trong kho (đổi trạng thái xong không nhảy nhóm lung tung).
     if (muc === 'kho') KHO_LOC = 'tatca';
-    $('#sbQuay').hidden = false;
+    $('#sbQuay').hidden = true;   // v1.166.0 — menu ☰ chỉ còn tài khoản thầy, không còn nút về danh sách
     $('#sbTieuDe').textContent = m.ten;
     $('#sbPhu').textContent = m.mota;
     $('#sbMenu').hidden = true;
@@ -8892,8 +9027,8 @@ button.mk-em:hover{border-color:currentColor}
   }
   function veMenuSb() {
     $('#sbQuay').hidden = true;
-    $('#sbTieuDe').textContent = 'Menu quản lý';
-    $('#sbPhu').textContent = 'Quản lý mã, lớp và hơn thế';
+    $('#sbTieuDe').textContent = 'Tài khoản';
+    $('#sbPhu').textContent = 'Thầy Andrew';
     $('#sbMenu').hidden = false;
     Object.keys(SB_MUC).forEach(function (k) { $('#' + SB_MUC[k].id).hidden = true; });
   }
@@ -8926,6 +9061,7 @@ button.mk-em:hover{border-color:currentColor}
       LOP_CHON = (DL.lop.some(function (l) { return l.maLop === cu; }) ? cu
                  : (DL.lop[0] ? DL.lop[0].maLop : ''));
       veTat();
+      datSoSinhNhat();   // v1.166.0 — số hồng trên mục Sinh nhật cột trái
       noiChat();
       // ⭐ 28/08 — lớp đang chọn thì khung chat đã mở sẵn ngay trên màn hình,
       // coi như đã xem — chỉ tính chấm đỏ cho các lớp CÒN LẠI.
@@ -9488,12 +9624,8 @@ button.mk-em:hover{border-color:currentColor}
     $('#sbDong').addEventListener('click', dongSb);
     $('#sbNen').addEventListener('click', dongSb);
     $('#sbQuay').addEventListener('click', veMenuSb);
-    Array.prototype.forEach.call(document.querySelectorAll('#sbMenu .sb-item[data-muc]'), function (b) {
-      b.addEventListener('click', function () { veChiTiet(b.getAttribute('data-muc')); });
-    });
     $('#maTim').addEventListener('input', veQuanLyMa);
-    // ⭐ v1.39.0 — QUẢN LÝ QUÀ: mục sidebar mở hộp lớn giữa màn.
-    $('#sbQua').addEventListener('click', moQuaHop);
+    // ⭐ v1.39.0 — QUẢN LÝ QUÀ: hộp lớn giữa màn. v1.166.0: mở từ mục "Quà tặng" cột trái (window.qlMoMuc).
     $('#qqDong').addEventListener('click', dongQuaHop);
     $('#qqNen').addEventListener('click', function (e) { if (e.target === this) dongQuaHop(); });
     $('#qqLuu').addEventListener('click', ghiQua);
@@ -9631,46 +9763,33 @@ button.mk-em:hover{border-color:currentColor}
   }
   function veKhanCap() {
     var bat = KHAN_CAP.khoaChat || KHAN_CAP.khoaDiem;
-    document.querySelectorAll('.nwb-ql-muc[data-muc="khanCap"], #sbKhanCap').forEach(function (n) {
+    // v1.166.0 — mục Khẩn cấp nay ở trong hộp "Quản lý & bảo mật": dòng mở hộp (cột trái) + mục trong hộp đỏ nhấp nháy khi đang bật.
+    document.querySelectorAll('.nwb-ql-muc[data-muc="baoMat"], .qm-tab[data-qm-tab="kc"]').forEach(function (n) {
       n.classList.toggle('kc-dang', bat);
-      n.title = bat ? 'KHẨN CẤP: ' + chuKhanCap() + ' — bấm để xem / mở lại' : 'Khoá chat / khoá ghi điểm khi bị tấn công';
+      n.title = bat ? 'KHẨN CẤP: ' + chuKhanCap() + ' — bấm để xem / mở lại' : '';
     });
-    var chuSb = $('#sbKhanCapChu');
-    if (chuSb) chuSb.textContent = bat ? 'ĐANG KHẨN CẤP' : 'Khẩn cấp';
     var dai = $('#khanCapDai');
     if (dai) {
       dai.hidden = !bat;
       dai.textContent = '🚨 KHẨN CẤP — ' + chuKhanCap() + (KHAN_CAP.lyDo ? ' (' + KHAN_CAP.lyDo + ')' : '') + '. Bấm vào đây để mở lại.';
     }
-    var hop = $('#khanCapHop');
-    if (hop && !hop.hidden) veHopKhanCap();
+    if (qmDangMo('kc')) veBaoMat();
   }
-  function veHopKhanCap() {
-    var hop = $('#khanCapHop');
-    if (!hop) {
-      hop = document.createElement('div');
-      hop.id = 'khanCapHop'; hop.className = 'kc-nen'; hop.hidden = true;
-      document.body.appendChild(hop);           // gắn vào body: tránh bẫy position:fixed trong khối có backdrop-filter
-      hop.addEventListener('click', function (e) {
-        if (e.target === hop || e.target.closest('[data-kc-dong]')) { hop.hidden = true; return; }
-        var b = e.target.closest('[data-kc]');
-        if (b) doiKhanCap(b.getAttribute('data-kc'), b);
-      });
-    }
+  // Ruột mục Khẩn cấp (vẽ trong hộp "Quản lý & bảo mật"; nút [data-kc] bắt ở bộ nghe của hộp).
+  function htmlKhanCap() {
     var dong = function (khoa, ten, mo) {
       var dang = KHAN_CAP[khoa];
       return '<div class="kc-dong"><div><b>' + ten + '</b><small>' + mo + '</small></div>' +
         '<button type="button" class="kc-bat' + (dang ? ' dang' : '') + '" data-kc="' + khoa + '">' + (dang ? 'ĐANG KHOÁ' : 'Khoá') + '</button></div>';
     };
-    hop.innerHTML = '<div class="kc-hop" role="dialog" aria-label="Khẩn cấp"><h3>🚨 Khẩn cấp</h3>' +
-      '<p>Dùng khi có người lạ phá chat hoặc bơm điểm giả. Bấm lần nữa để mở lại. Học sinh thấy chữ báo "tạm khoá", không mất bài.</p>' +
+    return '<div class="qm-kc"><p>Dùng khi có người lạ phá chat hoặc bơm điểm giả. Bấm lần nữa để mở lại. Học sinh thấy chữ báo "tạm khoá", không mất bài.</p>' +
       dong('khoaChat', 'Khoá chat mọi lớp', 'Không ai gửi được tin mới (trừ thầy).') +
       dong('khoaDiem', 'Khoá ghi điểm AWord', 'Bảng xếp hạng + kết quả tạm dừng nhận; bài làm tự gửi lại sau khi mở.') +
+      '<div class="kc-dong"><div><b>Chuông báo động</b><small>Máy ANDREWHOME quét 10 phút/lần; tự khoá chat khi ≥ 30 tin lạ (tác vụ "AndrewClasses Canh Gac").</small></div></div>' +
       (KHAN_CAP.luc ? '<p style="margin-top:10px">Đổi lần cuối: ' + new Date(KHAN_CAP.luc).toLocaleString('vi-VN') + (KHAN_CAP.lyDo ? ' — ' + A.chuAnToan(KHAN_CAP.lyDo) : '') + '</p>' : '') +
-      '<div class="kc-chan"><button type="button" data-kc-dong>Đóng</button></div></div>';
-    return hop;
+      '</div>';
   }
-  function moHopKhanCap() { veHopKhanCap().hidden = false; }
+  function moHopKhanCap() { moHopBaoMat('kc'); }
   function doiKhanCap(khoa, nut) {
     if (chuaThay(nut)) return;
     var moi = !KHAN_CAP[khoa], vao = { lyDo: moi ? 'thầy bật từ dashboard' : '' };
@@ -9685,8 +9804,7 @@ button.mk-em:hover{border-color:currentColor}
     });
   }
   (function () {
-    var n = $('#sbKhanCap'), dai = $('#khanCapDai');
-    if (n) n.onclick = moHopKhanCap;
+    var dai = $('#khanCapDai');
     if (dai) dai.onclick = moHopKhanCap;
     window.qlMoKhanCap = moHopKhanCap;     // mục "Khẩn cấp" cột trái (js/nw-thanh.js) gọi
     if (window.AWChat && AWChat.ngheKhanCap) AWChat.ngheKhanCap(function (k) { KHAN_CAP = k; veKhanCap(); });
@@ -9715,7 +9833,7 @@ button.mk-em:hover{border-color:currentColor}
     return _datLaiFn;
   }
   function hoiDatLai(hop, chip) {
-    var o = hop.querySelector('#mkHoi');
+    var o = hop.querySelector('.mk-hoi');
     if (!o) return;
     var ten = chip.getAttribute('data-mk-ten') || '', so = chip.getAttribute('data-mk-so') || '';
     o.hidden = false;
@@ -9726,8 +9844,8 @@ button.mk-em:hover{border-color:currentColor}
     o.scrollIntoView({ block: 'nearest' });
   }
   function datLai(hop, nut) {
-    var uid = nut.getAttribute('data-mk-dat'), o = hop.querySelector('#mkHoi');
-    hop.querySelectorAll('#mkHoi button').forEach(function (b) { b.disabled = true; });
+    var uid = nut.getAttribute('data-mk-dat'), o = hop.querySelector('.mk-hoi');
+    hop.querySelectorAll('.mk-hoi button').forEach(function (b) { b.disabled = true; });
     nut.textContent = 'Đang đặt lại…';
     hamDatLai().then(function (fn) { return fn({ uid: uid }); }).then(function (r) {
       var d = (r && r.data) || {};
@@ -9737,7 +9855,8 @@ button.mk-em:hover{border-color:currentColor}
         '<div class="mk-nut"><button type="button" class="chinh" data-mk-chep="' + A.chuAnToan(d.mk || '') + '">Chép mật khẩu</button>' +
         '<button type="button" data-mk-huy>Xong</button></div>';
       var chip = hop.querySelector('[data-mk-uid="' + uid + '"]');
-      if (chip) { chip.className = 'mk-em chua'; chip.firstChild.textContent = '⬜ '; }
+      if (chip && chip.classList.contains('mk-em')) { chip.className = 'mk-em chua'; chip.firstChild.textContent = '⬜ '; }
+      if (MK_THEO_UID[uid]) MK_THEO_UID[uid].tt = 'chua';
     })['catch'](function (e) {
       // Lỗi hàm tự ném mang câu tiếng Việt (e.message); hàm CHƯA đưa lên ⇒ 404 không CORS ⇒ SDK báo functions/internal.
       var ma = String((e && e.code) || ''), cau = String((e && e.message) || '');
@@ -9747,65 +9866,392 @@ button.mk-em:hover{border-color:currentColor}
       o.innerHTML = '<p>⚠ ' + chu + '</p><div class="mk-nut"><button type="button" data-mk-huy>Đóng</button></div>';
     });
   }
-  function moHopMatKhau(nut) {
-    if (chuaThay(nut)) return;
-    var hop = $('#mkNen');
-    if (!hop) {
-      hop = document.createElement('div');
-      hop.id = 'mkNen'; hop.className = 'kc-nen';
-      document.body.appendChild(hop);
-      hop.addEventListener('click', function (e) {
-        if (e.target === hop || e.target.closest('[data-mk-dong]')) { hop.hidden = true; return; }
-        var c = e.target.closest('[data-mk-uid]'); if (c) { hoiDatLai(hop, c); return; }
-        var d = e.target.closest('[data-mk-dat]'); if (d) { datLai(hop, d); return; }
-        var k = e.target.closest('[data-mk-chep]');
-        if (k) {
-          var mk = k.getAttribute('data-mk-chep');
-          (navigator.clipboard ? navigator.clipboard.writeText(mk) : Promise.reject())
-            .then(function () { k.textContent = 'Đã chép ✓'; }, function () { k.textContent = 'Chép tay giúp em'; });
-          return;
-        }
-        if (e.target.closest('[data-mk-huy]')) { var o = hop.querySelector('#mkHoi'); if (o) { o.hidden = true; o.innerHTML = ''; } }
-      });
-    }
-    hop.hidden = false;
-    hop.innerHTML = '<div class="kc-hop mk-hop" role="dialog" aria-label="Mật khẩu học sinh"><h3>🔐 Mật khẩu học sinh</h3><p>Đang đọc…</p></div>';
-    AWChat.kho().then(function (f) {
+  // ⭐ v1.166.0 — tách ĐỌC / VẼ / BỘ NGHE để HỘP "Quản lý & bảo mật" dùng chung (mục Mật khẩu HS + cột mật khẩu ở mục
+  // Học sinh & lớp). Hộp nhỏ #mkNen cũ BỎ: mọi lối vào (window.qlMoMatKhau) nay mở hộp lớn ở mục 'mk'.
+  // Mỗi lần mở hộp đọc lại nwUsers một lần (~160 lượt, như hộp cũ) — không nghe sống.
+  var MK_THEO_UID = {}, MK_KQ = null, MK_LOI = '', MK_DANG = null;
+  function docMatKhau() {
+    if (MK_DANG) return MK_DANG;
+    MK_DANG = AWChat.kho().then(function (f) {
       return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('vaiTro', '==', 'hs')));
     }).then(function (snap) {
       var lop = {}, tong = { da: 0, chua: 0, khoa: 0 };
+      MK_THEO_UID = {};
       snap.forEach(function (d) {
         var x = d.data() || {};
         var tt = x.quaHanMk ? 'khoa' : (x.phaiDoiMk ? 'chua' : 'da');
         tong[tt]++;
-        (lop[x.lop || '?'] = lop[x.lop || '?'] || []).push({ ten: x.ten || d.id, tt: tt, so: x.msId, uid: d.id });
+        var e = { ten: x.ten || d.id, tt: tt, so: x.msId, uid: d.id };
+        MK_THEO_UID[d.id] = e;
+        (lop[x.lop || '?'] = lop[x.lop || '?'] || []).push(e);
       });
-      var nhan = { da: '✅', chua: '⬜', khoa: '🔒' };
-      var html = Object.keys(lop).sort().map(function (l) {
-        var ds = lop[l].sort(function (a, b) { return ('' + a.tt + a.ten).localeCompare('' + b.tt + b.ten, 'vi'); });
-        var da = ds.filter(function (e) { return e.tt === 'da'; }).length;
-        return '<div class="mk-lop"><b>' + A.chuAnToan(A.lopHien ? A.lopHien(l) : l) + '<small>' + da + '/' + ds.length + ' đã đặt</small></b>' +
-          ds.map(function (e) {
-            return '<button type="button" class="mk-em ' + e.tt + '" data-mk-uid="' + A.chuAnToan(e.uid) + '" data-mk-ten="' + A.chuAnToan(e.ten) +
-              '" data-mk-so="' + A.chuAnToan(String(e.so || '')) + '" title="mã số ' + A.chuAnToan(String(e.so || '')) + ' — bấm để đặt lại mật khẩu">' +
-              '<span>' + nhan[e.tt] + ' </span>' + A.chuAnToan(e.ten) + '</button>';
-          }).join('') + '</div>';
-      }).join('');
-      hop.innerHTML = '<div class="kc-hop mk-hop" role="dialog" aria-label="Mật khẩu học sinh"><h3>🔐 Mật khẩu học sinh</h3>' +
-        '<div class="mk-tong"><span>✅ Đã đặt mật khẩu riêng: ' + tong.da + '</span><span>⬜ Chưa: ' + tong.chua + '</span><span>🔒 Khoá vì quá hạn: ' + tong.khoa + '</span></div>' +
-        '<p>Em chưa đặt vẫn đang dùng mật khẩu lớp (bạn cùng lớp vào thay được). Quá 7 ngày chưa đặt sẽ tự khoá. ' +
-        'Em quên mật khẩu / bị khoá: <b>bấm tên em</b> để đặt lại — thầy nhận mật khẩu tạm đọc cho em.</p>' +
-        '<div class="mk-hoi" id="mkHoi" hidden></div>' +
-        '<div class="mk-cuon">' + html + '</div>' +
-        '<div class="kc-chan"><button type="button" data-mk-dong>Đóng</button></div></div>';
-    })['catch'](function (e) {
+      MK_KQ = { lop: lop, tong: tong };
+      MK_DANG = null;
+      return MK_KQ;
+    }, function (e) {
       var ma = (e && (e.code || e.message)) || '';
-      hop.innerHTML = '<div class="kc-hop mk-hop"><h3>🔐 Mật khẩu học sinh</h3><p>' +
-        (String(ma).indexOf('permission-denied') >= 0 ? loiPhien('Chưa đọc được danh sách') : 'Chưa đọc được danh sách. Thử lại nhé.') +
-        '</p><div class="kc-chan"><button type="button" data-mk-dong>Đóng</button></div></div>';
+      MK_LOI = String(ma).indexOf('permission-denied') >= 0 ? loiPhien('Chưa đọc được danh sách mật khẩu') : 'Chưa đọc được danh sách mật khẩu. Thử lại nhé.';
+      MK_DANG = null;
+      throw e;
+    });
+    return MK_DANG;
+  }
+  // Chưa có số ⇒ đọc rồi vẽ lại hộp (nếu hộp còn mở). Trả true khi số đã sẵn.
+  function canMatKhau() {
+    if (MK_KQ || MK_LOI || THAY_PHIEN === null) return true;
+    docMatKhau().then(function () { if (qmDangMo()) veBaoMat(); }, function () { if (qmDangMo()) veBaoMat(); });
+    return false;
+  }
+  var MK_NHAN = { da: '✅', chua: '⬜', khoa: '🔒' };
+  function htmlMatKhau(kq) {
+    var lop = kq.lop, tong = kq.tong;
+    var html = Object.keys(lop).sort().map(function (l) {
+      var ds = lop[l].sort(function (a, b) { return ('' + a.tt + a.ten).localeCompare('' + b.tt + b.ten, 'vi'); });
+      var da = ds.filter(function (e) { return e.tt === 'da'; }).length;
+      return '<div class="mk-lop"><b>' + A.chuAnToan(A.lopHien ? A.lopHien(l) : l) + '<small>' + da + '/' + ds.length + ' đã đặt</small></b>' +
+        ds.map(function (e) {
+          return '<button type="button" class="mk-em ' + e.tt + '" data-mk-uid="' + A.chuAnToan(e.uid) + '" data-mk-ten="' + A.chuAnToan(e.ten) +
+            '" data-mk-so="' + A.chuAnToan(String(e.so || '')) + '" title="mã số ' + A.chuAnToan(String(e.so || '')) + ' — bấm để đặt lại mật khẩu">' +
+            '<span>' + MK_NHAN[e.tt] + ' </span>' + A.chuAnToan(e.ten) + '</button>';
+        }).join('') + '</div>';
+    }).join('');
+    return '<div class="mk-tong"><span>✅ Đã đặt mật khẩu riêng: ' + tong.da + '</span><span>⬜ Chưa: ' + tong.chua + '</span><span>🔒 Khoá vì quá hạn: ' + tong.khoa + '</span></div>' +
+      '<p class="qm-p">Em chưa đặt vẫn đang dùng mật khẩu lớp (bạn cùng lớp vào thay được). Quá 7 ngày chưa đặt sẽ tự khoá. ' +
+      'Em quên mật khẩu / bị khoá: <b>bấm tên em</b> để đặt lại — thầy nhận mật khẩu tạm đọc cho em.</p>' +
+      '<div class="mk-hoi" hidden></div>' +
+      '<div class="qm-mk-ds">' + html + '</div>';
+  }
+  // Bộ nghe các nút mật khẩu — gắn MỘT lần lên khung chứa (ruột vẽ lại thoải mái).
+  function ganNgheMk(hop) {
+    hop.addEventListener('click', function (e) {
+      var c = e.target.closest('[data-mk-uid]'); if (c) { if (!chuaThay()) hoiDatLai(hop, c); return; }
+      var d = e.target.closest('[data-mk-dat]'); if (d) { datLai(hop, d); return; }
+      var k = e.target.closest('[data-mk-chep]');
+      if (k) {
+        var mk = k.getAttribute('data-mk-chep');
+        (navigator.clipboard ? navigator.clipboard.writeText(mk) : Promise.reject())
+          .then(function () { k.textContent = 'Đã chép ✓'; }, function () { k.textContent = 'Chép tay giúp em'; });
+        return;
+      }
+      if (e.target.closest('[data-mk-huy]')) { var o = hop.querySelector('.mk-hoi'); if (o) { o.hidden = true; o.innerHTML = ''; } }
     });
   }
-  window.qlMoMatKhau = moHopMatKhau;       // mục "Mật khẩu HS" cột trái (js/nw-thanh.js) gọi
+  function moHopMatKhau() { moHopBaoMat('mk'); }
+  window.qlMoMatKhau = moHopMatKhau;
+
+  /* ============================================================
+     ⭐⭐ v1.166.0 (28/09/2026) — HỘP "QUẢN LÝ & BẢO MẬT" (mẫu v4 thầy chốt; kế hoạch myLesson-app
+     "KE HOACH QUAN LY HOC SINH.md" ĐỢT A). Dòng cuối cột trái (js/nw-thanh.js → window.qlMoBaoMat) mở hộp 5 mục:
+       Học sinh & lớp — thay "Quản lý mã" + "Thiết lập lớp" + "Xem như học sinh" của menu ☰ cũ + mục "Lớp" Network;
+                        2 cách xem: THEO HỌC SINH (một em học 2 nơi = MỘT dòng, gộp theo mã) · THEO LỚP; bấm tên ⇒ hồ sơ em
+       · Mật khẩu HS · Khẩn cấp · Nhật ký · Cài đặt bảo mật · chân cột = PHIÊN THẦY (bấm = đăng nhập / thoát).
+     ⛔ Đợt A CHỈ gom chức năng ĐANG CÓ — không kho mới, không luật mới. Thêm/sửa học sinh vẫn ở myStudent tới Đợt C;
+     hồ sơ em có điểm danh / học tập / lịch sử ở Đợt B.
+     ============================================================ */
+  var QM = { tab: 'hs', xem: 'hs', loc: '', tim: '', em: null };
+  var QM_P = function (d) { return '<svg viewBox="0 0 24 24">' + d + '</svg>'; };
+  var QM_IC = {
+    khien: QM_P('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>'),
+    hs: QM_P('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 4.5a3.4 3.4 0 0 1 0 6.7M20 20c0-3-1.7-5.2-4-5.9"/>'),
+    mk: QM_P('<rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>'),
+    kc: QM_P('<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'),
+    nk: QM_P('<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/>'),
+    cd: QM_P('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'),
+    x: QM_P('<path d="M6 6l12 12M18 6L6 18"/>'),
+    tim: QM_P('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>')
+  };
+  var QM_TABS = [['hs', 'Học sinh & lớp'], ['mk', 'Mật khẩu HS'], ['kc', 'Khẩn cấp'], ['nk', 'Nhật ký'], ['cd', 'Cài đặt bảo mật']];
+  var qmE = function (s) { return A.chuAnToan(String(s == null ? '' : s)); };
+  function qmDangMo(tab) { var n = $('#qmNen'); return !!n && !n.hidden && (!tab || QM.tab === tab); }
+  function qmHop() {
+    var nen = $('#qmNen');
+    if (nen) return nen;
+    nen = document.createElement('div');
+    nen.id = 'qmNen'; nen.className = 'qm-nen'; nen.hidden = true;
+    nen.innerHTML = '<div class="qm-hop" role="dialog" aria-modal="true" aria-label="Quản lý và bảo mật">' +
+      '<nav class="qm-trai"><h3>' + QM_IC.khien + 'Quản lý &amp; bảo mật</h3>' +
+      QM_TABS.map(function (t) {
+        return '<button type="button" class="qm-tab" data-qm-tab="' + t[0] + '">' + QM_IC[t[0]] + '<span>' + t[1] + '</span><em id="qmSo_' + t[0] + '"></em></button>';
+      }).join('') +
+      '<div class="qm-gian"></div>' +
+      '<button type="button" class="qm-phien" id="qmPhien"><i></i><span><b id="qmPhienChu">Đang kiểm phiên thầy…</b><small id="qmPhienPhu"></small></span></button>' +
+      '<div class="qm-chu">Chỉ thầy mở được hộp này.</div></nav>' +
+      '<div class="qm-phai"><div class="qm-dau"><div class="qm-dau-chu"><h4 id="qmTieu"></h4><div class="qm-phu" id="qmPhu"></div></div>' +
+      '<button type="button" class="qm-dong" data-qm-dong aria-label="Đóng">' + QM_IC.x + '</button></div>' +
+      '<div class="qm-than" id="qmThan"></div></div></div>';
+    document.body.appendChild(nen);            // gắn vào body: tránh bẫy position:fixed trong khối có backdrop-filter
+    nen.addEventListener('click', function (e) {
+      if (e.target === nen || e.target.closest('[data-qm-dong]')) return void dongHopBaoMat();
+      var t = e.target.closest('[data-qm-tab]');
+      if (t) { QM.tab = t.getAttribute('data-qm-tab'); QM.em = null; return void veBaoMat(); }
+      var x = e.target.closest('[data-qm-xem]');
+      if (x) { QM.xem = x.getAttribute('data-qm-xem'); QM.em = null; return void veBaoMat(); }
+      var l = e.target.closest('[data-qm-loc]');
+      if (l) { QM.loc = l.getAttribute('data-qm-loc'); QM.xem = 'hs'; QM.em = null; return void veBaoMat(); }
+      var mo = e.target.closest('[data-qm-mo]');
+      if (mo) return void window.open(mo.getAttribute('data-qm-mo'), '_blank');
+      var ds = e.target.closest('[data-qm-dslop]');
+      if (ds) { dongHopBaoMat(); return void gvMoSidebar(ds.getAttribute('data-qm-dslop'), 'lop'); }
+      if (e.target.closest('[data-qm-quay]')) { QM.em = null; return void veBaoMat(); }
+      var kc = e.target.closest('[data-kc]');
+      if (kc) return void doiKhanCap(kc.getAttribute('data-kc'), kc);
+      if (e.target.closest('#qmPhien')) return void $('#thayDn').click();
+      if (e.target.closest('[data-mk-uid],[data-mk-dat],[data-mk-chep],[data-mk-huy],.mk-hoi')) return;   // bộ nghe mật khẩu (ganNgheMk) lo
+      var em = e.target.closest('[data-qm-em]');
+      if (em) { QM.em = em.getAttribute('data-qm-em'); return void veBaoMat(); }
+    });
+    nen.addEventListener('input', function (e) {
+      if (e.target.id !== 'qmTim') return;
+      QM.tim = e.target.value;
+      veBangHs();
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && qmDangMo()) dongHopBaoMat(); });
+    ganNgheMk($('#qmThan'));
+    return nen;
+  }
+  function moHopBaoMat(tab) {
+    var nen = qmHop();
+    dongSb();
+    if (tab) QM.tab = tab;
+    QM.em = null;
+    MK_KQ = null; MK_LOI = '';                 // mỗi lần mở đọc lại trạng thái mật khẩu
+    nen.hidden = false;
+    document.body.style.overflow = 'hidden';
+    veBaoMat();
+    veQmPhien();
+  }
+  function dongHopBaoMat() {
+    var nen = $('#qmNen');
+    if (nen) nen.hidden = true;
+    document.body.style.overflow = '';
+  }
+  window.qlMoBaoMat = moHopBaoMat;
+
+  // Một em = MỘT dòng: gộp theo MÃ (em học lớp + khóa, hoặc học bổ sung, cùng một mã). Em chưa có mã ⇒ mỗi bản ghi một dòng.
+  function dsNguoi() {
+    var theoMa = {}, ds = [];
+    (DL.lop || []).concat(DL.khoa || []).forEach(function (l) {
+      (l.hocSinh || []).forEach(function (h) {
+        var k = h.ma ? A.chuanMa(h.ma) : (l.maLop + '#' + h.id);
+        var p = theoMa[k];
+        if (!p) { p = theoMa[k] = { khoa: k, ma: h.ma || '', ten: h.ten || '', tenCu: [], sinhNhat: '', noi: [], ids: [] }; ds.push(p); }
+        p.noi.push({ maLop: l.maLop, ten: l.tenGoc || l.maLop, laKhoa: l.loai === 'khoa', vao: h.vao || '', bs: !!h.bs });
+        p.ids.push(h.id);
+        (h.tenCu || []).forEach(function (t) { if (p.tenCu.indexOf(t) < 0) p.tenCu.push(t); });
+        if (!p.sinhNhat && h.sinhNhat) p.sinhNhat = h.sinhNhat;
+      });
+    });
+    ds.sort(function (a, b) { return a.ten.localeCompare(b.ten, 'vi'); });
+    return ds;
+  }
+  function mkCua(p) {
+    for (var i = 0; i < p.ids.length; i++) { var m = MK_THEO_UID['hs_' + p.ids[i]]; if (m) return m; }
+    return null;
+  }
+  function htmlTtMk(p) {
+    if (MK_LOI || THAY_PHIEN === null) return '<span class="qm-mk nho">—</span>';
+    if (!MK_KQ) return '<span class="qm-mk nho">…</span>';
+    var m = mkCua(p);
+    if (!m) return '<span class="qm-mk nho">chưa có tài khoản</span>';
+    return '<span class="qm-mk ' + m.tt + '">' + { da: 'Đã đặt riêng', chua: 'Dùng MK lớp', khoa: 'Khoá quá hạn' }[m.tt] + '</span>';
+  }
+  function nutDatLai(p) {
+    var m = MK_KQ && mkCua(p);
+    return m ? '<button type="button" class="qm-nut" data-mk-uid="' + qmE(m.uid) + '" data-mk-ten="' + qmE(m.ten) + '" data-mk-so="' + qmE(m.so) + '">Đặt lại MK</button>' : '';
+  }
+  function urlNhu(p, n) {
+    return (n.laKhoa ? 'khoa.html' : 'lop.html') + '?nhu=' + encodeURIComponent(p.ma) + '&lop=' + encodeURIComponent(n.maLop);
+  }
+  function chipNoi(n) { return '<span class="qm-lop' + (n.laKhoa ? ' khoa' : '') + '">' + qmE(n.ten) + (n.bs ? ' · bổ sung' : '') + '</span>'; }
+  function chuDau(ten) { var t = String(ten || '').trim().split(/\s+/).pop() || '?'; return qmE(t.charAt(0)); }
+  function boDau(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase(); }
+  function ngayVN(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : qmE(s); }
+  function hangHs(p) {
+    return '<tr data-qm-em="' + qmE(p.khoa) + '" title="Bấm để xem hồ sơ em">' +
+      '<td><div class="qm-em"><i>' + chuDau(p.ten) + '</i><div><b>' + qmE(p.ten) + '</b>' +
+        (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div></div></td>' +
+      '<td>' + p.noi.map(chipNoi).join('') + '</td>' +
+      '<td>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</td>' +
+      '<td>' + htmlTtMk(p) + '</td>' +
+      '<td><div class="qm-hd">' +
+        (p.ma ? '<button type="button" class="qm-nut" data-qm-mo="' + qmE(urlNhu(p, p.noi[0])) + '" title="Mở trang của em ở tab mới — không cần mật khẩu, không lưu vào máy">Xem như em</button>' : '') +
+        nutDatLai(p) + '</div></td></tr>';
+  }
+  function veBangHs() {
+    var tb = $('#qmBangHs');
+    if (!tb) return;
+    var q = boDau(QM.tim).trim();
+    var ds = dsNguoi().filter(function (p) {
+      if (QM.loc && !p.noi.some(function (n) { return n.maLop === QM.loc; })) return false;
+      return !q || boDau(p.ten + ' ' + p.tenCu.join(' ') + ' ' + p.ma).indexOf(q) >= 0;
+    });
+    tb.innerHTML = ds.length ? ds.map(hangHs).join('') : '<tr><td colspan="5" class="qm-trong">Không có em nào khớp.</td></tr>';
+    var dem = $('#qmDemHs');
+    if (dem) dem.textContent = ds.length + ' em';
+  }
+  function tatCaLop() { return (DL.lop || []).concat(DL.khoa || []); }
+  function htmlHocSinh() {
+    var dsL = tatCaLop();
+    var thanh = '<div class="qm-thanh"><div class="qm-phan">' +
+      '<button type="button" data-qm-xem="hs" class="' + (QM.xem === 'hs' ? 'chon' : '') + '">Theo học sinh</button>' +
+      '<button type="button" data-qm-xem="lop" class="' + (QM.xem === 'lop' ? 'chon' : '') + '">Theo lớp</button></div>' +
+      '<span class="qm-gian"></span><span class="qm-ghi">Thêm / sửa học sinh: vẫn ở myStudent (🌐 để lên web) — chuyển về đây ở Đợt C</span></div>';
+    if (QM.xem === 'lop') {
+      return thanh + '<table class="qm-bang"><thead><tr><th>Lớp / khóa</th><th>Lịch học</th><th>Sĩ số</th><th>Bài tập</th><th></th></tr></thead><tbody>' +
+        dsL.map(function (l) {
+          var laKhoa = l.loai === 'khoa', tt = trangThaiBai(l);
+          var lich = laKhoa ? 'Khóa học' : [String(l.thu || '').replace(/,/g, ' · '), l.gio ? l.gio + (l.tan ? '–' + l.tan : '') : ''].filter(Boolean).join(' · ');
+          return '<tr><td><span class="qm-lop' + (laKhoa ? ' khoa' : '') + '">' + qmE(l.tenGoc || l.maLop) + '</span></td>' +
+            '<td>' + qmE(lich || '—') + '</td><td>' + (l.hocSinh || []).length + ' em</td>' +
+            '<td><span class="qm-tt ' + tt + '">' + { giao: 'Đã giao', cho: 'Chờ bài', khong: 'Không giao bài' }[tt] + '</span></td>' +
+            '<td><div class="qm-hd"><button type="button" class="qm-nut" data-qm-loc="' + qmE(l.maLop) + '">Học sinh</button>' +
+              '<button type="button" class="qm-nut" data-qm-dslop="' + qmE(l.maLop) + '" title="Danh sách em + đổi ảnh đại diện">Thiết lập lớp</button>' +
+              '<button type="button" class="qm-nut" data-qm-mo="' + qmE((laKhoa ? 'khoa.html' : 'lop.html') + '?gv=1&lop=' + encodeURIComponent(l.maLop)) + '">Xem trang lớp</button></div></td></tr>';
+        }).join('') + '</tbody></table>';
+    }
+    return thanh +
+      '<div class="qm-loc"><label class="qm-tim">' + QM_IC.tim + '<input id="qmTim" type="search" placeholder="Tìm tên hoặc ID…" autocomplete="off" value="' + qmE(QM.tim) + '"></label>' +
+        '<span class="qm-dem" id="qmDemHs"></span></div>' +
+      '<div class="qm-chips"><button type="button" class="qm-chip' + (!QM.loc ? ' chon' : '') + '" data-qm-loc="">Tất cả</button>' +
+        dsL.map(function (l) { return '<button type="button" class="qm-chip' + (QM.loc === l.maLop ? ' chon' : '') + '" data-qm-loc="' + qmE(l.maLop) + '">' + qmE(l.tenGoc || l.maLop) + '</button>'; }).join('') + '</div>' +
+      '<div class="mk-hoi" hidden></div>' +
+      '<table class="qm-bang qm-bang-hs"><thead><tr><th>Học sinh</th><th>Lớp / khóa</th><th>ID đăng nhập</th><th>Mật khẩu</th><th></th></tr></thead><tbody id="qmBangHs"></tbody></table>';
+  }
+  function htmlHoSo(p) {
+    var sn = /^(\d{2})-(\d{2})$/.exec(p.sinhNhat || '');
+    return '<button type="button" class="qm-quay" data-qm-quay>‹ Danh sách học sinh</button>' +
+      '<div class="mk-hoi" hidden></div>' +
+      '<div class="qm-hs-dau"><i>' + chuDau(p.ten) + '</i><div><h5>' + qmE(p.ten) + '</h5>' +
+        (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div><span class="qm-gian"></span>' + nutDatLai(p) + '</div>' +
+      '<div class="qm-luoi">' +
+        '<div class="qm-o"><h6>Ghi danh &amp; ngày tham gia</h6>' + p.noi.map(function (n) {
+          return '<div class="qm-gd">' + chipNoi(n) + '<span class="qm-gd-ngay">' + (n.vao ? 'vào lớp ' + ngayVN(n.vao) : 'chưa ghi ngày vào') + '</span>' +
+            (p.ma ? '<button type="button" class="qm-nut" data-qm-mo="' + qmE(urlNhu(p, n)) + '">Xem như em</button>' : '') + '</div>';
+        }).join('') + '</div>' +
+        '<div class="qm-o"><h6>Thông tin</h6>' +
+          '<div class="qm-dong-tt"><span>ID đăng nhập</span>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</div>' +
+          '<div class="qm-dong-tt"><span>Sinh nhật</span><b>' + (sn ? sn[2] + '/' + sn[1] : 'chưa có') + '</b></div>' +
+          '<div class="qm-dong-tt"><span>Mật khẩu</span>' + htmlTtMk(p) + '</div></div>' +
+      '</div>' +
+      '<div class="qm-sap">Điểm danh gần đây · số liệu học tập 30 ngày · lịch sử chuyển lớp / trình độ: có ở <b>Đợt B</b>. ' +
+        'Sửa tên, ngày sinh, ghi danh: vẫn ở myStudent tới <b>Đợt C</b>.</div>';
+  }
+  function htmlCaiDat() {
+    var d = function (ten, mo, gt) { return '<div class="kc-dong"><div><b>' + ten + '</b><small>' + mo + '</small></div><span class="qm-gt">' + gt + '</span></div>'; };
+    return '<div class="qm-kc">' +
+      d('Đăng nhập học sinh', 'ID + mật khẩu. Em mới nhận mật khẩu lớp, lần đầu vào phải đặt mật khẩu riêng.', 'ID + mật khẩu') +
+      d('Mật khẩu riêng tối thiểu', 'Số ký tự ít nhất khi em tự đặt.', '8 ký tự') +
+      d('Hạn đặt mật khẩu riêng', 'Quá hạn chưa đặt ⇒ tài khoản tự khoá; thầy mở bằng Đặt lại MK.', '7 ngày') +
+      d('Tự đăng ký tài khoản', 'Người lạ không tự tạo tài khoản được.', 'TẮT') +
+      d('App Check (chặn script ngoài trình duyệt)', 'Đang theo dõi, chưa ép buộc — xem số liệu khoảng 04/10.', 'Theo dõi') +
+      d('ID mới ngắn gọn', 'Bật theo TỪNG LỚP khi thầy sẵn sàng — bài dở của em giữ nguyên.', 'Đợt E') +
+      '<p class="qm-p" style="margin-top:12px">Đổi các quy định này hiện phải nhờ Claude chạy công cụ trên máy MSI.</p></div>';
+  }
+  function veBaoMat() {
+    var nen = qmHop();
+    var batKc = KHAN_CAP.khoaChat || KHAN_CAP.khoaDiem;
+    nen.querySelectorAll('.qm-tab').forEach(function (b) {
+      var t = b.getAttribute('data-qm-tab');
+      b.classList.toggle('chon', t === QM.tab);
+      if (t === 'kc') b.classList.toggle('kc-dang', batKc);
+    });
+    $('#qmSo_hs').textContent = String(dsNguoi().length);
+    $('#qmSo_mk').textContent = MK_KQ ? MK_KQ.tong.da + '/' + (MK_KQ.tong.da + MK_KQ.tong.chua + MK_KQ.tong.khoa) : '';
+    $('#qmSo_kc').textContent = batKc ? 'BẬT' : 'TẮT';
+    $('#qmSo_kc').className = batKc ? 'bat' : 'tat';
+    var tieu = '', phu = '', than = '';
+    if (QM.tab === 'hs') {
+      canMatKhau();
+      var p = QM.em && dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
+      if (QM.em && !p) QM.em = null;
+      tieu = p ? 'Hồ sơ học sinh' : 'Học sinh & lớp';
+      phu = p ? p.noi.map(function (n) { return n.ten; }).join(' · ') : dsNguoi().length + ' em · ' + tatCaLop().length + ' lớp/khóa';
+      than = p ? htmlHoSo(p) : htmlHocSinh();
+    } else if (QM.tab === 'mk') {
+      tieu = 'Mật khẩu học sinh'; phu = 'Bấm tên em để đặt lại mật khẩu tạm (hiện một lần)';
+      if (THAY_PHIEN === null) than = '<p class="qm-p">' + qmE(AWThay.CAN_DANG_NHAP) + '</p>';
+      else if (MK_LOI) than = '<p class="qm-p">' + qmE(MK_LOI) + '</p>';
+      else if (canMatKhau() && MK_KQ) than = htmlMatKhau(MK_KQ);
+      else than = '<p class="qm-p">Đang đọc…</p>';
+    } else if (QM.tab === 'kc') {
+      tieu = '🚨 Khẩn cấp'; phu = 'Khoá chat / khoá ghi điểm khi bị tấn công — mở lại là mọi thứ chạy như cũ';
+      than = htmlKhanCap();
+    } else if (QM.tab === 'nk') {
+      tieu = 'Nhật ký'; phu = 'Ai làm gì, lúc nào (không bao giờ ghi mật khẩu)';
+      than = '<div class="qm-sap">Nhật ký thao tác (đặt lại mật khẩu, khẩn cấp, thêm/sửa học sinh…) hiện ở đây từ <b>Đợt B</b>. ' +
+        'Máy chủ đã ghi nhật ký đặt lại mật khẩu, nhưng trang chưa được đọc.</div>';
+    } else {
+      tieu = 'Cài đặt bảo mật'; phu = 'Quy định chung cho mọi tài khoản học sinh';
+      than = htmlCaiDat();
+    }
+    $('#qmTieu').textContent = tieu;
+    $('#qmPhu').textContent = phu;
+    $('#qmThan').innerHTML = than;
+    if (QM.tab === 'hs' && !QM.em && QM.xem === 'hs') veBangHs();
+  }
+  function veQmPhien() {
+    var nut = $('#qmPhien');
+    if (!nut) return;
+    nut.className = 'qm-phien' + (THAY_PHIEN ? ' co' : (THAY_PHIEN === null ? ' chua' : ''));
+    $('#qmPhienChu').textContent = THAY_PHIEN ? 'Phiên thầy: đã đăng nhập' : (THAY_PHIEN === null ? 'Chưa đăng nhập' : 'Đang kiểm phiên thầy…');
+    $('#qmPhienPhu').textContent = THAY_PHIEN ? (THAY_PHIEN.email || 'token từ app myLesson') + ' · bấm để thoát' : (THAY_PHIEN === null ? 'Bấm để đăng nhập Google' : '');
+  }
+
+  // ⭐ v1.166.0 — 4 mục dời từ menu ☰ lên cột trái nhóm QUẢN LÝ: Xếp hạng lớp · Bài đã xoá · Kho trò chuyện
+  // (mở đúng mục cũ trong sidebar, theo LỚP ĐANG CHỌN) · Quà tặng (hộp lớn cũ).
+  function moMucCotTrai(ma) {
+    if (ma === 'qua') return void moQuaHop();
+    if (LOP_CHON) gvMoSidebar(LOP_CHON, ma);
+  }
+  window.qlMoMuc = moMucCotTrai;
+
+  // ⭐ v1.166.0 — MỤC "SINH NHẬT" (Network, cột trái) thay nút bánh kem trên từng thẻ lớp + mục "Sinh nhật sắp tới" của ☰:
+  // 30 ngày tới, cả trung tâm, một em học 2 nơi chỉ hiện một lần. Số hồng trên mục = số em có sinh nhật trong 7 ngày.
+  function dsSinhNhat(soNgay) {
+    var r = [];
+    dsNguoi().forEach(function (p) {
+      var con = conMayNgay(p.sinhNhat);
+      if (con !== null && con <= soNgay) r.push({ p: p, con: con });
+    });
+    r.sort(function (a, b) { return a.con - b.con || a.p.ten.localeCompare(b.p.ten, 'vi'); });
+    return r;
+  }
+  function moSinhNhat() {
+    var nen = $('#snNen');
+    if (!nen) {
+      nen = document.createElement('div');
+      nen.id = 'snNen'; nen.className = 'kc-nen'; nen.hidden = true;
+      document.body.appendChild(nen);
+      nen.addEventListener('click', function (e) { if (e.target === nen || e.target.closest('[data-sn-dong]')) nen.hidden = true; });
+    }
+    var tatCa = dsNguoi(), nhom = '';
+    var coNgay = tatCa.filter(function (p) { return /^\d{2}-\d{2}$/.test(p.sinhNhat); }).length;
+    var html = dsSinhNhat(30).map(function (x) {
+      var g = x.con === 0 ? 'Hôm nay' : (x.con <= 7 ? '7 ngày tới' : 'Trong 30 ngày');
+      var dau = g !== nhom ? '<div class="sn-nhom">' + g + '</div>' : '';
+      nhom = g;
+      var sn = /^(\d{2})-(\d{2})$/.exec(x.p.sinhNhat);
+      return dau + '<div class="sn-em"><i>' + chuDau(x.p.ten) + '</i><div><b>' + qmE(x.p.ten) + '</b><small>' +
+        qmE(x.p.noi.map(function (n) { return n.ten; }).join(' · ')) + ' · ' + sn[2] + '/' + sn[1] + '</small></div>' +
+        '<span class="sn-khi' + (x.con === 0 ? ' nay' : (x.con <= 7 ? ' gan' : '')) + '">' +
+        (x.con === 0 ? 'Hôm nay 🎉' : (x.con === 1 ? 'Ngày mai' : 'còn ' + x.con + ' ngày')) + '</span></div>';
+    }).join('');
+    nen.innerHTML = '<div class="kc-hop sn-hop" role="dialog" aria-label="Sinh nhật sắp tới"><h3>🎂 Sinh nhật sắp tới</h3>' +
+      '<p>30 ngày tới, cả trung tâm.</p>' +
+      '<div class="sn-ds">' + (html || '<p class="qm-p">Không có sinh nhật nào trong 30 ngày tới.</p>') + '</div>' +
+      '<p class="sn-chan">Đang có ngày sinh của ' + coNgay + '/' + tatCa.length + ' em — ngày sinh nhập ở myStudent (🌐 để lên web).</p>' +
+      '<div class="kc-chan"><button type="button" data-sn-dong>Đóng</button></div></div>';
+    nen.hidden = false;
+  }
+  function datSoSinhNhat(lan) {
+    var nut = document.querySelector('.nwb-ql-muc[data-muc="sinhNhat"]');
+    if (!nut) { if ((lan || 0) < 20) setTimeout(function () { datSoSinhNhat((lan || 0) + 1); }, 300); return; }
+    var n = dsSinhNhat(7).length, so = nut.querySelector('.dk-so');
+    if (!n) { if (so) so.remove(); return; }
+    if (!so) { so = document.createElement('b'); so.className = 'dk-so sn-so'; nut.appendChild(so); }
+    so.textContent = String(n);
+  }
+  window.qlMoSinhNhat = moSinhNhat;
   function veThayDn() {
     var chu = $('#thayDnChu');
     if (!chu) return;
@@ -9816,6 +10262,7 @@ button.mk-em:hover{border-color:currentColor}
       chu.textContent = THAY_PHIEN === null ? '🔐 Đăng nhập Google để ghi kho' : 'Đang kiểm phiên thầy…';
       $('#thayDn').title = 'Cần phiên của thầy mới ghi được kho';
     }
+    veQmPhien();
   }
   $('#thayDn').addEventListener('click', function () {
     if (THAY_PHIEN) {
@@ -9831,7 +10278,10 @@ button.mk-em:hover{border-color:currentColor}
       baoToast((e && e.message) || 'Không đăng nhập được.');
     });
   });
-  AWThay.theoDoi(function (u) { THAY_PHIEN = u; veThayDn(); if (u) dkDemMoi(); })['catch'](function () {
+  AWThay.theoDoi(function (u) {
+    THAY_PHIEN = u; veThayDn(); if (u) dkDemMoi();
+    if (qmDangMo()) { MK_KQ = null; MK_LOI = ''; veBaoMat(); }   // v1.166.0 — vừa đăng nhập/thoát khi hộp đang mở ⇒ đọc lại
+  })['catch'](function () {
     THAY_PHIEN = null; veThayDn();
   });
 
@@ -9994,6 +10444,6 @@ button.mk-em:hover{border-color:currentColor}
   else moCong();
 })();
 </script>
-<script src="js/nw-thanh.js?v=10"></script>
+<script src="js/nw-thanh.js?v=11"></script>
 </body>
 </html>

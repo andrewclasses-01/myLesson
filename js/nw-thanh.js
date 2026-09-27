@@ -152,32 +152,40 @@
     suKien: P2('<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M8 14h3M13 14h3M8 17.5h3"/>'),
     baoCao: P2('<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/>'),
     an: P2('<path d="M17.9 17.9A10.9 10.9 0 0 1 12 20c-7 0-11-8-11-8a20 20 0 0 1 5.1-6"/><path d="M9.9 4.2A9.1 9.1 0 0 1 12 4c7 0 11 8 11 8a20 20 0 0 1-2.2 3.2"/><path d="M14.1 14.1a3 3 0 1 1-4.2-4.2"/><line x1="1" y1="1" x2="23" y2="23"/>'),
-    tuCam: P2('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>'),
-    khanCap: P2('<path d="M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>'),   // 27/09/2026 — nút KHẨN CẤP (dashboard window.qlMoKhanCap)
-    khoa: P2('<rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/>'),   // v1.160.0 — mục "Mật khẩu HS"
-    lop: P2('<path d="M3 10.8 12 6l9 4.8-9 4.8z"/><path d="M6.5 12.6v4.4c0 1.2 2.5 2.5 5.5 2.5s5.5-1.3 5.5-2.5v-4.4"/><path d="M21 10.8V16"/>')
+    tuCam: P2('<circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/>')
   };
-  // thầy 24/09: cột trái kiểu Facebook — không khung, dòng đầu = avatar + tên, icon to có MÀU riêng, nhóm ngăn bằng vạch mảnh
+  // ⭐ v1.166.0 (28/09/2026, mẫu v4 thầy chốt — myLesson-app "KE HOACH QUAN LY HOC SINH.md" Đợt A):
+  // bỏ dòng "Thầy Andrew" (đã có avatar trên thanh) · nhóm "Bài tập" → "QUẢN LÝ" (thêm 4 mục dời từ menu ☰) ·
+  // Network bỏ "Tài khoản" + "Lớp" (gộp vào hộp Quản lý & bảo mật), thêm "Sinh nhật" ·
+  // Khẩn cấp + Mật khẩu HS gộp vào MỘT dòng "Quản lý & bảo mật" KHÔNG tiêu đề ở dưới cùng (dashboard window.qlMoBaoMat).
+  ICQ.top = P2('<path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>');
+  ICQ.qua = P2('<rect x="3" y="8" width="18" height="5" rx="1"/><path d="M5 13v8h14v-8M12 8v13"/><path d="M12 8c-2-4-6-4-6-1.5S9 8 12 8c3 0 6 .5 6-1.5S14 4 12 8z"/>');
+  ICQ.kho = P2('<path d="M3 7l1.5-3h15L21 7"/><rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9.5 11.5h5"/>');
+  ICQ.khoChat = P2('<path d="M12 3a8 8 0 0 0-6.9 12L4 20l5-1.1A8 8 0 1 0 12 3z"/><path d="M9 10h6M9 13h4"/>');
+  ICQ.sinhNhat = P2('<path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/><path d="M4 20h16"/><path d="M4 15.5c1.4 1 2.6 1 4 0s2.6-1 4 0 2.6 1 4 0 2.6-1 4 0"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/>');
+  ICQ.baoMat = P2('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>');
   var MUC_QL = [
-    { ma: 'caNhan', chu: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg' },
-    { nhom: 'Bài tập', vach: true },
+    { nhom: 'Quản lý' },
     { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap, mau: '#0E7C6E' },
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, mau: '#F0821E' },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
-    { ma: 'khanCap', chu: 'Khẩn cấp', ic: ICQ.khanCap, mau: '#D32F2F' },   // 27/09/2026 — hộp khoá chat/điểm (dashboard window.qlMoKhanCap)
-    { ma: 'matKhau', chu: 'Mật khẩu HS', ic: ICQ.khoa, mau: '#0E7C6E' },   // v1.160.0 — ai đã đặt mật khẩu riêng (dashboard window.qlMoMatKhau)
+    { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, mau: '#E0B411' },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
+    { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, mau: '#EC4899' },
+    { ma: 'kho', chu: 'Bài đã xoá', ic: ICQ.kho, mau: '#64748B' },
+    { ma: 'kholuutru', chu: 'Kho trò chuyện', ic: ICQ.khoChat, mau: '#3E7BFA' },
     { nhom: 'Network', vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, mau: '#3E7BFA', mo: 'Lập và quản lý nhóm chat các lớp' },
     { ma: 'baiDang', chu: 'Bài đăng', ic: IC.bangTin, mau: '#18A957', mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
     { ma: 'noiBat', chu: 'Nổi bật', ic: ICQ.sao, mau: '#E0B411', mo: 'Ghim và sắp xếp bài nổi bật' },
     { ma: 'suKien', chu: 'Sự kiện & Khám phá', ic: ICQ.suKien, mau: '#F0821E', mo: 'Đăng trò chơi, giải đấu, khoá học, thông báo' },
+    { ma: 'sinhNhat', chu: 'Sinh nhật', ic: ICQ.sinhNhat, mau: '#EC4899' },  // v1.166.0 — window.qlMoSinhNhat
     { ma: 'baoCao', chu: 'Báo cáo', ic: ICQ.baoCao, mau: '#E0575B', mo: 'Xử lý báo cáo vi phạm từ học sinh' },
     { ma: 'daAn', chu: 'Bài đã ẩn', ic: ICQ.an, mau: '#7A8A87', mo: 'Xem lại và khôi phục bài đã ẩn' },
     { ma: 'tuCam', chu: 'Từ cấm', ic: ICQ.tuCam, mau: '#C2410C', mo: 'Thêm bớt từ cấm cho cả mạng' },
-    { ma: 'taiKhoan', chu: 'Tài khoản', ic: IC.caNhan, mau: '#8B5CF6', mo: 'Cấp, khoá, đặt lại mật khẩu tài khoản' },
-    { ma: 'lop', chu: 'Lớp', ic: ICQ.lop, mau: '#0891B2', mo: 'Xem thành viên từng lớp trên mạng' }
+    { vach: true },
+    { ma: 'baoMat', chu: 'Quản lý & bảo mật', ic: ICQ.baoMat, mau: '#C2410C' }   // v1.166.0 — hộp 5 mục (window.qlMoBaoMat)
   ];
   cot.innerHTML = MUC_QL.map(function (m) {
-    if (m.nhom) return (m.vach ? '<hr class="nwb-ql-vach">' : '') + '<div class="nwb-ql-nhom">' + m.nhom + '</div>';
+    if (!m.ma) return (m.vach ? '<hr class="nwb-ql-vach">' : '') + (m.nhom ? '<div class="nwb-ql-nhom">' + m.nhom + '</div>' : '');
     var hinh = m.anh ? '<img class="nwb-ql-av" src="' + m.anh + '" alt="">' : m.ic.replace('<svg ', '<svg style="stroke:' + m.mau + '" ');
     return '<button type="button" class="nwb-ql-muc' + (m.ma === 'baiTap' ? ' chon' : '') + '" data-muc="' + m.ma + '">' + hinh + '<span>' + m.chu + '</span></button>';
   }).join('');
@@ -192,8 +200,9 @@
     var ma = b.getAttribute('data-muc');
     if (ma === 'baiTap') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     if (ma === 'dangKy' && window.qlMoDangKy) { window.qlMoDangKy(); return; }
-    if (ma === 'khanCap') { if (window.qlMoKhanCap) window.qlMoKhanCap(); return; }
-    if (ma === 'matKhau') { if (window.qlMoMatKhau) window.qlMoMatKhau(b); return; }
+    if (ma === 'baoMat') { if (window.qlMoBaoMat) window.qlMoBaoMat(); return; }
+    if (ma === 'sinhNhat') { if (window.qlMoSinhNhat) window.qlMoSinhNhat(); return; }
+    if (ma === 'top' || ma === 'qua' || ma === 'kho' || ma === 'kholuutru') { if (window.qlMoMuc) window.qlMoMuc(ma); return; }
     moSap(ma);
   });
 })();

@@ -94,7 +94,7 @@
   }
 
   // Lời nhắc dùng chung khi kho từ chối vì thiếu phiên.
-  var CAN_DANG_NHAP = 'Cần phiên của thầy mới ghi được — bấm nút 🔐 Đăng nhập ở cột trái (hoặc mở từ app myLesson).';
+  var CAN_DANG_NHAP = 'Cần phiên của thầy mới ghi được — bấm ☰ (góc phải trên) → 🔐 Đăng nhập Google (hoặc mở từ app myLesson).';
 
   // ---- cầu từ app myLesson (webview) ----
   // App gọi `window.__thayToken(token)` sau dom-ready; nếu app tiêm sẵn

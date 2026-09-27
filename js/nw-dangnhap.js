@@ -29,7 +29,35 @@
   function loi(chu) { var p = $('#loiVao'); p.hidden = !chu; p.textContent = chu || ''; }
   function loiMk(chu) { var p = $('#loiDoiMk'); p.hidden = !chu; p.textContent = chu || ''; }
 
-  var IC_LOP = '<svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>';
+  // v1.163.0 (27/09): nút CON MẮT ở mọi ô mật khẩu — em chủ động hiện/ẩn (icon Lucide eye / eye-off).
+  // Mặc định ẨN; mỗi lần vẽ lại màn (veManVao / moDoiMk) gọi anMk() cho về ẩn.
+  var IC_MAT = '<svg viewBox="0 0 24 24"><path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/></svg>';
+  var IC_MAT_TAT = '<svg viewBox="0 0 24 24"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c4.97 0 8.46 3.37 9.94 6.65a1 1 0 0 1 0 .7 10.8 10.8 0 0 1-1.44 2.49"/><path d="M14.08 14.16a3 3 0 0 1-4.24-4.24"/><path d="M17.48 17.5A10.75 10.75 0 0 1 2.06 12.35a1 1 0 0 1 0-.7 10.8 10.8 0 0 1 4.45-5.14"/><path d="m2 2 20 20"/></svg>';
+  function datMat(nut, hien) {
+    var o = nut.previousElementSibling;
+    o.type = hien ? 'text' : 'password';
+    nut.innerHTML = hien ? IC_MAT_TAT : IC_MAT;
+    nut.setAttribute('aria-label', hien ? 'Ẩn mật khẩu' : 'Hiện mật khẩu');
+    nut.title = hien ? 'Ẩn mật khẩu' : 'Hiện mật khẩu';
+  }
+  function ganMat() {
+    ['#inMk', '#mkMoi', '#mkMoi2'].forEach(function (s) {
+      var o = $(s), nut = document.createElement('button');
+      nut.type = 'button'; nut.className = 'id-eye';
+      o.insertAdjacentElement('afterend', nut);
+      datMat(nut, false);
+      nut.addEventListener('mousedown', function (e) { e.preventDefault(); });   // giữ con trỏ trong ô (chuột)
+      nut.addEventListener('click', function () {
+        var dau = o.selectionStart, cuoi = o.selectionEnd;
+        datMat(nut, o.type === 'password');
+        o.focus();
+        try { o.setSelectionRange(dau, cuoi); } catch (e) { }
+      });
+    });
+  }
+  function anMk() { document.querySelectorAll('.dn-o .id-eye').forEach(function (n) { datMat(n, false); }); }
+
+  var IC_LOP ='<svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-6h6v6"/></svg>';
   var IC_KHOA = '<svg viewBox="0 0 24 24"><path d="M2 8l10-4 10 4-10 4z"/><path d="M6 10v5c0 1.5 3 3 6 3s6-1.5 6-3v-5M22 8v6"/></svg>';
   function chuNut(l) { return A.laKhoa(l) ? 'KHÓA ' + (l.tenGoc || l.maLop) : A.lopHien(l.maLop, l.tenGoc) + ' CLASS'; }
   function trangCua(l) { return A.laKhoa(l) ? 'khoa.html' : 'lop.html'; }
@@ -73,7 +101,7 @@
     cho = { ds: ds, ma: ma, mkCu: mkCu || '' };
     var ten = (ds[0] && ds[0].em && ds[0].em.ten) || '';
     $('#doiMkTen').textContent = ten ? 'Chào ' + ten + ', đặt mật khẩu riêng' : 'Đặt mật khẩu riêng';
-    $('#mkMoi').value = ''; $('#mkMoi2').value = ''; loiMk('');
+    $('#mkMoi').value = ''; $('#mkMoi2').value = ''; loiMk(''); anMk();
     man('manDoiMk');
     $('#mkMoi').focus();
   }
@@ -130,7 +158,7 @@
     var inMa = $('#inMa');
     inMa.value = maDienSan || '';
     if (inMa.value) inMa.placeholder = '';
-    $('#inMk').value = '';
+    $('#inMk').value = ''; anMk();
     $('#btnVao').disabled = false;
     man('manVao');
     if (maDienSan) $('#inMk').focus();
@@ -163,6 +191,7 @@
   $('#mkMoi').onkeydown = function (e) { if (e.key === 'Enter') $('#mkMoi2').focus(); };
   $('#mkMoi2').onkeydown = function (e) { if (e.key === 'Enter') luuMk(); };
   $('#btnHuyMk').onclick = doiNguoi;
+  ganMat();
 
   A.napDuLieu().then(async function (dl) {
     DL = dl;

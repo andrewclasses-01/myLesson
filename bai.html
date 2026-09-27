@@ -2040,7 +2040,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=140"></script>
+<script src="config.js?v=141"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=64"></script>
 <script src="js/nw-phien.js?v=3"></script>
@@ -3089,7 +3089,10 @@ function veKhoi(k, so){
          Cụm mang thêm `co-td` để rộng đúng bằng cột leaderboard. */
       '<div class="card-nut' + (coTuDien ? ' co-td' : '') + '">' +
         '<button class="ic-nut den" title="Tắt bớt ánh sáng xung quanh">' + IC_DEN + '</button>' +
-        '<a class="ic-nut" target="_blank" rel="noopener" href="__LINK__" ' +
+        /* ⭐ v1.162.0 (27/09/2026) — rel="opener" (KHÔNG noopener; Chrome mặc định cắt opener với _blank): tab AWord mới
+           cần `window.opener` = trang này để XIN VÉ đăng nhập (AWord Đợt 412) — không có vé thì điểm không ghi được.
+           Chỉ mở tới aword.andrewclasses.com (trang của thầy); vé chỉ trả đích danh origin AWord (js/nw-phien.js). */
+        '<a class="ic-nut" target="_blank" rel="opener" href="__LINK__" ' +
           'title="Mở ở tab mới">' + IC_TAB + '</a>' +
         (coTuDien
           ? '<button class="nut-tudien" title="Tra từ điển">' + IC_SACH +

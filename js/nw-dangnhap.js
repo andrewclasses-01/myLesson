@@ -112,7 +112,7 @@
     if (A.chuanMa(m1) === A.chuanMa(cho.ma)) { loiMk('Mật khẩu mới phải khác ID của em.'); $('#mkMoi').focus(); return; }
     // Mật khẩu lớp cả lớp đều biết — giữ lại là bạn nào cũng vào được tài khoản của em.
     if (/andrewclasses/i.test(m1) || (cho.mkCu && m1.toLowerCase() === cho.mkCu.toLowerCase())) {
-      loiMk('Đừng dùng lại mật khẩu lớp — cả lớp đều biết. Em đặt mật khẩu của riêng em nhé.'); $('#mkMoi').focus(); return;
+      loiMk('Đừng dùng lại mật khẩu thầy phát. Em đặt mật khẩu của riêng em nhé.'); $('#mkMoi').focus(); return;
     }
     if (m1 !== m2) { loiMk('Hai lần nhập chưa giống nhau.'); $('#mkMoi2').focus(); return; }
     var nut = $('#btnLuuMk'); nut.disabled = true;

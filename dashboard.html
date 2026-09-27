@@ -2600,6 +2600,17 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .mk-em.da{background:#e6f5ef; color:#0b6b4f}
 .mk-em.chua{background:#fff4e5; color:#8a5300}
 .mk-em.khoa{background:#fdecec; color:#b71c1c}
+/* v1.164.0: bấm tên em ⇒ đặt lại mật khẩu (hàm máy chủ datLaiMatKhauHs) */
+button.mk-em{border:1.5px solid transparent; font:inherit; font-size:12.5px; cursor:pointer}
+button.mk-em:hover{border-color:currentColor}
+.mk-hoi{margin:10px 0 4px; padding:12px 14px; border-radius:14px; background:#f1f7f6; border:1.5px solid #cfe6e1}
+.mk-hoi p{margin:0 0 10px}
+.mk-hoi .mk-nut{display:flex; gap:8px; flex-wrap:wrap}
+.mk-hoi .mk-nut button{padding:8px 14px; border-radius:10px; border:0; background:#eef2f7; cursor:pointer; font-weight:700}
+.mk-hoi .mk-nut button.chinh{background:#0E7C6E; color:#fff}
+.mk-hoi .mk-nut button:disabled{opacity:.55; cursor:default}
+.mk-tam{display:flex; align-items:center; gap:10px; margin:0 0 10px}
+.mk-tam code{font:800 24px/1 ui-monospace,Consolas,monospace; letter-spacing:.12em; padding:8px 14px; border-radius:10px; background:#fff; border:1.5px dashed #0E7C6E; color:#0E7C6E; user-select:all}
 .kc-chan{display:flex; justify-content:flex-end; margin-top:10px}
 .kc-chan button{padding:9px 16px; border-radius:12px; border:0; background:#eef2f7; cursor:pointer; font-weight:600}
 </style>
@@ -3009,7 +3020,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=142"></script>
+<script src="config.js?v=143"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=64"></script>
 <script src="js/chat.js?v=25"></script>
@@ -9686,8 +9697,56 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
      Đọc `nwUsers` (vaiTro 'hs') — luật cho PHIÊN THẦY đọc (nwVao ⊃ laThay) ⇒ cần chuaThay. ~160 lượt đọc MỖI LẦN MỞ hộp
      (không nghe sống). Trạng thái lấy cờ hồ sơ: phaiDoiMk=false ⇒ đã đặt · quaHanMk ⇒ bị khoá vì quá 7 ngày.
      ⛔ Cờ do trình duyệt em ghi — số chuẩn theo MÁY CHỦ: myNetwork/tools/tao-tai-khoan.mjs --trang-thai.
-     ⛔ Đặt lại mật khẩu cần khoá quản trị ⇒ KHÔNG có nút ở đây; thầy nhắn Claude / chạy `--reset <mã số>` (mã số hiện cạnh tên).
+     ⭐ v1.164.0 (27/09): BẤM TÊN EM ⇒ ĐẶT LẠI MẬT KHẨU. Trình duyệt không đổi được mật khẩu người khác ⇒ gọi HÀM MÁY CHỦ
+     `datLaiMatKhauHs` (asia-southeast1; mã nguồn kho myLesson-app `may-chu/functions`): cấp MẬT KHẨU TẠM RIÊNG em (4 chữ + 4 số),
+     mở khoá, đăng xuất mọi máy, bắt đặt mật khẩu riêng. Mật khẩu tạm CHỈ hiện một lần trong hộp này — không lưu ở đâu.
+     Hàm tự kiểm thầy (chép laThay() của luật) — nút chỉ là giao diện. `--reset <mã số>` (mật khẩu lớp) vẫn dùng được ở máy MSI.
      ============================================================ */
+  var _datLaiFn = null;
+  function hamDatLai() {
+    if (!_datLaiFn) {
+      _datLaiFn = AWChat.kho().then(async function () {       // kho() khởi động app chung (có phiên thầy) trước
+        var appMod = await import(SP_SDK + '/firebase-app.js');
+        var fnMod = await import(SP_SDK + '/firebase-functions.js');
+        return fnMod.httpsCallable(fnMod.getFunctions(appMod.getApp(), 'asia-southeast1'), 'datLaiMatKhauHs');
+      });
+      _datLaiFn['catch'](function () { _datLaiFn = null; });
+    }
+    return _datLaiFn;
+  }
+  function hoiDatLai(hop, chip) {
+    var o = hop.querySelector('#mkHoi');
+    if (!o) return;
+    var ten = chip.getAttribute('data-mk-ten') || '', so = chip.getAttribute('data-mk-so') || '';
+    o.hidden = false;
+    o.innerHTML = '<p><b>Đặt lại mật khẩu cho ' + A.chuAnToan(ten) + '</b>' + (so ? ' (mã số ' + A.chuAnToan(so) + ')' : '') +
+      '?<br>Em nhận MẬT KHẨU TẠM mới, bị đăng xuất khỏi mọi máy, vào lại là phải đặt mật khẩu riêng. Tài khoản đang khoá sẽ mở lại.</p>' +
+      '<div class="mk-nut"><button type="button" class="chinh" data-mk-dat="' + A.chuAnToan(chip.getAttribute('data-mk-uid')) + '">Đặt lại</button>' +
+      '<button type="button" data-mk-huy>Huỷ</button></div>';
+    o.scrollIntoView({ block: 'nearest' });
+  }
+  function datLai(hop, nut) {
+    var uid = nut.getAttribute('data-mk-dat'), o = hop.querySelector('#mkHoi');
+    hop.querySelectorAll('#mkHoi button').forEach(function (b) { b.disabled = true; });
+    nut.textContent = 'Đang đặt lại…';
+    hamDatLai().then(function (fn) { return fn({ uid: uid }); }).then(function (r) {
+      var d = (r && r.data) || {};
+      o.innerHTML = '<p><b>✅ Đã đặt lại cho ' + A.chuAnToan(d.ten || '') + '.</b> Mật khẩu tạm (chỉ hiện MỘT lần — đọc/chép cho em ngay):</p>' +
+        '<div class="mk-tam"><code>' + A.chuAnToan(d.mk || '') + '</code></div>' +
+        '<p>Em vào bằng ID của em + mật khẩu tạm này, rồi đặt mật khẩu riêng. 7 ngày chưa đặt sẽ tự khoá lại.</p>' +
+        '<div class="mk-nut"><button type="button" class="chinh" data-mk-chep="' + A.chuAnToan(d.mk || '') + '">Chép mật khẩu</button>' +
+        '<button type="button" data-mk-huy>Xong</button></div>';
+      var chip = hop.querySelector('[data-mk-uid="' + uid + '"]');
+      if (chip) { chip.className = 'mk-em chua'; chip.firstChild.textContent = '⬜ '; }
+    })['catch'](function (e) {
+      // Lỗi hàm tự ném mang câu tiếng Việt (e.message); hàm CHƯA đưa lên ⇒ 404 không CORS ⇒ SDK báo functions/internal.
+      var ma = String((e && e.code) || ''), cau = String((e && e.message) || '');
+      var chu = ma.indexOf('permission-denied') >= 0 ? 'Phiên hiện tại không phải của thầy — đăng nhập lại rồi thử.'
+        : /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(cau) ? A.chuAnToan(cau)
+        : 'Chưa đặt lại được (' + A.chuAnToan(ma || cau) + '). Nếu hàm máy chủ chưa đưa lên thì xem myLesson-app may-chu/HUONG DAN.md, hoặc nhắn Claude.';
+      o.innerHTML = '<p>⚠ ' + chu + '</p><div class="mk-nut"><button type="button" data-mk-huy>Đóng</button></div>';
+    });
+  }
   function moHopMatKhau(nut) {
     if (chuaThay(nut)) return;
     var hop = $('#mkNen');
@@ -9695,7 +9754,19 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
       hop = document.createElement('div');
       hop.id = 'mkNen'; hop.className = 'kc-nen';
       document.body.appendChild(hop);
-      hop.addEventListener('click', function (e) { if (e.target === hop || e.target.closest('[data-mk-dong]')) hop.hidden = true; });
+      hop.addEventListener('click', function (e) {
+        if (e.target === hop || e.target.closest('[data-mk-dong]')) { hop.hidden = true; return; }
+        var c = e.target.closest('[data-mk-uid]'); if (c) { hoiDatLai(hop, c); return; }
+        var d = e.target.closest('[data-mk-dat]'); if (d) { datLai(hop, d); return; }
+        var k = e.target.closest('[data-mk-chep]');
+        if (k) {
+          var mk = k.getAttribute('data-mk-chep');
+          (navigator.clipboard ? navigator.clipboard.writeText(mk) : Promise.reject())
+            .then(function () { k.textContent = 'Đã chép ✓'; }, function () { k.textContent = 'Chép tay giúp em'; });
+          return;
+        }
+        if (e.target.closest('[data-mk-huy]')) { var o = hop.querySelector('#mkHoi'); if (o) { o.hidden = true; o.innerHTML = ''; } }
+      });
     }
     hop.hidden = false;
     hop.innerHTML = '<div class="kc-hop mk-hop" role="dialog" aria-label="Mật khẩu học sinh"><h3>🔐 Mật khẩu học sinh</h3><p>Đang đọc…</p></div>';
@@ -9707,7 +9778,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
         var x = d.data() || {};
         var tt = x.quaHanMk ? 'khoa' : (x.phaiDoiMk ? 'chua' : 'da');
         tong[tt]++;
-        (lop[x.lop || '?'] = lop[x.lop || '?'] || []).push({ ten: x.ten || d.id, tt: tt, so: x.msId });
+        (lop[x.lop || '?'] = lop[x.lop || '?'] || []).push({ ten: x.ten || d.id, tt: tt, so: x.msId, uid: d.id });
       });
       var nhan = { da: '✅', chua: '⬜', khoa: '🔒' };
       var html = Object.keys(lop).sort().map(function (l) {
@@ -9715,13 +9786,16 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
         var da = ds.filter(function (e) { return e.tt === 'da'; }).length;
         return '<div class="mk-lop"><b>' + A.chuAnToan(A.lopHien ? A.lopHien(l) : l) + '<small>' + da + '/' + ds.length + ' đã đặt</small></b>' +
           ds.map(function (e) {
-            return '<span class="mk-em ' + e.tt + '" title="mã số ' + A.chuAnToan(String(e.so || '')) + '">' + nhan[e.tt] + ' ' + A.chuAnToan(e.ten) + '</span>';
+            return '<button type="button" class="mk-em ' + e.tt + '" data-mk-uid="' + A.chuAnToan(e.uid) + '" data-mk-ten="' + A.chuAnToan(e.ten) +
+              '" data-mk-so="' + A.chuAnToan(String(e.so || '')) + '" title="mã số ' + A.chuAnToan(String(e.so || '')) + ' — bấm để đặt lại mật khẩu">' +
+              '<span>' + nhan[e.tt] + ' </span>' + A.chuAnToan(e.ten) + '</button>';
           }).join('') + '</div>';
       }).join('');
       hop.innerHTML = '<div class="kc-hop mk-hop" role="dialog" aria-label="Mật khẩu học sinh"><h3>🔐 Mật khẩu học sinh</h3>' +
         '<div class="mk-tong"><span>✅ Đã đặt mật khẩu riêng: ' + tong.da + '</span><span>⬜ Chưa: ' + tong.chua + '</span><span>🔒 Khoá vì quá hạn: ' + tong.khoa + '</span></div>' +
         '<p>Em chưa đặt vẫn đang dùng mật khẩu lớp (bạn cùng lớp vào thay được). Quá 7 ngày chưa đặt sẽ tự khoá. ' +
-        'Em quên mật khẩu / bị khoá: thầy nhắn Claude "đặt lại mật khẩu cho em …" (rê chuột lên tên để xem mã số).</p>' +
+        'Em quên mật khẩu / bị khoá: <b>bấm tên em</b> để đặt lại — thầy nhận mật khẩu tạm đọc cho em.</p>' +
+        '<div class="mk-hoi" id="mkHoi" hidden></div>' +
         '<div class="mk-cuon">' + html + '</div>' +
         '<div class="kc-chan"><button type="button" data-mk-dong>Đóng</button></div></div>';
     })['catch'](function (e) {

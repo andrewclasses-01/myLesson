@@ -295,6 +295,8 @@
     var chu = String(tin.chu || '').trim().slice(0, TOI_DA_CHU);
     if (!chu) return Promise.reject(new Error('trống'));
     if (tin.vaiTro !== 'gv' && coLink(chu)) { var lLink = new Error('có link'); lLink.code = 'awc/co-link'; return Promise.reject(lLink); }
+    // v1.168.0 — tab "thầy đăng nhập thay em" (js/thay-vao.js): chat TẮT (tin sẽ mang tên em + dấu máy của thầy ⇒ chuông báo động nhầm).
+    if (window.__thayVao && tin.vaiTro !== 'gv') { var lTv = new Error('thay-vao'); lTv.code = 'awc/thay-vao'; return Promise.reject(lTv); }
     return db().then(function (f) {
       var oChat = f.fs.collection(f.db, 'classChat', maLop, 'messages');
       var goc = {
@@ -380,6 +382,7 @@
   function suaCx(maLop, tinId, maNguoi, ma, ten) {
     var khoa = String(maNguoi || '').replace(/[.$#[\]/]/g, '_');
     if (!khoa) return Promise.reject(new Error('thieu-ma-nguoi'));
+    if (window.__thayVao && khoa !== 'GV') { var lTv = new Error('thay-vao'); lTv.code = 'awc/thay-vao'; return Promise.reject(lTv); }
     // v1.158.0 — luật: học sinh chỉ sửa ĐÚNG ô cảm xúc của mình (khoá = token.ma) ⇒ chờ phiên như gui().
     var choPhien = (khoa !== 'GV' && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
     return choPhien.then(db).then(function (f) {
@@ -481,6 +484,7 @@
     if (ma === 'awc/co-link') return 'Chat lớp không gửi được đường link. Em cần gửi link thì nhờ thầy gửi giúp nhé.';
     if (ma === 'awc/tin-bi-chan') return 'Tin chưa gửi được. Em bỏ đường link (nếu có) rồi gửi lại nhé.';
     if (ma === 'awc/can-dang-nhap') return 'Phiên đăng nhập đã hết. Em tải lại trang và đăng nhập lại nhé.';
+    if (ma === 'awc/thay-vao') return 'Đang đăng nhập thay em — chat tắt. Thầy nhắn bằng tên mình ở dashboard nhé.';
     if (String(ma).indexOf('permission-denied') >= 0) {
       // ⭐ v1.52.0 (gói bảo mật C): xoá tin · tin ký THẦY · lưu trữ nay đòi PHIÊN THẦY
       // (js/thay.js). Học sinh nhắn/thả cảm xúc vẫn không cần đăng nhập.

@@ -2821,6 +2821,17 @@ button.mk-em:hover{border-color:currentColor}
   .hso-dd{grid-template-columns:repeat(12,minmax(0,1fr))}
 }
 
+/* ⭐ v1.168.0 — ô ĐĂNG NHẬP THAY EM trong hồ sơ */
+.hso-thay{margin:0 0 14px; padding:12px 14px; border-radius:14px; background:#FFF4F2; border:1.5px solid #F6C9BF}
+.hso-thay[hidden]{display:none}
+.hso-thay b{font:800 14px var(--font); color:#c62828}
+.hso-thay p{margin:6px 0 10px; font:600 12.5px/1.5 var(--font); color:#6b3a33}
+.hso-thay-hang{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+.hso-thay-hang input{height:36px; width:190px; border:1px solid var(--vien-dam); border-radius:9px; padding:0 10px; font:700 14px var(--font); letter-spacing:.2em}
+.hso-thay .hso-thay-tin{margin:8px 0 0; font-weight:700; color:var(--chu)}
+.qm-nut.do{color:#c62828; border-color:#F2C2C2}
+.qm-nut.do:hover{background:#fdecec; border-color:#c62828}
+
 /* ⭐ v1.166.0 — HỘP SINH NHẬT (mục Sinh nhật cột trái; dùng chung khung .kc-nen/.kc-hop) */
 .sn-hop{width:min(480px,100%); max-height:86vh; display:flex; flex-direction:column}
 .sn-hop h3{color:#BE185D}
@@ -3193,12 +3204,13 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=146"></script>
+<script src="config.js?v=147"></script>
+<script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=64"></script>
-<script src="js/chat.js?v=26"></script>
+<script src="js/chung.js?v=65"></script>
+<script src="js/chat.js?v=27"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
-<script src="js/thay.js?v=2"></script>
+<script src="js/thay.js?v=3"></script>
 <script>
 (function () {
   'use strict';
@@ -10054,6 +10066,15 @@ button.mk-em:hover{border-color:currentColor}
       var ds = e.target.closest('[data-qm-dslop]');
       if (ds) { dongHopBaoMat(); return void gvMoSidebar(ds.getAttribute('data-qm-dslop'), 'lop'); }
       if (e.target.closest('[data-qm-quay]')) { QM.em = null; return void veBaoMat(); }
+      if (QM.tab === 'hs' && QM.em && e.target.closest('[data-hso-thay], #hsoThay')) {   // v1.168.0 — đăng nhập thay em
+        var pTv = dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
+        if (!pTv) return;
+        var nt = e.target.closest('[data-hso-thay]');
+        if (nt) return void hsoMoThay(pTv, nt.getAttribute('data-hso-thay'));
+        if (e.target.closest('[data-hso-thay-vao]')) return void hsoVaoThay(pTv);
+        if (e.target.closest('[data-hso-thay-huy]')) { $('#hsoThay').hidden = true; return; }
+        return;
+      }
       if (QM.tab === 'hs' && QM.em && e.target.closest('#hsoLs, [data-hso-them]')) {   // v1.167.0 — lịch sử chuyển lớp
         var pHs = dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
         if (pHs && hsoBamLs(e, pHs)) return;
@@ -10072,6 +10093,12 @@ button.mk-em:hover{border-color:currentColor}
       veBangHs();
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && qmDangMo()) dongHopBaoMat(); });
+    nen.addEventListener('keydown', function (e) {       // v1.168.0 — Enter ở ô PIN = Vào
+      if (e.key !== 'Enter' || !e.target || e.target.id !== 'hsoPin') return;
+      e.preventDefault();
+      var pTv = dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
+      if (pTv) hsoVaoThay(pTv);
+    });
     ganNgheMk($('#qmThan'));
     return nen;
   }
@@ -10224,12 +10251,14 @@ button.mk-em:hover{border-color:currentColor}
     var sn = /^(\d{2})-(\d{2})$/.exec(p.sinhNhat || '');
     return '<button type="button" class="qm-quay" data-qm-quay>‹ Danh sách học sinh</button>' +
       '<div class="mk-hoi" hidden></div>' +
+      '<div class="hso-thay" id="hsoThay" hidden></div>' +
       '<div class="qm-hs-dau"><i>' + chuDau(p.ten) + '</i><div><h5>' + qmE(p.ten) + '</h5>' +
         (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div><span class="qm-gian"></span>' + nutDatLai(p) + '</div>' +
       '<div class="qm-luoi">' +
         '<div class="qm-o"><h6>Ghi danh &amp; ngày tham gia</h6>' + p.noi.map(function (n) {
           return '<div class="qm-gd">' + chipNoi(n) + '<span class="qm-gd-ngay">' + (n.vao ? 'vào lớp ' + ngayVN(n.vao) : 'chưa ghi ngày vào') + '</span>' +
-            (p.ma ? '<button type="button" class="qm-nut" data-qm-mo="' + qmE(urlNhu(p, n)) + '">Xem như em</button>' : '') + '</div>';
+            (p.ma ? '<button type="button" class="qm-nut" data-qm-mo="' + qmE(urlNhu(p, n)) + '" title="Chỉ xem — không ghi gì">Xem như em</button>' +
+              '<button type="button" class="qm-nut do" data-hso-thay="' + qmE(n.maLop) + '" title="Mở tab mới dưới tên em (cần PIN) — làm/nộp bài ghi thật">Đăng nhập thay</button>' : '') + '</div>';
         }).join('') +
           '<div class="qm-dong-tt"><span>ID đăng nhập</span>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</div>' +
           '<div class="qm-dong-tt"><span>Sinh nhật</span><b>' + (sn ? sn[2] + '/' + sn[1] : 'chưa có') + '</b></div>' +
@@ -10548,14 +10577,90 @@ button.mk-em:hover{border-color:currentColor}
       (ht.thieuMa ? '<p class="hso-ghi">Bài giao trước 23/09 được dò theo TÊN em (lượt làm hồi đó chưa gắn mã) — thời gian luyện tập của các bài đó chỉ tính lượt nộp.</p>' : '');
   }
 
+  /* ============================================================
+     ⭐⭐ v1.168.0 (28/09/2026) — "ĐĂNG NHẬP THAY EM" (Đợt B3). Nút ở từng dòng ghi danh trong hồ sơ em ⇒ ô PIN ⇒ bấm Vào:
+       1) MỞ TAB NGAY trong cú bấm (không bị chặn cửa sổ bật lên) `lop|khoa.html?nhu=<mã>&lop=<maLop>&thayvao=1`
+       2) gọi hàm máy chủ `dangNhapThayHs({uid, pin})` (kiểm thầy + PIN + hạn mức, ghi nhật ký) ⇒ vé
+       3) tab mới gửi `THAYVAO:SAN` ⇒ trả vé bằng postMessage ĐÍCH DANH origin này + đúng cửa sổ đó (KHÔNG để vé trên địa chỉ).
+     Tab em chạy phiên CHỈ TRONG TAB (js/thay-vao.js) ⇒ phiên thầy ở tab này không bị đẩy ra. Tự thoát sau 30 phút.
+     ============================================================ */
+  var _dnThayFn = null;
+  function hamDangNhapThay() {
+    if (!_dnThayFn) {
+      _dnThayFn = AWChat.kho().then(async function () {
+        var appMod = await import(SP_SDK + '/firebase-app.js');
+        var fnMod = await import(SP_SDK + '/firebase-functions.js');
+        return fnMod.httpsCallable(fnMod.getFunctions(appMod.getApp(), 'asia-southeast1'), 'dangNhapThayHs');
+      });
+      _dnThayFn['catch'](function () { _dnThayFn = null; });
+    }
+    return _dnThayFn;
+  }
+  function hsoMoThay(p, maLop) {
+    var n = p.noi.filter(function (x) { return x.maLop === maLop; })[0];
+    var o = $('#hsoThay');
+    if (!n || !o) return;
+    o.hidden = false;
+    o.setAttribute('data-lop', maLop);
+    o.innerHTML = '<b>🔐 Đăng nhập thay ' + qmE(p.ten) + ' ở ' + qmE(n.ten) + '</b>' +
+      '<p>Mở tab mới dưới tên em: làm bài / nộp bài sẽ GHI THẬT dưới tên em (chat tắt). Tự thoát sau 30 phút. Mỗi lần đều ghi nhật ký.</p>' +
+      '<div class="hso-thay-hang"><input id="hsoPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Mã PIN của thầy">' +
+      '<button type="button" class="qm-nut chinh" data-hso-thay-vao>Vào</button><button type="button" class="qm-nut" data-hso-thay-huy>Huỷ</button></div>' +
+      '<p class="hso-thay-tin" id="hsoThayTin"></p>';
+    $('#hsoPin').focus();
+  }
+  function hsoVaoThay(p) {
+    var o = $('#hsoThay'), tin = $('#hsoThayTin');
+    if (!o) return;
+    var maLop = o.getAttribute('data-lop'), n = p.noi.filter(function (x) { return x.maLop === maLop; })[0];
+    var pin = String(($('#hsoPin') || {}).value || '').trim();
+    var m = mkCua(p);
+    if (!/^\d{6,12}$/.test(pin)) { tin.textContent = 'PIN là 6–12 chữ số.'; return; }
+    if (!m) { tin.textContent = 'Em chưa có tài khoản (hoặc chưa đọc được danh sách mật khẩu) — chưa đăng nhập thay được.'; return; }
+    if (chuaThay()) return;
+    var url = (n.laKhoa ? 'khoa.html' : 'lop.html') + '?nhu=' + encodeURIComponent(p.ma) + '&lop=' + encodeURIComponent(n.maLop) + '&thayvao=1';
+    var w = window.open(url, '_blank');          // mở NGAY trong cú bấm; giữ opener để trao vé
+    if (!w) { tin.textContent = 'Trình duyệt chặn cửa sổ mới — cho phép cửa sổ bật lên rồi bấm lại.'; return; }
+    $('#hsoPin').value = '';
+    tin.textContent = 'Đang xin vé…';
+    var ve = null, loi = null, daGui = false;
+    function traVe() {
+      if (daGui || w.closed) return;
+      if (ve) { daGui = true; w.postMessage({ type: 'THAYVAO:VE', token: ve.token, ma: ve.ma, ten: ve.ten }, location.origin); tin.textContent = '✓ Đã mở tab đăng nhập thay ' + (ve.ten || p.ten) + '.'; }
+      else if (loi) { daGui = true; w.postMessage({ type: 'THAYVAO:LOI', chu: loi }, location.origin); }
+    }
+    function nghe(e) {
+      if (e.source !== w || e.origin !== location.origin) return;
+      if ((e.data || {}).type === 'THAYVAO:SAN') { traVe(); if (daGui) window.removeEventListener('message', nghe); }
+    }
+    window.addEventListener('message', nghe);
+    setTimeout(function () { window.removeEventListener('message', nghe); }, 120000);
+    hamDangNhapThay().then(function (fn) { return fn({ uid: m.uid, pin: pin }); }).then(function (r) {
+      ve = (r && r.data) || null;
+      if (!ve || !ve.token) throw new Error('Hàm không trả vé.');
+      NK = null;                                   // nhật ký có dòng mới
+      traVe();
+    })['catch'](function (e) {
+      var cau = String((e && e.message) || e || '');
+      loi = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(cau) ? cau : 'Chưa đăng nhập thay được (' + cau.slice(0, 80) + ').';
+      tin.textContent = '⚠ ' + loi;
+      traVe();
+      try { if (!w.closed) setTimeout(function () { if (!daGui) w.close(); }, 4000); } catch (x) { }
+    });
+  }
+
   // ---------- NHẬT KÝ (tab) ----------
   var NK = null;                         // null = chưa đọc · {dang} · {loi} · {ds}
   function docNhatKy() {
     NK = { dang: true };
     return AWChat.kho().then(function (f) {
-      return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwNhatKyDatLaiMk'), f.fs.orderBy('luc', 'desc'), f.fs.limit(100)));
-    }).then(function (s) {
-      var ds = []; s.forEach(function (d) { var x = d.data() || {}; ds.push({ luc: +x.luc || 0, viec: 'Đặt lại mật khẩu', ten: x.ten || '', uid: x.uid || '', boi: x.boi || '' }); });
+      var doc1 = function (kho) { return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, kho), f.fs.orderBy('luc', 'desc'), f.fs.limit(100))); };
+      return Promise.all([doc1('nwNhatKyDatLaiMk'), doc1('nwNhatKyDangNhapThay')['catch'](function () { return null; })]);
+    }).then(function (kq) {
+      var ds = [];
+      kq[0].forEach(function (d) { var x = d.data() || {}; ds.push({ luc: +x.luc || 0, viec: 'Đặt lại mật khẩu', ten: x.ten || '', uid: x.uid || '', boi: x.boi || '' }); });
+      if (kq[1]) kq[1].forEach(function (d) { var x = d.data() || {}; ds.push({ luc: +x.luc || 0, viec: 'Đăng nhập thay em', ten: x.ten || '', uid: x.uid || '', boi: x.boi || '' }); });
+      ds.sort(function (a, b) { return b.luc - a.luc; });
       NK = { ds: ds };
     }, function (e) { NK = { loi: hsoChuLoi(e) }; }).then(function () { if (qmDangMo('nk')) veBaoMat(); });
   }
@@ -10571,7 +10676,7 @@ button.mk-em:hover{border-color:currentColor}
         return '<tr><td>' + hsoNgay(x.luc) + '/' + d.getFullYear() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + '</td><td>' + qmE(x.viec) + '</td>' +
           '<td>' + qmE(x.ten) + ' <small class="qm-nhat">' + qmE(x.uid) + '</small></td><td>' + qmE(x.boi) + '</td></tr>';
       }).join('') + '</tbody></table>' +
-      '<p class="qm-p" style="margin-top:10px">Nhật ký đăng nhập thay em (Đợt B3) và thêm/sửa học sinh (Đợt C) sẽ hiện ở đây khi có.</p>';
+      '<p class="qm-p" style="margin-top:10px">Nhật ký thêm/sửa học sinh (Đợt C) sẽ hiện ở đây khi có.</p>';
   }
   function htmlCaiDat() {
     var d = function (ten, mo, gt) { return '<div class="kc-dong"><div><b>' + ten + '</b><small>' + mo + '</small></div><span class="qm-gt">' + gt + '</span></div>'; };

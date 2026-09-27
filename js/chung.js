@@ -884,6 +884,13 @@
       var lgv = lopTheoMa(dl, q.get('lop') || '');
       if (lgv) return { lop: lgv.maLop, ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', xemNhu: true };
     }
+    // ⭐ v1.168.0 — THẦY ĐĂNG NHẬP THAY EM (js/thay-vao.js): danh tính em THẬT (không `xemNhu` ⇒ nộp bài/làm bài được),
+    // KHÔNG ghi vào máy (không luuEm). Ghi được hay không là do PHIÊN (vé hàm máy chủ) — URL tự bịa chỉ xem được như ?nhu=.
+    if (q.get('thayvao') === '1' && q.get('nhu') && window.__thayVao) {
+      var dsTv = moiNoiTheoMa(dl, q.get('nhu'));
+      var tv = noiKhop(dsTv, q.get('lop')) || dsTv[0];
+      if (tv) return { lop: tv.lop.maLop, ten: tv.em.ten, ma: chuanMa(tv.em.ma), thayVao: true };
+    }
     var nhu = q.get('nhu');
     if (nhu) {
       // `?nhu=` có thể kèm `?lop=` để thầy xem em đó Ở ĐÚNG NƠI nào (em ở 2 nơi).
@@ -954,6 +961,7 @@
   // tính của mình (`gv=1&lop=`). Dùng CHUNG ở lop.html/bai.html/bai-sp.html —
   // đừng viết riêng từng nơi, dễ quên cập nhật một chỗ (bài học cũ của app này).
   function giuXemNhuQuery(em, maHs, maLop) {
+    if (em && em.thayVao) return 'nhu=' + encodeURIComponent(maHs || em.ma) + '&lop=' + encodeURIComponent(em.lop || maLop || '') + '&thayvao=1';
     if (!em || !em.xemNhu) return '';
     if (em.vaiTro === 'gv') return 'gv=1&lop=' + encodeURIComponent(maLop || '');
     return 'nhu=' + encodeURIComponent(maHs || '');

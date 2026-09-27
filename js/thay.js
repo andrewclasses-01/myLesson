@@ -37,8 +37,10 @@
         await AWChat.kho();                       // bảo đảm app Firebase đã có
         var appMod = await import(SDK + '/firebase-app.js');
         var au = await import(SDK + '/firebase-auth.js');
+        // ⭐ v1.168.0 — tab "đăng nhập thay em" (js/thay-vao.js): chờ Auth phiên-trong-tab, KHÔNG setPersistence(local).
+        if (window.__thayVao) { try { await window.__thayVao.san; } catch (e) {} }
         var a = au.getAuth(appMod.getApp());
-        try { await au.setPersistence(a, au.browserLocalPersistence); } catch (e) {}
+        if (!window.__thayVao) { try { await au.setPersistence(a, au.browserLocalPersistence); } catch (e) {} }
         return { au: au, a: a };
       })();
     }

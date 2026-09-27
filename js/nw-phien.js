@@ -39,9 +39,12 @@
         var appMod = await import(SDK + '/firebase-app.js');
         var au = await import(SDK + '/firebase-auth.js');
         var fs = await import(SDK + '/firebase-firestore.js');
+        // ⭐ v1.168.0 — tab "thầy đăng nhập thay em" (js/thay-vao.js): Auth đã khởi động với phiên CHỈ TRONG TAB ⇒ chờ nó,
+        // và TUYỆT ĐỐI không setPersistence(local) (chép phiên em vào IndexedDB ⇒ tab dashboard của thầy thành em).
+        if (window.__thayVao) { try { await window.__thayVao.san; } catch (e) { } }
         var app = (appMod.getApps && appMod.getApps().length) ? appMod.getApp() : appMod.initializeApp(CAU_HINH);
         var auth = au.getAuth(app);
-        try { await au.setPersistence(auth, au.browserLocalPersistence); } catch (e) { }
+        if (!window.__thayVao) { try { await au.setPersistence(auth, au.browserLocalPersistence); } catch (e) { } }
         return { au: au, auth: auth, fs: fs, db: fs.getFirestore(app) };
       })();
       _p['catch'](function () { _p = null; });   // mạng lỗi lúc tải SDK ⇒ lần sau thử lại
@@ -90,6 +93,7 @@
   // Đặt mật khẩu riêng. Giờ đổi thật lấy ở MÁY CHỦ Auth (passwordUpdatedAt — công cụ --trang-thai đọc),
   // cờ phaiDoiMk chỉ để web biết khỏi hỏi lại.
   async function datMatKhau(mkMoi) {
+    if (window.__thayVao) throw new Error('thay-vao');   // v1.168.0 — thầy đăng nhập thay KHÔNG được đổi mật khẩu của em
     var f = await fb();
     var u = f.auth.currentUser;
     if (!u) throw new Error('chua-dang-nhap');
@@ -108,6 +112,7 @@
   async function thoat() {
     var f = await fb();
     if (laHocSinh(f.auth.currentUser)) await f.au.signOut(f.auth);
+    if (window.__thayVao) window.__thayVao.xoa();        // v1.168.0 — thoát luôn chế độ đăng nhập thay
   }
 
   // ---------- CANH CỬA trang lớp/bài ----------
@@ -118,6 +123,14 @@
   var KHOA_DA_GAC = 'mylesson_gac_ok';
   function gac(ma) {
     if (!ma) return;
+    // ⭐ v1.168.0 — tab "thầy đăng nhập thay em": KHÔNG đá về màn đăng nhập, KHÔNG bắt đổi mật khẩu; thiếu phiên ⇒ chỉ báo (trang vẫn xem được).
+    if (window.__thayVao) {
+      fb().then(function () { return phienCuaMa(ma); }).then(function (u) {
+        if (u) lamMoiVe(false);
+        else window.__thayVao.baoLoi('Chưa đăng nhập thay được em này — trang này CHỈ XEM. Mở lại từ dashboard nếu cần.');
+      })['catch'](function (e) { console.warn('[phien] thay-vao', e); });
+      return;
+    }
     fb().then(function () { return phienCuaMa(ma); }).then(function (u) {
       if (!u) { veDangNhap(); return; }
       lamMoiVe(false);    // v1.161.0 — giữ sẵn vé cho các đường ghi REST (tieuDeNgay)

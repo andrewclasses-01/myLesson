@@ -738,11 +738,12 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=146"></script>
+<script src="config.js?v=147"></script>
+<script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=64"></script>
-<script src="js/nw-phien.js?v=3"></script>
-<script src="js/chat.js?v=26"></script>
+<script src="js/chung.js?v=65"></script>
+<script src="js/nw-phien.js?v=4"></script>
+<script src="js/chat.js?v=27"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
@@ -1342,7 +1343,9 @@ function dungCot(){
       }
       if (b.khoa) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
       if (!b.id || !b.trang) { baoToast('Bài này thầy giao trên giấy, không có trang trên web.'); return; }
-      location.href = b.trang + '?id=' + encodeURIComponent(b.id);
+      // v1.168.0 — giữ chế độ xem (thầy xem như em / đăng nhập thay em) khi mở bài, như lop.html `giuXemNhu()`
+      var qXn = A.giuXemNhuQuery(EM, EM && EM.ma, EM && EM.lop);
+      location.href = b.trang + '?id=' + encodeURIComponent(b.id) + (qXn ? '&' + qXn : '');
     };
     /* ⭐⭐ v1.113.0 (thầy chốt) — BẤM VÙNG THANH ⇒ POP-UP KẾT QUẢ (không mở bài nữa).
        Nút TÊN EM/CẢ LỚP nằm TRONG vùng này: để cú bấm đó nổi lên `t.onclick` ở trên

@@ -136,6 +136,29 @@
     location.replace('index.html');
   }
 
+  // ---------- ⭐⭐ v1.159.0 — CẤP VÉ cho khung AWord nhúng (AWord Đợt 410) ----------
+  // Luật: điểm AWord (scores/results) mang mã em CHỈ ghi được bằng ID token của đúng em đó. AWord ở tên miền khác nên không
+  // có phiên của em ⇒ khung AWord xin {type:'AWORD:XIN_VE', ma}, trang này trả {type:'AWORD:VE', ma, token, het}.
+  // ⛔ Chỉ trả cho tin đến từ ĐÚNG origin AWord, gửi ĐÍCH DANH origin đó (không '*'), và CHỈ khi phiên đang mở là học
+  //    sinh ĐÚNG mã xin (thầy xem như em `?nhu=` ⇒ không có vé ⇒ AWord giữ lượt trong outbox, không ghi nhầm tên em).
+  var AWORD_GOC = String((window.AWC && window.AWC.CFG && window.AWC.CFG.AWORD) || 'https://aword.andrewclasses.com').replace(/\/+$/, '');
+  window.addEventListener('message', function (e) {
+    var d = e.data;
+    if (!d || d.type !== 'AWORD:XIN_VE' || e.origin !== AWORD_GOC || !e.source) return;
+    var ma = chuanMa(d.ma);
+    if (!ma) return;
+    phienCuaMa(ma).then(function (u) {
+      if (!u) return null;
+      return u.getIdTokenResult().then(function (r) {
+        // vé sắp hết (< 2 phút) ⇒ xin vé mới
+        return (Date.parse(r.expirationTime) - Date.now() < 120000) ? u.getIdTokenResult(true) : r;
+      });
+    }).then(function (r) {
+      if (!r) return;
+      e.source.postMessage({ type: 'AWORD:VE', ma: ma, token: r.token, het: Date.parse(r.expirationTime) }, e.origin);
+    })['catch'](function (err) { console.warn('[phien] không cấp được vé AWord', err); });
+  });
+
   // Lỗi Firebase → câu dễ hiểu cho học sinh.
   function chuLoi(e) {
     var c = (e && e.code) || '';

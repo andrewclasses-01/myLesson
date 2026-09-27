@@ -9,10 +9,11 @@
 <link rel="stylesheet" href="nw/nw.css?v=1">
 <link rel="stylesheet" href="css/nw-thanh.css?v=6">
 <style>
-/* mẫu v29 (24/09): ô mật khẩu KHOÁ tạm thời — thầy chốt "để trống vẫn đăng nhập được", mở sau khi myNetwork xong */
-.dn-o.khoa input{background:#F1F5F4; border-color:var(--line); cursor:not-allowed; padding-right:46px}
-.dn-o.khoa input::placeholder{color:#7C8E8A; font-weight:600}
-.dn-o.khoa .o-khoa{position:absolute; right:14px; top:50%; transform:translateY(-50%); width:18px; height:18px; color:#9fb0ac; pointer-events:none}
+/* v1.158.0 (27/09, sau tấn công Tr0ngX): ô mật khẩu MỞ — chép chặng 1 trang thử; "Quên mật khẩu?" → hộp Liên hệ */
+.dn-quen{margin:-4px 0 12px; text-align:right; font-size:13px}
+.dn-quen button{color:var(--accent); font-weight:700}
+.dn-quen button:hover{text-decoration:underline}
+.dn-goiy{margin:-2px 0 14px; font-size:12.5px; color:var(--muted); text-align:center; line-height:1.45}
 /* màn chọn nơi học (em có mã ở 2 nơi) */
 .dn-chao{display:flex; flex-direction:column; align-items:center; text-align:center; margin:-4px 0 16px}
 .dn-chao .av{width:64px; height:64px; font-size:22px; margin-bottom:10px; box-shadow:0 6px 18px rgba(14,124,110,.22)}
@@ -45,8 +46,8 @@
 
       <section class="man" id="manVao">
         <label class="dn-o gon"><input id="inMa" type="text" autocomplete="username" placeholder="Andrew Classes ID" data-goi="Andrew Classes ID" autocapitalize="characters" spellcheck="false"></label>
-        <label class="dn-o gon khoa"><input id="inMk" type="password" placeholder="Để trống ô này" disabled tabindex="-1">
-          <svg class="o-khoa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2.5"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg></label>
+        <label class="dn-o gon"><input id="inMk" type="password" autocomplete="current-password" placeholder="Mật khẩu" data-goi="Mật khẩu"></label>
+        <p class="dn-quen"><button type="button" id="btnQuenMk">Quên mật khẩu?</button></p>
         <button class="btn primary wide" id="btnVao">ĐĂNG NHẬP</button>
         <p class="tiny warn" id="loiVao" hidden></p>
         <!-- thầy 24/09: chỗ để sau này mở MÀN ĐĂNG KÝ cho học sinh mới — tạm "sắp ra mắt" -->
@@ -59,16 +60,28 @@
         <div class="nut-thay"><button type="button" id="btnKhac">Không phải em? Đăng nhập ID khác</button></div>
       </section>
 
+      <!-- v1.158.0: lần đầu vào bằng mật khẩu lớp (phaiDoiMk) — em tự đặt mật khẩu riêng -->
+      <section class="man" id="manDoiMk">
+        <div class="dn-chao"><h2 id="doiMkTen">Đặt mật khẩu riêng</h2></div>
+        <p class="dn-goiy">Mật khẩu lớp cả lớp đều biết. Em đặt mật khẩu của riêng em (ít nhất 8 ký tự) và nhớ kỹ nhé.</p>
+        <label class="dn-o gon"><input id="mkMoi" type="password" autocomplete="new-password" placeholder="Mật khẩu mới" data-goi="Mật khẩu mới"></label>
+        <label class="dn-o gon"><input id="mkMoi2" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới" data-goi="Nhập lại mật khẩu mới"></label>
+        <button class="btn primary wide" id="btnLuuMk">LƯU MẬT KHẨU</button>
+        <p class="tiny warn" id="loiDoiMk" hidden></p>
+        <div class="nut-thay"><button type="button" id="btnHuyMk">Không phải em? Đăng nhập ID khác</button></div>
+      </section>
+
       <section class="man hien" id="manCho"><div class="dn-cho"><div class="xoay"></div><p class="tiny">Đang mở…</p></div></section>
     </div>
     <footer class="login-foot dn-foot"><p>Copyright © 2016 - 2026 by ANDREW · Phone &amp; Zalo: 0359.769.765</p></footer>
   </div>
 </div>
 
-<script src="config.js?v=136"></script>
+<script src="config.js?v=137"></script>
 <script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=62"></script>
-<script src="js/nw-dangnhap.js?v=1"></script>
-<script src="js/nw-thanh.js?v=8"></script>
+<script src="js/chung.js?v=63"></script>
+<script src="js/nw-phien.js?v=1"></script>
+<script src="js/nw-dangnhap.js?v=2"></script>
+<script src="js/nw-thanh.js?v=9"></script>
 </body>
 </html>

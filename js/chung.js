@@ -935,9 +935,17 @@
   }
 
   // Trang nào cũng gọi hàm này đầu tiên: chưa đăng nhập thì về màn đăng nhập.
+  // ⭐⭐ v1.158.0 (27/09/2026, sau tấn công Tr0ngX) — bộ nhớ máy thôi CHƯA ĐỦ: em thường phải còn PHIÊN
+  // Firebase Auth đúng mã (js/nw-phien.js `gac`), không thì về màn đăng nhập (máy cũ = tự đăng xuất).
+  // Kiểm SAU, không chặn vẽ trang. ⛔ Bỏ qua: thầy xem như em (`?nhu=`/`?gv=`) + phụ huynh (chưa có tài khoản).
+  // ⛔ Trang nào gọi hàm này mà QUÊN nạp js/nw-phien.js là KHÔNG canh cửa (im lặng) — lop/khoa/bai/bai-sp đều nạp.
   function batBuocDangNhap(dl) {
     var em = emDangHoc(dl);
     if (!em) { location.replace('index.html'); return null; }
+    if (!em.xemNhu && !em.dacBiet) {
+      if (window.NWP && window.NWP.gac) window.NWP.gac(em.ma);
+      else console.warn('[phien] trang này chưa nạp js/nw-phien.js — không canh cửa được');
+    }
     return em;
   }
 

@@ -101,6 +101,8 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') lh.classList.remove('mo'); });
   var nutLh = $('#btnLienHe');
   if (nutLh) nutLh.onclick = function () { lh.classList.add('mo'); };
+  var nutQuen = $('#btnQuenMk');   // v1.158.0 (27/09): quên mật khẩu → liên hệ thầy (đặt lại: myNetwork/tools/tao-tai-khoan.mjs --reset)
+  if (nutQuen) nutQuen.onclick = function () { lh.classList.add('mo'); };
 
   var dau = $('.top.nwb');
   if (!dau) return;              // màn đăng nhập: không có thanh

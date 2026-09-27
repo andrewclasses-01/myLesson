@@ -68,6 +68,9 @@
 
    ⚠️ Luật này cho AI CŨNG ĐỌC VÀ GỬI ĐƯỢC (không đòi đăng nhập) — đúng mức tin
    cậy mà cả hệ này đang có: mã học sinh vốn nằm công khai trong `lop.json`.
+   ⭐⭐ HẾT ĐÚNG từ v1.158.0 (27/09/2026, sau tấn công Tr0ngX): GỬI tin học sinh đòi phiên Firebase
+   Auth của CHÍNH em (`request.auth.token.ma == code`, mật khẩu thật — js/nw-phien.js); cảm xúc chỉ sửa
+   được ô của mình. Luật đăng bằng `tools/dang-luat-mat-khau.js`. ĐỌC vẫn công khai.
    ============================================================ */
 
 /* ============================================================
@@ -295,7 +298,15 @@
          "gửi lại không kèm dấu máy" (v1.80.0) — gửi lại kiểu đó nay chắc chắn bị từ chối.
          Kho từ chối thì đổi thành lỗi dễ hiểu cho học sinh (xem chuLoi). */
       var kem = Object.assign({ may: dauMay() }, goc);
-      return f.fs.addDoc(oChat, kem)['catch'](function (e) {
+      // ⭐⭐ v1.158.0 (27/09/2026) — luật đòi PHIÊN ĐĂNG NHẬP đúng mã người gửi (token.ma == code).
+      // Chờ Firebase Auth khôi phục phiên TRƯỚC khi ghi, không thì Firestore gửi đi KHÔNG kèm danh tính
+      // (auth chưa kịp khởi động) và bị từ chối oan. Thầy (role gv) đi phiên thầy như cũ.
+      var laHs = goc.role === 'hs';
+      var choPhien = (laHs && window.NWP) ? window.NWP.phienCuaMa(goc.code)['catch'](function () { return null; }) : Promise.resolve(true);
+      return choPhien.then(function (u) {
+        if (laHs && window.NWP && !u) { var l0 = new Error('chưa đăng nhập'); l0.code = 'awc/can-dang-nhap'; throw l0; }
+        return f.fs.addDoc(oChat, kem);
+      })['catch'](function (e) {
         var ma = String((e && (e.code || e.message)) || '');
         if (ma.indexOf('permission-denied') < 0) throw e;
         return docKhanCap().then(function (k) {
@@ -359,7 +370,9 @@
   function suaCx(maLop, tinId, maNguoi, ma, ten) {
     var khoa = String(maNguoi || '').replace(/[.$#[\]/]/g, '_');
     if (!khoa) return Promise.reject(new Error('thieu-ma-nguoi'));
-    return db().then(function (f) {
+    // v1.158.0 — luật: học sinh chỉ sửa ĐÚNG ô cảm xúc của mình (khoá = token.ma) ⇒ chờ phiên như gui().
+    var choPhien = (khoa !== 'GV' && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
+    return choPhien.then(db).then(function (f) {
       var truong = 'cx.' + khoa;
       var patch = {};
       patch[truong] = ma ? { ma: String(ma), ten: String(ten || '?').slice(0, 60), luc: Date.now() }
@@ -456,6 +469,7 @@
     // (27/09/2026) hai lỗi dành cho HỌC SINH — đặt bởi gui()
     if (ma === 'awc/chat-khoa') return 'Chat đang tạm khoá, em quay lại sau nhé.';
     if (ma === 'awc/tin-bi-chan') return 'Tin chưa gửi được. Em bỏ đường link (nếu có) rồi gửi lại nhé.';
+    if (ma === 'awc/can-dang-nhap') return 'Phiên đăng nhập đã hết. Em tải lại trang và đăng nhập lại nhé.';
     if (String(ma).indexOf('permission-denied') >= 0) {
       // ⭐ v1.52.0 (gói bảo mật C): xoá tin · tin ký THẦY · lưu trữ nay đòi PHIÊN THẦY
       // (js/thay.js). Học sinh nhắn/thả cảm xúc vẫn không cần đăng nhập.

@@ -15,7 +15,11 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const crypto = require('crypto');
-const KF = require('E:/LAP TRINH APP/myLesson/app/src/main/lib/kho-fs');
+// Thư mục lib của app myLesson khác nhau giữa các máy (ANDREWHOME: myLesson/app/src, MSI: myLesson/src) ⇒ DÒ, không trỏ cứng.
+const LIB_APP = ['E:/LAP TRINH APP/myLesson/src/main/lib', 'E:/LAP TRINH APP/myLesson/app/src/main/lib']
+  .find(d => require('fs').existsSync(d + '/kho-fs.js'));
+if (!LIB_APP) { console.error('Không tìm thấy thư mục lib của app myLesson (kho-fs.js) — kiểm lại đường dẫn E:/LAP TRINH APP/myLesson'); process.exit(2); }
+const KF = require(LIB_APP + '/kho-fs');
 const PROJECT = 'aword-70dae';
 const API = 'https://firebaserules.googleapis.com/v1';
 const TAI_LIEU = 'E:/LAP TRINH APP/myLesson-data/tai-lieu';
@@ -158,7 +162,7 @@ function ghiTaiLieu(ten, noiDung) {
   try { fs.mkdirSync(TAI_LIEU, { recursive: true }); fs.writeFileSync(path.join(TAI_LIEU, ten), noiDung, 'utf8'); console.log('  đã ghi', path.join(TAI_LIEU, ten)); } catch (e) { console.log('  (không ghi được tài liệu:', e.message, ')'); }
 }
 function docConfigWeb() {
-  const { P } = require('E:/LAP TRINH APP/myLesson/app/src/main/lib/duongdan');
+  const { P } = require(LIB_APP + '/duongdan');
   const s = fs.readFileSync(path.join(P.web, 'config.js'), 'utf8');
   const pid = /projectId\s*:\s*['"]([^'"]+)['"]/.exec(s), key = /apiKey\s*:\s*['"]([^'"]+)['"]/.exec(s);
   if (!pid || !key) throw new Error('không đọc được projectId/apiKey trong web/config.js');

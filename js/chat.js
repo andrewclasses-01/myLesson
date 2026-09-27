@@ -282,9 +282,19 @@
   }
 
   // Gửi một tin. Trả Promise; hỏng thì reject để nơi gọi báo cho người dùng.
+  /* ⭐ v1.165.0 (27/09/2026 tối, bản đồ tấn công T5 — LỪA ĐẢO QUA CHAT): tin HỌC SINH không được chứa đường link.
+     Lý do: mã nguồn web công khai ⇒ ai cũng dựng được trang đăng nhập GIẢ trong 10 phút, rồi nhắn vào chat lớp
+     "thầy bảo vào đây làm bài" — bạn gõ mã + mật khẩu là mất tài khoản THẬT (đã đổi mật khẩu vẫn mất).
+     Luật Firestore chặn thật (cùng khuôn regex, lower()); đây chỉ là CHẶN SỚM để báo lời dễ hiểu, không tốn lượt ghi.
+     Thầy (role gv) vẫn gửi link bình thường. Đo trên 3.398 tin HS thật (sao lưu 27/09): đúng 1 tin có link (YouTube).
+     ⛔ Đổi regex thì đổi CẢ tools/dang-luat-chong-link.js (luật) — hai bên phải giống nhau. */
+  var CO_LINK = /(https?:|:\/\/|www\.|\.(com|vn|net|org|io|me|app|gg|ly|xyz|top|site|online|tv|cc|info|edu)([\/?#:]|\s|$))/;
+  function coLink(chu) { return CO_LINK.test(String(chu || '').toLowerCase()); }
+
   function gui(maLop, tin) {
     var chu = String(tin.chu || '').trim().slice(0, TOI_DA_CHU);
     if (!chu) return Promise.reject(new Error('trống'));
+    if (tin.vaiTro !== 'gv' && coLink(chu)) { var lLink = new Error('có link'); lLink.code = 'awc/co-link'; return Promise.reject(lLink); }
     return db().then(function (f) {
       var oChat = f.fs.collection(f.db, 'classChat', maLop, 'messages');
       var goc = {
@@ -468,6 +478,7 @@
     var ma = (e && (e.code || e.message)) || '';
     // (27/09/2026) hai lỗi dành cho HỌC SINH — đặt bởi gui()
     if (ma === 'awc/chat-khoa') return 'Chat đang tạm khoá, em quay lại sau nhé.';
+    if (ma === 'awc/co-link') return 'Chat lớp không gửi được đường link. Em cần gửi link thì nhờ thầy gửi giúp nhé.';
     if (ma === 'awc/tin-bi-chan') return 'Tin chưa gửi được. Em bỏ đường link (nếu có) rồi gửi lại nhé.';
     if (ma === 'awc/can-dang-nhap') return 'Phiên đăng nhập đã hết. Em tải lại trang và đăng nhập lại nhé.';
     if (String(ma).indexOf('permission-denied') >= 0) {
@@ -482,7 +493,7 @@
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
     taiThem: taiThem, TOI_DA_TIN_THEM: TOI_DA_TIN_THEM,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
-    chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU,
+    chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU, coLink: coLink,
     dauMay: dauMay,                    /* ⭐ v1.80.0 — xem khối "DẤU MÁY" đầu file */
     ngheKhanCap: ngheKhanCap, docKhanCap: docKhanCap, datKhanCap: datKhanCap,   /* 🚨 27/09/2026 */
     // ⭐ v1.38.0 — mở CỬA FIREBASE dùng chung cho khối khác (js/vi-qua.js đọc

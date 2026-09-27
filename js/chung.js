@@ -3123,18 +3123,26 @@
       trang: { mapValue: { fields: trang } }, luc: { integerValue: String(Math.round(+d.luc || Date.now())) } } };
   }
   // Ghi ĐÈ trọn tài liệu (7 trường, đúng hasOnly). Trả Promise<true|false>.
+  // ⭐ v1.161.0 (27/09/2026, sau tấn công Tr0ngX) — luật đòi ID token ĐÚNG em (tools/dang-luat-tien-do.js):
+  // trước đó ai cũng ghi đè được bài nộp của em khác. Không có vé ⇒ gửi vẫn bị luật chặn (trả false như lỗi mạng).
+  function tieuDeEm(kieu) {
+    return (window.NWP && window.NWP.tieuDe) ? window.NWP.tieuDe(kieu)['catch'](function () { return {}; }) : Promise.resolve({});
+  }
   function nopGhi(d) {
     var id = nopId(d.lop, d.bai, d.o, d.ma);
     var u = nopUrlFs(id);
     if (!u) return Promise.resolve(false);
-    return fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(nopRaFs(d)) })
-      .then(function (r) { return r.ok; })['catch'](function () { return false; });
+    return tieuDeEm().then(function (h) {
+      return fetch(u, { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify(nopRaFs(d)) });
+    }).then(function (r) { return r.ok; })['catch'](function () { return false; });
   }
 
   // Đẩy MỘT blob JPEG lên Storage — trả URL CÓ TOKEN (đọc được dù luật đóng), hoặc '' khi hỏng.
   function nopDayBlob(ten, blob) {
     var u = 'https://firebasestorage.googleapis.com/v0/b/' + NOP_BUCKET + '/o?uploadType=media&name=' + encodeURIComponent(ten);
-    return fetch(u, { method: 'POST', headers: { 'Content-Type': 'image/jpeg' }, body: blob })
+    return tieuDeEm('storage').then(function (h) {       // v1.161.0 — Storage REST nhận "Firebase <ID token>"
+      return fetch(u, { method: 'POST', headers: Object.assign({ 'Content-Type': 'image/jpeg' }, h), body: blob });
+    })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (j) {
         var tk = String((j && j.downloadTokens) || '').split(',')[0];

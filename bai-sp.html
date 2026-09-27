@@ -765,10 +765,10 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=139"></script>
+<script src="config.js?v=140"></script>
 <script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=63"></script>
-<script src="js/nw-phien.js?v=2"></script>
+<script src="js/chung.js?v=64"></script>
+<script src="js/nw-phien.js?v=3"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới. -->
 <script src="js/chat.js?v=25"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -1059,6 +1059,10 @@ async function xacNhanNop(chonDaNop){
   var k = KHOI[0];
   try {
     var fb = await fbDb();
+    /* ⭐ v1.161.0 (27/09/2026) — luật: chỉ ĐÚNG em (ID token) tích/bỏ tích của mình (trước đó ai cũng XOÁ được
+       tích của em khác). Chờ Firebase Auth khôi phục phiên TRƯỚC khi ghi — không thì Firestore gửi đi không kèm
+       danh tính và bị từ chối oan. Dùng chung app Firebase với js/nw-phien.js. */
+    if (window.NWP && NWP.userHienTai) await NWP.userHienTai()['catch'](function(){ return null; });
     var refDoc = fb.fs.doc(fb.db, 'spSubmissions', buoiId(k), 'students', MA_HS);
     if (chonDaNop) {
       await fb.fs.setDoc(refDoc, { ten: TOI, tickedAt: Date.now() });

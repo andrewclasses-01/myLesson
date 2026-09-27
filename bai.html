@@ -2040,10 +2040,10 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=139"></script>
+<script src="config.js?v=140"></script>
 <script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=63"></script>
-<script src="js/nw-phien.js?v=2"></script>
+<script src="js/chung.js?v=64"></script>
+<script src="js/nw-phien.js?v=3"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
 <script src="js/chat.js?v=25"></script>
@@ -4816,18 +4816,23 @@ function dayTienDoFs(gap){
     than.fields.vt = { doubleValue: VI_TRI_KHOA.t };
     than.fields.vtLuc = { integerValue: String(VI_TRI_KHOA.luc) };
   }
+  // ⭐ v1.161.0 — luật đòi ID token đúng em (tools/dang-luat-tien-do.js). Lấy vé ĐỒNG BỘ (keepalive không chờ được);
+  // chưa có vé ⇒ KHÔNG gửi, giữ cờ BAN để lượt sau gửi (gửi mù chỉ ăn 403 và làm tắt cham oan).
+  var hVe = (window.NWP && NWP.tieuDeNgay) ? NWP.tieuDeNgay() : {};
+  if (!hVe.Authorization) return;
+  var tdVe = Object.assign({ 'Content-Type': 'application/json' }, hVe);
   var thanCu = JSON.stringify(than);                       // gói CŨ (đường lùi)
   var goi = chamGanVaoGoi('video', than);                  // v1.122.0 — kèm cham của máy này
   than = JSON.stringify(goi.than);
   TIEN_DO_FS_BAN = false;
   try {
-    fetch(u + goi.mask, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    fetch(u + goi.mask, { method: 'PATCH', headers: tdVe,
                body: than, keepalive: !!gap })
       .then(function(r){
         if (r.ok) return;
         if (goi.coCham && r.status === 403) {   // luật chưa lan: gửi lại gói cũ, tắt cham
           CHAM_TAT = true;
-          return fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: thanCu, keepalive: !!gap })
+          return fetch(u, { method: 'PATCH', headers: tdVe, body: thanCu, keepalive: !!gap })
             .then(function(r2){ if (!r2.ok) TIEN_DO_FS_BAN = true; });
         }
         TIEN_DO_FS_BAN = true;
@@ -4973,18 +4978,21 @@ function dayTienDoNgheFs(gap){
     tong: { mapValue: { fields: tongFields } },
     luc:  { integerValue: String(Date.now()) }
   } };
+  var hVe = (window.NWP && NWP.tieuDeNgay) ? NWP.tieuDeNgay() : {};   // v1.161.0 — như dayTienDoFs
+  if (!hVe.Authorization) return;
+  var tdVe = Object.assign({ 'Content-Type': 'application/json' }, hVe);
   var thanCu = JSON.stringify(thanObj);                    // gói CŨ (đường lùi)
   var goi = chamGanVaoGoi('nghe', thanObj);                // v1.122.0 — kèm cham của máy này
   var than = JSON.stringify(goi.than);
   NGHE_FS_BAN = false;
   try {
-    fetch(u + goi.mask, { method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    fetch(u + goi.mask, { method: 'PATCH', headers: tdVe,
                body: than, keepalive: !!gap })
       .then(function(r){
         if (r.ok) return;
         if (goi.coCham && r.status === 403) {
           CHAM_TAT = true;
-          return fetch(u, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: thanCu, keepalive: !!gap })
+          return fetch(u, { method: 'PATCH', headers: tdVe, body: thanCu, keepalive: !!gap })
             .then(function(r2){ if (!r2.ok) NGHE_FS_BAN = true; });
         }
         NGHE_FS_BAN = true;

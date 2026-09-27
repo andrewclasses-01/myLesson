@@ -120,6 +120,7 @@
     if (!ma) return;
     fb().then(function () { return phienCuaMa(ma); }).then(function (u) {
       if (!u) { veDangNhap(); return; }
+      lamMoiVe(false);    // v1.161.0 — giữ sẵn vé cho các đường ghi REST (tieuDeNgay)
       // hồ sơ: đọc 1 lần mỗi tab (sessionStorage) — đỡ tốn lượt đọc Firestore mỗi lần chuyển trang
       var daGac = '';
       try { daGac = sessionStorage.getItem(KHOA_DA_GAC) || ''; } catch (e) { }
@@ -134,6 +135,38 @@
     try { sessionStorage.removeItem(KHOA_DA_GAC); } catch (e) { }
     // KHÔNG gọi AWC.thoat(): index.html cần đọc lại mã đã nhớ để điền sẵn ô ID.
     location.replace('index.html');
+  }
+
+  // ---------- ⭐⭐ v1.161.0 — TIÊU ĐỀ DANH TÍNH cho các đường ghi REST của chính trang này ----------
+  // Luật (tools/dang-luat-tien-do.js): bài nộp ảnh (Storage nopBai + lessonNop), tiến độ video/audio, tích nộp Speaking
+  // CHỈ ghi được bằng ID token của đúng em. Các đường đó là REST (có đường keepalive lúc đóng tab — KHÔNG chờ được Promise)
+  // ⇒ giữ sẵn vé trong bộ nhớ trang (`_veHs`), làm mới mỗi 10 phút + khi còn < 2 phút.
+  //   tieuDe(kieu)     : Promise<{Authorization}> (lấy vé mới nếu cần) — dùng khi được phép chờ
+  //   tieuDeNgay(kieu) : {Authorization} hoặc {} NGAY (đồng bộ) — dùng cho keepalive; {} ⇒ đừng gửi, để lần sau
+  //   kieu 'storage' ⇒ "Firebase <token>" (Storage REST), còn lại "Bearer <token>" (Firestore REST).
+  var _veHs = null;          // { token, het }
+  var _henVe = null;
+  function lamMoiVe(epMoi) {
+    return userHienTai().then(function (u) {
+      if (!laHocSinh(u)) { _veHs = null; return null; }
+      return u.getIdTokenResult(!!epMoi).then(function (r) {
+        _veHs = { token: r.token, het: Date.parse(r.expirationTime) };
+        if (!_henVe) _henVe = setInterval(function () { lamMoiVe(false); }, 10 * 60 * 1000);
+        return _veHs.token;
+      });
+    })['catch'](function () { return null; });
+  }
+  function dauTieuDe(kieu, token) {
+    return token ? { Authorization: (kieu === 'storage' ? 'Firebase ' : 'Bearer ') + token } : {};
+  }
+  function tieuDeNgay(kieu) {
+    if (_veHs && _veHs.het - Date.now() > 120000) return dauTieuDe(kieu, _veHs.token);
+    lamMoiVe(!!_veHs);       // hết/sắp hết ⇒ xin vé mới cho lượt sau
+    return {};
+  }
+  function tieuDe(kieu) {
+    if (_veHs && _veHs.het - Date.now() > 120000) return Promise.resolve(dauTieuDe(kieu, _veHs.token));
+    return lamMoiVe(!!_veHs).then(function (t) { return dauTieuDe(kieu, t); });
   }
 
   // ---------- ⭐⭐ v1.159.0 — CẤP VÉ cho khung AWord nhúng (AWord Đợt 410) ----------
@@ -174,5 +207,6 @@
   }
 
   window.NWP = { fb: fb, emailTuMa: emailTuMa, userHienTai: userHienTai, phienCuaMa: phienCuaMa,
-    dangNhap: dangNhap, hoSo: hoSo, datMatKhau: datMatKhau, thoat: thoat, gac: gac, chuLoi: chuLoi };
+    dangNhap: dangNhap, hoSo: hoSo, datMatKhau: datMatKhau, thoat: thoat, gac: gac, chuLoi: chuLoi,
+    tieuDe: tieuDe, tieuDeNgay: tieuDeNgay };
 })();

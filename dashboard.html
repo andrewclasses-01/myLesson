@@ -2587,6 +2587,19 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .kc-bat{min-width:92px; padding:9px 12px; border-radius:12px; border:0; font-weight:700; cursor:pointer; background:#eef2f7; color:#334}
 .kc-bat.dang{background:#d32f2f; color:#fff}
 .kc-bat:disabled{opacity:.5; cursor:wait}
+/* v1.160.0 (27/09) — hộp "Mật khẩu HS": ai đã đặt mật khẩu riêng (dùng chung khung .kc-nen/.kc-hop) */
+.mk-hop{width:min(640px,100%); max-height:86vh; display:flex; flex-direction:column}
+.mk-hop h3{color:#0E7C6E}
+.mk-tong{display:flex; gap:8px; flex-wrap:wrap; margin:0 0 10px}
+.mk-tong span{padding:4px 10px; border-radius:99px; background:#f1f5f4; font-size:12.5px; font-weight:700}
+.mk-cuon{overflow:auto; border-top:1px solid #eee}
+.mk-lop{padding:10px 0 4px; border-bottom:1px solid #f0f0f0}
+.mk-lop > b{display:flex; justify-content:space-between; font-size:14px; margin-bottom:6px}
+.mk-lop > b small{color:#777; font-weight:600}
+.mk-em{display:inline-flex; align-items:center; gap:4px; margin:0 6px 6px 0; padding:3px 9px; border-radius:99px; font-size:12.5px; background:#f6f7f9}
+.mk-em.da{background:#e6f5ef; color:#0b6b4f}
+.mk-em.chua{background:#fff4e5; color:#8a5300}
+.mk-em.khoa{background:#fdecec; color:#b71c1c}
 .kc-chan{display:flex; justify-content:flex-end; margin-top:10px}
 .kc-chan button{padding:9px 16px; border-radius:12px; border:0; background:#eef2f7; cursor:pointer; font-weight:600}
 </style>
@@ -2996,7 +3009,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=138"></script>
+<script src="config.js?v=139"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=63"></script>
 <script src="js/chat.js?v=25"></script>
@@ -9667,6 +9680,58 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
     window.qlMoKhanCap = moHopKhanCap;     // mục "Khẩn cấp" cột trái (js/nw-thanh.js) gọi
     if (window.AWChat && AWChat.ngheKhanCap) AWChat.ngheKhanCap(function (k) { KHAN_CAP = k; veKhanCap(); });
   })();
+
+  /* ============================================================
+     🔐 v1.160.0 (27/09/2026) — HỘP "MẬT KHẨU HS": em nào đã đặt mật khẩu riêng (web v1.158.0 đăng nhập mật khẩu).
+     Đọc `nwUsers` (vaiTro 'hs') — luật cho PHIÊN THẦY đọc (nwVao ⊃ laThay) ⇒ cần chuaThay. ~160 lượt đọc MỖI LẦN MỞ hộp
+     (không nghe sống). Trạng thái lấy cờ hồ sơ: phaiDoiMk=false ⇒ đã đặt · quaHanMk ⇒ bị khoá vì quá 7 ngày.
+     ⛔ Cờ do trình duyệt em ghi — số chuẩn theo MÁY CHỦ: myNetwork/tools/tao-tai-khoan.mjs --trang-thai.
+     ⛔ Đặt lại mật khẩu cần khoá quản trị ⇒ KHÔNG có nút ở đây; thầy nhắn Claude / chạy `--reset <mã số>` (mã số hiện cạnh tên).
+     ============================================================ */
+  function moHopMatKhau(nut) {
+    if (chuaThay(nut)) return;
+    var hop = $('#mkNen');
+    if (!hop) {
+      hop = document.createElement('div');
+      hop.id = 'mkNen'; hop.className = 'kc-nen';
+      document.body.appendChild(hop);
+      hop.addEventListener('click', function (e) { if (e.target === hop || e.target.closest('[data-mk-dong]')) hop.hidden = true; });
+    }
+    hop.hidden = false;
+    hop.innerHTML = '<div class="kc-hop mk-hop" role="dialog" aria-label="Mật khẩu học sinh"><h3>🔐 Mật khẩu học sinh</h3><p>Đang đọc…</p></div>';
+    AWChat.kho().then(function (f) {
+      return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('vaiTro', '==', 'hs')));
+    }).then(function (snap) {
+      var lop = {}, tong = { da: 0, chua: 0, khoa: 0 };
+      snap.forEach(function (d) {
+        var x = d.data() || {};
+        var tt = x.quaHanMk ? 'khoa' : (x.phaiDoiMk ? 'chua' : 'da');
+        tong[tt]++;
+        (lop[x.lop || '?'] = lop[x.lop || '?'] || []).push({ ten: x.ten || d.id, tt: tt, so: x.msId });
+      });
+      var nhan = { da: '✅', chua: '⬜', khoa: '🔒' };
+      var html = Object.keys(lop).sort().map(function (l) {
+        var ds = lop[l].sort(function (a, b) { return ('' + a.tt + a.ten).localeCompare('' + b.tt + b.ten, 'vi'); });
+        var da = ds.filter(function (e) { return e.tt === 'da'; }).length;
+        return '<div class="mk-lop"><b>' + A.chuAnToan(A.lopHien ? A.lopHien(l) : l) + '<small>' + da + '/' + ds.length + ' đã đặt</small></b>' +
+          ds.map(function (e) {
+            return '<span class="mk-em ' + e.tt + '" title="mã số ' + A.chuAnToan(String(e.so || '')) + '">' + nhan[e.tt] + ' ' + A.chuAnToan(e.ten) + '</span>';
+          }).join('') + '</div>';
+      }).join('');
+      hop.innerHTML = '<div class="kc-hop mk-hop" role="dialog" aria-label="Mật khẩu học sinh"><h3>🔐 Mật khẩu học sinh</h3>' +
+        '<div class="mk-tong"><span>✅ Đã đặt mật khẩu riêng: ' + tong.da + '</span><span>⬜ Chưa: ' + tong.chua + '</span><span>🔒 Khoá vì quá hạn: ' + tong.khoa + '</span></div>' +
+        '<p>Em chưa đặt vẫn đang dùng mật khẩu lớp (bạn cùng lớp vào thay được). Quá 7 ngày chưa đặt sẽ tự khoá. ' +
+        'Em quên mật khẩu / bị khoá: thầy nhắn Claude "đặt lại mật khẩu cho em …" (rê chuột lên tên để xem mã số).</p>' +
+        '<div class="mk-cuon">' + html + '</div>' +
+        '<div class="kc-chan"><button type="button" data-mk-dong>Đóng</button></div></div>';
+    })['catch'](function (e) {
+      var ma = (e && (e.code || e.message)) || '';
+      hop.innerHTML = '<div class="kc-hop mk-hop"><h3>🔐 Mật khẩu học sinh</h3><p>' +
+        (String(ma).indexOf('permission-denied') >= 0 ? loiPhien('Chưa đọc được danh sách') : 'Chưa đọc được danh sách. Thử lại nhé.') +
+        '</p><div class="kc-chan"><button type="button" data-mk-dong>Đóng</button></div></div>';
+    });
+  }
+  window.qlMoMatKhau = moHopMatKhau;       // mục "Mật khẩu HS" cột trái (js/nw-thanh.js) gọi
   function veThayDn() {
     var chu = $('#thayDnChu');
     if (!chu) return;
@@ -9855,6 +9920,6 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   else moCong();
 })();
 </script>
-<script src="js/nw-thanh.js?v=9"></script>
+<script src="js/nw-thanh.js?v=10"></script>
 </body>
 </html>

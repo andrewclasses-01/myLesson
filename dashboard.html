@@ -3272,7 +3272,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=151"></script>
+<script src="config.js?v=152"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=65"></script>
@@ -10044,8 +10044,23 @@ button.mk-em:hover{border-color:currentColor}
     return false;
   }
   var MK_NHAN = { da: '✅', chua: '⬜', khoa: '🔒' };
-  function htmlMatKhau(kq) {
-    var lop = kq.lop, tong = kq.tong;
+  // v1.170.3 — CHỈ tài khoản của em ĐANG HỌC (có trong danh sách lớp web, lớp khớp — mkCua). Hồ sơ nwUsers của em đã nghỉ /
+  // tài khoản cũ đợt đánh lại số KHÔNG bao giờ tự xoá (vd LỘC B2A lưu trữ 26/09, TK đã khoá) ⇒ trước đây vẫn hiện trong lớp.
+  function mkLoc(kq) {
+    var con = {};
+    dsNguoi().forEach(function (p) { var m = mkCua(p); if (m) con[m.uid] = 1; });
+    var lop = {}, tong = { da: 0, chua: 0, khoa: 0 }, an = 0;
+    Object.keys(kq.lop).forEach(function (l) {
+      kq.lop[l].forEach(function (e) {
+        if (!con[e.uid]) { an++; return; }
+        tong[e.tt]++;
+        (lop[l] = lop[l] || []).push(e);
+      });
+    });
+    return { lop: lop, tong: tong, an: an };
+  }
+  function htmlMatKhau(kq0) {
+    var kq = mkLoc(kq0), lop = kq.lop, tong = kq.tong;
     var html = Object.keys(lop).sort().map(function (l) {
       var ds = lop[l].sort(function (a, b) { return ('' + a.tt + a.ten).localeCompare('' + b.tt + b.ten, 'vi'); });
       var da = ds.filter(function (e) { return e.tt === 'da'; }).length;
@@ -10060,7 +10075,8 @@ button.mk-em:hover{border-color:currentColor}
       '<p class="qm-p">Em chưa đặt vẫn đang dùng mật khẩu lớp (bạn cùng lớp vào thay được). Quá 7 ngày chưa đặt sẽ tự khoá. ' +
       'Em quên mật khẩu / bị khoá: <b>bấm tên em</b> để đặt lại — thầy nhận mật khẩu tạm đọc cho em.</p>' +
       '<div class="mk-hoi" hidden></div>' +
-      '<div class="qm-mk-ds">' + html + '</div>';
+      '<div class="qm-mk-ds">' + html + '</div>' +
+      (kq.an ? '<p class="qm-p" style="margin-top:10px">Không hiện ' + kq.an + ' tài khoản của em đã nghỉ / tài khoản cũ (không còn trong danh sách lớp).</p>' : '');
   }
   // Bộ nghe các nút mật khẩu — gắn MỘT lần lên khung chứa (ruột vẽ lại thoải mái).
   function ganNgheMk(hop) {
@@ -11568,7 +11584,8 @@ button.mk-em:hover{border-color:currentColor}
       if (t === 'kc') b.classList.toggle('kc-dang', batKc);
     });
     $('#qmSo_hs').textContent = String(dsNguoi().length);
-    $('#qmSo_mk').textContent = MK_KQ ? MK_KQ.tong.da + '/' + (MK_KQ.tong.da + MK_KQ.tong.chua + MK_KQ.tong.khoa) : '';
+    var mkT = MK_KQ ? mkLoc(MK_KQ).tong : null;
+    $('#qmSo_mk').textContent = mkT ? mkT.da + '/' + (mkT.da + mkT.chua + mkT.khoa) : '';
     $('#qmSo_kc').textContent = batKc ? 'BẬT' : 'TẮT';
     $('#qmSo_kc').className = batKc ? 'bat' : 'tat';
     var tieu = '', phu = '', than = '';

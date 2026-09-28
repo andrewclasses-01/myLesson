@@ -1759,6 +1759,18 @@
   //    `taoLuc`, tính tới CUỐI NGÀY hôm đó. Không có gì để suy thì trả null và
   //    ô hạn hiện "Chưa đặt hạn" — thà để trống còn hơn bịa một giờ.
   function mocHan(b) {
+    // 🐛 v1.172.0 (28/09/2026, ca thật B2-B STAGE 25.9) — BÀI STAGE: HẠN THẺ = HẠN CHẶNG CUỐI.
+    // `b.han` trong bai.json có thể LỆCH hạn chặng cuối (B2-B: `b.han` 14:00 · 28/9, act chặng 2 là
+    // 17:30 · 28/9) ⇒ qua 14:00 thẻ bị coi là HẾT HẠN ("bài gần nhất (đã hết hạn)") trong khi đồng hồ
+    // chặng vẫn đếm tới 17:30. Nay đọc thẳng `changCuaBai` — nơi đã gộp sẵn hạn act + hạn riêng chặng
+    // (`hanChang`) + hạn riêng cả thẻ (`HAN_SUA` đè chặng cuối) — để thẻ và đồng hồ luôn cùng MỘT mốc.
+    // Bài STAGE không có chặng nào mang hạn thì đi lối cũ bên dưới.
+    if (b && b.id && laBaiStage(b)) {
+      var cc = changCuaBai(b);
+      for (var ci = cc.length - 1; ci >= 0; ci--) {
+        if (cc[ci].so && cc[ci].moc != null) return cc[ci].moc;
+      }
+    }
     // ⭐ v1.20.0 — qua `hanCua()`: hạn sửa ở dashboard đứng trước `b.han` của
     // `bai.json`. Chưa sửa thì `hanCua()` chính là `b.han` — y hệt lối cũ.
     var hh = hanCua(b);

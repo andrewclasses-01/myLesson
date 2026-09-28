@@ -15,6 +15,9 @@
 .dn-quen button:hover{text-decoration:underline}
 /* v1.163.0: con mắt hiện/ẩn mật khẩu (nút .id-eye do js/nw-dangnhap.js chèn sau ô) */
 .dn-o .id-eye svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+/* v1.171.0 (28/09): dòng cảnh báo + Điều khoản ngay dưới nút đăng nhập (để "truy cập trái phép" không cãi được) */
+.dn-dieukhoan{margin:12px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted); text-align:center}
+.dn-dieukhoan a{font-weight:700; text-decoration:underline}
 .dn-goiy{margin:-2px 0 14px; font-size:12.5px; color:var(--muted); text-align:center; line-height:1.45}
 /* màn chọn nơi học (em có mã ở 2 nơi) */
 .dn-chao{display:flex; flex-direction:column; align-items:center; text-align:center; margin:-4px 0 16px}
@@ -52,6 +55,7 @@
         <p class="dn-quen"><button type="button" id="btnQuenMk">Quên mật khẩu?</button></p>
         <button class="btn primary wide" id="btnVao">ĐĂNG NHẬP</button>
         <p class="tiny warn" id="loiVao" hidden></p>
+        <p class="dn-dieukhoan">🔒 Chỉ dành cho học sinh được Andrew Classes cấp tài khoản. Nghiêm cấm dùng tài khoản người khác, dò mật khẩu hoặc dùng script tự động. Mọi lượt đăng nhập đều được ghi lại. Đăng nhập nghĩa là bạn đồng ý với <a href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
         <!-- thầy 24/09: chỗ để sau này mở MÀN ĐĂNG KÝ cho học sinh mới — tạm "sắp ra mắt" -->
         <div class="nut-thay dn-dk"><button type="button" id="btnDangKy">Đăng ký</button><i class="gach"></i><button type="button" id="btnLienHe">Liên hệ</button></div>
       </section>

@@ -3273,7 +3273,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=154"></script>
+<script src="config.js?v=155"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=65"></script>
@@ -6259,8 +6259,30 @@ button.mk-em:hover{border-color:currentColor}
   function hqGioAct(ma, ten) {
     var k = A.khoaTen(ten), luot = [], daCo = {};
     var soCau = (CHUAN[ma] && +CHUAN[ma].soCau > 0) ? +CHUAN[ma].soCau : 0;
+    var em = (DIEM[ma] || []).filter(function (e) { return A.khoaEm(e) === k; })[0];
+    // ⭐⭐ v1.171.1 (28/09) — NỐI LƯỢT NỘP DỞ "MỒ CÔI" VỚI VÁN CỦA NÓ. Mã lượt dở `hw<mốc>x…` = `nhapId`, sinh CÙNG
+    // mili-giây với `createdAt` của nhật ký ván (đo thật: lệch 0 ms). Nháp được gửi bù (AWord `sweepDrafts`, lần mở
+    // sau) thì nhật ký KHÔNG biết mã đó ⇒ trước đây hiện HAI dòng cho MỘT ván. Hai ca (BẢO NAM K9 L20 BT2 26/9):
+    //   · ván không có attemptId (16:03, 0 điểm trong nhật ký) + lượt dở 1/30 gửi bù 18:36 ⇒ GỘP: một dòng NỘP DỞ,
+    //     điểm của lượt dở, giờ HOẠT ĐỘNG của ván (7,8 phút, không phải 75 phút đồng hồ tường);
+    //   · ván đã NỘP bằng mã khác (19:15, 17/30) mà nháp giữa ván vẫn bị gửi bù (14/30 lúc 20:02) ⇒ lượt dở là
+    //     BẢN SAO của ván đó ⇒ bỏ, không cộng giờ lần hai.
+    var doTheoMoc = [], boQua = {};
+    ((em && em.luot) || []).forEach(function (l) {
+      var m = /^hw(\d{13})x/.exec(String(l.id || ''));
+      if (l.dd && m) doTheoMoc.push({ moc: +m[1], l: l });
+    });
+    function timDo(moc) {
+      for (var i = 0; i < doTheoMoc.length; i++) if (Math.abs(doTheoMoc[i].moc - moc) <= 50) return doTheoMoc[i].l;
+      return null;
+    }
     (HQ.act[ma] || []).forEach(function (d) {
       if (A.khoaEm(d) !== k) return;               // v1.134.0 — lượt luyện có `ma` thì theo mã
+      var ld = doTheoMoc.length && !d.mistakes ? timDo(+d.createdAt || 0) : null;
+      if (ld && ld.id !== d.attemptId) {
+        if (d.attemptId) boQua[ld.id] = 1;         // v1.171.1 — bản sao của ván đã nộp mã khác
+        else { d = Object.assign({}, d, { score: ld.diem, total: ld.tong, attemptId: ld.id, mode: 'submit' }); }
+      }
       if (d.attemptId) daCo[d.attemptId] = 1;
       var moi = HQ_MOC_GOP && (+d.createdAt || 0) >= HQ_MOC_GOP;
       var diem = +d.score || 0;
@@ -6285,9 +6307,8 @@ button.mk-em:hover{border-color:currentColor}
                   // v1.148.0 — nối BÀI LÀM: lượt đã nộp (NỘP / NỘP DỞ) ⇒ results/{attemptId}; lượt khác ⇒ practiceLog/{mã}/entries/{id}
                   code: ma, pl: d._id || '', rid: d.mode === 'submit' && d.attemptId ? String(d.attemptId) : '', coBl: !!d.coReview });
     });
-    var em = (DIEM[ma] || []).filter(function (e) { return A.khoaEm(e) === k; })[0];
     ((em && em.luot) || []).forEach(function (l) {
-      if (l.id && daCo[l.id]) return;
+      if (l.id && (daCo[l.id] || boQua[l.id])) return;
       var g = Math.round((+l.ms || 0) / 1000), gi = g, uoc = false;
       // ⭐ v1.170.5 (28/09) — lượt NỘP DỞ không nối được với practiceLog (nhịp cuối không tới, nháp gửi bù ở lần
       // mở sau) thì `ms` là ĐỒNG HỒ TƯỜNG, gồm cả lúc tab treo: MẠC MINH KHANG L20 BT2 16:36 27/9 = 1078 phút cho

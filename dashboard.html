@@ -3273,7 +3273,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=153"></script>
+<script src="config.js?v=154"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=65"></script>
@@ -6247,6 +6247,8 @@ button.mk-em:hover{border-color:currentColor}
   // ⛔ `HQ_MOC_GOP` = lúc AWord Đợt 383 lên sống; 0 = chưa áp (mọi lượt tính như cũ).
   var HQ_MOC_GOP = 1790271900000;   // v1.147.1 — 25/09/2026 00:45 (+07): AWord Đợt 383 `ba22cd1` lên sống 00:45:15
   var HQ_GIAY_DIEM0_TOI_THIEU = 120;
+  // ⛔ v1.170.5 — lúc AWord Đợt 418 lên sống: từ mốc này lượt NỘP DỞ gửi giờ HOẠT ĐỘNG vào scores (tin được).
+  var HQ_MOC_DO_HD = 1790656200000;   // 29/09/2026 11:30 (+07) = Đợt 418 `2b1282d` push 28/9 11:25 + 1 NGÀY (tab mở từ trước vẫn chạy code cũ)
   // Mẫu số chuẩn của act cho lượt DỞ (mẫu số riêng của lượt dở không chắc — xem `mauChuan` bên chung.js):
   // tổng NHỎ NHẤT trong các lượt KHÔNG dở của kho scores; chưa có thì số câu của đề.
   function hqMauAct(ma) {
@@ -6286,8 +6288,15 @@ button.mk-em:hover{border-color:currentColor}
     var em = (DIEM[ma] || []).filter(function (e) { return A.khoaEm(e) === k; })[0];
     ((em && em.luot) || []).forEach(function (l) {
       if (l.id && daCo[l.id]) return;
-      var g = Math.round((+l.ms || 0) / 1000);
-      luot.push({ luc: +l.luc || 0, giay: g, moTab: g, giayGame: g, uoc: false, loai: l.dd ? 'dodang' : 'nop', diem: +l.diem || 0, tong: +l.tong || 0, code: ma, pl: '', rid: String(l.id || '') });
+      var g = Math.round((+l.ms || 0) / 1000), gi = g, uoc = false;
+      // ⭐ v1.170.5 (28/09) — lượt NỘP DỞ không nối được với practiceLog (nhịp cuối không tới, nháp gửi bù ở lần
+      // mở sau) thì `ms` là ĐỒNG HỒ TƯỜNG, gồm cả lúc tab treo: MẠC MINH KHANG L20 BT2 16:36 27/9 = 1078 phút cho
+      // 1/30 câu. Lượt trước AWord Đợt 418 ⇒ ước lượng như lượt dở cũ: số câu × 15 s, không quá `ms`.
+      if (l.dd && (+l.luc || 0) < HQ_MOC_DO_HD) {
+        var cau = Math.max(0, +l.diem || 0); if (soCau) cau = Math.min(cau, soCau);
+        gi = Math.min(g, cau * HQ_GIAY_MOI_CAU_DO); uoc = gi < g;
+      }
+      luot.push({ luc: +l.luc || 0, giay: gi, moTab: g, giayGame: g, uoc: uoc, loai: l.dd ? 'dodang' : 'nop', diem: +l.diem || 0, tong: +l.tong || 0, code: ma, pl: '', rid: String(l.id || '') });
     });
     var ra = { giay: 0, moTab: 0, uoc: false, nop: 0, luyen: 0, do: 0, dodang: 0, causai: 0, luot: luot };
     luot.forEach(function (l) { ra.giay += l.giay; ra.moTab += Math.max(l.moTab, l.giay); if (l.uoc) ra.uoc = true; ra[l.loai]++; });

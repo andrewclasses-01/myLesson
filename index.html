@@ -17,7 +17,9 @@
 .dn-o .id-eye svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
 /* v1.171.0 (28/09): dòng cảnh báo + Điều khoản ngay dưới nút đăng nhập (để "truy cập trái phép" không cãi được) */
 .dn-dieukhoan{margin:12px 0 0; font-size:11.5px; line-height:1.5; color:var(--muted); text-align:center}
-.dn-dieukhoan a{font-weight:700; text-decoration:underline}
+.dn-dieukhoan a{font-weight:700; text-decoration:underline; white-space:nowrap}
+/* v1.171.2: ổ khoá nét mảnh (Lucide lock-keyhole) thay emoji 🔒, màu nhấn */
+.dn-dieukhoan .ic-khoa{display:inline-block; width:14px; height:14px; vertical-align:-2px; margin-right:4px; color:var(--accent); fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
 .dn-goiy{margin:-2px 0 14px; font-size:12.5px; color:var(--muted); text-align:center; line-height:1.45}
 /* màn chọn nơi học (em có mã ở 2 nơi) */
 .dn-chao{display:flex; flex-direction:column; align-items:center; text-align:center; margin:-4px 0 16px}
@@ -55,7 +57,7 @@
         <p class="dn-quen"><button type="button" id="btnQuenMk">Quên mật khẩu?</button></p>
         <button class="btn primary wide" id="btnVao">ĐĂNG NHẬP</button>
         <p class="tiny warn" id="loiVao" hidden></p>
-        <p class="dn-dieukhoan">🔒 Chỉ dành cho học sinh được Andrew Classes cấp tài khoản. Nghiêm cấm dùng tài khoản người khác, dò mật khẩu hoặc dùng script tự động. Mọi lượt đăng nhập đều được ghi lại. Đăng nhập nghĩa là bạn đồng ý với <a href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
+        <p class="dn-dieukhoan"><svg class="ic-khoa" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="16" r="1"/><rect x="3" y="10" width="18" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3"/></svg>Chỉ dành cho học sinh được Andrew Classes cấp tài khoản. Nghiêm cấm các hình thức đăng nhập trái phép. Đăng nhập nghĩa là bạn đồng ý với <a href="dieu-khoan.html">Điều khoản sử dụng</a>.</p>
         <!-- thầy 24/09: chỗ để sau này mở MÀN ĐĂNG KÝ cho học sinh mới — tạm "sắp ra mắt" -->
         <div class="nut-thay dn-dk"><button type="button" id="btnDangKy">Đăng ký</button><i class="gach"></i><button type="button" id="btnLienHe">Liên hệ</button></div>
       </section>

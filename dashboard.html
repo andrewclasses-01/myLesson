@@ -2602,6 +2602,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 /* v1.164.0: bấm tên em ⇒ đặt lại mật khẩu (hàm máy chủ datLaiMatKhauHs) */
 button.mk-em{border:1.5px solid transparent; font:inherit; font-size:12.5px; cursor:pointer}
 button.mk-em:hover{border-color:currentColor}
+.mk-em .mk-phu{font-size:.82em; font-weight:700; opacity:.7}
 .mk-hoi{margin:10px 0 4px; padding:12px 14px; border-radius:14px; background:#f1f7f6; border:1.5px solid #cfe6e1}
 .mk-hoi p{margin:0 0 10px}
 .mk-hoi .mk-nut{display:flex; gap:8px; flex-wrap:wrap}
@@ -3272,7 +3273,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=152"></script>
+<script src="config.js?v=153"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=65"></script>
@@ -10059,6 +10060,13 @@ button.mk-em:hover{border-color:currentColor}
     });
     return { lop: lop, tong: tong, an: an };
   }
+  // v1.170.4 — tên NGẮN của lớp phụ cho ghi chú "(+NTK9)": "NỀN TẢNG K9" → NTK9 · "NỀN TẢNG 4" → NT4 · còn lại = mã lớp.
+  function mkTenNgan(maLop) {
+    var l = tatCaLop().filter(function (x) { return x.maLop === maLop; })[0];
+    var goc = boDau((l && l.tenGoc) || '').toUpperCase().replace(/\s+/g, ' ').trim();
+    var m = /^NEN TANG\s*(.+)$/.exec(goc);
+    return m ? 'NT' + m[1].replace(/[^A-Z0-9]/g, '') : maLop;
+  }
   function htmlMatKhau(kq0) {
     var kq = mkLoc(kq0), lop = kq.lop, tong = kq.tong;
     var html = Object.keys(lop).sort().map(function (l) {
@@ -10068,7 +10076,9 @@ button.mk-em:hover{border-color:currentColor}
         ds.map(function (e) {
           return '<button type="button" class="mk-em ' + e.tt + '" data-mk-uid="' + A.chuAnToan(e.uid) + '" data-mk-ten="' + A.chuAnToan(e.ten) +
             '" data-mk-so="' + A.chuAnToan(String(e.so || '')) + '" title="mã số ' + A.chuAnToan(String(e.so || '')) + ' — bấm để đặt lại mật khẩu">' +
-            '<span>' + MK_NHAN[e.tt] + ' </span>' + A.chuAnToan(e.ten) + '</button>';
+            '<span>' + MK_NHAN[e.tt] + ' </span>' + A.chuAnToan(e.ten) +
+            (function () { var phu = (e.cacLop || []).filter(function (x) { return x && x !== l; });   // v1.170.4 — em ở nhiều lớp
+              return phu.length ? ' <small class="mk-phu">(+' + A.chuAnToan(phu.map(mkTenNgan).join(', +')) + ')</small>' : ''; })() + '</button>';
         }).join('') + '</div>';
     }).join('');
     return '<div class="mk-tong"><span>✅ Đã đặt mật khẩu riêng: ' + tong.da + '</span><span>⬜ Chưa: ' + tong.chua + '</span><span>🔒 Khoá vì quá hạn: ' + tong.khoa + '</span></div>' +

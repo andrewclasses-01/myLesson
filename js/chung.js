@@ -21,6 +21,50 @@
   var CFG = window.MYLESSON_CONFIG || {};
   var KHOA_EM = 'mylesson_hs';       // nhớ em đã đăng nhập, ngay trên máy em
 
+  // ---------- ⭐⭐ v1.174.0 (28/09/2026, thầy chốt) — GIỜ CHUẨN: KHÔNG TIN ĐỒNG HỒ MÁY EM ----------
+  // Ca thật: máy THANH PHƯƠNG (A1A) chạy CHẬM đúng 1 ngày 3 phút ⇒ bài em làm 28/9 lên dashboard thành 27/9, hạn
+  // nộp trên máy em còn dư một ngày. `gioNay()` = Date.now() + độ lệch đo bằng header `Date` của chính máy chủ web
+  // (HEAD cùng miền, chặn cache), mỗi lần mở trang đo một lần; lần đo trước cất localStorage `lech-dong-ho` để trang
+  // mở ra đã đúng ngay. Lệch < 2 phút coi như 0 (header chỉ chính xác tới giây) ⇒ máy đúng giờ chạy y như cũ.
+  // Dùng cho MỐC GIỜ THẬT: so hạn nộp · đếm ngược · buổi học · mốc ghi lên kho · ngày chấm công.
+  // ⛔ ĐỪNG dùng cho hạn sống bộ đệm hay đo thời lượng (hiệu hai mốc): lệch có thể được áp GIỮA chừng (lần đo đầu).
+  // ⛔ Bản CHÉP trong AWord: `core/gio-chuan.js` (cùng tên khoá localStorage `lech-dong-ho`, khác miền nên khác kho).
+  var LECH_NGUONG_MS = 2 * 60 * 1000, KHOA_LECH = 'lech-dong-ho';
+  var LECH = 0;
+  try {
+    var lechCat = Number(localStorage.getItem(KHOA_LECH));
+    if (isFinite(lechCat) && Math.abs(lechCat) >= LECH_NGUONG_MS) LECH = lechCat;
+  } catch (e) {}
+  function gioNay() { return Date.now() + LECH; }
+  var DUONG_DO_LECH = (function () {
+    try { return String((document.currentScript && document.currentScript.src) || '').split('?')[0]; } catch (e) { return ''; }
+  })() || (location.origin + '/js/chung.js');
+  var _doLech = null;
+  function doLechDongHo() {
+    if (_doLech) return _doLech;
+    if (!window.fetch || !/^https?:/.test(location.protocol)) return Promise.resolve(LECH);
+    var lan = 0;
+    function thu() {
+      var t0 = Date.now();
+      return fetch(DUONG_DO_LECH + '?dh=' + t0, { method: 'HEAD', cache: 'no-store' }).then(function (r) {
+        var t1 = Date.now(), may = Date.parse(r.headers.get('date') || '');
+        if (!isFinite(may) || t1 - t0 > 10000) throw new Error('khong do duoc');
+        var d = may + 500 - (t0 + t1) / 2;   // header cắt xuống giây ⇒ lấy giữa giây; so với giữa lượt đi-về
+        LECH = Math.abs(d) >= LECH_NGUONG_MS ? Math.round(d) : 0;
+        try { localStorage.setItem(KHOA_LECH, String(LECH)); } catch (e) {}
+        return LECH;
+      }).catch(function () {
+        if (++lan >= 3) { _doLech = null; return LECH; }
+        return new Promise(function (res) { setTimeout(res, 1500 * lan); }).then(thu);
+      });
+    }
+    _doLech = thu();
+    return _doLech;
+  }
+  doLechDongHo();
+  try { window.addEventListener('online', function () { doLechDongHo(); }); } catch (e) {}
+  window.gioChuan = gioNay;   // cho file rời (chat.js, nw-phien.js, nw-thanh.js…) không đi qua AWC
+
   // ---------- tiện ích chữ ----------
 
   function chuAnToan(s) {
@@ -555,7 +599,7 @@
     if (tt === 'an' || tt === 'xoa' || tt === 'xvv') return false;
     if (tt === 'khoa') return true;
     var moc = mocHan(b);
-    return moc == null || moc > Date.now();
+    return moc == null || moc > gioNay();
   }
 
   // Hạn ĐANG CÓ HIỆU LỰC của một thẻ: hạn sửa trước, rồi mới tới `bai.json`.
@@ -1568,7 +1612,7 @@
   //         moHet: bỏ qua MỌI khoá thời gian/chờ cả lớp — v1.82.0, xem dưới }
   function xetChang(b, lay, caLop, opt) {
     var o = opt || {};
-    var now = o.now || Date.now();
+    var now = o.now || gioNay();
     var epMo = +o.moChang || 0;
     var cac = changCuaBai(b);
     var moTiep = true;          // chặng đang xét có được mở không
@@ -2269,7 +2313,7 @@
   // chậm vài phút là mốc "đã xem" thấp hơn tin vừa đọc ⇒ chấm đỏ không chịu
   // tắt. Luôn truyền vào MỐC CỦA TIN cuối cùng em đã thấy.
   function danhDauDaXem(lop, ma, luc) {
-    var m = Number(luc) || Date.now();
+    var m = Number(luc) || gioNay();
     try { localStorage.setItem(khoaXemTin(lop, ma), String(m)); } catch (e) {}
   }
 
@@ -2522,7 +2566,7 @@
   // không có thì đúng lối cũ `thuChuoi` + `gio`.
   function buoiTiepTheo(thuChuoi, gio, tuMoc, lich) {
     if (lich && lich.length) {
-      var goc0 = new Date(tuMoc == null ? Date.now() : tuMoc);
+      var goc0 = new Date(tuMoc == null ? gioNay() : tuMoc);
       var tot = null;
       for (var k = 0; k < 8 && !tot; k++) {
         var ngay = new Date(goc0.getFullYear(), goc0.getMonth(), goc0.getDate() + k);
@@ -2539,7 +2583,7 @@
     var thu = thuTuChuoi(thuChuoi);
     var m = gioPhut(gio);
     if (!thu.length || !m) return '';
-    var goc = new Date(tuMoc == null ? Date.now() : tuMoc);
+    var goc = new Date(tuMoc == null ? gioNay() : tuMoc);
     for (var i = 0; i < 8; i++) {
       var d = new Date(goc.getFullYear(), goc.getMonth(), goc.getDate() + i,
                        m.h, m.p, 0, 0);
@@ -2634,7 +2678,7 @@
   // đúng ý thầy: chỉ thẻ "hết hạn đúng buổi này" mới được đổi màu.
   function theDangHoc(dl, maLop, hanMoc) {
     if (!hanMoc) return false;
-    var luc = Date.now();
+    var luc = gioNay();
     if (hanMoc > luc) return false;
     var b = buoiChuaMoc(dl, maLop, hanMoc);
     return !!b && luc < b.ketThuc;
@@ -2656,7 +2700,7 @@
     var m = nghiCua(maLop);
     if (m == null) return false;
     var b = buoiChuaMoc(dl, maLop, m);
-    return !b || Date.now() < b.ketThuc;
+    return !b || gioNay() < b.ketThuc;
   }
 
   // ---------- RUỘT THẺ NGHỈ: BÓNG BAY + GAME KHỦNG LONG ----------
@@ -3060,7 +3104,7 @@
       var moc = +e.getAttribute('data-moc');
       var boc = e.parentElement;                   // .nghi-han (v1.50.0)
       if (!moc) { e.textContent = '—'; continue; }
-      var con = moc - Date.now();
+      var con = moc - gioNay();
       // Hết hạn thì bỏ luôn nhãn "BUỔI HỌC TIẾP THEO TRONG" (CSS
       // `.nghi-han.het .nghi-nhan` ẩn nó), không thì đọc thành
       // "…TIẾP THEO TRONG ĐÃ ĐẾN GIỜ HỌC".
@@ -3214,7 +3258,7 @@
       lop: { stringValue: nopLopChuan(d.lop) }, bai: { stringValue: nopBaiChuan(d.bai) },
       o: { integerValue: String(Math.max(0, +d.o || 0)) }, ma: { stringValue: nopMaChuan(d.ma) },
       ten: { stringValue: String(d.ten || '').slice(0, 120) },
-      trang: { mapValue: { fields: trang } }, luc: { integerValue: String(Math.round(+d.luc || Date.now())) } } };
+      trang: { mapValue: { fields: trang } }, luc: { integerValue: String(Math.round(+d.luc || gioNay())) } } };
   }
   // Ghi ĐÈ trọn tài liệu (7 trường, đúng hasOnly). Trả Promise<true|false>.
   // ⭐ v1.161.0 (27/09/2026, sau tấn công Tr0ngX) — luật đòi ID token ĐÚNG em (tools/dang-luat-tien-do.js):
@@ -3305,9 +3349,9 @@
       return nopDoc(lop, bai, o, ma).then(function (cu) {
         var d = cu || { lop: lop, bai: bai, o: o, ma: ma, ten: ten, trang: {}, luc: 0 };
         d.ten = ten || d.ten; d.trang = d.trang || {};
-        d.trang[String(n)] = { luc: Date.now(), url: urls[0], nho: urls[1] || urls[0],
-                                thuTu: thuTu != null ? +thuTu : Date.now() };
-        d.luc = Date.now();
+        d.trang[String(n)] = { luc: gioNay(), url: urls[0], nho: urls[1] || urls[0],
+                                thuTu: thuTu != null ? +thuTu : gioNay() };
+        d.luc = gioNay();
         return nopGhi(d).then(function (ok) {
           if (!ok) throw new Error('Kho từ chối ghi bài nộp');
           return { ok: true, trang: d.trang };
@@ -3325,7 +3369,7 @@
       var d = cu || { lop: lop, bai: bai, o: o, ma: ma, ten: ten, trang: {}, luc: 0 };
       d.ten = ten || d.ten; d.trang = d.trang || {};
       Object.keys(doiFs || {}).forEach(function (n) { if (d.trang[n]) d.trang[n].thuTu = +doiFs[n]; });
-      d.luc = Date.now();
+      d.luc = gioNay();
       return nopGhi(d).then(function (ok) {
         if (!ok) throw new Error('Kho từ chối ghi thứ tự');
         return { ok: true, trang: d.trang };
@@ -3346,7 +3390,7 @@
       var t = d.trang[String(n)];
       if (!t || !t.url) throw new Error('Trang này chưa nộp gì để huỷ');
       t.huy = true;
-      d.luc = Date.now();
+      d.luc = gioNay();
       return nopGhi(d).then(function (ok) {
         if (!ok) throw new Error('Kho từ chối ghi bài huỷ');
         return { ok: true, trang: d.trang };
@@ -3359,6 +3403,7 @@
                  tuFs: nopTuFs, BUCKET: NOP_BUCKET };
 
   window.AWC = {
+    gioNay: gioNay, doLechDongHo: doLechDongHo,   // ⭐ v1.174.0 — giờ chuẩn theo máy chủ (xem đầu file)
     CFG: CFG,
     // ⭐ v1.78.0 — khóa học + một mã ở nhiều nơi + chấm "CÓ BÀI MỚI"
     dsNoiHoc: dsNoiHoc, laKhoa: laKhoa, moiNoiTheoMa: moiNoiTheoMa,

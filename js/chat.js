@@ -304,7 +304,7 @@
         code: String(tin.ma || '').slice(0, 40),
         role: tin.vaiTro === 'gv' ? 'gv' : 'hs',
         text: chu,
-        createdAt: Date.now()
+        createdAt: (window.gioChuan ? window.gioChuan() : Date.now())   // v1.174.0 — giờ chuẩn (máy chủ), không theo đồng hồ máy em
       };
       /* (27/09/2026, sau tấn công Tr0ngX) Luật BẮT BUỘC dấu máy ⇒ bỏ ĐƯỜNG LÙI
          "gửi lại không kèm dấu máy" (v1.80.0) — gửi lại kiểu đó nay chắc chắn bị từ chối.
@@ -364,7 +364,7 @@
   // Dashboard gọi (cần phiên thầy). `vao` = { khoaChat?, khoaDiem?, lyDo? }.
   function datKhanCap(vao) {
     return db().then(function (f) {
-      var d = { luc: Date.now() };
+      var d = { luc: (window.gioChuan ? window.gioChuan() : Date.now()) };
       if ('khoaChat' in vao) d.khoaChat = !!vao.khoaChat;
       if ('khoaDiem' in vao) d.khoaDiem = !!vao.khoaDiem;
       if ('lyDo' in vao) d.lyDo = String(vao.lyDo || '').slice(0, 200);
@@ -388,7 +388,7 @@
     return choPhien.then(db).then(function (f) {
       var truong = 'cx.' + khoa;
       var patch = {};
-      patch[truong] = ma ? { ma: String(ma), ten: String(ten || '?').slice(0, 60), luc: Date.now() }
+      patch[truong] = ma ? { ma: String(ma), ten: String(ten || '?').slice(0, 60), luc: (window.gioChuan ? window.gioChuan() : Date.now()) }
                           : f.fs.deleteField();
       return f.fs.updateDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId), patch);
     });
@@ -408,7 +408,7 @@
     return db().then(function (f) {
       return f.fs.addDoc(f.fs.collection(f.db, 'classChatArchive'), {
         lop: String(maLop || ''), tenLop: String(tenLop || maLop || ''),
-        luc: Date.now(), soTin: (dsTin || []).length,
+        luc: (window.gioChuan ? window.gioChuan() : Date.now()), soTin: (dsTin || []).length,
         tin: (dsTin || []).map(function (t) {
           /* ⭐ v1.80.0 — giữ luôn dấu máy vào kho lưu trữ, để sau khi "làm mới"
              phòng chat thầy vẫn tra ngược được. Luật `classChatArchive` KHÔNG

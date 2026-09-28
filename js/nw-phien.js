@@ -101,7 +101,7 @@
     // Mật khẩu ĐÃ đổi xong ở máy chủ. Ghi cờ hỏng (mạng/luật) thì KHÔNG được làm em kẹt ở màn này:
     // nhớ trong tab là đã qua (gac bỏ qua), lần sau vào máy chủ còn cờ thì em đặt lại — không mất gì.
     try {
-      await f.fs.updateDoc(f.fs.doc(f.db, 'nwUsers', u.uid), { phaiDoiMk: false, capNhat: Date.now() });
+      await f.fs.updateDoc(f.fs.doc(f.db, 'nwUsers', u.uid), { phaiDoiMk: false, capNhat: (window.gioChuan ? window.gioChuan() : Date.now()) });
     } catch (e) {
       console.warn('[phien] đã đổi mật khẩu nhưng chưa ghi được cờ phaiDoiMk', e);
     }
@@ -173,12 +173,12 @@
     return token ? { Authorization: (kieu === 'storage' ? 'Firebase ' : 'Bearer ') + token } : {};
   }
   function tieuDeNgay(kieu) {
-    if (_veHs && _veHs.het - Date.now() > 120000) return dauTieuDe(kieu, _veHs.token);
+    if (_veHs && _veHs.het - (window.gioChuan ? window.gioChuan() : Date.now()) > 120000) return dauTieuDe(kieu, _veHs.token);   // v1.174.0 — het = giờ máy chủ
     lamMoiVe(!!_veHs);       // hết/sắp hết ⇒ xin vé mới cho lượt sau
     return {};
   }
   function tieuDe(kieu) {
-    if (_veHs && _veHs.het - Date.now() > 120000) return Promise.resolve(dauTieuDe(kieu, _veHs.token));
+    if (_veHs && _veHs.het - (window.gioChuan ? window.gioChuan() : Date.now()) > 120000) return Promise.resolve(dauTieuDe(kieu, _veHs.token));
     return lamMoiVe(!!_veHs).then(function (t) { return dauTieuDe(kieu, t); });
   }
 
@@ -197,7 +197,7 @@
       if (!u) return null;
       return u.getIdTokenResult().then(function (r) {
         // vé sắp hết (< 2 phút) ⇒ xin vé mới
-        return (Date.parse(r.expirationTime) - Date.now() < 120000) ? u.getIdTokenResult(true) : r;
+        return (Date.parse(r.expirationTime) - (window.gioChuan ? window.gioChuan() : Date.now()) < 120000) ? u.getIdTokenResult(true) : r;
       });
     }).then(function (r) {
       if (!r) return;

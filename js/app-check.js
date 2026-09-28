@@ -37,7 +37,7 @@
           var url = typeof vao === 'string' ? vao : (vao && vao.url) || '';
           if (HOST_AC.test(url)) {
             var o = JSON.parse(localStorage.getItem('awc_ac') || 'null');
-            if (o && o.t && o.het > Date.now() + 60000) {
+            if (o && o.t && o.het > Date.now() + (Number(localStorage.getItem('lech-dong-ho')) || 0) + 60000) {   /* v1.174.0 — het theo giờ máy chủ */
               if (typeof vao === 'string') {
                 tuyChon = Object.assign({}, tuyChon || {});
                 var h = new Headers(tuyChon.headers || {});

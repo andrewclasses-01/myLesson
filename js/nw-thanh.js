@@ -64,7 +64,7 @@
   var nhipDem = null;
   function hai(n) { return (n < 10 ? '0' : '') + n; }
   function veDem() {
-    var con = Math.max(0, MOC_RA_MAT - Date.now()), s = Math.floor(con / 1000);
+    var con = Math.max(0, MOC_RA_MAT - (window.gioChuan ? window.gioChuan() : Date.now())), s = Math.floor(con / 1000);
     var so = { ngay: Math.floor(s / 86400), gio: Math.floor(s % 86400 / 3600), phut: Math.floor(s % 3600 / 60), giay: s % 60 };
     Object.keys(so).forEach(function (k) { $('[data-o="' + k + '"]', sap).textContent = hai(so[k]); });
     if (!con) { $('.nwb-dem-nh', sap).textContent = 'ĐÃ ĐẾN GIỜ RA MẮT!'; clearInterval(nhipDem); nhipDem = null; }
@@ -76,7 +76,7 @@
     $('.nwb-sap-chu', sap).textContent = g.chu;
     $('.nwb-sap-ds', sap).innerHTML = g.ds.map(function (d) { return '<li>' + d + '</li>'; }).join('');
     veDem();
-    if (!nhipDem && MOC_RA_MAT > Date.now()) nhipDem = setInterval(veDem, 1000);
+    if (!nhipDem && MOC_RA_MAT > (window.gioChuan ? window.gioChuan() : Date.now())) nhipDem = setInterval(veDem, 1000);
     sap.classList.add('mo');
     $('.nwb-sap-nut', sap).focus({ preventScroll: true });
   }

@@ -26,7 +26,7 @@
           var url = typeof vao === 'string' ? vao : (vao && vao.url) || '';
           if (HOST_AC.test(url)) {
             var o = JSON.parse(localStorage.getItem('awc_ac') || 'null');
-            if (o && o.t && o.het > Date.now() + 60000) {
+            if (o && o.t && o.het > Date.now() + (Number(localStorage.getItem('lech-dong-ho')) || 0) + 60000) {   /* v1.174.0 — het theo giờ máy chủ */
               if (typeof vao === 'string') {
                 tuyChon = Object.assign({}, tuyChon || {});
                 var h = new Headers(tuyChon.headers || {});
@@ -1665,10 +1665,10 @@ body.mo-menu .side.trai{transform:none}
 
 <script src="config.js?v=158"></script>
 <script src="js/thay-vao.js?v=1"></script>
-<script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=68"></script>
-<script src="js/nw-phien.js?v=4"></script>
-<script src="js/chat.js?v=27"></script>
+<script src="js/app-check.js?v=2"></script>
+<script src="js/chung.js?v=69"></script>
+<script src="js/nw-phien.js?v=5"></script>
+<script src="js/chat.js?v=28"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=3"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -2810,7 +2810,7 @@ function tinhHinhGio(b){
     return 'xong';   /* v1.95.0 — so với SĨ SỐ RIÊNG của thẻ (em mới vào không tính) */
   }
   if (b.hanMoc == null) return 'thuong';
-  var con = (b.hanMoc - Date.now()) / TIENG;
+  var con = (b.hanMoc - A.gioNay()) / TIENG;
   if (con <= GAP_TIENG) return 'gap';
   if (con <= 24) return '24h';
   return 'thuong';
@@ -2942,7 +2942,7 @@ function nhipDongHo(){
     /* moc = 0 nghĩa là bài CHƯA có hạn (app chưa gõ) — để gạch ngang, đừng
        hiện "HẾT HẠN" làm học sinh tưởng đã trễ. */
     if (!moc) { aoDangHoc(e, false); e.textContent = '—'; e.className = 'dhho'; return; }
-    var con = moc - Date.now();
+    var con = moc - A.gioNay();   /* v1.174.0 — giờ chuẩn (máy chủ) */
     if (con <= 0) {
       /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — LỚP ĐANG HỌC.
          Vừa tới hạn mà lớp đang trong buổi thì KHÔNG doạ em bằng chữ HẾT HẠN đỏ:
@@ -2978,7 +2978,7 @@ function nhipKhucCho(){
   if (!o.length) return;
   var can = false;
   for (var i = 0; i < o.length; i++) {
-    var con = +o[i].getAttribute('data-moc') - Date.now();
+    var con = +o[i].getAttribute('data-moc') - A.gioNay();
     if (con <= 0) { o[i].textContent = '0:00:00'; can = true; continue; }
     var sg = Math.floor(con / 1000);
     o[i].textContent = Math.floor(sg / 3600) + ':' + ('0' + Math.floor((sg % 3600) / 60)).slice(-2) + ':' + ('0' + (sg % 60)).slice(-2);
@@ -3103,8 +3103,8 @@ function dungCot(){
      dashboard gọi đúng hàm đó. Đừng viết lại phép so ở đây (chính vì trước đây
      hai nơi tự xét mà sinh ra cảnh lệch pha trên). */
   var mocNghi = A.nghiConHieuLuc(DL, LOP_DL) ? A.nghiCua(LOP_DL) : null;
-  var nghiConHan = !BAI_MOI && mocNghi != null && mocNghi > Date.now();
-  var nghiHetHan = !BAI_MOI && mocNghi != null && mocNghi <= Date.now();
+  var nghiConHan = !BAI_MOI && mocNghi != null && mocNghi > A.gioNay();
+  var nghiHetHan = !BAI_MOI && mocNghi != null && mocNghi <= A.gioNay();
 
   var tren, cu, dsThe;
   if (BAI_MOI) {
@@ -4844,6 +4844,6 @@ function baoToast(chu){
   henToast = setTimeout(function(){ t.classList.remove('hien'); }, 2600);
 }
 </script>
-<script src="js/nw-thanh.js?v=11"></script>
+<script src="js/nw-thanh.js?v=12"></script>
 </body>
 </html>

@@ -3272,7 +3272,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=149"></script>
+<script src="config.js?v=150"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=65"></script>
@@ -10189,6 +10189,7 @@ button.mk-em:hover{border-color:currentColor}
     QM.em = null;
     MK_KQ = null; MK_LOI = '';                 // mỗi lần mở đọc lại trạng thái mật khẩu
     HSO_NHO = {}; NK = null;                   // v1.167.0 — hồ sơ em + nhật ký cũng đọc mới
+    QR = null; DDC = {};                       // v1.170.1 — roster + điểm danh đọc mới (myStudent sửa tay cũng hiện)
     nen.hidden = false;
     document.body.style.overflow = 'hidden';
     veBaoMat();
@@ -11307,7 +11308,8 @@ button.mk-em:hover{border-color:currentColor}
     var trai = '<div class="dd-trai"><div class="dd-thang"><button type="button" class="qm-nut" data-dd-thang="-1">‹</button><b>Tháng ' + m + ' / ' + y + '</b><button type="button" class="qm-nut" data-dd-thang="1">›</button></div>' +
       '<div class="dd-lich">' + o + '</div>' +
       '<div class="dd-cg"><span><i class="co"></i>Đã điểm danh</span><span><i class="cho"></i>Còn chờ duyệt</span><span><i class="thieu"></i>Chưa điểm danh</span><span><i class="nghi"></i>Nghỉ / chuyển</span></div>' +
-      '<div class="dd-viec"><button type="button" class="qm-nut" data-dd-viec="hocBu">+ Tạo buổi học bù</button>' +
+      '<div class="dd-viec"><button type="button" class="qm-nut" data-dd-lam-moi title="Đọc lại điểm danh — thấy ngay chỗ vừa sửa ở myStudent">↻ Làm mới</button>' +
+      '<button type="button" class="qm-nut" data-dd-viec="hocBu">+ Tạo buổi học bù</button>' +
       '<button type="button" class="qm-nut do" data-dd-viec="ngayNghi">Ngày nghỉ (mọi lớp)…</button>' +
       '<button type="button" class="qm-nut" data-dd-excel>⬇ Xuất Excel tháng ' + m + '</button></div>' +
       (Number(l.on_break || 0) ? '<p class="qm-p">Lớp đang TẠM NGHỈ.</p>' : '') + '</div>';
@@ -11364,6 +11366,7 @@ button.mk-em:hover{border-color:currentColor}
       var p = DD.thang.split('-'), t = new Date(+p[0], +p[1] - 1 + (+b.getAttribute('data-dd-thang')), 1);
       DD.thang = ddIso(t).slice(0, 7); DD.ngay = ''; veBaoMat(); return true;
     }
+    if (e.target.closest('[data-dd-lam-moi]')) { delete DDC[DD.lop]; QR = null; veBaoMat(); return true; }
     if ((b = e.target.closest('[data-dd-ngay]'))) { DD.ngay = b.getAttribute('data-dd-ngay'); veBaoMat(); return true; }
     if ((b = e.target.closest('[data-dd-lon]'))) {
       e.preventDefault();
@@ -11572,7 +11575,7 @@ button.mk-em:hover{border-color:currentColor}
       phu = p ? p.noi.map(function (n) { return n.ten; }).join(' · ') : dsNguoi().length + ' em · ' + tatCaLop().length + ' lớp/khóa';
       than = p ? htmlHoSo(p) : htmlHocSinh();
     } else if (QM.tab === 'dd') {
-      tieu = 'Điểm danh'; phu = 'Máy lớp tự ghi khi nhận ra mặt · thầy sửa, duyệt, tạo buổi bù ngay tại đây (máy lớp nhận trong ≤ 5 phút)';
+      tieu = 'Điểm danh'; phu = 'Sửa được ở CẢ HAI nơi: đây và myStudent (nháy đúp ô ngày) — sửa ở đây máy lớp nhận ≤ 5 phút; sửa ở myStudent bấm ↻ Làm mới là thấy';
       than = htmlDiemDanh();
     } else if (QM.tab === 'mk') {
       tieu = 'Mật khẩu học sinh'; phu = 'Bấm tên em để đặt lại mật khẩu tạm (hiện một lần)';

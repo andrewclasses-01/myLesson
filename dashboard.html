@@ -3273,10 +3273,10 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=157"></script>
+<script src="config.js?v=158"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
-<script src="js/chung.js?v=67"></script>
+<script src="js/chung.js?v=68"></script>
 <script src="js/chat.js?v=27"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=3"></script>
@@ -5233,7 +5233,8 @@ button.mk-em:hover{border-color:currentColor}
         return;
       }
       var lh = bang[LOP_CHON] || null;
-      var moc = lh ? A.buoiTiepTheo(lh.thu, lh.gio) : '';
+      // ⭐ v1.173.0 — `lh.lich`: lịch từng buổi (lớp hai khung giờ); thiếu thì lối cũ thu+giờ.
+      var moc = lh ? A.buoiTiepTheo(lh.thu, lh.gio, null, lh.lich) : '';
       if (!moc) {
         $('#giaoDs').innerHTML = '<div class="giao-loi">Lớp <b>' + A.chuAnToan(tenLop) +
           '</b> chưa khai đủ lịch học (thứ học + giờ vào lớp) trong myStudent, nên chưa ' +

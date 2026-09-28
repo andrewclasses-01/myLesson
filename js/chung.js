@@ -2427,7 +2427,9 @@
             ra[ma] = {
               thu: String((f.days && f.days.stringValue) || ''),
               gio: String((f.start_time && f.start_time.stringValue) || ''),
-              tamNghi: !!Number((f.on_break && f.on_break.integerValue) || 0)
+              tamNghi: !!Number((f.on_break && f.on_break.integerValue) || 0),
+              // ⭐ v1.173.0 — lịch tuần TỪNG BUỔI (lớp hai khung giờ). Kho ghi thứ kiểu Python.
+              lich: chuanLichTuan((f.lich_tuan && f.lich_tuan.stringValue) || '', true)
             };
           }
           try { sessionStorage.setItem(KHOA_LICH,
@@ -2482,7 +2484,58 @@
     return { h: h, p: p };
   }
 
-  function buoiTiepTheo(thuChuoi, gio, tuMoc) {
+  // ⭐⭐ v1.173.0 (thầy chốt 28/09/2026) — LỚP HỌC HAI KHUNG GIỜ. Trước đây mỗi lớp chỉ có MỘT
+  // giờ vào/tan cho mọi thứ (`thu`/`gio`/`tan` = buổi ĐẦU của lịch) ⇒ A1-A học T2 19:45 + T5 17:45
+  // thì buổi T5 bị tính 19:45 ⇒ "LỚP ĐANG HỌC" / "buổi tiếp theo" sai giờ. Nay đọc lịch tuần
+  // TỪNG BUỔI (`lich_tuan` dashboard/myStudent sửa): mỗi phần tử một ĐỢT có hiệu lực từ `tu`.
+  //   `raw` = mảng hoặc chuỗi JSON `[{tu, buoi:[{thu, vao:"17h45", tan:"19h15"}]}]`.
+  //   ⛔ `laPython`: kho `mystudentRosterClasses` đếm thứ 0=T2 … 6=CN; `lop.json` (hàm máy chủ
+  //   `dung-lop.js` đã đổi sẵn) đếm theo getDay 0=CN. Sai cờ là lệch MỘT NGÀY không gì báo.
+  // Trả mảng đợt đã sắp theo `tu`, giờ đã đọc thành {h,p}; hỏng/rỗng ⇒ [].
+  function chuanLichTuan(raw, laPython) {
+    var ds = raw;
+    if (typeof raw === 'string') { try { ds = raw ? JSON.parse(raw) : []; } catch (e) { ds = []; } }
+    if (!Array.isArray(ds)) return [];
+    var ra = [];
+    ds.forEach(function (d) {
+      var buoi = [];
+      ((d && d.buoi) || []).forEach(function (b) {
+        var t = Number(b && b.thu), vao = gioPhut(b && b.vao), tan = gioPhut(b && b.tan);
+        if (!(t >= 0 && t <= 6) || Math.floor(t) !== t || !vao) return;
+        buoi.push({ thu: laPython ? (t + 1) % 7 : t, vao: vao, tan: tan });
+      });
+      if (buoi.length) ra.push({ tu: String((d && d.tu) || '').slice(0, 10), buoi: buoi });
+    });
+    return ra.sort(function (a, b) { return a.tu < b.tu ? -1 : a.tu > b.tu ? 1 : 0; });
+  }
+  // Các buổi rơi đúng ngày `d` theo ĐỢT có hiệu lực ngày đó (đợt `tu` ≤ ngày, muộn nhất).
+  function buoiTrongNgayLich(dots, d) {
+    if (!dots || !dots.length) return [];
+    var hai = function (n) { return (n < 10 ? '0' : '') + n; };
+    var iso = d.getFullYear() + '-' + hai(d.getMonth() + 1) + '-' + hai(d.getDate());
+    var chon = dots[0];
+    dots.forEach(function (x) { if (x.tu <= iso) chon = x; });
+    return chon.buoi.filter(function (b) { return b.thu === d.getDay(); });
+  }
+
+  // ⭐ v1.173.0 — `lich` (tuỳ chọn, mảng đợt đã `chuanLichTuan`): có thì mỗi buổi một giờ vào;
+  // không có thì đúng lối cũ `thuChuoi` + `gio`.
+  function buoiTiepTheo(thuChuoi, gio, tuMoc, lich) {
+    if (lich && lich.length) {
+      var goc0 = new Date(tuMoc == null ? Date.now() : tuMoc);
+      var tot = null;
+      for (var k = 0; k < 8 && !tot; k++) {
+        var ngay = new Date(goc0.getFullYear(), goc0.getMonth(), goc0.getDate() + k);
+        buoiTrongNgayLich(lich, ngay).forEach(function (b) {
+          var t = new Date(ngay.getFullYear(), ngay.getMonth(), ngay.getDate(), b.vao.h, b.vao.p, 0, 0);
+          if (t.getTime() > goc0.getTime() && (!tot || t < tot)) tot = t;
+        });
+      }
+      if (!tot) return '';
+      var h2 = function (n) { return (n < 10 ? '0' : '') + n; };
+      return tot.getFullYear() + '-' + h2(tot.getMonth() + 1) + '-' + h2(tot.getDate())
+           + 'T' + h2(tot.getHours()) + ':' + h2(tot.getMinutes());
+    }
     var thu = thuTuChuoi(thuChuoi);
     var m = gioPhut(gio);
     if (!thu.length || !m) return '';
@@ -2527,13 +2580,20 @@
   var LUI_TRUOC = 2 * 60 * 60 * 1000;
 
   // Lịch của một lớp trong `lop.json`, hoặc null nếu lớp/khoá đó không có lịch.
+  // ⭐ v1.173.0 — trả `{ dots }` (mảng ĐỢT lịch, mỗi buổi giờ vào/tan riêng — lớp hai khung giờ).
+  // `lop.json` có `lich` (hàm máy chủ `dung-lop.js` ≥ 28/09) thì dùng nó; bản cũ chỉ có
+  // `thu`/`gio`/`tan` thì dựng MỘT đợt từ ba trường đó — y hệt hành vi trước v1.173.0.
   function lichCua(dl, maLop) {
     var l = lopTheoMa(dl || {}, String(maLop || ''));
     if (!l || l.nghi) return null;                 // lớp TẠM NGHỈ: không buổi nào
+    var dots = chuanLichTuan(l.lich, false).map(function (d) {
+      return { tu: d.tu, buoi: d.buoi.filter(function (b) { return !!b.tan; }) };
+    }).filter(function (d) { return d.buoi.length; });
+    if (dots.length) return { dots: dots };
     var thu = thuTuChuoi(l.thu);
     var vao = gioPhut(l.gio), tan = gioPhut(l.tan);
     if (!thu.length || !vao || !tan) return null;  // thiếu một trong ba thì thôi
-    return { thu: thu, vao: vao, tan: tan };
+    return { dots: [{ tu: '', buoi: thu.map(function (t) { return { thu: t, vao: vao, tan: tan }; }) }] };
   }
 
   // BUỔI HỌC mà một mốc thời gian `moc` thuộc về: { batDau, ketThuc } tính bằng
@@ -2548,15 +2608,18 @@
     if (!c || !moc) return null;
     var g = new Date(moc);
     for (var i = -1; i <= 1; i++) {
-      var d = new Date(g.getFullYear(), g.getMonth(), g.getDate() + i,
-                       c.vao.h, c.vao.p, 0, 0);
-      if (c.thu.indexOf(d.getDay()) < 0) continue;
-      var batDau = d.getTime();
-      var ketThuc = new Date(g.getFullYear(), g.getMonth(), g.getDate() + i,
-                             c.tan.h, c.tan.p, 0, 0).getTime();
-      if (ketThuc <= batDau) ketThuc += 24 * 60 * 60 * 1000;   // vắt qua nửa đêm
-      if (moc >= batDau - LUI_TRUOC && moc < ketThuc) {
-        return { batDau: batDau, ketThuc: ketThuc };
+      var ngay = new Date(g.getFullYear(), g.getMonth(), g.getDate() + i);
+      // ⭐ v1.173.0 — mỗi buổi của NGÀY đó một giờ vào/tan riêng (lớp hai khung giờ).
+      var bs = buoiTrongNgayLich(c.dots, ngay);
+      for (var j = 0; j < bs.length; j++) {
+        var batDau = new Date(ngay.getFullYear(), ngay.getMonth(), ngay.getDate(),
+                              bs[j].vao.h, bs[j].vao.p, 0, 0).getTime();
+        var ketThuc = new Date(ngay.getFullYear(), ngay.getMonth(), ngay.getDate(),
+                               bs[j].tan.h, bs[j].tan.p, 0, 0).getTime();
+        if (ketThuc <= batDau) ketThuc += 24 * 60 * 60 * 1000;   // vắt qua nửa đêm
+        if (moc >= batDau - LUI_TRUOC && moc < ketThuc) {
+          return { batDau: batDau, ketThuc: ketThuc };
+        }
       }
     }
     return null;

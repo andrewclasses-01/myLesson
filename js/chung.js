@@ -2139,6 +2139,29 @@
         if (x && x.id != null) theoTen[avKhongDau(x.ten)] = String(x.id);
       });
       var chanDb = avChanDacBiet(dsDb);
+      // ⭐⭐ v1.171.3 (28/09/2026) — MÃ SỐ PHẢI KHỚP TÊN mới được dùng. Kho ảnh từng được app myLesson đẩy theo
+      // `id` CỤC BỘ của máy đang chạy myStudent (mỗi máy đánh số riêng), còn `lop.json` mang mã số WEB ⇒ 11:39
+      // 28/9 NỀN TẢNG K9 lệch cả 21 em, 17 em hiện mặt bạn khác (DIỆU CHI #218 = ảnh MẠC MINH KHANG); NNTNG4
+      // CÔNG THÀNH ↔ MINH ĐỨC; A1C TIẾN DŨNG = TRANG ANH. Kho luôn ghi kèm tên (`t`) ⇒ tên kho lệch tên em thì bỏ
+      // mã số, dò theo tên: TRÙNG HẲN trước, rồi luật đuôi — cả hai CHỈ nhận khi đúng MỘT ảnh khớp (thà thiếu ảnh
+      // còn hơn gắn nhầm mặt, như `avTenDayDu`). Bản cũ dò tên lấy ảnh khớp ĐẦU TIÊN.
+      var tenCuTheoTen = {};
+      (dsEm || []).forEach(function (x) {
+        if (x && x.ten) tenCuTheoTen[avKhongDau(x.ten)] = (x.tenCu || []).map(function (c) { return avKhongDau(c); });
+      });
+      var chuan = function (s) { return avKhongDau(s).replace(/\s+/g, ' ').trim(); };
+      function timAnh(ten) {
+        var id = theoTen[avKhongDau(ten)];
+        if (id && em[id]) {
+          var tk = em[id].t;
+          if (!tk || avTenKhop(tk, ten) || (tenCuTheoTen[avKhongDau(ten)] || []).indexOf(avKhongDau(tk)) >= 0) return id;
+        }
+        var x = chuan(ten), bang = ids.filter(function (k) { return chuan(em[k].t) === x; });
+        if (bang.length === 1) return bang[0];
+        if (bang.length > 1) return null;
+        var long = ids.filter(function (k) { return avTenKhop(em[k].t, ten); });
+        return long.length === 1 ? long[0] : null;
+      }
 
       var o = document.querySelectorAll('[data-av-em]'), de = 0;
       for (var i = 0; i < o.length; i++) {
@@ -2146,13 +2169,7 @@
         if (avSlugLop(el.getAttribute('data-av-lop')) !== avSlugLop(lopGoc)) continue;
         var ten = el.getAttribute('data-av-em');
         if (chanDb[avKhongDau(ten).replace(/\s+/g, ' ').trim()]) continue;
-        var id = theoTen[avKhongDau(ten)];
-        if (!(id && em[id])) {                // không có mã số → dò theo tên
-          id = null;
-          for (var k = 0; k < ids.length; k++) {
-            if (avTenKhop(em[ids[k]].t, ten)) { id = ids[k]; break; }
-          }
-        }
+        var id = timAnh(ten);
         if (!(id && em[id])) continue;
 
         // v1.58.0 — ô trên thanh đội (`av-thanh`) từng vẽ <img> không mang lớp `av-anh`:
@@ -2177,13 +2194,7 @@
         var q = AV_BONG[b];
         if (avSlugLop(q.lop) !== avSlugLop(lopGoc)) continue;
         if (chanDb[avKhongDau(q.ten).replace(/\s+/g, ' ').trim()]) continue;
-        var qid = theoTen[avKhongDau(q.ten)];
-        if (!(qid && em[qid])) {
-          qid = null;
-          for (var m = 0; m < ids.length; m++) {
-            if (avTenKhop(em[ids[m]].t, q.ten)) { qid = ids[m]; break; }
-          }
-        }
+        var qid = timAnh(q.ten);
         if (qid && em[qid]) {
           var mb = 'data:image/jpeg;base64,' + em[qid].a;
           if (q.im.src !== mb) { q.im.src = mb; de++; }

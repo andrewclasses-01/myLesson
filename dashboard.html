@@ -3276,7 +3276,7 @@ button.mk-em:hover{border-color:currentColor}
 <script src="config.js?v=158"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=2"></script>
-<script src="js/chung.js?v=69"></script>
+<script src="js/chung.js?v=70"></script>
 <script src="js/chat.js?v=28"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=3"></script>
@@ -3440,7 +3440,7 @@ button.mk-em:hover{border-color:currentColor}
     }
     var chay = [];
     for (var j = 0; j < Math.min(6, ma.length); j++) chay.push(ke());
-    return Promise.all(chay);
+    return Promise.all(chay).then(function () { chinhGioMay(); });   // v1.175.0 — giờ máy chủ cho lượt cũ
   }
 
   // ---------- 1. DẢI SỐ ----------
@@ -6020,9 +6020,9 @@ button.mk-em:hover{border-color:currentColor}
       HQ.t = tinhBai(b, LOP_CHON); hqVeLai();
     });
     // 2. video
-    if (coBaiGiangKh(b) && !HQ.video) docTienDoVideoCuaBai(b.id, hs).then(function (map) { if (BM_ID !== b.id) return; HQ.video = map; hqVeLai(); });
+    if (coBaiGiangKh(b) && !HQ.video) docTienDoVideoCuaBai(b.id, hs).then(function (map) { if (BM_ID !== b.id) return; HQ.video = map; chinhGioMay(); hqVeLai(); });
     // 3. nghe
-    if (coBaiNgheKh(b) && !HQ.nghe) docTienDoNgheCuaBai(b.id, hs).then(function (kq) { if (BM_ID !== b.id) return; HQ.nghe = kq; hqVeLai(); });
+    if (coBaiNgheKh(b) && !HQ.nghe) docTienDoNgheCuaBai(b.id, hs).then(function (kq) { if (BM_ID !== b.id) return; HQ.nghe = kq; chinhGioMay(); hqVeLai(); });
     // 4. lượt luyện từng act (phiên thầy)
     t.acts.forEach(function (a) {
       if (HQ.act[a.ma]) return;
@@ -6248,6 +6248,107 @@ button.mk-em:hover{border-color:currentColor}
   // ⛔ `HQ_MOC_GOP` = lúc AWord Đợt 383 lên sống; 0 = chưa áp (mọi lượt tính như cũ).
   var HQ_MOC_GOP = 1790271900000;   // v1.147.1 — 25/09/2026 00:45 (+07): AWord Đợt 383 `ba22cd1` lên sống 00:45:15
   var HQ_GIAY_DIEM0_TOI_THIEU = 120;
+  // ⭐⭐ v1.175.0 (28/09/2026, thầy chốt) — GIỜ MÁY CHỦ CHO DỮ LIỆU CŨ. Trước AWord Đợt 422 / web v1.174.0 mọi mốc giờ
+  // học sinh ghi là đồng hồ MÁY EM: máy THANH PHƯƠNG (A1A) chậm đúng 1 ngày 3 phút ⇒ bài 28/9 vẽ thành 27/9, lượt
+  // nộp trễ thành đúng hạn. Kho `scores` có `createTime` (giờ máy chủ, chung.js giữ ở `sv`) ⇒ d = sv − createdAt.
+  // ⛔ KHÔNG lấy thẳng `sv` làm giờ: lượt gửi BÙ (nháp/outbox, lần mở sau) có sv trễ hàng giờ mà createdAt mới là
+  // giờ chơi thật (đo 28/9: BẢO LINH 599 phút, MẠC MINH KHANG 276 phút — cả lượt nộp thường). Máy lệch thì NHIỀU
+  // lượt lệch GẦN NHƯ Y HỆT nhau ⇒ gom CỤM: ≥ 3 lượt trong 90 giây, |lệch| ≥ 5 phút = một máy lệch. Mỗi lượt lấy cụm
+  // LỚN NHẤT không vượt d (+90 s), luôn có ứng viên 0 (máy đúng giờ của cùng em; gửi bù chỉ làm d TĂNG).
+  // practiceLog + video/nghe không có giờ máy chủ ⇒ lượt có attemptId lấy lệch của lượt scores đó; còn lại, trước
+  // MOC_GIO_CHUAN, dùng `chinh` = cụm DUY NHẤT của em khi lượt gần 0 (trước mốc) không quá 20% cụm (em dùng 2 máy
+  // thì không đoán). Sau mốc máy em đã tự bù ⇒ d ≈ 0 ⇒ không chỉnh gì.
+  var MOC_GIO_CHUAN = 1790592655000;   // 28/09/2026 17:50:55 (+07): AWord Đợt 422 `d08a002` + web v1.174.0 `5c51f36` push
+  var LECH_GOM_MS = 90 * 1000, LECH_NHO_NHAT_MS = 5 * 60 * 1000, LECH_SO_LUOT = 3;
+  var BANG_LECH = {};   // khoá em (A.khoaEm) -> { cum: [ms…], chinh: ms }
+  // ds = [{d: sv − createdAt, luc: createdAt}] của MỘT em ⇒ { cum, chinh } (null khi không có cụm nào).
+  function lechCum(ds) {
+    var s = ds.map(function (x) { return x.d; }).sort(function (a, b) { return a - b; });
+    var cum = [], i = 0;
+    while (i < s.length) {
+      var j = i;
+      while (j + 1 < s.length && s[j + 1] - s[i] <= LECH_GOM_MS) j++;
+      var n = j - i + 1, c = s[i + (n >> 1)];
+      if (n >= LECH_SO_LUOT && Math.abs(c) >= LECH_NHO_NHAT_MS) cum.push({ c: c, n: n });
+      i = j + 1;
+    }
+    if (!cum.length) return null;
+    var chinh = 0;
+    if (cum.length === 1) {
+      var gan0 = ds.filter(function (x) { return x.luc < MOC_GIO_CHUAN && Math.abs(x.d) <= LECH_GOM_MS; }).length;
+      if (gan0 <= cum[0].n * 0.2) chinh = cum[0].c;
+    }
+    return { cum: cum.map(function (x) { return x.c; }), chinh: chinh };
+  }
+  // Lệch của MỘT lượt có giờ máy chủ (d đã biết).
+  function lechTheoD(bang, d) {
+    if (!bang || !isFinite(d)) return 0;
+    var tot = null;
+    [0].concat(bang.cum).forEach(function (c) { if (c <= d + LECH_GOM_MS && (tot === null || c > tot)) tot = c; });
+    return tot || 0;
+  }
+  // Lệch của một mốc KHÔNG có giờ máy chủ (practiceLog, video/nghe, worksheet): chỉ trước mốc sửa.
+  function lechKhongD(bang, luc) { return bang && luc > 0 && luc < MOC_GIO_CHUAN ? bang.chinh : 0; }
+  // Khoá ngày 'YYYY-MM-DD' của chấm công dời theo SỐ NGÀY TRÒN của lệch (lệch dưới nửa ngày ⇒ giữ).
+  function ngayDaChinh(kh, lech) {
+    var soNgay = Math.round(lech / 864e5);
+    var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(kh);
+    if (!soNgay || !m) return kh;
+    var d = new Date(+m[1], +m[2] - 1, +m[3], 12);
+    if (d.getTime() >= MOC_GIO_CHUAN) return kh;
+    d.setDate(d.getDate() + soNgay);
+    return hqNgayKhoa(d);
+  }
+  // Chỉnh `cham` (video/nghe) TẠI CHỖ, gọi lại bao nhiêu lần cũng được (giữ bản gốc ở `_goc`).
+  function chamDaChinh(cham, bang) {
+    if (!cham || !cham.phien) return cham;
+    var l = bang ? bang.chinh : 0;
+    if (!cham._goc) { if (!l) return cham; cham._goc = { phien: cham.phien, theoNgay: cham.theoNgay || {} }; }
+    if (cham._lech === l) return cham;
+    cham._lech = l;
+    cham.phien = cham._goc.phien.map(function (p) {
+      var x = lechKhongD(bang, +p.b);
+      return x ? { b: +p.b + x, k: +p.k + x, g: p.g } : p;
+    });
+    var tn = {};
+    Object.keys(cham._goc.theoNgay).forEach(function (kh) { var k2 = l ? ngayDaChinh(kh, l) : kh; tn[k2] = (tn[k2] || 0) + cham._goc.theoNgay[kh]; });
+    cham.theoNgay = tn;
+    return cham;
+  }
+  // Sau mỗi lượt đọc điểm: dựng BANG_LECH từ MỌI act đã nạp rồi chỉnh `luc` từng lượt + lucDat/lucTot/lucCuoi/luc
+  // của từng em (gốc giữ ở `lucMay` / `lucTotMay` ⇒ chạy lại không cộng dồn).
+  function chinhGioMay() {
+    var nhom = {};
+    Object.keys(DIEM).forEach(function (m) {
+      (DIEM[m] || []).forEach(function (e) {
+        var k = A.khoaEm(e);
+        (e.luot || []).forEach(function (lu) {
+          if (lu.lucMay == null) lu.lucMay = lu.luc || 0;
+          if (lu.sv > 0 && lu.lucMay > 0) (nhom[k] = nhom[k] || []).push({ d: lu.sv - lu.lucMay, luc: lu.lucMay });
+        });
+      });
+    });
+    BANG_LECH = {};
+    Object.keys(nhom).forEach(function (k) { var b = lechCum(nhom[k]); if (b) BANG_LECH[k] = b; });
+    Object.keys(DIEM).forEach(function (m) {
+      (DIEM[m] || []).forEach(function (e) {
+        if (!e.luot) return;
+        var b = BANG_LECH[A.khoaEm(e)];
+        if (e.lucTotMay == null) e.lucTotMay = e.lucTot || 0;
+        var dat = 0, cuoi = 0, tot = e.lucTotMay;
+        e.luot.forEach(function (lu) {
+          var x = lu.sv > 0 && lu.lucMay > 0 ? lechTheoD(b, lu.sv - lu.lucMay) : 0;
+          lu.luc = lu.lucMay ? lu.lucMay + x : 0;
+          if (lu.lucMay && lu.lucMay === e.lucTotMay) tot = lu.luc;
+          if (lu.pt >= 100 && lu.luc && (!dat || lu.luc < dat)) dat = lu.luc;
+          if (lu.luc > cuoi) cuoi = lu.luc;
+        });
+        e.lucDat = dat; e.lucTot = tot; e.lucCuoi = cuoi || e.lucCuoi; e.luc = e.lucDat || e.lucTot;
+      });
+    });
+    if (HQ && HQ.video) Object.keys(HQ.video).forEach(function (ten) { var v = HQ.video[ten]; if (v) chamDaChinh(v.cham, BANG_LECH[A.khoaTen(ten)]); });
+    if (HQ && HQ.nghe && HQ.nghe.cham) Object.keys(HQ.nghe.cham).forEach(function (ten) { chamDaChinh(HQ.nghe.cham[ten], BANG_LECH[A.khoaTen(ten)]); });
+  }
   // ⛔ v1.170.5 — lúc AWord Đợt 418 lên sống: từ mốc này lượt NỘP DỞ gửi giờ HOẠT ĐỘNG vào scores (tin được).
   var HQ_MOC_DO_HD = 1790656200000;   // 29/09/2026 11:30 (+07) = Đợt 418 `2b1282d` push 28/9 11:25 + 1 NGÀY (tab mở từ trước vẫn chạy code cũ)
   // Mẫu số chuẩn của act cho lượt DỞ (mẫu số riêng của lượt dở không chắc — xem `mauChuan` bên chung.js):
@@ -6277,6 +6378,14 @@ button.mk-em:hover{border-color:currentColor}
       for (var i = 0; i < doTheoMoc.length; i++) if (Math.abs(doTheoMoc[i].moc - moc) <= 50) return doTheoMoc[i].l;
       return null;
     }
+    // ⭐ v1.175.0 — lệch đồng hồ máy em của từng lượt scores (đã chỉnh ở chinhGioMay) ⇒ lượt practiceLog nối được mượn.
+    var lechId = {}, bangEm = BANG_LECH[k];
+    ((em && em.luot) || []).forEach(function (l) { if (l.id && l.lucMay) lechId[l.id] = l.luc - l.lucMay; });
+    function lucPl(d) {
+      var c = +d.createdAt || 0;
+      if (!c) return 0;
+      return c + (d.attemptId && lechId[d.attemptId] != null ? lechId[d.attemptId] : lechKhongD(bangEm, c));
+    }
     (HQ.act[ma] || []).forEach(function (d) {
       if (A.khoaEm(d) !== k) return;               // v1.134.0 — lượt luyện có `ma` thì theo mã
       var ld = doTheoMoc.length && !d.mistakes ? timDo(+d.createdAt || 0) : null;
@@ -6303,7 +6412,7 @@ button.mk-em:hover{border-color:currentColor}
       else if (d.done && d.mode === 'submit') loai = moi ? 'do' : 'nop';   // lượt mới làm hết mà 0 điểm ⇒ không nộp
       else if (d.done) loai = 'luyen';
       else loai = 'do';
-      luot.push({ luc: +d.createdAt || 0, giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
+      luot.push({ luc: lucPl(d), giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
                   diem: diem, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes,
                   // v1.148.0 — nối BÀI LÀM: lượt đã nộp (NỘP / NỘP DỞ) ⇒ results/{attemptId}; lượt khác ⇒ practiceLog/{mã}/entries/{id}
                   code: ma, pl: d._id || '', rid: d.mode === 'submit' && d.attemptId ? String(d.attemptId) : '', coBl: !!d.coReview });
@@ -10640,6 +10749,17 @@ button.mk-em:hover{border-color:currentColor}
     };
     var tongGiay = 0, thieuMa = false;
     var theoBai = {};
+    // ⭐ v1.175.0 — giờ MÁY CHỦ cho lượt cũ (luật ở `chinhGioMay`): hồ sơ là MỘT em ⇒ gom cụm trên mọi lượt của em.
+    var mauD = [];
+    acts.forEach(function (a) {
+      (a.diem || []).forEach(function (d) { var sv = Date.parse(d.createTime || '') || 0, c = hsoSo((d.fields || {}).createdAt); if (sv && c) mauD.push({ d: sv - c, luc: c }); });
+      if (a.gop) {
+        var k0 = A.khoaTen(a.x.tenHs);
+        a.gop.forEach(function (r) { if (A.khoaEm(r) !== k0) return; (r.luot || []).forEach(function (l) { var c = l.lucMay != null ? l.lucMay : l.luc; if (l.sv && c) mauD.push({ d: l.sv - c, luc: c }); }); });
+      }
+    });
+    var bangHs = lechCum(mauD);
+    var lucL = function (l) { var c = l.lucMay != null ? l.lucMay : (l.luc || 0); return c && l.sv ? c + lechTheoD(bangHs, l.sv - c) : c; };
     dsBai.forEach(function (x) { theoBai[x.b.id] = { x: x, act: 0, xong: 0, muon: false, coLam: false, ws: 0, wsDu: 0, moc: A.mocHan(x.b) }; if (hqNgayGiao(x.b).getTime() < HSO_MOC_MA) thieuMa = true; });
     acts.forEach(function (a) {
       var t = theoBai[a.x.b.id]; t.act++;
@@ -10647,12 +10767,16 @@ button.mk-em:hover{border-color:currentColor}
         var k = A.khoaTen(a.x.tenHs), hang = a.gop.filter(function (r) { return A.khoaEm(r) === k; })[0];
         if (hang) {
           t.coLam = true;
-          if (A.xongAct(a.gop, a.x.tenHs, a.chuan)) { t.xong++; var mc = hsoMocAct(a.x.b, a.ma); if (mc != null && (hang.lucDat || 0) > mc) t.muon = true; }
-          (hang.luot || []).forEach(function (l) { var g = Math.min((l.ms || 0) / 1000, 3600); tongGiay += g; congTuan(l.luc, g); });
+          var datG = 0;
+          (hang.luot || []).forEach(function (l) { var x = lucL(l); if (l.pt >= 100 && x && (!datG || x < datG)) datG = x; });
+          if (A.xongAct(a.gop, a.x.tenHs, a.chuan)) { t.xong++; var mc = hsoMocAct(a.x.b, a.ma); if (mc != null && (datG || hang.lucDat || 0) > mc) t.muon = true; }
+          (hang.luot || []).forEach(function (l) { var g = Math.min((l.ms || 0) / 1000, 3600); tongGiay += g; congTuan(lucL(l), g); });
         }
         return;
       }
-      var raw = (a.diem || []).map(function (d) { var fl = d.fields || {}; return { id: String(d.name || '').split('/').pop(), diem: hsoSo(fl.score), tong: hsoSo(fl.total), ms: hsoSo(fl.timeMs), luc: hsoSo(fl.createdAt), dd: !!(fl.doDang && fl.doDang.booleanValue) }; });
+      var raw = (a.diem || []).map(function (d) { var fl = d.fields || {}; return { id: String(d.name || '').split('/').pop(), diem: hsoSo(fl.score), tong: hsoSo(fl.total), ms: hsoSo(fl.timeMs), luc: hsoSo(fl.createdAt), sv: Date.parse(d.createTime || '') || 0, dd: !!(fl.doDang && fl.doDang.booleanValue) }; });
+      var lechRaw = {};
+      raw.forEach(function (r) { if (r.sv && r.luc) { var x = lechTheoD(bangHs, r.sv - r.luc); r.luc += x; lechRaw[r.id] = x; } });   // v1.175.0
       var chuan = a.chuan || {};
       var mau = chuan.soCau || 0;
       if (!mau) raw.forEach(function (r) { if (!r.dd && r.tong > 0 && (!mau || r.tong < mau)) mau = r.tong; });
@@ -10672,7 +10796,8 @@ button.mk-em:hover{border-color:currentColor}
         var ms = +e.timeMs || 0, act = +e.activeMs || 0, g = (act ? Math.min(ms || act, act) : ms) / 1000;
         g = Math.min(g, 3600);
         if (e.attemptId) daTinh[e.attemptId] = 1;
-        tongGiay += g; congTuan(+e.updatedAt || +e.createdAt || 0, g);
+        var t0 = +e.updatedAt || +e.createdAt || 0;   // v1.175.0 — mượn lệch của lượt nộp nối được, không thì `chinh` trước mốc
+        tongGiay += g; congTuan(t0 && t0 + (e.attemptId && lechRaw[e.attemptId] != null ? lechRaw[e.attemptId] : lechKhongD(bangHs, t0)), g);
       });
       raw.forEach(function (r) { if (daTinh[r.id]) return; var g = Math.min((r.ms || 0) / 1000, 3600); tongGiay += g; congTuan(r.luc, g); });
     });
@@ -10683,7 +10808,7 @@ button.mk-em:hover{border-color:currentColor}
         var g = giayTongCuaEm(v.phu, v.cham);
         if (g > 0) t.coLam = true;
         tongGiay += g;
-        var theo = (v.cham && v.cham.theoNgay) || {};
+        var theo = (chamDaChinh(v.cham, bangHs) || {}).theoNgay || {};   // v1.175.0
         Object.keys(theo).forEach(function (ngay) { var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ngay); if (m) congTuan(new Date(+m[1], +m[2] - 1, +m[3]).getTime(), theo[ngay]); });
       });
       A.wsHienCuaThe(x.b).forEach(function (w) {
@@ -10691,7 +10816,7 @@ button.mk-em:hover{border-color:currentColor}
         var d = nop[x.b.id + '__' + w.o], trang = d && d.trang ? Object.keys(d.trang).map(function (k) { return d.trang[k]; }).filter(function (tr) { return tr && !tr.huy; }) : [];
         if (trang.length) t.coLam = true;
         if (trang.length >= w.soTrang) t.wsDu++;
-        if (trang.some(function (tr) { return t.moc != null && +tr.luc > t.moc; })) t.muon = true;
+        if (trang.some(function (tr) { return t.moc != null && +tr.luc + lechKhongD(bangHs, +tr.luc) > t.moc; })) t.muon = true;
       });
     });
     var giao = 0, lam = 0, du = 0, muon = 0, thieu = 0, chuY = [];

@@ -1079,7 +1079,7 @@
   var TUOI_TOI_DA_MS = 10 * 60 * 1000;
   // ⭐ v1.147.0 (25/09/2026, GỘP PRACTICE + SUBMIT) — khoá đệm `awc_diem2_` → `awc_diem3_`: mỗi lượt nay
   // mang thêm `dd` (lượt DỞ DANG) + `pt`, bản cũ trong localStorage không có ⇒ mỗi máy đọc lại MỘT lần/act.
-  var KHOA_DIEM2 = 'awc_diem3_';
+  var KHOA_DIEM2 = 'awc_diem4_';   // v1.175.0 — 3→4: bản nhớ cũ thiếu `sv` (giờ máy chủ) từng lượt
 
   // ⭐ v1.147.0 — `orderBy=createdAt desc`: đọc lượt MỚI NHẤT trước. Trước đây liệt kê theo mã tài liệu
   // (`hw<mốc>…` = CŨ trước) nên khi chạm phanh số trang, lượt bị bỏ lại là lượt MỚI NHẤT — đúng lượt cần
@@ -1157,6 +1157,9 @@
                 // `createdAt` = lúc nộp (mốc mili giây, AWord ghi bằng Date.now()).
                 // Dùng làm "nộp lúc" trong bảng cả lớp; thiếu thì coi như 0.
                 luc: soF(f.createdAt),
+                // ⭐ v1.175.0 — giờ MÁY CHỦ lúc tài liệu được tạo (Firestore tự ghi, máy em không sửa được).
+                // Dashboard dùng nó suy độ lệch đồng hồ máy em cho dữ liệu cũ (xem `chinhGioMay` bên dashboard).
+                sv: Date.parse(doc.createTime || '') || 0,
                 // ⭐ v1.147.0 — lượt DỞ DANG (AWord Đợt 383: em bấm Start again / tải lại trang / đóng tab
                 // giữa ván). Điểm thật nhưng mẫu số KHÔNG chắc ⇒ không làm mẫu chuẩn, không tính "nộp là xong".
                 dd: !!(f.doDang && f.doDang.booleanValue),
@@ -1249,7 +1252,7 @@
       var cu = theo[k];
       // ⭐ v1.131.0 — giữ MỌI lượt (`luot`) để hộp quản lý cộng tổng thời gian nộp
       // (dashboard tab THỜI LƯỢNG); phần gộp "lượt tốt nhất" bên dưới không đổi.
-      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, diem: r.diem, tong: r.tong, dd: !!r.dd, pt: pt };
+      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, sv: r.sv || 0, diem: r.diem, tong: r.tong, dd: !!r.dd, pt: pt };
       var g = Math.round((r.ms || 0) / 1000);
       // ⭐ v1.147.0 (thầy chốt 24/09) — "NỘP LÚC" = lượt ĐẦU TIÊN em ĐẠT điểm tối đa (`lucDat`); chưa đạt thì
       // lấy lúc của lượt TỐT NHẤT (`lucTot`). Trước đây là lượt nộp đầu tiên bất kỳ — nay lượt dở cũng nộp,

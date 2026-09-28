@@ -3272,7 +3272,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=150"></script>
+<script src="config.js?v=151"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=1"></script>
 <script src="js/chung.js?v=65"></script>
@@ -10022,7 +10022,7 @@ button.mk-em:hover{border-color:currentColor}
         var x = d.data() || {};
         var tt = x.quaHanMk ? 'khoa' : (x.phaiDoiMk ? 'chua' : 'da');
         tong[tt]++;
-        var e = { ten: x.ten || d.id, tt: tt, so: x.msId, uid: d.id };
+        var e = { ten: x.ten || d.id, tt: tt, so: x.msId, uid: d.id, cacLop: (x.cacLop && x.cacLop.length ? x.cacLop : [x.lop || '']) };
         MK_THEO_UID[d.id] = e;
         (lop[x.lop || '?'] = lop[x.lop || '?'] || []).push(e);
       });
@@ -10220,7 +10220,12 @@ button.mk-em:hover{border-color:currentColor}
     return ds;
   }
   function mkCua(p) {
-    for (var i = 0; i < p.ids.length; i++) { var m = MK_THEO_UID['hs_' + p.ids[i]]; if (m) return m; }
+    // v1.170.2 — CHỈ nhận tài khoản có LỚP khớp nơi em đang học: số hs_<id> có thể trùng tài khoản CŨ đã khoá của em khác
+    // (đợt đánh lại số K9 27/09 — ca PHƯƠNG MINH B2A id 234 trùng TK cũ MINH HOÀNG) ⇒ hiện sai + "Đặt lại MK" đặt nhầm người.
+    for (var i = 0; i < p.ids.length; i++) {
+      var m = MK_THEO_UID['hs_' + p.ids[i]];
+      if (m && m.cacLop.some(function (l) { return p.noi.some(function (n) { return n.maLop === l; }); })) return m;
+    }
     return null;
   }
   function htmlTtMk(p) {

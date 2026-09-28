@@ -1,6 +1,6 @@
 {
-  "capNhat": "2026-09-27 14:33:55",
-  "nguon": "myStudent",
+  "capNhat": "2026-09-28 07:49:26",
+  "nguon": "dashboard",
   "lop": [
     {
       "maLop": "A1A",
@@ -766,7 +766,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 234,
+          "id": 237,
           "ten": "PHƯƠNG MINH",
           "ma": "VUPHUONGMINH13042012",
           "sinhNhat": "",

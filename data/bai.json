@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-28 21:58:43",
+  "capNhat": "2026-09-28 22:39:53",
   "bai": {
     "A1C": [
       {
@@ -1015,6 +1015,45 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_26.9_STAGE_7_JOB",
+        "tieuDe": "NNTNG4_26.9_STAGE 7 JOB",
+        "tenHien": "NNTNG4_26.9_STAGE 7 JOB",
+        "dang": "STAGE",
+        "ngay": "26.9",
+        "han": "2026-10-03T08:00",
+        "maLesson": "7 JOB",
+        "taoLuc": "2026-09-28",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "gt6pxr",
+            "mau": "QUIZ",
+            "han": "2026-09-30T12:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "5bx9u5",
+            "mau": "OPEN THE BOX",
+            "han": "2026-10-02T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "7 JOB / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "np4wyn",
+            "mau": "FIND THE MATCH",
+            "han": "2026-10-03T08:00"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_19.9_STAGE_6_CLOTHES",
         "tieuDe": "NNTNG4_19.9_STAGE 6 CLOTHES",

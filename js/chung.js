@@ -2044,8 +2044,11 @@
     for (var id in f) {
       var g = (f[id].mapValue && f[id].mapValue.fields) || {};
       var a = g.a && g.a.stringValue;
-      if (!a) continue;
-      em[id] = { t: (g.t && g.t.stringValue) || '', a: a };
+      // v1.177.0 — BIA XOÁ (`xoa`): thầy xoá ảnh trên dashboard ⇒ giữ mục để `deAvatarKho` GỠ ảnh đang hiện
+      // (kể cả ảnh lớp nền file tĩnh cũ), thay vì bỏ qua như em chưa từng có ảnh.
+      var xoa = !!(g.xoa && (g.xoa.integerValue || g.xoa.booleanValue || g.xoa.doubleValue));
+      if (!a && !xoa) continue;
+      em[id] = xoa && !a ? { t: (g.t && g.t.stringValue) || '', a: '', xoa: 1 } : { t: (g.t && g.t.stringValue) || '', a: a };
     }
     return { em: em, luc: avMoc(j) };
   }
@@ -2230,6 +2233,11 @@
         if (chanDb[avKhongDau(ten).replace(/\s+/g, ' ').trim()]) continue;
         var id = timAnh(ten);
         if (!(id && em[id])) continue;
+        if (em[id].xoa) {                       // v1.177.0 — bia xoá: gỡ mọi ảnh đang hiện, về chữ tắt
+          var cu = el.querySelectorAll('img');
+          for (var c = 0; c < cu.length; c++) { cu[c].remove(); de++; }
+          continue;
+        }
 
         // v1.58.0 — ô trên thanh đội (`av-thanh`) từng vẽ <img> không mang lớp `av-anh`:
         // bản trước không thấy nên chèn thêm một <img> thứ hai chồng lên. Nay nhận cả hai.
@@ -2254,7 +2262,7 @@
         if (avSlugLop(q.lop) !== avSlugLop(lopGoc)) continue;
         if (chanDb[avKhongDau(q.ten).replace(/\s+/g, ' ').trim()]) continue;
         var qid = timAnh(q.ten);
-        if (qid && em[qid]) {
+        if (qid && em[qid] && !em[qid].xoa) {
           var mb = 'data:image/jpeg;base64,' + em[qid].a;
           if (q.im.src !== mb) { q.im.src = mb; de++; }
         }
@@ -2273,6 +2281,12 @@
   //    ĐÚNG MỘT LẦN — dựng thêm mỗi lần đổi lớp thì mỗi lượt vẽ chạy N lượt đè chồng nhau.
   // `dsDb` (v1.94.6) — danh sách HS ĐẶC BIỆT của lớp (`l.hsDb`), xem chú thích
   // ⭐⭐ ở `deAvatarKho`.
+  // v1.177.0 — thầy vừa đổi/xoá ảnh trên dashboard ⇒ quên bản đệm của lớp đó, lượt đè sau tải lại kho ngay.
+  function quenAvatarKho(lopGoc) {
+    var slug = avSlugLop(lopGoc);
+    delete AV_RAM[slug]; delete AV_HONG[slug];
+    try { localStorage.removeItem(KHOA_AV + ':' + slug); } catch (e) {}
+  }
   var avLop = '', avDs = [], avDb = [], avTai = null, avHen = null;
   function batAvatarKho(lopGoc, dsEm, dsDb) {
     if (!lopGoc) return;
@@ -3462,7 +3476,7 @@
     trangThaiThe: trangThaiThe, datTrangThai: datTrangThai, conHan: conHan,
     // ⭐ v1.37.0 — avatar dùng chung + chấm đỏ tin nhắn mới
     avSlugLop: avSlugLop, avSlugTen: avSlugTen, avUrl: avUrl, gaAvatar: gaAvatar,
-    napAvatarKho: napAvatarKho, deAvatarKho: deAvatarKho, batAvatarKho: batAvatarKho,
+    napAvatarKho: napAvatarKho, deAvatarKho: deAvatarKho, batAvatarKho: batAvatarKho, quenAvatarKho: quenAvatarKho,
     avTenKhop: avTenKhop, avTenDayDu: avTenDayDu,
     mocDaXem: mocDaXem, danhDauDaXem: danhDauDaXem,
     mocTinMoi: mocTinMoi, datMocTinMoi: datMocTinMoi,

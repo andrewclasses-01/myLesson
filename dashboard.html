@@ -2742,6 +2742,32 @@ button.mk-em:hover{border-color:currentColor}
 .qm-than .mk-hoi{margin:0 0 12px}
 .qm-mk-ds{border-top:1px solid #eee}
 .qm-quay{border:0; background:none; font:700 12.5px var(--font); color:var(--xanh); padding:0; margin-bottom:12px; cursor:pointer}
+.ad-hop{width:min(720px,100%)}
+.ad-nen.ad-keo .ad-tha{border-color:var(--xanh); background:var(--xanh-nhat)}
+.ad-tron{border-radius:50%; background:#D7E2DF; flex:none; display:grid; place-items:center; font:800 13px var(--font); color:#5F7370; font-style:normal; position:relative; overflow:hidden; width:44px; height:44px}
+.ad-tron.vua{width:64px; height:64px; font-size:20px}
+.ad-tron.to{width:88px; height:88px; font-size:28px}
+.ad-tron .av-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.ad-dau{display:flex; align-items:center; gap:14px; margin-bottom:6px}
+.ad-dau b{display:block; font:800 14px var(--font)} .ad-dau small{display:block; font:600 12px var(--font); color:var(--nhat)}
+.ad-tha{display:block; border:2px dashed var(--vien-dam); border-radius:14px; padding:18px; text-align:center; cursor:pointer; background:#FAFCFB}
+.ad-tha b{display:block; font:800 14px var(--font); color:var(--xanh)} .ad-tha small{display:block; margin-top:4px; font:600 12px var(--font); color:var(--nhat)}
+.ad-mau{display:grid; grid-template-columns:repeat(auto-fill,minmax(64px,1fr)); gap:8px}
+.ad-mau button{padding:0; border:2px solid transparent; border-radius:10px; overflow:hidden; aspect-ratio:1; background:#eef2f1; cursor:pointer}
+.ad-mau button:hover{border-color:var(--xanh)}
+.ad-mau img{width:100%; height:100%; object-fit:cover; display:block}
+.ad-cat-vung{display:flex; gap:18px; align-items:flex-start; flex-wrap:wrap}
+.ad-cat{position:relative; overflow:hidden; border-radius:14px; background:#222; touch-action:none; cursor:grab; flex:none; max-width:100%}
+.ad-cat img{position:absolute; left:0; top:0; max-width:none; user-select:none; pointer-events:none; transform-origin:0 0}
+.ad-cat::after{content:''; position:absolute; inset:0; background:radial-gradient(circle closest-side, transparent 98.5%, rgba(255,255,255,.9) 99%, rgba(0,0,0,.5) 100%); pointer-events:none}
+.ad-cat-ben{flex:1 1 200px; min-width:0}
+.ad-luoi{display:grid; grid-template-columns:repeat(auto-fill,minmax(112px,1fr)); gap:10px}
+.ad-o{display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 6px; border:1.5px solid var(--vien); border-radius:14px; background:#fff; cursor:pointer; font:inherit}
+.ad-o:hover{border-color:var(--xanh)}
+.ad-o.cho{border-color:var(--xanh); background:var(--xanh-nhat)}
+.ad-o b{font:700 12.5px var(--font); text-align:center} .ad-o small{font:700 11px var(--font); color:var(--xanh)}
+.ad-bam{cursor:pointer; border-radius:50%; display:inline-flex}
+.ad-bam:hover i{outline:3px solid var(--xanh-nhat)}
 .qm-hs-dau{display:flex; align-items:center; gap:14px; margin-bottom:16px}
 .qm-hs-dau i{width:60px; height:60px; font-size:22px}
 .qm-hs-dau h5{margin:0; font:800 20px var(--font)}
@@ -9813,7 +9839,8 @@ button.mk-em:hover{border-color:currentColor}
     $('#avDs').addEventListener('click', function (e) {
       var b = e.target.closest ? e.target.closest('[data-av]') : null;
       if (!b || b.disabled) return;
-      baoToast('Ảnh đại diện nay đặt trong myStudent (tab Lớp học/Khóa học) — mở myStudent để đổi.');
+      // v1.177.0 — thầy chốt 29/09: đổi ảnh NGAY TRÊN DASHBOARD (nơi duy nhất) ⇒ ✎ mở hộp ảnh đại diện.
+      if (window.adMoTheoTen) window.adMoTheoTen(LOP_CHON, b.getAttribute('data-av'));
     });
 
     $('#chatGui').onclick = guiChat;
@@ -10422,6 +10449,7 @@ button.mk-em:hover{border-color:currentColor}
     document.body.appendChild(nen);            // gắn vào body: tránh bẫy position:fixed trong khối có backdrop-filter
     nen.addEventListener('click', function (e) {
       if (e.target === nen || e.target.closest('[data-qm-dong]')) return void dongHopBaoMat();
+      if (adBamTrongQm(e)) return;                     // v1.177.0 — ảnh đại diện
       if (qcBamTrongQm(e)) return;                     // v1.169.0 — Đợt C: thêm/sửa/chuyển/nghỉ/lớp/kho
       if (QM.tab === 'dd' && ddBam(e)) return;         // v1.170.0 — Đợt F: điểm danh
       var t = e.target.closest('[data-qm-tab]');
@@ -10466,6 +10494,8 @@ button.mk-em:hover{border-color:currentColor}
     });
     document.addEventListener('keydown', function (e) {
       if (e.key !== 'Escape') return;
+      var ad = $('#adNen');
+      if (ad && !ad.hidden) return void adDong();        // v1.177.0 — hộp ảnh nằm trên cùng
       var qc = $('#qcNen');
       if (qc && !qc.hidden) return void qcDong();      // v1.169.0 — hộp phụ nằm trên
       if (qmDangMo()) dongHopBaoMat();
@@ -10574,7 +10604,7 @@ button.mk-em:hover{border-color:currentColor}
       ANH_QM_TAI = new MutationObserver(function (ds) {
         for (var i = 0; i < ds.length; i++) {
           var t = ds[i].target;
-          if (t && t.closest && t.closest('#qmNen, #snNen')) { anhHopQm(); return; }
+          if (t && t.closest && t.closest('#qmNen, #snNen, #adNen')) { anhHopQm(); return; }
         }
       });
       ANH_QM_TAI.observe(document.body, { childList: true, subtree: true });
@@ -10636,7 +10666,8 @@ button.mk-em:hover{border-color:currentColor}
             '<td>' + qmE(lich || '—') + '</td><td>' + (l.hocSinh || []).length + ' em</td>' +
             '<td><span class="qm-tt ' + tt + '">' + { giao: 'Đã giao', cho: 'Chờ bài', khong: 'Không giao bài' }[tt] + '</span></td>' +
             '<td><div class="qm-hd"><button type="button" class="qm-nut" data-qm-loc="' + qmE(l.maLop) + '">Học sinh</button>' +
-              '<button type="button" class="qm-nut" data-qm-dslop="' + qmE(l.maLop) + '" title="Danh sách em + đổi ảnh đại diện">Thiết lập lớp</button>' +
+              '<button type="button" class="qm-nut" data-ad-lop="' + qmE(l.maLop) + '" title="Đổi ảnh đại diện cả lớp một lượt">Ảnh đại diện</button>' +
+              '<button type="button" class="qm-nut" data-qm-dslop="' + qmE(l.maLop) + '" title="Danh sách em của lớp">Thiết lập lớp</button>' +
               '<button type="button" class="qm-nut" data-qm-mo="' + qmE((laKhoa ? 'khoa.html' : 'lop.html') + '?gv=1&lop=' + encodeURIComponent(l.maLop)) + '">Xem trang lớp</button>' +
               '<button type="button" class="qm-nut" data-qc-mo="suaLop" data-qc-lop="' + qmE(l.tenGoc || l.maLop) + '">Sửa lớp</button></div></td></tr>';
         }).join('') + htmlLopRong(dsL) + '</tbody></table>';
@@ -10690,8 +10721,9 @@ button.mk-em:hover{border-color:currentColor}
     return '<button type="button" class="qm-quay" data-qm-quay>‹ Danh sách học sinh</button>' +
       '<div class="mk-hoi" hidden></div>' +
       '<div class="hso-thay" id="hsoThay" hidden></div>' +
-      '<div class="qm-hs-dau">' + oAnhNguoi(p) + '<div><h5>' + qmE(p.ten) + '</h5>' +
+      '<div class="qm-hs-dau"><span class="ad-bam" data-ad-em title="Đổi ảnh đại diện">' + oAnhNguoi(p) + '</span><div><h5>' + qmE(p.ten) + '</h5>' +
         (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div><span class="qm-gian"></span>' +
+        '<button type="button" class="qm-nut" data-ad-em>Ảnh đại diện</button>' +
         (p.ma ? '<button type="button" class="qm-nut" data-qc-mo="suaHs">Sửa</button>' : '') + nutDatLai(p) + '</div>' +
       '<div class="qm-luoi">' +
         '<div class="qm-o"><h6>Ghi danh &amp; ngày tham gia<span class="qm-gian"></span>' + (p.ma ? '<button type="button" class="hso-them" data-qc-mo="chuyen" data-qc-noi="0" data-qc-kieu="ghiDanhThem">+ Ghi danh thêm</button>' : '') + '</h6>' + p.noi.map(function (n, iN) {
@@ -11515,6 +11547,316 @@ button.mk-em:hover{border-color:currentColor}
       try { A.datBangEm(x); } catch (e) { }
       try { veLopGrid(); } catch (e) { }
     })['catch'](function () { });
+  }
+  /* ============================================================
+     ⭐⭐ v1.177.0 (29/09/2026) — ĐỔI ẢNH ĐẠI DIỆN HỌC SINH NGAY TRÊN DASHBOARD. Thầy chốt: dashboard là NƠI DUY NHẤT đổi ảnh;
+     myStudent bỏ hộp "Ảnh đại diện", app myLesson thôi ghi kho ảnh — mọi app khác chỉ NHẬN từ đây.
+     Hộp `#adNen` (tiền tố ad-, dùng lại khung qc-), gắn vào body. Hai chế độ:
+       · MỘT EM (hồ sơ em / nút ✎ ở Thiết lập lớp): chọn ảnh ⇒ cắt vuông ⇒ Lưu NGAY.
+       · CẢ LỚP (Theo lớp ⇒ "Ảnh đại diện"): lưới cả lớp, đổi từng em (xếp hàng "chờ lưu") ⇒ "Lưu N ảnh" một lần.
+     Nguồn ảnh: tải file / kéo thả / dán (Ctrl+V) / chụp (điện thoại) + ảnh khuôn mặt camera (hàm trả về, việc `mau`).
+     Trình duyệt tự cắt vuông + nén 2 cỡ: LỚN ≤480 px (myStudent/myTeam) + NHỎ 96 px (web) ⇒ hàm máy chủ `qlAnhDaiDien`
+     (myLesson-app may-chu/functions/anh-dai-dien.js) ghi Storage + roster (3 máy myStudent kéo về) + `lessonAvatar`.
+     ============================================================ */
+  var AD = null;                 // { che:'em'|'lop', p, maLop?, ds?, cho:{khoa:{lon,nho,nguon,xoa,url}}, xem, mau, anh, cat }
+  var _adFn = null;
+  var AD_O = 280;                // cạnh khung cắt (px)
+  function hamAd() {
+    if (!_adFn) {
+      _adFn = AWChat.kho().then(async function () {
+        var appMod = await import(SP_SDK + '/firebase-app.js');
+        var fnMod = await import(SP_SDK + '/firebase-functions.js');
+        return fnMod.httpsCallable(fnMod.getFunctions(appMod.getApp(), 'asia-southeast1'), 'qlAnhDaiDien', { timeout: 120000 });
+      });
+      _adFn['catch'](function () { _adFn = null; });
+    }
+    return _adFn;
+  }
+  function adHop() {
+    var nen = $('#adNen');
+    if (nen) return nen;
+    nen = document.createElement('div');
+    nen.id = 'adNen'; nen.className = 'qc-nen ad-nen'; nen.hidden = true;
+    nen.innerHTML = '<div class="qc-hop ad-hop" role="dialog" aria-label="Ảnh đại diện"><div class="qc-dau"><div><h4 id="adTieu"></h4><small id="adPhu"></small></div>' +
+      '<button type="button" class="qm-dong" data-ad-dong aria-label="Đóng">' + QM_IC.x + '</button></div><div class="qc-than" id="adThan"></div></div>';
+    document.body.appendChild(nen);
+    nen.addEventListener('click', adBam);
+    nen.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'adTep' && e.target.files && e.target.files[0]) adNapTep(e.target.files[0]);
+    });
+    nen.addEventListener('input', function (e) {
+      if (e.target && e.target.id === 'adZoom' && AD && AD.cat) adPhong(+e.target.value);
+    });
+    nen.addEventListener('dragover', function (e) { if (AD && AD.xem === 'chon') { e.preventDefault(); nen.classList.add('ad-keo'); } });
+    nen.addEventListener('dragleave', function (e) { if (e.target === nen) nen.classList.remove('ad-keo'); });
+    nen.addEventListener('drop', function (e) {
+      nen.classList.remove('ad-keo');
+      if (!(AD && AD.xem === 'chon')) return;
+      e.preventDefault();
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (f) adNapTep(f);
+    });
+    document.addEventListener('paste', function (e) {
+      if (!(AD && AD.xem === 'chon') || nen.hidden) return;
+      var it = [].slice.call((e.clipboardData && e.clipboardData.items) || []).filter(function (x) { return /^image\//.test(x.type); })[0];
+      if (it) { e.preventDefault(); adNapTep(it.getAsFile()); }
+    });
+    return nen;
+  }
+  function adDong() { var n = $('#adNen'); if (n) n.hidden = true; AD = null; }
+  function adKhoa(p) { return p.khoa; }
+  function adNguoiLop(maLop) { return dsNguoi().filter(function (p) { return p.noi.some(function (n) { return n.maLop === maLop; }); }); }
+  function adMoEm(p) {
+    if (!p || chuaThay()) return;
+    AD = { che: 'em', p: p, cho: {}, xem: 'chon' };
+    adHop().hidden = false; adVe();
+  }
+  function adMoLop(maLop) {
+    if (chuaThay()) return;
+    var l = tatCaLop().filter(function (x) { return x.maLop === maLop; })[0];
+    AD = { che: 'lop', maLop: maLop, tenLop: l ? (l.tenGoc || l.maLop) : maLop, cho: {}, xem: 'luoi' };
+    adHop().hidden = false; adVe();
+  }
+  // ✎ ở sidebar Thiết lập lớp (khác phạm vi) gọi vào đây theo lớp + tên.
+  window.adMoTheoTen = function (maLop, ten) {
+    var p = adNguoiLop(maLop).filter(function (x) { return x.noi.some(function (n) { return n.maLop === maLop && n.tenHs === ten; }); })[0];
+    if (!p) return void baoToast('Không thấy em ' + ten + ' trong danh sách lớp.');
+    adMoEm(p);
+  };
+  // Ô tròn cỡ lớn: ảnh chờ lưu (nếu có) đè lên ảnh kho.
+  function adTron(p, co) {
+    var c = AD && AD.cho[adKhoa(p)];
+    var n = p.noi[0] || {};
+    if (c && c.xoa) return '<i class="ad-tron ' + (co || '') + '">' + chuDau(p.ten) + '</i>';
+    if (c) return '<i class="ad-tron ' + (co || '') + '"><img class="av-anh" src="' + c.url + '" alt="">' + chuDau(p.ten) + '</i>';
+    return '<i class="ad-tron ' + (co || '') + '" data-av-em="' + qmE(n.tenHs || p.ten) + '" data-av-lop="' + qmE(n.ten || '') + '">' + chuDau(p.ten) + '</i>';
+  }
+  function adBao(chu, loi) { var t = $('#adTin'); if (t) { t.textContent = chu || ''; t.className = 'qc-tin' + (loi ? ' loi' : ''); } }
+  function adVe() {
+    if (!AD) return;
+    var than = $('#adThan'), p = AD.p;
+    if (AD.xem === 'luoi') {
+      var ds = adNguoiLop(AD.maLop), soCho = Object.keys(AD.cho).length;
+      $('#adTieu').textContent = 'Ảnh đại diện · ' + AD.tenLop;
+      $('#adPhu').textContent = ds.length + ' em · bấm từng em để đổi, xong bấm Lưu một lần';
+      than.innerHTML = '<div class="ad-luoi">' + ds.map(function (x) {
+        var c = AD.cho[adKhoa(x)];
+        return '<button type="button" class="ad-o' + (c ? ' cho' : '') + '" data-ad-chon-em="' + qmE(adKhoa(x)) + '">' + adTron(x, 'vua') +
+          '<b>' + qmE(x.ten) + '</b>' + (c ? '<small>' + (c.xoa ? 'chờ xoá' : 'chờ lưu') + '</small>' : '') + '</button>';
+      }).join('') + '</div>' +
+        '<p class="qc-tin" id="adTin"></p>' +
+        '<div class="qc-cuoi"><small>Ảnh lưu lên máy chủ; 3 máy myStudent tự nhận về, học sinh thấy trong ≤ 10 phút.</small>' +
+        '<button type="button" class="qm-nut" data-ad-dong>Đóng</button>' +
+        '<button type="button" class="qm-nut chinh" data-ad-luu-lop' + (soCho ? '' : ' disabled') + '>Lưu ' + soCho + ' ảnh</button></div>';
+      return;
+    }
+    $('#adTieu').textContent = 'Ảnh đại diện · ' + p.ten;
+    $('#adPhu').textContent = p.noi.map(function (n) { return n.ten; }).join(' · ') + (p.noi.length > 1 ? ' — đổi một lần là đổi ở mọi nơi em học' : '');
+    var quay = AD.che === 'lop' ? '<button type="button" class="qm-quay" data-ad-quay>‹ Cả lớp</button>' : '';
+    if (AD.xem === 'cat') {
+      than.innerHTML = quay + '<div class="ad-cat-vung"><div class="ad-cat" id="adCat" style="width:' + AD_O + 'px;height:' + AD_O + 'px"><img id="adCatAnh" alt="" draggable="false"></div>' +
+        '<div class="ad-cat-ben"><p class="qm-p">Kéo ảnh để đặt khuôn mặt vào giữa vòng tròn, kéo thanh để phóng to.</p>' +
+        '<label class="qc-o"><span>Phóng to</span><input type="range" id="adZoom" min="1" max="4" step="0.01" value="' + AD.cat.z + '"></label></div></div>' +
+        '<p class="qc-tin" id="adTin"></p>' +
+        '<div class="qc-cuoi"><small>' + (AD.che === 'lop' ? 'Ảnh vào hàng "chờ lưu" — bấm Lưu ở lưới cả lớp.' : 'Lưu xong: 3 máy myStudent tự nhận về, học sinh thấy trong ≤ 10 phút.') + '</small>' +
+        '<button type="button" class="qm-nut" data-ad-lai>Chọn ảnh khác</button>' +
+        '<button type="button" class="qm-nut chinh" data-ad-dung>' + (AD.che === 'lop' ? 'Dùng ảnh này' : 'Lưu ảnh này') + '</button></div>';
+      var im = $('#adCatAnh'); im.src = AD.anh.src;
+      adGanKeo(); adVeCat();
+      return;
+    }
+    // xem 'chon'
+    var mau = AD.mau;
+    var htmlMau = !mau ? '<p class="qm-p">Đang tải ảnh khuôn mặt camera…</p>' : (mau.loi ? '<p class="qm-p">' + qmE(mau.loi) + '</p>' :
+      (mau.anh.length ? '<div class="ad-mau">' + mau.anh.map(function (x, i) {
+        return '<button type="button" data-ad-mau="' + i + '" title="' + qmE(x.luc || '') + '"><img src="data:image/jpeg;base64,' + x.a + '" alt=""></button>';
+      }).join('') + '</div>' + (mau.tong > mau.anh.length ? '<p class="qm-p">' + mau.anh.length + ' ảnh mới nhất / ' + mau.tong + ' ảnh.</p>' : '') :
+        '<p class="qm-p">Em chưa có ảnh khuôn mặt nào từ camera.</p>'));
+    var c = AD.cho[adKhoa(p)];
+    than.innerHTML = quay +
+      '<div class="ad-dau">' + adTron(p, 'to') + '<div><b>' + (c ? (c.xoa ? 'Chờ xoá ảnh' : 'Ảnh mới — chờ lưu') : 'Ảnh hiện tại') + '</b>' +
+        '<small>Chưa có ảnh thì hiện chữ cái đầu tên.</small></div><span class="qm-gian"></span>' +
+        (c ? '<button type="button" class="qm-nut" data-ad-bo>Bỏ thay đổi</button>' : '<button type="button" class="qm-nut do" data-ad-xoa>Xoá ảnh</button>') + '</div>' +
+      '<div class="qc-nhan">Tải ảnh lên</div>' +
+      '<label class="ad-tha" for="adTep"><b>Chọn ảnh từ máy / chụp bằng điện thoại</b><small>hoặc kéo thả ảnh vào đây · dán ảnh (Ctrl+V)</small></label>' +
+      '<input type="file" id="adTep" accept="image/*" hidden>' +
+      '<div class="qc-nhan">Ảnh khuôn mặt từ camera</div>' + htmlMau +
+      '<p class="qc-tin" id="adTin"></p>' +
+      (AD.che === 'lop' ? '<div class="qc-cuoi"><span class="qm-gian"></span><button type="button" class="qm-nut" data-ad-quay>Xong — về cả lớp</button></div>' : '');
+    if (!AD.mau) adNapMau();
+  }
+  function adNapMau() {
+    var p = AD.p, khoa = adKhoa(p);
+    hamAd().then(function (fn) { return fn({ viec: 'mau', ids: p.ids }); }).then(function (r) {
+      if (!AD || !AD.p || adKhoa(AD.p) !== khoa) return;
+      var kq = (r && r.data) || {};
+      AD.mau = { anh: kq.anh || [], tong: kq.tong || 0 };
+      if (AD.xem === 'chon') adVe();
+    })['catch'](function (e) {
+      if (!AD || !AD.p || adKhoa(AD.p) !== khoa) return;
+      AD.mau = { loi: 'Chưa tải được ảnh camera (' + String((e && e.message) || e).slice(0, 80) + ').' };
+      if (AD.xem === 'chon') adVe();
+    });
+  }
+  function adNapTep(f) {
+    if (!f || !/^image\//.test(f.type || '')) return void adBao('Tệp này không phải ảnh.', true);
+    if (f.size > 25 * 1024 * 1024) return void adBao('Ảnh quá lớn (> 25 MB).', true);
+    var url = URL.createObjectURL(f);
+    adMoCat(url, '');
+  }
+  function adMoCat(src, nguon) {
+    var im = new Image();
+    im.onload = function () {
+      if (!AD) return;
+      AD.anh = { src: src, w: im.naturalWidth, h: im.naturalHeight, el: im, nguon: nguon || '' };
+      AD.cat = { z: 1, x: 0, y: 0 };
+      var s = adTiLe();
+      AD.cat.x = (AD_O - AD.anh.w * s) / 2; AD.cat.y = (AD_O - AD.anh.h * s) / 2;
+      AD.xem = 'cat'; adVe();
+    };
+    im.onerror = function () { adBao('Không đọc được ảnh này (thử ảnh JPG/PNG khác).', true); };
+    im.src = src;
+  }
+  // Phóng to/thu nhỏ GIỮ TÂM khung (thanh kéo + lăn chuột).
+  function adPhong(z) {
+    var s0 = adTiLe(); AD.cat.z = Math.max(1, Math.min(4, z)); var s1 = adTiLe();
+    AD.cat.x = AD_O / 2 - (AD_O / 2 - AD.cat.x) * s1 / s0; AD.cat.y = AD_O / 2 - (AD_O / 2 - AD.cat.y) * s1 / s0;
+    adKep(); adVeCat();
+  }
+  function adTiLe() { return AD_O / Math.min(AD.anh.w, AD.anh.h) * AD.cat.z; }
+  function adKep() {                 // giữ ảnh luôn phủ kín khung
+    var s = adTiLe(), w = AD.anh.w * s, h = AD.anh.h * s, c = AD.cat;
+    c.x = Math.min(0, Math.max(AD_O - w, c.x)); c.y = Math.min(0, Math.max(AD_O - h, c.y));
+  }
+  function adVeCat() {
+    var im = $('#adCatAnh');
+    if (!im || !AD || !AD.cat) return;
+    var s = adTiLe();
+    im.style.width = (AD.anh.w * s) + 'px'; im.style.height = (AD.anh.h * s) + 'px';
+    im.style.transform = 'translate(' + AD.cat.x + 'px,' + AD.cat.y + 'px)';
+  }
+  function adGanKeo() {
+    var khung = $('#adCat');
+    if (!khung) return;
+    var dang = null;
+    khung.addEventListener('pointerdown', function (e) {
+      dang = { x: e.clientX, y: e.clientY, cx: AD.cat.x, cy: AD.cat.y };
+      try { khung.setPointerCapture(e.pointerId); } catch (x) {}
+      e.preventDefault();
+    });
+    khung.addEventListener('pointermove', function (e) {
+      if (!dang || !AD || !AD.cat) return;
+      AD.cat.x = dang.cx + e.clientX - dang.x; AD.cat.y = dang.cy + e.clientY - dang.y;
+      adKep(); adVeCat();
+    });
+    var tha = function () { dang = null; };
+    khung.addEventListener('pointerup', tha); khung.addEventListener('pointercancel', tha);
+    khung.addEventListener('wheel', function (e) {
+      e.preventDefault();
+      adPhong(AD.cat.z * (e.deltaY < 0 ? 1.08 : 1 / 1.08));
+      var z = $('#adZoom'); if (z) z.value = AD.cat.z;
+    }, { passive: false });
+  }
+  // Cắt vùng đang thấy ⇒ JPEG cạnh `n` (base64, không tiền tố).
+  function adXuat(n, q) {
+    var s = adTiLe(), cv = document.createElement('canvas');
+    cv.width = cv.height = n;
+    var g = cv.getContext('2d');
+    g.fillStyle = '#fff'; g.fillRect(0, 0, n, n);
+    g.imageSmoothingQuality = 'high';
+    g.drawImage(AD.anh.el, -AD.cat.x / s, -AD.cat.y / s, AD_O / s, AD_O / s, 0, 0, n, n);
+    return cv.toDataURL('image/jpeg', q).split(',')[1];
+  }
+  function adDungAnh() {
+    var canh = Math.round(AD_O / adTiLe());               // số điểm ảnh GỐC trong khung — ảnh camera nhỏ thì không phóng vô ích
+    var lon = adXuat(Math.max(96, Math.min(480, canh)), 0.88), nho = adXuat(96, 0.82);
+    var p = AD.p, khoa = adKhoa(p);
+    var muc = { lon: lon, nho: nho, nguon: AD.anh.nguon, url: 'data:image/jpeg;base64,' + nho };
+    if (AD.che === 'lop') { AD.cho[khoa] = muc; AD.xem = 'luoi'; AD.p = null; AD.mau = null; return void adVe(); }
+    adLuuMot(p, muc, $('[data-ad-dung]'));
+  }
+  // Gọi hàm cho MỘT em ⇒ đè ảnh lên mọi ô của em trên trang.
+  function adGoi(p, muc) {
+    var d = muc.xoa ? { viec: 'xoa', ids: p.ids } : { viec: 'dat', ids: p.ids, lon: muc.lon, nho: muc.nho, nguon: muc.nguon || '' };
+    return hamAd().then(function (fn) { return fn(d); }).then(function () {
+      p.noi.forEach(function (n) { try { A.quenAvatarKho(n.ten); } catch (e) {} });
+      var ten = {}, lop = {};
+      p.noi.forEach(function (n) { ten[n.tenHs || p.ten] = 1; lop[A.avSlugLop(n.ten)] = 1; });
+      [].slice.call(document.querySelectorAll('[data-av-em]')).forEach(function (el) {
+        if (!ten[el.getAttribute('data-av-em')] || !lop[A.avSlugLop(el.getAttribute('data-av-lop'))]) return;
+        var im = el.querySelector('img');
+        if (muc.xoa) { [].slice.call(el.querySelectorAll('img')).forEach(function (x) { x.remove(); }); return; }
+        if (!im) { im = document.createElement('img'); im.className = 'av-anh'; im.alt = ''; el.insertBefore(im, el.firstChild); }
+        im.src = 'data:image/jpeg;base64,' + muc.nho;
+      });
+    });
+  }
+  function adLoiChu(e) { var cau = String((e && e.message) || e || ''); return /[à-ỹđ]/i.test(cau) ? cau : 'Chưa lưu được (' + cau.slice(0, 100) + ').'; }
+  function adLuuMot(p, muc, nut) {
+    if (chuaThay()) return;
+    if (nut) nut.disabled = true;
+    adBao('Đang lưu… (máy chủ cần 3–10 giây)');
+    adGoi(p, muc).then(function () {
+      baoToast(muc.xoa ? 'Đã xoá ảnh đại diện của ' + p.ten + '.' : 'Đã lưu ảnh đại diện của ' + p.ten + '.');
+      adDong();
+      anhHopQm();
+    })['catch'](function (e) { adBao(adLoiChu(e), true); if (nut) nut.disabled = false; });
+  }
+  function adLuuLop(nut) {
+    if (chuaThay()) return;
+    var ds = adNguoiLop(AD.maLop).filter(function (p) { return AD.cho[adKhoa(p)]; });
+    if (!ds.length) return;
+    nut.disabled = true;
+    var hong = [], i = 0;
+    (function ke() {
+      if (!AD) return;
+      if (i >= ds.length) {
+        if (!hong.length) { baoToast('Đã lưu ' + ds.length + ' ảnh đại diện.'); adDong(); anhHopQm(); return; }
+        adVe();
+        return void adBao('Lưu được ' + (ds.length - hong.length) + '/' + ds.length + ' — chưa lưu: ' + hong.join(', ') + '. Bấm Lưu để thử lại.', true);
+      }
+      var p = ds[i++];
+      adBao('Đang lưu ' + i + '/' + ds.length + ': ' + p.ten + '…');
+      adGoi(p, AD.cho[adKhoa(p)]).then(function () { delete AD.cho[adKhoa(p)]; })['catch'](function (e) { hong.push(p.ten + ' (' + adLoiChu(e).slice(0, 60) + ')'); }).then(ke);
+    })();
+  }
+  function adBam(e) {
+    var nen = $('#adNen');
+    if (e.target === nen || e.target.closest('[data-ad-dong]')) {
+      if (AD && AD.che === 'lop' && Object.keys(AD.cho).length && !confirm('Còn ' + Object.keys(AD.cho).length + ' ảnh chưa lưu — đóng là bỏ. Đóng?')) return;
+      return void adDong();
+    }
+    if (!AD) return;
+    var o = e.target.closest('[data-ad-chon-em]');
+    if (o) {
+      var k = o.getAttribute('data-ad-chon-em');
+      AD.p = adNguoiLop(AD.maLop).filter(function (x) { return adKhoa(x) === k; })[0];
+      if (AD.p) { AD.xem = 'chon'; AD.mau = null; adVe(); }
+      return;
+    }
+    if (e.target.closest('[data-ad-quay]')) { AD.xem = AD.che === 'lop' ? 'luoi' : 'chon'; if (AD.che === 'lop') { AD.p = null; AD.mau = null; } return void adVe(); }
+    var m = e.target.closest('[data-ad-mau]');
+    if (m && AD.mau && AD.mau.anh) { var x = AD.mau.anh[+m.getAttribute('data-ad-mau')]; if (x) adMoCat('data:image/jpeg;base64,' + x.a, x.key); return; }
+    if (e.target.closest('[data-ad-lai]')) { AD.xem = 'chon'; return void adVe(); }
+    if (e.target.closest('[data-ad-dung]')) return void adDungAnh();
+    if (e.target.closest('[data-ad-bo]')) { delete AD.cho[adKhoa(AD.p)]; return void adVe(); }
+    if (e.target.closest('[data-ad-xoa]')) {
+      if (AD.che === 'lop') { AD.cho[adKhoa(AD.p)] = { xoa: true }; AD.xem = 'luoi'; AD.p = null; AD.mau = null; return void adVe(); }
+      if (!confirm('Xoá ảnh đại diện của ' + AD.p.ten + '? (Mọi nơi sẽ hiện chữ cái đầu tên.)')) return;
+      return void adLuuMot(AD.p, { xoa: true }, e.target.closest('[data-ad-xoa]'));
+    }
+    var l = e.target.closest('[data-ad-luu-lop]');
+    if (l) return void adLuuLop(l);
+  }
+  // Bấm trong hộp Quản lý: ô tròn / nút "Ảnh đại diện" ở hồ sơ, nút "Ảnh đại diện" ở chế độ Theo lớp.
+  function adBamTrongQm(e) {
+    var l = e.target.closest('[data-ad-lop]');
+    if (l) { adMoLop(l.getAttribute('data-ad-lop')); return true; }
+    if (e.target.closest('[data-ad-em]') && QM.em) {
+      adMoEm(dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0]);
+      return true;
+    }
+    return false;
   }
   // Bấm trong hộp Quản lý (bảng / hồ sơ) ⇒ mở hộp phụ
   function qcBamTrongQm(e) {

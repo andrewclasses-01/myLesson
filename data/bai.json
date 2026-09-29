@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-29 19:39:38",
+  "capNhat": "2026-09-29 22:04:19",
   "bai": {
     "A1C": [
       {
@@ -611,6 +611,26 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_29.9_WORKSHEET_LSA2-S3.T4.P1-2",
+        "tieuDe": "A1B_29.9_WORKSHEET LSA2-S3.T4.P1-2",
+        "tenHien": "A1B_29.9_WORKSHEET LSA2-S3.T4.P1-2",
+        "dang": "WORKSHEET",
+        "ngay": "29.9",
+        "tenBai": "LSA2-S3.T4.P1-2 / TRANSLATION QUEST",
+        "han": "2026-10-01T19:45",
+        "maLesson": "LSA2-S3.T4.P1-2",
+        "taoLuc": "2026-09-29",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSA2-S3.T4.P1-2 / TRANSLATION QUEST",
+            "o": 0,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1B%2FA1B_29.9_WORKSHEET_LSA2-S3.T4.P1-2%2F0.pdf?alt=media",
+            "soTrang": 2
+          }
+        ]
+      },
       {
         "id": "A1B_24.9_STAGE_LSA2-S3.T3.P3-4-5",
         "tieuDe": "A1B_24.9_STAGE LSA2-S3.T3.P3-4-5",

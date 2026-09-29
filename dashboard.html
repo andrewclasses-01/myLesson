@@ -3340,10 +3340,10 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=161"></script>
-<script src="js/thay-vao.js?v=1"></script>
+<script src="config.js?v=162"></script>
+<script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
-<script src="js/chung.js?v=71"></script>
+<script src="js/chung.js?v=72"></script>
 <script src="js/chat.js?v=28"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
@@ -10459,6 +10459,12 @@ button.mk-em:hover{border-color:currentColor}
       if (x) { QM.xem = x.getAttribute('data-qm-xem'); QM.em = null; return void veBaoMat(); }
       var l = e.target.closest('[data-qm-loc]');
       if (l) { QM.loc = l.getAttribute('data-qm-loc'); QM.xem = 'hs'; QM.em = null; return void veBaoMat(); }
+      var xn = e.target.closest('[data-hso-xem]');         // 29/09 — xem như em (vé chỉ xem, không PIN)
+      if (xn) {
+        var kXn = String(xn.getAttribute('data-hso-xem')).split('|');
+        var pXn = dsNguoi().filter(function (x) { return x.khoa === kXn[0]; })[0];
+        return void (pXn && hsoXemNhu(pXn, kXn[1]));
+      }
       var mo = e.target.closest('[data-qm-mo]');
       if (mo) return void window.open(mo.getAttribute('data-qm-mo'), '_blank');
       var ds = e.target.closest('[data-qm-dslop]');
@@ -10621,7 +10627,7 @@ button.mk-em:hover{border-color:currentColor}
       '<td>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</td>' +
       '<td>' + htmlTtMk(p) + '</td>' +
       '<td><div class="qm-hd">' +
-        (p.ma ? '<button type="button" class="qm-nut" data-qm-mo="' + qmE(urlNhu(p, p.noi[0])) + '" title="Mở trang của em ở tab mới — không cần mật khẩu, không lưu vào máy">Xem như em</button>' : '') +
+        (p.ma ? '<button type="button" class="qm-nut" data-hso-xem="' + qmE(p.khoa + '|' + p.noi[0].maLop) + '" title="Mở tab mới xem như em (cả mạng xã hội) — chỉ xem: không làm bài, không chat">Xem như em</button>' : '') +
         nutDatLai(p) + '</div></td></tr>';
   }
   function veBangHs() {
@@ -10729,7 +10735,7 @@ button.mk-em:hover{border-color:currentColor}
       '<div class="qm-luoi">' +
         '<div class="qm-o"><h6>Ghi danh &amp; ngày tham gia<span class="qm-gian"></span>' + (p.ma ? '<button type="button" class="hso-them" data-qc-mo="chuyen" data-qc-noi="0" data-qc-kieu="ghiDanhThem">+ Ghi danh thêm</button>' : '') + '</h6>' + p.noi.map(function (n, iN) {
           return '<div class="qm-gd">' + chipNoi(n) + '<span class="qm-gd-ngay">' + (n.vao ? 'vào lớp ' + ngayVN(n.vao) : 'chưa ghi ngày vào') + '</span>' +
-            (p.ma ? '<button type="button" class="qm-nut" data-qm-mo="' + qmE(urlNhu(p, n)) + '" title="Chỉ xem — không ghi gì">Xem như em</button>' +
+            (p.ma ? '<button type="button" class="qm-nut" data-hso-xem="' + qmE(p.khoa + '|' + n.maLop) + '" title="Mở tab mới xem như em (cả mạng xã hội) — chỉ xem: không làm bài, không chat">Xem như em</button>' +
               '<button type="button" class="qm-nut do" data-hso-thay="' + qmE(n.maLop) + '" title="Mở tab mới dưới tên em (cần PIN) — làm/nộp bài ghi thật">Đăng nhập thay</button>' : '') +
             '<span class="qm-gd-hd"><button type="button" class="qm-nut" data-qc-mo="chuyen" data-qc-noi="' + iN + '">Chuyển lớp</button>' +
             '<button type="button" class="qm-nut do" data-qc-mo="nghi" data-qc-noi="' + iN + '">Nghỉ</button></span></div>';
@@ -11098,6 +11104,44 @@ button.mk-em:hover{border-color:currentColor}
       '<button type="button" class="qm-nut chinh" data-hso-thay-vao>Vào</button><button type="button" class="qm-nut" data-hso-thay-huy>Huỷ</button></div>' +
       '<p class="hso-thay-tin" id="hsoThayTin"></p>';
     $('#hsoPin').focus();
+  }
+  /* ⭐ 29/09/2026 (thầy chốt) — XEM NHƯ EM "tương tự đăng nhập thay, chỉ khác không được làm bài, không được chat": cùng đường vé
+     `dangNhapThayHs` với `chiXem:true` (KHÔNG PIN) ⇒ tab mới `...&thayvao=1&chixem=1` có phiên THẬT của em ⇒ xem được cả mạng xã hội như em;
+     thay-vao.js/chung.js/nw-phien.js/nw/js/loi.js giữ tab CHỈ XEM. Em chưa có tài khoản ⇒ mở kiểu cũ `?nhu=` (chỉ trang bài). */
+  function hsoXemNhu(p, maLop) {
+    var n = p.noi.filter(function (x) { return x.maLop === maLop; })[0] || p.noi[0];
+    if (!n) return;
+    var m = MK_KQ && mkCua(p);
+    if (!m) {
+      baoToast('Em chưa có tài khoản (hoặc chưa đọc được danh sách tài khoản) — mở kiểu cũ: chỉ xem trang bài, không có mạng xã hội.');
+      return void window.open(urlNhu(p, n), '_blank');
+    }
+    if (chuaThay()) return;
+    var w = window.open(urlNhu(p, n) + '&thayvao=1&chixem=1', '_blank');
+    if (!w) return void baoToast('Trình duyệt chặn cửa sổ mới — cho phép cửa sổ bật lên rồi bấm lại.');
+    var ve = null, loi = null, daGui = false;
+    function traVe() {
+      if (daGui || w.closed) return;
+      if (ve) { daGui = true; w.postMessage({ type: 'THAYVAO:VE', token: ve.token, ma: ve.ma, ten: ve.ten }, location.origin); }
+      else if (loi) { daGui = true; w.postMessage({ type: 'THAYVAO:LOI', chu: loi }, location.origin); }
+    }
+    function nghe(e) {
+      if (e.source !== w || e.origin !== location.origin) return;
+      if ((e.data || {}).type === 'THAYVAO:SAN') { traVe(); if (daGui) window.removeEventListener('message', nghe); }
+    }
+    window.addEventListener('message', nghe);
+    setTimeout(function () { window.removeEventListener('message', nghe); }, 120000);
+    hamDangNhapThay().then(function (fn) { return fn({ uid: m.uid, chiXem: true }); }).then(function (r) {
+      ve = (r && r.data) || null;
+      if (!ve || !ve.token) throw new Error('Hàm không trả vé.');
+      NK = null;
+      traVe();
+    })['catch'](function (e) {
+      var cau = String((e && e.message) || e || '');
+      loi = /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(cau) ? cau : 'Chưa mở được chế độ xem như em (' + cau.slice(0, 80) + ').';
+      baoToast('⚠ ' + loi);
+      traVe();
+    });
   }
   function hsoVaoThay(p) {
     var o = $('#hsoThay'), tin = $('#hsoThayTin');
@@ -12555,6 +12599,6 @@ button.mk-em:hover{border-color:currentColor}
   moCong();   // v1.176.0 — luôn qua cửa: phiên thầy thật mới mở trang
 })();
 </script>
-<script src="js/nw-thanh.js?v=14"></script>
+<script src="js/nw-thanh.js?v=15"></script>
 </body>
 </html>

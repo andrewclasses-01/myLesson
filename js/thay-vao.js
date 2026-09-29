@@ -25,6 +25,10 @@
   var co = null;
   try { co = JSON.parse(sessionStorage.getItem(KHOA) || 'null'); } catch (e) { co = null; }
   var coUrl = q.get('thayvao') === '1';
+  // ⭐ 29/09/2026 (thầy chốt) — "XEM NHƯ EM" đi CÙNG đường này với `&chixem=1`: vé thật của em (không PIN, claim chiXem) nhưng tab
+  // CHỈ XEM — chung.js cho danh tính `xemNhu` (không làm/nộp bài), nw-phien.js không cấp vé ghi/AWord, chat lớp tắt, mạng xã hội
+  // (nw/js/loi.js) đọc như em nhưng chặn mọi lượt ghi.
+  var chiXemUrl = q.get('chixem') === '1';
   if (!co && !coUrl) { window.__thayVao = null; return; }
 
   var laDash = /dashboard\.html$/i.test(location.pathname);
@@ -66,9 +70,11 @@
     }
     if (document.body) ve(); else document.addEventListener('DOMContentLoaded', ve);
   }
+  function laChiXem() { return !!((co && co.chiXem) || (coUrl && chiXemUrl)); }
   function chuConLai() { var p = Math.max(0, Math.ceil(((co && co.het) - Date.now()) / 60000)); return p + ' phút'; }
   function veDaiDangThay() {
-    veDai('🔐 Thầy đang ĐĂNG NHẬP THAY ' + ((co && co.ten) || 'em') + ' — mọi bài làm ghi dưới tên em · tự thoát sau ' + chuConLai() + ' · chat tắt', true);
+    if (laChiXem()) veDai('👁 Thầy đang XEM NHƯ ' + ((co && co.ten) || 'em') + ' — CHỈ XEM: không làm bài, không chat, không đăng · tự thoát sau ' + chuConLai(), true);
+    else veDai('🔐 Thầy đang ĐĂNG NHẬP THAY ' + ((co && co.ten) || 'em') + ' — mọi bài làm ghi dưới tên em · tự thoát sau ' + chuConLai() + ' · chat tắt', true);
   }
   function thoat(chu) {
     clearInterval(_hen);
@@ -115,12 +121,12 @@
     }
     if (co && co.het && co.het < Date.now()) { thoat('Hết 30 phút — đã tự thoát chế độ đăng nhập thay em.'); return _auth; }
     if (!_auth.currentUser && coUrl && !co) {
-      veDai('🔐 Đang đăng nhập thay em…', false);
+      veDai(chiXemUrl ? '👁 Đang mở chế độ xem như em…' : '🔐 Đang đăng nhập thay em…', false);
       var ve = await choVe();
       if (ve && ve.token) {
         try {
           var r = await _au.signInWithCustomToken(_auth, ve.token);
-          ghiCo({ uid: r.user.uid, ma: String(ve.ma || ''), ten: String(ve.ten || ''), het: Date.now() + PHUT * 60000 });
+          ghiCo({ uid: r.user.uid, ma: String(ve.ma || ''), ten: String(ve.ten || ''), het: Date.now() + PHUT * 60000, chiXem: chiXemUrl });
         } catch (e) { veDai('Không đăng nhập thay được (' + ((e && e.code) || e) + '). Đóng tab rồi thử lại.', false); return _auth; }
       } else {
         veDai((ve && ve.loi) ? ve.loi : 'Không nhận được vé từ dashboard — đóng tab rồi thử lại.', false);
@@ -140,6 +146,7 @@
   window.__thayVao = {
     san: san,
     co: function () { return co; },
+    chiXem: laChiXem,
     xoa: xoaCo,
     baoLoi: function (chu) { veDai(chu, false); }
   };

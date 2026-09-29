@@ -249,6 +249,32 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   // ⛔ Có cờ mà setPersistence(local) ⇒ phiên EM chép vào IndexedDB ⇒ tab dashboard của thầy biến thành em.
   var _coThayVao = !!window.__thayVao;
   NW.dangThayVao = _coThayVao;
+  // 29/09: "xem như em" ⇒ đọc như em, KHÔNG ghi gì (bài, bình luận, cảm xúc, tin nhắn, kết bạn, ảnh…).
+  NW.chiXem = function () { return !!(window.__thayVao && window.__thayVao.chiXem && window.__thayVao.chiXem()); };
+  var _baoChiXemLuc = 0;
+  function chanGhi(duong) {
+    // lượt ghi nền (nhịp online, đánh dấu đã đọc) ⇒ im lặng; lượt em bấm ⇒ báo
+    if (!/^nwUsers\/|^nwChats\/[^/]+$/.test(String(duong || '')) && Date.now() - _baoChiXemLuc > 3000) {
+      _baoChiXemLuc = Date.now();
+      try { NW.toast('👁 Đang xem như em — chỉ xem, không đăng / nhắn / bày tỏ được.'); } catch (e) { }
+    }
+    var l = new Error('Đang xem như em — chỉ xem.'); l.code = 'nw/chi-xem';
+    return Promise.reject(l);
+  }
+  function fsChiXem(fs) {
+    var duongCua = function (r) { return r && r.path; };
+    return Object.assign({}, fs, {
+      addDoc: function (r) { return chanGhi(duongCua(r) + '/moi'); },
+      setDoc: function (r) { return chanGhi(duongCua(r)); },
+      updateDoc: function (r) { return chanGhi(duongCua(r)); },
+      deleteDoc: function (r) { return chanGhi(duongCua(r)); },
+      runTransaction: function () { return chanGhi(''); },
+      writeBatch: function () {
+        var b = { set: function () { return b; }, update: function () { return b; }, delete: function () { return b; }, commit: function () { return chanGhi(''); } };
+        return b;
+      }
+    });
+  }
   var _fb = null;
   function fb() {
     if (!_fb) {
@@ -260,7 +286,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
         var app = (appMod.getApps && appMod.getApps().length) ? appMod.getApp() : appMod.initializeApp(CFG.FIREBASE);
         var auth = au.getAuth(app);
         if (!_coThayVao) { try { await au.setPersistence(auth, au.browserLocalPersistence); } catch (e) { } }
-        return { app: app, appMod: appMod, au: au, auth: auth, fs: fs, db: fs.getFirestore(app) };
+        return { app: app, appMod: appMod, au: au, auth: auth, fs: NW.chiXem() ? fsChiXem(fs) : fs, db: fs.getFirestore(app) };
       })();
     }
     return _fb;
@@ -270,6 +296,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
     if (!_st) {
       _st = fb().then(async function (f) {
         var stMod = await import(SDK + '/firebase-storage.js');
+        if (NW.chiXem()) stMod = Object.assign({}, stMod, { uploadBytes: function () { return chanGhi(''); }, uploadBytesResumable: function () { throw new Error('Đang xem như em — chỉ xem.'); }, deleteObject: function () { return chanGhi(''); } });
         return { st: stMod.getStorage(f.app), stMod: stMod };
       });
     }
@@ -278,6 +305,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   NW.fb = fb; NW.storage = storage;
   // ⭐ 29/09/2026 — gọi HÀM MÁY CHỦ (asia-southeast1) bằng phiên đang đăng nhập. Dùng cho em tự đổi ảnh đại diện (qlAnhDaiDien).
   NW.goiHam = async function (ten, data) {
+    if (NW.chiXem()) return chanGhi('');
     var f = await fb();
     var fnMod = await import(SDK + '/firebase-functions.js');
     var r = await fnMod.httpsCallable(fnMod.getFunctions(f.app, 'asia-southeast1'), ten, { timeout: 120000 })(data || {});

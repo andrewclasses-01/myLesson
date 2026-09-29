@@ -119,6 +119,10 @@
   // 29/09: tab đăng nhập thay em mà vé CHƯA về (dải đỏ còn "Đang đăng nhập thay em…") ⇒ đợi, không sang nw/ bằng phiên thầy.
   function choThayVao() {
     var tv = window.__thayVao;
+    if (!tv && /[?&]nhu=/.test(location.search)) {
+      alert('Trang này mở kiểu "xem như em" cũ (không có phiên của em) nên chưa xem được mạng xã hội của em — mở lại bằng nút "Xem như em" trong hồ sơ em trên dashboard nhé.');
+      return true;
+    }
     if (!tv || tv.co()) return false;
     alert('Đang đăng nhập thay em — chờ dải đỏ trên cùng báo "Thầy đang ĐĂNG NHẬP THAY…" rồi bấm lại nhé.');
     return true;

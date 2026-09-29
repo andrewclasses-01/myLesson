@@ -71,7 +71,10 @@
   }
 
   // Phiên HỌC SINH đúng mã này (null nếu chưa đăng nhập / đang là người khác / là thầy).
+  // 29/09: tab "xem như em" (thay-vao.js chế độ chỉ xem) ⇒ coi như KHÔNG có phiên em cho mọi đường GHI (vé REST, vé AWord).
+  function chiXem() { return !!(window.__thayVao && window.__thayVao.chiXem && window.__thayVao.chiXem()); }
   async function phienCuaMa(ma) {
+    if (chiXem()) return null;
     var u = await userHienTai();
     if (!laHocSinh(u)) return null;
     return u.email === await emailTuMa(ma) ? u : null;
@@ -125,6 +128,7 @@
     if (!ma) return;
     // ⭐ v1.168.0 — tab "thầy đăng nhập thay em": KHÔNG đá về màn đăng nhập, KHÔNG bắt đổi mật khẩu; thiếu phiên ⇒ chỉ báo (trang vẫn xem được).
     if (window.__thayVao) {
+      if (chiXem()) return;                           // xem như em: không cần phiên cho trang bài
       fb().then(function () { return phienCuaMa(ma); }).then(function (u) {
         if (u) lamMoiVe(false);
         else window.__thayVao.baoLoi('Chưa đăng nhập thay được em này — trang này CHỈ XEM. Mở lại từ dashboard nếu cần.');
@@ -160,6 +164,7 @@
   var _veHs = null;          // { token, het }
   var _henVe = null;
   function lamMoiVe(epMoi) {
+    if (chiXem()) { _veHs = null; return Promise.resolve(null); }
     return userHienTai().then(function (u) {
       if (!laHocSinh(u)) { _veHs = null; return null; }
       return u.getIdTokenResult(!!epMoi).then(function (r) {

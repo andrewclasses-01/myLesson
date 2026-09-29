@@ -933,7 +933,10 @@
     if (q.get('thayvao') === '1' && q.get('nhu') && window.__thayVao) {
       var dsTv = moiNoiTheoMa(dl, q.get('nhu'));
       var tv = noiKhop(dsTv, q.get('lop')) || dsTv[0];
-      if (tv) return { lop: tv.lop.maLop, ten: tv.em.ten, ma: chuanMa(tv.em.ma), thayVao: true };
+      // 29/09: `&chixem=1` (xem như em) ⇒ thêm xemNhu ⇒ mọi trang bài CHỈ XEM như `?nhu=` cũ
+      if (tv) return window.__thayVao.chiXem && window.__thayVao.chiXem()
+        ? { lop: tv.lop.maLop, ten: tv.em.ten, ma: chuanMa(tv.em.ma), thayVao: true, chiXem: true, xemNhu: true }
+        : { lop: tv.lop.maLop, ten: tv.em.ten, ma: chuanMa(tv.em.ma), thayVao: true };
     }
     var nhu = q.get('nhu');
     if (nhu) {
@@ -1005,7 +1008,7 @@
   // tính của mình (`gv=1&lop=`). Dùng CHUNG ở lop.html/bai.html/bai-sp.html —
   // đừng viết riêng từng nơi, dễ quên cập nhật một chỗ (bài học cũ của app này).
   function giuXemNhuQuery(em, maHs, maLop) {
-    if (em && em.thayVao) return 'nhu=' + encodeURIComponent(maHs || em.ma) + '&lop=' + encodeURIComponent(em.lop || maLop || '') + '&thayvao=1';
+    if (em && em.thayVao) return 'nhu=' + encodeURIComponent(maHs || em.ma) + '&lop=' + encodeURIComponent(em.lop || maLop || '') + '&thayvao=1' + (em.chiXem ? '&chixem=1' : '');
     if (!em || !em.xemNhu) return '';
     if (em.vaiTro === 'gv') return 'gv=1&lop=' + encodeURIComponent(maLop || '');
     return 'nhu=' + encodeURIComponent(maHs || '');

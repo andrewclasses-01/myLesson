@@ -1664,7 +1664,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=167"></script>
+<script src="config.js?v=168"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=72"></script>
@@ -2806,8 +2806,8 @@ function tinhHinhGio(b){
   if (b.khoa) return 'khoa';
   /* ⭐ v1.56.0 — thẻ thầy đã ĐỔI HẠN RIÊNG thì KHÔNG bao giờ ăn trạng thái 'xong':
      đồng hồ chạy lại như thẻ mới cho tới mốc hạn mới (thầy chốt 03/09/2026). */
-  if (!b.suaHan &&
-      (b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= (x.siSo != null ? x.siSo : b.siSo); })) {
+  /* ⭐ v1.179.3 (29/09/2026, thầy chốt) — đủ cả lớp là 'xong' (xanh lá) KỂ CẢ thẻ đã đổi hạn riêng: bỏ ngoại lệ `suaHan` của v1.56.0. */
+  if ((b.bai || []).length && (b.bai || []).every(function(x){ return x.xong >= (x.siSo != null ? x.siSo : b.siSo); })) {
     return 'xong';   /* v1.95.0 — so với SĨ SỐ RIÊNG của thẻ (em mới vào không tính) */
   }
   if (b.hanMoc == null) return 'thuong';
@@ -3011,7 +3011,7 @@ function veTheMoi(b, tt){
      ⛔ Phải chặn Ở ĐÂY nữa: `tinhHinhGio()` đã thôi trả 'xong' nhưng `tinhHinhThe()`
      tự đếm lại `bai[].xong >= SI_SO` nên vẫn ra `du:true` ⇒ thẻ xanh lá mà đồng hồ
      lại chạy, nhìn tréo ngoe. Các thanh tiến trình vẫn giữ nguyên số thật của lớp. */
-  if (b.suaHan) th = { lop: th.lop, du: false };
+  /* v1.179.3 — bỏ chặn `suaHan` (xem `tinhHinhGio`): thẻ đã đổi hạn mà đủ cả lớp vẫn xanh lá + ✓. */
 
   var lopThem, lopNen;
   /* v1.35.0 — TẠM KHOÁ đứng trước cả "xong hết": thẻ nhìn là biết đang khoá. */

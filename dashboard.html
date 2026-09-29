@@ -3340,7 +3340,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=162"></script>
+<script src="config.js?v=163"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=72"></script>
@@ -8139,7 +8139,7 @@ button.mk-em:hover{border-color:currentColor}
       return '<div class="hsx-hang">' +
         '<span class="hsx-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</span>' +
         '<select class="chon-em" data-hsx-chon>' + opts + '</select>' +
-        '<button class="nut nho" data-hsx-mo>Mở</button>' +
+        '<button class="nut nho" data-hsx-mo="' + A.chuAnToan(l.maLop) + '">Mở</button>' +
         '</div>';
     }).join('') : '<div class="sb-trong">Chưa lớp nào có em có mã đăng nhập.</div>';
   }
@@ -9816,6 +9816,8 @@ button.mk-em:hover{border-color:currentColor}
         var oChon = hsxMo.parentElement.querySelector('[data-hsx-chon]');
         var maXem = oChon ? oChon.value : '';
         if (!maXem) return void baoToast('Lớp này chưa em nào có mã đăng nhập.');
+        // 29/09 (thầy chốt) — cùng cách "Xem như em" trong hồ sơ: vé chỉ xem ⇒ xem cả mạng xã hội như em, không làm bài / chat
+        if (window.qlXemNhuEm) return void window.qlXemNhuEm(maXem, hsxMo.getAttribute('data-hsx-mo') || '');
         return void window.open('lop.html?nhu=' + encodeURIComponent(maXem), '_blank');
       }
     });
@@ -11111,14 +11113,11 @@ button.mk-em:hover{border-color:currentColor}
   function hsoXemNhu(p, maLop) {
     var n = p.noi.filter(function (x) { return x.maLop === maLop; })[0] || p.noi[0];
     if (!n) return;
-    var m = MK_KQ && mkCua(p);
-    if (!m) {
-      baoToast('Em chưa có tài khoản (hoặc chưa đọc được danh sách tài khoản) — mở kiểu cũ: chỉ xem trang bài, không có mạng xã hội.');
-      return void window.open(urlNhu(p, n), '_blank');
-    }
     if (chuaThay()) return;
+    // mở tab NGAY trong cú bấm (không bị chặn cửa sổ bật lên); danh sách tài khoản (MK_KQ) chưa đọc ⇒ đọc rồi mới xin vé
     var w = window.open(urlNhu(p, n) + '&thayvao=1&chixem=1', '_blank');
     if (!w) return void baoToast('Trình duyệt chặn cửa sổ mới — cho phép cửa sổ bật lên rồi bấm lại.');
+    var m = null;
     var ve = null, loi = null, daGui = false;
     function traVe() {
       if (daGui || w.closed) return;
@@ -11131,7 +11130,17 @@ button.mk-em:hover{border-color:currentColor}
     }
     window.addEventListener('message', nghe);
     setTimeout(function () { window.removeEventListener('message', nghe); }, 120000);
-    hamDangNhapThay().then(function (fn) { return fn({ uid: m.uid, chiXem: true }); }).then(function (r) {
+    (MK_KQ ? Promise.resolve() : docMatKhau()).then(function () {
+      m = mkCua(p);
+      if (!m) {                                         // em chưa có tài khoản ⇒ kiểu cũ: chỉ trang bài, không mạng xã hội
+        daGui = true; window.removeEventListener('message', nghe);
+        baoToast('Em chưa có tài khoản — mở kiểu cũ: chỉ xem trang bài, không có mạng xã hội.');
+        try { w.location.replace(urlNhu(p, n)); } catch (x) { }
+        return null;
+      }
+      return hamDangNhapThay();
+    }).then(function (fn) { return fn ? fn({ uid: m.uid, chiXem: true }) : null; }).then(function (r) {
+      if (!m) return;
       ve = (r && r.data) || null;
       if (!ve || !ve.token) throw new Error('Hàm không trả vé.');
       NK = null;
@@ -11143,6 +11152,12 @@ button.mk-em:hover{border-color:currentColor}
       traVe();
     });
   }
+  window.qlXemNhuEm = function (ma, maLop) {
+    var k = A.chuanMa(ma);
+    var p = dsNguoi().filter(function (x) { return x.khoa === k; })[0];
+    if (!p) return void window.open('lop.html?nhu=' + encodeURIComponent(ma), '_blank');
+    hsoXemNhu(p, maLop);
+  };
   function hsoVaoThay(p) {
     var o = $('#hsoThay'), tin = $('#hsoThayTin');
     if (!o) return;

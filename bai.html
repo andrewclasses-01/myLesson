@@ -2055,7 +2055,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=171"></script>
+<script src="config.js?v=172"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
@@ -3687,7 +3687,7 @@ function veWsThanh(hop){
   if (WS_THANH.khoa !== khoa) { WS_THANH.khoa = khoa; wsDungBang(ds); }
   wsCapNhatThanh();
   if (!hop.querySelector('.card')) {
-    hop.appendChild(wsTheChiDuong('Bài này là bài <b>WORKSHEET</b> — bấm khối WORKSHEET ở đầu trang để tải bài và nộp bài làm.'));
+    hop.appendChild(wsTheChiDuong('Bài tập của lớp hôm nay là bài tập giấy - bấm nút <b>WORKSHEET</b> ở đầu trang để tải bài tập.'));
     if (!WS_THANH.tuMo) { WS_THANH.tuMo = true; setTimeout(function(){ wsMoBang(true); }, 250); }
   }
   /* Ảnh giấy trên khối + dải xem trước: nạp NGẦM sau khi trang yên (PDF ~vài trăm KB). */

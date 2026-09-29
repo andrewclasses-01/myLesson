@@ -1664,7 +1664,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=171"></script>
+<script src="config.js?v=172"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
@@ -2595,7 +2595,8 @@ function xepCaLop(b){
   var caLop = b.caLop || CA_LOP;   /* v1.95.0 — sĩ số riêng của thẻ */
 
   var xong = caLop.filter(function(t){ return !conThieu[t]; }).map(function(t){
-    return { ten:t, du:true, phu:'hoàn thành' };
+    /* v1.185.0 — bài WORKSHEET (giấy): không có act để "hoàn thành" ⇒ chữ "đã nhận bài" */
+    return { ten:t, du:true, phu: b.loai === 'wsheet' ? 'đã nhận bài' : 'hoàn thành' };
   });
 
   /* ⛔ Đừng trông vào thứ tự vào mảng: `b.thieu` dựng từ `Object.keys()` nên

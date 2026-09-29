@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-28 22:39:53",
+  "capNhat": "2026-09-29 19:24:03",
   "bai": {
     "A1C": [
       {
@@ -181,6 +181,68 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_27.9_STAGE_IEL-S15.T4.P2",
+        "tieuDe": "B2A_27.9_STAGE IEL-S15.T4.P2",
+        "tenHien": "B2A_27.9_STAGE IEL-S15.T4.P2",
+        "dang": "STAGE",
+        "ngay": "27.9",
+        "han": "2026-10-04T14:00",
+        "maLesson": "IEL-S15.T4.P2",
+        "taoLuc": "2026-09-29",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "p77uz9",
+            "mau": "ANAGRAM",
+            "han": "2026-10-01T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "fybmu5",
+            "mau": "QUIZ",
+            "han": "2026-10-03T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "x4scsz",
+            "mau": "CROSSWORD",
+            "han": "2026-10-03T00:00"
+          },
+          {
+            "loai": "ws",
+            "ten": "IEL-S15.T4.P2",
+            "o": 3,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB2A%2FB2A_27.9_STAGE_IEL-S15.T4.P2%2F3.pdf?alt=media",
+            "soTrang": 3
+          },
+          {
+            "loai": "nghe",
+            "ten": "DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "IEL-S15.T4.P2",
+            "han": "2026-10-04T14:00"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "IEL-S15.T4.P2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "ug3y56",
+            "mau": "QUIZ",
+            "han": "2026-10-04T14:00"
+          }
+        ]
+      },
       {
         "id": "B2A_26.9_WORDS_IEL-S15.T4.P2",
         "tieuDe": "B2A_26.9_WORDS IEL-S15.T4.P2",

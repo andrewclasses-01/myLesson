@@ -2317,18 +2317,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .cx-menu button.bo{font-size:14px; color:var(--nhat); font-weight:800}
 .chat-foot{flex:none; display:flex; gap:8px; align-items:flex-end; padding:11px 14px;
   border-top:1px solid var(--vien)}
-.chat-foot textarea{
-  flex:1; min-width:0; resize:none; max-height:120px; padding:9px 13px;
-  border-radius:12px; border:1px solid var(--vien-dam); color:var(--chu);
-  font:600 13px/1.5 var(--font);
-}
-.chat-foot textarea:focus{outline:none; border-color:var(--xanh)}
-.chat-foot button{flex:none; width:42px; height:38px; border-radius:12px;
-  border:0; background:var(--xanh); color:#fff; display:flex;
-  align-items:center; justify-content:center}
-.chat-foot button:hover{filter:brightness(1.08)}
-.chat-foot button[disabled]{opacity:.5; pointer-events:none}
-.chat-foot button svg{width:17px; height:17px; fill:currentColor}
+/* v1.186.0 — ô nhập + nút gửi nay do css/chat-ui.css lo (khuôn chat kiểu Zalo). */
 
 /* ================================================================
    SIDEBAR — bấm avatar mở bảng trượt từ trái: Quản lý mã · Thiết lập
@@ -2995,6 +2984,8 @@ button.mk-em:hover{border-color:currentColor}
 .sn-chan{margin:10px 0 0 !important; font-size:12px !important; color:var(--nhat) !important}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=7">
+<!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
+<link rel="stylesheet" href="css/chat-ui.css?v=1">
 </head>
 <body>
 
@@ -3111,10 +3102,8 @@ button.mk-em:hover{border-color:currentColor}
       <div class="khoi-than">
         <div class="chat-body" id="chatBody"></div>
         <div class="chat-foot">
-          <textarea id="chatO" rows="1" maxlength="300" placeholder="Nhắn tin…"></textarea>
-          <button id="chatGui" title="Gửi">
-            <svg viewBox="0 0 512 512"><path d="M40.5 17.6C30 12.6 17.5 21.5 20.2 32.9L62.8 213.6C64.2 219.6 69.3 224 75.4 224.5L246 238.6C255.4 239.4 255.4 272.6 246 273.4L75.4 287.5C69.3 288 64.2 292.4 62.8 298.4L20.2 479.1C17.5 490.5 30 499.4 40.5 494.4L480.5 282.4C492 276.9 492 235.1 480.5 229.6Z"/></svg>
-          </button>
+          <!-- ⭐ v1.186.0 — ô nhập khuôn chat kiểu Zalo (js/chat-ui.js dựng nút emoji/gửi quanh) -->
+          <div class="cu-o" id="chatO" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nhập tin nhắn" data-ph="Aa" spellcheck="false"></div>
         </div>
       </div>
     </section>
@@ -3238,9 +3227,6 @@ button.mk-em:hover{border-color:currentColor}
 <!-- ⭐ v1.138.0 — chụp ảnh cả hộp (đúp "Thầy Andrew"), xem `hqChupHop` -->
 <div class="chup-nhay" id="chupNhay"></div><div class="chup-xem" id="chupXem"></div><div class="chup-bao" id="chupBao"></div>
 
-<!-- ⭐ 28/08 — cụm thả cảm xúc (port từ lop.html), dùng chung cho hộp chat GV -->
-<div class="cx-menu" id="cxMenu"></div>
-<div class="cx-ai" id="cxAi"></div>
 
 <!-- ⭐ v1.34.0 — menu ⚙ Cài đặt thẻ (dải icon trong khu vực điểm mỗi thẻ bài, xem `.diem-ic`) -->
 <!-- ⭐ v1.36.0 (thầy chốt 02/09) — 4 mục CHỮ NGẮN + ICON NÉT; RUỘT CỦA CẢ 4 NÚT
@@ -3383,11 +3369,12 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=172"></script>
+<script src="config.js?v=173"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
-<script src="js/chat.js?v=28"></script>
+<script src="js/chat.js?v=29"></script>
+<script src="js/chat-ui.js?v=1"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -8363,38 +8350,30 @@ button.mk-em:hover{border-color:currentColor}
   var TIN_SONG = [], TIN_CU = [], hetCu = false, dangTaiCu = false;
   function gopTin(){ TIN = TIN_CU.concat(TIN_SONG); }
 
-  // ⭐ 28/08 — GV luôn xoá được MỌI tin (không riêng của mình — khác học sinh).
-  function coTheXoaTin(t) { return !!t.id; }
-  function xoaCumHtml(t) {
-    return coTheXoaTin(t)
-      ? '<span class="xoa-cum">' +
-          '<button class="nut-xoa-tin" type="button" data-xoa-mo title="Xoá tin nhắn">⁝</button>' +
-          '<button class="nut-xoa-that" type="button" data-xoa="' + A.chuAnToan(t.id) + '">Xoá</button>' +
-        '</span>'
-      : '';
-  }
-  function veTinDb(t, i, lopSlug) {
-    var laToi = t.vaiTro === 'gv';
-    var bong = '<div class="bong">' + A.chuAnToan(t.chu) + xoaCumHtml(t) + '</div>';
-    var gio = AWChat.chuGio(t.luc);
-    var cumCx = veCumCx(i);
-    var av = laToi
-      ? '<span class="av" style="background:var(--xanh)">GV<img src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>'
-      : veAv(t.ten, lopSlug);
-    if (laToi) {
-      return '<div class="msg toi" data-i="' + i + '">' + av +
-        '<div class="msg-c">' +
-          '<div class="hang-bong">' + cumCx + bong + '</div>' +
-          '<div class="gio-duoi">' + A.chuAnToan(gio) + '</div>' +
-        '</div></div>';
-    }
-    return '<div class="msg" data-i="' + i + '">' + av +
-      '<div class="msg-c">' +
-        '<div class="msg-top"><span class="n">' + A.chuAnToan(t.ten) + '</span>' +
-        '<span class="t">' + A.chuAnToan(gio) + '</span></div>' +
-        '<div class="hang-bong">' + bong + cumCx + '</div>' +
-      '</div></div>';
-  }
+  /* ⭐⭐ v1.186.0 (thầy chốt mẫu "bản 12", 30/09/2026) — KHUÔN CHAT KIỂU ZALO DÙNG CHUNG với lop.html/khoa.html
+     (js/chat-ui.js + css/chat-ui.css). GV chỉ khác: thu hồi + XOÁ HẲN được mọi tin, và cảm xúc ghi khoá 'GV'.
+     Bản vẽ tay cũ (veTinDb, cụm cảm xúc, cụm xoá 2 bước) đã bỏ. */
+  var UI_CHAT = ChatUI.tao({
+    khung: $('#chatBody'), chan: document.querySelector('.cot-chat .chat-foot'), idNhap: 'chatO',
+    toi: { khoa: 'GV', ten: 'Thầy Andrew' }, laThay: true,
+    laCuaToi: function (t) { return t.vaiTro === 'gv'; },
+    av: function (t) {
+      if (t.vaiTro === 'gv') return '<span class="av" style="background:var(--xanh)">GV<img src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
+      var l = A.lopTheoMa(DL, LOP_CHON);
+      return veAv(String(t.ten || '?'), avSlugLop((l && l.tenGoc) || LOP_CHON));
+    },
+    dsNhac: function () { var l = A.lopTheoMa(DL, LOP_CHON) || {}; return (l.hocSinh || []).map(function (h) { return h.ten; }); },
+    gui: function (g) {
+      if (chuaThay(null)) return Promise.reject('__im');
+      return AWChat.gui(LOP_CHON, Object.assign({ ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv' }, g));
+    },
+    datCx: function (t, gt) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.datCx(LOP_CHON, t.id, 'GV', gt); },
+    thuHoi: function (t) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.thuHoi(LOP_CHON, t.id, true); },
+    xoa: function (t) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.xoa(LOP_CHON, t.id); },
+    loi: function (e) { if (e === '__im') return; baoToast(typeof e === 'string' ? e : AWChat.chuLoi(e)); },
+    trong: 'Lớp này chưa có tin nhắn nào.<br>Thầy nhắn câu đầu tiên nhé.',
+    veLaiTuKho: function () { veChat(); }
+  });
   /* ⭐ v1.80.0 — DÒ "MỘT MÁY NHIỀU MÃ".
      Gom các tin ĐANG HIỆN theo dấu máy; máy nào gắn với từ 2 mã học sinh trở
      lên thì trả về để cảnh báo. Tin của thầy (`vaiTro==='gv'`) bỏ qua — thầy
@@ -8445,28 +8424,8 @@ button.mk-em:hover{border-color:currentColor}
     return '';
   }
   function veChat() {
-    var hop = $('#chatBody');
-    if (!TIN.length) {
-      hop.innerHTML = '<div class="chat-cho">Lớp này chưa có tin nhắn nào.<br>' +
-        'Thầy nhắn câu đầu tiên nhé.</div>';
-      return;
-    }
-    var l = A.lopTheoMa(DL, LOP_CHON);
-    var lopSlug = avSlugLop((l && l.tenGoc) || LOP_CHON);
-    var oDay = (hop.scrollHeight - hop.scrollTop - hop.clientHeight) < 60;
-    /* ⛔ Dải cảnh báo đứng TRƯỚC danh sách tin, nhưng `data-i` của mỗi tin vẫn
-       là chỉ số trong TIN (veTinDb tự đặt) nên cụm cảm xúc/xoá không lệch. */
-    hop.innerHTML = veDauTrangCu() + veCanhBaoMay(TIN) +
-      TIN.map(function (t, i) { return veTinDb(t, i, lopSlug); }).join('');
-    if (oDay) {
-      // ⛔ Phòng hờ như bên lop.html: nếu sau này `.chat-body` bên đây cũng
-      // có scroll-behavior:smooth thì cú "về đáy" vẫn phải TỨC THÌ, không đi
-      // ngang mốc <60px của taiThemCu() mà tự bắn tải thêm oan.
-      var kieuCuonCu = hop.style.scrollBehavior;
-      hop.style.scrollBehavior = 'auto';
-      hop.scrollTop = hop.scrollHeight;
-      hop.style.scrollBehavior = kieuCuonCu;
-    }
+    /* ⛔ Dải cảnh báo "một máy nhiều mã" đứng TRƯỚC danh sách tin (xem mayNhieuMa). */
+    UI_CHAT.ve(TIN, veDauTrangCu() + veCanhBaoMay(TIN));
   }
 
   // Kéo lên sát đầu `#chatBody` → tải thêm TOI_DA_TIN_THEM tin cũ hơn, MỘT
@@ -8501,112 +8460,8 @@ button.mk-em:hover{border-color:currentColor}
     if (this.scrollTop < 60) taiThemCu();
   });
 
-  // ---------- CỤM THẢ CẢM XÚC (port nguyên văn từ lop.html) ----------
-  // GV thả cảm xúc y hệt học sinh: khoá 'GV' + tên hiển thị 'Thầy Andrew'.
-  var CX_MA = 'GV', CX_TEN = 'Thầy Andrew';
-  var CAM_XUC = [
-    { ma: 'tim', ky: '❤️' }, { ma: 'haha', ky: '😆' }, { ma: 'khoc', ky: '😢' },
-    { ma: 'gaCon', ky: '🐥' }, { ma: 'ngac', ky: '😮' }, { ma: 'like', ky: '👍' }
-  ];
-  function kyHieuCx(ma) {
-    for (var i = 0; i < CAM_XUC.length; i++) if (CAM_XUC[i].ma === ma) return CAM_XUC[i].ky;
-    return '';
-  }
-  var GIU_MS = 420;
-  var cxTin = null, henGiu = null, daGiu = false;
-  $('#cxMenu').innerHTML = CAM_XUC.map(function (c) {
-    return '<button type="button" data-cx="' + c.ma + '" title="' + c.ma + '">' + c.ky + '</button>';
-  }).join('') + '<button type="button" class="bo" data-cx="" title="Bỏ cảm xúc">✕</button>';
-  function dsCx(i) {
-    var m = (TIN[i] && TIN[i].cx) || {};
-    return Object.keys(m).map(function (k) { return { ten: m[k].ten, ma: m[k].ma }; });
-  }
-  function cxCuaToi(i) {
-    var m = (TIN[i] && TIN[i].cx) || {};
-    return (m[CX_MA] && m[CX_MA].ma) || '';
-  }
-  function chiSoTin(nut) {
-    var m = nut.closest('.msg');
-    return m ? parseInt(m.getAttribute('data-i'), 10) : null;
-  }
-  function veCumCx(i) {
-    var ds = dsCx(i);
-    var dem = {};
-    ds.forEach(function (e) { dem[e.ma] = (dem[e.ma] || 0) + 1; });
-    var o = '<span class="ky' + (dem['tim'] ? '' : ' mo') + '">' + kyHieuCx('tim') + '</span>';
-    var loai = CAM_XUC.filter(function (c) { return c.ma !== 'tim' && dem[c.ma]; });
-    o += loai.map(function (c) { return '<span class="ky">' + c.ky + '</span>'; }).join('');
-    var trung = CAM_XUC.some(function (c) { return dem[c.ma] > 1; });
-    if (trung) o += '<span class="dem">' + ds.length + '</span>';
-    var soO = 1 + loai.length + (trung ? 1 : 0);
-    var lop = 'nut-cx' + (ds.length ? ' co' : '') +
-      (cxCuaToi(i) === 'tim' ? ' tim-toi' : '') + (soO > 4 ? ' nhieu' : '');
-    var nhan = ds.length ? 'Xem ai đã thả cảm xúc' : 'Thả tim';
-    return '<button class="' + lop + '" type="button" title="' + nhan + '" aria-label="' + nhan + '">' +
-      o + '</button>';
-  }
-  function veLaiCum(i) {
-    var msg = $('#chatBody').querySelector('.msg[data-i="' + i + '"]');
-    var cu = msg && msg.querySelector('.nut-cx');
-    if (cu) cu.outerHTML = veCumCx(i);
-  }
-  function datCxToi(i, ma) {
-    var t = TIN[i];
-    var cuTruoc = t.cx && t.cx[CX_MA];
-    var m = t.cx || (t.cx = {});
-    if (ma) m[CX_MA] = { ma: ma, ten: CX_TEN }; else delete m[CX_MA];
-    veLaiCum(i);
-    if (!t.id) return;
-    AWChat.suaCx(LOP_CHON, t.id, CX_MA, ma, CX_TEN)['catch'](function (e) {
-      if (cuTruoc) m[CX_MA] = cuTruoc; else delete m[CX_MA];
-      veLaiCum(i);
-      baoToast(AWChat.chuLoi(e));
-    });
-  }
-  function moPopCx(nut, i) {
-    var ds = dsCx(i);
-    if (!ds.length) return;
-    var xep = [];
-    CAM_XUC.forEach(function (c) {
-      ds.forEach(function (e) { if (e.ma === c.ma) xep.push({ ten: e.ten, ky: c.ky }); });
-    });
-    var o = $('#cxAi');
-    o.innerHTML = xep.map(function (e) {
-      return '<div class="d' + (e.ten === CX_TEN ? ' toi' : '') + '">' +
-        '<span class="k">' + e.ky + '</span>' +
-        '<span class="t">' + A.chuAnToan(e.ten) + '</span>' +
-      '</div>';
-    }).join('');
-    o.classList.add('mo');
-    datChoCxAi(o, nut);
-  }
-  function datChoCxAi(o, nut) {
-    var r = nut.getBoundingClientRect(), h = o.getBoundingClientRect();
-    var rong = document.documentElement.clientWidth;
-    var x = r.left + r.width / 2 - h.width / 2;
-    x = Math.max(8, Math.min(x, rong - h.width - 8));
-    var y = r.bottom + 6;
-    if (y + h.height > window.innerHeight - 8) y = r.top - h.height - 6;
-    o.style.left = Math.round(x) + 'px';
-    o.style.top = Math.round(y) + 'px';
-  }
-  function dongPopCx() { $('#cxAi').classList.remove('mo'); }
-  function moBangCx(nut) {
-    var m = $('#cxMenu');
-    cxTin = chiSoTin(nut);
-    m.classList.add('mo');
-    var r = nut.getBoundingClientRect(), mr = m.getBoundingClientRect();
-    var x = r.left + r.width / 2 - mr.width / 2;
-    x = Math.max(8, Math.min(x, document.documentElement.clientWidth - mr.width - 8));
-    var y = r.top - mr.height - 8;
-    if (y < 8) y = r.bottom + 8;
-    m.style.left = Math.round(x) + 'px';
-    m.style.top = Math.round(y) + 'px';
-  }
-  function dongBangCx() { $('#cxMenu').classList.remove('mo'); cxTin = null; }
-
   // ⭐ v1.32.0 — menu ⚙ Cài đặt thẻ (`#rcMenu`, một menu dùng chung cho mọi
-  // thẻ bài, định vị lại mỗi lần mở — cùng nếp với `moBangCx()` ở trên).
+  // thẻ bài, định vị lại mỗi lần mở).
   // ⭐ v1.36.0 — ICON NÉT cho menu ⚙ (thay 4 emoji). Cùng bộ nét với icon khắp
   // trang: viewBox 24, `fill:none`, màu ăn theo `currentColor` (xem CSS
   // `.rc-menu button svg`) — nên mục "Xoá" tự đỏ theo `.nguy`.
@@ -9027,27 +8882,12 @@ button.mk-em:hover{border-color:currentColor}
     baoToast(chu || 'Đã xoá hẳn bài khỏi web ✓');
   };
 
-  $('#cxMenu').onclick = function (e) {
-    var b = e.target.closest('button');
-    if (!b || cxTin === null) return;
-    datCxToi(cxTin, b.getAttribute('data-cx'));
-    dongBangCx();
-  };
-
-  // ---------- CỤM XOÁ 2 BƯỚC (port từ lop.html): ⁝ → "Xoá" → confirm ----------
-  function dongXoaCum(tru) {
-    document.querySelectorAll('.xoa-cum.mo').forEach(function (c) {
-      if (c !== tru) c.classList.remove('mo');
-    });
-  }
-
   function noiChat() {
     var l = A.lopTheoMa(DL, LOP_CHON);
     $('#chatPhu').textContent = 'lớp ' + ((l && l.tenGoc) || LOP_CHON);
     $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
     TIN = []; TIN_CU = []; hetCu = false; dangTaiCu = false;   // đổi lớp, quên trang cũ đã tải
-    $('#chatO').disabled = false;
-    $('#chatGui').disabled = false;
+    UI_CHAT.khoa(false);
     AWChat.nghe(LOP_CHON, function (ds) {
       TIN_SONG = ds;
       gopTin();
@@ -9055,30 +8895,8 @@ button.mk-em:hover{border-color:currentColor}
       veDangNhapGanDay();   // ⭐ v1.33.0 — tin/cảm xúc mới cũng là dấu vết hoạt động
     }, function (e) {
       $('#chatBody').innerHTML = '<div class="chat-cho">' + A.chuAnToan(AWChat.chuLoi(e)) + '</div>';
-      $('#chatO').disabled = true;
-      $('#chatGui').disabled = true;
+      UI_CHAT.khoa(true, 'Chưa mở được phòng chat.');
     });
-  }
-
-  function guiChat() {
-    var o = $('#chatO');
-    var chu = o.value.trim();
-    if (!chu) return;
-    o.disabled = true;
-    $('#chatGui').disabled = true;
-    if (chuaThay(null)) { o.disabled = false; $('#chatGui').disabled = false; return; }
-    AWChat.gui(LOP_CHON, { ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', chu: chu })
-      .then(function () { o.value = ''; noOChat(); })
-      ['catch'](function (e) { baoToast(AWChat.chuLoi(e)); })
-      .then(function () {
-        o.disabled = false; $('#chatGui').disabled = false; o.focus();
-      });
-  }
-
-  function noOChat() {
-    var o = $('#chatO');
-    o.style.height = 'auto';
-    o.style.height = (o.scrollHeight + (o.offsetHeight - o.clientHeight)) + 'px';
   }
 
   // ⭐ Đợt D — "Lưu trữ & làm mới": chép nguyên tin đang có vào kho
@@ -9134,7 +8952,7 @@ button.mk-em:hover{border-color:currentColor}
                 var cuaThay = t.vaiTro === 'gv';
                 return '<div class="klt-tin' + (cuaThay ? ' toi' : '') + '">' +
                   '<b>' + A.chuAnToan(cuaThay ? 'Thầy Andrew' : t.ten) + '</b> ' +
-                  '<span>' + A.chuAnToan(t.chu) + '</span>' +
+                  '<span>' + A.chuAnToan(t.thuHoi ? '(tin đã thu hồi)' : (!window.ChatUI ? t.chu : (t.sticker ? ChatUI.tomTat(t) : ChatUI.chuThuong(t.chu)))) + '</span>' +
                 '</div>';
               }).join('') +
             '</div>' +
@@ -10059,60 +9877,9 @@ button.mk-em:hover{border-color:currentColor}
       if (window.adMoTheoTen) window.adMoTheoTen(LOP_CHON, b.getAttribute('data-av'));
     });
 
-    $('#chatGui').onclick = guiChat;
     $('#btnLuuTru').onclick = luuTruVaLamMoi;
 
-    // ⭐ 28/08 — cụm thả cảm xúc + cụm xoá 2 bước, port nguyên hành vi từ lop.html.
-    var khungChat = $('#chatBody');
-    khungChat.addEventListener('pointerdown', function (e) {
-      var nut = e.target.closest('.nut-cx');
-      if (!nut) return;
-      daGiu = false;
-      clearTimeout(henGiu);
-      henGiu = setTimeout(function () { daGiu = true; moBangCx(nut); }, GIU_MS);
-    });
-    khungChat.addEventListener('pointerup', function (e) {
-      var nut = e.target.closest('.nut-cx');
-      clearTimeout(henGiu);
-      if (!nut || daGiu) return;
-      var i = chiSoTin(nut);
-      if (i === null) return;
-      if (dsCx(i).length) moPopCx(nut, i); else datCxToi(i, 'tim');
-    });
-    khungChat.addEventListener('pointercancel', function () { clearTimeout(henGiu); });
-    khungChat.addEventListener('pointerleave', function () { clearTimeout(henGiu); });
-    khungChat.addEventListener('contextmenu', function (e) {
-      var nut = e.target.closest('.nut-cx');
-      if (!nut) return;
-      e.preventDefault();
-      moBangCx(nut);
-    });
-    khungChat.addEventListener('click', function (e) {
-      var mo = e.target.closest('[data-xoa-mo]');
-      if (mo) {
-        var cum = mo.closest('.xoa-cum');
-        var dangMo = cum.classList.contains('mo');
-        dongXoaCum(null);
-        cum.classList.toggle('mo', !dangMo);
-        return;
-      }
-      var nut = e.target.closest('[data-xoa]');
-      if (!nut) return;
-      var id = nut.getAttribute('data-xoa');
-      if (chuaThay(null)) return;
-      if (!id || !window.confirm('Xoá tin nhắn này?')) return;
-      nut.disabled = true;
-      AWChat.xoa(LOP_CHON, id)['catch'](function (err) {
-        nut.disabled = false;
-        baoToast(AWChat.chuLoi(err));
-      });
-    });
     document.addEventListener('pointerdown', function (e) {
-      if ($('#cxMenu').classList.contains('mo') &&
-        !e.target.closest('#cxMenu') && !e.target.closest('.nut-cx')) dongBangCx();
-      if ($('#cxAi').classList.contains('mo') &&
-        !e.target.closest('#cxAi') && !e.target.closest('.nut-cx')) dongPopCx();
-      if (!e.target.closest('.xoa-cum')) dongXoaCum(null);
       // ⭐ v1.36.0 — ba hộp nối nhau (menu ⚙ → hạn → xác nhận): bấm ra NGOÀI CẢ
       // BA mới đóng, kẻo bấm sang hộp bên cạnh là hộp kia tự tắt mất.
       // ⭐ v1.86.0 — menu ⚙ của hàng kho (`#khoMenu`) và nút mở nó (`[data-kho-menu]`)
@@ -10127,11 +9894,6 @@ button.mk-em:hover{border-color:currentColor}
         if ($('#hanPop').classList.contains('mo')) dongHanPop();
       }
     });
-    $('#chatO').oninput = noOChat;
-    /* Enter = gửi · Shift+Enter = xuống dòng. */
-    $('#chatO').onkeydown = function (e) {
-      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); guiChat(); }
-    };
 
     $('#chepDong').onclick = function () { $('#chepNen').hidden = true; };
     $('#chepNen').onclick = function (e) { if (e.target.id === 'chepNen') $('#chepNen').hidden = true; };
@@ -10162,9 +9924,8 @@ button.mk-em:hover{border-color:currentColor}
         [function () { return mo('#popNen'); }, dongPop],
         [function () { return mo('#bmHop'); }, dongBaiModal],
         [function () { return mo('#sbPanel'); }, dongSb],
-        [function () { return !$('#chepNen').hidden; }, function () { $('#chepNen').hidden = true; }],
-        [function () { return mo('#cxMenu') || mo('#cxAi'); }, function () { dongBangCx(); dongPopCx(); }],
-        [function () { return !!document.querySelector('.xoa-cum.mo'); }, function () { dongXoaCum(null); }]
+        [function () { return !$('#chepNen').hidden; }, function () { $('#chepNen').hidden = true; }]
+        // v1.186.0 — hộp nổi của khuôn chat (js/chat-ui.js) tự đóng bằng Esc ở pha capture, trước cả chuỗi này.
       ];
       for (var i = 0; i < lop.length; i++) if (lop[i][0]()) { lop[i][1](); return; }
     });

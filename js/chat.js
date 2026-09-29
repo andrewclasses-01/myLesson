@@ -225,7 +225,8 @@
             vaiTro: x.role === 'gv' ? 'gv' : 'hs',
             chu: x.text || '', luc: Number(x.createdAt) || 0,
             cx: x.cx || {},
-            may: x.may || ''            /* ⭐ v1.80.0 — rỗng với mọi tin cũ */
+            may: x.may || '',           /* ⭐ v1.80.0 — rỗng với mọi tin cũ */
+            q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true   /* v1.186.0 — khuôn chat kiểu Zalo */
           });
         });
         ds.reverse();                              // Firestore trả mới->cũ, ta hiện cũ->mới
@@ -272,7 +273,8 @@
           id: d.id, ten: x.name || '?', ma: x.code || '',
           vaiTro: x.role === 'gv' ? 'gv' : 'hs',
           chu: x.text || '', luc: Number(x.createdAt) || 0,
-          cx: x.cx || {}, may: x.may || ''
+          cx: x.cx || {}, may: x.may || '',
+          q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true
         });
       });
       ds.reverse();
@@ -294,7 +296,7 @@
   function gui(maLop, tin) {
     var chu = String(tin.chu || '').trim().slice(0, TOI_DA_CHU);
     if (!chu) return Promise.reject(new Error('trống'));
-    if (tin.vaiTro !== 'gv' && coLink(chu)) { var lLink = new Error('có link'); lLink.code = 'awc/co-link'; return Promise.reject(lLink); }
+    if (tin.vaiTro !== 'gv' && (coLink(chu) || (tin.q && coLink(tin.q.chu)))) { var lLink = new Error('có link'); lLink.code = 'awc/co-link'; return Promise.reject(lLink); }
     // v1.168.0 — tab "thầy đăng nhập thay em" (js/thay-vao.js): chat TẮT (tin sẽ mang tên em + dấu máy của thầy ⇒ chuông báo động nhầm).
     if (window.__thayVao && tin.vaiTro !== 'gv') { var lTv = new Error('thay-vao'); lTv.code = 'awc/thay-vao'; return Promise.reject(lTv); }
     return db().then(function (f) {
@@ -306,6 +308,10 @@
         text: chu,
         createdAt: (window.gioChuan ? window.gioChuan() : Date.now())   // v1.174.0 — giờ chuẩn (máy chủ), không theo đồng hồ máy em
       };
+      /* v1.186.0 (khuôn chat kiểu Zalo, js/chat-ui.js) — trả lời một tin (`q`) + sticker. Luật kho kiểm khuôn cả hai
+         (tools/dang-luat-chat-zalo.js). q.chu là bản CHÉP tin gốc ⇒ luật chặn link trong q.chu y như text. */
+      if (tin.q && tin.q.id) goc.q = { id: String(tin.q.id).slice(0, 40), ten: String(tin.q.ten || '').slice(0, 60), chu: String(tin.q.chu || '').slice(0, 120) };
+      if (tin.sticker && /^[a-z]{2,8}:[a-z0-9-]{2,24}$/.test(String(tin.sticker))) goc.sticker = String(tin.sticker);
       /* (27/09/2026, sau tấn công Tr0ngX) Luật BẮT BUỘC dấu máy ⇒ bỏ ĐƯỜNG LÙI
          "gửi lại không kèm dấu máy" (v1.80.0) — gửi lại kiểu đó nay chắc chắn bị từ chối.
          Kho từ chối thì đổi thành lỗi dễ hiểu cho học sinh (xem chuLoi). */
@@ -394,6 +400,36 @@
     });
   }
 
+  /* ⭐ v1.186.0 — CẢM XÚC KIỂU ZALO: mỗi người MỘT ô `cx.<khoá>` = {ten, luc, n:{tim:3,haha:1,…}, l:'loại thả mới nhất'}.
+     Thả nhiều lần, nhiều loại; mỗi loại tối đa 10 (luật kho chặn thật). `giaTri` null = gỡ hết cảm xúc của người đó.
+     Ô cũ {ma, ten, luc} vẫn đọc được (js/chat-ui.js cxChuan). `luc` giữ nguyên vai trò "hoạt động gần đây" của dashboard. */
+  function datCx(maLop, tinId, maNguoi, giaTri) {
+    var khoa = String(maNguoi || '').replace(/[.$#[\]/]/g, '_');
+    if (!khoa) return Promise.reject(new Error('thieu-ma-nguoi'));
+    if (window.__thayVao && khoa !== 'GV') { var lTv = new Error('thay-vao'); lTv.code = 'awc/thay-vao'; return Promise.reject(lTv); }
+    var choPhien = (khoa !== 'GV' && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
+    return choPhien.then(db).then(function (f) {
+      var patch = {};
+      if (giaTri && giaTri.n) {
+        var n = {};
+        ['tim', 'haha', 'khoc', 'gian', 'wow', 'timVo'].forEach(function (k) { var x = Math.floor(Number(giaTri.n[k]) || 0); if (x > 0) n[k] = Math.min(10, x); });
+        patch['cx.' + khoa] = { ten: String(giaTri.ten || '?').slice(0, 60), luc: (window.gioChuan ? window.gioChuan() : Date.now()), n: n, l: n[giaTri.l] ? giaTri.l : (Object.keys(n)[0] || '') };
+      } else patch['cx.' + khoa] = f.fs.deleteField();
+      return f.fs.updateDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId), patch);
+    });
+  }
+
+  /* ⭐ v1.186.0 — THU HỒI: tin còn chỗ trong phòng; chữ + trích + sticker + cảm xúc xoá sạch, hiện "Tin nhắn đã bị thu hồi".
+     Học sinh thu hồi tin CỦA MÌNH (luật: đăng nhập đúng mã người gửi); thầy thu hồi mọi tin. Xoá hẳn vẫn là `xoa()` (chỉ thầy). */
+  function thuHoi(maLop, tinId, laThayGoi) {
+    if (window.__thayVao && !laThayGoi) { var lTv = new Error('thay-vao'); lTv.code = 'awc/thay-vao'; return Promise.reject(lTv); }
+    var choPhien = (!laThayGoi && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
+    return choPhien.then(db).then(function (f) {
+      return f.fs.updateDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId),
+        { thuHoi: true, text: '', cx: {}, q: f.fs.deleteField(), sticker: f.fs.deleteField() });
+    });
+  }
+
   // Xoá MỘT tin. Không có đăng nhập thật nên trang gọi hàm này TỰ CHỊU TRÁCH
   // NHIỆM kiểm "ai được xoá tin nào" ở phía giao diện — xem đầu file.
   function xoa(maLop, tinId) {
@@ -414,7 +450,8 @@
              phòng chat thầy vẫn tra ngược được. Luật `classChatArchive` KHÔNG
              cần đổi: nó chỉ kiểm `tin is list`, không soi bên trong. */
           return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc,
-                   cx: t.cx || {}, may: t.may || '' };
+                   cx: t.cx || {}, may: t.may || '',
+                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi };   /* v1.186.0 */
         })
       });
     });
@@ -495,6 +532,7 @@
 
   window.AWChat = {
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
+    datCx: datCx, thuHoi: thuHoi,      /* ⭐ v1.186.0 — khuôn chat kiểu Zalo (js/chat-ui.js) */
     taiThem: taiThem, TOI_DA_TIN_THEM: TOI_DA_TIN_THEM,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU, coLink: coLink,

@@ -971,20 +971,7 @@ i.m-la{background:var(--m-la)}
 
 .chat-foot{flex:none; display:flex; align-items:center; gap:8px; padding:11px 12px;
   border-top:1px solid var(--line)}
-/* font-size 16px là NGƯỠNG CỨNG của iOS Safari: nhỏ hơn thì bấm vào ô nhập
-   là cả trang bị phóng to. Đừng hạ xuống cho "cân" — sẽ vỡ trải nghiệm. */
-.chat-foot textarea{flex:1; min-width:0; font:600 16px/1.45 var(--sans); color:var(--ink);
-  background:var(--ground); border:1.5px solid var(--line); border-radius:12px;
-  padding:9px 14px; outline:none; transition:border-color .15s;
-  resize:none; overflow-y:hidden}
-.chat-foot textarea:focus{border-color:var(--accent)}
-/* Nút gửi kiểu Messenger: chỉ mỗi icon máy bay giấy đặc, KHÔNG nền nút,
-   luôn nằm giữa theo chiều cao ô nhập (align-items:center ở .chat-foot). */
-.chat-foot button{flex:none; width:34px; height:34px; background:none;
-  display:grid; place-items:center; transition:transform .15s var(--em), opacity .15s}
-.chat-foot button:hover{transform:scale(1.12)}
-.chat-foot button:active{transform:scale(.94)}
-.chat-foot button svg{width:24px; height:24px; fill:var(--accent)}
+/* v1.186.0 — ô nhập + nút gửi nay do css/chat-ui.css lo (font 16px trên điện thoại vẫn giữ, xem .cu-o). */
 
 /* ---------- SIDEBAR ---------- */
 .phu-mo{position:fixed; inset:0; z-index:40; background:rgba(22,35,42,.34);
@@ -1503,8 +1490,6 @@ body.mo-menu .side.trai{transform:none}
   .msg .av{width:28px; height:28px; font-size:11px; margin-top:13px}
   .msg.toi .av{margin-top:0}
   .chat-foot{padding:9px 10px}
-  .chat-foot textarea{padding:7px 12px}
-  .chat-foot button{width:40px}
 
   .thu{left:8px; right:8px; bottom:8px}
   .thu-hang{justify-content:center; flex-wrap:wrap}
@@ -1537,6 +1522,8 @@ body.mo-menu .side.trai{transform:none}
   letter-spacing:.08em; vertical-align:1px}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=7">
+<!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
+<link rel="stylesheet" href="css/chat-ui.css?v=1">
 </head>
 <body>
 
@@ -1563,25 +1550,14 @@ body.mo-menu .side.trai{transform:none}
     </div>
     <div class="chat-body" id="khungChat"></div>
     <div class="chat-foot">
-      <!-- textarea (không phải input) để tin dài tự xuống dòng, xem được trọn
-           vẹn trước khi gửi. rows=1, JS tự nới cao theo nội dung. -->
-      <textarea id="oChat" rows="1" maxlength="300"
-        placeholder="Nhắn gì đó cho cả lớp..."></textarea>
-      <!-- v17: máy bay giấy ĐẶC nằm ngang, mũi nhọn sang phải, cạnh trái có
-           khấc lõm — vẽ lại theo đúng ảnh mẫu thầy gửi; màu đổi sang xanh
-           ngọc của app thay vì đen. -->
-      <button id="nutGui" title="Gửi">
-        <svg viewBox="0 0 512 512"><path d="M40.5 17.6C30 12.6 17.5 21.5 20.2 32.9L62.8 213.6C64.2 219.6 69.3 224 75.4 224.5L246 238.6C255.4 239.4 255.4 272.6 246 273.4L75.4 287.5C69.3 288 64.2 292.4 62.8 298.4L20.2 479.1C17.5 490.5 30 499.4 40.5 494.4L480.5 282.4C492 276.9 492 235.1 480.5 229.6Z"/></svg>
-      </button>
+      <!-- ⭐ v1.186.0 — ô nhập KHUÔN CHAT KIỂU ZALO (js/chat-ui.js dựng nút emoji/gửi quanh ô này): contenteditable để
+           chèn được HÌNH emoji. Có sẵn trong HTML vì phần đo bàn phím phía trên gắn sự kiện focus vào #oChat. -->
+      <div class="cu-o" id="oChat" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nhập tin nhắn" data-ph="Aa" spellcheck="false"></div>
     </div>
   </aside>
   </div>
 </div>
 
-<!-- Bảng chọn cảm xúc (hiện khi GIỮ nút tim) -->
-<div class="cx-menu" id="cxMenu"></div>
-<!-- Danh sách ai thả cảm xúc gì (hiện khi chạm vào cụm đã có cảm xúc) -->
-<div class="cx-ai" id="cxAi"></div>
 
 <div class="phu-mo" id="phuMo"></div>
 
@@ -1664,12 +1640,13 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=172"></script>
+<script src="config.js?v=173"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
 <script src="js/nw-phien.js?v=6"></script>
-<script src="js/chat.js?v=28"></script>
+<script src="js/chat.js?v=29"></script>
+<script src="js/chat-ui.js?v=1"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=4"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -3615,7 +3592,7 @@ window.addEventListener('load', spCanSub);
 window.addEventListener('resize', spCanSub);
 
 document.addEventListener('keydown', function(e){
-  if (e.key === 'Escape') { dongHet(); dongPop(); dongBangCx(); dongPopCx(); dongXoaCum(null); spThoi(); }
+  if (e.key === 'Escape') { dongHet(); dongPop(); if (window.ChatUI) ChatUI.dongHet(); spThoi(); }
 });
 
 /* ═══════════════ SP CHECK — MỞ THẲNG PHÒNG CHẤM mySpeaking ═══════════════
@@ -4416,103 +4393,61 @@ function capNhatTheSpeakingGas(){
    xem `js/chat.js` (kèm đoạn LUẬT FIRESTORE thầy cần dán một lần).
    ⛔ Chưa dán luật thì khung báo hiền một dòng, KHÔNG để trống trơn khiến em
    nào cũng tưởng "lớp chưa ai nhắn gì". */
-var TIN_MAU = [];          /* tin đang hiện = TIN_CU nối TIN_SONG (giữ tên cũ
-                              cho các hàm cảm xúc bên dưới không phải sửa) */
-// ⭐ "Kéo lên tải thêm" (15/09/2026) — TIN_SONG là phần SỐNG do AWChat.nghe()
-// đổ về (luôn đúng TOI_DA_TIN tin gần nhất, tự cập nhật); TIN_CU là các trang
-// tin CŨ HƠN đã tải thêm bằng AWChat.taiThem() — TĨNH, không tự cập nhật, chỉ
-// đổi khi kéo lên tải thêm nữa. Xem khối "QUY ĐỊNH GIAO DIỆN KHUNG CHAT" +
-// nghiên cứu phân trang ở đầu `js/chat.js`.
+var TIN_MAU = [];          /* tin đang hiện = TIN_CU nối TIN_SONG */
+// ⭐ "Kéo lên tải thêm" (15/09/2026) — TIN_SONG là phần SỐNG do AWChat.nghe() đổ về (30 tin gần nhất, tự cập nhật);
+// TIN_CU là các trang CŨ HƠN tải thêm bằng AWChat.taiThem() — TĨNH. Xem đầu `js/chat.js`.
 var TIN_SONG = [], TIN_CU = [], hetCu = false, dangTaiCu = false;
 function gopTinMau(){ TIN_MAU = TIN_CU.concat(TIN_SONG); }
-
-// ⭐ v1.52.0 (gói bảo mật C) — CHỈ THẦY xoá được tin (luật Firestore `delete: if laThay()`).
-// Trước (Đợt D) em tự xoá tin của mình được; nay luật chặn ⇒ giấu nút kẻo bấm là 403.
-// Em tự xoá tin của mình: để đợt sau khi có đăng nhập học sinh.
-function coTheXoaTin(t){
-  return !!(t.id && MA_HS === 'GV');
-}
-function veTin(t, i){
-  var laToi = !!(t.ma && MA_HS && t.ma === MA_HS);
-  var laThay = t.vaiTro === 'gv';
-  // ⭐ 28/08 — cụm xoá nằm NGAY TRONG bong bóng (xem CSS `.xoa-cum`): bấm ⁝ mới
-  // hiện chữ "Xoá", bấm "Xoá" mới ra hộp confirm (không đổi — xem trình nghe
-  // click bên dưới). Không xoá được thì bỏ hẳn cụm, không vẽ ⁝ vô nghĩa.
-  var xoaCum = coTheXoaTin(t)
-    ? '<span class="xoa-cum">' +
-        '<button class="nut-xoa-tin" type="button" data-xoa-mo title="Xoá tin nhắn">⁝</button>' +
-        '<button class="nut-xoa-that" type="button" data-xoa="' + chuAnToan(t.id) + '">Xoá</button>' +
-      '</span>'
-    : '';
-  var bong = '<div class="bong">' + chuAnToan(t.chu) + xoaCum + '</div>';
-  var gio = AWChat.chuGio(t.luc);
-  // ⭐ #8 — cụm thả cảm xúc CHƯA TỪNG được vẽ vào tin nhắn (chỉ có hàm vẽ LẠI
-  // `veLaiCum`, không có lần vẽ ĐẦU) — nay gắn thẳng vào đây mới thật sự dùng
-  // được. `veCumCx` đọc `TIN_MAU[i].cx` nên phải gọi SAU khi TIN_MAU đã có `t`.
-  var cumCx = veCumCx(i);
-
-  if (laToi) {
-    return '<div class="msg toi" data-i="' + i + '">' + veAv(t.ten, i) +
-      '<div class="msg-c">' +
-        '<div class="hang-bong">' + cumCx + bong + '</div>' +
-        '<div class="gio-duoi">' + chuAnToan(gio) + '</div>' +
-      '</div></div>';
-  }
-  return '<div class="msg' + (laThay ? ' cua-thay' : '') + '" data-i="' + i + '">' +
-    veAv(t.ten, i) +
-    '<div class="msg-c">' +
-      '<div class="msg-top"><span class="n">' + chuAnToan(t.ten) +
-        (laThay ? ' <b class="nhan-thay">THẦY</b>' : '') + '</span>' +
-      '<span class="t">' + chuAnToan(gio) + '</span></div>' +
-      '<div class="hang-bong">' + bong + cumCx + '</div>' +
-    '</div></div>';
-}
-
 var khung = $('#khungChat');
 
-// ⭐ Dải nhỏ ở ĐẦU khung: "Đang tải tin cũ hơn…" trong lúc taiThemCu() đang
-// chờ kho trả lời, hoặc "— Đã đến tin đầu tiên —" khi hết lịch sử phòng.
-// KHÔNG tính vào TIN_MAU nên `data-i` của các tin vẫn đúng chỉ số cũ.
+/* ⭐⭐ v1.186.0 (thầy chốt mẫu "bản 12", 30/09/2026) — KHUÔN CHAT KIỂU ZALO DÙNG CHUNG: js/chat-ui.js + css/chat-ui.css.
+   Vẽ tin, cảm xúc (thả nhiều lần, 6 loại, tối đa 10/loại), trả lời, thu hồi, ô nhập có hình emoji, @ nhắc tên,
+   khay emoji/sticker, giữ tin trên điện thoại — TẤT CẢ nằm trong chat-ui.js, trang này chỉ nối vào kho (AWChat).
+   Bản vẽ tay cũ (veTin/cụm cảm xúc/cụm xoá) đã bỏ — cùng lúc ở lop.html, khoa.html, dashboard.html. */
+function soMauAv(ten){ var s = 0; ten = String(ten || ''); for (var i = 0; i < ten.length; i++) s += ten.charCodeAt(i); return s; }
+var UI_CHAT = ChatUI.tao({
+  khung: khung, chan: document.querySelector('.chat-foot'), idNhap: 'oChat',
+  toi: { get khoa(){ return MA_HS; }, get ten(){ return TOI; } },
+  get laThay(){ return MA_HS === 'GV'; },
+  laCuaToi: function(t){ return !!(t.ma && MA_HS && t.ma === MA_HS); },
+  av: function(t){
+    if (t.vaiTro === 'gv') return '<span class="av" style="background:#0E7C6E">GV<img class="av-anh" src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
+    return veAv(String(t.ten || '?'), soMauAv(t.ten));
+  },
+  nhan: function(t){ return t.vaiTro === 'gv' ? '<span class="cu-nhan">THẦY</span>' : ''; },
+  dsNhac: function(){ return CA_LOP.concat(['Thầy Andrew']); },
+  gui: function(g){
+    if (KHAN_CAP_CHAT) return Promise.reject(Object.assign(new Error('khoa'), { code: 'awc/chat-khoa' }));
+    return AWChat.gui(LOP_DL, Object.assign({ ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs' }, g));
+    /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay là tin hiện HAI LẦN. */
+  },
+  datCx: function(t, v){ return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
+  thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },
+  xoa: function(t){ return AWChat.xoa(LOP_DL, t.id); },
+  loi: function(e){ baoToast(typeof e === 'string' ? e : AWChat.chuLoi(e)); },
+  trong: 'Lớp mình chưa ai nhắn gì.<br>Em mở lời trước nhé!',
+  khiGo: function(){ if (typeof doSanChat === 'function') doSanChat(); },
+  veLaiTuKho: function(){ veChat(); }
+});
+/* Thầy đăng nhập thay em / xem như em (js/thay-vao.js): chat CHỈ ĐỌC (tin sẽ mang tên em + dấu máy của thầy). */
+if (window.__thayVao) UI_CHAT.datChiXem(true, 'Đang mở thay em — chat lớp chỉ để đọc.');
+
+// ⭐ Dải nhỏ ở ĐẦU khung: "Đang tải tin cũ hơn…" / "— Đã đến tin đầu tiên —". Không tính vào TIN_MAU.
 function veDauTrangCu(){
   if (dangTaiCu) return '<div class="tai-cu">Đang tải tin cũ hơn…</div>';
   if (hetCu) return '<div class="tai-cu">— Đã đến tin đầu tiên —</div>';
   return '';
 }
-function veChat(){
-  if (!TIN_MAU.length) {
-    khung.innerHTML = '<div class="chat-cho">Lớp mình chưa ai nhắn gì.<br>' +
-      'Em mở lời trước nhé!</div>';
-    return;
-  }
-  /* Đang ở sát đáy thì sau khi vẽ lại vẫn giữ ở đáy (tin mới về);
-     em đang cuộn đọc tin cũ thì KHÔNG giật xuống. */
-  var oDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60;
-  khung.innerHTML = veDauTrangCu() + TIN_MAU.map(veTin).join('');
-  if (oDay) {
-    // ⛔⛔ `.chat-body` có `scroll-behavior:smooth` (hiệu ứng cuộn mượt khi em
-    // tự kéo) — nếu để nguyên, cú "về đáy" này ĐI QUA từng mili-giây từ 0
-    // xuống đáy, ngang mốc <60px của `taiThemCu()` ở dưới, TỰ BẮN tải thêm
-    // oan mỗi lần mở phòng/có tin mới (đo thật 15/09, bắt bằng cách đọc biến
-    // TIN_CU giữa chừng). Cuộn "về đáy" luôn phải TỨC THÌ, không mượt.
-    var kieuCuonCu = khung.style.scrollBehavior;
-    khung.style.scrollBehavior = 'auto';
-    khung.scrollTop = khung.scrollHeight;
-    khung.style.scrollBehavior = kieuCuonCu;
-  }
-}
+function veChat(){ UI_CHAT.ve(TIN_MAU, veDauTrangCu()); }
 
-// Kéo lên sát đầu khung chat → tải thêm TOI_DA_TIN_THEM tin cũ hơn, MỘT LẦN
-// (không phải kênh sống — xem `AWChat.taiThem()`). Giữ nguyên vị trí đang đọc
-// bằng cách đo chiều cao TRƯỚC/SAU rồi bù lại `scrollTop`, kẻo chèn tin lên
-// đầu làm màn "giật" xuống dưới ngay chỗ em đang xem.
+// Kéo lên sát đầu khung chat → tải thêm TOI_DA_TIN_THEM tin cũ hơn, MỘT LẦN (không phải kênh sống — xem `AWChat.taiThem()`).
+// Giữ nguyên vị trí đang đọc: đo chiều cao TRƯỚC/SAU rồi bù `scrollTop`.
 function taiThemCu(){
   if (dangTaiCu || hetCu || !TIN_MAU.length) return;
-  // ⛔ Đo NGAY LÚC NÀY, TRƯỚC khi vẽ banner "Đang tải…" — đo sau lúc đó thì
-  // banner (rồi biến mất ở lần vẽ cuối) làm phép bù lệch đúng bằng chiều cao
-  // của chính nó (đã đo thật 15/09: lệch ~33px, một dòng chữ nhỏ).
+  // ⛔ Đo NGAY LÚC NÀY, TRƯỚC khi vẽ banner "Đang tải…" (đo sau thì lệch đúng chiều cao banner ~33px, đo thật 15/09).
   var caoTruoc = khung.scrollHeight, cuonTruoc = khung.scrollTop;
   dangTaiCu = true;
-  veChat();                                   // hiện "Đang tải tin cũ hơn…"
+  veChat();
   AWChat.taiThem(LOP_DL, TIN_MAU[0].luc, function(ds){
     dangTaiCu = false;
     if (!ds.length) { hetCu = true; veChat(); return; }
@@ -4554,18 +4489,14 @@ function danhDauDocChat(){
   A.veChamDo(false);
 }
 
-/* 🚨 27/09/2026 — CÔNG TẮC KHẨN CẤP (js/chat.js khối "CÔNG TẮC KHẨN CẤP"): thầy khoá chat
-   mọi lớp ⇒ ô nhắn chỉ đọc + chữ báo, nút gửi tắt. Mở khoá là tự trở lại, không cần tải trang. */
+/* 🚨 27/09/2026 — CÔNG TẮC KHẨN CẤP (js/chat.js khối "CÔNG TẮC KHẨN CẤP"): thầy khoá chat mọi lớp ⇒ ô nhập chỉ đọc,
+   nút gửi tắt. Mở khoá là tự trở lại, không cần tải trang. */
 var KHAN_CAP_CHAT = false;
 (function(){
   if (!window.AWChat || !AWChat.ngheKhanCap) return;
-  var goc = $('#oChat').placeholder;
   AWChat.ngheKhanCap(function(k){
     KHAN_CAP_CHAT = k.khoaChat;
-    var o = $('#oChat');
-    o.placeholder = k.khoaChat ? 'Chat đang tạm khoá, em quay lại sau nhé.' : goc;
-    o.readOnly = k.khoaChat;
-    $('#nutGui').disabled = k.khoaChat;
+    UI_CHAT.khoa(k.khoaChat, 'Chat đang tạm khoá, em quay lại sau nhé.');
   });
 })();
 
@@ -4579,269 +4510,20 @@ function noiChat(){
     capNhatChamTin();
   }, function(e){
     khung.innerHTML = '<div class="chat-cho">' + chuAnToan(AWChat.chuLoi(e)) + '</div>';
-    var o = $('#oChat'); if (o) o.disabled = true;
+    UI_CHAT.khoa(true, 'Chưa mở được phòng chat.');
   });
 }
 
-/* Sáu cảm xúc thả được — giữ lại cho đợt nối kho tin thật. */
-var CAM_XUC = [
-  { ma:'tim',  ky:'❤️' }, { ma:'haha', ky:'😆' }, { ma:'khoc', ky:'😢' },
-  { ma:'gaCon', ky:'🐥' }, { ma:'ngac', ky:'😮' }, { ma:'like', ky:'👍' }
-];
-function kyHieuCx(ma){
-  for (var i = 0; i < CAM_XUC.length; i++) if (CAM_XUC[i].ma === ma) return CAM_XUC[i].ky;
-  return '';
-}
-
-/* ---------- THẢ / XEM CẢM XÚC (v17) ----------
-   Tin CHƯA có cảm xúc nào → chạm nút ♡ là thả tim.
-   Tin ĐÃ có cảm xúc      → chạm vào cụm là mở pop-up "ai thả gì" (thầy chốt).
-   GIỮ 0,42s hoặc chuột phải → bảng chọn 6 cảm xúc + ✕ gỡ cảm xúc của mình. */
-var GIU_MS = 420;
-/* ⛔ Nhớ CHỈ SỐ TIN chứ đừng nhớ phần tử nút: mỗi lần đổi cảm xúc là cụm
-   được vẽ lại, phần tử cũ thành rác — giữ nó là trỏ vào chỗ đã mất. */
-var cxTin = null;
-var henGiu = null, daGiu = false;
-
-$('#cxMenu').innerHTML =
-  CAM_XUC.map(function(c){
-    return '<button type="button" data-cx="' + c.ma + '" title="' + c.ma + '">' + c.ky + '</button>';
-  }).join('') +
-  '<button type="button" class="bo" data-cx="" title="Bỏ cảm xúc">✕</button>';
-
-// ⭐ #8 (Đợt D) — cx nay ĐẾN TỪ FIRESTORE dạng map { maNguoi: {ma,ten} } (kho
-// tin thật, chia sẻ giữa mọi người). dsCx() đổi nó thành mảng [{ten,ma}] y hệt
-// hình dạng cũ để mọi hàm bên dưới (veCumCx/moPopCx…) không phải sửa gì thêm.
-function dsCx(i){
-  var m = TIN_MAU[i].cx || {};
-  return Object.keys(m).map(function(k){ return { ten: m[k].ten, ma: m[k].ma }; });
-}
-function cxCuaToi(i){
-  var m = TIN_MAU[i].cx || {};
-  return (m[MA_HS] && m[MA_HS].ma) || '';
-}
-function chiSoTin(nut){
-  var m = nut.closest('.msg');
-  return m ? parseInt(m.getAttribute('data-i'), 10) : null;
-}
-/* Cụm hiện ra: TIM luôn đứng đầu (♡ mờ nếu chưa ai thả tim), rồi tới các
-   cảm xúc khác mà lớp đã thả — mỗi loại MỘT icon, xếp theo thứ tự trong
-   CAM_XUC để lần nào cũng giống nhau. */
-function veCumCx(i){
-  var ds = dsCx(i);
-  var dem = {};
-  ds.forEach(function(e){ dem[e.ma] = (dem[e.ma] || 0) + 1; });
-
-  /* Tim luôn đứng đầu: có ai thả thì đỏ, chưa ai thả thì VẪN QUẢ TIM ẤY
-     nhưng rút hết màu (class .mo) — cùng hình, cùng cỡ, chỉ khác màu. */
-  var o = '<span class="ky' + (dem['tim'] ? '' : ' mo') + '">' + kyHieuCx('tim') + '</span>';
-
-  /* Hiện ĐỦ mọi loại lớp đã thả, xếp theo thứ tự trong CAM_XUC cho ổn định. */
-  var loai = CAM_XUC.filter(function(c){ return c.ma !== 'tim' && dem[c.ma]; });
-  o += loai.map(function(c){ return '<span class="ky">' + c.ky + '</span>'; }).join('');
-
-  /* Có loại nào từ 2 lượt trở lên (ví dụ 5 bạn cùng thả tim) thì ghi thêm
-     TỔNG số lượt của cả tin. Chỉ một icon một lượt thì khỏi, cho đỡ rối. */
-  var trung = CAM_XUC.some(function(c){ return dem[c.ma] > 1; });
-  if (trung) o += '<span class="dem">' + ds.length + '</span>';
-
-  var soO = 1 + loai.length + (trung ? 1 : 0);
-  var lop = 'nut-cx' + (ds.length ? ' co' : '') +
-            (cxCuaToi(i) === 'tim' ? ' tim-toi' : '') +
-            (soO > 4 ? ' nhieu' : '');
-  var nhan = ds.length ? 'Xem ai đã thả cảm xúc' : 'Thả tim';
-  return '<button class="' + lop + '" type="button" title="' + nhan + '" aria-label="' + nhan + '">' +
-    o + '</button>';
-}
-function veLaiCum(i){
-  var msg = khung.querySelector('.msg[data-i="' + i + '"]');
-  var cu = msg && msg.querySelector('.nut-cx');
-  if (cu) cu.outerHTML = veCumCx(i);
-}
-/* Đặt cảm xúc CỦA RIÊNG EM (ma rỗng = gỡ); cảm xúc của bạn khác giữ nguyên.
-   ⭐ Đợt D — vẽ lại NGAY (lạc quan) rồi mới ghi lên Firestore; ghi hỏng (vd
-   chưa dán luật mới) thì báo hiền + tự lùi lại giao diện, không đứng im như
-   đã lưu mà thực ra chưa. */
-function datCxToi(i, ma){
-  var t = TIN_MAU[i];
-  var cuTruoc = t.cx && t.cx[MA_HS];
-  var m = t.cx || (t.cx = {});
-  if (ma) m[MA_HS] = { ma:ma, ten:TOI }; else delete m[MA_HS];
-  veLaiCum(i);
-  if (!t.id) return;
-  AWChat.suaCx(LOP_DL, t.id, MA_HS, ma, TOI)['catch'](function(e){
-    if (cuTruoc) m[MA_HS] = cuTruoc; else delete m[MA_HS];
-    veLaiCum(i);
-    baoToast(AWChat.chuLoi(e));
-  });
-}
-
-/* Pop-up "AI THẢ CẢM XÚC GÌ" (v19): khung nhỏ dán ngay dưới cụm cảm xúc của
-   đúng tin đó, không làm mờ nền — chỉ icon + tên, xếp theo thứ tự CAM_XUC. */
-function moPopCx(nut, i){
-  var ds = dsCx(i);
-  if (!ds.length) return;
-  var xep = [];
-  CAM_XUC.forEach(function(c){
-    ds.forEach(function(e){ if (e.ma === c.ma) xep.push({ ten:e.ten, ky:c.ky }); });
-  });
-  var o = $('#cxAi');
-  o.innerHTML = xep.map(function(e){
-    return '<div class="d' + (e.ten === TOI ? ' toi' : '') + '">' +
-      '<span class="k">' + e.ky + '</span>' +
-      '<span class="t">' + (e.ten === TOI ? 'Em' : e.ten) + '</span>' +
-    '</div>';
-  }).join('');
-  o.classList.add('mo');           // hiện trước để đo được kích thước thật
-  datChoCxAi(o, nut);
-}
-/* Đặt ngay DƯỚI cụm cảm xúc; sát đáy màn thì lật lên trên. */
-function datChoCxAi(o, nut){
-  var r = nut.getBoundingClientRect(), h = o.getBoundingClientRect();
-  var rong = document.documentElement.clientWidth;
-  var x = r.left + r.width / 2 - h.width / 2;
-  x = Math.max(8, Math.min(x, rong - h.width - 8));
-  var y = r.bottom + 6;
-  if (y + h.height > window.innerHeight - 8) y = r.top - h.height - 6;
-  o.style.left = Math.round(x) + 'px';
-  o.style.top  = Math.round(y) + 'px';
-}
-function dongPopCx(){ $('#cxAi').classList.remove('mo'); }
-
-function moBangCx(nut){
-  var m = $('#cxMenu');
-  cxTin = chiSoTin(nut);
-  m.classList.add('mo');                       // hiện trước để đo được kích thước
-  var r = nut.getBoundingClientRect(), mr = m.getBoundingClientRect();
-  var x = r.left + r.width / 2 - mr.width / 2;
-  x = Math.max(8, Math.min(x, document.documentElement.clientWidth - mr.width - 8));
-  var y = r.top - mr.height - 8;
-  if (y < 8) y = r.bottom + 8;                 // gần mép trên thì lật xuống dưới
-  m.style.left = Math.round(x) + 'px';
-  m.style.top  = Math.round(y) + 'px';
-}
-function dongBangCx(){ $('#cxMenu').classList.remove('mo'); cxTin = null; }
-
-$('#cxMenu').onclick = function(e){
-  var b = e.target.closest('button');
-  if (!b || cxTin === null) return;          // tin số 0 cũng hợp lệ nên so với null
-  datCxToi(cxTin, b.getAttribute('data-cx'));
-  dongBangCx();
-};
-
-khung.addEventListener('pointerdown', function(e){
-  var nut = e.target.closest('.nut-cx');
-  if (!nut) return;
-  daGiu = false;
-  clearTimeout(henGiu);
-  henGiu = setTimeout(function(){ daGiu = true; moBangCx(nut); }, GIU_MS);
-});
-khung.addEventListener('pointerup', function(e){
-  var nut = e.target.closest('.nut-cx');
-  clearTimeout(henGiu);
-  if (!nut || daGiu) return;
-  var i = chiSoTin(nut);
-  if (i === null) return;
-  /* Chạm nhanh: tin đã có cảm xúc → mở danh sách "ai thả gì"; tin còn trống
-     → chạm là thả tim luôn cho nhanh. */
-  if (dsCx(i).length) moPopCx(nut, i); else datCxToi(i, 'tim');
-});
-khung.addEventListener('pointercancel', function(){ clearTimeout(henGiu); });
-khung.addEventListener('pointerleave', function(){ clearTimeout(henGiu); });
-/* Chuột phải trên máy tính cũng mở bảng chọn cho nhanh. */
-khung.addEventListener('contextmenu', function(e){
-  var nut = e.target.closest('.nut-cx');
-  if (!nut) return;
-  e.preventDefault();
-  moBangCx(nut);
-});
-/* ⭐ 28/08 — cụm xoá 2 bước: bấm ⁝ mới hiện chữ "Xoá" (data-xoa-mo), bấm "Xoá"
-   mới ra hộp confirm rồi xoá thật (data-xoa, giữ NGUYÊN xử lý cũ của Đợt D).
-   Không dùng pointerup chung với cụm cảm xúc kẻo bắt nhầm giữ/chạm. */
-function dongXoaCum(tru){
-  document.querySelectorAll('.xoa-cum.mo').forEach(function(c){
-    if (c !== tru) c.classList.remove('mo');
-  });
-}
+/* Bấm vào chỗ TRỐNG trong khung chat → con trỏ nhảy vào ô nhập. */
 khung.addEventListener('click', function(e){
-  var mo = e.target.closest('[data-xoa-mo]');
-  if (mo) {
-    var cum = mo.closest('.xoa-cum');
-    var dangMo = cum.classList.contains('mo');
-    dongXoaCum(null);
-    cum.classList.toggle('mo', !dangMo);
-    return;
-  }
-  var nut = e.target.closest('[data-xoa]');
-  if (!nut) return;
-  var id = nut.getAttribute('data-xoa');
-  if (!id || !window.confirm('Xoá tin nhắn này?')) return;
-  nut.disabled = true;
-  AWChat.xoa(LOP_DL, id)['catch'](function(err){
-    nut.disabled = false;
-    baoToast(AWChat.chuLoi(err));
-  });
+  if (e.target === khung || e.target.classList.contains('cu-ds') || e.target.classList.contains('cu-hang')) UI_CHAT.focus();
 });
-
-document.addEventListener('pointerdown', function(e){
-  if ($('#cxMenu').classList.contains('mo') &&
-      !e.target.closest('#cxMenu') && !e.target.closest('.nut-cx')) dongBangCx();
-  if ($('#cxAi').classList.contains('mo') &&
-      !e.target.closest('#cxAi') && !e.target.closest('.nut-cx')) dongPopCx();
-  if (!e.target.closest('.xoa-cum')) dongXoaCum(null);
-});
-window.addEventListener('scroll', function(){ dongBangCx(); dongPopCx(); }, true);
-
-/* Bấm vào chỗ trống bất kỳ trong khung chat → con trỏ nhảy vào ô nhập. */
-document.querySelector('.chat').addEventListener('click', function(e){
-  if (e.target.closest('.nut-cx') || e.target.closest('button') ||
-      e.target.closest('textarea') || e.target.closest('.bong')) return;
-  $('#oChat').focus();
-});
-
-/* Ô nhập tự nới cao theo đúng số dòng, KHÔNG chặn trần: thầy chốt phải luôn
-   nhìn thấy trọn tin trước khi gửi. Tin dài nhất (300 ký tự) chỉ chiếm chừng
-   nửa khung chat — phần danh sách tin tự co lại rồi bung ra sau khi gửi. */
-function noOChat(){
-  var o = $('#oChat');
-  o.style.height = 'auto';
-  /* box-sizing:border-box nên phải cộng thêm phần VIỀN — scrollHeight chỉ
-     tính tới padding, thiếu 3px viền là dòng cuối vẫn bị khuất. */
-  var vien = o.offsetHeight - o.clientHeight;
-  o.style.height = (o.scrollHeight + vien) + 'px';
-}
-
-function guiTin(){
-  var o = $('#oChat');
-  var chu = o.value.trim();
-  if (!chu) return;
-  if (KHAN_CAP_CHAT) { baoToast('Chat đang tạm khoá, em quay lại sau nhé.'); return; }   /* 🚨 27/09/2026 */
-  o.disabled = true;
-  AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu })
-    .then(function(){
-      o.value = '';
-      noOChat();
-      /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay
-         là tin hiện HAI LẦN. */
-    })['catch'](function(e){
-      baoToast(AWChat.chuLoi(e));
-    })
-    .then(function(){ o.disabled = false; o.focus(); });
-}
-$('#nutGui').onclick = guiTin;
-$('#oChat').oninput = noOChat;
-/* ⭐ v1.37.0 — bấm bất cứ chỗ nào trong khung trò chuyện = "em đã đọc" ⇒ tắt
-   chấm đỏ ở mọi avatar. Gõ vào ô nhập (bàn phím, không có cú bấm) cũng tính. */
+/* ⭐ v1.37.0 — bấm bất cứ chỗ nào trong khung trò chuyện = "em đã đọc" ⇒ tắt chấm đỏ ở mọi avatar. Gõ vào ô nhập cũng tính. */
 (function(){
   var kc = document.querySelector('.chat');
   if (kc) kc.addEventListener('pointerdown', danhDauDocChat);
   $('#oChat').addEventListener('focus', danhDauDocChat);
 })();
-/* Enter = gửi · Shift+Enter = xuống dòng trong ô nhập. */
-$('#oChat').onkeydown = function(e){
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); guiTin(); }
-};
-noOChat();
 
 var henToast = null;
 function baoToast(chu){

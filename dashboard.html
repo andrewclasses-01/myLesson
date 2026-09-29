@@ -2391,6 +2391,15 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .cong input:focus{outline:none; border-color:var(--xanh)}
 .cong .nut{width:100%; justify-content:center; margin-top:10px}
 .cong .loi{color:var(--do); font-size:12.5px; margin-top:10px; min-height:18px}
+.cong input + input{margin-top:8px}
+.cong input.qt-ma{font:800 24px/1 Consolas,monospace; letter-spacing:8px}
+.cong .qt-phu{display:block; width:100%; margin-top:10px; padding:8px; border:0; background:none;
+  color:var(--mo); font:600 12.5px/1.3 var(--font); cursor:pointer}
+.cong .qt-phu:hover{color:var(--xanh)}
+.cong .qt-qr{display:flex; justify-content:center; margin:0 0 10px; min-height:180px; align-items:center}
+.cong .qt-qr img{width:180px; height:180px; image-rendering:pixelated; border-radius:8px; background:#fff}
+.cong .qt-khoa{margin:0 0 12px; font-size:12px; color:var(--mo)}
+.cong .qt-khoa code{display:block; margin-top:6px; word-break:break-all; font:700 13px/1.4 Consolas,monospace; color:var(--chu); user-select:all}
 
 .chan{padding:8px 0 34px; font-size:11.5px; color:var(--nhat); text-align:center}
 .chan code{font-family:Consolas,monospace}
@@ -2919,15 +2928,45 @@ button.mk-em:hover{border-color:currentColor}
 </head>
 <body>
 
-<!-- CỬA VÀO: máy chưa gõ mã quản lý bao giờ thì hiện ô này thay cho cả trang. -->
-<section class="cong" id="cong" hidden>
+<!-- CỬA VÀO (v1.176.0): chưa có PHIÊN THẦY thật (tài khoản quản trị ID + mật khẩu + Google Authenticator,
+     Google dự phòng, hoặc token app tiêm vào) thì hiện hộp này thay cho cả trang.
+     ⛔ id KHÔNG được là "cong": app myLesson bản cũ thấy #cong đang hiện là tải lại trang ⇒ vòng lặp. -->
+<section class="cong" id="congQt" aria-live="polite">
   <img src="assets/avatar-tron.jpg" alt="">
   <h1>Trang quản lý</h1>
-  <p>Gõ mã quản lý của thầy để vào.</p>
-  <input type="password" id="congMa" placeholder="mã quản lý" autocomplete="off"
-    spellcheck="false">
-  <button class="nut chinh" id="congVao">VÀO</button>
-  <p class="loi" id="congLoi"></p>
+  <div id="qtCho"><p>Đang kiểm phiên đăng nhập…</p></div>
+  <form id="qtB1" hidden autocomplete="on" onsubmit="return false">
+    <p>Đăng nhập tài khoản quản trị.</p>
+    <input type="text" id="qtId" placeholder="ID" autocomplete="username" spellcheck="false" autocapitalize="off">
+    <input type="password" id="qtMk" placeholder="Mật khẩu" autocomplete="current-password">
+    <button class="nut chinh" id="qtVao" type="submit">TIẾP TỤC</button>
+    <button class="qt-phu" id="qtGoogle" type="button">Đăng nhập bằng Google (dự phòng)</button>
+  </form>
+  <form id="qtB2" hidden onsubmit="return false">
+    <p>Mở <b>Google Authenticator</b> trên điện thoại, gõ mã 6 số của <b>Andrew Classes</b>.</p>
+    <input type="text" id="qtMa" class="qt-ma" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+    <button class="nut chinh" id="qtMaVao" type="submit">XÁC NHẬN</button>
+    <button class="qt-phu" data-qt-lai type="button">← Quay lại</button>
+  </form>
+  <form id="qtB3" hidden onsubmit="return false">
+    <p><b>Cài đặt lần đầu — bước 1/2.</b> Đặt mật khẩu mới thay mật khẩu tạm (ít nhất 10 ký tự, có chữ và số; đừng dùng tên + năm sinh).</p>
+    <input type="password" id="qtMk1" placeholder="Mật khẩu mới" autocomplete="new-password">
+    <input type="password" id="qtMk2" placeholder="Gõ lại mật khẩu mới" autocomplete="new-password">
+    <button class="nut chinh" id="qtLuuMk" type="submit">LƯU MẬT KHẨU</button>
+  </form>
+  <form id="qtB4" hidden onsubmit="return false">
+    <p><b>Bước 2/2.</b> Mở Google Authenticator → dấu <b>+</b> → <b>Quét mã QR</b>, rồi gõ mã 6 số hiện ra.</p>
+    <div class="qt-qr" id="qtQr"></div>
+    <details class="qt-khoa"><summary>Không quét được? Gõ khoá thiết lập</summary><code id="qtKhoa"></code></details>
+    <input type="text" id="qtMaCai" class="qt-ma" placeholder="000000" inputmode="numeric" autocomplete="one-time-code" maxlength="6">
+    <button class="nut chinh" id="qtCaiVao" type="submit">XÁC NHẬN</button>
+  </form>
+  <div id="qtB5" hidden>
+    <p><b>✓ Đã cài xong mật khẩu + Google Authenticator.</b></p>
+    <p>Báo Claude “cấp quyền quản trị” rồi đăng nhập lại bằng ID + mật khẩu + mã 6 số. Nhớ <b>xoá file mật khẩu tạm</b> trên Desktop.</p>
+    <button class="nut chinh" data-qt-lai type="button">VỀ ĐĂNG NHẬP</button>
+  </div>
+  <p class="loi" id="qtLoi"></p>
 </section>
 
 <div id="trang" hidden>
@@ -3273,13 +3312,13 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=158"></script>
+<script src="config.js?v=159"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=70"></script>
 <script src="js/chat.js?v=28"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
-<script src="js/thay.js?v=3"></script>
+<script src="js/thay.js?v=4"></script>
 <script>
 (function () {
   'use strict';
@@ -9924,7 +9963,8 @@ button.mk-em:hover{border-color:currentColor}
     // tự nhảy lại vào đây (nếu máy còn nhớ em nào đó đang đăng nhập).
     $('#dangXuat').addEventListener('click', function () {
       A.thoatAdmin();
-      location.href = 'index.html?vao=1';
+      QT_DA_MO = false;                                   // v1.176.0 — tự chuyển trang, đừng để theoDoi chuyển lần nữa
+      AWThay.thoat()['catch'](function () {}).then(function () { location.href = 'index.html?vao=1'; });
     });
 
     // ---------- HỘP XEM BÀI ----------
@@ -9995,23 +10035,113 @@ button.mk-em:hover{border-color:currentColor}
     // `data-rail-caidat="@nghi"` nên đi chung tay bắt của thẻ bài thường.
   }
 
-  // ---------- cửa vào ----------
-  function moCong() {
-    $('#cong').hidden = false;
-    var vao = function () {
-      var ma = $('#congMa').value;
-      $('#congLoi').textContent = '';
-      A.laMaQuanLy(ma).then(function (dung) {
-        if (!dung) { $('#congLoi').textContent = 'Mã không đúng.'; return; }
-        A.datAdmin();
-        $('#cong').hidden = true;
-        $('#trang').hidden = false;
-        batDau();
-      })['catch'](function () { $('#congLoi').textContent = 'Máy này chưa kiểm được mã.'; });
+  // ---------- cửa vào (v1.176.0) ----------
+  // Dashboard CHỈ mở khi có PHIÊN THẦY thật (AWThay.theoDoi): tài khoản quản trị ID + mật khẩu + mã 6 số
+  // Google Authenticator · Google namdaptrai01 (dự phòng) · token app myLesson tiêm vào (tab CLASSES).
+  // Cờ `mylesson_ql` nay chỉ là "máy này từng vào dashboard" để index.html chỉ đường — KHÔNG mở khoá gì.
+  // QT_BUOC: 'cho' (đang kiểm phiên) · 'dang' (đang gọi máy chủ) · b1..b5 — theoDoi(null) chỉ đổi màn khi 'cho'.
+  var QT_BUOC = 'cho', QT_DA_MO = false, QT_MA = null, QT_CAI = null;
+  function qtBuoc(b) {
+    QT_BUOC = b;
+    var hien = b === 'cho' ? 'qtCho' : 'qt' + b.toUpperCase();
+    ['qtCho', 'qtB1', 'qtB2', 'qtB3', 'qtB4', 'qtB5'].forEach(function (id) { $('#' + id).hidden = id !== hien; });
+    $('#qtLoi').textContent = '';
+    var o = { b1: $('#qtId').value ? '#qtMk' : '#qtId', b2: '#qtMa', b3: '#qtMk1', b4: '#qtMaCai' }[b];
+    if (o) setTimeout(function () { $(o).focus(); }, 30);
+  }
+  function qtLoi(e) { $('#qtLoi').textContent = typeof e === 'string' ? e : AWThay.chuLoiQt(e); }
+  function qtMoKhoa() {
+    if (QT_DA_MO) return;
+    QT_DA_MO = true;
+    A.datAdmin();
+    $('#congQt').hidden = true;
+    $('#trang').hidden = false;
+    batDau();
+  }
+  function qtVeDangNhap() {
+    QT_MA = null; QT_CAI = null; QT_BUOC = 'dang';
+    ['#qtMk', '#qtMa', '#qtMaCai', '#qtMk1', '#qtMk2'].forEach(function (o) { $(o).value = ''; });
+    AWThay.thoat()['catch'](function () {}).then(function () { qtBuoc('b1'); });
+  }
+  function qtVeQr(q) {
+    $('#qtKhoa').textContent = q.khoa.replace(/(.{4})/g, '$1 ').trim();
+    var hop = $('#qtQr');
+    hop.textContent = 'Đang vẽ mã QR…';
+    var ve = function () {
+      var qr = window.qrcode(0, 'M'); qr.addData(q.qr); qr.make();
+      hop.innerHTML = '';
+      var img = new Image(); img.alt = 'Mã QR Google Authenticator'; img.src = qr.createDataURL(6, 2);
+      hop.appendChild(img);
     };
-    $('#congVao').onclick = vao;
-    $('#congMa').onkeydown = function (e) { if (e.key === 'Enter') vao(); };
-    $('#congMa').focus();
+    if (window.qrcode) return ve();
+    var sc = document.createElement('script');
+    sc.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js';
+    sc.onload = ve;
+    sc.onerror = function () { hop.textContent = 'Không tải được mã QR — mở "Gõ khoá thiết lập" bên dưới.'; };
+    document.head.appendChild(sc);
+  }
+  function moCong() {
+    try {
+      var nhoId = sessionStorage.getItem('qt_id');
+      if (nhoId) { $('#qtId').value = nhoId.toLowerCase(); sessionStorage.removeItem('qt_id'); }
+    } catch (e) {}
+    $('#qtVao').onclick = function () {
+      var id = $('#qtId').value.trim(), mk = $('#qtMk').value, nut = this;
+      if (!id) return $('#qtId').focus();
+      if (!mk) return $('#qtMk').focus();
+      nut.disabled = true; $('#qtLoi').textContent = ''; QT_BUOC = 'dang';
+      AWThay.dangNhapQt(id, mk).then(function (kq) {
+        nut.disabled = false;
+        if (kq.buoc === 'xong') return;                     // theoDoi tự mở khoá
+        if (kq.buoc === 'ma') { QT_MA = kq; qtBuoc('b2'); return; }
+        QT_CAI = { id: id }; qtBuoc('b3');
+      })['catch'](function (e) { nut.disabled = false; QT_BUOC = 'b1'; qtLoi(e); });
+    };
+    $('#qtMaVao').onclick = function () {
+      var nut = this, ma = $('#qtMa').value.replace(/\D/g, '');
+      if (ma.length !== 6 || !QT_MA) { qtLoi('Gõ đủ 6 số.'); return; }
+      nut.disabled = true; QT_BUOC = 'dang';
+      QT_MA.xacNhan(ma).then(function () { nut.disabled = false; })['catch'](function (e) {
+        nut.disabled = false; $('#qtMa').value = '';
+        if (/chua-cap-quyen/.test((e && e.message) || '')) { qtBuoc('b1'); qtLoi(e); return; }
+        QT_BUOC = 'b2'; $('#qtMa').focus(); qtLoi(e);
+      });
+    };
+    $('#qtLuuMk').onclick = function () {
+      var nut = this, m1 = $('#qtMk1').value, m2 = $('#qtMk2').value;
+      if (m1.length < 10 || !/[A-Za-z]/.test(m1) || !/\d/.test(m1)) { qtLoi('Mật khẩu ít nhất 10 ký tự, có cả chữ và số.'); return; }
+      if (/1994|ninh|pham|andrew|0902/i.test(m1)) { qtLoi('Đừng dùng tên / năm sinh trong mật khẩu — dễ đoán.'); return; }
+      if (m1 !== m2) { qtLoi('Hai lần gõ chưa giống nhau.'); return; }
+      nut.disabled = true;
+      AWThay.caiDatDoiMk(m1).then(function () {
+        return AWThay.caiDatTotp(QT_CAI.id);
+      }).then(function (q) {
+        nut.disabled = false; QT_CAI.totp = q; qtBuoc('b4'); qtVeQr(q);
+      })['catch'](function (e) { nut.disabled = false; qtLoi(e); });
+    };
+    $('#qtCaiVao').onclick = function () {
+      var nut = this, ma = $('#qtMaCai').value.replace(/\D/g, '');
+      if (ma.length !== 6 || !QT_CAI || !QT_CAI.totp) { qtLoi('Gõ đủ 6 số.'); return; }
+      nut.disabled = true;
+      QT_CAI.totp.xacNhan(ma).then(function () {
+        nut.disabled = false; QT_BUOC = 'dang';
+        return AWThay.thoat()['catch'](function () {}).then(function () { qtBuoc('b5'); });
+      })['catch'](function (e) { nut.disabled = false; $('#qtMaCai').value = ''; qtLoi(e); });
+    };
+    $('#qtGoogle').onclick = function () {
+      var nut = this; nut.disabled = true; QT_BUOC = 'dang';
+      AWThay.dangNhapGoogle().then(function () { nut.disabled = false; })['catch'](function (e) {
+        nut.disabled = false; QT_BUOC = 'b1'; qtLoi((e && e.message) || 'Không đăng nhập được.');
+      });
+    };
+    Array.prototype.forEach.call(document.querySelectorAll('[data-qt-lai]'), function (n) { n.onclick = qtVeDangNhap; });
+    $('#qtMa').addEventListener('input', function () { if (this.value.replace(/\D/g, '').length === 6) $('#qtMaVao').click(); });
+    $('#qtMaCai').addEventListener('input', function () { if (this.value.replace(/\D/g, '').length === 6) $('#qtCaiVao').click(); });
+    AWThay.theoDoi(function (u) {
+      if (u) { qtMoKhoa(); return; }
+      if (QT_DA_MO) { A.thoatAdmin(); location.replace('index.html?vao=1'); return; }   // đã vào mà mất phiên (thoát / quá 30 ngày)
+      if (QT_BUOC === 'cho') qtBuoc('b1');
+    })['catch'](function () { qtBuoc('b1'); qtLoi('Chưa tải được phần đăng nhập — kiểm mạng rồi tải lại trang.'); });
   }
 
   // ---------- ⭐ v1.52.0 (gói bảo mật C) — PHIÊN THẦY ----------
@@ -11864,7 +11994,7 @@ button.mk-em:hover{border-color:currentColor}
   }
   $('#thayDn').addEventListener('click', function () {
     if (THAY_PHIEN) {
-      if (!window.confirm('Thoát phiên ghi kho của thầy trên máy này?')) return;
+      if (!window.confirm('Đăng xuất trang quản lý trên máy này?')) return;   // v1.176.0 — mất phiên là về màn đăng nhập
       AWThay.thoat().then(function () { baoToast('Đã thoát phiên thầy.'); });
       return;
     }
@@ -12038,8 +12168,7 @@ button.mk-em:hover{border-color:currentColor}
   });
   window.qlMoDangKy = moDangKyHop;   // cầu cho js/nw-thanh.js (nạp SAU IIFE này)
 
-  if (A.laAdmin()) { $('#trang').hidden = false; batDau(); }
-  else moCong();
+  moCong();   // v1.176.0 — luôn qua cửa: phiên thầy thật mới mở trang
 })();
 </script>
 <script src="js/nw-thanh.js?v=12"></script>

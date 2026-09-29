@@ -149,7 +149,8 @@
     nut.disabled = true;
     A.laMaQuanLy(go).then(function (dung) {
       nut.disabled = false;
-      if (dung) { A.datAdmin(); location.href = 'dashboard.html'; return; }
+      // v1.176.0 — ID quản trị chỉ ĐƯA SANG cửa dashboard (ID + mật khẩu + mã 6 số), không mở khoá gì ở đây.
+      if (dung) { try { sessionStorage.setItem('qt_id', A.chuanMa(go)); } catch (e) { } location.href = 'dashboard.html'; return; }
       loi('Không tìm thấy ID này. Em kiểm tra lại hoặc hỏi thầy Andrew nhé.');
     })['catch'](function () { nut.disabled = false; loi('Không tìm thấy ID này. Em kiểm tra lại hoặc hỏi thầy Andrew nhé.'); });
   }

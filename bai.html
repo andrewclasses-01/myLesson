@@ -841,6 +841,20 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 /* Hộp giữ chỗ theo tỉ lệ. `content` rỗng + `display:block` là đủ; nó nằm
    TRONG LUỒNG nên chính nó quyết chiều cao của `.game`. */
 .game::before{content:''; display:block; padding-top:var(--ti-le)}
+
+/* ===== ⭐ v1.180.0 (thầy chốt 29/09) — NÚT PHÓNG TO: làm bài NGAY TRONG TAB này, không mở tab mới / không quét QR =====
+   Vì sao: tab AWord riêng không xin được VÉ đăng nhập (opener bị cắt / tab mẹ bị máy thu hồi) ⇒ điểm không lên kho
+   (LAN VY 29/09 17:46, DUY AN 28/09 22:05 — 60/60 mà mất). Khung game NHÚNG (iframe) luôn có trang mẹ ở `window.parent`.
+   `.phong` = chính khung `.game` (KHÔNG dời iframe sang chỗ khác — dời là tải lại, mất ván) phủ kín màn hình.
+   ⛔ Ông bà `.card` KHÔNG được có transform/filter/backdrop-filter khi mở (thì fixed thành "dính" theo họ) — đã đo. */
+.game.phong{position:fixed; inset:0; z-index:9000; width:100vw; height:100vh; height:100dvh; border-radius:0; background:#0b1220}
+.game.phong::before{display:none}
+html.co-phong,html.co-phong body{overflow:hidden}
+.game-thu{position:absolute; top:max(8px,env(safe-area-inset-top)); left:max(8px,env(safe-area-inset-left)); z-index:5; display:none; align-items:center; gap:6px;
+  height:34px; padding:0 12px 0 9px; border:0; border-radius:99px; background:rgba(15,23,42,.72); color:#fff; font:800 12px/1 var(--font,system-ui); letter-spacing:.05em; cursor:pointer; backdrop-filter:blur(6px)}
+.game-thu svg{width:16px; height:16px; stroke:currentColor; stroke-width:2; fill:none; stroke-linecap:round; stroke-linejoin:round}
+.game-thu:hover{background:rgba(15,23,42,.9)}
+.game.phong .game-thu{display:inline-flex}
 .game iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
 /* ---------- BÌA READY (đợt 5 · làm lại đợt 6 · ⭐ THU NHỎ Ở ĐỢT 7) ----------
    Bố cục vẫn theo màn START của AWord (brand ghim trên cùng · cụm giữa
@@ -2041,10 +2055,10 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=168"></script>
+<script src="config.js?v=169"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
-<script src="js/chung.js?v=72"></script>
+<script src="js/chung.js?v=73"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -2218,8 +2232,8 @@ var IC_TAM  = '<svg viewBox="0 0 24 24"><rect x="6.5" y="4.5" width="4" height="
 /* Mũi tên hiện đại cho ±5 giây (thầy chốt đợt 3, bỏ icon xoay vòng cũ). */
 var IC_LUI  = '<svg viewBox="0 0 24 24"><path d="M11 6l-6 6 6 6"/><path d="M19 6l-6 6 6 6"/></svg>';
 var IC_TOI  = '<svg viewBox="0 0 24 24"><path d="M13 6l6 6-6 6"/><path d="M5 6l6 6-6 6"/></svg>';
-var IC_TAB  = '<svg viewBox="0 0 24 24"><path d="M14 4h6v6M20 4l-8.5 8.5"/>' +
-              '<path d="M18 14v5a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V7.5A1.5 1.5 0 0 1 5 6h5"/></svg>';
+var IC_PHONG = '<svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>';
+var IC_THU_NHO = '<svg viewBox="0 0 24 24"><path d="M4 14h6v6M20 10h-6V4M14 10l7-7M3 21l7-7"/></svg>';
 var IC_DEN  = '<svg viewBox="0 0 24 24"><path d="M9.5 18h5M10 21h4"/>' +
               '<path d="M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1.1 2h5c.1-.8.5-1.5 1.1-2A6 6 0 0 0 12 3z"/></svg>';
 var IC_MOI  = '<svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 5.5V11h-5.5"/></svg>';
@@ -3091,11 +3105,10 @@ function veKhoi(k, so){
          Cụm mang thêm `co-td` để rộng đúng bằng cột leaderboard. */
       '<div class="card-nut' + (coTuDien ? ' co-td' : '') + '">' +
         '<button class="ic-nut den" title="Tắt bớt ánh sáng xung quanh">' + IC_DEN + '</button>' +
-        /* ⭐ v1.162.0 (27/09/2026) — rel="opener" (KHÔNG noopener; Chrome mặc định cắt opener với _blank): tab AWord mới
-           cần `window.opener` = trang này để XIN VÉ đăng nhập (AWord Đợt 412) — không có vé thì điểm không ghi được.
-           Chỉ mở tới aword.andrewclasses.com (trang của thầy); vé chỉ trả đích danh origin AWord (js/nw-phien.js). */
-        '<a class="ic-nut" target="_blank" rel="opener" href="__LINK__" ' +
-          'title="Mở ở tab mới">' + IC_TAB + '</a>' +
+        /* ⭐ v1.180.0 (29/09/2026, thầy chốt) — BỎ nút "Mở ở tab mới" (v1.162.0): tab AWord riêng hay không xin được VÉ đăng nhập
+           (opener bị cắt khi mở từ app khác / tab mẹ bị máy thu hồi) ⇒ điểm 60/60 mất. Thay bằng nút PHÓNG TO ngay trong tab này:
+           khung nhúng luôn có trang mẹ (`window.parent`) cấp vé. Muốn dùng máy khác ⇒ đăng nhập ở máy đó. */
+        '<button type="button" class="ic-nut phong-nut" title="Phóng to để làm bài" aria-label="Phóng to">' + IC_PHONG + '</button>' +
         (coTuDien
           ? '<button class="nut-tudien" title="Tra từ điển">' + IC_SACH +
               '<span class="td-chu">A-DICTIONARY</span></button>'
@@ -3146,6 +3159,22 @@ function veKhoi(k, so){
     if (this.classList.contains('cho-mo') && !(e.target.closest && e.target.closest('.bia-ready'))) return;
     moAct(khung);
   };
+
+  /* ⭐ v1.180.0 — PHÓNG TO / THU NHỎ (xem CSS `.game.phong`). Esc hoặc nút "THU NHỎ" thu lại; iframe giữ nguyên, ván không mất. */
+  var nutPhong = sec.querySelector('.phong-nut');
+  var nutThu = document.createElement('button');
+  nutThu.type = 'button'; nutThu.className = 'game-thu'; nutThu.setAttribute('aria-label', 'Thu nhỏ');
+  nutThu.innerHTML = IC_THU_NHO + '<span>THU NHỎ</span>';
+  khung.appendChild(nutThu);
+  function phongTo(bat){
+    khung.classList.toggle('phong', bat);
+    document.documentElement.classList.toggle('co-phong', bat);
+    if (bat) document.addEventListener('keydown', escThu); else document.removeEventListener('keydown', escThu);
+    if (!bat) { try { khung.scrollIntoView({ block: 'center' }); } catch (e) {} }
+  }
+  function escThu(e){ if (e.key === 'Escape') phongTo(false); }
+  nutPhong.onclick = function(){ phongTo(!khung.classList.contains('phong')); };
+  nutThu.onclick = function(){ phongTo(false); };
 
   var nutDen = sec.querySelector('.ic-nut.den');
   nutDen.onclick = function(){

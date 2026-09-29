@@ -1154,6 +1154,7 @@
               var f = doc.fields || {};
               tatCa.push({
                 id: String(doc.name || '').split('/').pop(),   // v1.131.0 — khớp `attemptId` của practiceLog
+                tay: /^tay/.test(String(doc.name || '').split('/').pop()),   // v1.180.0 — lượt THẦY NHẬP TAY (dashboard): mã `tay<mốc>x…`
                 ten: (f.name && f.name.stringValue) || '?',
                 ma: (f.ma && f.ma.stringValue) || '',           // v1.134.0 — mã em (AWord Đợt 367, web gửi &ma=)
                 diem: soF(f.score), tong: soF(f.total), ms: soF(f.timeMs),
@@ -1162,7 +1163,7 @@
                 luc: soF(f.createdAt),
                 // ⭐ v1.175.0 — giờ MÁY CHỦ lúc tài liệu được tạo (Firestore tự ghi, máy em không sửa được).
                 // Dashboard dùng nó suy độ lệch đồng hồ máy em cho dữ liệu cũ (xem `chinhGioMay` bên dashboard).
-                sv: Date.parse(doc.createTime || '') || 0,
+                sv: /^tay/.test(String(doc.name || '').split('/').pop()) ? 0 : (Date.parse(doc.createTime || '') || 0),   // v1.180.0 — lượt nhập tay: giờ thầy chọn, KHÔNG dùng để suy lệch đồng hồ máy em
                 // ⭐ v1.147.0 — lượt DỞ DANG (AWord Đợt 383: em bấm Start again / tải lại trang / đóng tab
                 // giữa ván). Điểm thật nhưng mẫu số KHÔNG chắc ⇒ không làm mẫu chuẩn, không tính "nộp là xong".
                 dd: !!(f.doDang && f.doDang.booleanValue),
@@ -1255,8 +1256,10 @@
       var cu = theo[k];
       // ⭐ v1.131.0 — giữ MỌI lượt (`luot`) để hộp quản lý cộng tổng thời gian nộp
       // (dashboard tab THỜI LƯỢNG); phần gộp "lượt tốt nhất" bên dưới không đổi.
-      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, sv: r.sv || 0, diem: r.diem, tong: r.tong, dd: !!r.dd, pt: pt };
+      var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, sv: r.sv || 0, diem: r.diem, tong: r.tong, dd: !!r.dd, pt: pt, tay: !!r.tay };
       var g = Math.round((r.ms || 0) / 1000);
+      // ⭐ v1.180.0 — lượt NHẬP TAY không có giờ làm (0) ⇒ khi HOÀ ĐIỂM không được thắng lượt thật về tốc độ: xếp như chậm nhất.
+      var gx = r.tay ? 1e9 : g;
       // ⭐ v1.147.0 (thầy chốt 24/09) — "NỘP LÚC" = lượt ĐẦU TIÊN em ĐẠT điểm tối đa (`lucDat`); chưa đạt thì
       // lấy lúc của lượt TỐT NHẤT (`lucTot`). Trước đây là lượt nộp đầu tiên bất kỳ — nay lượt dở cũng nộp,
       // lượt đầu có thể chỉ là vài câu rồi bỏ. `lucCuoi` = lượt gần nhất (hoạt động gần đây ở dashboard).
@@ -1264,7 +1267,7 @@
       // Lượt dở hiện điểm trên MẪU CHUẨN của act (mẫu số riêng của nó không chắc — xem mauChuan).
       var tongHien = (r.dd && mau > 0) ? mau : r.tong;
       if (!cu) {
-        theo[k] = { ten: r.ten, ma: r.ma || '', diem: pt, giay: g,
+        theo[k] = { ten: r.ten, ma: r.ma || '', diem: pt, giay: g, giayXep: gx,
                     lucDat: dat, lucTot: r.luc || 0, lucCuoi: r.luc || 0, coLuotDu: !r.dd,
                     cacTen: [r.ten], luot: [lu],
                     tho: { diem: r.diem, tong: tongHien } };
@@ -1275,8 +1278,8 @@
       if (!r.dd) cu.coLuotDu = true;
       if (dat && (!cu.lucDat || dat < cu.lucDat)) cu.lucDat = dat;
       if (r.luc > cu.lucCuoi) cu.lucCuoi = r.luc;
-      if (pt > cu.diem || (pt === cu.diem && g < cu.giay)) {
-        cu.diem = pt; cu.giay = g; cu.tho = { diem: r.diem, tong: tongHien }; cu.lucTot = r.luc || 0;
+      if (pt > cu.diem || (pt === cu.diem && gx < cu.giayXep)) {
+        cu.diem = pt; cu.giay = g; cu.giayXep = gx; cu.tho = { diem: r.diem, tong: tongHien }; cu.lucTot = r.luc || 0;
       }
     });
     var ra = [];
@@ -1287,7 +1290,7 @@
     }
     ra.sort(function (a, b) {
       if (b.diem !== a.diem) return b.diem - a.diem;
-      return a.giay - b.giay;
+      return (a.giayXep != null ? a.giayXep : a.giay) - (b.giayXep != null ? b.giayXep : b.giay);
     });
     return ra;
   }

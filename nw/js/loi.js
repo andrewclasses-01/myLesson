@@ -126,7 +126,10 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   NW.IC = {
     quanLy: P('<rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="11" width="8" height="10" rx="2"/><rect x="3" y="14" width="8" height="7" rx="2"/>'),   // v0.9.0: tab QUẢN LÝ của thầy (4 ô)
     baiTap: P('<path d="M8.5 21H5.2A1.7 1.7 0 0 1 3.5 19.3V4.2A1.7 1.7 0 0 1 5.2 2.5h8.3l5 5v3.3"/><path d="M13.5 2.5v4.2a1 1 0 0 0 1 1h4"/><path d="M6.8 9.6h4M6.8 12.6h7M6.8 15.6h5.2"/><path d="M11.3 21.5l.9-3.5 6.5-6.5a1.85 1.85 0 0 1 2.6 2.6l-6.5 6.5z"/><path d="M17.4 12.8l2.6 2.6"/>'),  // v14 theo mẫu Flaticon paper_10538038 (giấy gấp góc + bút chì)
-    bangTin: P('<path d="M3 10.8 12 3.5l9 7.3"/><path d="M5.5 9.3V20.5h13V9.3"/><path d="M10 20.5v-5.5h4v5.5"/>'),  // v0.4.0 ngôi nhà (bảng tin)
+    bangTin: P('<path fill="currentColor" stroke="none" fill-rule="evenodd" d="M10.55 2.75Q12 1.6 13.45 2.75L20.6 8.45Q21.5 9.15 21.5 10.3V19.3Q21.5 21.5 19.3 21.5H4.7Q2.5 21.5 2.5 19.3V10.3Q2.5 9.15 3.4 8.45ZM9.4 20.3V14.5Q9.4 13 10.9 13H13.1Q14.6 13 14.6 14.5V20.3Z"/>'),  // 29/09 thầy: ngôi nhà ĐẶC theo mẫu home.png (bảng tin)
+    baiDang: P('<path d="M3 10.8 12 3.5l9 7.3"/><path d="M5.5 9.3V20.5h13V9.3"/><path d="M10 20.5v-5.5h4v5.5"/>'),  // ngôi nhà viền cũ — mục "Bài đăng" trang quản lý
+    shop: P('<path d="M4.8 8.2h14.4l-1.1 11.6a1.8 1.8 0 0 1-1.8 1.7H7.7a1.8 1.8 0 0 1-1.8-1.7z"/><path d="M8.7 10.8V6.8a3.3 3.3 0 0 1 6.6 0v4"/>'),  // 29/09 tab SHOP ĐỔI QUÀ (túi mua sắm)
+    gio: P('<circle cx="9" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/><path d="M2.5 3.5h2.6l2.4 11.3a1.6 1.6 0 0 0 1.6 1.2h8.6a1.6 1.6 0 0 0 1.6-1.2L21 7.5H6"/>'),  // giỏ quà
     tinNhan: P('<path d="M12.5 2.5a8.5 8.5 0 1 1-4.6 15.6L3 21.5l1.6-5.2A8.5 8.5 0 0 1 12.5 2.5z"/><circle cx="8.8" cy="11" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.5" cy="11" r="1.2" fill="currentColor" stroke="none"/><circle cx="16.2" cy="11" r="1.2" fill="currentColor" stroke="none"/>'),  // v0.3.1 theo mẫu Flaticon thầy gửi
     khamPha: P('<circle cx="12" cy="12" r="9.5"/><path d="m15.8 8.2-2.2 5.4-5.4 2.2 2.2-5.4z"/>'),
     caNhan: P('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),

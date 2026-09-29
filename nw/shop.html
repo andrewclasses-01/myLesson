@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop đổi quà · Andrew Classes Network</title>
+<link rel="icon" href="assets/avatar-tron.jpg">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="css/nw.css?v=13">
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<style>
+/* ============================================================
+   SHOP ĐỔI QUÀ (29/09/2026, thầy chốt) — học sinh chọn quà vào GIỎ rồi bấm "Yêu cầu đổi quà" ⇒ đơn về hộp
+   Quà tặng trên dashboard. Thầy (và "xem như em") mở trang này = CHẾ ĐỘ QUAN SÁT: thấy y học sinh, không giỏ, không đổi.
+   Đợt này CHỈ GIAO DIỆN (thầy: "build giao diện trước, nội dung xử lý sau"): kho quà đọc THẬT `quaTang/catalog`;
+   ví sao chưa có kho thật ⇒ hiện số trên hồ sơ (0); nút gửi yêu cầu + "đơn của em" là bản mẫu.
+   ============================================================ */
+.main.shop{grid-template-columns:minmax(0,1fr) 330px}
+.shop-dau{display:flex; align-items:center; gap:14px; padding:16px 18px; margin-bottom:14px}
+.shop-dau .shop-ic{flex:none; width:48px; height:48px; border-radius:14px; display:grid; place-items:center;
+  background:linear-gradient(135deg,#FFE9C7,#FCD9E6); color:#C2410C}
+.shop-dau .shop-ic .ic{width:26px; height:26px; stroke-width:1.9}
+.shop-dau h1{margin:0; font-size:18px; font-weight:800; letter-spacing:.02em}
+.shop-dau p{margin:2px 0 0; font-size:12.5px; color:var(--muted); font-weight:600}
+.shop-vi{margin-left:auto; flex:none; display:flex; align-items:center; gap:6px; padding:8px 14px; border-radius:999px;
+  background:var(--amber-soft); color:#9A6A12; font-weight:800; font-size:14px}
+.shop-vi svg{width:18px; height:18px; fill:var(--m-vang); stroke:none}
+.shop-qs{display:flex; align-items:center; gap:10px; padding:11px 14px; margin-bottom:14px; border-radius:14px;
+  background:#EEF4FF; color:#2F5FC4; font-size:13px; font-weight:700; border:1px solid #D6E3FF}
+.shop-qs .ic{width:19px; height:19px}
+.shop-nhom{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px}
+.shop-nhom button{padding:9px 15px; border-radius:999px; background:var(--surface); border:1.5px solid var(--line);
+  font-weight:800; font-size:12.5px; color:var(--muted); transition:all .15s}
+.shop-nhom button:hover{border-color:var(--accent); color:var(--accent)}
+.shop-nhom button.chon{background:var(--accent); border-color:var(--accent); color:#fff}
+.shop-luoi{display:grid; grid-template-columns:repeat(auto-fill,minmax(172px,1fr)); gap:12px}
+.mon{display:flex; flex-direction:column; padding:12px; border-radius:18px; background:var(--surface);
+  border:1px solid var(--line); box-shadow:var(--shadow); transition:transform .18s var(--em), box-shadow .18s}
+.mon:hover{transform:translateY(-2px); box-shadow:0 2px 6px rgba(22,35,42,.08), 0 14px 30px rgba(22,35,42,.09)}
+.mon-anh{position:relative; aspect-ratio:1/1; border-radius:14px; display:grid; place-items:center; font-size:58px;
+  background:linear-gradient(160deg,#F2FAF8,#E3F1EE); margin-bottom:10px; line-height:1}
+.mon-anh .nhan{position:absolute; top:8px; left:8px; padding:3px 8px; border-radius:999px; font-size:10.5px;
+  font-weight:800; background:#fff; color:var(--muted); letter-spacing:.02em}
+.mon-anh .nhan.it{color:#C2410C; background:#FFF1E6}
+.mon-ten{font-weight:800; font-size:14px; line-height:1.3; min-height:2.6em}
+.mon-gia{display:flex; align-items:center; gap:5px; margin:6px 0 10px; font-weight:800; font-size:15px; color:#9A6A12}
+.mon-gia svg{width:16px; height:16px; fill:var(--m-vang); stroke:none}
+.mon .btn{margin-top:auto; padding:10px 8px; white-space:nowrap; font-size:12.5px; gap:6px}
+.mon.het{opacity:.55}
+.mon.het .mon-anh{filter:grayscale(1)}
+.so-luong{margin-top:auto; display:flex; align-items:center; justify-content:space-between; border-radius:12px;
+  background:var(--accent-soft); color:var(--accent); font-weight:800}
+.so-luong span{white-space:nowrap; font-size:12.5px}
+.so-luong button{flex:none; width:38px; height:40px; display:grid; place-items:center; border-radius:12px; font-size:20px; color:var(--accent)}
+.so-luong button:hover{background:rgba(14,124,110,.12)}
+.so-luong button:disabled{opacity:.35; cursor:default; background:none}
+
+/* ---------- giỏ quà ---------- */
+.gio-cot{position:sticky; top:calc(var(--cao-thanh) + 18px); align-self:start; display:flex; flex-direction:column; gap:14px}
+.gio{padding:0; overflow:hidden}
+.gio-dau{display:flex; align-items:center; gap:10px; padding:14px 16px; border-bottom:1px solid var(--line)}
+.gio-dau h2{margin:0; font-size:14.5px; font-weight:800; letter-spacing:.04em; flex:1}
+.gio-dau .ic{color:var(--accent)}
+.gio-dau .dong{display:none; width:34px; height:34px; border-radius:50%; place-items:center; color:var(--muted)}
+.gio-ds{max-height:min(46vh,420px); overflow:auto}
+.gio-dong{display:flex; align-items:center; gap:10px; padding:10px 16px}
+.gio-dong + .gio-dong{border-top:1px dashed var(--line)}
+.gio-dong .icon{flex:none; width:42px; height:42px; border-radius:12px; display:grid; place-items:center; font-size:24px; background:var(--accent-soft)}
+.gio-dong .ten{flex:1; min-width:0; font-weight:700; font-size:13.5px; line-height:1.3}
+.gio-dong .ten small{display:block; color:#9A6A12; font-weight:800; font-size:12px}
+.gio-dong .sl{display:flex; align-items:center; gap:2px; font-weight:800; font-size:13.5px}
+.gio-dong .sl button{width:28px; height:28px; border-radius:8px; display:grid; place-items:center; color:var(--accent); font-size:17px}
+.gio-dong .sl button:hover{background:var(--accent-soft)}
+.gio-dong .sl b{min-width:20px; text-align:center}
+.gio-trong{padding:26px 16px; text-align:center; color:var(--muted); font-weight:600; font-size:13px}
+.gio-trong .ic{width:34px; height:34px; margin:0 auto 8px; color:#b8c6c2}
+.gio-tong{padding:12px 16px; border-top:1px solid var(--line); background:#FBFDFC; font-size:13px; font-weight:600}
+.gio-tong div{display:flex; justify-content:space-between; padding:3px 0}
+.gio-tong .chot{font-size:15px; font-weight:800; padding-top:8px; margin-top:4px; border-top:1px dashed var(--line)}
+.gio-tong .chot b{color:#9A6A12}
+.gio-tong .thieu{color:var(--do); font-size:12px; font-weight:700; justify-content:flex-start}
+.gio-chan{padding:0 16px 16px; background:#FBFDFC}
+.don{padding:0; overflow:hidden}
+.don-dong{display:flex; align-items:center; gap:10px; padding:11px 16px}
+.don-dong + .don-dong{border-top:1px solid var(--line)}
+.don-dong .ten{flex:1; min-width:0; font-weight:700; font-size:13px; line-height:1.35}
+.don-dong .ten small{display:block; color:var(--muted); font-weight:600; font-size:11.5px}
+.tt{flex:none; padding:4px 9px; border-radius:999px; font-size:11px; font-weight:800}
+.tt.cho{background:var(--amber-soft); color:#9A6A12}
+.tt.duyet{background:#EEF4FF; color:#2F5FC4}
+.tt.xong{background:#E6F6EC; color:#12803F}
+.tt.huy{background:var(--do-soft); color:var(--do)}
+.mau{margin:0; padding:8px 16px; background:#FFF6E0; color:#8A5A00; font-size:11.5px; font-weight:700; border-bottom:1px solid #F5E3B5}
+.nut-gio{display:none}
+
+@media (max-width:900px){
+  .main.shop{grid-template-columns:minmax(0,1fr)}
+  /* điện thoại: giỏ = tấm trượt từ dưới lên, mở bằng nút giỏ nổi */
+  .gio-cot{position:fixed; left:0; right:0; bottom:0; top:auto; z-index:70; max-height:86dvh; overflow:auto;
+    padding:12px; background:var(--ground); border-radius:22px 22px 0 0; box-shadow:0 -12px 40px rgba(22,35,42,.22);
+    transform:translateY(105%); transition:transform .3s var(--em)}
+  body.mo-gio .gio-cot{transform:none}
+  .gio-dau .dong{display:grid}
+  .gio-phu{position:fixed; inset:0; z-index:69; background:rgba(22,35,42,.4); opacity:0; pointer-events:none; transition:opacity .2s}
+  body.mo-gio .gio-phu{opacity:1; pointer-events:auto}
+  .nut-gio{display:flex; position:fixed; right:16px; bottom:22px; z-index:50; align-items:center; gap:8px; padding:12px 18px;
+    border-radius:999px; background:var(--accent); color:#fff; font-weight:800; font-size:14px; box-shadow:0 10px 28px rgba(14,124,110,.35)}
+  .nut-gio .ic{width:20px; height:20px}
+  .nut-gio b{min-width:22px; height:22px; padding:0 6px; border-radius:11px; background:#fff; color:var(--accent); display:grid; place-items:center; font-size:12px}
+}
+@media (max-width:640px){
+  .shop-dau{padding:12px 14px; gap:11px}
+  .shop-dau .shop-ic{width:42px; height:42px}
+  .shop-dau h1{font-size:16px}
+  .shop-dau p{display:none}
+  .shop-vi{padding:7px 11px; font-size:13px}
+  .shop-luoi{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+  .mon{padding:10px}
+  .mon-anh{font-size:48px}
+  .nut-gio{bottom:calc(var(--cao-thanh) + 14px + env(safe-area-inset-bottom))}
+  .gio-cot{bottom:0; padding-bottom:calc(12px + env(safe-area-inset-bottom)); z-index:70}
+}
+</style>
+</head>
+<body>
+<main class="main shop">
+  <section>
+    <div class="card shop-dau">
+      <span class="shop-ic" id="icShop"></span>
+      <div><h1>SHOP ĐỔI QUÀ</h1><p id="shopPhu">Chọn quà em thích, thêm vào giỏ rồi gửi yêu cầu cho thầy</p></div>
+      <span class="shop-vi" title="Số sao em đang có"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg><span id="shopSao">0</span> sao</span>
+    </div>
+    <div class="shop-qs" id="shopQs" hidden></div>
+    <div class="shop-nhom" id="shopNhom"></div>
+    <div class="shop-luoi" id="shopLuoi"><div class="xoay"></div></div>
+  </section>
+  <aside class="gio-cot" id="gioCot">
+    <div class="card gio">
+      <div class="gio-dau"><span id="icGio"></span><h2>GIỎ QUÀ</h2><button class="dong" id="gioDong" type="button" aria-label="Đóng"></button></div>
+      <div class="gio-ds" id="gioDs"></div>
+      <div id="gioTong"></div>
+    </div>
+    <div class="card don">
+      <div class="gio-dau"><h2>ĐƠN ĐỔI QUÀ CỦA EM</h2></div>
+      <p class="mau">Dữ liệu mẫu — phần gửi đơn thật đang hoàn thiện.</p>
+      <div id="donDs"></div>
+    </div>
+  </aside>
+</main>
+<div class="gio-phu" id="gioPhu"></div>
+<button class="nut-gio" id="nutGio" type="button"></button>
+
+<script src="config.js?v=13"></script>
+<script src="../js/thay-vao.js?v=2"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
+<script src="js/loi.js?v=17"></script>
+<script src="js/thanh.js?v=15"></script>
+<script src="js/bai.js?v=13"></script>
+<script src="js/chat.js?v=13"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = NW.$, $$ = NW.$$, IC = NW.IC, an = NW.chuAnToan;
+  var SAO = '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
+  $('#icShop').innerHTML = IC.shop;
+  $('#icGio').innerHTML = IC.gio;
+  $('#gioDong').innerHTML = IC.dong;
+
+  // Bộ quà mẫu (khuôn y `quaTang/catalog` — dashboard "Quà tặng" ghi) — chỉ dùng khi kho chưa có / chưa đọc được.
+  var MAU = { thue: 5, nhom: [
+    { ma: 'hoctap', ten: 'ĐỒ DÙNG HỌC TẬP', mon: [
+      { ten: 'Bút bi 4 màu', gia: 40, con: 12, icon: '🖊️' }, { ten: 'Set bút màu 12 cây', gia: 72, con: 6, icon: '🖍️' },
+      { ten: 'Vở kẻ ngang 120 trang', gia: 30, con: 20, icon: '📒' }, { ten: 'Hộp bút vải', gia: 95, con: 4, icon: '🎒' } ] },
+    { ma: 'sangtao', ten: 'ĐỒ DÙNG SÁNG TẠO', mon: [
+      { ten: 'Đất nặn 8 màu', gia: 85, con: 7, icon: '🧱' }, { ten: 'Bộ sticker trang trí', gia: 35, con: 15, icon: '✨' },
+      { ten: 'Màu nước 12 ô + cọ', gia: 130, con: 3, icon: '🎨' } ] },
+    { ma: 'dochoi', ten: 'ĐỒ CHƠI', mon: [
+      { ten: 'Rubik 3x3', gia: 90, con: 6, icon: '🧩' }, { ten: 'Thú bông nhỏ', gia: 160, con: 2, icon: '🧸' },
+      { ten: 'Bóng nảy phát sáng', gia: 25, con: 0, icon: '🏀' } ] }
+  ] };
+  var DON_MAU = [
+    { ten: 'Bút bi 4 màu × 2', ngay: 'Hôm qua · 84 sao', tt: 'cho' },
+    { ten: 'Rubik 3x3', ngay: '20/09 · 95 sao', tt: 'xong' }
+  ];
+  var TT_CHU = { cho: 'Chờ thầy duyệt', duyet: 'Đã duyệt', xong: 'Đã nhận quà', huy: 'Từ chối' };
+
+  NW.dungThanh({ tab: 'shop' }).then(async function () {
+    var toi = NW.toi || {};
+    // Thầy / "xem như em" ⇒ chỉ quan sát
+    var quanSat = !!toi.laThay || NW.chiXem();
+    var saoCo = Number(toi.sao) || 0;
+    $('#shopSao').textContent = saoCo;
+    if (quanSat) {
+      $('#shopQs').hidden = false;
+      $('#shopQs').innerHTML = IC.hien + '<span>' + (toi.laThay
+        ? 'Chế độ quan sát — thầy xem Shop y như học sinh thấy, không thêm vào giỏ, không đổi quà.'
+        : 'Đang xem như em — chỉ xem Shop, không thêm vào giỏ, không đổi quà.') + '</span>';
+      $('#shopPhu').textContent = 'Quà học sinh đang thấy trong Shop';
+      if (toi.laThay) $('.shop-vi').hidden = true;   // thầy không có ví sao
+      $('#gioCot').hidden = true;
+      $('.main.shop').style.gridTemplateColumns = 'minmax(0,1fr)';
+    }
+
+    // ---------- kho quà ----------
+    var kho = MAU;
+    try {
+      var f = await NW.fb();
+      var d = await f.fs.getDoc(f.fs.doc(f.db, 'quaTang', 'catalog'));
+      var o = d.exists() ? d.data() : null;
+      if (o && o.nhom && o.nhom.some(function (n) { return (n.mon || []).length; })) kho = o;
+    } catch (e) { /* kho chưa đọc được ⇒ bộ mẫu */ }
+    var thue = Number(kho.thue) || 0;
+    var MON = [];                       // mọi món đang hiện, kèm khoá ổn định nhom:ten
+    (kho.nhom || []).forEach(function (n) {
+      (n.mon || []).forEach(function (m) {
+        if (m.tat) return;
+        MON.push({ k: n.ma + ':' + m.ten, nhom: n.ma, ten: String(m.ten || ''), gia: Number(m.gia) || 0, con: Number(m.con) || 0, icon: m.icon || '🎁' });
+      });
+    });
+    var monTheoK = {}; MON.forEach(function (m) { monTheoK[m.k] = m; });
+
+    // ---------- giỏ (nhớ trên máy theo từng em; chỉ là tiện lợi, chưa gửi đi đâu) ----------
+    var KHOA_GIO = 'nw_gio_' + (toi.uid || 'khach');
+    var gio = {};
+    try { gio = JSON.parse(localStorage.getItem(KHOA_GIO) || '{}') || {}; } catch (e) { gio = {}; }
+    Object.keys(gio).forEach(function (k) { if (!monTheoK[k] || !(gio[k] > 0)) delete gio[k]; else gio[k] = Math.min(gio[k], monTheoK[k].con); });
+    function luuGio() { try { localStorage.setItem(KHOA_GIO, JSON.stringify(gio)); } catch (e) { } }
+    function soTrongGio() { return Object.keys(gio).reduce(function (s, k) { return s + gio[k]; }, 0); }
+    function tinhTong() {
+      var tien = Object.keys(gio).reduce(function (s, k) { return s + monTheoK[k].gia * gio[k]; }, 0);
+      var phi = Math.round(tien * thue / 100);
+      return { tien: tien, phi: phi, tong: tien + phi };
+    }
+    function doiSo(k, buoc) {
+      var m = monTheoK[k]; if (!m) return;
+      var moi = Math.max(0, Math.min(m.con, (gio[k] || 0) + buoc));
+      if (moi === (gio[k] || 0) && buoc > 0) NW.toast('Món này chỉ còn ' + m.con + ' phần.');
+      if (moi) gio[k] = moi; else delete gio[k];
+      luuGio(); veLuoi(); veGio();
+    }
+
+    // ---------- nhóm + lưới ----------
+    var nhomChon = 'tatCa';
+    var dsNhom = [{ ma: 'tatCa', ten: 'TẤT CẢ' }].concat((kho.nhom || []).filter(function (n) { return MON.some(function (m) { return m.nhom === n.ma; }); }));
+    $('#shopNhom').innerHTML = dsNhom.map(function (n) {
+      var so = n.ma === 'tatCa' ? MON.length : MON.filter(function (m) { return m.nhom === n.ma; }).length;
+      return '<button type="button" data-n="' + an(n.ma) + '"' + (n.ma === nhomChon ? ' class="chon"' : '') + '>' + an(n.ten) + ' (' + so + ')</button>';
+    }).join('');
+    $$('#shopNhom button').forEach(function (b) {
+      b.onclick = function () { nhomChon = b.getAttribute('data-n'); $$('#shopNhom button').forEach(function (x) { x.classList.toggle('chon', x === b); }); veLuoi(); };
+    });
+
+    function veLuoi() {
+      var ds = MON.filter(function (m) { return nhomChon === 'tatCa' || m.nhom === nhomChon; });
+      if (!ds.length) { $('#shopLuoi').innerHTML = '<div class="card trong" style="grid-column:1/-1">' + IC.shop + '<br>Shop chưa có món quà nào — thầy sẽ sớm bày quà lên nhé!</div>'; return; }
+      $('#shopLuoi').innerHTML = ds.map(function (m) {
+        var het = m.con <= 0, co = gio[m.k] || 0;
+        var nut = quanSat ? '' : het ? '<button class="btn soft wide" type="button" disabled>Tạm hết quà</button>'
+          : co ? '<div class="so-luong"><button type="button" data-bot="' + an(m.k) + '" aria-label="Bớt">−</button><span>' + co + ' trong giỏ</span>' +
+                 '<button type="button" data-them="' + an(m.k) + '" aria-label="Thêm"' + (co >= m.con ? ' disabled' : '') + '>+</button></div>'
+          : '<button class="btn primary wide" type="button" data-them="' + an(m.k) + '">' + IC.gio + 'Thêm vào giỏ</button>';
+        return '<div class="mon' + (het ? ' het' : '') + '">' +
+          '<div class="mon-anh">' + (het ? '<span class="nhan">Hết quà</span>' : m.con <= 3 ? '<span class="nhan it">Còn ' + m.con + '</span>' : '') + an(m.icon) + '</div>' +
+          '<div class="mon-ten">' + an(m.ten) + '</div>' +
+          '<div class="mon-gia">' + SAO + m.gia + ' sao</div>' + nut + '</div>';
+      }).join('');
+      $$('#shopLuoi [data-them]').forEach(function (b) { b.onclick = function () { doiSo(b.getAttribute('data-them'), 1); }; });
+      $$('#shopLuoi [data-bot]').forEach(function (b) { b.onclick = function () { doiSo(b.getAttribute('data-bot'), -1); }; });
+    }
+
+    function veGio() {
+      var ks = Object.keys(gio), so = soTrongGio();
+      $('#nutGio').innerHTML = IC.gio + 'Giỏ quà <b>' + so + '</b>';
+      $('#nutGio').hidden = quanSat;
+      if (!ks.length) {
+        $('#gioDs').innerHTML = '<div class="gio-trong">' + IC.gio + '<br>Giỏ đang trống.<br>Bấm “Thêm vào giỏ” ở món em thích nhé.</div>';
+        $('#gioTong').innerHTML = '';
+        return;
+      }
+      $('#gioDs').innerHTML = ks.map(function (k) {
+        var m = monTheoK[k];
+        return '<div class="gio-dong"><span class="icon">' + an(m.icon) + '</span><span class="ten">' + an(m.ten) + '<small>' + m.gia + ' sao / phần</small></span>' +
+          '<span class="sl"><button type="button" data-bot="' + an(k) + '" aria-label="Bớt">−</button><b>' + gio[k] + '</b>' +
+          '<button type="button" data-them="' + an(k) + '" aria-label="Thêm">+</button></span></div>';
+      }).join('');
+      var t = tinhTong();
+      $('#gioTong').innerHTML = '<div class="gio-tong">' +
+        '<div><span>Tiền quà (' + so + ' món)</span><span>' + t.tien + ' sao</span></div>' +
+        '<div><span>Phí đổi quà (' + thue + '%)</span><span>' + t.phi + ' sao</span></div>' +
+        '<div class="chot"><span>Tổng trừ vào ví</span><b>' + t.tong + ' sao</b></div>' +
+        (t.tong > saoCo ? '<div class="thieu">Em đang có ' + saoCo + ' sao — còn thiếu ' + (t.tong - saoCo) + ' sao.</div>' : '') +
+        '</div><div class="gio-chan"><button class="btn primary wide" type="button" id="nutYeuCau">' + IC.gui + 'YÊU CẦU ĐỔI QUÀ</button></div>';
+      $$('#gioDs [data-them]').forEach(function (b) { b.onclick = function () { doiSo(b.getAttribute('data-them'), 1); }; });
+      $$('#gioDs [data-bot]').forEach(function (b) { b.onclick = function () { doiSo(b.getAttribute('data-bot'), -1); }; });
+      $('#nutYeuCau').onclick = async function () {
+        var ok = await NW.hoi('Gửi yêu cầu đổi quà?', 'Em đổi ' + so + ' món, tổng ' + t.tong + ' sao (đã gồm phí ' + thue + '%). Thầy duyệt xong sẽ trao quà cho em.', { ok: 'Gửi yêu cầu' });
+        if (ok) NW.toast('Phần gửi yêu cầu đang được hoàn thiện — thầy sẽ mở sớm nhé!');
+      };
+    }
+
+    function veDon() {
+      $('#donDs').innerHTML = DON_MAU.map(function (d) {
+        return '<div class="don-dong"><span class="ten">' + an(d.ten) + '<small>' + an(d.ngay) + '</small></span><span class="tt ' + d.tt + '">' + TT_CHU[d.tt] + '</span></div>';
+      }).join('');
+    }
+
+    function moGio() { document.body.classList.add('mo-gio'); }
+    function dongGio() { document.body.classList.remove('mo-gio'); }
+    $('#nutGio').onclick = moGio;
+    $('#gioPhu').onclick = dongGio;
+    $('#gioDong').onclick = dongGio;
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') dongGio(); });
+
+    veLuoi(); veGio(); veDon();
+  });
+})();
+</script>
+</body>
+</html>

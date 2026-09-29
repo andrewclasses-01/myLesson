@@ -18,7 +18,9 @@
     baiTap: P('<path d="M8.5 21H5.2A1.7 1.7 0 0 1 3.5 19.3V4.2A1.7 1.7 0 0 1 5.2 2.5h8.3l5 5v3.3"/><path d="M13.5 2.5v4.2a1 1 0 0 0 1 1h4"/><path d="M6.8 9.6h4M6.8 12.6h7M6.8 15.6h5.2"/><path d="M11.3 21.5l.9-3.5 6.5-6.5a1.85 1.85 0 0 1 2.6 2.6l-6.5 6.5z"/><path d="M17.4 12.8l2.6 2.6"/>'),
     khamPha: P('<circle cx="12" cy="12" r="9.5"/><path d="m15.8 8.2-2.2 5.4-5.4 2.2 2.2-5.4z"/>'),
     tinNhan: P('<path d="M12.5 2.5a8.5 8.5 0 1 1-4.6 15.6L3 21.5l1.6-5.2A8.5 8.5 0 0 1 12.5 2.5z"/><circle cx="8.8" cy="11" r="1.2" fill="currentColor" stroke="none"/><circle cx="12.5" cy="11" r="1.2" fill="currentColor" stroke="none"/><circle cx="16.2" cy="11" r="1.2" fill="currentColor" stroke="none"/>'),
-    bangTin: P('<path d="M3 10.8 12 3.5l9 7.3"/><path d="M5.5 9.3V20.5h13V9.3"/><path d="M10 20.5v-5.5h4v5.5"/>'),
+    bangTin: P('<path fill="currentColor" stroke="none" fill-rule="evenodd" d="M10.55 2.75Q12 1.6 13.45 2.75L20.6 8.45Q21.5 9.15 21.5 10.3V19.3Q21.5 21.5 19.3 21.5H4.7Q2.5 21.5 2.5 19.3V10.3Q2.5 9.15 3.4 8.45ZM9.4 20.3V14.5Q9.4 13 10.9 13H13.1Q14.6 13 14.6 14.5V20.3Z"/>'),   // 29/09 thầy: ngôi nhà ĐẶC (home.png)
+    baiDang: P('<path d="M3 10.8 12 3.5l9 7.3"/><path d="M5.5 9.3V20.5h13V9.3"/><path d="M10 20.5v-5.5h4v5.5"/>'),
+    shop: P('<path d="M4.8 8.2h14.4l-1.1 11.6a1.8 1.8 0 0 1-1.8 1.7H7.7a1.8 1.8 0 0 1-1.8-1.7z"/><path d="M8.7 10.8V6.8a3.3 3.3 0 0 1 6.6 0v4"/>'),
     chuong: P('<path d="M6.2 8.5a5.8 5.8 0 0 1 11.6 0c0 6.5 2.7 8.3 2.7 8.3H3.5s2.7-1.8 2.7-8.3"/><path d="M10.4 20.5a1.8 1.8 0 0 0 3.2 0"/>'),
     timKiem: P('<circle cx="11" cy="11" r="7"/><path d="m20.5 20.5-4.6-4.6"/>'),
     caNhan: P('<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'),
@@ -30,6 +32,7 @@
     { ma: 'tinNhan', chu: 'TIN NHẮN' },
     { ma: 'bangTin', chu: 'BẢNG TIN' },
     { ma: 'chuong', chu: 'THÔNG BÁO' },
+    { ma: 'shop', chu: 'SHOP ĐỔI QUÀ' },   // 29/09 thầy chốt: trước Tìm kiếm
     { ma: 'timKiem', chu: 'TÌM KIẾM' }
   ];
   // Nút Đăng ký ở màn đăng nhập (thầy 24/09: sau này mở màn đăng ký cho học sinh mới)
@@ -56,6 +59,7 @@
     tinNhan: { chu: 'Trò chuyện và chia sẻ những điều thú vị', ds: ['Chat riêng với bạn, chat nhóm cùng cả lớp'] },
     bangTin: { chu: 'Thế giới ngoài kia có gì?', ds: ['Đăng ảnh, chia sẻ thành tích, kể chuyện lớp mình', 'Bình luận với những bài đăng thú vị'] },
     chuong: { chu: 'Không bỏ lỡ bất cứ điều gì', ds: ['Ai vừa thả tim, bình luận bài của em', 'Lời mời kết bạn từ các lớp khác', 'Tin quan trọng từ thầy Andrew'] },
+    shop: { chu: 'Đổi sao lấy những món quà em thích', ds: ['Đồ dùng học tập, đồ sáng tạo, đồ chơi xinh xắn', 'Chọn quà vào giỏ, gửi yêu cầu cho thầy', 'Theo dõi đơn đổi quà của em'] },
     timKiem: { chu: 'Tìm mọi người, mọi bài viết chỉ trong một chạm', ds: ['Tìm bạn cũ, bạn mới ở mọi lớp', 'Tìm lại bài đăng, nhóm chat', 'Kết bạn để mở rộng vòng bạn bè'] },
     caNhan: { chu: 'Thế giới của riêng em', ds: ['Ảnh bìa, ảnh đại diện, lời giới thiệu', 'Sở thích và bài viết của riêng em', 'Ghi lại những kỷ niệm, chia sẻ hành trình của riêng em'] },
     dangKy: { chu: 'Học sinh mới đăng ký học ngay trên web', ds: ['Đăng ký kiểm tra đầu vào', 'Đăng ký học thử', 'Thầy liên hệ lại sớm nhất'] }
@@ -128,7 +132,7 @@
     return true;
   }
   var TRANG_NW = window.AC_THU ? { khamPha: 'nw/khampha.html', tinNhan: 'nw/tinnhan.html', bangTin: 'nw/bangtin.html',
-    chuong: 'nw/bangtin.html?tb=1', timKiem: 'nw/timkiem.html', caNhan: 'nw/canhan.html' } : {};
+    chuong: 'nw/bangtin.html?tb=1', shop: 'nw/shop.html', timKiem: 'nw/timkiem.html', caNhan: 'nw/canhan.html' } : {};
   $('.nwb-tabs', dau).innerHTML = tabs.map(function (t, i) {
     var dauTien = i === 0;
     return '<a class="nwb-tab' + (dauTien ? ' chon' : '') + '" data-ma="' + t.ma + '" data-nh="' + t.chu + '" href="' +
@@ -190,7 +194,7 @@
     { ma: 'kholuutru', chu: 'Kho trò chuyện', ic: ICQ.khoChat, mau: '#3E7BFA' },
     { vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, mau: '#3E7BFA', mo: 'Lập và quản lý nhóm chat các lớp' },
-    { ma: 'baiDang', chu: 'Bài đăng', ic: IC.bangTin, mau: '#18A957', mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
+    { ma: 'baiDang', chu: 'Bài đăng', ic: IC.baiDang, mau: '#18A957', mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
     { ma: 'noiBat', chu: 'Nổi bật', ic: ICQ.sao, mau: '#E0B411', mo: 'Ghim và sắp xếp bài nổi bật' },
     { ma: 'suKien', chu: 'Sự kiện & Khám phá', ic: ICQ.suKien, mau: '#F0821E', mo: 'Đăng trò chơi, giải đấu, khoá học, thông báo' },
     { ma: 'sinhNhat', chu: 'Sinh nhật', ic: ICQ.sinhNhat, mau: '#EC4899' },  // v1.166.0 — window.qlMoSinhNhat

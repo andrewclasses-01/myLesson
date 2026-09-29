@@ -2543,6 +2543,28 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .qq-nut.phu{background:var(--the); color:var(--xanh); border:1px solid var(--xanh)}
 .qq-nut:disabled{opacity:.45; cursor:default}
 .qq-trong{padding:24px 10px; text-align:center; font:600 12.5px var(--font); color:var(--nhat)}
+/* ⭐ v1.179.0 (29/09) — hộp Quà có 2 phần: KHO QUÀ | ĐƠN ĐỔI QUÀ (đơn học sinh gửi từ tab Shop). Đợt này đơn là BẢN MẪU. */
+.qq-che{display:flex; gap:4px; padding:4px; margin-bottom:14px; border-radius:14px; background:var(--nen); border:1px solid var(--vien); width:max-content; max-width:100%}
+.qq-che button{padding:9px 16px; border-radius:11px; border:0; background:none; font:800 12.5px var(--font); color:var(--nhat); cursor:pointer; display:flex; align-items:center; gap:7px}
+.qq-che button.chon{background:var(--the); color:var(--xanh); box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.qq-che button b{min-width:20px; height:20px; padding:0 6px; border-radius:10px; background:#E0575B; color:#fff; font-size:11px; display:grid; place-items:center}
+.qq-mau{margin:0 0 12px; padding:9px 12px; border-radius:10px; background:#FFF6E0; color:#8A5A00; font:700 11.5px/1.4 var(--font); border:1px solid #F5E3B5}
+.qq-loc{display:flex; gap:8px; flex-wrap:wrap; margin-bottom:12px}
+.qq-loc button{padding:7px 13px; border-radius:999px; border:1px solid var(--vien); background:var(--the); font:700 12px var(--font); color:var(--nhat); cursor:pointer}
+.qq-loc button.chon{background:var(--xanh); border-color:var(--xanh); color:#fff}
+.qq-don{display:grid; grid-template-columns:minmax(170px,1.1fr) minmax(0,2fr) 90px 128px; gap:12px; align-items:center; padding:12px 14px}
+.qq-don + .qq-don{border-top:1px solid var(--vien)}
+.qq-don .ai b{display:block; font:800 13px/1.3 var(--font)}
+.qq-don .ai span{font:600 11.5px var(--font); color:var(--nhat)}
+.qq-don .mon{display:flex; flex-wrap:wrap; gap:6px}
+.qq-don .mon span{padding:4px 9px; border-radius:9px; background:var(--nen); border:1px solid var(--vien); font:700 12px var(--font)}
+.qq-don .tong{font:800 13.5px var(--font); color:#9A6A12; text-align:right}
+.qq-don .xu{display:flex; flex-direction:column; gap:6px; align-items:stretch}
+.qq-don .xu .qq-nut{padding:7px 10px; font-size:12px}
+.qq-tt{padding:4px 10px; border-radius:999px; font:800 11px var(--font); text-align:center}
+.qq-tt.cho{background:#FCF3E2; color:#9A6A12} .qq-tt.duyet{background:#EEF4FF; color:#2F5FC4}
+.qq-tt.xong{background:#E6F6EC; color:#12803F} .qq-tt.huy{background:var(--do-nhat); color:var(--do)}
+@media (max-width:720px){ .qq-don{grid-template-columns:1fr auto} .qq-don .mon{grid-column:1/-1} .qq-don .xu{grid-column:1/-1; flex-direction:row} }
 @media (max-width:720px){
   .qq-hang{grid-template-columns:48px 1fr 84px; grid-auto-rows:auto}
   .qq-hang.dau{display:none}
@@ -3305,7 +3327,7 @@ button.mk-em:hover{border-color:currentColor}
   <div class="qq-hop" role="dialog" aria-modal="true" aria-label="Quản lý quà">
     <div class="qq-dau">
       <span class="qq-ic"><svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4.5"/><path d="M5 12.5h14V21H5zM12 8v13M12 8s-1-4.5-4-4.5S5.5 8 8.5 8M12 8s1-4.5 4-4.5S18.5 8 15.5 8"/></svg></span>
-      <div><h3>QUẢN LÝ QUÀ</h3><p id="qqPhu">Kho quà chung cho mọi lớp</p></div>
+      <div><h3>QUẢN LÝ QUÀ</h3><p id="qqPhu">Kho quà chung cho mọi lớp · đơn đổi quà từ Shop</p></div>
       <button class="qq-dong" id="qqDong" title="Đóng" aria-label="Đóng">
         <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
@@ -3340,7 +3362,7 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=164"></script>
+<script src="config.js?v=165"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=72"></script>
@@ -9056,6 +9078,56 @@ button.mk-em:hover{border-color:currentColor}
   var QUA = null;             // bộ quà đang sửa (đọc một lần mỗi phiên)
   var QUA_NHOM = 'hoctap';
   var QUA_BAN = false;        // đã sửa gì mà chưa lưu?
+  // ⭐ v1.179.0 (29/09/2026, thầy chốt) — phần ĐƠN ĐỔI QUÀ: học sinh chọn quà vào giỏ ở tab SHOP (nw/shop.html) rồi bấm
+  // "Yêu cầu đổi quà" ⇒ đơn về đây; thầy Duyệt (tự trừ số lượng "còn lại" của món) / Từ chối / Đã trao quà.
+  // Đợt này CHỈ GIAO DIỆN (thầy: "build giao diện trước, nội dung xử lý sau") ⇒ đơn là BẢN MẪU, nút chỉ báo.
+  var QUA_CHE = 'kho';        // 'kho' | 'don'
+  var QUA_LOC = 'cho';
+  var DON_MAU = [
+    { ten: 'Nguyễn Minh Anh', lop: 'K9A', luc: 'Hôm nay · 14:20', tt: 'cho', mon: [{ icon: '🖊️', ten: 'Bút bi 4 màu', sl: 2, gia: 40 }, { icon: '✨', ten: 'Bộ sticker trang trí', sl: 1, gia: 35 }] },
+    { ten: 'Trần Gia Bảo', lop: 'K8B', luc: 'Hôm nay · 09:05', tt: 'cho', mon: [{ icon: '🧩', ten: 'Rubik 3x3', sl: 1, gia: 90 }] },
+    { ten: 'Lê Khánh Linh', lop: 'K7', luc: 'Hôm qua · 18:40', tt: 'duyet', mon: [{ icon: '🎨', ten: 'Màu nước 12 ô + cọ', sl: 1, gia: 130 }] },
+    { ten: 'Phạm Đức Huy', lop: 'K6', luc: '20/09 · 16:12', tt: 'xong', mon: [{ icon: '📒', ten: 'Vở kẻ ngang 120 trang', sl: 3, gia: 30 }] },
+    { ten: 'Đỗ Thu Hà', lop: 'K9A', luc: '18/09 · 19:30', tt: 'huy', mon: [{ icon: '🧸', ten: 'Thú bông nhỏ', sl: 1, gia: 160 }] }
+  ];
+  var DON_TT = { cho: 'Chờ duyệt', duyet: 'Đã duyệt', xong: 'Đã trao quà', huy: 'Từ chối' };
+  function quaCheHtml() {
+    var cho = DON_MAU.filter(function (d) { return d.tt === 'cho'; }).length;
+    return '<div class="qq-che"><button type="button" data-che="kho"' + (QUA_CHE === 'kho' ? ' class="chon"' : '') + '>KHO QUÀ</button>' +
+      '<button type="button" data-che="don"' + (QUA_CHE === 'don' ? ' class="chon"' : '') + '>ĐƠN ĐỔI QUÀ' + (cho ? '<b>' + cho + '</b>' : '') + '</button></div>';
+  }
+  function ganChe() {
+    Array.prototype.forEach.call($('#qqThan').querySelectorAll('[data-che]'), function (b) {
+      b.onclick = function () { QUA_CHE = b.getAttribute('data-che'); veQua(); };
+    });
+  }
+  function veDonQua() {
+    var thue = Number(QUA.thue) || 0;
+    var ds = DON_MAU.filter(function (d) { return QUA_LOC === 'tatCa' || d.tt === QUA_LOC; });
+    var LOC = [['cho', 'Chờ duyệt'], ['duyet', 'Đã duyệt'], ['xong', 'Đã trao'], ['huy', 'Từ chối'], ['tatCa', 'Tất cả']];
+    $('#qqThan').innerHTML = quaCheHtml() +
+      '<p class="qq-mau">Dữ liệu mẫu — đơn thật từ tab Shop của học sinh sẽ hiện ở đây khi phần gửi đơn hoàn thiện.</p>' +
+      '<div class="qq-loc">' + LOC.map(function (l) {
+        var so = l[0] === 'tatCa' ? DON_MAU.length : DON_MAU.filter(function (d) { return d.tt === l[0]; }).length;
+        return '<button type="button" data-loc="' + l[0] + '"' + (QUA_LOC === l[0] ? ' class="chon"' : '') + '>' + l[1] + ' (' + so + ')</button>';
+      }).join('') + '</div>' +
+      '<div class="qq-bang">' + (ds.length ? ds.map(function (d) {
+        var tien = d.mon.reduce(function (t, m) { return t + m.gia * m.sl; }, 0), tong = tien + Math.round(tien * thue / 100);
+        var xu = d.tt === 'cho' ? '<button class="qq-nut" type="button" data-xu="duyet">Duyệt</button><button class="qq-nut phu" type="button" data-xu="huy">Từ chối</button>'
+          : d.tt === 'duyet' ? '<button class="qq-nut" type="button" data-xu="xong">Đã trao quà</button>'
+          : '<span class="qq-tt ' + d.tt + '">' + DON_TT[d.tt] + '</span>';
+        return '<div class="qq-don"><div class="ai"><b>' + A.chuAnToan(d.ten) + '</b><span>Lớp ' + A.chuAnToan(d.lop) + ' · ' + A.chuAnToan(d.luc) + '</span></div>' +
+          '<div class="mon">' + d.mon.map(function (m) { return '<span>' + A.chuAnToan(m.icon + ' ' + m.ten) + ' × ' + m.sl + '</span>'; }).join('') + '</div>' +
+          '<div class="tong">' + tong + ' ★</div><div class="xu">' + xu + '</div></div>';
+      }).join('') : '<div class="qq-trong">Không có đơn nào ở mục này.</div>') + '</div>';
+    ganChe();
+    Array.prototype.forEach.call($('#qqThan').querySelectorAll('[data-loc]'), function (b) {
+      b.onclick = function () { QUA_LOC = b.getAttribute('data-loc'); veDonQua(); };
+    });
+    Array.prototype.forEach.call($('#qqThan').querySelectorAll('[data-xu]'), function (b) {
+      b.onclick = function () { baoToast('Đây là đơn mẫu — nút Duyệt / Từ chối / Đã trao sẽ chạy thật khi phần gửi đơn hoàn thiện (Duyệt tự trừ số lượng còn lại).'); };
+    });
+  }
 
   function quaTrong() {
     return { thue: 0, nhom: QUA_KHUNG.map(function (n) { return { ma: n.ma, ten: n.ten, mon: [] }; }) };
@@ -9086,9 +9158,11 @@ button.mk-em:hover{border-color:currentColor}
   var QQ_XOA = '<svg viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l1 13h9l1-13"/></svg>';
 
   function veQua() {
+    $('#qqThem').hidden = $('#qqLuu').hidden = QUA_CHE === 'don';
+    if (QUA_CHE === 'don') return veDonQua();
     var n = quaNhomHien();
     var mon = n.mon || [];
-    $('#qqThan').innerHTML =
+    $('#qqThan').innerHTML = quaCheHtml() +
       '<div class="qq-thanh">' +
         '<div class="qq-tab">' + QUA.nhom.map(function (x) {
           return '<button type="button" data-nhom="' + A.chuAnToan(x.ma) + '"' +
@@ -9115,6 +9189,7 @@ button.mk-em:hover{border-color:currentColor}
         }).join('') : '<div class="qq-trong">Nhóm này chưa có món nào — bấm ' +
           '“Thêm món vào nhóm này” ở dưới.</div>') +
       '</div>';
+    ganChe();
 
     Array.prototype.forEach.call($('#qqThan').querySelectorAll('.qq-tab button'), function (b) {
       b.onclick = function () { QUA_NHOM = b.getAttribute('data-nhom'); veQua(); };
@@ -12614,6 +12689,6 @@ button.mk-em:hover{border-color:currentColor}
   moCong();   // v1.176.0 — luôn qua cửa: phiên thầy thật mới mở trang
 })();
 </script>
-<script src="js/nw-thanh.js?v=16"></script>
+<script src="js/nw-thanh.js?v=17"></script>
 </body>
 </html>

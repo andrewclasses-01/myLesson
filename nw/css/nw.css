@@ -124,8 +124,12 @@ textarea{resize:none; font-weight:500; line-height:1.5; display:block}
   transition:background-color .18s, box-shadow .18s, transform .18s var(--em)}
 .tab:hover{color:var(--ink); background:rgba(14,124,110,.06)}
 .tab.chon{color:var(--accent)}
-.tab.chon .ic{stroke-width:1.9; background:var(--accent-soft);
-  box-shadow:0 0 0 3px rgba(14,124,110,.12), 0 4px 14px rgba(14,124,110,.28); transform:translateY(-1px)}
+.tab.chon .ic{stroke-width:1.9}
+/* 29/09 thầy chọn kiểu A: tab đang chọn = icon sáng màu (không nền tròn) + vạch 3px hết ô tab ở mép dưới (CHỈ máy tính) */
+.tab::after{content:""; position:absolute; left:0; right:0; bottom:0; height:3px; border-radius:3px 3px 0 0;
+  background:var(--accent); transform:scaleX(0); transition:transform .22s cubic-bezier(.22,.9,.3,1)}
+.tab.chon::after{transform:scaleX(1)}
+@media (max-width:640px){ .tab::after{display:none} }
 .tab .cham{position:absolute; top:9px; right:9px; min-width:17px; height:17px; padding:0 5px; border-radius:9px;
   background:var(--do); color:#fff; font-size:10px; font-weight:800; display:grid; place-items:center; border:2px solid var(--ground)}
 /* tooltip chữ nhỏ khi rê chuột (vì tab không có chữ) */

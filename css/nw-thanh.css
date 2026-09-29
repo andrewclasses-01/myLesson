@@ -24,8 +24,12 @@
   transition:background-color .18s, box-shadow .18s, transform .18s cubic-bezier(.22,.9,.3,1)}
 .nwb-tab:hover{color:var(--ink); background:rgba(14,124,110,.06)}
 .nwb-tab.chon{color:var(--accent)}
-.nwb-tab.chon svg{stroke-width:1.9; background:var(--accent-soft);
-  box-shadow:0 0 0 3px rgba(14,124,110,.12), 0 4px 14px rgba(14,124,110,.28); transform:translateY(-1px)}
+.nwb-tab.chon svg{stroke-width:1.9}
+/* 29/09 thầy chọn kiểu A: tab đang chọn = icon sáng màu (không nền tròn) + vạch 3px hết ô tab ở mép dưới (CHỈ máy tính) */
+.nwb-tab::after{content:""; position:absolute; left:0; right:0; bottom:0; height:3px; border-radius:3px 3px 0 0;
+  background:var(--accent); transform:scaleX(0); transition:transform .22s cubic-bezier(.22,.9,.3,1)}
+.nwb-tab.chon::after{transform:scaleX(1)}
+@media (max-width:640px){ .nwb-tab::after{display:none} }
 /* tooltip chữ nhỏ khi rê chuột (tab không có chữ) */
 .nwb-tab::before{content:attr(data-nh); position:absolute; top:calc(100% + 4px); left:50%; z-index:5;
   transform:translateX(-50%) translateY(-4px); padding:4px 8px; border-radius:7px; background:var(--ink); color:#fff;

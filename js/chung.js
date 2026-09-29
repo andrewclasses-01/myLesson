@@ -1867,7 +1867,12 @@
     // ⭐ v1.88.0 — WORKSHEET: chỉ là thẻ nhắc bài giấy, không có trang bài tập
     // nào để mở. `dungCot()` bên lop.html đã có sẵn nhánh báo "giao trên giấy"
     // cho mọi thẻ thiếu `trang` — không cần code thêm gì ở đó.
-    if (d === 'WORKSHEET') return '';
+    // ⭐ v1.184.0 (29/09/2026) — CÓ PDF (khối `ws` mang `tep`) ⇒ mở `bai.html`: trang đó đã
+    // có sẵn khối WORKSHEET ở thanh đầu (tải PDF + nộp ảnh) và TỰ MỞ bảng khi bài chỉ có
+    // worksheet. Không có PDF (bài giấy thuần) ⇒ '' như cũ, thẻ báo "giao trên giấy".
+    if (d === 'WORKSHEET') {
+      return (b.khoi || []).some(function (k) { return k && k.loai === 'ws' && k.tep; }) ? 'bai.html' : '';
+    }
     if (d.indexOf('SP') === 0 || d.indexOf('SLIDE') >= 0) return 'bai-sp.html';
     return 'bai.html';
   }

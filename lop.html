@@ -1664,10 +1664,10 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=170"></script>
+<script src="config.js?v=171"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
-<script src="js/chung.js?v=74"></script>
+<script src="js/chung.js?v=75"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <script src="js/chat.js?v=28"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -2866,8 +2866,8 @@ function veHan(b, tt){
    thẻ bình thường (`theTuBai`/`veTheMoi`/`veTheCu`/Kho bài…) — chỉ khác ở
    HAI CHỖ: tiêu đề đảo vai (WORKSHEET lên trên, tên BT ở lớp xuống dưới) và
    không có thanh tiến trình (không có act nào để đếm), thay bằng dòng nhắc.
-   ⛔ Không mở trang bài tập nào khi bấm — không cần code riêng: `trangCuaBai()`
-   (js/chung.js) trả '' cho dạng này, và `dungCot()` đã có sẵn nhánh
+   ⭐ v1.184.0: có PDF thì `trangCuaBai()` trả 'bai.html' (mở bảng tải PDF + nộp ảnh);
+   bài giấy thuần: `trangCuaBai()` (js/chung.js) trả '' và `dungCot()` đã có sẵn nhánh
    "!b.trang -> báo thẻ giao trên giấy" cho MỌI thẻ thiếu trang. */
 /* ⭐ v1.103.0 (15/09/2026, thầy chốt) — app v2.70.0: WORKSHEET là một LOẠI cả
    dòng với dãy ô số, mỗi ô = một file/tiêu đề; đẩy web thành khối `{loai:'ws',
@@ -2884,9 +2884,10 @@ function veWorksheetChu(b){
     '</span>';
 }
 function veWorksheetKhoi(b){
+  var coPdf = !!b.trang;   /* v1.184.0 — có PDF ⇒ thẻ mở được trang bài, bỏ chữ "GIẤY" */
   var ten = (b && b.ws && b.ws.length) ? b.ws.map(A.chuAnToan).join(' · ') : '';
   return '<span class="the-diem ws-diem">' +
-      '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP GIẤY' +
+      '<span class="ws-nhac" title="' + A.chuAnToan(ten) + '">EM HÃY HOÀN THÀNH BÀI TẬP' + (coPdf ? '' : ' GIẤY') +
         (ten ? '<br><span class="ws-nhac-ten">' + ten + '</span>!' : '<br>TRÊN WORKSHEET!') +
       '</span>' +
     '</span>';

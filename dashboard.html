@@ -67,9 +67,10 @@
       if (!lopDoan) { var em = JSON.parse(localStorage.getItem('mylesson_hs') || 'null'); lopDoan = (em && em.lop) || ''; }
       lopDoan = String(lopDoan).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
     } catch (e) { lopDoan = ''; }
+    var gocDl = (/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825') ? 'https://andrewclasses.com/' : '';   // 29/09: trang thử đọc dữ liệu trang thật (= config.js AC_GOC_DL)
     window.__napSom = {
-      'data/lop.json': lay('data/lop.json?t=' + t),
-      'data/bai.json': lay('data/bai.json?t=' + t),
+      'data/lop.json': lay(gocDl + 'data/lop.json?t=' + t),
+      'data/bai.json': lay(gocDl + 'data/bai.json?t=' + t),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
       lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
@@ -3339,10 +3340,10 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=159"></script>
+<script src="config.js?v=160"></script>
 <script src="js/thay-vao.js?v=1"></script>
 <script src="js/app-check.js?v=2"></script>
-<script src="js/chung.js?v=70"></script>
+<script src="js/chung.js?v=71"></script>
 <script src="js/chat.js?v=28"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
@@ -3914,7 +3915,7 @@ button.mk-em:hover{border-color:currentColor}
     return '<span class="bm-em-av" data-av-em="' + A.chuAnToan(ten) + '" data-av-lop="' +
       A.chuAnToan(tenGocLop) + '" style="background:' + MAU_AV[i % MAU_AV.length] + '">' +
       A.chuAnToan(avChuTat(ten).toUpperCase()) +
-      '<img class="bm-em-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(ten) +
+      '<img class="bm-em-anh" src="' + (window.AC_GOC_DL || '') + 'assets/avatar/' + lopSlug + '/' + avSlugTen(ten) +
       '.jpg" alt="" onerror="this.remove()"></span>';
   }
 
@@ -5889,7 +5890,7 @@ button.mk-em:hover{border-color:currentColor}
       for (var j = 0; j < x.ten.length; j++) mauI += x.ten.charCodeAt(j);
       var mau = MAU_AV[mauI % MAU_AV.length];
       // v1.58.0 — mang dấu `data-av-*` để kho ảnh đè được như mọi ô avatar khác.
-      var anh = '<img class="av-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(x.ten) +
+      var anh = '<img class="av-anh" src="' + (window.AC_GOC_DL || '') + 'assets/avatar/' + lopSlug + '/' + avSlugTen(x.ten) +
         '.jpg" alt="" onerror="this.remove()">';
       return '<span class="dn-b" data-av-em="' + A.chuAnToan(x.ten) + '" data-av-lop="' +
         A.chuAnToan(lopGoc) + '" style="top:' + top.toFixed(1) + '%; left:' +
@@ -7192,7 +7193,7 @@ button.mk-em:hover{border-color:currentColor}
         '<clipPath id="' + id + '"><circle cx="' + cx + '" cy="' + cy + '" r="12"/></clipPath>' +
         '<circle cx="' + cx + '" cy="' + cy + '" r="12" fill="' + (x.xong ? mau : '#fff') + '"/>' +
         '<text x="' + cx + '" y="' + (+cy + 3.5).toFixed(1) + '" text-anchor="middle" font-size="9" font-weight="800" fill="' + (x.xong ? '#fff' : mau) + '">' + A.chuAnToan(avChuTat(ten).toUpperCase()) + '</text>' +
-        '<image href="assets/avatar/' + slug + '/' + avSlugTen(ten) + '.jpg" x="' + (cx - 12) + '" y="' + (cy - 12) + '" width="24" height="24" clip-path="url(#' + id + ')" preserveAspectRatio="xMidYMid slice"' + (x.xong ? '' : ' opacity=".45"') + '/>' +
+        '<image href="' + (window.AC_GOC_DL || '') + 'assets/avatar/' + slug + '/' + avSlugTen(ten) + '.jpg" x="' + (cx - 12) + '" y="' + (cy - 12) + '" width="24" height="24" clip-path="url(#' + id + ')" preserveAspectRatio="xMidYMid slice"' + (x.xong ? '' : ' opacity=".45"') + '/>' +
         '<circle class="vien" cx="' + cx + '" cy="' + cy + '" r="12.5" fill="none" stroke="' + (x.xong ? '#fff' : mau) + '" stroke-width="2"' + (x.xong ? '' : ' stroke-dasharray="4 2"') + '/>' +
         '<circle class="chon-vong" cx="' + cx + '" cy="' + cy + '" r="16" fill="none" stroke="#16232A" stroke-width="2.5"/></g>';
     });
@@ -8030,7 +8031,7 @@ button.mk-em:hover{border-color:currentColor}
           return '<div class="av-dong">' +
             '<span class="av-hinh" data-av-em="' + A.chuAnToan(h.ten) + '" data-av-lop="' +
             A.chuAnToan((l && l.tenGoc) || LOP_CHON) + '">' + A.chuAnToan(avChuTat(h.ten).toUpperCase()) +
-            '<img class="av-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(h.ten) + '.jpg' + v +
+            '<img class="av-anh" src="' + (window.AC_GOC_DL || '') + 'assets/avatar/' + lopSlug + '/' + avSlugTen(h.ten) + '.jpg' + v +
             '" alt="" onerror="this.remove()"></span>' +
             '<span class="av-ten">' + A.chuAnToan(h.ten) + '</span>' +
             (tt ? '<span class="av-tt' + (tt.loi ? ' av-loi' : '') + '">' + A.chuAnToan(tt.chu) + '</span>' : '') +
@@ -8190,7 +8191,7 @@ button.mk-em:hover{border-color:currentColor}
     // mang dấu `data-av-*` để kho ảnh đè được. Chữ tắt vẫn theo tên tin ghi.
     var lQ = A.lopTheoMa(DL, LOP_CHON) || {};
     var tenDay = A.avTenDayDu(ten, lQ.hocSinh || []);
-    var anh = lopSlug ? ('<img class="av-anh" src="assets/avatar/' + lopSlug + '/' + avSlugTen(tenDay) +
+    var anh = lopSlug ? ('<img class="av-anh" src="' + (window.AC_GOC_DL || '') + 'assets/avatar/' + lopSlug + '/' + avSlugTen(tenDay) +
       '.jpg" alt="" onerror="this.remove()">') : '';
     return '<span class="av" data-av-em="' + A.chuAnToan(tenDay) + '" data-av-lop="' +
            A.chuAnToan(lQ.tenGoc || LOP_CHON) + '" style="background:' + MAU_AV[i % MAU_AV.length] + '">' +
@@ -12554,6 +12555,6 @@ button.mk-em:hover{border-color:currentColor}
   moCong();   // v1.176.0 — luôn qua cửa: phiên thầy thật mới mở trang
 })();
 </script>
-<script src="js/nw-thanh.js?v=12"></script>
+<script src="js/nw-thanh.js?v=13"></script>
 </body>
 </html>

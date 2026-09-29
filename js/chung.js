@@ -637,7 +637,7 @@
   }
 
   function napJson(duong) {
-    var p = laySom(duong) || fetch(duong + '?t=' + Date.now(), { cache: 'no-store' });
+    var p = laySom(duong) || fetch((/^data\//.test(duong) ? (window.AC_GOC_DL || '') : '') + duong + '?t=' + Date.now(), { cache: 'no-store' });
     return p
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });
@@ -1895,7 +1895,7 @@
   }
   // `lop` ở đây là TÊN GỐC có gạch ("B2-B"), không phải mã đã bỏ gạch.
   function avUrl(lop, ten) {
-    return 'assets/avatar/' + avSlugLop(lop) + '/' + avSlugTen(ten) + '.jpg';
+    return (window.AC_GOC_DL || '') + 'assets/avatar/' + avSlugLop(lop) + '/' + avSlugTen(ten) + '.jpg';
   }
 
   // Gắn ẢNH + CHỮ TẮT vào một ô avatar ĐÃ CÓ SẴN thẻ con (huy hiệu số sao,

@@ -1,13 +1,20 @@
 // ═══════════════════════════════════════════════════════════════
 // CẤU HÌNH myLesson Web — sửa file này rồi push là xong.
 // ═══════════════════════════════════════════════════════════════
+// ⭐ 29/09/2026 (thầy chốt) — MỘT BỘ CODE CHO CẢ TRANG THẬT (andrewclasses.com) + TRANG THỬ (andrewclasses-01.github.io/andrewclasses-thu,
+// máy: cổng 8825). File hai bên GIỐNG HỆT — trang thử là bản chép tự động (tools/dong-bo-trang-thu.py). Chỉ khác nhờ cờ này:
+//   · trang thử bấm tab myNetwork (bảng tin, tin nhắn, cá nhân…) là MỞ trang nw/…; trang thật hiện hộp "sắp ra mắt".
+//   · trang thử KHÔNG chứa dữ liệu học sinh (data/, assets/avatar/) ⇒ đọc từ https://andrewclasses.com/.
+window.AC_THU = (/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825');
+window.AC_GOC_DL = window.AC_THU ? 'https://andrewclasses.com/' : '';
+
 window.MYLESSON_CONFIG = {
   // Tên hiện trên trang + tab trình duyệt
   TEN_SITE: 'Lesson in Andrew Classes',
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.177.0',
+  PHIEN_BAN: '1.178.0',
 
   // ---- ID QUẢN TRỊ CỦA THẦY (v1.176.0, 29/09/2026) ----
   // Chuỗi BĂM SHA-256 của ID quản trị (viết hoa, bỏ khoảng trắng). Gõ ID này ở màn đăng nhập

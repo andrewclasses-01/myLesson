@@ -89,9 +89,10 @@
       if (!lopDoan) { var em = JSON.parse(localStorage.getItem('mylesson_hs') || 'null'); lopDoan = (em && em.lop) || ''; }
       lopDoan = String(lopDoan).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
     } catch (e) { lopDoan = ''; }
+    var gocDl = (/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825') ? 'https://andrewclasses.com/' : '';   // 29/09: trang thử đọc dữ liệu trang thật (= config.js AC_GOC_DL)
     window.__napSom = {
-      'data/lop.json': lay('data/lop.json?t=' + t),
-      'data/bai.json': lay('data/bai.json?t=' + t),
+      'data/lop.json': lay(gocDl + 'data/lop.json?t=' + t),
+      'data/bai.json': lay(gocDl + 'data/bai.json?t=' + t),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
       lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,

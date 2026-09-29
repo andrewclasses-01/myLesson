@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bảng tin · Andrew Classes Network</title>
+<link rel="icon" href="assets/avatar-tron.jpg">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="css/nw.css?v=13">
+</head>
+<body>
+<main class="main">
+  <section>
+    <div id="soan" style="margin-bottom:14px"></div>
+    <div id="dong"></div>
+  </section>
+  <aside class="cot-phu">
+    <!-- v0.9.2 (thầy chốt 23/09): bỏ khung "Nếp của mạng", khung NGƯỜI LIÊN HỆ kéo dài xuống — ruột ở js/lienhe.js -->
+    <div id="oSinhNhat"></div>   <!-- v0.9.2 (thầy chốt 23/09): chỉ hiện đúng hôm có bạn sinh nhật -->
+    <div id="oLienHe"></div>
+    <p class="tiny cot-ver" id="verFoot"></p>
+  </aside>
+</main>
+
+<script src="config.js?v=13"></script>
+<script src="js/loi.js?v=14"></script>
+<script src="js/thanh.js?v=13"></script>
+<script src="js/bai.js?v=13"></script>
+<script src="js/chat.js?v=13"></script>
+<script src="js/chatnoi.js?v=13"></script>
+<script src="js/lienhe.js?v=13"></script>
+<script>
+(function () {
+  'use strict';
+  var $ = NW.$, IC = NW.IC, an = NW.chuAnToan;
+  $('#verFoot').textContent = 'Andrew Classes Network · v' + NW.CFG.PHIEN_BAN;
+
+  NW.dungThanh({ tab: 'bangTin' }).then(function (ph) {
+    var toi = NW.toi;
+    var dong = NW.Bai.dongBai({ hop: $('#dong'), loai: 'bangTin' });
+    NW.Bai.soan({ hop: $('#soan'), sauKhiDang: function (bai, id) { dong.chenDau(bai, id); } });
+
+    NW.LienHe.dung({ hop: $('#oLienHe'), hopSinhNhat: $('#oSinhNhat') });
+  });
+
+})();
+</script>
+</body>
+</html>

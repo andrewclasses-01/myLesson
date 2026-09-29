@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<title>Tin nhắn · Andrew Classes Network</title>
+<link rel="icon" href="assets/avatar-tron.jpg">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="css/nw.css?v=13">
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+</head>
+<body>
+<main class="main mot tn-main" style="padding-top:12px">
+  <div id="tn"></div>
+</main>
+<script src="config.js?v=13"></script>
+<script src="js/loi.js?v=14"></script>
+<script src="js/thanh.js?v=13"></script>
+<script src="js/chat.js?v=13"></script>
+<script>
+NW.dungThanh({ tab: 'tinNhan' }).then(function () { NW.Chat.dung(NW.$('#tn')); });
+</script>
+</body>
+</html>

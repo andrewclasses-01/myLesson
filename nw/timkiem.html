@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tìm kiếm · Andrew Classes Network</title>
+<link rel="icon" href="assets/avatar-tron.jpg">
+<link rel="stylesheet" href="assets/fonts.css">
+<link rel="stylesheet" href="css/nw.css?v=13">
+<link rel="preconnect" href="https://firestore.googleapis.com">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+</head>
+<body>
+<main class="main hep">
+  <section>
+    <div class="tim-o card"><span class="ic-tim" id="icTim"></span><input type="search" id="oTim" placeholder="Tìm bạn, bài đăng, nhóm…" autocomplete="off"><button class="tim-xoa" id="timXoa" type="button" aria-label="Xoá" hidden>✕</button></div>
+    <div class="tim-loai" id="timLoai">
+      <button type="button" class="chon" data-l="nguoi">Mọi người</button>
+      <button type="button" data-l="bai">Bài đăng</button>
+      <button type="button" data-l="nhom">Nhóm</button>
+    </div>
+    <div id="timKq" class="tim-kq"><div class="card trong">Gõ tên bạn, chữ trong bài hoặc tên nhóm để tìm.</div></div>
+  </section>
+</main>
+
+<script src="config.js?v=13"></script>
+<script src="js/loi.js?v=14"></script>
+<script src="js/thanh.js?v=13"></script>
+<script src="js/bai.js?v=13"></script>
+<script src="js/chat.js?v=13"></script>
+<script>
+// v0.4.0 — TÌM KIẾM (thầy chốt 22/09): một ô gõ, 3 loại MỌI NGƯỜI · BÀI ĐĂNG · NHÓM.
+//  · Mọi người: tìm theo TIỀN TỐ tên thường trên nwUsers (giống khám phá), mỗi người → trang cá nhân (ở đó có nút theo quan hệ).
+//  · Bài đăng: tải 60 bài mới nhất rồi LỌC CHỮ ở máy (không có full-text trên Firestore); chỉ hiện bài em được xem.
+//  · Nhóm: các nhóm chat em đang ở (nwChats loại 'nhom'), lọc theo tên → mở phòng.
+(function () {
+  'use strict';
+  var $ = NW.$, $$ = NW.$$, IC = NW.IC, an = NW.chuAnToan;
+  $('#icTim').innerHTML = IC.timKiem;
+
+  NW.dungThanh({ tab: 'timKiem' }).then(async function (ph) {
+    var toi = NW.toi, o = $('#oTim'), kq = $('#timKq'), loai = 'nguoi';
+    o.focus();
+    $$('#timLoai button').forEach(function (b) {
+      b.onclick = function () { $$('#timLoai button').forEach(function (x) { x.classList.toggle('chon', x === b); }); loai = b.getAttribute('data-l'); tim(); };
+    });
+    $('#timXoa').onclick = function () { o.value = ''; o.focus(); tim(); };
+    o.oninput = function () { $('#timXoa').hidden = !o.value; clearTimeout(o._t); o._t = setTimeout(tim, 350); };
+
+    async function tim() {
+      var q = NW.khongDau(o.value.trim());
+      if (!q) { kq.innerHTML = '<div class="card trong">Gõ tên bạn, chữ trong bài hoặc tên nhóm để tìm.</div>'; return; }
+      kq.innerHTML = '<div class="xoay"></div>';
+      try {
+        if (loai === 'nguoi') veNguoi(await timNguoi(q));
+        else if (loai === 'bai') veBai(await timBai(q));
+        else veNhom(await timNhom(q));
+      } catch (e) { kq.innerHTML = '<div class="card trong">' + an(NW.chuLoiKho(e)) + '</div>'; }
+    }
+
+    // ---- mọi người ----
+    async function timNguoi(q) {
+      if (ph.banThu) return [{ uid: 'hs_1', ten: 'MINH ANH', lop: 'A1C' }, { uid: 'hs_2', ten: 'HÀ LINH', lop: 'B2B' }, { uid: 'hs_3', ten: 'BẢO NAM', lop: 'B2B' }, { uid: 'hs_4', ten: 'MINH TÚ', lop: 'NNTNGK9' }]
+        .filter(function (n) { return NW.khongDau(n.ten).indexOf(q) >= 0; });
+      var f = await NW.fb();
+      var qr = f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('tenThuong', '>=', q), f.fs.where('tenThuong', '<=', q + ''), f.fs.limit(30));
+      var snap = await f.fs.getDocs(qr); var ds = [];
+      snap.forEach(function (d) { var x = d.data(); if (d.id !== toi.uid && !x.khoa) ds.push({ uid: d.id, ten: x.ten, anh: x.anh, lop: x.lop, cacLop: x.cacLop, vaiTro: x.vaiTro }); });
+      return ds;
+    }
+    function veNguoi(ds) {
+      var lops = toi.cacLop || [toi.lop];
+      kq.innerHTML = ds.length ? ds.map(function (n) {
+        var cungLop = n.vaiTro === 'gv' || (n.cacLop || [n.lop]).some(function (l) { return lops.indexOf(l) >= 0; });
+        return '<a class="nguoi card" href="canhan.html?uid=' + an(n.uid) + '">' + NW.avHtml(n) +
+          '<span><span class="ten">' + an(n.ten) + '</span><br><span class="lop">' + an(n.vaiTro === 'gv' ? 'THẦY' : (n.lop || '')) + (cungLop && n.vaiTro !== 'gv' ? ' · cùng lớp' : '') + '</span></span>' +
+          '<span class="cuoi tiny">' + (cungLop ? 'Xem trang' : 'Xem · kết bạn') + ' ›</span></a>';
+      }).join('') : '<div class="card trong">Không thấy ai tên như vậy.</div>';
+    }
+
+    // ---- bài đăng ----
+    var boBai = null;
+    async function timBai(q) {
+      if (ph.banThu) boBai = NW.Bai.mau();
+      else if (!boBai) {
+        var f = await NW.fb();
+        var snap = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwPosts'), f.fs.orderBy('luc', 'desc'), f.fs.limit(60)));
+        boBai = []; snap.forEach(function (d) { boBai.push({ id: d.id, bai: d.data() }); });
+      }
+      var banSet = await NW.dsBanUid();
+      return boBai.filter(function (x) {
+        var b = x.bai; if (!NW.Bai.xemDuoc(b, banSet)) return false;
+        var chu = NW.khongDau((b.chu || '') + ' ' + ((b.tacGia || {}).ten || ''));
+        return chu.indexOf(q) >= 0;
+      });
+    }
+    function veBai(ds) {
+      kq.innerHTML = '';
+      if (!ds.length) { kq.innerHTML = '<div class="card trong">Không có bài nào chứa chữ đó (chỉ tìm trong 60 bài mới nhất).</div>'; return; }
+      ds.forEach(function (x) { kq.appendChild(NW.Bai.dung(x.bai, x.id, { gon: true })); });
+    }
+
+    // ---- nhóm ----
+    async function timNhom(q) {
+      var ds = [];
+      if (ph.banThu) ds = [{ id: 'n1', ten: 'Nhóm ôn WORDS A1C', so: 5 }, { id: 'n2', ten: 'Team Speaking 3', so: 4 }];
+      else {
+        var f = await NW.fb();
+        var snap = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwChats'), f.fs.where('thanhVien', 'array-contains', toi.uid), f.fs.orderBy('capNhat', 'desc'), f.fs.limit(50)));
+        snap.forEach(function (d) { var x = d.data(); if (x.loai === 'nhom') ds.push({ id: d.id, ten: x.ten || 'Nhóm', so: (x.thanhVien || []).length }); });
+      }
+      return ds.filter(function (n) { return NW.khongDau(n.ten).indexOf(q) >= 0; });
+    }
+    function veNhom(ds) {
+      kq.innerHTML = ds.length ? ds.map(function (n) {
+        return '<a class="nguoi card" href="tinnhan.html?phong=' + an(n.id) + '"><span class="av" style="background:var(--accent-soft);color:var(--accent)">' + IC.nhom + '</span>' +
+          '<span><span class="ten">' + an(n.ten) + '</span><br><span class="lop">' + n.so + ' thành viên</span></span><span class="cuoi tiny">Mở ›</span></a>';
+      }).join('') : '<div class="card trong">Không có nhóm nào tên như vậy (chỉ tìm trong nhóm em đang ở).</div>';
+    }
+
+    var q0 = NW.thamSo('q'); if (q0) { o.value = q0; $('#timXoa').hidden = false; tim(); }
+  });
+})();
+</script>
+</body>
+</html>

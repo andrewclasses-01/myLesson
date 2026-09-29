@@ -1984,7 +1984,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .bxh-dong .diem small{font-size:.7em; font-weight:700; color:var(--nhat)}
 .bxh-dong .diem.full{color:#16A34A}
 .bxh-dong .tg{font:700 calc(var(--f)*.86)/1 var(--font); color:var(--mo); font-variant-numeric:tabular-nums; text-align:right}
-.bxh-dong.chua .ten{color:#DC2626}
+.bxh-dong.chua .ten, .bxh-dong.gan-han .ten{color:#DC2626}
 .bxh-dong.chua .diem, .bxh-dong.chua .tg{color:#D3DCDA}
 .hq-xh-phai{--f:13px; --av:26px; min-width:0; min-height:0; border:1px solid var(--vien); border-radius:14px; background:var(--the); display:flex; flex-direction:column; overflow:hidden}
 .bd-dau{flex:none; display:flex; align-items:baseline; justify-content:center; gap:10px; padding:10px 14px 8px; border-bottom:1px solid var(--vien)}
@@ -6895,6 +6895,8 @@ button.mk-em:hover{border-color:currentColor}
       return (y.tot.r - x.tot.r) || (x.tot.giay - y.tot.giay) || x.h.ten.localeCompare(y.h.ten, 'vi');
     });
     var xong = dong.filter(function (d) { return d.full; }).length, n = dong.length, dangDoc = !HQ.act[a.ma] && !(DIEM[a.ma] || []).length;
+    // ⭐ v1.182.0 (thầy chốt 29/09) — hạn của act còn ≤ 5 GIỜ (hoặc đã qua) ⇒ em CHƯA ĐỦ ĐIỂM TỐI ĐA, dù có điểm, cũng tên đỏ.
+    var mocAct = hqMocHanAct(a), ganHan = mocAct != null && mocAct - A.gioNay() <= HQ_GAN_HAN_MS;
     var mmss = function (g) { return Math.floor(g / 60) + ':' + ('0' + (g % 60)).slice(-2); };
     var c = CHUAN[a.ma], mauChu = String(a.mau || '').trim();
     return '<div class="bxh" style="--n:' + n + '"><div class="bxh-dau"><i style="background:' + MAU_TT[j % MAU_TT.length] + '"></i><b title="' + A.chuAnToan(a.ten) + '">' + A.chuAnToan(hqNhanAct(a)) + '</b>' +
@@ -6902,10 +6904,23 @@ button.mk-em:hover{border-color:currentColor}
       '<span class="dem' + (n && xong === n ? ' du' : '') + '">' + (dangDoc ? '…' : xong + '/' + n + ' đã xong') + '</span></div><div class="bxh-ds">' +
       dong.map(function (d, k) {
         var hang = d.tot ? (k < 3 ? '<span class="hang hc h' + (k + 1) + '">' + (k + 1) + '</span>' : '<span class="hang">' + (k + 1) + '</span>') : '<span class="hang">–</span>';
-        return '<div class="bxh-dong' + (d.tot ? '' : ' chua') + '" data-hq-em="' + A.chuAnToan(d.h.ten) + '" title="Đúp để xem chi tiết">' + hang + '<span class="ten"' + tenGonTitle(d.h.ten) + '>' + tenGon(d.h.ten) + '</span>' +
+        return '<div class="bxh-dong' + (d.tot ? (ganHan && !d.full ? ' gan-han' : '') : ' chua') + '" data-hq-em="' + A.chuAnToan(d.h.ten) + '" title="Đúp để xem chi tiết">' + hang + '<span class="ten"' + tenGonTitle(d.h.ten) + '>' + tenGon(d.h.ten) + '</span>' +
           '<span class="diem' + (d.full ? ' full' : '') + '">' + (d.tot ? d.tot.diem + (d.tot.mau ? '<small>/' + d.tot.mau + '</small>' : '') : '—') + '</span>' +
           '<span class="tg">' + (d.tot && d.tot.giay && d.tot.giay < 1e9 ? mmss(d.tot.giay) : '—') + '</span></div>';
       }).join('') + '</div></div>';
+  }
+  var HQ_GAN_HAN_MS = 5 * 3600 * 1000;
+  // Mốc hạn (ms) của MỘT act trong hộp: thẻ STAGE lấy hạn của CHẶNG chứa act đó, thẻ thường lấy hạn thẻ. Không có hạn ⇒ null.
+  function hqMocHanAct(a) {
+    var t = HQ.t, b = HQ.b;
+    if (t && t.stage && t.chang) {
+      for (var i = 0; i < t.chang.length; i++) {
+        var c = t.chang[i];
+        if ((c.acts || []).some(function (x) { return x.ma === a.ma; })) return c.moc != null ? c.moc : null;
+      }
+    }
+    var m = b ? A.mocHan(b) : null;
+    return m == null ? null : m;
   }
   function hqTabXepHang() {
     var t = HQ.t, pv = hqPhamVi(), kt = hqKt(hqSoDangXem());
@@ -7936,7 +7951,7 @@ button.mk-em:hover{border-color:currentColor}
       '<div class="dau-chu"><div class="t1" id="hqCtTen" title="Đúp = chép ẢNH pop-up này">' + A.chuAnToan(ten) + '</div><div class="t2">' + A.chuAnToan(dong2) + '</div></div>' +
       '<button type="button" class="hq-nut-zoom" id="hqCtZoom" title="' + (ct.zoom ? 'Về màn tổng quan' : 'Xem chi tiết: đồ thị tiến triển theo thời gian') + '">' + (ct.zoom ? IC_THU + 'Tổng quan' : IC_ZOOM + 'Chi tiết') + '</button>' +
       '<button type="button" class="bm-dong" id="hqCtDong" title="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
-    var bang = '<div class="hq-ct-khoi"><h4>Lượt luyện tập<span id="hqCtNgayO">' + hqCtNhanNgay() + '</span><button type="button" class="nt-nut" id="hqCtNhapTay" title="Lượt nộp của em không lên được kho? Thầy nhập điểm tay ở đây">+ Nhập điểm tay</button><span class="dem" id="hqCtDem">' + dong.length + ' lượt</span></h4><div class="hq-ct-cuon">' + hqCtBang(dong) + '</div>' + hqCtChip(dl, mc, dong.length) + '</div>';
+    var bang = '<div class="hq-ct-khoi"><h4>Lượt luyện tập<span id="hqCtNgayO">' + hqCtNhanNgay() + '</span><button type="button" class="nt-nut" id="hqCtNhapTay"' + (HQ_NT_HIEN ? '' : ' hidden') + ' title="Lượt nộp của em không lên được kho? Thầy nhập điểm tay ở đây">+ Nhập điểm tay</button><span class="dem" id="hqCtDem">' + dong.length + ' lượt</span></h4><div class="hq-ct-cuon">' + hqCtBang(dong) + '</div>' + hqCtChip(dl, mc, dong.length) + '</div>';
     if (!ct.zoom) {
       var gVideo = hqGioVideo(ten), gNghe = hqGioNghe(ten), gAct = 0, nop = 0, luyen = 0, doo = 0, soNgay = 0;
       // v1.147.0 — "luyện" gồm LUYỆN cũ + CÂU SAI. v1.151.0 — lượt dở (dodang) nay hiện là BỎ DỞ ⇒ đếm vào "bỏ dở" cho khớp bảng.
@@ -7979,6 +7994,8 @@ button.mk-em:hover{border-color:currentColor}
   // mã bắt đầu `tay` = nhãn NHẬP TAY, không cần đổi luật). KHÔNG ghi `results` (không có bài làm từng câu) — bảng xếp hạng chỉ đọc `scores`.
   // Ghi xong: bump `submitCount` để mọi máy đọc lại kho (bản nhớ điểm so theo số này). Xoá lượt nhập tay: luật `scores` chỉ cho isTeacher
   // (Google của thầy) — phiên khác báo lỗi rõ.
+  // v1.182.0 (thầy chốt 29/09) — nút ẨN mặc định; ĐÚP tiêu đề "LƯỢT LUYỆN TẬP" để hiện/ẩn (nhớ tới khi tải lại trang).
+  var HQ_NT_HIEN = false;
   function ntDong() { $('#ntNen').classList.remove('mo'); }
   function ntTongMacDinh(a) { var c = CHUAN[a.ma], n = (c && +c.soCau > 0) ? +c.soCau : hqMauAct(a.ma); return n || ''; }
   function ntMoGio(ms) {
@@ -10231,6 +10248,12 @@ button.mk-em:hover{border-color:currentColor}
       }
       // ⭐ v1.137.0 — ĐÚP một khối chặng ở tab BÀI TẬP ⇒ cả hành trình.
       if (e.target.closest('[data-hqkhoi]') && !e.target.closest('button, a')) { e.preventDefault(); hqDoiChang('all'); return; }
+      // ⭐ v1.182.0 — ĐÚP tiêu đề LƯỢT LUYỆN TẬP (khối có nút nhập tay) ⇒ hiện/ẩn nút "+ Nhập điểm tay".
+      var h4Nt = e.target.closest('#hqCtHop .hq-ct-khoi h4');
+      if (h4Nt && h4Nt.querySelector('#hqCtNhapTay') && !e.target.closest('button')) {
+        e.preventDefault(); var sel5 = window.getSelection && window.getSelection(); if (sel5) sel5.removeAllRanges();
+        HQ_NT_HIEN = !HQ_NT_HIEN; h4Nt.querySelector('#hqCtNhapTay').hidden = !HQ_NT_HIEN; return;
+      }
       var em = e.target.closest('[data-hq-em]');
       if (em) { e.preventDefault(); hqChiTiet(em.dataset.hqEm); }
     });

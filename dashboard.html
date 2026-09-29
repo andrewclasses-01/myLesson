@@ -10110,7 +10110,8 @@ button.mk-em:hover{border-color:currentColor}
     $('#qtLuuMk').onclick = function () {
       var nut = this, m1 = $('#qtMk1').value, m2 = $('#qtMk2').value;
       if (m1.length < 10 || !/[A-Za-z]/.test(m1) || !/\d/.test(m1)) { qtLoi('Mật khẩu ít nhất 10 ký tự, có cả chữ và số.'); return; }
-      if (/1994|ninh|pham|andrew|0902/i.test(m1)) { qtLoi('Đừng dùng tên / năm sinh trong mật khẩu — dễ đoán.'); return; }
+      // v1.176.1 — thầy chốt: chỉ NHẮC (hỏi lại), không chặn — thầy muốn dùng mật khẩu chung với tài khoản khác.
+      if (/1994|ninh|pham|andrew|0902/i.test(m1) && !window.confirm('Mật khẩu có tên / ngày sinh nên dễ đoán hơn. Vẫn dùng mật khẩu này?')) return;
       if (m1 !== m2) { qtLoi('Hai lần gõ chưa giống nhau.'); return; }
       nut.disabled = true;
       AWThay.caiDatDoiMk(m1).then(function () {

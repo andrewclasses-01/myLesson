@@ -1259,7 +1259,7 @@
       var lu = { id: r.id || '', ms: r.ms || 0, luc: r.luc || 0, sv: r.sv || 0, diem: r.diem, tong: r.tong, dd: !!r.dd, pt: pt, tay: !!r.tay };
       var g = Math.round((r.ms || 0) / 1000);
       // ⭐ v1.180.0 — lượt NHẬP TAY không có giờ làm (0) ⇒ khi HOÀ ĐIỂM không được thắng lượt thật về tốc độ: xếp như chậm nhất.
-      var gx = r.tay ? 1e9 : g;
+      var gx = (r.tay && !g) ? 1e9 : g;   // v1.181.0 — nay thầy nhập kèm thời gian làm bài ⇒ có giờ thì xếp như lượt thật
       // ⭐ v1.147.0 (thầy chốt 24/09) — "NỘP LÚC" = lượt ĐẦU TIÊN em ĐẠT điểm tối đa (`lucDat`); chưa đạt thì
       // lấy lúc của lượt TỐT NHẤT (`lucTot`). Trước đây là lượt nộp đầu tiên bất kỳ — nay lượt dở cũng nộp,
       // lượt đầu có thể chỉ là vài câu rồi bỏ. `lucCuoi` = lượt gần nhất (hoạt động gần đây ở dashboard).

@@ -181,14 +181,14 @@
   ICQ.sinhNhat = P2('<path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/><path d="M4 20h16"/><path d="M4 15.5c1.4 1 2.6 1 4 0s2.6-1 4 0 2.6 1 4 0 2.6-1 4 0"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/>');
   ICQ.baoMat = P2('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>');
   var MUC_QL = [
-    { nhom: 'Quản lý' },
+    // 29/09 thầy: bỏ chữ "Quản lý" / "Network" — chỉ còn vạch ngăn giữa 2 nhóm
     { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap, mau: '#0E7C6E' },
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, mau: '#F0821E' },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
     { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, mau: '#E0B411' },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
     { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, mau: '#EC4899' },
     { ma: 'kho', chu: 'Bài đã xoá', ic: ICQ.kho, mau: '#64748B' },
     { ma: 'kholuutru', chu: 'Kho trò chuyện', ic: ICQ.khoChat, mau: '#3E7BFA' },
-    { nhom: 'Network', vach: true },
+    { vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, mau: '#3E7BFA', mo: 'Lập và quản lý nhóm chat các lớp' },
     { ma: 'baiDang', chu: 'Bài đăng', ic: IC.bangTin, mau: '#18A957', mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
     { ma: 'noiBat', chu: 'Nổi bật', ic: ICQ.sao, mau: '#E0B411', mo: 'Ghim và sắp xếp bài nổi bật' },

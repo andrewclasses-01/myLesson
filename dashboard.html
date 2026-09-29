@@ -2723,7 +2723,8 @@ button.mk-em:hover{border-color:currentColor}
 .qm-bang tbody tr:hover td{background:#FAFCFB}
 .qm-trong{text-align:center; color:var(--nhat); padding:26px 10px !important}
 .qm-em{display:flex; align-items:center; gap:10px}
-.qm-em i, .qm-hs-dau i, .sn-em i{width:32px; height:32px; border-radius:50%; background:#D7E2DF; flex:none; display:grid; place-items:center; font:800 12px var(--font); color:#5F7370; font-style:normal}
+.qm-em i, .qm-hs-dau i, .sn-em i{width:32px; height:32px; border-radius:50%; background:#D7E2DF; flex:none; display:grid; place-items:center; font:800 12px var(--font); color:#5F7370; font-style:normal; position:relative; overflow:hidden}
+.qm-em i .av-anh, .qm-hs-dau i .av-anh, .sn-em i .av-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .qm-em b{font-weight:700}
 .qm-em small{display:block; font:600 11px var(--font); color:var(--nhat)}
 .qm-lop{display:inline-block; font:700 11px var(--font); padding:3px 8px; border-radius:6px; background:var(--xanh-nhat); color:var(--xanh); margin:1px 4px 1px 0; white-space:nowrap}
@@ -10491,6 +10492,7 @@ button.mk-em:hover{border-color:currentColor}
     document.body.style.overflow = 'hidden';
     veBaoMat();
     veQmPhien();
+    batAnhHopQm();                             // v1.176.2 — ảnh đại diện trong hộp
   }
   function dongHopBaoMat() {
     var nen = $('#qmNen');
@@ -10541,11 +10543,48 @@ button.mk-em:hover{border-color:currentColor}
   }
   function chipNoi(n) { return '<span class="qm-lop' + (n.laKhoa ? ' khoa' : '') + '">' + qmE(n.ten) + (n.bs ? ' · bổ sung' : '') + '</span>'; }
   function chuDau(ten) { var t = String(ten || '').trim().split(/\s+/).pop() || '?'; return qmE(t.charAt(0)); }
+  // v1.176.2 — ô tròn MANG DẤU `data-av-em`/`data-av-lop` để `A.deAvatarKho()` đè ảnh đại diện từ kho `lessonAvatar`
+  // (bản trước chỉ vẽ chữ cái đầu ⇒ hộp Quản lý & bảo mật không bao giờ có ảnh). Không dùng lớp nền file tĩnh:
+  // 160 em ⇒ hàng loạt 404; ảnh thiếu thì giữ chữ cái như cũ. `anhHopQm()` dưới đây quét ĐỦ 9 lớp/khóa.
+  function oAnh(ten, lopGoc) {
+    return '<i data-av-em="' + qmE(ten) + '" data-av-lop="' + qmE(lopGoc) + '">' + chuDau(ten) + '</i>';
+  }
+  // Mã lớp của myStudent (tab Điểm danh) có thể là mã hoặc tên gốc ⇒ đổi về TÊN GỐC mà kho ảnh dùng.
+  function lopGocTheoMa(code) {
+    var k = A.avSlugLop(code), l = tatCaLop().filter(function (x) { return A.avSlugLop(x.maLop) === k || A.avSlugLop(x.tenGoc || '') === k; })[0];
+    return l ? (l.tenGoc || l.maLop) : code;
+  }
+  function oAnhNguoi(p) { var n = p.noi[0] || {}; return oAnh(n.tenHs || p.ten, n.ten || ''); }
+  // `batAvatarKho` chỉ theo dõi MỘT lớp (lớp đang chọn ở trang) ⇒ hộp này tự đè cho MỌI lớp, mỗi khi hộp vẽ lại.
+  // Kho mỗi lớp đệm 10 phút trong máy ⇒ vẽ lại liên tục không tốn lượt đọc. ⛔ Chỉ theo dõi childList (xem batAvatarKho).
+  var ANH_QM_HEN = null, ANH_QM_TAI = null;
+  function anhHopQm() {
+    if (ANH_QM_HEN) return;
+    ANH_QM_HEN = setTimeout(function () {
+      ANH_QM_HEN = null;
+      tatCaLop().forEach(function (l) {
+        try { A.deAvatarKho(l.tenGoc || l.maLop, l.hocSinh || [], l.hsDb || []); } catch (e) {}
+      });
+    }, 200);
+  }
+  function batAnhHopQm() {
+    anhHopQm();
+    if (ANH_QM_TAI) return;
+    try {
+      ANH_QM_TAI = new MutationObserver(function (ds) {
+        for (var i = 0; i < ds.length; i++) {
+          var t = ds[i].target;
+          if (t && t.closest && t.closest('#qmNen, #snNen')) { anhHopQm(); return; }
+        }
+      });
+      ANH_QM_TAI.observe(document.body, { childList: true, subtree: true });
+    } catch (e) {}
+  }
   function boDau(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[đĐ]/g, 'd').toLowerCase(); }
   function ngayVN(s) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(s || '')); return m ? m[3] + '/' + m[2] + '/' + m[1] : qmE(s); }
   function hangHs(p) {
     return '<tr data-qm-em="' + qmE(p.khoa) + '" title="Bấm để xem hồ sơ em">' +
-      '<td><div class="qm-em"><i>' + chuDau(p.ten) + '</i><div><b>' + qmE(p.ten) + '</b>' +
+      '<td><div class="qm-em">' + oAnhNguoi(p) + '<div><b>' + qmE(p.ten) + '</b>' +
         (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div></div></td>' +
       '<td>' + p.noi.map(chipNoi).join('') + '</td>' +
       '<td>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</td>' +
@@ -10651,7 +10690,7 @@ button.mk-em:hover{border-color:currentColor}
     return '<button type="button" class="qm-quay" data-qm-quay>‹ Danh sách học sinh</button>' +
       '<div class="mk-hoi" hidden></div>' +
       '<div class="hso-thay" id="hsoThay" hidden></div>' +
-      '<div class="qm-hs-dau"><i>' + chuDau(p.ten) + '</i><div><h5>' + qmE(p.ten) + '</h5>' +
+      '<div class="qm-hs-dau">' + oAnhNguoi(p) + '<div><h5>' + qmE(p.ten) + '</h5>' +
         (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div><span class="qm-gian"></span>' +
         (p.ma ? '<button type="button" class="qm-nut" data-qc-mo="suaHs">Sửa</button>' : '') + nutDatLai(p) + '</div>' +
       '<div class="qm-luoi">' +
@@ -11655,7 +11694,7 @@ button.mk-em:hover{border-color:currentColor}
           (r.first_seen ? '<small class="qm-nhat"> ' + qmE(String(r.first_seen).slice(0, 5)) + '</small>' : '') : '<span class="qm-nhat">—</span>';
         var nut = function (k, chu) { return '<button type="button" class="' + k + (tt === k ? ' chon' : '') + '" data-dd-tt="' + k + '">' + chu + '</button>'; };
         var ly = tt === 'phep' || tt === 'vang' ? String(r.reason || '') : '';
-        return '<tr data-dd-gid="' + qmE(x.s.gid) + '"><td><div class="qm-em"><i>' + chuDau(x.s.name) + '</i><div><b>' + qmE(x.s.name) + '</b>' +
+        return '<tr data-dd-gid="' + qmE(x.s.gid) + '"><td><div class="qm-em">' + oAnh(x.s.name, lopGocTheoMa(l.code)) + '<div><b>' + qmE(x.s.name) + '</b>' +
             (tt === 'cho' ? '<small class="dd-kt">máy chưa chắc — bấm Có mặt / Vắng để chốt</small>' : '') + (tt === 'ctg' ? '<small>chưa tham gia lớp</small>' : '') + (x.ngoai ? '<small>đã chuyển / nghỉ</small>' : '') + '</div></div></td>' +
           '<td>' + anh + '</td>' +
           '<td><div class="dd-tt">' + nut('co', 'Có mặt') + nut('phep', 'Có phép') + nut('vang', 'Vắng') + '</div>' +
@@ -11960,7 +11999,7 @@ button.mk-em:hover{border-color:currentColor}
       var dau = g !== nhom ? '<div class="sn-nhom">' + g + '</div>' : '';
       nhom = g;
       var sn = /^(\d{2})-(\d{2})$/.exec(x.p.sinhNhat);
-      return dau + '<div class="sn-em"><i>' + chuDau(x.p.ten) + '</i><div><b>' + qmE(x.p.ten) + '</b><small>' +
+      return dau + '<div class="sn-em">' + oAnhNguoi(x.p) + '<div><b>' + qmE(x.p.ten) + '</b><small>' +
         qmE(x.p.noi.map(function (n) { return n.ten; }).join(' · ')) + ' · ' + sn[2] + '/' + sn[1] + '</small></div>' +
         '<span class="sn-khi' + (x.con === 0 ? ' nay' : (x.con <= 7 ? ' gan' : '')) + '">' +
         (x.con === 0 ? 'Hôm nay 🎉' : (x.con === 1 ? 'Ngày mai' : 'còn ' + x.con + ' ngày')) + '</span></div>';
@@ -11971,6 +12010,7 @@ button.mk-em:hover{border-color:currentColor}
       '<p class="sn-chan">Đang có ngày sinh của ' + coNgay + '/' + tatCa.length + ' em — ngày sinh nhập ở myStudent (🌐 để lên web).</p>' +
       '<div class="kc-chan"><button type="button" data-sn-dong>Đóng</button></div></div>';
     nen.hidden = false;
+    batAnhHopQm();
   }
   function datSoSinhNhat(lan) {
     var nut = document.querySelector('.nwb-ql-muc[data-muc="sinhNhat"]');

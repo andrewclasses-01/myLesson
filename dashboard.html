@@ -8062,7 +8062,7 @@ button.mk-em:hover{border-color:currentColor}
       });
     }).then(function () { baoToast('Đã xoá lượt nhập tay.'); return ntNapLai(code); })['catch'](function (e) {
       if (nut) nut.disabled = false;
-      baoToast(e && e.code === 'permission-denied' ? 'Xoá lượt nhập tay cần đăng nhập Google của thầy.' : 'Chưa xoá được.');
+      baoToast(e && e.code === 'permission-denied' ? 'Kho từ chối xoá — cần phiên thầy (luật 29/09: tài khoản quản trị xoá được lượt nhập tay).' : 'Chưa xoá được: ' + ((e && e.message) || e));
     });
   }
   function dongHqChiTiet() {

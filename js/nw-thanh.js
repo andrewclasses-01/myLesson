@@ -116,6 +116,13 @@
 
   // ⭐ 29/09/2026 — trang THỬ (window.AC_THU, config.js): 5 icon + avatar mở các trang myNetwork trong nw/ (đăng nhập Firebase dùng
   // chung). Chuông không có trang riêng ⇒ Bảng tin kèm hộp thông báo. Trang THẬT: TRANG_NW rỗng ⇒ hộp "sắp ra mắt" như cũ.
+  // 29/09: tab đăng nhập thay em mà vé CHƯA về (dải đỏ còn "Đang đăng nhập thay em…") ⇒ đợi, không sang nw/ bằng phiên thầy.
+  function choThayVao() {
+    var tv = window.__thayVao;
+    if (!tv || tv.co()) return false;
+    alert('Đang đăng nhập thay em — chờ dải đỏ trên cùng báo "Thầy đang ĐĂNG NHẬP THAY…" rồi bấm lại nhé.');
+    return true;
+  }
   var TRANG_NW = window.AC_THU ? { khamPha: 'nw/khampha.html', tinNhan: 'nw/tinnhan.html', bangTin: 'nw/bangtin.html',
     chuong: 'nw/bangtin.html?tb=1', timKiem: 'nw/timkiem.html', caNhan: 'nw/canhan.html' } : {};
   $('.nwb-tabs', dau).innerHTML = tabs.map(function (t, i) {
@@ -132,13 +139,13 @@
     e.preventDefault();
     var ma = t.getAttribute('data-ma');
     if (ma === 'baiTap' || ma === 'quanLy') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
-    if (TRANG_NW[ma]) { location.href = TRANG_NW[ma]; return; }
+    if (TRANG_NW[ma]) { if (!choThayVao()) location.href = TRANG_NW[ma]; return; }
     moSap(ma);
   });
 
   // Avatar = TRANG CÁ NHÂN (trang thử: nw/canhan.html; trang thật: chưa mở). Gán đè onclick cũ của trang (mở sidebar).
   var av = $('#nutMenu') || $('#nwbAv');
-  if (av) { av.title = 'Trang cá nhân'; av.onclick = function () { if (TRANG_NW.caNhan) location.href = TRANG_NW.caNhan; else moSap('caNhan'); }; }
+  if (av) { av.title = 'Trang cá nhân'; av.onclick = function () { if (TRANG_NW.caNhan) { if (!choThayVao()) location.href = TRANG_NW.caNhan; } else moSap('caNhan'); }; }
 
   // ☰ học sinh = sidebar cũ (ví sao + menu), mở lại luôn thấy MENU CHÍNH như nút avatar cũ.
   // ☰ thầy mang id="moSb" ⇒ dashboard tự gắn moSb() như nút "Andrew Classes" cũ, không cần gắn ở đây.

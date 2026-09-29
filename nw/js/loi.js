@@ -243,10 +243,11 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   };
 
   // ---------- Firebase (nạp lười, một app) ----------
-  // Trang thử 28/09: cờ "thầy đăng nhập thay em" (sessionStorage của js/thay-vao.js, trang lớp v1.168.0).
+  // ⭐ 29/09/2026 (thầy chốt: "dùng tất cả mọi thứ như của em") — ĐĂNG NHẬP THAY EM dùng được cả mạng xã hội.
+  // Trang nw/ nạp ../js/thay-vao.js TRƯỚC file này: có cờ ⇒ nó initializeAuth(phiên CHỈ TRONG TAB) và khôi phục phiên EM từ
+  // sessionStorage ⇒ ở đây CHỜ nó xong (`__thayVao.san`) rồi mới getAuth (trả đúng auth đó).
   // ⛔ Có cờ mà setPersistence(local) ⇒ phiên EM chép vào IndexedDB ⇒ tab dashboard của thầy biến thành em.
-  var _coThayVao = false;
-  try { _coThayVao = !!sessionStorage.getItem('mylesson_thay_vao'); } catch (e) { }
+  var _coThayVao = !!window.__thayVao;
   NW.dangThayVao = _coThayVao;
   var _fb = null;
   function fb() {
@@ -255,6 +256,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
         var appMod = await import(SDK + '/firebase-app.js');
         var au = await import(SDK + '/firebase-auth.js');
         var fs = await import(SDK + '/firebase-firestore.js');
+        if (window.__thayVao) { try { await window.__thayVao.san; } catch (e) { } }
         var app = (appMod.getApps && appMod.getApps().length) ? appMod.getApp() : appMod.initializeApp(CFG.FIREBASE);
         var auth = au.getAuth(app);
         if (!_coThayVao) { try { await au.setPersistence(auth, au.browserLocalPersistence); } catch (e) { } }
@@ -385,6 +387,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
     return r.user;
   }
   async function datMatKhau(mkMoi) {
+    if (_coThayVao) throw new Error('Đang đăng nhập thay em — thầy không đổi mật khẩu của em ở đây.');
     var f = await fb();
     var u = f.auth.currentUser;
     if (!u) throw new Error('Chưa đăng nhập');
@@ -394,6 +397,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   }
   // Đổi mật khẩu khi đã biết mật khẩu cũ (menu avatar).
   async function doiMatKhau(mkCu, mkMoi) {
+    if (_coThayVao) throw new Error('Đang đăng nhập thay em — thầy không đổi mật khẩu của em ở đây.');
     var f = await fb();
     var u = f.auth.currentUser;
     if (!u) throw new Error('Chưa đăng nhập');

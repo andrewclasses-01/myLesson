@@ -284,13 +284,13 @@
       veThanh(o.tab); capNhatCham();
       return { user: null, hoSo: NW.toi, laThay: !!NW.toi.laThay, banThu: true };
     }
-    // Trang thử 28/09: tab đang "thầy đăng nhập thay em" (js/thay-vao.js của trang lớp) ⇒ KHÔNG mở mạng xã hội bằng phiên em
-    if (NW.dangThayVao) {
-      manBao('Đang đăng nhập thay em', 'Tab này đang ở chế độ thầy đăng nhập thay học sinh (chỉ để xem trang bài tập). Mạng xã hội không mở trong chế độ này — thầy mở trang từ một tab khác nhé.',
+    // ⭐ 29/09/2026: tab "thầy đăng nhập thay em" ⇒ mạng xã hội chạy DƯỚI TÊN EM (phiên trong tab, js/thay-vao.js).
+    var ph = await NW.phien();
+    if (!ph && NW.dangThayVao) {
+      manBao('Phiên đăng nhập thay đã hết', 'Tab này đang ở chế độ thầy đăng nhập thay học sinh nhưng phiên đã hết (quá 30 phút hoặc đã thoát). Mở lại từ hồ sơ em trên dashboard nhé.',
         '<a class="btn primary wide" href="' + an(CFG.LINK_DASHBOARD) + '">Về trang quản lý</a>');
       return new Promise(function () { });
     }
-    var ph = await NW.phien();
     if (!ph) { location.replace('index.html'); return new Promise(function () { }); }
     if (ph.thieuHoSo) {
       manBao('Tài khoản chưa có hồ sơ', 'Tài khoản này đã đăng nhập được nhưng chưa có hồ sơ trên mạng. Thầy Andrew cần chạy công cụ tạo tài khoản (tools/tao-tai-khoan.mjs) rồi em vào lại nhé.');
@@ -300,7 +300,7 @@
       manBao('Tài khoản đang bị khoá', 'Thầy Andrew đã tạm khoá tài khoản này. Em gặp thầy để được mở lại nhé.');
       return new Promise(function () { });
     }
-    if (ph.hoSo.phaiDoiMk && !ph.laThay) { location.replace('index.html#doimk'); return new Promise(function () { }); }
+    if (ph.hoSo.phaiDoiMk && !ph.laThay && !NW.dangThayVao) { location.replace('index.html#doimk'); return new Promise(function () { }); }
     veThanh(o.tab);
     moKenh();
     // Trang thử 28/09: chuông trên thanh trang lớp/dashboard dẫn sang đây kèm ?tb=1 ⇒ mở sẵn hộp thông báo

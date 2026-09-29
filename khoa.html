@@ -467,7 +467,7 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
 .chat{background:var(--surface); border:1px solid var(--line);
   border-radius:18px; box-shadow:var(--shadow); display:flex; flex-direction:column;
   overflow:hidden; min-height:0}
-.chat-head{flex:none; padding:13px 18px 12px; border-bottom:1px solid var(--line); text-align:center}
+.chat-head{flex:none; padding:10px 14px; border-bottom:1px solid var(--line)}
 .chat-head h2{margin:0; font-size:14px; font-weight:800; display:flex; align-items:center; justify-content:center; gap:8px}
 .chat-head h2 svg{flex:none; width:17px; height:17px; stroke:var(--accent); stroke-width:2.2;
   fill:none; stroke-linecap:round; stroke-linejoin:round}
@@ -652,7 +652,7 @@ body.mo-menu .side.trai{transform:none}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=7">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=1">
+<link rel="stylesheet" href="css/chat-ui.css?v=2">
 </head>
 <body>
 
@@ -671,8 +671,9 @@ body.mo-menu .side.trai{transform:none}
   <div class="chat-cot">
   <aside class="chat">
     <div class="chat-head">
-      <h2><svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.9 8.9 0 0 1-3.9-.9L3 20l1-4.9a8.4 8.4 0 1 1 17-3.6z"/></svg>
-        <span class="ct-ten">CUỘC TRÒ CHUYỆN CỦA KHÓA</span></h2>
+      <!-- ⭐ v1.187.0 — thanh đầu như bản mẫu 12: vòng tròn tên lớp + tên lớp / "Thầy Andrew" (ChatUI.datDau) -->
+      <div class="cu-dau"><span class="cu-dau-av ct-av"></span>
+        <div class="cu-dau-chu"><b class="ct-ten">Khóa</b><small>Thầy Andrew</small></div></div>
     </div>
     <div class="chat-body" id="khungChat"></div>
     <div class="chat-foot">
@@ -725,13 +726,13 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=173"></script>
+<script src="config.js?v=174"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <script src="js/chat.js?v=29"></script>
-<script src="js/chat-ui.js?v=1"></script>
+<script src="js/chat-ui.js?v=2"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
@@ -1454,7 +1455,7 @@ function dienDanhTinh(){
   if (lopSide) lopSide.textContent = 'Khóa ' + LOP;
 
   var ctTen = document.querySelector('.chat-head .ct-ten');
-  if (ctTen) ctTen.textContent = 'CUỘC TRÒ CHUYỆN CỦA KHÓA ' + LOP;
+  if (ctTen) ChatUI.datDau(document.querySelector('.chat-head .ct-av'), ctTen, 'Khóa ' + LOP, LOP);
   var ver = $('#verFoot');
   if (ver) ver.textContent = 'v' + (A.CFG.PHIEN_BAN || '?');
 

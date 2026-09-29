@@ -632,6 +632,19 @@
     return ui;
   }
 
-  window.ChatUI = { tao: tao, cxChuan: cxChuan, demCx: demCx, tomTat: tomTat, chuThuong: chuThuong, dongHet: dongHet, coMo: coMo,
+  /* ⭐ v1.187.0 — THANH ĐẦU khung chat (bản mẫu 12): vòng tròn tên lớp viết tắt + "Lớp …" / "Thầy Andrew".
+     av/ten = phần tử `.cu-dau-av` / `<b>` trong `.cu-dau` có sẵn ở trang. */
+  function datDau(av, ten, chu, ma) {
+    if (ten) ten.textContent = chu;
+    if (!av) return;
+    // Tên nhiều chữ ("NỀN TẢNG K9") ⇒ chữ cái đầu mỗi chữ, chữ có số giữ nguyên ⇒ "NTK9"; một chữ ("A1-A") ⇒ bỏ dấu gạch ⇒ "A1A".
+    var ds = String(ma || '').trim().split(/\s+/).filter(Boolean);
+    var t = (ds.length > 1 ? ds.map(function (w) { return /\d/.test(w) ? w : w.charAt(0); }).join('') : ds.join(''))
+      .replace(/[^0-9A-Za-zÀ-ỹ]/g, '').toUpperCase().slice(0, 4) || '?';
+    av.textContent = t;
+    av.classList.toggle('dai', t.length > 3);
+  }
+
+  window.ChatUI = { tao: tao, datDau: datDau, cxChuan: cxChuan, demCx: demCx, tomTat: tomTat, chuThuong: chuThuong, dongHet: dongHet, coMo: coMo,
                     KINDS: KINDS, TOI_DA_CX: TOI_DA_CX, EMOJI: EMOJI, STICKER: STICKER };
 })();

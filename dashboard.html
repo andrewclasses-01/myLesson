@@ -2210,6 +2210,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 
 /* ---------- KHUNG TRÒ CHUYỆN CỦA LỚP ---------- */
 .chat-khoi .khoi-than{padding:0}
+.chat-khoi .khoi-dau{padding:10px 14px}
 /* ⭐ v1.79.0 — `height` cứng (= 2 thẻ) → `flex:1 1 0` + `min-height:0`, để khung
    chat GIÃN THEO chiều cao hàng grid (tức theo cột thẻ) thay vì đứng yên 400px.
    ⛔⛔ `min-height:0` (chứ KHÔNG phải `min-height` = 2 thẻ — đã viết thế và SAI) là
@@ -2985,7 +2986,7 @@ button.mk-em:hover{border-color:currentColor}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=7">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=1">
+<link rel="stylesheet" href="css/chat-ui.css?v=2">
 </head>
 <body>
 
@@ -3092,8 +3093,9 @@ button.mk-em:hover{border-color:currentColor}
          chung kho tin với khung chat bên trang học sinh (`js/chat.js`). -->
     <section class="khoi chat-khoi cot-chat">
       <div class="khoi-dau">
-        <h2>Trò chuyện</h2>
-        <span class="phu" id="chatPhu"></span>
+        <!-- ⭐ v1.187.0 — thanh đầu như bản mẫu 12: vòng tròn tên lớp + "Lớp …" / "Thầy Andrew" (ChatUI.datDau) -->
+        <div class="cu-dau"><span class="cu-dau-av" id="chatAv"></span>
+          <div class="cu-dau-chu"><b id="chatTen">Lớp</b><small>Thầy Andrew</small></div></div>
         <div class="day"></div>
         <button class="nut nho ic-tron" id="btnLuuTru" title="Lưu trữ &amp; làm mới — lưu tin nhắn hiện tại vào kho rồi làm sạch khung chat" aria-label="Lưu trữ &amp; làm mới">
           🗄
@@ -3369,12 +3371,12 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=173"></script>
+<script src="config.js?v=174"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
 <script src="js/chat.js?v=29"></script>
-<script src="js/chat-ui.js?v=1"></script>
+<script src="js/chat-ui.js?v=2"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -8884,7 +8886,8 @@ button.mk-em:hover{border-color:currentColor}
 
   function noiChat() {
     var l = A.lopTheoMa(DL, LOP_CHON);
-    $('#chatPhu').textContent = 'lớp ' + ((l && l.tenGoc) || LOP_CHON);
+    var tenLop = (l && l.tenGoc) || LOP_CHON;
+    ChatUI.datDau($('#chatAv'), $('#chatTen'), 'Lớp ' + tenLop, tenLop);
     $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
     TIN = []; TIN_CU = []; hetCu = false; dangTaiCu = false;   // đổi lớp, quên trang cũ đã tải
     UI_CHAT.khoa(false);

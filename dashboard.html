@@ -3938,11 +3938,14 @@ button.mk-em:hover{border-color:currentColor}
   // ⭐ v1.115.0 — thầy chốt: LUÔN viết tắt họ + tên đệm, giữ nguyên tên chính,
   // dùng cho nhãn tên dưới icon avatar (tên đầy đủ vẫn xem được khi rê chuột).
   // "Mạc Minh Khang" -> "M.M.Khang" · "Bảo Trâm" -> "B.Trâm"
+  // ⛔ v1.183.0 (thầy chốt 29/09) — KHÔNG BAO GIỜ tắt TÊN CUỐI. Đuôi không có chữ cái (số phân biệt trùng tên "2", "(A)"…)
+  // bám theo tên cuối chứ không phải tên cuối: MAI DƯƠNG 2 → M.DƯƠNG 2 (trước: M.D.2), THÙY DƯƠNG 1 → T.DƯƠNG 1.
   function vietTat(ten) {
-    var tu = String(ten || '').trim().split(/\s+/);
+    var tu = String(ten || '').trim().split(/\s+/), duoi = [];
+    while (tu.length && !/\p{L}/u.test(tu[tu.length - 1])) duoi.unshift(tu.pop());
     if (tu.length < 2) return ten;
     var chinh = tu.pop();
-    return tu.map(function (w) { return w.charAt(0).toUpperCase() + '.'; }).join('') + chinh;
+    return tu.map(function (w) { return w.charAt(0).toUpperCase() + '.'; }).join('') + chinh + (duoi.length ? ' ' + duoi.join(' ') : '');
   }
   // v1.144.3 (thầy chốt 24/09) — tên trong hộp quản lý: quá 10 ký tự thì viết tắt họ + đệm (ĐỖ NGỌC MINH KHANG → Đ.N.M.KHANG).
   // Trả HTML đã thoát; tên gốc đi vào `title` của thẻ bọc qua `tenGonTitle`.

@@ -62,10 +62,12 @@
   function fmtClock(s) { s = Math.max(0, Math.floor(s || 0)); return Math.floor(s / 60) + ':' + String(s % 60).padStart(2, '0'); }
   function soCls(n) { return n ? 'nx' : 'n0'; }
   function nhan(t) { return '<span class="nhan ' + (NHAN_LOAI[t] || '') + '">' + esc(CHU_LOAI[t] || t || '?') + '</span>'; }
+  // v1.183.0 — KHÔNG tắt TÊN CUỐI: đuôi không có chữ cái (số trùng tên "2") bám theo tên cuối (MAI DƯƠNG 2 → M.DƯƠNG 2).
   function vietTat(ten) {
-    var w = String(ten || '').trim().split(/\s+/).filter(Boolean);
+    var w = String(ten || '').trim().split(/\s+/).filter(Boolean), duoi = [];
+    while (w.length && !/\p{L}/u.test(w[w.length - 1])) duoi.unshift(w.pop());
     if (w.length <= 1) return ten;
-    return w.slice(0, -1).map(function (x) { return x.charAt(0); }).join('.') + '.' + w[w.length - 1];
+    return w.slice(0, -1).map(function (x) { return x.charAt(0); }).join('.') + '.' + w[w.length - 1] + (duoi.length ? ' ' + duoi.join(' ') : '');
   }
   // ⛔ Y HỆT `mySpeaking/web/js/app.js` khongDauTen + slugAvatar (mã tài liệu phiếu bám theo đây)
   function slugHs(s) {

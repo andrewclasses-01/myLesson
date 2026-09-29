@@ -2272,7 +2272,12 @@ function chuGio(giay){
    khi HAI em trùng nhau ở dạng đó mới nới thêm một bậc cho cả hai (NGUYỄN BẢO
    AN và TRẦN BẢO AN thành N.B.AN / T.B.AN). ⚠️ Phải xét trên CẢ LỚP, không chỉ
    mấy em đang có điểm — không thì hôm nay em ấy là B.AN, mai thành N.B.AN. */
-function tachTu(ten){ return String(ten || '').trim().split(/\s+/).filter(Boolean); }
+// v1.183.0 (thầy chốt 29/09) — KHÔNG tắt TÊN CUỐI: đuôi không có chữ cái (số trùng tên "2") GỘP vào tên cuối ⇒ MAI DƯƠNG 2 → M.DƯƠNG 2 (trước: D.2).
+function tachTu(ten){
+  var w = String(ten || '').trim().split(/\s+/).filter(Boolean);
+  while (w.length > 1 && !/\p{L}/u.test(w[w.length - 1])) { var d = w.pop(); w[w.length - 1] += ' ' + d; }
+  return w;
+}
 function dangTat(tu, mucDo){
   var cuoi = tu[tu.length - 1];
   var truoc = tu.slice(Math.max(0, tu.length - 1 - mucDo), tu.length - 1);

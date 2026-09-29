@@ -1723,7 +1723,12 @@ function veAv(ten, i){
 }
 
 /* ---------- VIẾT TẮT TÊN (cùng lối app myTeam) ---------- */
-function tachTu(ten){ return String(ten || '').trim().split(/\s+/).filter(Boolean); }
+// v1.183.0 (thầy chốt 29/09) — KHÔNG tắt TÊN CUỐI: đuôi không có chữ cái (số trùng tên "2") GỘP vào tên cuối ⇒ MAI DƯƠNG 2 → M.DƯƠNG 2 (trước: D.2).
+function tachTu(ten){
+  var w = String(ten || '').trim().split(/\s+/).filter(Boolean);
+  while (w.length > 1 && !/\p{L}/u.test(w[w.length - 1])) { var d = w.pop(); w[w.length - 1] += ' ' + d; }
+  return w;
+}
 
 function dangTat(tu, mucDo){
   var cuoi = tu[tu.length - 1];

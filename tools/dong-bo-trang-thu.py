@@ -72,6 +72,7 @@ def main():
     lo = [p for p in theo if bo_qua(p) and p not in GIU_THU]
     if lo:
         git(THU, 'reset', '-q')
+        tra_lai()
         sys.exit('CHỐT DỪNG: kho thử sắp chứa file cấm: ' + ', '.join(lo[:10]))
     doi = git(THU, 'diff', '--cached', '--stat').decode('utf-8').strip()
     print('Chép %d file từ web %s (v%s) sang kho thử.' % (so, sha, ban))
@@ -90,5 +91,24 @@ def main():
     print('\nĐã đẩy lên trang thử: ' + git(THU, 'log', '--oneline', '-1').decode('utf-8').strip())
 
 
+def tra_lai():
+    # hỏng giữa chừng ⇒ trả kho thử về đúng bản đã commit (file .gitignore trên máy không đụng)
+    try:
+        git(THU, 'reset', '-q'); git(THU, 'checkout', '-q', '--', '.'); git(THU, 'clean', '-fdq')
+    except Exception:
+        pass
+
+
 if __name__ == '__main__':
-    main()
+    try:
+        sys.stdout.reconfigure(encoding='utf-8')
+    except Exception:
+        pass
+    try:
+        main()
+    except SystemExit:
+        raise
+    except BaseException:
+        tra_lai()
+        print('LỖI — đã trả kho thử về như cũ.')
+        raise

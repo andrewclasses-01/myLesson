@@ -85,7 +85,7 @@ body.mo-menu .side.phai{transform:none}
 .nwb-sap-nut:hover{filter:brightness(1.08)}
 @media (prefers-reduced-motion: reduce){ .nwb-sap-ic .lap{animation:none} }
 
-/* ---------- giới thiệu + ĐẾM NGƯỢC (thầy 24/09: ra mắt 00:00 01/10/2026) ---------- */
+/* ---------- giới thiệu + ĐẾM NGƯỢC (thầy 24/09: ra mắt 00:00 01/11/2026) ---------- */
 .nwb-sap .nwb-sap-hop{width:min(380px,100%); max-height:calc(100dvh - 32px); overflow-y:auto}
 .nwb-sap-chu{margin:6px 0 12px}
 .nwb-sap-ds{list-style:none; margin:0 0 16px; padding:0; text-align:left; display:flex; flex-direction:column; gap:7px}

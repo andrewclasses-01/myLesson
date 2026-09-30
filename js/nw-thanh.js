@@ -49,11 +49,11 @@
     '<p class="nwb-sap-chu"></p><ul class="nwb-sap-ds"></ul>' +
     '<div class="nwb-dem"><p class="nwb-dem-nh">RA MẮT SAU</p><div class="nwb-dem-o">' +
     ['ngay:NGÀY', 'gio:GIỜ', 'phut:PHÚT', 'giay:GIÂY'].map(function (x) { x = x.split(':'); return '<span><b data-o="' + x[0] + '">00</b><i>' + x[1] + '</i></span>'; }).join('') +
-    '</div><p class="nwb-dem-ngay">00:00 · Thứ Năm, 01/10/2026</p></div>' +
+    '</div><p class="nwb-dem-ngay">00:00 · Chủ Nhật, 01/11/2026</p></div>' +
     '<button type="button" class="nwb-sap-nut">EM SẼ CHỜ!</button></div>';
   document.body.appendChild(sap);
 
-  // ⭐ thầy 24/09: mỗi tính năng có lời giới thiệu ngắn, kích thích tò mò + đếm ngược tới 00:00 01/10/2026 (giờ VN).
+  // ⭐ thầy 24/09: mỗi tính năng có lời giới thiệu ngắn, kích thích tò mò + đếm ngược tới 00:00 01/11/2026 (giờ VN; 30/09 thầy dời từ 01/10).
   var GIOI_THIEU = {
     khamPha: { chu: 'Cả thế giới thú vị cùng Andrew Classes', ds: ['Trò chơi & giải đấu online — thi tài với bạn khắp các lớp', 'Khám phá những khóa học bổ ích', 'Xem những gì nổi bật và thịnh hành'] },
     tinNhan: { chu: 'Trò chuyện và chia sẻ những điều thú vị', ds: ['Chat riêng với bạn, chat nhóm cùng cả lớp'] },
@@ -64,7 +64,7 @@
     caNhan: { chu: 'Thế giới của riêng em', ds: ['Ảnh bìa, ảnh đại diện, lời giới thiệu', 'Sở thích và bài viết của riêng em', 'Ghi lại những kỷ niệm, chia sẻ hành trình của riêng em'] },
     dangKy: { chu: 'Học sinh mới đăng ký học ngay trên web', ds: ['Đăng ký kiểm tra đầu vào', 'Đăng ký học thử', 'Thầy liên hệ lại sớm nhất'] }
   };
-  var MOC_RA_MAT = Date.parse('2026-10-01T00:00:00+07:00');
+  var MOC_RA_MAT = Date.parse('2026-11-01T00:00:00+07:00');
   var nhipDem = null;
   function hai(n) { return (n < 10 ? '0' : '') + n; }
   function veDem() {

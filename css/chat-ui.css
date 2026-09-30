@@ -43,7 +43,10 @@
   position:relative; display:grid; place-items:center; color:#fff; font-weight:700; line-height:1}
 /* ảnh đại diện luôn cắt tròn, phủ đúng ô — trang nào thiếu CSS `.av img` (dashboard) cũng không phình */
 .cu-av img{position:absolute; inset:0; width:100%!important; height:100%!important; object-fit:cover; border-radius:50%}
-.cu-w{position:relative; min-width:0; margin-bottom:15px}
+/* ⭐ v1.188.0 — thầy: 2 tin liền nhau CHƯA có cảm xúc thì sát nhau; có cảm xúc (coCx) mới giãn ra chừa chỗ viên cảm xúc.
+   Tin cuối luôn chừa chỗ (nút tim của tin mới nhất trên điện thoại / khi rê chuột không bị cắt ở đáy khung). */
+.cu-w{position:relative; min-width:0; margin-bottom:0}
+.cu-w.coCx, .cu-w.cuoi{margin-bottom:15px}
 .cu-bong{background:var(--cu-nen); border:1px solid var(--cu-vien); border-radius:10px; padding:7px 11px 5px;
   font-size:14px; line-height:1.45; overflow-wrap:anywhere; white-space:pre-wrap; box-shadow:0 1px 1px rgba(0,0,0,.04); color:var(--cu-chu)}
 .toi .cu-bong{background:#E2F2EF; border-color:#A9D5CE}
@@ -75,6 +78,10 @@
 .cu-cx .cs img{width:18px; height:18px}
 .cu-cx .cs em{font-style:normal; margin-left:3px; color:var(--cu-chu); font-variant-numeric:tabular-nums}
 .cu-cx .lk{width:26px; justify-content:center; border-radius:50%}
+/* ⭐ v1.188.0 — MÁY TÍNH: chỉ tin đang rê chuột mới hiện nút tim. ĐIỆN THOẠI: chỉ tin MỚI NHẤT chưa có cảm xúc mới hiện nút tim,
+   tin khác nhấn giữ để thả. `visibility` (không phải display) ⇒ bảng chọn cảm xúc vẫn neo đúng chỗ nút tim. */
+@media (hover:hover){ .cu-w:not(:hover) .cu-cx .lk{visibility:hidden} }
+@media (hover:none){ .cu-w:not(.cuoi) .cu-cx .lk, .cu-w.coCx .cu-cx .lk{display:none} }
 .cu-cx .lk:hover{border-color:#8CC9BF}
 .cu-cx .lk img{width:16px; height:16px}
 .cu-cx .lk svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linejoin:round}
@@ -202,6 +209,9 @@
 .cu-hd .ban{position:absolute; margin:0!important; transition:top .25s cubic-bezier(.22,.9,.3,1); animation:cuNoi .22s cubic-bezier(.22,.9,.3,1)}
 .cu-hd .ban .cu-bong{box-shadow:0 6px 20px rgba(0,0,0,.25)}
 .cu-hd .ban .cu-cong{display:none}
+/* ⭐ v1.188.0 — nhấn giữ: bong bóng giữ NGUYÊN màu như trong khung (tin mình xanh nhạt, tin thầy xanh rất nhạt). */
+.cu-hd .ban.toi .cu-bong{background:#E2F2EF; border-color:#A9D5CE}
+.cu-hd .ban:not(.toi) .cu-bong.thay{background:#EEF8F6; border-color:#C6E3DD}
 .cu-hd .hop{position:absolute; width:min(330px,calc(100vw - 20px)); background:var(--cu-nen); border-radius:16px; padding:10px; box-shadow:0 10px 30px rgba(0,0,0,.3);
   transition:top .25s cubic-bezier(.22,.9,.3,1); animation:cuHien .22s cubic-bezier(.22,.9,.3,1)}
 @keyframes cuHien{from{opacity:0; transform:translateY(-6px) scale(.96)}}

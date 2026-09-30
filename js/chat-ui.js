@@ -212,7 +212,8 @@
       var cong = t.thuHoi ? '' : '<div class="cu-cong"><button type="button" data-cu="tra" title="Trả lời" aria-label="Trả lời">' + IC.trich + '</button><button type="button" data-cu="them" title="Thêm" aria-label="Thêm">' + IC.ba + '</button></div>';
       return h + '<div class="cu-hang' + (toi ? ' toi' : '') + (cungNhom ? '' : ' dau') + '">' +
         (toi ? '' : '<div class="cu-av">' + (cungNhom ? '' : (o.av ? o.av(t, i) : '')) + '</div>') +
-        '<div class="cu-w" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (t.thuHoi ? '' : veCum(t)) + cong + '</div></div>';
+        // ⭐ v1.188.0 — coCx: tin đã có cảm xúc (giãn ra chừa chỗ viên cảm xúc); cuoi: tin mới nhất (điện thoại hiện nút tim ở đây).
+        '<div class="cu-w' + (!t.thuHoi && demCx(t.cx).tong ? ' coCx' : '') + (i === ds.length - 1 ? ' cuoi' : '') + '" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (t.thuHoi ? '' : veCum(t)) + cong + '</div></div>';
     }
     function veCum(t) {
       var d = demCx(t.cx), toi = cxCuaToi(t);
@@ -412,6 +413,8 @@
       var hd = document.createElement('div'); hd.className = 'cu-hd cu-pop';
       hd.innerHTML = '<div class="nen"></div>';
       var ban = goc.cloneNode(true); ban.classList.add('ban'); ban.classList.remove('giu');
+      // ⭐ v1.188.0 — bản nổi nằm NGOÀI .cu-hang ⇒ mang theo dấu "tin của mình" để giữ nguyên màu bong bóng khi nhấn giữ.
+      if (goc.closest('.cu-hang.toi')) ban.classList.add('toi');
       ban.style.width = rg.width + 'px'; ban.style.left = rg.left + 'px'; ban.style.top = rg.top + 'px';
       hd.appendChild(ban);
       var toi = cxCuaToi(t), hop = document.createElement('div'); hop.className = 'hop';

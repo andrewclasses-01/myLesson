@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-30 20:24:23",
+  "capNhat": "2026-09-30 21:21:04",
   "bai": {
     "A1C": [
       {
@@ -2878,6 +2878,26 @@
       }
     ],
     "B1B": [
+      {
+        "id": "B1B_30.9_WORKSHEET_LSB1-S3.T3.P1",
+        "tieuDe": "B1B_30.9_WORKSHEET LSB1-S3.T3.P1",
+        "tenHien": "B1B_30.9_WORKSHEET LSB1-S3.T3.P1",
+        "dang": "WORKSHEET",
+        "ngay": "30.9",
+        "tenBai": "WORDS – ANAGRAM",
+        "han": "2026-10-03T19:45",
+        "maLesson": "LSB1-S3.T3.P1",
+        "taoLuc": "2026-09-30",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "WORDS – ANAGRAM",
+            "o": 0,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB1B%2FB1B_30.9_WORKSHEET_LSB1-S3.T3.P1%2F0.pdf?alt=media",
+            "soTrang": 2
+          }
+        ]
+      },
       {
         "id": "B1B_26.9_DICTS_LSB1-S1.T1.P2",
         "tieuDe": "B1B_26.9_DICTS LSB1-S1.T1.P2",

@@ -433,6 +433,23 @@
     BO_QUA_CHANG[id] = m || {};
     luuDemHan();
   }
+  /* ⭐⭐ v1.202.0 (30/09/2026, thầy chốt) — "KHÔNG TÍNH" THEO TỪNG MỤC (mọi dạng bài, giống STAGE
+     bỏ qua theo chặng): thầy bấm một dòng ở tab BÀI TẬP (act / worksheet / bài nghe) rồi ✕ em ⇒ em
+     không vào x/N của RIÊNG dòng đó, không giữ thẻ/chặng lại vì dòng đó; các dòng khác vẫn tính.
+     Lưu CHUNG map `boQuaChang` với khoá có chữ đầu (`khoaMucBq`): 'a_<mã act>' · 'w_<ô nộp>' · 'n'.
+     Vì sao chung map: luật Firestore của `boQuaChang` chỉ kiểm `is map` + ≤ 40 khoá ⇒ KHÔNG phải đăng
+     luật mới; khoá số của chặng ('1','2'…) vẫn đọc như cũ, bản web cũ chỉ tra khoá số nên bỏ qua khoá chữ.
+     ⛔ Mọi chỗ duyệt `Object.keys(boQuaChang)` coi như SỐ CHẶNG phải lọc `/^\d+$/` (xem `ghiBoQuaChang`). */
+  function khoaMucBq(loai, x) {
+    if (loai === 'act') return 'a_' + String(x || '');
+    if (loai === 'ws') return 'w_' + String(+x || 0);
+    return 'n';
+  }
+  function boQuaMucCua(b, khoa) { return (boQuaChangGoc(b)[khoa] || []).slice(); }
+  function coBoQuaMuc(b) {
+    var g = boQuaChangGoc(b);
+    return Object.keys(g).some(function (k) { return !/^\d+$/.test(k) && (g[k] || []).length; });
+  }
   function tinhCaCua(b) { return TINH_CA[(b && b.id) || ''] || []; }
   function moChangCua(b) { return +MO_CHANG[(b && b.id) || ''] || 0; }
   /* Dashboard gọi sau khi ghi xong (cùng nếp `datHanSua`/`datTrangThai`) — không
@@ -796,9 +813,22 @@
     var c = changCuaBai(b).filter(function (x) { return x.acts.some(function (a) { return a.ma === ma; }); })[0];
     return c ? c.so : null;
   }
-  function caLopCuaAct(l, b, ma) { return caLopCuaBai(l, b, soChangCuaAct(b, ma)); }
+  // v1.202.0 — cộng thêm em thầy ✕ ở RIÊNG act này (`boQuaMucCua`, khoá 'a_<mã>').
+  function caLopCuaAct(l, b, ma) {
+    var bo = {};
+    boQuaMucCua(b, khoaMucBq('act', ma)).forEach(function (t) { bo[khoaTen(t)] = 1; });
+    return caLopCuaBai(l, b, soChangCuaAct(b, ma)).filter(function (t) { return !bo[khoaTen(t)]; });
+  }
   function khongTinhCuaAct(l, b, ma) {
-    return emKhongTinh(l, b, soChangCuaAct(b, ma)).map(function (x) { return x.ten; });
+    var ds = emKhongTinh(l, b, soChangCuaAct(b, ma)).map(function (x) { return x.ten; }), co = {};
+    ds.forEach(function (t) { co[khoaTen(t)] = 1; });
+    var trong = {};
+    caLopDayDu(l).forEach(function (t) { trong[khoaTen(t)] = t; });
+    boQuaMucCua(b, khoaMucBq('act', ma)).forEach(function (t) {
+      var k = khoaTen(t);
+      if (trong[k] && !co[k]) { co[k] = 1; ds.push(trong[k]); }
+    });
+    return ds;
   }
 
   // ⭐ v1.35.0 — BA CỬA lấy bài của một lớp, theo trạng thái thẻ (`trangThaiThe`):
@@ -1657,14 +1687,20 @@
   // Những em CHƯA xong hết act của một chặng.
   // `lay` = { diem: function(ma){...}, chuan: function(ma){...} } — lấy từ bảng
   // điểm trang đã đọc sẵn. `boQua` = mảng tên em thầy đã bỏ qua ở bài này.
-  function emChuaXongChang(chang, lay, caLop, boQua) {
-    var bo = {};
+  // v1.202.0 — `b` (tuỳ chọn): act nào em bị ✕ riêng (`boQuaMucCua`) thì act đó không giữ em lại.
+  function emChuaXongChang(chang, lay, caLop, boQua, b) {
+    var bo = {}, boAct = {};
     (boQua || []).forEach(function (t) { bo[khoaTen(t)] = 1; });
+    chang.acts.forEach(function (a) {
+      var m = {}; if (b) boQuaMucCua(b, khoaMucBq('act', a.ma)).forEach(function (t) { m[khoaTen(t)] = 1; });
+      boAct[a.ma] = m;
+    });
     var thieu = [];
     (caLop || []).forEach(function (ten) {
       if (bo[khoaTen(ten)]) return;
       for (var i = 0; i < chang.acts.length; i++) {
         var ma = chang.acts[i].ma;
+        if (boAct[ma][khoaTen(ten)]) continue;
         if (!xongAct(lay.diem(ma) || [], ten, lay.chuan(ma))) { thieu.push(ten); return; }
       }
     });
@@ -1689,7 +1725,7 @@
     for (var i = 0; i < cac.length; i++) {
       var c = cac[i];
       // v1.137.0 — bài STAGE: mỗi chặng chỉ trừ em thầy bỏ qua Ở CHẶNG ĐÓ (`boQuaChangCua` đã gồm `boQua` cũ).
-      c.thieu = emChuaXongChang(c, lay, caLop, (b && b.id && laBaiStage(b)) ? boQuaChangCua(b, c.so) : o.boQua);
+      c.thieu = emChuaXongChang(c, lay, caLop, (b && b.id && laBaiStage(b)) ? boQuaChangCua(b, c.so) : o.boQua, b);
       c.caLopXong = c.thieu.length === 0;
       c.quaHan = c.moc != null && now > c.moc;
 
@@ -3538,6 +3574,7 @@
     boQuaChangGoc: boQuaChangGoc, boQuaChangCua: boQuaChangCua, datBoQuaChang: datBoQuaChang,
     laStageCoChang: laStageCoChang, soChangCuaAct: soChangCuaAct,
     caLopCuaAct: caLopCuaAct, khongTinhCuaAct: khongTinhCuaAct,
+    khoaMucBq: khoaMucBq, boQuaMucCua: boQuaMucCua, coBoQuaMuc: coBoQuaMuc,   // v1.202.0
     moChangCua: moChangCua, mocActHan: mocActHan,
     datBoQua: datBoQua, datMoChang: datMoChang,
     tenDang: tenDang, coTenRieng: coTenRieng, tenO: tenO,

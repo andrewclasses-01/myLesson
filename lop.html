@@ -1644,7 +1644,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="config.js?v=188"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
-<script src="js/chung.js?v=76"></script>
+<script src="js/chung.js?v=77"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <script src="js/chat.js?v=29"></script>
 <script src="js/chat-ui.js?v=12"></script>
@@ -1947,7 +1947,8 @@ function donDiem(cacThe){
         /* v1.95.0 — đếm theo SĨ SỐ RIÊNG của thẻ (em vào lớp sau ngày giao không tính).
            ⭐ v1.137.0 — bài STAGE: sĩ số RIÊNG CỦA CHẶNG chứa act này (thầy bỏ qua em ở từng
            chặng, xem `A.caLopCuaAct`). `x.siSo`/`x.caLop`/`x.khongTinh` đi theo từng dòng act. */
-        var caX = (!LA_DAC_BIET && t.goc && LOP_OBJ && A.laStageCoChang(t.goc))
+        /* v1.202.0 — bài có em bị thầy ✕ riêng ở một act (`A.coBoQuaMuc`) cũng đi đường act riêng. */
+        var caX = (!LA_DAC_BIET && t.goc && LOP_OBJ && (A.laStageCoChang(t.goc) || A.coBoQuaMuc(t.goc)))
           ? A.caLopCuaAct(LOP_OBJ, t.goc, x.ma) : (t.caLop || CA_LOP);
         x.caLop = caX; x.siSo = caX.length;
         x.khongTinh = (caX === t.caLop || caX === CA_LOP) ? null : A.khongTinhCuaAct(LOP_OBJ, t.goc, x.ma);

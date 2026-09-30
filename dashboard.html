@@ -1605,6 +1605,12 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-muc .kq{font:800 12px/1 var(--font); text-align:right; font-variant-numeric:tabular-nums}
 .hq-muc .kq small{display:block; font:600 9.5px/1.3 var(--font); color:var(--nhat); margin-top:2px}
 .hq-muc .kq.du{color:var(--m-la)} .hq-muc .kq.thieu{color:var(--m-do)} .hq-muc .kq.ws{color:var(--xanh); font-size:10.5px; letter-spacing:.05em}
+/* ⭐ v1.202.0 — dòng BÀI TẬP bấm được (xem riêng dòng, bỏ qua em ở riêng dòng); dòng đang xem viền xanh như khối chặng. */
+.hq-muc.bqm{cursor:pointer; margin:0 -8px; padding-left:8px; padding-right:8px; border-radius:10px; transition:background .15s}
+.hq-muc.bqm:hover{background:#F3F7F6}
+.hq-muc.bqm.xem{background:#F5F9FF; box-shadow:inset 0 0 0 2px #3E7BFA; border-top-color:transparent}
+.hq-muc .ten .hq-kt-chip{margin-left:6px; vertical-align:1px}
+.hq-em-khoi h4 [data-hqbq-thoat]{margin-left:8px; vertical-align:1px; text-transform:none; letter-spacing:0}
 .hq-em-khoi{border:1px solid var(--vien); border-radius:14px; padding:13px; background:var(--the)}
 /* ⭐ v1.138.0 (thầy duyệt mẫu v11) — tiêu đề GỌN ("TỔNG QUAN • CHẶNG 1" · "KHÔNG TÍNH • CHẶNG 1"), BỎ mọi câu hướng dẫn, ảnh em TO hơn. */
 .hq-em-khoi h4, .hq-bq h4{margin:0 0 14px; font:800 12.5px/1.3 var(--font); letter-spacing:.08em; text-transform:uppercase; color:var(--mo)}
@@ -3382,7 +3388,7 @@ button.mk-em:hover{border-color:currentColor}
 <script src="config.js?v=188"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
-<script src="js/chung.js?v=76"></script>
+<script src="js/chung.js?v=77"></script>
 <script src="js/chat.js?v=29"></script>
 <script src="js/chat-ui.js?v=12"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -3457,7 +3463,8 @@ button.mk-em:hover{border-color:currentColor}
     var khongTinh = A.emKhongTinh(l, b);
     // ⭐ v1.137.0 — bài STAGE: mỗi act đếm trên em đang tính Ở CHẶNG CỦA ACT ĐÓ (thầy bỏ qua em
     // theo từng chặng) ⇒ act mang `caLop`/`siSo`/`khongTinh` riêng; bài thường = y như cả bài.
-    var stageCo = A.laStageCoChang(b);
+    // v1.202.0 — bài nào có em bị ✕ riêng ở một act (`A.coBoQuaMuc`) cũng đi đường act riêng.
+    var stageCo = A.laStageCoChang(b) || A.coBoQuaMuc(b);
     var acts = A.actCuaBai(b).map(function (k) {
       var caA = stageCo ? A.caLopCuaAct(l, b, k.ma) : caLop;
       var ds = DIEM[k.ma];
@@ -4281,7 +4288,9 @@ button.mk-em:hover{border-color:currentColor}
     if (!b) return;
     var goc = A.boQuaChangGoc(b), cu = A.boQuaCua(b), m = {};
     var cacSo = A.changCuaBai(b).map(function (c) { return String(c.so); });
-    Object.keys(goc).forEach(function (k) { if (cacSo.indexOf(k) < 0) cacSo.push(k); });
+    Object.keys(goc).forEach(function (k) { if (/^\d+$/.test(k) && cacSo.indexOf(k) < 0) cacSo.push(k); });
+    // v1.202.0 — khoá MỤC ('a_…','w_…','n') đi nguyên, không trộn `boQua` cũ vào.
+    Object.keys(goc).forEach(function (k) { if (!/^\d+$/.test(k)) m[k] = (goc[k] || []).slice(); });
     cacSo.forEach(function (k) {
       var ds = (goc[k] || []).slice();
       cu.forEach(function (t2) { if (!ds.some(function (x) { return A.khoaTen(x) === A.khoaTen(t2); })) ds.push(t2); });
@@ -4294,6 +4303,19 @@ button.mk-em:hover{border-color:currentColor}
     var doi = { boQuaChang: m };
     if (cu.length) doi.boQua = [];
     stageGhi(id, doi, nut, boQua ? 'Đã bỏ qua em ' + ten + ' ở chặng ' + so + '.' : 'Em ' + ten + ' đã được tính lại ở chặng ' + so + '.');
+  }
+  /* ⭐⭐ v1.202.0 (30/09/2026, thầy chốt) — GHI "KHÔNG TÍNH EM Ở MỘT MỤC" (act / worksheet / bài nghe), mọi dạng bài.
+     Cùng map `boQuaChang` (khoá chữ `A.khoaMucBq`, xem js/chung.js) ⇒ không cần luật Firestore mới. Gửi CẢ map như
+     `ghiBoQuaChang` (khoá số giữ nguyên, `boQua` cũ không đụng). */
+  function ghiBoQuaMuc(id, khoa, tenMuc, ten, boQua, nut) {
+    var b = A.baiCuaLop(DL, LOP_CHON, 'ql').filter(function (x) { return x.id === id; })[0];
+    if (!b || !khoa) return;
+    var goc = A.boQuaChangGoc(b), m = {};
+    Object.keys(goc).forEach(function (k) { m[k] = (goc[k] || []).slice(); });
+    var ds = (m[khoa] || []).filter(function (x) { return A.khoaTen(x) !== A.khoaTen(ten); });
+    if (boQua) ds.push(ten);
+    m[khoa] = ds;
+    stageGhi(id, { boQuaChang: m }, nut, boQua ? 'Đã bỏ qua em ' + ten + ' ở ' + tenMuc + '.' : 'Em ' + ten + ' đã được tính lại ở ' + tenMuc + '.');
   }
 
   // ================================================================
@@ -6073,6 +6095,7 @@ button.mk-em:hover{border-color:currentColor}
            video: giuNap ? HQ.video : null, nghe: giuNap ? HQ.nghe : null,
            act: giuNap ? HQ.act : {}, actLoi: '', nop: giuNap ? HQ.nop : {}, nopLoi: '',
            chang: giuNap ? HQ.chang : null, ct: null, nopSheet: giuNap ? (HQ.nopSheet || 0) : 0,
+           mucBq: giuNap ? (HQ.mucBq || null) : null,   // v1.202.0 — dòng BÀI TẬP đang xem riêng ({khoa, ten, loai, ma, o, so})
            sx: (giuNap && HQ.sx) ? HQ.sx : { cot: 'tong', giam: true },
            gd: (giuNap && HQ.gd) || '7', hsEm: giuNap ? HQ.hsEm : null };   // v1.154.0 — khoảng lọc GẦN ĐÂY · em đang xem hồ sơ HIỆU SUẤT   // v1.138.0 — cách xếp THỜI LƯỢNG giữ khi vẽ lại, mở bài khác thì về mặc định
     // ⭐ v1.132.0 — phạm vi mặc định = CHẶNG ĐANG MỞ (thầy chốt); bài không STAGE = cả bài.
@@ -6111,6 +6134,7 @@ button.mk-em:hover{border-color:currentColor}
      một cú ĐÚP vẫn rơi đúng khối cũ (vẽ lại innerHTML giữa hai cú bấm là trình duyệt không bắn `dblclick`). */
   function hqDoiChang(i) {
     HQ.chang = i; HQ_KT = null; HQ.hieu = true;
+    if (HQ.mucBq) { HQ.mucBq = null; if (HQ.tab === 'bt') return hqVeLai(); }   // v1.202.0 — đang xem riêng một dòng ⇒ đổi chặng là thoát
     var dsc = $('#hqDsc');
     if (HQ.tab !== 'bt' || !dsc) return hqVeLai();
     hqVeDauGiua();
@@ -6240,7 +6264,7 @@ button.mk-em:hover{border-color:currentColor}
     // v1.137.0 — mỗi sheet chỉ tính em ĐANG TÍNH ở chặng của sheet đó (bỏ qua theo chặng).
     var hs = hqHocSinh(t), du = 0, tong = 0;
     hs.forEach(function (h) {
-      var k = A.khoaTen(h.ten), cua = ws.filter(function (w) { return !hqKt(hqSoChangWs(w.k))[k]; });
+      var k = A.khoaTen(h.ten), cua = ws.filter(function (w) { return !hqKt(hqSoChangWs(w.k))[k] && !hqKtMuc(A.khoaMucBq('ws', w.o))[k]; });   // v1.202.0 + ✕ riêng từng sheet
       if (!cua.length) return;
       tong++;
       if (cua.every(function (w) { return hqEmNopSo(w.o, h) >= w.soTrang; })) du++;
@@ -6286,9 +6310,31 @@ button.mk-em:hover{border-color:currentColor}
   function hqMucDangMo() {
     var pv = hqPhamVi(), ra = [];
     // v1.137.0 — mỗi mục mang `so` (số chặng) để lưới em bỏ mục của chặng em đang được bỏ qua.
-    pv.acts.forEach(function (a) { ra.push({ loai: 'act', ma: a.ma, ten: a.ten, so: A.soChangCuaAct(HQ.b, a.ma) }); });
-    pv.ws.forEach(function (w) { ra.push({ loai: 'ws', o: w.o, soTrang: w.soTrang, ten: w.ten, so: hqSoChangWs(w.k) }); });
+    // v1.202.0 — mỗi mục mang thêm `kbq` (khoá "không tính theo mục", `A.khoaMucBq`).
+    pv.acts.forEach(function (a) { ra.push({ loai: 'act', ma: a.ma, ten: a.ten, so: A.soChangCuaAct(HQ.b, a.ma), kbq: A.khoaMucBq('act', a.ma) }); });
+    pv.ws.forEach(function (w) { ra.push({ loai: 'ws', o: w.o, soTrang: w.soTrang, ten: w.ten, so: hqSoChangWs(w.k), kbq: A.khoaMucBq('ws', w.o) }); });
     return ra;
+  }
+  // ---- ⭐ v1.202.0 — KHÔNG TÍNH THEO TỪNG MỤC ----
+  // Bảng khoá tên -> 1 của em thầy ✕ ở riêng mục `khoa`.
+  function hqKtMuc(khoa) {
+    var m = {};
+    if (khoa) A.boQuaMucCua(HQ.b, khoa).forEach(function (t) { m[A.khoaTen(t)] = 1; });
+    return m;
+  }
+  // Mục (dòng BÀI TẬP) từ khối gốc `k` của bài: {khoa, ten, loai, ma, o, soTrang, so}.
+  function hqMucTuKhoi(k, so) {
+    if (k.loai === 'act') return { khoa: A.khoaMucBq('act', k.ma), ten: k.ten, loai: 'act', ma: k.ma, so: so };
+    if (k.loai === 'ws') {
+      var ws = A.wsHienCuaThe(HQ.b, null).filter(function (w) { return w.k === k; })[0];
+      return ws ? { khoa: A.khoaMucBq('ws', ws.o), ten: k.ten, loai: 'ws', o: ws.o, soTrang: ws.soTrang, so: so } : null;
+    }
+    return { khoa: A.khoaMucBq('nghe'), ten: k.ten || 'DICTATION', loai: 'nghe', so: so };
+  }
+  // Em đã xong MỘT mục (kể cả bài nghe: có phút nghe là xong, y dòng "đã nghe").
+  function hqEmXongMucBq(mb, h) {
+    if (mb.loai === 'nghe') return hqGioNghe(h.ten) > 0;
+    return hqEmXongMuc(mb, h);
   }
   // ---- ⭐ v1.137.0 — BỎ QUA THEO TỪNG CHẶNG ----
   // Số chặng (`c.so`) đang xem, hoặc null (cả hành trình / bài không chặng).
@@ -6320,6 +6366,7 @@ button.mk-em:hover{border-color:currentColor}
     var k = A.khoaTen(h.ten), n = 0, N = 0;
     muc.forEach(function (m) {
       if (HQ.t.stage && m.so != null && hqKt(m.so)[k]) return;
+      if (m.kbq && hqKtMuc(m.kbq)[k]) return;   // v1.202.0 — em bị ✕ riêng ở mục này
       N++; if (hqEmXongMuc(m, h)) n++;
     });
     return { n: n, N: N };
@@ -6572,7 +6619,21 @@ button.mk-em:hover{border-color:currentColor}
 
   // ---- TAB BÀI TẬP ----
   // `so` = số chặng của khối đang vẽ (null = bài không chặng) — v1.137.0: mẫu số x/N theo em đang tính Ở CHẶNG ĐÓ.
+  /* ⭐⭐ v1.202.0 (thầy chốt 30/09) — MỌI dòng (act / worksheet / nghe) bấm được: bấm = xem riêng dòng đó ở lưới em
+     bên phải (✕ bỏ qua em ở riêng dòng này, ↩ tính lại) · bấm lại = về tổng quan. Dòng có em không tính mang chip. */
+  var HQ_MB = {};   // khoá mục -> mục (dựng lại mỗi lượt vẽ danh sách), cho cú bấm dòng
   function hqHangMuc(k, idx, so) {
+    var html = hqHangMucGoc(k, idx, so), mb = hqMucTuKhoi(k, so);
+    if (!mb) return html;
+    HQ_MB[mb.khoa] = mb;
+    var soKt = Object.keys(hqKtMuc(mb.khoa)).length;
+    var chon = HQ.mucBq && HQ.mucBq.khoa === mb.khoa;
+    html = html.replace('<div class="hq-muc"', '<div class="hq-muc bqm' + (chon ? ' xem' : '') + '" data-hqbq="' + A.chuAnToan(mb.khoa) + '"' +
+      ' title="' + (chon ? 'Bấm lại = về tổng quan' : 'Bấm = xem riêng dòng này · bỏ qua em ở riêng dòng này') + '"');
+    if (soKt) html = html.replace('</div><div class="mau">', ' <span class="hq-kt-chip">không tính ' + soKt + ' em</span></div><div class="mau">');
+    return html;
+  }
+  function hqHangMucGoc(k, idx, so) {
     var t = HQ.t;
     if (k.loai === 'act') {
       var a = t.acts.filter(function (x) { return x.ma === k.ma; })[0];
@@ -6595,6 +6656,8 @@ button.mk-em:hover{border-color:currentColor}
     if (k.loai === 'ws') {
       var ws = A.wsHienCuaThe(HQ.b, null).filter(function (w) { return w.k === k; })[0];
       var o = ws ? ws.o : 0, n = ws ? ws.soTrang : 1;
+      var ktW = hqKtMuc(A.khoaMucBq('ws', o));   // v1.202.0
+      tinh = tinh.filter(function (h) { return !ktW[A.khoaTen(h.ten)]; }); siSoO = tinh.length;
       var ds = HQ.nop[o];
       var du = 0, mot = 0;
       if (ds) tinh.forEach(function (h) { var s2 = hqEmNopSo(o, h); if (s2 >= n) du++; else if (s2) mot++; });
@@ -6605,7 +6668,8 @@ button.mk-em:hover{border-color:currentColor}
         '<span class="kq ws">' + (ds ? du + ' NỘP' + (mot ? '<small>' + mot + ' một phần</small>' : '') : '…') + '</span></div>';
     }
     // nghe / audio
-    var daNghe = 0;
+    var daNghe = 0, ktN = hqKtMuc(A.khoaMucBq('nghe'));   // v1.202.0
+    tinh = tinh.filter(function (h) { return !ktN[A.khoaTen(h.ten)]; }); siSoO = tinh.length;
     if (HQ.nghe) tinh.forEach(function (h) { if (hqGioNghe(h.ten) > 0) daNghe++; });
     var ptN = (HQ.nghe && siSoO) ? Math.min(100, Math.round(daNghe / siSoO * 100)) : 0;
     return '<div class="hq-muc"><span class="so"></span><span><div class="ten">' + A.chuAnToan(k.ten || 'DICTATION') + '</div>' +
@@ -6615,6 +6679,7 @@ button.mk-em:hover{border-color:currentColor}
   }
   function hqKhoiChang() {
     var b = HQ.b, t = HQ.t, khoi = b.khoi || [];
+    HQ_MB = {};
     var laMuc = function (k) { return (k.loai === 'act' && k.ma) || (k.loai === 'ws' && k.ten) || k.loai === 'nghe' || k.loai === 'audio'; };
     var stt = 0, danhSo = function (k) { return k.loai === 'act' ? (++stt) : ''; };
     if (!(t.stage && t.chang)) {
@@ -6661,6 +6726,7 @@ button.mk-em:hover{border-color:currentColor}
   function hqLuoiEm() {
     var b = HQ.b, t = HQ.t, hs = hqHocSinh(t), muc = hqMucDangMo(), N = muc.length;
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
+    if (HQ.mucBq) return '<div class="hq-em-khoi" id="hqLuoiEm">' + hqLuoiEmMuc(HQ.mucBq, slug, lopGoc) + '</div>';   // v1.202.0
     if (t.stage && t.chang) return '<div class="hq-em-khoi" id="hqLuoiEm">' + hqLuoiEmStage(hs, muc, slug, lopGoc) + '</div>';
     // ⭐ v1.138.0 (thầy duyệt mẫu v11) — chỉ tiêu đề gọn, KHÔNG câu hướng dẫn; ảnh em to (CSS).
     var kt = hqKhongTinh(t);
@@ -6672,7 +6738,7 @@ button.mk-em:hover{border-color:currentColor}
       return x.ly === 'muon' ? ('vào lớp ' + (g ? (+g[2] + '/' + (+g[1])) : v)) : 'thầy bỏ qua';
     };
     var oEm = function (h, x) {
-      var n = 0; muc.forEach(function (m) { if (hqEmXongMuc(m, h)) n++; });
+      var d = hqDemEm(h, muc), n = d.n, N = d.N;   // v1.202.0 — bỏ mục em bị ✕ riêng (N riêng từng em)
       var cls = !N ? '' : (n >= N ? 'du' : (n ? 'mot' : 'chua'));
       return '<div class="hq-em ' + cls + '" title="' + A.chuAnToan(h.ten) + ' · ' + n + '/' + N + (x ? ' · không tính ở bài này (' + A.chuAnToan(chuLy(x)) + ')' : '') + '" data-hq-em="' + A.chuAnToan(h.ten) + '">' +
         (x ? '<button type="button" class="tl" data-boqua-lai="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" data-lop="' + A.chuAnToan(t.maLop) + '" title="Đưa em quay lại danh sách đang tính">↩</button>' : '') +
@@ -6688,6 +6754,32 @@ button.mk-em:hover{border-color:currentColor}
       (daBo.length ? '<div class="hq-bq"><h4>KHÔNG TÍNH • <b>CẢ BÀI</b> <span class="so">' + daBo.length + '</span></h4>' +
         '<div class="hq-em-luoi">' + daBo.map(function (h) { return oEm(h, kt[A.khoaTen(h.ten)]); }).join('') + '</div></div>' : '') +
     '</div>';
+  }
+  /* ⭐⭐ v1.202.0 (thầy chốt 30/09) — XEM RIÊNG MỘT DÒNG BÀI TẬP (act / worksheet / nghe), mọi dạng bài, y nếp chặng
+     STAGE: lưới em đang tính ở dòng đó (em chưa xong có ✕ = bỏ qua ở riêng dòng này) + ô "KHÔNG TÍNH • <dòng>" (↩).
+     Em đã bị bỏ qua cả bài / cả chặng không hiện ở đây (đã rời mẫu số từ trước). */
+  function hqLuoiEmMuc(mb, slug, lopGoc) {
+    var b = HQ.b, ktM = hqKtMuc(mb.khoa), ten = A.chuAnToan(mb.ten);
+    var goc = hqTinhO(mb.so);
+    var oEm = function (h, laBq) {
+      var xong = hqEmXongMucBq(mb, h), tenEm = A.chuAnToan(h.ten);
+      var cls = laBq ? '' : (xong ? 'du' : 'chua');
+      return '<div class="hq-em ' + cls + '" title="' + tenEm + (laBq ? ' · không tính ở ' + ten : (xong ? ' · đã xong' : ' · chưa xong')) + '" data-hq-em="' + tenEm + '">' +
+        (!laBq && !xong ? '<button type="button" class="bq" data-bqm="' + tenEm + '" title="Bỏ qua em này ở riêng ' + ten + ' (các mục khác vẫn tính)">✕</button>' : '') +
+        (laBq ? '<button type="button" class="tl" data-bqm-lai="' + tenEm + '" title="Tính lại em này ở ' + ten + '">↩</button>' : '') +
+        '<div class="av">' + veEmAvDb(h.ten, slug, lopGoc) + '</div>' +
+        (!laBq && xong ? '<span class="hh">✓</span>' : '') +
+        '<div class="tn">' + A.chuAnToan(vietTat(h.ten)) + '</div></div>';
+    };
+    var dang = goc.filter(function (h) { return !ktM[A.khoaTen(h.ten)]; })
+      .map(function (h, vt) { return { h: h, vt: vt, x: hqEmXongMucBq(mb, h) ? 1 : 0 }; })
+      .sort(function (p, q) { return (p.x - q.x) || (p.vt - q.vt); }).map(function (p) { return p.h; });
+    var bo = goc.filter(function (h) { return !!ktM[A.khoaTen(h.ten)]; });
+    return '<h4>TỔNG QUAN • <b>' + ten + '</b> <button type="button" class="nut nho" data-hqbq-thoat="1" title="Về tổng quan cả bài">✕ đóng</button></h4>' +
+      (dang.length ? '<div class="hq-em-luoi">' + dang.map(function (h) { return oEm(h, false); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>') +
+      '<div class="hq-bq"><h4>KHÔNG TÍNH • <b>' + ten + '</b> <span class="so">' + bo.length + '</span></h4>' +
+        (bo.length ? '<div class="hq-em-luoi">' + bo.map(function (h) { return oEm(h, true); }).join('') + '</div>' : '') +
+      '</div>';
   }
   // Bài STAGE: xem MỘT chặng ⇒ ✕ bỏ qua em ở ĐÚNG chặng đó + ô "KHÔNG TÍNH • CHẶNG N" (↩ chỉ chặng đó);
   // xem CẢ HÀNH TRÌNH ⇒ không có ✕ (thầy chốt), em mang nhãn "bỏ qua S1·S2" / "mọi chặng".
@@ -7383,7 +7475,9 @@ button.mk-em:hover{border-color:currentColor}
         (dem || '') + '<span class="phai">' + nutSheet + tai + '</span></div>';
     };
     if (!ds) return dau('') + '<div class="nop-cho">' + A.chuAnToan(HQ.nopLoi || 'Đang đọc bài nộp…') + '</div>';
-    var kt = hqKt(hqSoChangWs(w.k));
+    var kt = {}, ktC = hqKt(hqSoChangWs(w.k)), ktW = hqKtMuc(A.khoaMucBq('ws', w.o));   // v1.202.0 — gộp ✕ riêng sheet này
+    Object.keys(ktC).forEach(function (x) { kt[x] = ktC[x]; });
+    Object.keys(ktW).forEach(function (x) { kt[x] = 1; });
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
     var hang = hqHocSinh(t).map(function (h) { var x = hqTrangEm(ds, h); x.h = h; x.kt = kt[A.khoaTen(h.ten)] ? 1 : 0; return x; });
     hang.sort(function (a, c) { return (a.kt - c.kt) || (Math.min(a.da, n) - Math.min(c.da, n)) || a.h.ten.localeCompare(c.h.ten, 'vi'); });
@@ -9813,6 +9907,39 @@ button.mk-em:hover{border-color:currentColor}
       }
       var bqcLai = e.target.closest('[data-bqc-lai]');
       if (bqcLai) { ghiBoQuaChang(bqcLai.dataset.bai, +bqcLai.dataset.so || 0, bqcLai.dataset.bqcLai, false, bqcLai); return; }
+      /* ⭐⭐ v1.202.0 (thầy chốt 30/09) — KHÔNG TÍNH THEO TỪNG DÒNG: bấm dòng = xem riêng (bấm lại = thoát) ·
+         ✕ = bỏ qua em ở riêng dòng đó (hỏi trước) · ↩ = tính lại. Ghi `boQuaChang['a_…'|'w_…'|'n']` — `ghiBoQuaMuc`. */
+      var bqm = e.target.closest('[data-bqm]');
+      if (bqm && HQ.mucBq) {
+        var tenM = bqm.dataset.bqm, mbX = HQ.mucBq;
+        moXnPop(bqm, {
+          tieuDe: 'Bỏ qua em này ở ' + mbX.ten + '?',
+          chu: 'Em ' + tenM + ' sẽ không tính vào x/N của ' + mbX.ten + ' và không giữ thẻ/chặng lại vì mục này. ' +
+               'Các mục khác em vẫn được tính bình thường. Em vẫn có trong THỜI LƯỢNG và bảng xếp hạng.',
+          nutOk: 'Bỏ qua ở mục này', nguy: true,
+          khiOk: function () { ghiBoQuaMuc(HQ.b.id, mbX.khoa, mbX.ten, tenM, true, null); }
+        });
+        return;
+      }
+      var bqmLai = e.target.closest('[data-bqm-lai]');
+      if (bqmLai && HQ.mucBq) { ghiBoQuaMuc(HQ.b.id, HQ.mucBq.khoa, HQ.mucBq.ten, bqmLai.dataset.bqmLai, false, bqmLai); return; }
+      if (e.target.closest('[data-hqbq-thoat]')) { HQ.mucBq = null; HQ.hieu = true; hqVeLai(); return; }
+      var hqBqD = e.target.closest('[data-hqbq]');
+      if (hqBqD && !e.target.closest('button, a')) {
+        var kBq = hqBqD.getAttribute('data-hqbq'), mbD = HQ_MB[kBq];
+        if (!mbD) return;
+        if (HQ.mucBq && HQ.mucBq.khoa === kBq) HQ.mucBq = null;
+        else {
+          HQ.mucBq = mbD;
+          // bài STAGE: dòng thuộc chặng nào thì chuyển phạm vi sang chặng đó (lưới em + mẫu số đúng chặng)
+          var tS = HQ.t;
+          if (tS.stage && tS.chang && mbD.so != null) {
+            for (var iS = 0; iS < tS.chang.length; iS++) if (tS.chang[iS].so === mbD.so) { HQ.chang = iS; break; }
+          }
+        }
+        HQ_KT = null; hqVeLai();
+        return;
+      }
       /* ⭐ v1.137.0 (thầy chốt mẫu v9) — BẤM MỘT KHỐI CHẶNG ở tab BÀI TẬP = xem riêng chặng đó (nút trong khối vẫn là nút). */
       var hqKh = e.target.closest('[data-hqkhoi]');
       if (hqKh && !e.target.closest('button, a')) { hqDoiChang(+hqKh.getAttribute('data-hqkhoi')); return; }

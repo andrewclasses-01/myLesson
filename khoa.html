@@ -729,7 +729,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="config.js?v=188"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
-<script src="js/chung.js?v=76"></script>
+<script src="js/chung.js?v=77"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <script src="js/chat.js?v=29"></script>
 <script src="js/chat-ui.js?v=12"></script>
@@ -1156,11 +1156,14 @@ function chuGiayPop(g){
    dồn xuống cuối. Cùng luật với leaderboard trang bài. */
 /* ⭐ v1.136.0 — gọi thẳng `A.xepHangAct` (luật xếp hạng DUY NHẤT của cả bốn bảng). Khóa học
    không có luật "vào lớp sau ngày giao", nhưng thầy vẫn ✕ bỏ qua được một em ở một lesson. */
-function khongTinhPop(){
-  return POP.b ? A.emKhongTinh(LOP_OBJ, POP.b).map(function(x){ return x.ten; }) : [];
+/* v1.202.0 — `ma` (tuỳ chọn): gồm cả em thầy ✕ riêng ở act đó (`A.khongTinhCuaAct`). */
+function khongTinhPop(ma){
+  if (!POP.b) return [];
+  if (ma) return A.khongTinhCuaAct(LOP_OBJ, POP.b, ma);
+  return A.emKhongTinh(LOP_OBJ, POP.b).map(function(x){ return x.ten; });
 }
 function xepActPop(ma){
-  return A.xepHangAct(DIEM[ma] || [], CA_LOP, khongTinhPop());
+  return A.xepHangAct(DIEM[ma] || [], CA_LOP, khongTinhPop(ma));
 }
 function vachActPop(k, phu){
   return '<span class="doi-vach"><span class="line"></span><span class="lb">' +

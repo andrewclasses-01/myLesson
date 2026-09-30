@@ -5,8 +5,8 @@
 
    KHO nwPosts/{id}:
      uid · tacGia{uid,ten,anh,lop,vaiTro} · chu · anh[] · pham 'mang'|'lop' · lop · luc · suaLuc
-     · an · ghim · camXuc{uid: mã} · soBinhLuan · soChiaSe · chiaSeTu · goc{uid,tacGia,chu,anh,luc}
-   nwPosts/{id}/binhLuan/{cid}: uid · tacGia · chu · luc · camXuc{}
+     · an · ghim · cx{uid:{ten,luc,n,l}} (web v1.199.0, trước là camXuc{uid: mã}) · soBinhLuan · soChiaSe · chiaSeTu · goc{uid,tacGia,chu,anh,luc}
+   nwPosts/{id}/binhLuan/{cid}: uid · tacGia · chu · luc · cx{} · sticker?
    nwBaoCao/{id}: tu · tuTen · baiId · uidBai · lyDo · chu · luc · trangThai
 
    💸 Nếp đọc: dòng bài dùng getDocs + phân trang 10 bài (KHÔNG onSnapshot cả bảng tin);
@@ -51,6 +51,7 @@
           '<button type="button" class="xanh" id="soanThemAnh" title="Ảnh (tối đa ' + CFG.TOI_DA_ANH_BAI + ')" aria-label="Thêm ảnh">' + IC.anh + '</button>' +
           '<button type="button" class="duong" id="soanGan" title="Gắn thẻ bạn" aria-label="Gắn thẻ bạn">' + IC.gan + '</button>' +
           '<button type="button" class="vang" id="soanCg" title="Cảm xúc / hoạt động" aria-label="Cảm xúc / hoạt động">' + IC.camGiac + '</button>' +
+          '<button type="button" class="xanh" id="soanEmoji" title="Emoji" aria-label="Emoji">' + MAT_CUOI + '</button>' +   // ⭐ web v1.199.0
           (toi.laThay ? '<label class="chon-pham" style="cursor:pointer;margin-left:6px"><input type="checkbox" id="soanGhim" style="accent-color:var(--accent)"> GHIM</label>' : '') + '</div>' +
         '<input type="file" id="soanFile" accept="image/*" multiple hidden>' +
         '<div class="tb-dem"><span class="dem" id="soanDem"></span></div>' +
@@ -173,6 +174,8 @@
         });
       };
       // cảm xúc / hoạt động
+      // ⭐ web v1.199.0 — emoji 3D bộ chung: chèn ký tự vào bài, lúc hiện thành hình 3D
+      $('#soanEmoji', p).onclick = function () { if (window.ChatUI) ChatUI.moKhay(this, { emoji: function (ma, ky) { ChatUI.chenVaoO(ta, ky); } }); };
       $('#soanCg', p).onclick = function () {
         function nhom(loai, tieu) {
           return '<div class="tb-cg-tieu">' + tieu + '</div><div class="tb-cg">' + NW.CAM_GIAC.filter(function (c) { return c.loai === loai; }).map(function (c, i) {
@@ -196,7 +199,7 @@
           uid: toi.uid, tacGia: NW.tomTat(toi), chu: chu, anh: [], pham: pham,
           lop: toi.laThay ? 'GV' : lopToi, luc: Date.now(), an: false,
           ghim: !!(toi.laThay && $('#soanGhim', p) && $('#soanGhim', p).checked),
-          camXuc: {}, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null,
+          cx: {}, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null,
           gan: ganDs.slice(), camGiac: camGiac ? { ma: camGiac.ma, ky: camGiac.ky, chu: camGiac.chu, loai: camGiac.loai } : null
         };
         if (NW.laBanThu()) {   // bàn thử: bài hiện ngay trên máy em, không ghi kho
@@ -246,21 +249,22 @@
   };
 
   // ---------- vẽ thẻ bài ----------
-  function demCamXuc(cx) {
-    var d = {}; var tong = 0;
-    Object.keys(cx || {}).forEach(function (u) { var m = cx[u]; if (m) { d[m] = (d[m] || 0) + 1; tong++; } });
-    return { d: d, tong: tong };
-  }
+  // ⭐ web v1.199.0 (30/09/2026) — thầy chốt: bài đăng + bình luận dùng CHUNG bộ 6 cảm xúc 3D với chat (../js/chat-ui.js),
+  //   MỖI NGƯỜI MỖI LOẠI TỐI ĐA 1 (thả được nhiều loại). Ô mới `cx.<uid>` = {ten, luc, n:{tim:1,…}, l}; `camXuc` cũ BỎ.
+  var MAT_CUOI = '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.2c1 1.5 2.2 2.2 3.5 2.2s2.5-.7 3.5-2.2"/><path d="M9 9.6v.6M15 9.6v.6"/></svg>';
+  function demCamXuc(cx) { return { tong: window.ChatUI ? ChatUI.demCx(cx).tong : 0 }; }
+  function avCx(g) { return NW.avHtml({ ten: g.ten, vaiTro: g.ma === 'gv' ? 'gv' : '' }, 'nho'); }
+  function moAiThaCx(cx) { if (window.ChatUI) ChatUI.moBangCx(cx || {}, avCx, NW.toi.uid); }
   // v0.9.2: số nhỏ cạnh icon trong hàng nút — 0 thì giấu luôn cho gọn (đúng như ảnh mẫu thầy gửi)
   function demHtml(n) { n = n || 0; return '<b class="dem"' + (n ? '' : ' hidden') + '>' + (n || '') + '</b>'; }
 
   // khongSo = true: chỉ hiện các icon cảm xúc, KHÔNG kèm số (v0.9.2 — thầy chốt 23/09 cho cụm bên phải thẻ bài)
   function cumCamXuc(cx, khongSo) {
-    var c = demCamXuc(cx);
-    if (!c.tong) return '';
-    var loai = NW.CAM_XUC.filter(function (x) { return c.d[x.ma]; }).slice(0, 3);
-    return '<span class="cx-cum" data-cxai>' + loai.map(function (x) { return NW.cxHtml(x.ma); }).join('') + (khongSo ? '' : '<b>' + c.tong + '</b>') + '</span>';
+    var h = window.ChatUI ? ChatUI.cumCxHtml(cx, !khongSo) : '';
+    return h ? '<button type="button" class="cx-cum cu-cum" data-cxai title="Ai đã thả cảm xúc">' + h + '</button>' : '';
   }
+  // hình nút thả: cảm xúc em thả gần nhất (3D) hoặc tim viền
+  function hinhNutCx(cx) { return (window.ChatUI && ChatUI.nutCxHinh(cx, NW.toi.uid)) || IC.tim; }
   // v13: bài > 4 ảnh thì ô thứ 4 phủ "+N"; bấm ảnh nào mở bộ ảnh từ ảnh đó (data-ds = cả bộ)
   function khuAnhHtml(anh, nho) {
     if (!anh || !anh.length) return '';
@@ -273,7 +277,7 @@
   function dauBai(tg, luc, them, pham, bai) {
     tg = tg || {};
     var cg = '';
-    if (bai && bai.camGiac) cg += '<span class="cg">' + NW.chuCamGiac(bai.camGiac) + '</span>';
+    if (bai && bai.camGiac) cg += '<span class="cg">' + (window.ChatUI ? ChatUI.thayEmoji(NW.chuCamGiac(bai.camGiac)) : NW.chuCamGiac(bai.camGiac)) + '</span>';   // web v1.199.0 emoji 3D
     if (bai && bai.gan && bai.gan.length) {
       var g = bai.gan;
       cg += '<span class="cg">— cùng với <a href="canhan.html?uid=' + an(g[0].uid) + '">' + an(g[0].ten) + '</a>' +
@@ -310,17 +314,18 @@
         dauBai(bai.goc.tacGia, bai.goc.luc, '', '', bai.goc) + chuBai(bai.goc.chu, true) + khuAnhHtml(bai.goc.anh) + '</div>' :
         '<div class="bai-goc mat">Bài gốc không còn.</div>';
     }
-    var cx = (bai.camXuc || {})[toi.uid] || '';
+    bai.cx = bai.cx || {};
+    var cx = window.ChatUI && ChatUI.nutCxHinh(bai.cx, toi.uid) ? 'da' : '';
     el.innerHTML = dauBai(bai.tacGia, bai.luc, nhan, bai.pham, bai) +
       '<div class="bai-nut-goc"><button class="nut-tron bai-menu" data-menu type="button" aria-label="Menu bài">' + IC.baCham + '</button>' +
         '<button class="nut-tron bai-an" data-anbai type="button" aria-label="Ẩn bài này khỏi bảng tin" title="Ẩn khỏi bảng tin">' + IC.dong + '</button></div>' +
       chuBai(bai.chu, o.gon !== false) + (bai.chiaSeTu ? goc : khuAnhHtml(bai.anh)) +
       // v0.9.2 (thầy chốt 23/09, theo ảnh mẫu): MỘT hàng — 3 icon + số bên TRÁI (không chữ), cụm cảm xúc đã thả bên PHẢI
       '<div class="bai-nut">' +
-        '<button data-cx type="button" class="' + (cx ? 'da ' + cx : '') + '" title="Thích">' + (cx ? NW.cxHtml(cx) : IC.tim) + demHtml(demCamXuc(bai.camXuc).tong) + '</button>' +
+        '<button data-cx type="button" class="' + cx + '" title="Thả cảm xúc (giữ để chọn)">' + hinhNutCx(bai.cx) + demHtml(demCamXuc(bai.cx).tong) + '</button>' +
         '<button data-mobl type="button" title="Bình luận">' + IC.binhLuan + demHtml(bai.soBinhLuan) + '</button>' +
         '<button data-chiase type="button" title="Chia sẻ">' + IC.chiaSe + demHtml(bai.soChiaSe) + '</button>' +
-        '<span class="cx-phai">' + cumCamXuc(bai.camXuc, true) + '</span>' +
+        '<span class="cx-phai">' + cumCamXuc(bai.cx, true) + '</span>' +
       '</div><div class="bl-khu" data-blkhu hidden></div>';
     el.style.position = 'relative';
 
@@ -347,44 +352,41 @@
     };
     var xt = $('[data-xemthem]', el); if (xt) xt.onclick = function () { $('.bai-chu', el).classList.remove('dai'); xt.remove(); };
 
-    // ---- cảm xúc: v13 dùng helper chung NW.ganCamXuc (bấm = tim / gỡ; giữ hoặc rê = bảng 7) ----
+    // ---- cảm xúc — ⭐ web v1.199.0: khuôn chung ChatUI.ganNutCx (bấm = bật/tắt tim; giữ / rê 0,4 giây = bảng 6 cảm xúc,
+    //      mỗi loại bật/tắt 1 lần; thả là "nổ" hình như chat) ----
     var nutCx = $('[data-cx]', el);
-    function datCx(moi) {
-      var cu = (bai.camXuc || {})[toi.uid] || '';
-      bai.camXuc = bai.camXuc || {};
-      if (moi) bai.camXuc[toi.uid] = moi; else delete bai.camXuc[toi.uid];
-      nutCx.className = moi ? 'da ' + moi : '';
-      nutCx.innerHTML = (moi ? NW.cxHtml(moi) : IC.tim) + demHtml(demCamXuc(bai.camXuc).tong);
-      var phai = $('.cx-phai', el); if (phai) phai.innerHTML = cumCamXuc(bai.camXuc, true);
+    function veNutCx() {
+      nutCx.className = ChatUI.nutCxHinh(bai.cx, toi.uid) ? 'da' : '';
+      nutCx.innerHTML = hinhNutCx(bai.cx) + demHtml(demCamXuc(bai.cx).tong);
+      var phai = $('.cx-phai', el); if (phai) phai.innerHTML = cumCamXuc(bai.cx, true);
       ganCxAi();
-      if (NW.laBanThu()) return;
-      NW.fb().then(function (f) {
-        var patch = {}; patch['camXuc.' + toi.uid] = moi ? moi : f.fs.deleteField();
-        return f.fs.updateDoc(f.fs.doc(f.db, 'nwPosts', id), patch);
-      }).then(function () {
-        if (moi && !cu && !cuaToi) NW.guiThongBao(bai.uid, { loai: 'camXuc', chu: NW.kyCamXuc(moi) + ' ' + (bai.chu || '').slice(0, 60), link: 'baidang.html?id=' + id });
-      }).catch(function (e) { NW.toast(NW.chuLoiKho(e), true); });
     }
-    NW.ganCamXuc(nutCx, { hienTai: function () { return (bai.camXuc || {})[toi.uid] || ''; }, chon: datCx, macDinh: 'tim' });
+    if (window.ChatUI) ChatUI.ganNutCx(nutCx, {
+      lay: function () { return bai.cx; }, khoa: toi.uid, ten: toi.ten, macDinh: 'tim',
+      dat: function (gt, k, them) {
+        var coTruoc = !!(bai.cx || {})[toi.uid];
+        bai.cx = Object.assign({}, bai.cx || {});
+        if (gt) bai.cx[toi.uid] = gt; else delete bai.cx[toi.uid];
+        veNutCx();
+        if (NW.laBanThu()) return Promise.resolve();
+        return NW.fb().then(function (f) {
+          var patch = {}; patch['cx.' + toi.uid] = gt || f.fs.deleteField();
+          return f.fs.updateDoc(f.fs.doc(f.db, 'nwPosts', id), patch);
+        }).then(function () {
+          if (them && !coTruoc && !cuaToi) NW.guiThongBao(bai.uid, { loai: 'camXuc', chu: ChatUI.kyCx(k) + ' ' + (bai.chu || '').slice(0, 60), link: 'baidang.html?id=' + id });
+        }).catch(function (e) { NW.toast(NW.chuLoiKho(e), true); });
+      }
+    });
 
-    // ai đã thả gì
+    // ai đã thả gì — bảng 2 cột dùng chung với chat
     function ganCxAi() {
       var c = $('[data-cxai]', el); if (!c) return;
-      c.onclick = async function () {
-        var cx = bai.camXuc || {}; var uids = Object.keys(cx);
-        var p = NW.popMo({ tieuDe: 'Cảm xúc', html: '<div class="ds-nguoi" id="cxDs"><div class="xoay"></div></div>' });
-        var html = '';
-        for (var i = 0; i < uids.length; i++) {
-          var hs = NW.laBanThu() ? { ten: uids[i] } : (await NW.hoSo(uids[i]).catch(function () { return null; })) || { ten: '?' };
-          html += '<a class="nguoi" href="canhan.html?uid=' + an(uids[i]) + '">' + NW.avHtml(hs, 'nho') + '<span><span class="ten">' + an(hs.ten) + '</span><br><span class="lop">' + an(hs.lop || '') + '</span></span><span class="cuoi">' + NW.cxHtml(cx[uids[i]], 'to') + '</span></a>';
-        }
-        $('#cxDs', p).innerHTML = html || '<div class="trong">Chưa ai thả.</div>';
-      };
+      c.onclick = function () { moAiThaCx(bai.cx); };
     }
     ganCxAi();
 
     // ---- bình luận — v13: TRẢ LỜI 1 cấp · 7 CẢM XÚC (giữ/rê nút Thích) · GỬI ẢNH ----
-    // binhLuan/{cid}: uid · tacGia · chu · anh ('' | url) · traLoiCho (id bình luận gốc | null) · luc · camXuc{uid: mã}
+    // binhLuan/{cid}: uid · tacGia · chu · anh ('' | url) · traLoiCho (id bình luận gốc | null) · luc · cx{uid:{ten,luc,n,l}} · sticker? (web v1.199.0)
     var khuBl = $('[data-blkhu]', el);
     var blMo = false, blDs = [], blHet = false;
     var dangTraLoi = null;   // {goc: id gốc, ten: tên người được trả lời}
@@ -418,13 +420,13 @@
     }
     // một bình luận (gốc hoặc trả lời)
     function motBl(b, con) {
-      var tg = b.tacGia || {}, cuaToiBl = b.uid === toi.uid, cxb = (b.camXuc || {})[toi.uid] || '';
+      var tg = b.tacGia || {}, cuaToiBl = b.uid === toi.uid, vb = window.ChatUI ? ChatUI.cxChuan((b.cx || {})[toi.uid]) : null;
       return '<div class="bl' + (con ? ' con' : '') + '" data-bl="' + an(b.id) + '">' + NW.avHtml(tg, 'nho') + '<div class="than">' +
         '<div class="bong"><div class="ten"><a href="canhan.html?uid=' + an(tg.uid) + '" style="color:inherit">' + an(tg.ten) + '</a>' + (tg.vaiTro === 'gv' ? NW.tichHtml('nho') : '') + '</div>' +
-          (b.chu ? '<div class="chu">' + NW.chuCoLink(b.chu) + '</div>' : '') + cumCamXuc(b.camXuc) + '</div>' +
+          (b.chu ? '<div class="chu">' + NW.chuCoLink(b.chu) + '</div>' : '') + (b.sticker && window.ChatUI ? '<div class="bl-stk">' + ChatUI.stickerHtml(b.sticker) + '</div>' : '') + cumCamXuc(b.cx) + '</div>' +
         (b.anh ? '<button class="bl-anh" type="button" data-blanh="' + an(b.anh) + '"><img src="' + an(b.anh) + '" alt="" loading="lazy"></button>' : '') +
         '<div class="duoi"><span>' + an(NW.chuGio(b.luc)) + '</span>' +
-          '<button data-blcx type="button" class="' + cxb + '">' + (cxb ? an(NW.tenCamXuc(cxb)) : 'Thích') + '</button>' +
+          '<button data-blcx type="button" class="' + (vb ? 'da' : '') + '" title="Thả cảm xúc (giữ để chọn)">' + (vb ? an(ChatUI.tenCx(vb.l)) : 'Thích') + '</button>' +
           '<button data-bltra="' + an(b.traLoiCho || b.id) + '" data-ten="' + an(tg.ten) + '" type="button">Trả lời</button>' +
           ((cuaToiBl || toi.laThay) ? '<button data-blxoa type="button">Xoá</button>' : '') + '</div></div></div>';
     }
@@ -435,6 +437,7 @@
         (khoa ? '<div class="bl-dang-tra">Đang trả lời <b>' + an(ten) + '</b><button type="button" data-huytra aria-label="Thôi">' + IC.dong + '</button></div>' : '') +
         '<div class="bl-anh-xem"' + (a ? '' : ' hidden') + '>' + (a ? '<img src="' + a.url + '" alt="">' : '') + '<button type="button" data-boanh aria-label="Bỏ ảnh">' + IC.dong + '</button></div>' +
         '<textarea rows="1" placeholder="' + (khoa ? 'Trả lời ' + an(ten) + '…' : 'Viết bình luận…') + '" maxlength="' + CFG.TOI_DA_CHU_BINH_LUAN + '"></textarea>' +
+        '<button class="anh" data-blemoji type="button" title="Emoji và sticker" aria-label="Emoji và sticker">' + MAT_CUOI + '</button>' +
         '<button class="anh" data-blanhchon type="button" title="Gửi ảnh" aria-label="Gửi ảnh">' + IC.anh + '</button>' +
         '<button class="gui" data-blgui type="button" disabled aria-label="Gửi">' + IC.gui + '</button>' +
         '<input type="file" accept="image/*" hidden></div></div>';
@@ -458,6 +461,11 @@
         ta.addEventListener('input', kiem);
         ta.addEventListener('keydown', function (e) { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); if (!gui.disabled) gui.click(); } });
         $('[data-blanhchon]', hop).onclick = function () { file.click(); };
+        // ⭐ web v1.199.0 — emoji 3D (chèn ký tự, hiện ra thành hình 3D) + sticker (gửi luôn thành một bình luận)
+        var nutEmoji = $('[data-blemoji]', hop);
+        if (nutEmoji && window.ChatUI) nutEmoji.onclick = function () {
+          ChatUI.moKhay(nutEmoji, { emoji: function (ma, ky) { ChatUI.chenVaoO(ta, ky); }, sticker: function (sid) { guiBl({ sticker: sid }); } });
+        };
         file.onchange = async function () {
           var f0 = this.files && this.files[0]; this.value = ''; if (!f0) return;
           try { var blob = await NW.nenAnh(f0, { canhDai: 1200 }); anhChon[khoa] = { blob: blob, url: URL.createObjectURL(blob) }; }
@@ -469,11 +477,13 @@
         var bo = $('[data-boanh]', xem); if (bo) bo.onclick = boAnh;
         var huy = $('[data-huytra]', hop); if (huy) huy.onclick = function () { dangTraLoi = null; delete anhChon[khoa]; veBl(); };
         if (khoa) setTimeout(function () { ta.focus(); }, 40);
-        gui.onclick = async function () {
-          var chu = ta.value.trim(), a = anhChon[khoa];
-          if (!chu && !a) return;
+        gui.onclick = function () { guiBl(null); };
+        async function guiBl(them) {
+          var chu = them ? '' : ta.value.trim(), a = them ? null : anhChon[khoa];
+          if (!chu && !a && !(them && them.sticker)) return;
           var tu = await NW.kiemTuCam(chu); if (tu) { NW.toast('Bình luận có từ không phù hợp ("' + tu + '").', true); return; }
-          var b = { uid: toi.uid, tacGia: NW.tomTat(toi), chu: chu, anh: '', traLoiCho: khoa || null, luc: Date.now(), camXuc: {} };
+          var b = { uid: toi.uid, tacGia: NW.tomTat(toi), chu: chu, anh: '', traLoiCho: khoa || null, luc: Date.now(), cx: {} };
+          if (them && them.sticker) b.sticker = them.sticker;
           if (NW.laBanThu()) {
             b.id = 'm' + Date.now(); b.anh = a ? a.url : ''; blDs.push(b); delete anhChon[khoa]; if (khoa) { blBung[khoa] = true; dangTraLoi = null; }
             capNhatDem(1); veBl(); if (!khoa) $('[data-nhap=""] textarea', khuBl).focus(); return;
@@ -487,10 +497,11 @@
             capNhatDem(1);
             blDs.push(Object.assign({ id: ref.id }, b)); delete anhChon[khoa]; if (khoa) { blBung[khoa] = true; dangTraLoi = null; }
             veBl(); if (!khoa) $('[data-nhap=""] textarea', khuBl).focus();
-            if (!cuaToi) NW.guiThongBao(bai.uid, { loai: 'binhLuan', chu: (chu || '📷 ảnh').slice(0, 80), link: 'baidang.html?id=' + id });
-            if (khoa) { var g = blDs.filter(function (x) { return x.id === khoa; })[0]; if (g && g.uid !== toi.uid && g.uid !== bai.uid) NW.guiThongBao(g.uid, { loai: 'binhLuan', chu: 'đã trả lời: ' + (chu || '📷 ảnh').slice(0, 70), link: 'baidang.html?id=' + id }); }
+            var tomTat = chu || (b.sticker ? '[Sticker]' : '📷 ảnh');
+            if (!cuaToi) NW.guiThongBao(bai.uid, { loai: 'binhLuan', chu: tomTat.slice(0, 80), link: 'baidang.html?id=' + id });
+            if (khoa) { var g = blDs.filter(function (x) { return x.id === khoa; })[0]; if (g && g.uid !== toi.uid && g.uid !== bai.uid) NW.guiThongBao(g.uid, { loai: 'binhLuan', chu: 'đã trả lời: ' + tomTat.slice(0, 70), link: 'baidang.html?id=' + id }); }
           } catch (e) { NW.toast(NW.chuLoiKho(e), true); gui.disabled = false; }
-        };
+        }
       });
       var them = $('[data-blthem]', khuBl); if (them) them.onclick = function () { taiBl(true); };
       $$('[data-bung]', khuBl).forEach(function (b) { b.onclick = function () { blBung[b.getAttribute('data-bung')] = true; veBl(); }; });
@@ -520,18 +531,20 @@
           if (ta && b.traLoiCho) { ta.value = '@' + tra.getAttribute('data-ten') + ' '; ta.dispatchEvent(new Event('input')); }
         };
         var cxNut = $('[data-blcx]', row);
-        if (cxNut) NW.ganCamXuc(cxNut, {
-          hienTai: function () { return (b.camXuc || {})[toi.uid] || ''; },
-          chon: async function (moi) {
-            b.camXuc = b.camXuc || {};
-            if (moi) b.camXuc[toi.uid] = moi; else delete b.camXuc[toi.uid];
+        if (cxNut && window.ChatUI) ChatUI.ganNutCx(cxNut, {
+          lay: function () { return b.cx || {}; }, khoa: toi.uid, ten: toi.ten, macDinh: 'tim',
+          dat: function (gt) {
+            b.cx = Object.assign({}, b.cx || {});
+            if (gt) b.cx[toi.uid] = gt; else delete b.cx[toi.uid];
             veBl();
-            if (NW.laBanThu()) return;
-            try {
-              var f = await NW.fb(); var patch = {}; patch['camXuc.' + toi.uid] = moi || f.fs.deleteField();
-              await f.fs.updateDoc(f.fs.doc(f.db, 'nwPosts', id, 'binhLuan', bid), patch);
-            } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
-          }, macDinh: 'tim' });
+            if (NW.laBanThu()) return Promise.resolve();
+            return NW.fb().then(function (f) {
+              var patch = {}; patch['cx.' + toi.uid] = gt || f.fs.deleteField();
+              return f.fs.updateDoc(f.fs.doc(f.db, 'nwPosts', id, 'binhLuan', bid), patch);
+            }).catch(function (e) { NW.toast(NW.chuLoiKho(e), true); });
+          } });
+        var cumBl = $('[data-cxai]', row);
+        if (cumBl) cumBl.onclick = function () { moAiThaCx(b.cx); };
       });
     }
     $$('[data-mobl]', el).forEach(function (b) { b.onclick = moBl; });
@@ -555,7 +568,7 @@
         try {
           var f = await NW.fb();
           var moi = { uid: toi.uid, tacGia: NW.tomTat(toi), chu: chu, anh: [], pham: 'mang', lop: toi.laThay ? 'GV' : (toi.lop || ''), luc: Date.now(),
-            an: false, ghim: false, camXuc: {}, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: gocId,
+            an: false, ghim: false, cx: {}, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: gocId,
             goc: { uid: gocBai.uid, tacGia: gocBai.tacGia, chu: gocBai.chu || '', anh: gocBai.anh || [], luc: gocBai.luc } };
           await f.fs.addDoc(f.fs.collection(f.db, 'nwPosts'), moi);
           try { await f.fs.updateDoc(f.fs.doc(f.db, 'nwPosts', gocId), { soChiaSe: f.fs.increment(1) }); } catch (e) { }
@@ -739,6 +752,8 @@
   // ---------- dữ liệu mẫu cho bàn thử ----------
   Bai.mau = function () {
     var t = Date.now();
+    // ⭐ web v1.199.0 — cảm xúc mẫu theo khuôn mới (mỗi loại 1, mã cũ like/cuoi/ngac đổi sang tim/haha/wow)
+    function cxMau(o) { var DOI = { like: 'tim', thich: 'tim', cuoi: 'haha', ngac: 'wow' }, r = {}; Object.keys(o).forEach(function (u, i) { var k = DOI[o[u]] || o[u], n = {}; n[k] = 1; r[u] = { ten: u === 'gv' ? 'Thầy Andrew' : u.toUpperCase(), luc: t - i * 1000, n: n, l: k }; }); return r; }
     var tg0 = { uid: 'hs_0', ten: 'BẠN THỬ', anh: '', lop: 'A1C', vaiTro: 'hs' };
     var tg1 = { uid: 'hs_1', ten: 'MINH ANH', anh: '', lop: 'A1C', vaiTro: 'hs' };
     var tg2 = { uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', lop: 'GV', vaiTro: 'gv' };
@@ -759,27 +774,27 @@
       bl: anhMau('EM CHỤP', '#00CEC9', '#81ECEC', 1000, 750), lop1: anhMau('BẢNG', '#636E72', '#B2BEC3', 1200, 800), lop2: anhMau('SÂN', '#00B894', '#DFE6E9', 1200, 800)
     };
     return [
-      { id: 'm1', bai: { uid: 'gv', tacGia: tg2, chu: 'Chào cả mạng! Đây là bảng tin của Andrew Classes. Các em đăng bài lịch sự, thân thiện nhé. 😊', anh: [], pham: 'mang', lop: 'GV', luc: t - 3600e3, an: false, ghim: true, noiBat: true, noiBatLuc: t - 3000e3, camXuc: { hs_1: 'tim', hs_2: 'like', hs_3: 'haha' }, soBinhLuan: 2, soChiaSe: 1, chiaSeTu: null, goc: null,
-        _blMau: [{ id: 'b1', uid: 'hs_1', tacGia: tg1, chu: 'Dạ vâng ạ!', luc: t - 3000e3, camXuc: {} }, { id: 'b2', uid: 'hs_2', tacGia: tg3, chu: 'Em chào thầy 🙌', luc: t - 2000e3, camXuc: { hs_1: 'tim' } }] } },
+      { id: 'm1', bai: { uid: 'gv', tacGia: tg2, chu: 'Chào cả mạng! Đây là bảng tin của Andrew Classes. Các em đăng bài lịch sự, thân thiện nhé. 😊', anh: [], pham: 'mang', lop: 'GV', luc: t - 3600e3, an: false, ghim: true, noiBat: true, noiBatLuc: t - 3000e3, cx: cxMau({ hs_1: 'tim', hs_2: 'like', hs_3: 'haha' }), soBinhLuan: 2, soChiaSe: 1, chiaSeTu: null, goc: null,
+        _blMau: [{ id: 'b1', uid: 'hs_1', tacGia: tg1, chu: 'Dạ vâng ạ!', luc: t - 3000e3, cx: cxMau({}) }, { id: 'b2', uid: 'hs_2', tacGia: tg3, chu: 'Em chào thầy 🙌', luc: t - 2000e3, cx: cxMau({ hs_1: 'tim' }) }] } },
       { id: 'm0', bai: { uid: 'hs_0', tacGia: tg0, chu: 'Được 3 sao bài Listening hôm nay 🥳 Cảm ơn Minh Anh đã ôn cùng!', anh: [A.sao], pham: 'ban', lop: 'A1C', luc: t - 300e3, an: false, ghim: false,
-        camXuc: { hs_1: 'tim', hs_5: 'like' }, soBinhLuan: 1, soChiaSe: 0, chiaSeTu: null, goc: null, gan: [{ uid: 'hs_1', ten: 'MINH ANH' }], camGiac: { ma: 'tuyetVoi', ky: '🥳', chu: 'tuyệt vời', loai: 'cam' },
-        _blMau: [{ id: 'c0', uid: 'hs_1', tacGia: tg1, chu: 'Giỏi quá 👏 mai ôn tiếp nha', luc: t - 200e3, camXuc: { hs_0: 'tim' } }] } },
-      { id: 'm3', bai: { uid: 'hs_2', tacGia: tg3, chu: 'Chia sẻ lại bài của thầy cho lớp mình xem.', anh: [], pham: 'mang', lop: 'B2B', luc: t - 600e3, an: false, ghim: false, camXuc: {}, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: 'm1', goc: { uid: 'gv', tacGia: tg2, chu: 'Chào cả mạng! Đây là bảng tin của Andrew Classes.', anh: [], luc: t - 3600e3 } } },
+        cx: cxMau({ hs_1: 'tim', hs_5: 'like' }), soBinhLuan: 1, soChiaSe: 0, chiaSeTu: null, goc: null, gan: [{ uid: 'hs_1', ten: 'MINH ANH' }], camGiac: { ma: 'tuyetVoi', ky: '🥳', chu: 'tuyệt vời', loai: 'cam' },
+        _blMau: [{ id: 'c0', uid: 'hs_1', tacGia: tg1, chu: 'Giỏi quá 👏 mai ôn tiếp nha', luc: t - 200e3, cx: cxMau({ hs_0: 'tim' }) }] } },
+      { id: 'm3', bai: { uid: 'hs_2', tacGia: tg3, chu: 'Chia sẻ lại bài của thầy cho lớp mình xem.', anh: [], pham: 'mang', lop: 'B2B', luc: t - 600e3, an: false, ghim: false, cx: cxMau({}), soBinhLuan: 0, soChiaSe: 0, chiaSeTu: 'm1', goc: { uid: 'gv', tacGia: tg2, chu: 'Chào cả mạng! Đây là bảng tin của Andrew Classes.', anh: [], luc: t - 3600e3 } } },
       { id: 'm4', bai: { uid: 'hs_5', tacGia: tg5, chu: 'Góc học tập mới của em, tối nay cày WORDS 3 💪', anh: [A.hoc1, A.hoc2, A.hoc3], pham: 'lop', lop: 'A1C', luc: t - 1500e3, an: false, ghim: false, noiBat: true, noiBatLuc: t - 1000e3,
-        camXuc: { hs_1: 'tim', hs_0: 'ngac', hs_6: 'tim' }, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null, gan: [], camGiac: { ma: 'hocBai', ky: '📚', chu: 'học bài', loai: 'hd' } } },
-      { id: 'm2', bai: { uid: 'hs_1', tacGia: tg1, chu: 'Hôm nay em làm xong hết bài WORDS 2 rồi, 100% luôn 🎉 Bạn nào chưa làm thì làm nhanh kẻo hết hạn nha https://andrewclasses.com', anh: [], pham: 'ban', lop: 'A1C', luc: t - 1800e3, an: false, ghim: false, camXuc: { hs_0: 'tim', hs_2: 'cuoi' }, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null } },
+        cx: cxMau({ hs_1: 'tim', hs_0: 'ngac', hs_6: 'tim' }), soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null, gan: [], camGiac: { ma: 'hocBai', ky: '📚', chu: 'học bài', loai: 'hd' } } },
+      { id: 'm2', bai: { uid: 'hs_1', tacGia: tg1, chu: 'Hôm nay em làm xong hết bài WORDS 2 rồi, 100% luôn 🎉 Bạn nào chưa làm thì làm nhanh kẻo hết hạn nha https://andrewclasses.com', anh: [], pham: 'ban', lop: 'A1C', luc: t - 1800e3, an: false, ghim: false, cx: cxMau({ hs_0: 'tim', hs_2: 'cuoi' }), soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null } },
       { id: 'm6', bai: { uid: 'gv', tacGia: tg2, chu: 'Ảnh buổi Speaking Test tuần này 📸 Các đội làm rất tốt, tuần sau công bố kết quả nhé!', anh: [A.sp1, A.sp2, A.sp3, A.sp4, A.sp5, A.sp6], pham: 'mang', lop: 'GV', luc: t - 3000e3, an: false, ghim: false, noiBat: true, noiBatLuc: t - 2000e3,
-        camXuc: { hs_1: 'tim', hs_2: 'tim', hs_3: 'haha', hs_5: 'ngac', hs_6: 'like', hs_7: 'tim', hs_8: 'cuoi' }, soBinhLuan: 5, soChiaSe: 2, chiaSeTu: null, goc: null,
+        cx: cxMau({ hs_1: 'tim', hs_2: 'tim', hs_3: 'haha', hs_5: 'ngac', hs_6: 'like', hs_7: 'tim', hs_8: 'cuoi' }), soBinhLuan: 5, soChiaSe: 2, chiaSeTu: null, goc: null,
         gan: [{ uid: 'hs_1', ten: 'MINH ANH' }, { uid: 'hs_5', ten: 'THẢO VY' }, { uid: 'hs_2', ten: 'BẢO NAM' }], camGiac: null,
         _blMau: [
-          { id: 'c1', uid: 'hs_1', tacGia: tg1, chu: 'Thầy ơi ảnh đẹp quá 😍 đội em ở tấm 2 kìa', luc: t - 2800e3, camXuc: { hs_2: 'tim', hs_5: 'haha', gv: 'like' } },
-          { id: 'c1a', uid: 'gv', tacGia: tg2, chu: 'Cảm ơn em, đội em nói rất tự tin đó!', luc: t - 2700e3, camXuc: { hs_1: 'tim' }, traLoiCho: 'c1' },
-          { id: 'c1b', uid: 'hs_5', tacGia: tg5, chu: '@MINH ANH mình đứng góc trái kìa 😂', luc: t - 2600e3, camXuc: {}, traLoiCho: 'c1' },
-          { id: 'c1c', uid: 'hs_2', tacGia: tg3, chu: 'Đội B2B cũng có mặt nha 🙋', luc: t - 2500e3, camXuc: {}, traLoiCho: 'c1' },
-          { id: 'c2', uid: 'hs_2', tacGia: tg3, chu: 'Em chụp thêm được tấm này ạ', anh: A.bl, luc: t - 2400e3, camXuc: { hs_1: 'haha', hs_0: 'tim' } },
-          { id: 'c3', uid: 'hs_0', tacGia: tg0, chu: 'Thầy gửi lại ảnh gốc cho em với ạ 🙏', luc: t - 2000e3, camXuc: {} }
+          { id: 'c1', uid: 'hs_1', tacGia: tg1, chu: 'Thầy ơi ảnh đẹp quá 😍 đội em ở tấm 2 kìa', luc: t - 2800e3, cx: cxMau({ hs_2: 'tim', hs_5: 'haha', gv: 'like' }) },
+          { id: 'c1a', uid: 'gv', tacGia: tg2, chu: 'Cảm ơn em, đội em nói rất tự tin đó!', luc: t - 2700e3, cx: cxMau({ hs_1: 'tim' }), traLoiCho: 'c1' },
+          { id: 'c1b', uid: 'hs_5', tacGia: tg5, chu: '@MINH ANH mình đứng góc trái kìa 😂', luc: t - 2600e3, cx: cxMau({}), traLoiCho: 'c1' },
+          { id: 'c1c', uid: 'hs_2', tacGia: tg3, chu: 'Đội B2B cũng có mặt nha 🙋', luc: t - 2500e3, cx: cxMau({}), traLoiCho: 'c1' },
+          { id: 'c2', uid: 'hs_2', tacGia: tg3, chu: 'Em chụp thêm được tấm này ạ', anh: A.bl, luc: t - 2400e3, cx: cxMau({ hs_1: 'haha', hs_0: 'tim' }) },
+          { id: 'c3', uid: 'hs_0', tacGia: tg0, chu: 'Thầy gửi lại ảnh gốc cho em với ạ 🙏', luc: t - 2000e3, cx: cxMau({}) }
         ] } },
-      { id: 'm7', bai: { uid: 'hs_1', tacGia: tg1, chu: 'Lớp mình hôm nay 🏫', anh: [A.lop1, A.lop2], pham: 'lop', lop: 'A1C', luc: t - 7200e3, an: false, ghim: false, camXuc: { hs_5: 'tim' }, soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null, gan: [], camGiac: { ma: 'oLop', ky: '🏫', chu: 'ở lớp', loai: 'hd' } } }
+      { id: 'm7', bai: { uid: 'hs_1', tacGia: tg1, chu: 'Lớp mình hôm nay 🏫', anh: [A.lop1, A.lop2], pham: 'lop', lop: 'A1C', luc: t - 7200e3, an: false, ghim: false, cx: cxMau({ hs_5: 'tim' }), soBinhLuan: 0, soChiaSe: 0, chiaSeTu: null, goc: null, gan: [], camGiac: { ma: 'oLop', ky: '🏫', chu: 'ở lớp', loai: 'hd' } } }
     ];
   };
 })();

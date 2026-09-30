@@ -6,7 +6,8 @@
 <title>Quản lý · Andrew Classes Network</title>
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
-<link rel="stylesheet" href="css/nw.css?v=15">
+<link rel="stylesheet" href="css/nw.css?v=16">
+<link rel="stylesheet" href="../css/chat-ui.css?v=12">
 </head>
 <body>
 <main class="ql-main">
@@ -15,10 +16,11 @@
 </main>
 <script src="config.js?v=13"></script>
 <script src="../js/thay-vao.js?v=2"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
-<script src="js/loi.js?v=18"></script>
+<script src="../js/chat-ui.js?v=12"></script>   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
+<script src="js/loi.js?v=19"></script>
 <script src="js/thanh.js?v=15"></script>
-<script src="js/bai.js?v=13"></script>
-<script src="js/chat.js?v=14"></script>
+<script src="js/bai.js?v=14"></script>
+<script src="js/chat.js?v=15"></script>
 <script src="js/khampha.js?v=13"></script>
 <script>
 /* TRANG QUẢN LÝ CỦA THẦY — v0.9.0 (mẫu v28 thầy "ok build" 22/09/2026)
@@ -305,7 +307,7 @@
         (nb ? '<span class="ql-tag vang">' + IC.sao + 'NỔI BẬT</span>' : '') + (b.an ? '<span class="ql-tag xam">ĐANG ẨN</span>' : '') + (b._baoCao ? '<span class="ql-tag do">BỊ BÁO CÁO</span>' : '') + (b.chiaSeTu ? '<span class="ql-tag xam">CHIA SẺ</span>' : '') + '</div>' +
         '<div class="chu">' + an(b.chu || (b.chiaSeTu ? '(chia sẻ lại bài)' : '')) + '</div>' +
         ((b.anh || []).length ? '<div class="thumbs">' + b.anh.slice(0, 4).map(function (u) { return '<img src="' + an(u) + '" alt="" loading="lazy">'; }).join('') + (b.anh.length > 4 ? '<span>+' + (b.anh.length - 4) + '</span>' : '') + '</div>' : '') +
-        '<div class="so">' + IC.tim + ' ' + Object.keys(b.camXuc || {}).length + ' &nbsp; ' + IC.binhLuan + ' ' + (b.soBinhLuan || 0) + '</div></div>' +
+        '<div class="so">' + IC.tim + ' ' + (window.ChatUI ? ChatUI.demCx(b.cx).tong : 0) + ' &nbsp; ' + IC.binhLuan + ' ' + (b.soBinhLuan || 0) + '</div></div>' +
         '<div class="nut">' + (o.nut || ('<a class="btn soft nho" href="baidang.html?id=' + an(b.id) + (thu ? '&thu=thay' : '') + '" target="_blank">Xem</a>' +
           '<button class="btn ' + (nb ? 'soft' : 'ghost') + ' nho" data-ghim>' + (nb ? 'Gỡ nổi bật' : 'Ghim nổi bật') + '</button>' +
           '<button class="btn soft nho" data-an>' + (b.an ? 'Hiện lại' : 'Ẩn') + '</button>' +
@@ -605,8 +607,8 @@
         { id: 'n3', loai: 'nhom', ten: 'Đội Speaking Test', lop: '', thanhVien: [toi.uid, 'hs_1', 'hs_2', 'hs_4', 'hs_13'], tv: tv(hs.filter(function (h) { return ['hs_1', 'hs_2', 'hs_4', 'hs_13'].indexOf(h.uid) >= 0; })), anh: '', tinCuoi: { uid: 'hs_4', ten: 'THU HÀ', chu: 'Chiều nay mình tập lúc 4h nha', luc: t0 - D }, capNhat: t0 - D }
       ];
       var bai = NW.Bai.mau().map(function (m) { var b = m.bai; b.id = m.id; b.soBinhLuan = (m._blMau || []).length; return b; });
-      bai.push({ id: 'x1', uid: 'hs_9', tacGia: NW.tomTat(hs[6]), chu: 'Cả lớp ơi mai kiểm tra WORDS 3 nhé, ôn lại phần Unit 4!', anh: [], pham: 'lop', lop: 'B2B', luc: t0 - 4 * H, an: false, camXuc: { hs_2: 'tim', hs_10: 'thich' }, soBinhLuan: 2 });
-      bai.push({ id: 'x2', uid: 'hs_11', tacGia: NW.tomTat(hs[9]), chu: 'Ai có link bài nghe hôm qua cho mình xin với 🙏', anh: [], pham: 'mang', lop: 'B1B', luc: t0 - 8 * H, an: true, camXuc: {}, soBinhLuan: 4 });
+      bai.push({ id: 'x1', uid: 'hs_9', tacGia: NW.tomTat(hs[6]), chu: 'Cả lớp ơi mai kiểm tra WORDS 3 nhé, ôn lại phần Unit 4!', anh: [], pham: 'lop', lop: 'B2B', luc: t0 - 4 * H, an: false, cx: { hs_2: { ten: 'HS', luc: 1, n: { tim: 1 }, l: 'tim' }, hs_10: { ten: 'HS', luc: 2, n: { haha: 1 }, l: 'haha' } }, soBinhLuan: 2 });
+      bai.push({ id: 'x2', uid: 'hs_11', tacGia: NW.tomTat(hs[9]), chu: 'Ai có link bài nghe hôm qua cho mình xin với 🙏', anh: [], pham: 'mang', lop: 'B1B', luc: t0 - 8 * H, an: true, cx: {}, soBinhLuan: 4 });
       var dem = 0; bai.forEach(function (b) { if (!b.noiBat && !b.an && dem < 2) { b.noiBat = true; b.noiBatLuc = t0 - (++dem) * 3600e3; } });
       function anhMau(chu, m1, m2) { return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="320" height="180"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="' + m1 + '"/><stop offset="1" stop-color="' + m2 + '"/></linearGradient></defs><rect width="320" height="180" fill="url(#g)"/><text x="160" y="102" font-family="Montserrat,Arial" font-size="24" font-weight="800" fill="rgba(255,255,255,.9)" text-anchor="middle">' + chu + '</text></svg>'); }
       var muc = [

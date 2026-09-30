@@ -115,9 +115,11 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
 
   // Chữ có link: biến http(s)://… thành thẻ <a> (sau khi đã escape).
   function chuCoLink(s) {
-    return chuAnToan(s).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
+    var h = chuAnToan(s).replace(/(https?:\/\/[^\s<]+)/g, function (u) {
       return '<a href="' + u + '" target="_blank" rel="noopener">' + u + '</a>';
     });
+    // ⭐ web v1.199.0 — thầy chốt bộ emoji 3D DÙNG CHUNG toàn hệ thống: emoji trong bài / bình luận hiện bằng hình 3D (../js/chat-ui.js)
+    return window.ChatUI ? ChatUI.thayEmoji(h) : h;
   }
   NW.chuCoLink = chuCoLink;
 

@@ -6,7 +6,8 @@
 <title>Khám phá · Andrew Classes Network</title>
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
-<link rel="stylesheet" href="css/nw.css?v=15">
+<link rel="stylesheet" href="css/nw.css?v=16">
+<link rel="stylesheet" href="../css/chat-ui.css?v=12">
 <link rel="preconnect" href="https://firestore.googleapis.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 </head>
@@ -16,9 +17,10 @@
 </main>
 <script src="config.js?v=13"></script>
 <script src="../js/thay-vao.js?v=2"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
-<script src="js/loi.js?v=18"></script>
+<script src="../js/chat-ui.js?v=12"></script>   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
+<script src="js/loi.js?v=19"></script>
 <script src="js/thanh.js?v=15"></script>
-<script src="js/bai.js?v=13"></script>
+<script src="js/bai.js?v=14"></script>
 <script src="js/khampha.js?v=13"></script>
 <script>
 /* KHÁM PHÁ — v0.7.0 (mẫu v18+v19 thầy chốt 22/09): cổng hoạt động của trung tâm.
@@ -104,14 +106,14 @@
     function veNoiBat() {
       var hop = $('#noiBat'); if (!hop) return;
       hop.innerHTML = NOI_BAT.length ? NOI_BAT.map(function (x) {
-        var b = x.bai, tg = b.tacGia || {}, cx = Object.keys(b.camXuc || {}).length;
-        var loai = NW.CAM_XUC.filter(function (c) { return Object.keys(b.camXuc || {}).some(function (u) { return b.camXuc[u] === c.ma; }); }).slice(0, 3);
+        // ⭐ web v1.199.0 — cảm xúc bộ chung (b.cx), camXuc cũ bỏ
+        var b = x.bai, tg = b.tacGia || {}, cx = window.ChatUI ? ChatUI.demCx(b.cx).tong : 0;
         return '<div class="kp-bai" data-id="' + an(x.id) + '">' + (toi.laThay ? '<button type="button" class="go" data-go="' + an(x.id) + '" title="Gỡ khỏi Nổi bật">' + IC.dong + '</button>' : '') +
           '<a href="baidang.html?id=' + an(x.id) + '">' +
           (b.anh && b.anh.length ? '<span class="anh"><img src="' + an(b.anh[0]) + '" alt="" loading="lazy">' + (b.anh.length > 1 ? '<i>+' + (b.anh.length - 1) + '</i>' : '') + '</span>' : '') +
           '<span class="than"><span class="ai">' + NW.avHtml(tg, 'nho') + '<span><b>' + an(tg.ten) + '</b>' + (tg.vaiTro === 'gv' ? NW.tichHtml('nho') : '') + '<small>' + an(NW.chuGio(b.luc)) + '</small></span></span>' +
           (b.chu ? '<span class="chu">' + an(b.chu) + '</span>' : '') +
-          '<span class="so">' + (cx ? '<span class="cx-cum">' + loai.map(function (c) { return NW.cxHtml(c.ma); }).join('') + '<b>' + cx + '</b></span>' : '') + '<span>' + (b.soBinhLuan || 0) + ' bình luận</span></span></span></a></div>';
+          '<span class="so">' + (cx ? ChatUI.cumCxHtml(b.cx, true) : '') + '<span>' + (b.soBinhLuan || 0) + ' bình luận</span></span></span></a></div>';
       }).join('') : '<div class="trong" style="width:100%">' + (toi.laThay ? 'Chưa ghim bài nào. Ở Bảng tin, bấm ⋯ trên bài → "Ghim vào Nổi bật".' : 'Thầy chưa chọn bài nổi bật nào.') + '</div>';
       $$('[data-go]', hop).forEach(function (b) {
         b.onclick = async function () {

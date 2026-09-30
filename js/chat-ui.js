@@ -109,15 +109,32 @@
     ten.sort(function (a, b) { return b.length - a.length; });
     return new RegExp('@(' + ten.join('|') + ')(?![\\p{L}\\p{N}])', 'gu');
   }
+  // ⭐ v1.199.0 — thầy chốt bộ emoji DÙNG CHUNG toàn hệ thống: emoji Unicode gõ từ bàn phím (😂, 👍…) có trong bộ 87 hình
+  //   cũng hiện thành hình 3D. UNI = [ký tự (± FE0F), mã], xếp dài trước để "❤️" không bị cắt thành "❤".
+  var UNI = [];
+  Object.keys(EMOJI).forEach(function (ma) { var k = kyTuEmoji(ma); if (!k) return; UNI.push([k, ma]); if (k.slice(-1) !== '\ufe0f') UNI.push([k + '\ufe0f', ma]); });
+  UNI.sort(function (a, b) { return b[0].length - a[0].length; });
+  var reUni = new RegExp(UNI.map(function (x) { return x[0].replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }).join('|'), 'g');
+  var maUni = {}; UNI.forEach(function (x) { maUni[x[0]] = x[1]; });
+  function imgEmoji(ma, to) { return '<img class="cu-ei' + (to ? ' to' : '') + '" src="' + urlEmoji(ma) + '" alt="' + esc(EMOJI[ma]) + '" title="' + esc(EMOJI[ma]) + '" draggable="false">'; }
+  // chỉ toàn emoji (1–3 cái, mã hoặc Unicode)?
+  function laChiEmoji(s) {
+    var dem = 0, con = String(s || '').replace(/:([0-9a-f]+(?:-[0-9a-f]+)*):/g, function (m, ma) { if (EMOJI[ma]) { dem++; return ''; } return m; })
+      .replace(reUni, function () { dem++; return ''; });
+    return dem >= 1 && dem <= 3 && !con.trim();
+  }
+  // Thay mã :xxxx: + emoji Unicode trong HTML ĐÃ LỌC (esc) bằng hình 3D. Dùng chung: chat, bài đăng, bình luận (NW.chuCoLink).
+  function thayEmoji(h, to) {
+    return String(h).replace(/:([0-9a-f]+(?:-[0-9a-f]+)*):/g, function (m, ma) { return EMOJI[ma] ? imgEmoji(ma, to) : m; })
+      .replace(reUni, function (m) { return imgEmoji(maUni[m], to); });
+  }
   function giau(chu, re, nho) {
     var s = String(chu || '');
-    var chiEmoji = !nho && /^\s*(:[0-9a-f]+(?:-[0-9a-f]+)*:\s*){1,3}$/.test(s) && s.replace(/:([0-9a-f-]+):/g, function (m, ma) { return EMOJI[ma] ? '' : 'x'; }).trim() === '';
+    var chiEmoji = !nho && laChiEmoji(s);
     var h = esc(s);
     if (!nho) h = h.replace(/(https?:\/\/[^\s<]+)/g, function (u) { return '<a href="' + u + '" target="_blank" rel="noopener noreferrer">' + u + '</a>'; });
     if (re) h = h.replace(re, '<span class="cu-nhac">@$1</span>');
-    return h.replace(/:([0-9a-f]+(?:-[0-9a-f]+)*):/g, function (m, ma) {
-      return EMOJI[ma] ? '<img class="cu-ei' + (chiEmoji ? ' to' : '') + '" src="' + urlEmoji(ma) + '" alt="' + esc(EMOJI[ma]) + '" title="' + esc(EMOJI[ma]) + '" draggable="false">' : m;
-    });
+    return thayEmoji(h, chiEmoji);
   }
   function tomTat(t) {
     if (!t) return '';
@@ -177,12 +194,12 @@
     el.style.top = Math.round(Math.max(8, Math.min(y, H - h - 8))) + 'px';
   }
   function dongHet() {
-    ['chon', 'menu', 'khay', 'goi'].forEach(function (k) { if (POP[k]) POP[k].hidden = true; });
+    ['chon', 'menu', 'khay', 'goi', 'chon1', 'khay2'].forEach(function (k) { if (POP[k]) POP[k].hidden = true; });
     dongBang(); dongHd();
     document.querySelectorAll('.cu-cong.mo').forEach(function (x) { x.classList.remove('mo'); });
   }
   function coMo() {
-    return ['chon', 'menu', 'khay', 'goi'].some(function (k) { return POP[k] && !POP[k].hidden; }) || !!BANG || !!HD;
+    return ['chon', 'menu', 'khay', 'goi', 'chon1', 'khay2'].some(function (k) { return POP[k] && !POP[k].hidden; }) || !!BANG || !!HD;
   }
   var BANG = null, HD = null;
   function dongBang() { if (BANG) { BANG.nen.remove(); BANG.el.remove(); BANG = null; } }
@@ -196,8 +213,186 @@
     if (POP.menu && !POP.menu.hidden && !t.closest('.cu-pop.cu-menu') && !t.closest('[data-cu="them"]')) { POP.menu.hidden = true; document.querySelectorAll('.cu-cong.mo').forEach(function (x) { x.classList.remove('mo'); }); }
     if (POP.khay && !POP.khay.hidden && !t.closest('.cu-pop.cu-khay') && !t.closest('[data-cu="khay"]')) POP.khay.hidden = true;
     if (POP.goi && !POP.goi.hidden && !t.closest('.cu-pop.cu-goi')) POP.goi.hidden = true;
+    if (POP.chon1 && !POP.chon1.hidden && !t.closest('.cu-pop.cu-chon.mot') && !(NUT1 && NUT1.nut.contains(t))) POP.chon1.hidden = true;
+    if (POP.khay2 && !POP.khay2.hidden && !t.closest('.cu-pop') && !(KHAY2.neo && KHAY2.neo.contains(t))) POP.khay2.hidden = true;
   }, true);
   window.addEventListener('resize', function () { if (POP.chon) POP.chon.hidden = true; if (POP.menu) POP.menu.hidden = true; });
+
+  // ⭐ v1.190.0 — thầy: MỖI lần thả, phía trên nút thả "nổ tung" ra vài hình cảm xúc đó.
+  // ⭐ v1.191.0 — thầy: 15 hình, to nhỏ khác nhau, TỪ BÉ THÀNH TO tại MỘT điểm rồi BUNG RA XUNG QUANH (đủ 360°).
+  //   Lớp nổ gắn vào <body> (position:fixed) để không bị khung chat cắt và không vướng lần vẽ lại khung.
+  function noTung(neo, k) {
+    var c = CX_E[k]; if (!c || !neo.animate) return;
+    try { if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (x) {}
+    var r = neo.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top - 6, SO = 15;
+    for (var i = 0; i < SO; i++) {
+      var im = document.createElement('img');
+      im.src = urlEmoji(c.e); im.alt = ''; im.className = 'cu-no';
+      var co = 12 + Math.pow(Math.random(), 1.6) * 28;                       // 12–40px, nhiều hình nhỏ, ít hình to
+      im.style.cssText = 'left:' + (x0 - co / 2) + 'px;top:' + (y0 - co / 2) + 'px;width:' + co + 'px;height:' + co + 'px';
+      document.body.appendChild(im);
+      var goc = (i / SO) * 2 * Math.PI + (Math.random() - .5) * (2 * Math.PI / SO);   // rải đều quanh một vòng
+      var xa = 30 + Math.random() * 45, dx = Math.cos(goc) * xa, dy = Math.sin(goc) * xa;
+      var xoay = Math.random() * 70 - 35;
+      var a = im.animate([
+        { transform: 'translate(0,0) scale(.05) rotate(0deg)', opacity: 1 },
+        { transform: 'translate(' + dx * .75 + 'px,' + dy * .75 + 'px) scale(1) rotate(' + xoay * .6 + 'deg)', opacity: 1, offset: .45 },
+        { transform: 'translate(' + dx * 1.15 + 'px,' + (dy * 1.15 - 18) + 'px) scale(.85) rotate(' + xoay + 'deg)', opacity: 0 }
+      ], { duration: 800 + Math.random() * 400, easing: 'cubic-bezier(.15,.85,.35,1)', fill: 'forwards' });
+      a.onfinish = (function (el) { return function () { el.remove(); }; })(im);
+      setTimeout((function (el) { return function () { if (el.isConnected) el.remove(); }; })(im), 2000);
+    }
+  }
+
+  // bảng "ai thả gì" — 2 cột (dùng chung: chat + bài đăng + bình luận)
+  function moBangCx(cxMap, av, khoaToi, tab) {
+    dongBang();
+    var nen = document.createElement('div'); nen.className = 'cu-nen-mo';
+    var el = document.createElement('div'); el.className = 'cu-pop cu-bang';
+    document.body.appendChild(nen); document.body.appendChild(el);
+    BANG = { nen: nen, el: el };
+    nen.onclick = dongBang;
+    function ve() {
+      var d = demCx(cxMap), loai = Object.keys(d.theo).sort(function (a, b) { return d.theo[b] - d.theo[a]; });
+      if (tab !== 'all' && !d.theo[tab]) tab = 'all';
+      var ng = d.nguoi.filter(function (x) { return tab === 'all' || x.n[tab]; });
+      ng.sort(function (a, b) { return (tab === 'all' ? b.tong - a.tong : b.n[tab] - a.n[tab]); });
+      el.innerHTML = '<div class="dau">Cảm xúc<button type="button" data-dong aria-label="Đóng">×</button></div>' +
+        (d.tong ? '<div class="hai"><div class="trai"><button type="button" data-tab="all" aria-pressed="' + (tab === 'all') + '">Tất cả<b>' + d.tong + '</b></button>' +
+          loai.map(function (k) { return '<button type="button" data-tab="' + k + '" aria-pressed="' + (tab === k) + '" title="' + CX_E[k].ten + '">' + imgCx(k) + '<b>' + d.theo[k] + '</b></button>'; }).join('') +
+          '</div><div class="phai">' + ng.map(function (x) {
+            var ks = tab === 'all' ? KINDS.filter(function (k) { return x.n[k]; }) : [tab];
+            var gia = { ten: x.ten, ma: x.khoa, vaiTro: x.khoa === 'GV' ? 'gv' : 'hs' };
+            return '<div class="cu-ai"><div class="cu-av">' + (av ? av(gia, 0) : '') + '</div><span class="n">' + esc(x.khoa === khoaToi ? (x.ten + ' (em)') : x.ten) + '</span><span class="ds">' +
+              ks.map(function (k) { return '<span>' + imgCx(k) + x.n[k] + '</span>'; }).join('') + '</span></div>';
+          }).join('') + '</div></div>' : '<p style="padding:14px;color:var(--cu-phu)">Chưa có ai thả cảm xúc.</p>');
+      el.querySelector('[data-dong]').onclick = dongBang;
+      el.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { tab = b.getAttribute('data-tab'); ve(); }; });
+    }
+    ve();
+  }
+
+  // HTML khay emoji / sticker (dùng chung: ô chat + ô bình luận / đăng bài). st = {tab, goi}; coStk = có tab Sticker.
+  function htmlKhay(st, coStk) {
+    var h;
+    if (st.tab === 'emoji' || !coStk) {
+      var gd = []; try { gd = JSON.parse(localStorage.getItem('cu_ganday') || '[]').filter(function (x) { return EMOJI[x]; }); } catch (e) {}
+      var luoi = function (ds) { return '<div class="luoi">' + ds.map(function (ma) { return '<button type="button" data-e="' + ma + '" title="' + esc(EMOJI[ma]) + '" aria-label="' + esc(EMOJI[ma]) + '"><img src="' + urlEmoji(ma) + '" alt="" loading="lazy" draggable="false"></button>'; }).join('') + '</div>'; };
+      h = (gd.length ? '<div class="nhom">Gần đây</div>' + luoi(gd) : '') + NHOM_EMOJI.map(function (n) { return '<div class="nhom">' + n.ten + '</div>' + luoi(n.ds); }).join('');
+    } else {
+      var g = STICKER.filter(function (x) { return x.id === st.goi; })[0] || STICKER[0];
+      h = '<div class="bo">' + STICKER.map(function (x) { var d = timStk(x.id + ':' + x.ds[0].ma); return '<button type="button" data-g="' + x.id + '" aria-pressed="' + (x === g) + '"><img src="' + esc(d.url) + '" alt="" loading="lazy">' + esc(x.ten) + '</button>'; }).join('') + '</div>' +
+        '<div class="stk">' + g.ds.map(function (it) { var d = timStk(g.id + ':' + it.ma); return '<button type="button" data-s="' + g.id + ':' + it.ma + '" title="' + esc(it.chu) + '"><img src="' + esc(d.url) + '" alt="' + esc(it.chu) + '" loading="lazy" draggable="false">' + (d.coChu ? esc(it.chu) : '') + '</button>'; }).join('') + '</div>' +
+        '<div class="ghi">' + esc(g.ghi) + '</div>';
+    }
+    return (coStk ? '<div class="tab"><button type="button" data-t="emoji" aria-pressed="' + (st.tab === 'emoji') + '">Emoji</button><button type="button" data-t="stk" aria-pressed="' + (st.tab === 'stk') + '">Sticker</button></div>' : '<div class="tab"><button type="button" data-t="emoji" aria-pressed="true">Emoji</button></div>') +
+      '<div class="than">' + h + '</div>';
+  }
+  function nhoGanDay(ma) { try { var g = JSON.parse(localStorage.getItem('cu_ganday') || '[]'); g = [ma].concat(g.filter(function (x) { return x !== ma; })).slice(0, 16); localStorage.setItem('cu_ganday', JSON.stringify(g)); } catch (e) {} }
+
+  // ============================================================
+  // ⭐ v1.199.0 — MẢNH DÙNG CHUNG ngoài chat (bài đăng + bình luận myNetwork): thầy chốt MỖI NGƯỜI MỖI LOẠI TỐI ĐA 1.
+  //   Ô cảm xúc cùng khuôn với chat: cx[khoa] = {ten, luc, n:{tim:1, haha:1}, l} (luật kho chặn n > 1).
+  // ============================================================
+  function kyCx(k) { var c = CX_E[k]; return c ? kyTuEmoji(c.e) : ''; }
+  // Viên: tối đa 3 loại GẦN NHẤT (+ tổng nếu coSo). '' nếu chưa ai thả.
+  function cumCxHtml(cxMap, coSo) {
+    var d = demCx(cxMap); if (!d.tong) return '';
+    var dau = [];
+    d.nguoi.slice().sort(function (a, b) { return b.luc - a.luc; }).forEach(function (x) { if (x.l && x.n[x.l] && dau.indexOf(x.l) < 0) dau.push(x.l); });
+    d.nguoi.slice().sort(function (a, b) { return b.luc - a.luc; }).forEach(function (x) { Object.keys(x.n).forEach(function (k) { if (x.n[k] > 0 && dau.indexOf(k) < 0) dau.push(k); }); });
+    return '<span class="cu-vien">' + dau.filter(function (k) { return CX_E[k]; }).slice(0, 3).map(function (k) { return imgCx(k); }).join('') + (coSo ? '<em>' + d.tong + '</em>' : '') + '</span>';
+  }
+  // Hình nút thả: cảm xúc em thả gần nhất, chưa thả thì null (trang tự vẽ tim viền của trang).
+  function nutCxHinh(cxMap, khoa) { var v = cxChuan((cxMap || {})[khoa]); return v ? imgCx(v.l) : null; }
+  function tenCx(k) { return (CX_E[k] || {}).ten || ''; }
+  // Gắn nút thả cảm xúc (bài / bình luận). c = { lay(): cxMap, khoa, ten, dat(giaTri|null, loai, them) -> Promise, macDinh: 'tim' }
+  //   bấm = bật/tắt macDinh · giữ (điện thoại) hoặc rê 0,4 giây (máy tính) = bảng 6 cảm xúc, bấm loại nào bật/tắt loại đó rồi đóng bảng.
+  var NUT1 = null;
+  function doiMot(c, k, neo) {
+    var cu = cxChuan((c.lay() || {})[c.khoa]) || { ten: c.ten, luc: 0, n: {}, l: '' };
+    var n = Object.assign({}, cu.n), them = !n[k];
+    if (them) n[k] = 1; else delete n[k];
+    var ks = Object.keys(n);
+    var gt = ks.length ? { ten: String(c.ten || cu.ten || '?').slice(0, 60), luc: window.gioChuan ? window.gioChuan() : Date.now(), n: n, l: them ? k : (n[cu.l] ? cu.l : ks[ks.length - 1]) } : null;
+    if (them && neo && neo.isConnected) noTung(neo, k);
+    return Promise.resolve(c.dat(gt, k, them));
+  }
+  // ⛔ hộp nổi tạo LƯỜI (lần đầu dùng) — file này có thể nạp trước <body> xong, pop() lúc nạp sẽ hỏng
+  function popChon1() {
+    var p = pop('chon1', 'cu-chon mot');
+    if (!p._gan) {
+      p._gan = true;
+      p.addEventListener('click', function (e) {
+        var b = e.target.closest('button[data-k]'); if (!b || b.disabled || !NUT1) return;
+        var k = b.getAttribute('data-k'), c = NUT1.c, nut = NUT1.nut;
+        this.hidden = true;
+        if (k) doiMot(c, k, nut)['catch'](function () {});
+        else Promise.resolve(c.dat(null, '', false))['catch'](function () {});
+      });
+    }
+    return p;
+  }
+  function moChon1(nut, c) {
+    NUT1 = { nut: nut, c: c };
+    var p = popChon1(), v = cxChuan((c.lay() || {})[c.khoa]);
+    p.innerHTML = CX.map(function (x) { return '<button type="button" data-k="' + x.k + '" title="' + x.ten + '" aria-label="' + x.ten + '"' + (v && v.n[x.k] ? ' class="da"' : '') + '>' + imgCx(x.k) + '</button>'; }).join('') +
+      '<button type="button" class="xo" data-k="" title="Gỡ hết cảm xúc em đã thả" aria-label="Gỡ hết cảm xúc em đã thả"' + (v ? '' : ' disabled') + '>×</button>';
+    p.hidden = false;
+    var r = nut.getBoundingClientRect();
+    datCanh(p, r.left - 6, r.top - p.offsetHeight - 6 < 8 ? r.bottom + 6 : r.top - p.offsetHeight - 6);
+  }
+  function ganNutCx(nut, c) {
+    if (!nut || nut._cuGan) return; nut._cuGan = true;
+    var hen = null, henRe = null;
+    nut.addEventListener('click', function (e) {
+      e.preventDefault();
+      if (nut._daGiu) { nut._daGiu = false; return; }
+      if (POP.chon1) POP.chon1.hidden = true;
+      doiMot(c, c.macDinh || 'tim', nut)['catch'](function () {});
+    });
+    nut.addEventListener('pointerdown', function () { clearTimeout(hen); hen = setTimeout(function () { nut._daGiu = true; moChon1(nut, c); }, 420); });
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (ev) { nut.addEventListener(ev, function () { clearTimeout(hen); }); });
+    nut.addEventListener('pointerover', function (e) { if (e.pointerType === 'touch') return; clearTimeout(henRe); henRe = setTimeout(function () { if (nut.isConnected) moChon1(nut, c); }, 400); });
+    nut.addEventListener('pointerout', function () { clearTimeout(henRe); });
+    nut.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+  }
+  // Khay emoji/sticker cho ô chữ thường (textarea bình luận / đăng bài). cb = { emoji(ma, kyTu), sticker?(id) }
+  var KHAY2 = { tab: 'emoji', goi: 'lop', cb: null, neo: null };
+  function popKhay2() {
+    var k = pop('khay2', 'cu-khay');
+    if (!k._gan) {
+      k._gan = true;
+      k.addEventListener('pointerdown', function (e) { if (e.target.closest('[data-e]')) e.preventDefault(); });
+      k.addEventListener('click', function (e) {
+        var cb = KHAY2.cb; if (!cb) return;
+        var t = e.target.closest('[data-t]'); if (t) { KHAY2.tab = t.getAttribute('data-t'); this.innerHTML = htmlKhay(KHAY2, !!cb.sticker); return; }
+        var g = e.target.closest('[data-g]'); if (g) { KHAY2.goi = g.getAttribute('data-g'); this.innerHTML = htmlKhay(KHAY2, !!cb.sticker); return; }
+        var s = e.target.closest('[data-s]'); if (s) { this.hidden = true; if (cb.sticker) cb.sticker(s.getAttribute('data-s')); return; }
+        var x = e.target.closest('[data-e]'); if (x) { var ma = x.getAttribute('data-e'); nhoGanDay(ma); cb.emoji(ma, kyTuEmoji(ma)); }
+      });
+    }
+    return k;
+  }
+  function moKhay(neo, cb) {
+    var k = popKhay2();
+    if (!k.hidden && KHAY2.neo === neo) { k.hidden = true; return; }
+    KHAY2.cb = cb; KHAY2.neo = neo;
+    if (!cb.sticker) KHAY2.tab = 'emoji';
+    k.innerHTML = htmlKhay(KHAY2, !!cb.sticker); k.hidden = false;
+    var r = neo.getBoundingClientRect();
+    datCanh(k, r.left - 10, r.top - k.offsetHeight - 6 < 8 ? r.bottom + 6 : r.top - k.offsetHeight - 6);
+  }
+  // Chèn chữ vào textarea ngay chỗ con trỏ (emoji Unicode ⇒ lúc hiện sẽ thành hình 3D nhờ thayEmoji)
+  function chenVaoO(ta, chu) {
+    var a = ta.selectionStart == null ? ta.value.length : ta.selectionStart, b = ta.selectionEnd == null ? a : ta.selectionEnd;
+    ta.focus();
+    try { ta.setRangeText(chu, a, b, 'end'); } catch (e) { ta.value = ta.value.slice(0, a) + chu + ta.value.slice(b); }
+    ta.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  // Sticker: HTML hình (bình luận). '' nếu mã lạ.
+  function stickerHtml(id) { var d = timStk(id); return d ? '<img class="cu-stk-anh" src="' + esc(d.url) + '" alt="' + esc(d.it.chu) + '" title="' + esc(d.it.chu) + '" loading="lazy" draggable="false">' + (d.coChu ? '<div class="cu-stk-chu">' + esc(d.it.chu) + '</div>' : '') : ''; }
+
 
   // ============================================================
   function tao(o) {
@@ -285,31 +480,6 @@
       if (b) { b.classList.remove('nay'); void b.offsetWidth; b.classList.add('nay'); if (k) noTung(b, k); }
       return b;
     }
-    // ⭐ v1.190.0 — thầy: MỖI lần thả, phía trên nút thả "nổ tung" ra vài hình cảm xúc đó.
-    // ⭐ v1.191.0 — thầy: 15 hình, to nhỏ khác nhau, TỪ BÉ THÀNH TO tại MỘT điểm rồi BUNG RA XUNG QUANH (đủ 360°).
-    //   Lớp nổ gắn vào <body> (position:fixed) để không bị khung chat cắt và không vướng lần vẽ lại khung.
-    function noTung(neo, k) {
-      var c = CX_E[k]; if (!c || !neo.animate) return;
-      try { if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (x) {}
-      var r = neo.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top - 6, SO = 15;
-      for (var i = 0; i < SO; i++) {
-        var im = document.createElement('img');
-        im.src = urlEmoji(c.e); im.alt = ''; im.className = 'cu-no';
-        var co = 12 + Math.pow(Math.random(), 1.6) * 28;                       // 12–40px, nhiều hình nhỏ, ít hình to
-        im.style.cssText = 'left:' + (x0 - co / 2) + 'px;top:' + (y0 - co / 2) + 'px;width:' + co + 'px;height:' + co + 'px';
-        document.body.appendChild(im);
-        var goc = (i / SO) * 2 * Math.PI + (Math.random() - .5) * (2 * Math.PI / SO);   // rải đều quanh một vòng
-        var xa = 30 + Math.random() * 45, dx = Math.cos(goc) * xa, dy = Math.sin(goc) * xa;
-        var xoay = Math.random() * 70 - 35;
-        var a = im.animate([
-          { transform: 'translate(0,0) scale(.05) rotate(0deg)', opacity: 1 },
-          { transform: 'translate(' + dx * .75 + 'px,' + dy * .75 + 'px) scale(1) rotate(' + xoay * .6 + 'deg)', opacity: 1, offset: .45 },
-          { transform: 'translate(' + dx * 1.15 + 'px,' + (dy * 1.15 - 18) + 'px) scale(.85) rotate(' + xoay + 'deg)', opacity: 0 }
-        ], { duration: 800 + Math.random() * 400, easing: 'cubic-bezier(.15,.85,.35,1)', fill: 'forwards' });
-        a.onfinish = (function (el) { return function () { el.remove(); }; })(im);
-        setTimeout((function (el) { return function () { if (el.isConnected) el.remove(); }; })(im), 2000);
-      }
-    }
     function cssEsc(s) { return String(s).replace(/["\\]/g, '\\$&'); }
 
     // ---------- thả cảm xúc (ghi dồn: bấm liền tay nhiều lần chỉ tốn MỘT lượt ghi) ----------
@@ -364,33 +534,8 @@
       else { xoaHetCx(t); this.hidden = true; }
     });
 
-    // bảng "ai thả gì" — 2 cột
-    function moBang(t, tab) {
-      DANG = ui; dongBang();
-      var nen = document.createElement('div'); nen.className = 'cu-nen-mo';
-      var el = document.createElement('div'); el.className = 'cu-pop cu-bang';
-      document.body.appendChild(nen); document.body.appendChild(el);
-      BANG = { nen: nen, el: el };
-      nen.onclick = dongBang;
-      function ve() {
-        var d = demCx(t.cx), loai = Object.keys(d.theo).sort(function (a, b) { return d.theo[b] - d.theo[a]; });
-        if (tab !== 'all' && !d.theo[tab]) tab = 'all';
-        var ng = d.nguoi.filter(function (x) { return tab === 'all' || x.n[tab]; });
-        ng.sort(function (a, b) { return (tab === 'all' ? b.tong - a.tong : b.n[tab] - a.n[tab]); });
-        el.innerHTML = '<div class="dau">Cảm xúc<button type="button" data-dong aria-label="Đóng">×</button></div>' +
-          (d.tong ? '<div class="hai"><div class="trai"><button type="button" data-tab="all" aria-pressed="' + (tab === 'all') + '">Tất cả<b>' + d.tong + '</b></button>' +
-            loai.map(function (k) { return '<button type="button" data-tab="' + k + '" aria-pressed="' + (tab === k) + '" title="' + CX_E[k].ten + '">' + imgCx(k) + '<b>' + d.theo[k] + '</b></button>'; }).join('') +
-            '</div><div class="phai">' + ng.map(function (x) {
-              var ks = tab === 'all' ? KINDS.filter(function (k) { return x.n[k]; }) : [tab];
-              var gia = { ten: x.ten, ma: x.khoa, vaiTro: x.khoa === 'GV' ? 'gv' : 'hs' };
-              return '<div class="cu-ai"><div class="cu-av">' + (o.av ? o.av(gia, 0) : '') + '</div><span class="n">' + esc(x.khoa === toiK() ? (x.ten + ' (em)') : x.ten) + '</span><span class="ds">' +
-                ks.map(function (k) { return '<span>' + imgCx(k) + x.n[k] + '</span>'; }).join('') + '</span></div>';
-            }).join('') + '</div></div>' : '<p style="padding:14px;color:var(--cu-phu)">Chưa có ai thả cảm xúc.</p>');
-        el.querySelector('[data-dong]').onclick = dongBang;
-        el.querySelectorAll('[data-tab]').forEach(function (b) { b.onclick = function () { tab = b.getAttribute('data-tab'); ve(); }; });
-      }
-      ve();
-    }
+
+    function moBang(t, tab) { DANG = ui; moBangCx(t.cx, o.av, toiK(), tab); }
 
     // menu ⋯
     function moMenu(t, neo) {
@@ -561,8 +706,7 @@
     function chenEmoji(ma) {
       if (ed.getAttribute('contenteditable') !== 'true') return;
       var img = document.createElement('img'); img.className = 'cu-ei'; img.src = urlEmoji(ma); img.alt = EMOJI[ma]; img.title = EMOJI[ma]; img.setAttribute('data-e', ma); img.draggable = false;
-      chenNut(img); veNutGui();
-      try { var g = JSON.parse(localStorage.getItem('cu_ganday') || '[]'); g = [ma].concat(g.filter(function (x) { return x !== ma; })).slice(0, 16); localStorage.setItem('cu_ganday', JSON.stringify(g)); } catch (e) {}
+      chenNut(img); veNutGui(); nhoGanDay(ma);
     }
     // bấm trúng HÌNH emoji: tự đặt con trỏ (nửa trái = trước hình, nửa phải = sau hình)
     ed.addEventListener('mousedown', function (e) {
@@ -680,18 +824,8 @@
     // khay emoji / sticker (hộp nổi ngay trên ô nhập)
     var KHAY = { tab: 'emoji', goi: 'lop' };
     function veKhay() {
-      DANG = ui; var k = pop('khay', 'cu-khay'), h;
-      if (KHAY.tab === 'emoji') {
-        var gd = []; try { gd = JSON.parse(localStorage.getItem('cu_ganday') || '[]').filter(function (x) { return EMOJI[x]; }); } catch (e) {}
-        var luoi = function (ds) { return '<div class="luoi">' + ds.map(function (ma) { return '<button type="button" data-e="' + ma + '" title="' + esc(EMOJI[ma]) + '" aria-label="' + esc(EMOJI[ma]) + '"><img src="' + urlEmoji(ma) + '" alt="" loading="lazy" draggable="false"></button>'; }).join('') + '</div>'; };
-        h = (gd.length ? '<div class="nhom">Gần đây</div>' + luoi(gd) : '') + NHOM_EMOJI.map(function (n) { return '<div class="nhom">' + n.ten + '</div>' + luoi(n.ds); }).join('');
-      } else {
-        var g = STICKER.filter(function (x) { return x.id === KHAY.goi; })[0] || STICKER[0];
-        h = '<div class="bo">' + STICKER.map(function (x) { var d = timStk(x.id + ':' + x.ds[0].ma); return '<button type="button" data-g="' + x.id + '" aria-pressed="' + (x === g) + '"><img src="' + esc(d.url) + '" alt="" loading="lazy">' + esc(x.ten) + '</button>'; }).join('') + '</div>' +
-          '<div class="stk">' + g.ds.map(function (it) { var d = timStk(g.id + ':' + it.ma); return '<button type="button" data-s="' + g.id + ':' + it.ma + '" title="' + esc(it.chu) + '"><img src="' + esc(d.url) + '" alt="' + esc(it.chu) + '" loading="lazy" draggable="false">' + (d.coChu ? esc(it.chu) : '') + '</button>'; }).join('') + '</div>' +
-          '<div class="ghi">' + esc(g.ghi) + '</div>';
-      }
-      k.innerHTML = '<div class="tab"><button type="button" data-t="emoji" aria-pressed="' + (KHAY.tab === 'emoji') + '">Emoji</button><button type="button" data-t="stk" aria-pressed="' + (KHAY.tab === 'stk') + '">Sticker</button></div><div class="than">' + h + '</div>';
+      DANG = ui; var k = pop('khay', 'cu-khay');
+      k.innerHTML = htmlKhay(KHAY, true);
       k.hidden = false;
       var r = chan.getBoundingClientRect();
       datCanh(k, r.left, r.top - k.offsetHeight - 6);
@@ -737,6 +871,9 @@
     av.classList.toggle('dai', t.length > 3);
   }
 
-  window.ChatUI = { tao: tao, datDau: datDau, cxChuan: cxChuan, demCx: demCx, tomTat: tomTat, chuThuong: chuThuong, dongHet: dongHet, coMo: coMo,
+  window.ChatUI = { tao: tao, datDau: datDau,
+                    // ⭐ v1.199.0 — mảnh dùng chung cho bài đăng / bình luận / mọi ô chữ
+                    ganNutCx: ganNutCx, cumCxHtml: cumCxHtml, nutCxHinh: nutCxHinh, moBangCx: moBangCx, tenCx: tenCx, kyCx: kyCx, noTung: noTung,
+                    moKhay: moKhay, chenVaoO: chenVaoO, thayEmoji: thayEmoji, stickerHtml: stickerHtml, timStk: timStk, imgCx: imgCx, cxChuan: cxChuan, demCx: demCx, tomTat: tomTat, chuThuong: chuThuong, dongHet: dongHet, coMo: coMo,
                     KINDS: KINDS, TOI_DA_CX: TOI_DA_CX, EMOJI: EMOJI, STICKER: STICKER };
 })();

@@ -1131,16 +1131,69 @@
       '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) +
       '?key=' + db.apiKey + '&mask.fieldPaths=submitCount&mask.fieldPaths=lastSubmitAt';
   }
+  // v1.200.0 — trả { so: submitCount|null, luc: lastSubmitAt|0 } (cùng 1 lượt đọc như trước).
   function docSoNop(ma) {
     return fetch(urlSoNop(ma), { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(function (d) { var f = (d && d.fields) || {}; return f.submitCount ? soF(f.submitCount) : null; })
+      .then(function (d) {
+        var f = (d && d.fields) || {};
+        return { so: f.submitCount ? soF(f.submitCount) : null, luc: f.lastSubmitAt ? soF(f.lastSubmitAt) : 0 };
+      })
+      ['catch'](function () { return { so: null, luc: 0 }; });
+  }
+
+  // ⭐⭐ v1.200.0 (30/09/2026, GIẢM LƯỢT ĐỌC — Firestore đọc 1–1,5 TRIỆU lượt/ngày, đo Cloud Monitoring) —
+  // GÓI MỌI LƯỢT do máy chủ giữ sẵn: hàm `bangDiem` (myLesson-app may-chu/functions/bang-diem.js) cập nhật
+  // `assignments/{mã}/bang/goi` mỗi khi có lượt mới / thầy sửa-xoá ⇒ đọc 1 TÀI LIỆU thay vì liệt kê 300–800
+  // dòng. Gói chứa ĐỦ từng lượt (không phải bản rút gọn) nên `gopTotNhat` nhận y hệt danh sách cũ:
+  // { t tên, m mã, s điểm, o tổng, g timeMs, c createdAt, v giờ máy chủ tạo (= createTime cũ), d dở dang }.
+  // KHÔNG đổi gì ở kho scores/results/practiceLog. Gói chưa có / quá lớn (`day`) / đọc hỏng ⇒ liệt kê như cũ.
+  // TƯƠI chưa? `sauMoc` = `lastSubmitAt` của bài giao = `createdAt` CỦA LƯỢT NỘP CUỐI (AWord ghi cùng một mốc,
+  // theo giờ máy chủ — gio-chuan.js): gói có lượt `c >= sauMoc` ⇒ đã có lượt cuối. Máy chủ chậm 1–3s ⇒ chờ
+  // lại tối đa 4 lần × 1,25s. Gói được cập nhật ≥ 60s sau mốc đó (vd thầy XOÁ đúng lượt cuối) cũng coi là tươi.
+  function urlGoi(ma) {
+    var db = CFG.AWORD_DB || {};
+    return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
+      '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) + '/bang/goi?key=' + db.apiKey;
+  }
+  function docGoi(ma) {
+    return fetch(urlGoi(ma), { cache: 'no-store' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        var f = d && d.fields;
+        if (!f || soF(f.v) !== 1 || (f.day && f.day.booleanValue)) return null;
+        var r = (f.r && f.r.mapValue && f.r.mapValue.fields) || {};
+        var cMax = 0;
+        var ds = Object.keys(r).map(function (id) {
+          var g = (r[id] && r[id].mapValue && r[id].mapValue.fields) || {};
+          var tay = /^tay/.test(id), c = soF(g.c);
+          if (c > cMax) cMax = c;
+          return { id: id, tay: tay, ten: (g.t && g.t.stringValue) || '?', ma: (g.m && g.m.stringValue) || '',
+            diem: soF(g.s), tong: soF(g.o), ms: soF(g.g), luc: c, sv: tay ? 0 : soF(g.v), dd: soF(g.d) === 1 };
+        });
+        // Thứ tự y đường cũ: createdAt MỚI trước (hoà thì mã tài liệu giảm dần), phanh 3.000 lượt.
+        ds.sort(function (a, b) { return (b.luc - a.luc) || (a.id < b.id ? 1 : (a.id > b.id ? -1 : 0)); });
+        return { ds: ds.slice(0, 3000), cMax: cMax, capNhat: soF(f.capNhat) };
+      })
       ['catch'](function () { return null; });
+  }
+  function lietKeScores(ma, sauMoc) {
+    var lan = 0;
+    function thu() {
+      return docGoi(ma).then(function (g) {
+        var tuoi = g && (!sauMoc || g.cMax >= sauMoc || g.capNhat >= sauMoc + 60000);
+        if (tuoi) return gopTotNhat(g.ds);
+        if (g && ++lan <= 4) return new Promise(function (x) { setTimeout(x, 1250); }).then(thu);
+        return lietKeScoresCu(ma);
+      });
+    }
+    return thu();
   }
 
   // Liệt kê MỌI lượt của act rồi gộp — chính là đường đọc cũ (trước v1.74.0 nó nằm
   // thẳng trong diemCuaAct), giữ nguyên từng dòng: phân trang 300, phanh 3 trang.
-  function lietKeScores(ma) {
+  // v1.200.0: chỉ còn là đường DỰ PHÒNG khi chưa có gói (xem lietKeScores ở trên).
+  function lietKeScoresCu(ma) {
     return new Promise(function (xong, hong) {
       var tatCa = [];
       (function trang(token, lan) {
@@ -1184,26 +1237,34 @@
   // Ba luật gộp chép y hệt core/assignments.js bên AWord — đổi bên đó phải đổi
   // cả đây: gộp theo tên thường-hoá · mỗi em lấy lượt tốt nhất · điểm cao trước,
   // hoà thì ai nhanh hơn đứng trên.
-  function diemCuaAct(ma, epDocLai) {
+  // v1.200.0 — `lietKeThang`: bỏ qua gói, liệt kê thẳng như cũ (dashboard ngay sau khi thầy NHẬP ĐIỂM TAY:
+  // lượt `tay…` mang giờ thầy chọn chứ không phải giờ nộp ⇒ không dùng được mốc lastSubmitAt để biết gói tươi).
+  function diemCuaAct(ma, epDocLai, lietKeThang) {
     ma = String(ma || '').trim();
     if (!ma) return Promise.resolve([]);
     if (epDocLai) { delete nhoDiem[ma]; xoaNhoDiem(ma); }
+    if (lietKeThang) {
+      nhoDiem[ma] = Promise.all([lietKeScoresCu(ma), docSoNop(ma)]).then(function (kq) { ghiNhoDiem(ma, kq[0], kq[1].so); return kq[0]; });
+      nhoDiem[ma]['catch'](function () { delete nhoDiem[ma]; });
+      return nhoDiem[ma];
+    }
     if (nhoDiem[ma]) return nhoDiem[ma];
 
     var nho = epDocLai ? null : docNhoDiem(ma);
     if (!nho) {
-      // Chưa có bản nhớ (hoặc bấm làm mới): liệt kê + hỏi sổ nộp song song, nhớ lại.
-      nhoDiem[ma] = Promise.all([lietKeScores(ma), docSoNop(ma)]).then(function (kq) {
-        ghiNhoDiem(ma, kq[0], kq[1]);
-        return kq[0];
+      // Chưa có bản nhớ (hoặc bấm làm mới): hỏi sổ nộp TRƯỚC (v1.200.0 — cần `lastSubmitAt` để biết gói
+      // máy chủ đã có lượt nộp cuối chưa), rồi đọc gói / liệt kê, nhớ lại.
+      nhoDiem[ma] = docSoNop(ma).then(function (sn) {
+        return lietKeScores(ma, sn.luc).then(function (ds) { ghiNhoDiem(ma, ds, sn.so); return ds; });
       });
     } else {
       // Có bản nhớ: hỏi sổ nộp (1 lượt nhỏ). Sổ không đổi (hoặc không biết) và bản
-      // nhớ chưa quá 10 phút ⇒ dùng lại; còn lại liệt kê như cũ.
-      nhoDiem[ma] = docSoNop(ma).then(function (so) {
+      // nhớ chưa quá 10 phút ⇒ dùng lại; còn lại đọc gói / liệt kê.
+      nhoDiem[ma] = docSoNop(ma).then(function (sn) {
+        var so = sn.so;
         var conTuoi = (Date.now() - (nho.luc || 0)) < TUOI_TOI_DA_MS;
         if (conTuoi && (so === null || nho.soNop === so)) return nho.ds;
-        return lietKeScores(ma).then(function (ds) { ghiNhoDiem(ma, ds, so); return ds; });
+        return lietKeScores(ma, sn.luc).then(function (ds) { ghiNhoDiem(ma, ds, so); return ds; });
       });
     }
 

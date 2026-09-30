@@ -3377,10 +3377,10 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=186"></script>
+<script src="config.js?v=187"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
-<script src="js/chung.js?v=75"></script>
+<script src="js/chung.js?v=76"></script>
 <script src="js/chat.js?v=29"></script>
 <script src="js/chat-ui.js?v=12"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -8058,7 +8058,7 @@ button.mk-em:hover{border-color:currentColor}
   }
   // Đọc lại điểm của act vừa đổi rồi vẽ lại hộp em + hộp quản lý + thẻ.
   function ntNapLai(ma) {
-    return A.diemCuaAct(ma, true)['catch'](function () { return null; }).then(function (ds) {
+    return A.diemCuaAct(ma, true, true)['catch'](function () { return null; }).then(function (ds) {   // v1.200.0 — sau nhập tay: liệt kê thẳng (xem chung.js diemCuaAct)
       if (ds) DIEM[ma] = ds;
       chinhGioMay();
       if (HQ && HQ.ct) hqVeChiTiet();

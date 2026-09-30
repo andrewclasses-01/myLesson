@@ -411,6 +411,11 @@ a{color:inherit}
 .nut.ic-tron{width:30px; height:30px; padding:0; border-radius:50%;
   display:grid; place-items:center; font-size:14px; line-height:1}
 .nut[disabled]{opacity:.5; pointer-events:none}
+.nut-3cham svg{width:18px; height:18px; fill:currentColor}
+/* ⭐ v1.192.0 — menu ⋮ tuỳ chọn cuộc trò chuyện (dùng khuôn .cu-menu của css/chat-ui.css) */
+#chatMenuGv{position:fixed; z-index:9000; width:270px; box-sizing:border-box}
+#chatMenuGv button span{font-size:16px; width:20px; text-align:center}
+#chatMenuGv small{display:block; color:var(--cu-phu); font-size:11.5px; margin-top:1px}
 
 /* ---------- DẢI SỐ — nay GỘP vào thanh đầu trang (bên phải avatar) ---------- */
 /* ⭐ v1.32.0 — thầy chốt bỏ hẳn dải số rời bên dưới thanh đầu trang, chỉ giữ
@@ -2986,7 +2991,7 @@ button.mk-em:hover{border-color:currentColor}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=7">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=5">
+<link rel="stylesheet" href="css/chat-ui.css?v=6">
 </head>
 <body>
 
@@ -3097,8 +3102,9 @@ button.mk-em:hover{border-color:currentColor}
         <div class="cu-dau"><span class="cu-dau-av" id="chatAv"></span>
           <div class="cu-dau-chu"><b id="chatTen">Lớp</b><small>Thầy Andrew</small></div></div>
         <div class="day"></div>
-        <button class="nut nho ic-tron" id="btnLuuTru" title="Lưu trữ &amp; làm mới — lưu tin nhắn hiện tại vào kho rồi làm sạch khung chat" aria-label="Lưu trữ &amp; làm mới">
-          🗄
+        <!-- ⭐ v1.192.0 — thầy: nút Lưu trữ đổi thành nút ⋮ mở TUỲ CHỌN cuộc trò chuyện (riêng giáo viên), xem moMenuChat(). -->
+        <button class="nut nho ic-tron nut-3cham" id="btnChatMenu" title="Tuỳ chọn cuộc trò chuyện" aria-label="Tuỳ chọn cuộc trò chuyện" aria-haspopup="menu">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
         </button>
       </div>
       <div class="khoi-than">
@@ -3371,12 +3377,12 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=178"></script>
+<script src="config.js?v=179"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=2"></script>
 <script src="js/chung.js?v=75"></script>
 <script src="js/chat.js?v=29"></script>
-<script src="js/chat-ui.js?v=6"></script>
+<script src="js/chat-ui.js?v=7"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -8905,6 +8911,35 @@ button.mk-em:hover{border-color:currentColor}
   // ⭐ Đợt D — "Lưu trữ & làm mới": chép nguyên tin đang có vào kho
   // `classChatArchive` rồi xoá sạch phòng đang mở, để lớp bắt đầu lại.
   // ⚠️ Cần luật Firestore MỚI (cx/update/delete) — chưa dán thì báo hiền.
+  // ⭐ v1.192.0 — MENU ⋮ TUỲ CHỌN CUỘC TRÒ CHUYỆN (riêng thầy): lưu trữ & làm mới · xem kho trò chuyện · khoá chat khẩn cấp.
+  function moMenuChat(nut) {
+    var m = $('#chatMenuGv');
+    if (!m) {
+      m = document.createElement('div');
+      m.id = 'chatMenuGv'; m.className = 'cu-pop cu-menu'; m.setAttribute('role', 'menu'); m.hidden = true;
+      m.innerHTML =
+        '<button type="button" role="menuitem" data-v="luu"><span>🗄</span><div>Lưu trữ &amp; làm mới<small>Lưu tin hiện tại vào kho rồi làm sạch khung chat</small></div></button>' +
+        '<button type="button" role="menuitem" data-v="kho"><span>📂</span><div>Xem kho trò chuyện<small>Các lượt đã lưu trữ của lớp này</small></div></button>' +
+        '<button type="button" role="menuitem" data-v="kc" class="nguy"><span>🚨</span><div>Khoá chat khẩn cấp<small>Khi có người lạ phá chat</small></div></button>';
+      document.body.appendChild(m);
+      m.onclick = function (e) {
+        var b = e.target.closest('button[data-v]'); if (!b) return;
+        m.hidden = true;
+        var v = b.getAttribute('data-v');
+        if (v === 'luu') luuTruVaLamMoi();
+        else if (v === 'kho') moMucCotTrai('kholuutru');
+        else if (v === 'kc') moHopKhanCap();
+      };
+      document.addEventListener('pointerdown', function (e) { if (!m.hidden && !m.contains(e.target) && !e.target.closest('#btnChatMenu')) m.hidden = true; }, true);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape') m.hidden = true; });
+      window.addEventListener('scroll', function () { m.hidden = true; }, true);
+    }
+    if (!m.hidden) { m.hidden = true; return; }
+    m.hidden = false;
+    var r = nut.getBoundingClientRect();
+    m.style.left = Math.max(8, r.right - 270) + 'px';
+    m.style.top = (r.bottom + 6) + 'px';
+  }
   function luuTruVaLamMoi() {
     if (!TIN.length) return baoToast('Lớp này chưa có tin nhắn nào để lưu trữ.');
     if (chuaThay(null)) return;
@@ -8912,7 +8947,7 @@ button.mk-em:hover{border-color:currentColor}
     var tenLop = (l && l.tenGoc) || LOP_CHON;
     if (!window.confirm('Lưu ' + TIN.length + ' tin nhắn hiện tại của lớp ' + tenLop +
         ' vào kho lưu trữ, rồi XOÁ SẠCH khung chat để bắt đầu lại?')) return;
-    var nut = $('#btnLuuTru');
+    var nut = $('#btnChatMenu');
     nut.disabled = true;
     var dsXoa = TIN.slice();
     AWChat.luuKho(LOP_CHON, tenLop, dsXoa)
@@ -9880,7 +9915,7 @@ button.mk-em:hover{border-color:currentColor}
       if (window.adMoTheoTen) window.adMoTheoTen(LOP_CHON, b.getAttribute('data-av'));
     });
 
-    $('#btnLuuTru').onclick = luuTruVaLamMoi;
+    $('#btnChatMenu').onclick = function (e) { e.stopPropagation(); moMenuChat(this); };
 
     document.addEventListener('pointerdown', function (e) {
       // ⭐ v1.36.0 — ba hộp nối nhau (menu ⚙ → hạn → xác nhận): bấm ra NGOÀI CẢ

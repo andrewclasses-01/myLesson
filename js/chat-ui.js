@@ -129,6 +129,9 @@
     if (cung(d, new Date(nay.getFullYear(), nay.getMonth(), nay.getDate() - 1))) return 'Hôm qua';
     return ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()] + ', ' + d.getDate() + '/' + (d.getMonth() + 1) + (d.getFullYear() !== nay.getFullYear() ? '/' + d.getFullYear() : '');
   }
+  // ⭐ v1.192.0 — thầy: mốc đầu mỗi NHỊP trò chuyện ghi rõ giờ + ngày đủ năm, vd "17:59 29.9.2026".
+  function mocNhip(ms) { var d = new Date(ms); return gio(ms) + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear(); }
+  var NHIP_MOI = 60 * 60e3;   // im lặng từ 1 tiếng trở lên (hoặc sang ngày khác) ⇒ nhịp trò chuyện mới
   function $(s, r) { return (r || document).querySelector(s); }
 
   // ---------- icon nét ----------
@@ -183,6 +186,7 @@
   function tao(o) {
     var ui = { o: o, ds: [], khoaChat: false };
     var khung = o.khung, CHO = {}, HEN = {};
+    khung.classList.add('cu-khung');   // ⭐ v1.192.0 — nền xám rất nhạt như bản mẫu (bong bóng trắng không lẫn nền)
     khung.style.overflowX = 'hidden';   // nút trả lời/⋯ nằm sát bong bóng không được đẻ thanh cuộn ngang   // CHO[id] = giá trị cx CỦA EM đang chờ ghi (đè lên bản kho)
     var reN = reNhac([]);
     var toiK = function () { return String((o.toi && o.toi.khoa) || ''); };
@@ -194,9 +198,9 @@
     // ---------- vẽ danh sách ----------
     function veTin(t, i, ds) {
       var toi = cuaToi(t), truoc = ds[i - 1];
-      var ngayMoi = !truoc || ngay(truoc.luc) !== ngay(t.luc);
+      var ngayMoi = !truoc || ngay(truoc.luc) !== ngay(t.luc) || (t.luc - truoc.luc) >= NHIP_MOI;
       var cungNhom = !ngayMoi && truoc && (truoc.ma || truoc.ten) === (t.ma || t.ten) && !!(o.laCuaToi && o.laCuaToi(truoc)) === toi && (t.luc - truoc.luc) < 5 * 60e3;
-      var h = ngayMoi ? '<div class="cu-ngay">' + esc(ngay(t.luc)) + '</div>' : '';
+      var h = ngayMoi ? '<div class="cu-ngay">' + esc(mocNhip(t.luc)) + '</div>' : '';
       var ten = (!toi && !cungNhom) ? '<div class="cu-ten">' + esc(t.ten) + (o.nhan ? o.nhan(t) : '') + '</div>' : '';
       var than;
       if (t.thuHoi) than = '<div class="cu-bong thuhoi">' + ten + 'Tin nhắn đã bị thu hồi<span class="cu-gio">' + gio(t.luc) + '</span></div>';

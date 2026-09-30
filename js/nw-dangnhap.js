@@ -62,7 +62,34 @@
   function chuNut(l) { return A.laKhoa(l) ? 'KHÓA ' + (l.tenGoc || l.maLop) : A.lopHien(l.maLop, l.tenGoc) + ' CLASS'; }
   function trangCua(l) { return A.laKhoa(l) ? 'khoa.html' : 'lop.html'; }
 
+  // ⭐ v1.201.0 (thầy chốt 30/09) — THẦY XEM NHƯ EM / ĐĂNG NHẬP THAY EM mở TRANG NÀY (dashboard ⇒ `index.html?nhu=<mã>&thayvao=1[&chixem=1]`,
+  // js/thay-vao.js lo vé + phiên CHỈ TRONG TAB). Em 1 nơi ⇒ vào thẳng; em ≥2 nơi ⇒ màn chọn lớp y như em tự đăng nhập.
+  // ⛔ Chế độ này KHÔNG ghi gì vào máy (không luuEm/danhDauDaChon — máy của thầy, không phải của em): nơi học đi theo địa chỉ
+  // `lop|khoa.html?nhu=&lop=&thayvao=1` như trước (chung.js emDangHoc nhánh thayvao).
+  var CHE_DO_THAY = false;
+  function urlThay(noi) {
+    var tv = window.__thayVao;
+    return trangCua(noi.lop) + '?nhu=' + encodeURIComponent(A.chuanMa(noi.em.ma)) + '&lop=' + encodeURIComponent(noi.lop.maLop) +
+      '&thayvao=1' + (tv && tv.chiXem && tv.chiXem() ? '&chixem=1' : '');
+  }
+  async function vaoCheDoThay(dl) {
+    var tv = window.__thayVao;
+    try { await tv.san; } catch (e) { }
+    var co = tv.co && tv.co();
+    if (!co || !co.ma) {                     // vé hỏng / hết phiên — dải đỏ trên cùng đã nói lý do; tab này không mở màn gõ ID
+      man('');
+      return;
+    }
+    var ds = A.moiNoiTheoMa(dl, co.ma);
+    if (!ds.length) { tv.baoLoi('Không thấy ID ' + co.ma + ' trong danh sách lớp — đóng tab rồi thử lại từ dashboard.'); man(''); return; }
+    CHE_DO_THAY = true;
+    if (ds.length === 1) { location.replace(urlThay(ds[0])); return; }
+    var khac = $('#btnKhac'); if (khac) khac.hidden = true;     // "Không phải em?" không có nghĩa ở chế độ này
+    moChon(ds);
+  }
+
   function diVao(noi) {
+    if (CHE_DO_THAY) { location.href = urlThay(noi); return; }
     A.luuEm({ lop: noi.lop.maLop, ten: noi.em.ten, ma: A.chuanMa(noi.em.ma) });
     A.danhDauDaChon(noi.lop.maLop);
     location.href = trangCua(noi.lop);
@@ -196,6 +223,7 @@
 
   A.napDuLieu().then(async function (dl) {
     DL = dl;
+    if (window.__thayVao) { await vaoCheDoThay(dl); return; }     // v1.201.0 — thầy xem như em / đăng nhập thay
     var epGo = new URLSearchParams(location.search).get('vao') === '1';
     if (epGo) { A.thoat(); A.thoatAdmin(); await P.thoat()['catch'](function () { }); }
     // Máy đã nhớ em → thầy chốt: mở andrewclasses.com LUÔN vào thẳng TRANG BÀI TẬP.

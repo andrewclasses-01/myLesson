@@ -2806,7 +2806,7 @@ button.mk-em:hover{border-color:currentColor}
 .ad-o b{font:700 12.5px var(--font); text-align:center} .ad-o small{font:700 11px var(--font); color:var(--xanh)}
 .ad-bam{cursor:pointer; border-radius:50%; display:inline-flex}
 .ad-bam:hover i{outline:3px solid var(--xanh-nhat)}
-.qm-hs-dau{display:flex; align-items:center; gap:14px; margin-bottom:16px}
+.qm-hs-dau{display:flex; align-items:center; gap:14px; margin-bottom:16px; flex-wrap:wrap}   /* v1.201.0 thêm 2 nút ⇒ cho xuống dòng */
 .qm-hs-dau i{width:60px; height:60px; font-size:22px}
 .qm-hs-dau h5{margin:0; font:800 20px var(--font)}
 .qm-hs-dau small{font:600 12.5px var(--font); color:var(--nhat)}
@@ -2967,6 +2967,7 @@ button.mk-em:hover{border-color:currentColor}
 /* ⭐ v1.168.0 — ô ĐĂNG NHẬP THAY EM trong hồ sơ */
 .hso-thay{margin:0 0 14px; padding:12px 14px; border-radius:14px; background:#FFF4F2; border:1.5px solid #F6C9BF}
 .hso-thay[hidden]{display:none}
+.hso-ten-chep{cursor:copy; user-select:none}
 .hso-thay b{font:800 14px var(--font); color:#c62828}
 .hso-thay p{margin:6px 0 10px; font:600 12.5px/1.5 var(--font); color:#6b3a33}
 .hso-thay-hang{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
@@ -3377,7 +3378,8 @@ button.mk-em:hover{border-color:currentColor}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=187"></script>
+<script src="js/o-ngay.js?v=1"></script>
+<script src="config.js?v=188"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=76"></script>
@@ -9923,7 +9925,7 @@ button.mk-em:hover{border-color:currentColor}
       // ⭐ v1.86.0 — menu ⚙ của hàng kho (`#khoMenu`) và nút mở nó (`[data-kho-menu]`)
       // vào chung cụm này, kẻo bấm từ menu sang hộp xác nhận là menu tự tắt mất.
       var trongCum = e.target.closest('#rcMenu') || e.target.closest('#xnPop') ||
-                     e.target.closest('#hanPop') || e.target.closest('[data-rail-caidat]') || e.target.closest('[data-hqhan]') ||
+                     e.target.closest('#hanPop') || e.target.closest('.ong-lich') || e.target.closest('[data-rail-caidat]') || e.target.closest('[data-hqhan]') ||
                      e.target.closest('#khoMenu') || e.target.closest('[data-kho-menu]');
       if (!trongCum) {
         if ($('#rcMenu').classList.contains('mo')) dongRcMenu();
@@ -10469,6 +10471,18 @@ button.mk-em:hover{border-color:currentColor}
       '<button type="button" class="qm-dong" data-qm-dong aria-label="Đóng">' + QM_IC.x + '</button></div>' +
       '<div class="qm-than" id="qmThan"></div></div></div>';
     document.body.appendChild(nen);            // gắn vào body: tránh bẫy position:fixed trong khối có backdrop-filter
+    // v1.201.0 (thầy chốt 30/09) — NHÁY ĐÚP tên em ở hồ sơ ⇒ chép ID đăng nhập.
+    nen.addEventListener('dblclick', function (e) {
+      var h = e.target.closest('[data-hso-chep-ma]');
+      if (!h || QM.tab !== 'hs' || !QM.em) return;
+      var p = dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
+      if (!p || !p.ma) return;
+      try { var sel = window.getSelection(); if (sel) sel.removeAllRanges(); } catch (x) { }
+      var xong = function () { baoToast('Đã chép ID ' + p.ma + '.'); };
+      var hong = function () { baoToast('Trình duyệt chặn chép tự động — ID của em: ' + p.ma); };   // #chepNen nằm DƯỚI hộp này
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(p.ma).then(xong, hong);
+      else hong();
+    });
     nen.addEventListener('click', function (e) {
       if (e.target === nen || e.target.closest('[data-qm-dong]')) return void dongHopBaoMat();
       if (adBamTrongQm(e)) return;                     // v1.177.0 — ảnh đại diện
@@ -10482,9 +10496,9 @@ button.mk-em:hover{border-color:currentColor}
       if (l) { QM.loc = l.getAttribute('data-qm-loc'); QM.xem = 'hs'; QM.em = null; return void veBaoMat(); }
       var xn = e.target.closest('[data-hso-xem]');         // 29/09 — xem như em (vé chỉ xem, không PIN)
       if (xn) {
-        var kXn = String(xn.getAttribute('data-hso-xem')).split('|');
-        var pXn = dsNguoi().filter(function (x) { return x.khoa === kXn[0]; })[0];
-        return void (pXn && hsoXemNhu(pXn, kXn[1]));
+        var kXn = String(xn.getAttribute('data-hso-xem')).split('|')[0];
+        var pXn = dsNguoi().filter(function (x) { return x.khoa === kXn; })[0];
+        return void (pXn && hsoXemNhu(pXn));
       }
       var mo = e.target.closest('[data-qm-mo]');
       if (mo) return void window.open(mo.getAttribute('data-qm-mo'), '_blank');
@@ -10495,7 +10509,7 @@ button.mk-em:hover{border-color:currentColor}
         var pTv = dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
         if (!pTv) return;
         var nt = e.target.closest('[data-hso-thay]');
-        if (nt) return void hsoMoThay(pTv, nt.getAttribute('data-hso-thay'));
+        if (nt) return void hsoMoThay(pTv);
         if (e.target.closest('[data-hso-thay-vao]')) return void hsoVaoThay(pTv);
         if (e.target.closest('[data-hso-thay-huy]')) { $('#hsoThay').hidden = true; return; }
         return;
@@ -10648,7 +10662,7 @@ button.mk-em:hover{border-color:currentColor}
       '<td>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</td>' +
       '<td>' + htmlTtMk(p) + '</td>' +
       '<td><div class="qm-hd">' +
-        (p.ma ? '<button type="button" class="qm-nut" data-hso-xem="' + qmE(p.khoa + '|' + p.noi[0].maLop) + '" title="Mở tab mới xem như em (cả mạng xã hội) — chỉ xem: không làm bài, không chat">Xem như em</button>' : '') +
+        (p.ma ? '<button type="button" class="qm-nut" data-hso-xem="' + qmE(p.khoa) + '" title="Mở tab mới xem như em (cả mạng xã hội) — chỉ xem: không làm bài, không chat">Xem như em</button>' : '') +
         nutDatLai(p) + '</div></td></tr>';
   }
   function veBangHs() {
@@ -10749,15 +10763,17 @@ button.mk-em:hover{border-color:currentColor}
     return '<button type="button" class="qm-quay" data-qm-quay>‹ Danh sách học sinh</button>' +
       '<div class="mk-hoi" hidden></div>' +
       '<div class="hso-thay" id="hsoThay" hidden></div>' +
-      '<div class="qm-hs-dau"><span class="ad-bam" data-ad-em title="Đổi ảnh đại diện">' + oAnhNguoi(p) + '</span><div><h5>' + qmE(p.ten) + '</h5>' +
+      '<div class="qm-hs-dau"><span class="ad-bam" data-ad-em title="Đổi ảnh đại diện">' + oAnhNguoi(p) + '</span><div><h5' + (p.ma ? ' class="hso-ten-chep" data-hso-chep-ma title="Nháy đúp để chép ID đăng nhập"' : '') + '>' + qmE(p.ten) + '</h5>' +
         (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div><span class="qm-gian"></span>' +
+        // v1.201.0 (thầy chốt 30/09) — Xem như em / Đăng nhập thay tính CHUNG cho em (không theo từng lớp): tab mới mở TRANG ĐĂNG NHẬP,
+        // em ≥2 nơi thì chọn lớp ở đó y như em tự gõ ID + mật khẩu.
+        (p.ma ? '<button type="button" class="qm-nut" data-hso-xem="' + qmE(p.khoa) + '" title="Mở tab mới xem như em (cả mạng xã hội) — chỉ xem: không làm bài, không chat">Xem như em</button>' +
+          '<button type="button" class="qm-nut do" data-hso-thay title="Mở tab mới dưới tên em (cần PIN) — làm/nộp bài ghi thật">Đăng nhập thay</button>' : '') +
         '<button type="button" class="qm-nut" data-ad-em>Ảnh đại diện</button>' +
         (p.ma ? '<button type="button" class="qm-nut" data-qc-mo="suaHs">Sửa</button>' : '') + nutDatLai(p) + '</div>' +
       '<div class="qm-luoi">' +
         '<div class="qm-o"><h6>Ghi danh &amp; ngày tham gia<span class="qm-gian"></span>' + (p.ma ? '<button type="button" class="hso-them" data-qc-mo="chuyen" data-qc-noi="0" data-qc-kieu="ghiDanhThem">+ Ghi danh thêm</button>' : '') + '</h6>' + p.noi.map(function (n, iN) {
           return '<div class="qm-gd">' + chipNoi(n) + '<span class="qm-gd-ngay">' + (n.vao ? 'vào lớp ' + ngayVN(n.vao) : 'chưa ghi ngày vào') + '</span>' +
-            (p.ma ? '<button type="button" class="qm-nut" data-hso-xem="' + qmE(p.khoa + '|' + n.maLop) + '" title="Mở tab mới xem như em (cả mạng xã hội) — chỉ xem: không làm bài, không chat">Xem như em</button>' +
-              '<button type="button" class="qm-nut do" data-hso-thay="' + qmE(n.maLop) + '" title="Mở tab mới dưới tên em (cần PIN) — làm/nộp bài ghi thật">Đăng nhập thay</button>' : '') +
             '<span class="qm-gd-hd"><button type="button" class="qm-nut" data-qc-mo="chuyen" data-qc-noi="' + iN + '">Chuyển lớp</button>' +
             '<button type="button" class="qm-nut do" data-qc-mo="nghi" data-qc-noi="' + iN + '">Nghỉ</button></span></div>';
         }).join('') +
@@ -10803,7 +10819,7 @@ button.mk-em:hover{border-color:currentColor}
     });
     ds.sort(function (a, b) { return String(b.m.luc || '').localeCompare(String(a.m.luc || '')); });
     var form = '<div class="hso-form" id="hsoForm" hidden>' +
-      '<input type="date" id="hsoNgay" value="' + new Date().toISOString().slice(0, 10) + '">' +
+      '<input type="date" id="hsoNgay" value="' + qcHomNay() + '">' +
       '<select id="hsoLoai">' + Object.keys(HSO_LOAI).map(function (k) { return '<option value="' + k + '">' + HSO_LOAI[k] + '</option>'; }).join('') + '</select>' +
       '<input id="hsoTu" placeholder="Từ (lớp / trình độ)" maxlength="40">' +
       '<input id="hsoDen" placeholder="Đến (lớp / trình độ)" maxlength="40">' +
@@ -11113,14 +11129,18 @@ button.mk-em:hover{border-color:currentColor}
     }
     return _dnThayFn;
   }
-  function hsoMoThay(p, maLop) {
-    var n = p.noi.filter(function (x) { return x.maLop === maLop; })[0];
+  // v1.201.0 (thầy chốt 30/09) — tab "thay em" mở TRANG ĐĂNG NHẬP (index.html) chứ không mở thẳng một lớp: em 1 nơi ⇒ vào thẳng,
+  // em ≥2 nơi ⇒ màn "Xin chào, …" chọn lớp y như em tự gõ ID + mật khẩu (js/nw-dangnhap.js nhánh thầy thay em).
+  function urlThayVao(p, chiXem) {
+    return 'index.html?nhu=' + encodeURIComponent(p.ma) + '&thayvao=1' + (chiXem ? '&chixem=1' : '');
+  }
+  function hsoMoThay(p) {
     var o = $('#hsoThay');
-    if (!n || !o) return;
+    if (!o || !p.noi.length) return;
     o.hidden = false;
-    o.setAttribute('data-lop', maLop);
-    o.innerHTML = '<b>🔐 Đăng nhập thay ' + qmE(p.ten) + ' ở ' + qmE(n.ten) + '</b>' +
-      '<p>Mở tab mới dưới tên em: làm bài / nộp bài sẽ GHI THẬT dưới tên em (chat tắt). Tự thoát sau 30 phút. Mỗi lần đều ghi nhật ký.</p>' +
+    o.innerHTML = '<b>🔐 Đăng nhập thay ' + qmE(p.ten) + '</b>' +
+      '<p>Mở tab mới dưới tên em' + (p.noi.length > 1 ? ' (em học ' + p.noi.length + ' nơi — chọn lớp ở tab mới)' : '') +
+      ': làm bài / nộp bài sẽ GHI THẬT dưới tên em (chat tắt). Tự thoát sau 30 phút. Mỗi lần đều ghi nhật ký.</p>' +
       '<div class="hso-thay-hang"><input id="hsoPin" type="password" inputmode="numeric" autocomplete="off" maxlength="12" placeholder="Mã PIN của thầy">' +
       '<button type="button" class="qm-nut chinh" data-hso-thay-vao>Vào</button><button type="button" class="qm-nut" data-hso-thay-huy>Huỷ</button></div>' +
       '<p class="hso-thay-tin" id="hsoThayTin"></p>';
@@ -11129,12 +11149,12 @@ button.mk-em:hover{border-color:currentColor}
   /* ⭐ 29/09/2026 (thầy chốt) — XEM NHƯ EM "tương tự đăng nhập thay, chỉ khác không được làm bài, không được chat": cùng đường vé
      `dangNhapThayHs` với `chiXem:true` (KHÔNG PIN) ⇒ tab mới `...&thayvao=1&chixem=1` có phiên THẬT của em ⇒ xem được cả mạng xã hội như em;
      thay-vao.js/chung.js/nw-phien.js/nw/js/loi.js giữ tab CHỈ XEM. Em chưa có tài khoản ⇒ mở kiểu cũ `?nhu=` (chỉ trang bài). */
-  function hsoXemNhu(p, maLop) {
-    var n = p.noi.filter(function (x) { return x.maLop === maLop; })[0] || p.noi[0];
+  function hsoXemNhu(p) {
+    var n = p.noi[0];                                   // chỉ dùng khi em CHƯA có tài khoản (mở kiểu cũ, nơi đầu tiên)
     if (!n) return;
     if (chuaThay()) return;
     // mở tab NGAY trong cú bấm (không bị chặn cửa sổ bật lên); danh sách tài khoản (MK_KQ) chưa đọc ⇒ đọc rồi mới xin vé
-    var w = window.open(urlNhu(p, n) + '&thayvao=1&chixem=1', '_blank');
+    var w = window.open(urlThayVao(p, true), '_blank');
     if (!w) return void baoToast('Trình duyệt chặn cửa sổ mới — cho phép cửa sổ bật lên rồi bấm lại.');
     var m = null;
     var ve = null, loi = null, daGui = false;
@@ -11171,23 +11191,21 @@ button.mk-em:hover{border-color:currentColor}
       traVe();
     });
   }
-  window.qlXemNhuEm = function (ma, maLop) {
+  window.qlXemNhuEm = function (ma) {                  // v1.201.0 — không theo lớp nữa: tab mới tự cho chọn lớp
     var k = A.chuanMa(ma);
     var p = dsNguoi().filter(function (x) { return x.khoa === k; })[0];
     if (!p) return void window.open('lop.html?nhu=' + encodeURIComponent(ma), '_blank');
-    hsoXemNhu(p, maLop);
+    hsoXemNhu(p);
   };
   function hsoVaoThay(p) {
     var o = $('#hsoThay'), tin = $('#hsoThayTin');
     if (!o) return;
-    var maLop = o.getAttribute('data-lop'), n = p.noi.filter(function (x) { return x.maLop === maLop; })[0];
     var pin = String(($('#hsoPin') || {}).value || '').trim();
     var m = mkCua(p);
     if (!/^\d{6,12}$/.test(pin)) { tin.textContent = 'PIN là 6–12 chữ số.'; return; }
     if (!m) { tin.textContent = 'Em chưa có tài khoản (hoặc chưa đọc được danh sách mật khẩu) — chưa đăng nhập thay được.'; return; }
     if (chuaThay()) return;
-    var url = (n.laKhoa ? 'khoa.html' : 'lop.html') + '?nhu=' + encodeURIComponent(p.ma) + '&lop=' + encodeURIComponent(n.maLop) + '&thayvao=1';
-    var w = window.open(url, '_blank');          // mở NGAY trong cú bấm; giữ opener để trao vé
+    var w = window.open(urlThayVao(p, false), '_blank');          // mở NGAY trong cú bấm; giữ opener để trao vé
     if (!w) { tin.textContent = 'Trình duyệt chặn cửa sổ mới — cho phép cửa sổ bật lên rồi bấm lại.'; return; }
     $('#hsoPin').value = '';
     tin.textContent = 'Đang xin vé…';
@@ -12270,7 +12288,7 @@ button.mk-em:hover{border-color:currentColor}
           var rows = dong[code + '|' + b.date] || {}, q = b.date.split('-');
           em.forEach(function (s, j) {
             var r = rows[s.gid];
-            if (r && +r.present) dat(ws, 3 + k, 2 + j, new Date(Date.UTC(+q[0], +q[1] - 1, +q[2])), { bold: true, fmt: 'd-mmm' });
+            if (r && +r.present) dat(ws, 3 + k, 2 + j, new Date(Date.UTC(+q[0], +q[1] - 1, +q[2])), { bold: true, fmt: 'dd/mm' });
             else if (r) { var rs = String(r.reason || '').trim().toLowerCase(); while (rs.indexOf('nghỉ') === 0) rs = rs.slice(4).trim();
               dat(ws, 3 + k, 2 + j, (+q[2]) + '/' + (+q[1]) + ' nghỉ' + (rs ? ' ' + rs : ''), { bold: true }); }
             else dat(ws, 3 + k, 2 + j, '', { bold: true });
@@ -12591,7 +12609,7 @@ button.mk-em:hover{border-color:currentColor}
       ws['!cols'] = [{ wch: 18 }, { wch: 22 }, { wch: 13 }, { wch: 22 }, { wch: 11 }, { wch: 24 }, { wch: 8 }, { wch: 14 }, { wch: 30 }];
       window.XLSX.utils.book_append_sheet(wb, ws, 'Dang ky');
       var n = new Date(), p = function (x) { return (x < 10 ? '0' : '') + x; };
-      window.XLSX.writeFile(wb, 'Dang ky Nen Tang ' + n.getFullYear() + '-' + p(n.getMonth() + 1) + '-' + p(n.getDate()) + '.xlsx');
+      window.XLSX.writeFile(wb, 'Dang ky Nen Tang ' + p(n.getDate()) + '-' + p(n.getMonth() + 1) + '-' + n.getFullYear() + '.xlsx');
       $('#dkTin').textContent = 'Đã tải file Excel (' + rows.length + ' phiếu).';
     };
     if (window.XLSX) return xong();

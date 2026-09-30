@@ -131,7 +131,16 @@
   }
   // ⭐ v1.192.0 — thầy: mốc đầu mỗi NHỊP trò chuyện ghi rõ giờ + ngày đủ năm, vd "17:59 29.9.2026".
   function mocNhip(ms) { var d = new Date(ms); return gio(ms) + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear(); }
-  var NHIP_MOI = 60 * 60e3;   // im lặng từ 1 tiếng trở lên (hoặc sang ngày khác) ⇒ nhịp trò chuyện mới
+  var NHIP_MOI = 60 * 60e3;
+  // ⭐ v1.193.0 — thầy: thanh cuộn MẢNH, KHÔNG mũi tên, CHỈ HIỆN KHI ĐANG CUỘN. Nghe `scroll` (không nổi bọt ⇒ bắt ở pha capture)
+  //   của mọi vùng cuộn trong khuôn chat, gắn class .cu-dang-cuon rồi gỡ sau 900ms đứng yên (CSS ở css/chat-ui.css).
+  var VUNG_CUON = '.cu-khung, .cu-o, .cu-bang .trai, .cu-bang .phai, .cu-khay .than';
+  document.addEventListener('scroll', function (e) {
+    var el = e.target; if (!el || !el.matches || !el.matches(VUNG_CUON)) return;
+    el.classList.add('cu-dang-cuon');
+    clearTimeout(el._cuHenCuon);
+    el._cuHenCuon = setTimeout(function () { el.classList.remove('cu-dang-cuon'); }, 900);
+  }, true);   // im lặng từ 1 tiếng trở lên (hoặc sang ngày khác) ⇒ nhịp trò chuyện mới
   function $(s, r) { return (r || document).querySelector(s); }
 
   // ---------- icon nét ----------

@@ -239,7 +239,35 @@
     };
     function veLai() { ui.ve(ui.ds.map(function (t) { return t; }), dauHienTai()); }
     function dauHienTai() { var c = khung.querySelector('.cu-ds'); var h = ''; if (c) { var n = khung.firstChild; while (n && n !== c) { h += n.outerHTML || ''; n = n.nextSibling; } } return h; }
-    function nay(id) { var b = khung.querySelector('.cu-w[data-id="' + cssEsc(id) + '"] .lk'); if (b) { b.classList.remove('nay'); void b.offsetWidth; b.classList.add('nay'); } return b; }
+    function nay(id, k) {
+      var b = khung.querySelector('.cu-w[data-id="' + cssEsc(id) + '"] .lk');
+      if (b) { b.classList.remove('nay'); void b.offsetWidth; b.classList.add('nay'); if (k) noTung(b, k); }
+      return b;
+    }
+    // ⭐ v1.190.0 — thầy: MỖI lần thả, phía trên nút thả "nổ tung" ra vài hình cảm xúc đó rồi bay lên, mờ dần.
+    //   Lớp nổ gắn vào <body> (position:fixed) để không bị khung chat cắt và không vướng lần vẽ lại khung.
+    function noTung(neo, k) {
+      var c = CX_E[k]; if (!c || !neo.animate) return;
+      try { if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (x) {}
+      var r = neo.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top + r.height / 2, SO = 7;
+      for (var i = 0; i < SO; i++) {
+        var im = document.createElement('img');
+        im.src = urlEmoji(c.e); im.alt = ''; im.className = 'cu-no';
+        var co = 18 + Math.random() * 10;
+        im.style.cssText = 'left:' + (x0 - co / 2) + 'px;top:' + (y0 - co / 2) + 'px;width:' + co + 'px;height:' + co + 'px';
+        document.body.appendChild(im);
+        var goc = (-150 + (i / (SO - 1)) * 120 + (Math.random() * 16 - 8)) * Math.PI / 180;   // quạt từ trái-trên sang phải-trên
+        var xa = 38 + Math.random() * 34, dx = Math.cos(goc) * xa, dy = Math.sin(goc) * xa;
+        var len = 40 + Math.random() * 30, xoay = (Math.random() * 60 - 30);
+        var a = im.animate([
+          { transform: 'translate(0,0) scale(.3) rotate(0deg)', opacity: 0 },
+          { transform: 'translate(' + dx * .8 + 'px,' + dy * .8 + 'px) scale(1.15) rotate(' + xoay / 2 + 'deg)', opacity: 1, offset: .3 },
+          { transform: 'translate(' + dx + 'px,' + (dy - len) + 'px) scale(.9) rotate(' + xoay + 'deg)', opacity: 0 }
+        ], { duration: 850 + Math.random() * 350, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+        a.onfinish = (function (el) { return function () { el.remove(); }; })(im);
+        setTimeout((function (el) { return function () { if (el.isConnected) el.remove(); }; })(im), 2000);
+      }
+    }
     function cssEsc(s) { return String(s).replace(/["\\]/g, '\\$&'); }
 
     // ---------- thả cảm xúc (ghi dồn: bấm liền tay nhiều lần chỉ tốn MỘT lượt ghi) ----------
@@ -287,7 +315,8 @@
       var u = DANG; if (u !== ui) return;
       var t = tim(this._id); if (!t) return;
       var k = b.getAttribute('data-k');
-      if (k) { if (them(t, k)) { var nb = nay(t.id); if (nb) moChon(tim(t.id), nb); } }
+      // ⭐ v1.190.0 — thầy: chọn xong một cảm xúc là thanh chọn ẨN LUÔN (trước đây mở lại để thả tiếp).
+      if (k) { this.hidden = true; if (them(t, k)) nay(t.id, k); }
       else { xoaHetCx(t); this.hidden = true; }
     };
 
@@ -375,7 +404,7 @@
         return;
       }
       if (!t) return;
-      if (viec === 'lk') { if (b._daGiu) { b._daGiu = false; return; } if (POP.chon) POP.chon.hidden = true; var tt = cxCuaToi(t); if (them(t, (tt && tt.l) || 'tim')) nay(t.id); }
+      if (viec === 'lk') { if (b._daGiu) { b._daGiu = false; return; } if (POP.chon) POP.chon.hidden = true; var tt = cxCuaToi(t), kk = (tt && tt.l) || 'tim'; if (them(t, kk)) nay(t.id, kk); }
       if (viec === 'cs') moBang(t, 'all');
       if (viec === 'tra') datTra(t);
       if (viec === 'them') moMenu(t, b);
@@ -434,7 +463,7 @@
       hd.querySelector('.nen').onclick = dongHd;
       hop.onclick = function (e) {
         var k = e.target.closest('[data-k]');
-        if (k) { if (k.disabled) return; dongHd(); if (k.getAttribute('data-k')) { if (them(t, k.getAttribute('data-k'))) nay(t.id); } else xoaHetCx(t); return; }
+        if (k) { if (k.disabled) return; dongHd(); if (k.getAttribute('data-k')) { if (them(t, k.getAttribute('data-k'))) nay(t.id, k.getAttribute('data-k')); } else xoaHetCx(t); return; }
         var b = e.target.closest('[data-m]'); if (!b) return;
         var v = b.getAttribute('data-m'); dongHd();
         if (v === 'cx') { moBang(t, 'all'); return; }

@@ -87,6 +87,8 @@
 .cu-cx .lk svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linejoin:round}
 .cu-cx .lk.nay img, .cu-cx .lk.nay svg{animation:cuNay .35s cubic-bezier(.22,.9,.3,1)}
 @keyframes cuNay{0%{transform:scale(.6)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
+/* ⭐ v1.190.0 — hình cảm xúc "nổ tung" khi thả (js noTung): gắn vào body, không bắt chuột. */
+.cu-no{position:fixed; z-index:9500; pointer-events:none; opacity:0; will-change:transform,opacity}
 
 /* thanh công cụ khi rê chuột (dính sát bong bóng, ẩn chậm) */
 .cu-cong{position:absolute; top:0; bottom:0; display:flex; align-items:center; gap:3px; opacity:0; visibility:hidden;

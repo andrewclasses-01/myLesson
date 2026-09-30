@@ -6742,6 +6742,8 @@ button.mk-em:hover{border-color:currentColor}
       var cls = !N ? '' : (n >= N ? 'du' : (n ? 'mot' : 'chua'));
       return '<div class="hq-em ' + cls + '" title="' + A.chuAnToan(h.ten) + ' · ' + n + '/' + N + (x ? ' · không tính ở bài này (' + A.chuAnToan(chuLy(x)) + ')' : '') + '" data-hq-em="' + A.chuAnToan(h.ten) + '">' +
         (x ? '<button type="button" class="tl" data-boqua-lai="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" data-lop="' + A.chuAnToan(t.maLop) + '" title="Đưa em quay lại danh sách đang tính">↩</button>' : '') +
+        // v1.202.1 (thầy 30/09 "chưa thấy ô không tính") — bài thường cũng có ✕ bỏ qua CẢ BÀI như chặng STAGE.
+        (!x && N && n < N ? '<button type="button" class="bq" data-boqua="' + A.chuAnToan(h.ten) + '" data-bai="' + A.chuAnToan(b.id) + '" data-lop="' + A.chuAnToan(t.maLop) + '" title="Bỏ qua em này ở cả bài (muốn bỏ riêng một dòng: bấm dòng đó bên trái)">✕</button>' : '') +
         '<div class="av">' + veEmAvDb(h.ten, slug, lopGoc) + '</div>' +
         (N && !x ? '<span class="hh">' + n + '/' + N + '</span>' : '') +
         (x ? '<span class="ly">' + A.chuAnToan(x.ly === 'muon' ? 'vào sau' : 'bỏ qua') + '</span>' : '') +
@@ -6751,8 +6753,9 @@ button.mk-em:hover{border-color:currentColor}
     var daBo = hs.filter(function (h) { return !!kt[A.khoaTen(h.ten)]; });
     return '<div class="hq-em-khoi" id="hqLuoiEm"><h4>TỔNG QUAN • <b>CẢ BÀI</b></h4>' +
       (dangTinh.length ? '<div class="hq-em-luoi">' + dangTinh.map(function (h) { return oEm(h, null); }).join('') + '</div>' : '<div class="bm-em-trong">Chưa có em nào</div>') +
-      (daBo.length ? '<div class="hq-bq"><h4>KHÔNG TÍNH • <b>CẢ BÀI</b> <span class="so">' + daBo.length + '</span></h4>' +
-        '<div class="hq-em-luoi">' + daBo.map(function (h) { return oEm(h, kt[A.khoaTen(h.ten)]); }).join('') + '</div></div>' : '') +
+      // v1.202.1 — ô KHÔNG TÍNH luôn hiện (kể cả 0 em), y nếp chặng STAGE.
+      '<div class="hq-bq"><h4>KHÔNG TÍNH • <b>CẢ BÀI</b> <span class="so">' + daBo.length + '</span></h4>' +
+        (daBo.length ? '<div class="hq-em-luoi">' + daBo.map(function (h) { return oEm(h, kt[A.khoaTen(h.ten)]); }).join('') + '</div>' : '') + '</div>' +
     '</div>';
   }
   /* ⭐⭐ v1.202.0 (thầy chốt 30/09) — XEM RIÊNG MỘT DÒNG BÀI TẬP (act / worksheet / nghe), mọi dạng bài, y nếp chặng
@@ -9956,8 +9959,8 @@ button.mk-em:hover{border-color:currentColor}
         var tcB = (bGoc ? A.tinhCaCua(bGoc) : []).filter(function (x) { return A.khoaTen(x) !== A.khoaTen(tenEm); });
         moXnPop(bq, {
           tieuDe: 'Bỏ qua em này ở bài này?',
-          chu: 'Em ' + tenEm + ' sẽ không còn được tính khi xét cả lớp đã xong chặng hay chưa, ' +
-               'và không tính vào thanh x/' + (HQ.t ? HQ.t.siSo : '') + '. Em vẫn ở trong lớp, vẫn có ' +
+          chu: 'Em ' + tenEm + ' sẽ không tính vào thanh x/' + (HQ.t ? HQ.t.siSo : '') + ' của MỌI dòng trong bài này ' +
+               '(muốn bỏ riêng một dòng: bấm dòng đó bên trái). Em vẫn ở trong lớp, vẫn có ' +
                'trong THỜI LƯỢNG và bảng xếp hạng. Chỉ áp dụng cho bài này.',
           nutOk: 'Bỏ qua em này', nguy: true,
           khiOk: function () { stageGhi(idB, { boQua: ds, tinhCa: tcB }, null, 'Đã bỏ qua em ' + tenEm + '.'); }

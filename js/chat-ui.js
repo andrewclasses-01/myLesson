@@ -244,26 +244,27 @@
       if (b) { b.classList.remove('nay'); void b.offsetWidth; b.classList.add('nay'); if (k) noTung(b, k); }
       return b;
     }
-    // ⭐ v1.190.0 — thầy: MỖI lần thả, phía trên nút thả "nổ tung" ra vài hình cảm xúc đó rồi bay lên, mờ dần.
+    // ⭐ v1.190.0 — thầy: MỖI lần thả, phía trên nút thả "nổ tung" ra vài hình cảm xúc đó.
+    // ⭐ v1.191.0 — thầy: 15 hình, to nhỏ khác nhau, TỪ BÉ THÀNH TO tại MỘT điểm rồi BUNG RA XUNG QUANH (đủ 360°).
     //   Lớp nổ gắn vào <body> (position:fixed) để không bị khung chat cắt và không vướng lần vẽ lại khung.
     function noTung(neo, k) {
       var c = CX_E[k]; if (!c || !neo.animate) return;
       try { if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return; } catch (x) {}
-      var r = neo.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top + r.height / 2, SO = 7;
+      var r = neo.getBoundingClientRect(), x0 = r.left + r.width / 2, y0 = r.top - 6, SO = 15;
       for (var i = 0; i < SO; i++) {
         var im = document.createElement('img');
         im.src = urlEmoji(c.e); im.alt = ''; im.className = 'cu-no';
-        var co = 18 + Math.random() * 10;
+        var co = 12 + Math.pow(Math.random(), 1.6) * 28;                       // 12–40px, nhiều hình nhỏ, ít hình to
         im.style.cssText = 'left:' + (x0 - co / 2) + 'px;top:' + (y0 - co / 2) + 'px;width:' + co + 'px;height:' + co + 'px';
         document.body.appendChild(im);
-        var goc = (-150 + (i / (SO - 1)) * 120 + (Math.random() * 16 - 8)) * Math.PI / 180;   // quạt từ trái-trên sang phải-trên
-        var xa = 38 + Math.random() * 34, dx = Math.cos(goc) * xa, dy = Math.sin(goc) * xa;
-        var len = 40 + Math.random() * 30, xoay = (Math.random() * 60 - 30);
+        var goc = (i / SO) * 2 * Math.PI + (Math.random() - .5) * (2 * Math.PI / SO);   // rải đều quanh một vòng
+        var xa = 30 + Math.random() * 45, dx = Math.cos(goc) * xa, dy = Math.sin(goc) * xa;
+        var xoay = Math.random() * 70 - 35;
         var a = im.animate([
-          { transform: 'translate(0,0) scale(.3) rotate(0deg)', opacity: 0 },
-          { transform: 'translate(' + dx * .8 + 'px,' + dy * .8 + 'px) scale(1.15) rotate(' + xoay / 2 + 'deg)', opacity: 1, offset: .3 },
-          { transform: 'translate(' + dx + 'px,' + (dy - len) + 'px) scale(.9) rotate(' + xoay + 'deg)', opacity: 0 }
-        ], { duration: 850 + Math.random() * 350, easing: 'cubic-bezier(.2,.8,.3,1)', fill: 'forwards' });
+          { transform: 'translate(0,0) scale(.05) rotate(0deg)', opacity: 1 },
+          { transform: 'translate(' + dx * .75 + 'px,' + dy * .75 + 'px) scale(1) rotate(' + xoay * .6 + 'deg)', opacity: 1, offset: .45 },
+          { transform: 'translate(' + dx * 1.15 + 'px,' + (dy * 1.15 - 18) + 'px) scale(.85) rotate(' + xoay + 'deg)', opacity: 0 }
+        ], { duration: 800 + Math.random() * 400, easing: 'cubic-bezier(.15,.85,.35,1)', fill: 'forwards' });
         a.onfinish = (function (el) { return function () { el.remove(); }; })(im);
         setTimeout((function (el) { return function () { if (el.isConnected) el.remove(); }; })(im), 2000);
       }

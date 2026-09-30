@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-30 21:21:04",
+  "capNhat": "2026-09-30 21:46:12",
   "bai": {
     "A1C": [
       {
@@ -969,6 +969,24 @@
       }
     ],
     "A2B": [
+      {
+        "id": "A2B_30.9_WORKSHEET_LSB1-S1.T1.P3-4",
+        "tieuDe": "A2B_30.9_WORKSHEET LSB1-S1.T1.P3-4",
+        "tenHien": "A2B_30.9_WORKSHEET LSB1-S1.T1.P3-4",
+        "dang": "WORKSHEET",
+        "ngay": "30.9",
+        "tenBai": "TRANSLATION QUEST / ENG1",
+        "han": "2026-10-02T17:45",
+        "maLesson": "LSB1-S1.T1.P3-4",
+        "taoLuc": "2026-09-30",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "TRANSLATION QUEST / ENG1",
+            "o": 0
+          }
+        ]
+      },
       {
         "id": "A2B_25.9_DICTS_LSB1-S1.T1.P2",
         "tieuDe": "A2B_25.9_DICTS LSB1-S1.T1.P2",

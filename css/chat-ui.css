@@ -92,15 +92,15 @@
 
 /* cụm cảm xúc (viên) + nút tim tròn, tách nhau */
 /* ⭐ v1.195.0 — thầy: viên cảm xúc dài ngang tràn ra ngoài ⇒ tối đa 3 loại (JS), hình nhỏ cỡ Zalo (15px), sát nhau hơn,
-   nút tim dịch sang PHẢI (lòi ra mép bong bóng một chút). Tin có cảm xúc đặt bề ngang tối thiểu để viên không tràn khỏi khung. */
-.cu-cx{position:absolute; right:-7px; bottom:-12px; display:flex; align-items:center; gap:3px; z-index:1}
+   nút tim nằm TRONG mép phải bong bóng ~5px như Zalo (v1.196.0: -7px lòi ra quá nhiều ⇒ thầy bảo đẩy lại). Tin có cảm xúc đặt bề ngang tối thiểu để viên không tràn khỏi khung. */
+.cu-cx{position:absolute; right:5px; bottom:-12px; display:flex; align-items:center; gap:3px; z-index:1}
 .cu-cx button{border:1px solid var(--cu-vien); background:var(--cu-nen); cursor:pointer; display:flex; align-items:center; height:22px;
   color:var(--cu-phu); font:500 12px var(--cu-font); box-shadow:0 1px 3px rgba(0,0,0,.14); padding:0}
 .cu-cx .cs{border-radius:12px; padding:0 7px 0 4px; gap:1px}
 .cu-cx .cs img{width:15px; height:15px}
 .cu-cx .cs em{font-style:normal; margin-left:4px; color:var(--cu-chu); font-variant-numeric:tabular-nums}
 .cu-cx .lk{width:22px; justify-content:center; border-radius:50%}
-.cu-w.coCx{min-width:84px}
+.cu-w.coCx{min-width:96px}
 /* ⭐ v1.188.0 — MÁY TÍNH: chỉ tin đang rê chuột mới hiện nút tim. ĐIỆN THOẠI: chỉ tin MỚI NHẤT chưa có cảm xúc mới hiện nút tim,
    tin khác nhấn giữ để thả. ⭐ v1.189.0 — thầy: tin ĐÃ có cảm xúc (coCx) thì nút tim hiện HẲN luôn, cả 2 bản. `visibility` (không phải display) ⇒ bảng chọn cảm xúc vẫn neo đúng chỗ nút tim. */
 @media (hover:hover){ .cu-w:not(:hover):not(.coCx) .cu-cx .lk{visibility:hidden} }

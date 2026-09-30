@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-29 22:04:19",
+  "capNhat": "2026-09-30 09:36:53",
   "bai": {
     "A1C": [
       {
@@ -1617,6 +1617,247 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L05",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 21: BÀI GIẢNG 21: NGUYÊN LIỆU CHO CÂU KHÔNG CÓ ĐỘNG TỪ Ở HIỆN TẠI ĐƠN",
+        "tenBai": "LESSON 21",
+        "maLesson": "LESSON 21",
+        "han": "2026-10-04T23:59",
+        "taoLuc": "2026-09-30",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. PHÂN BIỆT 3 LOẠI CÂU",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "x45qua"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. TÌM DẠNG THAY ĐỔI CỦA \"BE\" PHÙ HỢP VỚI CHỦ NGỮ",
+            "act": "",
+            "mau": "OPEN THE BOX",
+            "ma": "rf6crd"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 21",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "r468ap"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 21: NGUYÊN LIỆU CHO CÂU KHÔNG CÓ ĐỘNG TỪ Ở HIỆN TẠI ĐƠN",
+          "video": "https://www.youtube.com/watch?v=GqhD-p3W_4A",
+          "doan": [
+            {
+              "id": "dmunghp9suafk",
+              "ten": "Đặt mục tiêu của buổi học hôm nay",
+              "tu": "00:00",
+              "den": "02:41",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9s4r08"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9s4r08",
+              "ten": "Review hành trình hiện tại",
+              "tu": "02:41",
+              "den": "00:03:51",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9sgied"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9sgied",
+              "ten": "Vấn đề phát sinh trong khi hướng dẫn Bài tập 1",
+              "tu": "00:03:51",
+              "den": "06:22",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9sshmx"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9sshmx",
+              "ten": "Nguyên tắc tối thượng trong tiếng Anh",
+              "tu": "06:22",
+              "den": "10:54",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9s8uij"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9s8uij",
+              "ten": "HD BT1 - Phân biệt 3 loại câu",
+              "tu": "10:54",
+              "den": "00:13:02",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmungpieydf7"
+              ]
+            },
+            {
+              "id": "dmunghp9sqcrf",
+              "ten": "Kết luận về trường hợp cần phải mượn động từ",
+              "tu": "00:13:08",
+              "den": "15:25",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9s8gru"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9s8gru",
+              "ten": "Hành trình đi mượn động từ - động từ khi cần mượn là \"be\"",
+              "tu": "15:25",
+              "den": "18:52",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9t086h"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9t086h",
+              "ten": "Một vấn đề đặc biệt của động từ mượn \"be\" cần lưu ý",
+              "tu": "18:52",
+              "den": "19:45",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9toi8d"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9toi8d",
+              "ten": "Câu chuyện thay đổi của học sinh \"be\" khi ở các môi trường khác nhau",
+              "tu": "19:45",
+              "den": "22:25",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9tr6ka"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9tr6ka",
+              "ten": "Biến đổi cụ thể của \"be\" với từng chủ ngữ cụ thể",
+              "tu": "22:25",
+              "den": "25:47",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9tyxg3"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9tyxg3",
+              "ten": "Kết luận về việc biến đổi động từ mượn \"be\" với từng loại chủ ngữ",
+              "tu": "25:47",
+              "den": "27:38",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9tsicz"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9tsicz",
+              "ten": "Một số ví dụ phân tích về việc mượn \"be\"",
+              "tu": "27:38",
+              "den": "31:03",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9tskch"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmunghp9tskch",
+              "ten": "HD BT2 - Tìm dạng biến đổi của \"be\" với từng loại chủ ngữ",
+              "tu": "31:03",
+              "den": "00:33:20",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmungpj2i9m9"
+              ]
+            },
+            {
+              "id": "dmunghp9tqsd9",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "00:33:27",
+              "den": "34:39",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmungpjgihgy"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmungpieydf7",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. PHÂN BIỆT 3 LOẠI CÂU",
+            "actTen": "BT1. PHAN BIET 3 LOAI CAU",
+            "ma": "x45qua",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9sqcrf"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmungpj2i9m9",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. TÌM DẠNG THAY ĐỔI CỦA \"BE\" PHÙ HỢP VỚI CHỦ NGỮ",
+            "actTen": "BT2. TIM DANG THAY DOI CUA \"BE\" PHU HOP VOI CHU NGU",
+            "ma": "rf6crd",
+            "mau": "OPEN THE BOX",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmunghp9tqsd9"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmungpjgihgy",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 21",
+            "actTen": "TRAC NGHIEM BAI GIANG 21 - NGUYEN LIEU CHO CAU KHONG CO DONG TU O HIEN TAI DON",
+            "ma": "r468ap",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ]
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L04",
         "dang": "KHOA",

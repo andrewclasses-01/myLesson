@@ -1571,3 +1571,8 @@ body.dn{min-height:100dvh}
 .sn-ds .ten-nut{display:block; padding:0; font-weight:700; font-size:13.5px; text-align:left}
 .sn-ds .ten-nut:hover{color:var(--accent)}
 .sn-mo{display:block; font-size:11.5px; color:var(--muted); font-weight:600; line-height:1.4}
+
+/* ⭐ web v1.198.0 — Tin nhắn + hộp chat nổi dùng khuôn chat Zalo chung (../css/chat-ui.css): chỉ còn đệm cho ô nhập. */
+.tn-nhap-khu{padding:9px 12px}
+.cn-chan.cn-chan2{display:block; padding:6px 8px 8px}
+.cn-chan.cn-chan2[hidden]{display:none}

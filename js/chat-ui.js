@@ -17,6 +17,11 @@
      });
      ui.ve(dsTin, htmlDau)   // dsTin: [{id, ten, ma, vaiTro, chu, luc, cx, q, sticker, thuHoi}]
      ui.khoa(true|false, 'chữ gợi ý')
+   ⭐ v1.198.0 (myNetwork dùng chung khuôn): tuỳ chọn thêm
+     hienTen: false            // chat 1-1: không in tên người gửi trên bong bóng
+     guiAnh(file) -> Promise<url>   // có ⇒ ô nhập thêm nút gửi ảnh; tin ảnh = {chu:'', hinh:url}
+     xemAnh(url, t)            // bấm ảnh trong tin
+     sauTin(t, i, ds) -> html  // chèn sau hàng tin (vd avatar "đã xem")
 
    Dữ liệu tin (thêm từ v1.186.0, trường cũ giữ nguyên):
      chu      chữ; emoji bộ riêng ghi dạng mã `:1f60a:` (xem EMOJI), nhắc tên dạng `@Tên`
@@ -118,6 +123,7 @@
     if (!t) return '';
     if (t.thuHoi) return 'Tin nhắn đã bị thu hồi';
     if (t.sticker) { var s = timStk(t.sticker); return '[Sticker]' + (s ? ' ' + s.it.chu : ''); }
+    if (t.hinh && !t.chu) return '📷 Ảnh';
     return String(t.chu || '');
   }
   function hai(n) { return (n < 10 ? '0' : '') + n; }
@@ -155,7 +161,8 @@
     chep: '<svg viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></svg>',
     thuHoi: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
     xoa: '<svg viewBox="0 0 24 24"><path d="M4.2 6.9h15.6"/><path d="M9.6 6.9V5.4a1.4 1.4 0 0 1 1.4-1.4h2a1.4 1.4 0 0 1 1.4 1.4v1.5"/><path d="M6.4 6.9l.85 12.1a1.8 1.8 0 0 0 1.8 1.7h6a1.8 1.8 0 0 0 1.8-1.7l.85-12.1"/></svg>',
-    tim: '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>'
+    tim: '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
+    anh: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 17l4.6-4.4a1.5 1.5 0 0 1 2 0L15 17l2-1.8a1.5 1.5 0 0 1 2 0l1.5 1.3"/></svg>'
   };
 
   // ---------- hộp nổi dùng chung (một bộ cho cả trang) ----------
@@ -211,7 +218,7 @@
       var ngayMoi = !truoc || ngay(truoc.luc) !== ngay(t.luc) || (t.luc - truoc.luc) >= NHIP_MOI;
       var cungNhom = !ngayMoi && truoc && (truoc.ma || truoc.ten) === (t.ma || t.ten) && !!(o.laCuaToi && o.laCuaToi(truoc)) === toi && (t.luc - truoc.luc) < 5 * 60e3;
       var h = ngayMoi ? '<div class="cu-ngay">' + esc(mocNhip(t.luc)) + '</div>' : '';
-      var ten = (!toi && !cungNhom) ? '<div class="cu-ten">' + esc(t.ten) + (o.nhan ? o.nhan(t) : '') + '</div>' : '';
+      var ten = (!toi && !cungNhom && o.hienTen !== false) ? '<div class="cu-ten">' + esc(t.ten) + (o.nhan ? o.nhan(t) : '') + '</div>' : '';
       var than;
       if (t.thuHoi) than = '<div class="cu-bong thuhoi">' + ten + 'Tin nhắn đã bị thu hồi<span class="cu-gio">' + gio(t.luc) + '</span></div>';
       else if (t.sticker && timStk(t.sticker)) {
@@ -221,13 +228,16 @@
           (s.coChu ? '<div class="cu-stk-chu">' + esc(s.it.chu) + '</div>' : '') + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
       } else {
         var q = t.q && t.q.id ? '<button type="button" class="cu-trich" data-cu="toi" data-id="' + esc(t.q.id) + '"><b>' + esc(t.q.ten || '') + '</b><span>' + giau(t.q.chu, reN, true) + '</span></button>' : '';
-        than = '<div class="cu-bong' + (t.vaiTro === 'gv' ? ' thay' : '') + '">' + ten + q + giau(t.chu, reN) + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
+        // ⭐ v1.198.0 — tin ẢNH (myNetwork): ảnh nằm trong bong bóng, bấm để xem to (o.xemAnh)
+        var anh = t.hinh ? '<button type="button" class="cu-hinh" data-cu="anh" aria-label="Xem ảnh"><img src="' + esc(t.hinh) + '" alt="Ảnh" loading="lazy" draggable="false"></button>' : '';
+        than = '<div class="cu-bong' + (t.vaiTro === 'gv' ? ' thay' : '') + (t.hinh && !t.chu ? ' chianh' : '') + '">' + ten + q + anh + (t.chu ? giau(t.chu, reN) : '') + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
       }
       var cong = t.thuHoi ? '' : '<div class="cu-cong"><button type="button" data-cu="tra" title="Trả lời" aria-label="Trả lời">' + IC.trich + '</button><button type="button" data-cu="them" title="Thêm" aria-label="Thêm">' + IC.ba + '</button></div>';
       return h + '<div class="cu-hang' + (toi ? ' toi' : '') + (cungNhom ? '' : ' dau') + '">' +
         (toi ? '' : '<div class="cu-av">' + (cungNhom ? '' : (o.av ? o.av(t, i) : '')) + '</div>') +
         // ⭐ v1.188.0 — coCx: tin đã có cảm xúc (giãn ra chừa chỗ viên cảm xúc); cuoi: tin mới nhất (điện thoại hiện nút tim ở đây).
-        '<div class="cu-w' + (!t.thuHoi && demCx(t.cx).tong ? ' coCx' : '') + (i === ds.length - 1 ? ' cuoi' : '') + '" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (t.thuHoi ? '' : veCum(t)) + cong + '</div></div>';
+        '<div class="cu-w' + (!t.thuHoi && demCx(t.cx).tong ? ' coCx' : '') + (i === ds.length - 1 ? ' cuoi' : '') + '" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (t.thuHoi ? '' : veCum(t)) + cong + '</div></div>' +
+        (o.sauTin ? (o.sauTin(t, i, ds) || '') : '');
     }
     function veCum(t) {
       var d = demCx(t.cx), toi = cxCuaToi(t);
@@ -261,7 +271,13 @@
       khung.scrollTop = sat ? khung.scrollHeight : cuon;
       khung.style.scrollBehavior = kieu;
       khung._cuDaVe = true;
+      khung._cuDay = sat;
     };
+    // ⭐ v1.198.0 — ảnh trong tin tải XONG sau lúc vẽ làm khung cao lên ⇒ đang ở đáy thì bám đáy tiếp (khỏi hụt tin cuối)
+    khung.addEventListener('load', function (e) {
+      if (e.target && e.target.tagName === 'IMG' && khung._cuDay) { var kieu = khung.style.scrollBehavior; khung.style.scrollBehavior = 'auto'; khung.scrollTop = khung.scrollHeight; khung.style.scrollBehavior = kieu; }
+    }, true);
+    khung.addEventListener('scroll', function () { khung._cuDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60; });
     function veLai() { ui.ve(ui.ds.map(function (t) { return t; }), dauHienTai()); }
     function dauHienTai() { var c = khung.querySelector('.cu-ds'); var h = ''; if (c) { var n = khung.firstChild; while (n && n !== c) { h += n.outerHTML || ''; n = n.nextSibling; } } return h; }
     function nay(id, k) {
@@ -336,7 +352,9 @@
       var r = neo.getBoundingClientRect();
       datCanh(p, r.right - p.offsetWidth + 10, r.top - p.offsetHeight - 6 < 8 ? r.bottom + 6 : r.top - p.offsetHeight - 6);
     }
-    pop('chon', 'cu-chon').onclick = function (e) {
+    // ⛔ v1.198.0 — addEventListener, KHÔNG `.onclick =`: trang có NHIỀU khuôn (hộp chat nổi myNetwork) mà gán onclick thì
+    //   khuôn tạo sau ĐÈ mất bộ bấm của khuôn trước ⇒ thanh cảm xúc của hộp cũ bấm không ăn. Mỗi khuôn tự lọc DANG === ui.
+    pop('chon', 'cu-chon').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-k]'); if (!b || b.disabled || !DANG) return;
       var u = DANG; if (u !== ui) return;
       var t = tim(this._id); if (!t) return;
@@ -344,7 +362,7 @@
       // ⭐ v1.190.0 — thầy: chọn xong một cảm xúc là thanh chọn ẨN LUÔN (trước đây mở lại để thả tiếp).
       if (k) { this.hidden = true; if (them(t, k)) nay(t.id, k); }
       else { xoaHetCx(t); this.hidden = true; }
-    };
+    });
 
     // bảng "ai thả gì" — 2 cột
     function moBang(t, tab) {
@@ -377,7 +395,7 @@
     // menu ⋯
     function moMenu(t, neo) {
       DANG = ui; var m = pop('menu', 'cu-menu'), dd = [];
-      if (!t.sticker) dd.push('<button type="button" data-m="chep">' + IC.chep + 'Sao chép</button>');
+      if (!t.sticker && t.chu) dd.push('<button type="button" data-m="chep">' + IC.chep + 'Sao chép</button>');
       if (!ui.khoaChat && !ui.chiXem) dd.push('<button type="button" data-m="tra">' + IC.traLoi + 'Trả lời</button>');
       if ((cuaToi(t) || o.laThay) && o.thuHoi && !ui.chiXem) dd.push('<button type="button" data-m="thuhoi" class="nguy">' + IC.thuHoi + 'Thu hồi</button>');
       if (o.laThay && o.xoa) dd.push('<button type="button" data-m="xoa" class="nguy">' + IC.xoa + 'Xoá hẳn</button>');
@@ -432,6 +450,7 @@
       if (!t) return;
       if (viec === 'lk') { if (b._daGiu) { b._daGiu = false; return; } if (POP.chon) POP.chon.hidden = true; var tt = cxCuaToi(t), kk = (tt && tt.l) || 'tim'; if (them(t, kk)) nay(t.id, kk); }
       if (viec === 'cs') moBang(t, 'all');
+      if (viec === 'anh') { if (o.xemAnh) o.xemAnh(t.hinh, t); else window.open(t.hinh, '_blank', 'noopener'); }
       if (viec === 'tra') datTra(t);
       if (viec === 'them') moMenu(t, b);
     }, true);
@@ -444,7 +463,7 @@
       }
       // điện thoại: GIỮ bong bóng 0,45 giây ⇒ tin nổi sáng + tuỳ chọn ngay dưới
       var bong = e.target.closest('.cu-bong');
-      if (!bong || e.pointerType !== 'touch' || e.target.closest('a,button')) return;
+      if (!bong || e.pointerType !== 'touch' || e.target.closest('a,button:not(.cu-hinh)')) return;
       var w2 = bong.closest('.cu-w'), t2 = ui.ds[+w2.getAttribute('data-i')];
       if (!t2 || t2.thuHoi) return;
       diem = { x: e.clientX, y: e.clientY }; w2.classList.add('giu');
@@ -476,7 +495,7 @@
       hop.innerHTML = (ui.chiXem ? '' : '<div class="cu-hd-cx">' + CX.map(function (c) { var n = toi && toi.n[c.k] || 0; return '<button type="button" data-k="' + c.k + '" aria-label="' + c.ten + '">' + imgCx(c.k) + (n ? '<i' + (n >= TOI_DA_CX ? ' class="day"' : '') + '>' + n + '</i>' : '') + '</button>'; }).join('') +
         '<button type="button" class="xo" data-k="" aria-label="Xoá hết cảm xúc em đã thả"' + (toi ? '' : ' disabled') + '>×</button></div>') +
         '<div class="cu-hd-ds">' + (ui.khoaChat || ui.chiXem ? '' : '<button type="button" data-m="tra">' + IC.traLoi + 'Trả lời</button>') +
-        (t.sticker ? '' : '<button type="button" data-m="chep">' + IC.chep + 'Sao chép</button>') +
+        (t.sticker || !t.chu ? '' : '<button type="button" data-m="chep">' + IC.chep + 'Sao chép</button>') +
         (demCx(t.cx).tong ? '<button type="button" data-m="cx">' + IC.tim + 'Cảm xúc</button>' : '') +
         ((cuaToi(t) || o.laThay) && o.thuHoi && !ui.chiXem ? '<button type="button" data-m="thuhoi" class="nguy">' + IC.thuHoi + 'Thu hồi</button>' : '') +
         (o.laThay && o.xoa ? '<button type="button" data-m="xoa" class="nguy">' + IC.xoa + 'Xoá hẳn</button>' : '') + '</div>';
@@ -505,6 +524,7 @@
     var edSan = chan.querySelector('.cu-o');
     if (edSan) edSan.parentNode.removeChild(edSan);
     chan.innerHTML = '<div class="cu-chan"><div class="cu-tra" hidden></div><div class="cu-nhap">' +
+      (o.guiAnh ? '<button type="button" class="ib" data-cu="guianh" title="Gửi ảnh" aria-label="Gửi ảnh">' + IC.anh + '</button><input type="file" accept="image/*" multiple hidden>' : '') +
       '<button type="button" class="ib" data-cu="khay" title="Emoji và sticker" aria-label="Mở emoji và sticker">' + IC.mat + '</button>' +
       '<div class="cu-o" id="' + esc(o.idNhap || 'cuNhap') + '" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nhập tin nhắn" data-ph="Aa" spellcheck="false"></div>' +
       '<button type="button" class="ib gui" aria-label="Gửi"></button></div></div>';
@@ -570,19 +590,19 @@
       ed.focus();
     }
     function gui(goi) {
-      if (dangGui || ui.khoaChat) return;
-      if (ui.chiXem) { loi('Đang ở chế độ xem — không nhắn được.'); return; }
+      if (dangGui || ui.khoaChat) return Promise.resolve();
+      if (ui.chiXem) { loi('Đang ở chế độ xem — không nhắn được.'); return Promise.resolve(); }
       var chu;
       if (!goi) {
         chu = docEd().trim();
         if (!chu) chu = ':2764:';
-        if (chu.length > TOI_DA_CHU) { loi('Tin dài quá ' + TOI_DA_CHU + ' ký tự (emoji tính mỗi hình khoảng 7 ký tự).'); return; }
+        if (chu.length > TOI_DA_CHU) { loi('Tin dài quá ' + TOI_DA_CHU + ' ký tự (emoji tính mỗi hình khoảng 7 ký tự).'); return Promise.resolve(); }
         goi = { chu: chu };
       }
       if (TRA) goi.q = { id: TRA.id, ten: String((cuaToi(TRA) && o.toi ? o.toi.ten : TRA.ten) || '').slice(0, 60), chu: tomTat(TRA).slice(0, 120) };
       dangGui = true; ed.setAttribute('contenteditable', 'false'); nutGui.disabled = true;
-      var coChu = !goi.sticker;
-      Promise.resolve(o.gui(goi)).then(function () {
+      var coChu = !goi.sticker && !goi.hinh;
+      return Promise.resolve(o.gui(goi)).then(function () {
         if (coChu) { ed.innerHTML = ''; vung = null; }
         datTra(null);
       })['catch'](function (e) { loi(e); }).then(function () {
@@ -592,6 +612,20 @@
       });
     }
     nutGui.onclick = function () { gui(null); };
+    // ⭐ v1.198.0 — gửi ảnh (myNetwork): trang lo nén + tải lên (o.guiAnh ⇒ url), khuôn gửi tin {chu:'', hinh:url} lần lượt từng ảnh
+    var nutAnh = $('[data-cu="guianh"]', chan), oFile = nutAnh ? nutAnh.nextElementSibling : null;
+    if (nutAnh) {
+      nutAnh.onclick = function () { if (ui.khoaChat || ui.chiXem) return; oFile.click(); };
+      oFile.onchange = function () {
+        var ds = Array.prototype.slice.call(this.files || [], 0, 6); this.value = '';
+        if (!ds.length) return;
+        nutAnh.disabled = true;
+        ds.reduce(function (p, f) {
+          return p.then(function () { return Promise.resolve(o.guiAnh(f)); })
+            .then(function (url) { if (url) return gui({ chu: '', hinh: url }); })['catch'](function (e) { loi(e); });
+        }, Promise.resolve()).then(function () { nutAnh.disabled = false; });
+      };
+    }
 
     // @ nhắc tên
     var goiDs = [], goiI = 0, goiNut = null;
@@ -678,7 +712,7 @@
       ed.setAttribute('contenteditable', khoa ? 'false' : 'true');
       ed.setAttribute('data-ph', khoa ? (chu || 'Chat đang tạm khoá.') : (o.goiY || 'Aa'));
       if (khoa) { ed.innerHTML = ''; datTra(null); }
-      nutGui.disabled = !!khoa; nutKhay.disabled = !!khoa;
+      nutGui.disabled = !!khoa; nutKhay.disabled = !!khoa; if (nutAnh) nutAnh.disabled = !!khoa;
       veNutGui();
     };
     ui.datChiXem = function (bat, chu) { ui.chiXem = false; if (bat) { ui.khoa(true, chu || 'Đang xem như học sinh — chat chỉ để đọc.'); ui.chiXem = true; } else ui.khoa(false); };

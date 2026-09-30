@@ -81,6 +81,16 @@
 .cu-bong.stk{padding:0; background:none!important; border:0!important; box-shadow:none!important; text-align:center}
 .cu-bong.stk img{width:112px; height:112px; display:block; object-fit:contain}
 .cu-bong.stk .cu-stk-chu{font:700 15px var(--cu-font); margin-top:-4px; color:#E86A17}
+/* ⭐ v1.198.0 — tin ẢNH (myNetwork) + avatar "đã xem" dưới tin */
+.cu-hinh{display:block; border:0; padding:0; margin:2px 0 4px; background:none; cursor:zoom-in; border-radius:8px; overflow:hidden}
+/* ⛔ max-width KHÔNG dùng % : khung co theo nội dung tính bề ngang ảnh theo cỡ GỐC (1200px) ⇒ bong bóng phình trắng thừa */
+.cu-hinh img{display:block; width:auto; height:auto; max-width:220px; max-height:280px; border-radius:8px; object-fit:cover}
+.cu-bong.chianh{padding:4px 4px 3px}
+.cu-bong.chianh .cu-hinh{margin:0 0 2px}
+.cu-bong.chianh .cu-gio{padding:0 5px}
+.cu-daxem{display:flex; justify-content:flex-end; gap:2px; margin:0 2px 6px}
+.cu-daxem > *{width:16px!important; height:16px!important; min-width:0!important; font-size:7px!important; border-radius:50%; overflow:hidden; flex:none}
+.cu-daxem img{width:100%; height:100%; object-fit:cover}
 .cu-bong.thuhoi{font-style:italic; color:var(--cu-phu); background:var(--cu-nen)!important; border-style:dashed}
 .cu-trich{display:block; width:100%; text-align:left; border:0; border-left:3px solid var(--cu-ac); background:rgba(27,35,48,.06);
   border-radius:5px; padding:4px 8px; margin:1px 0 5px; cursor:pointer; font:400 12.5px/1.35 var(--cu-font); color:var(--cu-phu); white-space:normal}

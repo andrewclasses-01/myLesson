@@ -89,7 +89,7 @@
     var theo = {}, tong = 0, nguoi = [];
     Object.keys(cx || {}).forEach(function (kh) {
       var v = cxChuan(cx[kh]); if (!v) return;
-      nguoi.push({ khoa: kh, ten: v.ten, n: v.n, tong: Object.keys(v.n).reduce(function (a, k) { return a + v.n[k]; }, 0) });
+      nguoi.push({ khoa: kh, ten: v.ten, n: v.n, luc: v.luc || 0, l: v.l || '', tong: Object.keys(v.n).reduce(function (a, k) { return a + v.n[k]; }, 0) });
       Object.keys(v.n).forEach(function (k) { theo[k] = (theo[k] || 0) + v.n[k]; tong += v.n[k]; });
     });
     return { theo: theo, tong: tong, nguoi: nguoi };
@@ -231,7 +231,18 @@
     }
     function veCum(t) {
       var d = demCx(t.cx), toi = cxCuaToi(t);
-      var dau = Object.keys(d.theo).sort(function (a, b) { return d.theo[b] - d.theo[a]; }).slice(0, 3);
+      // ⭐ v1.195.0 — thầy: viên cảm xúc chỉ hiện TỐI ĐA 3 loại GẦN NHẤT (loại khác vẫn tính trong số tổng + bảng "ai thả gì").
+      //   Kho chỉ giữ lúc thả cuối + loại cuối của MỖI NGƯỜI ⇒ xếp người theo lúc thả mới nhất, lấy loại cuối của họ trước,
+      //   rồi tới các loại khác của họ (nhiều lần hơn đứng trước).
+      var dau = [];
+      d.nguoi.slice().sort(function (a, b) { return b.luc - a.luc; }).forEach(function (x) {
+        if (x.l && x.n[x.l] && dau.indexOf(x.l) < 0) dau.push(x.l);
+      });
+      d.nguoi.slice().sort(function (a, b) { return b.luc - a.luc; }).forEach(function (x) {
+        Object.keys(x.n).filter(function (k) { return x.n[k] > 0; }).sort(function (a, b) { return x.n[b] - x.n[a]; })
+          .forEach(function (k) { if (dau.indexOf(k) < 0) dau.push(k); });
+      });
+      dau = dau.filter(function (k) { return CX_E[k]; }).slice(0, 3);
       return '<div class="cu-cx">' + (d.tong ? '<button type="button" class="cs" data-cu="cs" aria-label="Xem ai đã thả cảm xúc">' + dau.map(function (k) { return imgCx(k); }).join('') + '<em>' + d.tong + '</em></button>' : '') +
         '<button type="button" class="lk" data-cu="lk" aria-label="Thả cảm xúc" title="Chạm: thả thêm · giữ: chọn cảm xúc">' + (toi ? imgCx(toi.l) : IC.timVien) + '</button></div>';
     }

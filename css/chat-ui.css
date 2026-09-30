@@ -91,20 +91,23 @@
 @keyframes cuNhay{30%{box-shadow:0 0 0 4px rgba(14,124,110,.35)}}
 
 /* cụm cảm xúc (viên) + nút tim tròn, tách nhau */
-.cu-cx{position:absolute; right:8px; bottom:-14px; display:flex; align-items:center; gap:6px; z-index:1}
-.cu-cx button{border:1px solid var(--cu-vien); background:var(--cu-nen); cursor:pointer; display:flex; align-items:center; height:26px;
-  color:var(--cu-phu); font:500 12.5px var(--cu-font); box-shadow:0 1px 3px rgba(0,0,0,.14); padding:0}
-.cu-cx .cs{border-radius:14px; padding:0 8px 0 6px; gap:5px}
-.cu-cx .cs img{width:18px; height:18px}
-.cu-cx .cs em{font-style:normal; margin-left:3px; color:var(--cu-chu); font-variant-numeric:tabular-nums}
-.cu-cx .lk{width:26px; justify-content:center; border-radius:50%}
+/* ⭐ v1.195.0 — thầy: viên cảm xúc dài ngang tràn ra ngoài ⇒ tối đa 3 loại (JS), hình nhỏ cỡ Zalo (15px), sát nhau hơn,
+   nút tim dịch sang PHẢI (lòi ra mép bong bóng một chút). Tin có cảm xúc đặt bề ngang tối thiểu để viên không tràn khỏi khung. */
+.cu-cx{position:absolute; right:-7px; bottom:-12px; display:flex; align-items:center; gap:3px; z-index:1}
+.cu-cx button{border:1px solid var(--cu-vien); background:var(--cu-nen); cursor:pointer; display:flex; align-items:center; height:22px;
+  color:var(--cu-phu); font:500 12px var(--cu-font); box-shadow:0 1px 3px rgba(0,0,0,.14); padding:0}
+.cu-cx .cs{border-radius:12px; padding:0 7px 0 4px; gap:1px}
+.cu-cx .cs img{width:15px; height:15px}
+.cu-cx .cs em{font-style:normal; margin-left:4px; color:var(--cu-chu); font-variant-numeric:tabular-nums}
+.cu-cx .lk{width:22px; justify-content:center; border-radius:50%}
+.cu-w.coCx{min-width:84px}
 /* ⭐ v1.188.0 — MÁY TÍNH: chỉ tin đang rê chuột mới hiện nút tim. ĐIỆN THOẠI: chỉ tin MỚI NHẤT chưa có cảm xúc mới hiện nút tim,
    tin khác nhấn giữ để thả. ⭐ v1.189.0 — thầy: tin ĐÃ có cảm xúc (coCx) thì nút tim hiện HẲN luôn, cả 2 bản. `visibility` (không phải display) ⇒ bảng chọn cảm xúc vẫn neo đúng chỗ nút tim. */
 @media (hover:hover){ .cu-w:not(:hover):not(.coCx) .cu-cx .lk{visibility:hidden} }
 @media (hover:none){ .cu-w:not(.cuoi):not(.coCx) .cu-cx .lk{display:none} }
 .cu-cx .lk:hover{border-color:#8CC9BF}
-.cu-cx .lk img{width:16px; height:16px}
-.cu-cx .lk svg{width:15px; height:15px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linejoin:round}
+.cu-cx .lk img{width:14px; height:14px}
+.cu-cx .lk svg{width:13px; height:13px; stroke:currentColor; fill:none; stroke-width:2.2; stroke-linejoin:round}
 .cu-cx .lk.nay img, .cu-cx .lk.nay svg{animation:cuNay .35s cubic-bezier(.22,.9,.3,1)}
 @keyframes cuNay{0%{transform:scale(.6)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
 /* ⭐ v1.190.0 — hình cảm xúc "nổ tung" khi thả (js noTung): gắn vào body, không bắt chuột. */

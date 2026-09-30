@@ -129,8 +129,9 @@
     if (cung(d, new Date(nay.getFullYear(), nay.getMonth(), nay.getDate() - 1))) return 'Hôm qua';
     return ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.getDay()] + ', ' + d.getDate() + '/' + (d.getMonth() + 1) + (d.getFullYear() !== nay.getFullYear() ? '/' + d.getFullYear() : '');
   }
-  // ⭐ v1.192.0 — thầy: mốc đầu mỗi NHỊP trò chuyện ghi rõ giờ + ngày đủ năm, vd "17:59 29.9.2026".
-  function mocNhip(ms) { var d = new Date(ms); return gio(ms) + ' ' + d.getDate() + '.' + (d.getMonth() + 1) + '.' + d.getFullYear(); }
+  // ⭐ v1.192.0 — thầy: mốc đầu mỗi NHỊP trò chuyện ghi rõ giờ + ngày đủ năm, vd "17:59 29.9.2026" (v1.194.0: "11:22 14 Tháng 7, 2026").
+  // ⭐ v1.194.0 — thầy đổi dạng: "11:22 14 Tháng 7, 2026".
+  function mocNhip(ms) { var d = new Date(ms); return gio(ms) + ' ' + d.getDate() + ' Tháng ' + (d.getMonth() + 1) + ', ' + d.getFullYear(); }
   var NHIP_MOI = 60 * 60e3;
   // ⭐ v1.193.0 — thầy: thanh cuộn MẢNH, KHÔNG mũi tên, CHỈ HIỆN KHI ĐANG CUỘN. Nghe `scroll` (không nổi bọt ⇒ bắt ở pha capture)
   //   của mọi vùng cuộn trong khuôn chat, gắn class .cu-dang-cuon rồi gỡ sau 900ms đứng yên (CSS ở css/chat-ui.css).

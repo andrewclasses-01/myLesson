@@ -287,11 +287,21 @@
     }
     ve();
   }
+  // ⭐ v1.213.0 — thầy: bảng ưu tiên nằm TRONG khung chat (neo.khung), chỉ lòi ra ngoài khi khung quá nhỏ không chứa nổi.
   function datCanhBang(el, neo) {
     var rh = (neo.hang || neo.nut).getBoundingClientRect(), rn = (neo.nut || neo.hang).getBoundingClientRect();
-    var h = el.offsetHeight, top = rh.top - h - 6;
-    if (top < 8) top = Math.min(rn.bottom + 6, window.innerHeight - h - 8);   // trên không đủ chỗ ⇒ xuống dưới viên
-    datCanh(el, rn.right - el.offsetWidth + 8, top);
+    var w = el.offsetWidth, h = el.offsetHeight, W = document.documentElement.clientWidth, H = window.innerHeight;
+    var k = neo.khung ? neo.khung.getBoundingClientRect() : { left: 8, top: 8, right: W - 8, bottom: H - 8 };
+    var tren = Math.max(8, k.top + 6), duoi = Math.min(H - 8, k.bottom - 6), trai = Math.max(8, k.left + 6), phai = Math.min(W - 8, k.right - 6);
+    var top;
+    if (rh.top - h - 6 >= tren) top = rh.top - h - 6;                 // 1. trên dòng tin, trong khung
+    else if (rn.bottom + 6 + h <= duoi) top = rn.bottom + 6;          // 2. dưới viên cảm xúc, trong khung
+    else if (duoi - tren >= h) top = Math.max(tren, Math.min(rh.top - h - 6, duoi - h));   // 3. khung đủ cao: kẹp vào trong khung
+    else top = Math.max(8, Math.min(rh.top - h - 6, H - h - 8));     // 4. bất đắc dĩ: khung quá thấp ⇒ theo màn hình
+    var left = rn.right - w + 8;
+    if (phai - trai >= w) left = Math.max(trai, Math.min(left, phai - w));
+    el.style.left = Math.round(Math.max(8, Math.min(left, W - w - 8))) + 'px';
+    el.style.top = Math.round(top) + 'px';
   }
 
   // ⭐ v1.207.0 — thầy: rê chuột vào viên cảm xúc (hình nào, số nào cũng vậy) ⇒ hiện NGAY ô nhỏ ghi ai đã thả gì
@@ -659,7 +669,7 @@
     });
 
 
-    function moBang(t, tab, nut) { DANG = ui; moBangCx(t.cx, o.av, toiK(), tab, nut ? { hang: nut.closest('.cu-w') || nut, nut: nut } : null); }
+    function moBang(t, tab, nut) { DANG = ui; moBangCx(t.cx, o.av, toiK(), tab, nut ? { hang: nut.closest('.cu-w') || nut, nut: nut, khung: khung } : null); }
 
     // menu ⋯
     function moMenu(t, neo) {
@@ -905,17 +915,20 @@
         if (tra && !TRA) datTra(tra);
         loi(e);
       };
-      // ảnh trước (mỗi ảnh một tin, trích gắn vào tin đầu tiên), chữ sau
-      anh.forEach(function (a) {
+      // ảnh trước (mỗi ảnh một tin, trích gắn vào tin đầu tiên).
+      // ⭐ v1.213.0 — thầy: gắn ảnh + gõ chữ ⇒ chữ đi CÙNG ảnh trong MỘT ô tin (chữ gắn vào ảnh CUỐI, hiện dưới ảnh).
+      var chuKem = (!goi && anh.length && chu) ? chu : '';
+      anh.forEach(function (a, i) {
+        var cuoi = i === anh.length - 1;
         xepHang(function () {
           return Promise.resolve(o.guiAnh(a.file)).then(function (url) {
             if (!url) throw new Error('Không tải được ảnh lên.');
-            var g = { chu: '', hinh: url }; if (q) { g.q = q; q = null; }
+            var g = { chu: cuoi ? chuKem : '', hinh: url }; if (q) { g.q = q; q = null; }
             return o.gui(g);
-          }).then(function () { boAnh(a); }, function (e) { a.dang = false; veAnhCho(); veNutGui(); loi(e); });
+          }).then(function () { boAnh(a); }, function (e) { a.dang = false; veAnhCho(); veNutGui(); if (cuoi && chuKem) traVe(e); else loi(e); });
         });
       });
-      if (goi || chu) {
+      if (goi || (chu && !chuKem)) {
         var g = goi || { chu: chu };
         return xepHang(function () {
           if (q) { g.q = q; q = null; }

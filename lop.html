@@ -1641,12 +1641,13 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=197"></script>
+<script src="config.js?v=198"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <script src="js/chat.js?v=31"></script>
+<script src="js/online.js?v=1"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=16"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=4"></script>
@@ -3451,6 +3452,7 @@ A.napDuLieu().then(function(dl){
      Tra dữ liệu thì dùng LOP_DL, in ra màn hình thì dùng LOP. */
   TOI = EM.ten; MA_HS = EM.ma;
   LOP_DL = EM.lop;
+  if (window.ACOnline) ACOnline.bat('lop', function(){ return { lop: LOP_DL, ma: MA_HS, ten: TOI }; });   // v1.211.0
   LA_DAC_BIET = !!EM.dacBiet;
   // v1.82.0 — sidebar RÚT GỌN (chỉ còn "Đăng xuất"): dựng LẠI menu ngay khi biết cờ
   // này — lượt dựng đầu (top-level, trước khi EM sẵn sàng) luôn là menu ĐẦY ĐỦ.

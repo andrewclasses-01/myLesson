@@ -726,12 +726,13 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=197"></script>
+<script src="config.js?v=198"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <script src="js/chat.js?v=31"></script>
+<script src="js/online.js?v=1"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=16"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
@@ -1471,6 +1472,7 @@ A.napDuLieu().then(function(dl){
   if (!EM) return;
   TOI = EM.ten; MA_HS = EM.ma;
   LOP_DL = EM.lop;
+  if (window.ACOnline) ACOnline.bat('khoa', function(){ return { lop: LOP_DL, ma: MA_HS, ten: TOI }; });   // v1.211.0
   var l = A.lopTheoMa(dl, LOP_DL);
   if (!l) { location.replace('index.html'); return; }   /* mã không còn ở nơi đã nhớ */
   KHOA = l;

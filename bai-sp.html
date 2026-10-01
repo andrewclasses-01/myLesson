@@ -766,13 +766,14 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=197"></script>
+<script src="config.js?v=198"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
 <script src="js/nw-phien.js?v=6"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới. -->
 <script src="js/chat.js?v=31"></script>
+<script src="js/online.js?v=1"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
 <script src="js/vi-qua.js?v=3"></script>
@@ -1408,6 +1409,7 @@ A.napDuLieu().then(function(dl){
     var q = A.giuXemNhuQuery(EM, EM.ma, EM.lop); return q ? '?' + q : '';
   })(); return; }
   TOI = EM.ten; MA_HS = EM.ma; LOP_DL = EM.lop;
+  if (window.ACOnline) ACOnline.bat('sp', function(){ return { lop: LOP_DL, ma: MA_HS, ten: TOI, bai: 'SPEAKING' }; });   // v1.211.0
   var l = A.lopTheoMa(dl, LOP_DL);
   LOP = (l && l.tenGoc) || EM.lop;
   LOP_HIEN = A.lopHien(LOP_DL, l && l.tenGoc);   /* v1.64.0 — xem js/chung.js */

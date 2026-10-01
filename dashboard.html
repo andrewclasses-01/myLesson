@@ -2723,21 +2723,17 @@ button.mk-em:hover{border-color:currentColor}
 .lop-btn.lbB.chon .lb-luc{color:#E6F6F2}
 .lbB .lb-h3 .lb-khoa{margin:0 0 0 auto}
 .lop-btn.lbB.mo-kho{box-shadow:0 0 0 3px rgba(14,124,110,.28)}
-/* ⭐ v1.207.0 — thầy chốt: lớp có BUỔI HỌC HÔM NAY (A.coBuoiHomNay) viền TÍM mảnh, sáng neon lấp lánh:
-   quầng tím nhẹ "thở" + một vệt sáng chạy vòng quanh viền (conic-gradient + mask chỉ chừa viền 1.5px). */
-@property --hn-goc{syntax:'<angle>'; inherits:false; initial-value:0deg}
-.lop-btn.hom-nay{border-color:#A855F7; animation:hnTho 2.6s ease-in-out infinite}
-.lop-btn.hom-nay::after{content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; pointer-events:none; z-index:2;
-  background:conic-gradient(from var(--hn-goc), #A855F7 0deg, #A855F7 250deg, #E9D5FF 300deg, #fff 318deg, #E9D5FF 336deg, #A855F7 360deg);
+/* ⭐ v1.208.0 — thầy chốt (mẫu v4, "Góc sáng" + xanh lơ cyan): lớp có BUỔI HỌC HÔM NAY (A.coBuoiHomNay) viền nằm TRONG ô,
+   bắt đầu SAU vạch màu trái 5px (không đè vạch), cyan đậm ở góc phải trên nhạt dần về trái/dưới; ngoài ô chỉ chút ánh sáng toả.
+   Đứng yên, không chuyển động. Thẻ đang chọn (nền xanh) giữ viền xanh của thẻ. */
+.lop-btn.hom-nay{border-color:#CDEFF5; box-shadow:12px -8px 18px -10px rgba(6,182,212,.5), var(--bong)}
+.lop-btn.hom-nay::after{content:""; position:absolute; top:0; right:0; bottom:0; left:5px; border-radius:0 calc(var(--r) - 1px) calc(var(--r) - 1px) 0;
+  padding:1.5px 1.5px 1.5px 0; pointer-events:none; z-index:2;
+  background:radial-gradient(130% 160% at 100% 0%, #06B6D4 0%, rgba(6,182,212,.55) 40%, rgba(6,182,212,0) 85%);
   -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
-  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
-  animation:hnQuay 3.2s linear infinite}
-@keyframes hnQuay{to{--hn-goc:360deg}}
-@keyframes hnTho{0%,100%{box-shadow:0 0 0 1px rgba(168,85,247,.35), 0 0 6px rgba(168,85,247,.45), 0 0 14px rgba(168,85,247,.18)}
-  50%{box-shadow:0 0 0 1px rgba(168,85,247,.55), 0 0 10px rgba(168,85,247,.7), 0 0 22px rgba(192,132,252,.35)}}
-.lop-btn.hom-nay.chon{border-color:#A855F7}
-.lop-btn.lbB.hom-nay.mo-kho{animation:none; box-shadow:0 0 0 3px rgba(14,124,110,.28), 0 0 10px rgba(168,85,247,.6)}
-@media (prefers-reduced-motion:reduce){ .lop-btn.hom-nay, .lop-btn.hom-nay::after{animation:none} }
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0)}
+.lop-btn.hom-nay.chon{border-color:var(--xanh)}
+.lop-btn.lbB.hom-nay.mo-kho{box-shadow:0 0 0 3px rgba(14,124,110,.28), 12px -8px 18px -10px rgba(6,182,212,.5)}
 /* ⭐ v1.203.0 — KHO NHỎ (bấm đúp thẻ lớp): hộp nổi có mũi cạnh thẻ, mẫu K1 thầy chốt */
 .kho-nho{position:absolute; z-index:19; width:360px; max-height:min(560px,calc(100vh - 90px)); display:flex; flex-direction:column;
   background:var(--the); border-radius:14px; box-shadow:0 2px 6px rgba(16,40,36,.08), 0 18px 48px rgba(16,40,36,.18); animation:khoNhoVao .2s var(--em)}
@@ -3575,7 +3571,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=194"></script>
+<script src="config.js?v=195"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>

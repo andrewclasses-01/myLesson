@@ -2705,6 +2705,149 @@ button.mk-em:hover{border-color:currentColor}
 .lop-btn.lb3.chon .lb-h2 i{background:#9FF0C8}
 .lop-btn.lb3.chon .lb-dang{background:rgba(255,255,255,.18); color:#fff}
 .lop-btn.lb3.chon .lb-khoa{background:rgba(255,255,255,.2); color:#fff}
+/* ⭐ v1.203.0 — THẺ LỚP KIỂU B (thầy chốt 01/10): vạch màu trạng thái bên trái, 2 dòng, không nút phụ */
+.lop-btn.lbB{gap:9px; padding:11px 12px 11px 17px}
+.lop-btn.lbB::before{content:""; position:absolute; left:0; top:0; bottom:0; width:5px; background:var(--nhat); pointer-events:none}
+.lop-btn.lbB[data-tt="giao"]::before{background:var(--la)}
+.lop-btn.lbB[data-tt="cho"]::before{background:var(--vang)}
+.lop-btn.lbB.chon::before{background:rgba(255,255,255,.55)}
+.lbB .lb-h1{margin:0; align-items:baseline; gap:8px; padding-right:6px}
+.lop-btn.lbB .lb-cham{top:4px; right:4px; width:7px; height:7px}
+.lbB .lb-ten{flex:0 0 auto; max-width:100%; font:800 16px/1.15 var(--font)}
+.lbB .lb-luc{flex:1 1 0; min-width:0; text-align:right; font:700 11.5px/1 var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--mo)}
+.lop-btn.lbB[data-tt="giao"] .lb-luc{color:#1f7a4d}
+.lop-btn.lbB[data-tt="cho"] .lb-luc{color:#9A6A12}
+.lop-btn.lbB.chon .lb-luc{color:#E6F6F2}
+.lbB .lb-h3 .lb-khoa{margin:0 0 0 auto}
+.lop-btn.lbB.mo-kho{box-shadow:0 0 0 3px rgba(14,124,110,.28)}
+/* ⭐ v1.203.0 — KHO NHỎ (bấm đúp thẻ lớp): hộp nổi có mũi cạnh thẻ, mẫu K1 thầy chốt */
+.kho-nho{position:absolute; z-index:19; width:360px; max-height:min(560px,calc(100vh - 90px)); display:flex; flex-direction:column;
+  background:var(--the); border-radius:14px; box-shadow:0 2px 6px rgba(16,40,36,.08), 0 18px 48px rgba(16,40,36,.18); animation:khoNhoVao .2s var(--em)}
+@keyframes khoNhoVao{from{opacity:0; transform:translateX(-8px) scale(.98)} to{opacity:1; transform:none}}
+.kho-nho.ben-trai{animation-name:khoNhoVaoTrai}
+@keyframes khoNhoVaoTrai{from{opacity:0; transform:translateX(8px) scale(.98)} to{opacity:1; transform:none}}
+.kho-nho .kn-mui{position:absolute; top:22px; left:-7px; width:14px; height:14px; background:var(--the); transform:rotate(45deg); box-shadow:-2px 2px 4px rgba(16,40,36,.06)}
+.kho-nho.ben-trai .kn-mui{left:auto; right:-7px; box-shadow:2px -2px 4px rgba(16,40,36,.06)}
+.kho-nho.duoi .kn-mui{display:none}
+.kn-dau{display:flex; align-items:center; gap:10px; padding:14px 14px 10px 16px}
+.kn-dau .t{flex:1; min-width:0}
+.kn-dau .t b{display:block; font:800 15px/1.2 var(--font)}
+.kn-dau .t .phu{font:600 12px var(--font); color:var(--mo); margin:0}
+.kn-dong{width:30px; height:30px; flex:none; border:0; border-radius:50%; background:#F1F4F3; color:var(--mo); cursor:pointer; display:grid; place-items:center}
+.kn-dong:hover{background:#E4EAE8}
+.kho-nho .kho-loc{padding:0 14px 10px 16px; margin:0}
+.kho-nho .kn-ds{overflow:auto; padding:4px 8px 10px; border-top:1px solid var(--vien); min-height:60px}
+.kn-chi-tiet{display:flex; align-items:center; justify-content:center; gap:6px; border:0; border-top:1px solid var(--vien); background:#F7FAF9; color:var(--xanh);
+  font:800 12.5px var(--font); padding:11px; border-radius:0 0 14px 14px; cursor:pointer}
+.kn-chi-tiet:hover{background:var(--xanh-nhat)}
+@media (max-width:640px){ .kho-nho{width:calc(100vw - 16px)} }
+
+/* ⭐ v1.203.0 — KHO LỚN (mục "Kho bài" cột trái): mọi lớp, biểu đồ giao bài / chờ / thời gian làm bài */
+.kl-nen{position:fixed; inset:0; z-index:84; background:rgba(16,30,34,.42); display:grid; place-items:center; padding:24px}
+.kl{width:min(1240px,100%); height:min(860px,100%); background:#F6F9F8; border-radius:18px; box-shadow:0 30px 80px rgba(10,30,30,.35);
+  display:grid; grid-template-rows:auto 1fr; overflow:hidden; animation:klVao .22s var(--em)}
+@keyframes klVao{from{opacity:0; transform:translateY(10px) scale(.985)} to{opacity:1; transform:none}}
+.kl-dau{display:flex; align-items:center; gap:14px; padding:14px 18px; background:var(--the); border-bottom:1px solid var(--vien)}
+.kl-dau h2{margin:0; font:800 17px var(--font); flex:1; min-width:0}
+.kl-dau h2 span{font-weight:600; color:var(--mo); font-size:13px; margin-left:8px}
+.kl-ky{display:inline-flex; background:#EEF3F2; border-radius:9px; padding:3px}
+.kl-ky button{font:700 12px var(--font); border:0; background:none; color:var(--mo); padding:6px 11px; border-radius:7px; cursor:pointer}
+.kl-ky button.chon{background:var(--the); color:var(--chu); box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.kl-than{display:grid; grid-template-columns:200px 1fr; min-height:0}
+.kl-lop{background:var(--the); border-right:1px solid var(--vien); padding:10px 8px; overflow:auto}
+.kl-lop button{display:flex; align-items:center; gap:9px; width:100%; border:0; background:none; border-radius:9px; padding:8px 10px; cursor:pointer; font:700 13.5px var(--font); color:var(--chu); text-align:left}
+.kl-lop button:hover{background:#F2F6F5}
+.kl-lop button.chon{background:var(--xanh); color:#fff}
+.kl-lop button i{width:4px; height:18px; border-radius:2px; background:var(--nhat); flex:none}
+.kl-lop button[data-tt="giao"] i{background:var(--la)} .kl-lop button[data-tt="cho"] i{background:var(--vang)}
+.kl-lop button.chon i{background:rgba(255,255,255,.7)}
+.kl-lop button.tat i{background:linear-gradient(var(--la),var(--vang))}
+.kl-lop button em{margin-left:auto; font-style:normal; font-weight:600; font-size:12px; color:var(--nhat)}
+.kl-lop button.chon em{color:#CFEDE7}
+.kl-lop hr{border:0; border-top:1px solid var(--vien); margin:6px 8px}
+.kl-chinh{overflow:auto; padding:16px 18px 30px; min-width:0}
+.kl-doc{display:flex; align-items:center; gap:10px; background:#EEF6FF; color:#1C4E8A; border-radius:10px; padding:9px 12px; font:600 12.5px var(--font); margin-bottom:12px}
+.kl-doc i{width:14px; height:14px; border-radius:50%; border:2px solid #9EC5F4; border-top-color:#2a78d6; animation:klXoay .8s linear infinite; flex:none}
+@keyframes klXoay{to{transform:rotate(360deg)}}
+.kl-kpi{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:14px}
+.kl-kpi div{background:var(--the); border:1px solid var(--vien); border-radius:14px; padding:12px 14px; min-width:0}
+.kl-kpi small{display:block; font:700 11.5px var(--font); color:var(--mo); letter-spacing:.02em}
+.kl-kpi b{display:block; font:800 24px/1.2 var(--font); margin-top:4px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.kl-kpi span{font:600 11.5px var(--font); color:var(--nhat)}
+.kl-o{background:var(--the); border:1px solid var(--vien); border-radius:14px; padding:14px 16px; margin-bottom:14px; min-width:0}
+.kl-o h4{margin:0 0 2px; font:800 13px var(--font); letter-spacing:.04em; text-transform:uppercase}
+.kl-p{font:500 12px var(--font); color:var(--mo); margin:0 0 10px}
+.kl-hai{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+.kl-chu-thich{display:flex; flex-wrap:wrap; gap:6px 14px; margin:0 0 6px}
+.kl-chu-thich span{display:inline-flex; align-items:center; gap:6px; font:600 12px var(--font); color:#33464A}
+.kl-chu-thich i{width:12px; height:12px; border-radius:3px}
+.kl-chu-thich .kl-nay-i{width:0; height:12px; border-left:2px dashed var(--do); border-radius:0}
+.kl-soc{background:repeating-linear-gradient(135deg,#F2A93B 0 2px,#FDF3E3 2px 6px); box-shadow:inset 0 0 0 1px #F2C77F}
+.kl-gantt{position:relative; font:600 11.5px var(--font); padding-top:14px}
+.kl-g-truc{display:grid; grid-template-columns:96px 1fr; align-items:end; height:22px; color:var(--nhat)}
+.kl-g-ngay{position:relative; height:22px}
+.kl-g-ngay span{position:absolute; bottom:4px; transform:translateX(-50%); white-space:nowrap}
+.kl-g-hang{display:grid; grid-template-columns:96px 1fr; align-items:stretch; height:34px; border-top:1px solid #EEF2F1}
+.kl-g-hang .kl-g-ten{align-self:center}
+.kl-g-ten{font:800 12.5px var(--font); color:var(--chu); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:6px}
+.kl-g-ten:hover{color:var(--xanh)}
+.kl-g-ray{position:relative; height:100%}
+.kl-g-bar{position:absolute; top:8px; height:18px; border-radius:4px; cursor:pointer; overflow:hidden; color:#fff; font:800 9.5px/18px var(--font); padding:0 5px; white-space:nowrap; letter-spacing:.03em}
+.kl-g-bar:hover{filter:brightness(1.08); box-shadow:0 0 0 2px #fff, 0 0 0 3.5px rgba(22,35,42,.35); z-index:2}
+.kl-g-cho{position:absolute; top:12px; height:10px; border-radius:3px; cursor:default}
+.kl-g-cho:hover{outline:2px solid #C98500}
+.kl-g-nay{position:absolute; top:14px; bottom:0; width:0; border-left:2px dashed var(--do); pointer-events:none; z-index:3}
+.kl-g-nay b{position:absolute; top:-14px; left:-24px; font:800 10px var(--font); color:var(--do); background:var(--the); padding:0 3px; border-radius:4px; white-space:nowrap}
+.kl-g-luoi{position:absolute; top:0; bottom:0; width:1px; background:#F1F4F3}
+.kl-gantt.lon .kl-g-hang{height:58px}
+.kl-gantt.lon .kl-g-bar{top:14px; height:30px; font:800 10.5px/30px var(--font)}
+.kl-gantt.lon .kl-g-cho{top:24px}
+.kl-cot-ngang .h{display:grid; grid-template-columns:86px 1fr 104px; align-items:center; gap:10px; height:28px}
+.kl-cot-ngang .h b{font:800 12.5px var(--font); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.kl-cot-ngang .h .r{position:relative; height:14px}
+.kl-cot-ngang .h .r i{position:absolute; left:0; top:0; bottom:0; border-radius:0 4px 4px 0}
+.kl-cot-ngang .h span{font:700 12px var(--font); color:#33464A; text-align:right; white-space:nowrap}
+.kl-cot-dung{display:flex; align-items:flex-end; gap:2px; height:150px; border-bottom:1px solid var(--vien-dam); padding-top:16px}
+.kl-cot-dung i{flex:1; background:#2a78d6; border-radius:4px 4px 0 0; min-height:2px; cursor:pointer}
+.kl-cot-dung i:hover{background:#1c5cab}
+.kl-cot-dung i.cn{background:#86b6ef}
+.kl-cot-truc{display:flex; justify-content:space-between; font:600 11px var(--font); color:var(--nhat); margin-top:4px}
+.kl-bang{width:100%; border-collapse:collapse; font:600 12.5px var(--font)}
+.kl-bang th{font:800 11px var(--font); letter-spacing:.04em; color:var(--mo); text-align:right; padding:8px; border-bottom:1px solid var(--vien); text-transform:uppercase}
+.kl-bang th:first-child, .kl-bang td:first-child{text-align:left}
+.kl-bang td{padding:9px 8px; border-bottom:1px solid #F0F3F2; text-align:right; font-variant-numeric:tabular-nums}
+.kl-bang tr.dong:hover td{background:#F6FAF9; cursor:pointer}
+.kl-vt{display:inline-flex; align-items:center; gap:6px} .kl-vt i{width:4px; height:14px; border-radius:2px; background:var(--nhat)}
+.kl-vt[data-tt="giao"] i{background:var(--la)} .kl-vt[data-tt="cho"] i{background:var(--vang)}
+.kl-pt{display:inline-flex; align-items:center; gap:7px; font:700 12px var(--font)}
+.kl-pt u{display:inline-block; width:60px; height:6px; border-radius:3px; background:#EEF2F1; overflow:hidden; text-decoration:none}
+.kl-pt u s{display:block; height:100%; background:var(--xanh); text-decoration:none}
+.kl-mo{color:var(--nhat)}
+.kl-loc{margin:0 0 10px}
+.kl-kb-tieu, .kl-kb-hang{display:grid; grid-template-columns:62px minmax(0,1fr) 150px 120px 70px 30px; align-items:center; gap:12px}
+.kl-kb-tieu{padding:0 6px 6px; font:800 10.5px var(--font); letter-spacing:.05em; color:var(--nhat); text-transform:uppercase}
+.kl-kb-hang{padding:9px 6px; border-top:1px solid #F0F3F2; border-radius:0; cursor:pointer}
+.kl-kb-hang:hover{background:#F6FAF9}
+.kl-kb-hang .d{font:800 9.5px/1 var(--font); letter-spacing:.05em; padding:5px 0; border-radius:5px; color:#fff; text-align:center; white-space:nowrap; overflow:hidden}
+.kl-kb-hang .tn{min-width:0}
+.kl-kb-hang .tn b{display:block; font:700 13px/1.25 var(--font); overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.kl-kb-hang .tn span{font:500 11.5px var(--font); color:var(--mo)}
+.kl-kb-hang .lich{font:600 11.5px/1.35 var(--font); color:#33464A}
+.kl-kb-hang .ph{font:700 12px var(--font); text-align:right}
+.kl-kb-hang .ph small{font-weight:600; color:var(--nhat); font-size:10.5px}
+.kl-kb-hang.la-xoa .tn b{color:var(--nhat); text-decoration:line-through}
+.kl-tip{position:fixed; z-index:9990; pointer-events:none; background:#16232A; color:#fff; border-radius:10px; padding:9px 11px; font:600 12px/1.45 var(--font);
+  box-shadow:0 8px 24px rgba(0,0,0,.25); opacity:0; transition:opacity .1s; max-width:280px}
+.kl-tip b{font-weight:800} .kl-tip .x{color:#9FB4B0}
+.kl-tip.mo{opacity:1}
+@media (max-width:900px){
+  .kl-nen{padding:0} .kl{border-radius:0; height:100%}
+  .kl-than{grid-template-columns:1fr; grid-template-rows:auto 1fr}
+  .kl-lop{display:flex; overflow:auto; border-right:0; border-bottom:1px solid var(--vien)} .kl-lop button{width:auto; white-space:nowrap} .kl-lop hr{display:none}
+  .kl-kpi{grid-template-columns:repeat(2,minmax(0,1fr))} .kl-hai{grid-template-columns:1fr}
+  .kl-kb-tieu, .kl-kb-hang{grid-template-columns:52px minmax(0,1fr) 90px 26px} .kl-an-hep{display:none}
+  .kl-dau{flex-wrap:wrap}
+}
 
 /* ⭐ v1.166.0 — dòng "Quản lý & bảo mật" (cuối cột trái) + số hồng mục Sinh nhật */
 .nwb-ql-muc[data-muc="baoMat"]{background:linear-gradient(90deg,#FFF4F2,#FFFBEA); box-shadow:inset 0 0 0 1px #F6D9CF; white-space:nowrap}
@@ -2996,7 +3139,7 @@ button.mk-em:hover{border-color:currentColor}
 .sn-khi.gan{background:#FCE7F3; color:#BE185D}
 .sn-chan{margin:10px 0 0 !important; font-size:12px !important; color:var(--nhat) !important}
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=7">
+<link rel="stylesheet" href="css/nw-thanh.css?v=8">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=12">
 </head>
@@ -3168,10 +3311,6 @@ button.mk-em:hover{border-color:currentColor}
       <div id="maDs"></div>
       <p class="sb-note">Sửa/cấp mã mới thì gõ trong myStudent → tab Lớp học. Chỗ này chỉ để thầy xem nhanh.</p>
     </div>
-    <div id="sbMucLop" hidden>
-      <p class="phu" id="avPhu" style="margin:0 0 8px"></p>
-      <div id="avDs"></div>
-    </div>
     <div id="sbMucSinhNhat" hidden>
       <div id="snDs"></div>
     </div>
@@ -3188,23 +3327,6 @@ button.mk-em:hover{border-color:currentColor}
          ⭐ v1.60.0 — nay là KHO BÀI: mọi bài của lớp từ trước tới giờ, đủ bốn trạng
          thái, làm được mọi việc ngay tại đây (ẩn/hiện · khoá/mở · xoá/khôi phục ·
          xoá vĩnh viễn · và "xoá hẳn" khi mở trong app). -->
-    <div id="sbMucKho" hidden>
-      <p class="phu" id="khoPhu" style="margin:0 0 8px"></p>
-      <p class="sb-note" style="margin:0 0 11px">Mọi bài đã giao cho lớp này, mới nhất trên đầu.
-        <!-- ⭐ v1.86.0 -->
-        Bấm <b>vào hàng</b> để mở kết quả của thẻ; bấm <b>⚙</b> để đổi hạn nộp, ẩn,
-        tạm khoá hay xoá. Đặt <b>hạn mới</b> là thẻ quay lại dashboard và trang của lớp.<br>
-        <b>Ẩn</b> · <b>Tạm khoá</b> · <b>Xoá</b> đều lấy lại được — dữ liệu bài và điểm AWord
-        luôn còn nguyên.<br>
-        <!-- ⭐ v1.56.0 -->
-        <b>Xoá vĩnh viễn</b> dọn thẻ khỏi cả danh sách này: trên web không còn đường lấy lại,
-        nhưng bài vẫn nằm im trong kho.
-        <!-- ⭐ v1.60.0 — nút chỉ hiện khi trang chạy trong app (tab CLASSES) -->
-        <span id="khoNoteApp" hidden><br><b>Xoá hẳn</b> (chỉ có trong app) mới thật sự bỏ bài
-        khỏi dữ liệu web rồi đẩy lên mạng — không lấy lại được.</span></p>
-      <div class="kho-loc" id="khoLoc"></div>
-      <div id="khoDs"></div>
-    </div>
     <div id="sbMucHocSinh" hidden>
       <p class="sb-note" style="margin:0 0 11px">Chỉ để KIỂM TÍNH NĂNG — bấm thẻ lớp ở trang
         chính nay mở trang lớp bằng chính danh tính của thầy, không còn mượn tên em.</p>
@@ -3260,6 +3382,31 @@ button.mk-em:hover{border-color:currentColor}
      nhưng RUỘT DỰNG HỤT mỗi lần mở (xem `moKhoMenu`) vì số mục đổi theo trạng
      thái thẻ: bài đã xoá có "Khôi phục"/"Xoá vĩnh viễn", bài đang giao thì không.
      ⛔ Mọi mục vẫn mang `data-kho-lam` để đi ĐÚNG tay bắt cũ — MỘT đường ghi duy nhất. -->
+<!-- ⭐ v1.203.0 — KHO NHỎ: bấm ĐÚP thẻ lớp. Giữ các id cũ #khoPhu/#khoLoc/#khoDs (veKho + bộ nghe cũ dùng). -->
+<div class="kho-nho" id="khoNho" role="dialog" aria-label="Kho bài" hidden>
+  <span class="kn-mui"></span>
+  <div class="kn-dau">
+    <div class="t"><b id="khoNhoTen">Kho bài</b><p class="phu" id="khoPhu"></p></div>
+    <button type="button" class="kn-dong" id="khoNhoDong" aria-label="Đóng"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  </div>
+  <div class="kho-loc" id="khoLoc"></div>
+  <div class="kn-ds" id="khoDs"></div>
+  <button type="button" class="kn-chi-tiet" id="khoNhoChiTiet">Xem chi tiết lớp này · biểu đồ <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+</div>
+<!-- ⭐ v1.203.0 — KHO LỚN: mục "Kho bài" cột trái (window.qlMoKhoLon). -->
+<div class="kl-nen" id="klNen" hidden>
+  <div class="kl" role="dialog" aria-label="Kho bài tất cả lớp">
+    <div class="kl-dau">
+      <h2>Kho bài <span id="klPhu">Tất cả lớp</span></h2>
+      <div class="kl-ky" id="klKy"><button type="button" data-kl-ky="14">14 ngày</button><button type="button" data-kl-ky="30" class="chon">30 ngày</button><button type="button" data-kl-ky="60">60 ngày</button></div>
+      <button type="button" class="kn-dong" id="klDong" aria-label="Đóng"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="kl-than">
+      <nav class="kl-lop" id="klLop"></nav>
+      <div class="kl-chinh" id="klChinh"></div>
+    </div>
+  </div>
+</div>
 <div class="rc-menu" id="khoMenu"></div>
 
 <!-- ⭐ v1.36.0 — HỘP XÁC NHẬN dùng chung cho MỌI hành động của menu ⚙ (ẩn ·
@@ -3385,7 +3532,7 @@ button.mk-em:hover{border-color:currentColor}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=188"></script>
+<script src="config.js?v=189"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=77"></script>
@@ -3635,9 +3782,6 @@ button.mk-em:hover{border-color:currentColor}
     if (A.nghiConHieuLuc(DL, l.maLop)) return 'khong';
     return 'cho';
   }
-  // ⭐ v1.35.0 — icon KHO (thùng lưu trữ) trên nút lớp: bài đã xoá mềm của lớp đó.
-  var IC_KHO_NHO = '<svg viewBox="0 0 24 24"><path d="M3 7l1.5-3h15L21 7"/>' +
-    '<rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9.5 11.5h5"/></svg>';
 
   // ⭐ 11/09/2026 — rút phần vẽ MỘT nút lớp ra riêng (`theLopBtnHtml`), dùng
   // CHUNG cho cả `veLopGrid()` (lớp thường, cột trái) lẫn `veKhoaGrid()` (lớp
@@ -3700,29 +3844,35 @@ button.mk-em:hover{border-color:currentColor}
     var chu2 = tt === 'giao' ? 'Đã giao' : (tt === 'cho' ? 'Chờ' : 'Không giao bài');
     var luc = kieu ? chuLucThe(kieu, x.moc) : (tt === 'giao' ? 'chưa đặt hạn' : '');
     var maBai = b ? (A.maLesson(b) || (b.tenBai ? b.tenBai : '') || A.tenBai(b)) : '';
-    return '<div class="lop-btn lb3' + (l.maLop === LOP_CHON ? ' chon' : '') + (tt === 'cho' ? ' cho' : '') + '" data-malop="' + mL + '">' +
+    // ⭐⭐ v1.203.0 (01/10/2026, mẫu "nút lớp B" thầy chốt) — THẺ 2 DÒNG + VẠCH MÀU TRẠNG THÁI bên trái
+    // (xanh lá = đã giao · vàng = chờ · xám = không giao bài, `data-tt`). BỎ nút sĩ số (Thiết lập lớp) + nút kho:
+    // kho bài nay mở bằng BẤM ĐÚP thẻ (`moKhoNho`, tự đo 2 cú bấm — chonLop vẽ lại thẻ giữa 2 cú).
+    //   dòng 1: tên lớp · bên phải "còn 6 giờ" / "Chờ • 2 ngày 3 tiếng" / "Không giao bài"
+    //   dòng 2: dạng + mã bài (+ nhãn KHÓA cuối dòng)
+    return '<div class="lop-btn lb3 lbB' + (l.maLop === LOP_CHON ? ' chon' : '') + (tt === 'cho' ? ' cho' : '') + (l.maLop === KHO_NHO_LOP ? ' mo-kho' : '') + '" data-malop="' + mL + '" data-tt="' + tt + '"' +
+        ' title="' + A.chuAnToan(chu2 + (luc ? ' • ' + luc : '')) + ' — bấm đúp để mở kho bài">' +
       '<button class="lb-main" data-lop="' + mL + '" aria-label="Chọn ' + A.chuAnToan(l.tenGoc || l.maLop) + '"></button>' +
       (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
-      '<div class="lb-h1"><span class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</span><span class="lb-day"></span>' +
-        '<button class="lb-cnt" data-gv-lop="' + mL + '" title="Thiết lập (danh sách em + avatar)">' +
-          '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16.5 3.6a3.4 3.4 0 0 1 0 6.7"/><path d="M20 20c0-3-1.7-5.2-4-5.9"/></svg>' +
-          '<b>' + (l.hocSinh || []).length + '</b>' +
-        '</button>' +
-        '<button class="lb-ic" data-gv-kho="' + mL + '" title="Kho bài: mọi bài của lớp/khóa này">' + IC_KHO_NHO + '</button>' +
-      '</div>' +
-      '<div class="lb-h2 ' + tt + '"><i></i>' + chu2 +
-        (luc ? ' <span class="lb-luc"' + (kieu ? ' data-kieu="' + kieu + '" data-moc="' + x.moc + '"' : '') + '>• ' + A.chuAnToan(luc) + '</span>' : '') +
-        (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') +
+      '<div class="lb-h1"><span class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</span>' +
+        '<span class="lb-luc"' + (kieu ? ' data-kieu="' + kieu + '" data-moc="' + x.moc + '"' : '') + '>' +
+          A.chuAnToan(chuLucB(tt, kieu, luc)) + '</span>' +
       '</div>' +
       '<div class="lb-h3">' + (b ? '<span class="lb-dang">' + A.chuAnToan(dangNgan(b.dang)) + '</span>' +
         '<span class="lb-ma" title="' + A.chuAnToan(A.tenBai(b) + (maBai ? ' · ' + maBai : '')) + '">' + A.chuAnToan(maBai) + '</span>'
-        : '<span class="lb-ma trong">Chưa có bài</span>') + '</div>' +
+        : '<span class="lb-ma trong">Chưa có bài</span>') +
+        (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') + '</div>' +
     '</div>';
   }
-  // Dòng 2 tự chạy: chỉ đổi CHỮ trong `.lb-luc` (không vẽ lại thẻ — tránh bẫy "khối vẽ lại giữa cú bấm").
+  function chuLucB(tt, kieu, luc) {
+    if (tt === 'cho') return 'Chờ' + (luc ? ' • ' + luc : '');
+    if (tt === 'giao') return luc || 'Đã giao';
+    return 'Không giao bài';
+  }
+  // Dòng 1 (phải) tự chạy: chỉ đổi CHỮ trong `.lb-luc` (không vẽ lại thẻ — tránh bẫy "khối vẽ lại giữa cú bấm").
   function capNhatLucThe() {
     document.querySelectorAll('.lb-luc[data-kieu]').forEach(function (s) {
-      var t = '• ' + chuLucThe(s.getAttribute('data-kieu'), +s.getAttribute('data-moc'));
+      var k = s.getAttribute('data-kieu'), luc = chuLucThe(k, +s.getAttribute('data-moc'));
+      var t = chuLucB(k === 'cho' ? 'cho' : 'giao', k, luc);
       if (s.textContent !== t) s.textContent = t;
     });
   }
@@ -3746,6 +3896,7 @@ button.mk-em:hover{border-color:currentColor}
     // của lớp" (vẫn có trong menu ☰ khi bấm avatar).
     $('#lopGrid').innerHTML = xep.map(theLopBtnHtml).join('');
     veKhoaGrid();
+    if (KHO_NHO_LOP) datViTriKhoNho();   // v1.203.0
   }
 
   // ⭐⭐ 11/09/2026 — CỘT RIÊNG CHO CÁC LỚP KHÓA HỌC (`DL.khoa`, myStudent
@@ -3806,11 +3957,25 @@ button.mk-em:hover{border-color:currentColor}
     }).then(function (snap) {
       var d = (snap && snap.exists && snap.exists()) ? snap.data() : null;
       THU_TU_LOP = { dsLop: (d && d.dsLop) || [], dsKhoa: (d && d.dsKhoa) || [] };
+      luuThuTuMay(THU_TU_LOP);
     })['catch'](function () {
       // ⛔ Nuốt lỗi y hệt napHanSua(): chưa dán luật/mạng hỏng thì trang vẫn
       // chạy như chưa từng có tính năng này — xếp theo hạn gần nhất như cũ.
-      THU_TU_LOP = { dsLop: [], dsKhoa: [] };
+      // v1.203.0 — còn bản lưu trong trình duyệt thì giữ nguyên nó.
+      if (!THU_TU_LOP) THU_TU_LOP = { dsLop: [], dsKhoa: [] };
     });
+  }
+  // ⭐ v1.203.0 — bản chép thứ tự trong trình duyệt (vẽ ngay lúc mở trang, không chờ Firestore).
+  var SX_MAY = 'mylesson_ql_thutu';
+  function docThuTuMay() {
+    try {
+      var d = JSON.parse(localStorage.getItem(SX_MAY) || 'null');
+      if (d && Array.isArray(d.dsLop) && Array.isArray(d.dsKhoa)) return { dsLop: d.dsLop, dsKhoa: d.dsKhoa };
+    } catch (e) {}
+    return null;
+  }
+  function luuThuTuMay(t) {
+    try { localStorage.setItem(SX_MAY, JSON.stringify({ dsLop: t.dsLop, dsKhoa: t.dsKhoa })); } catch (e) {}
   }
 
   function ghiThuTuLop(dsLop, dsKhoa) {
@@ -3819,6 +3984,7 @@ button.mk-em:hover{border-color:currentColor}
         { dsLop: dsLop, dsKhoa: dsKhoa, luc: Date.now() }, { merge: true });
     }).then(function () {
       THU_TU_LOP = { dsLop: dsLop, dsKhoa: dsKhoa };
+      luuThuTuMay(THU_TU_LOP);
     });
   }
 
@@ -8271,6 +8437,7 @@ button.mk-em:hover{border-color:currentColor}
     return ((p[0] || '')[0] || '') + (p.length > 1 ? ((p[p.length - 1] || '')[0] || '') : '');
   }
   function veHocSinh() {
+    if (!$('#avDs')) return;   // v1.203.0 — sidebar "Thiết lập lớp" đã gỡ khỏi trang
     var l = A.lopTheoMa(DL, LOP_CHON);
     var ds = (l && l.hocSinh) || [];
     var lopSlug = avSlugLop((l && l.tenGoc) || LOP_CHON);
@@ -9109,7 +9276,7 @@ button.mk-em:hover{border-color:currentColor}
     veSinhNhat();
     veQuanLyMa();
     veTop();
-    veHocSinh();          // (Đợt D) danh sách HS + avatar theo lớp đang chọn
+    // v1.203.0 — bỏ veHocSinh(): sidebar "Thiết lập lớp" đã gỡ (thầy 01/10: đã có trong Quản lý & bảo mật).
   }
 
   // ⭐ 28/08 — CHẤM ĐỎ báo lớp có tin nhắn mới: tính 1 LẦN lúc mở/tải trang
@@ -9377,7 +9544,6 @@ button.mk-em:hover{border-color:currentColor}
   // phải mục điều hướng) — tái dùng NGUYÊN VẸN các hàm vẽ đã có. ----------
   var SB_MUC = {
     ma: { id: 'sbMucMa', ten: 'Quản lý mã', mota: 'Ai đã có mã, ai chưa — xem theo lớp', ve: veQuanLyMa },
-    lop: { id: 'sbMucLop', ten: 'Thiết lập lớp', mota: 'Danh sách em + đổi ảnh đại diện', ve: veHocSinh },
     sinhnhat: { id: 'sbMucSinhNhat', ten: 'Sinh nhật sắp tới', mota: '7 ngày tới, cả trung tâm', ve: veSinhNhat },
     top: { id: 'sbMucTop', ten: 'Top của lớp', mota: 'Lớp đang chọn ở trang chính', ve: veTop },
     // ⭐ #10 — chuyển cặp "xem như em nào" + "Xem trang lớp" (trước nằm ở đầu
@@ -9387,10 +9553,7 @@ button.mk-em:hover{border-color:currentColor}
     // ⭐ Đợt D — xem lại các gói "Lưu trữ & làm mới" (bấm nút cùng tên ở khối
     // Trò chuyện) của LỚP ĐANG CHỌN.
     kholuutru: { id: 'sbMucKhoLuuTru', ten: 'Kho trò chuyện', mota: 'Các lượt lưu trữ & làm mới của lớp đang chọn', ve: veKhoLuuTru },
-    // ⭐ v1.35.0 — bài đã XOÁ MỀM của lớp đang chọn (mở từ icon KHO trên nút lớp
-    // hoặc menu này), có nút Khôi phục.
-    // ⭐ v1.60.0 — nay là KHO BÀI: mọi bài của lớp, đủ bốn trạng thái.
-    kho: { id: 'sbMucKho', ten: 'Kho bài', mota: 'Lớp đang chọn — mọi bài từ trước tới giờ', ve: veKho }
+    // v1.203.0 — mục "kho" rời sidebar: nay là hộp KHO NHỎ (#khoNho, bấm đúp thẻ lớp) + KHO LỚN (cột trái).
   };
 
   // ================================================================
@@ -9477,8 +9640,7 @@ button.mk-em:hover{border-color:currentColor}
     $('#khoPhu').textContent = 'Lớp ' + ((l && l.tenGoc) || LOP_CHON) + ' · ' +
       (ds.length ? (ds.length + ' bài') : 'chưa có bài nào');
     // Trong app mới có nút "Xoá hẳn" — ngoài trình duyệt thì giấu luôn dòng giải thích.
-    var trongApp = !!window.__mylessonApp;
-    $('#khoNoteApp').hidden = !trongApp;
+    if (KL.mo) setTimeout(function () { klVe(true); }, 0);   // v1.203.0 — kho lớn vẽ theo
 
     var loc = [['tatca', 'Tất cả'], ['bt', 'Đang giao'], ['an', 'Đã ẩn'],
                ['khoa', 'Tạm khoá'], ['xoa', 'Đã xoá']];
@@ -9526,6 +9688,442 @@ button.mk-em:hover{border-color:currentColor}
         'Xoá vĩnh viễn tất cả (' + dem.xoa + ' bài đã xoá)</button></div>') : '') +
       (hien.length ? '' : '<div class="trong">Không có bài nào ở nhóm này.</div>');
   }
+  /* ==============================================================
+     ⭐⭐ v1.203.0 (01/10/2026) — KHO BÀI MỚI (thầy chốt mẫu `myLesson - thiet ke nut lop/mau-v2.html`)
+
+     (1) KHO NHỎ — BẤM ĐÚP thẻ lớp ⇒ hộp nổi có mũi ngay cạnh thẻ (`#khoNho`). Dùng LẠI `veKho()`:
+         hộp mang đúng các id cũ #khoPhu/#khoLoc/#khoDs ⇒ bộ nghe sẵn có (lọc, ⚙ menu, bấm hàng mở
+         kết quả, xoá vĩnh viễn) chạy y nguyên. Bỏ đoạn hướng dẫn (thầy chốt). Đúp tự đo bằng 2 cú
+         click cùng thẻ < 450 ms — KHÔNG dùng `dblclick`: cú bấm đầu gọi chonLop ⇒ veTat vẽ lại thẻ,
+         phần tử cũ bị thay ⇒ dblclick có thể không bắn (bẫy "khối vẽ lại giữa cú bấm").
+     (2) KHO LỚN — mục "Kho bài" cột trái (`window.qlMoKhoLon`) ⇒ pop-up mọi lớp:
+         4 ô số · LỊCH GIAO BÀI (mỗi bài một thanh giao→hạn, sọc vàng = lớp không có bài) ·
+         thời gian chờ TB · thời gian làm bài TB · bảng; chọn một lớp ⇒ lịch lớn + phút làm bài
+         theo ngày + danh sách mọi bài (lọc 5 nhóm, ⚙ như kho nhỏ).
+         · GIAO = ngày tạo bài `A.ngayGiaoBai` lúc 00:00 (kho không lưu giờ giao) · HẠN = `A.mocHan`.
+         · % XONG = `tinhBai().xongHet / siSo` (cùng luật thẻ bài) · PHÚT = tổng `luot[].ms` (lượt NỘP,
+           mỗi lượt chặn 2 giờ) của mỗi em ÷ số em có lượt — CHƯA gồm lượt luyện (practiceLog đọc
+           theo từng lượt rất tốn hạn mức, chỉ hộp quản lý một bài mới đọc).
+         · Điểm đọc qua `docDiemCuaCacBai` (đã nhớ 10 phút, ~1–2 lượt đọc/act) CHỈ lúc mở hộp,
+           chỉ bài trong kỳ đang xem; mã đã có trong DIEM thì không đọc lại.
+  ============================================================== */
+  var KHO_NHO_LOP = null;
+  var BAM_LOP = { ma: null, t: 0 };
+
+  function theLopDom(maLop) {
+    return document.querySelector('.lop-btn[data-malop="' + (window.CSS && CSS.escape ? CSS.escape(maLop) : maLop) + '"]');
+  }
+  function moKhoNho(maLop) {
+    if (LOP_CHON !== maLop) chonLop(maLop);
+    var l = A.lopTheoMa(DL, maLop);
+    KHO_NHO_LOP = maLop;
+    KHO_LOC = 'tatca';
+    $('#khoNhoTen').textContent = 'Kho bài · ' + ((l && l.tenGoc) || maLop);
+    veKho();
+    $$('.lop-btn.mo-kho').forEach(function (x) { x.classList.remove('mo-kho'); });
+    var the = theLopDom(maLop);
+    if (the) the.classList.add('mo-kho');
+    $('#khoNho').hidden = false;
+    $('#khoDs').scrollTop = 0;
+    datViTriKhoNho();
+  }
+  function datViTriKhoNho() {
+    var hop = $('#khoNho');
+    if (!hop || hop.hidden || !KHO_NHO_LOP) return;
+    var the = theLopDom(KHO_NHO_LOP);
+    if (!the) return void dongKhoNho();
+    var r = the.getBoundingClientRect(), w = hop.offsetWidth, gap = 12;
+    var hep = window.innerWidth < 640, trai = false, x, y;
+    if (hep) { x = Math.max(8, (window.innerWidth - w) / 2); y = r.bottom + 10; }
+    else {
+      x = r.right + gap; y = r.top;
+      if (x + w > window.innerWidth - 12) { x = r.left - gap - w; trai = true; }
+      if (x < 12) x = 12;
+    }
+    hop.style.left = (x + window.scrollX) + 'px';
+    hop.style.top = (y + window.scrollY) + 'px';
+    hop.classList.toggle('ben-trai', trai);
+    hop.classList.toggle('duoi', hep);
+  }
+  function dongKhoNho() {
+    var hop = $('#khoNho');
+    if (hop) hop.hidden = true;
+    KHO_NHO_LOP = null;
+    $$('.lop-btn.mo-kho').forEach(function (x) { x.classList.remove('mo-kho'); });
+  }
+  // Bấm thẻ lớp: lần 1 = chọn lớp (như cũ), lần 2 trong 450 ms trên CÙNG thẻ = mở kho nhỏ.
+  function bamTheLop(maLop) {
+    var bay = Date.now();
+    var dup = BAM_LOP.ma === maLop && bay - BAM_LOP.t < 450;
+    BAM_LOP = { ma: maLop, t: dup ? 0 : bay };
+    if (dup) return void moKhoNho(maLop);
+    if (KHO_NHO_LOP && KHO_NHO_LOP !== maLop) dongKhoNho();
+    chonLop(maLop);
+  }
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#khoNhoDong')) return void dongKhoNho();
+    if (e.target.closest('#khoNhoChiTiet')) { var m = KHO_NHO_LOP; dongKhoNho(); return void moKhoLon(m); }
+  });
+  // Bấm ra NGOÀI (trong trang chính) thì đóng; các hộp nổi khác (⚙ menu, hạn, xác nhận, hộp bài) nằm
+  // ngoài `.nwb-ql` nên bấm trong chúng KHÔNG đóng kho nhỏ.
+  document.addEventListener('pointerdown', function (e) {
+    if (!KHO_NHO_LOP || e.target.closest('#khoNho')) return;
+    var the = e.target.closest('.lop-btn');
+    if (the && the.dataset.malop === KHO_NHO_LOP) return;
+    if (e.target.closest('.nwb-ql') || e.target.closest('.top')) dongKhoNho();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if ($('#khoMenu').classList.contains('mo') || $('#xnPop').classList.contains('mo') || $('#hanPop').classList.contains('mo')) return;
+    if ($('#bmHop') && $('#bmHop').classList.contains('mo')) return;
+    if (KL.mo) return void dongKhoLon();
+    if (KHO_NHO_LOP) dongKhoNho();
+  });
+  window.addEventListener('resize', function () { datViTriKhoNho(); });
+
+  // ---------------- KHO LỚN ----------------
+  var KL = { mo: false, lop: null, ky: 30, loc: 'tatca', dangDoc: false };
+  var KL_NGAY = 86400000, KL_GIO = 3600000;
+  var KL_MAU = { WORDS: '#2a78d6', DICTS: '#eb6834', RD: '#1baf7a', WS: '#eda100', STAGE: '#e87ba4' };
+  var KL_MAU_KHAC = '#8AA09C';
+  var KL_TEN_DANG = { WORDS: 'WORDS', DICTS: 'DICTS', RD: 'READING', WS: 'WORKSHEET', STAGE: 'STAGE' };
+  function klE(s) { return A.chuAnToan(String(s == null ? '' : s)); }
+  function klDang(b) { return dangNgan(b.dang); }
+  function klMau(b) { return KL_MAU[klDang(b)] || KL_MAU_KHAC; }
+  function klNgay(ms) { var d = new Date(ms); return d.getDate() + '/' + (d.getMonth() + 1); }
+  function klGio(ms) { var d = new Date(ms); return klNgay(ms) + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function klCho2(ms) {
+    var g = Math.round(ms / KL_GIO);
+    if (g < 1) return '< 1 tiếng';
+    var n = Math.floor(g / 24);
+    return n ? n + ' ngày' + (g % 24 ? ' ' + (g % 24) + ' tiếng' : '') : g + ' tiếng';
+  }
+  function klT0() { return Date.now() - KL.ky * KL_NGAY; }
+  // Thứ tự lớp = đúng thứ tự thẻ trên trang (đã theo sắp xếp tay của thầy).
+  function klDsLop() {
+    var thu = doiSxDsMa('lopGrid').concat(doiSxDsMa('khoaGrid'));
+    var tat = tatCaLop();
+    var theo = {};
+    tat.forEach(function (l) { theo[l.maLop] = l; });
+    var ds = thu.map(function (m) { return theo[m]; }).filter(Boolean);
+    tat.forEach(function (l) { if (ds.indexOf(l) < 0) ds.push(l); });
+    return ds;
+  }
+  function klGiao(b) {
+    var d = A.ngayGiaoBai(b);
+    var t = d ? Date.parse(d + 'T00:00:00') : NaN;
+    return isNaN(t) ? null : t;
+  }
+  // Mọi bài (trừ đã xoá) có mốc giao + hạn, sắp theo giờ giao.
+  function klThanh(maLop) {
+    return A.baiCuaLop(DL, maLop, 'ql').map(function (b) {
+      var g = klGiao(b), h = A.mocHan(b);
+      if (g == null || h == null) return null;
+      if (h < g + KL_GIO) h = g + 12 * KL_GIO;
+      return { b: b, giao: g, han: h };
+    }).filter(Boolean).sort(function (a, c) { return a.giao - c.giao; });
+  }
+  // Khoảng CHỜ: từ hạn muộn nhất đã qua tới lúc giao bài kế (≥ 3 tiếng); lớp đang chờ ⇒ tới bây giờ.
+  function klCho(maLop) {
+    var ds = klThanh(maLop), r = [], maxHan = null, now = Date.now(), t0 = klT0();
+    ds.forEach(function (x) {
+      if (maxHan != null && x.giao - maxHan > 3 * KL_GIO) r.push({ tu: maxHan, den: x.giao });
+      maxHan = maxHan == null ? x.han : Math.max(maxHan, x.han);
+    });
+    if (maxHan != null && maxHan < now && now - maxHan > 3 * KL_GIO) r.push({ tu: maxHan, den: now, nay: true });
+    return r.filter(function (c) { return c.den > t0; }).map(function (c) {
+      return { tu: Math.max(c.tu, t0), den: c.den, nay: !!c.nay, dai: c.den - Math.max(c.tu, t0) };
+    });
+  }
+  function klTrongKy(x) { return x.han > klT0() && x.giao <= Date.now(); }
+  // % xong + phút làm bài TB/em của MỘT bài (null khi điểm chưa về / bài không có act).
+  function klSoBai(b, maLop) {
+    var acts = A.actCuaBai(b);
+    if (!acts.length) return { pct: null, phut: null, coDiem: true };
+    var coDiem = acts.every(function (k) { return !!DIEM[k.ma]; });
+    if (!coDiem) return { pct: null, phut: null, coDiem: false };
+    var t = tinhBai(b, maLop);
+    var pct = (t.xongHet != null && t.siSo) ? Math.round(t.xongHet / t.siSo * 100) : null;
+    var em = {};
+    acts.forEach(function (k) {
+      (DIEM[k.ma] || []).forEach(function (row) {
+        var s = (row.luot || []).reduce(function (a, lu) { return a + Math.min(+lu.ms || 0, 2 * KL_GIO); }, 0);
+        if (s > 0) em[row.ten] = (em[row.ten] || 0) + s;
+      });
+    });
+    var ten = Object.keys(em), tong = ten.reduce(function (a, k) { return a + em[k]; }, 0);
+    return { pct: pct, phut: ten.length ? tong / ten.length / 60000 : null, coDiem: true };
+  }
+  function klSoLop(l) {
+    var ds = klThanh(l.maLop).filter(klTrongKy), cho = klCho(l.maLop);
+    var tongCho = cho.reduce(function (a, c) { return a + c.dai; }, 0);
+    var nay = cho.filter(function (c) { return c.nay; })[0];
+    var pctT = 0, pctN = 0, phT = 0, phN = 0, thieu = false;
+    ds.forEach(function (x) {
+      var s = klSoBai(x.b, l.maLop);
+      if (!s.coDiem) thieu = true;
+      if (s.pct != null) { pctT += s.pct; pctN++; }
+      if (s.phut != null) { phT += s.phut; phN++; }
+    });
+    return {
+      soBai: ds.length, dangGiao: ds.filter(function (x) { return A.conHan(x.b); }).length,
+      choTb: cho.length ? tongCho / cho.length : 0, tongCho: tongCho, choNay: nay ? Date.now() - nay.tu : 0,
+      pct: pctN ? pctT / pctN : null, phut: phN ? phT / phN : null, thieu: thieu
+    };
+  }
+  // Đọc điểm các bài trong kỳ của các lớp đang xem (chỉ mã chưa có trong DIEM), rồi vẽ lại.
+  function klDocDiem() {
+    var dsL = KL.lop ? [A.lopTheoMa(DL, KL.lop)].filter(Boolean) : klDsLop();
+    var can = [];
+    dsL.forEach(function (l) {
+      klThanh(l.maLop).filter(klTrongKy).forEach(function (x) {
+        if (A.actCuaBai(x.b).some(function (k) { return !DIEM[k.ma]; })) can.push({ b: x.b, maLop: l.maLop });
+      });
+    });
+    if (!can.length || KL.dangDoc) return;
+    KL.dangDoc = true;
+    docDiemCuaCacBai(can).then(function () {
+      KL.dangDoc = false;
+      if (KL.mo) klVe(true);
+    }, function () { KL.dangDoc = false; });
+  }
+
+  // ---------- vẽ ----------
+  var KL_TOOLTIP = null;
+  function klChuThich() {
+    return '<div class="kl-chu-thich">' + Object.keys(KL_MAU).map(function (d) {
+      return '<span><i style="background:' + KL_MAU[d] + '"></i>' + KL_TEN_DANG[d] + '</span>';
+    }).join('') + '<span><i style="background:' + KL_MAU_KHAC + '"></i>Khác (SP CHECK, KHÓA…)</span><span><i class="kl-soc"></i>Chờ (không có bài)</span><span><i class="kl-nay-i"></i>Bây giờ</span></div>';
+  }
+  function klGantt(dsL, lon) {
+    var now = Date.now(), t0 = klT0(), t1 = now + 4 * KL_NGAY, W = t1 - t0;
+    function pc(t) { return ((Math.max(t0, Math.min(t1, t)) - t0) / W * 100).toFixed(3) + '%'; }
+    function rong(a, c) { return Math.max(0, (Math.min(t1, c) - Math.max(t0, a)) / W * 100).toFixed(3) + '%'; }
+    var buoc = KL.ky <= 14 ? 2 : (KL.ky <= 30 ? 5 : 10), truc = '', luoi = '';
+    var d0 = new Date(t0); d0.setHours(0, 0, 0, 0);
+    for (var t = d0.getTime() + KL_NGAY; t < t1; t += KL_NGAY) {
+      if (new Date(t).getDate() % buoc === 0) {
+        truc += '<span style="left:' + pc(t) + '">' + klNgay(t) + '</span>';
+        luoi += '<i class="kl-g-luoi" style="left:' + pc(t) + '"></i>';
+      }
+    }
+    var h = '<div class="kl-gantt' + (lon ? ' lon' : '') + '"><div class="kl-g-truc"><div></div><div class="kl-g-ngay">' + truc + '</div></div>';
+    var LAN = lon ? 36 : 22, DAU = lon ? 10 : 6, CAO = lon ? 30 : 18;
+    dsL.forEach(function (l) {
+      var ten = l.tenGoc || l.maLop;
+      // Xếp làn: thanh nào trùng thời gian với thanh trước trong làn thì xuống làn dưới (tham lam theo giờ giao).
+      var cuoiLan = [], soLan = 1;
+      var thanh = klThanh(l.maLop).filter(function (x) { return x.han > t0; }).map(function (x) {
+        var lan = 0;
+        while (lan < cuoiLan.length && cuoiLan[lan] > x.giao + 60000) lan++;
+        cuoiLan[lan] = x.han; soLan = Math.max(soLan, lan + 1);
+        x.lan = lan; return x;
+      }).map(function (x) {
+        var s = klSoBai(x.b, l.maLop), dg = klDang(x.b);
+        var tip = '<b>' + klE(A.tenBai(x.b)) + '</b><br><span class="x">Giao</span> ' + klNgay(x.giao) +
+          ' · <span class="x">hạn</span> ' + klGio(x.han) +
+          (s.pct != null ? '<br><span class="x">Xong</span> ' + s.pct + '%' : '') +
+          (s.phut != null ? ' · <span class="x">làm bài TB</span> ' + Math.round(s.phut) + ' phút/em' : '');
+        var nhan = lon ? dg + (s.pct != null ? ' · ' + s.pct + '%' : '') : dg;
+        return '<div class="kl-g-bar" data-kl-bai="' + klE(x.b.id) + '" data-kl-lop="' + klE(l.maLop) + '" style="left:' + pc(x.giao) +
+          ';top:' + (DAU + x.lan * LAN) + 'px;height:' + CAO + 'px;line-height:' + CAO + 'px;width:calc(' + rong(x.giao, x.han) + ' - 2px);background:' + klMau(x.b) +
+          '" data-kl-tip="' + klE(tip) + '">' + klE(nhan) + '</div>';
+      }).join('');
+      var cho = klCho(l.maLop).map(function (c) {
+        var tip = '<b>' + klE(ten) + ' · chờ ' + klCho2(c.dai) + '</b><br><span class="x">từ</span> ' + klGio(c.tu) +
+          ' <span class="x">đến</span> ' + (c.nay ? 'bây giờ (chưa giao bài mới)' : klNgay(c.den));
+        return '<div class="kl-g-cho kl-soc" style="left:' + pc(c.tu) + ';top:' + (DAU + (CAO - 10) / 2) + 'px;width:' + rong(c.tu, c.den) + '" data-kl-tip="' + klE(tip) + '"></div>';
+      }).join('');
+      h += '<div class="kl-g-hang" style="height:' + (DAU * 2 + (soLan - 1) * LAN + CAO) + 'px"><div class="kl-g-ten" data-kl-xem="' + klE(l.maLop) + '">' + klE(ten) + '</div><div class="kl-g-ray">' + luoi + cho + thanh + '</div></div>';
+    });
+    h += '<div class="kl-g-nay" style="left:calc(96px + (100% - 96px) * ' + ((now - t0) / W).toFixed(4) + ')"><b>Bây giờ</b></div></div>';
+    return h;
+  }
+  function klCotNgang(ds, mau, chuTb) {
+    var co = ds.filter(function (x) { return x.v; });
+    var max = Math.max.apply(null, co.map(function (x) { return x.v; }).concat([1]));
+    var tb = co.length ? co.reduce(function (a, x) { return a + x.v; }, 0) / co.length : 0;
+    return '<div class="kl-cot-ngang">' + ds.map(function (x) {
+      return '<div class="h" data-kl-tip="' + klE('<b>' + klE(x.ten) + '</b><br>' + x.chu) + '"><b>' + klE(x.ten) + '</b><div class="r"><i style="width:' +
+        (x.v ? x.v / max * 100 : 0) + '%;background:' + mau + '"></i></div><span>' + klE(x.ngan) + '</span></div>';
+    }).join('') + (co.length ? '<p class="kl-p" style="margin:8px 0 0">Trung bình các lớp: <b>' + klE(chuTb(tb)) + '</b></p>' : '') + '</div>';
+  }
+  function klPt(p) {
+    return p == null ? '<span class="kl-mo">—</span>' : '<span class="kl-pt"><u><s style="width:' + Math.round(p) + '%"></s></u>' + Math.round(p) + '%</span>';
+  }
+  function klDangDocHtml() {
+    return KL.dangDoc ? '<div class="kl-doc"><i></i>Đang đọc điểm các bài trong kỳ — % xong và thời gian làm bài sẽ hiện ngay khi xong.</div>' : '';
+  }
+  function klVeTatCa() {
+    var dsL = klDsLop(), sl = {};
+    dsL.forEach(function (l) { sl[l.maLop] = klSoLop(l); });
+    var tongBai = 0, dg = 0, tc = 0, nc = 0, ph = 0, np = 0, dangCho = 0;
+    dsL.forEach(function (l) {
+      var s = sl[l.maLop];
+      tongBai += s.soBai; if (s.dangGiao) dg++; if (s.choNay) dangCho++;
+      if (s.choTb) { tc += s.choTb; nc++; }
+      if (s.phut != null) { ph += s.phut; np++; }
+    });
+    var h = klDangDocHtml() + '<div class="kl-kpi">' +
+      '<div><small>BÀI ĐÃ GIAO</small><b>' + tongBai + '</b><span>' + KL.ky + ' ngày qua · ' + dsL.length + ' lớp</span></div>' +
+      '<div><small>ĐANG GIAO</small><b>' + dg + ' / ' + dsL.length + ' lớp</b><span>' + dangCho + ' lớp đang chờ bài</span></div>' +
+      '<div><small>CHỜ TRUNG BÌNH</small><b>' + (nc ? klCho2(tc / nc) : '—') + '</b><span>từ hạn bài trước → giao bài sau</span></div>' +
+      '<div><small>LÀM BÀI TRUNG BÌNH</small><b>' + (np ? Math.round(ph / np) + ' phút' : '…') + '</b><span>mỗi em · mỗi bài</span></div></div>';
+    h += '<div class="kl-o"><h4>Lịch giao bài</h4><p class="kl-p">Mỗi thanh là một bài, từ ngày giao đến hạn. Phần sọc vàng là lúc lớp không có bài. Rê chuột xem chi tiết · bấm tên lớp để xem riêng · bấm thanh để mở bài.</p>' +
+      klChuThich() + klGantt(dsL, false) + '</div>';
+    var dsCho = dsL.map(function (l) {
+      var s = sl[l.maLop], ten = l.tenGoc || l.maLop;
+      return { ten: ten, v: s.choTb, ngan: s.choTb ? klCho2(s.choTb) : '—',
+        chu: 'Chờ trung bình ' + (s.choTb ? klCho2(s.choTb) : '—') + '<br>Tổng chờ trong ' + KL.ky + ' ngày: ' + klCho2(s.tongCho) + (s.choNay ? '<br>Đang chờ: ' + klCho2(s.choNay) : '') };
+    }).sort(function (a, c) { return c.v - a.v; });
+    var dsPh = dsL.map(function (l) {
+      var s = sl[l.maLop], ten = l.tenGoc || l.maLop;
+      return { ten: ten, v: s.phut || 0, ngan: s.phut != null ? Math.round(s.phut) + ' phút' : '—',
+        chu: 'Làm bài TB ' + (s.phut != null ? Math.round(s.phut) + ' phút/em/bài' : '—') + '<br>Hoàn thành TB ' + (s.pct != null ? Math.round(s.pct) + '%' : '—') };
+    }).sort(function (a, c) { return c.v - a.v; });
+    h += '<div class="kl-hai"><div class="kl-o"><h4>Thời gian chờ trung bình</h4><p class="kl-p">Từ hạn bài trước đến lúc giao bài mới — dài nhất ở trên.</p>' +
+      klCotNgang(dsCho, '#F2A93B', klCho2) + '</div>' +
+      '<div class="kl-o"><h4>Thời gian làm bài</h4><p class="kl-p">Phút trung bình mỗi em cho một bài (cộng các lượt nộp).</p>' +
+      klCotNgang(dsPh, '#2a78d6', function (v) { return Math.round(v) + ' phút'; }) + '</div></div>';
+    h += '<div class="kl-o"><h4>Bảng tổng hợp</h4><p class="kl-p">Bấm một dòng để xem riêng lớp đó.</p><table class="kl-bang"><thead><tr>' +
+      '<th>Lớp</th><th>Bài</th><th>Đang giao</th><th>Đang chờ</th><th>Chờ TB</th><th>Làm bài TB</th><th>Hoàn thành</th></tr></thead><tbody>' +
+      dsL.map(function (l) {
+        var s = sl[l.maLop];
+        return '<tr class="dong" data-kl-xem="' + klE(l.maLop) + '"><td><span class="kl-vt" data-tt="' + trangThaiBai(l) + '"><i></i><b>' + klE(l.tenGoc || l.maLop) + '</b></span></td>' +
+          '<td>' + s.soBai + '</td><td>' + (s.dangGiao || '—') + '</td><td>' + (s.choNay ? klCho2(s.choNay) : '—') + '</td>' +
+          '<td>' + (s.choTb ? klCho2(s.choTb) : '—') + '</td><td>' + (s.phut != null ? Math.round(s.phut) + ' phút' : '—') + '</td><td>' + klPt(s.pct) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    return h;
+  }
+  function klVeMotLop(maLop) {
+    var l = A.lopTheoMa(DL, maLop);
+    if (!l) return '<div class="trong">Không tìm thấy lớp.</div>';
+    var s = klSoLop(l), siSo = (l.hocSinh || []).length;
+    var h = klDangDocHtml() + '<div class="kl-kpi">' +
+      '<div><small>BÀI ĐÃ GIAO</small><b>' + s.soBai + '</b><span>' + KL.ky + ' ngày qua · ' + siSo + ' em</span></div>' +
+      '<div><small>' + (s.choNay ? 'ĐANG CHỜ' : 'ĐANG GIAO') + '</small><b>' + (s.choNay ? klCho2(s.choNay) : s.dangGiao + ' bài') + '</b><span>' + (s.choNay ? 'chưa giao bài mới' : 'còn hạn') + '</span></div>' +
+      '<div><small>CHỜ TRUNG BÌNH</small><b>' + (s.choTb ? klCho2(s.choTb) : '—') + '</b><span>tổng chờ ' + klCho2(s.tongCho) + '</span></div>' +
+      '<div><small>LÀM BÀI TRUNG BÌNH</small><b>' + (s.phut != null ? Math.round(s.phut) + ' phút' : '…') + '</b><span>mỗi em · hoàn thành ' + (s.pct != null ? Math.round(s.pct) + '%' : '—') + '</span></div></div>';
+    h += '<div class="kl-o"><h4>Lịch giao bài · ' + klE(l.tenGoc || maLop) + '</h4><p class="kl-p">Trên thanh: dạng bài · % em đã xong. Bấm thanh để mở bài.</p>' + klChuThich() + klGantt([l], true) + '</div>';
+    // phút làm bài theo ngày (cộng lượt nộp của mọi act trong các bài trong kỳ)
+    var t0 = klT0(), ngay = {}, act = {};
+    klThanh(maLop).filter(klTrongKy).forEach(function (x) { A.actCuaBai(x.b).forEach(function (k) { act[k.ma] = 1; }); });
+    Object.keys(act).forEach(function (m) {
+      (DIEM[m] || []).forEach(function (row) {
+        (row.luot || []).forEach(function (lu) {
+          var luc = +lu.luc || 0;
+          if (luc < t0) return;
+          var d = new Date(luc); d.setHours(0, 0, 0, 0);
+          ngay[d.getTime()] = (ngay[d.getTime()] || 0) + Math.min(+lu.ms || 0, 2 * KL_GIO);
+        });
+      });
+    });
+    var cot = [], max = 1, d0 = new Date(); d0.setHours(0, 0, 0, 0);
+    for (var i = KL.ky - 1; i >= 0; i--) {
+      var t = d0.getTime() - i * KL_NGAY, v = Math.round((ngay[t] || 0) / 60000);
+      cot.push({ t: t, v: v, cn: new Date(t).getDay() === 0 });
+      if (v > max) max = v;
+    }
+    h += '<div class="kl-o"><h4>Làm bài theo ngày</h4><p class="kl-p">Tổng số phút cả lớp làm bài mỗi ngày (theo lượt nộp). Cột nhạt là Chủ Nhật.</p><div class="kl-cot-dung">' +
+      cot.map(function (c) {
+        return '<i' + (c.cn ? ' class="cn"' : '') + ' style="height:' + (c.v / max * 100) + '%" data-kl-tip="' + klE('<b>' + klNgay(c.t) + '</b><br>' + c.v + ' phút' + (siSo ? ' · ~' + Math.round(c.v / siSo) + ' phút/em' : '')) + '"></i>';
+      }).join('') + '</div><div class="kl-cot-truc"><span>' + klNgay(cot[0].t) + '</span><span>' + klNgay(cot[Math.floor(cot.length / 2)].t) + '</span><span>hôm nay</span></div></div>';
+    // danh sách mọi bài (kể cả đã xoá) — cùng nhóm/nhãn với kho nhỏ
+    var ds = A.baiCuaLop(DL, maLop, 'tatca').slice().sort(function (a, c) { return (klGiao(c) || 0) - (klGiao(a) || 0); });
+    var dem = { tatca: ds.length, bt: 0, an: 0, khoa: 0, xoa: 0 };
+    ds.forEach(function (b) { dem[khoNhom(b)]++; });
+    var hien = KL.loc === 'tatca' ? ds : ds.filter(function (b) { return khoNhom(b) === KL.loc; });
+    h += '<div class="kl-o"><h4>Tất cả bài · ' + klE(l.tenGoc || maLop) + '</h4><p class="kl-p">Bấm vào hàng để mở kết quả · ⚙ để đổi hạn, ẩn, tạm khoá, xoá.</p>' +
+      '<div class="kho-loc kl-loc">' + [['tatca', 'Tất cả'], ['bt', 'Đang giao'], ['an', 'Đã ẩn'], ['khoa', 'Tạm khoá'], ['xoa', 'Đã xoá']].map(function (k) {
+        return '<button type="button" data-kl-loc="' + k[0] + '"' + (KL.loc === k[0] ? ' class="chon"' : '') + '>' + k[1] + '<i>' + dem[k[0]] + '</i></button>';
+      }).join('') + '</div>' +
+      '<div class="kl-kb-tieu"><span>Dạng</span><span>Bài</span><span class="kl-an-hep">Giao → hạn</span><span>Hoàn thành</span><span class="kl-an-hep" style="text-align:right">Làm bài TB</span><span></span></div>' +
+      hien.map(function (b) {
+        var nhom = khoNhom(b), nhan = KHO_NHAN[nhom], id = klE(b.id), sb = klSoBai(b, maLop), g = klGiao(b), hn = A.mocHan(b);
+        return '<div class="kl-kb-hang kho-hang' + (nhom === 'xoa' ? ' la-xoa' : '') + '" data-kho-mo="' + id + '" role="button" tabindex="0">' +
+          '<span class="d" style="background:' + klMau(b) + '">' + klE(klDang(b) || '—') + '</span>' +
+          '<div class="tn"><b>' + klE(A.tenBai(b)) + ' <span class="kho-nhan ' + nhan.lop + '">' + nhan.chu + '</span></b><span>' + klE([A.maLesson(b), b.ngay ? 'ngày ' + b.ngay : ''].filter(Boolean).join(' · ') || A.tenDang(b.dang || '') || b.dang || '') + '</span></div>' +
+          '<div class="lich kl-an-hep">' + (g ? klNgay(g) : '—') + ' → ' + (hn ? klGio(hn) : '—') + '</div>' +
+          klPt(sb.pct) +
+          '<div class="ph kl-an-hep">' + (sb.phut != null ? Math.round(sb.phut) + '\'<small>/em</small>' : '—') + '</div>' +
+          '<button type="button" class="kho-ic" data-kho-menu="' + id + '" title="Tuỳ chọn thẻ: đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_NHO + '</button></div>';
+      }).join('') + (hien.length ? '' : '<div class="trong">Không có bài nào ở nhóm này.</div>') + '</div>';
+    return h;
+  }
+  function klVeLop() {
+    var dsL = klDsLop();
+    $('#klLop').innerHTML = '<button type="button" class="tat' + (KL.lop ? '' : ' chon') + '" data-kl-xem=""><i></i>Tất cả lớp</button><hr>' +
+      dsL.map(function (l) {
+        var n = klThanh(l.maLop).filter(klTrongKy).length;
+        return '<button type="button" data-kl-xem="' + klE(l.maLop) + '" data-tt="' + trangThaiBai(l) + '"' + (KL.lop === l.maLop ? ' class="chon"' : '') + '><i></i>' +
+          klE(l.tenGoc || l.maLop) + '<em>' + n + '</em></button>';
+      }).join('');
+  }
+  function klVe(giuCuon) {
+    var than = $('#klChinh'), cuon = than.scrollTop;
+    klVeLop();
+    var l = KL.lop ? A.lopTheoMa(DL, KL.lop) : null;
+    $('#klPhu').textContent = l ? (l.tenGoc || KL.lop) : 'Tất cả lớp';
+    than.innerHTML = KL.lop ? klVeMotLop(KL.lop) : klVeTatCa();
+    than.scrollTop = giuCuon ? cuon : 0;
+  }
+  function moKhoLon(maLop) {
+    if (!DL || !DL.lop) return;
+    dongKhoNho();
+    KL.lop = maLop || null; KL.loc = 'tatca'; KL.mo = true;
+    // ⚙ menu / bấm hàng của kho dùng LOP_CHON ⇒ xem một lớp thì chọn lớp đó luôn.
+    if (KL.lop && LOP_CHON !== KL.lop) chonLop(KL.lop);
+    $('#klNen').hidden = false;
+    document.body.style.overflow = 'hidden';
+    klVe();
+    klDocDiem();
+  }
+  function dongKhoLon() {
+    KL.mo = false;
+    $('#klNen').hidden = true;
+    document.body.style.overflow = '';
+    if (KL_TOOLTIP) KL_TOOLTIP.classList.remove('mo');
+  }
+  window.qlMoKhoLon = function () { moKhoLon(null); };
+  document.addEventListener('click', function (e) {
+    if (!KL.mo || !e.target.closest('#klNen')) return;
+    if (e.target.id === 'klNen' || e.target.closest('#klDong')) return void dongKhoLon();
+    var x = e.target.closest('[data-kl-xem]');
+    if (x) {
+      KL.lop = x.getAttribute('data-kl-xem') || null; KL.loc = 'tatca';
+      if (KL.lop && LOP_CHON !== KL.lop) chonLop(KL.lop);
+      klVe(); klDocDiem(); return;
+    }
+    var k = e.target.closest('[data-kl-ky]');
+    if (k) {
+      KL.ky = +k.getAttribute('data-kl-ky');
+      $$('#klKy [data-kl-ky]').forEach(function (b) { b.classList.toggle('chon', b === k); });
+      klVe(); klDocDiem(); return;
+    }
+    var f = e.target.closest('[data-kl-loc]');
+    if (f) { KL.loc = f.getAttribute('data-kl-loc'); klVe(true); return; }
+    // Bấm thanh bài ở lịch ⇒ chọn lớp đó + mở hộp bài (moBaiModal đọc theo LOP_CHON).
+    var bar = e.target.closest('[data-kl-bai]');
+    if (bar) {
+      var mL = bar.getAttribute('data-kl-lop');
+      if (LOP_CHON !== mL) chonLop(mL);
+      moBaiModal(bar.getAttribute('data-kl-bai'));
+    }
+  });
+  // Thẻ rê chuột của biểu đồ (một thẻ dùng chung, đi theo chuột).
+  document.addEventListener('mousemove', function (e) {
+    if (!KL.mo) return;
+    if (!KL_TOOLTIP) { KL_TOOLTIP = document.createElement('div'); KL_TOOLTIP.className = 'kl-tip'; document.body.appendChild(KL_TOOLTIP); }
+    var el = e.target.closest && e.target.closest('[data-kl-tip]');
+    if (!el) { KL_TOOLTIP.classList.remove('mo'); return; }
+    KL_TOOLTIP.innerHTML = el.getAttribute('data-kl-tip');
+    KL_TOOLTIP.classList.add('mo');
+    var x = e.clientX + 14, y = e.clientY + 14, w = KL_TOOLTIP.offsetWidth, h = KL_TOOLTIP.offsetHeight;
+    if (x + w > window.innerWidth - 8) x = e.clientX - w - 14;
+    if (y + h > window.innerHeight - 8) y = e.clientY - h - 14;
+    KL_TOOLTIP.style.left = x + 'px'; KL_TOOLTIP.style.top = y + 'px';
+  });
+
   function veChiTiet(muc) {
     var m = SB_MUC[muc];
     if (!m) return;
@@ -9563,13 +10161,25 @@ button.mk-em:hover{border-color:currentColor}
     $('#ver').textContent = 'web v' + (A.CFG.PHIEN_BAN || '?');
     document.title = 'Trang quản lý · Andrew Classes';
 
-    // ⭐ 15/09/2026 — nạp thứ tự sắp xếp SONG SONG với napDuLieu (không chặn nhau);
-    // trang vẫn vẽ ngay theo thứ tự-theo-hạn quen thuộc, rồi vẽ lại ĐÚNG MỘT LẦN nữa
-    // nếu thứ tự tay kéo về sau (thường về cùng lúc/trước, nên hiếm khi nháy lại).
-    napThuTuLop().then(function () { if (DL.lop.length) veLopGrid(); });
+    // ⭐⭐ v1.203.0 (01/10/2026, thầy: "lưu hẳn, không xáo xong mới tìm lại vị trí") — trước đây thứ tự
+    // tay kéo nạp SONG SONG napDuLieu ⇒ trang vẽ theo-hạn trước rồi mới nhảy về thứ tự của thầy.
+    // Nay: (1) bản lưu trong trình duyệt (`docThuTuMay`) có sẵn ⇒ vẽ NGAY đúng thứ tự, không chờ mạng;
+    // (2) máy chưa có bản lưu ⇒ CHỜ thứ tự về (tối đa 1,5 s) rồi mới vẽ lần đầu;
+    // (3) bản Firestore về sau mà KHÁC bản đang vẽ (thầy kéo ở máy khác) ⇒ vẽ lại một lần.
+    var thuTuMay = docThuTuMay();
+    if (thuTuMay) THU_TU_LOP = thuTuMay;
+    var dangVeTheo = JSON.stringify(THU_TU_LOP);
+    var choThuTu = napThuTuLop();
+    choThuTu.then(function () {
+      if (DL.lop.length && JSON.stringify(THU_TU_LOP) !== dangVeTheo) veLopGrid();
+    });
+    var choLanDau = thuTuMay ? Promise.resolve() :
+      Promise.race([choThuTu, new Promise(function (r) { setTimeout(r, 1500); })]);
 
-    A.napDuLieu().then(function (dl) {
+    Promise.all([A.napDuLieu(), choLanDau]).then(function (kq) {
+      var dl = kq[0];
       DL = dl;
+      dangVeTheo = JSON.stringify(THU_TU_LOP);
       var cu = '';
       try { cu = localStorage.getItem('mylesson_ql_lop') || ''; } catch (e) {}
       LOP_CHON = (DL.lop.some(function (l) { return l.maLop === cu; }) ? cu
@@ -9635,12 +10245,10 @@ button.mk-em:hover{border-color:currentColor}
       if (e.target.closest('[data-sx-huy]')) return void huySapXep();
 
       var lopBtn = e.target.closest('.lb-main[data-lop]');
-      if (lopBtn) return void chonLop(lopBtn.dataset.lop);
+      if (lopBtn) return void bamTheLop(lopBtn.dataset.lop);   // v1.203.0 — đúp = kho nhỏ
 
       var gvSn = e.target.closest('[data-gv-sn]');
       if (gvSn) return void gvMoSidebar(gvSn.dataset.gvSn, 'sinhnhat');
-      var gvLop = e.target.closest('[data-gv-lop]');
-      if (gvLop) return void gvMoSidebar(gvLop.dataset.gvLop, 'lop');
 
       // ⭐ v1.34.0 — dải icon riêng cho từng thẻ bài (`.diem-ic`, trong khu
       // vực điểm): ⚙ mở menu Cài đặt thẻ (đổi hạn — dùng chung `moBaiModal`;
@@ -9800,8 +10408,6 @@ button.mk-em:hover{border-color:currentColor}
         return void moBaiModal(idMo);
       }
 
-      var gvKho = e.target.closest('[data-gv-kho]');
-      if (gvKho) return void gvMoSidebar(gvKho.dataset.gvKho, 'kho');
 
       // ⭐ #4 — BA vùng bấm TÁCH RIÊNG trên thẻ bài (kiểm TRƯỚC .the[data-id]
       // chung, vì cả ba đều NẰM TRONG nó): tam giác xanh mở trang lớp bằng
@@ -10040,12 +10646,7 @@ button.mk-em:hover{border-color:currentColor}
     // mở hộp chọn ảnh cũ nữa — tránh HAI nơi cùng chỉnh avatar đá nhau (myStudent mới là
     // nguồn CHÍNH THỨC từ nay). ⛔ Cố tình KHÔNG xoá marker `MYLESSON:AVATAR:DOI:`/
     // `lib/avatar.js` phía app — chỉ tắt Ở ĐÂY, dễ khôi phục nếu cần.
-    $('#avDs').addEventListener('click', function (e) {
-      var b = e.target.closest ? e.target.closest('[data-av]') : null;
-      if (!b || b.disabled) return;
-      // v1.177.0 — thầy chốt 29/09: đổi ảnh NGAY TRÊN DASHBOARD (nơi duy nhất) ⇒ ✎ mở hộp ảnh đại diện.
-      if (window.adMoTheoTen) window.adMoTheoTen(LOP_CHON, b.getAttribute('data-av'));
-    });
+    // v1.203.0 — gỡ bộ nghe #avDs: sidebar "Thiết lập lớp" đã bỏ (ảnh đổi ở hộp Quản lý & bảo mật).
 
     $('#btnChatMenu').onclick = function (e) { e.stopPropagation(); moMenuChat(this); };
 
@@ -10632,8 +11233,9 @@ button.mk-em:hover{border-color:currentColor}
       }
       var mo = e.target.closest('[data-qm-mo]');
       if (mo) return void window.open(mo.getAttribute('data-qm-mo'), '_blank');
+      // v1.203.0 — bỏ nút "Thiết lập lớp" (sidebar cũ đã gỡ; "Ảnh đại diện" ngay cạnh làm đúng việc đó).
       var ds = e.target.closest('[data-qm-dslop]');
-      if (ds) { dongHopBaoMat(); return void gvMoSidebar(ds.getAttribute('data-qm-dslop'), 'lop'); }
+      if (ds) return void adMoLop(ds.getAttribute('data-qm-dslop'));
       if (e.target.closest('[data-qm-quay]')) { QM.em = null; return void veBaoMat(); }
       if (QM.tab === 'hs' && QM.em && e.target.closest('[data-hso-thay], #hsoThay')) {   // v1.168.0 — đăng nhập thay em
         var pTv = dsNguoi().filter(function (x) { return x.khoa === QM.em; })[0];
@@ -10839,7 +11441,6 @@ button.mk-em:hover{border-color:currentColor}
             '<td><span class="qm-tt ' + tt + '">' + { giao: 'Đã giao', cho: 'Chờ bài', khong: 'Không giao bài' }[tt] + '</span></td>' +
             '<td><div class="qm-hd"><button type="button" class="qm-nut" data-qm-loc="' + qmE(l.maLop) + '">Học sinh</button>' +
               '<button type="button" class="qm-nut" data-ad-lop="' + qmE(l.maLop) + '" title="Đổi ảnh đại diện cả lớp một lượt">Ảnh đại diện</button>' +
-              '<button type="button" class="qm-nut" data-qm-dslop="' + qmE(l.maLop) + '" title="Danh sách em của lớp">Thiết lập lớp</button>' +
               '<button type="button" class="qm-nut" data-qm-mo="' + qmE((laKhoa ? 'khoa.html' : 'lop.html') + '?gv=1&lop=' + encodeURIComponent(l.maLop)) + '">Xem trang lớp</button>' +
               '<button type="button" class="qm-nut" data-qc-mo="suaLop" data-qc-lop="' + qmE(l.tenGoc || l.maLop) + '">Sửa lớp</button></div></td></tr>';
         }).join('') + htmlLopRong(dsL) + '</tbody></table>';
@@ -12781,6 +13382,6 @@ button.mk-em:hover{border-color:currentColor}
   moCong();   // v1.176.0 — luôn qua cửa: phiên thầy thật mới mở trang
 })();
 </script>
-<script src="js/nw-thanh.js?v=19"></script>
+<script src="js/nw-thanh.js?v=20"></script>
 </body>
 </html>

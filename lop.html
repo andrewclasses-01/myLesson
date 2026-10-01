@@ -1641,7 +1641,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=205"></script>
+<script src="config.js?v=206"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
@@ -1814,7 +1814,8 @@ function lopMa(){ return LOP_DL; }
 
 /* ⭐ v18 — 2 thẻ ở MỌI cửa sổ hẹp, không riêng điện thoại: hễ khung chat đã
    phải rơi xuống dưới thì nhường chỗ cho nó, thầy khỏi cuộn tìm ô nhập. */
-function soThe(){ return chatODuoi() ? 2 : 4; }
+/* ⭐ v1.215.0 — thầy: máy tính chỉ hiện TỐI ĐA 3 thẻ (khung chat cao bằng cột thẻ ⇒ 4 thẻ làm chat quá dài). */
+function soThe(){ return chatODuoi() ? 2 : 3; }
 
 /* "9.6" -> "9/6" (thầy viết ngày kiểu chấm trong tên bài, học sinh quen gạch chéo) */
 function ngayGach(s){
@@ -3104,11 +3105,12 @@ function dungCot(){
     cu = BAI_CU.slice(0, tong - 1);
     dsThe = cu.slice();          /* thẻ nghỉ KHÔNG nằm trong bảng tra bên dưới */
   } else {
-    /* Không có bài nào còn hạn: trên vạch là dòng nhắn, mọi bài xuống dưới. */
+    /* Không có bài nào còn hạn: trên vạch là dòng nhắn, mọi bài xuống dưới.
+       v1.215.0 — có thẻ nghỉ đã tan (nằm dưới vạch) thì nó chiếm 1 chỗ trong tổng số thẻ. */
     tren = BAI_CU.length
       ? '<div class="chua-co">' + IC_GIO + 'Bài tập mới sẽ sớm được cập nhật</div>'
       : '<div class="chua-co vui">🎈 No homework, No fun!</div>';
-    cu = BAI_CU.slice(0, tong);
+    cu = BAI_CU.slice(0, nghiHetHan ? tong - 1 : tong);
     dsThe = cu.slice();
   }
   $('#cotBai').innerHTML = tren + '<div class="vach"></div>' +

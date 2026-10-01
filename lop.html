@@ -1523,7 +1523,7 @@ body.mo-menu .side.trai{transform:none}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=15">
+<link rel="stylesheet" href="css/chat-ui.css?v=16">
 </head>
 <body>
 
@@ -1646,9 +1646,9 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
 <script src="js/nw-phien.js?v=6"></script>
-<script src="js/chat.js?v=31"></script>
+<script src="js/chat.js?v=32"></script>
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
-<script src="js/chat-ui.js?v=17"></script>
+<script src="js/chat-ui.js?v=18"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=4"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -4424,10 +4424,11 @@ var UI_CHAT = ChatUI.tao({
   dsNhac: function(){ return CA_LOP.concat(['Thầy Andrew']); },
   gui: function(g){
     if (KHAN_CAP_CHAT) return Promise.reject(Object.assign(new Error('khoa'), { code: 'awc/chat-khoa' }));
+    if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' }));   // v1.216.0
     return AWChat.gui(LOP_DL, Object.assign({ ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs' }, g));
     /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay là tin hiện HAI LẦN. */
   },
-  datCx: function(t, v){ return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
+  datCx: function(t, v){ if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' })); return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
   ghiXem: function(luc){ return AWChat.ghiXem(LOP_DL, MA_HS, TOI, luc); },   // v1.210.0 — "đã xem" tin cuối
   thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },
   xoa: function(t){ return AWChat.xoa(LOP_DL, t.id); },
@@ -4499,17 +4500,36 @@ function danhDauDocChat(){
 /* 🚨 27/09/2026 — CÔNG TẮC KHẨN CẤP (js/chat.js khối "CÔNG TẮC KHẨN CẤP"): thầy khoá chat mọi lớp ⇒ ô nhập chỉ đọc,
    nút gửi tắt. Mở khoá là tự trở lại, không cần tải trang. */
 var KHAN_CAP_CHAT = false;
+/* 🔇 v1.216.0 — THẦY CẤM CHAT RIÊNG EM (js/chat.js khối "CẤM CHAT TỪNG EM"): kho classChatCam/<lớp>/em/<mã em>, chỉ em + thầy đọc.
+   Đang cấm ⇒ ô nhập đóng băng "Em đang bị cấm chat."; hết giờ (den) tự mở lại — hẹn giờ theo giờ chuẩn, luật kho cũng tự hết hạn. */
+var CAM_CHAT = null, henCamChat = null, goCamChat = null;
+function camChatCon(){ return CAM_CHAT && AWChat.camChuan ? AWChat.camChuan(CAM_CHAT) : null; }
+function veKhoaChat(){
+  clearTimeout(henCamChat);
+  var cam = camChatCon();
+  if (KHAN_CAP_CHAT) UI_CHAT.khoa(true, 'Chat đang tạm khoá, em quay lại sau nhé.');
+  else if (cam) UI_CHAT.khoa(true, 'Em đang bị cấm chat.');
+  else UI_CHAT.khoa(false);
+  if (cam) henCamChat = setTimeout(veKhoaChat, Math.max(1000, Math.min(cam.den - (window.gioChuan ? window.gioChuan() : Date.now()) + 1500, 2000000000)));
+}
+function ngheCamChat(){
+  if (goCamChat) { goCamChat(); goCamChat = null; }
+  CAM_CHAT = null;
+  if (!window.AWChat || !AWChat.ngheCam) return;
+  goCamChat = AWChat.ngheCam(LOP_DL, MA_HS, function(x){ CAM_CHAT = x; veKhoaChat(); });
+}
 (function(){
   if (!window.AWChat || !AWChat.ngheKhanCap) return;
   AWChat.ngheKhanCap(function(k){
     KHAN_CAP_CHAT = k.khoaChat;
-    UI_CHAT.khoa(k.khoaChat, 'Chat đang tạm khoá, em quay lại sau nhé.');
+    veKhoaChat();
   });
 })();
 
 function noiChat(){
   TIN_CU = []; hetCu = false; dangTaiCu = false;   // phòng mới, quên trang cũ đã tải
   khung.innerHTML = '<div class="chat-cho">Đang mở phòng trò chuyện…</div>';
+  ngheCamChat();   // v1.216.0 — em có đang bị thầy cấm chat không
   AWChat.nghe(LOP_DL, function(ds){
     TIN_SONG = ds;
     gopTinMau();

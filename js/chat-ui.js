@@ -181,7 +181,8 @@
     thuHoi: '<svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>',
     xoa: '<svg viewBox="0 0 24 24"><path d="M4.2 6.9h15.6"/><path d="M9.6 6.9V5.4a1.4 1.4 0 0 1 1.4-1.4h2a1.4 1.4 0 0 1 1.4 1.4v1.5"/><path d="M6.4 6.9l.85 12.1a1.8 1.8 0 0 0 1.8 1.7h6a1.8 1.8 0 0 0 1.8-1.7l.85-12.1"/></svg>',
     tim: '<svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>',
-    anh: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 17l4.6-4.4a1.5 1.5 0 0 1 2 0L15 17l2-1.8a1.5 1.5 0 0 1 2 0l1.5 1.3"/></svg>'
+    anh: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="M4 17l4.6-4.4a1.5 1.5 0 0 1 2 0L15 17l2-1.8a1.5 1.5 0 0 1 2 0l1.5 1.3"/></svg>',
+    cam: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M6 6l12 12"/></svg>'   /* v1.216.0 — quản lý em / cấm chat */
   };
 
   // ---------- hộp nổi dùng chung (một bộ cho cả trang) ----------
@@ -463,8 +464,17 @@
     function veTin(t, i, ds) {
       var toi = cuaToi(t), truoc = ds[i - 1];
       var ngayMoi = !truoc || ngay(truoc.luc) !== ngay(t.luc) || (t.luc - truoc.luc) >= NHIP_MOI;
-      var cungNhom = !ngayMoi && truoc && (truoc.ma || truoc.ten) === (t.ma || t.ten) && !!(o.laCuaToi && o.laCuaToi(truoc)) === toi && (t.luc - truoc.luc) < 5 * 60e3;
+      var cungNhom = !ngayMoi && truoc && !truoc.he && (truoc.ma || truoc.ten) === (t.ma || t.ten) && !!(o.laCuaToi && o.laCuaToi(truoc)) === toi && (t.luc - truoc.luc) < 5 * 60e3;
       var h = ngayMoi ? '<div class="cu-ngay">' + esc(mocNhip(t.luc)) + '</div>' : '';
+      /* 🔇 v1.216.0 — TIN HỆ THỐNG "<TÊN> đã bị Thầy Andrew cấm chat!" (js/chat.js camChat): dòng giữa khung, avatar em + chữ,
+         không bong bóng / cảm xúc / trả lời. Thầy có nút × xoá hẳn dòng này. Thời hạn cấm KHÔNG hiện (thầy chốt). */
+      if (t.he && t.he.loai === 'cam') {
+        return h + '<div class="cu-he" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' +
+          '<span class="cu-av">' + (o.av ? o.av({ ten: t.he.ten, ma: '', vaiTro: 'hs' }, i) : '') + '</span>' +
+          '<span class="chu"><b>' + esc(t.he.ten) + '</b> đã bị Thầy Andrew cấm chat!</span>' +
+          (o.laThay && o.xoa ? '<button type="button" class="xo" data-cu="xoahe" title="Xoá dòng này" aria-label="Xoá dòng này">×</button>' : '') +
+          '</div>' + (o.sauTin ? (o.sauTin(t, i, ds) || '') : '');
+      }
       var ten = (!toi && !cungNhom && o.hienTen !== false) ? '<div class="cu-ten">' + esc(t.ten) + (o.nhan ? o.nhan(t) : '') + '</div>' : '';
       var than;
       if (t.thuHoi) than = '<div class="cu-bong thuhoi">' + ten + 'Tin nhắn đã bị thu hồi' + veThuHoiGoc(t) + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
@@ -507,7 +517,7 @@
       });
     }
     // ⭐ v1.209.0 — thầy: STICKER không thả cảm xúc, chỉ tin chữ/ảnh (tin chỉ có emoji vẫn thả được).
-    function coThaCx(t) { return !!t && !t.thuHoi && !(t.sticker && timStk(t.sticker)); }
+    function coThaCx(t) { return !!t && !t.thuHoi && !t.he && !(t.sticker && timStk(t.sticker)); }
     function veCum(t) {
       var d = demCx(t.cx), toi = cxCuaToi(t);
       // ⭐ v1.195.0 — thầy: viên cảm xúc chỉ hiện TỐI ĐA 3 loại GẦN NHẤT (loại khác vẫn tính trong số tổng + bảng "ai thả gì").
@@ -678,6 +688,7 @@
       if (!ui.khoaChat && !ui.chiXem) dd.push('<button type="button" data-m="tra">' + IC.traLoi + 'Trả lời</button>');
       if ((cuaToi(t) || o.laThay) && o.thuHoi && !ui.chiXem) dd.push('<button type="button" data-m="thuhoi" class="nguy">' + IC.thuHoi + 'Thu hồi</button>');
       if (o.laThay && o.xoa) dd.push('<button type="button" data-m="xoa" class="nguy">' + IC.xoa + 'Xoá hẳn</button>');
+      if (coMoEm(t)) dd.push('<button type="button" data-m="em">' + IC.cam + 'Quản lý em này</button>');   // v1.216.0
       m.innerHTML = dd.join(''); m._id = t.id; m.hidden = false;
       var r = neo.getBoundingClientRect();
       datCanh(m, cuaToi(t) ? r.right - m.offsetWidth : r.left, r.bottom + 6 + m.offsetHeight > window.innerHeight - 8 ? r.top - m.offsetHeight - 6 : r.bottom + 6);
@@ -688,7 +699,10 @@
       m.querySelector('[data-h="0"]').onclick = function () { m.hidden = true; };
       m.querySelector('[data-h="1"]').onclick = function () { m.hidden = true; lam(); };
     }
+    // 🔇 v1.216.0 — trang có o.moEm (dashboard thầy) ⇒ tin của HỌC SINH mở được hộp "quản lý em" (tin em gửi + cấm chat).
+    function coMoEm(t) { return !!(o.moEm && t && !t.he && t.vaiTro !== 'gv' && t.ma); }
     function lamViec(viec, t, m) {
+      if (viec === 'em') { if (coMoEm(t)) o.moEm(t); return; }
       if (viec === 'chep') {
         var chu = chuThuong(t.chu);
         var ok = function () { loi('Đã sao chép.'); };
@@ -722,8 +736,9 @@
     khung.addEventListener('click', function (e) {
       if (vuaGiu) { vuaGiu = false; e.preventDefault(); e.stopPropagation(); return; }
       var b = e.target.closest('[data-cu]'); if (!b) return;
-      var w = b.closest('.cu-w'), t = w ? ui.ds[+w.getAttribute('data-i')] : null;
+      var w = b.closest('.cu-w') || b.closest('.cu-he'), t = w ? ui.ds[+w.getAttribute('data-i')] : null;
       var viec = b.getAttribute('data-cu');
+      if (viec === 'xoahe') { if (t && o.laThay && o.xoa && window.confirm('Xoá dòng "' + t.he.ten + ' đã bị cấm chat" khỏi phòng? (Lệnh cấm vẫn giữ nguyên.)')) Promise.resolve(o.xoa(t))['catch'](loi); return; }
       if (viec === 'toi') {
         var g = khung.querySelector('.cu-w[data-id="' + cssEsc(b.getAttribute('data-id')) + '"]');
         if (!g) { loi('Tin gốc đã cũ — kéo lên để tải thêm tin cũ rồi bấm lại.'); return; }
@@ -753,6 +768,18 @@
       diem = { x: e.clientX, y: e.clientY }; w2.classList.add('giu');
       clearTimeout(henGiu);
       henGiu = setTimeout(function () { vuaGiu = true; w2.classList.remove('giu'); try { if (navigator.vibrate) navigator.vibrate(12); } catch (x) {} moHd(t2, w2); }, 450);
+    });
+    /* 🔇 v1.216.0 — thầy: BẤM ĐÚP avatar (hoặc tên) của một em trong khung chat ⇒ hộp quản lý em (o.moEm, chỉ dashboard).
+       Tin liền nhóm không có avatar riêng ⇒ bấm đúp avatar ở tin ĐẦU nhóm. Bảng tương tác/điện thoại: menu ⋯ "Quản lý em này". */
+    khung.addEventListener('dblclick', function (e) {
+      if (!o.moEm) return;
+      var av = e.target.closest('.cu-av, .cu-ten'); if (!av) return;
+      var hang = av.closest('.cu-hang'); var w = hang && hang.querySelector('.cu-w');
+      var t = w ? ui.ds[+w.getAttribute('data-i')] : null;
+      if (!coMoEm(t)) return;
+      e.preventDefault();
+      try { getSelection().removeAllRanges(); } catch (x) {}
+      dongHet(); o.moEm(t);
     });
     function huyGiu() { clearTimeout(henGiu); khung.querySelectorAll('.cu-w.giu').forEach(function (x) { x.classList.remove('giu'); }); }
     khung.addEventListener('pointermove', function (e) { if (diem && Math.abs(e.clientX - diem.x) + Math.abs(e.clientY - diem.y) > 10) { huyGiu(); diem = null; } });
@@ -791,7 +818,8 @@
         (t.sticker || !t.chu ? '' : '<button type="button" data-m="chep">' + IC.chep + 'Sao chép</button>') +
         (coThaCx(t) && demCx(t.cx).tong ? '<button type="button" data-m="cx">' + IC.tim + 'Cảm xúc</button>' : '') +
         ((cuaToi(t) || o.laThay) && o.thuHoi && !ui.chiXem ? '<button type="button" data-m="thuhoi" class="nguy">' + IC.thuHoi + 'Thu hồi</button>' : '') +
-        (o.laThay && o.xoa ? '<button type="button" data-m="xoa" class="nguy">' + IC.xoa + 'Xoá hẳn</button>' : '') + '</div>';
+        (o.laThay && o.xoa ? '<button type="button" data-m="xoa" class="nguy">' + IC.xoa + 'Xoá hẳn</button>' : '') +
+        (coMoEm(t) ? '<button type="button" data-m="em">' + IC.cam + 'Quản lý em này</button>' : '') + '</div>';
       hd.appendChild(hop); document.body.appendChild(hd); HD = hd;
       var cao = rg.height, duoi = 18, ph = hop.offsetHeight, pw = hop.offsetWidth, le = 10;
       var top = rg.top; if (top + cao + duoi + ph > H - le) top = H - le - ph - duoi - cao; if (top < le) top = le;

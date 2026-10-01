@@ -234,6 +234,7 @@
             may: x.may || '',           /* ⭐ v1.80.0 — rỗng với mọi tin cũ */
             q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true   /* v1.186.0 — khuôn chat kiểu Zalo */
             , hinh: x.hinh || ''           /* v1.206.0 — ảnh thầy gửi */
+            , he: heChuan(x.he)            /* v1.216.0 — tin hệ thống "… đã bị cấm chat" */
           });
         });
         ds.reverse();                              // Firestore trả mới->cũ, ta hiện cũ->mới
@@ -311,7 +312,8 @@
           vaiTro: x.role === 'gv' ? 'gv' : 'hs',
           chu: chuTin(x), luc: Number(x.createdAt) || 0,
           cx: x.cx || {}, may: x.may || '',
-          q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true, hinh: x.hinh || ''
+          q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true, hinh: x.hinh || '',
+          he: heChuan(x.he)
         });
       });
       ds.reverse();
@@ -367,9 +369,9 @@
       })['catch'](function (e) {
         var ma = String((e && (e.code || e.message)) || '');
         if (ma.indexOf('permission-denied') < 0) throw e;
-        return docKhanCap().then(function (k) {
+        return Promise.all([docKhanCap(), laHs ? docCam(maLop, goc.code) : Promise.resolve(null)]).then(function (k) {
           var loi = new Error('chat bị từ chối');
-          loi.code = k.khoaChat ? 'awc/chat-khoa' : 'awc/tin-bi-chan';
+          loi.code = k[0].khoaChat ? 'awc/chat-khoa' : (k[1] ? 'awc/bi-cam' : 'awc/tin-bi-chan');
           throw loi;
         });
       });
@@ -537,6 +539,111 @@
     });
   }
 
+  /* ============================================================
+     🔇 v1.216.0 (01/10/2026) — CẤM CHAT TỪNG EM (thầy bấm đúp avatar em trong chat dashboard)
+     Kho: classChatCam/{lớp}/em/{mã em} = { ten, den, luc }   den = mốc ms HẾT cấm (giờ máy chủ quyết)
+       · Đọc: CHỈ chính em đó (đăng nhập đúng mã) + thầy — bạn cùng lớp không đọc được ai đang bị cấm.
+       · Ghi/xoá: chỉ thầy. Luật classChat: tin + cảm xúc của em bị từ chối khi den > request.time
+         ⇒ HẾT GIỜ LÀ TỰ MỞ, không cần ai xoá tài liệu (trang em đặt hẹn giờ để mở ô nhập đúng lúc).
+     Tin hệ thống trong phòng: role 'gv' + he = {loai:'cam', ten} — chữ "<TÊN> đã bị Thầy Andrew cấm chat!",
+     KHÔNG ghi thời hạn (thầy chốt: trong tin không hiện, nhưng vẫn có hiệu lực). Luật: tools/dang-luat-cam-chat.js.
+     ============================================================ */
+  function heChuan(h) {
+    if (!h || typeof h !== 'object' || h.loai !== 'cam') return null;
+    return { loai: 'cam', ten: String(h.ten || '?').slice(0, 60) };
+  }
+  function khoaMa(ma) { return String(ma || '').replace(/[^0-9A-Za-z_-]/g, '_').slice(0, 60); }
+  function camChuan(x) {
+    var den = Number(x && x.den) || 0;
+    var nay = window.gioChuan ? window.gioChuan() : Date.now();
+    return den > nay ? { ten: String(x.ten || ''), den: den, luc: Number(x.luc) || 0 } : null;
+  }
+  // Đọc MỘT lần: em còn đang bị cấm? ⇒ {ten, den, luc} | null (lỗi/không có ⇒ null).
+  function docCam(maLop, ma) {
+    if (!ma) return Promise.resolve(null);
+    return db().then(function (f) {
+      return f.fs.getDoc(f.fs.doc(f.db, 'classChatCam', maLop, 'em', khoaMa(ma)));
+    }).then(function (s) { return s.exists() ? camChuan(s.data()) : null; }, function () { return null; });
+  }
+  // Trang em: nghe sống ô cấm CỦA MÌNH. cb(null | {ten, den, luc}). Trả hàm gỡ. Lỗi ⇒ coi như không cấm (luật vẫn chặn thật).
+  function ngheCam(maLop, ma, cb) {
+    var go = null, huy = false;
+    if (!ma || ma === 'GV') { cb(null); return function () {}; }
+    var choPhien = window.NWP ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
+    choPhien.then(db).then(function (f) {
+      if (huy) return;
+      go = f.fs.onSnapshot(f.fs.doc(f.db, 'classChatCam', maLop, 'em', khoaMa(ma)),
+        function (s) { if (!huy) cb(s.exists() ? (s.data() || {}) : null); },
+        function () { if (!huy) cb(null); });
+    });
+    return function () { huy = true; if (go) { try { go(); } catch (e) {} } };
+  }
+  // Dashboard: nghe danh sách em bị cấm của MỘT lớp (chỉ thầy đọc được). cb({ <mã>: {ten, den, luc} }) — cả ô đã hết hạn.
+  function ngheDsCam(maLop, cb) {
+    var go = null, huy = false;
+    db().then(function (f) {
+      if (huy) return;
+      go = f.fs.onSnapshot(f.fs.collection(f.db, 'classChatCam', maLop, 'em'), function (snap) {
+        var m = {}; snap.forEach(function (d) { m[d.id] = d.data() || {}; });
+        if (!huy) cb(m);
+      }, function () { if (!huy) cb({}); });
+    });
+    return function () { huy = true; if (go) { try { go(); } catch (e) {} } };
+  }
+  // Thầy cấm em `gio` tiếng: CÙNG MỘT LƯỢT GHI đặt ô cấm + gửi tin hệ thống vào phòng.
+  function camChat(maLop, ma, ten, gio) {
+    var soGio = Number(gio);
+    if (!ma || ma === 'GV') return Promise.reject(new Error('Không cấm được người này.'));
+    if (!(soGio > 0) || soGio > 24 * 30) return Promise.reject(new Error('Số giờ cấm phải từ lớn hơn 0 tới 720.'));
+    var tenEm = String(ten || '?').slice(0, 60);
+    return db().then(function (f) {
+      var nay = window.gioChuan ? window.gioChuan() : Date.now();
+      var b = f.fs.writeBatch(f.db);
+      b.set(f.fs.doc(f.db, 'classChatCam', maLop, 'em', khoaMa(ma)), { ten: tenEm, den: Math.round(nay + soGio * 3600e3), luc: nay });
+      b.set(f.fs.doc(f.fs.collection(f.db, 'classChat', maLop, 'messages')), {
+        name: 'Thầy Andrew', code: 'GV', role: 'gv', text: tenEm + ' đã bị Thầy Andrew cấm chat!',
+        createdAt: nay, may: dauMay(), he: { loai: 'cam', ten: tenEm }
+      });
+      return b.commit();
+    });
+  }
+  // Bỏ cấm sớm (không gửi tin gì vào phòng).
+  function boCam(maLop, ma) {
+    return db().then(function (f) { return f.fs.deleteDoc(f.fs.doc(f.db, 'classChatCam', maLop, 'em', khoaMa(ma))); });
+  }
+  // Mọi tin MỘT em đã gửi trong phòng (đọc MỘT lần — chỉ thầy dùng, lúc mở hộp quản lý em). TIN_EM_TRAN = trần an toàn.
+  // ⛔ Cố ý KHÔNG orderBy: where(code)+orderBy(createdAt) đòi chỉ mục ghép (khoá quản trị không có quyền tạo — đo 01/10/2026)
+  //   ⇒ lấy HẾT tin của em rồi xếp ở máy. Đừng thêm limit nhỏ: không orderBy thì limit cắt theo id NGẪU NHIÊN, không phải tin mới nhất.
+  var TIN_EM_TRAN = 2000;
+  function tinCuaEm(maLop, ma) {
+    return db().then(function (f) {
+      return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'classChat', maLop, 'messages'),
+        f.fs.where('code', '==', String(ma || '')), f.fs.limit(TIN_EM_TRAN)));
+    }).then(function (snap) {
+      var ds = [];
+      snap.forEach(function (d) {
+        var x = d.data() || {};
+        ds.push({ id: d.id, ten: x.name || '?', ma: x.code || '', vaiTro: x.role === 'gv' ? 'gv' : 'hs', chu: chuTin(x),
+                  luc: Number(x.createdAt) || 0, sticker: x.sticker || '', thuHoi: x.thuHoi === true, hinh: x.hinh || '', q: x.q || null });
+      });
+      ds.sort(function (a, b) { return b.luc - a.luc; });   // mới nhất lên đầu
+      return ds;
+    });
+  }
+  // Xoá hẳn NHIỀU tin một lượt (chỉ thầy). Gói ≤ 400 lệnh/lượt ghi.
+  function xoaNhieu(maLop, ids) {
+    ids = (ids || []).filter(Boolean);
+    return db().then(function (f) {
+      var lo = [];
+      for (var i = 0; i < ids.length; i += 400) {
+        var b = f.fs.writeBatch(f.db);
+        ids.slice(i, i + 400).forEach(function (id) { b.delete(f.fs.doc(f.db, 'classChat', maLop, 'messages', id)); });
+        lo.push(b.commit());
+      }
+      return Promise.all(lo).then(function () { return ids.length; });
+    });
+  }
+
   // Xoá MỘT tin. Không có đăng nhập thật nên trang gọi hàm này TỰ CHỊU TRÁCH
   // NHIỆM kiểm "ai được xoá tin nào" ở phía giao diện — xem đầu file.
   function xoa(maLop, tinId) {
@@ -558,7 +665,7 @@
              cần đổi: nó chỉ kiểm `tin is list`, không soi bên trong. */
           return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc,
                    cx: t.cx || {}, may: t.may || '',
-                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi, hinh: t.hinh || '' };   /* v1.186.0 · hinh v1.206.0 */
+                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi, hinh: t.hinh || '', he: t.he || null };   /* v1.186.0 · hinh v1.206.0 · he v1.216.0 */
         })
       });
     });
@@ -625,6 +732,7 @@
     var ma = (e && (e.code || e.message)) || '';
     // (27/09/2026) hai lỗi dành cho HỌC SINH — đặt bởi gui()
     if (ma === 'awc/chat-khoa') return 'Chat đang tạm khoá, em quay lại sau nhé.';
+    if (ma === 'awc/bi-cam') return 'Em đang bị cấm chat.';
     if (ma === 'awc/co-link') return 'Chat lớp không gửi được đường link. Em cần gửi link thì nhờ thầy gửi giúp nhé.';
     if (ma === 'awc/tin-bi-chan') return 'Tin chưa gửi được. Em bỏ đường link (nếu có) rồi gửi lại nhé.';
     if (ma === 'awc/can-dang-nhap') return 'Phiên đăng nhập đã hết. Em tải lại trang và đăng nhập lại nhé.';
@@ -647,6 +755,8 @@
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU, coLink: coLink,
     dauMay: dauMay,                    /* ⭐ v1.80.0 — xem khối "DẤU MÁY" đầu file */
     ngheKhanCap: ngheKhanCap, docKhanCap: docKhanCap, datKhanCap: datKhanCap,   /* 🚨 27/09/2026 */
+    docCam: docCam, ngheCam: ngheCam, ngheDsCam: ngheDsCam, camChat: camChat, boCam: boCam,   /* 🔇 v1.216.0 — cấm chat từng em */
+    camChuan: camChuan, tinCuaEm: tinCuaEm, xoaNhieu: xoaNhieu, TIN_EM_TRAN: TIN_EM_TRAN,
     // ⭐ v1.38.0 — mở CỬA FIREBASE dùng chung cho khối khác (js/vi-qua.js đọc
     // kho quà `quaTang/catalog`). ⛔ Nơi khác ĐỪNG tự `initializeApp` /
     // `getFirestore()` lần nữa: cùng một app gọi hai lần là dính

@@ -2765,6 +2765,44 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .kc-bat{min-width:92px; padding:9px 12px; border-radius:12px; border:0; font-weight:700; cursor:pointer; background:#eef2f7; color:#334}
 .kc-bat.dang{background:#d32f2f; color:#fff}
 .kc-bat:disabled{opacity:.5; cursor:wait}
+/* 🔇 v1.216.0 — hộp QUẢN LÝ EM TRONG CHAT (bấm đúp avatar em): tin em gửi (tích ⇒ xoá đồng loạt) + cấm chat theo giờ */
+.em-hop{width:min(560px,100%); max-height:90vh; display:flex; flex-direction:column; gap:14px; padding:18px 20px}
+.em-dau{display:flex; align-items:center; gap:12px}
+.em-dau h3{margin:0; color:var(--chu); font-size:17px}
+.em-dau small{color:#777; font-size:12.5px}
+.em-dau > div{flex:1; min-width:0}
+.em-av, .em-av > *{width:44px!important; height:44px!important; font-size:15px}
+.em-x{flex:none; width:34px; height:34px; border:0; border-radius:50%; background:#f1f5f4; font-size:20px; line-height:1; cursor:pointer; color:#556}
+.em-x:hover{background:#e3ebe9}
+.em-muc{display:flex; flex-direction:column; gap:8px; min-height:0}
+.em-muc.tin{flex:1 1 auto}
+.em-tieu{font-size:12px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--xanh)}
+.em-thanh{display:flex; align-items:center; gap:10px; font-size:13px}
+.em-thanh #emDem{flex:1; color:#777}
+.em-tat{display:inline-flex; align-items:center; gap:6px; font-weight:700; cursor:pointer}
+.em-ds{overflow:auto; min-height:80px; max-height:42vh; border:1px solid #e6ecea; border-radius:12px}
+.em-tin{display:flex; align-items:flex-start; gap:10px; padding:8px 12px; border-bottom:1px solid #f0f3f2; cursor:pointer; font-size:13.5px; line-height:1.4}
+.em-tin:last-child{border-bottom:0}
+.em-tin:hover{background:#f6faf9}
+.em-tin:has(input:checked){background:#fdecec}
+.em-tin input, .em-tat input{width:17px; height:17px; margin:1px 0 0; accent-color:#d32f2f; flex:none; cursor:pointer}
+.em-tin .gio{flex:none; width:96px; color:#8aa09c; font-size:12px; padding-top:1px}
+.em-tin .chu{flex:1; min-width:0; overflow-wrap:anywhere; white-space:pre-wrap}
+.em-cho{margin:0; padding:16px; color:#888; font-size:13px; text-align:center}
+.em-nut{padding:8px 14px; border-radius:10px; border:0; font:inherit; font-size:13px; font-weight:700; cursor:pointer; background:#eef2f7; color:#334}
+.em-nut.do{background:#d32f2f; color:#fff}
+.em-nut.do.xac{background:#8e1b1b}
+.em-nut:disabled{opacity:.45; cursor:default}
+.em-dang{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:#fdecec; border:1px solid #f6c9cc; font-size:18px}
+.em-dang > div{flex:1}
+.em-dang b{display:block; font-size:14px; color:#a3242f}
+.em-dang small{font-size:12.5px; color:#8a3a40}
+.em-gio{display:flex; flex-wrap:wrap; align-items:center; gap:6px}
+.em-gio [data-em-gio]{padding:7px 11px; border-radius:99px; border:1.5px solid #dfe6e4; background:#fff; font:inherit; font-size:13px; font-weight:700; cursor:pointer; color:#445}
+.em-gio [data-em-gio].chon{border-color:#d32f2f; color:#d32f2f; background:#fff5f5}
+.em-so{display:inline-flex; align-items:center; gap:5px; font-size:13px; color:#555; margin-right:auto}
+.em-so input{width:64px; padding:6px 8px; border:1.5px solid #dfe6e4; border-radius:10px; font:inherit; font-size:13px; text-align:center}
+.em-ghi{margin:0!important; font-size:12px!important; color:#888!important}
 /* v1.160.0 (27/09) — hộp "Mật khẩu HS": ai đã đặt mật khẩu riêng (dùng chung khung .kc-nen/.kc-hop) */
 .mk-hop{width:min(640px,100%); max-height:86vh; display:flex; flex-direction:column}
 .mk-hop h3{color:#0E7C6E}
@@ -3307,7 +3345,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=15">
+<link rel="stylesheet" href="css/chat-ui.css?v=16">
 </head>
 <body>
 
@@ -3709,8 +3747,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
-<script src="js/chat.js?v=31"></script>
-<script src="js/chat-ui.js?v=17"></script>
+<script src="js/chat.js?v=32"></script>
+<script src="js/chat-ui.js?v=18"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -9357,8 +9395,168 @@ tr.qm-hang-tam td{background:#fffbeb}
     xoa: function (t) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.xoa(LOP_CHON, t.id); },
     loi: function (e) { if (e === '__im') return; baoToast(typeof e === 'string' ? e : AWChat.chuLoi(e)); },
     trong: 'Lớp này chưa có tin nhắn nào.<br>Thầy nhắn câu đầu tiên nhé.',
-    veLaiTuKho: function () { veChat(); }
+    veLaiTuKho: function () { veChat(); },
+    // 🔇 v1.216.0 — bấm đúp avatar/tên em (hoặc ⋯ → "Quản lý em này") ⇒ hộp tin em gửi + cấm chat; nhãn ĐANG CẤM cạnh tên.
+    moEm: function (t) { moHopEm(t); },
+    nhan: function (t) { return t.vaiTro !== 'gv' && camCon(t.ma) ? '<span class="cu-nhan cam">ĐANG CẤM</span>' : ''; }
   });
+
+  /* ============================================================
+     🔇 v1.216.0 (01/10/2026) — HỘP QUẢN LÝ EM TRONG CHAT (thầy bấm đúp avatar một em)
+       · Danh sách MỌI tin em đó gửi trong phòng (AWChat.tinCuaEm — đọc 1 lần, ≤300 tin), ô tích đầu dòng,
+         tích nhiều rồi "Xoá N tin" ⇒ xoá hẳn đồng loạt (AWChat.xoaNhieu).
+       · CẤM CHAT theo tiếng: AWChat.camChat ghi classChatCam/<lớp>/em/<mã> {den} + tin hệ thống
+         "<TÊN> đã bị Thầy Andrew cấm chat!" (không ghi thời hạn). Hết giờ luật tự mở; "Bỏ cấm" mở sớm.
+     DS_CAM = map sống các em bị cấm của lớp đang mở (AWChat.ngheDsCam, chỉ thầy đọc) — nối lại trong noiChat().
+     ============================================================ */
+  var DS_CAM = {}, goDsCam = null, henDsCam = null;
+  function camCon(ma) { var x = DS_CAM[String(ma || '').replace(/[^0-9A-Za-z_-]/g, '_')]; return x ? AWChat.camChuan(x) : null; }
+  function ngheDsCamLop() {
+    if (goDsCam) { goDsCam(); goDsCam = null; }
+    DS_CAM = {}; clearTimeout(henDsCam);
+    var lop = LOP_CHON;
+    goDsCam = AWChat.ngheDsCam(lop, function (m) {
+      if (lop !== LOP_CHON) return;
+      DS_CAM = m || {};
+      veChat(); veHopEmCam();
+      // hết hạn cấm gần nhất ⇒ vẽ lại để gỡ nhãn ĐANG CẤM đúng lúc
+      clearTimeout(henDsCam);
+      var nay = window.gioChuan ? window.gioChuan() : Date.now(), gan = 0;
+      Object.keys(DS_CAM).forEach(function (k) { var d = Number(DS_CAM[k].den) || 0; if (d > nay && (!gan || d < gan)) gan = d; });
+      if (gan) henDsCam = setTimeout(function () { veChat(); veHopEmCam(); }, Math.min(gan - nay + 1500, 2000000000));
+    });
+  }
+  function chuConLai(ms) {
+    var p = Math.max(1, Math.ceil(ms / 60e3)), g = Math.floor(p / 60), f = p % 60;
+    return g ? g + ' giờ' + (f ? ' ' + f + ' phút' : '') : p + ' phút';
+  }
+  var HOP_EM = null;   // { ma, ten, lop, ds, chon:{id:1}, xacXoa }
+  function moHopEm(t) {
+    if (!t || !t.ma) return;
+    var nen = $('#emNen');
+    if (!nen) {
+      nen = document.createElement('div');
+      nen.id = 'emNen'; nen.className = 'kc-nen'; nen.hidden = true;
+      document.body.appendChild(nen);
+      nen.addEventListener('click', function (e) { if (e.target === nen || e.target.closest('[data-em-dong]')) dongHopEm(); });
+      nen.addEventListener('change', function (e) {
+        if (!HOP_EM) return;
+        var o = e.target;
+        if (o.matches('[data-em-tat]')) { HOP_EM.chon = {}; if (o.checked) HOP_EM.ds.forEach(function (x) { HOP_EM.chon[x.id] = 1; }); HOP_EM.xacXoa = false; veHopEmDs(); }
+        else if (o.matches('[data-em-id]')) { var id = o.getAttribute('data-em-id'); if (o.checked) HOP_EM.chon[id] = 1; else delete HOP_EM.chon[id]; HOP_EM.xacXoa = false; veHopEmNut(); }
+      });
+      nen.addEventListener('click', function (e) {
+        if (!HOP_EM) return;
+        var g = e.target.closest('[data-em-gio]');
+        if (g) { var o = $('#emGio'); if (o) o.value = g.getAttribute('data-em-gio'); nen.querySelectorAll('[data-em-gio]').forEach(function (x) { x.classList.toggle('chon', x === g); }); return; }
+        if (e.target.closest('[data-em-xoa]')) { xoaTinEm(e.target.closest('[data-em-xoa]')); return; }
+        if (e.target.closest('[data-em-cam]')) { camEm(e.target.closest('[data-em-cam]')); return; }
+        if (e.target.closest('[data-em-bo]')) { boCamEm(e.target.closest('[data-em-bo]')); }
+      });
+      nen.addEventListener('input', function (e) { if (e.target.id === 'emGio') nen.querySelectorAll('[data-em-gio]').forEach(function (x) { x.classList.toggle('chon', x.getAttribute('data-em-gio') === e.target.value); }); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && HOP_EM && !nen.hidden) { e.preventDefault(); dongHopEm(); } });
+    }
+    var l = A.lopTheoMa(DL, LOP_CHON) || {};
+    HOP_EM = { ma: t.ma, ten: String(t.ten || '?'), lop: LOP_CHON, ds: null, chon: {}, xacXoa: false };
+    nen.innerHTML = '<div class="kc-hop em-hop" role="dialog" aria-modal="true" aria-label="Quản lý em trong chat">' +
+      '<div class="em-dau"><span class="cu-av em-av">' + UI_CHAT.o.av(t, 0) + '</span><div><h3>' + A.chuAnToan(HOP_EM.ten) + '</h3>' +
+      '<small>Lớp ' + A.chuAnToan(l.tenGoc || LOP_CHON) + ' · trò chuyện của lớp</small></div>' +
+      '<button type="button" class="em-x" data-em-dong aria-label="Đóng">×</button></div>' +
+      '<div class="em-muc tin"><div class="em-tieu">Tin nhắn em đã gửi</div>' +
+      '<div class="em-thanh"><label class="em-tat"><input type="checkbox" data-em-tat> Chọn tất cả</label><span id="emDem"></span>' +
+      '<button type="button" class="em-nut do" data-em-xoa disabled>Xoá</button></div>' +
+      '<div class="em-ds" id="emDs"><p class="em-cho">Đang tải tin của em…</p></div></div>' +
+      '<div class="em-muc" id="emCam"></div></div>';
+    nen.hidden = false;
+    veHopEmCam();
+    AWChat.tinCuaEm(LOP_CHON, t.ma).then(function (ds) {
+      if (!HOP_EM || HOP_EM.ma !== t.ma) return;
+      HOP_EM.ds = ds.filter(function (x) { return !x.he; });
+      veHopEmDs();
+    }, function (e) {
+      var h = $('#emDs'); if (h) h.innerHTML = '<p class="em-cho">' + A.chuAnToan(AWChat.chuLoi(e)) + '</p>';
+    });
+  }
+  function dongHopEm() { var nen = $('#emNen'); if (nen) nen.hidden = true; HOP_EM = null; }
+  function chuTinEm(x) {
+    if (x.thuHoi) return '<i>(đã thu hồi)</i>';
+    var s = x.sticker ? '[Sticker]' : (x.hinh && !x.chu ? '📷 Ảnh' : ChatUI.chuThuong(x.chu));
+    return A.chuAnToan(s);
+  }
+  function veHopEmDs() {
+    var h = $('#emDs'); if (!h || !HOP_EM || !HOP_EM.ds) return;
+    var ds = HOP_EM.ds;
+    h.innerHTML = ds.length ? ds.map(function (x) {
+      return '<label class="em-tin"><input type="checkbox" data-em-id="' + A.chuAnToan(x.id) + '"' + (HOP_EM.chon[x.id] ? ' checked' : '') + '>' +
+        '<span class="gio">' + A.chuAnToan(AWChat.chuGio(x.luc)) + '</span><span class="chu">' + chuTinEm(x) + '</span></label>';
+    }).join('') : '<p class="em-cho">Em chưa gửi tin nào trong phòng này.</p>';
+    var tat = $('#emNen [data-em-tat]');
+    if (tat) { var n = Object.keys(HOP_EM.chon).length; tat.checked = !!ds.length && n === ds.length; tat.indeterminate = n > 0 && n < ds.length; tat.disabled = !ds.length; }
+    veHopEmNut();
+  }
+  function veHopEmNut() {
+    if (!HOP_EM) return;
+    var n = Object.keys(HOP_EM.chon).length, nut = $('#emNen [data-em-xoa]'), dem = $('#emDem');
+    if (dem) dem.textContent = HOP_EM.ds ? (n ? 'Đã chọn ' + n + '/' + HOP_EM.ds.length : HOP_EM.ds.length + ' tin' + (HOP_EM.ds.length >= AWChat.TIN_EM_TRAN ? ' (' + AWChat.TIN_EM_TRAN + ' tin — có thể còn tin cũ hơn)' : '')) : '';
+    if (nut) { nut.disabled = !n; nut.textContent = HOP_EM.xacXoa ? 'Bấm lần nữa: xoá hẳn ' + n + ' tin' : (n ? 'Xoá ' + n + ' tin' : 'Xoá'); nut.classList.toggle('xac', !!HOP_EM.xacXoa); }
+    var tat = $('#emNen [data-em-tat]');
+    if (tat && HOP_EM.ds) { tat.checked = !!HOP_EM.ds.length && n === HOP_EM.ds.length; tat.indeterminate = n > 0 && n < HOP_EM.ds.length; }
+  }
+  var henXacXoa = null;
+  function xoaTinEm(nut) {
+    var ids = Object.keys(HOP_EM.chon); if (!ids.length) return;
+    if (!HOP_EM.xacXoa) {   // bấm lần 1 ⇒ hỏi lại ngay trên nút (4 giây)
+      HOP_EM.xacXoa = true; veHopEmNut();
+      clearTimeout(henXacXoa); henXacXoa = setTimeout(function () { if (HOP_EM) { HOP_EM.xacXoa = false; veHopEmNut(); } }, 4000);
+      return;
+    }
+    clearTimeout(henXacXoa);
+    if (chuaThay(null)) return;
+    var hop = HOP_EM; nut.disabled = true; nut.textContent = 'Đang xoá…';
+    AWChat.xoaNhieu(hop.lop, ids).then(function (n) {
+      hop.ds = hop.ds.filter(function (x) { return !hop.chon[x.id]; }); hop.chon = {}; hop.xacXoa = false;
+      if (HOP_EM === hop) veHopEmDs();
+      baoToast('Đã xoá hẳn ' + n + ' tin của ' + hop.ten + ' ✓');
+    }, function (e) {
+      hop.xacXoa = false; if (HOP_EM === hop) veHopEmNut();
+      baoToast(AWChat.chuLoi(e));
+    });
+  }
+  function veHopEmCam() {
+    var h = $('#emCam'); if (!h || !HOP_EM) return;
+    var cam = camCon(HOP_EM.ma), giu = $('#emGio') ? $('#emGio').value : '1';
+    var nay = window.gioChuan ? window.gioChuan() : Date.now();
+    h.innerHTML = '<div class="em-tieu">Cấm chat</div>' +
+      (cam ? '<div class="em-dang">🔇 <div><b>Đang bị cấm chat</b><small>còn ' + chuConLai(cam.den - nay) + ' · mở lại lúc ' + A.chuAnToan(AWChat.chuGio(cam.den)) + '</small></div>' +
+        '<button type="button" class="em-nut" data-em-bo>Bỏ cấm</button></div>' : '') +
+      '<div class="em-gio">' + [1, 2, 3, 6, 12, 24].map(function (g) {
+        return '<button type="button" data-em-gio="' + g + '"' + (String(g) === giu ? ' class="chon"' : '') + '>' + g + ' giờ</button>';
+      }).join('') +
+      '<label class="em-so"><input id="emGio" type="number" min="1" max="720" step="1" value="' + A.chuAnToan(giu) + '"> giờ</label>' +
+      '<button type="button" class="em-nut do" data-em-cam>' + (cam ? 'Cấm lại từ bây giờ' : 'Cấm chat') + '</button></div>' +
+      '<p class="em-ghi">Cả lớp thấy dòng "<b>' + A.chuAnToan(HOP_EM.ten) + '</b> đã bị Thầy Andrew cấm chat!" (không ghi thời hạn). Ô nhập của em bị đóng băng: "Em đang bị cấm chat." — hết giờ tự mở.</p>';
+  }
+  function camEm(nut) {
+    if (chuaThay(null)) return;
+    var gio = Math.round(Number(($('#emGio') || {}).value));
+    if (!(gio >= 1 && gio <= 720)) { baoToast('Số giờ cấm từ 1 tới 720.'); return; }
+    var hop = HOP_EM; nut.disabled = true; nut.textContent = 'Đang cấm…';
+    AWChat.camChat(hop.lop, hop.ma, hop.ten, gio).then(function () {
+      baoToast('Đã cấm chat ' + hop.ten + ' ' + gio + ' giờ ✓');
+      if (HOP_EM === hop) veHopEmCam();
+    }, function (e) {
+      nut.disabled = false; nut.textContent = 'Cấm chat';
+      baoToast(e && e.message && !e.code ? e.message : AWChat.chuLoi(e));
+    });
+  }
+  function boCamEm(nut) {
+    if (chuaThay(null)) return;
+    var hop = HOP_EM; nut.disabled = true; nut.textContent = 'Đang mở…';
+    AWChat.boCam(hop.lop, hop.ma).then(function () {
+      baoToast('Đã bỏ cấm chat ' + hop.ten + ' ✓');
+    }, function (e) { nut.disabled = false; nut.textContent = 'Bỏ cấm'; baoToast(AWChat.chuLoi(e)); });
+  }
+
   /* ⭐ v1.80.0 — DÒ "MỘT MÁY NHIỀU MÃ".
      Gom các tin ĐANG HIỆN theo dấu máy; máy nào gắn với từ 2 mã học sinh trở
      lên thì trả về để cảnh báo. Tin của thầy (`vaiTro==='gv'`) bỏ qua — thầy
@@ -9874,6 +10072,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
     TIN = []; TIN_CU = []; hetCu = false; dangTaiCu = false;   // đổi lớp, quên trang cũ đã tải
     UI_CHAT.khoa(false);
+    ngheDsCamLop();   // 🔇 v1.216.0 — em nào của lớp đang bị cấm chat (nhãn ĐANG CẤM + hộp quản lý em)
     AWChat.nghe(LOP_CHON, function (ds) {
       TIN_SONG = ds;
       gopTin();
@@ -14092,6 +14291,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   });
   AWThay.theoDoi(function (u) {
     THAY_PHIEN = u; veThayDn(); if (u) dkDemMoi();
+    if (u && LOP_CHON) ngheDsCamLop();   // 🔇 v1.216.0 — danh sách cấm chỉ thầy đọc: có phiên rồi mới nghe lại được
     if (qmDangMo()) { MK_KQ = null; MK_LOI = ''; HSO_NHO = {}; NK = null; veBaoMat(); }   // v1.166.0 — vừa đăng nhập/thoát khi hộp đang mở ⇒ đọc lại
   })['catch'](function () {
     THAY_PHIEN = null; veThayDn();

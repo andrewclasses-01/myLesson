@@ -2770,7 +2770,12 @@ button.mk-em:hover{border-color:currentColor}
    Đứng yên, không chuyển động. Thẻ đang chọn (nền xanh) giữ viền xanh của thẻ. */
 /* v1.211.2 — thầy: còn SỢI TRẮNG ngoài vệt cyan = viền 1px #CDEFF5 của ô + nền trắng tràn dưới viền ⇒ viền trong suốt,
    nền chỉ tới mép trong viền (background-clip) ⇒ vệt cyan là mép ngoài cùng, ngoài nó chỉ còn quầng sáng. */
-.lop-btn.hom-nay{border-color:transparent; background-clip:padding-box; box-shadow:12px -8px 18px -10px rgba(6,182,212,.5), var(--bong)}
+.lop-btn.hom-nay{border-color:transparent; box-shadow:12px -8px 18px -10px rgba(6,182,212,.5), var(--bong)}
+/* v1.211.3 — thầy: VẪN lem trắng — vệt cyan nằm TRONG mép bo, cạnh ngoài cùng là nền trắng của ô được làm mịn ⇒ pixel trắng.
+   Tô cyan lên CHÍNH VIỀN ngoài cùng (2 lớp nền: trắng tới mép trong viền, gradient cyan cả viền) ⇒ pixel ngoài cùng là cyan;
+   vòng ::after bên trong nối liền vào. Thẻ đang chọn (nền xanh) không đụng. */
+.lop-btn.hom-nay:not(.chon){background:linear-gradient(var(--the), var(--the)) padding-box,
+  radial-gradient(130% 160% at 100% 0%, #06B6D4 0%, rgba(6,182,212,.55) 40%, rgba(6,182,212,0) 85%) border-box}
 .lop-btn.hom-nay::after{content:""; position:absolute; top:0; right:0; bottom:0; left:5px; border-radius:0 calc(var(--r) - 1px) calc(var(--r) - 1px) 0;
   padding:1.5px 1.5px 1.5px 0; pointer-events:none; z-index:2;
   background:radial-gradient(130% 160% at 100% 0%, #06B6D4 0%, rgba(6,182,212,.55) 40%, rgba(6,182,212,0) 85%);
@@ -3622,7 +3627,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=200"></script>
+<script src="config.js?v=201"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>

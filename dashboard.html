@@ -2918,6 +2918,17 @@ button.mk-em:hover{border-color:currentColor}
 .qm-lop.khoa{background:#FFF1E0; color:#B45309}
 .qm-ma{font:700 12px ui-monospace,Consolas,monospace; color:#384B48}
 .qm-chua-ma{font:800 10.5px var(--font); color:#b71c1c}
+/* ⭐ v1.204.0 — GIỚI TÍNH (Nam/Nữ) + HỌC SINH TẠM (kho `lopThem/chung`, chung với AWord) */
+.qm-gt{display:inline-flex; border:1.5px solid #e2e8f0; border-radius:8px; overflow:hidden; vertical-align:middle}
+.qm-gt button{border:0; background:#fff; font:800 11px/1 var(--font); padding:6px 9px; cursor:pointer; color:#94a3b8}
+.qm-gt button + button{border-left:1px solid #e2e8f0}
+.qm-gt button:hover{color:#334155}
+.qm-gt button.chon.m{background:#dbeafe; color:#1d4ed8}
+.qm-gt button.chon.f{background:#fce7f3; color:#be185d}
+.qm-gt.dang{opacity:.55; pointer-events:none}
+.qm-tam{display:inline-block; font:800 9px/1 var(--font); letter-spacing:.08em; padding:3px 6px; border-radius:5px; background:#fef3c7; color:#92400e; margin-left:6px; vertical-align:middle}
+tr.qm-hang-tam td{background:#fffbeb}
+.qm-lt-loi{font:600 11px var(--font); color:#b45309}
 .qm-mk, .qm-tt{font:700 11.5px var(--font); display:inline-flex; align-items:center; gap:6px; white-space:nowrap}
 .qm-mk::before, .qm-tt::before{content:''; width:8px; height:8px; border-radius:50%; background:currentColor}
 .qm-mk.da, .qm-tt.giao{color:var(--la)} .qm-mk.chua, .qm-tt.cho{color:var(--vang)} .qm-mk.khoa{color:#D32F2F}
@@ -3532,7 +3543,7 @@ button.mk-em:hover{border-color:currentColor}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=190"></script>
+<script src="config.js?v=191"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=77"></script>
@@ -3573,6 +3584,21 @@ button.mk-em:hover{border-color:currentColor}
 
   // ---------- tiện ích ----------
   var hen = null;
+  // ⭐ v1.204.0 (thầy báo 01/10) — QUÉT CHUỘT BÔI ĐEN CHỮ ra ngoài làm ĐÓNG pop-up: nhấn trong ô/khung, thả trên nền mờ ⇒
+  // trình duyệt bắn `click` lên TỔ TIÊN CHUNG (chính cái nền) ⇒ mọi hộp "bấm nền = đóng" đóng oan. Chặn CHUNG một chỗ:
+  // cú click có điểm nhấn ≠ điểm click, mà lúc đó đang bôi chữ hoặc điểm nhấn là ô nhập ⇒ nuốt cú click đó (pha bắt).
+  (function () {
+    var nhan = null;
+    document.addEventListener('mousedown', function (e) { nhan = e.target; }, true);
+    document.addEventListener('click', function (e) {
+      var n = nhan; nhan = null;
+      if (!n || n === e.target || !e.target.contains || !e.target.contains(n)) return;
+      var dangBoi = false;
+      try { dangBoi = String(window.getSelection() || '').length > 0; } catch (x) { }
+      var laO = n.closest && n.closest('input, textarea, [contenteditable="true"]');
+      if (dangBoi || laO) { e.stopPropagation(); e.preventDefault(); }
+    }, true);
+  })();
   function baoToast(chu) {
     var t = $('#toast');
     t.textContent = chu;
@@ -11219,6 +11245,7 @@ button.mk-em:hover{border-color:currentColor}
       if (adBamTrongQm(e)) return;                     // v1.177.0 — ảnh đại diện
       if (qcBamTrongQm(e)) return;                     // v1.169.0 — Đợt C: thêm/sửa/chuyển/nghỉ/lớp/kho
       if (QM.tab === 'dd' && ddBam(e)) return;         // v1.170.0 — Đợt F: điểm danh
+      if (QM.tab === 'hs' && ltBam(e)) return;         // v1.204.0 — giới tính + học sinh tạm
       var t = e.target.closest('[data-qm-tab]');
       if (t) { QM.tab = t.getAttribute('data-qm-tab'); QM.em = null; return void veBaoMat(); }
       var x = e.target.closest('[data-qm-xem]');
@@ -11306,6 +11333,93 @@ button.mk-em:hover{border-color:currentColor}
   window.qlMoBaoMat = moHopBaoMat;
 
   // Một em = MỘT dòng: gộp theo MÃ (em học lớp + khóa, hoặc học bổ sung, cùng một mã). Em chưa có mã ⇒ mỗi bản ghi một dòng.
+  /* ============================================================
+     ⭐ v1.204.0 (thầy chốt 01/10/2026, mẫu AWord in Quest v3) — GIỚI TÍNH + HỌC SINH TẠM.
+     Kho `lopThem/chung` (luật: CHỈ thầy — laThay, công cụ `myLesson-app/tools/dang-luat-lop-them.js`):
+       gt  : { <khoá em> : 'm' | 'f' }   — khoá em = `dsNguoi().khoa` (mã đăng nhập chuẩn, hoặc `<LỚP>#<id>`)
+       tam : { <mã lớp> : [{ id, ten, gt, luc, nguon:'aword'|'dashboard' }] } — em đi học thử / học bù, thêm từ AWord
+     ⛔ KHÔNG ghi vào `mystudentRoster*` (máy myStudent ghi đè cả tài liệu ⇒ trường thêm sẽ bị xoá).
+     Ghi TỪNG TRƯỜNG bằng setDoc merge (gt.<khoá> / tam.<lớp>) ⇒ AWord và dashboard ghi cùng lúc không đè nhau.
+     Đọc MỘT tài liệu khi mở hộp (+1 lượt đọc), ghi xong cập nhật bản trong máy, không đọc lại.
+     ============================================================ */
+  var LT = null, LT_DANG = null;               // LT = { gt:{}, tam:{} } | { loi }
+  function ltNap(ep) {
+    if (LT_DANG) return LT_DANG;
+    if (LT && !LT.loi && !ep) return Promise.resolve(LT);
+    LT_DANG = spDb().then(function (x) { return x.fs.getDoc(x.fs.doc(x.db, 'lopThem', 'chung')); }).then(function (s) {
+      var d = (s && s.exists()) ? s.data() : {};
+      LT = { gt: d.gt || {}, tam: d.tam || {} };
+      return LT;
+    }, function (e) {
+      LT = { gt: {}, tam: {}, loi: (e && e.code) || String(e) };
+      return LT;
+    }).then(function (v) { LT_DANG = null; return v; });
+    return LT_DANG;
+  }
+  function ltGhi(goi) {   // goi = { gt: {...} } hoặc { tam: {...} } — merge từng khoá
+    goi.luc = Date.now();
+    return spDb().then(function (x) { return x.fs.setDoc(x.fs.doc(x.db, 'lopThem', 'chung'), goi, { merge: true }); });
+  }
+  function ltBaoLoi(e) {
+    var c = (e && e.code) || '';
+    baoToast(/permission/i.test(c)
+      ? 'Kho giới tính / học sinh tạm chưa mở quyền (luật Firestore chưa đăng) hoặc chưa có phiên thầy 🔐.'
+      : 'Chưa ghi được: ' + ((e && e.message) || e));
+  }
+  function gtCua(khoa) { return (LT && LT.gt && LT.gt[khoa]) || ''; }
+  function htmlGt(g, thuocTinh) {
+    return '<span class="qm-gt" ' + thuocTinh + '>' +
+      '<button type="button" class="m' + (g === 'm' ? ' chon' : '') + '" data-gt-v="m">Nam</button>' +
+      '<button type="button" class="f' + (g === 'f' ? ' chon' : '') + '" data-gt-v="f">Nữ</button></span>';
+  }
+  function dsTam(maLop) { return (LT && LT.tam && Array.isArray(LT.tam[maLop])) ? LT.tam[maLop] : []; }
+  function hangTam(l, h) {
+    return '<tr class="qm-hang-tam"><td><div class="qm-em">' + oAnh(h.ten, l.tenGoc || l.maLop) + '<div><b>' + qmE(h.ten) + '</b><span class="qm-tam">TẠM</span>' +
+      '<small>' + (h.nguon === 'aword' ? 'thêm từ AWord' : 'thêm ở dashboard') + (h.luc ? ' · ' + ngayVN(new Date(h.luc).toISOString()) : '') + '</small></div></div></td>' +
+      '<td>' + htmlGt(h.gt || '', 'data-tam-gt="' + qmE(l.maLop) + '|' + qmE(h.id) + '"') + '</td>' +
+      '<td><span class="qm-lop' + (l.loai === 'khoa' ? ' khoa' : '') + '">' + qmE(l.tenGoc || l.maLop) + '</span></td>' +
+      '<td><span class="qm-mk nho">—</span></td><td><span class="qm-mk nho">không tài khoản</span></td>' +
+      '<td><div class="qm-hd"><button type="button" class="qm-nut" data-tam-xoa="' + qmE(l.maLop) + '|' + qmE(h.id) + '" title="Xoá học sinh tạm (AWord cũng mất theo)">Xoá</button></div></td></tr>';
+  }
+  // Bấm Nam/Nữ (em chính thức hoặc em tạm) · Xoá em tạm. Trả true nếu đã xử lý.
+  function ltBam(e) {
+    var nut = e.target.closest('[data-gt-v]');
+    if (nut) {
+      var hop = nut.closest('[data-gt-khoa],[data-tam-gt]');
+      if (!hop) return false;
+      e.stopPropagation();
+      var v = nut.getAttribute('data-gt-v');
+      if (hop.hasAttribute('data-gt-khoa')) {
+        var k = hop.getAttribute('data-gt-khoa'), cu = gtCua(k), moi = cu === v ? '' : v;   // bấm lại = bỏ chọn
+        var goi = { gt: {} };
+        goi.gt[k] = moi;
+        hop.classList.add('dang');
+        ltGhi(goi).then(function () { LT.gt[k] = moi; if (!moi) delete LT.gt[k]; veBangHs(); }, function (er) { hop.classList.remove('dang'); ltBaoLoi(er); });
+        return true;
+      }
+      var pt = hop.getAttribute('data-tam-gt').split('|'), ds = dsTam(pt[0]).map(function (x) { return Object.assign({}, x); });
+      var em = ds.filter(function (x) { return String(x.id) === pt[1]; })[0];
+      if (!em) return true;
+      em.gt = em.gt === v ? '' : v;
+      var g2 = { tam: {} }; g2.tam[pt[0]] = ds;
+      hop.classList.add('dang');
+      ltGhi(g2).then(function () { LT.tam[pt[0]] = ds; veBangHs(); }, function (er) { hop.classList.remove('dang'); ltBaoLoi(er); });
+      return true;
+    }
+    var xo = e.target.closest('[data-tam-xoa]');
+    if (xo) {
+      e.stopPropagation();
+      var p2 = xo.getAttribute('data-tam-xoa').split('|');
+      var con = dsTam(p2[0]).filter(function (x) { return String(x.id) !== p2[1]; });
+      var g3 = { tam: {} }; g3.tam[p2[0]] = con;
+      xo.disabled = true;
+      ltGhi(g3).then(function () { LT.tam[p2[0]] = con; veBangHs(); baoToast('Đã xoá học sinh tạm (AWord cũng mất theo).'); },
+        function (er) { xo.disabled = false; ltBaoLoi(er); });
+      return true;
+    }
+    return false;
+  }
+
   function dsNguoi() {
     var theoMa = {}, ds = [];
     (DL.lop || []).concat(DL.khoa || []).forEach(function (l) {
@@ -11390,6 +11504,7 @@ button.mk-em:hover{border-color:currentColor}
     return '<tr data-qm-em="' + qmE(p.khoa) + '" title="Bấm để xem hồ sơ em">' +
       '<td><div class="qm-em">' + oAnhNguoi(p) + '<div><b>' + qmE(p.ten) + '</b>' +
         (p.tenCu.length ? '<small>tên cũ: ' + qmE(p.tenCu.join(', ')) + '</small>' : '') + '</div></div></td>' +
+      '<td>' + htmlGt(gtCua(p.khoa), 'data-gt-khoa="' + qmE(p.khoa) + '"') + '</td>' +
       '<td>' + p.noi.map(chipNoi).join('') + '</td>' +
       '<td>' + (p.ma ? '<code class="qm-ma">' + qmE(p.ma) + '</code>' : '<span class="qm-chua-ma">CHƯA CÓ MÃ</span>') + '</td>' +
       '<td>' + htmlTtMk(p) + '</td>' +
@@ -11405,9 +11520,16 @@ button.mk-em:hover{border-color:currentColor}
       if (QM.loc && !p.noi.some(function (n) { return n.maLop === QM.loc; })) return false;
       return !q || boDau(p.ten + ' ' + p.tenCu.join(' ') + ' ' + p.ma).indexOf(q) >= 0;
     });
-    tb.innerHTML = ds.length ? ds.map(hangHs).join('') : '<tr><td colspan="5" class="qm-trong">Không có em nào khớp.</td></tr>';
+    if (!LT && !LT_DANG) ltNap().then(function () { if (qmDangMo('hs') && !QM.em && QM.xem === 'hs') veBangHs(); });
+    // v1.204.0 — em TẠM (kho lopThem) cuối bảng, theo lớp đang lọc; tìm theo tên cũng lọc em tạm
+    var tam = [];
+    tatCaLop().forEach(function (l) {
+      if (QM.loc && QM.loc !== l.maLop) return;
+      dsTam(l.maLop).forEach(function (h) { if (!q || boDau(h.ten).indexOf(q) >= 0) tam.push(hangTam(l, h)); });
+    });
+    tb.innerHTML = (ds.length || tam.length) ? ds.map(hangHs).join('') + tam.join('') : '<tr><td colspan="6" class="qm-trong">Không có em nào khớp.</td></tr>';
     var dem = $('#qmDemHs');
-    if (dem) dem.textContent = ds.length + ' em';
+    if (dem) dem.textContent = ds.length + ' em' + (tam.length ? ' · ' + tam.length + ' tạm' : '') + (LT && LT.loi ? ' · ⚠ chưa đọc được giới tính' : '');
   }
   function tatCaLop() { return (DL.lop || []).concat(DL.khoa || []); }
   // v1.169.0 — lớp đã tạo nhưng CHƯA có em (web chưa thấy) — đọc roster; chưa đọc thì đọc rồi vẽ lại.
@@ -11437,7 +11559,7 @@ button.mk-em:hover{border-color:currentColor}
           var laKhoa = l.loai === 'khoa', tt = trangThaiBai(l);
           var lich = laKhoa ? 'Khóa học' : [String(l.thu || '').replace(/,/g, ' · '), l.gio ? l.gio + (l.tan ? '–' + l.tan : '') : ''].filter(Boolean).join(' · ');
           return '<tr><td><span class="qm-lop' + (laKhoa ? ' khoa' : '') + '">' + qmE(l.tenGoc || l.maLop) + '</span></td>' +
-            '<td>' + qmE(lich || '—') + '</td><td>' + (l.hocSinh || []).length + ' em</td>' +
+            '<td>' + qmE(lich || '—') + '</td><td>' + (l.hocSinh || []).length + ' em' + (dsTam(l.maLop).length ? ' <span class="qm-tam">+' + dsTam(l.maLop).length + ' TẠM</span>' : '') + '</td>' +
             '<td><span class="qm-tt ' + tt + '">' + { giao: 'Đã giao', cho: 'Chờ bài', khong: 'Không giao bài' }[tt] + '</span></td>' +
             '<td><div class="qm-hd"><button type="button" class="qm-nut" data-qm-loc="' + qmE(l.maLop) + '">Học sinh</button>' +
               '<button type="button" class="qm-nut" data-ad-lop="' + qmE(l.maLop) + '" title="Đổi ảnh đại diện cả lớp một lượt">Ảnh đại diện</button>' +
@@ -11451,7 +11573,7 @@ button.mk-em:hover{border-color:currentColor}
       '<div class="qm-chips"><button type="button" class="qm-chip' + (!QM.loc ? ' chon' : '') + '" data-qm-loc="">Tất cả</button>' +
         dsL.map(function (l) { return '<button type="button" class="qm-chip' + (QM.loc === l.maLop ? ' chon' : '') + '" data-qm-loc="' + qmE(l.maLop) + '">' + qmE(l.tenGoc || l.maLop) + '</button>'; }).join('') + '</div>' +
       '<div class="mk-hoi" hidden></div>' +
-      '<table class="qm-bang qm-bang-hs"><thead><tr><th>Học sinh</th><th>Lớp / khóa</th><th>ID đăng nhập</th><th>Mật khẩu</th><th></th></tr></thead><tbody id="qmBangHs"></tbody></table>';
+      '<table class="qm-bang qm-bang-hs"><thead><tr><th>Học sinh</th><th>Giới tính</th><th>Lớp / khóa</th><th>ID đăng nhập</th><th>Mật khẩu</th><th></th></tr></thead><tbody id="qmBangHs"></tbody></table>';
   }
   /* ============================================================
      ⭐⭐ v1.167.0 (28/09/2026) — HỒ SƠ EM CÓ SỐ THẬT (Đợt B1+B2, kế hoạch myLesson-app "KE HOACH QUAN LY HOC SINH.md").

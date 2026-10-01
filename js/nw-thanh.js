@@ -183,6 +183,7 @@
   ICQ.kho = P2('<path d="M3 7l1.5-3h15L21 7"/><rect x="3" y="7" width="18" height="13" rx="1.5"/><path d="M9.5 11.5h5"/>');
   ICQ.khoChat = P2('<path d="M12 3a8 8 0 0 0-6.9 12L4 20l5-1.1A8 8 0 1 0 12 3z"/><path d="M9 10h6M9 13h4"/>');
   ICQ.sinhNhat = P2('<path d="M4 20v-6.5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2V20"/><path d="M4 20h16"/><path d="M4 15.5c1.4 1 2.6 1 4 0s2.6-1 4 0 2.6 1 4 0 2.6-1 4 0"/><path d="M9 11.5V8M12 11.5V6M15 11.5V8"/>');
+  ICQ.baiCheck = P2('<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 14l2 2 4-4"/>');
   ICQ.baoMat = P2('<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>');
   // ⭐ v1.203.1 — icon MÀU ĐẶC kiểu Facebook nay ở FILE CHUNG js/ic-ql.js (window.AC_ICQL) — dùng chung với nw/quanly.html.
   // Chưa nạp được file đó ⇒ rơi về icon nét cũ (`ic`).
@@ -194,6 +195,7 @@
     { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, icm: ICM.top },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
     { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, icm: ICM.qua },
     { ma: 'khoBai', chu: 'Kho bài', ic: ICQ.kho, icm: ICM.khoBai },   // v1.203.0 — thay "Bài đã xoá": pop-up lớn mọi lớp (window.qlMoKhoLon)
+    { ma: 'baiCheck', chu: 'Bài check', ic: ICQ.baiCheck },   // v1.205.0 — bài check AWord theo bộ đề (window.qlMoBaiCheck)
     { ma: 'kholuutru', chu: 'Kho trò chuyện', ic: ICQ.khoChat, icm: ICM.kholuutru },
     { vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, icm: ICM.nhom, mo: 'Lập và quản lý nhóm chat các lớp' },
@@ -228,6 +230,7 @@
     if (ma === 'baoMat') { if (window.qlMoBaoMat) window.qlMoBaoMat(); return; }
     if (ma === 'sinhNhat') { if (window.qlMoSinhNhat) window.qlMoSinhNhat(); return; }
     if (ma === 'khoBai') { if (window.qlMoKhoLon) window.qlMoKhoLon(); return; }
+    if (ma === 'baiCheck') { if (window.qlMoBaiCheck) window.qlMoBaiCheck(); return; }
     if (ma === 'top' || ma === 'qua' || ma === 'kholuutru') { if (window.qlMoMuc) window.qlMoMuc(ma); return; }
     // Trang thử: mục Network ⇒ trang quản lý myNetwork (nw/quanly.html?muc=…, cùng mã mục)
     if (window.AC_THU && m_NW[ma]) { location.href = 'nw/quanly.html?muc=' + ma; return; }

@@ -3149,6 +3149,20 @@ tr.qm-hang-tam td{background:#fffbeb}
 .sn-khi.nay{background:#EC4899; color:#fff}
 .sn-khi.gan{background:#FCE7F3; color:#BE185D}
 .sn-chan{margin:10px 0 0 !important; font-size:12px !important; color:var(--nhat) !important}
+/* ⭐ v1.205.0 — mục "Bài check" cột trái (window.qlMoBaiCheck): bài check AWord theo bộ đề (kho `boDeIn`, PDF ở Storage `baiCheck/`) */
+.bc-hop{width:min(560px,100%); max-height:86vh; display:flex; flex-direction:column}
+.bc-hop h3{color:#c2410c}
+.bc-ds{overflow:auto; margin:0 -8px}
+.bc-dong{display:flex; align-items:center; gap:11px; padding:10px 8px; border-radius:10px}
+.bc-dong:hover{background:#F6F9F8}
+.bc-pdf{width:34px; height:42px; flex:none; border-radius:5px; background:#fee2e2; color:#dc2626; display:grid; place-items:center; font:900 8.5px var(--font)}
+.bc-dong > div{flex:1; min-width:0}
+.bc-dong b{display:block; font:700 13.5px/1.3 var(--font)}
+.bc-dong small{display:block; font:600 11.5px/1.35 var(--font); color:var(--nhat)}
+.bc-nut{flex:none; display:flex; gap:6px}
+.bc-nut a, .bc-nut button{border:0; border-radius:10px; padding:8px 12px; font:700 12.5px var(--font); cursor:pointer; background:#eef2f7; color:#1d4ed8; text-decoration:none; white-space:nowrap}
+.bc-nut .san{background:#dcfce7; color:#15803d}
+.bc-chua{flex:none; font:700 11.5px var(--font); color:var(--nhat)}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=8">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
@@ -3543,7 +3557,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=191"></script>
+<script src="config.js?v=192"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=77"></script>
@@ -13313,6 +13327,69 @@ tr.qm-hang-tam td{background:#fffbeb}
     so.textContent = String(n);
   }
   window.qlMoSinhNhat = moSinhNhat;
+
+  // ⭐ v1.205.0 (01/10/2026, AWord Đợt 435) — MỤC "BÀI CHECK" (cột trái): bản thầy của mỗi BỘ ĐỀ Logic/Translation Quest
+  // AWord in (kho `boDeIn`, CHỈ THẦY — luật laThay; PDF ở Storage `baiCheck/`, link có token tải). Mới nhất lên đầu.
+  // Mở = tab PDF (Safari: nút Chia sẻ → Notability). Chia sẻ = hộp Chia sẻ của máy NGAY (Notability…):
+  // ⛔ iOS chỉ cho `navigator.share` NGAY trong cú chạm ⇒ chạm 1 tải sẵn PDF ("Chạm lại để chia sẻ"), chạm 2 mới mở hộp.
+  var BC_SAN = {};
+  function moBaiCheck() {
+    var nen = $('#bcNen');
+    if (!nen) {
+      nen = document.createElement('div');
+      nen.id = 'bcNen'; nen.className = 'kc-nen'; nen.hidden = true;
+      document.body.appendChild(nen);
+      nen.addEventListener('click', function (e) {
+        if (e.target === nen || e.target.closest('[data-bc-dong]')) { nen.hidden = true; return; }
+        var b = e.target.closest('[data-bc-chia]');
+        if (b) bcChiaSe(b);
+      });
+    }
+    nen.innerHTML = '<div class="kc-hop bc-hop" role="dialog" aria-label="Bài check"><h3>Bài check</h3>' +
+      '<p>Bản cho thầy của từng bộ đề in từ AWord (Logic / Translation Quest) · mới nhất lên đầu.</p>' +
+      '<div class="bc-ds" id="bcDs"><p class="qm-p">Đang tải…</p></div>' +
+      '<div class="kc-chan"><button type="button" data-bc-dong>Đóng</button></div></div>';
+    nen.hidden = false;
+    spDb().then(function (x) {
+      return x.fs.getDocs(x.fs.query(x.fs.collection(x.db, 'boDeIn'), x.fs.orderBy('tao', 'desc'), x.fs.limit(60)));
+    }).then(function (snap) {
+      var ds = [];
+      snap.forEach(function (d) { ds.push(d.data()); });
+      var host = $('#bcDs');
+      if (!host) return;
+      host.innerHTML = ds.length ? ds.map(function (b) {
+        var loai = b.kieu === 'trans' ? 'TRANSLATION QUEST' : 'LOGIC QUEST';
+        var ten = (b.ma || '') + ' · ' + loai + ' · ' + (b.maBai || b.actTen || '');
+        var phu = (b.ngayTao || '') + (b.lop && b.lop.length ? ' · in cho ' + b.lop.join(', ') : '') + (b.soTrang ? ' · ' + b.soTrang + ' trang' : '');
+        var tep = (b.maBai || 'AWord') + ' - ' + (b.ma || '') + ' ' + loai + ' - BAI CHECK.pdf';
+        var nut = b.pdf
+          ? '<span class="bc-nut"><a href="' + qmE(b.pdf) + '" target="_blank" rel="noopener">Mở</a>' +
+            (navigator.share ? '<button type="button" data-bc-chia data-url="' + qmE(b.pdf) + '" data-tep="' + qmE(tep) + '"' + (BC_SAN[b.pdf] ? ' class="san">Chạm lại để chia sẻ' : '>Chia sẻ') + '</button>' : '') + '</span>'
+          : '<span class="bc-chua">chưa có PDF</span>';
+        return '<div class="bc-dong"><span class="bc-pdf">PDF</span><div><b>' + qmE(ten) + '</b><small>' + qmE(phu) + '</small></div>' + nut + '</div>';
+      }).join('') : '<p class="qm-p">Chưa có bộ đề nào. In Logic Quest / Translation Quest trong AWord (bật "Bài check") là bản thầy tự lên đây.</p>';
+    }).catch(function (e) {
+      var host = $('#bcDs');
+      if (host) host.innerHTML = '<p class="qm-p">' + (/permission/i.test((e && e.code) || '')
+        ? 'Chưa đọc được kho bài check — cần phiên thầy 🔐 và luật Firestore <b>boDeIn</b> (myLesson-app tools/dang-luat-lop-them.js).'
+        : 'Không tải được: ' + qmE((e && e.message) || e)) + '</p>';
+    });
+  }
+  function bcChiaSe(b) {
+    var url = b.getAttribute('data-url'), tep = b.getAttribute('data-tep');
+    if (BC_SAN[url]) {
+      var f = new File([BC_SAN[url]], tep, { type: 'application/pdf' });
+      if (navigator.canShare && !navigator.canShare({ files: [f] })) { baoToast('Máy này không chia sẻ được file — bấm Mở.'); return; }
+      navigator.share({ files: [f], title: tep }).catch(function (e) { if (e && e.name !== 'AbortError') baoToast('Không chia sẻ được: ' + (e.message || e)); });
+      return;
+    }
+    b.textContent = 'Đang tải…';
+    fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); }).then(function (blob) {
+      BC_SAN[url] = blob;
+      b.textContent = 'Chạm lại để chia sẻ'; b.classList.add('san');
+    }, function (e) { b.textContent = 'Chia sẻ'; baoToast('Không tải được PDF: ' + (e.message || e)); });
+  }
+  window.qlMoBaiCheck = moBaiCheck;
   function veThayDn() {
     var chu = $('#thayDnChu');
     if (!chu) return;
@@ -13505,6 +13582,6 @@ tr.qm-hang-tam td{background:#fffbeb}
 })();
 </script>
 <script src="js/ic-ql.js?v=1"></script>
-<script src="js/nw-thanh.js?v=21"></script>
+<script src="js/nw-thanh.js?v=22"></script>
 </body>
 </html>

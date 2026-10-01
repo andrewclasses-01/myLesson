@@ -34,7 +34,19 @@
       return AWChat.kho().then(function (f) {
         var o = {}, khoa = String(x.ma).replace(/[.$#[\]/]/g, '_');
         o[khoa] = { ten: String(x.ten || '?').slice(0, 60), luc: f.fs.serverTimestamp(), trang: trang, bai: String(x.bai || '').slice(0, 80) };
-        return f.fs.setDoc(f.fs.doc(f.db, 'lessonOnline', String(x.lop)), o, { merge: true });
+        var refOn = f.fs.doc(f.db, 'lessonOnline', String(x.lop));
+        // ⭐ v1.214.0 — SỔ LỊCH SỬ ONLINE (pop-up phóng to dashboard): cùng lượt ghi, thêm 1 mục vào sổ ngày của lớp
+        //   `lessonOnlineNgay/<lớp>_<yyyy-mm-dd>` { <mã>: ["SSSc[:bài]"] } — SSS = khung 2 phút trong ngày, c = mã trang.
+        //   Sổ bị từ chối (luật chưa đăng / quá 800 mục) ⇒ vẫn báo online như cũ.
+        var d = new Date(), hai = function (n) { return (n < 10 ? '0' : '') + n; };
+        var ngay = d.getFullYear() + '-' + hai(d.getMonth() + 1) + '-' + hai(d.getDate());
+        var khung = Math.floor((d.getHours() * 60 + d.getMinutes()) / 2);
+        var muc = ('00' + khung).slice(-3) + ({ lop: 'l', khoa: 'k', bai: 'b', sp: 's' }[trang] || 'l') + (x.bai ? ':' + String(x.bai).slice(0, 24) : '');
+        var so = {}; so[khoa] = f.fs.arrayUnion(muc);
+        var b = f.fs.writeBatch(f.db);
+        b.set(refOn, o, { merge: true });
+        b.set(f.fs.doc(f.db, 'lessonOnlineNgay', String(x.lop) + '_' + ngay), so, { merge: true });
+        return b.commit()['catch'](function () { return f.fs.setDoc(refOn, o, { merge: true }); });
       });
     })['catch'](function () { lanCuoi = 0; }).then(function () { dangGhi = false; });
   }

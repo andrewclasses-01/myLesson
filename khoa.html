@@ -652,7 +652,7 @@ body.mo-menu .side.trai{transform:none}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=14">
+<link rel="stylesheet" href="css/chat-ui.css?v=15">
 </head>
 <body>
 
@@ -726,13 +726,13 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=196"></script>
+<script src="config.js?v=197"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
 <script src="js/nw-phien.js?v=6"></script>
-<script src="js/chat.js?v=30"></script>
-<script src="js/chat-ui.js?v=15"></script>
+<script src="js/chat.js?v=31"></script>
+<script src="js/chat-ui.js?v=16"></script>
 <script src="js/vi-qua.js?v=3"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
@@ -1562,6 +1562,7 @@ var UI_CHAT = ChatUI.tao({
     /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay là tin hiện HAI LẦN. */
   },
   datCx: function(t, v){ return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
+  ghiXem: function(luc){ return AWChat.ghiXem(LOP_DL, MA_HS, TOI, luc); },   // v1.210.0 — "đã xem" tin cuối
   thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },
   xoa: function(t){ return AWChat.xoa(LOP_DL, t.id); },
   loi: function(e){ baoToast(typeof e === 'string' ? e : AWChat.chuLoi(e)); },
@@ -1647,6 +1648,8 @@ function noiChat(){
     khung.innerHTML = '<div class="chat-cho">' + chuAnToan(AWChat.chuLoi(e)) + '</div>';
     UI_CHAT.khoa(true, 'Chưa mở được phòng chat.');
   });
+  UI_CHAT.datXem({});   // v1.210.0 — "đã xem" tin cuối (gọi SAU nghe(): nghe() tự tắt kênh đã xem cũ)
+  if (AWChat.ngheXem) AWChat.ngheXem(LOP_DL, function(m){ UI_CHAT.datXem(m); });
 }
 
 /* Bấm vào chỗ TRỐNG trong khung chat → con trỏ nhảy vào ô nhập. */

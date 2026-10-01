@@ -300,13 +300,16 @@
   function anTip() { if (TIP) TIP.hidden = true; }
   function hienTip(nut, cxMap, khoaToi) {
     var d = demCx(cxMap); if (!d.tong) return anTip();
-    if (!TIP) { TIP = document.createElement('div'); TIP.className = 'cu-pop cu-tip'; document.body.appendChild(TIP); }
     var ng = d.nguoi.slice().sort(function (a, b) { return b.luc - a.luc; }), TOI_DA = 12;
-    TIP.innerHTML = ng.slice(0, TOI_DA).map(function (x) {
+    hienTipHtml(nut, ng.slice(0, TOI_DA).map(function (x) {
       return '<div class="d"><span class="n">' + esc(x.khoa === khoaToi ? x.ten + ' (em)' : x.ten) + '</span><span class="e">' +
         KINDS.filter(function (k) { return x.n[k]; }).map(function (k) { return '<img src="' + urlEmoji(CX_E[k].e) + '" alt="">' + (x.n[k] > 1 ? '<b>' + x.n[k] + '</b>' : ''); }).join('') + '</span></div>';
-    }).join('') + (ng.length > TOI_DA ? '<div class="them">và ' + (ng.length - TOI_DA) + ' người khác</div>' : '');
-    TIP.hidden = false;
+    }).join('') + (ng.length > TOI_DA ? '<div class="them">và ' + (ng.length - TOI_DA) + ' người khác</div>' : ''));
+  }
+  function hienTipHtml(nut, html, lop) {
+    if (!TIP) { TIP = document.createElement('div'); document.body.appendChild(TIP); }
+    TIP.className = 'cu-pop cu-tip' + (lop ? ' ' + lop : '');
+    TIP.innerHTML = html; TIP.hidden = false;
     var r = nut.getBoundingClientRect();
     datCanh(TIP, r.left + r.width / 2 - TIP.offsetWidth / 2, r.top - TIP.offsetHeight - 6 < 8 ? r.bottom + 6 : r.top - TIP.offsetHeight - 6);
   }
@@ -522,19 +525,78 @@
       anTip();   // v1.207.0 — viên dưới chuột sắp bị vẽ lại
       var sat = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60 || !khung._cuDaVe;
       var cuon = khung.scrollTop;
-      khung.innerHTML = (dau || '') + (ui.ds.length ? '<div class="cu-ds">' + ui.ds.map(veTin).join('') + '</div>'
+      khung.innerHTML = (dau || '') + (ui.ds.length ? '<div class="cu-ds">' + ui.ds.map(veTin).join('') + (o.ghiXem ? '<div class="cu-dx" hidden></div>' : '') + '</div>'
         : '<div class="chat-cho">' + (o.trong || 'Chưa có tin nhắn nào.') + '</div>');
       var kieu = khung.style.scrollBehavior; khung.style.scrollBehavior = 'auto';
       khung.scrollTop = sat ? khung.scrollHeight : cuon;
       khung.style.scrollBehavior = kieu;
       khung._cuDaVe = true;
       khung._cuDay = sat;
+      veXem(); henThuXem();   // v1.210.0
     };
     // ⭐ v1.198.0 — ảnh trong tin tải XONG sau lúc vẽ làm khung cao lên ⇒ đang ở đáy thì bám đáy tiếp (khỏi hụt tin cuối)
     khung.addEventListener('load', function (e) {
       if (e.target && e.target.tagName === 'IMG' && khung._cuDay) { var kieu = khung.style.scrollBehavior; khung.style.scrollBehavior = 'auto'; khung.scrollTop = khung.scrollHeight; khung.style.scrollBehavior = kieu; }
     }, true);
-    khung.addEventListener('scroll', function () { khung._cuDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60; });
+    khung.addEventListener('scroll', function () { khung._cuDay = (khung.scrollHeight - khung.scrollTop - khung.clientHeight) < 60; if (khung._cuDay) henThuXem(); });
+
+    /* ⭐ v1.210.0 — "ĐÃ XEM" kiểu Messenger (thầy chốt kiểu A, mẫu D:\OTHERS\CLAUDE\myLesson - thiet ke da xem\mau-v2):
+       hàng avatar nhỏ sát đáy khung, CĂN PHẢI, chỉ dưới TIN CUỐI, nằm dưới viên cảm xúc. Không tính người gửi tin cuối + chính mình.
+       Rê chuột / chạm ⇒ ô ĐÃ XEM · CHƯA XEM. Trang truyền o.ghiXem(luc) (ghi ô của mình) và gọi ui.datXem(map) khi kho đổi. */
+    var XEM = {}, henXem = null, daGhiId = '', khungHien = true;
+    try { new IntersectionObserver(function (es) { khungHien = es[es.length - 1].intersectionRatio >= 0.3; if (khungHien) henThuXem(); }, { threshold: [0, 0.3, 1] }).observe(khung); } catch (e) {}
+    function tinCuoi() { for (var i = ui.ds.length - 1; i >= 0; i--) if (ui.ds[i] && ui.ds[i].id) return ui.ds[i]; return null; }
+    function khoaGui(t) { return t.vaiTro === 'gv' ? 'GV' : String(t.ma || ''); }
+    function dsDaXem() {
+      var t = tinCuoi(); if (!t) return [];
+      var bo = khoaGui(t), toi = toiK();
+      return Object.keys(XEM).filter(function (k) { var v = XEM[k]; return k !== bo && k !== toi && v && Number(v.luc) >= t.luc; })
+        .map(function (k) { return { khoa: k, ten: String(XEM[k].ten || '?'), luc: Number(XEM[k].luc) }; })
+        .sort(function (a, b) { return a.luc - b.luc; });
+    }
+    function avNho(x) { return '<span class="x">' + (o.av ? o.av({ ten: x.ten, ma: x.khoa, vaiTro: x.khoa === 'GV' ? 'gv' : 'hs' }, 0) : '') + '</span>'; }
+    function veXem() {
+      var hop = khung.querySelector('.cu-dx'); if (!hop) return;
+      var ds = dsDaXem(), day = khung._cuDay;
+      if (!ds.length) { hop.hidden = true; hop.innerHTML = ''; return; }
+      var TOI_DA = 10, hien = ds.length > TOI_DA ? TOI_DA - 1 : ds.length;
+      hop.innerHTML = ds.slice(0, hien).map(avNho).join('') + (ds.length > hien ? '<span class="them">+' + (ds.length - hien) + '</span>' : '');
+      hop.setAttribute('aria-label', 'Đã xem: ' + ds.length + ' người');
+      hop.hidden = false;
+      if (day) { var kieu = khung.style.scrollBehavior; khung.style.scrollBehavior = 'auto'; khung.scrollTop = khung.scrollHeight; khung.style.scrollBehavior = kieu; }
+    }
+    function htmlTipXem() {
+      var ds = dsDaXem(), t = tinCuoi(); if (!t) return '';
+      var kd = function (x) { return khongDau(x).trim(); };
+      var bo = {}; ds.forEach(function (x) { bo[kd(x.ten)] = 1; });
+      bo[kd(t.ten)] = 1; if (o.toi && o.toi.ten) bo[kd(o.toi.ten)] = 1;
+      var chua = [], gap = {};
+      (o.dsNhac ? o.dsNhac() : []).forEach(function (n) { var k = kd(n); if (n && !bo[k] && !gap[k]) { gap[k] = 1; chua.push(n); } });
+      var dong = function (x) { return '<span>' + avNho(x) + esc(x.ten) + '</span>'; };
+      return '<h4>Đã xem · ' + ds.length + '</h4><div class="ds">' + ds.map(dong).join('') + '</div>' +
+        (chua.length ? '<h4>Chưa xem · ' + chua.length + '</h4><div class="ds chua">' + chua.map(function (n) { return dong({ ten: n, khoa: '' }); }).join('') + '</div>' : '');
+    }
+    khung.addEventListener('pointerover', function (e) { var h = e.target.closest('.cu-dx'); if (h && e.pointerType !== 'touch') hienTipHtml(h, htmlTipXem(), 'xem'); });
+    khung.addEventListener('pointerout', function (e) { var h = e.target.closest('.cu-dx'); if (h && !h.contains(e.relatedTarget)) anTip(); });
+    khung.addEventListener('click', function (e) {   // điện thoại: chạm hàng đã xem ⇒ bật/tắt ô
+      var h = e.target.closest('.cu-dx'); if (!h) return;
+      if (TIP && !TIP.hidden) anTip(); else hienTipHtml(h, htmlTipXem(), 'xem');
+    });
+    // ghi "mình đã xem tới tin cuối": tin cuối mới (không phải của mình) + khung đang hiện + trang đang mở + đang ở đáy khung
+    function thuGhiXem() {
+      henXem = null;
+      if (!o.ghiXem || ui.chiXem) return;
+      var t = tinCuoi(); if (!t || cuaToi(t) || daGhiId === t.id) return;
+      if (document.visibilityState !== 'visible' || !khungHien || !khung.offsetParent || !khung._cuDay) return;
+      var cu = XEM[toiK()]; if (cu && Number(cu.luc) >= t.luc) { daGhiId = t.id; return; }
+      daGhiId = t.id;
+      Promise.resolve(o.ghiXem(t.luc))['catch'](function () { daGhiId = ''; });
+    }
+    function henThuXem() { if (!o.ghiXem) return; clearTimeout(henXem); henXem = setTimeout(thuGhiXem, 1200); }
+    document.addEventListener('visibilitychange', henThuXem);
+    window.addEventListener('focus', henThuXem);
+    khung.addEventListener('pointerdown', henThuXem);
+    ui.datXem = function (map) { XEM = map || {}; veXem(); henThuXem(); };
     function veLai() { ui.ve(ui.ds.map(function (t) { return t; }), dauHienTai()); }
     function dauHienTai() { var c = khung.querySelector('.cu-ds'); var h = ''; if (c) { var n = khung.firstChild; while (n && n !== c) { h += n.outerHTML || ''; n = n.nextSibling; } } return h; }
     function nay(id, k) {

@@ -244,7 +244,37 @@
     })['catch'](function (e) { if (khiLoi) khiLoi(e); });
   }
 
+  /* ⭐ v1.210.0 (01/10/2026) — "ĐÃ XEM" tin cuối kiểu Messenger (thầy chốt kiểu A, học sinh cũng thấy).
+     MỘT tài liệu mỗi lớp `classChatXem/<lớp>` = { <mã em | 'GV'>: {ten, luc} } — `luc` = createdAt của TIN CUỐI người đó
+     đã xem (mốc của tin, không phải đồng hồ máy). Luật: mỗi người CHỈ ghi ô của chính mình (tools/dang-luat-chat-da-xem.js).
+     ⛔ Lượt đọc: mỗi lượt ghi ô = 1 lượt đọc cho MỖI máy đang mở phòng ⇒ khuôn chỉ ghi khi tin cuối ĐỔI và khung chat
+     đang hiện trên màn (js/chat-ui.js thuGhiXem), không ghi theo nhịp đồng hồ. */
+  var dungXem = null;
+  function ngheXem(maLop, cb) {
+    thoiXem();
+    var huy = false, go = null;
+    dungXem = function () { huy = true; if (go) { try { go(); } catch (e) {} } };
+    db().then(function (f) {
+      if (huy) return;
+      go = f.fs.onSnapshot(f.fs.doc(f.db, 'classChatXem', maLop),
+        function (s) { if (!huy) cb(s.exists() ? (s.data() || {}) : {}); },
+        function () { if (!huy) cb({}); });
+    });
+  }
+  function thoiXem() { if (dungXem) dungXem(); dungXem = null; }
+  function ghiXem(maLop, maNguoi, ten, luc) {
+    var khoa = String(maNguoi || '').replace(/[.$#[\]/]/g, '_');
+    if (!khoa || !(Number(luc) > 0)) return Promise.resolve();
+    if (window.__thayVao && khoa !== 'GV') return Promise.resolve();   // thầy mở thay em: không ghi "em đã xem"
+    var choPhien = (khoa !== 'GV' && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
+    return choPhien.then(db).then(function (f) {
+      var o = {}; o[khoa] = { ten: String(ten || '?').slice(0, 60), luc: Number(luc) };
+      return f.fs.setDoc(f.fs.doc(f.db, 'classChatXem', maLop), o, { merge: true });
+    });
+  }
+
   function thoi() {
+    thoiXem();
     if (dungNghe) { try { dungNghe(); } catch (e) {} }
     dungNghe = null;
     phongDangNghe = '';
@@ -610,6 +640,7 @@
   window.AWChat = {
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
     datCx: datCx, thuHoi: thuHoi,      /* ⭐ v1.186.0 — khuôn chat kiểu Zalo (js/chat-ui.js) */
+    ngheXem: ngheXem, ghiXem: ghiXem,       /* ⭐ v1.210.0 — "đã xem" tin cuối */
     guiAnh: guiAnh, docThuHoi: docThuHoi,   /* ⭐ v1.206.0 — ảnh của thầy + bản chép tin thu hồi (chỉ thầy) */
     taiThem: taiThem, TOI_DA_TIN_THEM: TOI_DA_TIN_THEM,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,

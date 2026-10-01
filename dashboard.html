@@ -3180,7 +3180,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=14">
+<link rel="stylesheet" href="css/chat-ui.css?v=15">
 </head>
 <body>
 
@@ -3571,12 +3571,12 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=196"></script>
+<script src="config.js?v=197"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
-<script src="js/chat.js?v=30"></script>
-<script src="js/chat-ui.js?v=15"></script>
+<script src="js/chat.js?v=31"></script>
+<script src="js/chat-ui.js?v=16"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -8696,6 +8696,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       return AWChat.gui(LOP_CHON, Object.assign({ ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv' }, g));
     },
     datCx: function (t, gt) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.datCx(LOP_CHON, t.id, 'GV', gt); },
+    ghiXem: function (luc) { if (THAY_PHIEN === null) return Promise.resolve();   /* chưa có phiên thầy: im lặng, không báo */ return AWChat.ghiXem(LOP_CHON, 'GV', 'Thầy Andrew', luc); },   // v1.210.0
     thuHoi: function (t) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.thuHoi(LOP_CHON, t.id, true); },
     // ⭐ v1.206.0 — thầy chốt: CHỈ thầy gửi được ảnh (nút ảnh trước nút emoji, Ctrl+V dán ảnh, xem trước rồi bấm gửi)
     guiAnh: function (f) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.guiAnh(LOP_CHON, f); },
@@ -9230,6 +9231,8 @@ tr.qm-hang-tam td{background:#fffbeb}
       $('#chatBody').innerHTML = '<div class="chat-cho">' + A.chuAnToan(AWChat.chuLoi(e)) + '</div>';
       UI_CHAT.khoa(true, 'Chưa mở được phòng chat.');
     });
+    UI_CHAT.datXem({});   // v1.210.0 — "đã xem" tin cuối (gọi SAU nghe(): nghe() tự tắt kênh đã xem cũ)
+    AWChat.ngheXem(LOP_CHON, function (m) { UI_CHAT.datXem(m); });
   }
 
   // ⭐ Đợt D — "Lưu trữ & làm mới": chép nguyên tin đang có vào kho

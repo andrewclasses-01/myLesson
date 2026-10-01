@@ -91,6 +91,20 @@
 .cu-daxem{display:flex; justify-content:flex-end; gap:2px; margin:0 2px 6px}
 .cu-daxem > *{width:16px!important; height:16px!important; min-width:0!important; font-size:7px!important; border-radius:50%; overflow:hidden; flex:none}
 .cu-daxem img{width:100%; height:100%; object-fit:cover}
+/* ⭐ v1.210.0 — "ĐÃ XEM" kiểu Messenger: hàng avatar 15px sát đáy, CĂN PHẢI khung, chỉ dưới tin cuối (dưới viên cảm xúc) */
+.cu-dx{align-self:flex-end; display:flex; align-items:center; gap:2px; margin:2px 2px 2px 0; cursor:pointer; position:relative}
+.cu-dx .x, .cu-tip .x{flex:none; width:15px; height:15px; position:relative; display:inline-block}
+.cu-dx .x > *, .cu-tip .x > *{width:15px!important; height:15px!important; min-width:0!important; margin:0!important; padding:0!important; border-radius:50%!important;
+  overflow:hidden; position:relative; display:grid!important; place-items:center; font:700 6.5px/1 var(--cu-font, Roboto, sans-serif)!important; color:#fff; box-shadow:none!important}
+.cu-dx .x img, .cu-tip .x img{position:absolute; inset:0; width:100%!important; height:100%!important; object-fit:cover; border-radius:50%}
+.cu-dx .x > *:has(img), .cu-tip .x > *:has(img){color:transparent!important}
+.cu-dx .them{height:15px; min-width:15px; padding:0 4px; border-radius:8px; background:#DDE3EA; color:#5F6B7A; font:700 9px/15px var(--cu-font); text-align:center; margin-left:1px}
+.cu-tip.xem{max-width:260px; width:max-content}
+.cu-tip h4{margin:0 0 4px; font:500 10.5px var(--cu-font); letter-spacing:.04em; text-transform:uppercase; opacity:.7}
+.cu-tip .ds{display:flex; flex-wrap:wrap; gap:4px 9px; margin-bottom:7px}
+.cu-tip .ds:last-child{margin-bottom:0}
+.cu-tip .ds > span{display:inline-flex; align-items:center; gap:4px}
+.cu-tip .ds.chua > span{opacity:.6}
 .cu-bong.thuhoi{font-style:italic; color:var(--cu-phu); background:var(--cu-nen)!important; border-style:dashed}
 /* ⭐ v1.206.0 — dashboard thầy: nội dung tin đã thu hồi ngay dưới dòng "Tin nhắn đã bị thu hồi", nghiêng y như dòng đó */
 .cu-th-goc{font-style:italic; color:var(--cu-phu); margin-top:2px}

@@ -92,6 +92,15 @@
 .cu-daxem > *{width:16px!important; height:16px!important; min-width:0!important; font-size:7px!important; border-radius:50%; overflow:hidden; flex:none}
 .cu-daxem img{width:100%; height:100%; object-fit:cover}
 .cu-bong.thuhoi{font-style:italic; color:var(--cu-phu); background:var(--cu-nen)!important; border-style:dashed}
+/* ⭐ v1.206.0 — dashboard thầy: nội dung tin đã thu hồi ngay dưới dòng "Tin nhắn đã bị thu hồi", nghiêng y như dòng đó */
+.cu-th-goc{font-style:italic; color:var(--cu-phu); margin-top:2px}
+.cu-th-goc .cu-hinh{cursor:zoom-in; margin:3px 0 2px}
+.cu-th-goc .cu-hinh img{max-width:140px; max-height:140px; opacity:.75}
+.cu-th-stk{display:block; width:64px; height:64px; object-fit:contain; opacity:.75; margin:2px 0}
+/* ⭐ v1.206.0 — xem ảnh to (khi trang không tự lo o.xemAnh) */
+.cu-xem{position:fixed; inset:0; z-index:9600; background:rgba(10,14,20,.88); display:grid; place-items:center; cursor:zoom-out; animation:cuMo .18s ease}
+.cu-xem img{max-width:94vw; max-height:92vh; object-fit:contain; border-radius:6px; box-shadow:0 10px 40px rgba(0,0,0,.5)}
+.cu-xem button{position:absolute; top:12px; right:16px; width:40px; height:40px; border:0; border-radius:50%; background:rgba(255,255,255,.14); color:#fff; font-size:26px; line-height:1; cursor:pointer}
 .cu-trich{display:block; width:100%; text-align:left; border:0; border-left:3px solid var(--cu-ac); background:rgba(27,35,48,.06);
   border-radius:5px; padding:4px 8px; margin:1px 0 5px; cursor:pointer; font:400 12.5px/1.35 var(--cu-font); color:var(--cu-phu); white-space:normal}
 .cu-trich b{display:block; color:var(--cu-chu); font-weight:500}
@@ -145,6 +154,17 @@
 .cu-tra span{display:block; color:var(--cu-phu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .cu-tra .cu-ei{width:15px; height:15px; margin:-2px 1px}
 .cu-tra button{border:0; background:none; font-size:19px; color:var(--cu-phu); cursor:pointer; padding:0 2px}
+/* ⭐ v1.206.0 — ảnh chờ gửi: xem trước nhỏ trên ô nhập, × bỏ từng ảnh; đang gửi thì mờ + vòng xoay */
+.cu-anh-cho{display:flex; flex-wrap:wrap; gap:8px; margin:0 0 8px; padding:0 2px}
+.cu-anh-cho .it{position:relative; width:64px; height:64px; border-radius:10px; overflow:hidden; border:1px solid var(--cu-vien); background:var(--cu-nen2)}
+.cu-anh-cho .it img{width:100%; height:100%; object-fit:cover; display:block}
+.cu-anh-cho .it button{position:absolute; top:3px; right:3px; width:20px; height:20px; border:0; border-radius:50%; background:rgba(27,35,48,.72); color:#fff;
+  font-size:15px; line-height:20px; padding:0; cursor:pointer; display:grid; place-items:center}
+.cu-anh-cho .it button:hover{background:var(--cu-do)}
+.cu-anh-cho .it.dang img{opacity:.45}
+.cu-anh-cho .xoay{position:absolute; left:50%; top:50%; width:20px; height:20px; margin:-10px 0 0 -10px; border-radius:50%;
+  border:2.5px solid rgba(14,124,110,.25); border-top-color:var(--cu-ac); animation:cuXoay .8s linear infinite}
+@keyframes cuXoay{to{transform:rotate(360deg)}}
 .cu-nhap{display:flex; align-items:flex-end; gap:6px}
 .cu-nhap .ib{flex:none; width:36px; height:36px; border:0; background:none; border-radius:50%; display:grid; place-items:center; cursor:pointer; color:var(--cu-phu); padding:0}
 .cu-nhap .ib:hover{background:var(--cu-ac-nhat); color:var(--cu-ac-dam)}

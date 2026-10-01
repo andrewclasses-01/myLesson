@@ -199,6 +199,12 @@
     return _may;
   }
 
+  /* ⭐ v1.206.0 (01/10/2026) — ẢNH CỦA THẦY trong chat lớp (học sinh không gửi ảnh). Ảnh nén JPEG ≤1280px lên Storage
+     `classChat/<lớp>/<tên>.jpg`, tin mang `hinh` = URL tải về; `text` vẫn bắt buộc (luật) nên ghi CHU_ANH — trang cũ
+     còn cache vẫn hiện được "[Hình ảnh]". Luật: tools/dang-luat-chat-anh-thu-hoi.js. */
+  var CHU_ANH = '[Hình ảnh]';
+  function chuTin(x) { return (x.hinh && x.text === CHU_ANH) ? '' : (x.text || ''); }
+
   var dungNghe = null;       // hàm gỡ listener của phòng đang nghe
   var phongDangNghe = '';
 
@@ -223,10 +229,11 @@
           ds.push({
             id: d.id, ten: x.name || '?', ma: x.code || '',
             vaiTro: x.role === 'gv' ? 'gv' : 'hs',
-            chu: x.text || '', luc: Number(x.createdAt) || 0,
+            chu: chuTin(x), luc: Number(x.createdAt) || 0,
             cx: x.cx || {},
             may: x.may || '',           /* ⭐ v1.80.0 — rỗng với mọi tin cũ */
             q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true   /* v1.186.0 — khuôn chat kiểu Zalo */
+            , hinh: x.hinh || ''           /* v1.206.0 — ảnh thầy gửi */
           });
         });
         ds.reverse();                              // Firestore trả mới->cũ, ta hiện cũ->mới
@@ -272,9 +279,9 @@
         ds.push({
           id: d.id, ten: x.name || '?', ma: x.code || '',
           vaiTro: x.role === 'gv' ? 'gv' : 'hs',
-          chu: x.text || '', luc: Number(x.createdAt) || 0,
+          chu: chuTin(x), luc: Number(x.createdAt) || 0,
           cx: x.cx || {}, may: x.may || '',
-          q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true
+          q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true, hinh: x.hinh || ''
         });
       });
       ds.reverse();
@@ -295,6 +302,8 @@
 
   function gui(maLop, tin) {
     var chu = String(tin.chu || '').trim().slice(0, TOI_DA_CHU);
+    var hinh = tin.vaiTro === 'gv' && /^https:\/\/firebasestorage\.googleapis\.com\//.test(String(tin.hinh || '')) ? String(tin.hinh) : '';
+    if (hinh && !chu) chu = CHU_ANH;
     if (!chu) return Promise.reject(new Error('trống'));
     if (tin.vaiTro !== 'gv' && (coLink(chu) || (tin.q && coLink(tin.q.chu)))) { var lLink = new Error('có link'); lLink.code = 'awc/co-link'; return Promise.reject(lLink); }
     // v1.168.0 — tab "thầy đăng nhập thay em" (js/thay-vao.js): chat TẮT (tin sẽ mang tên em + dấu máy của thầy ⇒ chuông báo động nhầm).
@@ -312,6 +321,7 @@
          (tools/dang-luat-chat-zalo.js). q.chu là bản CHÉP tin gốc ⇒ luật chặn link trong q.chu y như text. */
       if (tin.q && tin.q.id) goc.q = { id: String(tin.q.id).slice(0, 40), ten: String(tin.q.ten || '').slice(0, 60), chu: String(tin.q.chu || '').slice(0, 120) };
       if (tin.sticker && /^[a-z]{2,8}:[a-z0-9-]{2,24}$/.test(String(tin.sticker))) goc.sticker = String(tin.sticker);
+      if (hinh) goc.hinh = hinh;   // v1.206.0 — chỉ thầy (luật chặn học sinh)
       /* (27/09/2026, sau tấn công Tr0ngX) Luật BẮT BUỘC dấu máy ⇒ bỏ ĐƯỜNG LÙI
          "gửi lại không kèm dấu máy" (v1.80.0) — gửi lại kiểu đó nay chắc chắn bị từ chối.
          Kho từ chối thì đổi thành lỗi dễ hiểu cho học sinh (xem chuLoi). */
@@ -425,8 +435,75 @@
     if (window.__thayVao && !laThayGoi) { var lTv = new Error('thay-vao'); lTv.code = 'awc/thay-vao'; return Promise.reject(lTv); }
     var choPhien = (!laThayGoi && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
     return choPhien.then(db).then(function (f) {
-      return f.fs.updateDoc(f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId),
-        { thuHoi: true, text: '', cx: {}, q: f.fs.deleteField(), sticker: f.fs.deleteField() });
+      var refTin = f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId);
+      var lenhThu = { thuHoi: true, text: '', cx: {}, q: f.fs.deleteField(), sticker: f.fs.deleteField(), hinh: f.fs.deleteField() };
+      var thuTron = function () { return f.fs.updateDoc(refTin, lenhThu); };
+      /* ⭐ v1.206.0 — BẢN CHÉP cho thầy: đọc tin gốc (1 lượt đọc) rồi CÙNG MỘT LƯỢT GHI vừa cất bản chép
+         `classChat/<lớp>/thuHoi/<id>` (chỉ thầy đọc — dashboard hiện dưới "Tin nhắn đã bị thu hồi") vừa thu hồi.
+         Luật đối chiếu bản chép với tin gốc từng chữ. Kho từ chối bản chép (luật chưa đăng…) ⇒ vẫn thu hồi như cũ. */
+      return f.fs.getDoc(refTin).then(function (s) {
+        var x = s.exists() ? (s.data() || {}) : null;
+        if (!x || x.thuHoi === true) return thuTron();
+        var chep = { text: x.text || '', name: x.name || '', code: x.code || '', luc: (window.gioChuan ? window.gioChuan() : Date.now()) };
+        ['q', 'sticker', 'hinh'].forEach(function (k) { if (x[k] != null) chep[k] = x[k]; });
+        var b = f.fs.writeBatch(f.db);
+        b.set(f.fs.doc(f.db, 'classChat', maLop, 'thuHoi', tinId), chep);
+        b.update(refTin, lenhThu);
+        return b.commit()['catch'](function (e) {
+          if (String((e && (e.code || e.message)) || '').indexOf('permission-denied') < 0) throw e;
+          return thuTron();
+        });
+      }, function () { return thuTron(); });
+    });
+  }
+
+  // ⭐ v1.206.0 — dashboard: đọc bản chép một tin đã thu hồi ⇒ {chu, q, sticker, hinh} | null (tin thu hồi trước bản này: null).
+  function docThuHoi(maLop, tinId) {
+    return db().then(function (f) {
+      return f.fs.getDoc(f.fs.doc(f.db, 'classChat', maLop, 'thuHoi', tinId));
+    }).then(function (s) {
+      if (!s.exists()) return null;
+      var x = s.data() || {};
+      return { chu: chuTin(x), q: x.q || null, sticker: x.sticker || '', hinh: x.hinh || '' };
+    });
+  }
+
+  // ⭐ v1.206.0 — thầy gửi ảnh: nén JPEG (cạnh dài ≤1280px) ⇒ Storage `classChat/<lớp>/<tên>.jpg` ⇒ URL tải về.
+  function docAnh(file) {
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: 'from-image' })['catch'](function () { return docAnhCu(file); });
+    }
+    return docAnhCu(file);
+  }
+  function docAnhCu(file) {
+    return new Promise(function (res, rej) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () { URL.revokeObjectURL(url); res(im); };
+      im.onerror = function () { URL.revokeObjectURL(url); rej(new Error('Không đọc được ảnh')); };
+      im.src = url;
+    });
+  }
+  function nenAnh(file) {
+    return docAnh(file).then(function (im) {
+      var w = im.width || im.naturalWidth, h = im.height || im.naturalHeight, ty = Math.min(1, 1280 / Math.max(w, h));
+      var cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(w * ty)); cv.height = Math.max(1, Math.round(h * ty));
+      var c = cv.getContext('2d'); c.fillStyle = '#fff'; c.fillRect(0, 0, cv.width, cv.height);   // PNG trong suốt ⇒ nền trắng
+      c.drawImage(im, 0, 0, cv.width, cv.height);
+      if (im.close) try { im.close(); } catch (e) {}
+      var ra = function (cl) { return new Promise(function (r) { cv.toBlob(r, 'image/jpeg', cl); }); };
+      return ra(0.85).then(function (b) { return b && b.size > 1.5 * 1024 * 1024 ? ra(0.6) : b; });
+    }).then(function (b) { if (!b) throw new Error('Không nén được ảnh'); return b; });
+  }
+  function guiAnh(maLop, file) {
+    if (!file || !/^image\//.test(file.type || '')) return Promise.reject(new Error('Chỉ gửi được file ảnh.'));
+    return Promise.all([nenAnh(file), db()]).then(async function (k) {
+      var appMod = await import(SDK + '/firebase-app.js');
+      var st = await import(SDK + '/firebase-storage.js');
+      var ten = Date.now().toString(36) + Math.random().toString(36).slice(2, 6) + '.jpg';
+      var r = st.ref(st.getStorage(appMod.getApp()), 'classChat/' + String(maLop).replace(/[^0-9A-Za-z_-]/g, '_').slice(0, 40) + '/' + ten);
+      await st.uploadBytes(r, k[0], { contentType: 'image/jpeg', cacheControl: 'public,max-age=31536000' });
+      return st.getDownloadURL(r);
     });
   }
 
@@ -451,7 +528,7 @@
              cần đổi: nó chỉ kiểm `tin is list`, không soi bên trong. */
           return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc,
                    cx: t.cx || {}, may: t.may || '',
-                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi };   /* v1.186.0 */
+                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi, hinh: t.hinh || '' };   /* v1.186.0 · hinh v1.206.0 */
         })
       });
     });
@@ -533,6 +610,7 @@
   window.AWChat = {
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
     datCx: datCx, thuHoi: thuHoi,      /* ⭐ v1.186.0 — khuôn chat kiểu Zalo (js/chat-ui.js) */
+    guiAnh: guiAnh, docThuHoi: docThuHoi,   /* ⭐ v1.206.0 — ảnh của thầy + bản chép tin thu hồi (chỉ thầy) */
     taiThem: taiThem, TOI_DA_TIN_THEM: TOI_DA_TIN_THEM,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
     chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU, coLink: coLink,

@@ -22,6 +22,8 @@
      guiAnh(file) -> Promise<url>   // có ⇒ ô nhập thêm nút gửi ảnh; tin ảnh = {chu:'', hinh:url}
      xemAnh(url, t)            // bấm ảnh trong tin
      sauTin(t, i, ds) -> html  // chèn sau hàng tin (vd avatar "đã xem")
+   ⭐ v1.206.0: guiAnh nay XEM TRƯỚC (nút ảnh trước nút emoji · Ctrl+V · kéo thả) rồi bấm gửi; chat lớp chỉ dashboard có guiAnh.
+     docThuHoi(t) -> Promise<{chu,q,sticker,hinh}|null>   // có ⇒ hiện nội dung tin đã thu hồi (dashboard thầy)
 
    Dữ liệu tin (thêm từ v1.186.0, trường cũ giữ nguyên):
      chu      chữ; emoji bộ riêng ghi dạng mã `:1f60a:` (xem EMOJI), nhắc tên dạng `@Tên`
@@ -217,6 +219,17 @@
     if (POP.khay2 && !POP.khay2.hidden && !t.closest('.cu-pop') && !(KHAY2.neo && KHAY2.neo.contains(t))) POP.khay2.hidden = true;
   }, true);
   window.addEventListener('resize', function () { if (POP.chon) POP.chon.hidden = true; if (POP.menu) POP.menu.hidden = true; });
+
+  // ⭐ v1.206.0 — xem ảnh to (trang không tự lo o.xemAnh): nền tối phủ màn, bấm đâu cũng đóng, Esc đóng.
+  function xemAnhTo(url) {
+    if (!url) return;
+    var x = document.createElement('div'); x.className = 'cu-xem';
+    x.innerHTML = '<img src="' + esc(url) + '" alt="Ảnh"><button type="button" aria-label="Đóng">×</button>';
+    var dong = function () { x.remove(); document.removeEventListener('keydown', phim, true); };
+    var phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); dong(); } };
+    x.onclick = dong; document.addEventListener('keydown', phim, true);
+    document.body.appendChild(x);
+  }
 
   // ⭐ v1.190.0 — thầy: MỖI lần thả, phía trên nút thả "nổ tung" ra vài hình cảm xúc đó.
   // ⭐ v1.191.0 — thầy: 15 hình, to nhỏ khác nhau, TỪ BÉ THÀNH TO tại MỘT điểm rồi BUNG RA XUNG QUANH (đủ 360°).
@@ -415,7 +428,7 @@
       var h = ngayMoi ? '<div class="cu-ngay">' + esc(mocNhip(t.luc)) + '</div>' : '';
       var ten = (!toi && !cungNhom && o.hienTen !== false) ? '<div class="cu-ten">' + esc(t.ten) + (o.nhan ? o.nhan(t) : '') + '</div>' : '';
       var than;
-      if (t.thuHoi) than = '<div class="cu-bong thuhoi">' + ten + 'Tin nhắn đã bị thu hồi<span class="cu-gio">' + gio(t.luc) + '</span></div>';
+      if (t.thuHoi) than = '<div class="cu-bong thuhoi">' + ten + 'Tin nhắn đã bị thu hồi' + veThuHoiGoc(t) + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
       else if (t.sticker && timStk(t.sticker)) {
         var s = timStk(t.sticker);
         than = ten +
@@ -433,6 +446,26 @@
         // ⭐ v1.188.0 — coCx: tin đã có cảm xúc (giãn ra chừa chỗ viên cảm xúc); cuoi: tin mới nhất (điện thoại hiện nút tim ở đây).
         '<div class="cu-w' + (!t.thuHoi && demCx(t.cx).tong ? ' coCx' : '') + (i === ds.length - 1 ? ' cuoi' : '') + '" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (t.thuHoi ? '' : veCum(t)) + cong + '</div></div>' +
         (o.sauTin ? (o.sauTin(t, i, ds) || '') : '');
+    }
+    /* ⭐ v1.206.0 — thầy chốt: dashboard (o.docThuHoi) xem được NỘI DUNG tin đã thu hồi, nằm ngay dưới dòng
+       "Tin nhắn đã bị thu hồi", nghiêng như dòng đó. TH[id]: undefined = chưa hỏi kho · 'cho' = đang đọc · null = không có bản chép. */
+    var TH = {};
+    function veThuHoiGoc(t) {
+      if (!o.docThuHoi || !t.id) return '';
+      var g = TH[t.id];
+      if (g === undefined) { TH[t.id] = 'cho'; hoiThuHoi(t); return ''; }
+      if (!g || g === 'cho') return '';
+      var s = g.sticker ? timStk(g.sticker) : null;
+      var h = s ? '<img class="cu-th-stk" src="' + esc(s.url) + '" alt="' + esc(s.it.chu) + '" title="' + esc(s.it.chu) + '" loading="lazy" draggable="false">' : '';
+      if (g.hinh) h += '<button type="button" class="cu-hinh cu-th-anh" data-cu="anhth" data-url="' + esc(g.hinh) + '" aria-label="Xem ảnh đã thu hồi"><img src="' + esc(g.hinh) + '" alt="Ảnh" loading="lazy" draggable="false"></button>';
+      if (g.chu && !s) h += giau(g.chu, reN);
+      return h ? '<div class="cu-th-goc">' + h + '</div>' : '';
+    }
+    var henTH = null;
+    function hoiThuHoi(t) {
+      Promise.resolve(o.docThuHoi(t)).then(function (g) { TH[t.id] = g || null; }, function () { TH[t.id] = null; }).then(function () {
+        clearTimeout(henTH); henTH = setTimeout(veLai, 30);   // nhiều tin cùng về ⇒ vẽ lại MỘT lần
+      });
     }
     function veCum(t) {
       var d = demCx(t.cx), toi = cxCuaToi(t);
@@ -562,7 +595,11 @@
       }
       if (viec === 'tra') datTra(t);
       if (viec === 'thuhoi') {
-        var lam = function () { Promise.resolve(o.thuHoi(t)).then(function () { if (TRA && TRA.id === t.id) datTra(null); })['catch'](loi); };
+        var lam = function () {
+          // v1.206.0 — thầy thu hồi: nhớ sẵn nội dung để hiện ngay dưới "Tin nhắn đã bị thu hồi" (khỏi chờ đọc bản chép)
+          if (o.docThuHoi && t.id) TH[t.id] = { chu: t.chu || '', q: t.q || null, sticker: t.sticker || '', hinh: t.hinh || '' };
+          Promise.resolve(o.thuHoi(t)).then(function () { if (TRA && TRA.id === t.id) datTra(null); })['catch'](function (e) { if (o.docThuHoi) delete TH[t.id]; loi(e); });
+        };
         if (m) hoi(m, 'Thu hồi tin này? Mọi người sẽ thấy "Tin nhắn đã bị thu hồi".', 'Thu hồi', lam); else if (window.confirm('Thu hồi tin này?')) lam();
         return true;
       }
@@ -595,7 +632,8 @@
       if (!t) return;
       if (viec === 'lk') { if (b._daGiu) { b._daGiu = false; return; } if (POP.chon) POP.chon.hidden = true; var tt = cxCuaToi(t), kk = (tt && tt.l) || 'tim'; if (them(t, kk)) nay(t.id, kk); }
       if (viec === 'cs') moBang(t, 'all');
-      if (viec === 'anh') { if (o.xemAnh) o.xemAnh(t.hinh, t); else window.open(t.hinh, '_blank', 'noopener'); }
+      if (viec === 'anh') { if (o.xemAnh) o.xemAnh(t.hinh, t); else xemAnhTo(t.hinh); }
+      if (viec === 'anhth') xemAnhTo(b.getAttribute('data-url'));
       if (viec === 'tra') datTra(t);
       if (viec === 'them') moMenu(t, b);
     }, true);
@@ -668,14 +706,15 @@
     // Ô nhập có sẵn trong HTML (`.cu-o`, trang đã gắn sự kiện focus/blur lên nó) thì GIỮ NGUYÊN phần tử đó, chỉ dựng khung quanh.
     var edSan = chan.querySelector('.cu-o');
     if (edSan) edSan.parentNode.removeChild(edSan);
-    chan.innerHTML = '<div class="cu-chan"><div class="cu-tra" hidden></div><div class="cu-nhap">' +
+    chan.innerHTML = '<div class="cu-chan"><div class="cu-tra" hidden></div>' + (o.guiAnh ? '<div class="cu-anh-cho" hidden></div>' : '') + '<div class="cu-nhap">' +
       (o.guiAnh ? '<button type="button" class="ib" data-cu="guianh" title="Gửi ảnh" aria-label="Gửi ảnh">' + IC.anh + '</button><input type="file" accept="image/*" multiple hidden>' : '') +
       '<button type="button" class="ib" data-cu="khay" title="Emoji và sticker" aria-label="Mở emoji và sticker">' + IC.mat + '</button>' +
       '<div class="cu-o" id="' + esc(o.idNhap || 'cuNhap') + '" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nhập tin nhắn" data-ph="Aa" spellcheck="false"></div>' +
       '<button type="button" class="ib gui" aria-label="Gửi"></button></div></div>';
     if (edSan) { var cho = $('.cu-o', chan); cho.parentNode.replaceChild(edSan, cho); edSan.setAttribute('contenteditable', 'true'); }
     var ed = $('.cu-o', chan), nutGui = $('.gui', chan), nutKhay = $('[data-cu="khay"]', chan), khuTra = $('.cu-tra', chan);
-    var vung = null, TRA = null, dangGui = false;
+    var vung = null, TRA = null;
+    var khuAnh = $('.cu-anh-cho', chan), ANH = [], TOI_DA_ANH = 6;   // v1.206.0 — ảnh chờ gửi (xem trước nhỏ trên ô nhập)
     ui.nhap = ed;
     function docEd(n) {
       var s = '';
@@ -689,7 +728,7 @@
     }
     function trong() { return !docEd().trim(); }
     function veNutGui() {
-      var co = !trong();
+      var co = !trong() || ANH.some(function (a) { return !a.dang; });
       nutGui.innerHTML = co ? IC.gui : imgCx('tim');
       nutGui.title = co ? 'Gửi' : 'Gửi tim'; nutGui.setAttribute('aria-label', nutGui.title);
       if (o.khiGo) o.khiGo();
@@ -718,10 +757,18 @@
     });
     ed.addEventListener('paste', function (e) {
       e.preventDefault();
-      var t = (e.clipboardData || window.clipboardData).getData('text/plain') || '';
+      var cb = e.clipboardData || window.clipboardData;
+      // v1.206.0 — Ctrl+V ẢNH (chụp màn hình, chép ảnh) ⇒ vào hàng ảnh chờ gửi (chỉ khuôn có o.guiAnh — thầy)
+      var anh = o.guiAnh && cb && cb.files ? Array.prototype.filter.call(cb.files, function (f) { return /^image\//.test(f.type); }) : [];
+      if (anh.length) { themAnh(anh); return; }
+      var t = cb.getData('text/plain') || '';
       if (t) { chenNut(document.createTextNode(t)); veNutGui(); }
     });
-    ed.addEventListener('drop', function (e) { e.preventDefault(); });
+    ed.addEventListener('drop', function (e) {
+      e.preventDefault();
+      var fs = o.guiAnh && e.dataTransfer ? Array.prototype.filter.call(e.dataTransfer.files || [], function (f) { return /^image\//.test(f.type); }) : [];
+      if (fs.length) themAnh(fs);
+    });
     ed.addEventListener('input', function () { if (trong() && !ed.querySelector('img')) ed.innerHTML = ''; veNutGui(); kiemNhac(); });
 
     function datTra(t) {
@@ -733,42 +780,81 @@
       if (o.khiGo) o.khiGo();
       ed.focus();
     }
+    /* ⭐ v1.206.0 — thầy báo: bấm gửi xong tin ĐÃ HIỆN trên khung (Firestore vẽ trước bằng bản ghi tại máy) mà ô nhập
+       vẫn còn nguyên chữ, chờ máy chủ xác nhận mới xoá. Nay: XOÁ Ô NHẬP NGAY lúc bấm gửi, tin đi qua HÀNG ĐỢI (XEP — giữ
+       đúng thứ tự, ảnh tải lâu không bị chữ gửi sau vượt lên); gửi hỏng thì trả chữ + trích về ô nhập (nếu ô đang trống). */
+    var XEP = Promise.resolve();
+    function xepHang(viec) { var p = XEP.then(viec); XEP = p['catch'](function () {}); return p; }
     function gui(goi) {
-      if (dangGui || ui.khoaChat) return Promise.resolve();
+      if (ui.khoaChat) return Promise.resolve();
       if (ui.chiXem) { loi('Đang ở chế độ xem — không nhắn được.'); return Promise.resolve(); }
-      var chu;
+      var anh = goi ? [] : ANH.filter(function (a) { return !a.dang; });
+      var chu = '', html = '';
       if (!goi) {
         chu = docEd().trim();
-        if (!chu) chu = ':2764:';
         if (chu.length > TOI_DA_CHU) { loi('Tin dài quá ' + TOI_DA_CHU + ' ký tự (emoji tính mỗi hình khoảng 7 ký tự).'); return Promise.resolve(); }
-        goi = { chu: chu };
+        if (!chu && !anh.length) chu = ':2764:';
+        html = ed.innerHTML; ed.innerHTML = ''; vung = null;
       }
-      if (TRA) goi.q = { id: TRA.id, ten: String((cuaToi(TRA) && o.toi ? o.toi.ten : TRA.ten) || '').slice(0, 60), chu: tomTat(TRA).slice(0, 120) };
-      dangGui = true; ed.setAttribute('contenteditable', 'false'); nutGui.disabled = true;
-      var coChu = !goi.sticker && !goi.hinh;
-      return Promise.resolve(o.gui(goi)).then(function () {
-        if (coChu) { ed.innerHTML = ''; vung = null; }
-        datTra(null);
-      })['catch'](function (e) { loi(e); }).then(function () {
-        dangGui = false; nutGui.disabled = false;
-        if (!ui.khoaChat) { ed.setAttribute('contenteditable', 'true'); ed.focus(); }
-        veNutGui();
+      var tra = TRA, q = tra ? { id: tra.id, ten: String((cuaToi(tra) && o.toi ? o.toi.ten : tra.ten) || '').slice(0, 60), chu: tomTat(tra).slice(0, 120) } : null;
+      datTra(null);
+      anh.forEach(function (a) { a.dang = true; });
+      veAnhCho(); veNutGui(); ed.focus();
+      var traVe = function (e) {   // hỏng ⇒ trả chữ + trích về ô nhập (ô còn trống), báo lỗi
+        if (html && trong()) { ed.innerHTML = html; vung = null; veNutGui(); }
+        if (tra && !TRA) datTra(tra);
+        loi(e);
+      };
+      // ảnh trước (mỗi ảnh một tin, trích gắn vào tin đầu tiên), chữ sau
+      anh.forEach(function (a) {
+        xepHang(function () {
+          return Promise.resolve(o.guiAnh(a.file)).then(function (url) {
+            if (!url) throw new Error('Không tải được ảnh lên.');
+            var g = { chu: '', hinh: url }; if (q) { g.q = q; q = null; }
+            return o.gui(g);
+          }).then(function () { boAnh(a); }, function (e) { a.dang = false; veAnhCho(); veNutGui(); loi(e); });
+        });
       });
+      if (goi || chu) {
+        var g = goi || { chu: chu };
+        return xepHang(function () {
+          if (q) { g.q = q; q = null; }
+          return Promise.resolve(o.gui(g));
+        })['catch'](traVe);
+      }
+      return XEP;
     }
     nutGui.onclick = function () { gui(null); };
-    // ⭐ v1.198.0 — gửi ảnh (myNetwork): trang lo nén + tải lên (o.guiAnh ⇒ url), khuôn gửi tin {chu:'', hinh:url} lần lượt từng ảnh
+    // ⭐ v1.198.0 — gửi ảnh: trang lo nén + tải lên (o.guiAnh ⇒ url), khuôn gửi tin {chu:'', hinh:url}.
+    // ⭐ v1.206.0 — thầy chốt: chọn ảnh (hoặc Ctrl+V / kéo thả ảnh vào ô nhập) ⇒ hiện XEM TRƯỚC nhỏ trên ô nhập, bấm gửi mới gửi.
     var nutAnh = $('[data-cu="guianh"]', chan), oFile = nutAnh ? nutAnh.nextElementSibling : null;
+    function themAnh(ds) {
+      if (ui.khoaChat || ui.chiXem || !khuAnh) return;
+      ds = Array.prototype.slice.call(ds || []).filter(function (f) { return /^image\//.test(f.type || ''); });
+      var con = TOI_DA_ANH - ANH.length;
+      if (ds.length > con) loi('Mỗi lần gửi tối đa ' + TOI_DA_ANH + ' ảnh.');
+      ds.slice(0, Math.max(0, con)).forEach(function (f) { ANH.push({ file: f, url: URL.createObjectURL(f), dang: false }); });
+      veAnhCho(); veNutGui(); ed.focus();
+    }
+    function boAnh(a) {
+      var i = ANH.indexOf(a); if (i < 0) return;
+      ANH.splice(i, 1); try { URL.revokeObjectURL(a.url); } catch (e) {}
+      veAnhCho(); veNutGui();
+    }
+    function veAnhCho() {
+      if (!khuAnh) return;
+      khuAnh.hidden = !ANH.length;
+      khuAnh.innerHTML = ANH.map(function (a, i) {
+        return '<div class="it' + (a.dang ? ' dang' : '') + '"><img src="' + esc(a.url) + '" alt="Ảnh chờ gửi" draggable="false">' +
+          (a.dang ? '<i class="xoay" aria-label="Đang gửi"></i>' : '<button type="button" data-xo="' + i + '" title="Bỏ ảnh này" aria-label="Bỏ ảnh này">×</button>') + '</div>';
+      }).join('');
+    }
+    if (khuAnh) khuAnh.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-xo]'); if (b) { var a = ANH[+b.getAttribute('data-xo')]; if (a && !a.dang) boAnh(a); }
+    });
     if (nutAnh) {
       nutAnh.onclick = function () { if (ui.khoaChat || ui.chiXem) return; oFile.click(); };
-      oFile.onchange = function () {
-        var ds = Array.prototype.slice.call(this.files || [], 0, 6); this.value = '';
-        if (!ds.length) return;
-        nutAnh.disabled = true;
-        ds.reduce(function (p, f) {
-          return p.then(function () { return Promise.resolve(o.guiAnh(f)); })
-            .then(function (url) { if (url) return gui({ chu: '', hinh: url }); })['catch'](function (e) { loi(e); });
-        }, Promise.resolve()).then(function () { nutAnh.disabled = false; });
-      };
+      oFile.onchange = function () { var ds = this.files; themAnh(ds); this.value = ''; };
     }
 
     // @ nhắc tên

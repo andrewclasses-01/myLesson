@@ -411,7 +411,10 @@ a{color:inherit}
 .nut.ic-tron{width:30px; height:30px; padding:0; border-radius:50%;
   display:grid; place-items:center; font-size:14px; line-height:1}
 .nut[disabled]{opacity:.5; pointer-events:none}
-.nut-3cham svg{width:18px; height:18px; fill:currentColor}
+/* ⭐ v1.206.0 — thầy: nút ⋮ tuỳ chọn cuộc trò chuyện KHÔNG nền tròn, chấm nhỏ + mảnh; rê chuột mới hiện nền tròn. */
+.nut.nut-3cham{background:transparent; border-color:transparent; box-shadow:none; color:#6B7686}
+.nut.nut-3cham:hover{background:var(--xanh-nhat); border-color:transparent; color:var(--xanh)}
+.nut-3cham svg{width:16px; height:16px; fill:currentColor}
 /* ⭐ v1.192.0 — menu ⋮ tuỳ chọn cuộc trò chuyện (dùng khuôn .cu-menu của css/chat-ui.css) */
 #chatMenuGv{position:fixed; z-index:9000; width:270px; box-sizing:border-box}
 #chatMenuGv button span{font-size:16px; width:20px; text-align:center}
@@ -3166,7 +3169,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=8">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=12">
+<link rel="stylesheet" href="css/chat-ui.css?v=13">
 </head>
 <body>
 
@@ -3279,7 +3282,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         <div class="day"></div>
         <!-- ⭐ v1.192.0 — thầy: nút Lưu trữ đổi thành nút ⋮ mở TUỲ CHỌN cuộc trò chuyện (riêng giáo viên), xem moMenuChat(). -->
         <button class="nut nho ic-tron nut-3cham" id="btnChatMenu" title="Tuỳ chọn cuộc trò chuyện" aria-label="Tuỳ chọn cuộc trò chuyện" aria-haspopup="menu">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="5.5" r="1.35"/><circle cx="12" cy="12" r="1.35"/><circle cx="12" cy="18.5" r="1.35"/></svg>
         </button>
       </div>
       <div class="khoi-than">
@@ -3557,12 +3560,12 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=192"></script>
+<script src="config.js?v=193"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=77"></script>
-<script src="js/chat.js?v=29"></script>
-<script src="js/chat-ui.js?v=12"></script>
+<script src="js/chat.js?v=30"></script>
+<script src="js/chat-ui.js?v=13"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -8683,6 +8686,10 @@ tr.qm-hang-tam td{background:#fffbeb}
     },
     datCx: function (t, gt) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.datCx(LOP_CHON, t.id, 'GV', gt); },
     thuHoi: function (t) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.thuHoi(LOP_CHON, t.id, true); },
+    // ⭐ v1.206.0 — thầy chốt: CHỈ thầy gửi được ảnh (nút ảnh trước nút emoji, Ctrl+V dán ảnh, xem trước rồi bấm gửi)
+    guiAnh: function (f) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.guiAnh(LOP_CHON, f); },
+    // ⭐ v1.206.0 — thầy xem được nội dung tin đã thu hồi (bản chép classChat/<lớp>/thuHoi, chỉ thầy đọc)
+    docThuHoi: function (t) { return AWChat.docThuHoi(LOP_CHON, t.id); },
     xoa: function (t) { if (chuaThay(null)) return Promise.reject('__im'); return AWChat.xoa(LOP_CHON, t.id); },
     loi: function (e) { if (e === '__im') return; baoToast(typeof e === 'string' ? e : AWChat.chuLoi(e)); },
     trong: 'Lớp này chưa có tin nhắn nào.<br>Thầy nhắn câu đầu tiên nhé.',

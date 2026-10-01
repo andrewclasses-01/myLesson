@@ -903,6 +903,11 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .hd-hl{display:grid; grid-template-columns:96px minmax(0,1fr) auto; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid #EEF2F1}
 .hd-hl:last-child{border-bottom:0}
 .hd-hl.chon .hd-lop{color:var(--xanh)}
+/* ⭐ v1.212.0 — bấm 1 lần = chọn em (sáng ở cả 2 nửa); bấm đúp = chi tiết bài gần nhất */
+.hd-o, .hd-dong{cursor:pointer}
+.hd-o.hd-chon{box-shadow:0 0 0 2px #FAFCFC, 0 0 0 4px var(--xanh); z-index:1}
+.hd-dong:hover{background:rgba(14,124,110,.04)}
+.hd-dong.hd-chon{background:rgba(14,124,110,.09); border-radius:10px; border-bottom-color:transparent; margin:0 -8px; padding:8px}
 .hd-lop{border:0; background:none; padding:0; text-align:left; font:800 13px/1.2 var(--font); color:var(--chu); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .hd-lop:hover{color:var(--xanh); text-decoration:underline}
 .hd-chong{display:flex; align-items:center; min-width:0; overflow:hidden}
@@ -3624,7 +3629,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=202"></script>
+<script src="config.js?v=203"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
@@ -6311,7 +6316,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         if (!A.conHan(b) && !(han && nay - han < 864e5)) return;
         A.actCuaBai(b).forEach(function (k) {
           if (dem >= HD_BAI_TOI_DA || can[k.ma]) return;
-          can[k.ma] = { lop: l.maLop, dang: dangNgan(b.dang), ma: A.maLesson(b) || A.tenBai(b) || '', act: k.act || k.mau || '' };
+          can[k.ma] = { lop: l.maLop, bId: b.id, dang: dangNgan(b.dang), ma: A.maLesson(b) || A.tenBai(b) || '', act: k.act || k.mau || '' };
           dem++;
         });
       });
@@ -6339,7 +6344,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       Object.keys(r).forEach(function (id) {
         var g = r[id] || {}, c = Number(g.c) || Number(g.v) || 0;
         if (g.d || !c || nay - c > 864e5) return;
-        ra.push({ ten: String(g.t || '?'), lop: a.lop, dang: a.dang, ma: a.ma, act: a.act, s: Number(g.s) || 0, o: Number(g.o) || 0, luc: c });
+        ra.push({ ten: String(g.t || '?'), lop: a.lop, bId: a.bId, dang: a.dang, ma: a.ma, act: a.act, s: Number(g.s) || 0, o: Number(g.o) || 0, luc: c });
       });
     });
     return ra.sort(function (x, y) { return y.luc - x.luc; }).slice(0, 40);
@@ -6357,7 +6362,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       var d = theoLop[l.maLop] || [], on = d.filter(function (x) { return x.on; }).length, TD = 9;
       var avs = d.slice(0, TD).map(function (x) {
         var noi = x.on ? (x.trang === 'bai' ? 'đang làm ' + x.bai : x.trang === 'sp' ? 'đang ở trang Speaking' : 'đang ở trang lớp') : hdChuTruoc(x.luc);
-        return '<span class="hd-o' + (x.on ? ' on' : '') + '" title="' + A.chuAnToan(x.ten + ' · ' + noi) + '">' + hdAv(x.ten, l.maLop, 26) + (x.on ? '<i></i>' : '') + '</span>';
+        return '<span class="hd-o' + (x.on ? ' on' : '') + (hdLaChon(l.maLop, x.ten) ? ' hd-chon' : '') + '" data-hd-em="' + A.chuAnToan(l.maLop + '|' + x.ten) + '" title="' + A.chuAnToan(x.ten + ' · ' + noi) + '">' + hdAv(x.ten, l.maLop, 26) + (x.on ? '<i></i>' : '') + '</span>';
       }).join('') + (d.length > TD ? '<span class="hd-them">+' + (d.length - TD) + '</span>' : '');
       return '<div class="hd-hl' + (d.length ? '' : ' im') + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
         '<button type="button" class="hd-lop" data-hd-lop="' + A.chuAnToan(l.maLop) + '" title="Chọn lớp ' + A.chuAnToan(l.tenGoc || l.maLop) + '">' + A.chuAnToan(l.tenGoc || l.maLop) + '</button>' +
@@ -6368,11 +6373,11 @@ tr.qm-hang-tam td{background:#fffbeb}
     var luot = hdLuotBai();
     var chip = function (t, phu) { return '<span class="hd-chip' + (phu ? ' phu' : '') + '">' + A.chuAnToan(t) + '</span>'; };
     var h = dangLam.map(function (x) {
-      return '<div class="hd-dong">' + hdAv(x.ten, x.lop, 32) + '<div class="hd-g"><div class="hd-ten">' + A.chuAnToan(x.ten) + ' ' + chip(hdTenLop(x.lop)) + '</div>' +
+      return '<div class="hd-dong' + (hdLaChon(x.lop, x.ten) ? ' hd-chon' : '') + '" data-hd-em="' + A.chuAnToan(x.lop + '|' + x.ten) + '">' + hdAv(x.ten, x.lop, 32) + '<div class="hd-g"><div class="hd-ten">' + A.chuAnToan(x.ten) + ' ' + chip(hdTenLop(x.lop)) + '</div>' +
         '<div class="hd-bai">' + A.chuAnToan(x.bai || 'đang mở trang bài') + '</div></div><span class="hd-lam"><i></i>đang làm</span></div>';
     }).join('') + luot.map(function (x) {
       var tl = x.o ? x.s / x.o : 0, mau = tl >= .9 ? 'tot' : tl >= .6 ? 'vua' : 'kem';
-      return '<div class="hd-dong">' + hdAv(x.ten, x.lop, 32) + '<div class="hd-g"><div class="hd-ten">' + A.chuAnToan(x.ten) + ' ' + chip(hdTenLop(x.lop)) + '</div>' +
+      return '<div class="hd-dong' + (hdLaChon(x.lop, x.ten) ? ' hd-chon' : '') + '" data-hd-em="' + A.chuAnToan(x.lop + '|' + x.ten + '|' + x.bId) + '">' + hdAv(x.ten, x.lop, 32) + '<div class="hd-g"><div class="hd-ten">' + A.chuAnToan(x.ten) + ' ' + chip(hdTenLop(x.lop)) + '</div>' +
         '<div class="hd-bai">' + (x.dang ? chip(x.dang, 1) : '') + A.chuAnToan(x.ma) + (x.act ? ' <span class="hd-mo">· ' + A.chuAnToan(x.act) + '</span>' : '') + '</div></div>' +
         '<div class="hd-diem ' + mau + '">' + x.s + '/' + x.o + '<small>' + hdChuTruoc(x.luc) + '</small></div></div>';
     }).join('');
@@ -6384,6 +6389,42 @@ tr.qm-hang-tam td{background:#fffbeb}
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-hd-lop]'); if (!b) return;
     chonLop(b.getAttribute('data-hd-lop'));
+  });
+  /* ⭐ v1.212.0 — thầy chốt: BẤM 1 LẦN avatar/dòng một em (ô online hoặc bài tập gần đây) = CHỌN em đó (sáng ở cả 2 nửa);
+     BẤM ĐÚP = mở bài GẦN NHẤT của em (chọn lớp em → hộp quản lý bài → hộp CHI TIẾT EM: đồ thị + bảng từng lượt, hqChiTiet).
+     ⛔ Tự đo 2 cú bấm (cùng em, ≤ 450ms) — KHÔNG dùng `dblclick`: ô hoạt động vẽ lại khi có lượt nộp/nhịp online,
+     vẽ lại giữa 2 cú bấm thì trình duyệt không bắn dblclick (bẫy "khối vẽ lại giữa cú bấm"). */
+  HD.chon = null; HD.bam = { k: '', luc: 0 };
+  function hdKhoaTen(s) { return A.khoaTen ? A.khoaTen(s) : String(s || '').toLowerCase(); }
+  function hdLaChon(lop, ten) { return !!(HD.chon && HD.chon.lop === lop && HD.chon.k === hdKhoaTen(ten)); }
+  function hdTenDay(lop, ten) { var l = A.lopTheoMa(DL, lop) || {}; return A.avTenDayDu(ten, l.hocSinh || []); }
+  // bài gần nhất của em: lượt nộp mới nhất trong ô bài tập ⇒ nếu không có thì bài còn hạn đầu tiên của lớp
+  function hdBaiGanNhat(lop, ten, bId) {
+    if (bId) return bId;
+    var k = hdKhoaTen(ten), l = hdLuotBai().filter(function (x) { return x.lop === lop && hdKhoaTen(x.ten) === k; })[0];
+    if (l) return l.bId;
+    var con = A.baiCuaLop(DL, lop, 'ql').filter(A.conHan);
+    return con.length ? con[0].id : '';
+  }
+  document.addEventListener('click', function (e) {
+    var el = e.target.closest('[data-hd-em]'); if (!el) return;
+    var p = el.getAttribute('data-hd-em').split('|'), lop = p[0], ten = p[1], bId = p[2] || '';
+    var khoa = lop + '|' + hdKhoaTen(ten), nay = Date.now();
+    var dup = HD.bam.k === khoa && nay - HD.bam.luc < 450;
+    HD.bam = { k: dup ? '' : khoa, luc: nay };
+    HD.chon = { lop: lop, k: hdKhoaTen(ten) };
+    hdVe();
+    if (!dup) return;
+    var id = hdBaiGanNhat(lop, ten, bId);
+    if (!id) { baoToast('Lớp ' + hdTenLop(lop) + ' chưa có bài nào còn hạn để xem chi tiết.'); return; }
+    if (LOP_CHON !== lop) chonLop(lop);
+    setTimeout(function () {
+      moBaiModal(id);
+      if (BM_ID !== id) { baoToast('Không mở được bài này (đã xoá?).'); return; }
+      var tenDay = hdTenDay(lop, ten);
+      if (!hqHocSinh(HQ.t).some(function (h) { return h.ten === tenDay; })) { baoToast(tenDay + ' không có trong danh sách làm bài này.'); return; }
+      hqChiTiet(tenDay);
+    }, LOP_CHON === lop ? 0 : 60);
   });
 
   // ⭐ v1.211.0 — thầy: khung giữa + khung chat KÉO DÀI tới đúng mép dưới nút "Quản lý & bảo mật" (cột trái, sticky đáy màn).

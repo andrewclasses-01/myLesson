@@ -3620,7 +3620,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=198"></script>
+<script src="config.js?v=199"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=78"></script>
@@ -6375,7 +6375,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     phai.innerHTML = h || '<div class="hd-trong">Chưa có lượt làm bài nào trong 24 giờ qua ở các bài đang mở.</div>';
     if (window.avKhoDe) try { window.avKhoDe(trai); window.avKhoDe(phai); } catch (e) {}
   }
-  function hdToanHe() { hdNgheOnline(); hdDongBoAct(); hdVe(); hdKeoDai(); }
+  function hdToanHe() { hdNgheOnline(); hdDongBoAct(); hdVe(); hdKeoDai(); setTimeout(hdKeoDai, 800); setTimeout(hdKeoDai, 2500); }
   setInterval(function () { if (document.visibilityState === 'visible') hdVe(); }, 30000);   // "x phút trước" + online hết hạn
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-hd-lop]'); if (!b) return;
@@ -6388,11 +6388,19 @@ tr.qm-hang-tam td{background:#fffbeb}
     var hai = document.querySelector('.hai-cot'), nut = document.querySelector('#nwbQlCot [data-muc="baoMat"]');
     if (!hai) return;
     if (!nut || window.innerWidth <= 900) { hai.style.minHeight = ''; return; }
-    var day = nut.getBoundingClientRect().bottom + window.scrollY, dinh = hai.getBoundingClientRect().top + window.scrollY;
-    var cao = Math.round(day - dinh);
-    hai.style.minHeight = cao > 300 ? cao + 'px' : '';
+    if (window.scrollY > 2 || !nut.getBoundingClientRect().height) return;   // cột trái sticky: chỉ đo khi trang ở đầu + đã hiện
+    hai.style.minHeight = '';
+    // v1.211.1 — thầy báo còn hụt ~20px: đo MÉP DƯỚI THẬT của khung chat (không phải đáy hàng 2 cột — còn lề/khoảng đệm)
+    //   so với mép dưới nút, thêm đúng phần hụt vào chiều cao hàng.
+    var chat = document.querySelector('.cot-chat') || hai;
+    var hut = nut.getBoundingClientRect().bottom - chat.getBoundingClientRect().bottom;
+    if (hut > 0) hai.style.minHeight = Math.round(hai.getBoundingClientRect().height + hut) + 'px';
   }
   window.addEventListener('resize', function () { clearTimeout(HD.henKeo); HD.henKeo = setTimeout(hdKeoDai, 120); });
+  // font web / ảnh tải xong làm cột trái + thẻ lớp đổi cao ⇒ đo lại (bẫy đo layout quá sớm)
+  window.addEventListener('load', hdKeoDai);
+  try { document.fonts.ready.then(hdKeoDai); } catch (e) {}
+  setTimeout(hdKeoDai, 1500); setTimeout(hdKeoDai, 4000);
 
   // ---------- BẤM THẺ BÀI: mở nội dung như bình thường (Thầy Andrew xem) ----------
   // Tái dùng NGUYÊN VẸN veRuotBai() (act/chưa xong/đã xong) — hộp này chỉ là VỎ

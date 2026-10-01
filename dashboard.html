@@ -2723,6 +2723,21 @@ button.mk-em:hover{border-color:currentColor}
 .lop-btn.lbB.chon .lb-luc{color:#E6F6F2}
 .lbB .lb-h3 .lb-khoa{margin:0 0 0 auto}
 .lop-btn.lbB.mo-kho{box-shadow:0 0 0 3px rgba(14,124,110,.28)}
+/* ⭐ v1.207.0 — thầy chốt: lớp có BUỔI HỌC HÔM NAY (A.coBuoiHomNay) viền TÍM mảnh, sáng neon lấp lánh:
+   quầng tím nhẹ "thở" + một vệt sáng chạy vòng quanh viền (conic-gradient + mask chỉ chừa viền 1.5px). */
+@property --hn-goc{syntax:'<angle>'; inherits:false; initial-value:0deg}
+.lop-btn.hom-nay{border-color:#A855F7; animation:hnTho 2.6s ease-in-out infinite}
+.lop-btn.hom-nay::after{content:""; position:absolute; inset:0; border-radius:inherit; padding:1.5px; pointer-events:none; z-index:2;
+  background:conic-gradient(from var(--hn-goc), #A855F7 0deg, #A855F7 250deg, #E9D5FF 300deg, #fff 318deg, #E9D5FF 336deg, #A855F7 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude, linear-gradient(#000 0 0);
+  animation:hnQuay 3.2s linear infinite}
+@keyframes hnQuay{to{--hn-goc:360deg}}
+@keyframes hnTho{0%,100%{box-shadow:0 0 0 1px rgba(168,85,247,.35), 0 0 6px rgba(168,85,247,.45), 0 0 14px rgba(168,85,247,.18)}
+  50%{box-shadow:0 0 0 1px rgba(168,85,247,.55), 0 0 10px rgba(168,85,247,.7), 0 0 22px rgba(192,132,252,.35)}}
+.lop-btn.hom-nay.chon{border-color:#A855F7}
+.lop-btn.lbB.hom-nay.mo-kho{animation:none; box-shadow:0 0 0 3px rgba(14,124,110,.28), 0 0 10px rgba(168,85,247,.6)}
+@media (prefers-reduced-motion:reduce){ .lop-btn.hom-nay, .lop-btn.hom-nay::after{animation:none} }
 /* ⭐ v1.203.0 — KHO NHỎ (bấm đúp thẻ lớp): hộp nổi có mũi cạnh thẻ, mẫu K1 thầy chốt */
 .kho-nho{position:absolute; z-index:19; width:360px; max-height:min(560px,calc(100vh - 90px)); display:flex; flex-direction:column;
   background:var(--the); border-radius:14px; box-shadow:0 2px 6px rgba(16,40,36,.08), 0 18px 48px rgba(16,40,36,.18); animation:khoNhoVao .2s var(--em)}
@@ -3167,9 +3182,9 @@ tr.qm-hang-tam td{background:#fffbeb}
 .bc-nut .san{background:#dcfce7; color:#15803d}
 .bc-chua{flex:none; font:700 11.5px var(--font); color:var(--nhat)}
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=8">
+<link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=13">
+<link rel="stylesheet" href="css/chat-ui.css?v=14">
 </head>
 <body>
 
@@ -3560,12 +3575,12 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=193"></script>
+<script src="config.js?v=194"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
-<script src="js/chung.js?v=77"></script>
+<script src="js/chung.js?v=78"></script>
 <script src="js/chat.js?v=30"></script>
-<script src="js/chat-ui.js?v=13"></script>
+<script src="js/chat-ui.js?v=14"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=4"></script>
 <script>
@@ -3892,7 +3907,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     // kho bài nay mở bằng BẤM ĐÚP thẻ (`moKhoNho`, tự đo 2 cú bấm — chonLop vẽ lại thẻ giữa 2 cú).
     //   dòng 1: tên lớp · bên phải "còn 6 giờ" / "Chờ • 2 ngày 3 tiếng" / "Không giao bài"
     //   dòng 2: dạng + mã bài (+ nhãn KHÓA cuối dòng)
-    return '<div class="lop-btn lb3 lbB' + (l.maLop === LOP_CHON ? ' chon' : '') + (tt === 'cho' ? ' cho' : '') + (l.maLop === KHO_NHO_LOP ? ' mo-kho' : '') + '" data-malop="' + mL + '" data-tt="' + tt + '"' +
+    return '<div class="lop-btn lb3 lbB' + (l.maLop === LOP_CHON ? ' chon' : '') + (tt === 'cho' ? ' cho' : '') + (l.maLop === KHO_NHO_LOP ? ' mo-kho' : '') + (A.coBuoiHomNay(DL, l.maLop) ? ' hom-nay' : '') + '" data-malop="' + mL + '" data-tt="' + tt + '"' +
         ' title="' + A.chuAnToan(chu2 + (luc ? ' • ' + luc : '')) + ' — bấm đúp để mở kho bài">' +
       '<button class="lb-main" data-lop="' + mL + '" aria-label="Chọn ' + A.chuAnToan(l.tenGoc || l.maLop) + '"></button>' +
       (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +

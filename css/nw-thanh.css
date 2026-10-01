@@ -36,9 +36,10 @@
   font-size:10px; font-weight:800; letter-spacing:.06em; white-space:nowrap; opacity:0; pointer-events:none;
   transition:opacity .15s, transform .15s}
 .nwb-tab:hover::before{opacity:1; transform:translateX(-50%) translateY(0)}
-.nwb-menu{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:var(--ink); background:#fff;
-  border:1px solid var(--line); box-shadow:var(--shadow); transition:background-color .15s, color .15s; cursor:pointer; padding:0}
-.nwb-menu:hover{background:var(--accent-soft); color:var(--accent)}
+/* ⭐ v1.207.0 — thầy: nút menu thanh trên CHỈ là 3 dấu gạch, không nền/viền tròn (rê chuột chỉ đổi màu). */
+.nwb-menu{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:var(--ink); background:transparent;
+  border:0; box-shadow:none; transition:color .15s; cursor:pointer; padding:0}
+.nwb-menu:hover{background:transparent; color:var(--accent)}
 .nwb-menu svg{width:24px; height:24px; stroke-width:2.2}
 
 /* sidebar: myNetwork mở bằng ☰ và TRƯỢT TỪ PHẢI. lop.html có sẵn .side.phai (thiếu trạng thái mở),
@@ -58,7 +59,7 @@ body.mo-menu .side.phai{transform:none}
   .nwb-tab svg{width:38px; height:38px; padding:7px}
   .nwb-tab::before{display:none}
   .top.nwb .av.me{width:40px; height:40px; font-size:14px; box-shadow:none}
-  .nwb-menu{width:40px; height:40px; box-shadow:none; background:var(--ground)}
+  .nwb-menu{width:40px; height:40px; box-shadow:none; background:transparent}
   body.co-nwb{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
   body.co-nwb .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
 }

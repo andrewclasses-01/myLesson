@@ -2765,6 +2765,13 @@
     return { dots: [{ tu: '', buoi: thu.map(function (t) { return { thu: t, vao: vao, tan: tan }; }) }] };
   }
 
+  // ⭐ v1.207.0 — thầy chốt: thẻ lớp có BUỔI HỌC HÔM NAY viền tím neon (dashboard). true/false, lớp tạm nghỉ / thiếu lịch ⇒ false.
+  function coBuoiHomNay(dl, maLop) {
+    var c = lichCua(dl, maLop); if (!c) return false;
+    var g = new Date(gioNay());
+    return buoiTrongNgayLich(c.dots, new Date(g.getFullYear(), g.getMonth(), g.getDate())).length > 0;
+  }
+
   // BUỔI HỌC mà một mốc thời gian `moc` thuộc về: { batDau, ketThuc } tính bằng
   // ms, hoặc null. "Thuộc về" = `moc` nằm trong [giờ vào − 2 tiếng, giờ tan).
   //
@@ -3537,7 +3544,7 @@
     nghiCua: nghiCua, nghiTt: nghiTt, datNghi: datNghi, napLopHoc: napLopHoc,
     buoiTiepTheo: buoiTiepTheo, thuTuChuoi: thuTuChuoi, gaSanNghi: gaSanNghi,
     // ⭐ v1.81.0 — "LỚP ĐANG HỌC" (giờ học nhồi sẵn trong lop.json)
-    lichCua: lichCua, buoiChuaMoc: buoiChuaMoc, theDangHoc: theDangHoc,
+    lichCua: lichCua, coBuoiHomNay: coBuoiHomNay, buoiChuaMoc: buoiChuaMoc, theDangHoc: theDangHoc,
     nghiConHieuLuc: nghiConHieuLuc,
     theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, chuanTen: chuanTen, khoaEm: khoaEm, datBangEm: datBangEm, lopHien: lopHien,

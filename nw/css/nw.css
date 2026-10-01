@@ -113,9 +113,9 @@ textarea{resize:none; font-weight:500; line-height:1.5; display:block}
 .sao-hieu .lap.l2{width:6px; height:6px; right:-9px; top:6px; animation-delay:.7s}
 .sao-hieu .lap.l3{width:5px; height:5px; left:6px; top:-9px; animation-delay:1.4s}
 @keyframes lap-lanh{0%,100%{opacity:.25; transform:scale(.7) rotate(0deg)} 50%{opacity:1; transform:scale(1.15) rotate(20deg)}}
-.nut-menu{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:var(--ink); background:#fff;
-  border:1px solid var(--line); box-shadow:var(--shadow); transition:background-color .15s, color .15s}
-.nut-menu:hover{background:var(--accent-soft); color:var(--accent)}
+.nut-menu{width:46px; height:46px; border-radius:50%; display:grid; place-items:center; color:var(--ink); background:transparent;
+  border:0; box-shadow:none; transition:color .15s}   /* v1.207.0 — chỉ 3 dấu gạch, không nền tròn */
+.nut-menu:hover{background:transparent; color:var(--accent)}
 .nut-menu .ic{width:24px; height:24px; stroke-width:2.2}
 .tabs{display:flex; align-items:stretch; gap:2px; height:var(--cao-thanh)}
 .tab{position:relative; display:grid; place-items:center; width:58px; color:var(--muted); border-radius:12px 12px 0 0;
@@ -153,7 +153,7 @@ textarea{resize:none; font-weight:500; line-height:1.5; display:block}
   .tab[data-nh]::before{display:none}
   .av.me{width:40px; height:40px; font-size:14px; box-shadow:none}
   .sao-hieu{font-size:9px; padding:0 3px}
-  .nut-menu{width:40px; height:40px; box-shadow:none; background:var(--ground)}
+  .nut-menu{width:40px; height:40px; box-shadow:none; background:transparent}
 }
 
 /* ---------- SIDEBAR PHẢI (mở từ ☰; hình chép myLesson lop.html .side) ---------- */

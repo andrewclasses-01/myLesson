@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-01 19:34:47",
+  "capNhat": "2026-10-01 21:43:52",
   "bai": {
     "A1C": [
       {
@@ -618,6 +618,47 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_1.10_DICTS_LSA2-S3.T4.P1-2",
+        "tieuDe": "A1B_1.10_DICTS LSA2-S3.T4.P1-2",
+        "tenHien": "A1B_1.10_DICTS LSA2-S3.T4.P1-2",
+        "dang": "DICTS",
+        "ngay": "1.10",
+        "han": "2026-10-06T19:45",
+        "maLesson": "LSA2-S3.T4.P1-2",
+        "taoLuc": "2026-10-01",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSA2-S3.T4.P1-2",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1B%2FA1B_1.10_DICTS_LSA2-S3.T4.P1-2%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "8tktvd",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSA2-S3.T4.P1-2"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ 2",
+            "act": "LSA2-S3.T4.P1-2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "wnb66r",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "A1B_29.9_WORKSHEET_LSA2-S3.T4.P1-2",
         "tieuDe": "A1B_29.9_WORKSHEET LSA2-S3.T4.P1-2",

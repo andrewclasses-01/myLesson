@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-30 15:49:27",
+  "capNhat": "2026-10-01 20:31:55",
   "nguon": "dashboard",
   "lop": [
     {
@@ -286,6 +286,13 @@
           "tenCu": [
             "DIỆP"
           ]
+        },
+        {
+          "id": 239,
+          "ten": "QUANG",
+          "ma": "QUANG",
+          "sinhNhat": "",
+          "vao": "2026-10-01"
         },
         {
           "id": 75,

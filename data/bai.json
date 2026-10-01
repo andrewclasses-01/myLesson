@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-09-30 21:46:12",
+  "capNhat": "2026-10-01 19:34:47",
   "bai": {
     "A1C": [
       {
@@ -1446,6 +1446,25 @@
       }
     ],
     "A1A": [
+      {
+        "id": "A1A_1.10_WORDS_LSB1-S1.T1.P3-4",
+        "tieuDe": "A1A_1.10_WORDS LSB1-S1.T1.P3-4",
+        "tenHien": "A1A_1.10_WORDS LSB1-S1.T1.P3-4",
+        "dang": "WORDS",
+        "ngay": "1.10",
+        "han": "2026-10-05T19:45",
+        "maLesson": "LSB1-S1.T1.P3-4",
+        "taoLuc": "2026-10-01",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "WORDS – TRANSLATION QUEST",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1A%2FA1A_1.10_WORDS_LSB1-S1.T1.P3-4%2F40.pdf?alt=media",
+            "soTrang": 4
+          }
+        ]
+      },
       {
         "id": "A1A_28.9_WORDS_LSB1-S1.T1.P2",
         "tieuDe": "A1A_28.9_WORDS LSB1-S1.T1.P2",

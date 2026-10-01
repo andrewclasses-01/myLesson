@@ -6,7 +6,7 @@
 <title>Quản lý · Andrew Classes Network</title>
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
-<link rel="stylesheet" href="css/nw.css?v=16">
+<link rel="stylesheet" href="css/nw.css?v=17">
 <link rel="stylesheet" href="../css/chat-ui.css?v=12">
 </head>
 <body>
@@ -19,6 +19,7 @@
 <script src="../js/chat-ui.js?v=12"></script>   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
 <script src="js/loi.js?v=19"></script>
 <script src="js/thanh.js?v=15"></script>
+<script src="../js/ic-ql.js?v=1"></script>   <!-- v1.203.1 icon màu cột trái, chung với dashboard -->
 <script src="js/bai.js?v=14"></script>
 <script src="js/chat.js?v=15"></script>
 <script src="../js/o-ngay.js?v=1"></script>
@@ -93,17 +94,17 @@
     // ---------- cột trái ----------
     var MUC_QL = [
       { nhom: 'BÀI TẬP' },
-      { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap },
+      { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap, icm: 'baiTap' },
       { nhom: 'NETWORK' },
-      { ma: 'nhom', chu: 'Nhóm chat', ic: IC.nhom },
-      { ma: 'baiDang', chu: 'Bài đăng', ic: IC.baiDang },
-      { ma: 'noiBat', chu: 'Nổi bật', ic: IC.sao },
-      { ma: 'suKien', chu: 'Sự kiện & Khám phá', ic: IC_QL.suKien },
-      { ma: 'baoCao', chu: 'Báo cáo', ic: IC.baoCao, dem: function () { return (BAO_CAO || []).filter(function (b) { return b.trangThai === 'moi'; }).length; } },
-      { ma: 'daAn', chu: 'Bài đã ẩn', ic: IC.an },
-      { ma: 'tuCam', chu: 'Từ cấm', ic: IC_QL.tuCam },
-      { ma: 'taiKhoan', chu: 'Tài khoản', ic: IC.caNhan },
-      { ma: 'lop', chu: 'Lớp', ic: IC_QL.lop }
+      { ma: 'nhom', chu: 'Nhóm chat', ic: IC.nhom, icm: 'nhom' },
+      { ma: 'baiDang', chu: 'Bài đăng', ic: IC.baiDang, icm: 'baiDang' },
+      { ma: 'noiBat', chu: 'Nổi bật', ic: IC.sao, icm: 'noiBat' },
+      { ma: 'suKien', chu: 'Sự kiện & Khám phá', ic: IC_QL.suKien, icm: 'suKien' },
+      { ma: 'baoCao', chu: 'Báo cáo', ic: IC.baoCao, icm: 'baoCao', dem: function () { return (BAO_CAO || []).filter(function (b) { return b.trangThai === 'moi'; }).length; } },
+      { ma: 'daAn', chu: 'Bài đã ẩn', ic: IC.an, icm: 'daAn' },
+      { ma: 'tuCam', chu: 'Từ cấm', ic: IC_QL.tuCam, icm: 'tuCam' },
+      { ma: 'taiKhoan', chu: 'Tài khoản', ic: IC.caNhan, icm: 'taiKhoan' },
+      { ma: 'lop', chu: 'Lớp', ic: IC_QL.lop, icm: 'lop' }
     ];
     var VE = {};
     var mucHien = NW.thamSo('muc'); if (!VE_CO(mucHien)) mucHien = 'baiTap';
@@ -112,7 +113,7 @@
       cot.innerHTML = MUC_QL.map(function (m) {
         if (m.nhom) return '<div class="ql-nhom">' + an(m.nhom) + '</div>';
         var d = m.dem ? m.dem() : 0;
-        return '<button class="ql-muc' + (m.ma === mucHien ? ' chon' : '') + '" data-muc="' + m.ma + '">' + m.ic + '<span>' + an(m.chu) + '</span>' + (d ? '<b class="ql-dem">' + d + '</b>' : '') + '</button>';
+        return '<button class="ql-muc' + (m.ma === mucHien ? ' chon' : '') + '" data-muc="' + m.ma + '">' + (m.icm && window.AC_ICQL ? '<span class="ic-m">' + window.AC_ICQL[m.icm]() + '</span>' : m.ic) + '<span>' + an(m.chu) + '</span>' + (d ? '<b class="ql-dem">' + d + '</b>' : '') + '</button>';
       }).join('');
       $$('.ql-muc', cot).forEach(function (b) { b.onclick = function () { mo(b.getAttribute('data-muc')); }; });
     }

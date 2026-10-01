@@ -1379,6 +1379,9 @@ body.dn{min-height:100dvh}
 .ql-nhom{font-size:10.5px; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); font-weight:800; padding:12px 12px 5px}
 .ql-muc{display:flex; align-items:center; gap:10px; width:100%; padding:9px 12px; border-radius:12px; font-weight:700; font-size:13.5px; color:var(--ink); text-align:left; transition:background .15s var(--em)}
 .ql-muc .ic{width:19px; height:19px; color:var(--muted); flex:none}
+/* web v1.203.1 — icon màu đặc kiểu Facebook (js/ic-ql.js), chung với cột trái dashboard */
+.ql-muc .ic-m{width:28px; height:28px; flex:none; display:grid; place-items:center; margin:-3px 0}
+.ql-muc .ic-m svg{width:28px; height:28px; display:block}
 .ql-muc:hover{background:var(--ground)}
 .ql-muc.chon{background:var(--accent-soft); color:var(--accent)}
 .ql-muc.chon .ic{color:var(--accent)}

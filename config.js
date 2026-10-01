@@ -14,7 +14,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.203.0',
+  PHIEN_BAN: '1.203.1',
 
   // ---- ID QUẢN TRỊ CỦA THẦY (v1.176.0, 29/09/2026) ----
   // Chuỗi BĂM SHA-256 của ID quản trị (viết hoa, bỏ khoảng trắng). Gõ ID này ở màn đăng nhập

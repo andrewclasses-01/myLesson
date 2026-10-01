@@ -470,7 +470,7 @@
       return h + '<div class="cu-hang' + (toi ? ' toi' : '') + (cungNhom ? '' : ' dau') + '">' +
         (toi ? '' : '<div class="cu-av">' + (cungNhom ? '' : (o.av ? o.av(t, i) : '')) + '</div>') +
         // ⭐ v1.188.0 — coCx: tin đã có cảm xúc (giãn ra chừa chỗ viên cảm xúc); cuoi: tin mới nhất (điện thoại hiện nút tim ở đây).
-        '<div class="cu-w' + (!t.thuHoi && demCx(t.cx).tong ? ' coCx' : '') + (i === ds.length - 1 ? ' cuoi' : '') + '" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (t.thuHoi ? '' : veCum(t)) + cong + '</div></div>' +
+        '<div class="cu-w' + (coThaCx(t) && demCx(t.cx).tong ? ' coCx' : '') + (i === ds.length - 1 ? ' cuoi' : '') + '" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' + than + (coThaCx(t) ? veCum(t) : '') + cong + '</div></div>' +
         (o.sauTin ? (o.sauTin(t, i, ds) || '') : '');
     }
     /* ⭐ v1.206.0 — thầy chốt: dashboard (o.docThuHoi) xem được NỘI DUNG tin đã thu hồi, nằm ngay dưới dòng
@@ -493,6 +493,8 @@
         clearTimeout(henTH); henTH = setTimeout(veLai, 30);   // nhiều tin cùng về ⇒ vẽ lại MỘT lần
       });
     }
+    // ⭐ v1.209.0 — thầy: STICKER không thả cảm xúc, chỉ tin chữ/ảnh (tin chỉ có emoji vẫn thả được).
+    function coThaCx(t) { return !!t && !t.thuHoi && !(t.sticker && timStk(t.sticker)); }
     function veCum(t) {
       var d = demCx(t.cx), toi = cxCuaToi(t);
       // ⭐ v1.195.0 — thầy: viên cảm xúc chỉ hiện TỐI ĐA 3 loại GẦN NHẤT (loại khác vẫn tính trong số tổng + bảng "ai thả gì").
@@ -544,7 +546,7 @@
 
     // ---------- thả cảm xúc (ghi dồn: bấm liền tay nhiều lần chỉ tốn MỘT lượt ghi) ----------
     function doiCx(t, sua) {
-      if (!t || !t.id || t.thuHoi) return false;
+      if (!t || !t.id || !coThaCx(t)) return false;
       if (ui.chiXem) { loi('Đang ở chế độ xem — không thả cảm xúc được.'); return false; }
       var cu = cxCuaToi(t), moi = cu ? { ten: cu.ten, luc: cu.luc, n: Object.assign({}, cu.n), l: cu.l } : { ten: (o.toi && o.toi.ten) || '?', luc: 0, n: {}, l: '' };
       if (sua(moi) === false) return false;
@@ -711,11 +713,11 @@
       ban.style.width = rg.width + 'px'; ban.style.left = rg.left + 'px'; ban.style.top = rg.top + 'px';
       hd.appendChild(ban);
       var toi = cxCuaToi(t), hop = document.createElement('div'); hop.className = 'hop';
-      hop.innerHTML = (ui.chiXem ? '' : '<div class="cu-hd-cx">' + CX.map(function (c) { var n = toi && toi.n[c.k] || 0; return '<button type="button" data-k="' + c.k + '" aria-label="' + c.ten + '">' + imgCx(c.k) + (n ? '<i' + (n >= TOI_DA_CX ? ' class="day"' : '') + '>' + n + '</i>' : '') + '</button>'; }).join('') +
+      hop.innerHTML = (ui.chiXem || !coThaCx(t) ? '' : '<div class="cu-hd-cx">' + CX.map(function (c) { var n = toi && toi.n[c.k] || 0; return '<button type="button" data-k="' + c.k + '" aria-label="' + c.ten + '">' + imgCx(c.k) + (n ? '<i' + (n >= TOI_DA_CX ? ' class="day"' : '') + '>' + n + '</i>' : '') + '</button>'; }).join('') +
         '<button type="button" class="xo" data-k="" aria-label="Xoá hết cảm xúc em đã thả"' + (toi ? '' : ' disabled') + '>×</button></div>') +
         '<div class="cu-hd-ds">' + (ui.khoaChat || ui.chiXem ? '' : '<button type="button" data-m="tra">' + IC.traLoi + 'Trả lời</button>') +
         (t.sticker || !t.chu ? '' : '<button type="button" data-m="chep">' + IC.chep + 'Sao chép</button>') +
-        (demCx(t.cx).tong ? '<button type="button" data-m="cx">' + IC.tim + 'Cảm xúc</button>' : '') +
+        (coThaCx(t) && demCx(t.cx).tong ? '<button type="button" data-m="cx">' + IC.tim + 'Cảm xúc</button>' : '') +
         ((cuaToi(t) || o.laThay) && o.thuHoi && !ui.chiXem ? '<button type="button" data-m="thuhoi" class="nguy">' + IC.thuHoi + 'Thu hồi</button>' : '') +
         (o.laThay && o.xoa ? '<button type="button" data-m="xoa" class="nguy">' + IC.xoa + 'Xoá hẳn</button>' : '') + '</div>';
       hd.appendChild(hop); document.body.appendChild(hd); HD = hd;

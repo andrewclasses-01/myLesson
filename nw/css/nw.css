@@ -834,6 +834,7 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .av-4 > :nth-child(1){left:0; top:0; z-index:1}
 .av-4 > :nth-child(2){right:0; top:0; z-index:2}
 .av-4 > :nth-child(3){left:0; bottom:0; z-index:3}
+.av-4 > :nth-child(4){right:0; bottom:0; z-index:4}   /* 02/10 thầy: bóng 4 = ảnh người thứ 4 (bỏ bóng sĩ số) */
 .av-4 > .av-so{right:0; bottom:0; z-index:4; display:grid; place-items:center; background:#EEF1F0; color:var(--ink); font:800 11px/1 var(--sans, inherit)}
 .av-4 > .av .on{display:none}
 .tn-phong-dau .av-4{width:42px; height:42px}

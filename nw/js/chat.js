@@ -277,9 +277,9 @@
       if (p.loai === 'nhom') {
         var tv = p.tv || {}, ds = (p.thanhVien || []).filter(function (u) { return u !== toi.uid; });
         ds.sort(function (a, b) { return ((tv[b] || {}).anh ? 1 : 0) - ((tv[a] || {}).anh ? 1 : 0); });
-        var ba = ds.slice(0, 3).map(function (u) { return NW.avHtml(Object.assign({}, tv[u] || { ten: '?' }, { online: false, hoatDongLuc: 0 })); }).join('');
-        var so = p.soThanhVien || (p.thanhVien || []).length;
-        return '<span class="av-4' + (lop ? ' ' + lop : '') + '" title="' + so + ' thành viên">' + ba + '<span class="av-so">' + (so > 99 ? '99+' : so) + '</span></span>';
+        // 02/10 thầy chốt: BỎ con số thành viên ⇒ bóng 4 là ảnh người thứ 4 (không còn bóng sĩ số)
+        var bon = ds.slice(0, 4).map(function (u) { return NW.avHtml(Object.assign({}, tv[u] || { ten: '?' }, { online: false, hoatDongLuc: 0 })); }).join('');
+        return '<span class="av-4' + (lop ? ' ' + lop : '') + '">' + bon + '</span>';
       }
       return NW.avHtml(nguoiKia(p), lop);
     }
@@ -410,14 +410,15 @@
 
     // ---------- khung phòng ----------
     function phuPhong(p) {
-      if (p.loai === 'nhom') return (laNhomLop(p) ? 'Nhóm lớp · ' : '') + (p.soThanhVien || (p.thanhVien || []).length) + ' thành viên';
+      // 02/10 thầy chốt: bỏ con số thành viên; chat với thầy chỉ hiện tên "Thầy Andrew" (không dòng "Thầy" bên dưới)
+      if (p.loai === 'nhom') return laNhomLop(p) ? 'Nhóm lớp' : 'Nhóm chat';
       var k = nguoiKia(p);
-      return k.vaiTro === 'gv' ? 'Thầy' : (NW.dangOnline(k) ? 'Đang hoạt động' : (k.lop ? 'Lớp ' + k.lop : ''));
+      return k.vaiTro === 'gv' ? '' : (NW.dangOnline(k) ? 'Đang hoạt động' : (k.lop ? 'Lớp ' + k.lop : ''));
     }
     function veKhungPhong(p) {
       khuPhong.innerHTML =
         '<div class="tn-phong-dau"><button class="nut-tron lui" id="tnLui" aria-label="Quay lại">' + IC_LUI + '</button>' + avPhong(p) +
-        '<div class="ai"><div class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + '</div><div class="phu">' + an(phuPhong(p)) + '</div></div>' +
+        '<div class="ai"><div class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + '</div>' + (phuPhong(p) ? '<div class="phu">' + an(phuPhong(p)) + '</div>' : '') + '</div>' +
         '<button class="nut-tron" id="tnInfoNut" aria-label="Thông tin" title="Thông tin cuộc trò chuyện">' + IC.thongTin + '</button></div>' +
         '<div class="tn-cuon" id="tnCuon"></div>' +
         '<div class="tn-nhap-khu" id="tnChan"></div>';   // ⭐ web v1.198.0 — ô nhập khuôn chat Zalo (ChatUI dựng)

@@ -204,6 +204,7 @@
     hop.className = 'card tn';
     // ⭐ 02/10/2026 thầy chốt: HS chưa có chat riêng ⇒ danh sách = NHÓM LỚP (mọi lớp em học, huy hiệu) + Thầy Andrew + dòng "sẽ sớm được bật"
     var CHO_RIENG = !!(toi.laThay || CFG.BAT_CHAT_RIENG);
+    var IC_LUI = '<svg class="ic" viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M15 5l-7 7 7 7"/></svg>';   // 02/10 thầy: nút quay lại (điện thoại) = dấu <
     var THAY = [];   // hồ sơ thầy (để luôn có dòng "Thầy Andrew" kể cả khi chưa nhắn lần nào)
     // 02/10/2026 thầy: khung giữa khi chưa mở phòng = icon tròn lớn + tiêu đề + 1 dòng hướng dẫn + nút "Nhắn tin mới" (bấm = nút ✎)
     var TRONG_PHONG = '<div class="tn-trong tn-chao"><span class="tn-chao-ic">' + IC.tinNhan + '</span><b>Tin nhắn của ' + (toi.laThay ? 'thầy' : 'em') + '</b>' +
@@ -362,7 +363,7 @@
     }
     function veKhungPhong(p) {
       khuPhong.innerHTML =
-        '<div class="tn-phong-dau"><button class="nut-tron lui" id="tnLui" aria-label="Quay lại">' + IC.lui + '</button>' + avPhong(p) +
+        '<div class="tn-phong-dau"><button class="nut-tron lui" id="tnLui" aria-label="Quay lại">' + IC_LUI + '</button>' + avPhong(p) +
         '<div class="ai"><div class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + '</div><div class="phu">' + an(phuPhong(p)) + '</div></div>' +
         '<button class="nut-tron" id="tnInfoNut" aria-label="Thông tin" title="Thông tin cuộc trò chuyện">' + IC.thongTin + '</button></div>' +
         '<div class="tn-cuon" id="tnCuon"></div>' +

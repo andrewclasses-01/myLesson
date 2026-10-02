@@ -2556,6 +2556,32 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .mn .sb-item .ten{font:700 13.5px/1.3 var(--font)}
 .mn .sb-item.sb-out:hover{background:var(--do-nhat)}
 @media (prefers-reduced-motion:reduce){.mn{transition:none}}
+/* ⭐ thiết kế ĐT 8 — pop-up HOẠT ĐỘNG (mục "Hoạt động" cột trái / ☰) */
+.hdt-nen{position:fixed; inset:0; z-index:8700; background:rgba(10,20,22,.45); display:grid; place-items:center; padding:24px}
+.hdt-nen[hidden]{display:none!important}
+.hdt-hop{width:min(1400px,100%); height:min(860px,100%); background:#F1F5F4; border-radius:20px; box-shadow:0 30px 80px rgba(0,0,0,.35);
+  display:flex; flex-direction:column; overflow:hidden; font-family:var(--font); color:var(--chu)}
+.hdt-dau{flex:none; display:flex; align-items:center; gap:12px; padding:12px 16px; background:#fff; border-bottom:1px solid var(--vien)}
+.hdt-dau h2{margin:0; font:800 16px var(--font); letter-spacing:.02em; white-space:nowrap}
+.hdt-tabs{display:none; gap:3px; background:#F1F5F4; padding:3px; border-radius:11px}
+.hdt-tabs button{border:0; background:none; font:700 12.5px var(--font); color:var(--mo); padding:8px 12px; border-radius:8px; cursor:pointer; white-space:nowrap}
+.hdt-tabs button.chon{background:#fff; color:var(--xanh); box-shadow:0 1px 3px rgba(22,35,42,.12)}
+.hdt-x{margin-left:auto; flex:none; width:40px; height:40px; border:0; border-radius:12px; background:#F1F5F4; color:var(--chu); display:grid; place-items:center; cursor:pointer}
+.hdt-x svg{width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round}
+.hdt-than{flex:1 1 0; min-height:0; padding:14px}
+.hdt-hop .hdt-than .hd-zone{display:grid; grid-template-columns:1fr 1fr; gap:14px; height:100%; min-height:0; flex:none}
+.hdt-hop .hdt-than .hd-nua{min-height:0; height:100%}
+.hdt-hop .hdt-than .hd-nua .hd-than{flex:1 1 0; max-height:none; min-height:0; overflow-y:auto}
+@media (max-width:640px){
+  .hdt-nen{padding:0}
+  .hdt-hop{width:100%; height:100%; border-radius:0}
+  .hdt-dau{padding:8px 10px 8px 14px; gap:8px; flex-wrap:wrap}
+  .hdt-tabs{display:flex; order:3; flex:1 1 100%}
+  .hdt-tabs button{flex:1}
+  .hdt-than{padding:10px}
+  .hdt-hop .hdt-than .hd-zone{grid-template-columns:1fr}
+  .hdt-hop[data-tab="0"] .hdt-than .hd-nua:nth-child(2), .hdt-hop[data-tab="1"] .hdt-than .hd-nua:nth-child(1){display:none}
+}
 .lb3 .lb-ten .tn-ngan{display:none}   /* máy tính: tên đầy đủ (điện thoại đổi ở @media 640 ngay dưới) */
 /* ⭐ thiết kế ĐT 4 (02/10/2026, thầy chốt) — ĐIỆN THOẠI (≤640): thanh tab lên ĐẦU, dải menu quản lý cuộn ngang (#nwbQlCot)
    BỎ khỏi đầu trang ⇒ JS (`datMenuDt`) dời nó VÀO pop-up ☰, pop-up thành SIDEBAR PHẢI cao hết màn: menu quản lý ở trên
@@ -3604,6 +3630,18 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="mn" id="menuNho" role="menu" aria-label="Menu tài khoản">
   <div class="mn-dau"><img src="assets/avatar-tron.jpg" alt=""><div><div class="ten">Thầy Andrew</div><div class="phu" id="mnVer">Trang quản lý</div></div></div>
   <div class="sb-menu" id="mnDs"></div>
+</div>
+<!-- ⭐ thiết kế ĐT 8 (02/10, thầy chốt) — HOẠT ĐỘNG: pop-up toàn màn, 2 tab (điện thoại xem từng tab, máy tính 2 phần cạnh nhau).
+     Ruột = CHÍNH khối .hd-zone của trang (dời vào khi mở, trả về khi đóng) ⇒ số liệu sống, không tốn thêm lượt đọc. -->
+<div class="hdt-nen" id="hdtNen" hidden>
+  <div class="hdt-hop" id="hdtHop" role="dialog" aria-modal="true" aria-label="Hoạt động" data-tab="0">
+    <div class="hdt-dau">
+      <h2>Hoạt động</h2>
+      <div class="hdt-tabs" role="tablist"><button type="button" class="chon" data-hdt="0">Đang hoạt động</button><button type="button" data-hdt="1">Bài tập gần đây</button></div>
+      <button type="button" class="hdt-x" id="hdtDong" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="hdt-than" id="hdtThan"></div>
+  </div>
 </div>
 <div class="sb-nen" id="sbNen"></div>
 <aside class="sb-panel" id="sbPanel" role="dialog" aria-label="Menu quản lý" aria-modal="true">
@@ -7002,8 +7040,33 @@ tr.qm-hang-tam td{background:#fffbeb}
     });
   }
   document.addEventListener('click', function (e) { var b = e.target.closest('[data-hd-phong]'); if (b) hdpMo(b.getAttribute('data-hd-phong')); });
-  // thiết kế ĐT 7 — mục "Hoạt động" (cột trái / ☰ điện thoại). TẠM mở pop-up phóng to ĐANG HOẠT ĐỘNG, chờ thầy chốt trang riêng.
-  window.qlMoHoatDong = function () { hdpMo('hd'); };
+  // ⭐ thiết kế ĐT 8 (thầy chốt) — mục "Hoạt động" = pop-up toàn màn #hdtNen, 2 tab. Dời CHÍNH khối .hd-zone vào (số liệu sống,
+  // tay bắt nút phóng to giữ nguyên), đóng thì trả về đúng chỗ cũ (ngay sau #theListDs) rồi kéo lại khung giữa (hdKeoDai).
+  (function () {
+    var nen = $('#hdtNen'), hop = $('#hdtHop'), than = $('#hdtThan'), cho = null, sau = null;
+    function chonTab(i) {
+      hop.setAttribute('data-tab', String(i));
+      Array.prototype.forEach.call(hop.querySelectorAll('[data-hdt]'), function (b) { b.classList.toggle('chon', b.getAttribute('data-hdt') === String(i)); });
+    }
+    function dong() {
+      if (nen.hidden) return;
+      var z = than.querySelector('.hd-zone');
+      if (z && cho) cho.insertBefore(z, sau);
+      nen.hidden = true; document.body.classList.remove('hdp-dang-mo');
+      try { hdKeoDai(); } catch (e) {}
+    }
+    window.qlMoHoatDong = function (tab) {
+      var z = document.querySelector('.hd-zone');
+      if (!z) return;
+      if (z.parentNode !== than) { cho = z.parentNode; sau = z.nextSibling; than.appendChild(z); }
+      chonTab(tab || 0);
+      nen.hidden = false; document.body.classList.add('hdp-dang-mo');
+    };
+    hop.addEventListener('click', function (e) { var b = e.target.closest('[data-hdt]'); if (b) chonTab(b.getAttribute('data-hdt')); });
+    $('#hdtDong').addEventListener('click', dong);
+    nen.addEventListener('click', function (e) { if (e.target === nen) dong(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !nen.hidden && !document.querySelector('.hdp-nen:not([hidden])')) dong(); });
+  })();
 
   // font web / ảnh tải xong làm cột trái + thẻ lớp đổi cao ⇒ đo lại (bẫy đo layout quá sớm)
   window.addEventListener('load', hdKeoDai);

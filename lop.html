@@ -1530,6 +1530,11 @@ body.mo-menu .side.trai{transform:none}
 .nhan-thay{display:inline-block; margin-left:5px; padding:1px 6px; border-radius:6px;
   background:#0E7C6E; color:#fff; font:800 9px/1.5 var(--sans, inherit);
   letter-spacing:.08em; vertical-align:1px}
+/* ⭐ thiết kế ĐT 8 (02/10, thầy chốt) — ĐIỆN THOẠI: chat lớp chuyển HẲN sang tab Tin nhắn (số tin mới trên icon) ⇒ trang chỉ còn thẻ bài. */
+@media (max-width:640px){
+  .chat-cot{display:none}
+  .main{grid-template-rows:auto; align-content:start}
+}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
@@ -4500,6 +4505,13 @@ function capNhatChamTin(){
   var l = mocTinCuoi();
   A.datMocTinMoi(LOP_DL, l);
   A.veChamDo(!!l && l > A.mocDaXem(LOP_DL, MA_HS));
+  /* ⭐ thiết kế ĐT 8 (thầy chốt) — số trên icon Tin nhắn = số tin CHƯA XEM của lớp này (không tính tin của chính em). Đọc ở trang
+     Tin nhắn (cùng khoá "đã xem") là số tự hết. Không tốn thêm lượt đọc: đếm trên tin đang có sẵn. */
+  if (window.NWB) {
+    var xem = A.mocDaXem(LOP_DL, MA_HS), n = 0;
+    TIN_MAU.forEach(function(t){ if ((Number(t.luc) || 0) > xem && !(t.ma && t.ma === MA_HS)) n++; });
+    NWB.datSo('tinNhan', n);
+  }
 }
 function danhDauDocChat(){
   var l = mocTinCuoi();

@@ -6524,7 +6524,10 @@ tr.qm-hang-tam td{background:#fffbeb}
       Object.keys(r).forEach(function (id) {
         var g = r[id] || {}, c = Number(g.c) || Number(g.v) || 0;
         if (g.d || !c || nay - c > 864e5) return;
-        ra.push({ ten: String(g.t || '?'), lop: a.lop, bId: a.bId, dang: a.dang, ma: a.ma, act: a.act, s: Number(g.s) || 0, o: Number(g.o) || 0, luc: c });
+        // 02/10/2026 — tên HIỆN = tên hiện tại trong danh sách lớp (tra theo mã em g.m, rồi theo tên đã chuẩn hoá); lượt cũ lưu tên IN HOA vẫn hiện "Minh Thư"
+        var dsL = (A.lopTheoMa(DL, a.lop) || {}).hocSinh || [];
+        var hL = (g.m && dsL.filter(function (x) { return A.chuanMa(x.ma) === A.chuanMa(g.m); })[0]) || dsL.filter(function (x) { return A.chuanTen(x.ten) === A.chuanTen(g.t); })[0];
+        ra.push({ ten: hL ? hL.ten : String(g.t || '?'), lop: a.lop, bId: a.bId, dang: a.dang, ma: a.ma, act: a.act, s: Number(g.s) || 0, o: Number(g.o) || 0, luc: c });
       });
     });
     return ra.sort(function (x, y) { return y.luc - x.luc; }).slice(0, 40);

@@ -2,6 +2,8 @@
 //   danh sách học sinh, kết quả thi đua. Làm THEO GIAI ĐOẠN (bản đồ ai đọc ẩn danh: memory khoa-doc-nguoi-ngoai):
 //   mỗi giai đoạn sửa người đọc (thêm vé đăng nhập / khoá quản trị) → đẩy → rồi MỚI siết luật ở đây.
 //   GĐ1: dashLopThuTu + classChatArchive chỉ thầy đọc (chỉ dashboard đọc, sau cổng đăng nhập).
+//   GĐ2 (sau web v1.226.0 vé đọc): chat lớp + đã xem = em ĐÚNG LỚP/thầy · tiến độ video/audio + bài nộp = CHÍNH EM/thầy ·
+//        tích nộp Speaking = học sinh đăng nhập/thầy · lịch lớp mystudentRosterClasses = thầy.
 //
 //   node tools/dang-luat-khoa-doc.js --gd <n> --xem | --dang | --kiem  ·  --lui <rulesetName>
 'use strict';
@@ -35,6 +37,50 @@ const GD = {
   ], [
     ['dashLopThuTu', 403, 200],
     ['classChatArchive', 403, 200],
+  ]],
+  2: ['(02/10/2026 GD2) khoa doc nguoi ngoai', [
+    ['hàm hsLop (học sinh thuộc lớp)',
+      "    function tenSach(t) {\n",
+      "    // (02/10/2026 GD2) khoa doc nguoi ngoai: phien HOC SINH thuoc lop `lop` (claim lops = \"A1C,NNTNGK9\" do tao-tai-khoan.mjs ky).\n" +
+      "    function hsLop(lop) {\n" +
+      "      return request.auth != null && request.auth.token.get('hs', false) == true\n" +
+      "          && lop in request.auth.token.get('lops', '').split(',');\n" +
+      "    }\n" +
+      "    function tenSach(t) {\n"],
+    ['mystudentRosterClasses: chỉ thầy',
+      "    match /mystudentRosterClasses/{maLop} {\n      allow read: if true;\n",
+      "    match /mystudentRosterClasses/{maLop} {\n      allow read: if laThay();   // (02/10/2026 GD2) chi dashboard thay; app may tinh doc bang khoa quan tri\n"],
+    ['classChat: em đúng lớp hoặc thầy',
+      "    match /classChat/{lop}/messages/{id} {\n      allow read: if true;\n",
+      "    match /classChat/{lop}/messages/{id} {\n      allow read: if hsLop(lop) || laThay();   // (02/10/2026 GD2) khoa doc nguoi ngoai - chi em DUNG LOP (dang nhap) hoac thay\n"],
+    ['classChatXem: em đúng lớp hoặc thầy',
+      "      allow read: if true;\n      allow create: if ccXemNguoi()",
+      "      allow read: if hsLop(lop) || laThay();   // (02/10/2026 GD2) khoa doc nguoi ngoai\n      allow create: if ccXemNguoi()"],
+    ['spSubmissions: học sinh đăng nhập hoặc thầy',
+      "    match /spSubmissions/{buoiId}/students/{maHS} {\n      allow read: if true;\n",
+      "    match /spSubmissions/{buoiId}/students/{maHS} {\n      allow read: if request.auth != null && (request.auth.token.get('hs', false) == true || laThay());   // (02/10/2026 GD2)\n"],
+    ['lessonNop get: chính em hoặc thầy',
+      "    match /lessonNop/{id} {\n      allow get: if true;\n",
+      "    match /lessonNop/{id} {\n      allow get: if hsDung(id.split('__')[id.split('__').size() - 1]) || laThay();   // (02/10/2026 GD2) ma = doan cuoi id <lop>__<bai>__<o>__<ma>\n"],
+    ['lessonVideoTienDo: chính em hoặc thầy',
+      "    match /lessonVideoTienDo/{id} {\n      allow read: if true;\n",
+      "    match /lessonVideoTienDo/{id} {\n      allow read: if hsDung(id.split('__')[0]) || laThay();   // (02/10/2026 GD2) id = <ma>__<bai> (do 84/84)\n"],
+    ['lessonAudioTienDo: chính em hoặc thầy',
+      "                match /lessonAudioTienDo/{id} {\n                    allow read: if true;\n",
+      "                match /lessonAudioTienDo/{id} {\n                    allow read: if hsDung(id.split('__')[0]) || laThay();   // (02/10/2026 GD2) id = <ma>__<bai> (do 185/185)\n"],
+  ], [
+    ['mystudentRosterClasses', 403, 200, 403],
+    ['classChat/A1C/messages', 403, 200, 200],
+    ['classChat/A1A/messages', 403, 200, 403],
+    ['classChatXem/A1C', 403, 200, 200, 'doc'],
+    ['classChatXem/A1A', 403, 200, 403, 'doc'],
+    ['spSubmissions/ZTESTKHONG/students', 403, 200, 200],
+    ['lessonNop/ZTEST__X__1__ZTESTKD1', 403, 404, 404, 'doc'],
+    ['lessonNop/ZTEST__X__1__NGUOIKHAC', 403, 404, 403, 'doc'],
+    ['lessonVideoTienDo/ZTESTKD1__X', 403, 404, 404, 'doc'],
+    ['lessonVideoTienDo/NGUOIKHAC__X', 403, 404, 403, 'doc'],
+    ['lessonAudioTienDo/ZTESTKD1__X', 403, 404, 404, 'doc'],
+    ['lessonAudioTienDo/NGUOIKHAC__X', 403, 404, 403, 'doc'],
   ]],
 };
 function thayMot(s, cu, moi, ten) {
@@ -164,11 +210,15 @@ async function kiem(gd) {
   console.log('luật đang chạy:', rel.rulesetName);
   try {
     const tkT = await tokenThayThu();
-    for (const [duong, lạ, thay] of GD[gd][2]) {
-      ok('NGƯỜI LẠ đọc ' + duong, (await goi(`${FS_GOC}/${duong}${k}&pageSize=1`, {})).status, lạ);
-      ok('THẦY đọc ' + duong, (await goi(`${FS_GOC}/${duong}${k}&pageSize=1`, { headers: { Authorization: 'Bearer ' + tkT } })).status, thay);
+    // học sinh thử lớp A1C (mã ZTESTKD1) — cột thứ 4 của bảng thử (bỏ trống = không thử)
+    const tkH = GD[gd][2].some((x) => x[3] !== undefined) ? await taoTkThu('hs_ztestkd1', 'ZTESTKD1', { hs: true, ma: 'ZTESTKD1', lop: 'A1C', lops: 'A1C', msId: 0 }) : null;
+    for (const [duong, lạ, thay, hs, kieu] of GD[gd][2]) {
+      const u = `${FS_GOC}/${duong}${k}` + (kieu === 'doc' ? '' : '&pageSize=1');
+      ok('NGƯỜI LẠ đọc ' + duong, (await goi(u, {})).status, lạ);
+      ok('THẦY đọc ' + duong, (await goi(u, { headers: { Authorization: 'Bearer ' + tkT } })).status, thay);
+      if (hs !== undefined) ok('HS A1C đọc ' + duong, (await goi(u, { headers: { Authorization: 'Bearer ' + tkH } })).status, hs);
     }
-  } finally { await xoaTkThu('ztest_thay'); }
+  } finally { await xoaTkThu('ztest_thay'); await xoaTkThu('hs_ztestkd1'); }
   if (hong) { console.log('\n⚠ Có phép thử trượt. Luật mới cần ~1–10 phút lan hết máy chủ — đợi rồi chạy lại --kiem.'); process.exitCode = 1; }
 }
 

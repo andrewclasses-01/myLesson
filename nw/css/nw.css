@@ -819,6 +819,8 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .hh-lop{width:17px; height:17px; flex:none; color:#F2A93B; vertical-align:-3px}
 .hh-lop.k3{color:#0E9F8A}
 .hh-lop.nho{width:14px; height:14px}
+/* 02/10 thầy: trong Tin nhắn tích vàng của thầy và huy hiệu lớp CÙNG CỠ (15px — giữa 13 và 17) */
+.tn-muc .ten .tich-vang, .tn-muc .ten .hh-lop, .tn-phong-dau .ten .tich-vang, .tn-phong-dau .ten .hh-lop, .tn-info-ai .ten .tich-vang, .tn-info-ai .ten .hh-lop{width:15px; height:15px; vertical-align:-3px}
 /* tên trên, tin cuối dưới (trước đây .tt bị luật chung biến thành hàng ngang ⇒ tên cụt "Lớp A…") */
 .tn-muc .tt{display:flex; flex-direction:column; justify-content:center; align-items:stretch; text-align:left; gap:2px}
 .tn-muc .tt .ten,.tn-muc .tt .cuoi{max-width:100%}

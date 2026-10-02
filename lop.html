@@ -3123,7 +3123,8 @@ function dungCot(){
     var b = dsThe[i] || {};
     t.onclick = function(){
       /* ⭐ v1.35.0 — thẻ TẠM KHOÁ: không mở gì cả (kể cả SP CHECK), chỉ báo một câu. */
-      if (b.khoa) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
+      /* thiết kế KNT 12 — THẦY (mở từ dashboard, `?gv=1`) vào được cả bài tạm khoá */
+      if (b.khoa && !(EM && EM.vaiTro === 'gv')) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
       /* ⭐ SP CHECK — thẻ speaking đi đường riêng: pop-up rồi sang mySpeaking. */
       if (b.loai === 'spcheck') { moPhongCham(b); return; }
       /* ⭐ v1.9.0 — mở đúng TRANG BÀI TẬP của thẻ này.

@@ -1334,7 +1334,8 @@ function dungCot(){
         henVeLaiAvatarMoc(t);
         return;
       }
-      if (b.khoa) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
+      /* thiết kế KNT 12 — THẦY (mở từ dashboard, `?gv=1`) vào được cả bài tạm khoá */
+      if (b.khoa && !(EM && EM.vaiTro === 'gv')) { baoToast('Bài này thầy đang tạm khoá, chờ thầy mở lại nhé.'); return; }
       if (!b.id || !b.trang) { baoToast('Bài này thầy giao trên giấy, không có trang trên web.'); return; }
       // v1.168.0 — giữ chế độ xem (thầy xem như em / đăng nhập thay em) khi mở bài, như lop.html `giuXemNhu()`
       var qXn = A.giuXemNhuQuery(EM, EM && EM.ma, EM && EM.lop);

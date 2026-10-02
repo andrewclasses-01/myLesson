@@ -361,6 +361,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    Chỉ đeo `.co-chon` ở thanh STAGE — thanh bài tập KHÓA dùng chung `.st-khuc` không bị ảnh hưởng. */
 .st-bar.co-chon .st-khuc.dang:not(.chon), .st-bar.co-chon .st-khuc.ket:not(.chon){--h:30px; font-size:11px; letter-spacing:.045em}
 .st-bar.co-chon .st-khuc.chon{flex-shrink:0; --h:46px; font-size:14px; letter-spacing:.06em; z-index:2}
+.st-bar.co-chon.gv .st-khuc{cursor:pointer}   /* thiết kế KNT 12 — thầy bấm được mọi khúc */
 /* ⭐⭐ v1.85.0 — HÀO QUANG NGAY TRÊN NỀN KHÚC, không phải bóng đổ ra ngoài —
    xem chú thích đầy đủ ở BẢN GỐC `lop.html`. BẢN CHÉP thứ ba (lop.html ·
    bai.html · dashboard.html), sửa một nơi phải sửa cả ba. */
@@ -2113,6 +2114,10 @@ var EM = null;
    KHÔNG áp dụng, thẻ nhúng AWord mang thêm cờ để BÊN ĐÓ không ghi/không hiện
    leaderboard chung của lớp — xem chỗ dựng `link`/`nhung` bên dưới. */
 var LA_DAC_BIET = false;
+/* ⭐ thiết kế KNT 12 (02/10/2026, thầy) — THẦY mở trang bài từ dashboard (`?gv=1` ⇒ EM.vaiTro 'gv'): MỌI khoá đều mở —
+   bài tạm khoá vẫn vào được · STAGE: mọi chặng hiện đầy đủ, bấm được mọi khúc, không bìa "chờ mở khóa" · KHÓA HỌC: mọi
+   đoạn bài giảng + mọi bài tập mở. Trạng thái thật (COMPLETED/IN PROGRESS…) vẫn tính như học sinh để thầy nhìn tiến độ. */
+var LA_GV = false;
 var BAI = null;          /* chính bài đang mở, đọc từ data/bai.json */
 
 var A = window.AWC;
@@ -2662,7 +2667,7 @@ function veBia(k){
    em chưa xong (`A.changCuConThieu`): act của chặng đó cũng lên bìa "Đang chờ mở
    khóa bởi…" (đã quá hạn) để em thấy ai còn thiếu, dù chặng kế đã mở. */
 function changChoMoCuaAct(k){
-  if (!LA_STAGE || !CHANG || !CHANG.length || !k || k.loai !== 'act') return null;
+  if (LA_GV || !LA_STAGE || !CHANG || !CHANG.length || !k || k.loai !== 'act') return null;
   var ds = A.changCuConThieu(CHANG).concat([A.changChoMo(CHANG)]);
   for (var i = 0; i < ds.length; i++) {
     var c = ds[i];
@@ -4673,6 +4678,10 @@ function tinhDuongDiKhoa(){
       if (moB[x.id] && btXongKhoa(x) && !xongB[x.id]) { xongB[x.id] = true; apDich(x.xong); doi = true; }
     });
   }
+  if (LA_GV) {   // thiết kế KNT 12 — thầy: mở hết (xong/chưa xong vẫn tính thật)
+    doan.forEach(function(d){ moD[d.id] = true; });
+    bt.forEach(function(x){ moB[x.id] = true; });
+  }
   return { moD: moD, moB: moB, xongD: xongD, xongB: xongB };
 }
 
@@ -6037,7 +6046,7 @@ function chuKhuc(c){
 
 function veThanhChang(){
   var el = document.createElement('div');
-  el.className = 'st-bar co-chon';
+  el.className = 'st-bar co-chon' + (LA_GV ? ' gv' : '');
   el.innerHTML = CHANG.map(function(c, i){
     var lop = c.tt === 'xong' ? 'xong'
             : c.tt === 'dang' ? 'dang'
@@ -6052,7 +6061,7 @@ function veThanhChang(){
     var k = e.target.closest('.st-khuc');
     if (!k) return;
     var i = +k.getAttribute('data-i');
-    if (!CHANG[i] || !CHANG[i].mo) {
+    if (!CHANG[i] || (!CHANG[i].mo && !LA_GV)) {
       baoToast(CHANG[i] && CHANG[i].tt === 'cho'
         ? 'Chặng này sắp mở, chờ tới giờ nhé.'
         : 'Chặng này chưa tới lượt — làm xong chặng trước đã.');
@@ -6222,7 +6231,7 @@ function changCuaKhoi(){
 }
 function veCacPhanStage(hop){
   CHANG = tinhChang();
-  if (CHANG_XEM == null || !CHANG[CHANG_XEM] || !CHANG[CHANG_XEM].mo) {
+  if (CHANG_XEM == null || !CHANG[CHANG_XEM] || (!CHANG[CHANG_XEM].mo && !LA_GV)) {
     CHANG_XEM = A.changHien(CHANG);
   }
   hop.appendChild(veThanhChang());
@@ -6244,9 +6253,10 @@ function veCacPhanStage(hop){
   var cuThieu = A.changCuConThieu(CHANG).filter(function(x){ return CHANG.indexOf(x) < hien; });
   var nhom = cuThieu.map(function(x){ return CHANG.indexOf(x); });
   if (CHANG[hien]) nhom.push(hien);
+  if (LA_GV) { hien = CHANG.length - 1; nhom = [0]; }   // thiết kế KNT 12 — thầy: mọi chặng đầy đủ, 1 "nhóm" ⇒ không băng màu
   CHANG.forEach(function(ch, ci){
     if (ci > hien) return;
-    var day = nhom.indexOf(ci) >= 0;   // vẽ đầy đủ?
+    var day = LA_GV || nhom.indexOf(ci) >= 0;   // vẽ đầy đủ?
     var so = soDauChang(ci), dauNhom = true, coWs = false, soThe = 0;
     KHOI.forEach(function(k, i){
       if (cua[i] !== ci) return;
@@ -6494,6 +6504,7 @@ A.napDuLieu().then(function(dl){
   // v1.211.0 — báo "đang làm bài" cho dashboard (BAI nạp sau ⇒ đọc lười mỗi nhịp)
   if (window.ACOnline) ACOnline.bat('bai', function(){ return { lop: LOP_DL, ma: MA_HS, ten: TOI, bai: BAI ? ((BAI.dang ? BAI.dang + ' ' : '') + (A.maLesson(BAI) || A.tenBai(BAI) || '')) : '' }; });
   LA_DAC_BIET = !!EM.dacBiet;
+  LA_GV = EM.vaiTro === 'gv';
   var l = A.lopTheoMa(dl, LOP_DL);
   EM_LA_KHOA = !!(l && A.laKhoa(l));   /* ⭐ 12/09/2026 — xem chú thích ở khai báo đầu file */
   LOP = (l && l.tenGoc) || EM.lop;
@@ -6520,7 +6531,7 @@ A.napDuLieu().then(function(dl){
   /* ⭐ v1.35.0 — bài đang TẠM KHOÁ (dashboard): không cho mở dù gõ thẳng địa chỉ,
      về trang lớp kèm cờ `khoa=1` để bên đó báo một câu. (Bài ẩn/xoá thì
      `A.baiCuaLop` cửa học sinh đã bỏ sẵn → rơi vào `!BAI` ở trên.) */
-  if (A.trangThaiThe(BAI) === 'khoa') { veTrangLop('khoa=1'); return; }
+  if (A.trangThaiThe(BAI) === 'khoa' && !LA_GV) { veTrangLop('khoa=1'); return; }
 
   /* ⭐⭐ v1.95.0 (13/09/2026) — danh sách em ĐANG TÍNH ở bài này (`A.caLopCuaBai`: bỏ em vào
      lớp SAU ngày giao + em thầy bấm ✕) — cùng luật với thẻ bên lop.html/dashboard. ⛔ Phải

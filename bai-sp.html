@@ -957,9 +957,13 @@ function buoiId(k){
 }
 
 function xepNop(){
+  /* 02/10/2026 — tên gốc đổi IN HOA → "Minh Thư": lượt tích cũ mang tên IN HOA vẫn khớp em (so theo chuanTen),
+     chữ hiện lấy đúng tên trong danh sách lớp hiện tại. */
+  var theoTen = {};
+  CA_LOP.forEach(function(t){ theoTen[A.chuanTen(t)] = t; });
   var daTich = Object.keys(dsNopHienTai)
-    .filter(function(ma){ return CA_LOP.indexOf(dsNopHienTai[ma].ten) >= 0; })
-    .map(function(ma){ return { ma:ma, ten:dsNopHienTai[ma].ten, gio:dsNopHienTai[ma].tickedAt }; })
+    .filter(function(ma){ return !!theoTen[A.chuanTen(dsNopHienTai[ma].ten)]; })
+    .map(function(ma){ return { ma:ma, ten:theoTen[A.chuanTen(dsNopHienTai[ma].ten)], gio:dsNopHienTai[ma].tickedAt }; })
     .sort(function(a, b){ return a.gio - b.gio; });   /* tích trước hiện trước */
   var daCo = {};
   daTich.forEach(function(e){ daCo[e.ten] = 1; });
@@ -982,7 +986,7 @@ function veNop(){
   var ds = xepNop();
   return ds.map(function(e){
     var daNop = !e.chua;
-    var laToi = e.ten === TOI;
+    var laToi = A.chuanTen(e.ten) === A.chuanTen(TOI);
     /* ⭐ ĐỢT 4 — hai bản chữ trạng thái, CSS chỉ hiện đúng một bản theo bề
        rộng cột: bản đủ ("Đã nộp bài ✓") cho cột rộng ≥260px, bản NGẮN ("✓ Đã
        nộp", bỏ luôn giờ) cho ba cột ép chung màn điện thoại thật (<620px). */

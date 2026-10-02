@@ -2399,7 +2399,7 @@ function veBang(ma){
     var huy  = full && i < 3;                /* huy chương: ba hạng đầu, phải full */
     var lop  = e.mien ? 'mien' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
     var hang = (e.chua || e.mien) ? '–' : (huy ? veHuy(i + 1) : (i + 1));
-    return '<div class="lb-row ' + lop + (e.ten === TOI ? ' me' : '') + '"' +
+    return '<div class="lb-row ' + lop + (A.chuanTen(e.ten) === A.chuanTen(TOI) ? ' me' : '') + '"' +
       (e.mien ? ' title="Bài này không tính cho em"' : '') + '>' +
       '<span class="lb-rank">' + hang + '</span>' +
       '<span class="lb-name">' + tenTat(e.ten) + '</span>' +

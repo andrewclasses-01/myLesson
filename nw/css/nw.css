@@ -815,6 +815,22 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 /* (2) huy hiệu xác minh MÀU VÀNG */
 .tich-vang{width:16px; height:16px; color:#F2A93B; flex:none; vertical-align:-3px}
 .tich-vang.nho{width:13px; height:13px}
+/* 02/10/2026 — huy hiệu NHÓM LỚP (NW.huyHieuLop) + dòng nhóm lớp / thầy / ghi chú cuối danh sách tin nhắn của HS */
+.hh-lop{width:17px; height:17px; flex:none; color:#F2A93B; vertical-align:-3px}
+.hh-lop.k3{color:#0E9F8A}
+.hh-lop.nho{width:14px; height:14px}
+.av-lop{width:52px; height:52px; flex:none; border-radius:50%; display:grid; place-items:center; background:linear-gradient(145deg,#12927F,#0B6B5E);
+  color:#fff; font:800 13px/1 var(--sans, inherit); letter-spacing:.02em; box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
+.tn-phong-dau .av-lop{width:42px; height:42px; font-size:11px}
+.tn-info-ai .av-lop{width:72px; height:72px; font-size:17px; margin:0 auto}
+/* tên trên, tin cuối dưới (trước đây .tt bị luật chung biến thành hàng ngang ⇒ tên cụt "Lớp A…") */
+.tn-muc .tt{display:flex; flex-direction:column; justify-content:center; align-items:stretch; text-align:left; gap:2px}
+.tn-muc .tt .ten,.tn-muc .tt .cuoi{max-width:100%}
+.tn-muc .tt .ten{min-width:0; justify-content:flex-start}
+.tn-muc .tn-moi-chu{color:var(--accent); font-weight:700}
+.tn-sap-rieng{display:flex; align-items:center; justify-content:center; gap:7px; margin:10px 14px 14px; padding:11px 12px; border-radius:12px;
+  background:var(--ground); color:var(--muted); font-size:12.5px; font-weight:600; text-align:center}
+.tn-sap-rieng .ic{width:16px; height:16px; flex:none}
 /* (1) icon phạm vi đơn sắc */
 .pham-ky .ic{width:13px; height:13px; stroke-width:2; color:var(--muted)}
 .pham-menu .ky .ic{width:20px; height:20px; color:var(--ink)}

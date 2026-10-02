@@ -48,6 +48,9 @@ window.NW_CONFIG = {
   // ---- Nhắn tin riêng ----
   // Thầy chốt 20/09/2026: giai đoạn đầu chỉ nhắn được với bạn CÙNG LỚP + thầy.
   // Bật cờ này (và luật Firestore đã có nhánh nwBanBe) là mở nhắn toàn mạng qua KẾT BẠN.
+  // ⭐ 02/10/2026 thầy chốt: TRANG TIN NHẮN của HỌC SINH tạm chỉ có NHÓM LỚP + Thầy Andrew (không nhắn riêng bạn, không tạo cuộc mới).
+  // Bật cờ này là mở lại nhắn riêng (nút ✎ + mọi cuộc riêng). Thầy luôn thấy đủ.
+  BAT_CHAT_RIENG: false,
   BAT_KET_BAN: true,   // v0.4.0 thầy chốt 22/09: cùng lớp = bạn sẵn, KHÁC LỚP phải kết bạn mới xem trang / nhắn tin
 
   // ---- Từ cấm: ô soạn tự chặn khi gõ (chặn ở giao diện; thầy còn kho

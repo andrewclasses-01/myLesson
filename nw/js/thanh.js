@@ -270,7 +270,7 @@
   // Dữ liệu giả cho bàn thử `?thu=1` (vai học sinh) / `?thu=thay` (vai thầy) — chỉ localhost.
   function toiBanThu() {
     if (NW.thamSo('thu') === 'thay') return { uid: 'gv', ten: 'Thầy Andrew', lop: 'GV', cacLop: [], vaiTro: 'gv', anh: 'assets/avatar-tron.jpg', bia: '', gioiThieu: '', laThay: true, phaiDoiMk: false, khoa: false };   // v0.9.0
-    return { uid: 'hs_0', ten: 'BẠN THỬ', lop: 'A1C', cacLop: ['A1C'], vaiTro: 'hs', anh: '', bia: '', gioiThieu: 'Tài khoản bàn thử', laThay: false, phaiDoiMk: false, khoa: false };
+    return { uid: 'hs_0', ten: 'BẠN THỬ', lop: 'A1C', cacLop: ['A1C', 'NTK9'], vaiTro: 'hs', anh: '', bia: '', gioiThieu: 'Tài khoản bàn thử', laThay: false, phaiDoiMk: false, khoa: false };
   }
 
   NW.dungThanh = async function (o) {

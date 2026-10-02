@@ -223,13 +223,14 @@
     function nguoiKia(p) { var k = (p.thanhVien || []).filter(function (u) { return u !== toi.uid; })[0] || toi.uid; return Object.assign({ uid: k }, (p.tv || {})[k] || { ten: '?' }); }
     function tenPhong(p) { return p.loai === 'nhom' ? (p.ten || 'Nhóm') : nguoiKia(p).ten || '?'; }
     function laNhomLop(p) { return p.loai === 'nhom' && !!p.lop; }
-    function vietTatLop(p) { return String(p.lop || '').replace(/^NTK/, 'K').replace(/^NNTNG/, 'NT').slice(0, 4); }
     function avPhong(p, lop) {
-      if (laNhomLop(p)) return '<span class="av-lop' + (lop ? ' ' + lop : '') + '">' + an(vietTatLop(p)) + '</span>';
+      // ⭐ 02/10/2026 thầy chốt: icon NHÓM = 4 bóng (2×2) — bóng 1-2-3 là ảnh thành viên (ưu tiên người có ảnh), bóng 4 = tổng số thành viên
       if (p.loai === 'nhom') {
-        var khac = (p.thanhVien || []).filter(function (u) { return u !== toi.uid; });
-        var tvs = khac.concat([toi.uid]).slice(0, 2).map(function (u) { return u === toi.uid ? toi : ((p.tv || {})[u] || { ten: '?' }); });
-        return '<span class="av-nhom' + (lop ? ' ' + lop : '') + '">' + tvs.map(function (t) { return NW.avHtml(t); }).join('') + '</span>';
+        var tv = p.tv || {}, ds = (p.thanhVien || []).filter(function (u) { return u !== toi.uid; });
+        ds.sort(function (a, b) { return ((tv[b] || {}).anh ? 1 : 0) - ((tv[a] || {}).anh ? 1 : 0); });
+        var ba = ds.slice(0, 3).map(function (u) { return NW.avHtml(Object.assign({}, tv[u] || { ten: '?' }, { online: false, hoatDongLuc: 0 })); }).join('');
+        var so = p.soThanhVien || (p.thanhVien || []).length;
+        return '<span class="av-4' + (lop ? ' ' + lop : '') + '" title="' + so + ' thành viên">' + ba + '<span class="av-so">' + (so > 99 ? '99+' : so) + '</span></span>';
       }
       return NW.avHtml(nguoiKia(p), lop);
     }

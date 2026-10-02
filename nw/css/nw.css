@@ -819,14 +819,22 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .hh-lop{width:17px; height:17px; flex:none; color:#F2A93B; vertical-align:-3px}
 .hh-lop.k3{color:#0E9F8A}
 .hh-lop.nho{width:14px; height:14px}
-.av-lop{width:52px; height:52px; flex:none; border-radius:50%; display:grid; place-items:center; background:linear-gradient(145deg,#12927F,#0B6B5E);
-  color:#fff; font:800 13px/1 var(--sans, inherit); letter-spacing:.02em; box-shadow:inset 0 0 0 2px rgba(255,255,255,.25)}
-.tn-phong-dau .av-lop{width:42px; height:42px; font-size:11px}
-.tn-info-ai .av-lop{width:72px; height:72px; font-size:17px; margin:0 auto}
 /* tên trên, tin cuối dưới (trước đây .tt bị luật chung biến thành hàng ngang ⇒ tên cụt "Lớp A…") */
 .tn-muc .tt{display:flex; flex-direction:column; justify-content:center; align-items:stretch; text-align:left; gap:2px}
 .tn-muc .tt .ten,.tn-muc .tt .cuoi{max-width:100%}
 .tn-muc .tt .ten{min-width:0; justify-content:flex-start}
+/* icon NHÓM 4 bóng (avPhong): 3 ảnh + 1 bóng số thành viên */
+.av-4{width:52px; height:52px; flex:none; display:grid; grid-template-columns:1fr 1fr; grid-template-rows:1fr 1fr; gap:2px}
+.av-4 > .av, .tn-muc .av-4 > .av{position:relative; width:auto; height:auto; min-width:0; font-size:9px; border:0; box-shadow:none}
+.av-4 > .av .on{display:none}
+.av-4 .av-so{border-radius:50%; display:grid; place-items:center; background:var(--accent-soft); color:var(--accent); font:800 10.5px/1 var(--sans, inherit)}
+.tn-phong-dau .av-4{width:42px; height:42px; gap:1.5px}
+.tn-phong-dau .av-4 > .av, .tn-info-ai .av-4 > .av, .tn-muc .av-4 > .av{width:auto; height:auto}
+.tn-phong-dau .av-4 > .av{font-size:7.5px}
+.tn-phong-dau .av-4 .av-so{font-size:9px}
+.tn-info-ai .av-4{width:76px; height:76px; gap:3px; margin:0 auto}
+.tn-info-ai .av-4 > .av{font-size:12px}
+.tn-info-ai .av-4 .av-so{font-size:15px}
 .tn-muc .tn-moi-chu{color:var(--accent); font-weight:700}
 .tn-sap-rieng{display:flex; align-items:center; justify-content:center; gap:7px; margin:10px 14px 14px; padding:11px 12px; border-radius:12px;
   background:var(--ground); color:var(--muted); font-size:12.5px; font-weight:600; text-align:center}

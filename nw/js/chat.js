@@ -162,19 +162,61 @@
         if (NW.laBanThu()) { var g = tinGoc(t.id); if (g) { g.cx = Object.assign({}, g.cx || {}); if (gt) g.cx[toi.uid] = gt; else delete g.cx[toi.uid]; } return Promise.resolve(); }
         return NW.fb().then(function (f) { var patch = {}; patch['cx.' + toi.uid] = gt || f.fs.deleteField(); return f.fs.updateDoc(refTin(f, t.id), patch); });
       },
-      // THU HỒI GIỮ CHỖ (thầy chốt 30/09): tin còn ô, xoá sạch chữ/ảnh/trích/sticker/cảm xúc. Người gửi hoặc thầy.
-      thuHoi: function (t) {
+      // THU HỒI GIỮ CHỖ (thầy chốt 30/09): tin còn ô, xoá sạch chữ/ảnh/trích/sticker/cảm xúc. CHỈ người gửi (học sinh).
+      // ⭐ 02/10/2026 (thầy chốt, y chat lớp v1.206.0): CÙNG MỘT LƯỢT GHI cất BẢN CHÉP `nwChats/{id}/thuHoi/{mid}` (chỉ thầy đọc —
+      // luật đối chiếu từng trường với tin gốc). Kho từ chối bản chép ⇒ vẫn thu hồi như cũ. THẦY không thu hồi — chỉ XOÁ HẲN (dưới).
+      thuHoi: toi.laThay ? null : function (t) {
         var p = c.phong();
-        if (NW.laBanThu()) { var g = tinGoc(t.id); if (g) { g.thuHoi = true; g.chu = ''; g.hinh = ''; g.cx = {}; delete g.traLoi; delete g.sticker; c.datTin(c.tin()); } return Promise.resolve(); }
+        if (NW.laBanThu()) { var g = tinGoc(t.id); if (g) { g._goc = { chu: g.chu, hinh: g.hinh, traLoi: g.traLoi, sticker: g.sticker }; g.thuHoi = true; g.chu = ''; g.hinh = ''; g.cx = {}; delete g.traLoi; delete g.sticker; c.datTin(c.tin()); } return Promise.resolve(); }
         return NW.fb().then(function (f) {
-          return f.fs.updateDoc(refTin(f, t.id), { thuHoi: true, chu: '', hinh: '', cx: {}, traLoi: f.fs.deleteField(), sticker: f.fs.deleteField(), camXuc: f.fs.deleteField() }).then(function () {
+          var ref = refTin(f, t.id);
+          var lenh = { thuHoi: true, chu: '', hinh: '', cx: {}, traLoi: f.fs.deleteField(), sticker: f.fs.deleteField(), camXuc: f.fs.deleteField() };
+          var thuTron = function () { return f.fs.updateDoc(ref, lenh); };
+          return f.fs.getDoc(ref).then(function (s) {
+            var x = s.exists() ? (s.data() || {}) : null;
+            if (!x || x.thuHoi === true) return thuTron();
+            var chep = { uid: x.uid || '', ten: x.ten || '', chu: x.chu || '', hinh: x.hinh || '', luc: Date.now() };
+            if (x.traLoi != null) chep.traLoi = x.traLoi;
+            if (x.sticker != null) chep.sticker = x.sticker;
+            var b = f.fs.writeBatch(f.db);
+            b.set(f.fs.doc(f.db, 'nwChats', p.id, 'thuHoi', t.id), chep);
+            b.update(ref, lenh);
+            return b.commit()['catch'](function (e) {
+              if (String((e && (e.code || e.message)) || '').indexOf('permission-denied') < 0) throw e;
+              return thuTron();
+            });
+          }, function () { return thuTron(); }).then(function () {
             if (p && p.tinCuoi && p.tinCuoi.luc === t.luc) return f.fs.updateDoc(f.fs.doc(f.db, 'nwChats', p.id), { tinCuoi: Object.assign({}, p.tinCuoi, { chu: 'Tin nhắn đã bị thu hồi', hinh: false }) }).catch(function () {});
           });
         });
       },
+      // ⭐ 02/10 — THẦY đọc nội dung tin em đã thu hồi (bản chép), hiện ngay dưới "Tin nhắn đã bị thu hồi" (khuôn chat-ui o.docThuHoi).
+      docThuHoi: !toi.laThay ? null : function (t) {
+        var doi = function (x) {
+          if (!x) return null;
+          var q = x.traLoi && x.traLoi.id ? { id: x.traLoi.id, ten: x.traLoi.ten || '', chu: x.traLoi.chu || (x.traLoi.hinh ? '📷 Ảnh' : '') } : null;
+          return { chu: x.chu === '❤️' ? ':2764:' : (x.chu || ''), q: q, sticker: x.sticker || '', hinh: x.hinh || '' };
+        };
+        if (NW.laBanThu()) { var g = tinGoc(t.id); return Promise.resolve(doi(g && g._goc)); }
+        var p = c.phong();
+        if (!p || !p.id) return Promise.resolve(null);
+        return NW.fb().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'nwChats', p.id, 'thuHoi', t.id)); })
+          .then(function (s) { return s.exists() ? doi(s.data()) : null; });
+      },
+      // THẦY XOÁ HẲN: tin biến mất (không để dòng "đã thu hồi"), xoá luôn bản chép; tin cuối danh sách ⇒ lùi về tin trước đó.
       xoa: toi.laThay ? function (t) {
         if (NW.laBanThu()) { c.datTin(c.tin().filter(function (x) { return x.id !== t.id; })); return Promise.resolve(); }
-        return NW.fb().then(function (f) { return f.fs.deleteDoc(refTin(f, t.id)); });
+        var p = c.phong();
+        return NW.fb().then(function (f) {
+          return f.fs.deleteDoc(refTin(f, t.id)).then(function () {
+            f.fs.deleteDoc(f.fs.doc(f.db, 'nwChats', p.id, 'thuHoi', t.id))['catch'](function () {});
+            if (!(p && p.tinCuoi && p.tinCuoi.luc === t.luc)) return;
+            var con = c.tin().filter(function (x) { return x.id !== t.id; });
+            var tr = con[con.length - 1];
+            var tc = tr ? { chu: tr.thuHoi ? 'Tin nhắn đã bị thu hồi' : String((window.ChatUI ? ChatUI.chuThuong(ChatUI.tomTat(tr)) : tr.chu) || '').slice(0, 80), hinh: !!(tr.hinh && !tr.thuHoi), uid: tr.uid, ten: tr.ten, luc: tr.luc } : null;
+            return f.fs.updateDoc(f.fs.doc(f.db, 'nwChats', p.id), { tinCuoi: tc }).catch(function () {});
+          });
+        });
       } : null,
       sauTin: function (t) {
         var ds = daXem[t.id]; if (!ds || !ds.length) return '';

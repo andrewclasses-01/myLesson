@@ -2106,7 +2106,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=209"></script>
+<script src="config.js?v=210"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -2894,10 +2894,43 @@ function suoiAWord(url){
   } catch (e) { /* trình duyệt cũ không có fetch/URL: bỏ qua */ }
 }
 
+/* ⭐ v1.230.0 (02/10/2026) — NHẸ MÁY KHI MỞ ACT MỚI. Trước bản này khung act đã mở thì
+   nằm lại tới khi rời trang: làm BT1 → BT2 → BT3 là máy gánh 3 bản AWord đầy đủ (+ video
+   bài giảng của bài KHÓA). iPad cũ lớp NTK9 (LESSON 21) hết bộ nhớ ⇒ Safari tự tải lại
+   trang giữa bài. Nay bấm READY act mới thì gỡ những khung act KHÁC đã BÁO RỜI VÁN
+   (AWord Đợt 445 bắn {type:'AWORD:VAN', dangChoi} lúc vào ván / xong ván / bỏ ván) và trả
+   lại tấm bìa READY như lúc đầu — bấm READY lại là chơi tiếp được như cũ.
+   ⛔ Khung CHƯA từng báo (AWord cũ trong cache, HS đặc biệt, đang ở màn START…) hoặc đang
+   trong ván (`dangChoi:true`) thì GIỮ NGUYÊN: gỡ giữa ván là mất lượt dở + AWord tính
+   "bỏ cuộc" (Đợt 383/424). Khung đang phóng to cũng giữ.
+   Kèm: video bài giảng đang phát thì tạm dừng (như em tự bấm dừng — vị trí + tiến độ vẫn
+   ghi như thường). */
+function donKhungCu(khungMoi){
+  document.querySelectorAll('.game').forEach(function(kh){
+    if (kh === khungMoi || kh.classList.contains('phong') || !kh.traBia) return;
+    var f = kh.querySelector('iframe');
+    if (f && f.getAttribute('data-van') === '0') kh.traBia();
+  });
+  try {
+    if (typeof YT_PLAYER !== 'undefined' && YT_PLAYER && YT_PLAYER.getPlayerState &&
+        YT_PLAYER.getPlayerState() === 1) YT_PLAYER.pauseVideo();   // 1 = YT.PlayerState.PLAYING
+  } catch (e) { /* trình phát chưa sẵn: thôi */ }
+}
+window.addEventListener('message', function(e){
+  if (e.origin !== AWORD) return;
+  var d = e.data;
+  if (!d || d.type !== 'AWORD:VAN' || !e.source) return;
+  var fs = document.querySelectorAll('.game iframe');
+  for (var i = 0; i < fs.length; i++) {
+    if (fs[i].contentWindow === e.source) { fs[i].setAttribute('data-van', d.dangChoi ? '1' : '0'); return; }
+  }
+});
+
 function moAct(khung){
   var bia = khung.querySelector('.game-cover');
   if (!bia || bia.classList.contains('dang-nap')) return;
   bia.classList.add('dang-nap');
+  donKhungCu(khung);
 
   /* Act nạp NGẦM ngay từ giây đầu — hiệu ứng chỉ là tấm màn phủ bên trên. */
   var f = document.createElement('iframe');
@@ -3218,9 +3251,23 @@ function veKhoi(k, so){
 
   var khung = sec.querySelector('.game');
   /* v1.118.0 — bìa CHỜ MỞ KHÓA: chỉ NÚT READY mới nạp act (bìa thường: bấm đâu cũng chạy). */
-  khung.querySelector('.game-cover').onclick = function(e){
-    if (this.classList.contains('cho-mo') && !(e.target.closest && e.target.closest('.bia-ready'))) return;
-    moAct(khung);
+  function ganBia(bia){
+    bia.onclick = function(e){
+      if (this.classList.contains('cho-mo') && !(e.target.closest && e.target.closest('.bia-ready'))) return;
+      moAct(khung);
+    };
+  }
+  ganBia(khung.querySelector('.game-cover'));
+  /* ⭐ v1.230.0 — `traBia`: gỡ khung act đã RỜI VÁN, trả lại đúng tấm bìa READY lúc đầu (xem `donKhungCu`). */
+  khung.traBia = function(){
+    var f = khung.querySelector('iframe');
+    if (f) { try { f.src = 'about:blank'; } catch (e) {} f.remove(); }
+    khung.querySelectorAll('.no-lop, .game-cover').forEach(function(n){ n.remove(); });
+    var tam = document.createElement('div');
+    tam.innerHTML = veBia(k);
+    var bia = tam.firstElementChild;
+    khung.insertBefore(bia, khung.firstChild);
+    ganBia(bia);
   };
 
   /* ⭐ v1.180.0 — PHÓNG TO / THU NHỎ (xem CSS `.game.phong`). Esc hoặc nút "THU NHỎ" thu lại; iframe giữ nguyên, ván không mất. */

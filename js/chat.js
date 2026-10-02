@@ -365,7 +365,11 @@
       var choPhien = (laHs && window.NWP) ? window.NWP.phienCuaMa(goc.code)['catch'](function () { return null; }) : Promise.resolve(true);
       return choPhien.then(function (u) {
         if (laHs && window.NWP && !u) { var l0 = new Error('chưa đăng nhập'); l0.code = 'awc/can-dang-nhap'; throw l0; }
-        return f.fs.addDoc(oChat, kem);
+        return f.fs.addDoc(oChat, kem).then(function (ref) {
+          // ⭐ v1.224.0 (02/10/2026) — tin có @Tên ⇒ thông báo người được nhắc (js/nhac-tb.js; lỗi không làm hỏng tin đã gửi)
+          if (window.NhacTB && ref && /@/.test(chu)) { try { window.NhacTB.sauGuiLop(maLop, ref.id, { ten: goc.name, ma: goc.code, vaiTro: goc.role, chu: chu, luc: goc.createdAt }); } catch (x) { } }
+          return ref;
+        });
       })['catch'](function (e) {
         var ma = String((e && (e.code || e.message)) || '');
         if (ma.indexOf('permission-denied') < 0) throw e;

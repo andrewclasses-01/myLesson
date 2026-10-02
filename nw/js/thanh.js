@@ -39,6 +39,7 @@
   }
 
   var TB_DS = [];            // thông báo đang có
+  var _tbMoKhiCo = false;    // v1.224.0 — ?tb=1: mở hộp thông báo khi lượt đầu về
   var PHONG_DS = [];         // phòng chat đang có (xếp mới → cũ)
   var ngheTB = [], nghePhong = [];
   NW.ngheThongBao = function (cb) { ngheTB.push(cb); cb(TB_DS); return function () { ngheTB = ngheTB.filter(function (x) { return x !== cb; }); }; };
@@ -157,7 +158,7 @@
         var laMoi = t.loai === 'ketBan' && !t.xuLy;   // v14: lời mời kết bạn xử lý ngay trong thông báo
         return '<div class="tha-muc' + (t.daDoc ? '' : ' chua') + (laMoi ? ' moi' : '') + '" data-id="' + an(t.id) + '" role="button" tabindex="0">' +
           NW.avHtml({ ten: t.tuTen, anh: t.tuAnh }, 'nho') +
-          '<span class="chu"><b>' + an(t.tuTen) + '</b> ' + an(CHU_LOAI[t.loai] || t.loai) +
+          '<span class="chu"><b>' + an(t.tuTen) + '</b> ' + an(t.loai === 'nhac' && NW.toi && NW.toi.laThay ? 'đã nhắc tới thầy' : (CHU_LOAI[t.loai] || t.loai)) +
           (t.chu ? '<small>' + an(t.chu) + '</small>' : '') + '<small>' + an(NW.chuGio(t.luc)) + '</small>' +
           (laMoi ? '<span class="nut2"><button class="btn primary nho" type="button" data-kbok>Đồng ý</button><button class="btn soft nho" type="button" data-kbxoa>Xoá</button></span>' : '') +
           (t.loai === 'ketBan' && t.xuLy ? '<small class="da">' + (t.xuLy === 'ok' ? 'Đã là bạn bè' : 'Đã xoá lời mời') + '</small>' : '') +
@@ -254,6 +255,8 @@
       function (snap) {
         var ds = []; snap.forEach(function (d) { ds.push(Object.assign({ id: d.id }, d.data())); });
         TB_DS = ds; capNhatCham(); ngheTB.forEach(function (cb) { cb(ds); });
+        // v1.224.0 — ?tb=1 (chuông ở trang lớp/khóa/dashboard dẫn sang): mở hộp khi thông báo ĐÃ VỀ (trước mở sau 600ms dễ rỗng)
+        if (_tbMoKhiCo) { _tbMoKhiCo = false; var cg = $('.tab[data-tab="chuong"]'); if (cg && !_thaMo) moChuong(cg); }
       }, function (e) { console.warn('[nw] thông báo', e); });
     f.fs.onSnapshot(
       f.fs.query(f.fs.collection(f.db, 'nwChats'), f.fs.where('thanhVien', 'array-contains', uid), f.fs.orderBy('capNhat', 'desc'), f.fs.limit(30)),
@@ -312,7 +315,7 @@
     veThanh(o.tab);
     moKenh();
     // Trang thử 28/09: chuông trên thanh trang lớp/dashboard dẫn sang đây kèm ?tb=1 ⇒ mở sẵn hộp thông báo
-    if (NW.thamSo('tb') === '1') setTimeout(function () { var c = $('.tab[data-tab="chuong"]'); if (c && !_thaMo) moChuong(c); }, 600);
+    if (NW.thamSo('tb') === '1') _tbMoKhiCo = true;   // v1.224.0 — mở trong lượt nhận thông báo đầu tiên (moKenh)
     return ph;
   };
 })();

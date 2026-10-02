@@ -91,7 +91,8 @@
     if (NW.laBanThu()) return t;
     try {
       var f = await NW.fb();
-      await f.fs.addDoc(f.fs.collection(f.db, 'nwChats', phongId, 'tin'), t);
+      var refTinMoi = await f.fs.addDoc(f.fs.collection(f.db, 'nwChats', phongId, 'tin'), t);
+      t.id = refTinMoi.id;   // v1.224.0 — cần id tin cho link thông báo nhắc tên
       var docDuoc = window.ChatUI ? ChatUI.chuThuong(ChatUI.tomTat(t)) : t.chu;
       var patch = { tinCuoi: { chu: t.hinh && !t.chu ? '' : String(docDuoc || '').slice(0, 80), hinh: !!t.hinh, uid: toi.uid, ten: toi.ten, luc: t.luc }, capNhat: t.luc };
       patch['docLuc.' + toi.uid] = t.luc;
@@ -150,6 +151,7 @@
         if (!NW.laBanThu() && !(c.phong() || {}).id) return Promise.reject('Đang mở phòng chat, em thử lại nhé.');
         return Chat.guiTin(c.phong().id, tin).then(function (t) {
           if (!t) throw '__im';                                   // từ cấm / lỗi đã báo ⇒ giữ nguyên chữ trong ô nhập
+          if (!NW.laBanThu() && window.NhacTB && t.id) { try { NhacTB.sauGuiPhong(c.phong(), t, !!toi.laThay); } catch (x) { } }   // v1.224.0 @nhắc tên
           if (NW.laBanThu()) { t.id = 'm' + Date.now(); c.datTin(c.tin().concat([t])); }
         });
       },
@@ -432,7 +434,34 @@
 
     // ---------- tin nhắn — ⭐ web v1.198.0: vẽ bằng khuôn chung (Chat.taoKhuon ⇒ ../js/chat-ui.js) ----------
     //   Cảm xúc / trả lời / menu ⋯ / thu hồi / giữ tin trên điện thoại: khuôn lo hết (xem Chat.taoKhuon ở trên).
-    function veTin() { if (UI && $('#tnCuon', khuPhong)) { if (UI.laLop) UI.ve(TIN, !hetCu && TIN.length >= 30 ? '<button class="bl-them" id="tnCu" type="button" style="align-self:center;padding:6px 12px;margin-bottom:6px">Xem tin cũ hơn</button>' : ''); else UI.veKho(); } }
+    function veTin() { if (UI && $('#tnCuon', khuPhong)) { if (UI.laLop) UI.ve(TIN, !hetCu && TIN.length >= 30 ? '<button class="bl-them" id="tnCu" type="button" style="align-self:center;padding:6px 12px;margin-bottom:6px">Xem tin cũ hơn</button>' : ''); else UI.veKho(); kiemToiTin(); } }
+    // ⭐ v1.224.0 (02/10/2026, thầy chốt) — mở từ thông báo nhắc tên: `?phong=<id>&tin=<id>&luc=<mốc>` ⇒ mở phòng, cuộn tới tin, nháy.
+    // ⛔ Trước đây `?phong=` chỉ thử MỘT lần ở lượt nghePhong đầu tiên (danh sách còn RỖNG, nhóm lớp nạp sau) ⇒ gần như không bao giờ mở được.
+    //   Nay giữ "phòng chờ mở" và thử lại mỗi lần danh sách phòng đổi + sau khi nạp xong nhóm lớp.
+    //   Tin chưa có trong khung (cũ hơn 30 tin mới nhất) ⇒ tải thêm tin cũ (tối đa 8 lượt) tới khi thấy.
+    var CHO_MO = NW.thamSo('phong') ? { phong: NW.thamSo('phong'), tin: NW.thamSo('tin') || '', luc: Number(NW.thamSo('luc')) || 0 } : null;
+    var CHO_TOI = null;
+    function thuMoCho() {
+      if (!CHO_MO) return;
+      var c = CHO_MO;
+      if (!timPhong(c.phong)) return;
+      CHO_MO = null;
+      if (c.tin) CHO_TOI = { id: c.tin, luc: c.luc, lan: 0 };
+      moPhong(c.phong);
+    }
+    function kiemToiTin() {
+      var c = CHO_TOI;
+      if (!c || !UI || !UI.toiTin || !TIN.length) return;
+      setTimeout(function () {
+        if (CHO_TOI !== c) return;
+        if (UI.toiTin(c.id)) { CHO_TOI = null; return; }
+        var dauLuc = Number(TIN[0].luc) || 0;
+        if (hetCu || c.lan >= 8 || (c.luc && dauLuc && dauLuc < c.luc)) { CHO_TOI = null; if (c.lan) NW.toast('Tin nhắn đó không còn (đã bị xoá).'); return; }
+        c.lan++;
+        var p = chon && timPhong(chon);
+        if (p && p._lop) taiCuLop(); else taiCu();
+      }, 300);
+    }
 
 
     // ---------- bảng thông tin (cột phải / phủ trên điện thoại) ----------
@@ -648,6 +677,7 @@
                  dsTen: (l.hocSinh || []).map(function (h) { return h.ten; }), tinCuoi: null, capNhat: 0, docLuc: dc };
       }).filter(Boolean);
       veDs();
+      thuMoCho();   // v1.224.0 — link thông báo trỏ vào nhóm lớp
       // tin cuối từng lớp — MỘT lượt đọc/lớp (getDocs limit 1, không mở kênh sống)
       var f = await AWChat.kho();
       PHONG_LOP.forEach(function (p) {
@@ -742,10 +772,11 @@
       PHONG = ds;
       if (chon && !/^lop:/.test(chon)) { var p = ds.filter(function (x) { return x.id === chon; })[0]; if (p) { nguoiHienTai = p; var ten = $('.tn-phong-dau .ten', khuPhong); if (ten) ten.textContent = tenPhong(p); veTin(); } }
       veDs();
+      thuMoCho();   // v1.224.0 — thử lại mỗi lần danh sách phòng đổi
       if (lanDau) {
         lanDau = false;
         var voi = NW.thamSo('voi'), phong = NW.thamSo('phong');
-        if (phong) moPhong(phong);
+        if (phong) { /* mở bằng thuMoCho() khi phòng đã có trong danh sách */ }
         else if (voi) NW.hoSo(voi).then(function (hs) { if (hs) return Chat.moRieng(Object.assign({ uid: voi }, hs)).then(function (id) { var pMoi = { id: id, loai: 'rieng', thanhVien: [toi.uid, voi], tv: {}, tinCuoi: null, docLuc: {} }; pMoi.tv[voi] = NW.tomTat(Object.assign({ uid: voi }, hs)); moPhong(id, pMoi); }); }).catch(function (e) { NW.toast(NW.chuLoiKho(e), true); });
       }
     });
@@ -807,6 +838,7 @@
         { id: 'hs_0__hs_5', loai: 'rieng', thanhVien: ['hs_0', 'hs_5'], tv: { hs_5: { uid: 'hs_5', ten: 'THẢO VY', lop: 'A1C', vaiTro: 'hs' } }, capNhat: t0 - 30 * 3600e3, tinCuoi: { chu: 'Bạn ơi cho mình mượn vở nha', uid: 'hs_5', luc: t0 - 30 * 3600e3 }, docLuc: {} }
       ];
       veDs();
+      thuMoCho();   // v1.224.0 — bàn thử: link ?phong=&tin=
       if (window.innerWidth > 640 && /[?&]mo=1/.test(location.search)) moPhong(CHO_RIENG ? 'hs_0__hs_1' : 'n0');
     }
   };

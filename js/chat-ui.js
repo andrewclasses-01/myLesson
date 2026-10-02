@@ -648,6 +648,15 @@
     window.addEventListener('focus', henThuXem);
     khung.addEventListener('pointerdown', henThuXem);
     ui.datXem = function (map) { XEM = map || {}; veXem(); henThuXem(); };
+    // ⭐ v1.224.0 — mở từ thông báo nhắc tên: cuộn tới tin `id` (giữa khung) + nháy 1 cái. Chưa có trong khung ⇒ false.
+    ui.toiTin = function (id) {
+      var g = id ? khung.querySelector('.cu-w[data-id="' + cssEsc(id) + '"]') : null;
+      if (!g) return false;
+      khung._cuDay = false;
+      g.scrollIntoView({ block: 'center' });
+      g.classList.remove('nhay'); void g.offsetWidth; g.classList.add('nhay');
+      return true;
+    };
     function veLai() { ui.ve(ui.ds.map(function (t) { return t; }), dauHienTai()); }
     function dauHienTai() { var c = khung.querySelector('.cu-ds'); var h = ''; if (c) { var n = khung.firstChild; while (n && n !== c) { h += n.outerHTML || ''; n = n.nextSibling; } } return h; }
     function nay(id, k) {

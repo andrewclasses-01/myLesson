@@ -2860,6 +2860,18 @@ button.mk-em:hover{border-color:currentColor}
 .lop-hang .lop-vach::before{display:none}
 @media (max-width:1100px){ .lop-hang{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:620px){ .lop-hang{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* ⭐ v1.218.0 (02/10/2026, thầy chốt) — CỘT CUỐI = các nút KHÓA NỀN TẢNG, ngăn với lớp thường bằng MỘT VẠCH MẢNH.
+   Lưới ngoài: 4 cột lớp thường · 1 cột vạch 1px · 1 cột khóa (mọi cột thẻ cùng 1fr ⇒ thẻ khóa = đúng cỡ thẻ lớp).
+   `.lop-grid` + `.lop-vach` dùng subgrid cột; vạch là `::before` của `.lop-vach` nằm đúng cột 1px, mờ dần hai đầu.
+   Màn ≤1100px giữ lưới gộp cũ (display:contents ở trên). */
+@media (min-width:1101px){
+  .lop-hang{grid-template-columns:repeat(4,minmax(0,1fr)) 1px minmax(0,1fr); column-gap:12px; align-items:start}
+  .lop-hang>.lop-grid{display:grid; grid-column:1/5; grid-template-columns:subgrid; gap:10px 12px}
+  .lop-hang .lop-vach{display:grid; grid-column:5/7; grid-template-columns:subgrid; align-self:stretch}
+  .lop-hang .lop-vach::before{display:block; content:''; position:static; grid-column:1; width:1px; height:auto; align-self:stretch;
+    background:linear-gradient(to bottom, rgba(14,124,110,0), rgba(14,124,110,.32) 18%, rgba(14,124,110,.32) 82%, rgba(14,124,110,0))}
+  .lop-hang .lop-grid-khoa{display:flex; flex-direction:column; gap:10px; grid-column:2; min-width:0}
+}
 .lop-btn.lb3{flex-direction:column; align-items:stretch; gap:7px; padding:11px 10px 11px 14px; min-width:0; border-radius:12px}
 .lb3 .lb-main{position:absolute; inset:0; z-index:1; padding:0; border-radius:inherit; background:none; cursor:pointer}
 .lb3 .lb-main:active{transform:none}

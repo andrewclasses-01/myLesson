@@ -603,7 +603,7 @@ body.mo-menu .side.trai{transform:none}
 
 /* ---------- DẠNG ĐIỆN THOẠI DỌC (y hệt lop.html) ---------- */
 @media (max-width:620px){
-  :root{--cao-the:226px}
+  :root{--cao-the:186px}   /* thiết kế ĐT 2 — 226 ⇒ 186: chat còn 104px thay 72px, ô gõ không chui dưới thanh tab */
   .wrap{padding:0 18px}
   .main{gap:12px; padding:12px 18px 14px; grid-template-rows:auto minmax(190px,1fr);
     height:calc(100vh - var(--cao-dau) - var(--banphim));
@@ -649,6 +649,9 @@ body.mo-menu .side.trai{transform:none}
   .msg.toi .av{margin-top:0}
   .chat-foot{padding:9px 10px}
 }
+/* thiết kế ĐT 2 (02/10) — thanh tab ở ĐÁY (≤640): `.main` đã trừ chiều cao thanh (--cao-dau) nên body KHÔNG đệm
+   thêm 76px như nw-thanh.css (trang cuộn như dashboard mới cần) ⇒ hết dư 9px phải cuộn. `html body` để thắng nw-thanh.css nạp sau. */
+@media (max-width:640px){ html body.co-nwb{padding-bottom:0} }
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->

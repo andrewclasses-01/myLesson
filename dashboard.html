@@ -2860,6 +2860,19 @@ button.mk-em:hover{border-color:currentColor}
 .lop-hang .lop-vach::before{display:none}
 @media (max-width:1100px){ .lop-hang{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:620px){ .lop-hang{grid-template-columns:repeat(2,minmax(0,1fr))} }
+/* ⭐ v1.219.0 (02/10/2026, thầy chốt) — ĐỔI LỚP MƯỢT (View Transitions, `chonLopMuot`): nút lớp đang chọn TRƯỢT từ chỗ cũ sang
+   chỗ mới (cùng tên `lop-chon`), cả khu dưới (`.hai-cot`: bài còn hạn · đang hoạt động · bài tập gần đây · chat) trượt THEO HƯỚNG
+   đi giữa 2 nút (--vx/--vy đặt trên <html>). ⛔ `::view-transition{pointer-events:none}` — không thì lớp ảnh chụp nuốt cú bấm thứ 2
+   ⇒ hỏng "bấm đúp thẻ lớp = kho nhỏ". Trình duyệt không hỗ trợ / giảm chuyển động ⇒ đổi lớp ngay như cũ. */
+.hai-cot{view-transition-name:noi-dung-lop}
+::view-transition{pointer-events:none}
+::view-transition-old(root), ::view-transition-new(root){animation-duration:.2s}
+::view-transition-group(lop-chon){animation-duration:.38s; animation-timing-function:cubic-bezier(.22,.9,.3,1); z-index:2}
+::view-transition-group(noi-dung-lop){animation-duration:.38s; animation-timing-function:cubic-bezier(.22,.9,.3,1)}
+::view-transition-old(noi-dung-lop){animation:vt-lop-ra .2s ease-in both}
+::view-transition-new(noi-dung-lop){animation:vt-lop-vao .38s cubic-bezier(.22,.9,.3,1) both}
+@keyframes vt-lop-ra{to{opacity:0; transform:translate(calc(var(--vx,0px) * -1), calc(var(--vy,0px) * -1))}}
+@keyframes vt-lop-vao{from{opacity:0; transform:translate(var(--vx,0px), var(--vy,0px))}}
 /* ⭐ v1.218.0 (02/10/2026, thầy chốt) — CỘT CUỐI = các nút KHÓA NỀN TẢNG, ngăn với lớp thường bằng MỘT VẠCH MẢNH.
    Lưới ngoài: 4 cột lớp thường · 1 cột vạch 1px · 1 cột khóa (mọi cột thẻ cùng 1fr ⇒ thẻ khóa = đúng cỡ thẻ lớp).
    `.lop-grid` + `.lop-vach` dùng subgrid cột; vạch là `::before` của `.lop-vach` nằm đúng cột 1px, mờ dần hai đầu.
@@ -3391,7 +3404,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 </style>
 <link rel="stylesheet" href="css/nw-thanh.css?v=9">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=16">
+<link rel="stylesheet" href="css/chat-ui.css?v=17">
 </head>
 <body>
 
@@ -6554,7 +6567,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   setInterval(function () { if (document.visibilityState === 'visible') hdVe(); }, 30000);   // "x phút trước" + online hết hạn
   document.addEventListener('click', function (e) {
     var b = e.target.closest('[data-hd-lop]'); if (!b) return;
-    chonLop(b.getAttribute('data-hd-lop'));
+    chonLopMuot(b.getAttribute('data-hd-lop'));   // v1.219.0 — cũng chuyển mượt
   });
   /* ⭐ v1.212.0 — thầy chốt: BẤM 1 LẦN avatar/dòng một em (ô online hoặc bài tập gần đây) = CHỌN em đó (sáng ở cả 2 nửa);
      BẤM ĐÚP = mở bài GẦN NHẤT của em (chọn lớp em → hộp quản lý bài → hộp CHI TIẾT EM: đồ thị + bảng từng lượt, hqChiTiet).
@@ -10722,7 +10735,47 @@ tr.qm-hang-tam td{background:#fffbeb}
     BAM_LOP = { ma: maLop, t: dup ? 0 : bay };
     if (dup) return void moKhoNho(maLop);
     if (KHO_NHO_LOP && KHO_NHO_LOP !== maLop) dongKhoNho();
-    chonLop(maLop);
+    chonLopMuot(maLop);
+  }
+  // ⭐ v1.219.0 — đổi lớp có hiệu ứng (CSS ở khối "ĐỔI LỚP MƯỢT"). Hướng = hướng đi từ nút cũ tới nút mới (trục đi xa hơn thắng):
+  // sang phải ⇒ nội dung mới trượt vào từ phải, xuống hàng dưới ⇒ trượt lên từ dưới…
+  // ⛔ Trong lúc hiệu ứng chạy, Chrome KHÔNG đưa cú bấm tới nút lớp (đo thật: bấm đúp mất cú 2 ⇒ kho nhỏ không mở dù đã có
+  // `::view-transition{pointer-events:none}`). Bắt cú bấm ở mức document: rơi trúng khung nút lớp vừa chọn ⇒ dừng hiệu ứng + coi
+  // như bấm nút đó (cú thứ 2 trong 450 ms ⇒ mở kho nhỏ như cũ).
+  var VT_LOP = { vt: null, ma: null };
+  document.addEventListener('click', function (e) {
+    if (!VT_LOP.vt || e.target.closest('.lop-btn')) return;
+    var n = theLopDom(VT_LOP.ma); if (!n) return;
+    var r = n.getBoundingClientRect();
+    if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
+    e.preventDefault(); e.stopPropagation();
+    try { VT_LOP.vt.skipTransition(); } catch (x) {}
+    VT_LOP.vt = null;
+    bamTheLop(VT_LOP.ma);
+  }, true);
+  function chonLopMuot(maLop) {
+    var cu = theLopDom(LOP_CHON), moi = theLopDom(maLop);
+    var giam = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (!document.startViewTransition || giam || !cu || !moi || cu === moi) return void chonLop(maLop);
+    var a = cu.getBoundingClientRect(), b = moi.getBoundingClientRect();
+    var dx = b.left - a.left, dy = b.top - a.top, goc = document.documentElement, D = 56;
+    var ngang = Math.abs(dx) >= Math.abs(dy);
+    goc.style.setProperty('--vx', ngang ? (dx > 0 ? D : -D) + 'px' : '0px');
+    goc.style.setProperty('--vy', ngang ? '0px' : (dy > 0 ? D : -D) + 'px');
+    cu.style.viewTransitionName = 'lop-chon';
+    var vt = VT_LOP.vt = document.startViewTransition(function () {
+      cu.style.viewTransitionName = '';
+      chonLop(maLop);
+      var n = theLopDom(maLop);
+      if (n) n.style.viewTransitionName = 'lop-chon';
+    });
+    VT_LOP.ma = maLop;
+    vt.finished['finally'](function () {
+      if (VT_LOP.vt === vt) VT_LOP.vt = null;
+      var n = theLopDom(maLop);
+      if (n) n.style.viewTransitionName = '';
+      if (cu) cu.style.viewTransitionName = '';
+    });
   }
   document.addEventListener('click', function (e) {
     if (e.target.closest('#khoNhoDong')) return void dongKhoNho();

@@ -901,8 +901,21 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .tn.mo-info{grid-template-columns:340px minmax(0,1fr) 300px}
 .tn-ds-dau{padding:14px 14px 6px}
 .tn-ds-dau h2{font-size:20px}
-.tn-ds-dau .nut-tron{width:36px; height:36px; background:var(--ground); color:var(--ink)}
-.tn-ds-dau .nut-tron.dam{background:var(--accent-soft); color:var(--accent)}
+/* 02/10/2026 thầy: 2 nút đầu danh sách CHỈ icon, không nền vuông */
+.tn-ds-dau .nut-tron{width:36px; height:36px; background:none; color:var(--ink); box-shadow:none}
+.tn-ds-dau .nut-tron.dam{background:none; color:var(--accent)}
+.tn-ds-dau .nut-tron:hover{background:none; color:var(--accent)}
+.tn-ds-dau .nut-tron .ic{width:22px; height:22px}
+/* khung giữa khi chưa mở phòng */
+.tn-chao{display:flex; flex-direction:column; align-items:center; gap:6px; padding:30px 24px}
+.tn-chao-ic{width:84px; height:84px; border-radius:50%; display:grid; place-items:center; background:var(--accent-soft); color:var(--accent); margin-bottom:10px}
+.tn-chao .tn-chao-ic .ic{width:40px; height:40px; margin:0; color:var(--accent); stroke-width:1.7}
+.tn-chao b{font-size:18px; font-weight:800; color:var(--ink)}
+.tn-chao span:not(.tn-chao-ic){font-size:14px; font-weight:500; color:var(--muted); max-width:300px; line-height:1.5}
+.tn-chao-nut{margin-top:14px; display:inline-flex; align-items:center; gap:8px; padding:10px 20px; border:0; border-radius:999px;
+  background:var(--accent); color:#fff; font:700 14px/1 var(--sans, inherit); cursor:pointer}
+.tn-chao-nut:hover{filter:brightness(1.08)}
+.tn-chao .tn-chao-nut .ic{width:17px; height:17px; margin:0; color:#fff; stroke-width:2.1}
 .tn-tim{padding:4px 12px 8px}
 .tn-tim .tim-o{display:flex; align-items:center; gap:8px; padding:0 12px; border-radius:999px; background:var(--ground); color:var(--muted)}
 .tn-tim .tim-o .ic{width:17px; height:17px; flex:none}

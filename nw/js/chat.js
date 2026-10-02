@@ -201,13 +201,17 @@
     var UI = null;   // ⭐ web v1.198.0 — khuôn chat Zalo của phòng đang mở (Chat.taoKhuon)
     var timChu = '';
     hop.className = 'card tn';
+    // 02/10/2026 thầy: khung giữa khi chưa mở phòng = icon tròn lớn + tiêu đề + 1 dòng hướng dẫn + nút "Nhắn tin mới" (bấm = nút ✎)
+    var TRONG_PHONG = '<div class="tn-trong tn-chao"><span class="tn-chao-ic">' + IC.tinNhan + '</span><b>Tin nhắn của ' + (toi.laThay ? 'thầy' : 'em') + '</b>' +
+      '<span>Chọn một cuộc trò chuyện bên trái để xem tin nhắn.</span>' +
+      '<button type="button" class="tn-chao-nut" data-tn-moi>' + IC.sua + 'Nhắn tin mới</button></div>';
     hop.innerHTML =
       '<div class="tn-ds"><div class="tn-ds-dau"><h2>Tin nhắn</h2>' +
         (toi.laThay ? '<button class="nut-tron" id="tnNhom" title="Tạo nhóm chat" aria-label="Tạo nhóm chat">' + IC.nhom + '</button>' : '') +   // v16: HS không tạo nhóm
         '<button class="nut-tron dam" id="tnMoi" title="Nhắn tin mới" aria-label="Nhắn tin mới">' + IC.sua + '</button></div>' +
         '<div class="tn-tim"><span class="tim-o">' + IC.timKiem + '<input type="search" id="tnTim" placeholder="Tìm trong tin nhắn"></span></div>' +
         '<div class="tn-ds-cuon" id="tnDs"><div class="tn-trong">Đang tải…</div></div></div>' +
-      '<div class="tn-phong" id="tnPhong"><div class="tn-trong">' + IC.tinNhan + 'Chọn một cuộc trò chuyện,<br>hoặc bấm ' + IC.sua + ' để nhắn cho bạn.</div></div>' +
+      '<div class="tn-phong" id="tnPhong">' + TRONG_PHONG + '</div>' +
       '<aside class="tn-info" id="tnInfo" hidden></aside>';
     var khuDs = $('#tnDs', hop), khuPhong = $('#tnPhong', hop), khuInfo = $('#tnInfo', hop);
     $('#tnTim', hop).addEventListener('input', function () { timChu = NW.khongDau(this.value.trim().toLowerCase()); veDs(); });
@@ -241,7 +245,7 @@
     function tatTB(p) { return !!((p.tat || {})[toi.uid]); }
     function veDs() {
       var ds = xepPhong(PHONG).filter(function (p) { return !timChu || NW.khongDau(tenPhong(p).toLowerCase()).indexOf(timChu) >= 0; });
-      if (!ds.length) { khuDs.innerHTML = '<div class="tn-trong">' + (timChu ? 'Không thấy cuộc trò chuyện nào.' : 'Chưa có cuộc trò chuyện nào.<br>Bấm ✎ để nhắn cho bạn cùng lớp hoặc thầy.') + '</div>'; return; }
+      if (!ds.length) { khuDs.innerHTML = '<div class="tn-trong">' + (timChu ? 'Không thấy cuộc trò chuyện nào.' : 'Chưa có cuộc trò chuyện nào.') + '</div>'; return; }
       khuDs.innerHTML = ds.map(function (p) {
         var tc = p.tinCuoi || {}, chua = chuaDoc(p);
         var cuoi = tc.luc ? ((tc.uid === toi.uid ? 'Em: ' : (p.loai === 'nhom' ? (tc.ten || '').split(' ').pop() + ': ' : '')) + (tc.chu || (tc.hinh ? '📷 Ảnh' : ''))) : 'Bắt đầu trò chuyện';
@@ -283,7 +287,7 @@
     function danhDauChuaDoc(p, chua) {
       var moc = chua ? ((p.tinCuoi || {}).luc || p.capNhat || 1) - 1 : Date.now();
       var patch = {}; patch['docLuc.' + toi.uid] = moc; patch['chuaDoc.' + toi.uid] = chua;
-      if (chua && chon === p.id) { hop.classList.remove('mo-phong'); chon = ''; dongInfo(); khuPhong.innerHTML = '<div class="tn-trong">' + IC.tinNhan + 'Chọn một cuộc trò chuyện.</div>'; }
+      if (chua && chon === p.id) { hop.classList.remove('mo-phong'); chon = ''; dongInfo(); khuPhong.innerHTML = TRONG_PHONG; }
       capNhatPhong(p, patch, function () { p.docLuc = p.docLuc || {}; p.docLuc[toi.uid] = moc; p.chuaDoc = p.chuaDoc || {}; p.chuaDoc[toi.uid] = chua; });
     }
     function datTat(p, tat) {
@@ -294,7 +298,7 @@
     async function xoaCuoc(p) {
       if (!(await NW.hoi('Xoá đoạn chat?', 'Đoạn chat sẽ biến mất khỏi danh sách của em (bạn kia vẫn giữ). Có tin mới thì nó hiện lại.', { ok: 'Xoá', nguy: true }))) return;
       var moc = Date.now(); var patch = {}; patch['anLuc.' + toi.uid] = moc;
-      if (chon === p.id) { hop.classList.remove('mo-phong'); chon = ''; dongInfo(); khuPhong.innerHTML = '<div class="tn-trong">' + IC.tinNhan + 'Chọn một cuộc trò chuyện.</div>'; }
+      if (chon === p.id) { hop.classList.remove('mo-phong'); chon = ''; dongInfo(); khuPhong.innerHTML = TRONG_PHONG; }
       capNhatPhong(p, patch, function () { p.anLuc = p.anLuc || {}; p.anLuc[toi.uid] = moc; });
     }
     function baoCaoCuoc(p) {
@@ -493,6 +497,7 @@
         catch (e) { NW.toast(NW.chuLoiKho(e), true); }
       });
     };
+    khuPhong.addEventListener('click', function (e) { if (e.target.closest('[data-tn-moi]')) $('#tnMoi', hop).onclick(); });   // nút "Nhắn tin mới" giữa khung
     if ($('#tnNhom', hop)) $('#tnNhom', hop).onclick = async function () {
       var ds = await Chat.nguoiNhanDuoc();
       var pop = chonNguoi('Tạo nhóm chat', ds, true, async function (chonDs) {

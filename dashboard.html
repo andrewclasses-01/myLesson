@@ -2860,29 +2860,20 @@ button.mk-em:hover{border-color:currentColor}
 .lop-hang .lop-vach::before{display:none}
 @media (max-width:1100px){ .lop-hang{grid-template-columns:repeat(3,minmax(0,1fr))} }
 @media (max-width:620px){ .lop-hang{grid-template-columns:repeat(2,minmax(0,1fr))} }
-/* ⭐ v1.219.0 (02/10/2026, thầy chốt) — ĐỔI LỚP MƯỢT (View Transitions, `chonLopMuot`): nút lớp đang chọn TRƯỢT từ chỗ cũ sang
+/* (LỊCH SỬ — kiểu trượt dưới đây ĐÃ BỎ, xem KNT 14 ngay sau; giữ lời ⛔ pointer-events) v1.219.0 — ĐỔI LỚP MƯỢT (View Transitions, `chonLopMuot`): nút lớp đang chọn TRƯỢT từ chỗ cũ sang
    chỗ mới (cùng tên `lop-chon`), cả khu dưới (`.hai-cot`: bài còn hạn · đang hoạt động · bài tập gần đây · chat) trượt THEO HƯỚNG
    đi giữa 2 nút (--vx/--vy đặt trên <html>). ⛔ `::view-transition{pointer-events:none}` — không thì lớp ảnh chụp nuốt cú bấm thứ 2
    ⇒ hỏng "bấm đúp thẻ lớp = kho nhỏ". Trình duyệt không hỗ trợ / giảm chuyển động ⇒ đổi lớp ngay như cũ. */
-/* ⭐ thiết kế KNT 9 (02/10/2026, thầy) — CHỈ MẢNG MÀU CHỌN trượt; chữ các nút đứng yên; khu dưới chỉ FADE (bỏ trượt).
-   Tên chuyển cảnh (đặt bằng JS trong `chonLopMuot`): lop-chon = thẻ lớp chọn (chữ tách riêng ⇒ ảnh chụp chỉ còn nền xanh) trượt
-   cũ→mới · lop-cu-1/2 = chữ trắng nút cũ mờ đi tại chỗ · lop-moi-1/2 = chữ trắng nút mới hiện ra lúc mảng màu sắp tới ·
-   lop-dich = nút mới ở dạng CHƯA chọn, giữ nguyên tới khi mảng màu phủ (khỏi lộ khoảng trống) · lop-roi = nút cũ ở dạng
-   chưa chọn, hiện ngay dưới mảng màu đang rời đi. Lớp chồng: dich/roi 1 < lop-chon 2 < chữ 3. */
+/* ⭐ thiết kế KNT 14 (02/10/2026, thầy chốt — thay KNT 9: trượt bị giật/nháy) — ĐỔI LỚP = CHUYỂN MỜ THƯỜNG.
+   · Nút lớp: không đặt tên chuyển cảnh nào ⇒ nằm trong ảnh `root`: nút cũ nhạt dần, nút mới đậm lên tại chỗ (crossfade).
+   · Nội dung (`.hai-cot`, tên noi-dung-lop): ảnh CŨ đứng yên đủ đậm, ảnh MỚI mờ dần ĐÈ LÊN (không có nhịp trống giữa hai cái);
+     cắt theo khung mới (overflow:clip) để phần cũ cao hơn không lòi ra dưới. */
 .hai-cot{view-transition-name:noi-dung-lop}
 ::view-transition{pointer-events:none}
-::view-transition-old(root), ::view-transition-new(root){animation-duration:.25s}
-::view-transition-group(lop-chon){animation-duration:.38s; animation-timing-function:cubic-bezier(.22,.9,.3,1); z-index:2}
-::view-transition-group(lop-dich), ::view-transition-group(lop-roi){animation:none; z-index:1}
-::view-transition-old(lop-dich), ::view-transition-new(lop-roi){animation:none; opacity:1}
-::view-transition-group(lop-cu-1), ::view-transition-group(lop-cu-2),
-::view-transition-group(lop-moi-1), ::view-transition-group(lop-moi-2){animation:none; z-index:3}
-::view-transition-old(lop-cu-1), ::view-transition-old(lop-cu-2){animation:vt-mo-ra .14s ease-in both}
-::view-transition-new(lop-moi-1), ::view-transition-new(lop-moi-2){animation:vt-mo-vao .2s ease-out .2s both}
-::view-transition-group(noi-dung-lop){animation:none}
-::view-transition-old(noi-dung-lop){animation:vt-mo-ra .16s ease-in both}
-::view-transition-new(noi-dung-lop){animation:vt-mo-vao .3s ease-out .08s both}
-@keyframes vt-mo-ra{to{opacity:0}}
+::view-transition-old(root), ::view-transition-new(root){animation-duration:.28s; animation-timing-function:ease-out}
+::view-transition-group(noi-dung-lop){animation:none; overflow:clip}
+::view-transition-old(noi-dung-lop){animation:none; opacity:1}
+::view-transition-new(noi-dung-lop){animation:vt-mo-vao .3s ease-out both}
 @keyframes vt-mo-vao{from{opacity:0}}
 /* ⭐ v1.218.0 (02/10/2026, thầy chốt) — CỘT CUỐI = các nút KHÓA NỀN TẢNG, ngăn với lớp thường bằng MỘT VẠCH MẢNH.
    Lưới ngoài: 4 cột lớp thường · 1 cột vạch 1px · 1 cột khóa (mọi cột thẻ cùng 1fr ⇒ thẻ khóa = đúng cỡ thẻ lớp).
@@ -10140,15 +10131,22 @@ tr.qm-hang-tam td{background:#fffbeb}
     baoToast(chu || 'Đã xoá hẳn bài khỏi web ✓');
   };
 
+  var CHAT_NHO = {};   // thiết kế KNT 14 — tin sống gần nhất của từng lớp (chỉ trong bộ nhớ trang)
   function noiChat() {
     var l = A.lopTheoMa(DL, LOP_CHON);
     var tenLop = (l && l.tenGoc) || LOP_CHON;
     ChatUI.datDau($('#chatAv'), $('#chatTen'), 'Lớp ' + tenLop, tenLop);
-    $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
     TIN = []; TIN_CU = []; hetCu = false; dangTaiCu = false;   // đổi lớp, quên trang cũ đã tải
+    /* thiết kế KNT 14 — lớp đã mở trong phiên này ⇒ vẽ NGAY bản tin nhớ được (kênh sống về sau tự cập nhật), không chớp
+       "Đang mở phòng…" giữa lúc chuyển lớp (thầy thấy nội dung nháy). Lớp chưa mở lần nào mới hiện chữ chờ. */
+    var lopNay = LOP_CHON;
+    $('#chatBody')._cuDaVe = false;   // vẽ lần đầu của lớp ⇒ cuộn xuống đáy
+    if (CHAT_NHO[lopNay]) { TIN_SONG = CHAT_NHO[lopNay]; gopTin(); veChat(); }
+    else $('#chatBody').innerHTML = '<div class="chat-cho">Đang mở phòng…</div>';
     UI_CHAT.khoa(false);
     ngheDsCamLop();   // 🔇 v1.216.0 — em nào của lớp đang bị cấm chat (nhãn ĐANG CẤM + hộp quản lý em)
     AWChat.nghe(LOP_CHON, function (ds) {
+      CHAT_NHO[lopNay] = ds;
       TIN_SONG = ds;
       gopTin();
       veChat();
@@ -10767,33 +10765,14 @@ tr.qm-hang-tam td{background:#fffbeb}
     // trong ảnh sống của trạng thái mới, tự mờ vào cùng hiệu ứng.
     bamTheLop(VT_LOP.ma);
   }, true);
-  // Đặt/xoá tên chuyển cảnh cho thẻ lớp + 2 dòng chữ của nó (xem khối CSS "thiết kế KNT 9").
-  function tenVtThe(the, ten, tenChu) {
-    if (!the) return;
-    the.style.viewTransitionName = ten || '';
-    var h1 = the.querySelector('.lb-h1'), h3 = the.querySelector('.lb-h3');
-    if (h1) h1.style.viewTransitionName = tenChu ? tenChu + '-1' : '';
-    if (h3) h3.style.viewTransitionName = tenChu ? tenChu + '-2' : '';
-  }
+  // thiết kế KNT 14 — chuyển mờ thường (xem khối CSS "thiết kế KNT 14"), không còn tên chuyển cảnh trên nút.
   function chonLopMuot(maLop) {
     var cu = theLopDom(LOP_CHON), moi = theLopDom(maLop);
     var giam = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!document.startViewTransition || giam || !cu || !moi || cu === moi) return void chonLop(maLop);
-    var maCu = LOP_CHON;
-    tenVtThe(cu, 'lop-chon', 'lop-cu');
-    tenVtThe(moi, 'lop-dich', '');
-    var vt = VT_LOP.vt = document.startViewTransition(function () {
-      tenVtThe(cu, '', ''); tenVtThe(moi, '', '');
-      chonLop(maLop);                         // vẽ lại lưới ⇒ thẻ là phần tử MỚI, tra lại
-      tenVtThe(theLopDom(maLop), 'lop-chon', 'lop-moi');
-      tenVtThe(theLopDom(maCu), 'lop-roi', '');
-    });
+    var vt = VT_LOP.vt = document.startViewTransition(function () { chonLop(maLop); });
     VT_LOP.ma = maLop;
-    vt.finished['finally'](function () {
-      if (VT_LOP.vt === vt) VT_LOP.vt = null;
-      tenVtThe(theLopDom(maLop), '', ''); tenVtThe(theLopDom(maCu), '', '');
-      tenVtThe(cu, '', ''); tenVtThe(moi, '', '');
-    });
+    vt.finished['finally'](function () { if (VT_LOP.vt === vt) VT_LOP.vt = null; });
   }
   document.addEventListener('click', function (e) {
     if (e.target.closest('#khoNhoDong')) return void dongKhoNho();

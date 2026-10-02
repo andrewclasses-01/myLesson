@@ -3939,7 +3939,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=206"></script>
+<script src="config.js?v=207"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=1"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -11250,10 +11250,18 @@ tr.qm-hang-tam td{background:#fffbeb}
         return '<button type="button" data-kl-xem="' + klE(l.maLop) + '" data-tt="' + trangThaiBai(l) + '"' + (KL.lop === l.maLop ? ' class="chon"' : '') + '><i></i>' +
           klE(l.tenGoc || l.maLop) + '<em>' + n + '</em></button>';
       }).join('');
+    // ⭐ 02/10/2026 — lớp cuối KT ĐẦU VÀO (học sinh kiểm tra đầu vào, js/ktdv-ql.js)
+    $('#klLop').insertAdjacentHTML('beforeend', '<hr><button type="button" data-kl-xem="__KTDV__"' + (KL.lop === '__KTDV__' ? ' class="chon"' : '') + '><i style="background:#7C5CD6"></i>KT ĐẦU VÀO</button>');
   }
   function klVe(giuCuon) {
     var than = $('#klChinh'), cuon = than.scrollTop;
     klVeLop();
+    if (KL.lop === '__KTDV__') {   // ⭐ 02/10/2026 — KT ĐẦU VÀO: js/ktdv-ql.js vẽ
+      $('#klPhu').textContent = 'KT ĐẦU VÀO';
+      if (window.KTDV) window.KTDV.ve(than, { dsLop: klDsLop }); else than.innerHTML = '<div class="trong">Chưa tải được js/ktdv-ql.js.</div>';
+      if (!giuCuon) than.scrollTop = 0;
+      return;
+    }
     var l = KL.lop ? A.lopTheoMa(DL, KL.lop) : null;
     $('#klPhu').textContent = l ? (l.tenGoc || KL.lop) : 'Tất cả lớp';
     than.innerHTML = KL.lop ? klVeMotLop(KL.lop) : klVeTatCa();
@@ -11283,7 +11291,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var x = e.target.closest('[data-kl-xem]');
     if (x) {
       KL.lop = x.getAttribute('data-kl-xem') || null; KL.loc = 'tatca';
-      if (KL.lop && LOP_CHON !== KL.lop) chonLop(KL.lop);
+      if (KL.lop && KL.lop !== '__KTDV__' && LOP_CHON !== KL.lop) chonLop(KL.lop);
       klVe(); klDocDiem(); return;
     }
     var k = e.target.closest('[data-kl-ky]');
@@ -14782,5 +14790,6 @@ tr.qm-hang-tam td{background:#fffbeb}
 </script>
 <script src="js/ic-ql.js?v=2"></script>
 <script src="js/nw-thanh.js?v=26"></script>
+<script src="js/ktdv-ql.js?v=1"></script>   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
 </body>
 </html>

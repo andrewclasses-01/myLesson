@@ -776,12 +776,15 @@
   function xepHangAct(dsDiem, caLopDu, khongTinh) {
     var mien = {}, trong = {};
     (khongTinh || []).forEach(function (t) { mien[khoaTen(t)] = 1; });
-    (caLopDu || []).forEach(function (t) { trong[khoaTen(t)] = 1; });
+    // 02/10/2026 — `trong[khoá]` = TÊN trong danh sách lớp hiện tại: dòng điểm cũ lưu tên IN HOA ("MINH THƯ") hiện
+    // theo tên mới ("Minh Thư") ở mọi bảng xếp hạng (khoá so vẫn qua khoaEm/khoaTen như cũ).
+    (caLopDu || []).forEach(function (t) { trong[khoaTen(t)] = String(t); });
     var nhanhHon = function (a, b) {
       if (a.diem !== b.diem) return b.diem - a.diem;
       return (a.giay || 0) - (b.giay || 0);
     };
-    var co = (dsDiem || []).filter(function (e) { return trong[khoaEm(e)]; }).slice().sort(nhanhHon);
+    var tenMoi = function (e) { var t = trong[khoaEm(e)]; if (!t || e.ten === t) return e; var o = {}; for (var k in e) if (Object.prototype.hasOwnProperty.call(e, k)) o[k] = e[k]; o.ten = t; return o; };
+    var co = (dsDiem || []).filter(function (e) { return trong[khoaEm(e)]; }).map(tenMoi).sort(nhanhHon);
     var daCo = {};
     co.forEach(function (e) { daCo[khoaEm(e)] = 1; });
     var chua = (caLopDu || []).filter(function (t) { return !daCo[khoaTen(t)]; })

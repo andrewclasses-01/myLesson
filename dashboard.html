@@ -1632,9 +1632,22 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   stroke-linecap:round; stroke-linejoin:round}
 
 @media (max-width:620px){
-  :root{--cao-the:166px}
+  /* thiết kế ĐT 3 (02/10) — 166 ⇒ 200 (= máy tính): thẻ STAGE "Bài còn hạn" cần ~200px, 166 làm thanh chặng đè ô đếm ngược. */
+  :root{--cao-the:200px}
   .the-in{--mui:42px}
   .play svg{width:17px; height:17px; margin-right:17px}
+  /* `.han-boc.rong` 236px (2 class) bóp tên bài còn "S.." ⇒ thu ô hạn STAGE; khúc chặng to được co như bai.html/lop.html. */
+  .han-boc.rong{width:150px}
+  .han-boc.rong .t-han{width:144px}
+  .han-boc.rong .han-dong{font-size:9px}
+  .st-khuc.cho,.st-khuc.dang,.st-khuc.ket{flex-shrink:1; min-width:0}
+  .st-khuc{font-size:9px; letter-spacing:.02em}
+  .st-khuc.dang,.st-khuc.ket{font-size:10px}
+  /* ĐANG HOẠT ĐỘNG / BÀI TẬP GẦN ĐÂY: hết "khung bé cuộn trong trang cuộn" — dài theo nội dung, bài gần đây trần 420px. */
+  .cot-the{min-height:0}
+  .hd-zone{flex:none}
+  .hd-than{flex:none; max-height:none}
+  .hd-nua + .hd-nua .hd-than{max-height:420px}
 }
 
 /* ================================================================
@@ -3404,7 +3417,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 .bc-nut .san{background:#dcfce7; color:#15803d}
 .bc-chua{flex:none; font:700 11.5px var(--font); color:var(--nhat)}
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=9">
+<link rel="stylesheet" href="css/nw-thanh.css?v=10">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=18">
 </head>

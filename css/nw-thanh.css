@@ -51,7 +51,7 @@ body.mo-menu .side.phai{transform:none}
    ⛔ bẫy myNetwork: .top có backdrop-filter ⇒ mọi con fixed neo vào nó — dời CẢ .top, bỏ blur. */
 @media (max-width:640px){
   .top.nwb{position:fixed; top:auto; bottom:0; left:0; right:0; z-index:40; height:66px; border-bottom:none;
-    border-top:1px solid var(--line); background:rgba(255,255,255,.97); backdrop-filter:none;
+    border-top:1px solid var(--line); background:#fff; backdrop-filter:none;   /* thiết kế ĐT 3 — .97 ⇒ đặc: iPhone lộ chữ nội dung dưới thanh */
     box-shadow:0 -6px 20px rgba(22,35,42,.06); padding-bottom:env(safe-area-inset-bottom); box-sizing:content-box}
   .nwb-in{display:flex; align-items:center; justify-content:space-between; gap:4px; padding:0 6px}
   .nwb-tabs{flex:1; justify-content:space-around; gap:0; height:100%}

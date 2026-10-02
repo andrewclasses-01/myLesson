@@ -47,21 +47,20 @@
 .side.phai{left:auto; right:0; transform:translateX(105%); box-shadow:-12px 0 40px rgba(22,35,42,.14)}
 body.mo-menu .side.phai{transform:none}
 
-/* Điện thoại: CẢ thanh xuống ĐÁY như myNetwork.
-   ⛔ bẫy myNetwork: .top có backdrop-filter ⇒ mọi con fixed neo vào nó — dời CẢ .top, bỏ blur. */
+/* Điện thoại: thanh nằm TRÊN ĐẦU trang, thấp hơn máy tính (54px).
+   thiết kế ĐT 4 (02/10, thầy chốt): trước đây CẢ thanh xuống ĐÁY như myNetwork — thầy đổi: đưa lên đầu, giữ đủ 9 ô,
+   avatar nhỏ lại cho thanh thấp, tiết kiệm chỗ. Nền ĐẶC + bỏ blur (⛔ .top có backdrop-filter ⇒ mọi con fixed neo vào nó). */
 @media (max-width:640px){
-  .top.nwb{position:fixed; top:auto; bottom:0; left:0; right:0; z-index:40; height:66px; border-bottom:none;
-    border-top:1px solid var(--line); background:#fff; backdrop-filter:none;   /* thiết kế ĐT 3 — .97 ⇒ đặc: iPhone lộ chữ nội dung dưới thanh */
-    box-shadow:0 -6px 20px rgba(22,35,42,.06); padding-bottom:env(safe-area-inset-bottom); box-sizing:content-box}
-  .nwb-in{display:flex; align-items:center; justify-content:space-between; gap:4px; padding:0 6px}
+  .top.nwb{position:sticky; top:0; bottom:auto; z-index:40; height:54px; border-top:none;
+    border-bottom:1px solid var(--line); background:#fff; backdrop-filter:none; -webkit-backdrop-filter:none;
+    box-shadow:0 4px 14px rgba(22,35,42,.05)}
+  .nwb-in{display:flex; align-items:center; justify-content:space-between; gap:2px; padding:0 6px}
   .nwb-tabs{flex:1; justify-content:space-around; gap:0; height:100%}
   .nwb-tab{width:auto; flex:1; min-width:0; border-radius:12px}
-  .nwb-tab svg{width:38px; height:38px; padding:7px}
+  .nwb-tab svg{width:36px; height:36px; padding:7px}
   .nwb-tab::before{display:none}
-  .top.nwb .av.me{width:40px; height:40px; font-size:14px; box-shadow:none}
-  .nwb-menu{width:40px; height:40px; box-shadow:none; background:transparent}
-  body.co-nwb{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
-  body.co-nwb .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+  .top.nwb .av.me{width:34px; height:34px; font-size:12.5px; box-shadow:none}
+  .nwb-menu{width:36px; height:36px; box-shadow:none; background:transparent}
 }
 
 /* ---------- HỘP "SẮP RA MẮT" (thầy chốt: hộp nhỏ giữa màn) ---------- */
@@ -135,7 +134,7 @@ body.nwb-thay .sb-panel.mo{transform:translateX(0)}
   .nwb-ql-av{width:28px; height:28px; margin:0}
   .nwb-ql-muc{width:auto; flex:none; white-space:nowrap}
 }
-@media (max-width:640px){ .top.nwb .nwb-av{width:40px; height:40px; box-shadow:none} }
+@media (max-width:640px){ .top.nwb .nwb-av{width:34px; height:34px; box-shadow:none} }
 
 /* ---------- HỘP LIÊN HỆ (màn đăng nhập) — cùng khung hộp "sắp ra mắt" ---------- */
 .nwb-lh-av{width:74px; height:74px; border-radius:50%; margin:0 auto 12px; display:block; box-shadow:0 8px 22px rgba(14,124,110,.25)}

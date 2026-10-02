@@ -1377,8 +1377,8 @@ body.mo-menu .side.trai{transform:none}
      (khúc flex-shrink:0, tối thiểu ~618px) kéo giãn ⇒ trang 698px ở iPhone, lệch phải cả trang (như khoa.html). */
   .main{grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(var(--san-chat),1fr);
     gap:14px; padding:14px 20px 16px;
-    height:calc(100vh - var(--cao-dau) - var(--banphim));
-    height:calc(100dvh - var(--cao-dau) - var(--banphim))}
+    height:calc(100vh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px));
+    height:calc(100dvh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px))}
   /* ⛔ Ô lưới bây giờ là .chat-cot chứ không phải .chat nữa, nên phải cho
      khung chat cao ĐÚNG BẰNG Ô (100%). Để height:auto là nó phình theo số
      tin nhắn rồi tràn ra ngoài ô, ô nhập tụt xuống tận đáy trang. */
@@ -1417,8 +1417,8 @@ body.mo-menu .side.trai{transform:none}
      khung vẫn tính là "auto" nên hàng 1fr không có gì để chia — nó co theo
      nội dung và khung chat lại dài ra như cũ. */
   .main{gap:12px; padding:12px 18px 14px; grid-template-rows:auto minmax(190px,1fr);
-    height:calc(100vh - var(--cao-dau) - var(--banphim));
-    height:calc(100dvh - var(--cao-dau) - var(--banphim))}
+    height:calc(100vh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px));
+    height:calc(100dvh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px))}
   .cot-bai{gap:12px}
   .vach{margin:0}
 
@@ -1530,11 +1530,8 @@ body.mo-menu .side.trai{transform:none}
 .nhan-thay{display:inline-block; margin-left:5px; padding:1px 6px; border-radius:6px;
   background:#0E7C6E; color:#fff; font:800 9px/1.5 var(--sans, inherit);
   letter-spacing:.08em; vertical-align:1px}
-/* thiết kế ĐT 2 (02/10) — thanh tab ở ĐÁY (≤640): `.main` đã trừ chiều cao thanh (--cao-dau) nên body KHÔNG đệm
-   thêm 76px như nw-thanh.css (trang cuộn như dashboard mới cần) ⇒ hết dư 9px phải cuộn. `html body` để thắng nw-thanh.css nạp sau. */
-@media (max-width:640px){ html body.co-nwb{padding-bottom:0} }
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=10">
+<link rel="stylesheet" href="css/nw-thanh.css?v=11">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=18">
 </head>
@@ -1655,7 +1652,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=206"></script>
-<script src="js/thay-vao.js?v=2"></script>
+<script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=80"></script>
 <script src="js/nw-phien.js?v=7"></script>

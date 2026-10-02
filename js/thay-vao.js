@@ -46,35 +46,44 @@
   function xoaCo() { co = null; try { sessionStorage.removeItem(KHOA); } catch (e) { } }
   function ghiCo(x) { co = x; try { sessionStorage.setItem(KHOA, JSON.stringify(x)); } catch (e) { } }
 
-  // ---------- dải đỏ trên cùng ----------
+  // ---------- dải báo ở CHÂN trang ----------
+  // thiết kế ĐT 4 (02/10/2026, thầy chốt): dải đỏ 3 dòng trên cùng che mất đầu trang (tiêu đề Tin nhắn, đầu thẻ bài) ⇒
+  // MỘT dòng gọn, chữ nhỏ, nền XANH DƯƠNG, nằm ở CHÂN trang (cả điện thoại lẫn máy tính) và KHÔNG đè nội dung:
+  // body đệm đáy đúng chiều cao dải + biến `--cao-dai` trên <html> cho các trang cao đúng 1 màn (lop/khoa/tinnhan trừ đi).
   function veDai(chu, coNut) {
     function ve() {
       var d = document.getElementById('thayVaoDai');
       if (!d) {
         d = document.createElement('div');
         d.id = 'thayVaoDai';
-        d.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:2147483000;background:#c62828;color:#fff;' +
-          'font:700 13px/1.35 Montserrat,system-ui,sans-serif;padding:7px 12px;display:flex;align-items:center;gap:10px;justify-content:center;flex-wrap:wrap;box-shadow:0 2px 10px rgba(0,0,0,.25)';
+        d.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483000;background:#1D4ED8;color:#fff;' +
+          'font:700 11.5px/1.3 Montserrat,system-ui,sans-serif;padding:5px 10px calc(5px + env(safe-area-inset-bottom));display:flex;align-items:center;gap:10px;justify-content:center;' +
+          'box-shadow:0 -2px 10px rgba(0,0,0,.18)';
         document.body.appendChild(d);
-        document.body.style.paddingTop = '40px';
       }
       d.innerHTML = '';
-      var s = document.createElement('span'); s.textContent = chu; d.appendChild(s);
+      var s = document.createElement('span'); s.textContent = chu;
+      s.style.cssText = 'min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis';
+      d.appendChild(s);
       if (coNut) {
         var b = document.createElement('button');
         b.type = 'button'; b.textContent = 'Thoát';
-        b.style.cssText = 'border:0;border-radius:8px;padding:4px 12px;background:#fff;color:#c62828;font:800 12px Montserrat,system-ui,sans-serif;cursor:pointer';
+        b.style.cssText = 'flex:none;border:0;border-radius:7px;padding:3px 10px;background:#fff;color:#1D4ED8;font:800 11.5px Montserrat,system-ui,sans-serif;cursor:pointer';
         b.onclick = function () { thoat('Đã thoát chế độ đăng nhập thay em. Có thể đóng tab này.'); };
         d.appendChild(b);
       }
+      var cao = d.offsetHeight;
+      document.body.style.paddingBottom = cao + 'px';
+      document.documentElement.style.setProperty('--cao-dai', cao + 'px');
+      try { window.dispatchEvent(new Event('resize')); } catch (e) { }   // lop/khoa đo lại chiều cao khung chat
     }
     if (document.body) ve(); else document.addEventListener('DOMContentLoaded', ve);
   }
   function laChiXem() { return !!((co && co.chiXem) || (coUrl && chiXemUrl)); }
   function chuConLai() { var p = Math.max(0, Math.ceil(((co && co.het) - Date.now()) / 60000)); return p + ' phút'; }
   function veDaiDangThay() {
-    if (laChiXem()) veDai('👁 Thầy đang XEM NHƯ ' + ((co && co.ten) || 'em') + ' — CHỈ XEM: không làm bài, không chat, không đăng · tự thoát sau ' + chuConLai(), true);
-    else veDai('🔐 Thầy đang ĐĂNG NHẬP THAY ' + ((co && co.ten) || 'em') + ' — mọi bài làm ghi dưới tên em · tự thoát sau ' + chuConLai() + ' · chat tắt', true);
+    if (laChiXem()) veDai('👁 Xem như ' + ((co && co.ten) || 'em') + ' · chỉ xem · còn ' + chuConLai(), true);
+    else veDai('🔐 Đăng nhập thay ' + ((co && co.ten) || 'em') + ' · bài làm ghi tên em · chat tắt · còn ' + chuConLai(), true);
   }
   function thoat(chu) {
     clearInterval(_hen);

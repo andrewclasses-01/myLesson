@@ -1641,3 +1641,10 @@ body.dn{min-height:100dvh}
 .bai-chu .cu-ei, .bl .chu .cu-ei{width:20px; height:20px; margin:-3px 1px}
 .bai-chu .cu-ei.to, .bl .chu .cu-ei.to{width:20px; height:20px}
 .kp-bai .so .cu-vien img{width:15px; height:15px}
+
+/* ⭐ 02/10/2026 thầy: trang TIN NHẮN không cuộn trang — khung tin nhắn cố định cao đúng màn hình, cách mép dưới 16px
+   (điện thoại 8px trên thanh đáy); màn thấp hơn thì khung co lại; muốn cuộn chỉ cuộn TRONG danh sách / khung tin. */
+body.trang-tn{height:100dvh; min-height:0; overflow:hidden}
+body.trang-tn .main.tn-main{height:calc(100dvh - var(--cao-thanh)); padding:12px 16px 16px; overflow:hidden}
+body.trang-tn .tn{height:100%; min-height:0}
+@media (max-width:760px){ body.trang-tn .main.tn-main{padding:6px 6px 8px} }

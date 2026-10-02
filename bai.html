@@ -917,6 +917,13 @@ html.co-phong,html.co-phong body{overflow:hidden}
   transition:transform .12s ease, filter .15s ease}
 .game-cover:hover .bia-ready{transform:scale(1.06); filter:brightness(1.1)}
 .game-cover:active .bia-ready{transform:scale(.96)}
+/* ⭐ thiết kế KNT 11 (02/10/2026, thầy) — bài STAGE: act EM ĐÃ XONG 100% (`A.xongAct`) ⇒ nút READY xanh lá + dấu tích
+   xanh lá cạnh tên act ở đầu thẻ. Class `.toi-xong` do `danhDauXongStage()` gắn/gỡ (vẽ trang + mỗi lần bảng làm mới). */
+.card.toi-xong .bia-ready{background:#22B35E; box-shadow:0 .5cqw 1.5cqw rgba(34,179,94,.35)}
+.card-head h2 .tick-xong{display:none}
+.card.toi-xong .card-head h2 .tick-xong{display:inline-flex; align-items:center; justify-content:center; vertical-align:-3px;
+  width:18px; height:18px; margin-left:7px; border-radius:50%; background:#22B35E; flex:none}
+.card-head h2 .tick-xong svg{width:12px; height:12px; fill:none; stroke:#fff; stroke-width:3.4; stroke-linecap:round; stroke-linejoin:round}
 .bia-mau{font-weight:800; font-size:max(12px, 2.15cqw); letter-spacing:.14cqw;
   color:var(--ink); text-transform:uppercase}
 .bia-em{font-weight:700; font-size:max(10px, 1.6cqw); letter-spacing:.2cqw; color:#7f93a5;
@@ -2440,6 +2447,7 @@ function lamMoiBang(sec, ma, nut){
       d.classList.add('den');
     });
     doLb();
+    danhDauXongStage();   // thiết kế KNT 11 — vừa nộp đủ 100% ⇒ READY xanh lá + tích ngay
     tua.classList.remove('dang-tai');
     tua.textContent = tenCu;
     nut.classList.remove('quay');
@@ -6100,11 +6108,24 @@ function veTheXongStage(k, so, ci){
     khung.classList.add('act-mo-rong-khoa');
     document.querySelectorAll('[data-chang="' + ci + '"][data-an-gon]').forEach(function(x){ x.hidden = false; });
     if (sec.parentNode) sec.parentNode.replaceChild(khung, sec);
+    danhDauXongStage();
   };
   return sec;
 }
 function emXongActStage(ma){
   return !!ma && A.xongAct(DIEM[ma] || [], TOI, CHUAN[ma]);
+}
+/* thiết kế KNT 11 — gắn/gỡ `.toi-xong` (READY xanh lá + tích xanh lá cạnh tên) cho mọi khung act của bài STAGE. */
+function danhDauXongStage(){
+  if (!LA_STAGE) return;
+  document.querySelectorAll('.card[data-ma]:not(.kh)').forEach(function(sec){
+    var xong = emXongActStage(sec.getAttribute('data-ma'));
+    sec.classList.toggle('toi-xong', xong);
+    var h2 = sec.querySelector('.card-head h2');
+    if (h2 && !h2.querySelector('.tick-xong')) {
+      h2.insertAdjacentHTML('beforeend', '<span class="tick-xong" title="Em đã hoàn thành 100%"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>');
+    }
+  });
 }
 
 /* Thẻ CHỜ của một chặng chưa tới lượt: chỉ thông tin, không bìa READY, không
@@ -6261,6 +6282,7 @@ function veCacPhanStage(hop){
     if (i > hien) { var t = veTheCho(x, dau); t.setAttribute('data-chang', i); hop.appendChild(t); dau = false; }
   });
   canhTenTheKhoaDT();
+  danhDauXongStage();
   nhipKhucCho();
 }
 

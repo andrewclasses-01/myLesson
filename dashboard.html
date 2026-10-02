@@ -2544,36 +2544,6 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .mn .sb-item .ten{font:700 13.5px/1.3 var(--font)}
 .mn .sb-item.sb-out:hover{background:var(--do-nhat)}
 @media (prefers-reduced-motion:reduce){.mn{transition:none}}
-.lb3 .lb-ten .tn-ngan{display:none}   /* máy tính: tên đầy đủ (điện thoại đổi ở @media 640 ngay dưới) */
-/* ⭐ thiết kế ĐT 4 (02/10/2026, thầy chốt) — ĐIỆN THOẠI (≤640): thanh tab lên ĐẦU, dải menu quản lý cuộn ngang (#nwbQlCot)
-   BỎ khỏi đầu trang ⇒ JS (`datMenuDt`) dời nó VÀO pop-up ☰, pop-up thành SIDEBAR PHẢI cao hết màn: menu quản lý ở trên
-   (ưu tiên), "Thầy đã đăng nhập" + "Đăng xuất" (#mnDs) xuống ĐÁY. Máy tính giữ nguyên pop-up nhỏ + cột trái. */
-@media (max-width:640px){
-  .mn{top:0!important; right:0!important; bottom:0; width:min(330px,88vw); border-radius:18px 0 0 18px; border-right:0;
-    padding:8px 8px calc(10px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; overflow-y:auto;
-    opacity:1; transform:translateX(105%); transition:transform .26s cubic-bezier(.22,.9,.3,1), box-shadow .26s;
-    box-shadow:-12px 0 40px rgba(16,40,36,.22)}
-  .mn.mo{transform:none; box-shadow:-12px 0 40px rgba(16,40,36,.22), 0 0 0 100vmax rgba(16,35,42,.38)}
-  .mn::before,.mn .mn-dau{display:none}
-  .mn .nwb-ql-cot{position:static; display:block; max-height:none; height:auto; overflow:visible; padding:4px 0 8px}
-  .mn .nwb-ql-nhom{display:none}
-  .mn .nwb-ql-vach{display:block; margin:6px 10px}
-  .mn .nwb-ql-muc{width:100%; white-space:normal; font-size:14.5px; padding:9px 10px; gap:12px}
-  .mn .nwb-ql-muc .nwb-ql-ic, .mn .nwb-ql-muc .nwb-ql-ic svg{width:28px; height:28px}
-  .mn .nwb-ql-av{width:32px; height:32px; margin:-2px 0 -2px -2px}
-  .mn #mnDs{margin-top:auto; border-top:1px solid var(--vien); padding-top:8px}
-  /* thẻ lớp: tên viết tắt (NT4 / NTK9) + chữ dạng bài và mã bài nhỏ lại để thấy hết */
-  .lb3 .lb-ten .tn-du{display:none}
-  .lb3 .lb-ten .tn-ngan{display:inline}
-  .lop-btn.lbB{padding:10px 8px 10px 14px}
-  .lbB .lb-h1{gap:6px; padding-right:4px}
-  .lbB .lb-ten{font-size:15px}
-  .lbB .lb-luc{font-size:10.5px}
-  .lb3 .lb-h3{gap:5px}
-  .lb3 .lb-dang{font-size:8px; padding:3px 4px; letter-spacing:.03em}
-  .lb3 .lb-ma{font-size:9.6px; letter-spacing:-.03em}
-  .lb3 .lb-khoa{font-size:8px; padding:3px 4px}
-}
 .sb-note{margin:10px 0 0; padding:9px 11px; border-radius:10px; background:var(--vang-nhat);
   color:#8a5b0e; font:600 11.5px/1.5 var(--font)}
 
@@ -3447,7 +3417,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 .bc-nut .san{background:#dcfce7; color:#15803d}
 .bc-chua{flex:none; font:700 11.5px var(--font); color:var(--nhat)}
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=11">
+<link rel="stylesheet" href="css/nw-thanh.css?v=10">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=18">
 </head>
@@ -3853,7 +3823,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 
 <script src="js/o-ngay.js?v=1"></script>
 <script src="config.js?v=206"></script>
-<script src="js/thay-vao.js?v=3"></script>
+<script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
 <script src="js/chung.js?v=80"></script>
 <script src="js/chat.js?v=32"></script>
@@ -4171,14 +4141,6 @@ tr.qm-hang-tam td{background:#fffbeb}
     var k = String(d || '').trim().toUpperCase();
     return k === 'WORKSHEET' ? 'WS' : k;
   }
-  // thiết kế ĐT 4 (02/10, thầy chốt) — thẻ lớp trên ĐIỆN THOẠI viết tắt "NỀN TẢNG 4" ⇒ "NT4", "NỀN TẢNG K9" ⇒ "NTK9"
-  // (CSS ≤640 đổi giữa .tn-du / .tn-ngan; máy tính vẫn tên đầy đủ).
-  function tenTheLop(ten) {
-    var du = A.chuAnToan(ten), re = /^N[ỀÊE]N\s*T[ẢA]NG\s*/i;
-    if (!re.test(String(ten))) return du;
-    var ngan = String(ten).replace(re, 'NT').replace(/\s+/g, '');
-    return '<span class="tn-du">' + du + '</span><span class="tn-ngan">' + A.chuAnToan(ngan) + '</span>';
-  }
   function theLopBtnHtml(l) {
     var mL = A.chuAnToan(l.maLop);
     var tt = trangThaiBai(l);
@@ -4196,7 +4158,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         ' title="' + A.chuAnToan(chu2 + (luc ? ' • ' + luc : '')) + ' — bấm đúp để mở kho bài">' +
       '<button class="lb-main" data-lop="' + mL + '" aria-label="Chọn ' + A.chuAnToan(l.tenGoc || l.maLop) + '"></button>' +
       (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
-      '<div class="lb-h1"><span class="lb-ten">' + tenTheLop(l.tenGoc || l.maLop) + '</span>' +
+      '<div class="lb-h1"><span class="lb-ten">' + A.chuAnToan(l.tenGoc || l.maLop) + '</span>' +
         '<span class="lb-luc"' + (kieu ? ' data-kieu="' + kieu + '" data-moc="' + x.moc + '"' : '') + '>' +
           A.chuAnToan(chuLucB(tt, kieu, luc)) + '</span>' +
       '</div>' +
@@ -11802,21 +11764,6 @@ tr.qm-hang-tam td{background:#fffbeb}
     // ---------- SIDEBAR ----------
     // ⭐ v1.218.0 — ☰ = pop-up nhỏ cạnh nút (thầy chốt), không mở cả sidebar nữa.
     $('#mnDs').appendChild($('#thayDn')); $('#mnDs').appendChild($('#dangXuat'));
-    // ⭐ thiết kế ĐT 4 (02/10, thầy chốt) — điện thoại (≤640): dải menu quản lý #nwbQlCot dời VÀO pop-up ☰ (CSS biến pop-up
-    // thành sidebar phải), máy tính trả về chỗ cũ trong lưới .nwb-ql. Dời CẢ nút ⇒ giữ nguyên tay bắt nw-thanh.js gắn sẵn.
-    (function () {
-      var mq = window.matchMedia('(max-width:640px)'), cot = $('#nwbQlCot');
-      if (!cot) return;
-      var cho = cot.parentNode, sau = cot.nextSibling;
-      function datMenuDt() {
-        if (mq.matches) { if (cot.parentNode !== $('#menuNho')) $('#menuNho').insertBefore(cot, $('#mnDs')); }
-        else if (cot.parentNode !== cho) cho.insertBefore(cot, sau);
-        menuNho(false);
-      }
-      datMenuDt();
-      if (mq.addEventListener) mq.addEventListener('change', datMenuDt); else if (mq.addListener) mq.addListener(datMenuDt);
-      cot.addEventListener('click', function (e) { if (e.target.closest('.nwb-ql-muc') && mq.matches) menuNho(false); });
-    })();
     $('#mnVer').textContent = 'Trang quản lý · web v' + (A.CFG.PHIEN_BAN || '?');
     $('#moSb').setAttribute('aria-haspopup', 'menu');
     $('#moSb').addEventListener('click', function (e) { e.stopPropagation(); menuNho(!$('#menuNho').classList.contains('mo')); });

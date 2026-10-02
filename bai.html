@@ -355,6 +355,12 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .st-khuc.dang-xem::after{content:''; position:absolute; inset:2px 12px 2px 14px;
   border:1.5px dashed rgba(255,255,255,.75); border-radius:5px; pointer-events:none}
 .st-khuc.xa.dang-xem::after,.st-khuc.cho.dang-xem::after{border-color:rgba(22,35,42,.28)}
+/* ⭐ thiết kế KNT 10 (02/10/2026, thầy chốt) — thanh chặng của TRANG BÀI STAGE (`.st-bar.co-chon`): khúc ĐANG CHỌN
+   TO LÊN (cỡ khúc IN PROGRESS cũ), bỏ khung nét đứt; khúc IN PROGRESS/OVERDUE không được chọn thu về cỡ thường nhưng
+   giữ màu + hào quang. Đổi chọn chỉ đổi class tại chỗ ⇒ `transition: height` có sẵn cho hiệu ứng to/nhỏ mượt.
+   Chỉ đeo `.co-chon` ở thanh STAGE — thanh bài tập KHÓA dùng chung `.st-khuc` không bị ảnh hưởng. */
+.st-bar.co-chon .st-khuc.dang:not(.chon), .st-bar.co-chon .st-khuc.ket:not(.chon){--h:30px; font-size:11px; letter-spacing:.045em}
+.st-bar.co-chon .st-khuc.chon{flex-shrink:0; --h:46px; font-size:14px; letter-spacing:.06em; z-index:2}
 /* ⭐⭐ v1.85.0 — HÀO QUANG NGAY TRÊN NỀN KHÚC, không phải bóng đổ ra ngoài —
    xem chú thích đầy đủ ở BẢN GỐC `lop.html`. BẢN CHÉP thứ ba (lop.html ·
    bai.html · dashboard.html), sửa một nơi phải sửa cả ba. */
@@ -440,6 +446,7 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
    `flex-shrink:0` ⇒ tràn ngang (đo 375px: 444px). Cho khúc to được co, chữ nhỏ lại. */
 @media (max-width:620px){
   .st-khuc.dang,.st-khuc.ket{flex-shrink:1; min-width:0; font-size:12px; letter-spacing:.03em}
+  .st-bar.co-chon .st-khuc.chon{flex-shrink:1; min-width:0; font-size:12px; letter-spacing:.03em}
 }
 
 /* ⭐⭐ v1.106.0 (15/09/2026, thầy duyệt mẫu `MAU THE BAI TAP KHOA HOC v4`) — THẺ
@@ -5725,7 +5732,7 @@ function tinhNhanBtKhoa(){
 // Không đặt sàn cỡ chữ (thầy chốt "co tiếp cho tới khi vừa"); sàn 3px chỉ là
 // chốt an toàn chống vòng lặp. Gọi lại khi: vẽ thẻ · font tải xong · xoay máy.
 function canhTenTheKhoaDT(){
-  if (!LA_KHOA) return;
+  if (!LA_KHOA && !LA_STAGE) return;   // thiết kế KNT 10 — thẻ xanh gọn của STAGE dùng chung
   document.querySelectorAll('.card.st-cho.kh').forEach(function(sec){
     var el = sec.querySelector('.st-cho-act');
     if (!el) return;
@@ -6022,13 +6029,13 @@ function chuKhuc(c){
 
 function veThanhChang(){
   var el = document.createElement('div');
-  el.className = 'st-bar';
+  el.className = 'st-bar co-chon';
   el.innerHTML = CHANG.map(function(c, i){
     var lop = c.tt === 'xong' ? 'xong'
             : c.tt === 'dang' ? 'dang'
             : c.tt === 'ket'  ? 'ket'
             : c.tt === 'cho'  ? 'cho' : 'xa';
-    return '<button type="button" class="st-khuc ' + lop + (i === CHANG_XEM ? ' dang-xem' : '') +
+    return '<button type="button" class="st-khuc ' + lop + (i === CHANG_XEM ? ' chon' : '') +
       '" data-i="' + i + '">' +
       (c.tt === 'xong' ? '<span class="tick">✓</span>' : '') +
       '<span class="lbl">' + chuKhuc(c) + '</span></button>';
@@ -6043,10 +6050,61 @@ function veThanhChang(){
         : 'Chặng này chưa tới lượt — làm xong chặng trước đã.');
       return;
     }
+    /* thiết kế KNT 10 — mọi chặng đã nằm sẵn trên trang ⇒ KHÔNG vẽ lại: khúc được chọn to lên (đổi class tại chỗ),
+       trang cuộn mượt tới thẻ đầu của chặng đó + nháy nhẹ các thẻ của chặng (như bấm thanh bài tập trang KHÓA). */
     CHANG_XEM = i;
-    veCacPhan();
+    el.querySelectorAll('.st-khuc').forEach(function(b){ b.classList.toggle('chon', b === k); });
+    var the = document.querySelectorAll('[data-chang="' + i + '"]:not([hidden])');
+    if (!the.length) return;
+    the[0].scrollIntoView({ behavior: 'smooth', block: the.length > 1 ? 'start' : 'center' });
+    Array.prototype.forEach.call(the, nhayTheKhoa);
   });
   return el;
+}
+
+/* ⭐ thiết kế KNT 10 (02/10/2026, thầy chốt) — THẺ XANH GỌN cho act của CHẶNG TRƯỚC mà em đã xong (y mẫu thẻ xong của
+   trang bài KHÓA, `veTheXongKhoa`): nhãn STAGE x · tên act · điểm + thời gian của em · Completed. Bấm ⇒ bung ra khung
+   act thật (READY + bảng xếp hạng) ngay tại chỗ, kèm các khối nghe/video của chặng đó (đang ẩn). Nhớ trong
+   `MO_ROI_STAGE` tới khi tải lại trang ⇒ điểm mới về / vẽ lại trang không thu thẻ lại. */
+var MO_ROI_STAGE = {};
+function veTheXongStage(k, so, ci){
+  var c = CHANG[ci] || {};
+  var sec = document.createElement('section');
+  sec.className = 'card st-cho kh xong';
+  sec.setAttribute('data-chang', ci);
+  sec.setAttribute('data-ma', k.ma);
+  var kq = ketQuaCuaToiKhoa(k.ma);
+  var tho = (kq && kq.tho) || {};
+  var diemChu = (tho.tong > 0) ? (Math.round(tho.diem) + '/' + tho.tong) : '';
+  var gioChu = (kq && kq.giay > 0) ? chuGiay(kq.giay) : '';
+  var ketQua = '';
+  if (diemChu || gioChu) {
+    ketQua = '<div class="st-ketqua">' +
+      (diemChu ? '<div class="st-kq-o">' + IC_TICK_KHOA + '<b>' + chuAnToan(diemChu) + '</b>&nbsp;câu đúng</div>' : '') +
+      (diemChu && gioChu ? '<span class="st-kq-sep"></span>' : '') +
+      (gioChu ? '<div class="st-kq-o">' + IC_GIO_KHOA + '<b>' + chuAnToan(gioChu) + '</b></div>' : '') +
+    '</div>';
+  }
+  var ten = ghepKhongLap([k.ten, k.act]).join(' • ');
+  sec.innerHTML =
+    '<div class="st-cho-vien"><div class="st-cho-clip"><div class="st-cho-hang">' +
+      '<span class="st-nhan">STAGE ' + (c.so || 1) + '</span>' +
+      '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(ten) + '</span>' + ketQua + '</div>' +
+      '<span class="st-trang xong">' + IC_TICK_KHOA + 'Completed</span>' +
+    '</div></div></div>';
+  sec.title = 'Bấm để mở lại act này';
+  sec.onclick = function(){
+    MO_ROI_STAGE[k.ma] = true;
+    var khung = veKhoi(k, so);
+    khung.setAttribute('data-chang', ci);
+    khung.classList.add('act-mo-rong-khoa');
+    document.querySelectorAll('[data-chang="' + ci + '"][data-an-gon]').forEach(function(x){ x.hidden = false; });
+    if (sec.parentNode) sec.parentNode.replaceChild(khung, sec);
+  };
+  return sec;
+}
+function emXongActStage(ma){
+  return !!ma && A.xongAct(DIEM[ma] || [], TOI, CHUAN[ma]);
 }
 
 /* Thẻ CHỜ của một chặng chưa tới lượt: chỉ thông tin, không bìa READY, không
@@ -6157,31 +6215,52 @@ function veCacPhanStage(hop){
      xếp hạng) phía TRÊN chặng đang xem, mỗi thẻ đeo băng màu tên chặng
      (`ganBangNhom`, mẫu D). Em bấm thanh chặng xem một chặng CŨ thì chỉ hiện chặng đó
      (chỉ gom chặng đứng trước CHẶNG ĐANG XEM). Số thứ tự act vẫn nối tiếp cả bài. */
-  var cuThieu = A.changCuConThieu(CHANG).filter(function(x){ return CHANG.indexOf(x) < CHANG_XEM; });
+  /* ⭐ thiết kế KNT 10 (02/10/2026, thầy chốt) — TRANG LUÔN HIỆN ĐỦ MỌI CHẶNG (như trang bài KHÓA), không còn "chỉ hiện chặng
+     đang xem": chặng TRƯỚC đã xong ⇒ act em đã xong thành THẺ XANH GỌN (`veTheXongStage`, bấm bung ra), act em chưa xong vẫn
+     khung đầy đủ · chặng cũ còn em thiếu + chặng đang chạy ⇒ khung đầy đủ như cũ (băng màu khi ≥2 nhóm) · chặng sau ⇒ thẻ
+     chờ. Mọi thẻ mang `data-chang` để thanh chặng cuộn tới. `CHANG_XEM` nay chỉ là khúc ĐANG CHỌN trên thanh (to lên). */
+  var hien = A.changHien(CHANG);
+  var cuThieu = A.changCuConThieu(CHANG).filter(function(x){ return CHANG.indexOf(x) < hien; });
   var nhom = cuThieu.map(function(x){ return CHANG.indexOf(x); });
-  if (CHANG[CHANG_XEM]) nhom.push(CHANG_XEM);
-  nhom.forEach(function(ci){
+  if (CHANG[hien]) nhom.push(hien);
+  CHANG.forEach(function(ch, ci){
+    if (ci > hien) return;
+    var day = nhom.indexOf(ci) >= 0;   // vẽ đầy đủ?
     var so = soDauChang(ci), dauNhom = true, coWs = false, soThe = 0;
     KHOI.forEach(function(k, i){
       if (cua[i] !== ci) return;
       if (k.loai === 'ws') { coWs = true; return; }   // v1.155.0 — worksheet ở thanh đầu trang
       soThe++;
-      var sec = veKhoi(k, k.loai === 'audio' ? 0 : so++);
-      /* v1.129.0 — băng màu trong đầu thẻ (mẫu D), chỉ khi trang hiện ≥2 nhóm. */
-      if (nhom.length > 1) { ganBangNhom(sec, CHANG[ci], ci === CHANG_XEM, dauNhom); dauNhom = false; }
+      var soK = k.loai === 'audio' ? 0 : so++;
+      var sec;
+      if (!day && k.loai === 'act' && emXongActStage(k.ma) && !MO_ROI_STAGE[k.ma]) {
+        sec = veTheXongStage(k, soK, ci);
+      } else {
+        sec = veKhoi(k, soK);
+        if (!day && k.loai !== 'act') {
+          /* khối nghe/video của chặng đã gọn: ẩn tới khi em bung một act của chặng đó */
+          var conGon = KHOI.some(function(k2, j){ return cua[j] === ci && k2.loai === 'act' && emXongActStage(k2.ma) && !MO_ROI_STAGE[k2.ma]; });
+          var daMo = KHOI.some(function(k2, j){ return cua[j] === ci && k2.loai === 'act' && (MO_ROI_STAGE[k2.ma] || !emXongActStage(k2.ma)); });
+          if (conGon && !daMo) { sec.hidden = true; sec.setAttribute('data-an-gon', '1'); }
+        }
+        if (day && nhom.length > 1) { ganBangNhom(sec, CHANG[ci], ci === hien, dauNhom); dauNhom = false; }
+      }
+      sec.setAttribute('data-chang', ci);
       hop.appendChild(sec);
     });
     /* v1.155.0 — chặng CHỈ có worksheet (ws mang hạn riêng) ⇒ không còn thẻ nào: chỉ đường lên thanh. */
     if (coWs && !soThe) {
       var nhac = wsTheChiDuong('Chặng này là bài <b>WORKSHEET</b> — bấm khối WORKSHEET ở đầu trang để tải bài và nộp bài làm.');
-      if (nhom.length > 1) ganBangNhom(nhac, CHANG[ci], ci === CHANG_XEM, true);
+      if (day && nhom.length > 1) ganBangNhom(nhac, CHANG[ci], ci === hien, true);
+      nhac.setAttribute('data-chang', ci);
       hop.appendChild(nhac);
     }
   });
   var dau = true;
   CHANG.forEach(function(x, i){
-    if (i > CHANG_XEM) { hop.appendChild(veTheCho(x, dau)); dau = false; }
+    if (i > hien) { var t = veTheCho(x, dau); t.setAttribute('data-chang', i); hop.appendChild(t); dau = false; }
   });
+  canhTenTheKhoaDT();
   nhipKhucCho();
 }
 
@@ -6338,8 +6417,11 @@ function veDauTrang(){
 function veOHan(){
   var chu = A.chuHan(BAI), moc = A.mocHan(BAI), khongHan = false;
   HAN_CHO_MO = false;
-  if (LA_STAGE && CHANG && CHANG[CHANG_XEM]) {
-    var c = CHANG[CHANG_XEM];
+  /* thiết kế KNT 10 — mọi chặng đã hiện cùng lúc ⇒ ô hạn nói về CHẶNG ĐANG CHẠY (`changHien`), không theo khúc em chọn
+     (chọn chặng cũ đã xong mà ô hạn nhảy sang "HẾT HẠN" là nói sai). */
+  var iHan = LA_STAGE && CHANG && CHANG.length ? A.changHien(CHANG) : -1;
+  if (LA_STAGE && CHANG && CHANG[iHan]) {
+    var c = CHANG[iHan];
     if (c && c.so && c.moc != null) {
       /* ⭐ v1.118.1 (thầy chốt sau test thật) — "STAGE 1: 00:00 • 19/9" thay
          "Hạn chặng 1: …": chữ cũ 25 ký tự tràn ô 86–92px trên điện thoại. Cờ

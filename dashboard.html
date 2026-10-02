@@ -900,24 +900,24 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
   color:#fff; font:800 calc(var(--co,32px) * .36)/1 var(--font); flex:none; margin:0!important}
 .hd-av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .hd-av:has(img){color:transparent}
-.hd-hl{display:grid; grid-template-columns:88px minmax(0,1fr) auto; gap:8px; align-items:center; padding:2px 0; min-height:26px; border-bottom:1px solid #EEF2F1}   /* v1.213.0 — gọn: thấy hết các lớp */
+.hd-hl{display:grid; grid-template-columns:108px minmax(0,1fr) auto; gap:8px; align-items:center; padding:2px 0; min-height:30px; border-bottom:1px solid #EEF2F1}   /* v1.213.0 — gọn: thấy hết các lớp · v1.218.0 thầy: chữ/icon to hơn, hàng 30px = vừa đủ 10 lớp ở màn 1080 */
 .hd-hl:last-child{border-bottom:0}
 .hd-hl.chon .hd-lop{color:var(--xanh)}
 /* ⭐ v1.212.0 — bấm 1 lần = chọn em (sáng ở cả 2 nửa); bấm đúp = chi tiết bài gần nhất */
 .hd-o, .hd-dong{cursor:pointer}
 .hd-dong:hover{background:rgba(14,124,110,.04)}
 .hd-dong.hd-chon{background:rgba(14,124,110,.09); border-radius:10px; border-bottom-color:transparent; margin:0 -8px; padding:8px}
-.hd-lop{border:0; background:none; padding:0; text-align:left; font:800 12px/1.2 var(--font); color:var(--chu); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.hd-lop{border:0; background:none; padding:0; text-align:left; font:800 14px/1.2 var(--font); color:var(--chu); cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .hd-lop:hover{color:var(--xanh); text-decoration:underline}
 .hd-chong{display:flex; align-items:center; min-width:0; overflow:hidden}
 .hd-o{position:relative; margin-left:-5px; border-radius:50%; box-shadow:0 0 0 1.5px #FAFCFC; flex:none; display:inline-flex}
 .hd-o:first-child{margin-left:0}
 .hd-o:not(.on) .hd-av{opacity:.5; filter:saturate(.55)}
-.hd-o i{position:absolute; right:-1px; bottom:-1px; width:8px; height:8px; border-radius:50%; background:#22C55E; border:2px solid #FAFCFC}
-.hd-them{margin-left:4px; font:700 10.5px var(--font); color:var(--mo)}
-.hd-so{font:700 11px var(--font); color:var(--mo); white-space:nowrap}
+.hd-o i{position:absolute; right:-1px; bottom:-1px; width:9px; height:9px; border-radius:50%; background:#22C55E; border:2px solid #FAFCFC}
+.hd-them{margin-left:4px; font:700 12px var(--font); color:var(--mo)}
+.hd-so{font:700 12.5px var(--font); color:var(--mo); white-space:nowrap}
 .hd-so em{font-style:normal; color:#16A34A}
-.hd-mo{color:var(--nhat); font:500 11.5px var(--font)}
+.hd-mo{color:var(--nhat); font:500 13px var(--font)}
 .hd-hl.im .hd-lop{color:var(--nhat)}
 .hd-dong{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; padding:8px 0; border-bottom:1px dashed #E3EBE9}
 .hd-dong:last-child{border-bottom:0}
@@ -6490,7 +6490,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       var d = theoLop[l.maLop] || [], on = d.filter(function (x) { return x.on; }).length, TD = 10;
       var avs = d.slice(0, TD).map(function (x) {
         var noi = x.on ? (x.trang === 'bai' ? 'đang làm ' + x.bai : x.trang === 'sp' ? 'đang ở trang Speaking' : 'đang ở trang lớp') : hdChuTruoc(x.luc);
-        return '<span class="hd-o' + (x.on ? ' on' : '') + '" data-hd-em="' + A.chuAnToan(l.maLop + '|' + x.ten) + '" title="' + A.chuAnToan(x.ten + ' · ' + noi) + '">' + hdAv(x.ten, l.maLop, 22) + (x.on ? '<i></i>' : '') + '</span>';
+        return '<span class="hd-o' + (x.on ? ' on' : '') + '" data-hd-em="' + A.chuAnToan(l.maLop + '|' + x.ten) + '" title="' + A.chuAnToan(x.ten + ' · ' + noi) + '">' + hdAv(x.ten, l.maLop, 26) + (x.on ? '<i></i>' : '') + '</span>';
       }).join('') + (d.length > TD ? '<span class="hd-them">+' + (d.length - TD) + '</span>' : '');
       return '<div class="hd-hl' + (d.length ? '' : ' im') + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
         '<button type="button" class="hd-lop" data-hd-lop="' + A.chuAnToan(l.maLop) + '" title="Chọn lớp ' + A.chuAnToan(l.tenGoc || l.maLop) + '">' + A.chuAnToan(l.tenGoc || l.maLop) + '</button>' +

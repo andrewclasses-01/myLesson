@@ -17,6 +17,8 @@
   'use strict';
   var NW = window.NW, CFG = NW.CFG, $ = NW.$, $$ = NW.$$, IC = NW.IC, an = NW.chuAnToan;
   var Chat = NW.Chat = {};
+  // ⭐ 02/10/2026 (web v1.225.0) cùng khuôn CO_LINK của chat lớp (js/chat.js) + luật kho nwCoLink
+  var CO_LINK = /(https?:|:\/\/|www\.|discord|t\.me\/|\.(com|vn|net|org|io|me|app|gg|ly|xyz|top|site|online|tv|cc|info|edu)([\/?#:]|\s|$))/;
 
   Chat.maRieng = function (a, b) { return a < b ? a + '__' + b : b + '__' + a; };
 
@@ -84,6 +86,8 @@
   Chat.guiTin = async function (phongId, tin) {
     var toi = NW.toi;
     if (tin.chu) { var tu = await NW.kiemTuCam(tin.chu); if (tu) { NW.toast('Tin có từ không phù hợp ("' + tu + '").', true); return null; } }
+    // ⭐ 02/10/2026 (web v1.225.0) học sinh KHÔNG gửi link trong Tin nhắn (y chat lớp; luật kho cũng chặn — báo trước cho dễ hiểu)
+    if (!toi.laThay && tin.chu && CO_LINK.test(String(tin.chu).toLowerCase())) { NW.toast('Tin nhắn không được chứa đường link.', true); return null; }
     var t = { uid: toi.uid, ten: toi.ten, anh: toi.anh || '', chu: String(tin.chu || '').slice(0, CFG.TOI_DA_CHU_TIN), hinh: tin.hinh || '', luc: Date.now() };
     // ⭐ web v1.198.0 — khuôn chat Zalo: trước đây `traLoi` bị RƠI ở đây (tin trả lời mất phần trích); nay giữ + thêm sticker
     if (tin.traLoi) t.traLoi = tin.traLoi;
@@ -115,7 +119,7 @@
     return {
       id: t.id, uid: t.uid, ma: t.uid, ten: t.ten || n.ten || '?', anh: t.anh || n.anh || '', vaiTro: laGv ? 'gv' : 'hs',
       chu: chu, hinh: t.hinh || '', luc: t.luc || 0, cx: t.cx || {}, sticker: t.sticker || '', thuHoi: !!t.thuHoi,
-      q: t.traLoi && t.traLoi.id ? { id: t.traLoi.id, ten: t.traLoi.uid === NW.toi.uid ? 'Em' : (t.traLoi.ten || ''), chu: t.traLoi.chu || (t.traLoi.hinh ? '📷 Ảnh' : '') } : null
+      q: t.traLoi && t.traLoi.id ? { id: t.traLoi.id, ten: t.traLoi.uid === NW.toi.uid ? 'Em' : (t.traLoi.ten || ''), chu: String(t.traLoi.chu || '').slice(0, 120) || (t.traLoi.hinh ? '📷 Ảnh' : '') } : null
     };
   };
   // "Đã xem": mỗi người khác hiện avatar nhỏ dưới tin CUỐI mà họ đã đọc tới (docLuc >= luc). Trả {idTin: [uid]}.
@@ -147,7 +151,8 @@
       gui: function (g) {
         var tin = { chu: g.chu || '', hinh: g.hinh || '' };
         if (g.sticker) tin.sticker = g.sticker;
-        if (g.q && g.q.id) { var goc = tinGoc(g.q.id) || {}; tin.traLoi = { id: g.q.id, uid: goc.uid || '', ten: goc.ten || g.q.ten || '', chu: String(g.q.chu || '').slice(0, 120), hinh: goc.hinh || '' }; }
+        // ⭐ 02/10/2026 (web v1.225.0, chống trích dẫn giả) luật kho đối chiếu trích dẫn với TIN GỐC THẬT (uid + tên + chữ + ảnh) ⇒ gửi ĐỦ chữ tin gốc
+        if (g.q && g.q.id) { var goc = tinGoc(g.q.id) || {}; tin.traLoi = { id: g.q.id, uid: goc.uid || '', ten: goc.ten || g.q.ten || '', chu: goc.uid ? String(goc.chu || '') : String(g.q.chu || '').slice(0, 120), hinh: goc.hinh || '' }; }
         if (!NW.laBanThu() && !(c.phong() || {}).id) return Promise.reject('Đang mở phòng chat, em thử lại nhé.');
         return Chat.guiTin(c.phong().id, tin).then(function (t) {
           if (!t) throw '__im';                                   // từ cấm / lỗi đã báo ⇒ giữ nguyên chữ trong ô nhập

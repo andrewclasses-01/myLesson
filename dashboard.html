@@ -2864,15 +2864,26 @@ button.mk-em:hover{border-color:currentColor}
    chỗ mới (cùng tên `lop-chon`), cả khu dưới (`.hai-cot`: bài còn hạn · đang hoạt động · bài tập gần đây · chat) trượt THEO HƯỚNG
    đi giữa 2 nút (--vx/--vy đặt trên <html>). ⛔ `::view-transition{pointer-events:none}` — không thì lớp ảnh chụp nuốt cú bấm thứ 2
    ⇒ hỏng "bấm đúp thẻ lớp = kho nhỏ". Trình duyệt không hỗ trợ / giảm chuyển động ⇒ đổi lớp ngay như cũ. */
+/* ⭐ thiết kế KNT 9 (02/10/2026, thầy) — CHỈ MẢNG MÀU CHỌN trượt; chữ các nút đứng yên; khu dưới chỉ FADE (bỏ trượt).
+   Tên chuyển cảnh (đặt bằng JS trong `chonLopMuot`): lop-chon = thẻ lớp chọn (chữ tách riêng ⇒ ảnh chụp chỉ còn nền xanh) trượt
+   cũ→mới · lop-cu-1/2 = chữ trắng nút cũ mờ đi tại chỗ · lop-moi-1/2 = chữ trắng nút mới hiện ra lúc mảng màu sắp tới ·
+   lop-dich = nút mới ở dạng CHƯA chọn, giữ nguyên tới khi mảng màu phủ (khỏi lộ khoảng trống) · lop-roi = nút cũ ở dạng
+   chưa chọn, hiện ngay dưới mảng màu đang rời đi. Lớp chồng: dich/roi 1 < lop-chon 2 < chữ 3. */
 .hai-cot{view-transition-name:noi-dung-lop}
 ::view-transition{pointer-events:none}
-::view-transition-old(root), ::view-transition-new(root){animation-duration:.2s}
+::view-transition-old(root), ::view-transition-new(root){animation-duration:.25s}
 ::view-transition-group(lop-chon){animation-duration:.38s; animation-timing-function:cubic-bezier(.22,.9,.3,1); z-index:2}
-::view-transition-group(noi-dung-lop){animation-duration:.38s; animation-timing-function:cubic-bezier(.22,.9,.3,1)}
-::view-transition-old(noi-dung-lop){animation:vt-lop-ra .2s ease-in both}
-::view-transition-new(noi-dung-lop){animation:vt-lop-vao .38s cubic-bezier(.22,.9,.3,1) both}
-@keyframes vt-lop-ra{to{opacity:0; transform:translate(calc(var(--vx,0px) * -1), calc(var(--vy,0px) * -1))}}
-@keyframes vt-lop-vao{from{opacity:0; transform:translate(var(--vx,0px), var(--vy,0px))}}
+::view-transition-group(lop-dich), ::view-transition-group(lop-roi){animation:none; z-index:1}
+::view-transition-old(lop-dich), ::view-transition-new(lop-roi){animation:none; opacity:1}
+::view-transition-group(lop-cu-1), ::view-transition-group(lop-cu-2),
+::view-transition-group(lop-moi-1), ::view-transition-group(lop-moi-2){animation:none; z-index:3}
+::view-transition-old(lop-cu-1), ::view-transition-old(lop-cu-2){animation:vt-mo-ra .14s ease-in both}
+::view-transition-new(lop-moi-1), ::view-transition-new(lop-moi-2){animation:vt-mo-vao .2s ease-out .2s both}
+::view-transition-group(noi-dung-lop){animation:none}
+::view-transition-old(noi-dung-lop){animation:vt-mo-ra .16s ease-in both}
+::view-transition-new(noi-dung-lop){animation:vt-mo-vao .3s ease-out .08s both}
+@keyframes vt-mo-ra{to{opacity:0}}
+@keyframes vt-mo-vao{from{opacity:0}}
 /* ⭐ v1.218.0 (02/10/2026, thầy chốt) — CỘT CUỐI = các nút KHÓA NỀN TẢNG, ngăn với lớp thường bằng MỘT VẠCH MẢNH.
    Lưới ngoài: 4 cột lớp thường · 1 cột vạch 1px · 1 cột khóa (mọi cột thẻ cùng 1fr ⇒ thẻ khóa = đúng cỡ thẻ lớp).
    `.lop-grid` + `.lop-vach` dùng subgrid cột; vạch là `::before` của `.lop-vach` nằm đúng cột 1px, mờ dần hai đầu.
@@ -10735,6 +10746,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     BAM_LOP = { ma: maLop, t: dup ? 0 : bay };
     if (dup) return void moKhoNho(maLop);
     if (KHO_NHO_LOP && KHO_NHO_LOP !== maLop) dongKhoNho();
+    // thiết kế KNT 9 — bấm lại lớp ĐANG chọn (cú 1 của bấm đúp mở kho) thì KHÔNG vẽ lại gì: trước đây chonLop chạy lại ⇒
+    // chat về "Đang mở phòng…", ĐANG HOẠT ĐỘNG + các thẻ vẽ lại ⇒ cả trang nháy một phát.
+    if (maLop === LOP_CHON) return;
     chonLopMuot(maLop);
   }
   // ⭐ v1.219.0 — đổi lớp có hiệu ứng (CSS ở khối "ĐỔI LỚP MƯỢT"). Hướng = hướng đi từ nút cũ tới nút mới (trục đi xa hơn thắng):
@@ -10749,32 +10763,36 @@ tr.qm-hang-tam td{background:#fffbeb}
     var r = n.getBoundingClientRect();
     if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) return;
     e.preventDefault(); e.stopPropagation();
-    try { VT_LOP.vt.skipTransition(); } catch (x) {}
-    VT_LOP.vt = null;
+    // thiết kế KNT 9 — KHÔNG skipTransition nữa: dừng ngang làm cả trang giật một nhịp (thầy thấy "nháy"). Kho nhỏ hiện
+    // trong ảnh sống của trạng thái mới, tự mờ vào cùng hiệu ứng.
     bamTheLop(VT_LOP.ma);
   }, true);
+  // Đặt/xoá tên chuyển cảnh cho thẻ lớp + 2 dòng chữ của nó (xem khối CSS "thiết kế KNT 9").
+  function tenVtThe(the, ten, tenChu) {
+    if (!the) return;
+    the.style.viewTransitionName = ten || '';
+    var h1 = the.querySelector('.lb-h1'), h3 = the.querySelector('.lb-h3');
+    if (h1) h1.style.viewTransitionName = tenChu ? tenChu + '-1' : '';
+    if (h3) h3.style.viewTransitionName = tenChu ? tenChu + '-2' : '';
+  }
   function chonLopMuot(maLop) {
     var cu = theLopDom(LOP_CHON), moi = theLopDom(maLop);
     var giam = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (!document.startViewTransition || giam || !cu || !moi || cu === moi) return void chonLop(maLop);
-    var a = cu.getBoundingClientRect(), b = moi.getBoundingClientRect();
-    var dx = b.left - a.left, dy = b.top - a.top, goc = document.documentElement, D = 56;
-    var ngang = Math.abs(dx) >= Math.abs(dy);
-    goc.style.setProperty('--vx', ngang ? (dx > 0 ? D : -D) + 'px' : '0px');
-    goc.style.setProperty('--vy', ngang ? '0px' : (dy > 0 ? D : -D) + 'px');
-    cu.style.viewTransitionName = 'lop-chon';
+    var maCu = LOP_CHON;
+    tenVtThe(cu, 'lop-chon', 'lop-cu');
+    tenVtThe(moi, 'lop-dich', '');
     var vt = VT_LOP.vt = document.startViewTransition(function () {
-      cu.style.viewTransitionName = '';
-      chonLop(maLop);
-      var n = theLopDom(maLop);
-      if (n) n.style.viewTransitionName = 'lop-chon';
+      tenVtThe(cu, '', ''); tenVtThe(moi, '', '');
+      chonLop(maLop);                         // vẽ lại lưới ⇒ thẻ là phần tử MỚI, tra lại
+      tenVtThe(theLopDom(maLop), 'lop-chon', 'lop-moi');
+      tenVtThe(theLopDom(maCu), 'lop-roi', '');
     });
     VT_LOP.ma = maLop;
     vt.finished['finally'](function () {
       if (VT_LOP.vt === vt) VT_LOP.vt = null;
-      var n = theLopDom(maLop);
-      if (n) n.style.viewTransitionName = '';
-      if (cu) cu.style.viewTransitionName = '';
+      tenVtThe(theLopDom(maLop), '', ''); tenVtThe(theLopDom(maCu), '', '');
+      tenVtThe(cu, '', ''); tenVtThe(moi, '', '');
     });
   }
   document.addEventListener('click', function (e) {

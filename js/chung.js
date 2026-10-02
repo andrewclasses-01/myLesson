@@ -65,6 +65,69 @@
   try { window.addEventListener('online', function () { doLechDongHo(); }); } catch (e) {}
   window.gioChuan = gioNay;   // cho file rời (chat.js, nw-phien.js, nw-thanh.js…) không đi qua AWC
 
+  // ---------- ⭐⭐ v1.221.5 (02/10/2026) — BỘ NHỚ TRÌNH DUYỆT CÓ TRẦN ----------
+  // Ca thật: iPhone thầy vào dashboard, gõ ĐÚNG mã 6 số vẫn báo "Không đăng nhập được (22)" — 22 = QuotaExceededError.
+  // localStorage của trang (~5 MB trên iPhone) ĐẦY vì bảng điểm `awc_diem4_<bài>` đệm MỌI bài từng mở, không bao giờ
+  // xoá (đo máy thầy: 99 bài = 4,4 MB + ảnh lớp 1 MB). Firebase Auth cất phiên vào CHÍNH localStorage
+  // (browserLocalPersistence) ⇒ hết chỗ là không đăng nhập được, cả thầy lẫn học sinh.
+  // ⇒ (1) mở trang: xoá khoá đệm ĐỜI CŨ + giữ bảng điểm dưới TRẦN (bỏ bài đọc lâu nhất trước); ghi thêm cũng giữ trần.
+  //    (2) thử ghi một gói 256 KB — không được ⇒ dọn MẠNH (bỏ hết bảng điểm + ảnh lớp + gói luyện).
+  // ⛔ CHỈ đụng KHOÁ ĐỆM (tải lại được từ mạng) — không bao giờ xoá khoá đăng nhập / tuỳ chọn / đã xem tin.
+  var DEM_CU = ['awc_diem2_', 'awc_diem3_', 'awc_chuan_', 'awc_av1:'];
+  var DEM_DIEM = 'awc_diem4_';                       // ⛔ phải khớp KHOA_DIEM2 bên dưới
+  var DEM_MANH = ['awc_diem4_', 'awc_av2:', 'awLuyen1:'];
+  var TRAN_DIEM = 1200000;                           // tính bằng KÝ TỰ (máy cất 2 byte/ký tự ⇒ ~2,4 MB)
+  var DEM_TONG = 0;                                   // tổng ký tự bảng điểm đang cất (đếm lúc mở trang, cộng khi ghi)
+  function cacKhoaDem(dau) {
+    var ra = [];
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!k) continue;
+        for (var j = 0; j < dau.length; j++) if (k.indexOf(dau[j]) === 0) { ra.push(k); break; }
+      }
+    } catch (e) {}
+    return ra;
+  }
+  // Giữ bảng điểm ≤ `tran` ký tự: xếp theo `luc` (lần đọc kho), bỏ bài cũ nhất trước. `giu` = khoá vừa ghi, giữ lại.
+  function catDiem(tran, giu) {
+    var ds = cacKhoaDem([DEM_DIEM]).map(function (k) {
+      var s = '';
+      try { s = localStorage.getItem(k) || ''; } catch (e) {}
+      var m = /"luc":(\d+)/.exec(s.slice(0, 40));     // ghiNhoDiem viết `luc` ĐẦU TIÊN ⇒ khỏi parse cả gói
+      return { k: k, n: k.length + s.length, luc: m ? +m[1] : 0 };
+    });
+    var tong = ds.reduce(function (a, o) { return a + o.n; }, 0);
+    ds.sort(function (a, b) { return a.luc - b.luc; });
+    for (var i = 0; i < ds.length && tong > tran; i++) {
+      if (ds[i].k === giu) continue;
+      try { localStorage.removeItem(ds[i].k); tong -= ds[i].n; } catch (e) {}
+    }
+    DEM_TONG = tong;
+  }
+  // manh=true: bỏ hết đệm lớn. Trả true nếu sau khi dọn còn ghi được gói thử.
+  function donBoNho(manh) {
+    try {
+      cacKhoaDem(DEM_CU).forEach(function (k) { localStorage.removeItem(k); });
+      if (manh) { cacKhoaDem(DEM_MANH).forEach(function (k) { localStorage.removeItem(k); }); DEM_TONG = 0; }
+      else catDiem(TRAN_DIEM);
+    } catch (e) {}
+    var thu = 'awc_thu_cho';
+    try {
+      localStorage.setItem(thu, new Array(131073).join('x'));   // 131072 ký tự ≈ 256 KB
+      localStorage.removeItem(thu);
+      return true;
+    } catch (e) {
+      try { localStorage.removeItem(thu); } catch (e2) {}
+      return manh ? false : donBoNho(true);
+    }
+  }
+  donBoNho(false);
+  window.donBoNho = donBoNho;   // cho thay.js / nw-phien.js: gặp lỗi hết chỗ thì dọn mạnh rồi bảo bấm lại
+  window.laLoiHetCho = function (e) {
+    return !!e && (e.code === 22 || e.code === 1014 || /quota/i.test(String(e.name || '') + ' ' + String(e.message || '')));
+  };
+
   // ---------- tiện ích chữ ----------
 
   function chuAnToan(s) {
@@ -1148,9 +1211,18 @@
     } catch (e) { return null; }
   }
   function ghiNhoDiem(ma, ds, soNop) {
+    var k = KHOA_DIEM2 + ma, s;
+    try { s = JSON.stringify({ luc: Date.now(), soNop: soNop, ds: ds }); } catch (e) { return; }
+    if (k.length + s.length > TRAN_DIEM / 3) { try { localStorage.removeItem(k); } catch (e) {} return; }   // một bài quá to: chỉ giữ RAM
+    // v1.221.5 — giữ trần (xem donBoNho ở đầu file): vượt trần ⇒ bỏ bài cũ nhất; hết chỗ ⇒ cắt mạnh rồi thử lại MỘT lần.
+    DEM_TONG += k.length + s.length;
     try {
-      localStorage.setItem(KHOA_DIEM2 + ma, JSON.stringify({ luc: Date.now(), soNop: soNop, ds: ds }));
-    } catch (e) {}
+      localStorage.setItem(k, s);
+      if (DEM_TONG > TRAN_DIEM) catDiem(TRAN_DIEM * 0.8, k);
+    } catch (e) {
+      catDiem(TRAN_DIEM * 0.4);
+      try { localStorage.setItem(k, s); } catch (e2) {}
+    }
   }
   function xoaNhoDiem(ma) {
     try { localStorage.removeItem(KHOA_DIEM2 + ma); sessionStorage.removeItem('awc_diem_' + ma); } catch (e) {}

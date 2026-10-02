@@ -177,6 +177,11 @@
 
   function chuLoiQt(e) {
     var c = (e && (e.code || e.message)) || '';
+    // v1.221.5 — "(22)" trên iPhone = bộ nhớ trang đầy, Firebase không cất được phiên ⇒ dọn đệm (chung.js) rồi bảo làm lại.
+    if (window.laLoiHetCho && window.laLoiHetCho(e)) {
+      if (window.donBoNho) window.donBoNho(true);
+      return 'Bộ nhớ trình duyệt bị đầy — đã dọn xong. Thầy đăng nhập lại nhé.';
+    }
     if (/invalid-credential|wrong-password|user-not-found|invalid-email|invalid-login/.test(c)) return 'Sai ID hoặc mật khẩu.';
     if (/too-many-requests/.test(c)) return 'Sai quá nhiều lần — đợi vài phút rồi thử lại.';
     if (/user-disabled/.test(c)) return 'Tài khoản đang bị khoá.';

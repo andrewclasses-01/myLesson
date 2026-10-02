@@ -3812,11 +3812,11 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="config.js?v=206"></script>
 <script src="js/thay-vao.js?v=2"></script>
 <script src="js/app-check.js?v=3"></script>
-<script src="js/chung.js?v=79"></script>
+<script src="js/chung.js?v=80"></script>
 <script src="js/chat.js?v=32"></script>
 <script src="js/chat-ui.js?v=19"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
-<script src="js/thay.js?v=4"></script>
+<script src="js/thay.js?v=5"></script>
 <script>
 (function () {
   'use strict';
@@ -11928,6 +11928,13 @@ tr.qm-hang-tam td{background:#fffbeb}
       QT_MA.xacNhan(ma).then(function () { nut.disabled = false; })['catch'](function (e) {
         nut.disabled = false; $('#qtMa').value = '';
         if (/chua-cap-quyen/.test((e && e.message) || '')) { qtBuoc('b1'); qtLoi(e); return; }
+        // v1.221.5 — bộ nhớ đầy (iPhone "(22)"): mã 6 số đã dùng, không thử lại được ⇒ về bước 1 (chuLoiQt dọn đệm).
+        if (window.laLoiHetCho && window.laLoiHetCho(e)) {
+          var cau = AWThay.chuLoiQt(e);
+          QT_MA = null; QT_BUOC = 'dang'; $('#qtMk').value = '';
+          AWThay.thoat()['catch'](function () {}).then(function () { qtBuoc('b1'); qtLoi(cau); });
+          return;
+        }
         QT_BUOC = 'b2'; $('#qtMa').focus(); qtLoi(e);
       });
     };

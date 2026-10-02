@@ -213,6 +213,11 @@
   // Lỗi Firebase → câu dễ hiểu cho học sinh.
   function chuLoi(e) {
     var c = (e && e.code) || '';
+    // v1.221.5 — bộ nhớ trang đầy (iPhone báo "22") ⇒ Firebase không cất được phiên: dọn đệm (chung.js) rồi bảo bấm lại.
+    if (window.laLoiHetCho && window.laLoiHetCho(e)) {
+      if (window.donBoNho) window.donBoNho(true);
+      return 'Bộ nhớ trình duyệt bị đầy — đã dọn xong. Em bấm đăng nhập lại nhé.';
+    }
     if (c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/user-not-found' || c === 'auth/invalid-email' || c === 'auth/invalid-login-credentials')
       return 'ID hoặc mật khẩu chưa đúng.';
     if (c === 'auth/too-many-requests') return 'Em nhập sai nhiều lần quá. Đợi vài phút rồi thử lại nhé.';

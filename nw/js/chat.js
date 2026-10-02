@@ -330,16 +330,20 @@
           '<span class="tt"><span class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + (tatTB(p) ? '<span class="tat" title="Đã tắt thông báo">' + IC.chuongTat + '</span>' : '') + '</span>' +
           '<span class="cuoi">' + cuoiHtml + '</span></span>' +
           (chua ? '<span class="cham"></span>' : '') +
-          (p._cho ? '' : '<button type="button" class="menu" data-menu aria-label="Tuỳ chọn" title="Tuỳ chọn">' + IC.baCham + '</button>') + '</div>';
+          (p._cho || p._lop ? '' : '<button type="button" class="menu" data-menu aria-label="Tuỳ chọn" title="Tuỳ chọn">' + IC.baCham + '</button>') + '</div>';
       }).join('') + ghiChu;
       $$('.tn-muc', khuDs).forEach(function (row) {
         var id = row.getAttribute('data-id'), giu = null, daGiu = false;
         row.onclick = function (e) { if (e.target.closest('[data-menu]')) return; if (daGiu) { daGiu = false; return; } moPhong(id); };
         row.onkeydown = function (e) { if (e.key === 'Enter') moPhong(id); };
         if (_phongCho[id]) { row.onclick = function () { moCho(_phongCho[id]); }; row.onkeydown = function (e) { if (e.key === 'Enter') moCho(_phongCho[id]); }; return; }
-        $('[data-menu]', row).onclick = function (e) { e.stopPropagation(); menuCuoc(this, id); };
+        if ($('[data-menu]', row)) $('[data-menu]', row).onclick = function (e) { e.stopPropagation(); menuCuoc(this, id); };
         // điện thoại: GIỮ 450ms = mở menu
-        row.addEventListener('pointerdown', function (e) { if (e.target.closest('button')) return; daGiu = false; giu = setTimeout(function () { daGiu = true; menuCuoc($('[data-menu]', row), id); }, 450); });
+        // v1.225.0 — vuốt cuộn danh sách KHÔNG được mở menu: nhích ngón > 8px / trình duyệt nhận cuộn (pointercancel) ⇒ huỷ đếm giữ
+        var diemGiu = null;
+        row.addEventListener('pointerdown', function (e) { if (e.target.closest('button') || (timPhong(id) || {})._lop) return; daGiu = false; diemGiu = { x: e.clientX, y: e.clientY }; clearTimeout(giu); giu = setTimeout(function () { daGiu = true; menuCuoc($('[data-menu]', row), id); }, 450); });
+        row.addEventListener('pointermove', function (e) { if (diemGiu && Math.abs(e.clientX - diemGiu.x) + Math.abs(e.clientY - diemGiu.y) > 8) clearTimeout(giu); });
+        row.addEventListener('pointercancel', function () { clearTimeout(giu); });
         row.addEventListener('pointerup', function () { clearTimeout(giu); });
         row.addEventListener('pointerleave', function () { clearTimeout(giu); });
         row.addEventListener('contextmenu', function (e) { e.preventDefault(); });
@@ -353,11 +357,11 @@
     // ---------- v16: menu từng cuộc chat (⋯ máy tính / giữ điện thoại) ----------
     function menuCuoc(nut, id) {
       var p = timPhong(id); if (!p) return;
-      if (p._lop) { NW.menuNho(nut, [{ ic: IC.nhom, chu: 'Xem thành viên', onclick: function () { xemThanhVien(p); } }]); return; }
+      if (p._lop) return;   // 02/10 thầy chốt: BỎ "Xem thành viên" (không cho xem danh sách lớp) ⇒ nhóm lớp không còn menu
       var chua = chuaDoc(p), tat = tatTB(p), items = [];
       items.push({ ic: chua ? IC.daDoc : IC.chuaDoc, chu: chua ? 'Đánh dấu đã đọc' : 'Đánh dấu chưa đọc', onclick: function () { danhDauChuaDoc(p, !chua); } });
       items.push({ ic: tat ? IC.chuongBat : IC.chuongTat, chu: tat ? 'Bật thông báo' : 'Tắt thông báo', onclick: function () { datTat(p, !tat); } });
-      if (p.loai === 'nhom') items.push({ ic: IC.nhom, chu: 'Xem thành viên', onclick: function () { xemThanhVien(p); } });
+      if (p.loai === 'nhom') { /* 02/10 thầy chốt: bỏ "Xem thành viên" */ }
       else if (CHO_RIENG && CO_CN) items.push({ ic: IC.caNhan, chu: 'Xem trang cá nhân', onclick: function () { NW.di('canhan.html?uid=' + nguoiKia(p).uid); } });
       if (p.loai !== 'nhom' && CHO_RIENG) items.push({ ic: IC.xoa, chu: 'Xoá đoạn chat', nguy: true, onclick: function () { xoaCuoc(p); } });
       items.push({ ic: IC.baoCao, chu: 'Báo cáo', onclick: function () { baoCaoCuoc(p); } });
@@ -471,7 +475,7 @@
       khuInfo.hidden = false; hop.classList.add('mo-info');
       khuInfo.innerHTML = '<div class="tn-info-dau"><button class="nut-tron" data-dong aria-label="Đóng">' + IC.dong + '</button></div>' +
         '<div class="tn-info-ai">' + avPhong(p, 'to') + '<div class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : k ? tichNeuThay(k) : '') + '</div><div class="phu">' + an(phuPhong(p)) + '</div>' +
-          (k ? (CHO_RIENG && CO_CN ? '<a class="btn soft nho" href="canhan.html?uid=' + an(k.uid) + '">' + IC.caNhan + 'Trang cá nhân</a>' : '') : '<button class="btn soft nho" type="button" data-tv>' + IC.nhom + 'Thành viên (' + (p.thanhVien || []).length + ')</button>') + '</div>' +
+          (k ? (CHO_RIENG && CO_CN ? '<a class="btn soft nho" href="canhan.html?uid=' + an(k.uid) + '">' + IC.caNhan + 'Trang cá nhân</a>' : '') : '') + '</div>' +   /* 02/10 thầy chốt: bỏ nút "Thành viên (n)" */
         '<div class="tn-info-muc"><h4>Ảnh đã gửi</h4>' + (anhDs.length ? '<div class="tn-info-anh">' + anhDs.slice(0, 12).map(function (u) { return '<button type="button" data-anh="' + an(u) + '"><img src="' + an(u) + '" alt="" loading="lazy"></button>'; }).join('') + '</div>' : '<div class="tiny">Chưa có ảnh nào.</div>') + '</div>' +
         (p.loai === 'nhom' && !p._lop ? '<div class="tn-info-muc"><h4>Nhóm</h4><div class="tn-info-nut">' +
           ((p.taoBoi === toi.uid || toi.laThay) ? '<button type="button" data-them>' + IC.them + 'Thêm thành viên</button><button type="button" data-doiten>' + IC.sua + 'Đổi tên nhóm</button>' : '') +
@@ -527,7 +531,6 @@
     function menuPhong(nut, p) {
       var items = [];
       if (p.loai === 'nhom') {
-        items.push({ ic: IC.nhom, chu: 'Thành viên (' + (p.thanhVien || []).length + ')', onclick: function () { xemThanhVien(p); } });
         if (p.taoBoi === toi.uid || toi.laThay) {
           items.push({ ic: IC.them, chu: 'Thêm thành viên', onclick: function () { themThanhVien(p); } });
           items.push({ ic: IC.sua, chu: 'Đổi tên nhóm', onclick: function () { doiTenNhom(p); } });

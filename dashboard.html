@@ -3038,9 +3038,10 @@ button.mk-em:hover{border-color:currentColor}
 /* ⭐ 02/10/2026 (thầy chốt, màn 1080 là màn bé nhất) — CỘT MENU GIÃN HẾT CHIỀU CAO MÀN, chừa 18px đáy.
    Các dòng chia đều phần dư (cao tối đa 56px); màn quá cao thì dòng "Quản lý & bảo mật" dồn xuống đáy.
    Khung giữa + chat tự dài theo vì `hdKeoDai()` kéo hàng 2 cột tới đáy nút baoMat.
-   Chỉ dashboard (nw-thanh.css dùng chung giữ nguyên) ⇒ bộ chọn `.nwb-ql > .nwb-ql-cot` để thắng file chung nạp sau. */
+   Chỉ dashboard (nw-thanh.css dùng chung giữ nguyên) ⇒ bộ chọn `.nwb-ql > .nwb-ql-cot` để thắng file chung nạp sau.
+   ⭐ v1.218.0 (thầy chốt) — TRẦN = đúng cỡ màn 1080 (vùng trang 911px ⇒ cột 817px): cửa sổ cao hơn thì KHÔNG giãn thêm. */
 @media (min-width:901px){
-  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:calc(100dvh - 62px - 14px - 18px); padding-bottom:0}
+  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:min(calc(100dvh - 62px - 14px - 18px), 817px); padding-bottom:0}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-muc{flex:1 1 auto; max-height:56px}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-vach{flex:none}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-vach:last-of-type{margin-top:auto}

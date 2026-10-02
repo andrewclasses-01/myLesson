@@ -4,6 +4,7 @@
 //   GĐ1: dashLopThuTu + classChatArchive chỉ thầy đọc (chỉ dashboard đọc, sau cổng đăng nhập).
 //   GĐ2 (sau web v1.226.0 vé đọc): chat lớp + đã xem = em ĐÚNG LỚP/thầy · tiến độ video/audio + bài nộp = CHÍNH EM/thầy ·
 //        tích nộp Speaking = học sinh đăng nhập/thầy · lịch lớp mystudentRosterClasses = thầy.
+//   GĐ3 (sau AWord Đợt 439): bảng điểm assignments/*/bang + scores = HS đăng nhập/thầy (nội dung bài assignments/{code} vẫn công khai).
 //
 //   node tools/dang-luat-khoa-doc.js --gd <n> --xem | --dang | --kiem  ·  --lui <rulesetName>
 'use strict';
@@ -81,6 +82,18 @@ const GD = {
     ['lessonVideoTienDo/NGUOIKHAC__X', 403, 404, 403, 'doc'],
     ['lessonAudioTienDo/ZTESTKD1__X', 403, 404, 404, 'doc'],
     ['lessonAudioTienDo/NGUOIKHAC__X', 403, 404, 403, 'doc'],
+  ]],
+  3: ['(02/10/2026 GD3) khoa doc nguoi ngoai', [
+    ['bảng điểm tốt nhất (bang): HS đăng nhập hoặc thầy',
+      "      match /bang/{bangId} {\n        allow read: if true;\n",
+      "      match /bang/{bangId} {\n        // (02/10/2026 GD3) khoa doc nguoi ngoai: bang xep hang (ten + diem HS) - AWord Dot 439 doc bang ve em, web myLesson v1.226.0 ve doc\n        allow read: if request.auth != null && (request.auth.token.get('hs', false) == true || laThay());\n"],
+    ['scores: HS đăng nhập hoặc thầy',
+      "      match /scores/{scoreId} {\n        allow read: if true;\n",
+      "      match /scores/{scoreId} {\n        allow read: if request.auth != null && (request.auth.token.get('hs', false) == true || laThay());   // (02/10/2026 GD3)\n"],
+  ], [
+    ['assignments/3kuv6g/bang/tot', 403, 200, 200, 'doc'],
+    ['assignments/3kuv6g/scores', 403, 200, 200],
+    ['assignments/3kuv6g', 200, 200, 200, 'doc'],
   ]],
 };
 function thayMot(s, cu, moi, ten) {

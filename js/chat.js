@@ -137,6 +137,9 @@
         var app = (appMod.getApps && appMod.getApps().length)
           ? appMod.getApp()
           : appMod.initializeApp(CAU_HINH);
+        // ⭐ 02/10/2026 (v1.226.0, khoá đọc người ngoài GĐ2): chat lớp CHỈ đọc được khi đăng nhập ⇒ chờ Auth khôi phục
+        // phiên (js/ve-doc.js) rồi mới trả kho — nghe sớm là bị từ chối và listener chết luôn (không tự nối lại).
+        if (window.__veDocSan) { try { await window.__veDocSan; } catch (e) { } }
         return { fs: fsMod, db: fsMod.getFirestore(app) };
       })();
     }

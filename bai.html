@@ -18,25 +18,61 @@
       window.__acBoc = true;
       var gocFetch = window.fetch;
       var HOST_AC = /^https:\/\/(firestore|firebasestorage)\.googleapis\.com\//;
-      window.fetch = function (vao, tuyChon) {
+      // ⭐ 02/10/2026 (v1.226.0, khoá đọc người ngoài GĐ2) VÉ ĐỌC: lượt ĐỌC firestore được gắn `Authorization: Bearer <vé>`
+      // (vé do js/ve-doc.js cất: localStorage 'awc_ve' — tab "thầy đăng nhập thay em" thì sessionStorage). Vé hết hạn mà
+      // máy CÓ phiên ('awc_ve_co') ⇒ CHỜ ve-doc.js cấp vé mới (tối đa 8 s) rồi mới gửi. Lượt GHI không đụng.
+      var HOST_FS = /^https:\/\/firestore\.googleapis\.com\//;
+      var trongTab = false;
+      try { trongTab = /[?&]thayvao=1(&|$)/.test(location.search) || !!sessionStorage.getItem('mylesson_thay_vao'); } catch (e) { }
+      var khoVe = function () { try { return trongTab ? window.sessionStorage : window.localStorage; } catch (e) { return null; } };
+      var veCon = function () {
         try {
-          var url = typeof vao === 'string' ? vao : (vao && vao.url) || '';
+          var k = khoVe(), o = k && JSON.parse(k.getItem('awc_ve') || 'null');
+          return (o && o.t && o.het > Date.now() + (Number(localStorage.getItem('lech-dong-ho')) || 0) + 60000) ? o.t : '';
+        } catch (e) { return ''; }
+      };
+      var coPhien = function () { try { var k = khoVe(); return !!(k && k.getItem('awc_ve_co') === '1'); } catch (e) { return false; } };
+      var laDoc = function (url, vao, tuyChon) {
+        var m = String((tuyChon && tuyChon.method) || (vao && typeof vao !== 'string' && vao.method) || 'GET').toUpperCase();
+        return m === 'GET' || (m === 'POST' && /:(runQuery|runAggregationQuery|batchGet)(\?|$)/.test(url));
+      };
+      // gắn một header (nếu chưa có) — vào chuỗi URL + tuyChon, hoặc dựng lại Request
+      var gan = function (vt, ten, gt) {
+        if (typeof vt[0] === 'string') {
+          vt[1] = Object.assign({}, vt[1] || {});
+          var h = new Headers(vt[1].headers || {});
+          if (!h.has(ten)) h.set(ten, gt);
+          vt[1].headers = h;
+        } else if (!vt[0].headers.has(ten)) {
+          var h2 = new Headers(vt[0].headers); h2.set(ten, gt);
+          vt[0] = new Request(vt[0], { headers: h2 });
+        }
+      };
+      var gui = function (vao, tuyChon, url) {
+        var vt = [vao, tuyChon];
+        try {
           if (HOST_AC.test(url)) {
             var o = JSON.parse(localStorage.getItem('awc_ac') || 'null');
-            if (o && o.t && o.het > Date.now() + (Number(localStorage.getItem('lech-dong-ho')) || 0) + 60000) {   /* v1.174.0 — het theo giờ máy chủ */
-              if (typeof vao === 'string') {
-                tuyChon = Object.assign({}, tuyChon || {});
-                var h = new Headers(tuyChon.headers || {});
-                if (!h.has('X-Firebase-AppCheck')) h.set('X-Firebase-AppCheck', o.t);
-                tuyChon.headers = h;
-              } else if (!vao.headers.has('X-Firebase-AppCheck')) {
-                var h2 = new Headers(vao.headers); h2.set('X-Firebase-AppCheck', o.t);
-                vao = new Request(vao, { headers: h2 });
-              }
-            }
+            if (o && o.t && o.het > Date.now() + (Number(localStorage.getItem('lech-dong-ho')) || 0) + 60000) gan(vt, 'X-Firebase-AppCheck', o.t);   /* v1.174.0 — het theo giờ máy chủ */
+          }
+          if (HOST_FS.test(url) && laDoc(url, vao, tuyChon)) { var t = veCon(); if (t) gan(vt, 'Authorization', 'Bearer ' + t); }
+        } catch (e) { /* hỏng gì cũng gửi như cũ */ }
+        return gocFetch.call(window, vt[0], vt[1]);
+      };
+      window.fetch = function (vao, tuyChon) {
+        var url = '';
+        try {
+          url = typeof vao === 'string' ? vao : (vao && vao.url) || '';
+          if (HOST_FS.test(url) && laDoc(url, vao, tuyChon) && !veCon() && coPhien()) {
+            return new Promise(function (res) {
+              var xong = false;
+              var di = function () { if (!xong) { xong = true; res(); } };
+              (window.__veCho = window.__veCho || []).push(di);
+              setTimeout(di, 8000);
+            }).then(function () { return gui(vao, tuyChon, url); });
           }
         } catch (e) { /* hỏng gì cũng gửi như cũ */ }
-        return gocFetch.call(this, vao, tuyChon);
+        return gui(vao, tuyChon, url);
       };
     }
   } catch (e) { /* im lặng */ }
@@ -2072,12 +2108,13 @@ body.mo-menu .side.trai{transform:none}
 
 <script src="config.js?v=206"></script>
 <script src="js/thay-vao.js?v=3"></script>
-<script src="js/app-check.js?v=3"></script>
+<script src="js/app-check.js?v=4"></script>
+<script src="js/ve-doc.js?v=1"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=80"></script>
 <script src="js/nw-phien.js?v=7"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
-<script src="js/chat.js?v=33"></script>
+<script src="js/chat.js?v=35"></script>
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->

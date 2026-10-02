@@ -51,6 +51,16 @@
   }
   var xongSan;
   window.__veDocSan = new Promise(function (res) { xongSan = res; });
+  // ⭐ v1.228.0 (GĐ4) — VÉ cho các lượt GHI cần danh tính (thầy ghi kho buổi speaking: sp-chitiet / js/sp-bang.js):
+  // chờ Auth khôi phục xong rồi trả vé còn hạn trong kho cất ('' nếu không có phiên).
+  window.__veDocLay = function () {
+    return window.__veDocSan.then(function () {
+      try {
+        var o = kho && JSON.parse(kho.getItem('awc_ve') || 'null');
+        return (o && o.t && o.het > Date.now() + 60000) ? o.t : '';
+      } catch (e) { return ''; }
+    });
+  };
   // Không bao giờ để ai chờ quá 8 giây (mạng hỏng / SDK không tải được).
   setTimeout(function () { xongSan(); bao(); }, 8000);
   (async function () {

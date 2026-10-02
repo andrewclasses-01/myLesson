@@ -14,7 +14,7 @@ window.MYLESSON_CONFIG = {
 
   // Phiên bản web — hiện nhỏ ở chân trang, để biết máy đang chạy bản nào
   // (GitHub Pages giữ cache ~10 phút, nhìn số này là biết bản mới về chưa).
-  PHIEN_BAN: '1.227.0',
+  PHIEN_BAN: '1.228.0',
 
   // ---- ID QUẢN TRỊ CỦA THẦY (v1.176.0, 29/09/2026) ----
   // Chuỗi BĂM SHA-256 của ID quản trị (viết hoa, bỏ khoảng trắng). Gõ ID này ở màn đăng nhập
@@ -55,9 +55,10 @@ window.MYLESSON_CONFIG = {
   SP_NAO: 'https://script.google.com/macros/s/AKfycbw3etxthOSUHRPA0F4Wvnd2NAoaaISYdfcoY27DyWqlUNOULCHOPC07Nx6KdgEbKOuhRw/exec',
   // Chạy thử trên máy thì trỏ sang mySpeaking local cổng 8126; lên mạng thì
   // dùng domain thật (đã kiểm: trả 200).
-  SP_WEB: /^(localhost|127\.0\.0\.1)$/.test(location.hostname)
-    ? 'http://localhost:8126/'
-    : 'https://speaking.andrewclasses.com/',
+  // ⭐ 02/10/2026 (v1.228.0, khoá đọc người ngoài GĐ4 — thầy chốt) trang học sinh mySpeaking DỜI VỀ CÙNG trang này
+  // (`speaking/`, đường TƯƠNG ĐỐI ⇒ trang thử dùng bản của trang thử) — chung phiên đăng nhập myLesson.
+  // speaking.andrewclasses.com cũ nay chỉ chuyển hướng về đây (giữ nguyên `?goi=`).
+  SP_WEB: 'speaking/',
 
   // Kho điểm AWord (Firebase) — để đọc bảng xếp hạng ngay trên trang bài.
   // apiKey là khóa CÔNG KHAI theo thiết kế Firebase (chỉ định danh dự án,

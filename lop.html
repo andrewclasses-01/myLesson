@@ -1692,10 +1692,10 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=207"></script>
+<script src="config.js?v=208"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
-<script src="js/ve-doc.js?v=1"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
+<script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=80"></script>
 <script src="js/nw-phien.js?v=7"></script>
 <script src="js/chat.js?v=35"></script>
@@ -3718,6 +3718,9 @@ function timEmTrongBuoi(ten, teams){
 /* Gói dữ liệu buổi cho mySpeaking — đi theo đường link vì hai trang KHÁC TÊN
    MIỀN nên không dùng chung bộ nhớ trình duyệt được. */
 function goiB64(o){
+  /* ⭐ 02/10/2026 (v1.228.0, GĐ4) mySpeaking ghi bài bằng PHIÊN của em ⇒ gói mang MÃ em để trang speaking/ đối chiếu
+     đúng người đang đăng nhập (vào nhầm tài khoản ⇒ chặn, không ghi bài dưới tên người khác). */
+  if (MA_HS && !o.ma) o.ma = MA_HS;
   var chuoi = unescape(encodeURIComponent(JSON.stringify(o)));
   return btoa(chuoi).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 }

@@ -114,9 +114,23 @@
     if (doc && doc.name) o._id = String(doc.name).split('/').pop();
     return o;
   }
+  /* ⭐ 02/10/2026 (myLesson v1.228.0 — khoá đọc người ngoài GĐ4): kho buổi speaking CHỈ cho em đúng lớp / THẦY đọc-ghi ⇒ mọi lượt
+     đọc/ghi REST ở đây kèm VÉ của phiên đang mở (thầy). Trang web: vé do js/ve-doc.js giữ (`__veDocLay`); app mySpeaking (bản chép
+     tools/chep-sp-bang.js): renderer đã đăng nhập vai thầy ⇒ lấy vé từ Auth SDK. Không có vé ⇒ gửi như cũ (kho sẽ từ chối). */
+  var SDK_FB = 'https://www.gstatic.com/firebasejs/12.9.0';
+  function veThay() {
+    var lay = window.__veDocLay ? window.__veDocLay()['catch'](function () { return ''; }) : Promise.resolve('');
+    return lay.then(function (t) {
+      if (t) return t;
+      return Promise.all([import(SDK_FB + '/firebase-app.js'), import(SDK_FB + '/firebase-auth.js')]).then(function (m) {
+        var u = m[1].getAuth(m[0].getApp()).currentUser;
+        return u ? u.getIdToken() : '';
+      })['catch'](function () { return ''; });
+    }).then(function (t) { return t ? { Authorization: 'Bearer ' + t } : {}; });
+  }
   function duongBuoi(ngan, id) { return '/spBuoi/' + encodeURIComponent(ctx.buoiId) + '/' + ngan + '/' + encodeURIComponent(id); }
   function fsGet(duong) {
-    return fetch(fsGoc() + duong + fsKey(), { cache: 'no-store' }).then(function (r) {
+    return veThay().then(function (h) { return fetch(fsGoc() + duong + fsKey(), { cache: 'no-store', headers: h }); }).then(function (r) {
       if (r.status === 404) return null;
       if (!r.ok) throw new Error('FS_' + r.status);
       return r.json().then(fsGiaiDoc);
@@ -125,7 +139,7 @@
   function fsPatch(duong, data, mask) {
     var fields = {}; Object.keys(data).forEach(function (k) { fields[k] = fsMa(data[k]); });
     var q = fsKey(); (mask || []).forEach(function (f) { q += '&updateMask.fieldPaths=' + encodeURIComponent(f); });
-    return fetch(fsGoc() + duong + q, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: fields }) })
+    return veThay().then(function (h) { return fetch(fsGoc() + duong + q, { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify({ fields: fields }) }); })
       .then(function (r) {
         if (r.ok) return true;
         return r.json().then(function (j) { throw new Error((j.error && j.error.message) || ('FS_' + r.status)); },
@@ -728,7 +742,9 @@
        (tab KẾT QUẢ của app mySpeaking đang dùng bản chép này). */
     if (ctx.nghe === false) return;
     var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
-    Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js')]).then(function (m) {
+    /* 02/10/2026 GĐ4 — chờ Auth (web: __veDocSan · app mySpeaking: __spChoAuth) rồi mới nghe, kẻo bị từ chối và listener chết. */
+    var choAuth = window.__veDocSan || window.__spChoAuth || Promise.resolve();
+    Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js'), Promise.resolve(choAuth)['catch'](function () { })]).then(function (m) {
       if (!ST.mo) return;
       var appMod = m[0], fsMod = m[1], app;
       try { app = appMod.getApp(); } catch (e) { app = appMod.initializeApp({ apiKey: ctx.db.apiKey, projectId: ctx.db.projectId, appId: '1:399279049436:web:b9b34dcfb34732aa744219', messagingSenderId: '399279049436' }); }   /* 27/09/2026: appId cho App Check */

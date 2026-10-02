@@ -579,12 +579,12 @@ button.gio:active{transform:scale(.94)}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=207"></script>
+<script src="config.js?v=208"></script>
 <script src="js/app-check.js?v=4"></script>
-<script src="js/ve-doc.js?v=1"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
+<script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=80"></script>
 <script src="js/trung.js?v=1"></script>
-<script src="js/sp-bang.js?v=8"></script>
+<script src="js/sp-bang.js?v=9"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -1497,8 +1497,12 @@ button.gio:active{transform:scale(.94)}
     var fields = {}; Object.keys(data).forEach(function(k){ fields[k] = fsMa(data[k]); });
     var q = spKhoa();
     (mask || []).forEach(function(f){ q += '&updateMask.fieldPaths=' + encodeURIComponent(f); });
-    return fetch(spFsGoc() + duong + q, {
-      method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fields: fields })
+    /* 02/10/2026 GĐ4 — ghi kho buổi bằng VÉ THẦY (js/ve-doc.js __veDocLay); không vé ⇒ gửi như cũ (kho từ chối). */
+    var lay = window.__veDocLay ? window.__veDocLay()['catch'](function(){ return ''; }) : Promise.resolve('');
+    return lay.then(function(t){
+      return fetch(spFsGoc() + duong + q, {
+        method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, t ? { Authorization: 'Bearer ' + t } : {}), body: JSON.stringify({ fields: fields })
+      });
     }).then(function(r){
       if (r.ok) return true;
       return r.json().then(function(j){ throw new Error((j.error && j.error.message) || ('FS_' + r.status)); },
@@ -1624,7 +1628,8 @@ button.gio:active{transform:scale(.94)}
   function batNgheKho(){
     var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
     var cfg = (A.CFG && A.CFG.AWORD_DB) || {};
-    return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js')])
+    /* 02/10/2026 GĐ4 — kho buổi chỉ cho em đúng lớp / thầy đọc ⇒ chờ Auth (js/ve-doc.js) rồi mới nghe. */
+    return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-firestore.js'), Promise.resolve(window.__veDocSan)['catch'](function(){})])
       .then(function(m){
         var appMod = m[0], fsMod = m[1], app;
         try { app = appMod.getApp(); }

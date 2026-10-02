@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Speaking in Andrew Classes</title>
+<link rel="icon" type="image/png" href="img/logo-site.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- `?v=64` (06/09/2026, rà soát toàn hệ): Tailwind KHÔNG còn nạp từ cdn.tailwindcss.com (bản đó biên dịch CSS
+     trong trình duyệt MỖI LẦN mở trang, +120 KB, và là một điểm chết đơn). Nay là file tĩnh biên dịch sẵn trên
+     máy (30 KB, 6 KB gzip) từ `tailwind.config.js` (theme.extend chép nguyên văn khối cũ) + `tailwind.in.css`:
+       npx tailwindcss@3 -c tailwind.config.js -i tailwind.in.css -o css/tailwind.css --minify
+     ⛔ Thêm class Tailwind MỚI vào index.html / js/app.js / teacher.html là phải chạy lại lệnh trên và tăng ?v=. -->
+<link rel="stylesheet" href="css/tailwind.css?v=1">
+<!-- `?v=63` (06/09/2026): SheetJS (xlsx, 325 KB gzip) KHÔNG còn nạp sẵn ở đây — app.js `napXLSX()`
+     tải nó đúng lúc bấm Export Excel (việc của thầy). Trang học sinh nhẹ đi 325 KB, bớt một điểm chết CDN. -->
+<!-- `?v=64`: Lucide tự lưu trong kho (`vendor/`), không còn gọi unpkg.com — bớt điểm chết CDN thứ ba. -->
+<script src="vendor/lucide-0.454.0.min.js"></script>
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Be Vietnam Pro', sans-serif; }
+  /* ⭐ 05/09/2026 (thầy chốt) — KHUNG VIDEO THU NHỎ TỐI ĐA.
+     Điện thoại: bỏ tỷ lệ 16:9 cứng, khoá CHIỀU CAO còn ~một nửa (14dvh ≈ 110px trên máy 844px).
+     Thầy chốt: "không quan trọng việc hiển thị video, chủ yếu là nghe và bắt lỗi" — nhường
+     hết chỗ cho khung check lỗi. Video tự có viền đen hai bên, KHÔNG méo hình.
+     Máy tính: trần riêng ở khối "Bố cục GHIM" bên dưới.
+     ⛔ Bỏ luôn `border-radius` của iframe/video: thẻ bọc nay `overflow-hidden` và video phải
+     TRÀN SÁT MÉP TRÊN thẻ (để mép trên video trùng mép trên khung Mistakes found, thầy chốt). */
+  .video-shell { aspect-ratio:auto; height:14dvh; min-height:88px; }
+  .video-shell iframe, .video-shell video { width:100%; height:100%; border:0; background:#000; }
+  /* Dòng thông tin dưới video nay thường RỖNG (đã bỏ "LỚP · TEAM · thành viên", thầy chốt
+     05/09) — rỗng thì đừng chiếm một khoảng trống vô nghĩa. Vẫn dùng cho chữ "Loading…". */
+  #videoStatus:empty { display:none; }
+  input[type=number]::-webkit-inner-spin-button { opacity: 1; }
+  @keyframes pop { 0%{transform:scale(.92);opacity:0} 100%{transform:scale(1);opacity:1} }
+  .pop { animation: pop .18s ease-out; }
+  @keyframes slidein { from{transform:translateY(12px);opacity:0} to{transform:translateY(0);opacity:1} }
+  .slidein { animation: slidein .25s ease-out; }
+  /* Thanh tua video; phần đã chạy màu đỏ đặt qua JS (background gradient).
+     ⭐ 05/09/2026: thu nhỏ theo đợt "player gọn tối đa" — thanh 8px→6px, nút mốc 24px→14px.
+     ⛔ Nút mốc KHÔNG được nhỏ hơn 14px: dưới cỡ đó ngón tay trên điện thoại kéo trượt hụt. */
+  #vcSeek { -webkit-appearance:none; appearance:none; height:6px; border-radius:9999px; background:#e2e8f0; outline:none; }
+  #vcSeek::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:14px; height:14px; border-radius:9999px; background:#e11d48; border:2px solid #fff; box-shadow:0 1px 3px rgba(0,0,0,.35); cursor:pointer; }
+  #vcSeek::-moz-range-thumb { width:12px; height:12px; border:2px solid #fff; border-radius:9999px; background:#e11d48; box-shadow:0 1px 3px rgba(0,0,0,.35); cursor:pointer; }
+  /* Ô SENTENCE / MISTAKE / EXPLANATION tự giãn cao theo nội dung để xem hết chữ */
+  textarea.autogrow { resize:none; overflow:hidden; }
+  /* Thanh kéo DỰ PHÒNG: phần đã qua XANH DƯƠNG (JS set), nút mốc TO gấp đôi thanh xịn */
+  #swSeek { -webkit-appearance:none; appearance:none; height:8px; border-radius:9999px; background:#dbeafe; outline:none; }
+  #swSeek::-webkit-slider-thumb { -webkit-appearance:none; appearance:none; width:44px; height:44px; border-radius:9999px; background:#2563eb; border:4px solid #fff; box-shadow:0 2px 7px rgba(0,0,0,.4); cursor:pointer; }
+  #swSeek::-moz-range-thumb { width:40px; height:40px; border:4px solid #fff; border-radius:9999px; background:#2563eb; box-shadow:0 2px 7px rgba(0,0,0,.4); cursor:pointer; }
+  /* Nháy ô MIN/SEC khi ánh sáng SET TIME bay tới */
+  @keyframes timeflash { 0%{ box-shadow:0 0 0 3px rgba(37,99,235,.55) } 100%{ box-shadow:0 0 0 0 rgba(37,99,235,0) } }
+  .time-flash { animation: timeflash .7s ease-out; }
+
+  /* ══════════ ⭐ 03/09/2026 — MÀN GỘP LỖI TRÙNG (#trungScreen) ══════════
+     Tiền tố `tr-` cho MỌI class riêng của hai màn này. ⛔ Đừng mượn tên class của màn
+     chấm/phản biện: trùng tên là đứt hàm vẽ mà không có gì báo (LUẬT 3 bên myLesson). */
+  /* SỐ ĐỊNH DANH của lỗi — đặt MỘT LẦN theo thứ tự thời gian, KHÔNG đánh lại khi gộp
+     (thầy chốt: cả đội gọi "lỗi số 7" phải luôn cùng một câu). */
+  .tr-stt { flex:none; min-width:22px; height:20px; padding:0 5px; border-radius:6px;
+    background:#f1f5f9; color:#64748b; font-size:11px; font-weight:800;
+    display:inline-flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums; }
+  /* Ba mục GOM MỘT DÒNG, phân biệt bằng MÀU: câu gốc nghiêng xám · chỗ sai đỏ · giải thích xanh.
+     Một cụm 4 dòng × 3 dòng chữ = 12 dòng thì không ai đọc nổi. */
+  .tr-chi { margin-top:3px; font-size:11.5px; line-height:1.5; }
+  .tr-chi i { font-style:italic; font-weight:600; color:#64748b; }
+  .tr-chi b { font-weight:800; color:#dc2626; margin-left:.45em; }
+  .tr-chi b::before { content:'·'; color:#cbd5e1; font-weight:700; margin-right:.45em; }
+  .tr-chi u { text-decoration:none; font-weight:600; color:#059669; margin-left:.45em; }
+  .tr-chi u::before { content:'→'; color:#a7d8c4; font-weight:700; margin-right:.3em; }
+  /* Ô lỗi ở cột trái: nhạt = chưa gộp · viền xanh dày = thầy Andrew gợi ý · vàng nháy = đang tích */
+  .tr-o { border:1.5px solid #e2e8f0; border-radius:16px; padding:11px 12px; background:#fff;
+    cursor:pointer; transition:opacity .2s, border-color .2s, box-shadow .2s; }
+  .tr-o.mo { opacity:.55; }
+  .tr-o.goiy { border-color:#3b82f6; border-width:2.5px; background:#eff6ff; }
+  .tr-o.tich { opacity:1; border-color:#f59e0b; background:#fffbeb; animation:tr-nhay 1s ease-in-out infinite; }
+  @keyframes tr-nhay { 0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0)} 50%{box-shadow:0 0 0 5px rgba(245,158,11,.45)} }
+  .tr-tick { width:22px; height:22px; border-radius:7px; border:2px solid #cbd5e1; background:#fff;
+    display:inline-flex; align-items:center; justify-content:center; flex:none; }
+  .tr-tick svg { width:14px; height:14px; opacity:0; }
+  .tr-o.goiy .tr-tick { border-color:#3b82f6; }
+  .tr-o.tich .tr-tick { background:#f59e0b; border-color:#f59e0b; }
+  .tr-o.tich .tr-tick svg { opacity:1; }
+  /* Khung CỤM: xanh dương = đang soạn · xanh lá = đã gửi đề nghị ·
+     (màn xác nhận) xanh lá = số đông gộp · xám = số đông không gộp · cam = hoà, đang treo */
+  .tr-cum { border:3px solid #2563eb; border-radius:20px; background:#fff; overflow:hidden;
+    position:relative; }
+  /* ⭐ 03/09 (thầy chốt lần 2) — NÚT BÚT MỞ KHOÁ cụm ĐÃ GỬI: tròn, nổi, góc dưới bên phải.
+     Bấm là hiện lại các nút ✕ trên từng dòng y như lúc chưa gửi. */
+  .tr-but { position:absolute; right:10px; bottom:10px; width:34px; height:34px; border:none;
+    border-radius:9999px; background:#16a34a; color:#fff; display:flex; align-items:center;
+    justify-content:center; box-shadow:0 4px 12px rgba(22,163,74,.4); transition:transform .15s; }
+  .tr-but:hover { transform:scale(1.08); } .tr-but:active { transform:scale(.94); }
+  .tr-cum.moKhoa { border-color:#f59e0b; }
+  .tr-cum.moKhoa .tr-cum-dau { background:#fffbeb; color:#b45309; }
+  .tr-cum.moKhoa .tr-but { background:#f59e0b; box-shadow:0 4px 12px rgba(245,158,11,.45); }
+  .tr-cum.daGui, .tr-cum.chot { border-color:#16a34a; }
+  .tr-cum.khong { border-color:#cbd5e1; opacity:.75; }
+  .tr-cum.hoa { border-color:#f59e0b; }
+  .tr-cum-dau { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
+    padding:9px 13px; background:#eff6ff; font-size:11px; font-weight:800; letter-spacing:.06em;
+    text-transform:uppercase; color:#1d4ed8; }
+  .tr-cum.daGui .tr-cum-dau, .tr-cum.chot .tr-cum-dau { background:#f0fdf4; color:#15803d; }
+  .tr-cum.khong .tr-cum-dau { background:#f1f5f9; color:#64748b; }
+  .tr-cum.hoa .tr-cum-dau { background:#fffbeb; color:#b45309; }
+  .tr-cum-dau .trai { display:flex; align-items:center; gap:6px; min-width:0; }
+  .tr-cum-dau .giua { display:flex; justify-content:center; }
+  .tr-cum-dau .phai { text-align:right; text-transform:none; letter-spacing:normal; color:#64748b;
+    font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tr-cum-o { padding:9px 13px; border-top:1px solid #e2e8f0; display:flex; gap:9px; align-items:flex-start; }
+  .tr-cum-o .bo { margin-left:auto; flex:none; width:26px; height:26px; border-radius:50%; border:none;
+    background:#fee2e2; color:#dc2626; display:inline-flex; align-items:center; justify-content:center; }
+  /* Dấu GỬI: mũi tên lên trong ô tròn — xanh lá đã gửi, xám chưa gửi */
+  .tr-up { display:inline-flex; color:#94a3b8; }
+  .tr-up.xanh { color:#16a34a; }
+  /* Avatar nhỏ (ai đã động vào cụm / ai đã bỏ phiếu) */
+  .tr-av { width:26px; height:26px; border-radius:9999px; display:inline-flex; align-items:center;
+    justify-content:center; font-size:9px; font-weight:800; color:#fff; box-shadow:0 0 0 2px #fff;
+    margin-left:-6px; overflow:hidden; position:relative; flex:none; }
+  .tr-av:first-child { margin-left:0; }
+  .tr-av img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; }
+  .tr-cum-dau .tr-av { width:22px; height:22px; font-size:8px; }
+  /* Hai nút phiếu ở màn xác nhận: SỐ TO trong nút, avatar người đã bỏ nằm dưới */
+  /* ⭐ `?v=62` (thầy chốt) — Ô VOTE DỰNG LẠI NẰM NGANG: SỐ TO sát mép trái (chỗ đó CHỈ có số),
+     bên phải là hai dòng — trên là chữ ĐỒNG Ý GỘP / KHÔNG GỘP, dưới là avatar người đã bỏ.
+     Avatar to lên 30px (trước 26px): cả đội chỉ 4–5 em nên thừa chỗ, để nhỏ thì không nhận ra ai. */
+  .tr-phieu { display:grid; grid-template-columns:1fr 1fr; gap:10px; padding:12px 13px 13px;
+    border-top:1px solid #e2e8f0; background:#f8fafc; }
+  .tr-phieu button { border:2px solid transparent; border-radius:14px; padding:9px 10px;
+    display:flex; flex-direction:row; align-items:center; gap:10px; text-align:left;
+    font-weight:800; font-size:11.5px; letter-spacing:.04em; text-transform:uppercase;
+    transition:transform .15s, background .2s, color .2s; }
+  .tr-phieu button:active { transform:scale(.97); }
+  .tr-phieu .so { font-size:32px; line-height:1; font-variant-numeric:tabular-nums; flex:none;
+    min-width:26px; text-align:center; }
+  .tr-phieu .ruot { display:flex; flex-direction:column; align-items:flex-start; gap:3px; min-width:0; }
+  .tr-phieu .avs { display:flex; min-height:30px; align-items:center; }
+  .tr-phieu .avs .tr-av { width:30px; height:30px; font-size:10px; }
+  .tr-phieu .ok { background:#dcfce7; color:#15803d; }
+  .tr-phieu .ok.minh { background:#16a34a; color:#fff; border-color:#15803d; }
+  .tr-phieu .no { background:#fee2e2; color:#b91c1c; }
+  .tr-phieu .no.minh { background:#dc2626; color:#fff; border-color:#b91c1c; }
+  /* ⭐ `?v=62` (thầy chốt) — BÊN THUA VỀ ĐEN TRẮNG cho dễ nhìn: số đông chọn GỘP thì ô KHÔNG GỘP
+     xám hẳn, và ngược lại. Xám kể cả khi đó là phiếu của CHÍNH EM (`.minh`).
+     ⛔ Bốn selector chứ không phải hai, và phải kể cả `.minh`: `.tr-phieu .ok.minh` có độ đặc
+        hiệu (0,0,3,1), viết gọn `.tr-phieu button.xam` (0,0,2,1) là THUA, ô của em không xám.
+        Đừng chữa bằng `!important` — cứ kể đủ tổ hợp là xong. */
+  .tr-phieu .ok.xam, .tr-phieu .no.xam,
+  .tr-phieu .ok.minh.xam, .tr-phieu .no.minh.xam {
+    background:#e2e8f0; color:#94a3b8; border-color:transparent; }
+  .tr-phieu .xam .tr-av { filter:grayscale(1); opacity:.65; }
+  /* Pop-up chọn cụm: ⛔ ô con phải flex:none — thân là flex-column có max-height nên ô bị co,
+     cộng overflow:hidden là NÚT BÊN TRONG BỊ CẮT CỤT (đã cắn ở bản mẫu, thầy chụp lại được). */
+  .tpc-o { border:2px solid #dbeafe; border-radius:16px; overflow:hidden; flex:none; }
+  .tpc-dau { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:8px;
+    padding:7px 12px; background:#f8fafc; font-size:10.5px; font-weight:800; letter-spacing:.05em;
+    text-transform:uppercase; color:#475569; }
+  .tpc-dau .ten { text-align:right; text-transform:none; letter-spacing:normal; color:#64748b;
+    font-weight:700; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .tpc-dong { display:flex; gap:8px; align-items:flex-start; padding:6px 12px; border-top:1px solid #f1f5f9; }
+  .tpc-them { border:none; border-radius:9999px; background:#2563eb; color:#fff; font-weight:800;
+    font-size:10.5px; letter-spacing:.05em; padding:6px 14px; white-space:nowrap;
+    animation:tpc-nhay 1.5s ease-in-out infinite; }
+  @keyframes tpc-nhay { 0%,100%{box-shadow:0 0 0 0 rgba(37,99,235,.5)} 60%{box-shadow:0 0 0 7px rgba(37,99,235,0)} }
+  /* ══════════ ⭐⭐⭐ 05/09/2026 (`?v=61`, thầy chốt) — MÀN TRÙNG DỰNG LẠI THÀNH
+     **MỘT CỘT, BỐN TẦNG** Ở MỌI CỠ MÀN, đúng khuôn màn PHẢN BIỆN (`?v=59`) ══════════
+       ① `<header>`      — thanh thông tin, ruột bó 820px, dòng Saved/Saving (#trLuu) ở GIỮA
+       ② `#trBar`        — hai nút MISTAKES / GROUPS + dải đếm (LUÔN hiện, kể cả khi xem GROUPS)
+       ③ `#trDaiTieng`   — thanh player (⛔ KHÔNG BAO GIỜ có hình, khung video vẫn 1px ẩn)
+       ④ `#trCuon`       — bảng MISTAKES **hoặc** GROUPS, **PHẦN DUY NHẤT CUỘN**
+     Ba tầng trên ghim cứng.
+     ⛔ ĐÃ BỎ HẲN lưới 2 cột cũ (`#ktWrap` grid ≥1024px): máy tính nay cũng chỉ hiện MỘT bảng,
+        đúng cái nút đang chọn (thầy chốt "luôn là dạng 1 cột kể cả khi ở chế độ máy tính").
+     ⛔⛔ Khoá khung `100dvh` + `position:fixed` dưới 1024px là cách chữa ĐÃ ĐO THẬT của màn
+        chấm (`?v=52`→`?v=54`): iPhone **đẩy CẢ TRANG** khi bàn phím hiện, `sticky`/`100dvh`/
+        `overflow:hidden` đều không cản được. Màn này trước `?v=61` vẫn là `min-h-screen` +
+        `sticky top-0` — ĐÚNG Y cách đã hỏng, chỉ chưa ai mở bằng iPhone nên chưa lộ. */
+  #trungScreen:not(.hidden){ display:flex; flex-direction:column; height:100dvh; overflow:hidden; }
+  @media (max-width:1023.98px){
+    /* `top` do `theoKhungNhin()` đặt theo `visualViewport.offsetTop` — xem chú thích hàm đó.
+       ⛔ Dùng `fixed`, KHÔNG dùng `transform:translateY()`: `transform` tạo khung quy chiếu mới
+          ⇒ mọi pop-up `fixed` bên trong (trPopCum, trPopXoa) sẽ neo nhầm vào #trungScreen. */
+    #trungScreen:not(.hidden){ position:fixed; left:0; right:0; top:0; }
+  }
+  #trungScreen > header{ flex-shrink:0; }
+  #trungScreen > header > div{ max-width:820px; }
+  #trungScreen > main{
+    display:flex; flex-direction:column; gap:.625rem;
+    max-width:820px; margin-left:auto; margin-right:auto;
+    flex:1 1 0%; min-height:0; overflow:hidden;
+    padding-top:.5rem; padding-bottom:.5rem;
+  }
+  /* ⛔⛔ `:not(.hidden)` là BẮT BUỘC ở mọi luật đặt `display` bằng selector có #id: selector
+     một ID (0,1,0,0) **ăn đứt** `.hidden{display:none}` (0,0,1,0) của Tailwind. Đúng cái bẫy
+     đã làm nút CONFLICT hiện ra dù bằng 0 ở `?v=59`, và ô trắng trống ở `?v=44`. */
+  /* ⭐ `?v=62` (thầy chốt) — dải ② nay LUÔN XẾP DỌC ở MỌI cỡ màn, và mọi nút TRẢI HẾT bề ngang
+     cột. Trước đó máy tính xếp ngang (nút trái, dải đếm dạt phải) — thầy chốt bỏ, cho hai màn
+     giống hệt nhau ở mọi cỡ màn. Dải đếm rời `#trDem` đã BỎ HẲN: con số nhét luôn vào tên nút
+     ("ALL MISTAKES: 8" · "GROUPS: 1"), đỡ một hàng chữ trên màn điện thoại vốn đã chật. */
+  #trBar:not(.hidden){ display:flex; flex-direction:column; gap:.375rem; flex-shrink:0; }
+  #trTab:not(.hidden), #xnTab:not(.hidden){ display:flex; width:100%; border:1px solid #cbd5e1;
+    border-radius:.75rem; overflow:hidden; background:#fff; }
+  #trTab button, #xnTab button{ flex:1; min-width:0; padding:.375rem .6rem; min-height:36px;
+    font-size:11px; font-weight:800; letter-spacing:.04em; white-space:nowrap;
+    display:flex; align-items:center; justify-content:center; gap:.35rem; transition:background .15s; }
+  /* Hai ô KẾT QUẢ của màn XÁC NHẬN TRÙNG — chia đôi bề ngang cột, chỉ để NHÌN, không bấm được. */
+  #xnKq:not(.hidden){ display:flex; gap:.375rem; }
+  #xnKq > span{ flex:1; min-width:0; min-height:32px; border-radius:.75rem; font-size:11px;
+    font-weight:800; letter-spacing:.04em; display:inline-flex; align-items:center;
+    justify-content:center; gap:.35rem; white-space:nowrap; }
+  #xnKqGop{ background:#dcfce7; color:#15803d; }
+  #xnKqKhong{ background:#fee2e2; color:#b91c1c; }
+  #trDaiTieng{ flex-shrink:0; }
+  /* Tầng ④ — PHẦN DUY NHẤT CUỘN. Ba lớp chặn vuốt ngang y như `#khoiNhap` của màn chấm
+     (`?v=56`, thầy bắt lỗi trên iPhone): khoá tràn ngang · bảo iOS chỉ nhận cử chỉ dọc ·
+     ép chữ dài (IPA, link…) tự ngắt — thủ phạm là chuỗi dài KHÔNG CÓ CHỖ NGẮT. */
+  #trCuon{ flex:1 1 0%; min-height:0; overflow-y:auto; overflow-x:hidden;
+    overscroll-behavior-x:none; touch-action:pan-y; }
+  #trCuon > *{ min-width:0; max-width:100%; }
+  #ktDs, #ktCum, #xnWrap{ overflow-wrap:anywhere; }
+  #ktWrap:not(.hidden) { display:block; }
+  /* ⛔ `.tr-khung` phải có `:not(.hidden)`: `.tr-khung{display:flex}` và `.hidden{display:none}`
+     cùng độ đặc hiệu (0,0,1,0) ⇒ thứ tự nạp quyết định, mà Tailwind là CDN nạp riêng. Không
+     chốt thì bảng đang ẩn có ngày hiện ngược ra — nay hai bảng bật/tắt liên tục theo nút. */
+  .tr-khung:not(.hidden) { display:flex; flex-direction:column; }
+  .tr-khung { background:#fff; border:1px solid #e2e8f0; border-radius:1.5rem;
+    box-shadow:0 1px 2px rgba(0,0,0,.05); padding:.75rem; }
+  #ktCum, #ktDs { flex:1; }
+  @media (min-width:640px) { .tr-khung { padding:1rem; } }
+  /* Tiêu đề GIỮA khung, có vạch mảnh hai bên — MISTAKES / GROUPS */
+  .tr-tieu { display:flex; align-items:center; justify-content:center; gap:.75rem;
+    margin:0 .25rem .75rem; font-size:11px; font-weight:800; letter-spacing:.18em;
+    text-transform:uppercase; color:#64748b; }
+  .tr-tieu::before, .tr-tieu::after { content:''; flex:1; height:1px; background:#e2e8f0; }
+  /* ⭐ VẠCH NGĂN HAI NHÓM GỢI Ý NẰM LIỀN NHAU (thầy chốt): bốn ô xanh liên tiếp mà không có
+     vạch thì trông như MỘT cụm, em tích nhầm cả bốn. Vạch phải nổi, không phải nét mờ. */
+  .tr-ngan { display:flex; align-items:center; gap:.6rem; margin:.25rem .25rem; }
+  .tr-ngan::before, .tr-ngan::after { content:''; flex:1; height:3px; border-radius:3px;
+    background:linear-gradient(90deg,transparent,#f59e0b,transparent); }
+  .tr-ngan span { font-size:9px; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:#b45309; background:#fffbeb; border:1px solid #fde68a; border-radius:999px; padding:2px 8px; }
+  @media (prefers-reduced-motion: reduce) {
+    .tr-o.tich, .tpc-them { animation:none !important; }
+  }
+  /* ── CHỐNG TỰ PHÓNG TO TRANG KHI GÕ TRÊN ĐIỆN THOẠI (chặng 18) ──
+     Safari iPhone TỰ zoom trang khi bấm vào ô nhập có cỡ chữ < 16px và KHÔNG tự thu lại
+     → HS phải chụm tay thu nhỏ sau mỗi lần gõ. Không tắt được bằng thẻ viewport
+     (iOS bỏ qua user-scalable/maximum-scale). Cách chắc ăn duy nhất (Apple khuyến nghị):
+     ép MỌI ô nhập ≥ 16px trên màn nhỏ. Chỉ áp dụng < 1024px → desktop giữ nguyên chữ nhỏ như cũ. */
+  @media (max-width:1023px){
+    input, select, textarea { font-size:16px !important; }
+    /* CHẶNG 33: chữ hướng dẫn (placeholder) TRẢ VỀ 13px trên điện thoại. Chặng 18 ép 16px cho cả
+       placeholder là THỪA: iOS chỉ tự phóng to theo cỡ chữ của Ô NHẬP, không theo placeholder.
+       Ép 16px làm câu "The sentence that contains the mistake" tràn 2 dòng trong ô cao 1 dòng
+       (rows=1 + autogrow) ⇒ HS thấy chữ bị CẮT CỤT. 13px vẫn dễ đọc mà gọn 1 dòng. */
+    input::placeholder, textarea::placeholder { font-size:13px !important; }
+    /* ⛔ 05/09/2026: luật `.tIn` (4 ô giờ nói tí hon dưới mỗi tên) đã gỡ cùng bộ ô đó. */
+  }
+  /* ══ ⭐ 05/09/2026 (thầy chốt, sau khi bấm thử trên điện thoại thật) — KHOÁ BỐ CỤC Ở **MỌI CỠ MÀN** ══
+     Trước đây chỉ desktop mới khoá `100dvh`, còn điện thoại để cả thân trang cuộn và ghim khối
+     video bằng `position:sticky`. **Trên máy thật sticky KHÔNG giữ được**: cuộn xuống là thanh
+     đầu trang, hai nút CHECK/LIST và cả thanh player đều trôi mất (thầy chụp ảnh gửi lúc 01:17).
+     ⛔ ĐỪNG quay lại cách sticky. Nay điện thoại dùng ĐÚNG khuôn của máy tính:
+         #appScreen = cột cao đúng 100dvh, không cuộn
+           ├─ header        (shrink-0)  ← đứng yên
+           └─ main          (flex:1)
+              ├─ #khoiVideo (shrink-0)  ← hai nút CHECK/LIST + video + player: đứng yên
+              └─ #khoiNhap  (flex:1, overflow-y:auto)  ← PHẦN DUY NHẤT CUỘN
+     Dùng CSS riêng thay vì class lg:flex của Tailwind: nếu dùng lg:flex nó sẽ ĐÈ class .hidden
+     (cùng độ ưu tiên, media query nằm sau) làm màn/tab đang ẩn hiện ngược ra — bẫy cascade. */
+  #appScreen:not(.hidden){ display:flex; flex-direction:column; height:100dvh; overflow:hidden; }
+  @media (max-width:1023.98px){
+    /* ⛔⛔⛔ 05/09/2026 lần 3 — `position:fixed` + `top` do JS đặt theo `visualViewport.offsetTop`.
+       BẰNG CHỨNG dẫn tới cách này: trong ảnh thầy gửi lúc 01:53, **thanh tím đầu trang đã biến
+       mất** (chỉ còn CHECK/LIST) mà phía dưới lại thừa ra một vệt trắng ĐÚNG BẰNG chiều cao nó.
+       ⇒ Safari **vẫn đẩy cả trang lên** (visual viewport lệch khỏi layout viewport một đoạn
+       `offsetTop`): phần trên bị đẩy khuất, phần dưới hụt ra đúng bấy nhiêu. `window.scrollTo(0,0)`
+       KHÔNG kéo lại được vì đây KHÔNG phải cuộn trang thường.
+       Chữa: neo `#appScreen` bằng `position:fixed` rồi **dịch nó xuống đúng `offsetTop`**.
+       ⛔ `position:fixed` KHÔNG tạo khung quy chiếu cho con `fixed` (chỉ `transform`/`filter`/
+          `perspective` mới tạo) ⇒ mọi pop-up bên trong vẫn neo đúng vào màn hình. Đây chính là
+          lý do dùng `fixed` chứ KHÔNG dùng `transform: translateY()`. */
+    #appScreen:not(.hidden){ position:fixed; left:0; right:0; top:0; }
+    #appScreen:not(.hidden) > main{ flex:1 1 0%; min-height:0; display:flex; flex-direction:column; }
+    #khoiVideo{ flex-shrink:0; }
+    /* ⭐ 05/09/2026 (`?v=56`, thầy bắt lỗi trên iPhone): vùng cuộn CHỈ được vuốt DỌC. Trước đây một
+       dòng chữ dài không có chỗ ngắt (IPA, link…) làm khung rộng hơn màn ⇒ Safari cho vuốt ngang,
+       cả cột LIST trôi sang trái. Ba lớp chặn: khoá tràn ngang · bảo iOS chỉ nhận cử chỉ dọc ·
+       ép chữ dài tự ngắt (khối `#errList` bên dưới). */
+    #khoiNhap{ flex:1 1 0%; min-height:0; overflow-y:auto; overflow-x:hidden;
+               overscroll-behavior-x:none; touch-action:pan-y; }
+    #khoiNhap > *{ min-width:0; max-width:100%; }
+    #errFormCard, #errListCard{ overflow-x:hidden; }
+    /* ⛔ `?v=57` — LỖI CŨ, chỉ lộ khi mở màn PHẢN BIỆN bằng điện thoại (đo thật 375px): hàng đầu
+       khung "Mistakes found" xếp 3 khối trên MỘT dòng không xuống hàng — nút lọc ALL/TEAM
+       CONFLICT/MINE cần 157px, badge UNCONFIRMED 122px, G/P/I 118px = 397px, mà chỗ chỉ có 317px.
+       Nút lọc bị bóp còn 60px và vì bản thân nó có `overflow-hidden` nên **MINE bị cắt mất hẳn**,
+       học sinh không đổi được sang danh sách lỗi của chính mình.
+       ⛔ Đã kiểm: KHÔNG phải do hai luật `overflow-x`/`min-width` thêm ở `?v=56` — gỡ chúng ra
+       nút vẫn 60px. Lỗi có từ trước, chưa ai mở màn này bằng iPhone nên chưa lộ.
+       CHỮA: cho hàng xuống dòng và cấm bóp nút lọc. Máy tính (≥1024px) không đụng. */
+    #errListHead{ flex-wrap:wrap; gap:.5rem; }
+    #btnPbLoc{ flex-shrink:0; }
+    #btnPbThieu{ margin-left:0; margin-right:0; }   /* mx-2 của Tailwind thừa khi đã có gap */
+    /* ⭐ 05/09/2026 (thầy chốt) — BÓP MỌI KHOẢNG DỌC THỪA. Màn điện thoại đã bé, mỗi vệt trống
+       là một dòng chữ bị mất. Ba nguồn sinh ra vệt trắng dưới thanh player:
+         ① `py-2` của <main>  ② `space-y-2.5` giữa khối video và khung nhập  ③ `pt-1 pb-2` của #khoiVideo
+       ⛔ Phải đè `space-y-2.5` bằng selector có #id (Tailwind sinh
+          `.space-y-2\.5 > :not([hidden]) ~ :not([hidden])`, class thường không thắng nổi). */
+    #appScreen:not(.hidden) > main{ padding-top:.25rem; padding-bottom:0; }
+    #appScreen:not(.hidden) > main > * + *{ margin-top:.375rem; }
+    #khoiVideo{ padding-top:0; padding-bottom:0; }
+    #errFormCard, #errListCard{ padding:.75rem; }
+  }
+  /* ── Bố cục GHIM (desktop ≥1024px): video + khung bắt lỗi đứng yên, CHỈ danh sách lỗi cuộn ── */
+  @media (min-width:1024px){
+    /* ⭐ 05/09/2026 (thầy chốt) — BỐ CỤC MỚI, ĐẢO NGƯỢC CHẶNG 30:
+         NỬA TRÁI  = VIDEO (trên) + KHỐI CHECK LỖI (dưới)
+         NỬA PHẢI = MISTAKES FOUND, cao bằng TỔNG hai khối trái
+       Vẫn là grid 2 cột × 2 hàng `auto minmax(0,1fr)` như cũ, chỉ đổi chỗ ngồi:
+         video     → cột 1 hàng 1, cao theo nội dung (trần 24dvh)
+         form      → cột 1 hàng 2, GIÃN đầy chỗ còn lại và tự cuộn bên trong
+         list      → cột 2, TRẢI CẢ HAI HÀNG
+       ⭐ Hai mép phải trùng nhau (thầy chốt): mép TRÊN video = mép trên khung Mistakes
+       (thẻ video bỏ đệm trên, video tràn sát mép) · mép DƯỚI form = mép dưới khung Mistakes
+       (form `min-height:0` + `flex:1` nên đáy luôn chạm đáy lưới, không còn lửng lơ).
+       ⛔ Đừng cho cả CỘT TRÁI cuộn (bản cũ làm thế): cột cuộn thì thẻ form co theo nội dung,
+       đáy nó không bao giờ bằng đáy cột phải. Phải để CHÍNH THẺ FORM giãn rồi cuộn bên trong.
+       2 wrapper cột "tan ra" bằng display:contents để form + list thành ô grid trực tiếp. */
+    #tab-errors:not(.hidden){ display:contents; }
+    #tab-errors > *{ margin-top:0; }   /* bỏ margin space-y của mobile khi con đã thành ô grid */
+    /* Máy tính: video giữ 16:9 nhưng CHẶN TRẦN — không còn phải cao bằng cột form như bản cũ.
+       ⭐ `?v=58` (thầy chốt) — CĂN GIỮA. Vì sao trước đây lệch hẳn về trái: `max-height:24dvh`
+       kẹp chiều cao lại, mà khối có `aspect-ratio` thì trình duyệt TÍNH LẠI CẢ CHIỀU RỘNG cho
+       khớp tỷ lệ ⇒ khung co từ 614px xuống 378px nhưng vẫn dính mép trái (margin mặc định 0).
+       ⛔ Đo thật 1340×885: thẻ trắng 614px · `.video-shell` 378px · iframe ĐÚNG BẰNG khung
+       (`width:100%` vẫn ăn) — nên KHÔNG phải lỗi của iframe, đừng đi sửa `initYouTube`.
+       Điện thoại không dính: ở đó `aspect-ratio:auto` nên khung rộng đúng 100%, margin auto = 0.
+       ⛔⛔ CHỈ `margin:auto` là KHÔNG ĐỦ — đã thử, đo lại vẫn lệch y nguyên (chừa trái 1px, phải
+       235px). Lý do: `margin:auto` chỉ chia đều chỗ trống khi chiều rộng là một giá trị TƯỜNG
+       MINH; ở đây nó do `aspect-ratio` suy ra từ chiều cao nên trình duyệt vẫn coi là `auto` và
+       dồn hết chỗ thừa sang phải. Phải nêu `max-width` bằng đúng bề ngang tối đa (chiều cao trần
+       nhân 16/9) — width khi đó bị kẹp bởi một giá trị tường minh, `margin:auto` mới chia đều.
+       Cột hẹp hơn 377px thì `max-width` không chạm tới, khung rộng full như cũ, margin = 0. */
+    .video-shell{ aspect-ratio:16/9; height:auto; max-height:24dvh;
+                  max-width:calc(24dvh * 16 / 9); margin-left:auto; margin-right:auto; }
+    /* Thẻ form: ô grid cột 1 hàng 2, giãn đầy và tự cuộn bên trong */
+    #errFormCard{ grid-column:1; grid-row:2; min-height:0; overflow-y:auto; display:flex; flex-direction:column; }
+    #errFormCard > .mb-3:last-of-type{ margin-bottom:.75rem; }
+    #errAddRow{ margin-top:auto; }     /* nút đỏ dính đáy thẻ cho cân với cột phải */
+  }
+  /* ══ ⭐ 05/09/2026 (thầy chốt) — ĐIỆN THOẠI: HAI CHẾ ĐỘ **CHECK** / **LIST** ══
+     Dưới 1024px chỉ hiện MỘT trong hai khung (form hoặc danh sách lỗi); hai nút chọn nằm
+     ngay TRÊN ĐẦU video và LUÔN HIỆN — đổi chế độ thì khung video vẫn còn nguyên tại chỗ.
+     ⛔ #dsTab ẩn ở desktop bằng CSS THUẦN trong media query, KHÔNG dùng class `lg:hidden`:
+        luật sống còn của file này cấm gắn class `lg:*` đổi display lên phần tử có thể mang
+        `.hidden` (bẫy cascade đã cắn ở màn XÁC NHẬN TRÙNG).
+     ⛔ `:not(.pb-mode)` là CHỐT AN TOÀN: màn PHẢN BIỆN vốn đã ẩn #errFormCard, nếu lúc đó
+        còn dính ds-check thì #errListCard cũng ẩn nốt ⇒ MÀN TRẮNG TRƠN. */
+  @media (max-width:1023.98px){
+    #appScreen.ds-check:not(.pb-mode) #errListCard{ display:none; }
+    #appScreen.ds-list:not(.pb-mode)  #errFormCard{ display:none; }
+    /* Bàn phím ảo bật lên (em bấm vào ô gõ chữ): video co về 0, CHỈ CÒN thanh player — vừa
+       nhìn được chữ đang sửa, vừa còn chỗ cho bàn phím. Thanh đầu trang + hai nút CHECK/LIST
+       KHÔNG co theo (thầy chốt: luôn hiện). */
+    #appScreen.go-banphim .video-shell{ height:0; min-height:0; }
+  }
+  @media (min-width:1024px){ #dsTab{ display:none; } }
+  /* Tên bài dưới tên site: điện thoại ẩn cho thanh đầu cao tối thiểu, máy tính vẫn hiện */
+  @media (max-width:1023.98px){ #hdTopic{ display:none; } }
+  /* ⭐ 05/09/2026 (thầy chốt) — TỰ LƯU: màn chấm mô hình 2 BỎ HẲN nút Submit, thay bằng dòng trạng thái
+     #hdLuu nằm GIỮA thanh đầu trang (nhỏ, xanh lá khi đã lưu). `.tu-luu` do `tlBat()` đặt trên #appScreen.
+     ⛔ #hdLuu KHÔNG đặt `display` ở đây để class `.hidden` của Tailwind vẫn ẩn được nó (mô hình 1/phản biện). */
+  #appScreen.tu-luu #btnSubmit{ display:none; }
+  #appScreen.tu-luu #btnHome{ margin-right:0; }   /* bỏ mr-auto để #hdLuu (mx-auto) đứng đúng giữa khoảng trống */
+  /* ⭐ `?v=56` (thầy chốt trên iPhone): ICON đứng CỐ ĐỊNH bên trái (ô 13px), chữ "Saved 09:45" /
+     "Saving…" căn trái theo icon. Cả khối có bề ngang TỐI THIỂU đủ cho chữ dài nhất trong hai trạng
+     thái thường, nên đổi chữ mà icon không nhích. Icon đổi theo `data-kieu` bằng CSS thuần
+     (không gán .hidden cho SVG — xem bẫy "gán .hidden cho SVG không ăn"). */
+  /* ⭐ `?v=61` — bộ luật này nay dùng CHUNG cho HAI dòng trạng thái: `#hdLuu` (màn chấm +
+     phản biện) và `#trLuu` (màn KIỂM TRA TRÙNG). Viết bằng CLASS `.hdLuu` để khỏi chép đôi;
+     hai phần tử đều mang `class="hdLuu"`. ⛔ Đừng đổi lại thành `#hdLuu`: sửa một bên quên
+     bên kia là dòng trạng thái mất sạch màu mà chẳng có gì báo. */
+  .hdLuu:not(.hidden){ display:inline-flex; align-items:center; justify-content:flex-start; gap:.35rem; min-width:6.6rem; }
+  .hdLuu{ margin-left:auto; margin-right:auto; flex-shrink:0; white-space:nowrap; font-size:11px; font-weight:800;
+          line-height:1.2; padding:.2rem .6rem; border-radius:9999px; transition:color .2s, background .2s; }
+  @media (min-width:640px){ .hdLuu{ font-size:12px; min-width:7rem; } }
+  .hdLuu-ico{ width:13px; height:13px; flex-shrink:0; display:inline-flex; align-items:center; justify-content:center; }
+  .hdLuu-ico > *{ display:none; }
+  .hdLuu[data-kieu="san"] .hdLuu-check, .hdLuu[data-kieu="xong"] .hdLuu-check{ display:block; }
+  #appScreen.pb-mode #hdLuu{ min-width:8.4rem; }   /* chỗ cho chữ dài nhất: "2 reasons needed" */
+  .hdLuu[data-kieu="dang"] .hdLuu-spin{ display:block; }
+  .hdLuu[data-kieu="hong"] .hdLuu-alert{ display:block; }
+  .hdLuu-spin{ width:11px; height:11px; border-radius:50%; border:2px solid rgba(255,255,255,.3);
+               border-top-color:currentColor; animation:hdLuuXoay .8s linear infinite; }
+  @keyframes hdLuuXoay{ to{ transform:rotate(360deg); } }
+  .hdLuu[data-kieu="san"]{ color:rgba(255,255,255,.7); }
+  .hdLuu[data-kieu="dang"]{ color:rgba(255,255,255,.9); }
+  /* `?v=57` (màn phản biện): có phiếu DISAGREE chưa gõ lý do ⇒ CHƯA ghi được lên kho (luật kho
+     cấm phiếu phản đối rỗng). Phải nói rõ, đừng hiện "Saved" cho em tưởng xong. */
+  .hdLuu[data-kieu="cho"]{ color:#0f172a; background:#fbbf24; }
+  .hdLuu[data-kieu="cho"] .hdLuu-alert{ display:block; }
+  .hdLuu[data-kieu="xong"]{ color:#86efac; }                       /* emerald-300 — xanh lá trên nền tím */
+  .hdLuu[data-kieu="hong"]{ color:#fff; background:#e11d48; animation:hdLuuNhay 1.1s ease-in-out infinite; }
+  @keyframes hdLuuNhay{ 0%,100%{ opacity:1; } 50%{ opacity:.55; } }
+  /* `?v=56`: chữ dài không có chỗ ngắt (IPA, link) PHẢI tự gãy dòng trong ô lỗi — không thì ô rộng
+     hơn khung và điện thoại vuốt được ngang (xem khối #khoiNhap). Áp mọi cỡ màn. */
+  #errList{ overflow-wrap:anywhere; min-width:0; }
+  #appScreen.pb-mode #dsTab{ display:none; }   /* màn phản biện không có form ⇒ hai nút vô nghĩa */
+  .dsBtn{ flex:1; padding:.375rem 0; font-size:12px; font-weight:800; display:flex; align-items:center;
+          justify-content:center; gap:.375rem; transition:background .15s, color .15s; }
+
+  /* CHẶNG 29 — chế độ XEM LẠI bài đã nộp: khoá form + ẩn nút sửa/xoá từng lỗi (mở khoá qua nút Edit) */
+  #appScreen.review-locked #errFormCard{ opacity:.45; pointer-events:none; }
+  #appScreen.review-locked #errList [data-edit], #appScreen.review-locked #errList [data-ka]{ display:none; }
+
+  /* ══ (Đợt B 27/08/2026) MÔ HÌNH 2 — bản tổng lỗi + màn phản biện ══ */
+  /* Màn PHẢN BIỆN: ẩn form thêm lỗi + nút Export — chỉ còn video + danh sách câu bị chấm */
+  #appScreen.pb-mode #errFormCard, #appScreen.pb-mode #btnExport{ display:none; }
+  /* (Đợt lọc ALL/MINE) màn phản biện: thay hẳn tiêu đề "Mistakes found" bằng nút ALL/MINE —
+     2 ID + 1 class ăn đứt độ đặc hiệu của .hidden nên không cần JS bật/tắt mỗi lần đổi màn. */
+  #appScreen.pb-mode #errListTitle{ display:none; }
+  #appScreen.pb-mode #btnPbLoc{ display:inline-flex; }
+
+  /* ══════ ⭐⭐⭐ `?v=59` (thầy chốt) — MÀN PHẢN BIỆN: MỘT CỘT DUY NHẤT, BỐN TẦNG ══════
+       ① thanh đầu trang · ② dải lọc + dải số đếm · ③ video · ④ danh sách lỗi (PHẦN DUY NHẤT CUỘN)
+     Ba tầng trên GHIM cứng, cuộn kiểu gì cũng còn nguyên. Máy tính bỏ hẳn lưới 2 cột cũ.
+     **Bề ngang cột 820px** (tự chọn theo thầy giao): đủ cho ba dòng chữ của một lỗi mà không kéo
+     quá dài, và nửa trái/nửa phải của tầng ② mỗi bên 410px — dư chỗ cho cả ba nút lọc.
+     ⭐ Thầy chốt: **video GIỮ CHIỀU CAO như cũ** (24dvh ⇒ rộng 378px), nằm CĂN GIỮA trong dải,
+     chấp nhận hai bên là nền trắng của thẻ; còn DẢI video thì rộng bằng các dải khác, để cả cột
+     thẳng mép thành một khối thống nhất.
+     ⛔ `:not(.hidden)` trong selector là để ăn đứt độ đặc hiệu của mấy luật khoá bố cục ở khối
+        "KHOÁ BỐ CỤC Ở MỌI CỠ MÀN" bên trên (chúng cũng dùng `#appScreen:not(.hidden) > main`). */
+  #appScreen.pb-mode:not(.hidden) > main{
+    display:flex; flex-direction:column; gap:.625rem;
+    max-width:820px; margin-left:auto; margin-right:auto;
+    flex:1 1 0%; min-height:0; overflow:hidden;
+  }
+  #appScreen.pb-mode:not(.hidden) > main > *{ margin-top:0; }   /* bỏ space-y cũ, nay dùng gap */
+  #appScreen.pb-mode #pbBar{ display:flex; align-items:center; gap:.5rem; flex-shrink:0; }
+  /* ⭐ `?v=60` (thầy chốt) — thanh đầu trang cũng bó về ĐÚNG bề ngang cột: logo dính mép trái cột,
+     nút tên dính mép phải cột, dòng trạng thái ở giữa. Cùng `max-width` và cùng `px-4` với `<main>`
+     nên mép thẳng khít với #pbBar (788px nội dung). Nền tím vẫn trải hết màn — chỉ RUỘT bó lại.
+     ⛔ Chỉ áp cho màn phản biện: màn CHẤM vẫn là lưới 2 cột rộng 1280px, bó lại là hỏng. */
+  #appScreen.pb-mode > header > div{ max-width:820px; }
+  #appScreen.pb-mode #khoiVideo{ flex-shrink:0; }
+  /* Đầu khung "Mistakes found" nay RỖNG (ba phần tử đã dời lên tầng ②) ⇒ ẩn hẳn kẻo chừa
+     một khoảng trống vô nghĩa. */
+  #appScreen.pb-mode #errListHead{ display:none; }
+  #pbBarTrai{ display:flex; min-width:0; }
+  #pbBarPhai{ display:flex; align-items:center; gap:.5rem; margin-left:auto; min-width:0; }
+  /* Đồng bộ chiều cao + bỏ `mx-2` mà `capNhatBadgeThieuPb()` gán kèm trong className.
+     ⛔⛔ BẮT BUỘC có `:not(.hidden)` — ĐÃ VẤP KHI KIỂM: selector 2 ID (0,2,0,1) **ăn đứt**
+     `.hidden{display:none}` (0,0,1,0) của Tailwind, nên nút CONFLICT bị ép hiện ra dù
+     `veNutLocPb()` đã gắn `hidden` cho nó (số bằng 0). Đúng họ bẫy cascade mà file này đã ghi
+     ở khối `#dsTab` ("cấm dùng luật đổi display lên phần tử có thể mang .hidden"). */
+  #pbBar #btnPbLoc > button:not(.hidden){ min-height:30px; display:flex; align-items:center; justify-content:center; }
+  #pbBar #btnPbThieu:not(.hidden){ margin-left:0; margin-right:0; min-height:34px;
+                      display:inline-flex; align-items:center; justify-content:center; }
+  #pbBar #errStats{ gap:.375rem; }
+  #pbBar #errStats > span:not(.hidden){ min-height:34px; display:inline-flex; align-items:center; justify-content:center; }
+  @media (max-width:1023.98px){
+    /* Điện thoại: nút lọc HÀNG TRÊN, badge + số đếm HÀNG DƯỚI; mỗi hàng trải hết bề ngang và
+       các ô chia đều nhau cho cân (thầy chốt). */
+    #appScreen.pb-mode #pbBar{ flex-direction:column; align-items:stretch; gap:.375rem; }
+    #pbBarPhai{ margin-left:0; }
+    #appScreen.pb-mode #btnPbLoc{ display:flex; width:100%; }
+    #pbBar #btnPbLoc > button:not(.hidden){ flex:1 1 0%; padding-left:.25rem; padding-right:.25rem; }
+    #pbBarPhai > *{ flex:1 1 0%; }
+    #pbBar #errStats{ justify-content:center; }
+  }
+  @media (min-width:1024px){
+    /* ⛔ `?v=59` — luật cũ `#errListCard{grid-row:1/span 2}` ĐÃ BỎ cùng lưới 2 cột.
+       `#khoiNhap` mang class `lg:contents` (tan ra thành ô lưới) — ở đây phải kéo nó về làm
+       KHỐI THẬT thì mới cuộn được; nó là tầng ④, phần duy nhất cuộn. */
+    /* `scrollbar-gutter:stable` — luôn chừa chỗ cho thanh cuộn, để bề ngang khung danh sách
+       KHÔNG nhảy 15px giữa lúc ít lỗi (chưa cần cuộn) và nhiều lỗi (đã cuộn). */
+    #appScreen.pb-mode #khoiNhap{ display:block; flex:1 1 0%; min-height:0;
+                                  overflow-y:auto; overflow-x:hidden; scrollbar-gutter:stable; }
+    #appScreen.pb-mode #errListCard{ display:block; min-height:0; }
+  }
+  /* Câu đã GỠ (Accept Appeal): mờ + gạch ngang.
+     ⛔ (Đợt Keep/Accept 02/09/2026) KHÔNG còn chìm xuống cuối bảng — thầy chốt cho em ĐỔI Ý
+     thoải mái kể cả sau khi đã gửi, mà chìm xuống đáy thì em không tìm lại nổi để bấm lại. */
+  .err-go{ opacity:.55; }
+  .err-go .text-rose-600, .err-go .text-emerald-600, .err-go .italic{ text-decoration:line-through; }
+  /* Nút SUBMIT VÀNG khi có sửa chưa gửi.
+     (Đợt Keep/Accept 02/09/2026 — thầy chốt) BỎ hẳn kiểu nảy to-nhỏ cũ (`transform:scale`):
+     nút phình ra rồi thu lại làm cả thanh đầu trang giật theo. Nay nút ĐỨNG YÊN đúng kích
+     thước, chỉ có HÀO QUANG VÀNG toả ra rồi thu lại — cùng khuôn với `.dis-halo` bên dưới,
+     đổi màu sang amber. Giữ NGUYÊN tên class `nut-vang-nhay` vì `capNhatNutSubmit()` đang gọi. */
+  @keyframes nutVangHao{
+    0%,100%{ box-shadow:0 0 0 3px rgba(245,158,11,.40), 0 0 14px 4px rgba(245,158,11,.55); }
+    50%{ box-shadow:0 0 0 7px rgba(245,158,11,.15), 0 0 28px 10px rgba(245,158,11,.85); }
+  }
+  .nut-vang-nhay{ animation:nutVangHao 1.1s ease-in-out infinite; }
+  /* Nút DISAGREEMENT đang bật: hào quang nhấp nháy quanh nút */
+  @keyframes disHalo{
+    0%,100%{ box-shadow:0 0 0 3px rgba(225,29,72,.35), 0 0 14px 4px rgba(225,29,72,.55); }
+    50%{ box-shadow:0 0 0 6px rgba(225,29,72,.15), 0 0 26px 9px rgba(225,29,72,.85); }
+  }
+  .dis-halo{ animation:disHalo 1s ease-in-out infinite; }
+  /* (Đợt Keep/Accept 02/09/2026) Hai nút Keep Issue / Accept Appeal nằm TRONG ô lỗi, hàng cuối.
+     Nút KHÔNG được chọn thì nhạt hẳn đi (thầy chốt "cái kia nhạt đi và khó nhìn") — dùng
+     opacity chứ không đổi màu, để em vẫn đọc được chữ mà bấm lại khi muốn đổi ý. */
+  .ka-mo{ opacity:.35; }
+  .ka-mo:hover{ opacity:.7; }
+  /* Pop-up nhỏ cạnh avatar: chỉ còn NỘI DUNG phản biện (2 nút Keep/Agree đã dời vào ô lỗi) */
+  #pbPop{ position:fixed; z-index:70; width:290px; background:#fff; border:1px solid #e2e8f0;
+    border-radius:1rem; box-shadow:0 18px 40px rgba(15,23,42,.22); padding:.8rem; }
+</style>
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+<!-- ══════════ SCREEN 1 — CLASS LOGIN ══════════ -->
+<div id="loginScreen" class="fixed inset-0 z-50 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 pop my-8">
+    <!-- Logo site = ảnh chibi thầy chọn (img/logo-site.png, 256px thu từ bản gốc AVATAR\OK CHIBI - TRON.png).
+         Tên site "Speaking in Andrew Classes": chữ Speaking tô gradient tím-hồng (thầy chốt chặng 28) -->
+    <div class="flex items-center gap-3 mb-1">
+      <img src="img/logo-site.png" alt="Speaking in Andrew Classes" class="w-14 h-14 rounded-full shadow shrink-0">
+      <div>
+        <h1 class="text-2xl font-extrabold leading-tight bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Speaking</h1>
+        <p class="text-sm text-slate-500 font-medium">in Andrew Classes</p>
+      </div>
+    </div>
+
+    <div class="mt-6 space-y-4">
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Your class <span class="text-rose-500">*</span></label>
+        <input id="inpClass" type="text" autocomplete="off" placeholder="Enter your class code" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <div>
+        <label class="block text-sm font-semibold mb-1.5">Class code <span class="text-rose-500">*</span></label>
+        <input id="inpCode" type="text" autocomplete="off" placeholder="The code your teacher gave you" class="w-full rounded-xl border border-slate-300 px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+      </div>
+      <button id="btnLogin" class="w-full bg-indigo-600 hover:bg-indigo-700 active:scale-[.98] transition text-white font-bold rounded-xl py-3 flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/30">
+        <i data-lucide="log-in" class="w-5 h-5"></i> Continue
+      </button>
+    </div>
+
+    <!-- (CHẶNG 32) Lịch sử "MY SUBMITTED CHECKS" đã CHUYỂN sang trang xác nhận (identConfirm) — thầy chốt -->
+  </div>
+</div>
+
+<!-- ══════════ SCREEN 2 — PICK YOUR NAME ══════════ -->
+<div id="identifyScreen" class="hidden fixed inset-0 z-50 bg-gradient-to-br from-indigo-600 via-violet-600 to-fuchsia-600 flex items-center justify-center p-4 overflow-y-auto">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8 pop my-8">
+    <div id="identHeader" class="mb-4"></div>
+
+    <!-- name picker: 2 ô CẠNH NHAU — Your Team (trái) + Your Name (phải, KHÓA đến khi chọn team) -->
+    <div id="identPick">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">Your Team</label>
+          <select id="selTeam" class="w-full rounded-xl border border-slate-300 px-3 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="">— Team —</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-500 mb-1">Your Name</label>
+          <select id="selName" disabled class="w-full rounded-xl border border-slate-300 px-3 py-2.5 bg-slate-100 text-slate-400 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:cursor-not-allowed">
+            <option value="">— Name —</option>
+          </select>
+        </div>
+      </div>
+      <button id="btnBackLogin" class="mt-5 text-sm text-slate-500 hover:text-slate-700 font-medium flex items-center gap-1">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Back
+      </button>
+    </div>
+
+    <!-- confirmation -->
+    <div id="identConfirm" class="hidden">
+      <div class="flex items-center gap-4 mb-4">
+        <div id="identPhoto" class="w-16 h-16 rounded-2xl bg-indigo-100 text-indigo-600 font-extrabold text-xl flex items-center justify-center overflow-hidden shrink-0 bg-cover bg-center"></div>
+        <div class="min-w-0">
+          <div id="identName" class="text-2xl font-extrabold text-slate-900 leading-tight"></div>
+          <div id="identTeams" class="text-sm text-slate-600 mt-0.5"></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl bg-rose-50 border border-rose-100 p-4">
+        <div class="font-bold text-sm text-rose-700 mb-1 flex items-center gap-1.5"><i data-lucide="heart-handshake" class="w-4 h-4 shrink-0"></i> <span id="identNoteTitle">Andrew has something for you.</span></div>
+        <p class="text-sm text-slate-600 leading-relaxed">Practising is your responsibility, but it is also your right. Always remember that the practice you do today is how you build your own ability for tomorrow. Never act dishonestly or let yourself down by copying someone else's work!</p>
+        <label class="flex items-start gap-2.5 mt-3 cursor-pointer select-none">
+          <input id="chkAgree" type="checkbox" class="mt-0.5 w-5 h-5 accent-indigo-600 shrink-0">
+          <span class="text-sm font-semibold text-slate-800">I understand and respect our journey, teacher Andrew ❤️</span>
+        </label>
+      </div>
+
+      <button id="btnStartCheck" disabled class="mt-5 w-full bg-emerald-500 hover:bg-emerald-600 active:scale-[.98] transition text-white font-bold rounded-xl py-3 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/30 opacity-50 cursor-not-allowed">
+        <i data-lucide="rocket" class="w-5 h-5"></i> Start checking
+      </button>
+      <!-- (CHẶNG 32) nút quay lại = CHỈ ICON (thầy chốt bỏ chữ "That's not me — choose again") -->
+      <button id="btnBackNames" title="Choose again" class="mt-3 w-10 h-10 rounded-full border border-slate-200 hover:bg-slate-100 active:scale-95 transition flex items-center justify-center text-slate-500">
+        <i data-lucide="arrow-left" class="w-5 h-5 pointer-events-none"></i>
+      </button>
+
+      <!-- (CHẶNG 32) lịch sử bài ĐÃ NỘP trên chính thiết bị này — chuyển từ màn đăng nhập sang đây -->
+      <div id="reviewSection" class="hidden mt-4 pt-4 border-t border-slate-200">
+        <div class="text-xs font-bold text-slate-500 mb-2 flex items-center gap-1.5">
+          <i data-lucide="history" class="w-4 h-4"></i> MY SUBMITTED CHECKS — TAP TO REVIEW
+        </div>
+        <div id="reviewList" class="space-y-2"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ MAIN APP ══════════ -->
+<div id="appScreen" class="hidden">
+  <!-- Header -->
+  <!-- ⭐ 05/09/2026 (thầy chốt) — THANH ĐẦU TRANG: CO HẸP TỐI ĐA + LUÔN HIỆN.
+       Điện thoại: `sticky top-0` (ĐẢO NGƯỢC luật cũ "không sticky, video mới là thứ ghim" —
+       thầy chốt lại: thanh này phải luôn thấy để bấm Submit bất cứ lúc nào). Đệm dọc
+       py-3 → py-1.5, avatar 36→28px, và dòng tên bài `#hdTopic` ẩn ở điện thoại cho gọn.
+       Máy tính: `lg:shrink-0` như cũ (bố cục khoá 100dvh nên vốn đã luôn hiện). -->
+  <header class="shrink-0 z-40 bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white shadow-lg">
+    <!-- CHẶNG 33: LUÔN 1 HÀNG (bỏ flex-wrap). Hẹp <640px: tên site rút "SP in Andrew Classes",
+         Submit thành icon, Export ẨN. Rộng ≥640px: Submit đủ chữ + Export = ICON nằm BÊN PHẢI Submit. -->
+    <div class="max-w-7xl mx-auto px-3 sm:px-4 py-1.5 lg:py-2 flex flex-nowrap items-center gap-2 sm:gap-3">
+      <!-- (Đợt 3 Firebase, 26/08/2026 — thầy chốt) Bấm logo = POP-UP VIDEO CẢ LỚP
+           (xem bài các đội khác để học hỏi). Đường "về trang đăng nhập" dời vào nút
+           nhỏ trong pop-up đó (vẫn hỏi trước nếu còn dữ liệu chưa submit).
+           Logo trang check lỗi = ẢNH ĐĂNG NHẬP CỦA myLesson (img/avatar-tron.jpg,
+           chép từ myLesson/web/assets) — hai hệ nhìn là một nhà; màn đăng nhập +
+           favicon vẫn giữ ảnh chibi cũ. -->
+      <button id="btnHome" title="Watch all team videos" class="flex items-center gap-2 sm:gap-2.5 mr-auto min-w-0 text-left hover:opacity-90 active:scale-[.98] transition">
+        <!-- (Đợt Keep/Accept 02/09/2026 — thầy chốt) Ảnh tròn này là AVATAR CỦA CHÍNH EM đang
+             đăng nhập, không còn là ảnh thầy. `datAvatarDauTrang()` đổi src sau khi biết tên em
+             (kho ảnh chung andrewclasses.com, cùng hàm `avatarUrl` với avatar phiếu phản biện);
+             thiếu ảnh thì rơi về vòng tròn chữ tắt tên em. Việc BẤM giữ nguyên: mở pop-up xem
+             video cả lớp. ⛔ Màn ĐĂNG NHẬP vẫn giữ ảnh chibi (img/logo-site.png) — đừng đổi. -->
+        <span class="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full ring-2 ring-white/50 shadow shrink-0 overflow-hidden bg-white/20 flex items-center justify-center">
+          <span id="hdAvatarChu" class="text-xs font-extrabold text-white"></span>
+          <img id="hdAvatar" src="img/avatar-tron.jpg" alt="" class="absolute inset-0 w-full h-full object-cover">
+        </span>
+        <div class="min-w-0">
+          <div class="font-extrabold leading-tight text-sm sm:text-base truncate">
+            <span class="sm:hidden">SP in Andrew Classes</span>
+            <span class="hidden sm:inline">Speaking in Andrew Classes</span>
+          </div>
+          <!-- ⭐ 05/09: ẩn ở điện thoại (thanh phải cao tối thiểu), máy tính vẫn giữ tên bài.
+               ⛔ Ẩn bằng CSS thuần (khối "#hdTopic" trong <style>), KHÔNG dùng `hidden lg:block`:
+               luật của file cấm cặp `.hidden` + `lg:*` đổi display. -->
+          <div id="hdTopic" class="text-[11px] sm:text-xs text-indigo-100 truncate"></div>
+        </div>
+      </button>
+      <!-- ⭐ 05/09/2026 — dòng trạng thái TỰ LƯU ("Saving…" / "✓ Auto saved 20:14" / "Not saved — retrying…"),
+           chỉ hiện ở màn chấm mô hình 2 (`tlBat()` gỡ .hidden). CSS ở khối "#hdLuu" trong <style>. -->
+      <span id="hdLuu" class="hdLuu hidden" data-kieu="san">
+        <span class="hdLuu-ico" aria-hidden="true">
+          <svg class="hdLuu-check" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span class="hdLuu-spin"></span>
+          <svg class="hdLuu-alert" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        </span>
+        <span id="hdLuuChu"></span>
+      </span>
+      <span id="hdStudent" class="shrink-0 bg-white/15 rounded-xl px-2.5 sm:px-3.5 py-2 text-xs sm:text-sm font-bold tabular-nums whitespace-nowrap"></span>
+      <button id="btnSubmit" title="Submit" class="shrink-0 bg-emerald-500 hover:bg-emerald-400 transition rounded-xl px-2.5 sm:px-4 py-2 text-sm font-bold flex items-center gap-1.5 shadow">
+        <i data-lucide="send" class="w-4 h-4 shrink-0"></i><span class="hidden sm:inline">Submit</span>
+      </button>
+      <button id="btnExport" title="Export Excel" class="hidden sm:flex shrink-0 bg-white/15 hover:bg-white/25 transition rounded-xl px-2.5 py-2 text-sm font-bold items-center justify-center">
+        <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- CHẶNG 29: dải báo chế độ XEM LẠI bài đã nộp (chỉ hiện khi vào từ "My submitted checks") -->
+  <div id="reviewBanner" class="hidden bg-emerald-50 border-b border-emerald-200 shrink-0">
+    <div class="max-w-7xl mx-auto px-4 py-2 flex flex-wrap items-center gap-2">
+      <span class="text-sm font-semibold text-emerald-800 flex items-center gap-1.5 mr-auto">
+        <i data-lucide="check-circle-2" class="w-4 h-4 shrink-0"></i> This check was submitted — you are viewing it.
+      </span>
+      <button id="btnEditAgain" class="bg-white border border-emerald-300 hover:bg-emerald-100 transition rounded-xl px-3.5 py-1.5 text-sm font-bold text-emerald-800 flex items-center gap-1.5">
+        <i data-lucide="pencil" class="w-4 h-4"></i> Edit &amp; submit again
+      </button>
+    </div>
+  </div>
+
+  <!-- Mobile: block thường để video sticky được theo cuộn trang; Desktop: grid 2 cột chiếm hết chiều cao.
+       ⚠️ PHẢI là lg:items-stretch (KHÔNG items-start): items-start làm cột nhập liệu cao theo NỘI DUNG
+       thay vì bị khoá theo màn hình → danh sách lỗi dài bị overflow-hidden CẮT CỤT, không cuộn được
+       (bug chặng 15→26, HS không xem lại/sửa lỗi trước khi Submit được — sửa ở chặng 27). -->
+  <main class="max-w-7xl mx-auto w-full px-4 py-2 lg:py-5 space-y-2.5 lg:space-y-0 lg:grid lg:grid-cols-2 lg:grid-rows-[auto_minmax(0,1fr)] lg:gap-5 lg:items-stretch lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+
+    <!-- ⭐⭐ `?v=59` (thầy chốt) — TẦNG 2 CỦA MÀN PHẢN BIỆN: dải nút lọc + dải số đếm, TÁCH HẲN
+         ra khỏi đầu khung "Mistakes found". Khung này để RỖNG trong HTML — ba phần tử
+         #btnPbLoc · #btnPbThieu · #errStats được `pbDungThanh()` (app.js) DỜI vào đây khi mở
+         màn phản biện, vì màn CHẤM vẫn cần đúng ba phần tử đó ở chỗ cũ.
+         ⛔ Dời bằng `appendChild` nên listener gắn trực tiếp trên chúng KHÔNG mất.
+         ⛔ Phải nằm TRƯỚC #khoiVideo (thứ tự tầng 2 → tầng 3 thầy chốt). Ở màn chấm nó `hidden`
+            nên không chiếm ô nào trong lưới desktop. -->
+    <div id="pbBar" class="hidden">
+      <div id="pbBarTrai"></div>
+      <div id="pbBarPhai"></div>
+    </div>
+
+    <!-- ─── VIDEO COLUMN ─── (mobile: GHIM trên cùng khi cuộn; desktop: đứng yên trong bố cục khóa.
+         CHẶNG 29: cột + thẻ video thành flex dọc giãn hết chiều cao → khối video CAO BẰNG khối check lỗi) -->
+    <!-- ⭐ 05/09/2026 — KHỐI ĐỨNG YÊN của điện thoại (hai nút CHECK/LIST + video + player).
+         ⛔ ĐÃ BỎ `sticky top-0 z-30`: trên máy thật nó KHÔNG giữ được, cuộn xuống là trôi mất
+            (xem khối CSS "KHOÁ BỐ CỤC Ở MỌI CỠ MÀN"). Nay nó đứng yên nhờ `flex-shrink:0`
+            trong cột `main`, chắc chắn hơn hẳn. -->
+    <div id="khoiVideo" class="pt-1 pb-2 lg:p-0 lg:flex lg:flex-col">
+
+      <!-- ⭐ 05/09/2026 (thầy chốt) — HAI NÚT CHECK / LIST, ngay TRÊN ĐẦU VIDEO (chỉ điện thoại).
+           ⛔ LUÔN HIỆN: nằm NGOÀI khung cuộn và KHÔNG co theo bàn phím ảo như video.
+              Đừng đưa khối này vào trong khung cuộn, và đừng gắn `lg:*` đổi display cho nó
+              (ẩn ở desktop bằng CSS thuần `@media (min-width:1024px){#dsTab{display:none}}`). -->
+      <div id="dsTab" class="flex rounded-xl overflow-hidden border-2 border-indigo-200 bg-white mb-2">
+        <button data-ds="check" class="dsBtn"><i data-lucide="square-pen" class="w-3.5 h-3.5 pointer-events-none"></i> CHECK</button>
+        <button data-ds="list" class="dsBtn"><i data-lucide="list-checks" class="w-3.5 h-3.5 pointer-events-none"></i> LIST
+          <span id="dsSo" class="rounded-full bg-rose-500 text-white px-1.5 text-[10px]">0</span></button>
+      </div>
+
+      <!-- ⭐ 05/09: thẻ BỎ ĐỆM, `overflow-hidden` — video tràn sát mép trên thẻ để mép trên của
+           nó trùng mép trên khung Mistakes found (thầy chốt). Đệm nay nằm ở từng khối con. -->
+      <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden lg:shrink-0">
+        <div class="video-shell" id="videoContainer"></div>
+
+        <!-- Always-visible player bar (custom — NEVER auto-hides, unlike native video controls)
+             ⭐ 05/09/2026 (thầy chốt) — GỌN TỐI ĐA + THÊM LÙI/TIẾN 5 GIÂY.
+             Nút play 56px → 34px · chữ giờ text-lg → 11px · bỏ nền xám + viền của cả thanh.
+             ⛔ Hai nút tua CỐ Ý không ghi số "5" (thầy chốt: "không cần thể hiện số 5 bên
+                trong, chỉ cần thể hiện sự tiến lùi") — đừng thêm lại. -->
+        <div id="videoCtrl" class="hidden items-center gap-1.5 px-2 py-1.5">
+          <button id="vcBack5" title="Lùi 5 giây" class="w-[30px] h-[30px] shrink-0 rounded-full text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95 transition flex items-center justify-center">
+            <i data-lucide="rotate-ccw" class="w-[18px] h-[18px] pointer-events-none"></i>
+          </button>
+          <button id="vcPlay" class="w-[34px] h-[34px] shrink-0 rounded-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white flex items-center justify-center shadow shadow-indigo-600/30">
+            <i data-lucide="play" class="w-4 h-4 pointer-events-none"></i>
+          </button>
+          <button id="vcFwd5" title="Tiến 5 giây" class="w-[30px] h-[30px] shrink-0 rounded-full text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95 transition flex items-center justify-center">
+            <i data-lucide="rotate-cw" class="w-[18px] h-[18px] pointer-events-none"></i>
+          </button>
+          <span id="vcCur" class="font-mono text-[11px] font-bold text-slate-700 tabular-nums shrink-0">0:00</span>
+          <input id="vcSeek" type="range" min="0" max="1000" value="0" class="flex-1 min-w-0 cursor-pointer">
+          <span id="vcDur" class="font-mono text-[11px] text-slate-400 tabular-nums shrink-0">0:00</span>
+        </div>
+
+        <!-- Backup slider (chỉ hiện khi Drive KHÔNG phát trực tiếp được): kéo cho khớp giờ trên video Drive rồi bấm SET TIME.
+             Không play/pause, không chữ hướng dẫn — thanh XANH DƯƠNG, nút mốc TO gấp đôi. -->
+        <div id="stopwatchWrap" class="hidden items-center gap-3.5 border-t border-slate-200 px-3 py-2 lg:shrink-0">
+          <span id="swCur" class="font-mono text-lg font-bold text-slate-900 tabular-nums shrink-0 w-14 text-center">0:00</span>
+          <input id="swSeek" type="range" min="0" max="900" value="0" class="flex-1 min-w-0 cursor-pointer">
+          <button id="swSet" class="shrink-0 bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white rounded-xl px-4 py-2.5 font-bold text-sm shadow shadow-indigo-600/30">SET TIME</button>
+        </div>
+
+        <!-- ⛔ 05/09/2026 (thầy chốt) — DÒNG "LỚP · TEAM · thành viên" ĐÃ BỎ HẲN, đừng dựng lại
+             (hàm `videoInfoHtml()` cũng đã gỡ khỏi app.js). Ô này GIỮ LẠI vì còn dùng cho chữ
+             trạng thái lúc tải video ("Loading YouTube…"), và tự biến mất khi rỗng nhờ luật
+             CSS `#videoStatus:empty{display:none}`.
+             CHẶNG 34: LUÔN 1 DÒNG — nowrap + min-w-0 + overflow-hidden; cỡ chữ do fitVideoInfo() hạ. -->
+        <div id="videoStatus" class="px-2 pb-1.5 text-slate-600 flex items-center gap-1.5 flex-nowrap whitespace-nowrap min-w-0 overflow-hidden lg:shrink-0"></div>
+      </div>
+    </div>
+
+    <!-- ─── INPUT COLUMN ─── (CHẶNG 30: desktop wrapper "tan ra" lg:contents → form + list thành
+         2 ô grid riêng; van an toàn màn thấp chuyển lên <main> lg:overflow-y-auto) -->
+    <!-- ⭐ 05/09/2026 — PHẦN DUY NHẤT CUỘN trên điện thoại (`#khoiNhap` trong CSS).
+         Desktop vẫn "tan ra" bằng `lg:contents` để form + list thành hai ô grid trực tiếp. -->
+    <div id="khoiNhap" class="space-y-4 lg:contents">
+
+      <!-- (tab bar đã bỏ chặng 12 — thời gian nói nhập ngay dưới nút tên HS trong form) -->
+      <!-- MISTAKES TAB -->
+      <div id="tab-errors" class="space-y-4">
+        <div id="errFormCard" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 lg:p-5">
+          <!-- STUDENT trên cùng — CHỈ CÒN HÀNG NÚT TÊN.
+               ⛔ 05/09/2026 (thầy chốt): 4 Ô GIỜ NÓI dưới mỗi tên ĐÃ BỎ HẲN, đừng dựng lại.
+                  Hệ quả đã biết và đã báo thầy: app máy tính mất nguồn "bảng giờ nói từng em"
+                  (`nguoncham.js` ①) — sẽ suy từ mốc các lỗi đã bắt trong MỘT ĐỢT RIÊNG.
+                  Trường `timers` trong bài nộp VẪN GIỮ (buổi cũ còn dữ liệu thật trên kho,
+                  ghi đè mất là hỏng — xem LUẬT 9️⃣), chỉ là không ai nhập mới được nữa.
+               CHẶNG 33: BỎ dấu sao đỏ ở cả 6 mục — mọi mục trong khung này đều bắt buộc rồi,
+               dấu sao chỉ làm rối. Luật chặn khi thiếu GIỮ NGUYÊN (xem addOrUpdateError). -->
+          <div class="mb-3">
+            <label class="block text-xs font-bold text-slate-500 mb-1">STUDENT</label>
+            <div id="fStudentWrap"></div>
+          </div>
+
+          <!-- TIME: tiêu đề CÙNG HÀNG với ô MIN/SEC (chữ TIME giãn cho bằng TYPE). MIN/SEC tự chạy theo video khi phát -->
+          <div class="mb-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <label class="text-xs font-bold text-slate-500 shrink-0 sm:w-14">TIME</label>
+              <div class="grid grid-cols-2 gap-2 w-full sm:flex-1 min-w-0">
+                <div class="relative">
+                  <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none">MIN</span>
+                  <input id="fMin" type="number" min="0" class="w-full rounded-lg border border-slate-300 pl-9 pr-2 py-2 text-center font-mono text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="relative">
+                  <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400 pointer-events-none">SEC</span>
+                  <input id="fSec" type="number" min="0" max="59" class="w-full rounded-lg border border-slate-300 pl-9 pr-2 py-2 text-center font-mono text-sm font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TYPE: tiêu đề CÙNG HÀNG với 3 nút. Mặc định nền TRẮNG; bấm = KHUNG VÀNG. Icon BÊN TRÁI chữ -->
+          <div class="mb-3">
+            <div class="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+              <label class="text-xs font-bold text-slate-500 shrink-0 sm:w-14">TYPE</label>
+              <div class="grid grid-cols-3 gap-2 w-full sm:flex-1 min-w-0" id="errTypeBtns">
+                <button data-type="Grammar" class="errType rounded-lg border-2 px-0.5 sm:px-1 py-2 text-[10px] sm:text-xs font-bold leading-tight transition flex flex-row items-center justify-center gap-1.5 border-slate-200 bg-white text-slate-700 hover:border-slate-300"><i data-lucide="pencil-line" class="w-4 h-4 text-blue-600 shrink-0 pointer-events-none"></i>Grammar</button>
+                <button data-type="Pronunciation" class="errType rounded-lg border-2 px-0.5 sm:px-1 py-2 text-[10px] sm:text-xs font-bold leading-tight transition flex flex-row items-center justify-center gap-1.5 border-slate-200 bg-white text-slate-700 hover:border-slate-300"><i data-lucide="audio-lines" class="w-4 h-4 text-emerald-600 shrink-0 pointer-events-none"></i>Pronunciation</button>
+                <button data-type="Information" class="errType rounded-lg border-2 px-0.5 sm:px-1 py-2 text-[10px] sm:text-xs font-bold leading-tight transition flex flex-row items-center justify-center gap-1.5 border-slate-200 bg-white text-slate-700 hover:border-slate-300"><i data-lucide="file-text" class="w-4 h-4 text-amber-500 shrink-0 pointer-events-none"></i>Information</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- SENTENCE: câu chứa lỗi (BẮT BUỘC). Ô tự giãn cao khi gõ nhiều chữ; chữ cỡ nhỏ = cỡ chữ hướng dẫn -->
+          <div class="mb-3">
+            <label class="block text-xs font-bold text-slate-500 mb-1">SENTENCE</label>
+            <textarea id="fSentence" rows="1" placeholder="The sentence that contains the mistake" class="autogrow w-full rounded-xl border border-slate-300 px-4 py-2.5 text-xs placeholder:italic placeholder:text-xs placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="block text-xs font-bold text-slate-500 mb-1">MISTAKE</label>
+            <textarea id="fDetail" rows="1" placeholder="e.g. said 'he go' instead of 'he goes'" class="autogrow w-full rounded-xl border border-slate-300 px-4 py-2.5 text-xs placeholder:italic placeholder:text-xs placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-slate-500 mb-1">EXPLANATION</label>
+            <textarea id="fExplain" rows="1" placeholder="Why is it wrong? How should it be fixed?" class="autogrow w-full rounded-xl border border-slate-300 px-4 py-2.5 text-xs placeholder:italic placeholder:text-xs placeholder:text-slate-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+          </div>
+
+          <!-- id="errAddRow": máy tính đẩy hàng nút này DÍNH ĐÁY thẻ (`margin-top:auto`) để mép
+               dưới khối check lỗi bằng đúng mép dưới khung Mistakes found — thầy chốt 05/09. -->
+          <div id="errAddRow" class="flex gap-2">
+            <button id="btnAddErr" class="flex-1 bg-rose-500 hover:bg-rose-600 active:scale-[.98] transition text-white font-bold rounded-xl py-2 flex items-center justify-center gap-2 shadow-lg shadow-rose-500/30">
+              <i data-lucide="plus-circle" class="w-5 h-5"></i><span id="btnAddErrLabel">Add this mistake</span>
+            </button>
+            <button id="btnCancelEdit" class="hidden bg-slate-200 hover:bg-slate-300 rounded-xl px-4 font-bold text-sm">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Mistakes list (desktop CHẶNG 30: ô grid CỘT PHẢI HÀNG 2 — dưới form, dưới video để trống;
+             vẫn là phần DUY NHẤT cuộn; min-h-[10rem] = SÀN chặng 27, thiếu chỗ thì <main> cuộn bù) -->
+        <!-- CHẶNG 33: SÀN cao 10rem→14rem. Lý do: nút "Delete all" ăn mất ~40px của khung, màn
+             1280×800 khung tụt về sàn thì phần cuộn chỉ còn 34px (chưa đủ 1 dòng lỗi). Chọn 12rem
+             (không phải 14) để màn 800px CHƯA phải bật van cuộn của <main> — bố cục vẫn ghim.
+             Màn thấp hơn nữa vẫn an toàn nhờ van <main lg:overflow-y-auto> của chặng 30. -->
+        <!-- ⭐ 05/09/2026 (thầy chốt): khung này nay chiếm TRỌN CỘT PHẢI, trải CẢ HAI HÀNG
+             (`lg:row-span-2`) — cao bằng tổng video + khối check lỗi bên trái.
+             ⛔ Bỏ `lg:row-start-2` của CHẶNG 30 (khi đó nó nằm dưới form, trên nó để trống). -->
+        <div id="errListCard" class="bg-white rounded-3xl shadow-sm border border-slate-200 p-4 lg:p-5 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:min-h-[12rem] lg:flex lg:flex-col">
+          <!-- `?v=57`: đặt id để CSS vá được bố cục điện thoại của màn PHẢN BIỆN (xem khối
+               "#errListHead" trong <style>) — dùng chung cho cả màn chấm, đừng đổi tên. -->
+          <div id="errListHead" class="flex items-center justify-between mb-3 lg:shrink-0">
+            <h2 id="errListTitle" class="font-extrabold flex items-center gap-2"><i data-lucide="list-checks" class="w-5 h-5 text-indigo-600"></i> Mistakes found</h2>
+            <!-- (Đợt lọc ALL/MINE) màn phản biện: thay hẳn tiêu đề trên bằng nút DÀI CHIA ĐÔI —
+                 bên đang hiện thì sáng, bên kia xám mờ (ẩn/hiện qua CSS .pb-mode bên dưới) -->
+            <!-- (Đợt CHÍNH CHỦ QUYẾT 02/09/2026) chèn thêm ô GIỮA "TEAM CONFLICT: n" — những câu
+                 mà CHÍNH CHỦ đã Agree nhưng đồng đội lại Disagree. Rất hiếm, nên ô này chỉ hiện
+                 khi n ≥ 1 (veNutLocPb tự bật/tắt bằng class .hidden). -->
+            <div id="btnPbLoc" class="hidden items-center rounded-full border-2 border-slate-300 overflow-hidden text-xs font-extrabold">
+              <button data-loc="all" class="px-3.5 py-1.5 transition">ALL</button>
+              <!-- `?v=59`: "TEAM CONFLICT" rút gọn thành "CONFLICT" (thầy chốt) — chữ thật do
+                   `veNutLocPb()` ghi đè mỗi lượt vẽ, sửa ở đây thì sửa cả bên đó. -->
+              <button data-loc="conflict" class="hidden px-3.5 py-1.5 transition border-x-2 border-slate-300">CONFLICT</button>
+              <button data-loc="mine" class="px-3.5 py-1.5 transition">MINE</button>
+            </div>
+            <!-- (Đợt B) nút DISAGREEMENT: số câu có phản đối CHƯA xử lý; bấm = dồn lên đầu + hào quang -->
+            <button id="btnDisagree" class="hidden"></button>
+            <!-- (Đợt phản biện 2) badge cố định: số lỗi CỦA CHÍNH EM chưa AGREE/DISAGREE (màn phản biện) -->
+            <button id="btnPbThieu" class="hidden"></button>
+            <div id="errStats" class="flex gap-1.5 text-xs font-bold"></div>
+          </div>
+          <div class="lg:flex-1 lg:min-h-0 lg:overflow-y-auto lg:pr-1">
+            <div id="errList" class="space-y-2.5"></div>
+            <div id="errEmpty" class="text-center py-8 text-slate-400 text-sm">
+              <i data-lucide="scan-search" class="w-10 h-10 mx-auto mb-2 opacity-50"></i>
+              No mistakes yet. Watch closely and get started! 🔍
+            </div>
+          </div>
+          <!-- ⛔ (Đợt Keep/Accept 02/09/2026 — thầy chốt) NÚT "DELETE ALL" ĐÃ BỎ HẲN, đừng dựng lại.
+               Lý do: xoá sạch một phát là mất cả buổi làm việc của em, mà không có đường lùi.
+               Muốn xoá thì phải xoá TỪNG câu qua nút bút chì (xoá trắng cả 3 ô SENTENCE/MISTAKE/
+               EXPLANATION → nút đỏ đổi thành "Delete this mistake"). Xem `addOrUpdateError()`. -->
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] hidden">
+  <div id="toastInner" class="rounded-2xl px-5 py-3 shadow-2xl text-white font-bold text-sm flex items-center gap-2"></div>
+</div>
+
+<!-- Login error modal -->
+<div id="loginErrModal" class="fixed inset-0 z-[55] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop text-center">
+    <div class="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="alert-circle" class="w-6 h-6 text-rose-500"></i>
+    </div>
+    <p class="text-slate-700 font-semibold mb-4 leading-relaxed">Your information is not correct. Contact teacher Andrew to get help.</p>
+    <button id="btnLoginErrOk" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 font-bold text-sm">OK</button>
+  </div>
+</div>
+
+<!-- Leave/home confirmation modal (bấm logo khi còn dữ liệu chưa submit) -->
+<div id="leaveModal" class="fixed inset-0 z-[55] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop text-center">
+    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="log-out" class="w-6 h-6 text-amber-500"></i>
+    </div>
+    <p class="text-slate-700 font-semibold mb-4 leading-relaxed">You have work that hasn't been submitted yet. Go back to the start anyway?</p>
+    <div class="flex gap-2">
+      <button id="btnLeaveCancel" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Stay here</button>
+      <button id="btnLeaveOk" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2.5 font-bold text-sm">Go back</button>
+    </div>
+  </div>
+</div>
+
+<!-- CHẶNG 29: xác nhận MỞ KHOÁ sửa bài đã nộp -->
+<div id="editAgainModal" class="fixed inset-0 z-[55] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop text-center">
+    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="pencil" class="w-6 h-6 text-amber-500"></i>
+    </div>
+    <p class="text-slate-700 font-semibold mb-1 leading-relaxed">Are you sure you want to edit and submit this check again?</p>
+    <p class="text-xs text-slate-500 mb-4 leading-relaxed">Teacher Andrew already received your check. If you edit it, remember to press <b>Submit</b> again when you finish.</p>
+    <div class="flex gap-2">
+      <button id="btnEditAgainCancel" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Keep viewing</button>
+      <button id="btnEditAgainOk" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2.5 font-bold text-sm">Yes, edit</button>
+    </div>
+  </div>
+</div>
+
+<!-- (CHẶNG 35) HỎI TRƯỚC khi mở bài đã nộp — app KHÔNG tự nhảy vào chế độ xem nữa -->
+<div id="historyModal" class="fixed inset-0 z-[56] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop">
+    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="history" class="w-6 h-6 text-slate-500"></i>
+    </div>
+    <p id="histTitle" class="text-slate-700 font-semibold mb-1 leading-relaxed text-center"></p>
+    <p class="text-xs text-slate-500 mb-4 leading-relaxed text-center">Tap one to view it, or start a brand-new check.</p>
+    <div id="histList" class="space-y-2 max-h-56 overflow-y-auto"></div>
+    <button id="btnHistNew" class="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 font-bold text-sm">No thanks — start a new check</button>
+  </div>
+</div>
+
+<!-- (Đợt 3 Firebase) POP-UP VIDEO CẢ LỚP — bấm logo là mở. Học sinh xem bài của
+     các đội khác để học hỏi tham khảo (thầy chốt 26/08/2026). -->
+<div id="videosModal" class="fixed inset-0 z-[56] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl p-5 pop">
+    <div class="flex items-center gap-2 mb-3">
+      <i data-lucide="clapperboard" class="w-5 h-5 text-indigo-500 shrink-0"></i>
+      <h3 class="font-extrabold text-slate-800">All team videos</h3>
+      <span class="hidden sm:inline text-xs text-slate-400 font-semibold">watch other teams and learn from them</span>
+      <button id="btnVidClose" class="ml-auto p-1.5 rounded-lg hover:bg-slate-100 shrink-0">
+        <i data-lucide="x" class="w-5 h-5 pointer-events-none"></i>
+      </button>
+    </div>
+    <div id="vidTabs" class="flex flex-wrap gap-2 mb-3"></div>
+    <div id="vidBox" class="aspect-video w-full bg-slate-900 rounded-2xl overflow-hidden"></div>
+    <div class="mt-3 flex items-center gap-2">
+      <span class="text-[11px] text-slate-400 font-semibold">Videos are unlisted — for our class only.</span>
+      <button id="btnVidExit" class="ml-auto text-xs font-bold text-slate-400 hover:text-slate-600 underline shrink-0">Exit to login page</button>
+    </div>
+  </div>
+</div>
+
+<!-- ⛔ (Đợt Keep/Accept 02/09/2026) HAI POP-UP XOÁ CŨ (#delOneModal + #delAllModal) ĐÃ BỎ HẲN.
+     Xoá một lỗi nay đi qua chính ô nhập: bấm bút chì → xoá trắng cả 3 ô SENTENCE/MISTAKE/
+     EXPLANATION → nút đỏ tự đổi thành "Delete this mistake". Việc xoá trắng 3 ô CHÍNH LÀ lời
+     xác nhận, nên không hỏi thêm một lần nữa; muốn huỷ thì bấm Cancel, lỗi còn nguyên. -->
+
+<!-- (CHẶNG 32) cảnh báo NỘP ÍT HƠN lần trước (em có thể đang làm ở máy khác, form trống) -->
+<div id="fewerModal" class="fixed inset-0 z-[55] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop text-center">
+    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-500"></i>
+    </div>
+    <p class="text-slate-700 font-semibold mb-1 leading-relaxed">Your check was submitted — but it has <b id="fewerNow">0</b> mistakes, while your earlier submission had <b id="fewerBefore">0</b>.</p>
+    <p class="text-xs text-slate-500 mb-4 leading-relaxed">Don't worry — Teacher Andrew keeps <b>every</b> submission. If you meant to continue your earlier check, just log in again on this page and it will load back into the form.</p>
+    <button id="btnFewerOk" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl py-2.5 font-bold text-sm">Got it</button>
+  </div>
+</div>
+
+<!-- (CHẶNG 35) hỏi LẦN NỮA khi nộp mà quá ít lỗi (≤15) -->
+<div id="fewMistakesModal" class="fixed inset-0 z-[57] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop text-center">
+    <div class="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="help-circle" class="w-6 h-6 text-slate-500"></i>
+    </div>
+    <p class="text-slate-700 font-semibold mb-4 leading-relaxed">Do you really want to submit with only <b id="fewMistakesN">0</b> mistake<span id="fewMistakesS">s</span>?</p>
+    <div class="flex gap-2">
+      <button id="btnFewReturn" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Return to check</button>
+      <button id="btnFewSubmit" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-2.5 font-bold text-sm">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- (Đợt phản biện 2) hỏi lại khi Submit mà còn lỗi CỦA CHÍNH EM chưa AGREE/DISAGREE — thầy chốt:
+     KHÔNG chặn, chỉ hỏi lại rồi vẫn cho nộp nếu bấm "Submit anyway" -->
+<div id="pbThieuModal" class="fixed inset-0 z-[57] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop text-center">
+    <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-3">
+      <i data-lucide="alert-triangle" class="w-6 h-6 text-amber-500"></i>
+    </div>
+    <p class="text-slate-700 font-semibold mb-4 leading-relaxed">You still have <b id="pbThieuN">0</b> mistake<span id="pbThieuS">s</span> about <b>you</b> that you haven't AGREEd or DISAGREEd with. Submit anyway?</p>
+    <div class="flex gap-2">
+      <button id="btnPbThieuCancel" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Go back and check</button>
+      <button id="btnPbThieuOk" class="flex-1 bg-amber-500 hover:bg-amber-600 text-white rounded-xl py-2.5 font-bold text-sm">Submit anyway</button>
+    </div>
+  </div>
+</div>
+
+<!-- Submit confirmation modal -->
+<div id="submitModal" class="fixed inset-0 z-[55] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop">
+    <!-- CHẶNG 35: pop-up xác nhận nộp dùng ICON ĐƠN SẮC (thầy chốt: không màu mè) -->
+    <h3 class="font-extrabold text-lg mb-2 flex items-center gap-2"><i data-lucide="send" class="w-5 h-5 text-slate-400"></i> Submit your check?</h3>
+    <div id="submitSummary" class="text-sm text-slate-600 space-y-1 mb-4"></div>
+    <div class="flex gap-2">
+      <button id="btnSubmitCancel" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Not yet, review</button>
+      <button id="btnSubmitOk" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl py-2.5 font-bold text-sm">Submit ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ (Đợt B) POP-UP LOADING — vào bài / SUBMIT mô hình 2 (chặn thao tác) ══════════ -->
+<div id="m2LoadModal" class="fixed inset-0 z-[65] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-xs p-6 pop text-center">
+    <i data-lucide="loader" class="w-8 h-8 mx-auto text-indigo-600 animate-spin"></i>
+    <div id="m2LoadText" class="mt-3 font-bold text-sm text-slate-700">Loading…</div>
+  </div>
+</div>
+
+<!-- ⛔ 05/09/2026 (thầy chốt "ok build" tự lưu) — POP-UP "Two versions found" (#draftModal) ĐÃ GỠ HẲN:
+     màn chấm mô hình 2 không còn nháp trong máy, kho là gốc duy nhất (xem khối `tl` trong app.js).
+     Bản cũ ở Backup/truoc-v55-05-09/index.html. -->
+
+<!-- ══════════ ⛔ 04/09/2026 — KHÔNG ĐỌC ĐƯỢC BÀI TRÊN KHO ══════════
+     Trước đây `startM2` nuốt lỗi này và coi như "chưa có bài trên kho" ⇒ lấy nháp máy làm bản
+     chính rồi ghi đè lên bài thật. Nay hỏi hẳn. Chọn "Take notes offline" vẫn an toàn vì
+     `tongLoiGhiAnToan` không đọc được kho thì KHÔNG ghi. -->
+<div id="khoHongModal" class="fixed inset-0 z-[70] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop">
+    <h3 class="font-extrabold text-lg mb-2 flex items-center gap-2"><i data-lucide="cloud-off" class="w-5 h-5 text-rose-500"></i> Could not load your check</h3>
+    <p class="text-sm text-slate-600 mb-4">We could not reach the server, so we cannot show the mistakes you saved before. <b>Nothing is lost</b> — but please try again before you start working.</p>
+    <div class="flex gap-2">
+      <button id="btnKhoThuLai" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl py-2.5 font-bold text-sm">Try again</button>
+      <button id="btnKhoOffline" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Take notes offline</button>
+    </div>
+    <p class="text-[11px] text-slate-500 mt-3">Offline notes stay on this device. You can submit them once you are back online.</p>
+  </div>
+</div>
+
+<!-- ══════════ (Đợt B) XÁC NHẬN KEEP / AGREE — mỗi thao tác đều hỏi chốt (thầy chốt) ══════════ -->
+<div id="kaModal" class="fixed inset-0 z-[75] bg-black/50 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-sm p-6 pop">
+    <h3 id="kaTitle" class="font-extrabold text-lg mb-2"></h3>
+    <p id="kaText" class="text-sm text-slate-600 mb-4"></p>
+    <div class="flex gap-2">
+      <button id="btnKaCancel" class="flex-1 bg-slate-200 hover:bg-slate-300 rounded-xl py-2.5 font-bold text-sm">Cancel</button>
+      <button id="btnKaOk" class="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-xl py-2.5 font-bold text-sm">OK</button>
+    </div>
+  </div>
+</div>
+
+<!-- (Đợt B) pop-up nhỏ cạnh avatar — nội dung phản biện + Keep/Agree (JS đặt vị trí) -->
+<div id="pbPop" class="hidden"></div>
+
+<!-- ══════════════════════════════════════════════════════════════════════════════════════
+     ⭐⭐⭐ 03/09/2026 — MÀN GỘP LỖI TRÙNG (thầy duyệt qua bản mẫu
+     `myLesson/mau-web/mau-kiem-tra-trung-03-09-2026.html`, 6 vòng chỉnh)
+     MỘT màn dùng cho HAI việc, `state.cheDo` quyết:
+       'kiemtratrung' — đội BỊ CHẤM gộp các dòng cùng một lỗi rồi gửi đề nghị
+       'xacnhantrung' — đội CHẤM bỏ phiếu đồng ý / không đồng ý từng cụm
+     ⛔ CẢ HAI MÀN ĐỀU KHÔNG CÓ HÌNH, chỉ có tiếng (thầy chốt): ở đây các em đọc chữ là
+        chính, khung hình chiếm chỗ mà chẳng ai nhìn. Video YouTube vẫn là video đó, chỉ
+        giấu khung (#trungVideo 1px) — không cần kho audio riêng.
+     ══════════════════════════════════════════════════════════════════════════════════════ -->
+<div id="trungScreen" class="hidden bg-slate-100">
+  <!-- ① THANH THÔNG TIN. Ruột bó 820px bằng CSS (`#trungScreen > header > div`) để logo dính
+       mép trái cột, nút tên dính mép phải cột — y như màn phản biện `?v=60`.
+       ⭐ `?v=61`: BỎ HẲN nút SAVE (`#btnTrGui`), thay bằng dòng trạng thái `#trLuu` ở GIỮA.
+       ⛔ Khối `div` giữ tên bài KHÔNG còn `mr-auto` — có nó thì `#trLuu` (margin auto hai bên)
+          bị đẩy dạt sang phải, không đứng giữa được. Cùng nếp `#appScreen.tu-luu #btnHome`. -->
+  <header class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white">
+    <div class="mx-auto px-3 sm:px-4 py-3 flex items-center gap-2.5 sm:gap-3">
+      <span class="relative w-9 h-9 rounded-full ring-2 ring-white/50 shadow shrink-0 overflow-hidden bg-white/20 flex items-center justify-center">
+        <span id="trAvatarChu" class="text-[11px] font-extrabold text-white"></span>
+        <img id="trAvatar" alt="" class="absolute inset-0 w-full h-full object-cover">
+      </span>
+      <div class="min-w-0">
+        <div id="trTitle" class="font-extrabold leading-tight text-sm sm:text-base truncate"></div>
+        <div id="trSub" class="text-[11px] sm:text-xs text-indigo-100 truncate"></div>
+      </div>
+      <span id="trLuu" class="hdLuu hidden" data-kieu="san">
+        <span class="hdLuu-ico" aria-hidden="true">
+          <svg class="hdLuu-check" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          <span class="hdLuu-spin"></span>
+          <svg class="hdLuu-alert" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg>
+        </span>
+        <span id="trLuuChu"></span>
+      </span>
+      <span id="trWho" class="shrink-0 bg-white/15 rounded-xl px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-bold whitespace-nowrap"></span>
+    </div>
+  </header>
+
+  <main class="w-full px-3 sm:px-4">
+    <!-- ② DẢI NÚT — khác nhau theo từng màn, cùng một chỗ ngồi.
+         ⭐ `?v=62` (thầy chốt): con số nhét THẲNG vào tên nút, bỏ hẳn dải đếm rời `#trDem`.
+         Mọi nút TRẢI HẾT bề ngang cột ở CẢ máy tính lẫn điện thoại. -->
+    <div id="trBar" class="hidden">
+      <!-- KIỂM TRA TRÙNG: chọn bảng nào đang hiện -->
+      <div id="trTab" class="hidden">
+        <button data-trcot="trai" class="bg-slate-900 text-white">ALL MISTAKES:&nbsp;<span id="trSoLoi">0</span></button>
+        <button data-trcot="phai" class="bg-white text-slate-500">GROUPS:&nbsp;<span id="trSoCum">0</span></button>
+      </div>
+      <!-- XÁC NHẬN TRÙNG: lọc danh sách cụm -->
+      <div id="xnTab" class="hidden">
+        <button data-xnloc="all" class="bg-slate-900 text-white">YÊU CẦU XEM XÉT:&nbsp;<span id="xnSoAll">0</span></button>
+        <button data-xnloc="can" class="bg-white text-slate-500">CẦN BỎ PHIẾU:&nbsp;<span id="xnSoCan">0</span></button>
+      </div>
+      <!-- XÁC NHẬN TRÙNG: kết quả phiếu của CẢ ĐỘI — chỉ để nhìn, không bấm được -->
+      <div id="xnKq" class="hidden">
+        <span id="xnKqGop">ĐỒNG Ý GỘP:&nbsp;<span id="xnSoGop">0</span></span>
+        <span id="xnKqKhong">KHÔNG GỘP:&nbsp;<span id="xnSoKhong">0</span></span>
+      </div>
+    </div>
+
+    <!-- ③ THANH TIẾNG — ⛔ KHÔNG BAO GIỜ CÓ HÌNH (thầy chốt): khung `#trungVideo` giữ 1px ẩn,
+         vẫn là chính video YouTube của buổi, chỉ giấu khung hình.
+         ⭐ `?v=61`: khuôn nút lấy ĐÚNG của `#videoCtrl` bên màn chấm/phản biện — ↺ 30px ·
+         play tím 34px · ↻ 30px · giờ mono 11px. ⛔ Hai nút tua CỐ Ý không ghi số "5"
+         (thầy chốt từ `?v=50`: "chỉ cần thể hiện sự tiến lùi") — đừng thêm lại. -->
+    <div id="trDaiTieng" class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+      <div class="flex items-center gap-1.5 px-2 py-1.5 relative">
+        <button id="trLui" title="Lùi 5 giây" class="w-[30px] h-[30px] shrink-0 rounded-full text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95 transition flex items-center justify-center">
+          <i data-lucide="rotate-ccw" class="w-[18px] h-[18px] pointer-events-none"></i>
+        </button>
+        <button id="trPlay" title="Phát / Dừng" class="w-[34px] h-[34px] shrink-0 rounded-full bg-indigo-600 hover:bg-indigo-500 active:scale-95 transition text-white flex items-center justify-center shadow shadow-indigo-600/30"></button>
+        <button id="trToi" title="Tiến 5 giây" class="w-[30px] h-[30px] shrink-0 rounded-full text-slate-600 hover:bg-slate-200 hover:text-slate-900 active:scale-95 transition flex items-center justify-center">
+          <i data-lucide="rotate-cw" class="w-[18px] h-[18px] pointer-events-none"></i>
+        </button>
+        <span id="trCur" class="font-mono text-[11px] font-bold text-slate-700 tabular-nums shrink-0">0:00</span>
+        <input id="trSeek" type="range" min="0" max="1000" value="0" class="flex-1 min-w-0 cursor-pointer">
+        <span id="trDur" class="font-mono text-[11px] text-slate-400 tabular-nums shrink-0">0:00</span>
+        <div id="trungVideo" class="absolute w-px h-px overflow-hidden opacity-0 pointer-events-none"></div>
+      </div>
+    </div>
+
+    <!-- ④ PHẦN DUY NHẤT CUỘN -->
+    <div id="trCuon">
+      <!-- ── KIỂM TRA TRÙNG ──
+           ⭐ `?v=61`: MỘT CỘT ở MỌI cỡ màn — mỗi lúc chỉ hiện MỘT trong hai khung, theo nút
+           đang chọn ở tầng ②. Lưới 2 cột cũ đã bỏ hẳn.
+           ⛔ Đừng thêm bất kỳ class `lg:*` nào đổi `display` cho phần tử có thể mang `.hidden`
+              (class `lg:grid` từng ĐÈ LÊN `.hidden` làm hiện ra một ô trắng trống — thầy bắt
+              được ở màn XÁC NHẬN TRÙNG hồi `?v=44`). -->
+      <div id="ktWrap" class="hidden">
+        <div id="ktTrai" class="tr-khung relative">
+          <div id="ktLoad" class="hidden absolute inset-0 z-[15] items-center justify-center rounded-3xl bg-slate-50/90">
+            <div class="text-center px-6">
+              <div class="w-11 h-11 mx-auto mb-3 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+              <div class="font-extrabold text-indigo-700 text-sm tracking-wide">THẦY ANDREW ĐANG TÌM CÁC LỖI TRÙNG</div>
+            </div>
+          </div>
+          <div id="ktDs" class="space-y-2"></div>
+          <div id="ktViec" class="hidden sticky bottom-3 z-20 gap-2 justify-center px-1.5 pt-3">
+            <button id="ktTao" class="rounded-full bg-blue-600 hover:bg-blue-500 transition text-white font-extrabold text-xs px-4 py-2.5 shadow-lg flex items-center gap-1.5">
+              <i data-lucide="plus" class="w-4 h-4 pointer-events-none"></i>NEW GROUP <span id="ktSoTich" class="bg-white/25 rounded-full px-1.5">0</span>
+            </button>
+            <button id="ktThem" class="rounded-full bg-slate-900 hover:bg-slate-700 transition text-white font-extrabold text-xs px-4 py-2.5 shadow-lg flex items-center gap-1.5">
+              <i data-lucide="layers" class="w-4 h-4 pointer-events-none"></i>ADD TO A GROUP
+            </button>
+          </div>
+        </div>
+        <div id="ktPhai" class="tr-khung hidden">
+          <div id="ktCum" class="space-y-3"></div>
+        </div>
+      </div>
+
+      <!-- ── XÁC NHẬN TRÙNG: một cột (nội dung do trVeXn dựng) ── -->
+      <div id="xnWrap" class="hidden"></div>
+    </div>
+  </main>
+</div>
+
+<!-- pop-up CHỌN CỤM (bấm ADD TO A GROUP) -->
+<div id="trPopCum" class="fixed inset-0 z-[80] bg-slate-900/55 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-[22px] w-full max-w-[560px] max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
+    <div class="flex items-start gap-2.5 px-4 py-3 border-b border-slate-200">
+      <div>
+        <div class="text-sm font-extrabold text-slate-900">Thêm vào cụm nào?</div>
+        <div class="text-[11.5px] font-semibold text-slate-500"><b id="tpcSo">0</b> lỗi đang chọn</div>
+      </div>
+      <button id="tpcDong" class="ml-auto w-7 h-7 rounded-full bg-slate-100 text-slate-500 font-extrabold shrink-0">✕</button>
+    </div>
+    <div id="tpcDs" class="overflow-auto px-3.5 py-3 flex flex-col gap-2.5"></div>
+  </div>
+</div>
+
+<!-- pop-up XÁC NHẬN BỎ MỘT DÒNG KHỎI CỤM -->
+<div id="trPopXoa" class="fixed inset-0 z-[85] bg-slate-900/55 hidden items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl">
+    <div class="font-extrabold text-slate-900 mb-1">Bỏ lỗi này khỏi cụm?</div>
+    <p class="text-sm text-slate-600 mb-4">Lỗi sẽ trở lại danh sách như chưa gộp. Cụm còn một lỗi thì tự giải tán.</p>
+    <div class="flex gap-2 justify-end">
+      <button id="tpxKhong" class="rounded-xl px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100">Giữ lại</button>
+      <button id="tpxCo" class="rounded-xl px-4 py-2 text-sm font-bold text-white bg-red-600">Bỏ khỏi cụm</button>
+    </div>
+  </div>
+</div>
+
+<!-- ?v=… = số phiên bản chống cache: MỖI lần sửa app.js/config.js nhớ tăng số này lên -->
+<script src="config.js?v=30"></script>
+<!-- ⭐ 02/10/2026 (khoá đọc người ngoài GĐ4, thầy chốt): trang học sinh mySpeaking DỜI VỀ andrewclasses.com/speaking/ —
+     dùng CHUNG phiên đăng nhập ID + mật khẩu của myLesson (bỏ hẳn gõ mã lớp / chọn tên). Thứ tự y các trang myLesson:
+     config → thay-vao (TRƯỚC mọi Auth) → app-check (cửa chung: App Check + vé đọc) → ve-doc → nw-phien. -->
+<script src="../config.js?v=208"></script>
+<script src="../js/thay-vao.js?v=3"></script>
+<script src="../js/app-check.js?v=4"></script>
+<script src="../js/ve-doc.js?v=2"></script>
+<script src="../js/nw-phien.js?v=7"></script>
+<script src="js/trung.js?v=8"></script>
+<script src="js/app.js?v=67"></script>
+</body>
+</html>

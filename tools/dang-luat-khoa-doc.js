@@ -5,6 +5,8 @@
 //   GĐ2 (sau web v1.226.0 vé đọc): chat lớp + đã xem = em ĐÚNG LỚP/thầy · tiến độ video/audio + bài nộp = CHÍNH EM/thầy ·
 //        tích nộp Speaking = học sinh đăng nhập/thầy · lịch lớp mystudentRosterClasses = thầy.
 //   GĐ3 (sau AWord Đợt 439): bảng điểm assignments/*/bang + scores = HS đăng nhập/thầy (nội dung bài assignments/{code} vẫn công khai).
+//   GĐ4 (sau web v1.227.0 — mySpeaking HS về /speaking/ + app mySpeaking v2.14.0): spBuoi + ngăn con = em ĐÚNG LỚP/thầy đọc;
+//        tài liệu có chủ (baiNop/tongLoi/phanHoi/cumPhieu) ghi phải mang ma = vé; cum = em đúng lớp/thầy.
 //
 //   node tools/dang-luat-khoa-doc.js --gd <n> --xem | --dang | --kiem  ·  --lui <rulesetName>
 'use strict';
@@ -94,6 +96,56 @@ const GD = {
     ['assignments/3kuv6g/bang/tot', 403, 200, 200, 'doc'],
     ['assignments/3kuv6g/scores', 403, 200, 200],
     ['assignments/3kuv6g', 200, 200, 200, 'doc'],
+  ]],
+  4: ['(02/10/2026 GD4) khoa doc nguoi ngoai', [
+    ['spBuoi: hàm + đọc buổi',
+      "    match /spBuoi/{buoiId} {\n      allow read: if true;\n      allow write: if false;\n",
+      "    match /spBuoi/{buoiId} {\n" +
+      "      // (02/10/2026 GD4) khoa doc nguoi ngoai: buoi speaking chi em DUNG LOP (dang nhap myLesson) hoac thay doc/ghi.\n" +
+      "      // Trang hoc sinh mySpeaking doi ve andrewclasses.com/speaking/ (chung phien). Ma buoi = <LOP>_<BAI>.\n" +
+      "      function spLop() { return buoiId.split('_')[0]; }\n" +
+      "      function spDoc() { return hsLop(spLop()) || laThay(); }\n" +
+      "      // Tai lieu CO CHU (baiNop/tongLoi/phanHoi/cumPhieu): em ghi phai mang `ma` = ma trong ve.\n" +
+      "      function spChuMoi() { return (hsLop(spLop()) && request.resource.data.get('ma', '') == request.auth.token.get('ma', '')) || laThay(); }\n" +
+      "      // Sua tai lieu da co: dung chu (ma), hoac tai lieu cu CHUA co ma (truoc GD4) — em dung lop duoc gan ma minh vao.\n" +
+      "      function spChuCu() { return !('ma' in resource.data) || resource.data.ma == request.auth.token.get('ma', '') || laThay(); }\n" +
+      "      allow get: if spDoc();\n" +
+      "      // truy van danh sach (lop.html spBuoiFs) PHAI loc classCode == lop cua em\n" +
+      "      allow list: if hsLop(resource.data.get('classCode', '')) || laThay();\n" +
+      "      allow write: if false;\n"],
+    ['baiNop: đọc + ghi có chủ',
+      "      match /baiNop/{sid} {\n        allow read: if true;\n        allow create: if request.resource.data.keys().hasOnly(\n                           ['sid','submittedAt','classCode','lesson','student','myTeam',\n                            'checkedTeam','videoUrl','videoId','errors','timers','createdAt'])\n",
+      "      match /baiNop/{sid} {\n        allow read: if spDoc();   // (02/10/2026 GD4)\n        allow create: if spChuMoi() && request.resource.data.keys().hasOnly(\n                           ['sid','submittedAt','classCode','lesson','student','myTeam',\n                            'checkedTeam','videoUrl','videoId','errors','timers','createdAt','ma'])\n"],
+    ['tongLoi: đọc',
+      "      match /tongLoi/{emCham} {\n        allow read: if true;\n",
+      "      match /tongLoi/{emCham} {\n        allow read: if spDoc();   // (02/10/2026 GD4)\n"],
+    ['tongLoi: khuôn có ma',
+      "                     ['student','myTeam','checkedTeam','videoUrl','videoId',\n                      'classCode','lesson','errors','timers','daNop','capNhatLuc'])\n",
+      "                     ['student','myTeam','checkedTeam','videoUrl','videoId',\n                      'classCode','lesson','errors','timers','daNop','capNhatLuc','ma'])\n"],
+    ['tongLoi: tạo có chủ',
+      "        allow create: if tongLoiHopLe();\n",
+      "        allow create: if tongLoiHopLe() && spChuMoi();   // (02/10/2026 GD4)\n"],
+    ['tongLoi: sửa có chủ',
+      "        allow update: if tongLoiHopLe()\n          && (!('errors' in resource.data)\n",
+      "        allow update: if tongLoiHopLe() && spChuMoi() && spChuCu()   // (02/10/2026 GD4)\n          && (!('errors' in resource.data)\n"],
+    ['phanHoi: đọc + ghi có chủ',
+      "      match /phanHoi/{phId} {\n        allow read: if true;\n        allow create, update: if request.resource.data.keys().hasOnly(\n                                   ['errId','chuLoi','voter','voterTeam','y','lyDo','luc'])\n",
+      "      match /phanHoi/{phId} {\n        allow read: if spDoc();   // (02/10/2026 GD4)\n        allow create, update: if spChuMoi() && (resource == null || spChuCu())\n          && request.resource.data.keys().hasOnly(\n                                   ['errId','chuLoi','voter','voterTeam','y','lyDo','luc','ma'])\n"],
+    ['cum: đọc + ghi em đúng lớp',
+      "      match /cum/{cumId} {\n        allow read: if true;\n        allow create, update: if request.resource.data.keys().hasOnly(\n",
+      "      match /cum/{cumId} {\n        allow read: if spDoc();   // (02/10/2026 GD4)\n        allow create, update: if spDoc() && request.resource.data.keys().hasOnly(\n"],
+    ['cumPhieu: đọc + ghi có chủ',
+      "      match /cumPhieu/{cpId} {\n        allow read: if true;\n        allow create, update: if request.resource.data.keys().hasOnly(\n                                   ['cumId','voter','voterTeam','y','luc'])\n",
+      "      match /cumPhieu/{cpId} {\n        allow read: if spDoc();   // (02/10/2026 GD4)\n        allow create, update: if spChuMoi() && (resource == null || spChuCu())\n          && request.resource.data.keys().hasOnly(\n                                   ['cumId','voter','voterTeam','y','luc','ma'])\n"],
+  ], [
+    ['spBuoi/A1C_ZTESTKD', 403, 404, 404, 'doc'],
+    ['spBuoi/B1B_ZTESTKD', 403, 404, 403, 'doc'],
+    ['spBuoi/A1C_ZTESTKD/tongLoi', 403, 200, 200],
+    ['spBuoi/B1B_ZTESTKD/tongLoi', 403, 200, 403],
+    ['spBuoi/A1C_ZTESTKD/phanHoi', 403, 200, 200],
+    ['spBuoi/A1C_ZTESTKD/cum', 403, 200, 200],
+    ['spBuoi/A1C_ZTESTKD/cumPhieu', 403, 200, 200],
+    ['spBuoi/A1C_ZTESTKD/baiNop', 403, 200, 200],
   ]],
 };
 function thayMot(s, cu, moi, ten) {
@@ -230,6 +282,36 @@ async function kiem(gd) {
       ok('NGƯỜI LẠ đọc ' + duong, (await goi(u, {})).status, lạ);
       ok('THẦY đọc ' + duong, (await goi(u, { headers: { Authorization: 'Bearer ' + tkT } })).status, thay);
       if (hs !== undefined) ok('HS A1C đọc ' + duong, (await goi(u, { headers: { Authorization: 'Bearer ' + tkH } })).status, hs);
+    }
+    // ── GĐ4: phép thử GHI kho buổi speaking (học sinh A1C mã ZTESTKD1 · thầy thử · người lạ) ──
+    if (gd === 4) {
+      const S = (v) => ({ stringValue: v }), I = (v) => ({ integerValue: String(v) }), A = (ds) => ({ arrayValue: { values: ds } });
+      const B4 = 'spBuoi/A1C_ZTESTKD', rac4 = [];
+      const tl = (ma) => Object.assign({ student: S('ZTEST KD'), errors: A([]), timers: A([]), capNhatLuc: I(Date.now()) }, ma ? { ma: S(ma) } : {});
+      const ghi4 = async (tok, p, f) => { const r = await goi(`${FS_GOC}/${p}${k}`, { method: 'PATCH', headers: tok ? { Authorization: 'Bearer ' + tok } : {}, json: { fields: f } }); if (r.status === 200) rac4.push(p); return r.status; };
+      const qt4 = async (p, f) => { const r = await goi(`${FS_GOC}/${p}`, { method: 'PATCH', headers: await H(), json: { fields: f } }); if (r.status !== 200) throw new Error('ADMIN ' + r.status); rac4.push(p); };
+      const q4 = async (tok, loc) => (await goi(`${FS_GOC}:runQuery${k}`, { method: 'POST', headers: tok ? { Authorization: 'Bearer ' + tok } : {},
+        json: { structuredQuery: Object.assign({ from: [{ collectionId: 'spBuoi' }], limit: 3 }, loc ? { where: { fieldFilter: { field: { fieldPath: 'classCode' }, op: 'EQUAL', value: S(loc) } } } : {}) } })).status;
+      try {
+        ok('HS A1C tạo bản tổng lỗi MANG MÃ MÌNH', await ghi4(tkH, B4 + '/tongLoi/zt1', tl('ZTESTKD1')), 200);
+        ok('HS A1C tạo bản tổng lỗi mang MÃ BẠN KHÁC', await ghi4(tkH, B4 + '/tongLoi/zt2', tl('NGUOIKHAC')), 403);
+        ok('HS A1C tạo bản tổng lỗi KHÔNG mã', await ghi4(tkH, B4 + '/tongLoi/zt2b', tl('')), 403);
+        ok('NGƯỜI LẠ tạo bản tổng lỗi', await ghi4(null, B4 + '/tongLoi/zt3', tl('ZTESTKD1')), 403);
+        ok('HS A1C ghi vào buổi LỚP KHÁC (B1B)', await ghi4(tkH, 'spBuoi/B1B_ZTESTKD/tongLoi/zt1', tl('ZTESTKD1')), 403);
+        await qt4(B4 + '/tongLoi/zt4', tl(''));            // tài liệu CŨ (trước GĐ4) chưa có mã
+        ok('HS A1C sửa tài liệu CŨ chưa có mã (gắn mã mình)', await ghi4(tkH, B4 + '/tongLoi/zt4', tl('ZTESTKD1')), 200);
+        await qt4(B4 + '/tongLoi/zt5', tl('NGUOIKHAC'));   // tài liệu của bạn khác
+        ok('HS A1C sửa tài liệu CỦA BẠN KHÁC', await ghi4(tkH, B4 + '/tongLoi/zt5', tl('ZTESTKD1')), 403);
+        ok('HS A1C tạo phiếu phản biện mang mã mình', await ghi4(tkH, B4 + '/phanHoi/zt1', { errId: S('e1'), voter: S('ZTEST KD'), y: S('dongY'), lyDo: S(''), luc: I(Date.now()), ma: S('ZTESTKD1') }), 200);
+        ok('THẦY tạo phiếu (không mã, bảng chốt)', await ghi4(tkT, B4 + '/phanHoi/zt2', { errId: S('e1'), voter: S('ZTEST KD'), y: S('dongY'), lyDo: S(''), luc: I(Date.now()) }), 200);
+        ok('HS A1C tạo cụm (không chủ)', await ghi4(tkH, B4 + '/cum/zt1', { doiBiCham: S('TEAM 1'), ids: A([]), ten: S(''), ai: A([]), daGui: { booleanValue: false }, luc: I(Date.now()) }), 200);
+        ok('HS A1C tạo phiếu cụm mang mã mình', await ghi4(tkH, B4 + '/cumPhieu/zt1', { cumId: S('zt1'), voter: S('ZTEST KD'), y: S('gop'), luc: I(Date.now()), ma: S('ZTESTKD1') }), 200);
+        ok('HS A1C nộp bài (baiNop) mang mã mình', await ghi4(tkH, B4 + '/baiNop/zt1', { sid: S('zt1'), student: S('ZTEST KD'), errors: A([]), timers: A([]), createdAt: I(Date.now()), ma: S('ZTESTKD1') }), 200);
+        ok('HS A1C truy vấn buổi LỌC classCode A1C', await q4(tkH, 'A1C'), 200);
+        ok('HS A1C truy vấn buổi KHÔNG lọc', await q4(tkH, ''), 403);
+        ok('NGƯỜI LẠ truy vấn buổi lọc A1C', await q4(null, 'A1C'), 403);
+        ok('THẦY truy vấn buổi không lọc', await q4(tkT, ''), 200);
+      } finally { if (rac4.length) console.log('  dọn', await xoaTaiLieu(rac4), 'tài liệu thử GĐ4'); }
     }
   } finally { await xoaTkThu('ztest_thay'); await xoaTkThu('hs_ztestkd1'); }
   if (hong) { console.log('\n⚠ Có phép thử trượt. Luật mới cần ~1–10 phút lan hết máy chủ — đợi rồi chạy lại --kiem.'); process.exitCode = 1; }

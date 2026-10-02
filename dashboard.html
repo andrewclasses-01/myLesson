@@ -13410,7 +13410,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (QC.viec === 'suaHs') {
       var p = QC.p, r0 = qrDongCua(p)[0] || {};
       d = { ma: p.ma };
-      if (qcGt('qcTen').toUpperCase() !== String(p.ten).toUpperCase()) d.ten = qcGt('qcTen');
+      if (qcGt('qcTen') !== String(p.ten)) d.ten = qcGt('qcTen');   // 02/10: đổi mỗi kiểu chữ (MINH THƯ → Minh Thư) cũng gửi
       if (qcGt('qcHoTen')) d.hoTen = qcGt('qcHoTen');
       if (qcGt('qcNgay') !== (r0.birthday || '')) d.ngaySinh = qcGt('qcNgay');
       if (A.chuanMa(qcGt('qcMa')) !== A.chuanMa(p.ma)) d.maMoi = qcGt('qcMa');

@@ -2562,17 +2562,18 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .mn .nwb-ql-muc .nwb-ql-ic, .mn .nwb-ql-muc .nwb-ql-ic svg{width:28px; height:28px}
   .mn .nwb-ql-av{width:32px; height:32px; margin:-2px 0 -2px -2px}
   .mn #mnDs{margin-top:auto; border-top:1px solid var(--vien); padding-top:8px}
-  /* thẻ lớp: tên viết tắt (NT4 / NTK9) + chữ dạng bài và mã bài nhỏ lại để thấy hết */
-  .lb3 .lb-ten .tn-du{display:none}
-  .lb3 .lb-ten .tn-ngan{display:inline}
-  .lop-btn.lbB{padding:10px 8px 10px 14px}
-  .lbB .lb-h1{gap:6px; padding-right:4px}
-  .lbB .lb-ten{font-size:15px}
-  .lbB .lb-luc{font-size:10.5px}
-  .lb3 .lb-h3{gap:5px}
-  .lb3 .lb-dang{font-size:8px; padding:3px 4px; letter-spacing:.03em}
-  .lb3 .lb-ma{font-size:9.6px; letter-spacing:-.03em}
-  .lb3 .lb-khoa{font-size:8px; padding:3px 4px}
+  /* thẻ lớp (tiền tố .lop-hang để THẮNG luật .lb3/.lbB viết SAU trong file, cùng độ ưu tiên): tên viết tắt (NT4 / NTK9) + chữ dạng bài và mã bài nhỏ lại để thấy hết */
+  .lop-hang .lb3 .lb-ten .tn-du{display:none}
+  .lop-hang .lb3 .lb-ten .tn-ngan{display:inline}
+  .lop-hang{column-gap:8px}
+  .lop-hang .lop-btn.lbB{padding:10px 6px 10px 12px}
+  .lop-hang .lbB .lb-h1{gap:6px; padding-right:4px}
+  .lop-hang .lbB .lb-ten{font-size:15px}
+  .lop-hang .lbB .lb-luc{font-size:10.5px}
+  .lop-hang .lb3 .lb-h3{gap:4px}
+  .lop-hang .lb3 .lb-dang{font-size:7.5px; padding:3px; letter-spacing:.02em}
+  .lop-hang .lb3 .lb-ma{font-size:8.8px; letter-spacing:-.05em}   /* thiết kế ĐT 5 — đo 360/375/390/403/414px: mọi mã bài hiện đủ */
+  .lop-hang .lb3 .lb-khoa{font-size:7.5px; padding:2px 3px; letter-spacing:.04em}
 }
 .sb-note{margin:10px 0 0; padding:9px 11px; border-radius:10px; background:var(--vang-nhat);
   color:#8a5b0e; font:600 11.5px/1.5 var(--font)}

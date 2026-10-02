@@ -130,8 +130,9 @@ textarea{resize:none; font-weight:500; line-height:1.5; display:block}
   background:var(--accent); transform:scaleX(0); transition:transform .22s cubic-bezier(.22,.9,.3,1)}
 .tab.chon::after{transform:scaleX(1)}
 @media (max-width:640px){ .tab::after{display:none} }
-.tab .cham{position:absolute; top:9px; right:9px; min-width:17px; height:17px; padding:0 5px; border-radius:9px;
-  background:var(--do); color:#fff; font-size:10px; font-weight:800; display:grid; place-items:center; border:2px solid var(--ground)}
+.tab .cham{position:absolute; left:calc(50% + 6px); top:calc(50% - 21px); right:auto; min-width:19px; height:19px; padding:0 5px; border-radius:999px;
+  background:#E5383B; color:#fff; font-size:10.5px; font-weight:800; display:grid; place-items:center; border:2px solid #fff; box-sizing:border-box;
+  box-shadow:0 2px 6px rgba(229,56,59,.35); pointer-events:none}   /* thiết kế ĐT 7 — cùng hình số với thanh trang quản lý/lớp (css/nw-thanh.css .nwb-so) */
 /* tooltip chữ nhỏ khi rê chuột (vì tab không có chữ) */
 .tab[data-nh]::before{content:attr(data-nh); position:absolute; top:calc(100% + 4px); left:50%;
   transform:translateX(-50%) translateY(-4px); padding:4px 8px; border-radius:7px; background:var(--ink); color:#fff;
@@ -148,7 +149,7 @@ textarea{resize:none; font-weight:500; line-height:1.5; display:block}
   .tabs{flex:1; justify-content:space-around; gap:0; height:100%}
   .tab{width:auto; flex:1; min-width:0; border-radius:12px}
   .tab .ic{width:36px; height:36px; padding:7px}
-  .tab .cham{top:2px; right:calc(50% - 21px); border-color:#fff}
+  .tab .cham{left:calc(50% + 4px); top:calc(50% - 19px); min-width:18px; height:18px; font-size:10px}
   .thanh-in{padding:0 6px}
   .tab[data-nh]::before{display:none}
   .av.me{width:34px; height:34px; font-size:12.5px; box-shadow:none}

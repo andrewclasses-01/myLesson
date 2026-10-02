@@ -1640,6 +1640,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   .han-boc.rong{width:150px}
   .han-boc.rong .t-han{width:144px}
   .han-boc.rong .han-dong{font-size:9px}
+  /* thiết kế ĐT 7 — thẻ bài THƯỜNG: ô hạn 176px bóp tên còn "VOCAB…" ⇒ ô hạn 134px, tên 13px được xuống dòng, ngày/khoảng ngày xuống dòng riêng. */
+  .han-boc{width:134px}
+  .t-han{width:128px}
+  .t-han .han-dong{font-size:10.5px}
+  .dhho{font-size:19px}
+  #theListDs .t-ten{font-size:13px; white-space:normal}
+  #theListDs .t-ten .ngay, #theListDs .t-ten .khoang{display:block; margin:2px 0 0; font-size:11.5px}
+  #theListDs .t-ma{font-size:11px}
   .st-khuc.cho,.st-khuc.dang,.st-khuc.ket{flex-shrink:1; min-width:0}
   .st-khuc{font-size:9px; letter-spacing:.02em}
   .st-khuc.dang,.st-khuc.ket{font-size:10px}
@@ -1648,6 +1656,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   .hd-zone{flex:none}
   .hd-than{flex:none; max-height:none}
   .hd-nua + .hd-nua .hd-than{max-height:420px}
+  /* ⭐ thiết kế ĐT 7 (02/10, thầy chốt) — điện thoại: chat lớp chuyển HẲN sang tab Tin nhắn (số tin mới hiện trên icon),
+     ĐANG HOẠT ĐỘNG + BÀI TẬP GẦN ĐÂY xem ở mục "Hoạt động" trong ☰. Máy tính giữ nguyên trên trang quản lý. */
+  .cot-chat{display:none}
+  .hd-zone{display:none}
 }
 
 /* ================================================================
@@ -3448,7 +3460,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 .bc-nut .san{background:#dcfce7; color:#15803d}
 .bc-chua{flex:none; font:700 11.5px var(--font); color:var(--nhat)}
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=12">
+<link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=18">
 </head>
@@ -6990,6 +7002,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     });
   }
   document.addEventListener('click', function (e) { var b = e.target.closest('[data-hd-phong]'); if (b) hdpMo(b.getAttribute('data-hd-phong')); });
+  // thiết kế ĐT 7 — mục "Hoạt động" (cột trái / ☰ điện thoại). TẠM mở pop-up phóng to ĐANG HOẠT ĐỘNG, chờ thầy chốt trang riêng.
+  window.qlMoHoatDong = function () { hdpMo('hd'); };
 
   // font web / ảnh tải xong làm cột trái + thẻ lớp đổi cao ⇒ đo lại (bẫy đo layout quá sớm)
   window.addEventListener('load', hdKeoDai);
@@ -10326,17 +10340,25 @@ tr.qm-hang-tam td{background:#fffbeb}
   // lớp khác rồi quay lại mới thấy chấm mới.
   var CHAM_DO = {};
   function xemTinKey(maLop) { return 'mylesson_xemtin_' + maLop; }
+  // thiết kế ĐT 7 — trang Tin nhắn (nw/js/chat.js) nhớ "đã xem" ở khoá `mylesson_xemtin_<lớp>_GV` ⇒ đọc cả hai, ghi cả hai.
+  function mocXemTin(maLop) {
+    var a = 0, b = 0;
+    try { a = Number(localStorage.getItem(xemTinKey(maLop))) || 0; b = Number(localStorage.getItem(xemTinKey(maLop) + '_GV')) || 0; } catch (e) {}
+    return Math.max(a, b);
+  }
+  // Số trên icon Tin nhắn = số LỚP có tin chưa xem (như Messenger/Zalo đếm cuộc trò chuyện) — không tốn thêm lượt đọc.
+  function veSoTin() { if (window.NWB && !/[?&]somau=1/.test(location.search)) NWB.datSo('tinNhan', Object.keys(CHAM_DO).length); }
   function danhDauDaXemTin(maLop) {
-    try { localStorage.setItem(xemTinKey(maLop), String(Date.now())); } catch (e) {}
+    var bay = String(Date.now());
+    try { localStorage.setItem(xemTinKey(maLop), bay); localStorage.setItem(xemTinKey(maLop) + '_GV', bay); } catch (e) {}
     delete CHAM_DO[maLop];
+    veSoTin();
   }
   function capNhatChamDoLop() {
     (DL.lop || []).forEach(function (l) {
       AWChat.tinMoiNhat(l.maLop).then(function (luc) {
         if (!luc) return;
-        var xem = 0;
-        try { xem = Number(localStorage.getItem(xemTinKey(l.maLop))) || 0; } catch (e) {}
-        if (luc > xem) { CHAM_DO[l.maLop] = true; veLopGrid(); }
+        if (luc > mocXemTin(l.maLop)) { CHAM_DO[l.maLop] = true; veLopGrid(); veSoTin(); }
       })['catch'](function () {});
     });
   }
@@ -14657,7 +14679,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   moCong();   // v1.176.0 — luôn qua cửa: phiên thầy thật mới mở trang
 })();
 </script>
-<script src="js/ic-ql.js?v=1"></script>
-<script src="js/nw-thanh.js?v=24"></script>
+<script src="js/ic-ql.js?v=2"></script>
+<script src="js/nw-thanh.js?v=25"></script>
 </body>
 </html>

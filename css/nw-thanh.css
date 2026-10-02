@@ -30,6 +30,14 @@
   background:var(--accent); transform:scaleX(0); transition:transform .22s cubic-bezier(.22,.9,.3,1)}
 .nwb-tab.chon::after{transform:scaleX(1)}
 @media (max-width:640px){ .nwb-tab::after{display:none} }
+/* ⭐ thiết kế ĐT 7 — SỐ trên icon (tin nhắn mới / thông báo): nút TRÒN đỏ, viền trắng, đè GÓC PHẢI TRÊN của icon
+   (neo theo TÂM ô tab ⇒ luôn sát icon dù ô rộng/hẹp). Icon máy tính 42px, điện thoại 36px. */
+.nwb-so{position:absolute; left:calc(50% + 6px); top:calc(50% - 21px); min-width:19px; height:19px; padding:0 5px;
+  border-radius:999px; background:#E5383B; color:#fff; border:2px solid #fff; box-sizing:border-box;
+  font:800 10.5px/15px var(--sans); text-align:center; letter-spacing:0; pointer-events:none;
+  box-shadow:0 2px 6px rgba(229,56,59,.35); z-index:1}
+.nwb-so.dai{padding:0 4px}
+@media (max-width:640px){ .nwb-so{left:calc(50% + 4px); top:calc(50% - 19px); min-width:18px; height:18px; font-size:10px; line-height:14px} }
 /* tooltip chữ nhỏ khi rê chuột (tab không có chữ) */
 .nwb-tab::before{content:attr(data-nh); position:absolute; top:calc(100% + 4px); left:50%; z-index:5;
   transform:translateX(-50%) translateY(-4px); padding:4px 8px; border-radius:7px; background:var(--ink); color:#fff;

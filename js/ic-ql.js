@@ -40,6 +40,9 @@ var ICM = {
     return icqSvg(a.def+b.def,'<circle cx="18" cy="12" r="7" fill="url(#'+b.id+')"/><path d="M4.5 32c0-7.5 6-12.5 13.5-12.5S31.5 24.5 31.5 32z" fill="url(#'+a.id+')"/><circle cx="18" cy="12" r="4.2" fill="#fff" opacity=".55"/>'); },
   lop:function(){ var a=icqG('#34D399','#0E7C6E'), b=icqG('#6EE7B7','#10B981');
     return icqSvg(a.def+b.def,'<path d="M8 17v7c0 2.6 4.5 5 10 5s10-2.4 10-5v-7z" fill="url(#'+b.id+')"/><path d="M18 6L2.5 13.5 18 21l15.5-7.5z" fill="url(#'+a.id+')"/><path d="M30 15v9" stroke="#0E7C6E" stroke-width="2.2" stroke-linecap="round"/><circle cx="30" cy="25.5" r="2.2" fill="#FFD84D"/>'); },
+  // thiết kế ĐT 7 (02/10) — mục "Hoạt động" (ngay sau Trang bài tập): ô bo xanh lá + đường nhịp hoạt động trắng + chấm online
+  hoatDong:function(){ var a=icqG('#4ADE80','#0E9F6E'), b=icqG('#FFE066','#F59E0B');
+    return icqSvg(a.def+b.def,'<rect x="3.5" y="5" width="29" height="26" rx="7" fill="url(#'+a.id+')"/><path d="M7.5 19h5l2.6-6.5 4.4 11 2.8-6.5h6.2" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="29" cy="7.5" r="4.6" fill="url(#'+b.id+')" stroke="#fff" stroke-width="1.6"/>'); },
 };
 return ICM;
 })();

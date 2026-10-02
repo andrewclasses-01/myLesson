@@ -143,6 +143,21 @@
   var nutMenu = $('.nwb-menu', dau);
   nutMenu.innerHTML = IC.menu3;
 
+  // ⭐ thiết kế ĐT 7 (02/10, thầy chốt) — SỐ trên icon tab (tin nhắn mới, thông báo): nút tròn đỏ ở GÓC PHẢI TRÊN của icon.
+  // window.NWB.datSo('tinNhan', 3) · 0/rỗng = ẩn · >99 = "99+". Bàn thử máy (localhost + ?somau=1): số mẫu 3 / 12 để thầy duyệt hình.
+  function datSo(ma, n) {
+    var t = dau.querySelector('.nwb-tab[data-ma="' + ma + '"]');
+    if (!t) return;
+    var o = t.querySelector('.nwb-so');
+    n = Number(n) || 0;
+    if (n <= 0) { if (o) o.remove(); return; }
+    if (!o) { o = document.createElement('span'); o.className = 'nwb-so'; t.appendChild(o); }
+    o.textContent = n > 99 ? '99+' : String(n);
+    o.classList.toggle('dai', n > 9);
+  }
+  window.NWB = { datSo: datSo };
+  if (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]somau=1/.test(location.search)) { datSo('tinNhan', 3); datSo('chuong', 12); }
+
   dau.addEventListener('click', function (e) {
     var t = e.target.closest('.nwb-tab');
     if (!t) return;
@@ -193,6 +208,7 @@
   var MUC_QL = [
     // 29/09 thầy: bỏ chữ "Quản lý" / "Network" — chỉ còn vạch ngăn giữa 2 nhóm
     { ma: 'baiTap', chu: 'Trang bài tập', ic: IC.baiTap, icm: ICM.baiTap },
+    { ma: 'hoatDong', chu: 'Hoạt động', ic: P('<path d="M3 12h4l3-8 4 16 3-8h4"/>'), icm: ICM.hoatDong },   // thiết kế ĐT 7 — Đang hoạt động + Bài tập gần đây (window.qlMoHoatDong)
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, icm: ICM.dangKy },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
     { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, icm: ICM.top },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
     { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, icm: ICM.qua },
@@ -228,6 +244,7 @@
     if (!b) return;
     var ma = b.getAttribute('data-muc');
     if (ma === 'baiTap') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (ma === 'hoatDong') { if (window.qlMoHoatDong) window.qlMoHoatDong(); return; }
     if (ma === 'dangKy' && window.qlMoDangKy) { window.qlMoDangKy(); return; }
     if (ma === 'baoMat') { if (window.qlMoBaoMat) window.qlMoBaoMat(); return; }
     if (ma === 'sinhNhat') { if (window.qlMoSinhNhat) window.qlMoSinhNhat(); return; }

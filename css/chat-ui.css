@@ -189,6 +189,12 @@
 .cu-anh-cho .xoay{position:absolute; left:50%; top:50%; width:20px; height:20px; margin:-10px 0 0 -10px; border-radius:50%;
   border:2.5px solid rgba(14,124,110,.25); border-top-color:var(--cu-ac); animation:cuXoay .8s linear infinite}
 @keyframes cuXoay{to{transform:rotate(360deg)}}
+/* ⭐ thiết kế KNT 13 — tin ĐANG GỬI (tin tạm của khuôn + tin thật chưa được máy chủ nhận): màu nhạt; ảnh đang tải lên có vòng xoay */
+.cu-hang.cu-tam .cu-bong{opacity:.5; transition:opacity .25s}
+.cu-hang .cu-bong{transition:opacity .25s}
+.cu-hang.cu-tam .cu-hinh{position:relative; cursor:default}
+.cu-hinh .xoay{position:absolute; left:50%; top:50%; width:26px; height:26px; margin:-13px 0 0 -13px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.55); border-top-color:var(--cu-ac); animation:cuXoay .8s linear infinite; box-shadow:0 0 0 1px rgba(0,0,0,.08)}
 .cu-nhap{display:flex; align-items:flex-end; gap:6px}
 .cu-nhap .ib{flex:none; width:36px; height:36px; border:0; background:none; border-radius:50%; display:grid; place-items:center; cursor:pointer; color:var(--cu-phu); padding:0}
 .cu-nhap .ib:hover{background:var(--cu-ac-nhat); color:var(--cu-ac-dam)}

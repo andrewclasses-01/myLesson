@@ -963,13 +963,24 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   function thuGhi(ds) { try { localStorage.setItem(THU_CHAN, JSON.stringify(ds)); } catch (e) { } }
   var _chanUid = null;
 
+  // ⭐ 02/10/2026 (thầy báo: học sinh bấm "Nhắn cho thầy" ⇒ "Kho từ chối") — đọc PHÒNG RIÊNG có thể CHƯA TỒN TẠI.
+  // Luật nwChats `allow read: if nwToi() in resource.data.thanhVien` ⇒ phòng chưa có thì resource = null ⇒ kho TỪ CHỐI
+  // (thầy qua được nhờ laThay()). Phòng riêng mã = uidA__uidB nên phòng đã có thì em LUÔN là thành viên (đọc được) ⇒
+  // bị từ chối = CHƯA CÓ phòng. Trả snapshot giả "không tồn tại" để bước tạo phòng chạy tiếp (luật create cho phép).
+  NW.docPhongRieng = async function (f, ref) {
+    try { return await f.fs.getDoc(ref); }
+    catch (e) {
+      if (String((e && (e.code || e.message)) || '').indexOf('permission-denied') < 0) throw e;
+      return { exists: function () { return false; }, data: function () { return {}; } };
+    }
+  };
   // Trạng thái chặn giữa em và một người → { toiChan, hoChan }
   NW.chanTinh = async function (uid) {
     if (!uid) return { toiChan: false, hoChan: false };
     if (NW.laBanThu()) return { toiChan: thuChan().some(function (n) { return n.uid === uid; }), hoChan: THU_HO_CHAN.indexOf(uid) >= 0 };
     try {
       var f = await NW.fb();
-      var snap = await f.fs.getDoc(f.fs.doc(f.db, 'nwChats', NW.phongRieng(NW.toi.uid, uid)));
+      var snap = await NW.docPhongRieng(f, f.fs.doc(f.db, 'nwChats', NW.phongRieng(NW.toi.uid, uid)));
       var ds = snap.exists() ? (snap.data().chanBoi || []) : [];
       return { toiChan: ds.indexOf(NW.toi.uid) >= 0, hoChan: ds.indexOf(uid) >= 0 };
     } catch (e) { console.warn('[nw] chặn', e); return { toiChan: false, hoChan: false }; }
@@ -985,7 +996,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
       var f = await NW.fb();
       // (1) cờ trong phòng chat của hai người — để BÊN KIA biết mình bị chặn (đọc phòng là việc sẵn có, không tốn thêm)
       var ref = f.fs.doc(f.db, 'nwChats', NW.phongRieng(NW.toi.uid, nguoi.uid));
-      var snap = await f.fs.getDoc(ref);
+      var snap = await NW.docPhongRieng(f, ref);
       if (!snap.exists()) {
         if (!(NW.Chat && NW.Chat.moRieng)) throw new Error('Chưa mở được phòng chat.');
         await NW.Chat.moRieng(nguoi);

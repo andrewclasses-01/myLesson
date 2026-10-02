@@ -66,7 +66,7 @@
     if (NW.laBanThu()) return id;
     var f = await NW.fb();
     var ref = f.fs.doc(f.db, 'nwChats', id);
-    var snap = await f.fs.getDoc(ref);
+    var snap = await NW.docPhongRieng(f, ref);   // 02/10: phòng chưa có ⇒ kho từ chối đọc ⇒ coi như chưa có (xem loi.js)
     if (!snap.exists()) {
       var tv = {}; tv[toi.uid] = NW.tomTat(toi); tv[nguoi.uid] = NW.tomTat(nguoi);
       var doc = { loai: 'rieng', ten: '', thanhVien: [toi.uid, nguoi.uid].sort(), tv: tv, taoBoi: toi.uid, luc: Date.now(), capNhat: Date.now(), tinCuoi: null, docLuc: {} };

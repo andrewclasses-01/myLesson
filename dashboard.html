@@ -2552,7 +2552,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .mn{top:0!important; right:0!important; bottom:0; width:min(330px,88vw); border-radius:18px 0 0 18px; border-right:0;
     padding:8px 8px calc(10px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; overflow-y:auto;
     opacity:1; transform:translateX(105%); transition:transform .26s cubic-bezier(.22,.9,.3,1), box-shadow .26s;
-    box-shadow:-12px 0 40px rgba(16,40,36,.22)}
+    box-shadow:none}   /* thiết kế ĐT 6 — đóng thì KHÔNG bóng: bóng -12px 40px của hộp nấp ngoài mép phải lộ thành dải tối ở cạnh phải màn */
   .mn.mo{transform:none; box-shadow:-12px 0 40px rgba(16,40,36,.22), 0 0 0 100vmax rgba(16,35,42,.38)}
   .mn::before,.mn .mn-dau{display:none}
   .mn .nwb-ql-cot{position:static; display:block; max-height:none; height:auto; overflow:visible; padding:4px 0 8px}
@@ -2571,9 +2571,9 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
   .lop-hang .lbB .lb-ten{font-size:15px}
   .lop-hang .lbB .lb-luc{font-size:10.5px}
   .lop-hang .lb3 .lb-h3{gap:4px}
-  .lop-hang .lb3 .lb-dang{font-size:7.5px; padding:3px; letter-spacing:.02em}
-  .lop-hang .lb3 .lb-ma{font-size:8.8px; letter-spacing:-.05em}   /* thiết kế ĐT 5 — đo 360/375/390/403/414px: mọi mã bài hiện đủ */
-  .lop-hang .lb3 .lb-khoa{font-size:7.5px; padding:2px 3px; letter-spacing:.04em}
+  .lop-hang .lb3 .lb-dang{font-size:9px; padding:3px 4px; letter-spacing:.03em}
+  .lop-hang .lb3 .lb-ma{font-size:clamp(10.4px, 2.9vw, 11.5px); letter-spacing:-.03em}   /* thiết kế ĐT 6 — thầy: 8.8px bé quá ⇒ to nhất mà không lẹm; đo cỡ tối đa vừa: 360→11 · 375→11.8 · ≥390→12px */
+  .lop-hang .lb3 .lb-khoa{font-size:8.5px; padding:3px 4px; letter-spacing:.05em}
 }
 .sb-note{margin:10px 0 0; padding:9px 11px; border-radius:10px; background:var(--vang-nhat);
   color:#8a5b0e; font:600 11.5px/1.5 var(--font)}
@@ -3448,7 +3448,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 .bc-nut .san{background:#dcfce7; color:#15803d}
 .bc-chua{flex:none; font:700 11.5px var(--font); color:var(--nhat)}
 </style>
-<link rel="stylesheet" href="css/nw-thanh.css?v=11">
+<link rel="stylesheet" href="css/nw-thanh.css?v=12">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=18">
 </head>

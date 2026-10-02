@@ -44,8 +44,8 @@
 
 /* sidebar: myNetwork mở bằng ☰ và TRƯỢT TỪ PHẢI. lop.html có sẵn .side.phai (thiếu trạng thái mở),
    khoa.html KHÔNG có ⇒ khai đủ ở đây (⛔ thiếu là sidebar nằm phơi bên trái, mở sẵn). */
-.side.phai{left:auto; right:0; transform:translateX(105%); box-shadow:-12px 0 40px rgba(22,35,42,.14)}
-body.mo-menu .side.phai{transform:none}
+.side.phai{left:auto; right:0; transform:translateX(105%); box-shadow:none}   /* thiết kế ĐT 6 — đóng thì không bóng (bóng lộ thành dải tối ở mép phải màn) */
+body.mo-menu .side.phai{transform:none; box-shadow:-12px 0 40px rgba(22,35,42,.14)}
 
 /* Điện thoại: thanh nằm TRÊN ĐẦU trang, thấp hơn máy tính (54px).
    thiết kế ĐT 4 (02/10, thầy chốt): trước đây CẢ thanh xuống ĐÁY như myNetwork — thầy đổi: đưa lên đầu, giữ đủ 9 ô,
@@ -123,8 +123,8 @@ body.mo-menu .side.phai{transform:none}
 .nwb-ql-muc:hover{background:rgba(22,35,42,.06)}
 .nwb-ql-muc.chon{background:rgba(14,124,110,.10)}
 /* menu quản lý cũ (.sb-panel) trượt từ PHẢI như myNetwork */
-body.nwb-thay .sb-panel{left:auto; right:0; transform:translateX(100%); box-shadow:-10px 0 34px rgba(16,40,36,.22)}
-body.nwb-thay .sb-panel.mo{transform:translateX(0)}
+body.nwb-thay .sb-panel{left:auto; right:0; transform:translateX(100%); box-shadow:none}   /* thiết kế ĐT 6 — đóng thì không bóng */
+body.nwb-thay .sb-panel.mo{transform:translateX(0); box-shadow:-10px 0 34px rgba(16,40,36,.22)}
 /* màn hẹp: cột trái thành dải chip cuộn ngang trên đầu */
 @media (max-width:900px){
   .nwb-ql{grid-template-columns:minmax(0,1fr); gap:12px}

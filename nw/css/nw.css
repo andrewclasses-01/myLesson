@@ -957,6 +957,8 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .tn-muc .cuoi{font-size:12.5px}
 .tn-muc .cuoi .gio{font-size:12px; color:var(--muted); font-weight:600}
 .tn-muc.chua .ten,.tn-muc.chua .cuoi{color:var(--ink); font-weight:800}
+/* 02/10 thầy: dòng dưới tên (tin cuối) chữ THƯỜNG, không đậm — tin chưa đọc chỉ đậm màu chữ + chấm xanh */
+.tn-muc .cuoi, .tn-muc.chua .cuoi, .tn-muc .cuoi .gio, .tn-muc .tn-moi-chu{font-weight:400}
 .tn-muc .cham{width:10px; height:10px; background:var(--accent)}
 .tn-muc.chon{background:var(--accent-soft)}
 /* khung phòng */

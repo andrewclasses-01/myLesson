@@ -22,7 +22,8 @@
 // (Cùng điều kiện với config.js `AC_THU` gốc; trang nw/ không nạp config.js gốc.)
 // Bàn thử dữ liệu giả `?thu=1` / `?thu=thay` trên máy (NW.laBanThu) vẫn mở.
 if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825' ||
-      (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=(1|thay)(&|$)/.test(location.search)))) {
+      (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=(1|thay)(&|$)/.test(location.search)) ||
+      /\/nw\/tinnhan\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 thầy chính thức mở TIN NHẮN trên trang thật
   location.replace('../index.html');
   throw new Error('myNetwork chưa mở ở trang này');
 }
@@ -519,6 +520,13 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   // ⭐ 02/10/2026 — HUY HIỆU NHÓM LỚP: cùng khung răng cưa với tích vàng của thầy, khác chút bên trong (mẫu ?hh=1|2|3 ở bàn thử).
   //   1 = vàng + ngôi sao trắng · 2 = vàng + hình 2 người · 3 = xanh ngọc + dấu tích
   NW.HH_LOP = 1;
+  // ⭐ 02/10/2026 — trang THẬT chỉ mở Tin nhắn: link sang trang nw/ khác ⇒ hộp "sắp ra mắt" thay vì bị cổng đá về trang chủ.
+  NW.moDuoc = function (href) { return !!(CFG.LA_THU || NW.laBanThu() || /^(\.\/)?tinnhan\.html/.test(String(href || ''))); };
+  NW.sapRaMat = function (ten) {
+    var p = NW.popMo({ tieuDe: ten || 'Sắp ra mắt', html: '<p style="margin:0;font-weight:600;line-height:1.55">Tính năng này sẽ sớm được ra mắt.<br><span class="tiny">00:00 · Chủ Nhật, 01/11/2026</span></p>',
+      chan: '<button class="btn primary" data-dong>EM SẼ CHỜ!</button>' });
+    $('[data-dong]', p).onclick = NW.popDong;
+  };
   NW.huyHieuLop = function (lop) {
     var k = +(NW.thamSo && NW.thamSo('hh')) || NW.HH_LOP;
     var vien = 'M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484z';

@@ -132,8 +132,9 @@
     alert('Đang đăng nhập thay em — chờ dải đỏ trên cùng báo "Thầy đang ĐĂNG NHẬP THAY…" rồi bấm lại nhé.');
     return true;
   }
+  // ⭐ 02/10/2026 thầy CHÍNH THỨC MỞ tab TIN NHẮN trên trang thật (nhóm lớp = chat lớp + Thầy Andrew). Các tab khác vẫn "sắp ra mắt".
   var TRANG_NW = window.AC_THU ? { khamPha: 'nw/khampha.html', tinNhan: 'nw/tinnhan.html', bangTin: 'nw/bangtin.html',
-    chuong: 'nw/bangtin.html?tb=1', shop: 'nw/shop.html', timKiem: 'nw/timkiem.html', caNhan: 'nw/canhan.html' } : {};
+    chuong: 'nw/bangtin.html?tb=1', shop: 'nw/shop.html', timKiem: 'nw/timkiem.html', caNhan: 'nw/canhan.html' } : { tinNhan: 'nw/tinnhan.html' };
   $('.nwb-tabs', dau).innerHTML = tabs.map(function (t, i) {
     var dauTien = i === 0;
     return '<a class="nwb-tab' + (dauTien ? ' chon' : '') + '" data-ma="' + t.ma + '" data-nh="' + t.chu + '" href="' +

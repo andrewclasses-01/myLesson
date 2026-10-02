@@ -60,7 +60,7 @@
     hop.className = 'thanh';
     var toi = NW.toi || {};
     // avatar em: .av.me (nền gradient) + ảnh thật nếu có + huy hiệu sao; bấm = trang cá nhân
-    var avEm = '<a class="av me" id="nutAv" href="canhan.html" title="Trang cá nhân của em">' + an(NW.chuTat(toi.ten || '?')) +
+    var avEm = '<a class="av me" id="nutAv" href="canhan.html" title="' + (toi.laThay ? 'Trang cá nhân' : 'Trang cá nhân của em') + '">' + an(NW.chuTat(toi.ten || '?')) +
       (toi.anh ? '<img src="' + an(toi.anh) + '" alt="" loading="lazy" onerror="this.remove()">' : '') + saoHieu(toi.sao) + '</a>';
     hop.innerHTML = '<div class="thanh-in">' +
       '<div class="trai">' + avEm + '</div>' +
@@ -73,6 +73,12 @@
       '<div class="phai"><button class="nut-menu" id="nutMenu" title="Menu" aria-label="Menu">' + IC.menu3 + '</button></div>' +
       '</div>';
     $('.tab[data-tab="chuong"]').onclick = function (e) { e.preventDefault(); if (_thaMo) dongTha(); else moChuong(this); };
+    // ⭐ 02/10/2026 — trang thật: tab/avatar dẫn sang trang nw/ chưa mở ⇒ hộp "sắp ra mắt" (tab Bài tập/Quản lý/Tin nhắn vẫn đi thẳng)
+    $$('.tab', hop).forEach(function (a) {
+      var h = a.getAttribute('href') || '';
+      if (/^[a-z]+\.html/.test(h) && !/^\.\.\//.test(h) && !NW.moDuoc(h)) a.onclick = function (e) { e.preventDefault(); NW.sapRaMat(a.getAttribute('data-nh')); };
+    });
+    if (!NW.moDuoc('canhan.html')) $('#nutAv').onclick = function (e) { e.preventDefault(); NW.sapRaMat('TRANG CÁ NHÂN'); };
     $('#nutMenu').onclick = moSide;
     veSide();
   }
@@ -83,11 +89,11 @@
     var toi = NW.toi || {};
     var LAPC = function (c) { return '<svg class="sao-con ' + c + '" viewBox="0 0 10 10">' + LAP + '</svg>'; };
     var items = [
-      { ic: IC.caNhan, nh: 'Trang cá nhân của em', mo: 'Bìa · giới thiệu · bài của em', onclick: function () { NW.di('canhan.html'); } },
+      { ic: IC.caNhan, nh: 'Trang cá nhân của em', mo: 'Bìa · giới thiệu · bài của em', onclick: function () { if (NW.moDuoc('canhan.html')) NW.di('canhan.html'); else NW.sapRaMat('TRANG CÁ NHÂN'); } },
       { ic: IC.khoa, nh: 'Đổi mật khẩu', mo: 'Mật khẩu đăng nhập My ID', onclick: moDoiMk },
       { ic: IC.baiTap, nh: 'Trang bài tập', mo: 'andrewclasses.com', onclick: function () { location.href = CFG.LINK_BAI_TAP; } }
     ];
-    if (toi.laThay) items.push({ ic: IC.caiDat, nh: 'Trang quản lý', mo: 'Báo cáo · bài ẩn · từ cấm · tài khoản', onclick: function () { NW.di('quanly.html'); } });
+    if (toi.laThay) items.push({ ic: IC.caiDat, nh: 'Trang quản lý', mo: 'Báo cáo · bài ẩn · từ cấm · tài khoản', onclick: function () { if (NW.moDuoc('quanly.html')) NW.di('quanly.html'); else location.href = CFG.LINK_DASHBOARD; } });
     items.push({ ic: IC.thoat, nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', nguy: true, onclick: function () {
       if (NW.laBanThu()) { NW.thay('index.html?vao=1'); return; }   // ban thu: khong goi kho
       NW.thoat().then(function () { location.replace('index.html?vao=1'); });
@@ -165,7 +171,7 @@
         dongTha();
         if (!t) return;
         if (!t.daDoc) danhDauDoc([t.id]);
-        if (t.link && NW.linkAnToan(t.link)) NW.di(t.link);   // (27/09/2026) chỉ link trong site — xem NW.linkAnToan
+        if (t.link && NW.linkAnToan(t.link)) { if (NW.moDuoc(t.link)) NW.di(t.link); else NW.sapRaMat(); }   // (27/09/2026) chỉ link trong site — xem NW.linkAnToan
       };
       var ok = $('[data-kbok]', b), xoa = $('[data-kbxoa]', b);
       if (ok) ok.onclick = function () { xuLyKetBan(t, 'ok', neo); };

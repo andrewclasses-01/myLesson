@@ -5,6 +5,11 @@
 window.NW_CONFIG = {
   TEN_SITE: 'Andrew Classes Network',
 
+  // ⭐ 02/10/2026 — trang THỬ (andrewclasses-01.github.io / máy cổng 8825) mở hết myNetwork; trang THẬT chỉ mở Tin nhắn
+  // (các tab/trang khác = hộp "sắp ra mắt", NW.moDuoc). Trang thử không chứa data/ ⇒ đọc lop.json + ảnh từ andrewclasses.com.
+  LA_THU: /^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825',
+  GOC_DL: (/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825') ? 'https://andrewclasses.com/' : '../',
+
   // Phiên bản — hiện nhỏ ở chân trang / menu. GitHub Pages giữ cache ~10 phút,
   // nhìn số này là biết máy đang chạy bản nào.
   PHIEN_BAN: '0.9.2',

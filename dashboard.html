@@ -3035,6 +3035,18 @@ button.mk-em:hover{border-color:currentColor}
 .nwb-ql-muc .dk-so.sn-so{background:#EC4899}
 .nwb-ql-muc[data-muc="baoMat"].kc-dang{background:#fdecec; box-shadow:none}
 
+/* ⭐ 02/10/2026 (thầy chốt, màn 1080 là màn bé nhất) — CỘT MENU GIÃN HẾT CHIỀU CAO MÀN, chừa 18px đáy.
+   Các dòng chia đều phần dư (cao tối đa 56px); màn quá cao thì dòng "Quản lý & bảo mật" dồn xuống đáy.
+   Khung giữa + chat tự dài theo vì `hdKeoDai()` kéo hàng 2 cột tới đáy nút baoMat.
+   Chỉ dashboard (nw-thanh.css dùng chung giữ nguyên) ⇒ bộ chọn `.nwb-ql > .nwb-ql-cot` để thắng file chung nạp sau. */
+@media (min-width:901px){
+  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:calc(100dvh - 62px - 14px - 18px); padding-bottom:0}
+  .nwb-ql > .nwb-ql-cot > .nwb-ql-muc{flex:1 1 auto; max-height:56px}
+  .nwb-ql > .nwb-ql-cot > .nwb-ql-vach{flex:none}
+  .nwb-ql > .nwb-ql-cot > .nwb-ql-vach:last-of-type{margin-top:auto}
+  .nwb-ql > .nwb-ql-cot > .nwb-ql-muc:has(+ .nwb-ql-vach:last-of-type){margin-bottom:8px}
+}
+
 /* ⭐⭐ v1.166.0 — HỘP "QUẢN LÝ & BẢO MẬT" */
 .qm-nen{position:fixed; inset:0; z-index:9000; background:rgba(16,30,28,.45); display:flex; align-items:center; justify-content:center; padding:24px}
 .qm-nen[hidden]{display:none}

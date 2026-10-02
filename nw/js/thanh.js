@@ -22,10 +22,11 @@
   // Thứ tự 5 icon thầy chốt 22/09. `chuong` không đổi trang — bấm mở hộp thông báo.
   var TABS = [
     { ma: 'baiTap', chu: 'TRANG BÀI TẬP', ic: IC.baiTap, href: CFG.LINK_BAI_TAP, ngoai: true },
-    { ma: 'khamPha', chu: 'KHÁM PHÁ', ic: IC.khamPha, href: 'khampha.html' },
+    // 02/10/2026 thầy chốt thứ tự MỌI trang: Bài tập - Tin nhắn - Thông báo - Bảng tin - Khám phá - Quà tặng - Tìm kiếm
     { ma: 'tinNhan', chu: 'TIN NHẮN', ic: IC.tinNhan, href: 'tinnhan.html' },
-    { ma: 'bangTin', chu: 'BẢNG TIN', ic: IC.bangTin, href: 'bangtin.html' },
     { ma: 'chuong', chu: 'THÔNG BÁO', ic: IC.chuong, href: '#' },
+    { ma: 'bangTin', chu: 'BẢNG TIN', ic: IC.bangTin, href: 'bangtin.html' },
+    { ma: 'khamPha', chu: 'KHÁM PHÁ', ic: IC.khamPha, href: 'khampha.html' },
     { ma: 'shop', chu: 'SHOP ĐỔI QUÀ', ic: IC.shop, href: 'shop.html' },   // 29/09 thầy chốt: trước Tìm kiếm
     { ma: 'timKiem', chu: 'TÌM KIẾM', ic: IC.timKiem, href: 'timkiem.html' }   // v0.4.0 thầy chốt: kính lúp CUỐI bên phải
   ];

@@ -28,10 +28,11 @@
   };
   var TABS = [
     { ma: 'baiTap', chu: 'TRANG BÀI TẬP' },
-    { ma: 'khamPha', chu: 'KHÁM PHÁ' },
+    // 02/10/2026 thầy chốt thứ tự MỌI trang: Quản lý/Bài tập - Tin nhắn - Thông báo - Bảng tin - Khám phá - Quà tặng - Tìm kiếm
     { ma: 'tinNhan', chu: 'TIN NHẮN' },
-    { ma: 'bangTin', chu: 'BẢNG TIN' },
     { ma: 'chuong', chu: 'THÔNG BÁO' },
+    { ma: 'bangTin', chu: 'BẢNG TIN' },
+    { ma: 'khamPha', chu: 'KHÁM PHÁ' },
     { ma: 'shop', chu: 'SHOP ĐỔI QUÀ' },   // 29/09 thầy chốt: trước Tìm kiếm
     { ma: 'timKiem', chu: 'TÌM KIẾM' }
   ];

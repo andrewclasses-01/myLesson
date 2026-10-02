@@ -44,7 +44,9 @@
         if (window.__thayVao) { try { await window.__thayVao.san; } catch (e) { } }
         var app = (appMod.getApps && appMod.getApps().length) ? appMod.getApp() : appMod.initializeApp(CAU_HINH);
         var auth = au.getAuth(app);
-        if (!window.__thayVao) { try { await au.setPersistence(auth, au.browserLocalPersistence); } catch (e) { } }
+        // ⛔ v1.229.0 (02/10/2026) — BỎ setPersistence(browserLocalPersistence). getAuth() mặc định ưu tiên IndexedDB: mỗi lần nạp trang
+        // nó CHUYỂN phiên localStorage → IndexedDB (xoá khoá localStorage) rồi setPersistence lại chuyển ngược về ⇒ các tab KHÁC thấy
+        // khoá bị xoá thoáng qua = "đăng xuất" ⇒ dashboard tab 1 bị đá khi tab 2 mở trang chủ. Để mặc định: mọi trang chung kho IndexedDB.
         return { au: au, auth: auth, fs: fs, db: fs.getFirestore(app) };
       })();
       _p['catch'](function () { _p = null; });   // mạng lỗi lúc tải SDK ⇒ lần sau thử lại

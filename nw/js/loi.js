@@ -291,7 +291,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
         if (window.__thayVao) { try { await window.__thayVao.san; } catch (e) { } }
         var app = (appMod.getApps && appMod.getApps().length) ? appMod.getApp() : appMod.initializeApp(CFG.FIREBASE);
         var auth = au.getAuth(app);
-        if (!_coThayVao) { try { await au.setPersistence(auth, au.browserLocalPersistence); } catch (e) { } }
+        // ⛔ v1.229.0 — BỎ setPersistence(browserLocalPersistence) (xem ../../js/nw-phien.js): chuyển phiên qua lại làm tab khác bị đăng xuất.
         return { app: app, appMod: appMod, au: au, auth: auth, fs: NW.chiXem() ? fsChiXem(fs) : fs, db: fs.getFirestore(app) };
       })();
     }

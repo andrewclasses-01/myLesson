@@ -40,7 +40,8 @@
         // ⭐ v1.168.0 — tab "đăng nhập thay em" (js/thay-vao.js): chờ Auth phiên-trong-tab, KHÔNG setPersistence(local).
         if (window.__thayVao) { try { await window.__thayVao.san; } catch (e) {} }
         var a = au.getAuth(appMod.getApp());
-        if (!window.__thayVao) { try { await au.setPersistence(a, au.browserLocalPersistence); } catch (e) {} }
+        // ⛔ v1.229.0 — BỎ setPersistence(browserLocalPersistence): đánh nhau với getAuth() mặc định (IndexedDB) ⇒ mỗi lần nạp trang
+        // phiên bị chuyển qua chuyển lại, tab khác thấy "đăng xuất" thoáng qua và bị đá (xem js/nw-phien.js).
         return { au: au, a: a };
       })();
     }

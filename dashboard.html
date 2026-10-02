@@ -3939,7 +3939,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=208"></script>
+<script src="config.js?v=209"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -3948,7 +3948,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=20"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
-<script src="js/thay.js?v=5"></script>
+<script src="js/thay.js?v=6"></script>
 <script>
 (function () {
   'use strict';
@@ -12169,7 +12169,17 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#qtMaCai').addEventListener('input', function () { if (this.value.replace(/\D/g, '').length === 6) $('#qtCaiVao').click(); });
     AWThay.theoDoi(function (u) {
       if (u) { qtMoKhoa(); return; }
-      if (QT_DA_MO) { A.thoatAdmin(); location.replace('index.html?vao=1'); return; }   // đã vào mà mất phiên (thoát / quá 30 ngày)
+      if (QT_DA_MO) {   // đã vào mà mất phiên (thoát / quá 30 ngày)
+        // ⭐ v1.229.0 — KIỂM LẠI sau 2,5 s rồi mới đá: tab khác nạp trang có thể làm phiên "mất" thoáng qua (thầy gặp 02/10:
+        // mở tab 2 là tab 1 bị đăng xuất). Phiên vẫn còn ⇒ ở lại; mất thật ⇒ về màn đăng nhập như cũ.
+        setTimeout(function () {
+          AWThay.phien().then(function (v) {
+            if (v || !QT_DA_MO) return;
+            A.thoatAdmin(); location.replace('index.html?vao=1');
+          }, function () { A.thoatAdmin(); location.replace('index.html?vao=1'); });
+        }, 2500);
+        return;
+      }
       if (QT_BUOC === 'cho') qtBuoc('b1');
     })['catch'](function () { qtBuoc('b1'); qtLoi('Chưa tải được phần đăng nhập — kiểm mạng rồi tải lại trang.'); });
   }

@@ -999,7 +999,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
       var snap = await NW.docPhongRieng(f, ref);
       if (!snap.exists()) {
         if (!(NW.Chat && NW.Chat.moRieng)) throw new Error('Chưa mở được phòng chat.');
-        await NW.Chat.moRieng(nguoi);
+        await NW.Chat.moRieng(nguoi, { tao: true });   // 03/10: chặn cần phòng thật (mặc định phòng chỉ tạo lúc gửi tin đầu)
       }
       await f.fs.updateDoc(ref, { chanBoi: bat ? f.fs.arrayUnion(NW.toi.uid) : f.fs.arrayRemove(NW.toi.uid) });
       // (2) danh sách riêng của em — để lọc danh bạ bằng MỘT lượt đọc, và không ai khác dòm được em chặn ai

@@ -42,6 +42,10 @@
     if (NW.laBanThu() || !NW.Chat) return;
     try {
       hop.phongId = await NW.Chat.moRieng(hop.nguoi);
+      if (NW.Chat.dangCho(hop.phongId)) {   // 03/10: phòng chờ ⇒ chưa nghe; gửi tin đầu xong mới gắn kênh
+        NW.Chat.ngheKhiTao(function (id) { if (id === hop.phongId && !hop.dungNghe && hops.indexOf(hop) >= 0) noiPhong(hop); });
+        return;
+      }
       var f = await NW.fb();
       var q = f.fs.query(f.fs.collection(f.db, 'nwChats', hop.phongId, 'tin'), f.fs.orderBy('luc', 'desc'), f.fs.limit(30));
       hop.dungNghe = f.fs.onSnapshot(q, function (snap) {

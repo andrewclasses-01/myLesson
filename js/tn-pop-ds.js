@@ -113,6 +113,7 @@
     var choRieng = !!(me.laThay || (window.NW && NW.CFG && NW.CFG.BAT_CHAT_RIENG));
     return ds.filter(function (p) {
       if (((p.anLuc || {})[me.uid] || 0) >= (p.capNhat || 0)) return false;
+      if (p.loai !== 'nhom' && !p.tinCuoi) return false;   // 03/10: phòng riêng chưa có tin nào — không hiện
       if (!choRieng) return p.loai !== 'nhom' && nguoiKia(me, p).vaiTro === 'gv';
       return true;
     });

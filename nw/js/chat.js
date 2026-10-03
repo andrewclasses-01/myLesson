@@ -63,7 +63,13 @@
   };
 
   // Mở (tạo nếu chưa có) phòng riêng với một người → trả id phòng.
-  Chat.moRieng = async function (nguoi) {
+  // ⭐ 03/10/2026 (thầy phát hiện danh sách thầy đầy cuộc "Bắt đầu trò chuyện" rỗng: 42/45 phòng chưa có tin nào — em chỉ BẤM mở "Thầy Andrew" là
+  //   phòng đã được tạo): nay phòng riêng CHỈ ĐƯỢC TẠO LÚC GỬI TIN ĐẦU TIÊN. Mở xem = giữ phòng "chờ" trong RAM (Chat._cho), chưa ghi gì lên kho.
+  //   o.tao === true ⇒ tạo ngay (chặn/bỏ chặn cần phòng thật). Tạo xong gọi các hàm đăng ký ở Chat.ngheKhiTao để gắn kênh nghe tin.
+  Chat._cho = {}; Chat._khiTao = [];
+  Chat.dangCho = function (id) { return !!Chat._cho[id]; };
+  Chat.ngheKhiTao = function (fn) { Chat._khiTao.push(fn); };
+  Chat.moRieng = async function (nguoi, o) {
     var toi = NW.toi; var id = Chat.maRieng(toi.uid, nguoi.uid);
     if (NW.laBanThu()) return id;
     var f = await NW.fb();
@@ -72,7 +78,8 @@
     if (!snap.exists()) {
       var tv = {}; tv[toi.uid] = NW.tomTat(toi); tv[nguoi.uid] = NW.tomTat(nguoi);
       var doc = { loai: 'rieng', ten: '', thanhVien: [toi.uid, nguoi.uid].sort(), tv: tv, taoBoi: toi.uid, luc: Date.now(), capNhat: Date.now(), tinCuoi: null, docLuc: {} };
-      await f.fs.setDoc(ref, doc);
+      if (o && o.tao) await f.fs.setDoc(ref, doc);
+      else Chat._cho[id] = { ref: ref, doc: doc };
     }
     return id;
   };
@@ -95,12 +102,19 @@
     if (NW.laBanThu()) return t;
     try {
       var f = await NW.fb();
+      var moiTao = false, cho = Chat._cho[phongId];
+      if (cho) {   // phòng chờ: tạo NGAY BÂY GIỜ (kiểm lại một lần — bên kia có thể đã tạo trong lúc em soạn; tránh ghi đè phòng thật)
+        var co = await NW.docPhongRieng(f, cho.ref);
+        if (!co.exists()) { cho.doc.luc = cho.doc.capNhat = Date.now(); await f.fs.setDoc(cho.ref, cho.doc); }
+        delete Chat._cho[phongId]; moiTao = true;
+      }
       var refTinMoi = await f.fs.addDoc(f.fs.collection(f.db, 'nwChats', phongId, 'tin'), t);
       t.id = refTinMoi.id;   // v1.224.0 — cần id tin cho link thông báo nhắc tên
       var docDuoc = window.ChatUI ? ChatUI.chuThuong(ChatUI.tomTat(t)) : t.chu;
       var patch = { tinCuoi: { chu: t.hinh && !t.chu ? '' : String(docDuoc || '').slice(0, 80), hinh: !!t.hinh, uid: toi.uid, ten: toi.ten, luc: t.luc }, capNhat: t.luc };
       patch['docLuc.' + toi.uid] = t.luc;
       await f.fs.updateDoc(f.fs.doc(f.db, 'nwChats', phongId), patch);
+      if (moiTao) Chat._khiTao.slice().forEach(function (fn) { try { fn(phongId); } catch (e) { } });
       return t;
     } catch (e) { NW.toast(NW.chuLoiKho(e), true); return null; }
   };
@@ -307,6 +321,7 @@
     function laVoiThay(p) { return p.loai !== 'nhom' && nguoiKia(p).vaiTro === 'gv'; }
     function xepPhong(ds) {
       ds = ds.filter(function (p) { return laNhomLop(p) || !(((p.anLuc || {})[toi.uid] || 0) >= (p.capNhat || 0)); });
+      ds = ds.filter(function (p) { return p._cho || p.loai === 'nhom' || !!p.tinCuoi; });   // ⭐ 03/10: phòng riêng CHƯA CÓ TIN NÀO thì không hiện (thầy thấy "Bắt đầu trò chuyện" rỗng)
       if (!CHO_RIENG) {
         ds = ds.filter(function (p) { return laNhomLop(p) || laVoiThay(p); });
         THAY.forEach(function (t) {
@@ -504,7 +519,12 @@
       veKhungPhong(p);
       if (p._lop) { moPhongLop(p); return; }
       if (NW.laBanThu()) { TIN = tinMau(p); veTin(); if ((p.chuaDoc || {})[toi.uid]) { p.chuaDoc[toi.uid] = false; p.docLuc = p.docLuc || {}; p.docLuc[toi.uid] = Date.now(); veDs(); } return; }
+      if (Chat.dangCho(id)) { veTin(); return; }   // ⭐ 03/10 phòng CHỜ (chưa có tin đầu): chưa có gì trên kho để nghe — gắn kênh khi gửi tin đầu (Chat.ngheKhiTao ở dưới)
+      ngheTin(id, p);
+    }
+    async function ngheTin(id, p) {
       var f = await NW.fb();
+      if (dungNghe) { try { dungNghe(); } catch (e) { } dungNghe = null; }
       var q = f.fs.query(f.fs.collection(f.db, 'nwChats', id, 'tin'), f.fs.orderBy('luc', 'desc'), f.fs.limit(30));
       dungNghe = f.fs.onSnapshot(q, function (snap) {
         if (chon !== id) return;
@@ -517,6 +537,7 @@
         veTin(); danhDauDoc(p);
       }, function (e) { $('#tnCuon', khuPhong).innerHTML = '<div class="tn-trong">' + an(NW.chuLoiKho(e)) + '</div>'; });
     }
+    Chat.ngheKhiTao(function (id) { if (chon === id) ngheTin(id, nguoiHienTai || timPhong(id) || {}); });
     async function taiCu() {
       if (!TIN.length) return;
       var f = await NW.fb();

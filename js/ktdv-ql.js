@@ -491,7 +491,7 @@
           var ds = o.rv.map(function (r, i) {
             var ok = dung(o.b, i, r), k = o.b.ma + ':' + (i + 1);
             return { i: i + 1, q: cat(r.question), y: cat(r.yourText), c: cat(r.correctText), ok: ok,
-              g: ok ? '' : cat(k in BC.ghiChu ? BC.ghiChu[k] : window.KTDV_BC.goiY(r.yourText, r.correctText), 240) };
+              g: ok ? '' : cat(k in BC.ghiChu ? BC.ghiChu[k] : window.KTDV_BC.goiY(r.yourText, r.correctText, r.question), 240) };
           });
           return { ma: o.b.ma, ten: o.b.ten, n: o.rv.length || o.b.n, d: o.d, ds: ds };
         })
@@ -507,6 +507,7 @@
     function vePh() {
       var tk = thongKe();
       var h2 = '<div class="khong-in ktbc-goi ktbc-ph-goi">Đây là bản phụ huynh sẽ thấy. Sửa nhận xét và lời giải thích từng câu sai ngay trong trang (câu sai có sẵn nháp tự động), bấm <b>Lưu</b>, rồi <b>Gửi phụ huynh</b> để lấy link.' +
+        (BC.claudeLuc ? '<br><b>Claude đã chấm lại ngày ' + gioVN(BC.claudeLuc) + '</b>' + (BC.claudeGhiChu ? ' — ' + E(BC.claudeGhiChu) : '') + ' (lời giải thích + nhận xét bên dưới là bản của Claude; chưa bấm “Cập nhật link PH” thì phụ huynh vẫn thấy bản cũ).' : '') +
         (BC.token ? '<br>Link đang dùng: <a href="' + E(linkKq(BC.token)) + '" target="_blank" rel="noopener">' + E(linkKq(BC.token).replace('https://', '')) + '</a>' + (BC.guiLuc ? ' · cập nhật ' + gioVN(BC.guiLuc) : '') + ' — sau khi sửa bấm “Cập nhật link PH” để phụ huynh thấy bản mới.' : '') + '</div>';
       h2 += window.KTDV_BC.html(chup(tk), { sua: true });
       trang.innerHTML = h2;
@@ -595,7 +596,7 @@
     }
     function danhDau() { var t = nen.querySelector('.ktbc-luu-tt'); t.textContent = doi ? '● chưa lưu' : ''; }
     function luu(them) {
-      var goc = { sua: BC.sua, loai: BC.loai, ghiChu: BC.ghiChu || {}, uuDiem: BC.uuDiem || '', hanChe: BC.hanChe || '', guiLuc: BC.guiLuc || 0, token: BC.token || '', ma: h.ma, ten: h.ten, capNhat: Date.now() };
+      var goc = { sua: BC.sua, loai: BC.loai, ghiChu: BC.ghiChu || {}, uuDiem: BC.uuDiem || '', hanChe: BC.hanChe || '', guiLuc: BC.guiLuc || 0, token: BC.token || '', claudeLuc: BC.claudeLuc || 0, claudeGhiChu: BC.claudeGhiChu || '', ma: h.ma, ten: h.ten, capNhat: Date.now() };
       Object.assign(goc, them || {});
       return kho().then(function (f) { return f.fs.setDoc(f.fs.doc(f.db, 'ktdvBaoCao', String(h.ma)), goc); })
         .then(function () { Object.assign(BC, them || {}); doi = false; danhDau(); tb('Đã lưu báo cáo.'); }, function (e) { tb(chuLoi(e), true); });
@@ -664,11 +665,12 @@
       }
     });
     // nháp nhận xét tự động, GIỌNG CHO PHỤ HUYNH: nêu ĐIỂM TỐT + NHÓM LỖI CHÍNH có đếm (chi tiết từng câu đã nằm ở bảng bên dưới)
-    var NHAN_LOI = [[/để trống/, 'để trống câu'], [/lệch nhiều/, 'dịch chưa đúng ý câu'], [/Thiếu mạo từ/, 'thiếu a/an'], [/Thừa mạo từ/, 'thừa a/an'], [/Sai mạo từ/, 'dùng sai a/an'],
-      [/chính tả/, 'sai chính tả'], [/“s”|số nhiều/, 'số ít/số nhiều hoặc chia động từ (thêm/bớt “s”)'], [/to be/, 'động từ “to be”'],
-      [/Sai thì|trợ động từ|“will”|hoàn thành|thời gian|khuyết thiếu/, 'thì và trợ động từ'], [/Dùng từ chưa đúng|Dùng chưa đúng|Thiếu từ|Sai dạng/, 'dùng từ/cấu trúc chưa đúng']];
+    var NHAN_LOI = [[/chưa đúng ý|viết lại cho đúng/, 'dịch chưa đúng ý câu'], [/Thiếu mạo từ/, 'thiếu a/an'], [/Thừa mạo từ/, 'thừa a/an'], [/Sai mạo từ/, 'dùng sai a/an'],
+      [/chính tả/, 'sai chính tả'], [/số ít\/nhiều|số nhiều|“s\/es”|chia động từ hiện tại/, 'số ít/số nhiều hoặc chia động từ (s/es)'], [/to be/, 'động từ “to be”'],
+      [/Sai thì|trợ động từ|“will”|Thiếu “have|Thiếu “has|Thiếu “had|Thiếu “been|khả năng|thời gian/, 'thì và trợ động từ'], [/từ vựng|Sai dạng|Thiếu từ|Thừa hoặc/, 'dùng từ/cấu trúc chưa đúng']];
     function nhomLoi(r) {
-      var g = window.KTDV_BC.goiY(r.yourText, r.correctText), kq = [];
+      if (!r.yourText) return ['để trống câu'];
+      var g = window.KTDV_BC.goiY(r.yourText, r.correctText, r.question), kq = [];
       NHAN_LOI.forEach(function (x) { if (x[0].test(g)) kq.push(x[1]); });
       return kq.length ? kq : ['dùng từ/cấu trúc chưa đúng'];
     }

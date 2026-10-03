@@ -14,7 +14,8 @@
    Chỉ có Đúng / Sai — phân loại 4 mức, thời gian, rời trang… nằm ở phần "Chi tiết giáo viên" của dashboard.
 
    html(s, {sua:true})  ⇒ ô nhận xét chung là <textarea data-bc-nx="uuDiem|hanChe">, lời giải thích câu sai là <textarea data-bc-gc="mã:số câu"> (dashboard).
-   goiY(bàiLàm, đápÁn)  ⇒ lời giải thích TỰ ĐỘNG tiếng Việt (so từng từ + luật lỗi thường gặp) — thầy vẫn sửa lại được.
+   goiY(bàiLàm, đápÁn, đề)  ⇒ lời giải thích TỰ ĐỘNG tiếng Việt (so từng từ + luật lỗi thường gặp) — thầy / Claude vẫn sửa lại được.
+   Câu để trống: hiện “✗ Để trống” (đỏ) + “Đáp án đúng: …”, KHÔNG có lời giải thích. Lời giải thích không nhắc tới "đáp án".
    ============================================================ */
 (function () {
   'use strict';
@@ -32,9 +33,10 @@
     return { d: d, n: n, p: pc(d, n) };
   }
 
-  // ---- lời giải thích câu sai TỰ ĐỘNG (so từng từ với đáp án; thầy vẫn sửa lại được) ----
-  // Nhận ra: để trống · lệch quá nhiều · sai chính tả · sai a/an · thiếu/thừa a/an · số ít–số nhiều (cả bất quy tắc) · chia động từ ngôi thứ ba ·
-  // sai thì (quá khứ) · sai/thiếu to be · thiếu did/do/does/will/have/has/had/been/can/to · thiếu từ chỉ thời gian · thiếu/thừa/dùng từ khác.
+  // ---- lời giải thích câu sai TỰ ĐỘNG (so từng từ với đáp án; thầy / Claude vẫn sửa lại được) ----
+  // Giọng như cột "Nhận xét" của file chấm Excel: nêu RÕ lỗi gì, vì sao (không nhắc tới "đáp án", không bảo em đi đối chiếu). Câu để trống: KHÔNG có lời (chỉ hiện "✗ Để trống" + đáp án đúng).
+  // Nhận ra: lệch quá nhiều ý · sai chính tả · sai/thiếu/thừa a/an · số ít–số nhiều (cả bất quy tắc) · chia động từ ngôi thứ ba · sai thì quá khứ · sai/thiếu "to be" ·
+  // thiếu do/does/did/will/have/has/had/been/can/to · thiếu từ chỉ thời gian · sai từ vựng (so với nghĩa tiếng Việt của đề) · sai dạng từ.
   function tok(s) {
     return String(s || '').normalize('NFC').toLowerCase().replace(/[‘’`]/g, "'").replace(/[^a-z0-9' ]+/g, ' ').split(/\s+/).filter(function (x) { return x; });
   }
@@ -48,78 +50,108 @@
     return x === z + 's' || x === z + 'es' || (/ies$/.test(x) && z === x.slice(0, -3) + 'y') || (/ves$/.test(x) && (z === x.slice(0, -3) + 'f' || z === x.slice(0, -3) + 'fe'));
   }
   function q(x) { return '“' + x + '”'; }
-  var SO_NHIEU_BQT = { foot: 'feet', tooth: 'teeth', child: 'children', man: 'men', woman: 'women', mouse: 'mice', person: 'people', goose: 'geese', ox: 'oxen', sheep: 'sheep', fish: 'fish' };
+  var SO_NHIEU_BQT = { foot: 'feet', tooth: 'teeth', child: 'children', man: 'men', woman: 'women', mouse: 'mice', person: 'people', goose: 'geese', ox: 'oxen' };
   var QUA_KHU = { be: 'was', is: 'was', am: 'was', are: 'were', go: 'went', eat: 'ate', have: 'had', has: 'had', buy: 'bought', see: 'saw', make: 'made', come: 'came', take: 'took', give: 'gave',
     get: 'got', write: 'wrote', drink: 'drank', swim: 'swam', meet: 'met', say: 'said', tell: 'told', know: 'knew', think: 'thought', leave: 'left', do: 'did', run: 'ran', sleep: 'slept', can: 'could',
-    sit: 'sat', stand: 'stood', find: 'found', bring: 'brought', read: 'read', play: 'played', help: 'helped', work: 'worked', cook: 'cooked', walk: 'walked' };
+    sit: 'sat', stand: 'stood', find: 'found', bring: 'brought', play: 'played', help: 'helped', work: 'worked', cook: 'cooked', walk: 'walked' };
   var BE = ['am', 'is', 'are', 'was', 'were', 'be', 'been', 'being'];
-  var TG = ['yesterday', 'tomorrow', 'tonight', 'ago', 'last', 'next', 'now', 'today', 'tuesday', 'monday', 'sunday', 'night', 'week', 'morning', 'afternoon', 'evening', 'always', 'often', 'usually', 'never', 'sometimes', 'already', 'ever', 'yet', 'just', 'for', 'since'];
-  var MAO = ['a', 'an', 'the'];
+  var VI_TG = { yesterday: 'hôm qua', tomorrow: 'ngày mai', tonight: 'tối nay', ago: 'cách đây', last: 'trước / qua', next: 'tới / sau', now: 'bây giờ', today: 'hôm nay', always: 'luôn luôn', often: 'thường',
+    usually: 'thường', never: 'không bao giờ', sometimes: 'thỉnh thoảng', already: 'rồi', ever: 'từng', just: 'vừa', for: 'trong khoảng thời gian', since: 'kể từ khi', morning: 'buổi sáng', afternoon: 'buổi chiều', evening: 'buổi tối', night: 'đêm / tối', week: 'tuần', tuesday: 'thứ ba', monday: 'thứ hai', sunday: 'chủ nhật' };
+  var TG = Object.keys(VI_TG);
+  var SAU_NGUYEN_MAU = ['will', 'can', 'cannot', 'could', 'to', 'do', 'does', 'did', 'not', 'must', 'should', 'may', 'would'];
   function laSo(w) { return /^(two|three|four|five|six|seven|eight|nine|ten|eleven|twelve|twenty|\d+)$/.test(w) && w !== '1'; }
-  function ghepCap(x, z, b, loi) {   // thử giải thích việc "x" (con viết) thay cho "z" (đáp án); trả chuỗi hoặc null
-    if ((x === 'a' || x === 'an') && (z === 'a' || z === 'an')) return 'Sai mạo từ: trước từ này phải dùng ' + q(z) + ' (con viết ' + q(x) + ') — “an” trước nguyên âm u e o a i, “a” trước phụ âm.';
-    if (SO_NHIEU_BQT[z] === undefined && Object.keys(SO_NHIEU_BQT).some(function (k) { return SO_NHIEU_BQT[k] === z && k === x; })) return 'Danh từ số nhiều bất quy tắc: ' + q(x) + ' → ' + q(z) + '.';
-    if (SO_NHIEU_BQT[x] === z) return 'Danh từ số nhiều bất quy tắc: ' + q(x) + ' → ' + q(z) + '.';
-    if (QUA_KHU[x] === z) return 'Sai thì: câu ở quá khứ nên động từ phải chia quá khứ — con viết ' + q(x) + ', đúng là ' + q(z) + '.';
-    if (BE.indexOf(x) >= 0 && BE.indexOf(z) >= 0) return 'Sai động từ “to be”: con viết ' + q(x) + ', đáp án dùng ' + q(z) + ' (phải hợp với chủ ngữ số ít/số nhiều và thì: am/is/are/was/were).';
-    if (dangS(x, z)) return 'Dư “s”: con viết ' + q(x) + ', đúng là ' + q(z) + ' (danh từ số ít hoặc động từ không chia ngôi thứ ba thì không thêm “s”).';
-    if (dangS(z, x)) {
-      var coSo = b.some(laSo);
-      return 'Thiếu “s”: con viết ' + q(x) + ', đúng là ' + q(z) + (coSo ? ' (có số lượng từ hai trở lên nên danh từ phải ở số nhiều).' : ' (danh từ số nhiều, hoặc động từ chia cho he/she/it ở hiện tại đơn).');
+  // từ đứng ngay trước / sau "z" trong đáp án (b là mảng từ thường, cGoc là chuỗi gốc có hoa)
+  function truoc(b, z) { var i = b.indexOf(z); return i > 0 ? b[i - 1] : ''; }
+  function sau(b, z) { var i = b.indexOf(z); return (i >= 0 && i < b.length - 1) ? b[i + 1] : ''; }
+  var HAN_DINH = ['the', 'a', 'an', 'my', 'your', 'his', 'her', 'our', 'their', 'its', 'those', 'these', 'this', 'that', 'many', 'some', 'any', 'all', 'few', 'big', 'small', 'new', 'old', 'good', 'tall', 'short', 'beautiful', 'little', 'great', 'nice'];
+  // z (đã thêm s/es) là ĐỘNG TỪ chia ngôi thứ ba (he/she/it/tên riêng/danh từ số ít đứng trước) hay là DANH TỪ số nhiều?
+  function laDongTu(b, z) {
+    var i = b.indexOf(z), t;
+    if (i <= 0) return false;
+    t = i - 1;
+    while (t >= 0 && (TG.indexOf(b[t]) >= 0 || b[t] === 'not' || b[t] === 'also')) t--;   // bỏ qua trạng từ: “She often watches”
+    if (t < 0) return false;
+    return HAN_DINH.indexOf(b[t]) < 0 && !laSo(b[t]);
+  }
+  function ghepCap(x, z, b, ngan) {   // x = con viết, z = cần viết; trả lời giải thích hoặc null nếu hai từ không có quan hệ rõ
+    if ((x === 'a' || x === 'an') && (z === 'a' || z === 'an')) return 'Sai mạo từ: trước ' + q(sau(b, z) || 'từ này') + ' phải dùng ' + q(z) + ' (con viết ' + q(x) + '); “an” đứng trước nguyên âm (u, e, o, a, i), “a” đứng trước phụ âm.';
+    if (SO_NHIEU_BQT[x] === z) return 'Sai số nhiều bất quy tắc: số nhiều của ' + q(x) + ' là ' + q(z) + '.';
+    if (BE.indexOf(x) >= 0 && BE.indexOf(z) >= 0) {
+      if (z === 'are' || z === 'were') return 'Sai chia “to be”: chủ ngữ số nhiều phải dùng ' + q(z) + ', con viết ' + q(x) + '.';
+      if (z === 'is' || z === 'was') return 'Sai chia “to be”: chủ ngữ số ít (he, she, it, danh từ số ít) phải dùng ' + q(z) + ', con viết ' + q(x) + '.';
+      return 'Sai chia “to be”: ' + q(x) + ' không hợp với chủ ngữ hoặc thì của câu, cần dùng ' + q(z) + '.';
     }
-    if (x.length >= 3 && z.length >= 3 && (x.indexOf(z) === 0 || z.indexOf(x) === 0) && Math.abs(x.length - z.length) <= 3) return 'Sai dạng của động từ/từ: con viết ' + q(x) + ', đáp án dùng ' + q(z) + ' (kiểm tra thì và dạng từ đứng sau will, can, cannot, to…).';
-    if (z.length >= 4 && lev(x, z) <= (z.length >= 8 ? 3 : 2)) return 'Sai chính tả: con viết ' + q(x) + ', đúng là ' + q(z) + '.';
+    if (QUA_KHU[x] === z) {
+      var m = b.filter(function (w) { return ['yesterday', 'ago', 'last'].indexOf(w) >= 0; })[0];
+      return 'Sai thì: ' + (m ? 'câu có ' + q(m) + ' (' + VI_TG[m] + ') nên' : 'câu ở quá khứ nên') + ' động từ phải chia quá khứ: ' + q(x) + ' → ' + q(z) + '.';
+    }
+    if (dangS(x, z)) {
+      if (ngan) return 'Sai số ít/nhiều: ' + (b.indexOf('a') >= 0 || b.indexOf('an') >= 0 ? '“a/an” (một) yêu cầu danh từ số ít ' : 'danh từ phải ở số ít ') + q(z) + ', nhưng con viết ' + q(x) + ' (số nhiều).';
+      return 'Sai chia từ: thừa “s/es” ở ' + q(x) + ' — chủ ngữ này không đòi thêm “s”, cần viết ' + q(z) + '.';
+    }
+    if (dangS(z, x)) {
+      var so = b.filter(laSo)[0];
+      if (so) return 'Sai số ít/nhiều: có số lượng ' + q(so) + ' (từ hai trở lên) nên danh từ phải ở số nhiều: ' + q(x) + ' → ' + q(z) + '.';
+      if (!ngan && laDongTu(b, z)) return 'Sai chia động từ hiện tại đơn: chủ ngữ ngôi thứ ba số ít (he, she, it, tên riêng) cần thêm “s/es”: ' + q(x) + ' → ' + q(z) + '.';
+      return 'Sai số ít/nhiều: danh từ phải ở số nhiều: ' + q(x) + ' → ' + q(z) + '.';
+    }
+    var du = x.length > z.length ? (x.indexOf(z) === 0 ? x.slice(z.length) : null) : (z.indexOf(x) === 0 ? z.slice(x.length) : null);
+    if (x.length >= 3 && z.length >= 3 && du && ['ed', 'ing', 'ly', 'er', 'est'].indexOf(du) >= 0) {
+      if (du === 'ly' && z.length > x.length) return 'Sai loại từ: ở đây cần trạng từ ' + q(z) + ' (bổ nghĩa cho động từ), con viết tính từ ' + q(x) + '.';
+      var tr = truoc(b, z);
+      return 'Sai dạng từ: ' + (SAU_NGUYEN_MAU.indexOf(tr) >= 0 ? 'sau ' + q(tr) + ' động từ phải ở dạng nguyên mẫu' : 'dạng của từ chưa đúng') + ': ' + q(x) + ' → ' + q(z) + '.';
+    }
+    if (z.length >= 4 && lev(x, z) <= (z.length >= 8 ? 3 : 2)) return 'Sai chính tả: ' + q(x) + ' → ' + q(z) + '.';
     return null;
   }
-  function goiY(y, c) {
+  // y = bài làm của em · c = đáp án · de = đề tiếng Việt (tuỳ chọn, để nói "không đúng nghĩa của …")
+  function goiY(y, c, de) {
     y = String(y || '').trim(); c = String(c || '').trim();
-    if (!y) return 'Con để trống câu này.';
+    if (!y) return '';   // để trống: không có lời — giao diện tự hiện “✗ Để trống”
     var a = tok(y), b = tok(c);
     if (!b.length) return '';
-    if (a.join(' ') === b.join(' ')) return 'Gần đúng — chỉ lệch dấu câu hoặc cách viết hoa so với đáp án.';
-    // thừa (a mà b không có) / thiếu (b mà a không có), tính theo số lần
+    if (a.join(' ') === b.join(' ')) return 'Chỉ lệch dấu câu hoặc cách viết hoa, nội dung đúng.';
     var dem = function (arr) { var m = {}; arr.forEach(function (w) { m[w] = (m[w] || 0) + 1; }); return m; };
-    var da = dem(a), db = dem(b), thieu = [], thua = [];
+    var da = dem(a), thieu = [], thua = [];
     b.forEach(function (w) { if ((da[w] || 0) > 0) da[w]--; else thieu.push(w); });
-    da = dem(a); var db2 = dem(b);
+    var db2 = dem(b);
     a.forEach(function (w) { if ((db2[w] || 0) > 0) db2[w]--; else thua.push(w); });
     var khop = b.length - thieu.length;
-    var ngan = b.length <= 4;   // cụm danh từ (BT1/BT2)
-    if (!ngan && khop / b.length < 0.34) return 'Bài làm lệch nhiều so với đáp án (chưa dịch đủ ý, hoặc dùng từ chưa phù hợp) — con xem đáp án bên dưới để đối chiếu.';
+    var ngan = b.length <= 4 && !b.some(function (w) { return BE.concat(['i', 'he', 'she', 'it', 'we', 'they', 'you', 'do', 'does', 'did', 'will', 'can', 'cannot']).indexOf(w) >= 0; });   // cụm danh từ (BT1/BT2), không phải câu ngắn
+    if (!ngan && khop / b.length < 0.34) return 'Câu dịch chưa đúng ý: cần diễn đạt đủ ý của câu tiếng Việt bằng câu tiếng Anh đúng ngữ pháp.';
     var ms = [];
-    // ghép từng cặp (thừa ↔ thiếu) có quan hệ rõ ràng
     thua = thua.slice(); thieu = thieu.slice();
     for (var i = thua.length - 1; i >= 0; i--) {
       for (var j = 0; j < thieu.length; j++) {
-        var g = ghepCap(thua[i], thieu[j], b);
+        var g = ghepCap(thua[i], thieu[j], b, ngan);
         if (g) { ms.push(g); thua.splice(i, 1); thieu.splice(j, 1); break; }
       }
     }
-    // phần còn lại
-    var dungHet = function (arr, kho) { return arr.filter(function (w) { return kho.indexOf(w) >= 0; }); };
-    var tMao = dungHet(thieu, ['a', 'an']), tBe = dungHet(thieu, BE), tTg = dungHet(thieu, TG);
-    var tTro = dungHet(thieu, ['did', 'do', 'does']), tHt = dungHet(thieu, ['have', 'has', 'had', 'been']), tWill = dungHet(thieu, ['will']), tCan = dungHet(thieu, ['can', 'cannot', 'could']), tTo = dungHet(thieu, ['to']);
+    var loc = function (arr, kho) { return arr.filter(function (w) { return kho.indexOf(w) >= 0; }); };
+    var tMao = loc(thieu, ['a', 'an']), tBe = loc(thieu, BE), tTg = loc(thieu, TG), tTro = loc(thieu, ['did', 'do', 'does']), tHt = loc(thieu, ['have', 'has', 'had', 'been']),
+      tWill = loc(thieu, ['will']), tCan = loc(thieu, ['can', 'cannot', 'could']), tTo = loc(thieu, ['to']);
     var daDung = [].concat(tMao, tBe, tTg, tTro, tHt, tWill, tCan, tTo);
     if (tMao.length) ms.push('Thiếu mạo từ ' + q(tMao[0]) + ': danh từ đếm được số ít phải có a/an đứng trước.');
-    if (tBe.length) ms.push('Thiếu động từ “to be” ' + tBe.slice(0, 2).map(q).join(', ') + ' (am/is/are/was/were) trong câu.');
-    if (tTro.length) ms.push('Thiếu trợ động từ ' + q(tTro[0]) + ': câu hỏi hoặc câu phủ định ở hiện tại đơn/quá khứ đơn cần do/does/did.');
-    if (tWill.length) ms.push('Thiếu “will”: câu ở thì tương lai đơn.');
-    if (tHt.length) ms.push('Thiếu ' + tHt.slice(0, 2).map(q).join(', ') + ': câu cần trợ động từ này (thì hoàn thành have/has/had + V3, hoặc bị động, hoặc cấu trúc “used to”…).');
-    if (tCan.length) ms.push('Thiếu động từ khuyết thiếu ' + q(tCan[0]) + ' (khả năng).');
-    if (tTo.length) ms.push('Thiếu “to” (want/like to…, used to…).');
-    if (tTg.length) ms.push('Thiếu từ chỉ thời gian ' + tTg.slice(0, 2).map(q).join(', ') + ' — cần để thể hiện đúng thì của câu.');
+    if (tBe.length) ms.push('Thiếu động từ “to be” (' + tBe.slice(0, 2).map(q).join(', ') + ') trong câu — câu mô tả cần có am/is/are/was/were.');
+    if (tTro.length) ms.push('Thiếu trợ động từ ' + q(tTro[0]) + ': câu phủ định hoặc câu hỏi ở hiện tại đơn/quá khứ đơn cần do/does/did.');
+    if (tWill.length) ms.push('Thiếu “will”: câu nói về tương lai dùng “will + động từ nguyên mẫu”.');
+    if (tHt.length) ms.push('Thiếu ' + tHt.slice(0, 2).map(q).join(', ') + ': câu cần trợ động từ này (thì hoàn thành have/has/had + V3, bị động be + V3, hoặc cấu trúc “used to”).');
+    if (tCan.length) ms.push('Thiếu ' + q(tCan[0]) + ': câu diễn tả khả năng (có thể / không thể) cần can/cannot/could.');
+    if (tTo.length) ms.push('Thiếu “to” (want to, like to, used to…).');
+    if (tTg.length) ms.push('Thiếu từ chỉ thời gian ' + tTg.slice(0, 2).map(function (w) { return q(w) + ' (' + VI_TG[w] + ')'; }).join(', ') + ' — câu cần từ này để thể hiện đúng nghĩa và thì.');
     var conThieu = thieu.filter(function (w) { return daDung.indexOf(w) < 0; });
-    var maoThua = dungHet(thua, ['a', 'an']);
+    var maoThua = loc(thua, ['a', 'an']);
     if (ngan && maoThua.length && !conThieu.length) ms.push('Thừa mạo từ ' + q(maoThua[0]) + ': danh từ không đếm được (hoặc danh từ số nhiều) không dùng a/an.');
     else if (thua.length || conThieu.length) {
-      if (thua.length && conThieu.length && thua.length === conThieu.length && ngan) ms.push('Dùng từ chưa đúng: con viết ' + thua.slice(0, 3).map(q).join(', ') + ', đáp án dùng ' + conThieu.slice(0, 3).map(q).join(', ') + '.');
-      else {
+      if (thua.length && conThieu.length && thua.length === conThieu.length && ngan) {
+        ms.push('Sai từ vựng: ' + thua.slice(0, 3).map(q).join(', ') + (de ? ' không đúng nghĩa của ' + q(de) : ' dùng chưa đúng') + '; từ cần dùng là ' + conThieu.slice(0, 3).map(q).join(', ') + '.');
+      } else {
         if (conThieu.length) ms.push('Thiếu từ: ' + conThieu.slice(0, 4).map(q).join(', ') + (conThieu.length > 4 ? '…' : '') + '.');
-        if (thua.length) ms.push('Dùng chưa đúng / thừa từ: ' + thua.slice(0, 4).map(q).join(', ') + (thua.length > 4 ? '…' : '') + '.');
+        if (thua.length) ms.push('Thừa hoặc dùng sai từ: ' + thua.slice(0, 4).map(q).join(', ') + (thua.length > 4 ? '…' : '') + '.');
       }
     }
-    ms = ms.filter(function (m, k) { return ms.indexOf(m) === k; });   // bỏ lời trùng (vd 2 chỗ cùng thiếu “s”)
-    return (ms.slice(0, 3).join(' ') || 'Chưa đúng — con đối chiếu đáp án bên dưới.');
+    ms = ms.filter(function (m, k) { return ms.indexOf(m) === k; });
+    return ms.slice(0, 3).join(' ') || 'Câu chưa đúng: cần viết lại cho đúng ngữ pháp và đủ ý.';
   }
 
   function vong(p, mau) {
@@ -147,14 +179,16 @@
   function hang(b, x, sua) {
     var ok = !!x.ok;
     var nx;
+    var trong = !ok && !x.y;
     if (ok) nx = '<span class="kqp-dung">✓ Đúng</span>';
+    else if (trong && !x.g && !sua) nx = '<span class="kqp-sai-nhan">✗ Để trống</span>' + (x.c ? '<span class="kqp-da">Đáp án đúng: <b>' + E(x.c) + '</b></span>' : '');
     else {
-      var g = sua ? '<textarea rows="2" data-bc-gc="' + E(b.ma + ':' + x.i) + '" placeholder="Giải thích câu sai…">' + E(x.g) + '</textarea><span class="in-chu">' + E(x.g) + '</span>' : (x.g ? '<span class="kqp-g">' + E(x.g) + '</span>' : '');
-      nx = '<span class="kqp-sai-nhan">✗ Sai</span>' + g + (x.c ? '<span class="kqp-da">Đáp án đúng: <b>' + E(x.c) + '</b></span>' : '');
+      var g = sua ? '<textarea rows="' + Math.min(7, Math.max(2, Math.ceil(String(x.g || '').length / 32))) + '" data-bc-gc="' + E(b.ma + ':' + x.i) + '" placeholder="' + (trong ? 'Để trống — có thể bỏ trống ô này' : 'Giải thích câu sai…') + '">' + E(x.g) + '</textarea><span class="in-chu">' + E(x.g) + '</span>' : (x.g ? '<span class="kqp-g">' + E(x.g) + '</span>' : '');
+      nx = '<span class="kqp-sai-nhan">' + (trong ? '✗ Để trống' : '✗ Sai') + '</span>' + g + (x.c ? '<span class="kqp-da">Đáp án đúng: <b>' + E(x.c) + '</b></span>' : '');
     }
     return '<div class="kqp-hang ' + (ok ? 'ok' : 'sai') + '"><div class="kqp-h-stt">' + x.i + '</div>' +
       '<div class="kqp-h-de" data-l="Đề">' + E(x.q) + '</div>' +
-      '<div class="kqp-h-bl" data-l="Con viết">' + (x.y ? E(x.y) : '<em>(để trống)</em>') + '</div>' +
+      '<div class="kqp-h-bl" data-l="Con viết">' + (x.y ? E(x.y) : '<em>—</em>') + '</div>' +
       '<div class="kqp-h-nx" data-l="Nhận xét">' + nx + '</div></div>';
   }
 

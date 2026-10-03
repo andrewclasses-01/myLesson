@@ -161,14 +161,18 @@
     el.classList.remove('len'); void el.offsetWidth; el.classList.add('len');
     h.ve();
   }
-  function go(h, xong) {   // cuộn xuống dưới → thu bề ngang cho các hộp bên trái trượt sang phải êm → gỡ khỏi trang
+  function go(h, xong) {   // cuộn xuống dưới (Web Animations — không phụ thuộc class/transition) → thu bề ngang cho các hộp bên trái trượt sang phải êm → gỡ khỏi trang
     var el = h.el; if (!el.parentNode) { if (xong) xong(); return; }
-    el.classList.remove('len'); el.classList.add('xuong');
-    setTimeout(function () {
-      var w = el.offsetWidth; el.style.width = w + 'px'; void el.offsetWidth;
-      el.style.transition = 'width .2s ease, margin .2s ease'; el.style.width = '0'; el.style.marginLeft = '-10px';
-      setTimeout(function () { if (el.parentNode) el.remove(); el.classList.remove('xuong'); el.removeAttribute('style'); if (xong) xong(); }, 210);
-    }, 230);
+    var xoaXong = function () { if (el.parentNode) el.remove(); el.classList.remove('len'); el.removeAttribute('style'); if (xong) xong(); };
+    if (!el.animate) { xoaXong(); return; }
+    el.classList.remove('len');
+    var w = el.offsetWidth;
+    var xuong = el.animate([{ transform: 'translateY(0)' }, { transform: 'translateY(105%)' }], { duration: 320, easing: 'cubic-bezier(.4,0,.6,1)', fill: 'forwards' });
+    xuong.onfinish = function () {
+      var thu = el.animate([{ width: w + 'px', marginLeft: '0px' }, { width: '0px', marginLeft: '-10px' }], { duration: 220, easing: 'ease', fill: 'forwards' });
+      thu.onfinish = xoaXong; thu.oncancel = xoaXong;
+    };
+    xuong.oncancel = xoaXong;
   }
   function datMin() {
     var kn = khuMin(), ds = hops.filter(function (h) { return h.min; });

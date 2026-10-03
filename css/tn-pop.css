@@ -69,8 +69,12 @@
   width:328px; height:455px; max-height:calc(100dvh - 80px); display:flex; flex-direction:column; overflow:hidden; background:#fff; color:var(--tp-chu);
   border:1px solid var(--tp-vien); border-bottom:none; border-radius:14px 14px 0 0; box-shadow:0 12px 36px rgba(22,35,42,.22);
   font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif; font-weight:400; letter-spacing:0;
-  animation:tpLen .22s cubic-bezier(.22,.9,.3,1)}
-@keyframes tpLen{from{transform:translateY(20px); opacity:0} to{transform:none; opacity:1}}
+  flex:none}
+/* thầy chốt 03/10: hộp mới CUỘN TỪ DƯỚI LÊN, đóng/thu nhỏ CUỘN XUỐNG DƯỚI (js/tn-pop.js gan/go) */
+.tp-hop.len{animation:tpLen .3s cubic-bezier(.22,.9,.3,1) both}
+@keyframes tpLen{from{transform:translateY(100%)} to{transform:none}}
+.tp-hop.xuong{transform:translateY(100%); transition:transform .22s cubic-bezier(.5,0,.8,.4)}
+@media (prefers-reduced-motion:reduce){ .tp-hop.len{animation:none} .tp-hop.xuong{transition:none} }
 .tp-hop *{box-sizing:border-box}
 .tp-hop-dau{flex:none; display:flex; align-items:center; gap:8px; padding:8px 8px 8px 10px; border-bottom:1px solid var(--tp-vien); background:#fff}
 .tp-hop-dau .tp-av{width:36px; height:36px}

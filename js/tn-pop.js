@@ -152,28 +152,49 @@
   }
   function khuHop() { var k = document.getElementById('tpKhu'); if (!k) { k = document.createElement('div'); k.id = 'tpKhu'; k.className = 'tp-khu'; document.body.appendChild(k); } return k; }
   function khuMin() { var k = document.getElementById('tpMin'); if (!k) { k = document.createElement('div'); k.id = 'tpMin'; k.className = 'tp-min'; document.body.appendChild(k); } return k; }
-  function xepHop() {
-    var mo = hops.filter(function (h) { return !h.min; });
-    while (mo.length > TOI_DA) { mo.shift().min = true; }
-    mo = hops.filter(function (h) { return !h.min; });
-    var k = khuHop(); k.innerHTML = '';
-    mo.forEach(function (h) { k.appendChild(h.el); h.ve(); });
+  // ⭐ HIỆU ỨNG (thầy chốt 03/10): hộp MỚI cuộn từ dưới lên và xếp ở BÊN TRÁI cùng; đóng/thu nhỏ thì cuộn xuống dưới.
+  //   Mỗi hộp là MỘT phần tử giữ nguyên — thêm/bớt hộp nào chỉ đụng đúng hộp đó (không vẽ lại cả hàng ⇒ các hộp khác không nháy).
+  function gan(h) {
+    var el = h.el, k = khuHop();
+    el.classList.remove('xuong'); el.removeAttribute('style');
+    k.insertBefore(el, k.firstChild);
+    el.classList.remove('len'); void el.offsetWidth; el.classList.add('len');
+    h.ve();
+  }
+  function go(h, xong) {   // cuộn xuống dưới → thu bề ngang cho các hộp bên trái trượt sang phải êm → gỡ khỏi trang
+    var el = h.el; if (!el.parentNode) { if (xong) xong(); return; }
+    el.classList.remove('len'); el.classList.add('xuong');
+    setTimeout(function () {
+      var w = el.offsetWidth; el.style.width = w + 'px'; void el.offsetWidth;
+      el.style.transition = 'width .2s ease, margin .2s ease'; el.style.width = '0'; el.style.marginLeft = '-10px';
+      setTimeout(function () { if (el.parentNode) el.remove(); el.classList.remove('xuong'); el.removeAttribute('style'); if (xong) xong(); }, 210);
+    }, 230);
+  }
+  function datMin() {
     var kn = khuMin(), ds = hops.filter(function (h) { return h.min; });
     kn.innerHTML = ds.map(function (h, i) { return '<button type="button" data-i="' + i + '" title="' + an(h.it.ten) + '">' + avHtml(h.it.anh.slice(0, 1)) + '<span class="x" data-x aria-label="Đóng">×</span></button>'; }).join('');
     [].forEach.call(kn.querySelectorAll('button'), function (b) {
       var h = ds[+b.getAttribute('data-i')];
-      b.onclick = function (e) { if (e.target.closest('[data-x]')) { dongHop(h); return; } h.min = false; xepHop(); };
+      b.onclick = function (e) { if (e.target.closest('[data-x]')) { dongHop(h); return; } moLai(h); };
     });
+  }
+  function moLai(h) { h.min = false; gan(h); gioiHan(); datMin(); }
+  function gioiHan() {   // quá 3 hộp ⇒ hộp CŨ NHẤT (bên phải cùng) tự thu nhỏ, cuộn xuống
+    var mo = hops.filter(function (x) { return !x.min; });
+    while (mo.length > TOI_DA) { var cu = mo.pop(); cu.min = true; go(cu); }
   }
   function dongHop(h) {
     hops = hops.filter(function (x) { return x !== h; });
     if (h.huy) { try { h.huy(); } catch (e) { } h.huy = null; }
-    h.el.remove(); xepHop();
+    go(h); datMin();
   }
   TP.dongHop = function () { hops.slice().forEach(dongHop); };
-  TP.moHop = function (it) {
+  // TnPop.tinMoi(item) — TRANG gọi khi có tin MỚI của người khác đến cuộc chat `item`: hộp tự cuộn lên (không giành con trỏ của ô đang gõ).
+  TP.tinMoi = function (it) { TP.moHop(it, { imLang: true }); };
+  TP.moHop = function (it, o) {
+    o = o || {};
     var co = hops.filter(function (h) { return h.it.id === it.id; })[0];
-    if (co) { if (co.min) { co.min = false; xepHop(); } if (co.ui) co.ui.focus(); return; }
+    if (co) { if (co.min) moLai(co); else if (!o.imLang && co.ui) co.ui.focus(); return; }
     var el = document.createElement('div'); el.className = 'tp-hop';
     var phu = it.loai === 'lop' ? 'Nhóm lớp' : it.loai === 'thay' ? 'Thầy' : (it.lop || '');
     el.innerHTML = '<div class="tp-hop-dau">' + avHtml(it.anh) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div>' +
@@ -181,9 +202,9 @@
       '<button type="button" data-dong title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       '<div class="tp-hop-than"></div><div class="tp-hop-chan"></div>';
     var h = { it: it, el: el, min: false, ui: null, ds: [], ve: function () { if (h.ui) h.ui.ve(h.ds, ''); } };
-    hops.push(h); xepHop();
+    hops.unshift(h); gan(h); gioiHan(); datMin();
     el.querySelector('[data-dong]').onclick = function () { dongHop(h); };
-    el.querySelector('[data-min]').onclick = function () { h.min = true; xepHop(); };
+    el.querySelector('[data-min]').onclick = function () { h.min = true; go(h); datMin(); };
     nap(function (loi) {
       if (loi || !window.ChatUI || hops.indexOf(h) < 0) return;
       var ad = (TP.phong && TP.phong(it)) || adMau(it), nhom = it.loai === 'lop';
@@ -198,7 +219,7 @@
         xoa: ad.xoa || null, loi: function (e) { if (e !== '__im') console.warn('[tn-pop]', e); }, trong: 'Chưa có tin nào. Nhắn câu đầu tiên đi!'
       });
       h.huy = ad.nghe(function (ds) { h.ds = ds; if (!h.min) h.ui.ve(ds, ''); });
-      setTimeout(function () { if (h.ui) h.ui.focus(); }, 60);
+      if (!o.imLang) setTimeout(function () { if (h.ui) h.ui.focus(); }, 60);
     });
   };
 })();

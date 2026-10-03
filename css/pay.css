@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -450,6 +450,7 @@ button,.hsrow,.no-dong,.tab,.chon-hs{touch-action:manipulation;-webkit-tap-highl
   .hop{width:calc(100vw - 16px)!important;max-width:none!important;max-height:calc(100dvh - 16px);padding:16px 14px}
   .hop .hangnut{flex-wrap:wrap}
   .bang{font-size:12px}
+  #trangGiaodich .bang{min-width:860px}          /* bảng Giao dịch 8 cột: giữ dòng gọn, vuốt ngang xem tiếp */
   .bang th,.bang td{padding:6px 6px}
   .gd-tim{flex:1 1 100%}
   #gdTimNoiDung,#gdTimSoTien{width:100%;min-width:0}

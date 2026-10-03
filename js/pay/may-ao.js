@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — MÁY ẢO (may-ao.js) · Đợt 1 chuyển myPay lên dashboard (03/10/2026)
 
@@ -47,6 +47,44 @@
   };
   path.win32 = path;
 
+  // ───────── Buffer thu gọn (Đợt 2 — đọc file Excel sao kê trên trình duyệt) ─────────
+  // Chỉ những hàm src/main/lib/xlsx-mini.js + hoadon.js dùng: from · readUInt16LE/32LE · slice · toString · indexOf/lastIndexOf (chuỗi byte).
+  // Trong Node (bộ so, tools/) dùng Buffer thật — lớp này chỉ thay khi trình duyệt không có Buffer.
+  var BufferNho = (function () {
+    if (typeof Uint8Array === 'undefined') return null;
+    class B extends Uint8Array {
+      static from(x, enc) {
+        if (typeof x === 'string') {
+          if (enc === 'binary' || enc === 'latin1') { var a = new B(x.length); for (var i = 0; i < x.length; i++) a[i] = x.charCodeAt(i) & 255; return a; }
+          if (enc === 'base64') { var s = atob(x); var b = new B(s.length); for (var j = 0; j < s.length; j++) b[j] = s.charCodeAt(j); return b; }
+          return new B(new TextEncoder().encode(x));
+        }
+        if (x instanceof ArrayBuffer) return new B(x.slice(0));
+        var c = new B(x.length); c.set(x); return c;
+      }
+      static isBuffer(x) { return x instanceof B; }
+      readUInt16LE(o) { return this[o] | (this[o + 1] << 8); }
+      readUInt32LE(o) { return (this[o] | (this[o + 1] << 8) | (this[o + 2] << 16)) + this[o + 3] * 0x1000000; }
+      slice(a, b) { return this.subarray(a, b); }
+      toString(enc) {
+        if (enc === 'binary' || enc === 'latin1') { var s = ''; for (var i = 0; i < this.length; i++) s += String.fromCharCode(this[i]); return s; }
+        return new TextDecoder('utf-8').decode(this);
+      }
+      indexOf(v, tu) {
+        if (typeof v === 'number') return Uint8Array.prototype.indexOf.call(this, v, tu);
+        var n = v.length; for (var i = Math.max(0, tu || 0); i + n <= this.length; i++) { var k = 0; while (k < n && this[i + k] === v[k]) k++; if (k === n) return i; }
+        return -1;
+      }
+      lastIndexOf(v, tu) {
+        if (typeof v === 'number') return Uint8Array.prototype.lastIndexOf.call(this, v, tu === undefined ? this.length - 1 : tu);
+        var n = v.length; for (var i = Math.min(this.length - n, tu === undefined ? Infinity : tu); i >= 0; i--) { var k = 0; while (k < n && this[i + k] === v[k]) k++; if (k === n) return i; }
+        return -1;
+      }
+    }
+    return B;
+  })();
+  var BufferDung = goc.Buffer || BufferNho;
+
   function taoMay(tuyChon) {
     var opt = tuyChon || {};
     // ───────── Ổ ẢO ─────────
@@ -75,7 +113,7 @@
         var maHoa = typeof enc === 'string' ? enc : (enc && enc.encoding);
         if (maHoa) return typeof nd === 'string' ? nd : new TextDecoder('utf-8').decode(nd);
         var b = typeof nd === 'string' ? new TextEncoder().encode(nd) : nd;
-        return goc.Buffer && goc.Buffer.from ? goc.Buffer.from(b) : b;
+        return BufferDung.from(b);
       },
       writeFileSync: function (p, duLieu) {
         if (laChiDoc(p)) throw loi('EACCES', 'ổ ảo: nguồn ngoài CHỈ ĐỌC', p);
@@ -128,6 +166,8 @@
     function goiKenh(kenh, args) {
       // Mỗi lượt gọi xếp HÀNG — không lượt nào chen giữa lúc lượt khác đang ghi lên mạng.
       var lan = hangDoi.then(function () { return SAN; }).then(function () {
+        return opt.truocMoiKenh ? opt.truocMoiKenh(kenh, args) : null;   // vd chờ đọc xong file vừa kéo thả
+      }).then(function () {
         var h = KENH[kenh];
         if (!h) return { ok: false, loi: 'KENH_KHONG_CO: ' + kenh };
         return Promise.resolve(h.apply(null, [null].concat(args))).then(function (kq) {
@@ -185,7 +225,7 @@
           if (ten.charAt(0) === '.') { var p = path.join(thuMuc, ten); if (!/\.js$/i.test(p)) p += '.js'; return nap(p); }
           throw new Error('Module ngoài không có trên web: ' + ten);
         };
-        ham(mod, mod.exports, req, thuMuc, x, processGia, goc.Buffer);
+        ham(mod, mod.exports, req, thuMuc, x, processGia, BufferDung);
         return mod.exports;
       }
       return nap;
@@ -204,6 +244,6 @@
     };
   }
 
-  var MayAo = { taoMay: taoMay, path: path };
+  var MayAo = { taoMay: taoMay, path: path, BufferNho: BufferNho };
   if (typeof module !== 'undefined' && module.exports) module.exports = MayAo; else goc.MayAo = MayAo;
 })(typeof window !== 'undefined' ? window : globalThis);

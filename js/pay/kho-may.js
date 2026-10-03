@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -66,12 +66,34 @@
     return /^[^\\]+\.json$/i.test(rel) && rel.toLowerCase() !== 'cua-so.json' || /^thang\\\d{4}-\d{2}\.json$/i.test(rel);
   }
 
+  // ───────── Đợt 2: file sao kê — đọc trong trình duyệt ─────────
+  // Kéo-thả: giao diện myPay cần ĐƯỜNG DẪN ngay (đồng bộ) ⇒ cấp đường ảo ngay + đọc file song song; kênh kế tiếp
+  // (saoke:nap) CHỜ đọc xong mới chạy (truocMoiKenh). File chỉ nằm trong bộ nhớ trang (không lên mạng) — y như app chỉ
+  // giữ đường dẫn; kết quả đọc (giao dịch) mới được lưu vào payKho như app.
+  var dangDocFile = [];
+  function duongTai(ten) { return DIR_TAI + '\\' + String(ten || 'sao-ke.xlsx').replace(/[\\/:*?"<>|]+/g, '-'); }
+  function docFileVaoMay(f) {
+    var p = duongTai(f.name);
+    var lan = f.arrayBuffer().then(function (b) { may.datFile(p, new Uint8Array(b)); });
+    dangDocFile.push(lan);
+    return { p: p, lan: lan };
+  }
+  // giải nén ZIP bên trong file .xlsx (thư viện pako — nạp ở pay.html)
+  var zlibWeb = {
+    inflateRawSync: function (raw) {
+      if (!window.pako) throw new Error('Chưa tải được bộ giải nén (pako) — kiểm tra mạng rồi tải lại trang');
+      return MayAo.BufferNho.from(window.pako.inflateRaw(raw));
+    }
+  };
+
   var may = MayAo.taoMay({
     chiDoc: [GOC_E + '\\myData', GOC_E + '\\myStudent-data'],
     cuaSo: window, phienBan: G.__PHIEN_BAN + ' web', san: san,
     sauMoiKenh: function (kenh, kq) { return luuLenMang().then(function () { return kq; }, function (e) { return loiLuu(e); }); },
+    truocMoiKenh: function () { var ds = dangDocFile.splice(0); return Promise.all(ds); },
     chonFile: chonFileTuMay,
-    duongFile: function () { return ''; }
+    duongFile: function (f) { return f && f.name && /\.(xlsx|xlsm)$/i.test(f.name) ? docFileVaoMay(f).p : ''; },
+    zlib: zlibWeb
   });
   may.nghe(function (p, kieu) {
     var rel = relCua(p); if (!rel || /\.tmp$/i.test(rel)) return;
@@ -107,16 +129,33 @@
   may.KENH['fs:day'] = bocWeb(function () { throw new Error('Đẩy hóa đơn lên trang học sinh: làm ở Đợt 3'); });
 
   // chọn file sao kê (Đợt 2 dùng): đọc file vào ổ ảo, trả đường dẫn giả
-  function chonFileTuMay() {
-    return new Promise(function (xong) {
-      var i = document.createElement('input'); i.type = 'file'; i.multiple = true; i.accept = '.xlsx,.xlsm';
-      i.onchange = function () {
-        var ds = Array.prototype.slice.call(i.files || []);
-        Promise.all(ds.map(function (f) { return f.arrayBuffer().then(function (b) { var p = DIR_TAI + '\\' + f.name; may.datFile(p, new Uint8Array(b)); return p; }); }))
-          .then(function (ps) { xong({ canceled: !ps.length, filePaths: ps }); });
+  // Mở hộp chọn file NGAY trong cú bấm (giao-dien-web.js gọi lúc bắt cú bấm nút "Chọn file sao kê") — iPhone/Safari chỉ cho
+  // mở hộp chọn file khi đang trong cú bấm; kênh saoke:chon chạy sau (qua hàng đợi) chỉ việc NHẬN kết quả đã chờ sẵn.
+  // ⛔ Bấm Hủy: trình duyệt mới có sự kiện 'cancel'; trình duyệt cũ thì đoán qua lúc cửa sổ lấy lại tiêu điểm — KHÔNG được
+  //    treo lời hứa (treo là kẹt cả hàng đợi thao tác).
+  var choChon = null;
+  function moChonFileNgay() {
+    choChon = new Promise(function (xong) {
+      var daXong = false;
+      var ket = function (ds) {
+        if (daXong) return; daXong = true;
+        window.removeEventListener('focus', khiVe);
+        Promise.all(ds.map(function (x) { return x.lan; })).then(function () { xong({ canceled: !ds.length, filePaths: ds.map(function (x) { return x.p; }) }); },
+          function () { xong({ canceled: true, filePaths: [] }); });
       };
+      var i = document.createElement('input'); i.type = 'file'; i.multiple = true; i.accept = '.xlsx,.xlsm';
+      i.onchange = function () { ket(Array.prototype.slice.call(i.files || []).map(docFileVaoMay)); };
+      i.addEventListener('cancel', function () { ket([]); });
+      var khiVe = function () { setTimeout(function () { if (!i.files || !i.files.length) ket([]); }, 1500); };
+      window.addEventListener('focus', khiVe);
       i.click();
     });
+    return choChon;
+  }
+  function chonFileTuMay() {
+    var p = choChon || moChonFileNgay();
+    choChon = null;
+    return p;
   }
 
   // ───────── Firestore ─────────
@@ -315,6 +354,6 @@
       loiSan(e);
     });
   }
-  window.PayWeb = { may: may, san: san, luuLenMang: luuLenMang };
+  window.PayWeb = { may: may, nap: nap, san: san, luuLenMang: luuLenMang, moChonFileNgay: moChonFileNgay, duongTai: duongTai };
   khoiDong();
 })();

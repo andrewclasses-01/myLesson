@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — CHỈNH GIAO DIỆN CHO WEB + ĐIỆN THOẠI (giao-dien-web.js) · Đợt 1 (03/10/2026)
    Giao diện myPay (mypay-app.js) giữ NGUYÊN; file này chỉ bù chỗ màn cảm ứng thiếu:
@@ -51,6 +51,12 @@
   }, true);
   document.addEventListener('dblclick', function (e) {
     if (e.isTrusted && Date.now() - vuaDupLuc < 600) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+
+  // Đợt 2 — nút "Chọn file sao kê": mở hộp chọn file NGAY trong cú bấm (iPhone/Safari bắt buộc), giao diện myPay vẫn chạy
+  // đường cũ (kênh saoke:chon) và nhận đúng file vừa chọn.
+  document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('#nutChonSaoKe') && window.PayWeb) window.PayWeb.moChonFileNgay();
   }, true);
 
   // nút về Dashboard

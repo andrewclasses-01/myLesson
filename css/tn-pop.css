@@ -59,3 +59,37 @@
   .tp-dau h3{font-size:22px}
 }
 @media (prefers-reduced-motion:reduce){ .tp-pop{transition:none} }
+
+/* ============================================================
+   HỘP CHAT NHỎ góc dưới phải (bấm một dòng trong hộp thả xuống) — mẫu y hộp chat nổi của bảng tin
+   ============================================================ */
+.tp-khu{position:fixed; right:0; bottom:0; z-index:8900; display:flex; align-items:flex-end; gap:10px; padding:0 84px 0 0; pointer-events:none}
+.tp-khu > *{pointer-events:auto}
+.tp-hop{--tp-ac:#0E7C6E; --tp-chu:#1B2330; --tp-phu:#65707F; --tp-nen2:#F0F2F5; --tp-vien:#E3E7EE;
+  width:328px; height:455px; max-height:calc(100dvh - 80px); display:flex; flex-direction:column; overflow:hidden; background:#fff; color:var(--tp-chu);
+  border:1px solid var(--tp-vien); border-bottom:none; border-radius:14px 14px 0 0; box-shadow:0 12px 36px rgba(22,35,42,.22);
+  font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif; font-weight:400; letter-spacing:0;
+  animation:tpLen .22s cubic-bezier(.22,.9,.3,1)}
+@keyframes tpLen{from{transform:translateY(20px); opacity:0} to{transform:none; opacity:1}}
+.tp-hop *{box-sizing:border-box}
+.tp-hop-dau{flex:none; display:flex; align-items:center; gap:8px; padding:8px 8px 8px 10px; border-bottom:1px solid var(--tp-vien); background:#fff}
+.tp-hop-dau .tp-av{width:36px; height:36px}
+.tp-hop-dau .tp-av.nhom > i{font-size:7px; box-shadow:0 0 0 1.5px #fff}
+.tp-hop-dau .tp-av.mot > i{font-size:13px}
+.tp-hop-dau .ai{flex:1; min-width:0; line-height:1.25}
+.tp-hop-dau .ai b{display:flex; align-items:center; gap:4px; font-size:15px; font-weight:700; color:var(--tp-chu)}
+.tp-hop-dau .ai b > span{min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.tp-hop-dau .ai b svg{flex:none; width:15px; height:15px; color:#F2A93B}
+.tp-hop-dau .ai small{display:block; font-size:12px; color:var(--tp-phu)}
+.tp-hop-dau button{flex:none; width:30px; height:30px; border:0; border-radius:50%; background:transparent; color:var(--tp-phu); display:grid; place-items:center; cursor:pointer; padding:0}
+.tp-hop-dau button:hover{background:var(--tp-nen2); color:var(--tp-chu)}
+.tp-hop-dau button svg{width:17px; height:17px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round}
+.tp-hop-than{flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; padding:10px 10px 6px}
+.tp-hop-chan{flex:none; padding:6px 8px 8px; border-top:1px solid var(--tp-vien)}
+.tp-min{position:fixed; right:16px; bottom:16px; z-index:8900; display:flex; flex-direction:column-reverse; gap:10px}
+.tp-min button{position:relative; width:48px; height:48px; border:0; padding:0; border-radius:50%; background:transparent; cursor:pointer; box-shadow:0 6px 18px rgba(22,35,42,.25)}
+.tp-min .tp-av{width:48px; height:48px}
+.tp-min .tp-av.nhom{display:block}
+.tp-min .x{position:absolute; top:-4px; right:-4px; width:18px; height:18px; border-radius:50%; background:#fff; color:#1B2330; border:1px solid #E3E7EE; display:none; place-items:center; font-size:13px; line-height:1}
+.tp-min button:hover .x{display:grid}
+@media (max-width:640px){ .tp-khu,.tp-min{display:none} }

@@ -12,6 +12,9 @@
 //            "ghiChu": { "BT1:7": "lời giải thích câu 7 của BT1", … },   // câu SAI: lời giải thích kỹ như cột “Nhận xét” trong file Excel
 //            "sua":    { "BT3:12": true, "BT2:4": false } }         // đổi Đúng/Sai: true = đúng, false = sai (khi máy chấm oan/lọt)
 //        Chỉ GỘP vào những gì đã có (không xoá phần thầy đã sửa trừ khi trùng khoá); đặt `claudeLuc` = bây giờ.
+//   node tools/claude-cham-lai.js --cap-nhat-link <ID>
+//        CẬP NHẬT LINK PHỤ HUYNH đã gửi (kiemtra.andrewclasses.com/kq?c=<token>) theo ktdvBaoCao hiện tại (lời giải thích, nhận xét chung, đổi Đúng/Sai) — GIỮ NGUYÊN token nên phụ huynh bấm link cũ là thấy bản mới.
+//        Chỉ dùng khi thầy cho phép / yêu cầu (đây là thứ phụ huynh nhìn thấy). Em chưa có link thì báo lỗi.
 //   node tools/claude-cham-lai.js --go <ID>      gỡ phần Claude đã ghi (ghiChu + claudeLuc + claudeGhiChu), trả về lời giải thích tự động
 //
 // ⛔ Sau --ghi: link đã gửi phụ huynh KHÔNG tự đổi — thầy mở báo cáo trên dashboard, đọc lại rồi bấm “Cập nhật link PH”.
@@ -179,6 +182,32 @@ async function cmdGhi() {
   console.log('→ Thầy mở dashboard › KT ĐẦU VÀO › Báo cáo em ' + hoso.ten + ' để xem; muốn phụ huynh thấy bản mới thì bấm “Cập nhật link PH”.');
 }
 
+async function cmdCapNhatLink() {
+  const M = String(process.argv[process.argv.indexOf('--cap-nhat-link') + 1] || '').toUpperCase();
+  const bc = await docDoc('ktdvBaoCao/' + M);
+  if (!bc || !bc.token) throw new Error('Em ' + M + ' chưa có link phụ huynh (thầy bấm “Gửi phụ huynh” trên dashboard trước)');
+  const cs = await docDoc('ktdvChiaSe/' + bc.token);
+  if (!cs || !cs.json) throw new Error('Link ' + bc.token + ' không còn tài liệu (đã thu hồi?)');
+  global.window = global.window || { addEventListener() { } };
+  require('../js/ktdv-bc.js');
+  const goiY = global.window.KTDV_BC.goiY;
+  const s = JSON.parse(cs.json), gc = bc.ghiChu || {}, sua = bc.sua || {};
+  s.bai.forEach((b) => {
+    if (b.chua || !b.ds) return;
+    const B = BAI.find((x) => x.ma === b.ma);
+    b.ds.forEach((x) => {
+      const sk = B.code + ':' + (x.i - 1);
+      if (sk in sua) x.ok = !!sua[sk];
+      const key = b.ma + ':' + x.i;
+      x.g = x.ok ? '' : String(key in gc ? gc[key] : goiY(x.y, x.c, x.q)).slice(0, 420);
+    });
+    b.d = b.ds.filter((x) => x.ok).length;
+  });
+  s.uuDiem = bc.uuDiem || ''; s.hanChe = bc.hanChe || ''; s.ngayBc = Date.now();
+  await ghiDoc('ktdvChiaSe/' + bc.token, { json: JSON.stringify(s), capNhat: Date.now() });
+  console.log('Đã cập nhật link kiemtra.andrewclasses.com/kq?c=' + bc.token + ' — ' + s.bai.map((b) => b.ma + ' ' + (b.chua ? 'chưa nộp' : b.d + '/' + b.n)).join(' · '));
+}
+
 async function cmdGo() {
   const M = String(process.argv[process.argv.indexOf('--go') + 1] || '').toUpperCase();
   const cu = await docDoc('ktdvBaoCao/' + M);
@@ -193,7 +222,8 @@ async function cmdGo() {
     if (process.argv.includes('--ds')) await cmdDs();
     else if (process.argv.includes('--xuat')) await cmdXuat();
     else if (process.argv.includes('--ghi')) await cmdGhi();
+    else if (process.argv.includes('--cap-nhat-link')) await cmdCapNhatLink();
     else if (process.argv.includes('--go')) await cmdGo();
-    else console.log('Dùng: --ds [--ngay D/M[/YYYY]] [--ten "…"] | --xuat <ID> [--ra file] | --ghi file.json | --go <ID>   (xem đầu file)');
+    else console.log('Dùng: --ds [--ngay D/M[/YYYY]] [--ten "…"] | --xuat <ID> [--ra file] | --ghi file.json | --cap-nhat-link <ID> | --go <ID>   (xem đầu file)');
   } catch (e) { console.error('LỖI:', e.message); process.exitCode = 1; }
 })();

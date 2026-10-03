@@ -1669,3 +1669,14 @@ body.trang-tn .tn-muc .cuoi .gio{font-size:13px}
 body.trang-tn .tn-phong-dau .ten{font-size:16px; font-weight:600}
 body.trang-tn .tn-chao b{font-weight:700}
 body.trang-tn .tn-chao span:not(.tn-chao-ic){font-weight:400}
+
+/* ============================================================
+   03/10/2026 — KHUNG NHÚNG của hộp chat nhỏ (nw/tinnhan.html?hop=1&phong=… | &voi=…): chỉ khung phòng chat, không thanh/danh sách/đầu phòng
+   ============================================================ */
+body.trang-hop{background:#fff; overflow:hidden}
+body.trang-hop .main.tn-main{padding:0; height:100dvh}
+body.trang-hop .tn{display:block; height:100dvh; border-radius:0; box-shadow:none; border:0; background:#fff}
+body.trang-hop .tn-ds, body.trang-hop .tn-info, body.trang-hop .tn-phong-dau{display:none!important}
+body.trang-hop .tn .tn-phong{display:flex!important; height:100dvh}
+body.trang-hop .tn-phong .tn-chao > *{display:none}
+body.trang-hop .tn-phong .tn-chao::after{content:'Đang mở cuộc trò chuyện…'; color:#65707F; font-size:14px}

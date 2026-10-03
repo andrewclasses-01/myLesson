@@ -675,6 +675,8 @@
         DS_LOP = (dl.lop || []).concat(dl.khoa || []);
       } catch (e) { console.warn('[tn] chưa nạp được danh sách lớp', e); return; }
       var can = toi.laThay ? DS_LOP.map(function (l) { return l.maLop; }) : (toi.cacLop || [toi.lop]).filter(Boolean);
+      var hopLop = /^lop:(.+)$/.exec(NW.thamSo('phong') || '');   // ⭐ 03/10 khung nhúng của hộp chat nhỏ: chỉ nạp ĐÚNG lớp đang mở (đỡ lượt đọc tin cuối từng lớp)
+      if (/[?&]hop=1(&|$)/.test(location.search) && hopLop) can = can.filter(function (m) { return m === hopLop[1]; });
       PHONG_LOP = can.map(function (ma, i) {
         var l = DS_LOP.filter(function (x) { return x.maLop === ma; })[0]; if (!l) return null;
         var tv = {}, tvIds = [];

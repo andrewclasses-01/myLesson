@@ -6,28 +6,30 @@
 <title>Tin nhắn · Andrew Classes Network</title>
 <link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
-<link rel="stylesheet" href="../css/tn-pop.css?v=4">
-<link rel="stylesheet" href="css/nw.css?v=29">
+<link rel="stylesheet" href="../css/tn-pop.css?v=5">
+<link rel="stylesheet" href="css/nw.css?v=30">
 <link rel="stylesheet" href="../css/chat-ui.css?v=19">   <!-- ⭐ web v1.198.0 khuôn chat Zalo dùng chung -->
 <link rel="preconnect" href="https://firestore.googleapis.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
 </head>
 <body class="trang-tn">
+<script>if (/[?&]hop=1(&|$)/.test(location.search)) document.body.classList.add('trang-hop');</script>   <!-- 03/10: khung nhúng của hộp chat nhỏ (js/tn-pop.js) — chỉ phòng chat -->
 <main class="main mot tn-main">
   <div id="tn"></div>
 </main>
 <script src="config.js?v=15"></script>
 <script src="../js/thay-vao.js?v=3"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
 <script src="js/loi.js?v=23"></script>
-<script src="../js/tn-pop.js?v=5"></script>
-<script src="js/thanh.js?v=20"></script>
+<script src="../js/tn-pop.js?v=6"></script>
+<script src="../js/tn-pop-ds.js?v=2"></script>
+<script src="js/thanh.js?v=21"></script>
 <script src="../js/nw-phien.js?v=8"></script>   <!-- ⭐ 02/10/2026 nhóm lớp = chat lớp myLesson (cùng app Firebase + phiên) -->
 <script src="../js/chat.js?v=35"></script>
 <script src="../js/chat-ui.js?v=20"></script>
-<script src="js/chat.js?v=24"></script>
+<script src="js/chat.js?v=25"></script>
 <script src="../js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script>
-NW.dungThanh({ tab: 'tinNhan' }).then(function () { NW.Chat.dung(NW.$('#tn')); });
+NW.dungThanh({ tab: 'tinNhan', hop: document.body.classList.contains('trang-hop') }).then(function () { NW.Chat.dung(NW.$('#tn')); });
 </script>
 </body>
 </html>

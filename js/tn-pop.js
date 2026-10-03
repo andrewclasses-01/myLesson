@@ -50,6 +50,8 @@
   }
 
   TP.nguon = null;
+  TP.mau = mau;
+  TP.lamMoi = function () { };
   TP.coThe = function () { return !!TP.nguon || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); };
   TP.dong = function () {
     if (!mo) return;
@@ -115,7 +117,7 @@
       var it = m.cuoc.filter(function (c) { return c.id === id; })[0];
       // ⭐ máy tính: mở HỘP CHAT NHỎ góc dưới, giữ nguyên trang đang xem · điện thoại (≤640px): sang trang Tin nhắn như Facebook
       if (it && window.innerWidth > 640) { TP.dong(); TP.moHop(it); return; }
-      location.href = phong(id);
+      location.href = (it && it.q) ? trang + (trang.indexOf('?') < 0 ? '?' : '&') + it.q : phong(id);
     });
     Promise.resolve(TP.nguon ? TP.nguon() : mau()).then(function (ds) { if (mo === m) { m.cuoc = ds || []; ve(); } })
       .catch(function () { if (mo === m) khu.innerHTML = '<div class="tp-trong">Chưa tải được tin nhắn. Bấm "Xem tất cả" để mở trang Tin nhắn.</div>'; });
@@ -190,7 +192,7 @@
   function dongHop(h) {
     hops = hops.filter(function (x) { return x !== h; });
     if (h.huy) { try { h.huy(); } catch (e) { } h.huy = null; }
-    go(h); datMin();
+    go(h); datMin(); if (TP.lamMoi) TP.lamMoi();
   }
   TP.dongHop = function () { hops.slice().forEach(dongHop); };
   // TnPop.tinMoi(item) — TRANG gọi khi có tin MỚI của người khác đến cuộc chat `item`: hộp tự cuộn lên (không giành con trỏ của ô đang gõ).
@@ -204,11 +206,25 @@
     el.innerHTML = '<div class="tp-hop-dau">' + avHtml(it.anh) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div>' +
       '<button type="button" data-min title="Thu nhỏ" aria-label="Thu nhỏ"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>' +
       '<button type="button" data-dong title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
-      '<div class="tp-hop-than"></div><div class="tp-hop-chan"></div>';
+      (it.hop ? '<div class="tp-hop-fr-khu"><iframe class="tp-hop-fr" title="' + an(it.ten) + '" allow="clipboard-write"></iframe><div class="tp-hop-cho">Đang mở…</div></div>' : '<div class="tp-hop-than"></div><div class="tp-hop-chan"></div>');
     var h = { it: it, el: el, min: false, ui: null, ds: [], ve: function () { if (h.ui) h.ui.ve(h.ds, ''); } };
     hops.unshift(h); gan(h); gioiHan(); datMin();
     el.querySelector('[data-dong]').onclick = function () { dongHop(h); };
     el.querySelector('[data-min]').onclick = function () { h.min = true; go(h); datMin(); };
+    if (it.hop) {   // ⭐ DỮ LIỆU THẬT: khung nhúng chạy đúng trang Tin nhắn (nw/tinnhan.html?hop=1&…) — js/tn-pop-ds.js
+      var fr = el.querySelector('iframe'), cho = el.querySelector('.tp-hop-cho');
+      fr.onload = function () {
+        cho.classList.add('xong');
+        if (o.imLang) return;
+        var n = 0, t = setInterval(function () {
+          try { var oo = fr.contentWindow.document.querySelector('.cu-o'); if (oo) { oo.focus(); clearInterval(t); } } catch (e) { clearInterval(t); }
+          if (++n > 24) clearInterval(t);
+        }, 250);
+      };
+      fr.src = GOC + it.hop;
+      if (TP.lamMoi) TP.lamMoi();
+      return;
+    }
     nap(function (loi) {
       if (loi || !window.ChatUI || hops.indexOf(h) < 0) return;
       var ad = (TP.phong && TP.phong(it)) || adMau(it), nhom = it.loai === 'lop';

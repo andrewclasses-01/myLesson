@@ -253,12 +253,12 @@
   }
 
   // ---------- kênh nghe ----------
-  async function moKenh() {
+  async function moKenh(hop) {
     if (NW.laBanThu()) return;
-    batNhip();
+    if (!hop) batNhip();   // ⭐ 03/10 khung nhúng (hộp chat nhỏ): trang mẹ đã lo nhịp online + thông báo
     var f = await NW.fb();
     var uid = NW.toi.uid;
-    f.fs.onSnapshot(
+    if (!hop) f.fs.onSnapshot(
       f.fs.query(f.fs.collection(f.db, 'nwUsers', uid, 'thongBao'), f.fs.orderBy('luc', 'desc'), f.fs.limit(20)),
       function (snap) {
         var ds = []; snap.forEach(function (d) { ds.push(Object.assign({ id: d.id }, d.data())); });
@@ -300,7 +300,8 @@
         { id: 't2', loai: 'camXuc', tuUid: 'hs_1', tuTen: 'MINH ANH', tuAnh: '', chu: '❤️ Được 3 sao bài Listening hôm nay', luc: t0 - 1500e3, daDoc: false, link: 'baidang.html?id=m0' },
         { id: 't3', loai: 'binhLuan', tuUid: 'gv', tuTen: 'Thầy Andrew', tuAnh: 'assets/avatar-tron.jpg', chu: 'Cảm ơn em, đội em nói rất tự tin đó!', luc: t0 - 2700e3, daDoc: true, link: 'baidang.html?id=m6' }
       ];
-      veThanh(o.tab); capNhatCham();
+      if (!o.hop) veThanh(o.tab);
+      capNhatCham();
       return { user: null, hoSo: NW.toi, laThay: !!NW.toi.laThay, banThu: true };
     }
     // ⭐ 29/09/2026: tab "thầy đăng nhập thay em" ⇒ mạng xã hội chạy DƯỚI TÊN EM (phiên trong tab, js/thay-vao.js).
@@ -320,8 +321,8 @@
       return new Promise(function () { });
     }
     if (ph.hoSo.phaiDoiMk && !ph.laThay && !NW.dangThayVao) { location.replace('index.html#doimk'); return new Promise(function () { }); }
-    veThanh(o.tab);
-    moKenh();
+    if (!o.hop) veThanh(o.tab);
+    moKenh(!!o.hop);
     // Trang thử 28/09: chuông trên thanh trang lớp/dashboard dẫn sang đây kèm ?tb=1 ⇒ mở sẵn hộp thông báo
     if (NW.thamSo('tb') === '1') _tbMoKhiCo = true;   // v1.224.0 — mở trong lượt nhận thông báo đầu tiên (moKenh)
     return ph;

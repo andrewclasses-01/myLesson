@@ -68,7 +68,7 @@
     var nen = document.createElement('div'); nen.className = 'tp-nen';
     var pop = document.createElement('div'); pop.className = 'tp-pop'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Tin nhắn');
     pop.innerHTML =
-      '<div class="tp-dau"><h3>Tin nhắn</h3><a class="tp-ib" href="' + an(trang) + '" title="Mở trong Tin nhắn" aria-label="Mở trong Tin nhắn">' + BIEU.mr + '</a></div>' +
+      '<div class="tp-dau"><h3>Tin nhắn</h3></div>' +
       '<div class="tp-tim"><label>' + BIEU.tim + '<input type="search" placeholder="Tìm trong tin nhắn" aria-label="Tìm trong tin nhắn"></label></div>' +
       '<div class="tp-loc"><button type="button" class="chon" data-loc="tat">Tất cả</button><button type="button" data-loc="chua">Chưa đọc</button></div>' +
       '<div class="tp-ds"><div class="tp-trong">Đang tải…</div></div>' +

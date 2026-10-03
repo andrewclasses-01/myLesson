@@ -1650,3 +1650,22 @@ body.trang-tn{height:100dvh; min-height:0; overflow:hidden}
 body.trang-tn .main.tn-main{height:calc(100dvh - var(--cao-thanh) - var(--cao-dai, 0px)); padding:12px 16px 16px; overflow:hidden}   /* --cao-dai: dải 'xem như em' ở chân (js/thay-vao.js) */
 body.trang-tn .tn{height:100%; min-height:0}
 @media (max-width:760px){ body.trang-tn .main.tn-main{padding:6px 6px 8px} }
+
+/* ============================================================
+   v17 — TIN NHẮN KIỂU MESSENGER (thiết kế 03/10/2026, thầy xem rồi mới chốt)
+   Font = font hệ thống như Facebook (Segoe UI / SF / Roboto), chữ gọn hơn, 2 dòng tên + tin cuối sát nhau, hàng cao vừa.
+   ============================================================ */
+body.trang-tn{--sans:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif; font-family:var(--sans); font-weight:400; letter-spacing:0}
+body.trang-tn .tn-ds-dau h2{font-size:24px; font-weight:700; letter-spacing:-.2px}
+body.trang-tn .tn-tim input{font-size:15px; font-weight:400}
+body.trang-tn .tn-muc{padding:6px 8px; gap:12px; margin:0 8px; width:calc(100% - 16px); border-radius:8px}
+body.trang-tn .tn-muc > .av, body.trang-tn .tn-muc > .av-4, body.trang-tn .tn-muc > .av-nhom{width:56px; height:56px}
+/* ⛔ gốc rễ "chữ xa nhau": luật chung `.tt` (nhãn trạng thái dạng viên, dòng ~1220) rò vào hàng chat ⇒ đệm 8px hai bên + giãn chữ .04em (kế thừa xuống tên & tin cuối) */
+body.trang-tn .tn-muc .tt{display:flex; flex-direction:column; justify-content:center; gap:1px; padding:0; border-radius:0; letter-spacing:0; font-size:inherit; font-weight:inherit; background:none}
+body.trang-tn .tn-muc .ten{font-size:15px; line-height:20px; font-weight:600; color:var(--ink)}
+body.trang-tn .tn-muc.chua .ten{font-weight:700}
+body.trang-tn .tn-muc .cuoi{font-size:13px; line-height:16px}
+body.trang-tn .tn-muc .cuoi .gio{font-size:13px}
+body.trang-tn .tn-phong-dau .ten{font-size:16px; font-weight:600}
+body.trang-tn .tn-chao b{font-weight:700}
+body.trang-tn .tn-chao span:not(.tn-chao-ic){font-weight:400}

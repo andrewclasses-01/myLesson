@@ -157,6 +157,36 @@
   };
   TP.lamMoi = function () { _tamDs = null; };
 
+
+  // ---------- THÔNG BÁO (icon chuông): nwUsers/{uid}/thongBao, 20 tin mới nhất, đệm 30 giây ----------
+  var _tamTB = null;
+  TP.nguonTB = function () {
+    if (laBanThu()) { var t = Date.now(); return Promise.resolve([
+      { id: 't1', loai: 'camXuc', tuTen: 'MINH ANH', chu: '❤️ Được 3 sao bài Listening hôm nay', luc: t - 1500e3, daDoc: false, link: 'baidang.html?id=m0' },
+      { id: 't2', loai: 'binhLuan', tuTen: 'Thầy Andrew', tuAnh: GOC + 'nw/assets/avatar-tron.jpg', chu: 'Cảm ơn em, đội em nói rất tự tin đó!', luc: t - 2700e3, daDoc: true, link: 'baidang.html?id=m6' }]); }
+    if (_tamTB && Date.now() - _tamTB.luc < 30000) return Promise.resolve(_tamTB.ds);
+    return nguoiDangNhap().then(function (me) {
+      if (!me) throw new Error('chua-dang-nhap');
+      return me.f.fs.getDocs(me.f.fs.query(me.f.fs.collection(me.f.db, 'nwUsers', me.uid, 'thongBao'), me.f.fs.orderBy('luc', 'desc'), me.f.fs.limit(20))).then(function (s) {
+        var a = []; s.forEach(function (d) { a.push(Object.assign({ id: d.id }, d.data())); });
+        _tamTB = { luc: Date.now(), ds: a }; return a;
+      });
+    }).catch(function (e) {
+      if (laLocal() && /chua-dang-nhap/.test(String(e && e.message))) return [];
+      throw e;
+    });
+  };
+  TP.docTB = function (ids) {
+    if (!ids || !ids.length || laBanThu()) return;
+    _tamTB = null;
+    nguoiDangNhap().then(function (me) {
+      if (!me) return;
+      var b = me.f.fs.writeBatch(me.f.db);
+      ids.forEach(function (id) { b.update(me.f.fs.doc(me.f.db, 'nwUsers', me.uid, 'thongBao', id), { daDoc: true }); });
+      return b.commit();
+    }).catch(function (e) { console.warn('[tn-pop] đánh dấu đã đọc', e); });
+  };
+
   // ---------- TIN MỚI: tự cuộn hộp chat lên ----------
   var daNghe = false, thay = {};   // thay[phongId] = mốc tin cuối đã xử lý
   TP.batNghe = function () {

@@ -163,6 +163,15 @@
     if (!t) return;
     e.preventDefault();
     var ma = t.getAttribute('data-ma');
+    // ⭐ 03/10/2026 — icon CHUÔNG mở HỘP THÔNG BÁO ngay tại trang (thầy: trước đây bấm chuông nhảy sang trang Tin nhắn rồi hiện cả 2 hộp)
+    if (ma === 'chuong' && window.TnPop && TnPop.coTB && TnPop.coTB()) {
+      if (choThayVao()) return;
+      TnPop.moTB(t, { laThay: laThay, dieu: function (link) {
+        if (window.AC_THU || /^tinnhan\.html/.test(link)) { location.href = 'nw/' + link; return; }
+        moSap('chuong');   // trang thật: các trang myNetwork khác chưa mở ⇒ hộp "sắp ra mắt"
+      } });
+      return;
+    }
     // ⭐ 03/10/2026 thiết kế — icon TIN NHẮN mở HỘP THẢ XUỐNG kiểu Facebook (js/tn-pop.js); "Xem tất cả trong Tin nhắn" mới sang trang.
     if (ma === 'tinNhan' && TRANG_NW.tinNhan && window.TnPop && TnPop.coThe()) {
       if (choThayVao()) return;

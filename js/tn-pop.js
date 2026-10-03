@@ -123,6 +123,67 @@
       .catch(function () { if (mo === m) khu.innerHTML = '<div class="tp-trong">Chưa tải được tin nhắn. Bấm "Xem tất cả" để mở trang Tin nhắn.</div>'; });
   };
   // ============================================================
+  // HỘP THÔNG BÁO THẢ XUỐNG (icon chuông ở trang lớp/khóa/dashboard) — mở NGAY TẠI TRANG, không nhảy sang trang Tin nhắn nữa.
+  // (thầy 03/10: bấm chuông bị nháy tải trang Tin nhắn rồi hiện cả hộp tin nhắn lẫn hộp thông báo)
+  // Nguồn: TnPop.nguonTB() → [{id, loai, tuTen, tuAnh, chu, luc, daDoc, link, tuUid}] · TnPop.docTB(ids) đánh dấu đã đọc.
+  // o.dieu(link): trang quyết định mở link (trang thật chỉ mở được Tin nhắn; còn lại "sắp ra mắt").
+  // ============================================================
+  var CHU_LOAI = { camXuc: 'đã thả cảm xúc vào bài của em', binhLuan: 'đã bình luận vào bài của em', chiaSe: 'đã chia sẻ bài của em',
+                   ketBan: 'muốn kết bạn với em', dongY: 'đã đồng ý kết bạn', nhac: 'đã nhắc tới em', nhom: 'đã thêm em vào nhóm', chung: '' };
+  function gioTB(ms) {
+    ms = Number(ms) || 0; if (!ms) return '';
+    var kc = Date.now() - ms, p = Math.floor(kc / 60000);
+    if (p < 1) return 'vừa xong'; if (p < 60) return p + ' phút'; if (p < 1440) return Math.floor(p / 60) + ' giờ';
+    var d = new Date(ms); return d.getDate() + '/' + (d.getMonth() + 1);
+  }
+  TP.coTB = function () { return !!TP.nguonTB; };
+  TP.moTB = function (neo, o) {
+    o = o || {};
+    if (mo) { TP.dong(); return; }
+    var nen = document.createElement('div'); nen.className = 'tp-nen';
+    var pop = document.createElement('div'); pop.className = 'tp-pop tp-tb'; pop.setAttribute('role', 'dialog'); pop.setAttribute('aria-label', 'Thông báo');
+    pop.innerHTML = '<div class="tp-dau"><h3>Thông báo</h3><button type="button" class="tp-docHet" hidden>Đánh dấu đã đọc</button></div><div class="tp-ds"><div class="tp-trong">Đang tải…</div></div>';
+    document.body.appendChild(nen); document.body.appendChild(pop);
+    if (neo && window.innerWidth > 640) {
+      var r = neo.getBoundingClientRect(), W = Math.min(360, window.innerWidth - 16);
+      pop.style.top = Math.round(r.bottom + 6) + 'px';
+      pop.style.left = Math.max(8, Math.min(window.innerWidth - W - 8, Math.round(r.left + r.width / 2 - W / 2))) + 'px';
+    }
+    var m = mo = { pop: pop, nen: nen };
+    m.dongNgay = function () { TP.dong(); };
+    m.phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); TP.dong(); } };
+    document.addEventListener('keydown', m.phim, true);
+    window.addEventListener('resize', m.dongNgay);
+    nen.onclick = TP.dong;
+    requestAnimationFrame(function () { pop.classList.add('mo'); });
+    var khu = pop.querySelector('.tp-ds'), nutHet = pop.querySelector('.tp-docHet'), ds = [];
+    function capNhatSo() { var n = ds.filter(function (t) { return !t.daDoc; }).length; nutHet.hidden = !n; if (window.NWB && NWB.datSo) NWB.datSo('chuong', n); }
+    function ve() {
+      capNhatSo();
+      if (!ds.length) { khu.innerHTML = '<div class="tp-trong">Chưa có thông báo nào.</div>'; return; }
+      khu.innerHTML = ds.map(function (t, i) {
+        return '<button type="button" class="tp-muc tp-tbm' + (t.daDoc ? '' : ' chua') + '" data-i="' + i + '">' + avHtml([{ ten: t.tuTen || '?', url: t.tuAnh || '' }]) +
+          '<span class="tp-tt"><span class="tp-tbchu"><b>' + an(t.tuTen) + '</b> ' + an(t.loai === 'nhac' && o.laThay ? 'đã nhắc tới thầy' : (CHU_LOAI[t.loai] || t.loai || '')) + '</span>' +
+          (t.chu ? '<span class="tp-cuoi">' + an(t.chu) + '</span>' : '') + '<span class="tp-gio">' + an(gioTB(t.luc)) + '</span></span>' +
+          (t.daDoc ? '' : '<span class="tp-cham" aria-label="Chưa đọc"></span>') + '</button>';
+      }).join('');
+    }
+    khu.addEventListener('click', function (e) {
+      var b = e.target.closest('.tp-tbm'); if (!b) return;
+      var t = ds[+b.getAttribute('data-i')]; if (!t) return;
+      if (!t.daDoc) { t.daDoc = true; if (TP.docTB) TP.docTB([t.id]); }
+      TP.dong();
+      if (t.link && o.dieu) o.dieu(t.link);
+    });
+    nutHet.onclick = function () {
+      var ids = ds.filter(function (t) { return !t.daDoc; }).map(function (t) { return t.id; });
+      ds.forEach(function (t) { t.daDoc = true; }); if (ids.length && TP.docTB) TP.docTB(ids); ve();
+    };
+    Promise.resolve(TP.nguonTB()).then(function (kq) { if (mo === m) { ds = kq || []; ve(); } })
+      .catch(function () { if (mo === m) khu.innerHTML = '<div class="tp-trong">Chưa tải được thông báo. Em thử lại nhé.</div>'; });
+  };
+
+  // ============================================================
   // HỘP CHAT NHỎ (góc dưới phải) — bấm một dòng trong hộp thả xuống ⇒ chat nhanh, KHÔNG rời trang đang xem.
   // Khuôn chat = ChatUI (js/chat-ui.js, tự nạp nếu trang chưa có) — y hộp chat nổi của bảng tin.
   // Nguồn tin: TnPop.phong(item) trả adapter { toi:{khoa,ten}, laThay, tin():[tin khuôn], nghe(cb)→huỷ, gui(g)→Promise, datCx(t,gt), thuHoi(t), xoa?(t) }

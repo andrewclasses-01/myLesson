@@ -55,6 +55,19 @@
   TP.coThe = function () { return !!TP.nguon || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); };
   // ⭐ 03/10: hộp đang mở mà bấm icon TAB KHÁC (vd chuông) ⇒ chuyển NGAY (đóng hộp này + mở hộp kia), không bắt bấm 2 lần.
   //   Lớp nền trong suốt nuốt cú bấm ⇒ tìm phần tử thật nằm dưới điểm bấm; là icon tab khác icon đã mở hộp thì bấm hộ nó.
+  // ⭐ 03/10: hộp mở ⇒ icon của hộp SÁNG (chon), icon tab hiện tại tắt tạm; đóng hộp ⇒ trả sáng lại tab hiện tại.
+  function sangIcon(m) {
+    var neo = m.neo; if (!neo || !neo.parentNode) return;
+    m.tabCu = [].slice.call(neo.parentNode.children).filter(function (x) { return x !== neo && x.classList.contains('chon'); });
+    m.daSang = !neo.classList.contains('chon');
+    m.tabCu.forEach(function (x) { x.classList.remove('chon'); });
+    neo.classList.add('chon');
+  }
+  function traIcon(m) {
+    if (!m.neo) return;
+    if (m.daSang) m.neo.classList.remove('chon');
+    (m.tabCu || []).forEach(function (x) { x.classList.add('chon'); });
+  }
   function bamNen(m, e) {
     var tab = null;
     m.nen.style.pointerEvents = 'none';
@@ -70,6 +83,7 @@
   TP.dong = function () {
     if (!mo) return;
     var m = mo; mo = null;
+    traIcon(m);
     m.pop.classList.remove('mo');
     document.removeEventListener('keydown', m.phim, true);
     window.removeEventListener('resize', m.dongNgay);
@@ -97,6 +111,7 @@
       pop.style.left = Math.max(8, Math.min(window.innerWidth - W - 8, Math.round(r.left + r.width / 2 - W / 2))) + 'px';
     }
     var m = mo = { pop: pop, nen: nen, neo: neo, cuoc: [], loc: 'tat', chu: '' };
+    sangIcon(m);
     m.dongNgay = function () { TP.dong(); };
     m.phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); TP.dong(); } };
     document.addEventListener('keydown', m.phim, true);
@@ -164,6 +179,7 @@
       pop.style.left = Math.max(8, Math.min(window.innerWidth - W - 8, Math.round(r.left + r.width / 2 - W / 2))) + 'px';
     }
     var m = mo = { pop: pop, nen: nen, neo: neo };
+    sangIcon(m);
     m.dongNgay = function () { TP.dong(); };
     m.phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); TP.dong(); } };
     document.addEventListener('keydown', m.phim, true);

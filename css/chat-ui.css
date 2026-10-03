@@ -78,7 +78,7 @@
 .cu-w{position:relative; min-width:0; margin-bottom:0}
 .cu-w.coCx, .cu-w.cuoi{margin-bottom:15px}
 .cu-bong{background:var(--cu-nen); border:1px solid var(--cu-vien); border-radius:10px; padding:7px 11px 5px;
-  font-size:15px; line-height:1.35; overflow-wrap:anywhere; white-space:pre-wrap; box-shadow:0 1px 1px rgba(0,0,0,.04); color:var(--cu-chu)}
+  font-size:16px; line-height:1.35; overflow-wrap:anywhere; white-space:pre-wrap; box-shadow:0 1px 1px rgba(0,0,0,.04); color:var(--cu-chu)}
 .toi .cu-bong{background:#E2F2EF; border-color:#A9D5CE}
 .cu-hang:not(.toi) .cu-bong.thay{background:#EEF8F6; border-color:#C6E3DD}
 .cu-ten{font-size:12.5px; color:var(--cu-phu); font-weight:500; margin-bottom:2px; white-space:normal}
@@ -206,7 +206,7 @@
 .cu-nhap .gui img{width:26px; height:26px}
 .cu-o{flex:1; min-width:0; min-height:37px; max-height:120px; overflow-y:auto; outline:none; white-space:pre-wrap; overflow-wrap:anywhere;
   border:1px solid var(--cu-vien); background:var(--cu-nen2); color:var(--cu-chu); border-radius:18px; padding:8px 13px;
-  font:400 15px/1.4 var(--cu-font); text-align:left; cursor:text}
+  font:400 16px/1.4 var(--cu-font); text-align:left; cursor:text}
 .cu-o:focus{border-color:#7FC3B8}
 .cu-o:empty::before{content:attr(data-ph); color:var(--cu-phu); pointer-events:none}
 .cu-o img.cu-ei{width:20px; height:20px; margin:0; padding:0 1px; vertical-align:-4px; cursor:text}

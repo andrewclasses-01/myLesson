@@ -1,0 +1,65 @@
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ============================================================
+   myPay WEB — CHỈNH GIAO DIỆN CHO WEB + ĐIỆN THOẠI (giao-dien-web.js) · Đợt 1 (03/10/2026)
+   Giao diện myPay (mypay-app.js) giữ NGUYÊN; file này chỉ bù chỗ màn cảm ứng thiếu:
+   • BẤM GIỮ ~0,55 giây = CHUỘT PHẢI (4 mục thầy đã chốt — không thêm mục nào). Android tự bắn chuột phải khi
+     giữ ⇒ chặn bản tự bắn để không mở 2 lần.
+   • CHẠM ĐÚP = NHÁY ĐÚP (mở hóa đơn) — trình duyệt điện thoại tự bắn nháy đúp thì bỏ bản trùng.
+   • Nút "← Dashboard" ở cột/thanh tab.
+   ============================================================ */
+(function () {
+  'use strict';
+  var GIU_MS = 550, DUP_MS = 320, XA = 14;
+  var giu = null, lanCham = null, vuaGiuLuc = 0, vuaDupLuc = 0;
+
+  function phat(el, kieu, x, y) {
+    el.dispatchEvent(new MouseEvent(kieu, { bubbles: true, cancelable: true, clientX: x, clientY: y, view: window }));
+  }
+  document.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) { clearTimeout(giu && giu.hen); giu = null; return; }
+    var t = e.touches[0]; var el = e.target;
+    if (el.closest('input,textarea,select')) return;
+    clearTimeout(giu && giu.hen);
+    giu = { x: t.clientX, y: t.clientY, el: el, xong: false };
+    giu.hen = setTimeout(function () {
+      if (!giu) return;
+      giu.xong = true; vuaGiuLuc = Date.now();
+      if (navigator.vibrate) { try { navigator.vibrate(12); } catch (er) { /* thôi */ } }
+      phat(giu.el, 'contextmenu', giu.x, giu.y);
+    }, GIU_MS);
+  }, { passive: true });
+  document.addEventListener('touchmove', function (e) {
+    if (!giu) return; var t = e.touches[0];
+    if (Math.abs(t.clientX - giu.x) > XA || Math.abs(t.clientY - giu.y) > XA) { clearTimeout(giu.hen); giu = null; }
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    var g = giu; giu = null;
+    if (g) clearTimeout(g.hen);
+    if (g && g.xong) { e.preventDefault(); lanCham = null; return; }   // vừa giữ ⇒ không tính là chạm
+    var t = e.changedTouches[0]; var el = e.target; var bay = Date.now();
+    if (lanCham && bay - lanCham.luc < DUP_MS && lanCham.el === el && Math.abs(t.clientX - lanCham.x) < XA * 2 && Math.abs(t.clientY - lanCham.y) < XA * 2) {
+      lanCham = null; vuaDupLuc = bay;
+      setTimeout(function () { phat(el, 'dblclick', t.clientX, t.clientY); }, 0);
+      return;
+    }
+    lanCham = { el: el, x: t.clientX, y: t.clientY, luc: bay };
+  }, { passive: false });
+  document.addEventListener('touchcancel', function () { if (giu) clearTimeout(giu.hen); giu = null; }, { passive: true });
+  // chặn bản TRÌNH DUYỆT tự bắn (trùng với bản mình vừa bắn)
+  document.addEventListener('contextmenu', function (e) {
+    if (e.isTrusted && Date.now() - vuaGiuLuc < 1200) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+  document.addEventListener('dblclick', function (e) {
+    if (e.isTrusted && Date.now() - vuaDupLuc < 600) { e.preventDefault(); e.stopImmediatePropagation(); }
+  }, true);
+
+  // nút về Dashboard
+  document.addEventListener('DOMContentLoaded', function () {
+    var rail = document.querySelector('.rail'); if (!rail) return;
+    var a = document.createElement('a');
+    a.className = 'tab py-ve'; a.href = 'dashboard.html'; a.title = 'Về trang quản lý';
+    a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Dashboard';
+    var brand = rail.querySelector('.brand');
+    rail.insertBefore(a, brand || null);
+  });
+})();

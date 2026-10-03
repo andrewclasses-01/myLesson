@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#f4f6fa">
+<title>myPay · Học phí · Andrew Classes</title>
+<link rel="icon" href="assets/avatar-tron.jpg">
+<!-- ⛔ TRANG SINH TỰ ĐỘNG từ kho myPay (web/pay-khung.html + src/renderer/index.html) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY. myPay v0.15.0 -->
+<link rel="stylesheet" href="css/pay.css?v=c39e4065">
+<script src="js/app-check.js?v=4"></script>
+<script src="js/pay/ban-thu.js?v=c39e4065"></script>
+<script src="js/pay/giao-dien-web.js?v=c39e4065"></script>
+</head>
+<body>
+<div id="pyMan" class="py-man"><div class="py-the glass"><div class="py-quay"></div><div id="pyManChu">Đang mở myPay…</div></div></div>
+
+<div class="khung">
+  <nav class="rail">
+    <button class="tab on" data-trang="thang">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      Tháng
+    </button>
+    <button class="tab" data-trang="giaodich">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+      Giao dịch
+    </button>
+    <button class="tab" data-trang="nophi" title="Các khoản tháng trước thầy tự thêm tay">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="7" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Nợ phí
+      <span class="tab-dem" id="demNoPhi" hidden>0</span>
+    </button>
+    <button class="tab" data-trang="caidat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Cài đặt
+    </button>
+    <div class="brand"><b>myPay</b> <i id="brandVer">v0.1.0</i><small>ANDREW CLASSES</small></div>
+  </nav>
+
+  <main class="noidung">
+    <!-- ═══════ TRANG THÁNG ═══════ -->
+    <section class="trang on" id="trangThang">
+      <div class="dau">
+        <div class="thangnav glass">
+          <button id="thangTruoc" title="Tháng trước">‹</button>
+          <span class="nhan" id="thangNhan" title="Chuột phải để xem cần thu / đẩy web">—</span>
+          <button id="thangSau" title="Tháng sau">›</button>
+        </div>
+        <div class="chipset" id="chipTong"></div>
+        <span class="keo"></span>
+        <button class="btn" id="nutHoaDon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="13" y2="15"/></svg>
+          Hóa đơn
+        </button>
+      </div>
+      <div id="khuCanhBao"></div>
+      <div class="cuon"><div class="luoi" id="luoiLop"></div></div>
+    </section>
+
+    <!-- ═══════ TRANG GIAO DỊCH ═══════ -->
+    <section class="trang" id="trangGiaodich">
+      <div class="dau">
+        <div class="thangnav glass">
+          <button id="thangTruoc2">‹</button>
+          <span class="nhan" id="thangNhan2">—</span>
+          <button id="thangSau2">›</button>
+        </div>
+        <span class="keo"></span>
+        <button class="btn primary" id="nutChonSaoKe">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Chọn file sao kê
+        </button>
+      </div>
+      <div class="dropzone" id="vungTha">
+        <div class="to">Kéo file sao kê ngân hàng (.xlsx) thả vào đây</div>
+        <div>hoặc bấm nút "Chọn file sao kê" — app tự đọc, tự vá file lỗi, không sửa file gốc</div>
+      </div>
+      <!-- v0.9.0 — nút XÁC NHẬN cùng hàng với thẻ file, bên phải. Chuột phải để Làm sạch
+           / xem-hủy đã xác nhận (thầy chốt: gọn, không cần menu xổ xuống). -->
+      <div class="hang-file">
+        <div class="filelist" id="dsFile"></div>
+        <span class="keo"></span>
+        <!-- v0.12.0 — tìm nhanh trong bảng giao dịch, gõ tới đâu lọc tới đó, không cần
+             bấm nút. Gõ 1 trong 2 ô cũng lọc được (để trống ô kia = không giới hạn). -->
+        <div class="gd-tim">
+          <input type="text" id="gdTimNoiDung" placeholder="Tìm nội dung…">
+          <input type="text" id="gdTimSoTien" placeholder="Tìm số tiền…" inputmode="numeric">
+        </div>
+        <span class="keo"></span>
+        <button class="btn primary" id="nutXacNhan" title="Đưa các giao dịch đã khớp vào Tháng chính thức. Chuột phải để Làm sạch / xem đã xác nhận.">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+          XÁC NHẬN
+        </button>
+      </div>
+      <div class="cuon glass" style="padding:0 4px">
+        <table class="bang" id="bangGd">
+          <thead><tr><th style="width:44px">STT</th><th style="width:100px">Ngày</th><th style="width:60px">Giờ</th><th style="width:110px;text-align:right">Số tiền</th><th>Nội dung</th><th style="width:150px">Xác định</th><th style="width:180px">Kết quả</th><th style="width:180px"></th></tr></thead>
+          <tbody id="thanGd"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ═══════ TRANG NỢ PHÍ (v0.6.0) ═══════ -->
+    <!-- Danh sách thầy TỰ THÊM TAY từ trang Tháng (chuột phải tên em → Thêm vào nợ phí).
+         KHÔNG gom theo lớp — mỗi em (hoặc mỗi NHÀ) một ô riêng, trong ô là từng tháng nợ. -->
+    <section class="trang" id="trangNoPhi">
+      <div class="dau">
+        <span style="font-size:19px;font-weight:800">Nợ phí</span>
+        <div class="chipset" id="chipNoPhi"></div>
+        <span class="keo"></span>
+        <span class="mota" style="font-size:12px">Thêm bằng cách chuột phải vào tên em ở trang Tháng</span>
+        <button class="btn" id="nutDongPhiTruoc" title="Ghi nhận phụ huynh đã đóng trước — trừ dần vào các tháng sau (chỉ áp dụng học sinh lẻ)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M6 15h4"/></svg>
+          Đóng phí trước
+        </button>
+        <!-- v0.12.0 — thêm nợ phí bằng tay: chọn lớp/em/tháng/số tiền, luôn đẻ dòng MỚI -->
+        <button class="btn" id="nutThemNoPhi" title="Thêm một dòng nợ phí bằng tay — chọn em, chọn tháng, nhập số tiền (chỉ áp dụng học sinh lẻ)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Thêm nợ phí
+        </button>
+      </div>
+      <!-- v0.9.0 — thầy chốt: em CÓ NHÃN lên trước (luoiNoPhi), em CHƯA NHÃN xuống khung
+           cuộn RIÊNG bên dưới (khuChuaGanNhan) — tránh kéo dài cả trang Nợ phí. -->
+      <div class="cuon">
+        <div class="luoi" id="luoiNoPhi"></div>
+        <div id="khuChuaGanNhan"></div>
+      </div>
+    </section>
+
+    <!-- ═══════ TRANG CÀI ĐẶT ═══════ -->
+    <section class="trang" id="trangCaidat">
+      <div class="dau">
+        <span style="font-size:19px;font-weight:800">Cài đặt</span>
+        <span class="keo"></span>
+        <span class="chip" id="chipKhoa">Firebase: …</span>
+        <button class="btn primary" id="nutQlHs" title="Tiểu học · trần riêng · % giảm từng em · nhóm gia đình nhiều con">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+          QUẢN LÝ HỌC SINH
+        </button>
+        <button class="btn" id="nutHocMay" title="Xem/sửa/xoá các mẫu 'nội dung chuyển khoản → học sinh' mà app đã tự học">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10"/><path d="M12 6v6l4 2"/><path d="M17 2l2 2-2 2"/></svg>
+          DỮ LIỆU ĐÃ HỌC
+        </button>
+      </div>
+      <div class="cuon">
+        <div class="cd-cot">
+          <div class="cd-khoi glass">
+            <h3>Mức phí theo LỚP</h3>
+            <p class="mota">Cần đóng = min(buổi × đơn giá, trần) × (100 − giảm%), làm tròn xuống 50k. Trần 0 = không trần. Hệ số buổi 2 = lớp ≥3 tiếng (1 ngày tính 2 buổi).</p>
+            <table class="bang"><thead><tr><th>Lớp</th><th>Thu</th><th>Đơn giá</th><th>Trần</th><th>Giảm %</th><th>Hệ số buổi</th></tr></thead>
+              <tbody id="thanCdLop"></tbody></table>
+          </div>
+          <div class="cd-khoi glass">
+            <h3>Mức riêng từng em + Gia đình nhiều con</h3>
+            <p class="mota">Bấm nút <b>QUẢN LÝ HỌC SINH</b> ở trên: đánh dấu học sinh tiểu học (trần
+              1.000.000đ), đặt trần riêng và % giảm cho từng em, tạo/sửa nhóm gia đình nhiều con và
+              % giảm của cả nhà. Tất cả nằm gọn một chỗ.</p>
+            <div id="tomTatQlHs" class="ctiet" style="color:var(--text-dim)"></div>
+          </div>
+          <div class="cd-khoi glass">
+            <h3>Các tháng</h3>
+            <p class="mota">Chọn tháng CŨ NHẤT được phép xem trong app — tháng đó trở về sau hiện bình
+              thường ở mọi tab và bảng thống kê; tháng cũ hơn BỎ QUA HẲN (nút ‹ ở trang Tháng dừng lại
+              đúng mốc, bảng "Chưa gắn nhãn" cũng không quét tới). Để trống = không giới hạn.</p>
+            <div class="hangnut" style="justify-content:flex-start;margin-top:0">
+              <select id="cdThangBd" style="padding:6px 9px;border-radius:8px;border:1px solid var(--glass-border);font-weight:700"></select>
+              <input type="number" id="cdNamBd" placeholder="Năm" min="2020" max="2100" style="width:90px">
+              <button class="btn primary" id="nutLuuThangBd">Lưu mốc</button>
+              <button class="btn" id="nutBoThangBd">Bỏ giới hạn</button>
+            </div>
+            <div id="tomTatThangBd" class="ctiet" style="color:var(--text-dim);margin-top:8px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- modal gán giao dịch -->
+<div class="man" id="manGan"><div class="hop glass" id="hopGan"></div></div>
+<!-- modal hóa đơn (dạng lịch) — mở từ nút Hóa đơn (chọn em) hoặc click đúp 1 em -->
+<div class="man" id="manHd"><div class="hop glass" id="hopHd" style="width:min(820px,96vw)"></div></div>
+<!-- modal xem trước đẩy web -->
+<div class="man" id="manDayWeb"><div class="hop glass" id="hopDayWeb" style="width:min(920px,94vw)"></div></div>
+<!-- modal QUẢN LÝ HỌC SINH (tiểu học · trần riêng · % giảm · nhóm gia đình) -->
+<div class="man" id="manQlHs"><div class="hop glass" id="hopQlHs" style="width:min(880px,96vw)"></div></div>
+<!-- modal chọn học sinh để thêm vào 1 nhà (nằm TRÊN modal Quản lý học sinh) -->
+<div class="man" id="manChonHs" style="z-index:70"><div class="hop glass" id="hopChonHs"></div></div>
+<!-- modal báo lệch so với lần Chốt tháng -->
+<div class="man" id="manLechChot"><div class="hop glass" id="hopLechChot" style="width:min(640px,94vw)"></div></div>
+<!-- modal DỮ LIỆU ĐÃ HỌC (v0.8.0) — xem/sửa/xoá mẫu nội dung CK → học sinh -->
+<div class="man" id="manHocMay"><div class="hop glass" id="hopHocMay" style="width:min(920px,96vw)"></div></div>
+<!-- modal nhập "Đóng một phần" (mở từ chuột phải tên em/nhà ở trang Tháng) -->
+<div class="man" id="manMotPhan"><div class="hop glass" id="hopMotPhan"></div></div>
+<!-- modal hóa đơn TỔNG nhiều tháng nợ (mở từ ô của em trong tab Nợ phí) -->
+<div class="man" id="manHdTong"><div class="hop glass" id="hopHdTong" style="width:min(820px,96vw)"></div></div>
+<!-- modal xem / hủy giao dịch ĐÃ XÁC NHẬN (v0.9.0 — chuột phải nút XÁC NHẬN) -->
+<div class="man" id="manDsXacNhan"><div class="hop glass" id="hopDsXacNhan" style="width:min(720px,96vw)"></div></div>
+<!-- modal "Đóng phí trước" (v0.10.0) — ghi nhận tạm ứng + xem/xoá tạm ứng hiện có -->
+<div class="man" id="manDongPhiTruoc"><div class="hop glass" id="hopDongPhiTruoc" style="width:min(720px,96vw)"></div></div>
+<!-- modal "Thêm nợ phí" tay (v0.12.0) — chọn lớp → em → tháng/năm → số tiền -->
+<div class="man" id="manThemNoPhi"><div class="hop glass" id="hopThemNoPhi" style="width:min(560px,96vw)"></div></div>
+<!-- menu chuột phải trên số tháng -->
+<div class="ctxmenu glass" id="ctxThang"></div>
+<!-- menu chuột phải trên TÊN HỌC SINH / TÊN NHÀ ở trang Tháng (v0.6.0) -->
+<div class="ctxmenu glass" id="ctxHs"></div>
+<!-- menu chuột phải trên nút XÁC NHẬN: Làm sạch / Xem đã xác nhận (v0.9.0) -->
+<div class="ctxmenu glass" id="ctxXacNhan"></div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/pay/may-ao.js?v=c39e4065"></script>
+<script src="js/pay/nap-du-lieu.js?v=c39e4065"></script>
+<script src="js/pay/mypay-goi.js?v=c39e4065"></script>
+<script src="js/pay/kho-may.js?v=c39e4065"></script>
+<script src="js/pay/mypay-app.js?v=c39e4065"></script>
+</body>
+</html>

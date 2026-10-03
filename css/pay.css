@@ -1,0 +1,460 @@
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ============================================================
+   myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
+   của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
+   kiểu "THẺ NỔI TRÊN NỀN NGÀ": nền app hơi ngà, thẻ trắng tinh, tách khối
+   bằng BÓNG 2 TẦNG chứ không bằng kẻ đậm; màu ít, chữ đậm rõ.
+   ⛔ MỌI MÀU phải là var(--...) — sau này thêm bản tối chỉ cần đè token.
+   ============================================================ */
+:root{
+  --board-bg:#edf0f5;
+  --bg-tren:#f4f6fa;
+  --strip-bg:#ffffff;
+  --glass-bg:#ffffff;
+  --glass-border:rgba(15,23,42,.09);
+  --vach-ro:rgba(15,23,42,.26);
+  --phu:15,23,42;
+  --text:#0f172a;
+  --text-dim:#526074;
+  --placeholder:#94a3b8;
+  --accent:#2563eb;
+  --accent-soft:rgba(37,99,235,.10);
+  --accent-line:rgba(37,99,235,.42);
+  --accent-doi:#ffffff;
+  --accent-ink:#1d4ed8;
+  --chu-noi:#1e40af;
+  --green:#15803d;
+  --green-soft:rgba(21,128,61,.12);
+  --green-line:rgba(21,128,61,.42);
+  --amber:#b45309;
+  --amber-soft:rgba(180,83,9,.12);
+  --amber-line:rgba(180,83,9,.42);
+  --danger:#dc2626;
+  --danger-soft:rgba(220,38,38,.13);
+  --tim:#7c3aed;
+  --tim-soft:rgba(124,58,237,.12);
+  --tim-line:rgba(124,58,237,.4);
+  --warn-bg:#fef7e6;
+  --warn-line:rgba(180,83,9,.32);
+  --warn-chu:#8a5a10;
+  --veil:rgba(15,23,42,.32);
+  --toast-bg:#ffffff;
+  --shadow:0 1px 2px rgba(16,24,40,.05), 0 10px 28px rgba(16,24,40,.09);
+  --font:'SF Pro Display','SF Pro Text',-apple-system,'Inter',
+         'Segoe UI Variable Text','Segoe UI',system-ui,sans-serif;
+  --radius:18px;
+  --ease:cubic-bezier(.22,.9,.3,1);
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;color:var(--text);
+  font:600 14px/1.5 var(--font);
+  background:linear-gradient(180deg,var(--bg-tren),var(--board-bg));
+  overflow:hidden;
+  /* v0.5.0 — CHẶN BÔI ĐEN CHỮ toàn app (thầy: click 1 hàng hay lỡ bôi đen, khó chịu).
+     Chỉ mở lại ở nơi thầy THẬT SỰ gõ/chép: ô nhập liệu. Đặt ở body chứ không ở `*` để
+     luật `user-select:text` bên dưới còn thắng được theo thứ tự đặc hiệu. */
+  user-select:none;
+  -webkit-user-select:none;
+}
+input,textarea,select,[contenteditable="true"]{user-select:text;-webkit-user-select:text}
+input,button,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+.glass{
+  background:var(--glass-bg);
+  border:1px solid var(--glass-border);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+}
+
+/* ---------- khung: rail trái + nội dung ---------- */
+.khung{display:flex;height:100vh}
+.rail{
+  width:216px;flex:0 0 216px;background:var(--strip-bg);
+  border-right:1px solid var(--glass-border);
+  display:flex;flex-direction:column;padding:14px 10px;gap:4px;
+}
+.rail .tab{
+  display:flex;align-items:center;gap:10px;padding:11px 14px;border:0;border-radius:12px;
+  background:transparent;color:var(--text-dim);font-weight:700;
+  transition:background .18s var(--ease),color .18s var(--ease);
+  text-align:left;
+}
+.rail .tab svg{width:19px;height:19px;flex:0 0 19px}
+.rail .tab:hover{background:rgba(var(--phu),.05);color:var(--text)}
+.rail .tab.on{background:var(--accent-soft);color:var(--chu-noi)}
+.rail .brand{
+  margin-top:auto;padding:12px 14px;border-top:1px solid var(--glass-border);
+  font-size:13px;color:var(--text-dim);
+}
+.rail .brand b{color:var(--text)}
+.rail .brand i{font-style:italic;font-weight:600}
+.rail .brand small{display:block;letter-spacing:.14em;font-size:10px;margin-top:2px}
+
+.noidung{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden}
+.trang{display:none;flex-direction:column;flex:1;min-height:0;padding:18px 22px;gap:14px}
+.trang.on{display:flex}
+
+/* ---------- đầu trang tháng ---------- */
+.dau{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.thangnav{display:flex;align-items:center;gap:2px;padding:4px}
+.thangnav button{
+  width:36px;height:36px;border:0;border-radius:10px;background:transparent;
+  font-size:17px;color:var(--text-dim);transition:background .18s var(--ease);
+}
+.thangnav button:hover{background:rgba(var(--phu),.06);color:var(--text)}
+.thangnav button:disabled{opacity:.3;cursor:default;pointer-events:none}
+.thangnav .nhan{font-size:19px;font-weight:800;min-width:132px;text-align:center}
+.chipset{display:flex;gap:8px;flex-wrap:wrap}
+.chip{
+  padding:7px 13px;border-radius:999px;font-weight:700;font-size:13px;
+  border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text-dim);
+}
+.chip b{color:var(--text)}
+.chip.xanh{background:var(--green-soft);border-color:var(--green-line);color:var(--green)}
+.chip.do{background:var(--danger-soft);border-color:var(--danger);color:var(--danger)}
+.chip.tim{background:var(--tim-soft);border-color:var(--tim-line);color:var(--tim)}
+/* v0.11.0 — bẫy bắt được: chỉ scope `.dau .keo` nên `.hang-file` (bọc nút XÁC NHẬN)
+   không đẩy nút sang phải được — CHUYỂN thành selector chung, hoạt động mọi hàng flex
+   dùng `.keo` làm spacer (kể cả `.hangnut` — vô hại vì hàng đó đã `justify-content:
+   flex-end` sẵn, thêm flex:1 vào keo chỉ trùng lặp chứ không phá gì). */
+.keo{flex:1}
+.btn{
+  padding:9px 16px;border-radius:12px;border:1px solid var(--glass-border);
+  background:var(--glass-bg);font-weight:700;color:var(--text);
+  transition:filter .18s var(--ease),background .18s var(--ease);
+  display:inline-flex;align-items:center;gap:8px;
+}
+.btn svg{width:16px;height:16px}
+.btn:hover{background:rgba(var(--phu),.04)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-doi)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.5;cursor:default}
+
+.canhbao{
+  background:var(--warn-bg);border:1px solid var(--warn-line);border-radius:12px;
+  color:var(--warn-chu);padding:9px 14px;font-size:13px;
+}
+.canhbao b{color:var(--warn-chu)}
+
+/* ---------- lưới lớp ---------- */
+.cuon{flex:1;min-height:0;overflow:auto;padding-bottom:8px}
+/* v0.9.0 — khung "Chưa gắn nhãn" cuộn RIÊNG bên trong, không kéo dài cả trang Nợ phí */
+/* v0.10.0 — cao thêm 30% (320→416); dòng cuối MỜ DẦN khi còn nội dung ẩn bên dưới (báo
+   hiệu "còn cuộn được"), hiện rõ nét khi đã cuộn tới dòng cuối thật — .cuon-noibo bọc
+   trong .co-mo-day (relative) để đặt lớp phủ gradient tuyệt đối ở đáy. */
+.co-mo-day{position:relative}
+.cuon-noibo{max-height:416px;overflow:auto;padding-right:4px}
+.co-mo-day::after{
+  content:'';position:absolute;left:0;right:4px;bottom:0;height:36px;pointer-events:none;
+  background:linear-gradient(to bottom, transparent, var(--glass-bg));
+  opacity:0;transition:opacity .18s var(--ease);
+}
+.co-mo-day.co-an::after{opacity:1}
+.luoi{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.lop-card{padding:14px 14px 8px}
+.lop-card h3{
+  margin:0 0 4px;font-size:15px;letter-spacing:.02em;display:flex;align-items:center;gap:8px;
+}
+.lop-card h3 .dem{margin-left:auto;font-size:12px;color:var(--text-dim);font-weight:700}
+.tienbar{height:5px;border-radius:99px;background:rgba(var(--phu),.08);overflow:hidden;margin:4px 0 8px}
+.tienbar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .5s var(--ease)}
+.hsrow{
+  display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:10px;
+  transition:background .15s var(--ease);cursor:pointer;font-size:13px;
+}
+.hsrow:hover{background:rgba(var(--phu),.05)}
+.hsrow .cham{width:9px;height:9px;border-radius:99px;flex:0 0 9px}
+.hsrow .ten{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hsrow .ten small{color:var(--text-dim);font-weight:600}
+.hsrow .tien{margin-left:auto;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.hsrow .ghichu{font-size:11px;font-weight:700;padding:2px 7px;border-radius:99px;white-space:nowrap}
+.du .cham{background:var(--green)} .du .tien{color:var(--green)}
+.chuadong .cham{background:var(--danger)} .chuadong .tien{color:var(--danger)}
+.lech .cham{background:var(--amber)} .lech .tien{color:var(--amber)}
+.lech .ghichu{background:var(--amber-soft);color:var(--amber)}
+.khongbuoi .cham{background:rgba(var(--phu),.18)} .khongbuoi .ten,.khongbuoi .tien{color:var(--placeholder)}
+.hsrow.dangchon{background:var(--accent-soft)}
+.hsrow.giadinh{opacity:.72}
+.hsrow.giadinh .ten small{font-style:italic}
+.hs-vach{height:1px;background:var(--glass-border);margin:6px 4px 4px}
+
+/* ---------- v0.6.0: đóng một phần · hàng bị khoá · nợ phí ---------- */
+/* Đóng một phần = VẪN CHƯA ĐÓNG (thầy chốt) nhưng tô vàng cho khác hẳn màu đỏ. */
+.motphan .cham{background:var(--amber)} .motphan .tien{color:var(--amber)}
+.motphan .ghichu{background:var(--amber-soft);color:var(--amber)}
+/* HS thuộc gia đình hiện MỜ dưới thẻ lớp: chỉ để xem, mọi thao tác làm ở thẻ GIA ĐÌNH. */
+.hsrow.khoa{cursor:default}
+.hsrow.khoa:hover{background:transparent}
+.canhbao-trung{background:var(--danger-soft);color:var(--danger)!important}
+/* v0.10.0 — "(còn dư: …)" xanh cạnh số tiền đỏ khi em còn tạm ứng chưa dùng hết */
+.con-du{background:var(--green-soft);color:var(--green)!important}
+.tab-dem{
+  margin-left:auto;min-width:20px;padding:1px 6px;border-radius:99px;font-size:11px;font-weight:800;
+  background:var(--danger-soft);color:var(--danger);
+}
+/* Ô nợ có nhiều thứ trên một hàng (tháng · nhãn · tiền · 2 nút) nên cần cột RỘNG HƠN
+   thẻ lớp, không thì chữ trong nút vỡ thành 3 dòng. */
+#luoiNoPhi{grid-template-columns:repeat(auto-fill,minmax(430px,1fr))}
+.no-dong{
+  display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:10px;font-size:13px;
+}
+.no-dong .btn{white-space:nowrap}
+.no-dong:hover{background:rgba(var(--phu),.05)}
+.no-dong .kythang{font-weight:700;min-width:96px}
+.no-dong .tien{margin-left:auto;font-weight:800;color:var(--danger);font-variant-numeric:tabular-nums}
+.no-dong .nutnho{display:flex;gap:6px}
+.no-tong{
+  display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;
+  border-top:1px solid var(--glass-border);font-weight:800;
+}
+.no-tong .tien{margin-left:auto;color:var(--danger);font-variant-numeric:tabular-nums}
+.no-mat{background:var(--amber-soft);color:var(--amber);border-radius:8px;padding:4px 8px;font-size:11.5px;font-weight:700;margin-bottom:6px}
+
+/* ---------- v0.7.0: nhãn Nợ phí / Đóng sau · khung đếm gộp · hóa đơn không cuộn ---------- */
+/* Nhãn đứng NGAY TRƯỚC số tiền: "Nợ phí • 1.050.000" (đỏ = em xin nợ · vàng = thầy thu sau) */
+.no-nhan{font-style:normal;font-weight:800;font-size:11.5px;margin-right:2px}
+.no-nhan.no{color:var(--danger)}
+.no-nhan.sau{color:var(--amber)}
+.no-dong.sau .tien{color:var(--amber)}
+.no-dong .no-nhan{
+  padding:1px 7px;border-radius:8px;font-size:11px;
+}
+.no-dong .no-nhan.no{background:var(--danger-soft)}
+.no-dong .no-nhan.sau{background:var(--amber-soft)}
+
+/* Khung đếm gộp: một khối liền, vạch ngăn giữa các ô, bo góc như nút (không phải viên thuốc) */
+.omdem{
+  display:inline-flex;align-items:stretch;border:1px solid var(--glass-border);
+  border-radius:12px;overflow:hidden;background:var(--glass);
+  /* cửa sổ hẹp thì xuống hàng trong khung, KHÔNG để tràn ngang ra khỏi thanh công cụ
+     (bản chip cũ tự xuống hàng được, khung liền thì phải nói rõ) */
+  flex-wrap:wrap;max-width:100%;
+}
+.omdem .o{
+  display:flex;align-items:center;gap:6px;padding:8px 14px;font-size:12.5px;font-weight:700;
+  color:var(--text-dim);border-right:1px solid var(--glass-border);white-space:nowrap;
+}
+.omdem .o:last-child{border-right:0}
+.omdem .o b{font-weight:800;font-variant-numeric:tabular-nums}
+.omdem .o.xanh b{color:var(--green)}
+.omdem .o.do b{color:var(--danger)}
+.omdem .o.tim b{color:var(--tim)}
+.omdem .o.amber b{color:var(--amber)}
+
+/* Hóa đơn LUÔN hiện trọn vẹn — nhiều tháng thì ảnh tự co nhỏ, KHÔNG BAO GIỜ cuộn.
+   (ảnh Sao chép/Tải về vẫn nguyên độ phân giải gốc, chỉ khung xem mới co) */
+.hd-khung{display:flex;justify-content:center;overflow:hidden}
+.hd-anh{
+  max-width:100%;max-height:56vh;border:1px solid var(--glass-border);border-radius:12px;
+}
+
+/* ---------- nhãn "Tiểu học" (v0.5.0) ---------- */
+.th-nhan{color:var(--green);font-style:italic;font-weight:700;font-size:.86em}
+.hsrow.tieuhoc .ten{color:var(--green)}
+
+/* ---------- màn Quản lý học sinh (v0.5.0) ---------- */
+.qlhs-tab{display:flex;gap:8px;margin-bottom:12px}
+.qlhs-tab button{
+  padding:7px 14px;border-radius:10px;border:1px solid var(--glass-border);
+  background:var(--glass-bg);font-weight:700;font-size:13px;
+}
+.qlhs-tab button.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--chu-noi)}
+.qlhs-lop{margin-bottom:16px}
+.qlhs-lop > h4{margin:0 0 6px;font-size:13px;letter-spacing:.04em;color:var(--text-dim);text-transform:uppercase}
+.qlhs-mo{opacity:.45}
+.nha-khoi{border:1px solid var(--glass-border);border-radius:12px;padding:12px;margin-bottom:12px;background:rgba(var(--phu),.02)}
+.nha-dau{display:flex;align-items:center;gap:10px;margin-bottom:8px;font-size:13.5px;flex-wrap:wrap}
+.nha-dau input[type=text]{
+  flex:1;min-width:180px;padding:6px 10px;border-radius:8px;
+  border:1px solid var(--glass-border);font-weight:700;
+}
+.nha-dau label{display:flex;align-items:center;gap:6px;font-weight:600;color:var(--text-dim);font-size:12.5px}
+.nha-dau input[type=number]{width:70px;padding:5px 8px;border-radius:8px;border:1px solid var(--glass-border);font-weight:700}
+.nha-mems{display:flex;flex-wrap:wrap;gap:6px}
+.nha-chip{
+  display:inline-flex;align-items:center;gap:6px;padding:4px 6px 4px 11px;border-radius:999px;
+  background:var(--accent-soft);color:var(--chu-noi);font-size:12.5px;font-weight:700;
+}
+.nha-chip small{color:var(--text-dim);font-weight:600}
+.nha-chip.mat{background:var(--danger-soft);color:var(--danger)}
+.nha-chip button{border:0;background:transparent;color:inherit;font-size:14px;line-height:1;padding:0 4px}
+
+/* ---------- popup báo lệch chốt ---------- */
+.lech-ds{margin:0;padding-left:18px;font-size:13px;line-height:1.9}
+
+/* ---------- trang giao dịch ---------- */
+.dropzone{
+  border:2px dashed var(--accent-line);border-radius:var(--radius);
+  padding:22px;text-align:center;color:var(--text-dim);
+  background:var(--accent-soft);transition:background .2s var(--ease);
+  font-weight:700;
+}
+.dropzone.keo{background:rgba(37,99,235,.18)}
+.dropzone .to{font-size:15px;color:var(--accent-ink)}
+.filelist{display:flex;gap:8px;flex-wrap:wrap}
+/* v0.9.0 — hàng file + nút XÁC NHẬN cùng hàng, xuống dòng khi hẹp */
+.hang-file{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.hang-file .filelist{margin-bottom:0}
+/* v0.12.0 — 2 ô tìm nhanh nằm giữa hàng file và nút XÁC NHẬN, không kéo giãn cả hàng */
+.gd-tim{display:flex;gap:8px;flex:0 0 auto}
+.gd-tim input{
+  padding:8px 10px;border-radius:10px;border:1px solid var(--glass-border);
+  background:rgba(var(--phu),.03);font-weight:700;font-size:13px;
+}
+.gd-tim input:focus{outline:none;border-color:var(--accent)}
+#gdTimNoiDung{width:180px}
+#gdTimSoTien{width:120px}
+tr.da-xac-nhan{background:rgba(var(--phu),.035)}
+tr.da-xac-nhan .nhan.xanh{opacity:.85}
+.filetag{
+  display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:999px;
+  background:var(--glass-bg);border:1px solid var(--glass-border);font-size:13px;font-weight:700;
+  cursor:pointer; /* v0.8.0 — click đúp mở file Excel gốc */
+}
+.filetag:hover{border-color:var(--accent)}
+.filetag button{border:0;background:transparent;color:var(--danger);font-size:15px;padding:0 2px}
+.bang{width:100%;border-collapse:collapse;font-size:13px}
+.bang th{
+  text-align:left;color:var(--text-dim);font-size:11px;letter-spacing:.06em;text-transform:uppercase;
+  padding:8px 10px;border-bottom:1px solid var(--vach-ro);position:sticky;top:0;background:var(--glass-bg);z-index:1;
+}
+.bang td{padding:8px 10px;border-bottom:1px solid var(--glass-border);vertical-align:top}
+.bang tr:hover td{background:rgba(var(--phu),.03)}
+.bang .sotien{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;text-align:right}
+.nhan{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:800}
+.nhan.xanh{background:var(--green-soft);color:var(--green)}
+.nhan.do{background:var(--danger-soft);color:var(--danger)}
+.nhan.tim{background:var(--tim-soft);color:var(--tim)}
+.nhan.amber{background:var(--amber-soft);color:var(--amber)}
+.nhan.xam{background:rgba(var(--phu),.07);color:var(--text-dim)}
+.btn.nho{padding:5px 11px;font-size:12px;border-radius:9px}
+
+/* ---------- cài đặt ---------- */
+.cd-cot{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.cd-khoi{padding:16px}
+.cd-khoi h3{margin:0 0 10px;font-size:14px;letter-spacing:.02em}
+.cd-khoi p.mota{margin:0 0 12px;color:var(--text-dim);font-size:12.5px;font-weight:600}
+.bang input[type=number],.bang input[type=text]{
+  width:92px;padding:5px 8px;border-radius:8px;border:1px solid var(--glass-border);
+  background:rgba(var(--phu),.03);font-weight:700;
+}
+.bang input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)}
+.giadinh-item{
+  display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid var(--glass-border);
+  border-radius:12px;margin-bottom:8px;background:rgba(var(--phu),.02);
+}
+.giadinh-item .thanhvien{flex:1;font-weight:700;font-size:13px}
+.giadinh-item small{color:var(--text-dim)}
+
+/* ---------- modal ---------- */
+.man{position:fixed;inset:0;background:var(--veil);display:none;align-items:center;justify-content:center;z-index:50}
+.man.on{display:flex}
+.hop{
+  width:min(620px,92vw);max-height:86vh;overflow:auto;padding:20px 22px;
+  animation:hien .28s var(--ease);
+}
+@keyframes hien{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hop h3{margin:0 0 6px;font-size:16px}
+.hop .mota{color:var(--text-dim);font-size:12.5px;margin:0 0 14px}
+.hop .hangnut{display:flex;gap:8px;justify-content:flex-end;margin-top:16px}
+.timkiem{
+  width:100%;padding:9px 12px;border-radius:10px;border:1px solid var(--glass-border);
+  background:rgba(var(--phu),.03);margin-bottom:10px;font-weight:700;
+}
+.chon-ds{max-height:290px;overflow:auto;border:1px solid var(--glass-border);border-radius:12px}
+.chon-hs{display:flex;align-items:center;gap:9px;padding:8px 12px;cursor:pointer;font-size:13px;font-weight:700}
+.chon-hs:hover{background:rgba(var(--phu),.05)}
+.chon-hs.dachon{background:var(--accent-soft);color:var(--chu-noi)}
+.chon-hs small{color:var(--text-dim);margin-left:auto}
+/* v0.8.0 — gợi ý gán tay xếp hạng: người khớp nhất nổi bật, lý do hiện chữ nghiêng nhỏ */
+.chon-hs.top{background:var(--green-soft);border-radius:8px}
+.chon-hs.top.dachon{background:var(--accent-soft)}
+.goiy-lydo{display:block;font-style:italic;color:var(--accent-ink);font-weight:600;font-size:11.5px}
+.ctiet{font-size:13px;line-height:1.8}
+.ctiet b{font-variant-numeric:tabular-nums}
+.hop label.dong{display:flex;align-items:center;gap:8px;font-size:13px;margin-top:10px}
+.hop input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)}
+.hop input[type=number]{width:130px;padding:6px 9px;border-radius:8px;border:1px solid var(--glass-border);font-weight:700}
+
+/* ---------- menu chuột phải (số tháng) ---------- */
+.ctxmenu{
+  position:fixed;display:none;z-index:60;min-width:240px;padding:6px;
+  animation:hien .16s var(--ease);
+}
+.ctxmenu.on{display:block}
+.ctxmenu .muc{padding:9px 12px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
+.ctxmenu .muc:hover{background:rgba(var(--phu),.06)}
+.ctxmenu .muc.tt{cursor:default;color:var(--text-dim);font-weight:600}
+.ctxmenu .muc.tt:hover{background:transparent}
+.ctxmenu .muc.tt b{color:var(--text);font-variant-numeric:tabular-nums}
+.ctxmenu hr{border:0;border-top:1px solid var(--glass-border);margin:4px 2px}
+
+/* ---------- popup xem trước đẩy web ---------- */
+.dayweb-tk{display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.dayweb-boqua{background:var(--amber-soft);color:var(--amber);border-radius:10px;padding:8px 12px;font-size:12.5px;margin-bottom:10px}
+.dayweb-ds{max-height:52vh;overflow:auto;border:1px solid var(--glass-border);border-radius:12px}
+.dayweb-ds tr.boqua{opacity:.45}
+
+/* ---------- toast ---------- */
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(16px);
+  background:var(--toast-bg);border:1px solid var(--glass-border);box-shadow:var(--shadow);
+  border-radius:12px;padding:10px 18px;font-weight:700;font-size:13px;
+  opacity:0;pointer-events:none;transition:opacity .25s var(--ease),transform .25s var(--ease);
+  z-index:99;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-thumb{background:rgba(var(--phu),.18);border-radius:99px}
+::-webkit-scrollbar-track{background:transparent}
+
+
+/* ───── phần riêng trang web (web/pay-web.css) ───── */
+/* myPay WEB — phần CSS riêng trang web (nối SAU main.css của app) · Đợt 1 (03/10/2026)
+   Máy tính: giữ nguyên giao diện app. Điện thoại (≤760px): thanh tab xuống đáy, thẻ một cột, hộp vừa màn hình. */
+.khung{height:100vh;height:100dvh}
+button,.hsrow,.no-dong,.tab,.chon-hs{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.hsrow,.no-dong,[data-uid]{-webkit-touch-callout:none}
+.rail .py-ve{text-decoration:none;margin-top:auto}
+.rail .py-ve + .brand{margin-top:0}
+
+/* màn chờ / màn chặn (kho-may.js) */
+#pyMan{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:linear-gradient(180deg,var(--bg-tren),var(--board-bg))}
+#pyMan[hidden]{display:none}
+#pyMan .py-the{max-width:440px;padding:24px 26px;text-align:center;font-size:15px;line-height:1.6}
+#pyMan .py-the a{color:var(--accent-ink);font-weight:800}
+#pyMan .py-quay{width:30px;height:30px;margin:0 auto 14px;border-radius:50%;border:3px solid var(--accent-soft);
+  border-top-color:var(--accent);animation:pyQuay .8s linear infinite}
+#pyMan.loi .py-quay{display:none}
+#pyMan.loi .py-the{border-color:var(--warn-line)}
+@keyframes pyQuay{to{transform:rotate(360deg)}}
+
+@media (max-width:760px){
+  .khung{flex-direction:column-reverse}
+  .rail{width:auto;flex:0 0 auto;flex-direction:row;align-items:stretch;gap:2px;
+    padding:4px 4px calc(4px + env(safe-area-inset-bottom));border-right:0;border-top:1px solid var(--glass-border)}
+  .rail .tab{flex:1 1 0;flex-direction:column;justify-content:center;gap:2px;padding:6px 2px;font-size:11px;
+    text-align:center;position:relative;min-width:0}
+  .rail .tab svg{width:20px;height:20px;flex:0 0 20px}
+  .rail .tab-dem{position:absolute;top:2px;right:14%;margin:0}
+  .rail .py-ve{margin-top:0}
+  .rail .brand{display:none}
+  .trang{padding:10px 10px 8px;gap:10px}
+  .dau{gap:8px}
+  .thangnav .nhan{min-width:112px;font-size:17px}
+  .luoi,#luoiNoPhi{grid-template-columns:1fr}
+  .cd-cot{grid-template-columns:1fr}
+  .hop{width:calc(100vw - 16px)!important;max-width:none!important;max-height:calc(100dvh - 16px);padding:16px 14px}
+  .hop .hangnut{flex-wrap:wrap}
+  .bang{font-size:12px}
+  .bang th,.bang td{padding:6px 6px}
+  .gd-tim{flex:1 1 100%}
+  #gdTimNoiDung,#gdTimSoTien{width:100%;min-width:0}
+  .no-dong{flex-wrap:wrap}
+  .ctxmenu{min-width:210px;max-width:calc(100vw - 16px)}
+  .ctxmenu .muc{padding:12px 12px}
+  .hsrow{padding-top:9px;padding-bottom:9px}
+}

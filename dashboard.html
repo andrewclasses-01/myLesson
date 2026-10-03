@@ -3232,6 +3232,9 @@ button.mk-em:hover{border-color:currentColor}
 .qm-tab em.bat{color:#fff; background:#D32F2F; border-radius:8px; padding:2px 7px}
 .qm-tab.kc-dang{background:#fdecec; color:#c62828; font-weight:700; animation:kcNhay 1.2s ease-in-out infinite}
 .qm-gian{flex:1}
+.qm-vach{height:1px; background:var(--vien); margin:8px 6px}   /* v1.237.0 — tách mục myPay */
+.qm-pay{text-decoration:none}
+.qm-pay svg{color:#2563eb}
 .qm-phien{display:flex; align-items:center; gap:10px; margin:0 2px; border:1px solid var(--vien); background:#fff; border-radius:12px; padding:10px; text-align:left; cursor:pointer; font-family:var(--font)}
 .qm-phien i{width:10px; height:10px; border-radius:50%; background:#CBD6D3; flex:none}
 .qm-phien.co i{background:var(--la); box-shadow:0 0 0 3px #E6F6EE}
@@ -3346,6 +3349,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   .qm-trai{flex-direction:row; overflow-x:auto; padding:8px; border-right:0; border-bottom:1px solid var(--vien)}
   .qm-trai h3, .qm-gian, .qm-chu, .qm-phien, .qm-tab em{display:none}
   .qm-tab{flex:none; white-space:nowrap}
+  .qm-vach{width:1px; height:auto; margin:6px 4px}
   .qm-luoi{grid-template-columns:1fr}
   .qm-bang-hs th:nth-child(3), .qm-bang-hs td:nth-child(3){display:none}
   .qm-bang td, .qm-bang th{padding:7px 6px}
@@ -3940,7 +3944,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=217"></script>
+<script src="config.js?v=218"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -12437,7 +12441,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     nk: QM_P('<path d="M5 4h11l3 3v13H5z"/><path d="M8 10h8M8 14h8M8 18h5"/>'),
     cd: QM_P('<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>'),
     x: QM_P('<path d="M6 6l12 12M18 6L6 18"/>'),
-    tim: QM_P('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>')
+    tim: QM_P('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/>'),
+    pay: QM_P('<path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h12v4"/><path d="M3.5 7.5v10A2.5 2.5 0 0 0 6 20h14.5V9H6a2.5 2.5 0 0 1-2.5-2.5"/><circle cx="16.5" cy="14.5" r="1.2"/>')
   };
   var QM_TABS = [['hs', 'Học sinh & lớp'], ['dd', 'Điểm danh'], ['mk', 'Mật khẩu HS'], ['kc', 'Khẩn cấp'], ['nk', 'Nhật ký'], ['cd', 'Cài đặt bảo mật']];
   var qmE = function (s) { return A.chuAnToan(String(s == null ? '' : s)); };
@@ -12452,6 +12457,8 @@ tr.qm-hang-tam td{background:#fffbeb}
       QM_TABS.map(function (t) {
         return '<button type="button" class="qm-tab" data-qm-tab="' + t[0] + '">' + QM_IC[t[0]] + '<span>' + t[1] + '</span><em id="qmSo_' + t[0] + '"></em></button>';
       }).join('') +
+      // v1.237.0 (03/10/2026, thầy chốt) — myPay (học phí) = TRANG RIÊNG pay.html mở TAB MỚI, mục tách riêng dưới 6 mục trên.
+      '<div class="qm-vach"></div><a class="qm-tab qm-pay" href="pay.html" target="_blank" rel="noopener" title="Học phí — mở myPay ở tab mới">' + QM_IC.pay + '<span>myPay</span><em>↗</em></a>' +
       '<div class="qm-gian"></div>' +
       '<button type="button" class="qm-phien" id="qmPhien"><i></i><span><b id="qmPhienChu">Đang kiểm phiên thầy…</b><small id="qmPhienPhu"></small></span></button>' +
       '<div class="qm-chu">Chỉ thầy mở được hộp này.</div></nav>' +

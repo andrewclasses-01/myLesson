@@ -491,7 +491,7 @@
           var ds = o.rv.map(function (r, i) {
             var ok = dung(o.b, i, r), k = o.b.ma + ':' + (i + 1);
             return { i: i + 1, q: cat(r.question), y: cat(r.yourText), c: cat(r.correctText), ok: ok,
-              g: ok ? '' : cat(k in BC.ghiChu ? BC.ghiChu[k] : window.KTDV_BC.goiY(r.yourText, r.correctText, r.question), 240) };
+              g: ok ? '' : cat(k in BC.ghiChu ? BC.ghiChu[k] : window.KTDV_BC.goiY(r.yourText, r.correctText, r.question), 420) };
           });
           return { ma: o.b.ma, ten: o.b.ten, n: o.rv.length || o.b.n, d: o.d, ds: ds };
         })

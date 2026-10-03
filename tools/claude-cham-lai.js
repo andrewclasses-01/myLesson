@@ -169,7 +169,7 @@ async function cmdGhi() {
   const soCau = {}; BAI.forEach((b) => { soCau[b.ma] = b; });
   const kiemKhoa = (k) => { const m = /^(BT[123]):(\d+)$/.exec(k); if (!m || +m[2] < 1 || +m[2] > soCau[m[1]].n) throw new Error('khoá câu không hợp lệ: ' + k + ' (dạng BT1:7, số câu 1..n)'); return m; };
   let nGc = 0, nSua = 0;
-  Object.keys(inp.ghiChu || {}).forEach((k) => { kiemKhoa(k); bc.ghiChu[k] = String(inp.ghiChu[k]).slice(0, 240); nGc++; });
+  Object.keys(inp.ghiChu || {}).forEach((k) => { kiemKhoa(k); bc.ghiChu[k] = String(inp.ghiChu[k]).slice(0, 420); nGc++; });
   Object.keys(inp.sua || {}).forEach((k) => { const m = kiemKhoa(k); bc.sua[soCau[m[1]].code + ':' + (+m[2] - 1)] = !!inp.sua[k]; nSua++; });
   if (typeof inp.uuDiem === 'string') bc.uuDiem = inp.uuDiem;
   if (typeof inp.hanChe === 'string') bc.hanChe = inp.hanChe;

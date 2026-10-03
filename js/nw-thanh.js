@@ -163,6 +163,12 @@
     if (!t) return;
     e.preventDefault();
     var ma = t.getAttribute('data-ma');
+    // ⭐ 03/10/2026 thiết kế — icon TIN NHẮN mở HỘP THẢ XUỐNG kiểu Facebook (js/tn-pop.js); "Xem tất cả trong Tin nhắn" mới sang trang.
+    if (ma === 'tinNhan' && TRANG_NW.tinNhan && window.TnPop && TnPop.coThe()) {
+      if (choThayVao()) return;
+      TnPop.mo(t, { trang: TRANG_NW.tinNhan, phong: function (id) { return TRANG_NW.tinNhan + '?phong=' + encodeURIComponent(id); } });
+      return;
+    }
     if (ma === 'baiTap' || ma === 'quanLy') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     if (TRANG_NW[ma]) { if (!choThayVao()) location.href = TRANG_NW[ma]; return; }
     moSap(ma);

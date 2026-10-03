@@ -74,6 +74,14 @@
       '<div class="phai"><button class="nut-menu" id="nutMenu" title="Menu" aria-label="Menu">' + IC.menu3 + '</button></div>' +
       '</div>';
     $('.tab[data-tab="chuong"]').onclick = function (e) { e.preventDefault(); if (_thaMo) dongTha(); else moChuong(this); };
+    // ⭐ 03/10/2026 thiết kế — icon TIN NHẮN mở HỘP THẢ XUỐNG kiểu Facebook (js/tn-pop.js), không nhảy trang; sang trang = "Xem tất cả trong Tin nhắn".
+    //   Đang ở trang Tin nhắn thì giữ như cũ. Chưa nạp được tn-pop.js / chưa có dữ liệu thật (TnPop.coThe() sai) ⇒ đi thẳng sang trang.
+    var nutTn = $('.tab[data-tab="tinNhan"]');
+    if (nutTn && tab !== 'tinNhan') nutTn.addEventListener('click', function (e) {
+      if (!window.TnPop || !TnPop.coThe()) return;
+      e.preventDefault(); e.stopImmediatePropagation(); dongTha();
+      TnPop.mo(this, { trang: NW.duong('tinnhan.html'), phong: function (id) { return NW.duong('tinnhan.html?phong=' + encodeURIComponent(id)); } });
+    }, true);
     // ⭐ 02/10/2026 — trang thật: tab/avatar dẫn sang trang nw/ chưa mở ⇒ hộp "sắp ra mắt" (tab Bài tập/Quản lý/Tin nhắn vẫn đi thẳng)
     $$('.tab', hop).forEach(function (a) {
       var h = a.getAttribute('href') || '';

@@ -663,7 +663,15 @@
         doi = true; danhDau(); var cu2 = nen.querySelector('.ktbc-cuon').scrollTop; veBc(); nen.querySelector('.ktbc-cuon').scrollTop = cu2;
       }
     });
-    // nháp nhận xét tự động, GIỌNG CHO PHỤ HUYNH (ngắn, không số liệu rời trang — chuyện đó chỉ nằm ở Chi tiết giáo viên)
+    // nháp nhận xét tự động, GIỌNG CHO PHỤ HUYNH: nêu ĐIỂM TỐT + NHÓM LỖI CHÍNH có đếm (chi tiết từng câu đã nằm ở bảng bên dưới)
+    var NHAN_LOI = [[/để trống/, 'để trống câu'], [/lệch nhiều/, 'dịch chưa đúng ý câu'], [/Thiếu mạo từ/, 'thiếu a/an'], [/Thừa mạo từ/, 'thừa a/an'], [/Sai mạo từ/, 'dùng sai a/an'],
+      [/chính tả/, 'sai chính tả'], [/“s”|số nhiều/, 'số ít/số nhiều hoặc chia động từ (thêm/bớt “s”)'], [/to be/, 'động từ “to be”'],
+      [/Sai thì|trợ động từ|“will”|hoàn thành|thời gian|khuyết thiếu/, 'thì và trợ động từ'], [/Dùng từ chưa đúng|Dùng chưa đúng|Thiếu từ|Sai dạng/, 'dùng từ/cấu trúc chưa đúng']];
+    function nhomLoi(r) {
+      var g = window.KTDV_BC.goiY(r.yourText, r.correctText), kq = [];
+      NHAN_LOI.forEach(function (x) { if (x[0].test(g)) kq.push(x[1]); });
+      return kq.length ? kq : ['dùng từ/cấu trúc chưa đúng'];
+    }
     function nhapNhanXet(tk) {
       var uu = [], han = [];
       tk.forEach(function (o) {
@@ -671,13 +679,14 @@
         var n = o.rv.length || o.b.n, p = o.d / n;
         if (p >= 0.8) uu.push(o.b.ten + ': con làm tốt (' + o.d + '/' + n + ' câu).');
         else if (p >= 0.5) uu.push(o.b.ten + ': con nắm được phần cơ bản (' + o.d + '/' + n + ' câu).');
-        var loiCau = o.rv.map(function (r, i) { return { r: r, i: i }; }).filter(function (x) { return !dung(o.b, x.i, x.r); });
-        if (loiCau.length) {
-          var vd = loiCau.slice(0, 3).map(function (x) { return '“' + x.r.question + '” → con viết “' + (x.r.yourText || '(để trống)') + '”, đúng là “' + x.r.correctText + '”'; });
-          han.push(o.b.ten + ': chưa đúng ' + loiCau.length + '/' + n + ' câu. Ví dụ: ' + vd.join('; ') + '.');
+        var dem = {}, sai = 0;
+        o.rv.forEach(function (r, i) { if (dung(o.b, i, r)) return; sai++; nhomLoi(r).forEach(function (l) { dem[l] = (dem[l] || 0) + 1; }); });
+        if (sai) {
+          var top = Object.keys(dem).sort(function (x, y) { return dem[y] - dem[x]; }).slice(0, 3).map(function (l) { return l + ' (' + dem[l] + ' câu)'; });
+          han.push(o.b.ten + ': chưa đúng ' + sai + '/' + n + ' câu, chủ yếu do ' + top.join(', ') + '.');
         }
       });
-      if (!uu.length) uu.push('Con hoàn thành bài kiểm tra.');
+      if (!uu.length) uu.push('Con đã hoàn thành bài kiểm tra và làm hết các phần.');
       return { uu: uu.join('\n'), han: han.join('\n') };
     }
   }

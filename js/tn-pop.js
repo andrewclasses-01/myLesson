@@ -53,6 +53,20 @@
   TP.mau = mau;
   TP.lamMoi = function () { };
   TP.coThe = function () { return !!TP.nguon || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); };
+  // ⭐ 03/10: hộp đang mở mà bấm icon TAB KHÁC (vd chuông) ⇒ chuyển NGAY (đóng hộp này + mở hộp kia), không bắt bấm 2 lần.
+  //   Lớp nền trong suốt nuốt cú bấm ⇒ tìm phần tử thật nằm dưới điểm bấm; là icon tab khác icon đã mở hộp thì bấm hộ nó.
+  function bamNen(m, e) {
+    var tab = null;
+    m.nen.style.pointerEvents = 'none';
+    try {
+      var ds = document.elementsFromPoint(e.clientX, e.clientY);
+      for (var i = 0; i < ds.length && !tab; i++) tab = ds[i].closest && ds[i].closest('.nwb-tab, .tab[data-tab]');
+    } catch (x) { }
+    m.nen.style.pointerEvents = '';
+    var neo = m.neo;
+    TP.dong();
+    if (tab && !(neo && (tab === neo || tab.contains(neo) || neo.contains(tab)))) tab.click();
+  }
   TP.dong = function () {
     if (!mo) return;
     var m = mo; mo = null;
@@ -82,12 +96,12 @@
       pop.style.top = Math.round(r.bottom + 6) + 'px';
       pop.style.left = Math.max(8, Math.min(window.innerWidth - W - 8, Math.round(r.left + r.width / 2 - W / 2))) + 'px';
     }
-    var m = mo = { pop: pop, nen: nen, cuoc: [], loc: 'tat', chu: '' };
+    var m = mo = { pop: pop, nen: nen, neo: neo, cuoc: [], loc: 'tat', chu: '' };
     m.dongNgay = function () { TP.dong(); };
     m.phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); TP.dong(); } };
     document.addEventListener('keydown', m.phim, true);
     window.addEventListener('resize', m.dongNgay);
-    nen.onclick = TP.dong;
+    nen.onclick = function (e) { bamNen(m, e); };
     requestAnimationFrame(function () { pop.classList.add('mo'); });
 
     var khu = pop.querySelector('.tp-ds');
@@ -149,12 +163,12 @@
       pop.style.top = Math.round(r.bottom + 6) + 'px';
       pop.style.left = Math.max(8, Math.min(window.innerWidth - W - 8, Math.round(r.left + r.width / 2 - W / 2))) + 'px';
     }
-    var m = mo = { pop: pop, nen: nen };
+    var m = mo = { pop: pop, nen: nen, neo: neo };
     m.dongNgay = function () { TP.dong(); };
     m.phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); TP.dong(); } };
     document.addEventListener('keydown', m.phim, true);
     window.addEventListener('resize', m.dongNgay);
-    nen.onclick = TP.dong;
+    nen.onclick = function (e) { bamNen(m, e); };
     requestAnimationFrame(function () { pop.classList.add('mo'); });
     var khu = pop.querySelector('.tp-ds'), nutHet = pop.querySelector('.tp-docHet'), ds = [];
     function capNhatSo() { var n = ds.filter(function (t) { return !t.daDoc; }).length; nutHet.hidden = !n; if (window.NWB && NWB.datSo) NWB.datSo('chuong', n); }

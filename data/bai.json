@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-02 19:37:17",
+  "capNhat": "2026-10-04 10:37:35",
   "bai": {
     "A1C": [
       {
@@ -415,6 +415,26 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_2.10_WORDS_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2B_2.10_WORDS DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2B_2.10_WORDS DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "WORDS",
+        "ngay": "2.10",
+        "han": "2026-10-05T17:45",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-04",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "meugqb",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "B2B_28.9_DICTS_IEL-S15.T4.P2",
         "tieuDe": "B2B_28.9_DICTS IEL-S15.T4.P2",

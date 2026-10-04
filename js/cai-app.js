@@ -24,7 +24,7 @@
     var s = document.currentScript && document.currentScript.src;
     try { return new URL('../', s || location.href).href; } catch (e) { return ''; }
   })();
-  var ICON = GOC + 'assets/icons/icon-192.png';
+  var ICON = GOC + 'assets/icons/icon-192.png?v=2';   // v1.246.0 icon S3 sáng hơn, bản bo góc
 
   var hoiCai = null;          // sự kiện beforeinstallprompt giữ lại (Chrome/Edge/Android)
   var vuaCai = false;

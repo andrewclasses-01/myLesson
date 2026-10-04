@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ⭐ v1.245.0 cài như app (manifest.webmanifest + assets/icons, xem js/cai-app.js) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Andrew Classes">
 <title>Trang quản lý · Andrew Classes</title>
-<link rel="icon" href="assets/avatar-tron.jpg">
 <!-- ⚡ Khối SOM đứng TRƯỚC mọi <link rel=stylesheet>: script inline phải chờ CSS phía trên
      nó tải xong mới được chạy — đo live 03/09 (v1.54.1): fonts.css hết hạn cache làm dữ
      liệu chỉ bắt đầu ở 640ms thay vì ~320ms. -->
@@ -3530,6 +3538,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
+<script src="js/cai-app.js?v=1"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 </head>
 <body>
 
@@ -3710,6 +3719,11 @@ tr.qm-hang-tam td{background:#fffbeb}
       <button class="sb-item" id="thayDn" title="Phiên ghi kho của thầy">
         <span class="ic"><svg viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></span>
         <span class="chu"><span class="ten" id="thayDnChu">Đang kiểm phiên thầy…</span></span>
+      </button>
+      <!-- ⭐ v1.245.0 (04/10/2026) — Cài app vào máy (js/cai-app.js); đang mở bằng app thì CaiApp.gan() ẩn đi -->
+      <button class="sb-item" id="caiApp" title="Cài andrewclasses.com như một ứng dụng">
+        <span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M12 7.5v7m0 0l-3-3m3 3l3-3"/><path d="M10 18.5h4"/></svg></span>
+        <span class="chu"><span class="ten">Cài app vào máy</span></span>
       </button>
       <button class="sb-item sb-out" id="dangXuat">
         <span class="ic"><svg viewBox="0 0 24 24"><path d="M15 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h9"/><path d="M10 12h11m0 0-4-4m4 4-4 4"/></svg></span>
@@ -3944,7 +3958,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=225"></script>
+<script src="config.js?v=226"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -11970,7 +11984,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 
     // ---------- SIDEBAR ----------
     // ⭐ v1.218.0 — ☰ = pop-up nhỏ cạnh nút (thầy chốt), không mở cả sidebar nữa.
-    $('#mnDs').appendChild($('#thayDn')); $('#mnDs').appendChild($('#dangXuat'));
+    $('#mnDs').appendChild($('#thayDn')); $('#mnDs').appendChild($('#caiApp')); $('#mnDs').appendChild($('#dangXuat'));
+    if (window.CaiApp) CaiApp.gan($('#caiApp')); else $('#caiApp').style.display = 'none';   // v1.245.0
     // ⭐ thiết kế ĐT 4 (02/10, thầy chốt) — điện thoại (≤640): dải menu quản lý #nwbQlCot dời VÀO pop-up ☰ (CSS biến pop-up
     // thành sidebar phải), máy tính trả về chỗ cũ trong lưới .nwb-ql. Dời CẢ nút ⇒ giữ nguyên tay bắt nw-thanh.js gắn sẵn.
     (function () {

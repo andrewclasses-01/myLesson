@@ -3,14 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ⭐ v1.245.0 cài như app (manifest.webmanifest + assets/icons, xem js/cai-app.js) -->
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="../assets/icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="../assets/icons/apple-touch-icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Andrew Classes">
 <title>Bài đăng · Andrew Classes Network</title>
-<link rel="icon" href="assets/avatar-tron.jpg">
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="../css/tn-pop.css?v=8">
 <link rel="stylesheet" href="css/nw.css?v=31">
 <link rel="stylesheet" href="../css/chat-ui.css?v=20">
 <link rel="preconnect" href="https://firestore.googleapis.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<script src="../js/cai-app.js?v=1"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 </head>
 <body>
 <main class="main hep">
@@ -25,7 +34,7 @@
 <script src="js/loi.js?v=24"></script>
 <script src="../js/tn-pop.js?v=9"></script>
 <script src="../js/tn-pop-ds.js?v=4"></script>
-<script src="js/thanh.js?v=21"></script>
+<script src="js/thanh.js?v=22"></script>
 <script src="js/bai.js?v=14"></script>
 <script>
 NW.dungThanh({ tab: 'bangTin' }).then(function () {

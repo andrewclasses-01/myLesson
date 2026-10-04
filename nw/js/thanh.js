@@ -102,7 +102,11 @@
       { ic: IC.khoa, nh: 'Đổi mật khẩu', mo: 'Mật khẩu đăng nhập My ID', onclick: moDoiMk },
       { ic: IC.baiTap, nh: 'Trang bài tập', mo: 'andrewclasses.com', onclick: function () { location.href = CFG.LINK_BAI_TAP; } }
     ];
+    // ⭐ web v1.245.0 (04/10/2026) — "Cài app vào máy" (../js/cai-app.js), ngay trên Đăng xuất; đang mở bằng app thì không vẽ.
+    var mucApp = (window.CaiApp && !CaiApp.daCai())
+      ? { ic: CaiApp.IC.caiApp.replace('<svg ', '<svg class="ic" '), nh: 'Cài app vào máy', mo: 'Mở Andrew Classes như một ứng dụng', onclick: function () { CaiApp.mo(); } } : null;
     if (toi.laThay) items.push({ ic: IC.caiDat, nh: 'Trang quản lý', mo: 'Báo cáo · bài ẩn · từ cấm · tài khoản', onclick: function () { if (NW.moDuoc('quanly.html')) NW.di('quanly.html'); else location.href = CFG.LINK_DASHBOARD; } });
+    if (mucApp) items.push(mucApp);
     items.push({ ic: IC.thoat, nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', nguy: true, onclick: function () {
       if (NW.laBanThu()) { NW.thay('index.html?vao=1'); return; }   // ban thu: khong goi kho
       NW.thoat().then(function () { location.replace('index.html?vao=1'); });

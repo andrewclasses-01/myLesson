@@ -6,6 +6,15 @@
      bàn phím ảo hiện lên (thay vì phủ đè). iOS không theo cờ này nên phần
      dưới còn xử lý thêm bằng visualViewport. -->
 <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<!-- ⭐ v1.245.0 cài như app (manifest.webmanifest + assets/icons, xem js/cai-app.js) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Andrew Classes">
 <title>Lớp học · Andrew Classes</title>
 <!-- ⚡ Khối SOM đứng TRƯỚC mọi <link rel=stylesheet>: script inline phải chờ CSS phía trên
      nó tải xong mới được chạy — đo live 03/09 (v1.54.1): fonts.css hết hạn cache làm dữ
@@ -1576,6 +1585,7 @@ body.mo-menu .side.trai{transform:none}
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
+<script src="js/cai-app.js?v=1"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 </head>
 <body>
 
@@ -1693,7 +1703,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=225"></script>
+<script src="config.js?v=226"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -1707,7 +1717,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay.js?v=6"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=3"></script>
+<script src="js/vi-qua.js?v=4"></script>
 <script>
 /* ============================================================
    TRANG CHÍNH CỦA LỚP — bản THẬT (web v1.9.0, 23/08/2026).

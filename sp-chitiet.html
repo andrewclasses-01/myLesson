@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- ⭐ v1.245.0 cài như app (manifest.webmanifest + assets/icons, xem js/cai-app.js) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Andrew Classes">
 <title>Chi tiết SPEAKING CHECK · Andrew Classes</title>
-<link rel="icon" href="assets/avatar-tron.jpg">
 <!-- ⚡ Khối SOM đứng TRƯỚC mọi <link rel=stylesheet>: script inline phải chờ CSS phía trên
      nó tải xong mới được chạy — đo live 03/09 (v1.54.1): fonts.css hết hạn cache làm dữ
      liệu chỉ bắt đầu ở 640ms thay vì ~320ms. -->
@@ -579,7 +587,7 @@ button.gio:active{transform:scale(.94)}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=225"></script>
+<script src="config.js?v=226"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=80"></script>

@@ -3,8 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, interactive-widget=resizes-content">
+<!-- ⭐ v1.245.0 cài như app (manifest.webmanifest + assets/icons, xem js/cai-app.js) -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="icon" href="assets/icons/favicon-16.png" sizes="16x16" type="image/png">
+<link rel="apple-touch-icon" href="assets/icons/apple-touch-icon-180.png">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Andrew Classes">
 <title>Khóa học · Andrew Classes</title>
-<link rel="icon" href="assets/avatar-tron.jpg">
 <!-- SOM:BEGIN -->
 <!-- ⚡ SINH TỰ ĐỘNG từ js/som.js bằng `python tools/sinh-som.py --write` — ĐỪNG SỬA TAY.
      Khởi động sớm: xin lop.json · bai.json · lessonHan · lessonNghi ngay tại đây,
@@ -695,6 +703,7 @@ body.mo-menu .side.trai{transform:none}
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
+<script src="js/cai-app.js?v=1"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 </head>
 <body>
 
@@ -768,7 +777,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=225"></script>
+<script src="config.js?v=226"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -778,7 +787,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
-<script src="js/vi-qua.js?v=3"></script>
+<script src="js/vi-qua.js?v=4"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
 function chuAnToan(x){ return window.AWC.chuAnToan(x); }

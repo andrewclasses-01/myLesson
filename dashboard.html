@@ -3944,7 +3944,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=224"></script>
+<script src="config.js?v=225"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -4633,34 +4633,66 @@ tr.qm-hang-tam td{background:#fffbeb}
      hồ thật, `lan` = số lượt bấm phát, `ngay` = SỐ NGÀY có xem (hợp các máy).
      `co=false` = tài liệu chưa có cham (bài xem trước 21/09) ⇒ cột hiện tổng =
      phủ như cũ, không tụt về 0. */
-  function chamTuFs(fields) {
-    var ra = { giay: 0, that: 0, lan: 0, ngay: 0, co: false, theoNgay: {}, phien: [] };   // v1.131.0 — theoNgay {YYYY-MM-DD: giây} · v1.146.0 phien [{b,k,g}] mọi máy
+  /* ⭐⭐ v1.244.0 (04/10/2026, thầy chốt) — `laNghe` = bài nghe DICTS: `giay` / `theoNgay` / `phien[].g` đổi sang THỜI GIAN
+     NGỒI (phát + dừng chép ≤3 phút/lần + nghe lại — bai.html khối THỜI GIAN NGỒI); giây phát gốc giữ ở `giayPhat`.
+     Mỗi máy: ngồi = `ngoi` (đo thật từ v1.244.0) + phần CŨ ước từ phiên không có `n` (độ dài phiên k−b — phiên vốn chỉ
+     ngắt khi dừng >3 phút nên đã gồm khúc dừng chép; không biết lúc đó có rời tab không) + giây phát cũ ngoài mọi phiên
+     (trước 24/09, phiên bị cắt bớt) tính nguyên giây phát. Video giữ nguyên giây phát. */
+  function chamTuFs(fields, laNghe) {
+    var ra = { giay: 0, that: 0, lan: 0, ngay: 0, co: false, theoNgay: {}, phien: [], giayPhat: 0 };   // v1.131.0 — theoNgay {YYYY-MM-DD: giây} · v1.146.0 phien [{b,k,g}] mọi máy
     try {
       var m = fields.cham && fields.cham.mapValue && fields.cham.mapValue.fields;
       if (!m) return ra;
       var so = function (v) { return v ? Number(v.doubleValue != null ? v.doubleValue : v.integerValue) || 0 : 0; };
+      var ngayKh = function (ms) { var d = new Date(ms), p = function (n) { return (n < 10 ? '0' : '') + n; }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); };
       var ngay = {};
       Object.keys(m).forEach(function (may) {
         var f = m[may].mapValue && m[may].mapValue.fields;
         if (!f) return;
         ra.co = true;
-        ra.giay += so(f.giay); ra.that += so(f.that); ra.lan += Math.round(so(f.lan));
+        ra.giayPhat += so(f.giay); ra.that += so(f.that); ra.lan += Math.round(so(f.lan));
+        var theo = {};   // giây theo ngày của máy này
         var mn = f.ngay && f.ngay.mapValue && f.ngay.mapValue.fields;
-        if (mn) Object.keys(mn).forEach(function (k) { if (so(mn[k]) > 0) { ngay[k] = 1; ra.theoNgay[k] = (ra.theoNgay[k] || 0) + so(mn[k]); } });
+        if (mn) Object.keys(mn).forEach(function (k) { if (so(mn[k]) > 0) theo[k] = so(mn[k]); });
         // v1.146.0 — phiên xem/nghe có GIỜ THẬT (bai.html `chamCong`); bài xem trước 24/09 không có
-        var mp = f.phien && f.phien.arrayValue && f.phien.arrayValue.values;
+        var mp = f.phien && f.phien.arrayValue && f.phien.arrayValue.values, ph = [];
         (mp || []).forEach(function (v) {
           var g = v && v.mapValue && v.mapValue.fields; if (!g) return;
           var p = { b: so(g.b), k: so(g.k), g: so(g.g) };
-          if (p.b > 0 && p.k >= p.b && p.g > 0) ra.phien.push(p);
+          if (g.n) p.n = so(g.n);
+          if (p.b > 0 && p.k >= p.b && p.g > 0) ph.push(p);
         });
+        var tong = so(f.giay);
+        if (laNghe) {
+          var coNgoi = !!f.ngoi, goc = coNgoi ? so(f.goc) : tong, gCu = 0, tongCu = 0, gMoiNgay = {}, ngoiNgay = {};
+          var mnN = f.ngayN && f.ngayN.mapValue && f.ngayN.mapValue.fields;
+          if (mnN) Object.keys(mnN).forEach(function (k) { if (so(mnN[k]) > 0) ngoiNgay[k] = so(mnN[k]); });
+          ph = ph.map(function (p) {
+            var kh = ngayKh(p.b);
+            if (p.n != null) { gMoiNgay[kh] = (gMoiNgay[kh] || 0) + p.g; return { b: p.b, k: p.k, g: p.n, gPhat: p.g }; }
+            var dai = Math.max(p.g, (p.k - p.b) / 1000);
+            gCu += p.g; gMoiNgay[kh] = (gMoiNgay[kh] || 0) + p.g;
+            ngoiNgay[kh] = (ngoiNgay[kh] || 0) + dai;
+            tongCu += dai;
+            return { b: p.b, k: p.k, g: dai, gPhat: p.g };
+          });
+          // giây phát cũ ngoài mọi phiên: theo ngày = phần `ngay` không phiên nào giải thích được
+          Object.keys(theo).forEach(function (k) { var du = theo[k] - (gMoiNgay[k] || 0); if (du > 0.5) ngoiNgay[k] = (ngoiNgay[k] || 0) + du; });
+          tong = so(f.ngoi) + Math.max(0, goc - gCu) + tongCu;
+          theo = ngoiNgay;
+        }
+        ra.giay += tong;
+        Object.keys(theo).forEach(function (k) { ngay[k] = 1; ra.theoNgay[k] = (ra.theoNgay[k] || 0) + theo[k]; });
+        ra.phien = ra.phien.concat(ph);
       });
+      if (!laNghe) ra.giay = ra.giayPhat;
       ra.ngay = Object.keys(ngay).length;
     } catch (e) {}
     return ra;
   }
-  // Tổng phút hiện cho MỘT em = max(tổng cham, phủ) — tổng không bao giờ nhỏ hơn phủ.
-  function giayTongCuaEm(phu, cham) { return Math.max(phu || 0, (cham && cham.giay) || 0); }
+  // Tổng phút hiện cho MỘT em. ⛔ v1.244.0 — trước đây = max(cham, phủ) ⇒ phát TẮT TIẾNG / tab ẩn hết bài vẫn được ghi đủ phút
+  // (phủ không xét hai luật đó). Nay: tài liệu có `cham` ⇒ CHỈ tin cham; phủ chỉ còn là đường lùi cho bài xem trước 21/09.
+  function giayTongCuaEm(phu, cham) { return (cham && cham.co) ? (cham.giay || 0) : (phu || 0); }
   // Đọc tiến độ xem của CẢ LỚP cho một bài — tối đa 6 lượt song song, không
   // bao giờ reject (404/403/mất mạng đều coi là 0 giây, y hệt tinh thần
   // `napTienDoFs` bên bai.html). Mỗi em: {phu: giây phủ, cham} (v1.122.0).
@@ -4741,7 +4773,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         .then(function (j) {
           var kq = giayNgheTuFs((j && j.fields) || {});
           giay[h.ten] = kq.giay;
-          cham[h.ten] = chamTuFs((j && j.fields) || {});   // v1.122.0
+          cham[h.ten] = chamTuFs((j && j.fields) || {}, true);   // v1.122.0 · v1.244.0 thời gian ngồi
           Object.keys(kq.tong).forEach(function (id) { if (!tong[id]) tong[id] = kq.tong[id]; });
         })
         ['catch'](function () { giay[h.ten] = 0; })
@@ -13067,7 +13099,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       });
       dsBai.forEach(function (x) {
         if (coBaiGiangKh(x.b)) viec.push(function () { return fetch(urlTienDoVideoDb(ma, x.b.id), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { var fl = (j && j.fields) || {}; x.video = { phu: giayXemTuFs(fl), cham: chamTuFs(fl) }; }); });
-        if (coBaiNgheKh(x.b)) viec.push(function () { return fetch(urlTienDoNgheDb(ma, x.b.id), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { var fl = (j && j.fields) || {}; x.nghe = { phu: giayNgheTuFs(fl).giay || 0, cham: chamTuFs(fl) }; }); });
+        if (coBaiNgheKh(x.b)) viec.push(function () { return fetch(urlTienDoNgheDb(ma, x.b.id), { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) { var fl = (j && j.fields) || {}; x.nghe = { phu: giayNgheTuFs(fl).giay || 0, cham: chamTuFs(fl, true) }; }); });
       });
       viec.push(function () {
         return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'lessonNop'), f.fs.where('ma', '==', ma))).then(function (s) {

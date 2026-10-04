@@ -2106,7 +2106,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=224"></script>
+<script src="config.js?v=225"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -4235,15 +4235,18 @@ function noiTrinhPhat(sec, maNghe){
   am.addEventListener('seeked', function(){ GIAY_HIEN_NGHE[maNghe] = am.currentTime; });
   am.addEventListener('play', function(){
     chamLan('nghe'); CHAM_LUC_NGHE[maNghe] = Date.now();   // v1.122.0
+    ngoiDongDung(false); NGOI_VUA_NGHE = false; giuSangNghe(true);   // v1.244.0 — hết khúc dừng chép, giữ màn sáng
     if (ngheFsHen) clearInterval(ngheFsHen);
     ngheFsHen = setInterval(function(){ dayTienDoNgheFs(); }, NGHE_FS_NHIP_MS);
   });
   am.addEventListener('pause', function(){
     if (ngheFsHen) { clearInterval(ngheFsHen); ngheFsHen = null; }
+    if (!am.ended) ngoiMoDung();   // v1.244.0 — `ended` cũng bắn `pause` trước ⇒ để `ended` mở
     dayTienDoNgheFs();
   });
   am.addEventListener('ended', function(){
     if (ngheFsHen) { clearInterval(ngheFsHen); ngheFsHen = null; }
+    ngoiMoDung();   // v1.244.0 — chép câu cuối sau khi hết băng cũng được tính
     dayTienDoNgheFs();
   });
 
@@ -5039,11 +5042,67 @@ function nhipNghe(maNghe, am){
       // v1.122.0 — độ chăm: giây băng + giây thật (trần 3s, phòng mốc cũ sau khi tạm dừng lâu)
       var that = CHAM_LUC_NGHE[maNghe] ? (lucNay - CHAM_LUC_NGHE[maNghe]) / 1000 : delta;
       // v1.144.0 (thầy chốt 24/09) — audio TẮT TIẾNG không cộng giờ; tab ẩn / tắt màn hình VẪN cộng (nghe thật).
-      if (!am.muted && am.volume > 0) chamCong('nghe', delta, Math.min(Math.max(that, 0), 3));
+      if (!am.muted && am.volume > 0) {
+        var thatCap = Math.min(Math.max(that, 0), 3);
+        chamCong('nghe', delta, thatCap, thatCap);   // v1.244.0 — giây thật lúc phát cũng là giây NGỒI
+        NGOI_VUA_NGHE = true;
+      }
     }
   }
   GIAY_HIEN_NGHE[maNghe] = now;
   CHAM_LUC_NGHE[maNghe] = lucNay;
+}
+
+/* ⭐⭐ v1.244.0 — KHÚC DỪNG CHÉP của bài nghe (xem khối THỜI GIAN NGỒI ở `chamCua`). Bấm dừng / hết băng NGAY SAU một khúc
+   nghe thật (không tắt tiếng) ⇒ mở "cửa sổ dừng" 3 phút: mỗi giây trang ĐANG HIỆN thì cộng 1 giây ngồi; rời tab/app thì
+   không cộng nhưng đồng hồ 3 phút vẫn chạy (đi đâu quá 3 phút quay lại = hết cửa sổ). Bấm phát lại ⇒ đóng cửa sổ (giây
+   phát lại do `nhipNghe` đếm). Màn hình giữ sáng từ lúc phát tới hết cửa sổ dừng. */
+var NGOI_VUA_NGHE = false;   // khúc phát vừa rồi có ít nhất một nhịp nghe thật
+var NGOI_DUNG = null;        // {bd: ms bấm dừng, moc: ms nhịp đếm trước, lan: số nhịp từ lần đẩy kho trước}
+var ngoiDungHen = null;
+function ngoiMoDung(){
+  if (NGOI_DUNG) return;   // đã mở (pause + ended cùng bắn) — bấm phát mới đóng
+  if (!NGOI_VUA_NGHE) { giuSangNghe(false); return; }
+  NGOI_VUA_NGHE = false;
+  var now = Date.now();
+  NGOI_DUNG = { bd: now, moc: now, lan: 0 };
+  ngoiDungHen = setInterval(ngoiNhipDung, 1000);
+}
+function ngoiNhipDung(){
+  if (!NGOI_DUNG) return;
+  var now = Date.now(), het = now - NGOI_DUNG.bd >= NGOI_DUNG_TOI_DA_MS;
+  var den = het ? NGOI_DUNG.bd + NGOI_DUNG_TOI_DA_MS : now;
+  var d = Math.min(Math.max(den - NGOI_DUNG.moc, 0), 2000) / 1000;   // trần 2 s/nhịp: nhịp bị trễ không cộng vống
+  NGOI_DUNG.moc = now;
+  if (document.visibilityState === 'visible' && d > 0) { chamNgoiDung(d); NGOI_DUNG.lan++; }
+  if (het) { ngoiDongDung(true); giuSangNghe(false); return; }
+  if (NGOI_DUNG.lan >= 30) { NGOI_DUNG.lan = 0; dayTienDoNgheFs(); }   // đẩy thưa 30 s/lần trong lúc chép
+}
+function ngoiDongDung(day){
+  if (ngoiDungHen) { clearInterval(ngoiDungHen); ngoiDungHen = null; }
+  var co = !!NGOI_DUNG;
+  NGOI_DUNG = null;
+  if (co && day) dayTienDoNgheFs();
+}
+document.addEventListener('visibilitychange', function(){
+  // trở lại trang: mốc đếm bắt đầu từ bây giờ (lúc vắng mặt không cộng) + xin lại giữ sáng (trình duyệt tự nhả khi ẩn)
+  if (document.visibilityState !== 'visible') return;
+  if (NGOI_DUNG) NGOI_DUNG.moc = Date.now();
+  var dangPhat = Array.prototype.some.call(document.querySelectorAll('.nghe audio'), function(a){ return !a.paused && !a.ended; });
+  if (NGOI_DUNG || dangPhat) giuSangNghe(true);
+});
+// Giữ màn hình sáng (Screen Wake Lock — Chrome/Edge/Android, Safari iOS 16.4+). Máy không hỗ trợ / bị từ chối ⇒ bỏ qua êm.
+var KHOA_SANG_NGHE = null;
+function giuSangNghe(bat){
+  try {
+    if (!bat) { if (KHOA_SANG_NGHE) { KHOA_SANG_NGHE.release()['catch'](function(){}); KHOA_SANG_NGHE = null; } return; }
+    if (KHOA_SANG_NGHE && !KHOA_SANG_NGHE.released) return;
+    if (!navigator.wakeLock || document.visibilityState !== 'visible') return;
+    navigator.wakeLock.request('screen').then(function(k){
+      KHOA_SANG_NGHE = k;
+      k.addEventListener('release', function(){ if (KHOA_SANG_NGHE === k) KHOA_SANG_NGHE = null; });
+    })['catch'](function(){});
+  } catch (e) {}
 }
 function urlTienDoNgheFs(){
   var db = (A.CFG && A.CFG.AWORD_DB) || {};
@@ -5185,7 +5244,7 @@ function chamMay(){
   return _chamMay;
 }
 function chamKhoaKho(loai){ return 'awc_cham_' + loai + '_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
-function chamRong(){ return { giay: 0, that: 0, lan: 0, ngay: {}, phien: [] }; }
+function chamRong(){ return { giay: 0, that: 0, lan: 0, ngay: {}, phien: [], ngoi: 0, ngayN: {}, goc: 0 }; }
 /* ⭐ v1.146.0 (24/09/2026, thầy chốt "giờ thật và chuẩn") — PHIÊN XEM/NGHE CÓ GIỜ THẬT.
    Trước đây kho chỉ có tổng giây theo NGÀY ⇒ dashboard không biết em xem lúc mấy giờ
    (bảng lượt từng in giờ giả 23:59). Nay mỗi máy giữ thêm `phien` = [{b: ms bắt đầu,
@@ -5202,14 +5261,28 @@ function chamNgayCua(ms){
 }
 function chamPhienSach(ds){
   return (Array.isArray(ds) ? ds : []).filter(function(x){ return x && isFinite(x.b) && isFinite(x.k) && isFinite(x.g) && x.k >= x.b; })
-    .map(function(x){ return { b: +x.b, k: +x.k, g: +x.g }; });
+    .map(function(x){ var p = { b: +x.b, k: +x.k, g: +x.g }; if (x.n != null && isFinite(x.n)) p.n = +x.n; return p; });
 }
+/* ⭐⭐ v1.244.0 (04/10/2026, thầy chốt) — THỜI GIAN NGỒI của bài nghe DICTS: em nghe một khúc rồi DỪNG CHÉP vào vở,
+   lùi lại nghe lại, chép tiếp… ⇒ chỉ đếm giây phát là thiếu hẳn phần chép. Nay `cham` (chỉ loại 'nghe') có thêm:
+     ngoi  = giây NGỒI kể từ khi máy này chạy bản đo ngồi = giây đồng hồ thật lúc phát (không tắt tiếng)
+             + giây tạm dừng ngay sau một khúc nghe thật, MỖI LẦN DỪNG tối đa 3 phút tính từ lúc bấm dừng,
+             CHỈ đếm lúc trang đang hiện (rời tab/app khác không tính — thầy chốt)
+     ngayN = {YYYY-MM-DD: giây ngồi} · phien[].n = giây ngồi của phiên (phiên có `n` = phiên đo ngồi)
+     goc   = giây PHÁT đã có trước khi máy này bắt đầu đo ngồi (phần đó dashboard ước từ phiên cũ).
+   Trong lúc làm bài nghe giữ MÀN HÌNH SÁNG (Wake Lock) để điện thoại không tự khoá lúc em cúi chép; hết 3 phút dừng thì nhả.
+   Luật Firestore chỉ kiểm `cham` là map ≤30 khoá ⇒ không phải đăng luật. Dashboard: `chamTuFs(fields, true)`. */
+var NGOI_DUNG_TOI_DA_MS = 3 * 60 * 1000;
 function chamCua(loai){
   if (CHAM[loai]) return CHAM[loai];
   var c = chamRong();
   try {
     var o = JSON.parse(localStorage.getItem(chamKhoaKho(loai)) || 'null');
-    if (o && isFinite(o.giay)) c = { giay: +o.giay || 0, that: +o.that || 0, lan: Math.round(+o.lan || 0), ngay: (o.ngay && typeof o.ngay === 'object') ? o.ngay : {}, phien: chamPhienSach(o.phien) };
+    if (o && isFinite(o.giay)) {
+      c = { giay: +o.giay || 0, that: +o.that || 0, lan: Math.round(+o.lan || 0), ngay: (o.ngay && typeof o.ngay === 'object') ? o.ngay : {}, phien: chamPhienSach(o.phien),
+            ngoi: +o.ngoi || 0, ngayN: (o.ngayN && typeof o.ngayN === 'object') ? o.ngayN : {}, goc: +o.goc || 0 };
+      if (o.ngoi == null) c.goc = c.giay;   // bộ đếm có từ trước v1.244.0 ⇒ phần phát cũ thành `goc`
+    }
   } catch (e) {}
   CHAM[loai] = c;
   return c;
@@ -5219,9 +5292,10 @@ function chamLuu(loai){
 }
 function chamHomNay(){ return chamNgayCua(A.gioNay()); }   // v1.174.0 — ngày theo giờ máy chủ
 // Cộng một nhịp phát THẬT: `giay` giây băng, `that` giây đồng hồ (đã chặn trần ở nơi gọi).
-function chamCong(loai, giay, that){
+// v1.244.0 — `ngoi` (chỉ bài nghe) = giây NGỒI của nhịp này (giây thật lúc phát).
+function chamCong(loai, giay, that, ngoi){
   if (!(giay > 0)) return;
-  var c = chamCua(loai);
+  var c = chamCua(loai), coNgoi = ngoi != null;
   c.giay += giay;
   c.that += Math.max(0, that || 0);
   var k = chamHomNay();
@@ -5229,16 +5303,41 @@ function chamCong(loai, giay, that){
   // giữ tối đa 60 ngày gần nhất (khoá ISO sắp theo chữ = theo thời gian)
   var ks = Object.keys(c.ngay).sort();
   while (ks.length > 60) delete c.ngay[ks.shift()];
+  if (coNgoi) chamNgoiNgay(c, k, ngoi);
   // v1.146.0 — phiên có giờ thật: nối vào phiên cuối nếu còn liền mạch + cùng ngày, không thì mở phiên mới
+  // v1.244.0 — phiên đo ngồi (có `n`) KHÔNG nối vào phiên cũ không có `n` (dashboard tách hai loại phiên).
   var now = A.gioNay(), cuoi = c.phien[c.phien.length - 1];
-  if (cuoi && now - cuoi.k <= PHIEN_NGAT_MS && chamNgayCua(cuoi.b) === k) { cuoi.k = now; cuoi.g += giay; }
-  else {
+  if (cuoi && now - cuoi.k <= PHIEN_NGAT_MS && chamNgayCua(cuoi.b) === k && (!coNgoi || cuoi.n != null)) {
+    cuoi.k = now; cuoi.g += giay;
+    if (coNgoi) cuoi.n += ngoi;
+  } else {
     var bd = now - Math.max(giay, that || 0) * 1000;
     if (chamNgayCua(bd) !== k) bd = new Date(new Date(now).setHours(0, 0, 0, 0)).getTime();
-    c.phien.push({ b: Math.round(bd), k: now, g: giay });
+    var p = { b: Math.round(bd), k: now, g: giay };
+    if (coNgoi) p.n = ngoi;
+    c.phien.push(p);
     while (c.phien.length > PHIEN_TOI_DA) c.phien.shift();
   }
   chamLuu(loai);
+}
+// v1.244.0 — cộng giây ngồi vào tổng + ngày (giữ 60 ngày như `ngay`).
+function chamNgoiNgay(c, k, giay){
+  c.ngoi = (c.ngoi || 0) + giay;
+  if (!c.ngayN) c.ngayN = {};
+  c.ngayN[k] = (c.ngayN[k] || 0) + giay;
+  var ks = Object.keys(c.ngayN).sort();
+  while (ks.length > 60) delete c.ngayN[ks.shift()];
+}
+// v1.244.0 — giây TẠM DỪNG (đang chép) của bài nghe: cộng vào ngồi + kéo dài phiên đo ngồi cuối cùng.
+// Không có phiên đo ngồi liền mạch cùng ngày ⇒ bỏ (khúc dừng chỉ tính khi vừa nghe thật ngay trước đó).
+function chamNgoiDung(giay){
+  if (!(giay > 0)) return;
+  var c = chamCua('nghe'), k = chamHomNay(), now = A.gioNay(), cuoi = c.phien[c.phien.length - 1];
+  if (!cuoi || cuoi.n == null || now - cuoi.k > PHIEN_NGAT_MS + 5000 || chamNgayCua(cuoi.b) !== k) return;
+  chamNgoiNgay(c, k, giay);
+  cuoi.k = now; cuoi.n += giay;
+  chamLuu('nghe');
+  NGHE_FS_BAN = true;
 }
 function chamLan(loai){
   var c = chamCua(loai); c.lan += 1; chamLuu(loai);
@@ -5246,17 +5345,26 @@ function chamLan(loai){
 }
 // Bộ đếm máy này -> Firestore mapValue (làm tròn 0,1 giây).
 function chamRaFs(loai){
-  var c = chamCua(loai), ngay = {};
-  Object.keys(c.ngay).forEach(function(k){ ngay[k] = { doubleValue: Math.round(c.ngay[k] * 10) / 10 }; });
-  return { mapValue: { fields: {
-    giay: { doubleValue: Math.round(c.giay * 10) / 10 },
-    that: { doubleValue: Math.round(c.that * 10) / 10 },
+  var c = chamCua(loai), ngay = {}, tron = function(x){ return { doubleValue: Math.round(x * 10) / 10 }; };
+  Object.keys(c.ngay).forEach(function(k){ ngay[k] = tron(c.ngay[k]); });
+  var f = {
+    giay: tron(c.giay),
+    that: tron(c.that),
     lan:  { integerValue: String(c.lan) },
     ngay: { mapValue: { fields: ngay } },
-    phien: { arrayValue: { values: c.phien.map(function(x){ return { mapValue: { fields: {
-      b: { integerValue: String(Math.round(x.b)) }, k: { integerValue: String(Math.round(x.k)) },
-      g: { doubleValue: Math.round(x.g * 10) / 10 } } } }; }) } }
-  } } };
+    phien: { arrayValue: { values: c.phien.map(function(x){
+      var g = { b: { integerValue: String(Math.round(x.b)) }, k: { integerValue: String(Math.round(x.k)) }, g: tron(x.g) };
+      if (x.n != null) g.n = tron(x.n);   // v1.244.0
+      return { mapValue: { fields: g } }; }) } }
+  };
+  if (loai === 'nghe') {   // v1.244.0 — thời gian ngồi
+    var ngayN = {};
+    Object.keys(c.ngayN || {}).forEach(function(k){ ngayN[k] = tron(c.ngayN[k]); });
+    f.ngoi = tron(c.ngoi || 0);
+    f.ngayN = { mapValue: { fields: ngayN } };
+    f.goc = tron(c.goc || 0);
+  }
+  return { mapValue: { fields: f } };
 }
 // Lúc mở bài: bản kho của CHÍNH máy này lớn hơn bản máy (localStorage bị xoá /
 // trình duyệt khác cùng dấu máy không thể có) ⇒ lấy bản kho.
@@ -5270,9 +5378,15 @@ function chamGopTuFs(loai, fields){
     var mn = f.ngay && f.ngay.mapValue && f.ngay.mapValue.fields;
     if (mn) Object.keys(mn).forEach(function(k){ var n = so(mn[k]); if (isFinite(n) && n > 0) kho.ngay[k] = n; });
     var mp = f.phien && f.phien.arrayValue && f.phien.arrayValue.values;   // v1.146.0
-    kho.phien = chamPhienSach((mp || []).map(function(v){ var g = v.mapValue && v.mapValue.fields; return g ? { b: so(g.b), k: so(g.k), g: so(g.g) } : null; }));
+    kho.phien = chamPhienSach((mp || []).map(function(v){ var g = v.mapValue && v.mapValue.fields; if (!g) return null;
+      var p = { b: so(g.b), k: so(g.k), g: so(g.g) }; if (g.n) p.n = so(g.n); return p; }));
+    // v1.244.0 — thời gian ngồi; kho chưa có `ngoi` (bản cũ) ⇒ toàn bộ giây phát là `goc`
+    kho.ngoi = so(f.ngoi); kho.ngayN = {};
+    var mnN = f.ngayN && f.ngayN.mapValue && f.ngayN.mapValue.fields;
+    if (mnN) Object.keys(mnN).forEach(function(k){ var n = so(mnN[k]); if (isFinite(n) && n > 0) kho.ngayN[k] = n; });
+    kho.goc = f.ngoi ? so(f.goc) : kho.giay;
     var may = chamCua(loai);
-    if (isFinite(kho.giay) && kho.giay > may.giay) { CHAM[loai] = kho; chamLuu(loai); }
+    if (isFinite(kho.giay) && (kho.giay > may.giay || (kho.giay === may.giay && kho.ngoi > (may.ngoi || 0)))) { CHAM[loai] = kho; chamLuu(loai); }
   } catch (e) {}
 }
 // Gói PATCH: thân + chuỗi updateMask (chỉ khoá máy mình trong `cham`).

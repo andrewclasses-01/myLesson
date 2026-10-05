@@ -907,12 +907,14 @@ html.co-phong,html.co-phong body{overflow:hidden}
    cân với đồng hồ (trái) + điểm (phải) của game AWord (AWord Đợt 466 đặt hàng đó cao đúng 38px ở điện thoại).
    Game có thứ nằm giữa hàng trên (thanh thời gian/tim của Gameshow · Open the box · Whack-a-mole · Flying fruit,
    dòng "… IN ANDREW CLASSES" của Anagram/Crossword…) ⇒ AWord gửi `AWORD:GIUA {ban:true}` ⇒ `data-giua="1"` ⇒
-   nút dời về góc trên trái như chỗ cũ. Áp MỌI màn hình (thầy chọn). */
+   nút dời về góc trên trái như chỗ cũ. Áp MỌI màn hình (thầy chọn).
+   v1.248.0 (thầy): nút màu SÁNG, ÍT NỔI BẬT — nền trắng mờ, viền mảnh, icon xám nhạt (trước: nền tối, icon trắng). */
 .game-thu{position:absolute; top:max(8px,env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:5; display:none;
   align-items:center; justify-content:center; width:38px; height:38px; padding:0; border:0; border-radius:50%;
-  background:rgba(15,23,42,.72); color:#fff; cursor:pointer; backdrop-filter:blur(6px)}
+  background:rgba(255,255,255,.78); color:#94a3b8; box-shadow:0 0 0 1px rgba(15,23,42,.08), 0 1px 3px rgba(15,23,42,.08);
+  cursor:pointer; backdrop-filter:blur(6px)}
 .game-thu svg{width:18px; height:18px; stroke:currentColor; stroke-width:2.2; fill:none; stroke-linecap:round; stroke-linejoin:round}
-.game-thu:hover{background:rgba(15,23,42,.9)}
+.game-thu:hover{background:#fff; color:#64748b}
 .game.phong .game-thu{display:inline-flex}
 .game.phong[data-giua="1"] .game-thu{left:max(8px,env(safe-area-inset-left)); transform:none}
 .game iframe{position:absolute; inset:0; width:100%; height:100%; border:0; display:block}
@@ -2123,7 +2125,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=228"></script>
+<script src="config.js?v=229"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->

@@ -2125,7 +2125,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=229"></script>
+<script src="config.js?v=230"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -2947,6 +2947,25 @@ window.addEventListener('message', function(e){
     }
     return;
   }
+  /* ⭐ v1.249.0 (thầy chốt 05/10) — GAME CÓ BÀN PHÍM + ĐIỆN THOẠI ⇒ TỰ PHÓNG TO. AWord (Đợt 472) gửi
+     `AWORD:BANPHIM {co, luc}`: luc "nap" = màn START vừa hiện (sau READY) — chỉ tự phóng to MỘT lần mỗi
+     khung game (em bấm thu nhỏ thì thôi); luc "start" = em bấm START/CONTINUE — phóng to lại nếu đang nhỏ.
+     "Điện thoại" = màn cảm ứng có cạnh ngắn ≤ 500px (iPad / máy tính không tự phóng to). */
+  if (d.type === 'AWORD:BANPHIM') {
+    if (!d.co) return;
+    var laDT = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches) &&
+               Math.min(screen.width, screen.height) <= 500;
+    if (!laDT) return;
+    var ks = document.querySelectorAll('.game iframe');
+    for (var q = 0; q < ks.length; q++) {
+      if (ks[q].contentWindow !== e.source) continue;
+      var kh = ks[q].parentNode;
+      if (d.luc === 'nap') { if (ks[q].getAttribute('data-tu-phong')) return; ks[q].setAttribute('data-tu-phong', '1'); }
+      if (!kh.classList.contains('phong') && kh.phongTo) kh.phongTo(true);
+      return;
+    }
+    return;
+  }
   if (d.type !== 'AWORD:VAN') return;
   var fs = document.querySelectorAll('.game iframe');
   for (var i = 0; i < fs.length; i++) {
@@ -3314,6 +3333,7 @@ function veKhoi(k, so){
   function escThu(e){ if (e.key === 'Escape') phongTo(false); }
   nutPhong.onclick = function(){ phongTo(!khung.classList.contains('phong')); };
   nutThu.onclick = function(){ phongTo(false); };
+  khung.phongTo = phongTo;   /* v1.249.0 — để chỗ nghe tin AWORD:BANPHIM (bên dưới) tự phóng to trên điện thoại */
 
   var nutDen = sec.querySelector('.ic-nut.den');
   nutDen.onclick = function(){

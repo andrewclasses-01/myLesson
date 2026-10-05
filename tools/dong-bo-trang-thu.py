@@ -59,8 +59,8 @@ def main():
                 continue
             dich = os.path.join(THU, m.name.replace('/', os.sep))
             os.makedirs(os.path.dirname(dich), exist_ok=True)
-            with tar.extractfile(m) as nguon, open(dich + '.tmp', 'wb') as ra:
-                shutil.copyfileobj(nguon, ra)
+            with tar.extractfile(m) as vao, open(dich + '.tmp', 'wb') as ra:
+                shutil.copyfileobj(vao, ra)
             os.replace(dich + '.tmp', dich)
             so += 1
     # thư mục rỗng còn sót

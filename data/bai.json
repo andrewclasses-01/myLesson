@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-04 10:37:35",
+  "capNhat": "2026-10-05 11:23:51",
   "bai": {
     "A1C": [
       {
@@ -1766,6 +1766,236 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L06",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 22: BÀI GIẢNG 22: TẠO CÂU NÓI CÓ/KHÔNG Ở HIỆN TẠI ĐƠN KHI KHÔNG CÓ ĐỘNG TỪ",
+        "tenBai": "LESSON 22",
+        "maLesson": "LESSON 22",
+        "han": "2026-10-09T23:59",
+        "taoLuc": "2026-10-05",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1: TẠO CÂU NÓI CÓ/KHÔNG KHI CẦN SỬ DỤNG ĐỘNG TỪ MƯỢN \"BE\"",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "dwyrnk"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2: TẠO CÂU VỚI 3 DẠNG ĐỘNG TỪ",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "ggscqv"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 22",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "w8f6fh"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 22: TẠO CÂU NÓI CÓ/KHÔNG Ở HIỆN TẠI ĐƠN KHI KHÔNG CÓ ĐỘNG TỪ",
+          "video": "https://www.youtube.com/watch?v=0vtVzRjQnY8",
+          "doan": [
+            {
+              "id": "dmuumjywfjqyk",
+              "ten": "Review hành trình hiện tại",
+              "tu": "00:00",
+              "den": "00:03:56",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfzs3f"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfzs3f",
+              "ten": "Lưu ý: tuyệt đối không mượn động từ khi trong câu đã có động từ rồi",
+              "tu": "03:56",
+              "den": "00:06:02",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfl5z2"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfl5z2",
+              "ten": "Tổng quan các dạng câu khi mượn động từ và câu đố thử thách",
+              "tu": "06:02",
+              "den": "08:27",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywf8ksb"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywf8ksb",
+              "ten": "Lưu ý: lỗi thiếu động từ mà học sinh thường mắc phải",
+              "tu": "00:08:34",
+              "den": "00:11:08",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfynqj"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfynqj",
+              "ten": "Ôn lại cách mượn động từ khi câu chưa có động từ",
+              "tu": "00:11:08",
+              "den": "00:14:05",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfkxw7"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfkxw7",
+              "ten": "Tạo câu nói có khi sử dụng động từ mượn",
+              "tu": "00:14:05",
+              "den": "00:18:07",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfe5kh"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfe5kh",
+              "ten": "Phân tích bằng ví dụ và một số lưu ý",
+              "tu": "18:07",
+              "den": "00:21:47",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfj8iw"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfj8iw",
+              "ten": "Tạo câu nói không khi sử dụng động từ mượn",
+              "tu": "00:21:47",
+              "den": "00:29:25",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfbm1l"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfbm1l",
+              "ten": "Lưu ý lần 2: có động từ rồi thì nhất định không được dùng động từ mượn",
+              "tu": "29:25",
+              "den": "00:31:02",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywf266b"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywf266b",
+              "ten": "Tiếp tục phân tích bằng ví dụ",
+              "tu": "31:02",
+              "den": "00:35:17",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfucdv"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmuumjywfucdv",
+              "ten": "HD BT1 - Tạo câu có sử dụng động từ mượn",
+              "tu": "35:17",
+              "den": "00:36:52",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmuuqr4h77px"
+              ]
+            },
+            {
+              "id": "dmuumjywf9wnr",
+              "ten": "HD BT2 - Phân biệt và tạo câu ở 3 dạng động từ",
+              "tu": "00:36:58",
+              "den": "00:39:46",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmuuqr5iice2"
+              ]
+            },
+            {
+              "id": "dmuumjywfboh2",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "39:52",
+              "den": "40:42",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmuuqr5zmqsd"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmuuqr4h77px",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1: TẠO CÂU NÓI CÓ/KHÔNG KHI CẦN SỬ DỤNG ĐỘNG TỪ MƯỢN \"BE\"",
+            "actTen": "BT1. TAO CAU NOI CO/KHONG VOI DONG TU \"BE\"",
+            "ma": "dwyrnk",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywf9wnr"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmuuqr5iice2",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2: TẠO CÂU VỚI 3 DẠNG ĐỘNG TỪ",
+            "actTen": "BT2. TAO CAU VOI 3 DANG DONG TU",
+            "ma": "ggscqv",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmuumjywfboh2"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmuuqr5zmqsd",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 22",
+            "actTen": "TRAC NGHIEM BAI GIANG 22 - TAO CAU NOI CO/KHONG VOI CAU KHONG CO DONG TU",
+            "ma": "w8f6fh",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ]
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L05",
         "dang": "KHOA",

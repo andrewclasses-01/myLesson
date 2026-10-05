@@ -150,7 +150,12 @@
     });
     Promise.resolve(TP.nguon ? TP.nguon() : mau()).then(function (ds) { if (mo === m) { m.cuoc = ds || []; ve(); } })
       .catch(function () { if (mo === m) khu.innerHTML = '<div class="tp-trong">Chưa tải được tin nhắn. Bấm "Xem tất cả" để mở trang Tin nhắn.</div>'; });
+    // v1.253.0 — sổ chưa đọc chung (tn-pop-ds.js) đổi ⇒ vẽ lại danh sách ĐANG MỞ (tin mới nhảy lên đầu, chấm chưa đọc tắt/bật)
+    m.taiLai = function () {
+      Promise.resolve(TP.nguon ? TP.nguon() : null).then(function (ds) { if (mo === m && ds) { m.cuoc = ds; ve(); } }).catch(function () { });
+    };
   };
+  TP.veLai = function () { if (mo && mo.taiLai) mo.taiLai(); };
   // ============================================================
   // HỘP THÔNG BÁO THẢ XUỐNG (icon chuông ở trang lớp/khóa/dashboard) — mở NGAY TẠI TRANG, không nhảy sang trang Tin nhắn nữa.
   // (thầy 03/10: bấm chuông bị nháy tải trang Tin nhắn rồi hiện cả hộp tin nhắn lẫn hộp thông báo)

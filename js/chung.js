@@ -2514,7 +2514,9 @@
   // tắt. Luôn truyền vào MỐC CỦA TIN cuối cùng em đã thấy.
   function danhDauDaXem(lop, ma, luc) {
     var m = Number(luc) || gioNay();
-    try { localStorage.setItem(khoaXemTin(lop, ma), String(m)); } catch (e) {}
+    // v1.253.0 — chỉ TIẾN, không lùi: mốc có thể đã được chép từ kho (xem ở máy khác) cao hơn tin trang này đang có
+    try { if (m > mocDaXem(lop, ma)) localStorage.setItem(khoaXemTin(lop, ma), String(m)); } catch (e) {}
+    try { window.dispatchEvent(new CustomEvent('ac-tn-xem', { detail: { lop: lop } })); } catch (e) {}
   }
 
   function datMocTinMoi(lop, luc) {

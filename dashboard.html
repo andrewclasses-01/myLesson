@@ -3957,8 +3957,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=80"></script>
-<script src="js/chat.js?v=35"></script>
+<script src="js/chung.js?v=81"></script>
+<script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=20"></script>
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -10494,21 +10494,40 @@ tr.qm-hang-tam td{background:#fffbeb}
     return Math.max(a, b);
   }
   // Số trên icon Tin nhắn = số LỚP có tin chưa xem (như Messenger/Zalo đếm cuộc trò chuyện) — không tốn thêm lượt đọc.
-  function veSoTin() { if (window.NWB && !/[?&]somau=1/.test(location.search)) NWB.datSo('tinNhan', Object.keys(CHAM_DO).length); }
+  // v1.253.0 — sổ chưa đọc CHUNG (js/tn-pop-ds.js) chạy thì NÓ đặt số (số CUỘC chưa đọc: lớp + chat riêng, mọi máy); đây chỉ là dự phòng.
+  function veSoTin() { if (window.NWB && !/[?&]somau=1/.test(location.search) && !(window.TnPop && TnPop.soChay)) NWB.datSo('tinNhan', Object.keys(CHAM_DO).length); }
+  var LUC_TIN = {};   // v1.253.0 — mốc tin cuối đã biết của từng lớp (tinMoiNhat / sổ chung)
   function danhDauDaXemTin(maLop) {
-    var bay = String(Date.now());
-    try { localStorage.setItem(xemTinKey(maLop), bay); localStorage.setItem(xemTinKey(maLop) + '_GV', bay); } catch (e) {}
+    // v1.253.0 — LUẬT 10: mốc = TIN CUỐI đã biết, không phải đồng hồ máy trần (máy chạy nhanh ⇒ nuốt tin tới sau); chưa biết ⇒ giờ chuẩn
+    var luc = LUC_TIN[maLop] || (window.gioChuan ? window.gioChuan() : Date.now());
+    try {
+      if (luc > (Number(localStorage.getItem(xemTinKey(maLop))) || 0)) localStorage.setItem(xemTinKey(maLop), String(luc));
+      if (luc > (Number(localStorage.getItem(xemTinKey(maLop) + '_GV')) || 0)) localStorage.setItem(xemTinKey(maLop) + '_GV', String(luc));
+    } catch (e) {}
     delete CHAM_DO[maLop];
     veSoTin();
+    try { window.dispatchEvent(new CustomEvent('ac-tn-xem', { detail: { lop: maLop } })); } catch (e) {}
   }
   function capNhatChamDoLop() {
     (DL.lop || []).forEach(function (l) {
       AWChat.tinMoiNhat(l.maLop).then(function (luc) {
         if (!luc) return;
+        if (luc > (LUC_TIN[l.maLop] || 0)) LUC_TIN[l.maLop] = luc;
         if (luc > mocXemTin(l.maLop)) { CHAM_DO[l.maLop] = true; veLopGrid(); veSoTin(); }
       })['catch'](function () {});
     });
   }
+  // v1.253.0 — chấm đỏ THẺ LỚP sống theo sổ chung: tin lớp mới tới / đã xem ở máy khác ⇒ bật/tắt ngay, không cần tải lại trang.
+  window.addEventListener('ac-tn-so', function (e) {
+    var lop = (e.detail || {}).lop || {}, doi = false;
+    Object.keys(lop).forEach(function (ma) {
+      var o = lop[ma], luc = o.x ? Number(o.x.createdAt) || 0 : 0;
+      if (luc > (LUC_TIN[ma] || 0)) LUC_TIN[ma] = luc;
+      if (o.chua && !CHAM_DO[ma]) { CHAM_DO[ma] = true; doi = true; }
+      else if (!o.chua && CHAM_DO[ma]) { delete CHAM_DO[ma]; doi = true; }
+    });
+    if (doi) veLopGrid();
+  });
 
   function chonLop(maLop, epMoi) {
     LOP_CHON = maLop;
@@ -14822,8 +14841,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 })();
 </script>
 <script src="js/ic-ql.js?v=2"></script>
-<script src="js/tn-pop.js?v=9"></script>
-<script src="js/tn-pop-ds.js?v=4"></script>
+<script src="js/tn-pop.js?v=10"></script>
+<script src="js/tn-pop-ds.js?v=5"></script>
 <script src="js/nw-thanh.js?v=28"></script>
 <script src="js/ktdv-bc.js?v=4"></script>   <!-- 03/10/2026 bản báo cáo phụ huynh KT ĐẦU VÀO (bản chép ở repo kiemtra) -->
 <script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->

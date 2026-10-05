@@ -274,6 +274,15 @@
     return choPhien.then(db).then(function (f) {
       var o = {}; o[khoa] = { ten: String(ten || '?').slice(0, 60), luc: Number(luc) };
       return f.fs.setDoc(f.fs.doc(f.db, 'classChatXem', maLop), o, { merge: true });
+    }).then(function () {
+      // ⭐ v1.253.0 — mốc "đã xem" của MÁY theo luôn (khoá mylesson_xemtin_* mà trang lớp / dashboard / Tin nhắn đọc) + báo
+      // sổ chưa đọc chung (js/tn-pop-ds.js) đếm lại ngay. Máy KHÁC nhận mốc này qua kho classChatXem.
+      try {
+        var k = 'mylesson_xemtin_' + maLop + '_' + khoa;
+        if (Number(luc) > (Number(localStorage.getItem(k)) || 0)) localStorage.setItem(k, String(Number(luc)));
+        if (khoa === 'GV' && Number(luc) > (Number(localStorage.getItem('mylesson_xemtin_' + maLop)) || 0)) localStorage.setItem('mylesson_xemtin_' + maLop, String(Number(luc)));
+      } catch (e) {}
+      try { window.dispatchEvent(new CustomEvent('ac-tn-xem', { detail: { lop: maLop } })); } catch (e) {}
     });
   }
 

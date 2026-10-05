@@ -316,6 +316,7 @@
     // v16: nhóm (thầy tạo) luôn đứng ĐẦU danh sách; cuộc em đã "xoá" (anLuc[em] >= capNhat) thì giấu tới khi có tin mới
     // 02/10: NHÓM LỚP luôn đứng trên cùng (theo thứ tự lớp của em), rồi nhóm khác, rồi cuộc riêng.
     //   HS chưa bật chat riêng: chỉ nhóm lớp + cuộc với thầy (chưa có thì dòng chờ `_cho`), thầy ở DƯỚI CÙNG.
+    //   ⛔ v1.253.0 (06/10) thầy BỎ thứ tự cố định trên: nay xếp theo TIN MỚI NHẤT (xem xepPhong); hangPhong/thuTuLop chỉ còn để phân xử khi bằng mốc.
     function hangPhong(p) { return laNhomLop(p) ? 0 : p.loai === 'nhom' ? 1 : 2; }
     function thuTuLop(p) { if (p._thuTu != null) return p._thuTu; var i = (toi.cacLop || [toi.lop]).indexOf(p.lop); return i < 0 ? 99 : i; }
     function laVoiThay(p) { return p.loai !== 'nhom' && nguoiKia(p).vaiTro === 'gv'; }
@@ -329,9 +330,11 @@
           if (!ds.some(function (p) { return p.id === id || (laVoiThay(p) && nguoiKia(p).uid === t.uid); })) { var tv = {}; tv[t.uid] = NW.tomTat(t); ds.push({ id: id, loai: 'rieng', thanhVien: [toi.uid, t.uid], tv: tv, tinCuoi: null, docLuc: {}, _cho: t }); }
         });
       }
+      // ⭐ v1.253.0 (thầy chốt 06/10) — MỌI cuộc xếp chung theo TIN MỚI NHẤT (như Messenger), kể cả nhóm lớp / nhóm / thầy.
+      //   Cuộc chưa có tin nào (mốc 0) xuống cuối, giữ thứ tự cũ (nhóm lớp → nhóm → riêng).
+      function mocPhong(p) { return p._cho ? 0 : ((p.tinCuoi && p.tinCuoi.luc) || p.capNhat || 0); }
       return ds.sort(function (a, b) {
-        if (!CHO_RIENG) { var ta = laVoiThay(a) ? 1 : 0, tb = laVoiThay(b) ? 1 : 0; if (ta !== tb) return ta - tb; }
-        return hangPhong(a) - hangPhong(b) || (laNhomLop(a) && laNhomLop(b) ? thuTuLop(a) - thuTuLop(b) : 0) || (b.capNhat || 0) - (a.capNhat || 0);
+        return mocPhong(b) - mocPhong(a) || hangPhong(a) - hangPhong(b) || (laNhomLop(a) && laNhomLop(b) ? thuTuLop(a) - thuTuLop(b) : 0);
       });
     }
     var _phongCho = {};
@@ -682,6 +685,7 @@
       if (!(luc > 0) || !MA_TOI) return;
       try { if (luc > docXem(p.lop)) localStorage.setItem(khoaXem(p.lop), String(luc)); } catch (e) { }
       p.docLuc = p.docLuc || {}; if (luc > (p.docLuc[toi.uid] || 0)) { p.docLuc[toi.uid] = luc; veDs(); }
+      try { window.dispatchEvent(new CustomEvent('ac-tn-xem', { detail: { lop: p.lop } })); } catch (e) { }   // v1.253.0 — số đỏ tính lại ngay
     }
     function tenLopHien(l) { var g = String(l.tenGoc || l.maLop || ''); return /[a-z]{3,}/i.test(avKhongDau(g)) ? g : 'Lớp ' + g; }
     function uidTin(t) { return t.ma && t.ma === MA_TOI ? toi.uid : (t.vaiTro === 'gv' ? 'm:GV' : 'm:' + (t.ma || '?')); }
@@ -710,6 +714,21 @@
       }).filter(Boolean);
       veDs();
       thuMoCho();   // v1.224.0 — link thông báo trỏ vào nhóm lớp
+      // ⭐ v1.253.0 — sổ chưa đọc CHUNG (../js/tn-pop-ds.js) có kênh sống tin cuối từng lớp + mốc "đã xem" gộp mọi máy ⇒ nhận từ đó:
+      //   tin lớp mới nhảy lên đầu danh sách NGAY, chấm chưa đọc tắt khi đã xem ở máy khác. Khung nhúng (hop=1) không chạy sổ ⇒ cách cũ.
+      if (window.TnPop && TnPop.ngheSo && !/[?&]hop=1(&|$)/.test(location.search)) {
+        TnPop.ngheSo(function (st) {
+          PHONG_LOP.forEach(function (p) {
+            var o = st.lop[p.lop]; if (!o) return;
+            var x = o.x;
+            if (x) datTinCuoiLop(p, { ma: x.code, vaiTro: x.role, ten: x.name, chu: x.thuHoi ? 'Tin nhắn đã bị thu hồi' : (x.hinh && x.text === '[Hình ảnh]' ? '' : x.text), hinh: x.hinh, sticker: x.sticker, luc: Number(x.createdAt) || 0 });
+            p.docLuc = p.docLuc || {}; if (o.xem > (p.docLuc[toi.uid] || 0)) p.docLuc[toi.uid] = o.xem;
+          });
+          veDs();
+        });
+        if (TnPop.batNghe) TnPop.batNghe();   // khởi động sổ ngay (mặc định chờ 2,5 giây)
+        return;
+      }
       // tin cuối từng lớp — MỘT lượt đọc/lớp (getDocs limit 1, không mở kênh sống)
       var f = await AWChat.kho();
       PHONG_LOP.forEach(function (p) {
@@ -721,6 +740,7 @@
     }
     function datTinCuoiLop(p, t) {
       if (!t || !(t.luc > 0)) return;
+      if (p.tinCuoi && p.tinCuoi.luc > t.luc) return;   // v1.253.0 — hai nguồn (sổ chung + phòng đang mở) không được kéo lùi tin cuối
       var chu = window.ChatUI && ChatUI.chuThuong ? ChatUI.chuThuong(ChatUI.tomTat({ chu: t.chu || '', hinh: t.hinh || '', sticker: t.sticker || '' })) : (t.chu || '');
       p.tinCuoi = { chu: String(chu || (t.sticker ? 'Nhãn dán' : '')).slice(0, 80), hinh: !!t.hinh, uid: uidTin(t), ten: t.vaiTro === 'gv' ? 'Thầy Andrew' : t.ten, luc: t.luc };
       p.capNhat = t.luc;

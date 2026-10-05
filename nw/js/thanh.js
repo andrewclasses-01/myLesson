@@ -137,9 +137,13 @@
     if (!c) { c = document.createElement('span'); c.className = 'cham'; nut.appendChild(c); }
     c.textContent = so > 99 ? '99+' : String(so);
   }
+  // v1.253.0 — số tab Tin nhắn do sổ chưa đọc CHUNG (../js/tn-pop-ds.js) đặt: số CUỘC chưa đọc gồm cả NHÓM LỚP, đúng mọi máy.
+  // Sổ chưa chạy (chưa nạp / khung nhúng) ⇒ đếm cũ (chỉ phòng nwChats).
+  var SO_TIN = null;
+  NW.datSoTin = function (n) { SO_TIN = Number(n) || 0; capNhatCham(); };
   function capNhatCham() {
     datCham($('.tab[data-tab="chuong"]'), soChuaDoc(TB_DS));
-    datCham($('.tab[data-tab="tinNhan"]'), soPhongChua(PHONG_DS));
+    datCham($('.tab[data-tab="tinNhan"]'), SO_TIN != null ? SO_TIN : soPhongChua(PHONG_DS));
   }
 
   // ---------- chuông ----------

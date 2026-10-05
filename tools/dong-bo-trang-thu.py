@@ -9,6 +9,9 @@ Chỗ khác đó nằm TRONG CODE (config.js `AC_THU` theo tên miền) ⇒ file
 
     python tools/dong-bo-trang-thu.py            (xem trước: chép vào kho thử, in thay đổi, KHÔNG commit)
     python tools/dong-bo-trang-thu.py --day      (chép + commit + push kho thử)
+    python tools/dong-bo-trang-thu.py --day --nguon origin/<nhánh>
+        (06/10/2026 — đưa một NHÁNH ĐANG THỬ lên trang thử để thầy duyệt TRƯỚC khi gộp vào main / lên trang thật.
+         Lần đồng bộ sau từ main sẽ đè lại ⇒ gộp xong nhớ chạy lại không có --nguon.)
 
 Nguồn = `origin/main` của kho web (bản ĐÃ push — không lấy file đang sửa dở). Bỏ: data/ · assets/avatar/ · tools/ · CNAME
 (dữ liệu học sinh + khoá — kho thử công khai, KHÔNG được chứa) · README.md · .gitignore (của riêng kho thử).
@@ -32,9 +35,10 @@ def bo_qua(p):
 
 def main():
     day = '--day' in sys.argv
+    nguon = sys.argv[sys.argv.index('--nguon') + 1] if '--nguon' in sys.argv else 'origin/main'
     git(WEB, 'fetch', '-q', 'origin')
-    sha = git(WEB, 'rev-parse', '--short', 'origin/main').decode().strip()
-    ban = git(WEB, 'show', 'origin/main:config.js').decode('utf-8')
+    sha = git(WEB, 'rev-parse', '--short', nguon).decode().strip()
+    ban = git(WEB, 'show', nguon + ':config.js').decode('utf-8')
     ban = ban.split("PHIEN_BAN: '", 1)[1].split("'", 1)[0]
 
     if git(THU, 'status', '--porcelain').strip():
@@ -49,7 +53,7 @@ def main():
                 os.remove(f)
     # ② chép bản origin/main (git archive) trừ vùng cấm
     so = 0
-    with tarfile.open(fileobj=io.BytesIO(git(WEB, 'archive', '--format=tar', 'origin/main'))) as tar:
+    with tarfile.open(fileobj=io.BytesIO(git(WEB, 'archive', '--format=tar', nguon))) as tar:
         for m in tar.getmembers():
             if not m.isfile() or bo_qua(m.name):
                 continue
@@ -86,7 +90,8 @@ def main():
         git(THU, 'clean', '-fdq')
         print('\n(xem trước — chưa commit; chạy lại với --day để đẩy lên trang thử)')
         return
-    git(THU, 'commit', '-q', '-m', 'Dong bo = trang that web v%s %s (tools/dong-bo-trang-thu.py)' % (ban, sha))
+    git(THU, 'commit', '-q', '-m', ('Dong bo = trang that web v%s %s (tools/dong-bo-trang-thu.py)' % (ban, sha)) if nguon == 'origin/main'
+        else ('THU NHANH %s = web v%s %s (tools/dong-bo-trang-thu.py --nguon)' % (nguon, ban, sha)))
     git(THU, 'push', '-q')
     print('\nĐã đẩy lên trang thử: ' + git(THU, 'log', '--oneline', '-1').decode('utf-8').strip())
 

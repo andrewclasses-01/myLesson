@@ -1707,9 +1707,9 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=80"></script>
+<script src="js/chung.js?v=81"></script>
 <script src="js/nw-phien.js?v=8"></script>
-<script src="js/chat.js?v=35"></script>
+<script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
@@ -4559,12 +4559,15 @@ function capNhatChamTin(){
   A.veChamDo(!!l && l > A.mocDaXem(LOP_DL, MA_HS));
   /* ⭐ thiết kế ĐT 8 (thầy chốt) — số trên icon Tin nhắn = số tin CHƯA XEM của lớp này (không tính tin của chính em). Đọc ở trang
      Tin nhắn (cùng khoá "đã xem") là số tự hết. Không tốn thêm lượt đọc: đếm trên tin đang có sẵn. */
-  if (window.NWB) {
+  /* v1.253.0 — sổ chưa đọc CHUNG (js/tn-pop-ds.js) đã chạy ⇒ nó đếm số CUỘC chưa đọc (lớp + chat riêng, mọi máy); đếm cũ chỉ là dự phòng. */
+  if (window.NWB && !(window.TnPop && TnPop.soChay)) {
     var xem = A.mocDaXem(LOP_DL, MA_HS), n = 0;
     TIN_MAU.forEach(function(t){ if ((Number(t.luc) || 0) > xem && !(t.ma && t.ma === MA_HS)) n++; });
     NWB.datSo('tinNhan', n);
   }
 }
+/* v1.253.0 — "đã xem" đổi (xem ở máy khác ⇒ mốc kho chép xuống máy, hoặc vừa xem ở trang này) ⇒ chấm đỏ avatar tính lại */
+window.addEventListener('ac-tn-xem', function(){ capNhatChamTin(); });
 function danhDauDocChat(){
   var l = mocTinCuoi();
   if (!l) return;
@@ -4638,8 +4641,8 @@ function baoToast(chu){
   henToast = setTimeout(function(){ t.classList.remove('hien'); }, 2600);
 }
 </script>
-<script src="js/tn-pop.js?v=9"></script>
-<script src="js/tn-pop-ds.js?v=4"></script>
+<script src="js/tn-pop.js?v=10"></script>
+<script src="js/tn-pop-ds.js?v=5"></script>
 <script src="js/nw-thanh.js?v=28"></script>
 </body>
 </html>

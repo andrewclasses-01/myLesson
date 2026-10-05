@@ -46,6 +46,7 @@
 <script src="js/thanh.js?v=22"></script>
 <script src="js/bai.js?v=14"></script>
 <script src="js/chat.js?v=26"></script>
+<script src="../js/cat-anh.js?v=1"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
 <script>
 // v0.4.0 (22/09/2026, mẫu v12 thầy chốt): bìa rộng · avatar to + sao · MỌI nút = icon trắng không nền nằm TRONG bìa
 // (mình: đổi bìa góc trên phải; sửa giới thiệu + chia sẻ link góc dưới phải · cùng lớp/bạn bè: nhắn tin + chia sẻ ·
@@ -168,17 +169,22 @@
     $('#fileAv').onchange = async function () {
       var file = this.files && this.files[0]; this.value = ''; if (!file) return;
       try {
+        // ⭐ v1.251.0 (05/10/2026) — căn ảnh trước khi lưu: bộ cắt dùng chung ../js/cat-anh.js (zoom + khung mờ đầu-vai)
+        if (!window.CatAnh) throw new Error('Chưa tải được bộ cắt ảnh — tải lại trang.');
+        var ctl = await window.CatAnh.mo(file, { tieuDe: 'Căn ảnh đại diện' });
+        if (!ctl) return;
+        var canh = function (max) { return Math.max(96, Math.min(max, ctl.canhGoc())); };
         NW.toast('Đang tải ảnh…');
         var url;
         if (ph.banThu) {
-          url = URL.createObjectURL(await NW.nenAnh(file, { canhDai: CFG.ANH.avatar, vuong: true, chatLuong: 0.86 }));
+          url = URL.createObjectURL(await ctl.xuatBlob(canh(CFG.ANH.avatar), 0.86));
           await capNhatHoSo({ anh: url });
         } else if (NW.toi && NW.toi.vaiTro !== 'gv') {
           // ⭐ 29/09/2026 (thầy chốt) — ẢNH ĐẠI DIỆN CỦA EM LÀ ẢNH CHUNG CẢ HỆ (trang lớp, bảng xếp hạng, myStudent, myTeam…):
           // đi qua hàm máy chủ `qlAnhDaiDien` (việc `tuDat`, tối đa 5 lần/ngày) — y đường thầy đổi trên dashboard; thầy đổi
           // sau là đè lên. Luật không cho em tự ghi `anh` nữa. Ảnh cắt vuông: lớn 480 px + nhỏ 96 px.
-          var lon = await NW.nenAnh(file, { canhDai: 480, vuong: true, chatLuong: 0.88 });
-          var nho = await NW.nenAnh(file, { canhDai: 96, vuong: true, chatLuong: 0.82 });
+          var lon = await ctl.xuatBlob(canh(480), 0.88);
+          var nho = await ctl.xuatBlob(96, 0.82);
           var kq = await NW.goiHam('qlAnhDaiDien', { viec: 'tuDat', lon: await NW.blobB64(lon), nho: await NW.blobB64(nho) });
           url = kq.anhNw || '';
           if (!url) throw new Error('Máy chủ chưa trả ảnh mới — thử lại sau ít phút.');
@@ -186,7 +192,7 @@
           try { sessionStorage.removeItem('nwHoSo:' + toi.uid); } catch (e) { }
           ve();
         } else {
-          var blob = await NW.nenAnh(file, { canhDai: CFG.ANH.avatar, vuong: true, chatLuong: 0.86 });   // ảnh của THẦY: như cũ
+          var blob = await ctl.xuatBlob(canh(CFG.ANH.avatar), 0.86);   // ảnh của THẦY: như cũ (giờ cũng căn được)
           url = await NW.taiAnh(blob, 'avatar_' + Date.now().toString(36) + '.jpg');
           await capNhatHoSo({ anh: url });
         }

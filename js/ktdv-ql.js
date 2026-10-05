@@ -290,7 +290,7 @@
     ]);
   }
 
-  // ----- ảnh đại diện: chọn / kéo thả / dán ảnh ⇒ cắt vuông giữa ⇒ JPEG ≤ 400 px -----
+  // ----- ảnh đại diện: chọn / kéo thả / dán ảnh ⇒ căn trong CatAnh (zoom + khung đầu-vai) ⇒ JPEG ≤ 400 px · catVuong chỉ còn dùng khi chuyển lớp -----
   function catVuong(file, canh) {
     return new Promise(function (ok, hong) {
       var img = new Image(), url = URL.createObjectURL(file);
@@ -309,7 +309,7 @@
     var anh = null;
     var hop = moHop('Ảnh đại diện — ' + h.ten,
       '<div class="ktq-anh"><div class="ktq-anh-o" tabindex="0">' + (h.anh ? '<img src="' + E(h.anh) + '">' : '<span>Bấm để chọn ảnh<br>hoặc kéo thả / dán (Ctrl+V)</span>') + '</div>' +
-      '<input type="file" accept="image/*" hidden><p class="ktq-goi">Ảnh được cắt vuông ở giữa. Sau này em vào học chính, ảnh này đi theo em.</p></div>', [
+      '<input type="file" accept="image/*" hidden><p class="ktq-goi">Chọn ảnh xong sẽ có khung mờ để căn đầu và vai. Sau này em vào học chính, ảnh này đi theo em.</p></div>', [
       { chu: 'Xoá ảnh', phu: true, do: true, bam: function (b) { if (!h.anh) return tb('Em chưa có ảnh.'); cho(b); goi('qlKtdv', { viec: 'datAnh', ma: h.ma, xoa: true }).then(function () { dongHop(); tb('Đã xoá ảnh.'); S.ds = null; napHet().then(veDs); }, function (e) { thoi(b); tb(chuLoi(e), true); }); } },
       { chu: 'LƯU ẢNH', bam: function (b) {
         if (!anh) return tb('Chọn ảnh trước đã.', true);
@@ -320,7 +320,17 @@
     var o = hop.than.querySelector('.ktq-anh-o'), inp = hop.than.querySelector('input[type=file]');
     var nhan = function (f) {
       if (!f || !/^image\//.test(f.type)) return;
-      catVuong(f, 400).then(function (d) { anh = d; o.innerHTML = '<img src="' + d + '">'; }, function (e) { tb(e.message, true); });
+      // v1.251.0 — căn ảnh bằng bộ cắt dùng chung js/cat-anh.js (zoom + khung mờ đầu-vai), như dashboard
+      if (!window.CatAnh) return tb('Chưa tải được js/cat-anh.js — tải lại trang.', true);
+      window.CatAnh.mo(f, { tieuDe: 'Căn ảnh — ' + h.ten }).then(function (ctl) {
+        if (!ctl) return;
+        anh = 'data:image/jpeg;base64,' + ctl.xuat(Math.max(96, Math.min(400, ctl.canhGoc())), 0.86);
+        ctl.huy();
+        o.innerHTML = '<img src="' + anh + '">';
+        // bấm Lưu trong bộ cắt = lưu luôn (như dashboard), khỏi bấm LƯU ẢNH lần hai
+        var nut = [].slice.call(hop.nen.querySelectorAll('button')).filter(function (x) { return x.textContent === 'LƯU ẢNH'; })[0];
+        if (nut) nut.click();
+      }, function (e) { tb(e.message, true); });
     };
     o.onclick = function () { inp.click(); };
     inp.onchange = function () { nhan(inp.files[0]); };

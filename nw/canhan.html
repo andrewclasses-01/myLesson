@@ -34,7 +34,6 @@
     <div class="card" id="khuGt" hidden><div class="gioi-thieu" id="gioiThieu"></div></div>
   </section>
 </main>
-<input type="file" id="fileAv" accept="image/*" hidden>
 <input type="file" id="fileBia" accept="image/*" hidden>
 
 <script src="config.js?v=15"></script>
@@ -46,7 +45,7 @@
 <script src="js/thanh.js?v=22"></script>
 <script src="js/bai.js?v=14"></script>
 <script src="js/chat.js?v=26"></script>
-<script src="../js/cat-anh.js?v=1"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
+<script src="../js/cat-anh.js?v=2"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
 <script>
 // v0.4.0 (22/09/2026, mẫu v12 thầy chốt): bìa rộng · avatar to + sao · MỌI nút = icon trắng không nền nằm TRONG bìa
 // (mình: đổi bìa góc trên phải; sửa giới thiệu + chia sẻ link góc dưới phải · cùng lớp/bạn bè: nhắn tin + chia sẻ ·
@@ -102,7 +101,7 @@
         '</div>' +
         (khoa ? '' : '<div class="cn-tabs" id="cnTabs"><button type="button" class="chon" data-t="bai">BÀI VIẾT</button><button type="button" data-t="anh">ẢNH</button><button type="button" data-t="gt">GIỚI THIỆU</button></div>');
       if (cuaToi) {
-        $('#doiAv').onclick = function () { $('#fileAv').click(); };
+        $('#doiAv').onclick = moDoiAnh;
         $('#doiBia').onclick = function () { $('#fileBia').click(); };
         $('#suaGt').onclick = suaGt;
       }
@@ -166,40 +165,51 @@
       try { sessionStorage.removeItem('nwHoSo:' + toi.uid); } catch (e) { }
       ve();
     }
-    $('#fileAv').onchange = async function () {
-      var file = this.files && this.files[0]; this.value = ''; if (!file) return;
-      try {
-        // ⭐ v1.251.0 (05/10/2026) — căn ảnh trước khi lưu: bộ cắt dùng chung ../js/cat-anh.js (zoom + khung mờ đầu-vai)
-        if (!window.CatAnh) throw new Error('Chưa tải được bộ cắt ảnh — tải lại trang.');
-        var ctl = await window.CatAnh.mo(file, { tieuDe: 'Căn ảnh đại diện' });
-        if (!ctl) return;
-        var canh = function (max) { return Math.max(96, Math.min(max, ctl.canhGoc())); };
-        NW.toast('Đang tải ảnh…');
-        var url;
-        if (ph.banThu) {
-          url = URL.createObjectURL(await ctl.xuatBlob(canh(CFG.ANH.avatar), 0.86));
-          await capNhatHoSo({ anh: url });
-        } else if (NW.toi && NW.toi.vaiTro !== 'gv') {
-          // ⭐ 29/09/2026 (thầy chốt) — ẢNH ĐẠI DIỆN CỦA EM LÀ ẢNH CHUNG CẢ HỆ (trang lớp, bảng xếp hạng, myStudent, myTeam…):
-          // đi qua hàm máy chủ `qlAnhDaiDien` (việc `tuDat`, tối đa 5 lần/ngày) — y đường thầy đổi trên dashboard; thầy đổi
-          // sau là đè lên. Luật không cho em tự ghi `anh` nữa. Ảnh cắt vuông: lớn 480 px + nhỏ 96 px.
-          var lon = await ctl.xuatBlob(canh(480), 0.88);
-          var nho = await ctl.xuatBlob(96, 0.82);
-          var kq = await NW.goiHam('qlAnhDaiDien', { viec: 'tuDat', lon: await NW.blobB64(lon), nho: await NW.blobB64(nho) });
-          url = kq.anhNw || '';
-          if (!url) throw new Error('Máy chủ chưa trả ảnh mới — thử lại sau ít phút.');
-          Object.assign(hs, { anh: url }); Object.assign(NW.toi, { anh: url });
-          try { sessionStorage.removeItem('nwHoSo:' + toi.uid); } catch (e) { }
-          ve();
-        } else {
-          var blob = await ctl.xuatBlob(canh(CFG.ANH.avatar), 0.86);   // ảnh của THẦY: như cũ (giờ cũng căn được)
-          url = await NW.taiAnh(blob, 'avatar_' + Date.now().toString(36) + '.jpg');
-          await capNhatHoSo({ anh: url });
+    // ⭐ v1.252.0 (05/10/2026) — KHUNG SỬA + BỘ SƯU TẬP (../js/cat-anh.js CatAnh.moKho): bấm nút máy ảnh trên avatar là mở
+    // khung sửa ảnh đang dùng; nút máy ảnh trong khung nạp ảnh mới; dải "Ảnh đã dùng" chọn lại ảnh cũ (em: máy chủ kho-anh.js).
+    function loiViet(e) { var cau = String((e && e.message) || ''); return /[à-ỹđ]/i.test(cau) ? cau : NW.chuLoiKho(e); }
+    function moDoiAnh() {
+      if (!window.CatAnh || !window.CatAnh.moKho) return NW.toast('Chưa tải được bộ cắt ảnh — tải lại trang.', true);
+      var laEm = !ph.banThu && NW.toi && NW.toi.vaiTro !== 'gv';
+      var url = '';
+      window.CatAnh.moKho({
+        tieuDe: 'Ảnh đại diện',
+        taiKho: function () {
+          if (!laEm) return Promise.resolve({ ds: [], dung: '', hienTai: hs.anh || '' });
+          return NW.goiHam('qlAnhDaiDien', { viec: 'tuKho' }).then(function (k) {
+            return { ds: k.ds || [], dung: k.dung || '', hienTai: k.hienTai ? 'data:image/jpeg;base64,' + k.hienTai : (hs.anh || '') };
+          });
+        },
+        bo: laEm ? function (id) { return NW.goiHam('qlAnhDaiDien', { viec: 'tuBoKho', id: id }); } : null,
+        luu: async function (kq) {
+          try {
+            if (ph.banThu) {
+              url = URL.createObjectURL(await kq.ctl.xuatBlob(Math.max(96, Math.min(CFG.ANH.avatar, kq.ctl.canhGoc())), 0.86));
+              await capNhatHoSo({ anh: url });
+            } else if (laEm) {
+              // ⭐ 29/09/2026 (thầy chốt) — ẢNH ĐẠI DIỆN CỦA EM LÀ ẢNH CHUNG CẢ HỆ (trang lớp, bảng xếp hạng, myStudent, myTeam…):
+              // đi qua hàm máy chủ `qlAnhDaiDien` (việc `tuDat`, tối đa 5 lần/ngày) — y đường thầy đổi trên dashboard; thầy đổi
+              // sau là đè lên. Luật không cho em tự ghi `anh` nữa. Lớn 480 px + nhỏ 96 px + ảnh gốc/id bộ sưu tập + vị trí cắt.
+              var x = window.CatAnh.duLieu(kq, 480, 0.88);
+              var r = await NW.goiHam('qlAnhDaiDien', { viec: 'tuDat', lon: x.lon, nho: x.nho, cat: x.cat, goc: x.goc || '', gocId: x.gocId || '' });
+              url = r.anhNw || '';
+              if (!url) throw new Error('Máy chủ chưa trả ảnh mới — thử lại sau ít phút.');
+              Object.assign(hs, { anh: url }); Object.assign(NW.toi, { anh: url });
+              try { sessionStorage.removeItem('nwHoSo:' + toi.uid); } catch (e) { }
+              ve();
+            } else {
+              var blob = await kq.ctl.xuatBlob(Math.max(96, Math.min(CFG.ANH.avatar, kq.ctl.canhGoc())), 0.86);   // ảnh của THẦY: như cũ (không bộ sưu tập)
+              url = await NW.taiAnh(blob, 'avatar_' + Date.now().toString(36) + '.jpg');
+              await capNhatHoSo({ anh: url });
+            }
+          } catch (e) { throw new Error(loiViet(e)); }
         }
+      }).then(function (daLuu) {
+        if (!daLuu || !url) return;
         NW.toast('Đã đổi ảnh đại diện.');
         var nutAv = $('#nutAv'); if (nutAv) { var im = nutAv.querySelector('img'); if (im) im.src = url; else nutAv.insertAdjacentHTML('afterbegin', '<img src="' + an(url) + '" alt="">'); }
-      } catch (e) { var cau = String((e && e.message) || ''); NW.toast(/[à-ỹđ]/i.test(cau) ? cau : NW.chuLoiKho(e), true); }
-    };
+      });
+    }
     $('#fileBia').onchange = async function () {
       var file = this.files && this.files[0]; this.value = ''; if (!file) return;
       try {

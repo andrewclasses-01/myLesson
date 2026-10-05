@@ -305,40 +305,27 @@
       img.src = url;
     });
   }
+  // ⭐ v1.252.0 — KHUNG SỬA + BỘ SƯU TẬP (js/cat-anh.js CatAnh.moKho): mở là sửa ảnh đang dùng; nút máy ảnh nạp ảnh mới;
+  // ảnh cũ nằm trong dải "Ảnh đã dùng" (máy chủ kho-anh.js, khoá = ID ⇒ chuyển học chính vẫn giữ). Lưu ở hộp là lưu luôn.
   function moAnh(h) {
-    var anh = null;
-    var hop = moHop('Ảnh đại diện — ' + h.ten,
-      '<div class="ktq-anh"><div class="ktq-anh-o" tabindex="0">' + (h.anh ? '<img src="' + E(h.anh) + '">' : '<span>Bấm để chọn ảnh<br>hoặc kéo thả / dán (Ctrl+V)</span>') + '</div>' +
-      '<input type="file" accept="image/*" hidden><p class="ktq-goi">Chọn ảnh xong sẽ có khung mờ để căn đầu và vai. Sau này em vào học chính, ảnh này đi theo em.</p></div>', [
-      { chu: 'Xoá ảnh', phu: true, do: true, bam: function (b) { if (!h.anh) return tb('Em chưa có ảnh.'); cho(b); goi('qlKtdv', { viec: 'datAnh', ma: h.ma, xoa: true }).then(function () { dongHop(); tb('Đã xoá ảnh.'); S.ds = null; napHet().then(veDs); }, function (e) { thoi(b); tb(chuLoi(e), true); }); } },
-      { chu: 'LƯU ẢNH', bam: function (b) {
-        if (!anh) return tb('Chọn ảnh trước đã.', true);
-        cho(b, 'Đang lưu…');
-        goi('qlKtdv', { viec: 'datAnh', ma: h.ma, lon: anh }).then(function () { dongHop(); tb('Đã lưu ảnh.'); S.ds = null; napHet().then(veDs); }, function (e) { thoi(b); tb(chuLoi(e), true); });
-      } }
-    ]);
-    var o = hop.than.querySelector('.ktq-anh-o'), inp = hop.than.querySelector('input[type=file]');
-    var nhan = function (f) {
-      if (!f || !/^image\//.test(f.type)) return;
-      // v1.251.0 — căn ảnh bằng bộ cắt dùng chung js/cat-anh.js (zoom + khung mờ đầu-vai), như dashboard
-      if (!window.CatAnh) return tb('Chưa tải được js/cat-anh.js — tải lại trang.', true);
-      window.CatAnh.mo(f, { tieuDe: 'Căn ảnh — ' + h.ten }).then(function (ctl) {
-        if (!ctl) return;
-        anh = 'data:image/jpeg;base64,' + ctl.xuat(Math.max(96, Math.min(400, ctl.canhGoc())), 0.86);
-        ctl.huy();
-        o.innerHTML = '<img src="' + anh + '">';
-        // bấm Lưu trong bộ cắt = lưu luôn (như dashboard), khỏi bấm LƯU ẢNH lần hai
-        var nut = [].slice.call(hop.nen.querySelectorAll('button')).filter(function (x) { return x.textContent === 'LƯU ẢNH'; })[0];
-        if (nut) nut.click();
-      }, function (e) { tb(e.message, true); });
-    };
-    o.onclick = function () { inp.click(); };
-    inp.onchange = function () { nhan(inp.files[0]); };
-    o.addEventListener('dragover', function (e) { e.preventDefault(); o.classList.add('keo'); });
-    o.addEventListener('dragleave', function () { o.classList.remove('keo'); });
-    o.addEventListener('drop', function (e) { e.preventDefault(); o.classList.remove('keo'); nhan(e.dataTransfer.files[0]); });
-    hop.nen.addEventListener('paste', function (e) { var it = [].slice.call(e.clipboardData.items || []).filter(function (x) { return /^image\//.test(x.type); })[0]; if (it) nhan(it.getAsFile()); });
-    o.focus();
+    if (!window.CatAnh || !window.CatAnh.moKho) return tb('Chưa tải được js/cat-anh.js — tải lại trang (Ctrl+F5).', true);
+    var xong = function (chu) { tb(chu); S.ds = null; napHet().then(veDs); };
+    window.CatAnh.moKho({
+      tieuDe: 'Ảnh đại diện — ' + h.ten,
+      taiKho: function () {
+        return goi('qlKtdv', { viec: 'kho', ma: h.ma }).then(function (r) { return { ds: r.ds || [], dung: r.dung || '', hienTai: h.anh || '' }; });
+      },
+      bo: function (id) { return goi('qlKtdv', { viec: 'boKho', ma: h.ma, id: id }); },
+      luu: function (kq) {
+        var x = window.CatAnh.duLieu(kq, 400, 0.86);
+        return goi('qlKtdv', { viec: 'datAnh', ma: h.ma, lon: x.lon, nho: x.nho, cat: x.cat, goc: x.goc || '', gocId: x.gocId || '' })
+          .then(function (r) { xong(r && r.khoLoi ? 'Đã lưu ảnh (chưa cất được vào bộ sưu tập: ' + r.khoLoi + ').' : 'Đã lưu ảnh.'); },
+            function (e) { throw new Error(chuLoi(e)); });
+      },
+      xoa: h.anh ? function () {
+        return goi('qlKtdv', { viec: 'datAnh', ma: h.ma, xoa: true }).then(function () { xong('Đã xoá ảnh.'); }, function (e) { throw new Error(chuLoi(e)); });
+      } : null
+    });
   }
 
   // ----- chuyển sang học chính: qlHocSinh.themHs cùng ID ⇒ (ảnh) qlAnhDaiDien ⇒ qlKtdv.daChuyen -----
@@ -760,8 +747,6 @@
     '.ktq-mk{display:flex;gap:10px} .ktq-mk div{flex:1;background:var(--xanh-nhat);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column}' +
     '.ktq-mk span{font-size:12px;color:var(--mo);font-weight:700} .ktq-mk b{font-size:20px;letter-spacing:.04em;user-select:all}' +
     '.ktq-goi{color:var(--mo);font-size:12.5px;margin:10px 0} .ktq-tn{width:100%;font:500 13px var(--font);border:1px solid var(--vien-dam);border-radius:10px;padding:10px;resize:vertical}' +
-    '.ktq-anh{display:flex;flex-direction:column;align-items:center} .ktq-anh-o{width:220px;height:220px;border-radius:50%;border:2px dashed var(--vien-dam);display:grid;place-items:center;text-align:center;color:var(--nhat);font-size:13px;cursor:pointer;overflow:hidden}' +
-    '.ktq-anh-o.keo{border-color:var(--xanh);background:var(--xanh-nhat)} .ktq-anh-o img{width:100%;height:100%;object-fit:cover}' +
     '.ktq-menu{position:fixed;z-index:125;background:#fff;border:1px solid var(--vien);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.15);padding:6px;display:flex;flex-direction:column;min-width:220px}' +
     '.ktq-menu button{border:0;background:none;text-align:left;padding:9px 12px;border-radius:8px;font:600 13.5px var(--font);cursor:pointer;color:var(--chu)} .ktq-menu button:hover{background:#F2F6F5}' +
     '.ktq-toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);opacity:0;transition:.25s;z-index:200;background:#16232A;color:#fff;padding:10px 16px;border-radius:10px;font:600 13.5px var(--font);max-width:90vw}' +

@@ -553,6 +553,14 @@
         if (o.kt.taiLai) lam.push('tải lại trang ' + o.kt.taiLai + ' lần');
         if (lam.length) dg.push('Quá trình: ' + lam.join(' · '));
         if (o.kt.gioiThieuMs != null) dg.push('Xem hướng dẫn ' + phut(o.kt.gioiThieuMs) + ' · làm thử sai ' + (o.kt.thuSai || 0) + ' lần');
+        // v1.250.0 (AWord Đợt 471/473, 05/10): lỗi bàn phím em tự báo · chữ tới muộn · loại máy
+        (o.kt.thuLoi || []).forEach(function (x) {
+          dg.push('<span class="ktbc-bpl">⌨️ <b>Em báo bàn phím lỗi</b> ở câu thử ' + x.cau + ' · máy nhận: <code>' + E(x.chu || '') + '</code>' + (x.may ? ' · ' + E(x.may) : '') + '</span>');
+        });
+        if ((o.kt.thuTre || []).length) dg.push('Chữ tới muộn lúc làm thử: <b>' + o.kt.thuTre.length + ' lần</b> (máy đã đợi rồi chấm lại)');
+        var tre = rv.filter(function (r) { return r.tre; }).length;
+        if (tre) dg.push('Chữ cuối tới muộn ở <b>' + tre + ' câu</b> bài thật (máy đã bổ sung)');
+        if (o.kt.may) dg.push('Thiết bị: ' + E(o.kt.may));
         return '<div class="ktbc-pt-o"><div class="ktbc-pt-ten">' + o.b.ma + '. ' + E(o.b.ten) + '</div><ul>' + dg.map(function (x) { return '<li>' + x + '</li>'; }).join('') + '</ul>' + bieuDo(o) + '</div>';
       }).join('') + '</div>';
       // bảng từng câu
@@ -768,6 +776,7 @@
     '.c-dung{color:#1F7A50;font-weight:800} .c-tam{color:#2D7FB8;font-weight:800} .c-nhe{color:#B9781C;font-weight:800} .c-nang{color:#C93A3F;font-weight:800} .nhat{color:var(--nhat)}' +
     '.ktbc-pt{display:flex;flex-direction:column;gap:12px} .ktbc-pt-o{border:1px solid var(--vien);border-radius:12px;padding:10px 14px} .ktbc-pt-ten{font-weight:800;font-size:13.5px}' +
     '.ktbc-pt ul{margin:6px 0;padding-left:18px;font-size:13px;line-height:1.6} .ktbc-pt .canh{color:#B4363B} .ktbc-pt .tot{color:#1F7A50}' +
+    '.ktbc-pt .ktbc-bpl{display:inline-block;background:#FFF6E5;border:1px solid #F1C27A;border-radius:8px;padding:1px 8px;color:#633806} .ktbc-bpl code{font-size:12px}' +
     '.ktbc-bd-chu{font-size:11px;color:var(--mo);display:flex;align-items:center;gap:4px;flex-wrap:wrap} .ktbc-bd-chu i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-left:6px}' +
     '.ktbc-nx label{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-weight:800;font-size:13px} .ktbc-nx textarea{font:500 13.5px var(--font);border:1px solid var(--vien-dam);border-radius:10px;padding:10px;resize:vertical;line-height:1.55}' +
     '.ktbc-nx .in-chu{display:none;white-space:pre-wrap;font-weight:500;font-size:13.5px;line-height:1.55}' +

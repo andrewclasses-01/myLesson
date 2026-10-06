@@ -2053,6 +2053,16 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-ct-bang td.mo{color:#B5C2BF}
 .hq-ct-bang td i.m{display:inline-block; width:calc(9px*var(--k)); height:calc(9px*var(--k)); border-radius:50%; margin-right:7px}
 .hq-loai{font:800 calc(9.5px*var(--k))/1 var(--font); letter-spacing:.05em; padding:calc(4px*var(--k)) calc(7px*var(--k)); border-radius:99px}
+.hq-loai.danglam{background:#E6F0FF; color:#2B5FD0} .hq-loai.danglam::before{content:''; display:inline-block; width:.55em; height:.55em; border-radius:50%; background:#3E7BFA; margin-right:.4em; vertical-align:.06em; animation:hqDangLam 1.2s ease-in-out infinite}
+@keyframes hqDangLam{50%{opacity:.2}}
+.hq-loai.chuaxong{background:#EEF2F1; color:#5B6B67} .hq-loai.duatop{background:#F1E9FF; color:#6D28D9}
+/* ⭐ v1.260.0 — lượt ĐẠT 100% ĐẦU TIÊN của act: cả dòng xanh lá chuyển sắc + vạch trái + ★ */
+.hq-ct-bang tr.dau100, .hq-feed tr.dau100{background:linear-gradient(90deg,#BBF7D0 0%,#DCFCE7 45%,#F0FDF4 100%)}
+.hq-ct-bang tr.dau100 td, .hq-feed tr.dau100 td{color:#14532D; font-weight:800}
+.hq-ct-bang tr.dau100 td:first-child, .hq-feed tr.dau100 td:first-child{box-shadow:inset 4px 0 0 #16A34A}
+.hq-ct-bang tr.dau100 td.pt.full{color:#15803D}
+.hq-ct-bang tr.dau100:hover td{background:rgba(255,255,255,.35)}
+.sao100{color:#16A34A; margin-left:.4em; font-size:1.1em; text-shadow:0 0 6px rgba(34,197,94,.55)}
 .hq-loai.nop{background:var(--la-nhat); color:#1F7A4D} .hq-loai.dodang{background:var(--do-nhat); color:#B03A3E} .hq-loai.causai{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.luyen{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.do{background:var(--do-nhat); color:#B03A3E} .hq-loai.video{background:var(--duong-nhat); color:#2B5FD0} .hq-loai.nghe{background:var(--vang-nhat); color:#8a5b0e}
 /* hàng CHIP mục dưới bảng */
 .hq-ct-chip{flex:none; display:flex; gap:calc(6px*var(--k)); flex-wrap:wrap; align-items:center; margin-top:calc(8px*var(--k))}
@@ -7605,6 +7615,17 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ⛔ `HQ_MOC_GOP` = lúc AWord Đợt 383 lên sống; 0 = chưa áp (mọi lượt tính như cũ).
   var HQ_MOC_GOP = 1790271900000;   // v1.147.1 — 25/09/2026 00:45 (+07): AWord Đợt 383 `ba22cd1` lên sống 00:45:15
   var HQ_GIAY_DIEM0_TOI_THIEU = 120;
+  // ⭐⭐ v1.260.0 (thầy chốt 06/10) — LƯỢT CHƯA XONG KHÔNG PHẢI BỎ DỞ. Nhật ký ván `done:false` không có attemptId trước đây
+  // luôn là `do` (BỎ DỞ) — kể cả ván em ĐANG làm (thầy mở pop-up đúng lúc em làm: 3 ca 18:49–18:53 06/10, cả 3 hoá ra
+  // đang làm, MẠC MINH KHANG nộp 29/30 lúc 18:59) và ván AWord Đợt 469 GIỮ trên máy em chờ làm tiếp (CONTINUE, cùng tài liệu
+  // nhật ký, làm xong là thành NỘP). Hai loại mới (giờ = `updatedAt` của AWord, theo giờ máy chủ — Đợt 422):
+  //   danglam  — nhịp ghi < 3 phút (AWord ghi mỗi phút) ⇒ ĐANG LÀM.
+  //   chuaxong — ván từ mốc Đợt 486 (CONTINUE mới chạy thật), chưa quá 7 ngày từ nhịp cuối (`HAN_MS` của core/lam-tiep.js)
+  //              ⇒ CHƯA XONG: em còn giữ ván, mở lại là làm tiếp. Quá 7 ngày AWord thôi giữ ⇒ BỎ DỞ như cũ.
+  // Không loại nào đếm vào "bỏ dở"; giờ hoạt động vẫn cộng như mọi lượt.
+  var HQ_DANG_LAM_MS = 3 * 60000;
+  var HQ_MOC_GIU = 1791214680000;   // 05/10/2026 22:38 (+07) — AWord Đợt 486 `93c50a7` lên sống
+  var HQ_GIU_MS = 7 * 24 * 3600000;
   // ⭐⭐ v1.175.0 (28/09/2026, thầy chốt) — GIỜ MÁY CHỦ CHO DỮ LIỆU CŨ. Trước AWord Đợt 422 / web v1.174.0 mọi mốc giờ
   // học sinh ghi là đồng hồ MÁY EM: máy THANH PHƯƠNG (A1A) chậm đúng 1 ngày 3 phút ⇒ bài 28/9 vẽ thành 27/9, lượt
   // nộp trễ thành đúng hạn. Kho `scores` có `createTime` (giờ máy chủ, chung.js giữ ở `sv`) ⇒ d = sv − createdAt.
@@ -7726,7 +7747,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     //     điểm của lượt dở, giờ HOẠT ĐỘNG của ván (7,8 phút, không phải 75 phút đồng hồ tường);
     //   · ván đã NỘP bằng mã khác (19:15, 17/30) mà nháp giữa ván vẫn bị gửi bù (14/30 lúc 20:02) ⇒ lượt dở là
     //     BẢN SAO của ván đó ⇒ bỏ, không cộng giờ lần hai.
-    var doTheoMoc = [], boQua = {};
+    var doTheoMoc = [], boQua = {}, batDauMoi = 0;
     ((em && em.luot) || []).forEach(function (l) {
       var m = /^hw(\d{13})x/.exec(String(l.id || ''));
       if (l.dd && m) doTheoMoc.push({ moc: +m[1], l: l });
@@ -7745,6 +7766,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     }
     (HQ.act[ma] || []).forEach(function (d) {
       if (A.khoaEm(d) !== k) return;               // v1.134.0 — lượt luyện có `ma` thì theo mã
+      if (+d.createdAt > batDauMoi) batDauMoi = +d.createdAt;   // v1.260.0 — ván bắt đầu muộn nhất (kể cả ván bị lọc bên dưới)
       var ld = doTheoMoc.length && !d.mistakes ? timDo(+d.createdAt || 0) : null;
       if (ld && ld.id !== d.attemptId) {
         if (d.attemptId) boQua[ld.id] = 1;         // v1.171.1 — bản sao của ván đã nộp mã khác
@@ -7753,7 +7775,10 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (d.attemptId) daCo[d.attemptId] = 1;
       var moi = HQ_MOC_GOP && (+d.createdAt || 0) >= HQ_MOC_GOP;
       var diem = +d.score || 0;
-      if (moi && diem <= 0) {
+      // ⭐ v1.260.0 — lượt CHƯA XONG (chưa tới đích, chưa nộp gì): nhịp ghi < 3 phút ⇒ em ĐANG LÀM (hiện kể cả < 2 phút).
+      var chuaXong = !d.done && !d.attemptId && !d.mistakes && d.mode === 'submit';
+      var dangLam = chuaXong && A.gioNay() - (+d.updatedAt || 0) < HQ_DANG_LAM_MS;
+      if (moi && diem <= 0 && !dangLam) {
         var hd = d.activeMs != null && isFinite(+d.activeMs) ? +d.activeMs : (+d.timeMs || 0);
         if (hd < HQ_GIAY_DIEM0_TOI_THIEU * 1000) return;   // điểm 0 + dưới 2 phút hoạt động ⇒ bỏ hẳn
       }
@@ -7768,8 +7793,10 @@ tr.qm-hang-tam td{background:#fffbeb}
       else if (d.mode === 'submit' && d.attemptId) loai = d.done ? 'nop' : 'dodang';
       else if (d.done && d.mode === 'submit') loai = moi ? 'do' : 'nop';   // lượt mới làm hết mà 0 điểm ⇒ không nộp
       else if (d.done) loai = 'luyen';
+      else if (dangLam) loai = 'danglam';
+      else if (chuaXong && (+d.createdAt || 0) >= HQ_MOC_GIU && A.gioNay() - (+d.updatedAt || +d.createdAt || 0) < HQ_GIU_MS) loai = 'chuaxong';
       else loai = 'do';
-      luot.push({ luc: lucPl(d), giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
+      luot.push({ luc: lucPl(d), capNhat: +d.updatedAt || +d.createdAt || 0, giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
                   diem: diem, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes,
                   // v1.148.0 — nối BÀI LÀM: lượt đã nộp (NỘP / NỘP DỞ) ⇒ results/{attemptId}; lượt khác ⇒ practiceLog/{mã}/entries/{id}
                   code: ma, pl: d._id || '', rid: d.mode === 'submit' && d.attemptId ? String(d.attemptId) : '', coBl: !!d.coReview });
@@ -7786,8 +7813,21 @@ tr.qm-hang-tam td{background:#fffbeb}
       }
       luot.push({ luc: +l.luc || 0, giay: gi, moTab: g, giayGame: g, uoc: uoc, loai: l.dd ? 'dodang' : 'nop', diem: +l.diem || 0, tong: +l.tong || 0, code: ma, pl: '', rid: String(l.id || ''), tay: !!l.tay });
     });
-    var ra = { giay: 0, moTab: 0, uoc: false, nop: 0, luyen: 0, do: 0, dodang: 0, causai: 0, luot: luot };
-    luot.forEach(function (l) { ra.giay += l.giay; ra.moTab += Math.max(l.moTab, l.giay); if (l.uoc) ra.uoc = true; ra[l.loai]++; });
+    // ⭐⭐ v1.260.0 (thầy chốt 06/10) — LƯỢT ĐẠT 100% ĐẦU TIÊN (`dau100`, tô cả dòng) + ĐUA TOP: sau lượt đó, mọi lượt
+    // bỏ giữa chừng (BỎ DỞ · CHƯA XONG) của act này là em CÀY để lên hạng (AWord Đợt 468 mở ☰ Start again cho em đã 100%),
+    // không phải bỏ dở ⇒ cờ `duaTop` (giữ nguyên `loai` để mọi phép tính điểm như cũ), nhãn ĐUA TOP, không đếm vào "bỏ dở".
+    // CHƯA XONG chỉ cho ván dở CUỐI: sau nhịp cuối của nó em đã bắt đầu ván KHÁC của act này (máy khác / tab thứ hai /
+    // AWord thôi giữ) ⇒ ván đó không còn ai làm tiếp ⇒ BỎ DỞ như cũ (đo 06/10: HÀ PHƯƠNG mở 3 tab chồng giờ 11:53–12:12).
+    luot.forEach(function (l) {
+      if (l.loai === 'chuaxong' && (batDauMoi > l.capNhat || luot.some(function (m) { return m !== l && (m.luc || 0) > l.capNhat; }))) l.loai = 'do';
+    });
+    var moc100 = null;
+    luot.slice().sort(function (x, y) { return (x.luc || 0) - (y.luc || 0); }).forEach(function (l) {
+      if (moc100 == null) { if (l.loai === 'nop' && hqLuotDat(l, ma)) { l.dau100 = true; moc100 = l.luc || 0; } return; }
+      if (!l.mistakes && (l.loai === 'dodang' || l.loai === 'do' || l.loai === 'chuaxong')) l.duaTop = true;
+    });
+    var ra = { giay: 0, moTab: 0, uoc: false, nop: 0, luyen: 0, do: 0, dodang: 0, causai: 0, danglam: 0, chuaxong: 0, duatop: 0, luot: luot };
+    luot.forEach(function (l) { ra.giay += l.giay; ra.moTab += Math.max(l.moTab, l.giay); if (l.uoc) ra.uoc = true; ra[l.duaTop ? 'duatop' : l.loai]++; });
     return ra;
   }
   function hqGioVideo(ten) { var d = (HQ.video || {})[ten]; return d ? giayTongCuaEm(d.phu, d.cham) : 0; }
@@ -8255,7 +8295,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   //     ⛔ Bấm chọn em KHÔNG vẽ lại danh sách/biểu đồ (chỉ đổi class + ruột hồ sơ) — vẽ lại giữa 2 cú bấm là mất `dblclick`.
   // ================================================================
   var HQ_GD_KHOANG = [['1', 'Hôm nay'], ['3', '3 ngày'], ['7', '7 ngày'], ['giao', 'Từ ngày giao']];
-  var HQ_NHAN_LOAI = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', video: 'XEM', nghe: 'NGHE' };
+  var HQ_NHAN_LOAI = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', video: 'XEM', nghe: 'NGHE', danglam: 'ĐANG LÀM', chuaxong: 'CHƯA XONG', duatop: 'ĐUA TOP' };   // v1.260.0 — 3 nhãn cuối
   var HQ_THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   function hqEmTinh() { var kt = hqKt(hqSoDangXem()); return hqHocSinh(HQ.t).filter(function (h) { return !kt[A.khoaTen(h.ten)]; }); }
   function hqThuNgay(ms) { var d = new Date(ms); return HQ_THU[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1); }
@@ -8294,7 +8334,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           var dung = Math.max(0, +l.diem || 0), c = CHUAN[a.ma], soCau = (c && +c.soCau > 0) ? +c.soCau : null;
           var mauSo = l.loai === 'do' ? soCau : (l.loai === 'dodang' ? (hqMauAct(a.ma) || null) : (+l.tong || null));
           var nop = !l.mistakes && (l.loai === 'nop' || l.loai === 'dodang');
-          ra.push({ h: h, ma: a.ma, muc: hqNhanAct(a), mau: MAU_TT[j % MAU_TT.length], k: 'a' + j, loai: l.loai, luc: l.luc, giay: l.giay, uoc: l.uoc,
+          ra.push({ h: h, ma: a.ma, muc: hqNhanAct(a), mau: MAU_TT[j % MAU_TT.length], k: 'a' + j, loai: l.duaTop ? 'duatop' : l.loai, dau100: !!l.dau100, luc: l.luc, giay: l.giay, uoc: l.uoc,
                     dung: dung, mauSo: mauSo, nop: nop, pt: nop ? hqPtLuot(l, a.ma) : null, full: nop && hqLuotDat(l, a.ma) });
         });
       });
@@ -8344,7 +8384,8 @@ tr.qm-hang-tam td{background:#fffbeb}
         ng = kh;
         h += '<tr class="ngay"><td colspan="7">' + (homNay ? 'Hôm nay · ' : x.luc >= nay - 864e5 ? 'Hôm qua · ' : '') + hqThuNgay(x.luc) + '</td></tr>';
       }
-      h += '<tr' + (Date.now() - x.luc < 3600000 ? ' class="moi-toanh"' : '') + ' data-hq-em="' + A.chuAnToan(x.h.ten) + '" title="' + A.chuAnToan(x.h.ten) + ' — đúp để xem chi tiết em">' +
+      var lopTr = [Date.now() - x.luc < 3600000 ? 'moi-toanh' : '', x.dau100 ? 'dau100' : ''].filter(Boolean).join(' ');   // v1.260.0 — lượt 100% đầu tiên
+      h += '<tr' + (lopTr ? ' class="' + lopTr + '"' : '') + ' data-hq-em="' + A.chuAnToan(x.h.ten) + '" title="' + A.chuAnToan(x.h.ten) + ' — đúp để xem chi tiết em">' +
         '<td class="luc"><b>' + hqGioPhutLuc(x.luc) + '</b>' + (homNay ? '<small>' + hqTruoc(x.luc) + '</small>' : '') + '</td>' +
         '<td><span class="ten">' + veEmAvDb(x.h.ten, slug, lopGoc) + '<span' + tenGonTitle(x.h.ten) + '>' + tenGon(x.h.ten) + '</span></span></td>' +
         '<td><span class="muc"><i style="background:' + x.mau + '"></i>' + A.chuAnToan(x.muc) + '</span></td>' +
@@ -8917,7 +8958,20 @@ tr.qm-hang-tam td{background:#fffbeb}
         // v1.148.0 (thầy chốt) — KHÔNG vẽ chấm lượt LUYỆN TẬP (CÂU SAI = Start with mistakes, LUYỆN cũ): mẫu số chỉ là số câu sai ⇒ % sai trên đồ thị.
         return { id: 'a' + j + '-' + q, code: l.code, pl: l.pl, rid: l.rid, coBl: l.coBl, tay: !!l.tay,
                  luc: l.luc, giay: l.giay, moTab: l.moTab, uoc: l.uoc, loai: l.loai, dung: dung, mauSo: mauSo, pt: pt, mistakes: !!l.mistakes,
+                 dau100: !!l.dau100, duaTop: !!l.duaTop, dat: hqLuotDat(l, a.ma),
                  ve: !l.mistakes && l.loai !== 'luyen' && l.loai !== 'causai' && pt != null && (l.loai !== 'do' || dung > 0) };
+      });
+      // ⭐⭐ v1.260.0 (thầy chốt 06/10) — SAU LƯỢT 100% ĐẦU TIÊN em đã xong nhiệm vụ, lượt sau là CÀY lên hạng ⇒ đồ thị tiến triển
+      // CHỈ vẽ lượt lại đạt tối đa VÀ hiệu suất (câu đúng / giây làm thật) ≥ lượt vẽ ngay trước — lượt hụt / bỏ giữa chừng không
+      // kéo đường xuống (bảng vẫn đủ mọi lượt). Lượt không có giờ (nhập tay cũ) đạt tối đa thì vẽ, không làm mốc so.
+      var qua100 = false, hsTruoc = null;
+      luot.forEach(function (l) {
+        if (!qua100) { if (l.dau100) { qua100 = true; hsTruoc = l.giay > 0 ? l.dung / l.giay : null; } return; }
+        if (!l.ve) return;
+        if (!l.dat) { l.ve = false; return; }
+        var hs = l.giay > 0 ? l.dung / l.giay : null;
+        if (hs != null && hsTruoc != null && hs < hsTruoc) { l.ve = false; return; }
+        if (hs != null) hsTruoc = hs;
       });
       return { k: 'a' + j, ma: a.ma, nhan: hqNhanAct(a), mau: MAU_TT[j % MAU_TT.length], soCau: soCau, luot: luot };
     });
@@ -8948,12 +9002,13 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   // Bảng từng lượt (mới nhất trước) — Kết quả tách 2 cột thẳng hàng: "x/y" | "%".
   function hqCtDong(dl, mc) {
-    var nhanLoai = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', nghe: 'NGHE', video: 'XEM' };   // v1.148.0 — CÂU SAI / LUYỆN ⇒ LUYỆN TẬP · v1.151.0 — NỘP DỞ ⇒ BỎ DỞ (thầy chốt)
+    var nhanLoai = HQ_NHAN_LOAI;   // v1.260.0 — dùng chung bảng nhãn (có ĐANG LÀM · CHƯA XONG · ĐUA TOP). v1.148.0 — CÂU SAI / LUYỆN ⇒ LUYỆN TẬP · v1.151.0 — NỘP DỞ ⇒ BỎ DỞ (thầy chốt)
     var dong = [];
     dl.acts.forEach(function (x) {
       if (!mc.co(x.k)) return;
       x.luot.forEach(function (l) {
-        dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: l.loai, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[l.loai], tay: !!l.tay, code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
+        var lh = l.duaTop ? 'duatop' : l.loai;
+        dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: lh, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[lh], tay: !!l.tay, dau100: l.dau100, code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
                     xy: l.mauSo ? l.dung + '/' + l.mauSo : (l.loai === 'do' ? (l.dung ? l.dung + ' câu' : '—') : '—'),
                     pt: l.mistakes ? '—' : (l.pt != null ? l.pt + '%' : ''), mo: l.mistakes || (l.loai === 'do' && !l.dung), full: !l.mistakes && l.pt >= 100 });
       });
@@ -8995,7 +9050,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     return '<table class="hq-ct-bang"><tr><th>Lúc</th><th>Mục</th><th>Loại</th><th class="r">Phút</th><th class="r" colspan="2">Kết quả</th></tr>' +
       dong.slice(0, 300).map(function (l) {
         var dLuc = new Date(l.luc || 0);
-        return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (l.id && HQ.ct && HQ.ct.chonId === l.id ? ' class="chon"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '">' + l.nhan + '</span>' + (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
+        // ⭐ v1.260.0 — lượt ĐẠT 100% ĐẦU TIÊN của act: tô cả dòng xanh + ★ (thầy thấy ngay em xong nhiệm vụ ở lượt nào)
+        var lopTr = [l.id && HQ.ct && HQ.ct.chonId === l.id ? 'chon' : '', l.dau100 ? 'dau100' : ''].filter(Boolean).join(' ');
+        return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (lopTr ? ' class="' + lopTr + '"' : '') + (l.dau100 ? ' title="Lần đầu đạt 100% ' + A.chuAnToan(l.muc) + ' — em xong nhiệm vụ ở lượt này"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '">' + l.nhan + '</span>' + (l.dau100 ? '<span class="sao100">★</span>' : '') + (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
           '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '"' + (l.tPt ? ' title="' + A.chuAnToan(l.tPt) + '"' : '') + '>' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }
@@ -9068,7 +9125,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       xx += bw;
     });
     [0, 25, 50, 75, 100].forEach(function (v) { var y = T + gh * (1 - v / 100); svg += '<line class="luoi" x1="' + L + '" x2="' + (W - R) + '" y1="' + y + '" y2="' + y + '"/><text x="' + (L - 8 * k) + '" y="' + (y + f * .35) + '" text-anchor="end">' + v + '%</text>'; });
-    var nhanLoai = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ' };
+    var nhanLoai = HQ_NHAN_LOAI;
     acts.forEach(function (x, j) {
       var ls = x.luot.filter(function (l) { return l.ve && pos.has(l); }); if (!ls.length) return;
       var full = ls.some(function (l) { return l.pt >= 100; }), mau = full ? XANH_FULL : x.mau;
@@ -9084,7 +9141,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         var daNop = l.loai === 'nop' || l.loai === 'dodang';
         var cx = pts[q][0], cy = pts[q][1], dodo = l.loai === 'do', mc2 = l.pt >= 100 ? XANH_FULL : x.mau, r = (l.loai === 'nop' ? 4.8 : 3.8) * k, tre = 120 + q * 50;   // v1.148.0 — chấm nhỏ lại (cũ 7 / 5,5)
         svg += '<circle data-id="' + l.id + '" class="diem' + ((l.loai === 'luyen' || l.loai === 'causai') ? ' luyen' : '') + (dodo ? ' dodo' : '') + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '" fill="' + mc2 + '" style="animation-delay:' + tre + 'ms' + (!daNop ? ';stroke:' + mc2 : '') + '"><title>' +
-          A.chuAnToan(x.nhan) + ' · ' + hqChuLuc(l.luc) + ' · ' + nhanLoai[l.loai] + ' · ' + l.dung + '/' + l.mauSo + ' (' + l.pt + '%) · ' + hqChuPhut(l.giay) + '</title></circle>';
+          A.chuAnToan(x.nhan) + ' · ' + hqChuLuc(l.luc) + ' · ' + nhanLoai[l.duaTop ? 'duatop' : l.loai] + ' · ' + l.dung + '/' + l.mauSo + ' (' + l.pt + '%) · ' + hqChuPhut(l.giay) + '</title></circle>';
         if (mot) svg += '<text class="nhan-diem' + (dodo ? ' dodo' : '') + '" x="' + cx + '" y="' + (cy - r - 6 * k) + '" text-anchor="middle"' + (l.pt >= 100 ? ' style="fill:#15803D"' : '') + '>' + l.pt + '</text>';
       });
     });
@@ -9249,9 +9306,9 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<button type="button" class="bm-dong" id="hqCtDong" title="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>';
     var bang = '<div class="hq-ct-khoi"><h4>Lượt luyện tập<span id="hqCtNgayO">' + hqCtNhanNgay() + '</span><button type="button" class="nt-nut" id="hqCtNhapTay"' + (HQ_NT_HIEN ? '' : ' hidden') + ' title="Lượt nộp của em không lên được kho? Thầy nhập điểm tay ở đây">+ Nhập điểm tay</button><span class="dem" id="hqCtDem">' + dong.length + ' lượt</span></h4><div class="hq-ct-cuon">' + hqCtBang(dong) + '</div>' + hqCtChip(dl, mc, dong.length) + '</div>';
     if (!ct.zoom) {
-      var gVideo = hqGioVideo(ten), gNghe = hqGioNghe(ten), gAct = 0, nop = 0, luyen = 0, doo = 0, soNgay = 0;
+      var gVideo = hqGioVideo(ten), gNghe = hqGioNghe(ten), gAct = 0, nop = 0, luyen = 0, doo = 0, dua = 0, dang = 0, chua = 0, soNgay = 0;
       // v1.147.0 — "luyện" gồm LUYỆN cũ + CÂU SAI. v1.151.0 — lượt dở (dodang) nay hiện là BỎ DỞ ⇒ đếm vào "bỏ dở" cho khớp bảng.
-      dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'nop') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else doo++; }); });
+      dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'nop') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else if (l.duaTop) dua++; else if (l.loai === 'danglam') dang++; else if (l.loai === 'chuaxong') chua++; else doo++; }); });   // v1.260.0 — ĐUA TOP · đang làm/chưa xong tách khỏi bỏ dở
       Object.keys(dl.theo).forEach(function (kh) { var n = dl.theo[kh], a2 = 0; Object.keys(n[2]).forEach(function (kk) { a2 += n[2][kk]; }); if (n[0] + n[1] + a2 > 0) soNgay++; });
       var tong = gVideo + gNghe + gAct, soNgayToiNay = Math.max(1, Math.round((dl.nay - dl.giao) / 86400000) + 1);
       // ⭐ v1.153.0 (thầy chốt 25/09) — ĐIỂM TỐT NHẤT của TỪNG act (không chỉ act cao nhất; video/nghe không tính):
@@ -9269,7 +9326,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       hop.innerHTML = dau + '<div class="hq-ct-giua"><div class="hq-ct-trai"><div class="hq-tiles">' +
           tile('Tổng luyện tập', hqChuGio(tong), (coBaiGiangKh(b) ? 'video ' + hqPhut(gVideo) + 'p' + (phuVd != null ? ' (phủ ' + phuVd + '%)' : '') + ' · ' : '') + (coBaiNgheKh(b) ? 'nghe ' + hqPhut(gNghe) + 'p' + (phuNg != null ? ' (' + phuNg + '%)' : '') + ' · ' : '') + 'act ' + hqPhut(gAct) + 'p') +
           tile('Ngày có luyện', soNgay + ' <small>/ ' + soNgayToiNay + ' ngày</small>', 'trung bình ' + Math.round(hqPhut(tong) / soNgayToiNay) + ' phút/ngày') +
-          tile('Lượt AWord', String(nop + luyen + doo), nop + ' nộp · ' + luyen + ' luyện tập · ' + doo + ' bỏ dở') +
+          tile('Lượt AWord', String(nop + luyen + doo + dua + dang + chua), nop + ' nộp · ' + luyen + ' luyện tập · ' + doo + ' bỏ dở' + (dua ? ' · ' + dua + ' đua top' : '') + (dang ? ' · ' + dang + ' đang làm' : '') + (chua ? ' · ' + chua + ' chưa xong' : '')) +
           '<div class="hq-tile hq-tot"><span>Điểm tốt nhất</span><div class="hq-tot-ds' + (totDs.length > 3 ? ' hai' : '') + '">' + (totDs.length ? totDs.map(function (d) {
             return '<div' + (d.tit ? ' title="' + A.chuAnToan(d.tit) + '"' : '') + '><i style="background:' + d.x.mau + '"></i><em>' + A.chuAnToan(d.x.nhan) + '</em><b class="' + (d.pt == null ? 'rong' : d.dang ? 'dang' : d.pt >= 100 ? 'full' : '') + '">' + (d.pt == null ? '—' : d.pt + '<small>%</small>') + '</b></div>';
           }).join('') : '<div class="rong">chưa có act</div>') + '</div></div>' +

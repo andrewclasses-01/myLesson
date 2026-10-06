@@ -139,6 +139,24 @@
       }).then(function (sub) { return luuMay(me, sub); });
     }).then(function () { ls(K_BAT, '1'); veNut(); });
   }
+  // ⭐ v1.256.0 (06/10/2026, thầy chốt) — ĐĂNG XUẤT là GỠ thông báo của máy này: xoá tài liệu máy (lúc phiên CÒN sống) + huỷ
+  //   đăng ký đẩy. Quyền thông báo của trình duyệt giữ nguyên ⇒ đăng nhập lại, bấm "Bật thông báo" là bật ngay (không hỏi lại).
+  //   Tối đa 2,5 giây — mạng chậm cũng không giữ chân nút Đăng xuất.
+  function goKhiThoat() {
+    return Promise.race([tatNgam(), new Promise(function (r) { setTimeout(r, 2500); })]);
+  }
+  function tatNgam() {
+    ls(K_BAT, null); ls(K_MOC, null);
+    if (!('serviceWorker' in navigator)) return Promise.resolve();
+    return navigator.serviceWorker.getRegistration(GOC).then(function (reg) {
+      return reg && reg.pushManager.getSubscription();
+    }).then(function (sub) {
+      if (!sub) return;
+      return sha1(sub.endpoint).then(function (id) {
+        return toi().then(function (me) { if (me) return me.f.fs.deleteDoc(me.f.fs.doc(me.f.db, 'dayThietBi', id)).catch(function () { }); });
+      }).catch(function () { }).then(function () { return sub.unsubscribe(); });
+    }).catch(function (e) { console.warn('[day] gỡ', e); });
+  }
   function tat() {
     ls(K_BAT, null); ls(K_MOC, null);
     var xong = !('serviceWorker' in navigator) ? Promise.resolve() : navigator.serviceWorker.getRegistration(GOC).then(function (reg) {
@@ -156,6 +174,10 @@
     if (trangThai() !== 'bat' || dangThayEm()) return;
     Promise.all([dangKySw(), toi()]).then(function (kq) {
       var reg = kq[0], me = kq[1]; if (!me) return;
+      // v1.256.0 — người KHÁC đăng nhập trên trình duyệt này (người trước không bấm Đăng xuất) ⇒ KHÔNG chuyển máy sang người mới
+      //   (họ chưa từng bật) — gỡ hẳn; người mới muốn nhận thì tự bấm "Bật thông báo".
+      var uidCu = String(ls(K_MOC) || '').split('|')[0];
+      if (uidCu && uidCu !== me.uid) return tatNgam().then(veNut);
       return reg.pushManager.getSubscription().then(function (s) {
         return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: u8(KHOA_CONG_KHAI) });
       }).then(function (sub) {
@@ -303,7 +325,7 @@
     };
   }
 
-  window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop, moGuiThay: moGuiThay, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
+  window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, goKhiThoat: goKhiThoat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop, moGuiThay: moGuiThay, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
   setTimeout(dongBo, 3000);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') veNut(); });
 })();

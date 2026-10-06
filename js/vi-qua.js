@@ -443,6 +443,10 @@
       CaiApp.gan(n);
       n.addEventListener('click', function () { document.body.classList.remove('mo-menu'); });
     }
+    // ⭐ v1.256.0 — Đăng xuất GỠ thông báo đẩy của máy này trước (js/day.js, tối đa 2,5 giây) rồi mới thoát.
+    function thoatRa() {
+      (window.ACDay ? ACDay.goKhiThoat() : Promise.resolve()).then(function () { A.thoat(); location.href = 'index.html'; });
+    }
     // ⭐ v1.255.0 (06/10/2026, thầy chốt) — "Bật thông báo" (js/day.js) ngay TRÊN "Cài app vào máy"; nhãn tự đổi theo trạng thái.
     var MUC_TB = window.ACDay ? { nh: 'Bật thông báo', mo: 'Báo ngay khi có tin nhắn mới', ic: ACDay.IC.chuong, khoa: 'tb' } : null;
 
@@ -456,9 +460,7 @@
         (MUC_TB ? nutMenu(MUC_TB) : '') + (MUC_APP ? nutMenu(MUC_APP) : '') +
         nutMenu({ nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', ic: IC.ra, khoa: 'ra' }) +
         '</div></div>';
-      hop.querySelector('[data-khoa="ra"]').onclick = function () {
-        A.thoat(); location.href = 'index.html';
-      };
+      hop.querySelector('[data-khoa="ra"]').onclick = thoatRa;
       ganApp(hop);
       var oSaoDG = opt.oSao || document.querySelector('.vi-to');
       if (oSaoDG) oSaoDG.hidden = true;   // ô sao đầu sidebar cũng dẫn vào Ví sao — ẩn luôn
@@ -515,7 +517,7 @@
       var khoa = b.getAttribute('data-khoa');
       if (khoa === 'app' || khoa === 'tb') return;   // nút Cài app / Thông báo: ganApp() gắn bên dưới
       b.onclick = khoa === 'ra'
-        ? function () { A.thoat(); location.href = 'index.html'; }
+        ? thoatRa
         : baoChua;
     });
 

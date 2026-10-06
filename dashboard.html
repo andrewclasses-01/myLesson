@@ -3534,7 +3534,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
-<script src="js/day.js?v=1"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
+<script src="js/day.js?v=2"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
 <body>
 
@@ -12051,9 +12051,12 @@ tr.qm-hang-tam td{background:#fffbeb}
     // Đăng xuất = quên máy này rồi về màn đăng nhập. `?vao=1` để màn đó KHÔNG
     // tự nhảy lại vào đây (nếu máy còn nhớ em nào đó đang đăng nhập).
     $('#dangXuat').addEventListener('click', function () {
-      A.thoatAdmin();
       QT_DA_MO = false;                                   // v1.176.0 — tự chuyển trang, đừng để theoDoi chuyển lần nữa
-      AWThay.thoat()['catch'](function () {}).then(function () { location.href = 'index.html?vao=1'; });
+      // v1.256.0 — gỡ thông báo đẩy của máy này TRƯỚC khi thoát phiên (cần phiên để xoá tài liệu máy; tối đa 2,5 giây)
+      (window.ACDay ? ACDay.goKhiThoat() : Promise.resolve()).then(function () {
+        A.thoatAdmin();
+        return AWThay.thoat()['catch'](function () {});
+      }).then(function () { location.href = 'index.html?vao=1'; });
     });
 
     // ---------- HỘP XEM BÀI ----------

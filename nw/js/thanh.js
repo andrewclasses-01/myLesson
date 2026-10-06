@@ -111,7 +111,7 @@
     if (mucApp) items.push(mucApp);
     items.push({ ic: IC.thoat, nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', nguy: true, onclick: function () {
       if (NW.laBanThu()) { NW.thay('index.html?vao=1'); return; }   // ban thu: khong goi kho
-      NW.thoat().then(function () { location.replace('index.html?vao=1'); });
+      (window.ACDay ? ACDay.goKhiThoat() : Promise.resolve()).then(function () { return NW.thoat(); }).then(function () { location.replace('index.html?vao=1'); });   // v1.256.0 gỡ thông báo đẩy trước
     } });
     var phu = document.createElement('div'); phu.className = 'phu-mo'; phu.id = 'nwSidePhu'; phu.onclick = dongSide;
     var side = document.createElement('nav'); side.className = 'side'; side.id = 'nwSide';

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (72a14f1) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (e84ef78) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — CHỈNH GIAO DIỆN CHO WEB + ĐIỆN THOẠI (giao-dien-web.js) · Đợt 1 (03/10/2026)
    Giao diện myPay (mypay-app.js) giữ NGUYÊN; file này chỉ bù chỗ màn cảm ứng thiếu:
@@ -52,6 +52,21 @@
   document.addEventListener('dblclick', function (e) {
     if (e.isTrusted && Date.now() - vuaDupLuc < 600) { e.preventDefault(); e.stopImmediatePropagation(); }
   }, true);
+
+  // ⭐ 07/10/2026 (thầy chốt) — CUỘN CHUỘT CHỈ ĐỂ CUỘN TRANG: ô số đang được chọn mà cuộn chuột thì trình duyệt tự tăng/giảm số
+  //   (dễ sửa nhầm tiền). Rời ô đó NGAY trước khi trình duyệt đổi số ⇒ số giữ nguyên, trang cuộn bình thường.
+  document.addEventListener('wheel', function (e) {
+    var t = e.target;
+    if (t && t.tagName === 'INPUT' && t.type === 'number' && document.activeElement === t) t.blur();
+  }, { capture: true, passive: true });
+  // ⭐ 07/10/2026 (thầy chốt) — GÕ XONG BẤM ENTER = NHẬN Ô ĐÓ (như bấm ra ngoài). Chạy SAU các xử lý Enter sẵn có của ô
+  //   (setTimeout) để không cắt ngang việc ô đó tự làm khi Enter (gửi form đăng nhập…). Ô nhiều dòng (textarea) giữ Enter xuống dòng.
+  document.addEventListener('keydown', function (e) {
+    var t = e.target;
+    if (e.key !== 'Enter' || e.isComposing || e.shiftKey || !t || t.tagName !== 'INPUT') return;
+    if (/^(button|submit|checkbox|radio|file|range|color)$/.test(t.type)) return;
+    setTimeout(function () { if (document.activeElement === t) t.blur(); }, 0);
+  });
 
   // Đợt 2 — nút "Chọn file sao kê": mở hộp chọn file NGAY trong cú bấm (iPhone/Safari bắt buộc), giao diện myPay vẫn chạy
   // đường cũ (kênh saoke:chon) và nhận đúng file vừa chọn.

@@ -7772,6 +7772,17 @@ tr.qm-hang-tam td{background:#fffbeb}
         if (d.attemptId) boQua[ld.id] = 1;         // v1.171.1 — bản sao của ván đã nộp mã khác
         else { d = Object.assign({}, d, { score: ld.diem, total: ld.tong, attemptId: ld.id, mode: 'submit' }); }
       }
+      // ⭐ v1.261.0 (06/10) — VÁN LÀM TIẾP MÀ NHẬT KÝ ĐỨNG: nhật ký ván dở (không attemptId) nhưng có lượt NỘP trong scores BẮT ĐẦU
+      // đúng lúc ván này bắt đầu (luc − ms ≈ createdAt, ±60 s) ⇒ cùng MỘT ván, em đã làm tiếp (AWord Đợt 469) tới đích, chỉ là các
+      // nhịp sau không ghi được vào practiceLog (đo: BẢO NAM NTK9 BT1 20:23 → nộp 21/30 lúc 21:00, ms 37,5 phút, nhật ký đứng ở 20:48)
+      // ⇒ bỏ dòng nhật ký, giữ dòng NỘP (không còn BỎ DỞ ma).
+      if (!d.done && !d.attemptId && !d.mistakes) {
+        var bdPl = +d.createdAt || 0, nopCung = null;
+        ((em && em.luot) || []).forEach(function (l) {
+          if (!nopCung && !l.dd && l.id && +l.ms > 0 && Math.abs((+l.lucMay || +l.luc || 0) - (+l.ms) - bdPl) <= 60000) nopCung = l;
+        });
+        if (nopCung) return;
+      }
       if (d.attemptId) daCo[d.attemptId] = 1;
       var moi = HQ_MOC_GOP && (+d.createdAt || 0) >= HQ_MOC_GOP;
       var diem = +d.score || 0;
@@ -7796,7 +7807,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       else if (dangLam) loai = 'danglam';
       else if (chuaXong && (+d.createdAt || 0) >= HQ_MOC_GIU && A.gioNay() - (+d.updatedAt || +d.createdAt || 0) < HQ_GIU_MS) loai = 'chuaxong';
       else loai = 'do';
-      luot.push({ luc: lucPl(d), capNhat: +d.updatedAt || +d.createdAt || 0, giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
+      luot.push({ luc: lucPl(d), capNhat: +d.updatedAt || +d.createdAt || 0, lt: String(d.lt || ''), giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
                   diem: diem, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes,
                   // v1.148.0 — nối BÀI LÀM: lượt đã nộp (NỘP / NỘP DỞ) ⇒ results/{attemptId}; lượt khác ⇒ practiceLog/{mã}/entries/{id}
                   code: ma, pl: d._id || '', rid: d.mode === 'submit' && d.attemptId ? String(d.attemptId) : '', coBl: !!d.coReview });
@@ -8958,7 +8969,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         // v1.148.0 (thầy chốt) — KHÔNG vẽ chấm lượt LUYỆN TẬP (CÂU SAI = Start with mistakes, LUYỆN cũ): mẫu số chỉ là số câu sai ⇒ % sai trên đồ thị.
         return { id: 'a' + j + '-' + q, code: l.code, pl: l.pl, rid: l.rid, coBl: l.coBl, tay: !!l.tay,
                  luc: l.luc, giay: l.giay, moTab: l.moTab, uoc: l.uoc, loai: l.loai, dung: dung, mauSo: mauSo, pt: pt, mistakes: !!l.mistakes,
-                 dau100: !!l.dau100, duaTop: !!l.duaTop, dat: hqLuotDat(l, a.ma),
+                 dau100: !!l.dau100, duaTop: !!l.duaTop, dat: hqLuotDat(l, a.ma), lt: l.lt || '',
                  ve: !l.mistakes && l.loai !== 'luyen' && l.loai !== 'causai' && pt != null && (l.loai !== 'do' || dung > 0) };
       });
       // ⭐⭐ v1.260.0 (thầy chốt 06/10) — SAU LƯỢT 100% ĐẦU TIÊN em đã xong nhiệm vụ, lượt sau là CÀY lên hạng ⇒ đồ thị tiến triển
@@ -9008,7 +9019,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (!mc.co(x.k)) return;
       x.luot.forEach(function (l) {
         var lh = l.duaTop ? 'duatop' : l.loai;
-        dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: lh, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[lh], tay: !!l.tay, dau100: l.dau100, code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
+        dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: lh, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[lh], tay: !!l.tay, dau100: l.dau100, lt: l.lt || '', code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
                     xy: l.mauSo ? l.dung + '/' + l.mauSo : (l.loai === 'do' ? (l.dung ? l.dung + ' câu' : '—') : '—'),
                     pt: l.mistakes ? '—' : (l.pt != null ? l.pt + '%' : ''), mo: l.mistakes || (l.loai === 'do' && !l.dung), full: !l.mistakes && l.pt >= 100 });
       });
@@ -9045,6 +9056,16 @@ tr.qm-hang-tam td{background:#fffbeb}
     var d = new Date(ngay + 'T00:00:00');
     return '<button type="button" class="hq-ct-ngay" id="hqCtNgayBo" title="Bỏ lọc ngày — hiện lại mọi lượt">' + d.getDate() + '/' + (d.getMonth() + 1) + ' <b>✕</b></button>';
   }
+  // 🔎 v1.261.0 — CHẨN ĐOÁN LÀM TIẾP (AWord Đợt 490, trường `lt` của practiceLog): rê chuột nhãn Loại ⇒ vì sao ván này có/không
+  // làm tiếp lượt dở. Mã gốc giữ nguyên trong ngoặc để Claude đọc kho đối chiếu.
+  var HQ_LT = { 'khong-co': 'máy em KHÔNG còn lượt dở nào để làm tiếp', 'vet': 'đề bài đã đổi nên bỏ lượt cũ', 'khong-tpl': 'lượt cũ thiếu trạng thái ván',
+    'tab-khac': 'đang có trang khác làm bài này', 'bo-qua': 'có lượt dở mà không làm tiếp', 'sau': 'ván sau trong cùng trang (Start again…)', 'co': 'có lượt dở' };
+  function hqChuLt(lt) {
+    var tiep = />tiep/.test(lt), goc = lt.replace(/>tiep/, ''), p = goc.split('|'), dau = HQ_LT[p[0]] || p[0];
+    var mo = p.filter(function (x) { return x.indexOf('mo:') === 0; })[0], ls = p.filter(function (x) { return /^ls/.test(x); })[0];
+    return (tiep ? 'Đã LÀM TIẾP lượt dở. Lúc bắt đầu: ' : 'Ván mới: ') + dau + (mo ? ' · lúc mở trang: ' + (HQ_LT[mo.slice(3)] || mo.slice(3)) : '') +
+      (ls ? ' · bộ nhớ máy ' + (ls === 'ls-loi' ? 'KHÔNG GHI ĐƯỢC' : ls.slice(2)) : '') + (p.indexOf('luu!') >= 0 ? ' · ⚠ cất lượt dở THẤT BẠI' : '') + ' (' + lt + ')';
+  }
   function hqCtBang(dong) {
     if (!dong.length) return '<div class="bm-em-trong">Chưa có lượt nào.</div>';
     return '<table class="hq-ct-bang"><tr><th>Lúc</th><th>Mục</th><th>Loại</th><th class="r">Phút</th><th class="r" colspan="2">Kết quả</th></tr>' +
@@ -9052,7 +9073,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         var dLuc = new Date(l.luc || 0);
         // ⭐ v1.260.0 — lượt ĐẠT 100% ĐẦU TIÊN của act: tô cả dòng xanh + ★ (thầy thấy ngay em xong nhiệm vụ ở lượt nào)
         var lopTr = [l.id && HQ.ct && HQ.ct.chonId === l.id ? 'chon' : '', l.dau100 ? 'dau100' : ''].filter(Boolean).join(' ');
-        return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (lopTr ? ' class="' + lopTr + '"' : '') + (l.dau100 ? ' title="Lần đầu đạt 100% ' + A.chuAnToan(l.muc) + ' — em xong nhiệm vụ ở lượt này"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '">' + l.nhan + '</span>' + (l.dau100 ? '<span class="sao100">★</span>' : '') + (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
+        return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (lopTr ? ' class="' + lopTr + '"' : '') + (l.dau100 ? ' title="Lần đầu đạt 100% ' + A.chuAnToan(l.muc) + ' — em xong nhiệm vụ ở lượt này"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '"' + (l.lt ? ' title="' + A.chuAnToan(hqChuLt(l.lt)) + '"' : '') + '>' + l.nhan + '</span>' + (l.dau100 ? '<span class="sao100">★</span>' : '') + (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
           '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '"' + (l.tPt ? ' title="' + A.chuAnToan(l.tPt) + '"' : '') + '>' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }

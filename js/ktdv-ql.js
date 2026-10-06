@@ -205,6 +205,14 @@
     than.querySelectorAll('input[name]').forEach(function (i) { o[i.name] = i.value.trim(); });
     return o;
   }
+  // v1.259.0 — lỗi "học sinh cũ" từ hàm máy chủ (details.trung = [{so, t, ht, ns, tt, dong:[{lop}], ma}])
+  function laTrung(e) { return !!(e && e.details && e.details.trung && e.details.trung.length); }
+  function chuTrung(tr) {
+    var TT = { dangHoc: 'đang học', luuTru: 'đã nghỉ', hsCu: 'học sinh cũ', ktdv: 'hồ sơ KTĐV' };
+    return 'Có thể là HỌC SINH CŨ (trùng họ tên + ngày sinh):\n' + tr.map(function (x) {
+      return '• Số ' + x.so + ' — ' + (x.ht || x.t) + ' — ' + (TT[x.tt] || x.tt) + ((x.dong || []).length ? ' — ' + x.dong.map(function (r) { return r.lop; }).join(', ') : '');
+    }).join('\n') + '\n(Em cũ quay lại học: khôi phục ở Kho lưu trữ để giữ số + lịch sử.)';
+  }
   function moThem() {
     moHop('Thêm học sinh kiểm tra đầu vào', formHs(null), [
       { chu: 'Huỷ', phu: true, bam: dongHop },
@@ -212,10 +220,17 @@
         var d = docForm(than);
         if (d.ten.length < 2) return tb('Thiếu tên gọi của em.', true);
         cho(b, 'Đang tạo…');
-        goi('qlKtdv', Object.assign({ viec: 'them' }, d)).then(function (r) {
-          S.ds = null; napHet().then(veDs);
-          hienMatKhau(d.ten, r.ma, r.mkTam, 'Đã tạo hồ sơ');
-        }, function (e) { thoi(b); tb(chuLoi(e), true); });
+        var tao = function (boQua) {
+          return goi('qlKtdv', Object.assign({ viec: 'them' }, d, boQua ? { boQuaTrung: true } : {})).then(function (r) {
+            S.ds = null; napHet().then(veDs);
+            hienMatKhau(d.ten, r.ma, r.mkTam, 'Đã tạo hồ sơ');
+          }, function (e) {
+            // v1.259.0 (06/10/2026) — trùng HỌC SINH CŨ (cùng họ tên + ngày sinh) ⇒ báo, thầy chọn vẫn tạo hay thôi
+            if (!boQua && laTrung(e) && window.confirm(chuTrung(e.details.trung) + '\n\nVẫn tạo hồ sơ kiểm tra đầu vào MỚI (số học sinh mới)?')) return tao(true);
+            thoi(b); tb(laTrung(e) ? 'Chưa tạo — trùng học sinh cũ.' : chuLoi(e), true);
+          });
+        };
+        tao(false);
       } }
     ]);
   }
@@ -345,7 +360,14 @@
       { chu: 'CHUYỂN', bam: function (b, than) {
         var lop = than.querySelector('[name=lop]').value, vao = than.querySelector('[name=vao]').value;
         cho(b, 'Đang ghi danh…');
-        goi('qlHocSinh', { viec: 'themHs', ten: h.ten, hoTen: h.hoTen || '', ngaySinh: h.ngaySinh || '', ma: h.ma, ghiChu: 'Từ kiểm tra đầu vào', ghiDanh: [{ lop: lop, vao: vao }] })
+        var ghiDanh = function (boQua) {
+          return goi('qlHocSinh', Object.assign({ viec: 'themHs', ten: h.ten, hoTen: h.hoTen || '', ngaySinh: h.ngaySinh || '', ma: h.ma, ghiChu: 'Từ kiểm tra đầu vào', ghiDanh: [{ lop: lop, vao: vao }] }, boQua ? { boQuaTrung: true } : {}))
+            ['catch'](function (e) {   // v1.259.0 — trùng học sinh cũ ⇒ hỏi
+              if (!boQua && laTrung(e) && window.confirm(chuTrung(e.details.trung) + '\n\nVẫn ghi danh hồ sơ KTĐV này (giữ số của hồ sơ KTĐV)?')) return ghiDanh(true);
+              throw e;
+            });
+        };
+        ghiDanh(false)
           .then(function () {
             if (!h.anh) return null;
             b.textContent = 'Đang chuyển ảnh…';

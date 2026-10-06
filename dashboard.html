@@ -3534,6 +3534,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
+<script src="js/day.js?v=1"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
 <body>
 
@@ -3716,6 +3717,11 @@ tr.qm-hang-tam td{background:#fffbeb}
         <span class="chu"><span class="ten" id="thayDnChu">Đang kiểm phiên thầy…</span></span>
       </button>
       <!-- ⭐ v1.245.0 (04/10/2026) — Cài app vào máy (js/cai-app.js); đang mở bằng app thì CaiApp.gan() ẩn đi -->
+      <!-- ⭐ v1.255.0 (06/10/2026) — thông báo đẩy trên máy thầy (js/day.js; nhãn tự đổi theo trạng thái) -->
+      <button class="sb-item" id="dayTb" title="Thông báo đẩy trên máy này">
+        <span class="ic"><svg viewBox="0 0 24 24"><path d="M6.2 8.5a5.8 5.8 0 0 1 11.6 0c0 6.5 2.7 8.3 2.7 8.3H3.5s2.7-1.8 2.7-8.3"/><path d="M10.4 20.5a1.8 1.8 0 0 0 3.2 0"/></svg></span>
+        <span class="chu"><span class="ten">Bật thông báo</span></span>
+      </button>
       <button class="sb-item" id="caiApp" title="Cài andrewclasses.com như một ứng dụng">
         <span class="ic"><svg viewBox="0 0 24 24"><rect x="5" y="2.5" width="14" height="19" rx="2.5"/><path d="M12 7.5v7m0 0l-3-3m3 3l3-3"/><path d="M10 18.5h4"/></svg></span>
         <span class="chu"><span class="ten">Cài app vào máy</span></span>
@@ -11998,7 +12004,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 
     // ---------- SIDEBAR ----------
     // ⭐ v1.218.0 — ☰ = pop-up nhỏ cạnh nút (thầy chốt), không mở cả sidebar nữa.
-    $('#mnDs').appendChild($('#thayDn')); $('#mnDs').appendChild($('#caiApp')); $('#mnDs').appendChild($('#dangXuat'));
+    $('#mnDs').appendChild($('#thayDn')); $('#mnDs').appendChild($('#dayTb')); $('#mnDs').appendChild($('#caiApp')); $('#mnDs').appendChild($('#dangXuat'));
+    if (window.ACDay) ACDay.gan($('#dayTb')); else $('#dayTb').style.display = 'none';   // v1.255.0
     if (window.CaiApp) CaiApp.gan($('#caiApp')); else $('#caiApp').style.display = 'none';   // v1.245.0
     // ⭐ thiết kế ĐT 4 (02/10, thầy chốt) — điện thoại (≤640): dải menu quản lý #nwbQlCot dời VÀO pop-up ☰ (CSS biến pop-up
     // thành sidebar phải), máy tính trả về chỗ cũ trong lưới .nwb-ql. Dời CẢ nút ⇒ giữ nguyên tay bắt nw-thanh.js gắn sẵn.
@@ -14842,8 +14849,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 </script>
 <script src="js/ic-ql.js?v=2"></script>
 <script src="js/tn-pop.js?v=11"></script>
-<script src="js/tn-pop-ds.js?v=5"></script>
-<script src="js/nw-thanh.js?v=28"></script>
+<script src="js/tn-pop-ds.js?v=6"></script>
+<script src="js/nw-thanh.js?v=29"></script>
 <script src="js/ktdv-bc.js?v=4"></script>   <!-- 03/10/2026 bản báo cáo phụ huynh KT ĐẦU VÀO (bản chép ở repo kiemtra) -->
 <script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=9"></script>   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->

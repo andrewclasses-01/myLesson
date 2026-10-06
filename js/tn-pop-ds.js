@@ -91,7 +91,7 @@
   //     quay lại màn hình (cách ≥ 20 giây) — KHÔNG nghe sống (cả lớp xem tin là cả lớp ghi ⇒ rất tốn lượt đọc).
   //   Ra: TnPop.soChay · số tab Tin nhắn (NWB.datSo / NW.datSoTin) · sự kiện 'ac-tn-so' {lop:{mã:{x,xem,chua}}, so} · TnPop.ngheSo(cb).
   // ============================================================
-  var SO = { me: null, chay: false, lop: {}, phong: null, dsLop: [], docKhoLuc: 0 };
+  var SO = { me: null, chay: false, lop: {}, phong: null, dsLop: [], docKhoLuc: 0, tatLop: [] };
   var ngheSoDs = [], henSo = null;
   function mocXem(me, lop) {
     var a = docXem(me.ma, lop), b = 0, o = SO.lop[lop];
@@ -108,6 +108,7 @@
     return doi;
   }
   function lopChua(me, lop) {
+    if (SO.tatLop.indexOf(lop) >= 0) return false;   // v1.255.0 — nhóm lớp đã TẮT thông báo không tính vào số đỏ (như chat riêng)
     var x = (SO.lop[lop] || {}).x, luc = x ? Number(x.createdAt) || 0 : 0;
     return luc > 0 && !(x.code && x.code === me.ma) && luc > mocXem(me, lop);
   }
@@ -128,6 +129,8 @@
     var st = trangThaiSo();
     if (window.NWB && NWB.datSo) NWB.datSo('tinNhan', st.so);
     if (window.NW && NW.datSoTin) NW.datSoTin(st.so);
+    // v1.255.0 — số đỏ trên ICON APP (màn hình chính iPhone / app máy tính); trình duyệt thường bỏ qua
+    try { if (navigator.setAppBadge) { if (st.so) navigator.setAppBadge(st.so).catch(function () { }); else navigator.clearAppBadge().catch(function () { }); } } catch (e) { }
     ngheSoDs.forEach(function (cb) { try { cb(st); } catch (e) { console.warn('[tn-so]', e); } });
     try { window.dispatchEvent(new CustomEvent('ac-tn-so', { detail: st })); } catch (e) { }
     if (TP.veLai) TP.veLai();
@@ -173,11 +176,13 @@
       });
       SO.chay = true; TP.soChay = true;
       docKho(true);
+      if (window.ACDay) ACDay.tatLopDs().then(function (ds) { SO.tatLop = ds || []; henTinh(); });
       nghePhongChung(me, henTinh);
       henTinh();
     });
   }
   window.addEventListener('ac-tn-xem', function () { henTinh(); });
+  window.addEventListener('ac-tn-tat', function (e) { SO.tatLop = ((e.detail || {}).ds) || []; henTinh(); });
   // xem trong KHUNG NHÚNG hộp chat nhỏ / tab khác (cùng nhà) ⇒ chỉ thấy qua sự kiện storage — báo lại thành 'ac-tn-xem' cho trang này
   window.addEventListener('storage', function (e) {
     if (!/^mylesson_xemtin_/.test(e.key || '')) return;

@@ -230,6 +230,7 @@
     { ma: 'khoBai', chu: 'Kho bài', ic: ICQ.kho, icm: ICM.khoBai },   // v1.203.0 — thay "Bài đã xoá": pop-up lớn mọi lớp (window.qlMoKhoLon)
     { ma: 'baiCheck', chu: 'Bài check', ic: ICQ.baiCheck },   // v1.205.0 — bài check AWord theo bộ đề (window.qlMoBaiCheck)
     { ma: 'kholuutru', chu: 'Kho trò chuyện', ic: ICQ.khoChat, icm: ICM.kholuutru },
+    { ma: 'guiTb', chu: 'Gửi thông báo', ic: IC.chuong },   // v1.255.0 — đẩy thông báo tới máy HS (js/day.js ACDay.moGuiThay)
     { vach: true },
     { ma: 'nhom', chu: 'Nhóm chat', ic: ICQ.nhom, icm: ICM.nhom, mo: 'Lập và quản lý nhóm chat các lớp' },
     { ma: 'baiDang', chu: 'Bài đăng', ic: IC.baiDang, icm: ICM.baiDang, mo: 'Xem, ẩn, xoá bài đăng của học sinh' },
@@ -265,6 +266,7 @@
     if (ma === 'sinhNhat') { if (window.qlMoSinhNhat) window.qlMoSinhNhat(); return; }
     if (ma === 'khoBai') { if (window.qlMoKhoLon) window.qlMoKhoLon(); return; }
     if (ma === 'baiCheck') { if (window.qlMoBaiCheck) window.qlMoBaiCheck(); return; }
+    if (ma === 'guiTb') { if (window.ACDay) ACDay.moGuiThay(); return; }
     if (ma === 'top' || ma === 'qua' || ma === 'kholuutru') { if (window.qlMoMuc) window.qlMoMuc(ma); return; }
     // Trang thử: mục Network ⇒ trang quản lý myNetwork (nw/quanly.html?muc=…, cùng mã mục)
     if (window.AC_THU && m_NW[ma]) { location.href = 'nw/quanly.html?muc=' + ma; return; }

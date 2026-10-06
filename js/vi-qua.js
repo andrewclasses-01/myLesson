@@ -436,11 +436,15 @@
     var MUC_APP = (window.CaiApp && !CaiApp.daCai())
       ? { nh: 'Cài app vào máy', mo: 'Mở Andrew Classes như một ứng dụng', ic: CaiApp.IC.caiApp, khoa: 'app' } : null;
     function ganApp(h) {
+      var t = h.querySelector('[data-khoa="tb"]');   // v1.255.0 — thông báo đẩy (js/day.js)
+      if (t) { ACDay.gan(t); t.addEventListener('click', function () { document.body.classList.remove('mo-menu'); }); }
       var n = h.querySelector('[data-khoa="app"]');
       if (!n) return;
       CaiApp.gan(n);
       n.addEventListener('click', function () { document.body.classList.remove('mo-menu'); });
     }
+    // ⭐ v1.255.0 (06/10/2026, thầy chốt) — "Bật thông báo" (js/day.js) ngay TRÊN "Cài app vào máy"; nhãn tự đổi theo trạng thái.
+    var MUC_TB = window.ACDay ? { nh: 'Bật thông báo', mo: 'Báo ngay khi có tin nhắn mới', ic: ACDay.IC.chuong, khoa: 'tb' } : null;
 
     // ⭐⭐ v1.82.0 (thầy chốt 09/09/2026) — HỌC SINH ĐẶC BIỆT: sidebar RÚT GỌN, bấm
     // avatar chỉ hiện "Đăng xuất" — không Thông tin/Công cụ/Thư viện kỷ niệm/Ví sao,
@@ -449,7 +453,7 @@
     if (opt.donGian) {
       hop.classList.add('vq-truot');
       hop.innerHTML = '<div class="vq-doi"><div class="vq-trang vq-chinh">' +
-        (MUC_APP ? nutMenu(MUC_APP) : '') +
+        (MUC_TB ? nutMenu(MUC_TB) : '') + (MUC_APP ? nutMenu(MUC_APP) : '') +
         nutMenu({ nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', ic: IC.ra, khoa: 'ra' }) +
         '</div></div>';
       hop.querySelector('[data-khoa="ra"]').onclick = function () {
@@ -487,7 +491,7 @@
           nutMenu(chinh[0]) +
           nutMenu(chinh[1]) +
           '<div class="vq-xo">' + congCuCon.map(nutMenu).join('') + '</div>' +
-          nutMenu(chinh[2]) + nutMenu(chinh[3]) + (MUC_APP ? nutMenu(MUC_APP) : '') + nutMenu(chinh[4]) +
+          nutMenu(chinh[2]) + nutMenu(chinh[3]) + (MUC_TB ? nutMenu(MUC_TB) : '') + (MUC_APP ? nutMenu(MUC_APP) : '') + nutMenu(chinh[4]) +
         '</div>' +
         '<div class="vq-trang vq-vi">' +
           '<button class="vq-quay" type="button" data-quay="1">' + IC.quay + ' Quay lại menu</button>' +
@@ -509,7 +513,7 @@
     Array.prototype.forEach.call(hop.querySelectorAll('.vq-chinh > button'), function (b, i) {
       if (i === 1) return;                       // nút Công cụ đã có việc riêng
       var khoa = b.getAttribute('data-khoa');
-      if (khoa === 'app') return;                // nút Cài app: ganApp() gắn bên dưới
+      if (khoa === 'app' || khoa === 'tb') return;   // nút Cài app / Thông báo: ganApp() gắn bên dưới
       b.onclick = khoa === 'ra'
         ? function () { A.thoat(); location.href = 'index.html'; }
         : baoChua;

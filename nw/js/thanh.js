@@ -106,6 +106,8 @@
     var mucApp = (window.CaiApp && !CaiApp.daCai())
       ? { ic: CaiApp.IC.caiApp.replace('<svg ', '<svg class="ic" '), nh: 'Cài app vào máy', mo: 'Mở Andrew Classes như một ứng dụng', onclick: function () { CaiApp.mo(); } } : null;
     if (toi.laThay) items.push({ ic: IC.caiDat, nh: 'Trang quản lý', mo: 'Báo cáo · bài ẩn · từ cấm · tài khoản', onclick: function () { if (NW.moDuoc('quanly.html')) NW.di('quanly.html'); else location.href = CFG.LINK_DASHBOARD; } });
+    // ⭐ web v1.255.0 (06/10/2026) — "Bật thông báo" (../js/day.js) ngay trên "Cài app"; nhãn tự đổi theo trạng thái
+    if (window.ACDay) items.push({ ic: ACDay.IC.chuong.replace('<svg ', '<svg class="ic" '), nh: 'Bật thông báo', mo: 'Báo ngay khi có tin nhắn mới', tb: true });
     if (mucApp) items.push(mucApp);
     items.push({ ic: IC.thoat, nh: 'Đăng xuất', mo: 'Đăng xuất ID Andrew Classes', nguy: true, onclick: function () {
       if (NW.laBanThu()) { NW.thay('index.html?vao=1'); return; }   // ban thu: khong goi kho
@@ -124,7 +126,11 @@
       '<div class="side-foot">Andrew Classes Network · v' + an(CFG.PHIEN_BAN) + '</div>';
     document.body.appendChild(phu); document.body.appendChild(side);
     $('[data-dong]', side).onclick = dongSide;
-    $$('.side-ds button', side).forEach(function (b) { b.onclick = function () { dongSide(); var it = items[+b.getAttribute('data-i')]; if (it.onclick) it.onclick(); }; });
+    $$('.side-ds button', side).forEach(function (b) {
+      var it = items[+b.getAttribute('data-i')];
+      if (it.tb) { b.addEventListener('click', dongSide); ACDay.gan(b); return; }   // v1.255.0 — js/day.js tự gắn cú bấm
+      b.onclick = function () { dongSide(); if (it.onclick) it.onclick(); };
+    });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') dongSide(); });
   }
   function moSide() { document.body.classList.add('mo-menu'); }

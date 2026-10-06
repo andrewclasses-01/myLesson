@@ -353,7 +353,7 @@
           '<span class="tt"><span class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + (tatTB(p) ? '<span class="tat" title="Đã tắt thông báo">' + IC.chuongTat + '</span>' : '') + '</span>' +
           '<span class="cuoi">' + cuoiHtml + '</span></span>' +
           (chua ? '<span class="cham"></span>' : '') +
-          (p._cho || p._lop ? '' : '<button type="button" class="menu" data-menu aria-label="Tuỳ chọn" title="Tuỳ chọn">' + IC.baCham + '</button>') + '</div>';
+          (p._cho || (p._lop && !window.ACDay) ? '' : '<button type="button" class="menu" data-menu aria-label="Tuỳ chọn" title="Tuỳ chọn">' + IC.baCham + '</button>') + '</div>';
       }).join('') + ghiChu;
       $$('.tn-muc', khuDs).forEach(function (row) {
         var id = row.getAttribute('data-id'), giu = null, daGiu = false;
@@ -380,7 +380,18 @@
     // ---------- v16: menu từng cuộc chat (⋯ máy tính / giữ điện thoại) ----------
     function menuCuoc(nut, id) {
       var p = timPhong(id); if (!p) return;
-      if (p._lop) return;   // 02/10 thầy chốt: BỎ "Xem thành viên" (không cho xem danh sách lớp) ⇒ nhóm lớp không còn menu
+      // 02/10 thầy chốt: BỎ "Xem thành viên" (không cho xem danh sách lớp). ⭐ v1.255.0 — nhóm lớp có menu CHỈ một mục
+      //   Tắt/Bật thông báo (thông báo đẩy + số đỏ; lưu nwUsers/<uid>/rieng/tatLop qua js/day.js — chung mọi máy).
+      if (p._lop) {
+        if (!window.ACDay || NW.laBanThu()) return;
+        var tatL = tatTB(p);
+        NW.menuNho(nut, [{ ic: tatL ? IC.chuongBat : IC.chuongTat, chu: tatL ? 'Bật thông báo' : 'Tắt thông báo', onclick: function () {
+          p.tat = p.tat || {}; p.tat[toi.uid] = !tatL; veDs();
+          ACDay.datTatLop(p.lop, !tatL).then(function () { NW.toast(!tatL ? 'Đã tắt thông báo nhóm lớp này.' : 'Đã bật lại thông báo.'); },
+            function (e) { p.tat[toi.uid] = tatL; veDs(); NW.toast(NW.chuLoiKho(e), true); });
+        } }]);
+        return;
+      }
       var chua = chuaDoc(p), tat = tatTB(p), items = [];
       items.push({ ic: chua ? IC.daDoc : IC.chuaDoc, chu: chua ? 'Đánh dấu đã đọc' : 'Đánh dấu chưa đọc', onclick: function () { danhDauChuaDoc(p, !chua); } });
       items.push({ ic: tat ? IC.chuongBat : IC.chuongTat, chu: tat ? 'Bật thông báo' : 'Tắt thông báo', onclick: function () { datTat(p, !tat); } });
@@ -714,6 +725,9 @@
       }).filter(Boolean);
       veDs();
       thuMoCho();   // v1.224.0 — link thông báo trỏ vào nhóm lớp
+      if (window.ACDay && !NW.laBanThu()) ACDay.tatLopDs().then(function (ds) {   // v1.255.0 — nhóm lớp đã tắt thông báo: hiện chuông gạch
+        PHONG_LOP.forEach(function (p) { p.tat = {}; p.tat[toi.uid] = ds.indexOf(p.lop) >= 0; }); veDs();
+      });
       // ⭐ v1.253.0 — sổ chưa đọc CHUNG (../js/tn-pop-ds.js) có kênh sống tin cuối từng lớp + mốc "đã xem" gộp mọi máy ⇒ nhận từ đó:
       //   tin lớp mới nhảy lên đầu danh sách NGAY, chấm chưa đọc tắt khi đã xem ở máy khác. Khung nhúng (hop=1) không chạy sổ ⇒ cách cũ.
       if (window.TnPop && TnPop.ngheSo && !/[?&]hop=1(&|$)/.test(location.search)) {

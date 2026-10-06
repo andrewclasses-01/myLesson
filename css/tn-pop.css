@@ -120,3 +120,14 @@
 .tp-gio{font-size:12px; color:var(--tp-phu)}
 .tp-tbm.chua .tp-gio{color:var(--tp-ac); font-weight:600}
 .tp-tbm .tp-cham{margin-top:18px}
+
+/* ============================================================
+   v1.254.0 (06/10/2026, thầy chốt) — ĐIỆN THOẠI: CHAT NGAY TRONG HỘP (js/tn-pop.js moChatTrongHop). Giữ nguyên cỡ hộp;
+   đầu = khuôn đầu hộp chat nhỏ (.tp-hop-dau) + nút ← về danh sách; thân = khung nhúng nw/tinnhan.html?hop=1.
+   ============================================================ */
+.tp-pop.dang-chat > :not(.tp-dt){display:none!important}
+.tp-dt{flex:1; min-height:0; display:flex; flex-direction:column; overflow:hidden; border-radius:10px}
+.tp-dt .tp-hop-dau{border-radius:10px 10px 0 0; padding-left:4px}
+.tp-dt .tp-hop-dau button[data-lui]{width:36px; height:36px; color:var(--tp-ac)}
+.tp-dt .tp-hop-dau button[data-lui] svg{width:22px; height:22px; stroke-width:2.4}
+.tp-dt .tp-hop-fr-khu{border-radius:0 0 10px 10px; overflow:hidden}

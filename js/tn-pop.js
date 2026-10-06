@@ -87,8 +87,57 @@
     m.pop.classList.remove('mo');
     document.removeEventListener('keydown', m.phim, true);
     window.removeEventListener('resize', m.dongNgay);
+    tatVV(m);
     setTimeout(function () { m.pop.remove(); m.nen.remove(); }, 180);
   };
+
+  // ============================================================
+  // ⭐ v1.254.0 (06/10/2026, thầy chốt) — ĐIỆN THOẠI: bấm một cuộc trong hộp ⇒ CHAT NGAY TRONG HỘP (giữ nguyên cỡ hộp), nút ← về danh sách.
+  //   Ruột = đúng khung nhúng của hộp chat nhỏ máy tính (nw/tinnhan.html?hop=1&…) ⇒ gửi/nhận/cảm xúc/đã xem y hệt.
+  //   ⛔ Bàn phím iPhone ĐẨY cả trang (memory bay-ban-phim-ios-day-trang): khi bàn phím bật, hộp bám visualViewport —
+  //   top = offsetTop + lề, cao = phần màn còn thấy (inline !important vì CSS điện thoại đặt top/height !important).
+  // ============================================================
+  function vvKhop(m) {
+    var vv = window.visualViewport; if (!vv || !m.chat) return;
+    var ps = m.pop.style, banPhim = window.innerHeight - vv.height > 120;
+    if (!banPhim) { ps.removeProperty('top'); ps.removeProperty('height'); ps.removeProperty('max-height'); return; }
+    ps.setProperty('top', Math.round(vv.offsetTop + 6) + 'px', 'important');
+    ps.setProperty('height', Math.round(vv.height - 12) + 'px', 'important');
+    ps.setProperty('max-height', Math.round(vv.height - 12) + 'px', 'important');
+  }
+  function batVV(m) {
+    var vv = window.visualViewport; if (!vv || m.vvNghe) return;
+    m.vvNghe = function () { vvKhop(m); };
+    vv.addEventListener('resize', m.vvNghe); vv.addEventListener('scroll', m.vvNghe);
+    window.addEventListener('orientationchange', m.vvNghe);
+  }
+  function tatVV(m) {
+    var vv = window.visualViewport; if (!m.vvNghe) return;
+    if (vv) { vv.removeEventListener('resize', m.vvNghe); vv.removeEventListener('scroll', m.vvNghe); }
+    window.removeEventListener('orientationchange', m.vvNghe);
+    m.vvNghe = null;
+    ['top', 'height', 'max-height'].forEach(function (k) { m.pop.style.removeProperty(k); });
+  }
+  function moChatTrongHop(m, it) {
+    dongChatTrongHop(m, true);
+    var phu = it.loai === 'lop' ? 'Nhóm lớp' : it.loai === 'thay' ? 'Thầy' : (it.lop || '');
+    var v = document.createElement('div'); v.className = 'tp-dt';
+    v.innerHTML = '<div class="tp-hop-dau"><button type="button" data-lui title="Về danh sách" aria-label="Về danh sách"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
+      avHtml(it.anh) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div></div>' +
+      '<div class="tp-hop-fr-khu"><iframe class="tp-hop-fr" title="' + an(it.ten) + '" allow="clipboard-write"></iframe><div class="tp-hop-cho">Đang mở…</div></div>';
+    m.pop.appendChild(v); m.pop.classList.add('dang-chat'); m.chat = v;
+    var fr = v.querySelector('iframe');
+    fr.onload = function () { v.querySelector('.tp-hop-cho').classList.add('xong'); };
+    fr.src = GOC + it.hop;
+    v.querySelector('[data-lui]').onclick = function () { dongChatTrongHop(m); };
+    batVV(m);
+  }
+  function dongChatTrongHop(m, imLang) {
+    if (!m.chat) return;
+    m.chat.remove(); m.chat = null; m.pop.classList.remove('dang-chat');
+    tatVV(m);
+    if (!imLang && m.taiLai) m.taiLai();
+  }
 
   TP.mo = function (neo, o) {
     o = o || {};
@@ -112,7 +161,9 @@
     }
     var m = mo = { pop: pop, nen: nen, neo: neo, cuoc: [], loc: 'tat', chu: '' };
     sangIcon(m);
-    m.dongNgay = function () { TP.dong(); };
+    // v1.254.0 — chỉ đóng khi BỀ NGANG đổi (xoay máy / kéo cửa sổ): bàn phím điện thoại bật lên chỉ đổi bề cao — trước đây là đóng mất hộp
+    m.w = window.innerWidth;
+    m.dongNgay = function () { if (Math.abs(window.innerWidth - m.w) > 40) TP.dong(); };
     m.phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); TP.dong(); } };
     document.addEventListener('keydown', m.phim, true);
     window.addEventListener('resize', m.dongNgay);
@@ -146,6 +197,7 @@
       var it = m.cuoc.filter(function (c) { return c.id === id; })[0];
       // ⭐ máy tính: mở HỘP CHAT NHỎ góc dưới, giữ nguyên trang đang xem · điện thoại (≤640px): sang trang Tin nhắn như Facebook
       if (it && window.innerWidth > 640) { TP.dong(); TP.moHop(it); return; }
+      if (it && it.hop) { moChatTrongHop(m, it); return; }   // v1.254.0 — điện thoại: chat ngay trong hộp
       location.href = (it && it.q) ? trang + (trang.indexOf('?') < 0 ? '?' : '&') + it.q : phong(id);
     });
     Promise.resolve(TP.nguon ? TP.nguon() : mau()).then(function (ds) { if (mo === m) { m.cuoc = ds || []; ve(); } })

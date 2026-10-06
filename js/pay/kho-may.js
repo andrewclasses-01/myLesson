@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (3d9ba46) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (72a14f1) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -283,6 +283,7 @@
   }
 
   var bangSo = null;                // payMaHs/so
+  var soHsTheoGid = new Map();      // hsSo/soCai: gid → số học sinh vĩnh viễn (Đợt 4, 06/10/2026)
   var bangThang = {};               // 'yyyy-MM' → { ngay: {...} }
   var thangDoi = new Set();         // bảng ngày tháng nào vừa dựng lại (cần ghi lên)
   var nguon = { hs: [], lop: [] };
@@ -305,9 +306,12 @@
       docTatCa(K.fs.collection(K.db, 'mystudentRosterStudents')),
       docTatCa(K.fs.collection(K.db, 'mystudentRosterClasses')),
       docTatCa(K.fs.collection(K.db, 'payMaHs')),
-      docTatCa(K.fs.query(K.fs.collection(K.db, 'mystudentSoDiemDanh'), K.fs.where('ngay', '>=', tuIso)))
+      docTatCa(K.fs.query(K.fs.collection(K.db, 'mystudentSoDiemDanh'), K.fs.where('ngay', '>=', tuIso))),
+      // ⭐ 06/10/2026 (Đợt 4) — SỔ HỘ TỊCH: mỗi em MỘT số vĩnh viễn 100001+ (gid các dòng lớp/khóa/bổ sung ⇒ cùng số)
+      K.fs.getDoc(K.fs.doc(K.db, 'hsSo', 'soCai')).then(function (s) { return s.exists() ? s.data() : null; }, function () { return null; })
     ]).then(function (r) {
       nguon.hs = r[0]; nguon.lop = r[1];
+      soHsTheoGid = ND.bangSoHs(r[4]);
       r[2].forEach(function (d) {
         if (d.__id === 'so') bangSo = { so: d.so || {}, tiep: d.tiep || ND.SO_DAU };
         else if (/^ngay-/.test(d.__id)) bangThang[d.__id.slice(5)] = { ngay: d.ngay || {} };
@@ -344,7 +348,7 @@
         p = K.fs.runTransaction(K.db, function (tx) {
           return tx.get(ref).then(function (s) {
             var b = s.exists() ? { so: Object.assign({}, s.data().so || {}), tiep: s.data().tiep || ND.SO_DAU } : { so: {}, tiep: ND.SO_DAU };
-            ND.capSo(b, thieu.slice().sort());
+            ND.capSo(b, thieu.slice().sort(), soHsTheoGid);   // gid có trong sổ hộ tịch ⇒ SỐ HỌC SINH; còn lại 5000xx
             tx.set(ref, { so: b.so, tiep: b.tiep, luc: K.fs.serverTimestamp() });
             return b;
           });

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (3d9ba46) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (72a14f1) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — DỰNG "FILE" myPay TỪ DỮ LIỆU FIRESTORE (nap-du-lieu.js) · Đợt 1 (03/10/2026)
 
@@ -115,12 +115,25 @@
   }
 
   // Cấp số myPay cho các khoá chưa có. Trả số khoá MỚI cấp (để biết có phải ghi lại payMaHs/so không).
-  function capSo(bangSo, cacKhoa) {
+  // ⭐ 06/10/2026 (Đợt 4, thầy chốt) — gid có trong SỔ HỘ TỊCH (`hsSo/soCai`) ⇒ dùng SỐ HỌC SINH vĩnh viễn 100001+
+  //   (mọi dòng lớp/khóa/bổ sung của MỘT em cùng một số). Khoá `so:LỚP|TÊN` (em không còn gid) vẫn cấp 5000xx.
+  function capSo(bangSo, cacKhoa, soHsTheoGid) {
     if (!bangSo.so) bangSo.so = {};
     if (!bangSo.tiep) bangSo.tiep = SO_DAU;
     var moi = 0;
-    cacKhoa.forEach(function (k) { if (k && !(k in bangSo.so)) { bangSo.so[k] = bangSo.tiep++; moi++; } });
+    cacKhoa.forEach(function (k) {
+      if (!k || k in bangSo.so) return;
+      var n = soHsTheoGid && soHsTheoGid.get(k);
+      bangSo.so[k] = n || bangSo.tiep++; moi++;
+    });
     return moi;
+  }
+  // hsSo/soCai ⇒ Map gid → số học sinh (g = dòng đang có, gx = dòng đã bị myStudent xoá được nối lại)
+  function bangSoHs(soCai) {
+    var m = new Map();
+    var ng = (soCai && soCai.nguoi) || {};
+    Object.keys(ng).forEach(function (n) { (ng[n].g || []).concat(ng[n].gx || []).forEach(function (g) { m.set(g, +n); }); });
+    return m;
   }
 
   // ───────── dựng "file" đúng khuôn myStudent xuất (myPay đọc y như trên máy) ─────────
@@ -154,7 +167,7 @@
 
   var NapDuLieu = {
     SO_DAU: SO_DAU, LOP_THU: LOP_THU, boDau: boDau, tenHoa: tenHoa, isoTuNgayHt: isoTuNgayHt, thangCuaNgayHt: thangCuaNgayHt,
-    locLop: locLop, locHocSinh: locHocSinh, noiMotNgay: noiMotNgay, hocIdTuBang: hocIdTuBang, capSo: capSo,
+    locLop: locLop, locHocSinh: locHocSinh, noiMotNgay: noiMotNgay, hocIdTuBang: hocIdTuBang, capSo: capSo, bangSoHs: bangSoHs,
     dungHocSinhJson: dungHocSinhJson, dungLopJson: dungLopJson, dungSoNgay: dungSoNgay
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = NapDuLieu; else goc.NapDuLieu = NapDuLieu;

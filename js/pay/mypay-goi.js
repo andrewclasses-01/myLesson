@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (66a4043) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (72a14f1) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -710,6 +710,7 @@ function catLop(cd, maLop) {
   return Object.assign({}, kho.MAC_DINH_LOP, (cd.lop || {})[maLop]);
 }
 function khoaTen(ten) { return String(ten || '').trim().toUpperCase(); }
+function idDonVi(maLop, id) { return 'R|' + maLop + '|#' + id; }
 function catHs(cd, maLop, ten) {
   const hs = cd.hocSinh || {};
   return Object.assign({}, catLop(cd, maLop), hs[maLop + '|' + khoaTen(ten)] || hs[maLop + '|' + ten]);
@@ -799,7 +800,7 @@ function tinhThang(dd, caiDat, giaDinh) {
     if (!b.buoi && !b.choDuyet && hocLopKhac) continue;   // v0.15.0 — tháng này em học lớp khác ⇒ để vòng 1b tính đúng lớp đó
     const cat = catEm(maLop, [hs.ten, tenSoLop(maLop, hs.id)]);   // v0.15.0 — tên hiện tại, rồi tên trong sổ tháng đó (em đổi tên)
     units.push({
-      id: 'R|' + maLop + '|' + khoaTen(hs.ten),
+      id: idDonVi(maLop, hs.id),
       hsId: hs.id,
       kind: 'reg',
       label: hs.ten,
@@ -824,7 +825,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       const b = buoiCuaId(maLop, h.id);
       const cat = catHs(cd, maLop, ten);
       units.push({
-        id: 'R|' + maLop + '|' + khoaTen(ten),
+        id: idDonVi(maLop, h.id),                    // 06/10/2026 — theo SỐ, xem vòng 1
         hsId: h.id,                                  // v0.6.0 — xem chú thích ở vòng 1
         kind: 'reg', label: ten, classes: [maLop], names: [ten], maDangNhap: '',
         buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich,
@@ -1991,6 +1992,6 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
   G.__PHIEN_BAN = "0.15.0";
-  G.__MA = "66a4043";
+  G.__MA = "72a14f1";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

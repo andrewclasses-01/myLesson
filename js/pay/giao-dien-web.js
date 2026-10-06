@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (3d9ba46) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — CHỈNH GIAO DIỆN CHO WEB + ĐIỆN THOẠI (giao-dien-web.js) · Đợt 1 (03/10/2026)
    Giao diện myPay (mypay-app.js) giữ NGUYÊN; file này chỉ bù chỗ màn cảm ứng thiếu:
@@ -67,5 +67,11 @@
     a.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>Dashboard';
     var brand = rail.querySelector('.brand');
     rail.insertBefore(a, brand || null);
+    // 06/10/2026 — nút Đăng xuất (phiên myPay riêng trong tab; dashboard KHÔNG bị đăng xuất theo)
+    var x = document.createElement('button');
+    x.className = 'tab py-ra'; x.type = 'button'; x.title = 'Thoát myPay trên máy này (Dashboard vẫn giữ đăng nhập)';
+    x.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Đăng xuất';
+    x.addEventListener('click', function () { if (window.PayWeb) window.PayWeb.dangXuat('Đã đăng xuất myPay.'); });
+    rail.insertBefore(x, brand || null);
   });
 })();

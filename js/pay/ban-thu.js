@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (76d57ee) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (3d9ba46) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — BÀN THỬ (ban-thu.js) · Đợt 1 (03/10/2026)
    CHỈ chạy trên máy (localhost/127.0.0.1) khi địa chỉ có ?banthu=<file json>: thay Firestore bằng KHO GIẢ trong bộ
@@ -50,7 +50,24 @@
     },
     serverTimestamp: function () { return new Date().toISOString(); }
   };
-  var au = { onAuthStateChanged: function (a, cb) { setTimeout(function () { cb(q.get('khach') ? null : { uid: 'thay' }); }, 10); return function () {}; } };
+  // Đăng nhập giả (06/10/2026 — phiên myPay riêng): ?khach=1 ⇒ chưa đăng nhập, hiện khung đăng nhập; ID bất kỳ + mật khẩu
+  // 'sai' ⇒ báo sai; mật khẩu khác ⇒ hỏi mã 6 số; mã '123456' ⇒ vào. ?hethan=<giây> ⇒ phiên hết hạn sau từng ấy giây.
+  var nguoi = q.get('khach') ? null : { uid: 'thay', banThu: true };
+  var au = {
+    onAuthStateChanged: function (a, cb) { setTimeout(function () { cb(nguoi); }, 10); return function () {}; },
+    signOut: function () { nguoi = null; return Promise.resolve(); },
+    signInWithEmailAndPassword: function (a, email, mk) {
+      return Promise.reject(mk === 'sai' ? { code: 'auth/invalid-credential' } : { code: 'auth/multi-factor-auth-required' });
+    },
+    getMultiFactorResolver: function () {
+      return { hints: [{ factorId: 'totp', uid: 'g1' }], resolveSignIn: function (kd) {
+        if (kd.ma !== '123456') return Promise.reject({ code: 'auth/invalid-verification-code' });
+        nguoi = { uid: 'thay', banThu: true }; return Promise.resolve({ user: nguoi });
+      } };
+    },
+    TotpMultiFactorGenerator: { FACTOR_ID: 'totp', assertionForSignIn: function (uid, ma) { return { ma: ma }; } }
+  };
+  var batDauLuc = Date.now();
 
   var san = fetch(q.get('banthu'), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Không đọc được file bàn thử ' + r.status); return r.json(); }).then(function (j) {
     Object.keys(j).forEach(function (t) { Object.keys(j[t]).forEach(function (id) { kho(t).set(id, j[t][id]); }); });
@@ -59,6 +76,7 @@
   window.PayBanThu = {
     san: san, DB: DB,
     dem: function () { return { docDoc: demDoc, ghi: demGhi }; },
+    phien: function (u) { return u && u.banThu ? { u: u, het: q.get('hethan') ? batDauLuc + Number(q.get('hethan')) * 1000 : Date.now() + 6 * 3600 * 1000 } : null; },
     suaTuMayKhac: function (id, fn) {
       var o = sao(kho('payKho').get(id)); fn(o); o.phien = (Number(o.phien) || 0) + 1; o.may = 'may-khac';
       ghi({ col: 'payKho', id: id }, o);

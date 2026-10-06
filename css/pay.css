@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (3d9ba46) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -431,6 +431,20 @@ button,.hsrow,.no-dong,.tab,.chon-hs{touch-action:manipulation;-webkit-tap-highl
 #pyMan.loi .py-quay{display:none}
 #pyMan.loi .py-the{border-color:var(--warn-line)}
 @keyframes pyQuay{to{transform:rotate(360deg)}}
+/* khung đăng nhập myPay (06/10/2026 — phiên riêng trong tab) */
+.rail .py-ra{margin-top:0}
+.rail .py-ra + .brand{margin-top:0}
+#pyMan.dn .py-quay{display:none}
+#pyMan.dn .py-the{width:100%;max-width:380px}
+.py-dn-tieu{font-size:20px;font-weight:800;color:var(--accent-ink)}
+.py-dn-phu{font-size:13px;opacity:.75;margin:4px 0 16px}
+.py-dn{display:flex;flex-direction:column;gap:10px;text-align:left}
+.py-dn input{font:inherit;font-size:16px;padding:11px 13px;border-radius:12px;border:1px solid var(--glass-border);
+  background:#fff;color:inherit;user-select:text;-webkit-user-select:text}
+.py-dn input:focus{outline:2px solid var(--accent);outline-offset:0}
+.py-dn .btn{justify-content:center;padding:11px;font-size:15px}
+.py-dn-loi{min-height:20px;font-size:13px;color:#b91c1c;text-align:center}
+#pyMan .py-the a.py-dn-ve{display:inline-block;margin-top:8px;font-size:13px;font-weight:600}
 
 @media (max-width:760px){
   .khung{flex-direction:column-reverse}

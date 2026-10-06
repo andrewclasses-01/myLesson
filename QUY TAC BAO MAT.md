@@ -13,5 +13,8 @@
 6. **Đổi luật Firestore chỉ bằng công cụ trong `tools/`**: sửa tại chỗ từ bản đang chạy, kiểm bằng phép thử thật,
    giữ đường lùi, dọn dữ liệu thử.
 7. **Phát hiện dữ liệu lạ: sao lưu trước, xoá sau**, và không liên hệ người để lại thông tin liên lạc trong đó.
+8. **Học phí + sổ điểm danh ngày chỉ mở cho phiên myPay** (mã 6 số, đăng nhập trong 6 giờ, phiên riêng trong tab —
+   luật `payPhien()`, `tools/dang-luat-pay-phien.js`). Không đưa số tiền / điểm danh từng em vào kho đọc chung,
+   thông báo đẩy, hay file tĩnh; hoá đơn cho học sinh (sau này) chỉ em đó đọc được, KHÔNG theo kiểu "biết mã là đọc".
 
 Hồ sơ chi tiết giữ ở kho riêng tư của thầy.

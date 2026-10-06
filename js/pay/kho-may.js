@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (a157053) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (3d9ba46) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -21,7 +21,6 @@
     apiKey: 'AIzaSyAV_yoyAQM2fKKdOsJyuAxxf4AN7MsF7XY', authDomain: 'aword-70dae.firebaseapp.com', projectId: 'aword-70dae',
     storageBucket: 'aword-70dae.firebasestorage.app', messagingSenderId: '399279049436', appId: '1:399279049436:web:b9b34dcfb34732aa744219'
   };
-  var EMAIL_THAY = 'namdaptrai01@gmail.com';
   var DUOI_QT = '@quantri.andrewclasses.com';
   var GOC_E = 'E:\\LAP TRINH APP';
   var DIR_DATA = GOC_E + '\\myPay-data';
@@ -159,25 +158,128 @@
   }
 
   // ───────── Firestore ─────────
+  // ⭐ 06/10/2026 (thầy chốt) — PHIÊN myPay RIÊNG, CHỈ SỐNG TRONG TAB: initializeAuth + browserSessionPersistence ⇒ KHÔNG đọc
+  // phiên dashboard (IndexedDB, nhớ 30 ngày), đóng tab là mất phiên, đăng xuất ở đây không đá dashboard. Vào bằng tài khoản
+  // quản trị ID + mật khẩu + mã 6 số; máy chủ (luật payPhien, tools/dang-luat-pay-phien.js kho web) chỉ mở kho học phí cho
+  // phiên có mã 6 số (sign_in_second_factor 'totp') đăng nhập trong 6 giờ ⇒ phiên dashboard / vé app ký uid 'thay' bị chặn.
+  // ⛔ pay.html KHÔNG được nạp file nào gọi getAuth() trước chỗ này (thay.js, chat.js…) — initializeAuth sẽ hỏng.
   function moKho() {
     if (window.PayBanThu) return window.PayBanThu.san;     // bàn thử trên máy (ban-thu.js tự kiểm localhost + ?banthu)
     return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-auth.js'), import(SDK + '/firebase-firestore.js')]).then(function (m) {
       var app = m[0].getApps().length ? m[0].getApp() : m[0].initializeApp(CAU_HINH);
-      return { fs: m[2], db: m[2].getFirestore(app), au: m[1], a: m[1].getAuth(app) };
+      var a;
+      try { a = m[1].initializeAuth(app, { persistence: m[1].browserSessionPersistence }); }
+      catch (e) { a = m[1].getAuth(app); }   // đã có Auth (không nên xảy ra) — máy chủ vẫn chặn phiên không đủ điều kiện
+      return { fs: m[2], db: m[2].getFirestore(app), au: m[1], a: a };
     });
   }
-  // Có phải thầy không — cùng luật js/thay.js (tài khoản quản trị phải có claim thay; Google đúng email; token app ký uid 'thay').
-  function laThay(k, u) {
-    if (!u) return Promise.resolve(false);
-    if (u.uid === 'thay') return Promise.resolve(true);
-    var qt = u.email && u.email.slice(-DUOI_QT.length) === DUOI_QT;
-    if (!qt && !(u.email === EMAIL_THAY && u.emailVerified)) return Promise.resolve(false);
-    return u.getIdTokenResult().then(function (t) { return qt ? t.claims.thay === true : true; }, function () { return false; });
+  var HAN_PHIEN = 6 * 3600 * 1000;   // ⛔ phải khớp luật payPhien (21600000 ms)
+  var BIEN = 2 * 60 * 1000;          // hết sớm 2 phút cho khỏi lệch đồng hồ máy
+  // Phiên hợp lệ ⇒ { u, het } (het = mốc hết hạn, ms) · không ⇒ null
+  function kiemPhien(k, u) {
+    if (!u) return Promise.resolve(null);
+    if (window.PayBanThu) return Promise.resolve(window.PayBanThu.phien(u));
+    if (!(u.email && u.email.slice(-DUOI_QT.length) === DUOI_QT)) return Promise.resolve(null);
+    return u.getIdTokenResult().then(function (t) {
+      var c = t.claims || {}; var f = c.firebase || {};
+      var luc = Number(c.auth_time) * 1000;
+      if (c.thay !== true || f.sign_in_second_factor !== 'totp' || !luc) return null;
+      var het = luc + HAN_PHIEN - BIEN;
+      return Date.now() < het ? { u: u, het: het } : null;
+    }, function () { return null; });
   }
   function choPhien(k) {
     return new Promise(function (xong) {
-      var dung = k.au.onAuthStateChanged(k.a, function (u) { dung(); laThay(k, u).then(function (ok) { xong(ok ? u : null); }); });
+      var dung = k.au.onAuthStateChanged(k.a, function (u) { dung(); kiemPhien(k, u).then(xong); });
     });
+  }
+
+  // ───────── đăng nhập (tài khoản quản trị: ID + mật khẩu + mã 6 số — cùng tài khoản dashboard, js/thay.js) ─────────
+  function emailTuId(id) {
+    var chuan = String(id || '').replace(/\s+/g, '').toUpperCase();
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(chuan)).then(function (buf) {
+      return Array.prototype.map.call(new Uint8Array(buf), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('').slice(0, 24) + DUOI_QT;
+    });
+  }
+  function maLoi(e) { return String((e && (e.code || e.message)) || ''); }
+  function chuLoi(e) {
+    var c = maLoi(e);
+    if (/invalid-credential|wrong-password|user-not-found|invalid-email|invalid-login/.test(c)) return 'Sai ID hoặc mật khẩu.';
+    if (/too-many-requests/.test(c)) return 'Sai quá nhiều lần — đợi vài phút rồi thử lại.';
+    if (/user-disabled/.test(c)) return 'Tài khoản đang bị khoá.';
+    if (/invalid-verification-code|invalid-code|missing-code/.test(c)) return 'Mã 6 số không đúng (hoặc đã quá 30 giây) — gõ mã mới.';
+    if (/chua-co-ma/.test(c)) return 'Tài khoản chưa cài mã 6 số — cài trên Dashboard trước.';
+    if (/chua-du-quyen/.test(c)) return 'Tài khoản này không mở được myPay.';
+    if (/network/.test(c)) return 'Mất mạng — thử lại.';
+    return 'Không đăng nhập được (' + c.replace(/</g, '&lt;') + ').';
+  }
+  // Hiện khung đăng nhập trong màn chờ; trả Promise<{u, het}> khi đăng nhập xong.
+  function hoiDangNhap(k, loiDau) {
+    return new Promise(function (xong) {
+      var giai = null, goi = null;
+      function ve(buoc, loi) {
+        var m = document.getElementById('pyMan'); if (m) { m.classList.remove('loi'); m.classList.add('dn'); }
+        man('<div class="py-dn-tieu">myPay · Học phí</div>' +
+          '<div class="py-dn-phu">Mỗi lần mở myPay thầy đăng nhập lại. Đóng tab là tự đăng xuất; tối đa 6 giờ.</div>' +
+          '<form id="pyDn" class="py-dn" autocomplete="off">' +
+          (buoc === 'ma'
+            ? '<input id="pyDnMa" inputmode="numeric" maxlength="6" placeholder="Mã 6 số (Google Authenticator)" autocomplete="one-time-code">'
+            : '<input id="pyDnId" placeholder="ID quản trị" autocapitalize="characters" autocomplete="username">' +
+              '<input id="pyDnMk" type="password" placeholder="Mật khẩu" autocomplete="current-password">') +
+          '<button type="submit" class="btn primary">' + (buoc === 'ma' ? 'Xác nhận' : 'Đăng nhập') + '</button>' +
+          '<div class="py-dn-loi">' + (loi || '') + '</div></form>' +
+          '<a class="py-dn-ve" href="dashboard.html">← Về Dashboard</a>');
+        var f = document.getElementById('pyDn');
+        var o = document.getElementById(buoc === 'ma' ? 'pyDnMa' : 'pyDnId'); if (o) o.focus();
+        f.addEventListener('submit', function (ev) {
+          ev.preventDefault();
+          var nut = f.querySelector('button'); nut.disabled = true;
+          var p = buoc === 'ma' ? nhapMa(document.getElementById('pyDnMa').value) : nhapMk(document.getElementById('pyDnId').value, document.getElementById('pyDnMk').value);
+          p.then(function (ph) {
+            if (!ph) throw new Error('chua-du-quyen');
+            var m2 = document.getElementById('pyMan'); if (m2) m2.classList.remove('dn');
+            xong(ph);
+          })['catch'](function (e) {
+            if (e && e.__daVe) return;                                   // đã chuyển sang bước mã 6 số
+            var sai6 = /invalid-verification-code|invalid-code|missing-code/.test(maLoi(e));
+            if (buoc === 'ma' && sai6) { ve('ma', chuLoi(e)); return; }   // gõ lại mã, giữ bước
+            k.au.signOut(k.a)['catch'](function () {});
+            ve('mk', chuLoi(e));
+          });
+        });
+      }
+      function nhapMk(id, mk) {
+        return emailTuId(id).then(function (email) {
+          return k.au.signInWithEmailAndPassword(k.a, email, mk).then(function () {
+            throw new Error('chua-co-ma');   // vào được mà KHÔNG hỏi mã ⇒ tài khoản chưa cài mã 6 số (máy chủ cũng chặn)
+          }, function (e) {
+            if (!e || e.code !== 'auth/multi-factor-auth-required') throw e;
+            giai = k.au.getMultiFactorResolver(k.a, e);
+            goi = giai.hints.filter(function (h) { return h.factorId === k.au.TotpMultiFactorGenerator.FACTOR_ID; })[0];
+            if (!goi) throw new Error('chua-co-ma');
+            ve('ma');
+            var d = new Error('da-ve'); d.__daVe = true; throw d;
+          });
+        });
+      }
+      function nhapMa(ma) {
+        var kd = k.au.TotpMultiFactorGenerator.assertionForSignIn(goi.uid, String(ma || '').replace(/\D/g, ''));
+        return giai.resolveSignIn(kd).then(function (r) { return kiemPhien(k, r.user); });
+      }
+      ve('mk', loiDau);
+    });
+  }
+  // Hết 6 giờ / bấm Đăng xuất ⇒ thoát phiên + tải lại (= màn đăng nhập; dữ liệu trong bộ nhớ trang mất theo)
+  var _hetLuc = 0;
+  function dangXuat(lyDo) {
+    try { sessionStorage.setItem('py_ly_do', lyDo || ''); } catch (e) { /* thôi */ }
+    return Promise.resolve(K && K.au && K.au.signOut ? K.au.signOut(K.a) : null)['catch'](function () {}).then(function () { location.reload(); });
+  }
+  function canhGioHet(het) {
+    _hetLuc = het;
+    var kiem = function () { if (_hetLuc && Date.now() >= _hetLuc) { _hetLuc = 0; dangXuat('Phiên myPay đã quá 6 giờ — thầy đăng nhập lại nhé.'); } };
+    setInterval(kiem, 30000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) kiem(); });
   }
 
   var bangSo = null;                // payMaHs/so
@@ -331,11 +433,13 @@
   // ───────── KHỞI ĐỘNG ─────────
   function khoiDong() {
     man('Đang kiểm tra phiên đăng nhập của thầy…');
-    return moKho().then(function (k) { K = k; return choPhien(k); }).then(function (u) {
-      if (!u) {
-        man('Trang <b>myPay</b> chỉ dành cho thầy.<br>Mở <a href="dashboard.html">Dashboard</a>, đăng nhập, rồi bấm lại mục <b>myPay</b> trong hộp Quản lý &amp; bảo mật.', true);
-        return null;
-      }
+    var lyDo = ''; try { lyDo = sessionStorage.getItem('py_ly_do') || ''; sessionStorage.removeItem('py_ly_do'); } catch (e) { /* thôi */ }
+    return moKho().then(function (k) { K = k; return choPhien(k); }).then(function (ph) {
+      if (ph) return ph;
+      // chưa đăng nhập / phiên cũ không đủ điều kiện (quá 6 giờ…) ⇒ thoát hẳn rồi hỏi đăng nhập
+      return Promise.resolve(K.a && K.a.currentUser ? K.au.signOut(K.a) : null)['catch'](function () {}).then(function () { return hoiDangNhap(K, lyDo); });
+    }).then(function (ph) {
+      canhGioHet(ph.het);
       man('Đang tải dữ liệu học phí…');
       return napPayKho().then(function (n) {
         if (!n) throw new Error('Chưa có dữ liệu myPay trên mạng (chưa dời từ máy lên).');
@@ -354,6 +458,6 @@
       loiSan(e);
     });
   }
-  window.PayWeb = { may: may, nap: nap, san: san, luuLenMang: luuLenMang, moChonFileNgay: moChonFileNgay, duongTai: duongTai };
+  window.PayWeb = { may: may, nap: nap, san: san, luuLenMang: luuLenMang, moChonFileNgay: moChonFileNgay, duongTai: duongTai, dangXuat: dangXuat };
   khoiDong();
 })();

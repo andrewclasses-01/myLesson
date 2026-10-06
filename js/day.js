@@ -20,6 +20,7 @@
   var GOC = SRC.replace(/js\/day\.js.*$/, '');
   var KHOA_CONG_KHAI = 'BCCpzKHeGNtwbW2lIo705hxvQPAc2g6U44L4HiwJ8ngFceTFgB2KJTK5JBaLclmCONFKG92MkUXLH-op7BqD6Ko';
   var HAM_GUI = 'https://asia-southeast1-aword-70dae.cloudfunctions.net/dayThayGui';
+  var HAM_XEM_NHAC = 'https://asia-southeast1-aword-70dae.cloudfunctions.net/nhacHanXemTruoc';   // v1.257.0
   var K_BAT = 'ac_day_bat', K_MOC = 'ac_day_moc';
   var UA = navigator.userAgent || '';
   var LA_IOS = /iPad|iPhone|iPod/.test(UA) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -205,7 +206,21 @@
     '.dy-lops input{margin:0}' +
     '.dy-hop .dy-o{width:100%;box-sizing:border-box;border:1.5px solid #D9E3E1;border-radius:12px;padding:10px 12px;font:500 15px/1.4 "Segoe UI",system-ui,sans-serif;margin:4px 0 6px;resize:vertical}' +
     '.dy-hop .dy-nh{display:block;font-size:13px;font-weight:800;margin:10px 0 2px;color:#16232A}' +
-    '.dy-hop .dy-bao{min-height:18px;font-size:13px;text-align:center;color:#0E7C6E;margin:8px 0 0}';
+    '.dy-hop .dy-bao{min-height:18px;font-size:13px;text-align:center;color:#0E7C6E;margin:8px 0 0}' +
+    /* v1.257.0 — hộp NHẮC HẠN BÀI */
+    '.dy-hop.rong{width:min(560px,100%)}' +
+    '.dy-cong{display:flex;align-items:center;justify-content:space-between;gap:12px;background:#F4F8F7;border-radius:14px;padding:12px 14px;font-size:14.5px;font-weight:700}' +
+    '.dy-cong input{width:22px;height:22px;accent-color:#0E7C6E}' +
+    '.dy-chips{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0}' +
+    '.dy-chip{display:inline-flex;align-items:center;gap:6px;padding:6px 6px 6px 12px;border-radius:999px;background:#E4F3F0;color:#0B6156;font-size:13.5px;font-weight:800}' +
+    '.dy-chip button{border:0;background:#fff;color:#5F7370;width:22px;height:22px;border-radius:50%;cursor:pointer;font-size:14px;line-height:1}' +
+    '.dy-them{display:flex;gap:6px;align-items:center}.dy-them input{width:70px}' +
+    '.dy-hop select{border:1.5px solid #D9E3E1;border-radius:10px;padding:8px;font:600 14px "Segoe UI",system-ui,sans-serif;background:#fff}' +
+    '.dy-them .dy-o{margin:0}.dy-nho{border:0;border-radius:10px;background:#0E7C6E;color:#fff;font-weight:800;padding:9px 12px;cursor:pointer}' +
+    '.dy-lop{display:grid;grid-template-columns:1fr auto;gap:6px 8px;align-items:center;font-size:14px;margin:6px 0 2px}' +
+    '.dy-lop .dy-rieng{grid-column:1/-1;margin:0 0 4px}' +
+    '.dy-ds{font-size:13.5px;line-height:1.5;max-height:240px;overflow:auto;background:#F7FAF9;border-radius:12px;padding:8px 10px;margin-top:6px}' +
+    '.dy-ds b{color:#16232A}.dy-hop .x{color:#8A9A97}.dy-ds > div{padding:4px 0;border-bottom:1px solid #E8EFED}.dy-ds > div:last-child{border:0}';
   var CHUONG = '<svg viewBox="0 0 24 24"><path d="M6.2 8.5a5.8 5.8 0 0 1 11.6 0c0 6.5 2.7 8.3 2.7 8.3H3.5s2.7-1.8 2.7-8.3"/><path d="M10.4 20.5a1.8 1.8 0 0 0 3.2 0"/></svg>';
   var CHUONG_TAT = '<svg viewBox="0 0 24 24"><path d="M6.2 8.5a5.8 5.8 0 0 1 9.9-4.1M17.8 9.3c.3 5.6 2.7 7.5 2.7 7.5H7"/><path d="M10.4 20.5a1.8 1.8 0 0 0 3.2 0"/><path d="M3 3l18 18"/></svg>';
   function hop(html) {
@@ -325,7 +340,110 @@
     };
   }
 
-  window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, goKhiThoat: goKhiThoat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop, moGuiThay: moGuiThay, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
+  // ---------- ⭐ v1.257.0 (06/10/2026, thầy chốt) — TỰ NHẮC HẠN BÀI: hộp cài đặt (dashboard, cột trái "Nhắc hạn bài") ----------
+  // Kho `cauHinhNhac/chung` = { bat, moc:[phút], lop:{ <mã lớp>: { tat:true } | { moc:[phút] } }, capNhat } — hàm máy chủ nhacHanBai đọc.
+  // Thiếu tài liệu = mặc định BẬT, mốc 1 ngày + 2 tiếng. "Xem trước" = hàm nhacHanXemTruoc (chỉ tính, không gửi).
+  var MOC_MAC_DINH = [1440, 120];
+  function chuMoc(p) { return p % 1440 === 0 ? (p / 1440) + ' ngày' : (p % 60 === 0 ? (p / 60) + ' giờ' : p + ' phút'); }
+  function docMocGio(s) {   // "24, 3, 1.5" (giờ) -> [phút]
+    return String(s || '').split(/[,;\s]+/).map(function (x) { return Math.round(parseFloat(x) * 60); })   // số lẻ dùng dấu chấm: 1.5
+      .filter(function (x) { return x > 0 && x <= 14 * 1440; }).slice(0, 6);
+  }
+  function goiHam(url, data) {
+    return toi().then(function (me) { if (!me) throw new Error('Chưa đăng nhập phiên thầy.'); return me.u.getIdToken(); }).then(function (tk) {
+      return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tk }, body: JSON.stringify({ data: data || {} }) });
+    }).then(function (r) { return r.json(); }).then(function (j) { if (j.error) throw new Error(j.error.message || 'lỗi máy chủ'); return j.result || {}; });
+  }
+  function tenLopHien(l) { var g = String(l.tenGoc || l.maLop); return /[a-z]{3,}/i.test(g.normalize('NFD').replace(/[̀-ͯ]/g, '')) ? g : 'Lớp ' + g; }
+  function moNhacHan() {
+    var h = hop('<div class="dy-ic">' + CHUONG + '</div><h3>Nhắc hạn bài</h3><p>Tự đẩy thông báo tới máy các em <b>chưa làm xong</b> trước hạn. 22h–6h không gửi (dời sang 6:00).</p>' +
+      '<label class="dy-cong">Tự nhắc hạn bài<input type="checkbox" id="nhBat" checked></label>' +
+      '<span class="dy-nh">Nhắc trước hạn</span><div class="dy-chips" id="nhMoc"></div>' +
+      '<div class="dy-them"><input class="dy-o" id="nhSo" type="number" min="1" max="336" value="3"><select id="nhDv"><option value="60">giờ</option><option value="1440">ngày</option><option value="1">phút</option></select><button type="button" class="dy-nho" id="nhThem">+ Thêm mốc</button></div>' +
+      '<span class="dy-nh">Từng lớp</span><div id="nhLop"><p class="x">Đang tải…</p></div>' +
+      '<p class="dy-bao" id="nhBao"></p>' +
+      '<button type="button" class="dy-nut" id="nhLuu">LƯU</button>' +
+      '<button type="button" class="dy-nut phu" id="nhXem">Xem trước: ai sẽ được nhắc (48 giờ tới)</button>' +
+      '<div class="dy-ds" id="nhKq" hidden></div>' +
+      '<span class="dy-nh">Đã nhắc gần đây</span><div class="dy-ds" id="nhNk"><span class="x">Đang tải…</span></div>' +
+      '<button type="button" class="dy-nut phu" data-dy-dong>Đóng</button>');
+    h.$('.dy-hop').classList.add('rong');
+    var CFG = { bat: true, moc: MOC_MAC_DINH.slice(), lop: {} }, DS_LOP = [];
+    function veMoc() {
+      CFG.moc.sort(function (a, b) { return b - a; });
+      h.$('#nhMoc').innerHTML = CFG.moc.length ? CFG.moc.map(function (p, i) { return '<span class="dy-chip">' + chuMoc(p) + '<button type="button" data-xoa="' + i + '" aria-label="Bỏ">×</button></span>'; }).join('') : '<span class="x">Chưa có mốc nào</span>';
+    }
+    function veLop() {
+      h.$('#nhLop').innerHTML = DS_LOP.map(function (l) {
+        var c = CFG.lop[l.ma] || {}, kieu = c.tat ? 'tat' : (c.moc && c.moc.length ? 'rieng' : 'chung');
+        return '<div class="dy-lop" data-lop="' + an(l.ma) + '"><span>' + an(l.ten) + '</span><select data-kieu><option value="chung"' + (kieu === 'chung' ? ' selected' : '') + '>Theo cài đặt chung</option>' +
+          '<option value="tat"' + (kieu === 'tat' ? ' selected' : '') + '>Không nhắc</option><option value="rieng"' + (kieu === 'rieng' ? ' selected' : '') + '>Mốc riêng</option></select>' +
+          '<input class="dy-o dy-rieng" data-gio placeholder="Số giờ trước hạn, cách nhau dấu phẩy — vd: 24, 3" value="' + (kieu === 'rieng' ? c.moc.map(function (p) { return Math.round(p / 6) / 10; }).join(', ') : '') + '"' + (kieu === 'rieng' ? '' : ' hidden') + '></div>';
+      }).join('') || '<p class="x">Chưa tải được danh sách lớp.</p>';
+    }
+    h.$('#nhMoc').addEventListener('click', function (e) { var b = e.target.closest('[data-xoa]'); if (!b) return; CFG.moc.splice(+b.getAttribute('data-xoa'), 1); veMoc(); });
+    h.$('#nhThem').onclick = function () {
+      var p = Math.round((+h.$('#nhSo').value || 0) * (+h.$('#nhDv').value || 60));
+      if (!(p > 0 && p <= 14 * 1440)) { h.$('#nhBao').textContent = 'Mốc phải từ 1 phút tới 14 ngày.'; return; }
+      if (CFG.moc.length >= 6) { h.$('#nhBao').textContent = 'Tối đa 6 mốc.'; return; }
+      if (CFG.moc.indexOf(p) < 0) CFG.moc.push(p);
+      h.$('#nhBao').textContent = ''; veMoc();
+    };
+    h.$('#nhLop').addEventListener('change', function (e) {
+      var s = e.target.closest('[data-kieu]'); if (!s) return;
+      s.parentNode.querySelector('[data-gio]').hidden = s.value !== 'rieng';
+    });
+    toi().then(function (me) {
+      if (!me) throw new Error('Chưa đăng nhập phiên thầy.');
+      var fs = me.f.fs, db = me.f.db;
+      fs.getDoc(fs.doc(db, 'cauHinhNhac', 'chung')).then(function (s) {
+        if (s.exists()) { var d = s.data() || {}; CFG.bat = d.bat !== false; CFG.moc = Array.isArray(d.moc) && d.moc.length ? d.moc.slice() : MOC_MAC_DINH.slice(); CFG.lop = d.lop || {}; }
+        h.$('#nhBat').checked = CFG.bat; veMoc(); veLop();
+      }).catch(function (e) { h.$('#nhBao').textContent = 'Chưa đọc được cài đặt: ' + String(e && e.message || e).slice(0, 80); veMoc(); });
+      fs.getDocs(fs.query(fs.collection(db, 'nhacHanDaGui'), fs.orderBy('luc', 'desc'), fs.limit(12))).then(function (s) {
+        var ra = [];
+        s.forEach(function (d) {
+          var x = d.data() || {}, co = x.emCoMay || 0;
+          ra.push('<div><b>' + an(x.lop) + ' · ' + an(x.bai) + (x.so ? ' · chặng ' + x.so : '') + '</b> <span class="x">(hạn ' + an(x.gio || '') + ', nhắc lúc ' +
+            new Date(x.luc).toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: 'numeric', month: 'numeric' }) + ')</span><br>' +
+            (x.soEm ? x.soEm + ' em chưa xong · ' + co + ' em nhận được' + (x.soEm > co ? ' · <span class="x">' + (x.soEm - co) + ' em chưa bật thông báo</span>' : '') : 'cả lớp đã xong — không gửi') + '</div>');
+        });
+        h.$('#nhNk').innerHTML = ra.join('') || '<span class="x">Chưa nhắc lần nào.</span>';
+      }).catch(function () { h.$('#nhNk').innerHTML = '<span class="x">Chưa đọc được nhật ký.</span>'; });
+    }).catch(function (e) { h.$('#nhBao').textContent = String(e && e.message || e); veMoc(); });
+    fetch((window.AC_GOC_DL || GOC) + 'data/lop.json', { cache: 'no-cache' }).then(function (r) { return r.json(); }).then(function (dl) {
+      DS_LOP = (dl.lop || []).concat(dl.khoa || []).map(function (l) { return { ma: l.maLop, ten: tenLopHien(l) }; });
+      veLop();
+    }).catch(function () { veLop(); });
+    h.$('#nhLuu').onclick = function () {
+      var bao = h.$('#nhBao'), nut = this, lop = {};
+      Array.prototype.forEach.call(h.$('#nhLop').querySelectorAll('[data-lop]'), function (r) {
+        var kieu = r.querySelector('[data-kieu]').value, ma = r.getAttribute('data-lop');
+        if (kieu === 'tat') lop[ma] = { tat: true };
+        else if (kieu === 'rieng') { var m = docMocGio(r.querySelector('[data-gio]').value); if (m.length) lop[ma] = { moc: m }; }
+      });
+      if (!CFG.moc.length) { bao.textContent = 'Cần ít nhất một mốc nhắc.'; return; }
+      nut.disabled = true; bao.textContent = 'Đang lưu…';
+      toi().then(function (me) {
+        if (!me) throw new Error('Chưa đăng nhập phiên thầy.');
+        return me.f.fs.setDoc(me.f.fs.doc(me.f.db, 'cauHinhNhac', 'chung'), { bat: h.$('#nhBat').checked, moc: CFG.moc.slice(0, 6), lop: lop, capNhat: Date.now() });
+      }).then(function () { CFG.lop = lop; bao.textContent = '✓ Đã lưu. Máy chủ áp dụng từ lượt kiểm kế tiếp (15 phút/lần).'; nut.disabled = false; },
+        function (e) { bao.textContent = 'Chưa lưu được: ' + String(e && e.message || e).slice(0, 100); nut.disabled = false; });
+    };
+    h.$('#nhXem').onclick = function () {
+      var kq = h.$('#nhKq'), nut = this; kq.hidden = false; kq.innerHTML = '<span class="x">Máy chủ đang tính…</span>'; nut.disabled = true;
+      goiHam(HAM_XEM_NHAC).then(function (r) {
+        nut.disabled = false;
+        var ds = (r.ds || []).sort(function (a, b) { return a.moc - b.moc; });
+        kq.innerHTML = ds.length ? ds.map(function (x) {
+          return '<div><b>' + an(x.lop) + ' · ' + an(x.bai) + (x.so ? ' · chặng ' + x.so : '') + '</b> <span class="x">hạn ' + an(x.gio) + '</span><br>' +
+            (x.em.length ? x.em.map(function (t, i) { return an(t) + (x.coMay[i] ? ' 🔔' : ''); }).join(', ') : '<span class="x">cả lớp đã xong</span>') + '</div>';
+        }).join('') + '<div class="x">🔔 = em đã bật thông báo (nhận được nhắc). Bài chỉ có worksheet / bài nghe không tính.</div>' : '<span class="x">Không có bài nào hết hạn trong 48 giờ tới.</span>';
+      }, function (e) { nut.disabled = false; kq.innerHTML = '<span class="x">Chưa xem được: ' + an(String(e && e.message || e).slice(0, 120)) + '</span>'; });
+    };
+  }
+
+  window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, goKhiThoat: goKhiThoat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop, moGuiThay: moGuiThay, moNhacHan: moNhacHan, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
   setTimeout(dongBo, 3000);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') veNut(); });
 })();

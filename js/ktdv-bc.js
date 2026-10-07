@@ -279,7 +279,7 @@
     '.kqp-muc{display:inline-block;margin-top:6px;font-weight:800;font-size:13.5px;padding:3px 14px;border-radius:999px}' +
     '.kqp-muc.tot{background:#E3F5EA;color:#1F7A50} .kqp-muc.kha{background:#E2F2EF;color:#0E7C6E} .kqp-muc.co{background:#FDF4E5;color:#A86A12} .kqp-muc.luyen{background:#FCEBDD;color:#A8501F}' +
     '.kqp-phu{font-size:13px;color:var(--mo);margin-top:8px} .kqp-phu b{color:var(--chu)}' +
-    '.kqp-cot{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}' +
+    '.kqp-cot{display:flex;flex-direction:column;gap:12px}' +
     '.kqp-phan{border:1px solid var(--vien);border-radius:14px;padding:12px 14px;background:#fff}' +
     '.kqp-phan-t{display:flex;justify-content:space-between;align-items:center;gap:8px}' +
     '.kqp-phan-t span{font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px}' +
@@ -308,7 +308,7 @@
     '.kqp-da{display:block;margin-top:3px;color:#1F7A50;font-size:13px} .kqp-da b{font-weight:700}' +
     '.kqp-h-nx textarea{display:block;resize:vertical;line-height:1.45;width:100%;margin-top:3px;font:500 13px var(--font,inherit);border:1px solid #CFDCD9;border-radius:8px;padding:6px 8px;background:#fff;color:var(--chu)}' +
     '.kqp-ky{margin-top:26px;padding-top:12px;border-top:1px solid var(--vien);font-size:12px;color:var(--nhat);text-align:center}' +
-    '@media(max-width:600px){.kqp{font-size:14.5px}.kqp-tq{flex-direction:column;text-align:center;gap:10px}.kqp-cot{grid-template-columns:1fr}.kqp-ten{font-size:19px}' +
+    '@media(max-width:600px){.kqp{font-size:14.5px}.kqp-tq{flex-direction:column;text-align:center;gap:10px}.kqp-ten{font-size:19px}' +
     ' .kqp-tieu{display:none} .kqp-hang{grid-template-columns:30px minmax(0,1fr);row-gap:3px;padding:10px 12px} .kqp-h-de{font-weight:700} .kqp-h-bl,.kqp-h-nx{grid-column:2}' +
     ' .kqp-h-bl::before,.kqp-h-nx::before{content:attr(data-l) ": ";font-size:11.5px;font-weight:700;color:var(--mo)}}' +
     '@media print{.kqp-tq{background:#fff;border:1px solid var(--vien)} .kqp-nx textarea,.kqp-h-nx textarea{display:none} .kqp .in-chu{display:block} .kqp-phan,.kqp-nx,.kqp-hang,.kqp-tq,.kqp-vs{break-inside:avoid}' +

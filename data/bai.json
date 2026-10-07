@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-07 14:51:31",
+  "capNhat": "2026-10-07 14:56:00",
   "bai": {
     "A1C": [
       {
@@ -511,6 +511,26 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_5.10_WORKSHEET_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2B_5.10_WORKSHEET DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2B_5.10_WORKSHEET DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "WORKSHEET",
+        "ngay": "5.10",
+        "tenBai": "DỊCH BÀI: BONES AND MUSCLES",
+        "han": "2026-10-09T19:45",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-07",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "DỊCH BÀI: BONES AND MUSCLES",
+            "o": 0,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB2B%2FB2B_5.10_WORKSHEET_DS-S5.I1.W1_BONES_AND_MUSCLES%2F0.pdf?alt=media",
+            "soTrang": 2
+          }
+        ]
+      },
       {
         "id": "B2B_2.10_WORDS_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2B_2.10_WORDS DS-S5.I1.W1 BONES AND MUSCLES",

@@ -1176,8 +1176,8 @@ body.co-den-dt{touch-action:none; overscroll-behavior:none}
   fill:none; stroke-linecap:round; stroke-linejoin:round}
 
 .lb-ds{flex:1; min-height:0; display:grid; grid-auto-flow:row; gap:var(--lb-khe)}
-/* Bốn cột CỐ ĐỊNH: hạng · tên · điểm · thời gian. Điểm và thời gian căn MÉP
-   PHẢI trong cột của mình nên hàng nào cũng thẳng cột với nhau. */
+/* Bốn cột CỐ ĐỊNH: hạng · tên · điểm · thời gian. Điểm và thời gian căn GIỮA
+   cột của mình (v1.263.2, thầy chốt) nên hàng nào cũng thẳng cột với nhau. */
 .lb-row{display:grid;
   grid-template-columns:calc(var(--lb-cao) - 2px) minmax(0,1fr) 3.6ch 4.8ch;
   gap:6px; align-items:center; padding:0 6px; border-radius:7px;
@@ -1190,9 +1190,9 @@ body.co-den-dt{touch-action:none; overscroll-behavior:none}
   height:calc(var(--lb-cao) - 5px); margin:0 auto}
 /* ⭐ Tên LUÔN in đậm, và luôn ở dạng VIẾT TẮT (cùng lối app myTeam). */
 .lb-name{font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
-.lb-score{font-weight:800; color:var(--accent); text-align:right;
+.lb-score{font-weight:800; color:var(--accent); text-align:center;
   font-variant-numeric:tabular-nums}
-.lb-time{color:#93A5A1; text-align:right; font-size:calc(var(--lb-chu) - 1px);
+.lb-time{color:#93A5A1; text-align:center; font-size:calc(var(--lb-chu) - 1px);
   font-variant-numeric:tabular-nums}
 
 /* MÀU TÊN — bốn mức thầy chốt ở đợt 4, sửa lại ở v1.47.0 (02/09/2026):

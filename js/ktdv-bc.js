@@ -14,6 +14,8 @@
      mỗi phần có điểm tối đa theo độ khó (BT1 20 · BT2 30 · BT3 50) + MỨC CHUẨN (90% · 85% · 70% câu đúng);
      điểm phần = tối đa × min(1, tỉ lệ đúng / chuẩn). Bảng `CACH` bên dưới. Ảnh chụp KHÔNG lưu cách tính ⇒ link cũ cũng tính
      lại theo `CACH` hiện hành (thầy chọn). Số liệu 55 bài chấm cũ: TB đúng BT1 60% · BT2 41% · BT3 20%.
+   ⭐ 07/10/2026 chiều — thầy ĐỔI: "hạ điểm thật mạnh, đề cao bài 3" ⇒ BT1 10 · BT2 20 · BT3 70 và BỎ mức chuẩn (c = 1: đúng bao nhiêu %
+     được bấy nhiêu điểm). Code vẫn giữ cơ chế chuẩn (c < 1) — chữ "đạt chuẩn khi đúng N câu" / đoạn "mức chuẩn" chỉ hiện khi có phần c < 1.
    Chỉ có Đúng / Sai — phân loại 4 mức, thời gian, rời trang… nằm ở phần "Chi tiết giáo viên" của dashboard.
 
    html(s, {sua:true})  ⇒ ô nhận xét chung là <textarea data-bc-nx="uuDiem|hanChe">, lời giải thích câu sai là <textarea data-bc-gc="mã:số câu"> (dashboard).
@@ -27,7 +29,7 @@
 
   // ---- ĐIỂM QUY ĐỔI THEO ĐỘ KHÓ (07/10/2026) ----
   // w = điểm tối đa của phần (thang 100) · c = mức chuẩn (tỉ lệ câu đúng để được trọn điểm phần) · sao = độ khó hiện cho phụ huynh
-  var CACH = { BT1: { w: 20, c: 0.90, sao: 1 }, BT2: { w: 30, c: 0.85, sao: 2 }, BT3: { w: 50, c: 0.70, sao: 3 } };
+  var CACH = { BT1: { w: 10, c: 1, sao: 1 }, BT2: { w: 20, c: 1, sao: 2 }, BT3: { w: 70, c: 1, sao: 3 } };
   function cachCua(b) { return CACH[b.ma] || { w: b.n || 1, c: 1, sao: 1 }; }
   function mot(x) { return Math.round(x * 10) / 10; }
   function so(x) { return String(mot(x)).replace('.', ','); }
@@ -52,7 +54,7 @@
   // ---- màu + nhãn theo điểm, dễ hiểu với phụ huynh (không dùng đỏ) ----
   function mucChung(t) { return t >= 80 ? ['Tốt', 'tot'] : t >= 60 ? ['Khá', 'kha'] : t >= 35 ? ['Cần cố gắng', 'co'] : ['Cần luyện nhiều', 'luyen']; }
   function mauVong(t) { return t >= 80 ? '#1F9D55' : t >= 60 ? '#0E7C6E' : t >= 35 ? '#E0962B' : '#D9774F'; }
-  function ttPhan(tl) { return tl >= 0.999 ? ['dat', '✓ Đạt chuẩn', '#1F9D55'] : tl >= 0.6 ? ['gan', 'Gần đạt', '#0E9A86'] : ['can', 'Cần luyện thêm', '#E0962B']; }
+  function ttPhan(tl) { return tl >= 0.999 ? ['dat', '✓ Trọn điểm', '#1F9D55'] : tl >= 0.6 ? ['gan', 'Gần đạt', '#0E9A86'] : ['can', 'Cần luyện thêm', '#E0962B']; }
 
   // ---- lời giải thích câu sai TỰ ĐỘNG (so từng từ với đáp án; thầy / Claude vẫn sửa lại được) ----
   // Giọng như cột "Nhận xét" của file chấm Excel: nêu RÕ lỗi gì, vì sao (không nhắc tới "đáp án", không bảo em đi đối chiếu). Câu để trống: KHÔNG có lời (chỉ hiện "✗ Để trống" + đáp án đúng).
@@ -237,16 +239,17 @@
       if (b.chua) return '<div class="kqp-phan"><div class="kqp-phan-t"><span><i>' + (i + 1) + '</i>' + E(b.ten) + '</span><em class="kqp-tt chua">Chưa nộp</em></div>' +
         '<div class="kqp-phan-d"><em>Tối đa ' + so(x.toiDa) + ' điểm</em>' + sao + '</div><div class="kqp-nen"><u style="width:0"></u></div></div>';
       var tt = ttPhan(x.tl);
-      var chu = 'Đúng <b>' + b.d + '/' + b.n + '</b> câu · ' + (x.chuan >= 1 ? 'cần đúng hết ' + b.n + ' câu để trọn điểm' : 'đạt chuẩn khi đúng <b>' + x.can + '</b> câu') +
-        (b.d < x.can ? ' (còn thiếu ' + (x.can - b.d) + ')' : '');
+      var chu = 'Đúng <b>' + b.d + '/' + b.n + '</b> câu (' + Math.round(100 * b.d / (b.n || 1)) + '%)' +
+        (x.chuan < 1 ? ' · đạt chuẩn khi đúng <b>' + x.can + '</b> câu' + (b.d < x.can ? ' (còn thiếu ' + (x.can - b.d) + ')' : '') : '');
       return '<div class="kqp-phan"><div class="kqp-phan-t"><span><i>' + (i + 1) + '</i>' + E(b.ten) + '</span><em class="kqp-tt ' + tt[0] + '">' + tt[1] + '</em></div>' +
         '<div class="kqp-phan-d"><b>' + so(x.d) + '</b><em>/ ' + so(x.toiDa) + ' điểm</em>' + sao + '</div>' +
         '<div class="kqp-nen"><u style="width:' + Math.max(2, x.tl * 100) + '%;background:' + tt[2] + '"></u></div>' +
         '<div class="kqp-phan-c">' + chu + '</div></div>';
     }).join('') + '</div>';
-    var c3 = CACH.BT3 ? Math.round(CACH.BT3.c * 100) : 70;
+    var c3 = CACH.BT3 ? Math.round(CACH.BT3.c * 100) : 100, coChuan = qd.ds.some(function (x) { return x.chuan < 1; });
     h += '<details class="kqp-vs"><summary>Vì sao tính điểm như vậy?</summary><p>Ba phần khó dần: tạo cụm số ít → cụm số nhiều → tạo câu. Phần càng khó thì càng nhiều điểm (' +
-      qd.ds.map(function (x) { return so(x.toiDa); }).join(' / ') + ' điểm).</p><p>Mỗi phần có một <b>mức chuẩn</b> — số câu đúng cần có để coi là đã vững. Đạt mức chuẩn là được trọn điểm phần đó, vì với phần khó như tạo câu, làm đúng ' + c3 + '% đã là rất tốt.</p></details>';
+      qd.ds.map(function (x) { return so(x.toiDa); }).join(' / ') + ' điểm).</p>' + (coChuan ? '<p>Mỗi phần có một <b>mức chuẩn</b> — số câu đúng cần có để coi là đã vững. Đạt mức chuẩn là được trọn điểm phần đó, vì với phần khó như tạo câu, làm đúng ' + c3 + '% đã là rất tốt.</p>'
+      : '<p><b>Tạo câu</b> là kỹ năng chính để con nói và viết được tiếng Anh, nên chiếm phần lớn số điểm. Điểm mỗi phần tính theo tỉ lệ câu con làm đúng trong phần đó.</p>') + '</details>';
     // nhận xét
     var nx = nhanXet('uuDiem', 'Con làm tốt', 'tot', s.uuDiem, sua, 'Điểm tốt của em…') + nhanXet('hanChe', 'Con cần cải thiện', 'can', s.hanChe, sua, 'Những điểm em cần luyện thêm…');
     if (nx) h += '<h3 class="kqp-muc-tde">Nhận xét của thầy</h3><div class="kqp-nxs">' + nx + '</div>';

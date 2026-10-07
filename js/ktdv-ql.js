@@ -560,7 +560,7 @@
       var soVN = function (x) { return String(Math.round(x * 10) / 10).replace('.', ','); };
       h2 += '<h4 class="ktbc-muc">1. Phân loại câu</h4><table class="ktbc-bang tk"><thead><tr><th>Bài</th><th>Đúng hoàn toàn</th><th>Tạm chấp nhận</th><th>Sai, không nghiêm trọng</th><th>Sai nghiêm trọng / bỏ trống</th><th>Câu đúng</th><th>Điểm quy đổi</th></tr></thead><tbody>' +
         tk.map(function (o, i) {
-          var x = qd.ds[i], chuan = 'tối đa ' + x.toiDa + ' · chuẩn ' + Math.round(x.chuan * 100) + '% (' + x.can + ' câu)';
+          var x = qd.ds[i], chuan = 'tối đa ' + x.toiDa + (x.chuan < 1 ? ' · chuẩn ' + Math.round(x.chuan * 100) + '% (' + x.can + ' câu)' : '');
           if (!o.k) return '<tr><td>' + o.b.ma + '. ' + E(o.b.ten) + '</td><td colspan="5" class="nhat">Chưa làm</td><td class="nhat">' + chuan + '</td></tr>';
           var n = o.rv.length || o.b.n;
           return '<tr><td>' + o.b.ma + '. ' + E(o.b.ten) + '</td><td class="c-dung">' + o.loai.dung + '</td><td class="c-tam">' + o.loai.tam + '</td><td class="c-nhe">' + o.loai.nhe + '</td><td class="c-nang">' + o.loai.nang + '</td><td><b>' + o.d + '/' + n + ' = ' + (Math.round(1000 * o.d / n) / 10) + '%</b></td>' +
@@ -716,9 +716,9 @@
       var uu = [], han = [];
       tk.forEach(function (o) {
         if (!o.k) return;
-        // 07/10/2026: so với MỨC CHUẨN của phần (ktdv-bc.js CACH — tạo câu đúng 70% đã là tốt), không so với 100%
+        // 07/10/2026: so với MỨC CHUẨN của phần (ktdv-bc.js CACH; chiều 07/10 thầy bỏ chuẩn ⇒ c = 1, so với 100%)
         var n = o.rv.length || o.b.n, ch = (window.KTDV_BC.CACH[o.b.ma] || { c: 1 }).c, p = (o.d / n) / ch;
-        if (p >= 0.999) uu.push(o.b.ten + ': con đạt chuẩn (' + o.d + '/' + n + ' câu).');
+        if (p >= 0.999) uu.push(o.b.ten + ': con ' + (ch < 1 ? 'đạt chuẩn' : 'làm đúng hết') + ' (' + o.d + '/' + n + ' câu).');
         else if (p >= 0.8) uu.push(o.b.ten + ': con làm tốt (' + o.d + '/' + n + ' câu).');
         else if (p >= 0.5) uu.push(o.b.ten + ': con nắm được phần cơ bản (' + o.d + '/' + n + ' câu).');
         var dem = {}, sai = 0;

@@ -153,7 +153,13 @@
         if (t.loai === 'dang') return '<span class="ktq-o dang" title="' + E(b.ma + ': đang làm / bỏ dở (' + t.lg.length + ' lượt)') + '"><b>' + b.ma + '</b>đang làm</span>';
         return '<span class="ktq-o"><b>' + b.ma + '</b>chưa</span>';
       }).join('');
-      var phu = [x.ma, x.ngaySinh ? ngaySinhVN(x.ngaySinh) : '', x.truong || '', x.lopTruong ? 'lớp ' + x.lopTruong : ''].filter(Boolean).join(' · ');
+      // ⭐ 07/10/2026 — ĐIỂM QUY ĐỔI theo độ khó (thang 100, js/ktdv-bc.js) khi đã nộp đủ 3 bài; theo chấm máy (phần thầy sửa Đúng/Sai tính trong Báo cáo)
+      var bq = BAI.map(function (b) { var t = tinhTrang(x, b); return t.loai === 'xong' ? { ma: b.ma, n: t.k.total || b.n, d: t.k.score || 0 } : null; });
+      if (window.KTDV_BC && bq.every(Boolean)) {
+        var qd = window.KTDV_BC.diem({ bai: bq });
+        o += '<span class="ktq-o qd" title="Điểm quy đổi theo độ khó (thang 100) — theo chấm máy; phần thầy sửa Đúng/Sai xem trong Báo cáo"><b>ĐIỂM</b>' + Math.round(qd.t) + '</span>';
+      }
+      var phu =[x.ma, x.ngaySinh ? ngaySinhVN(x.ngaySinh) : '', x.truong || '', x.lopTruong ? 'lớp ' + x.lopTruong : ''].filter(Boolean).join(' · ');
       return '<div class="ktq-dong" data-ktq-ma="' + E(x.ma) + '">' + anhHtml(x, 44) +
         '<div class="ktq-ten"><b>' + E(x.ten) + '</b><span>' + E(phu) + '</span>' + (x.trangThai === 'da-chuyen' ? '<span class="ktq-chuyen">Đã vào học: ' + E(x.chuyenSang || '') + '</span>' : '') + '</div>' +
         '<div class="ktq-oo">' + o + '</div>' +
@@ -549,12 +555,17 @@
           '<div class="ktbc-o-so"><b>' + o.d + '</b>/' + n + ' câu đúng</div><div class="ktbc-o-phu">Thời gian: ' + phut(o.k.timeMs) + '</div></div>';
       }).join('') + '</div>';
       // phân loại
-      h2 += '<h4 class="ktbc-muc">1. Phân loại câu</h4><table class="ktbc-bang tk"><thead><tr><th>Bài</th><th>Đúng hoàn toàn</th><th>Tạm chấp nhận</th><th>Sai, không nghiêm trọng</th><th>Sai nghiêm trọng / bỏ trống</th><th>Điểm</th></tr></thead><tbody>' +
-        tk.map(function (o) {
-          if (!o.k) return '<tr><td>' + o.b.ma + '. ' + E(o.b.ten) + '</td><td colspan="5" class="nhat">Chưa làm</td></tr>';
+      // ⭐ 07/10/2026 — cột "Điểm quy đổi" (thang 100 theo độ khó, js/ktdv-bc.js CACH) cạnh số câu đúng thật
+      var qd = window.KTDV_BC.diem({ bai: tk.map(function (o) { return o.k ? { ma: o.b.ma, n: o.rv.length || o.b.n, d: o.d } : { ma: o.b.ma, n: o.b.n, chua: true }; }) });
+      var soVN = function (x) { return String(Math.round(x * 10) / 10).replace('.', ','); };
+      h2 += '<h4 class="ktbc-muc">1. Phân loại câu</h4><table class="ktbc-bang tk"><thead><tr><th>Bài</th><th>Đúng hoàn toàn</th><th>Tạm chấp nhận</th><th>Sai, không nghiêm trọng</th><th>Sai nghiêm trọng / bỏ trống</th><th>Câu đúng</th><th>Điểm quy đổi</th></tr></thead><tbody>' +
+        tk.map(function (o, i) {
+          var x = qd.ds[i], chuan = 'tối đa ' + x.toiDa + ' · chuẩn ' + Math.round(x.chuan * 100) + '% (' + x.can + ' câu)';
+          if (!o.k) return '<tr><td>' + o.b.ma + '. ' + E(o.b.ten) + '</td><td colspan="5" class="nhat">Chưa làm</td><td class="nhat">' + chuan + '</td></tr>';
           var n = o.rv.length || o.b.n;
-          return '<tr><td>' + o.b.ma + '. ' + E(o.b.ten) + '</td><td class="c-dung">' + o.loai.dung + '</td><td class="c-tam">' + o.loai.tam + '</td><td class="c-nhe">' + o.loai.nhe + '</td><td class="c-nang">' + o.loai.nang + '</td><td><b>' + o.d + '/' + n + ' = ' + (Math.round(1000 * o.d / n) / 10) + '%</b></td></tr>';
-        }).join('') + '</tbody></table>';
+          return '<tr><td>' + o.b.ma + '. ' + E(o.b.ten) + '</td><td class="c-dung">' + o.loai.dung + '</td><td class="c-tam">' + o.loai.tam + '</td><td class="c-nhe">' + o.loai.nhe + '</td><td class="c-nang">' + o.loai.nang + '</td><td><b>' + o.d + '/' + n + ' = ' + (Math.round(1000 * o.d / n) / 10) + '%</b></td>' +
+            '<td><b>' + soVN(x.d) + '/' + x.toiDa + '</b><br><span class="nhat">' + chuan + '</span></td></tr>';
+        }).join('') + '<tr><td colspan="6" style="text-align:right"><b>Tổng điểm quy đổi (thang 100)</b></td><td><b>' + soVN(qd.t) + '</b></td></tr></tbody></table>';
       // phân tích thời gian + nghi dịch
       h2 += '<h4 class="ktbc-muc">2. Phân tích quá trình làm bài</h4><div class="ktbc-pt">' + tk.map(function (o) {
         if (!o.k) return '';
@@ -705,8 +716,10 @@
       var uu = [], han = [];
       tk.forEach(function (o) {
         if (!o.k) return;
-        var n = o.rv.length || o.b.n, p = o.d / n;
-        if (p >= 0.8) uu.push(o.b.ten + ': con làm tốt (' + o.d + '/' + n + ' câu).');
+        // 07/10/2026: so với MỨC CHUẨN của phần (ktdv-bc.js CACH — tạo câu đúng 70% đã là tốt), không so với 100%
+        var n = o.rv.length || o.b.n, ch = (window.KTDV_BC.CACH[o.b.ma] || { c: 1 }).c, p = (o.d / n) / ch;
+        if (p >= 0.999) uu.push(o.b.ten + ': con đạt chuẩn (' + o.d + '/' + n + ' câu).');
+        else if (p >= 0.8) uu.push(o.b.ten + ': con làm tốt (' + o.d + '/' + n + ' câu).');
         else if (p >= 0.5) uu.push(o.b.ten + ': con nắm được phần cơ bản (' + o.d + '/' + n + ' câu).');
         var dem = {}, sai = 0;
         o.rv.forEach(function (r, i) { if (dung(o.b, i, r)) return; sai++; nhomLoi(r).forEach(function (l) { dem[l] = (dem[l] || 0) + 1; }); });
@@ -753,7 +766,7 @@
     '.ktq-ten{flex:1;min-width:0;display:flex;flex-direction:column} .ktq-ten b{font-size:15px} .ktq-ten span{font-size:12px;color:var(--mo);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
     '.ktq-ten .ktq-chuyen{color:var(--xanh);font-weight:700}' +
     '.ktq-oo{display:flex;gap:6px;flex:none} .ktq-o{display:flex;flex-direction:column;align-items:center;min-width:62px;padding:4px 6px;border-radius:9px;background:#F2F6F5;color:var(--nhat);font-size:12px;font-weight:700}' +
-    '.ktq-o b{font-size:11px;color:var(--mo)} .ktq-o.xong{background:var(--la-nhat);color:#1F7A50} .ktq-o.dang{background:var(--vang-nhat);color:#A86A12}' +
+    '.ktq-o b{font-size:11px;color:var(--mo)} .ktq-o.xong{background:var(--la-nhat);color:#1F7A50} .ktq-o.dang{background:var(--vang-nhat);color:#A86A12} .ktq-o.qd{background:#0E7C6E;color:#fff;font-size:14px} .ktq-o.qd b{color:#CDEDE7}' +
     '.ktq-hd{display:flex;gap:6px;flex:none}' +
     '@media(max-width:720px){.ktq-dong{flex-wrap:wrap}.ktq-oo{order:3;width:100%}.ktq-dau{flex-direction:column}}' +
     '.ktq-nen{position:fixed;inset:0;z-index:120;background:rgba(16,30,34,.45);display:grid;place-items:center;padding:16px}' +

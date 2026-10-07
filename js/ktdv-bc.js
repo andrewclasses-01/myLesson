@@ -10,7 +10,10 @@
        bai:[ { ma, ten, n, d, ds:[{i, q, y, c, ok, g}] }  |  { ma, ten, n, chua:true } ] }
        ds = TẤT CẢ các câu (đúng + sai) như các sheet BT1/BT2/BT3 trong file Excel chấm: STT · đề · bài làm · nhận xét.
        ok = đúng/sai (KHÔNG cho điểm từng câu); g = lời giải thích tiếng Việt cho câu sai (đáp án đúng nằm ở c).
-   Kết luận % = số câu đúng / tổng số câu.
+   ⭐ 07/10/2026 (thầy chốt) — ĐIỂM QUY ĐỔI THEO ĐỘ KHÓ, thang 100 (thay cho "% = số câu đúng / tổng số câu"):
+     mỗi phần có điểm tối đa theo độ khó (BT1 20 · BT2 30 · BT3 50) + MỨC CHUẨN (90% · 85% · 70% câu đúng);
+     điểm phần = tối đa × min(1, tỉ lệ đúng / chuẩn). Bảng `CACH` bên dưới. Ảnh chụp KHÔNG lưu cách tính ⇒ link cũ cũng tính
+     lại theo `CACH` hiện hành (thầy chọn). Số liệu 55 bài chấm cũ: TB đúng BT1 60% · BT2 41% · BT3 20%.
    Chỉ có Đúng / Sai — phân loại 4 mức, thời gian, rời trang… nằm ở phần "Chi tiết giáo viên" của dashboard.
 
    html(s, {sua:true})  ⇒ ô nhận xét chung là <textarea data-bc-nx="uuDiem|hanChe">, lời giải thích câu sai là <textarea data-bc-gc="mã:số câu"> (dashboard).
@@ -22,16 +25,34 @@
   function E(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function ngayVN(ms) { if (!ms) return ''; var d = new Date(ms); return d.getDate() + '/' + (d.getMonth() + 1) + '/' + d.getFullYear(); }
 
-  // ---- màu theo %, dễ hiểu với phụ huynh ----
-  function mauVong(p) { return p >= 85 ? '#1F9D55' : p >= 70 ? '#0E7C6E' : p >= 50 ? '#E0962B' : '#D9534F'; }
-  function mauThanh(p) { return p >= 70 ? '#0E9A86' : p >= 50 ? '#E0962B' : '#D9534F'; }
-  function pc(d, n) { return n ? Math.round(100 * d / n) : 0; }
-
-  function tong(s) {
+  // ---- ĐIỂM QUY ĐỔI THEO ĐỘ KHÓ (07/10/2026) ----
+  // w = điểm tối đa của phần (thang 100) · c = mức chuẩn (tỉ lệ câu đúng để được trọn điểm phần) · sao = độ khó hiện cho phụ huynh
+  var CACH = { BT1: { w: 20, c: 0.90, sao: 1 }, BT2: { w: 30, c: 0.85, sao: 2 }, BT3: { w: 50, c: 0.70, sao: 3 } };
+  function cachCua(b) { return CACH[b.ma] || { w: b.n || 1, c: 1, sao: 1 }; }
+  function mot(x) { return Math.round(x * 10) / 10; }
+  function so(x) { return String(mot(x)).replace('.', ','); }
+  // điểm từng phần + tổng. Thiếu bài chưa nộp ⇒ tổng quy về 100 theo các phần ĐÃ nộp (kèm dòng "Mới tính x/3 bài").
+  function diem(s) {
+    var ds = [], dat = 0, toi = 0;
+    (s.bai || []).forEach(function (b) {
+      var k = cachCua(b), x = { ma: b.ma, toiDa: k.w, sao: k.sao, chuan: k.c, can: Math.ceil((b.n || 0) * k.c - 1e-9) };
+      if (b.chua) { x.chua = true; ds.push(x); return; }
+      x.tl = b.n ? Math.min(1, (b.d / b.n) / k.c) : 0;
+      x.d = mot(k.w * x.tl);
+      dat += x.d; toi += k.w;
+      ds.push(x);
+    });
+    return { ds: ds, t: toi ? mot(dat * 100 / toi) : 0, toiDa: toi };
+  }
+  function tong(s) {   // số câu đúng thật (vẫn hiện nhỏ cho minh bạch)
     var d = 0, n = 0;
     (s.bai || []).forEach(function (b) { if (!b.chua) { d += b.d; n += b.n; } });
-    return { d: d, n: n, p: pc(d, n) };
+    return { d: d, n: n, p: n ? Math.round(100 * d / n) : 0 };
   }
+  // ---- màu + nhãn theo điểm, dễ hiểu với phụ huynh (không dùng đỏ) ----
+  function mucChung(t) { return t >= 80 ? ['Tốt', 'tot'] : t >= 60 ? ['Khá', 'kha'] : t >= 35 ? ['Cần cố gắng', 'co'] : ['Cần luyện nhiều', 'luyen']; }
+  function mauVong(t) { return t >= 80 ? '#1F9D55' : t >= 60 ? '#0E7C6E' : t >= 35 ? '#E0962B' : '#D9774F'; }
+  function ttPhan(tl) { return tl >= 0.999 ? ['dat', '✓ Đạt chuẩn', '#1F9D55'] : tl >= 0.6 ? ['gan', 'Gần đạt', '#0E9A86'] : ['can', 'Cần luyện thêm', '#E0962B']; }
 
   // ---- lời giải thích câu sai TỰ ĐỘNG (so từng từ với đáp án; thầy / Claude vẫn sửa lại được) ----
   // Giọng như cột "Nhận xét" của file chấm Excel: nêu RÕ lỗi gì, vì sao (không nhắc tới "đáp án", không bảo em đi đối chiếu). Câu để trống: KHÔNG có lời (chỉ hiện "✗ Để trống" + đáp án đúng).
@@ -154,12 +175,13 @@
     return ms.slice(0, 3).join(' ') || 'Câu chưa đúng: cần viết lại cho đúng ngữ pháp và đủ ý.';
   }
 
-  function vong(p, mau) {
-    var r = 52, c = 2 * Math.PI * r;
-    return '<svg class="kqp-vong" viewBox="0 0 132 132" width="132" height="132" role="img" aria-label="Tỉ lệ câu đúng ' + p + ' phần trăm">' +
-      '<circle cx="66" cy="66" r="' + r + '" fill="none" stroke="#E4ECEA" stroke-width="13"/>' +
-      '<circle cx="66" cy="66" r="' + r + '" fill="none" stroke="' + mau + '" stroke-width="13" stroke-linecap="round" stroke-dasharray="' + (c * p / 100).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 66 66)"/>' +
-      '<text x="66" y="75" text-anchor="middle" font-size="30" font-weight="800" fill="#16232A">' + p + '%</text></svg>';
+  function vong(t, mau) {
+    var r = 54, c = 2 * Math.PI * r, p = Math.max(0, Math.min(100, t));
+    return '<svg class="kqp-vong" viewBox="0 0 140 140" width="140" height="140" role="img" aria-label="Điểm quy đổi ' + Math.round(t) + ' trên 100">' +
+      '<circle cx="70" cy="70" r="' + r + '" fill="none" stroke="#E4ECEA" stroke-width="13"/>' +
+      '<circle cx="70" cy="70" r="' + r + '" fill="none" stroke="' + mau + '" stroke-width="13" stroke-linecap="round" stroke-dasharray="' + (c * p / 100).toFixed(1) + ' ' + c.toFixed(1) + '" transform="rotate(-90 70 70)"/>' +
+      '<text x="70" y="76" text-anchor="middle" font-size="36" font-weight="800" fill="#16232A">' + Math.round(t) + '</text>' +
+      '<text x="70" y="97" text-anchor="middle" font-size="12" font-weight="700" fill="#5F7370">/ 100 điểm</text></svg>';
   }
 
   function dong(txt) {
@@ -204,16 +226,27 @@
       '<div><div class="kqp-ten">' + E(ten) + '</div>' + (tt ? '<div class="kqp-tt">' + tt + '</div>' : '') +
       (s.ngayLam ? '<div class="kqp-tt">Ngày làm bài: ' + ngayVN(s.ngayLam) + '</div>' : '') + '</div></div>';
     if (!xong) return h + '<div class="kqp-chua">Em chưa nộp bài nào.</div></div>';
-    // tổng + từng phần
-    h += '<div class="kqp-tq"><div class="kqp-tq-vong">' + vong(t.p, mauVong(t.p)) + '</div><div class="kqp-tq-chu">' +
-      '<div class="kqp-nhan">Tỉ lệ câu đúng</div><div class="kqp-so"><b>' + t.d + '</b> / ' + t.n + ' câu</div>' +
-      (xong < s.bai.length ? '<div class="kqp-ghi">Mới tính ' + xong + '/' + s.bai.length + ' bài đã nộp.</div>' : '') + '</div></div>';
+    // tổng (điểm quy đổi theo độ khó, thang 100) + từng phần
+    var qd = diem(s), muc = mucChung(qd.t);
+    h += '<div class="kqp-tq"><div class="kqp-tq-vong">' + vong(qd.t, mauVong(qd.t)) + '</div><div class="kqp-tq-chu">' +
+      '<div class="kqp-nhan">Điểm quy đổi theo độ khó</div><span class="kqp-muc ' + muc[1] + '">' + muc[0] + '</span>' +
+      '<div class="kqp-phu">Con làm đúng <b>' + t.d + '/' + t.n + '</b> câu</div>' +
+      (xong < s.bai.length ? '<div class="kqp-ghi">Mới tính ' + xong + '/' + s.bai.length + ' bài đã nộp (quy về thang 100).</div>' : '') + '</div></div>';
     h += '<h3 class="kqp-muc-tde">Kết quả từng phần</h3><div class="kqp-cot">' + s.bai.map(function (b, i) {
-      if (b.chua) return '<div class="kqp-dong"><div class="kqp-dong-t"><span><i>' + (i + 1) + '</i>' + E(b.ten) + '</span><em>Chưa nộp</em></div><div class="kqp-nen"><u style="width:0"></u></div></div>';
-      var p = pc(b.d, b.n);
-      return '<div class="kqp-dong"><div class="kqp-dong-t"><span><i>' + (i + 1) + '</i>' + E(b.ten) + '</span><em><b>' + b.d + '</b>/' + b.n + ' câu đúng · ' + p + '%</em></div>' +
-        '<div class="kqp-nen"><u style="width:' + Math.max(p, 2) + '%;background:' + mauThanh(p) + '"></u></div></div>';
+      var x = qd.ds[i], sao = '<span class="kqp-kho">Độ khó ' + '★★★'.slice(0, x.sao) + '</span>';
+      if (b.chua) return '<div class="kqp-phan"><div class="kqp-phan-t"><span><i>' + (i + 1) + '</i>' + E(b.ten) + '</span><em class="kqp-tt chua">Chưa nộp</em></div>' +
+        '<div class="kqp-phan-d"><em>Tối đa ' + so(x.toiDa) + ' điểm</em>' + sao + '</div><div class="kqp-nen"><u style="width:0"></u></div></div>';
+      var tt = ttPhan(x.tl);
+      var chu = 'Đúng <b>' + b.d + '/' + b.n + '</b> câu · ' + (x.chuan >= 1 ? 'cần đúng hết ' + b.n + ' câu để trọn điểm' : 'đạt chuẩn khi đúng <b>' + x.can + '</b> câu') +
+        (b.d < x.can ? ' (còn thiếu ' + (x.can - b.d) + ')' : '');
+      return '<div class="kqp-phan"><div class="kqp-phan-t"><span><i>' + (i + 1) + '</i>' + E(b.ten) + '</span><em class="kqp-tt ' + tt[0] + '">' + tt[1] + '</em></div>' +
+        '<div class="kqp-phan-d"><b>' + so(x.d) + '</b><em>/ ' + so(x.toiDa) + ' điểm</em>' + sao + '</div>' +
+        '<div class="kqp-nen"><u style="width:' + Math.max(2, x.tl * 100) + '%;background:' + tt[2] + '"></u></div>' +
+        '<div class="kqp-phan-c">' + chu + '</div></div>';
     }).join('') + '</div>';
+    var c3 = CACH.BT3 ? Math.round(CACH.BT3.c * 100) : 70;
+    h += '<details class="kqp-vs"><summary>Vì sao tính điểm như vậy?</summary><p>Ba phần khó dần: tạo cụm số ít → cụm số nhiều → tạo câu. Phần càng khó thì càng nhiều điểm (' +
+      qd.ds.map(function (x) { return so(x.toiDa); }).join(' / ') + ' điểm).</p><p>Mỗi phần có một <b>mức chuẩn</b> — số câu đúng cần có để coi là đã vững. Đạt mức chuẩn là được trọn điểm phần đó, vì với phần khó như tạo câu, làm đúng ' + c3 + '% đã là rất tốt.</p></details>';
     // nhận xét
     var nx = nhanXet('uuDiem', 'Con làm tốt', 'tot', s.uuDiem, sua, 'Điểm tốt của em…') + nhanXet('hanChe', 'Con cần cải thiện', 'can', s.hanChe, sua, 'Những điểm em cần luyện thêm…');
     if (nx) h += '<h3 class="kqp-muc-tde">Nhận xét của thầy</h3><div class="kqp-nxs">' + nx + '</div>';
@@ -242,11 +275,22 @@
     '.kqp-tq-vong{flex:none;line-height:0} .kqp-nhan{font-size:12.5px;font-weight:700;color:var(--mo);text-transform:uppercase;letter-spacing:.05em}' +
     '.kqp-so{font-size:18px;margin:2px 0} .kqp-so b{font-size:34px;font-weight:800;color:var(--xanh);line-height:1} .kqp-ghi{font-size:12px;color:var(--mo);margin-top:6px}' +
     '.kqp-muc-tde{font-size:14px;font-weight:800;margin:24px 0 10px;color:var(--xanh);text-transform:uppercase;letter-spacing:.05em}' +
-    '.kqp-cot{display:flex;flex-direction:column;gap:14px}' +
-    '.kqp-dong-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:5px;font-size:14px;font-weight:700}' +
-    '.kqp-dong-t i{font-style:normal;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--xanh);color:#fff;font-size:12px;margin-right:8px}' +
-    '.kqp-dong-t em{font-style:normal;font-weight:600;color:var(--mo);white-space:nowrap} .kqp-dong-t em b{color:var(--chu);font-size:16px}' +
-    '.kqp-nen{height:14px;border-radius:999px;background:#E4ECEA;overflow:hidden} .kqp-nen u{display:block;height:100%;border-radius:999px;text-decoration:none}' +
+    /* 07/10/2026 điểm quy đổi: nhãn mức + thẻ từng phần + "Vì sao tính điểm như vậy?" */
+    '.kqp-muc{display:inline-block;margin-top:6px;font-weight:800;font-size:13.5px;padding:3px 14px;border-radius:999px}' +
+    '.kqp-muc.tot{background:#E3F5EA;color:#1F7A50} .kqp-muc.kha{background:#E2F2EF;color:#0E7C6E} .kqp-muc.co{background:#FDF4E5;color:#A86A12} .kqp-muc.luyen{background:#FCEBDD;color:#A8501F}' +
+    '.kqp-phu{font-size:13px;color:var(--mo);margin-top:8px} .kqp-phu b{color:var(--chu)}' +
+    '.kqp-cot{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}' +
+    '.kqp-phan{border:1px solid var(--vien);border-radius:14px;padding:12px 14px;background:#fff}' +
+    '.kqp-phan-t{display:flex;justify-content:space-between;align-items:center;gap:8px}' +
+    '.kqp-phan-t span{font-weight:800;font-size:14px;display:flex;align-items:center;gap:8px}' +
+    '.kqp-phan-t i{font-style:normal;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--xanh);color:#fff;font-size:12px;flex:none}' +
+    '.kqp-tt{font-style:normal;font-size:11.5px;font-weight:800;padding:3px 9px;border-radius:999px;white-space:nowrap}' +
+    '.kqp-tt.dat{background:#E3F5EA;color:#1F7A50} .kqp-tt.gan{background:#E2F2EF;color:#0E7C6E} .kqp-tt.can{background:#FCEBDD;color:#A86A12} .kqp-tt.chua{background:#F2F6F5;color:var(--nhat)}' +
+    '.kqp-phan-d{display:flex;align-items:baseline;gap:6px;margin:8px 0 6px} .kqp-phan-d b{font-size:24px;line-height:1;font-weight:800}' +
+    '.kqp-phan-d em{font-style:normal;color:var(--mo);font-weight:600;font-size:13px} .kqp-kho{margin-left:auto;font-size:11.5px;color:var(--nhat);font-weight:700;white-space:nowrap}' +
+    '.kqp-phan-c{font-size:12.5px;color:var(--mo);margin-top:6px} .kqp-phan-c b{color:var(--chu)}' +
+    '.kqp-nen{height:12px;border-radius:999px;background:#E4ECEA;overflow:hidden} .kqp-nen u{display:block;height:100%;border-radius:999px;text-decoration:none}' +
+    '.kqp-vs{margin-top:12px;background:#F4F9F8;border-radius:12px;padding:10px 14px;font-size:13.5px} .kqp-vs summary{cursor:pointer;font-weight:800;color:var(--xanh)} .kqp-vs p{margin:8px 0 0}' +
     '.kqp-nxs{display:flex;flex-direction:column;gap:12px}' +
     '.kqp-nx{border-radius:14px;padding:12px 16px;border-left:5px solid} .kqp-nx.tot{background:#EDF8F2;border-color:#2E9E6B} .kqp-nx.can{background:#FDF4E5;border-color:#E0962B}' +
     '.kqp-nx h4{margin:0 0 4px;font-size:13.5px;font-weight:800} .kqp-nx.tot h4{color:#1F7A50} .kqp-nx.can h4{color:#A86A12}' +
@@ -264,10 +308,10 @@
     '.kqp-da{display:block;margin-top:3px;color:#1F7A50;font-size:13px} .kqp-da b{font-weight:700}' +
     '.kqp-h-nx textarea{display:block;resize:vertical;line-height:1.45;width:100%;margin-top:3px;font:500 13px var(--font,inherit);border:1px solid #CFDCD9;border-radius:8px;padding:6px 8px;background:#fff;color:var(--chu)}' +
     '.kqp-ky{margin-top:26px;padding-top:12px;border-top:1px solid var(--vien);font-size:12px;color:var(--nhat);text-align:center}' +
-    '@media(max-width:600px){.kqp{font-size:14.5px}.kqp-tq{flex-direction:column;text-align:center;gap:10px}.kqp-dong-t{flex-direction:column;gap:2px}.kqp-ten{font-size:19px}' +
+    '@media(max-width:600px){.kqp{font-size:14.5px}.kqp-tq{flex-direction:column;text-align:center;gap:10px}.kqp-cot{grid-template-columns:1fr}.kqp-ten{font-size:19px}' +
     ' .kqp-tieu{display:none} .kqp-hang{grid-template-columns:30px minmax(0,1fr);row-gap:3px;padding:10px 12px} .kqp-h-de{font-weight:700} .kqp-h-bl,.kqp-h-nx{grid-column:2}' +
     ' .kqp-h-bl::before,.kqp-h-nx::before{content:attr(data-l) ": ";font-size:11.5px;font-weight:700;color:var(--mo)}}' +
-    '@media print{.kqp-tq{background:#fff;border:1px solid var(--vien)} .kqp-nx textarea,.kqp-h-nx textarea{display:none} .kqp .in-chu{display:block} .kqp-dong,.kqp-nx,.kqp-hang,.kqp-tq{break-inside:avoid}' +
+    '@media print{.kqp-tq{background:#fff;border:1px solid var(--vien)} .kqp-nx textarea,.kqp-h-nx textarea{display:none} .kqp .in-chu{display:block} .kqp-phan,.kqp-nx,.kqp-hang,.kqp-tq,.kqp-vs{break-inside:avoid}' +
     ' .kqp *{-webkit-print-color-adjust:exact;print-color-adjust:exact}}';
 
   // in / lưu PDF: mở hết các khối câu rồi gập lại như cũ
@@ -275,5 +319,5 @@
   window.addEventListener('beforeprint', function () { _mo = []; [].forEach.call(document.querySelectorAll('.kqp details'), function (d) { if (!d.open) { d.open = true; _mo.push(d); } }); });
   window.addEventListener('afterprint', function () { _mo.forEach(function (d) { d.open = false; }); _mo = []; });
 
-  window.KTDV_BC = { html: html, css: css, tong: tong, goiY: goiY };
+  window.KTDV_BC = { html: html, css: css, tong: tong, diem: diem, CACH: CACH, goiY: goiY };
 })();

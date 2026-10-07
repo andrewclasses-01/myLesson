@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-06 17:22:41",
+  "capNhat": "2026-10-07 14:57:10",
   "nguon": "dashboard",
   "lop": [
     {
@@ -261,7 +261,8 @@
           "id": 147,
           "ten": "Hoàng Minh",
           "ma": "LEHOANGMINH05102015",
-          "sinhNhat": ""
+          "sinhNhat": "",
+          "vao": "2026-09-07"
         },
         {
           "id": 71,
@@ -338,6 +339,21 @@
       "lich": [
         {
           "tu": "",
+          "buoi": [
+            {
+              "thu": 1,
+              "vao": "13h30",
+              "tan": "17h00"
+            },
+            {
+              "thu": 4,
+              "vao": "13h30",
+              "tan": "17h00"
+            }
+          ]
+        },
+        {
+          "tu": "2026-09-01",
           "buoi": [
             {
               "thu": 0,
@@ -472,7 +488,8 @@
           "id": 80,
           "ten": "Tùng Lâm",
           "ma": "NGUYENTUNGLAM22062016",
-          "sinhNhat": ""
+          "sinhNhat": "",
+          "vao": "2026-09-09"
         }
       ]
     },
@@ -756,12 +773,6 @@
           "sinhNhat": ""
         },
         {
-          "id": 98,
-          "ten": "Phúc An",
-          "ma": "PHAMPHUCAN12122013",
-          "sinhNhat": ""
-        },
-        {
           "id": 64,
           "ten": "Phúc Duy",
           "ma": "NGUYENPHUCDUY05122014",
@@ -1012,6 +1023,21 @@
       "lich": [
         {
           "tu": "",
+          "buoi": [
+            {
+              "thu": 2,
+              "vao": "8h00",
+              "tan": "11h30"
+            },
+            {
+              "thu": 5,
+              "vao": "8h00",
+              "tan": "11h30"
+            }
+          ]
+        },
+        {
+          "tu": "2026-09-02",
           "buoi": [
             {
               "thu": 0,

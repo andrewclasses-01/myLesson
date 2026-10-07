@@ -7640,7 +7640,12 @@ tr.qm-hang-tam td{background:#fffbeb}
   var LECH_GOM_MS = 90 * 1000, LECH_NHO_NHAT_MS = 5 * 60 * 1000, LECH_SO_LUOT = 3;
   var BANG_LECH = {};   // khoá em (A.khoaEm) -> { cum: [ms…], chinh: ms }
   // ds = [{d: sv − createdAt, luc: createdAt}] của MỘT em ⇒ { cum, chinh } (null khi không có cụm nào).
+  // ⛔⛔ v1.263.3 (07/10/2026) — CHỈ lượt TRƯỚC `MOC_GIO_CHUAN` mới có thể là máy lệch giờ. Từ mốc đó AWord tự bù giờ máy
+  // chủ ⇒ d lớn chỉ còn là GỬI BÙ, mà gửi bù cả LOẠT thì cũng thành "cụm" giống hệt máy lệch: HÀ MY A2B FTG j56ry9 — 6 lượt
+  // nộp dở 22:36–22:54 06/10 nằm chờ trên máy, tới 13:16 07/10 mới lên máy chủ (d = 856 phút cả 6) ⇒ bị cộng 14 giờ 17
+  // ⇒ hiện thành 6 dòng BỎ DỞ 12:53–13:11 07/10, lại rơi TRƯỚC lượt 100% 13:25 nên không thành ĐUA TOP.
   function lechCum(ds) {
+    ds = ds.filter(function (x) { return x.luc < MOC_GIO_CHUAN; });
     var s = ds.map(function (x) { return x.d; }).sort(function (a, b) { return a - b; });
     var cum = [], i = 0;
     while (i < s.length) {
@@ -7658,9 +7663,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     }
     return { cum: cum.map(function (x) { return x.c; }), chinh: chinh };
   }
-  // Lệch của MỘT lượt có giờ máy chủ (d đã biết).
-  function lechTheoD(bang, d) {
-    if (!bang || !isFinite(d)) return 0;
+  // Lệch của MỘT lượt có giờ máy chủ (d đã biết). `luc` = giờ máy của lượt: từ `MOC_GIO_CHUAN` không chỉnh (v1.263.3).
+  function lechTheoD(bang, d, luc) {
+    if (!bang || !isFinite(d) || !(luc < MOC_GIO_CHUAN)) return 0;
     var tot = null;
     [0].concat(bang.cum).forEach(function (c) { if (c <= d + LECH_GOM_MS && (tot === null || c > tot)) tot = c; });
     return tot || 0;
@@ -7715,7 +7720,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         if (e.lucTotMay == null) e.lucTotMay = e.lucTot || 0;
         var dat = 0, cuoi = 0, tot = e.lucTotMay;
         e.luot.forEach(function (lu) {
-          var x = lu.sv > 0 && lu.lucMay > 0 ? lechTheoD(b, lu.sv - lu.lucMay) : 0;
+          var x = lu.sv > 0 && lu.lucMay > 0 ? lechTheoD(b, lu.sv - lu.lucMay, lu.lucMay) : 0;
           lu.luc = lu.lucMay ? lu.lucMay + x : 0;
           if (lu.lucMay && lu.lucMay === e.lucTotMay) tot = lu.luc;
           if (lu.pt >= 100 && lu.luc && (!dat || lu.luc < dat)) dat = lu.luc;
@@ -13249,7 +13254,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       }
     });
     var bangHs = lechCum(mauD);
-    var lucL = function (l) { var c = l.lucMay != null ? l.lucMay : (l.luc || 0); return c && l.sv ? c + lechTheoD(bangHs, l.sv - c) : c; };
+    var lucL = function (l) { var c = l.lucMay != null ? l.lucMay : (l.luc || 0); return c && l.sv ? c + lechTheoD(bangHs, l.sv - c, c) : c; };
     dsBai.forEach(function (x) { theoBai[x.b.id] = { x: x, act: 0, xong: 0, muon: false, coLam: false, ws: 0, wsDu: 0, moc: A.mocHan(x.b) }; if (hqNgayGiao(x.b).getTime() < HSO_MOC_MA) thieuMa = true; });
     acts.forEach(function (a) {
       var t = theoBai[a.x.b.id]; t.act++;
@@ -13266,7 +13271,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       }
       var raw = (a.diem || []).map(function (d) { var fl = d.fields || {}; return { id: String(d.name || '').split('/').pop(), diem: hsoSo(fl.score), tong: hsoSo(fl.total), ms: hsoSo(fl.timeMs), luc: hsoSo(fl.createdAt), sv: Date.parse(d.createTime || '') || 0, dd: !!(fl.doDang && fl.doDang.booleanValue) }; });
       var lechRaw = {};
-      raw.forEach(function (r) { if (r.sv && r.luc) { var x = lechTheoD(bangHs, r.sv - r.luc); r.luc += x; lechRaw[r.id] = x; } });   // v1.175.0
+      raw.forEach(function (r) { if (r.sv && r.luc) { var x = lechTheoD(bangHs, r.sv - r.luc, r.luc); r.luc += x; lechRaw[r.id] = x; } });   // v1.175.0
       var chuan = a.chuan || {};
       var mau = chuan.soCau || 0;
       if (!mau) raw.forEach(function (r) { if (!r.dd && r.tong > 0 && (!mau || r.tong < mau)) mau = r.tong; });

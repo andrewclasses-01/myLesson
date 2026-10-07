@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-07 14:23:48",
+  "capNhat": "2026-10-07 14:51:31",
   "bai": {
     "A1C": [
       {
@@ -296,6 +296,49 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_4.10_READING_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2A_4.10_READING DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2A_4.10_READING DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "READING",
+        "ngay": "4.10",
+        "han": "2026-10-11T14:00",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-07",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "DS-S5.I1.W1 BONES AND MUSCLES",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB2A%2FB2A_4.10_READING_DS-S5.I1.W1_BONES_AND_MUSCLES%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "DS-S5.I1.W1 / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "dwcnuc",
+            "mau": "TRUE OR FALSE"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "DS-S5.I1.W1 / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "u573xu",
+            "mau": "FIND THE MATCH"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "DS-S5.I1.W1 / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "25r663",
+            "mau": "QUIZ"
+          }
+        ]
+      },
       {
         "id": "B2A_27.9_STAGE_IEL-S15.T4.P2",
         "tieuDe": "B2A_27.9_STAGE IEL-S15.T4.P2",

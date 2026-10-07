@@ -241,7 +241,7 @@
     ]);
   }
   function tinNhan(ten, ma, mk) {
-    return 'Chào phụ huynh em ' + ten + ',\nThầy gửi phụ huynh tài khoản và mật khẩu để con đăng nhập và làm bài kiểm tra:\n' +
+    return 'Thầy gửi chị tài khoản và mật khẩu để con đăng nhập và làm bài kiểm tra:\n' +
       '• Trang kiểm tra: ' + TRANG_KT.replace('https://', '') + '\n• ID: ' + ma + '\n• Mật khẩu: ' + mk + '\n' +
       'Con chỉ cần mở link, đăng nhập vào là có hướng dẫn đầy đủ. Con tự làm, không dùng phần mềm dịch, không dùng từ điển hay công cụ hỗ trợ ạ. Sau khi làm xong con báo thầy để thầy chấm và gửi kết quả ạ.';
   }

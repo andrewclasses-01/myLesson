@@ -436,8 +436,7 @@
   function cat(s, n) { return String(s == null ? '' : s).slice(0, n || 300); }
   function linkKq(token) { return TRANG_KT + '/kq?c=' + token; }
   function tinKetQua(ten, link) {
-    return 'Chào phụ huynh em ' + ten + ',\nThầy Andrew gửi kết quả KIỂM TRA ĐẦU VÀO của con:\n' + link + '\n' +
-      'Phụ huynh bấm vào link là xem được ngay trên điện thoại, không cần tải file. Cần trao đổi thêm, phụ huynh nhắn thầy qua Zalo ạ.';
+    return 'Chào chị ạ, thầy gửi kết quả bài kiểm tra của con ạ, chị bấm vào link để xem chi tiết nhé:\n' + link;
   }
 
   function moBaoCao(h) {

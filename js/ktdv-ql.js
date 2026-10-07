@@ -241,9 +241,9 @@
     ]);
   }
   function tinNhan(ten, ma, mk) {
-    return 'Chào phụ huynh em ' + ten + ',\nThầy Andrew gửi tài khoản làm bài KIỂM TRA ĐẦU VÀO của con:\n' +
-      '• Trang: ' + TRANG_KT.replace('https://', '') + '\n• ID: ' + ma + '\n• Mật khẩu: ' + mk + '\n' +
-      'Con làm trên máy tính (hoặc điện thoại), tự làm, không dùng phần mềm dịch. Có 3 bài, mỗi bài có hướng dẫn và làm thử trước. Làm xong thầy sẽ gửi kết quả ạ.';
+    return 'Chào phụ huynh em ' + ten + ',\nThầy gửi phụ huynh tài khoản và mật khẩu để con đăng nhập và làm bài kiểm tra:\n' +
+      '• Trang kiểm tra: ' + TRANG_KT.replace('https://', '') + '\n• ID: ' + ma + '\n• Mật khẩu: ' + mk + '\n' +
+      'Con chỉ cần mở link, đăng nhập vào là có hướng dẫn đầy đủ. Con tự làm, không dùng phần mềm dịch, không dùng từ điển hay công cụ hỗ trợ ạ. Sau khi làm xong con báo thầy để thầy chấm và gửi kết quả ạ.';
   }
   function hienMatKhau(ten, ma, mk, tieuDe) {
     var tn = tinNhan(ten, ma, mk);
@@ -816,7 +816,7 @@
     '.ktbc-bang .kq,.ktbc-bang .lo{border:0;border-radius:7px;padding:3px 8px;font:700 11.5px var(--font);cursor:pointer;white-space:nowrap}' +
     '.kq.d{background:var(--la-nhat);color:#1F7A50} .kq.s{background:#FDECEC;color:#C93A3F} .kq.sua{outline:2px dashed #2D7FB8}' +
     '.lo.dung{background:var(--la-nhat);color:#1F7A50} .lo.tam{background:#E6F1FA;color:#2D7FB8} .lo.nhe{background:var(--vang-nhat);color:#A86A12} .lo.nang{background:#FDECEC;color:#C93A3F}' +
-    '.ktbc-bang .tg{white-space:nowrap;color:var(--mo)} .co{font-style:normal;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 5px;margin-left:3px} .co.roi{background:#FFF1DE;color:#B36A00} .co.dan{background:#FDECEC;color:#C93A3F}' +
+    '.ktbc-bang .tg{white-space:nowrap;color:var(--mo)} .ktbc-bang .co{font-style:normal;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 5px;margin-left:3px} .ktbc-bang .co.roi{background:#FFF1DE;color:#B36A00} .ktbc-bang .co.dan{background:#FDECEC;color:#C93A3F}' +
     '.ktbc-ky{margin-top:24px;font-size:11.5px;color:var(--nhat);text-align:right}' +
     '.ktbc-trang .kqp{max-width:720px;margin:0 auto} .ktbc-ph-goi{max-width:720px;margin:0 auto 14px!important;background:#F2F6F5;border-radius:10px;padding:8px 12px;line-height:1.5}' +
     '.ktbc-ph-goi a{color:var(--xanh);font-weight:700}' +

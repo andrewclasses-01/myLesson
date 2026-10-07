@@ -467,7 +467,7 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
   white-space:normal; text-align:center; line-height:1.35}
 .doi-vach .lb .tong{margin-left:6px; font-weight:700; letter-spacing:.03em; color:var(--muted); white-space:nowrap}
 .doi-vach .lb .tong::before{content:'•'; margin-right:6px; color:var(--line)}
-.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch 4.8ch;
+.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch var(--w-giay,4.8ch);   /* v1.263.4: --w-giay = cột giờ nới theo số dài nhất CỦA BẢNG */
   gap:6px; align-items:center; padding:0 6px; border-radius:7px;
   height:24px; font-weight:700; font-size:12px; line-height:1}
 .xh-dong:nth-child(odd){background:#F3F8F6}
@@ -1231,13 +1231,17 @@ function veCotActPop(k){
   var c = CHUAN[k.ma];
   var moc = (c && !c.tru) ? c.dinh : 0;
   var toi = A.khoaTen(TOI);
+  /* ⭐ v1.263.4 (thầy 07/10) — cột GIỜ rộng 4.8ch vừa "59:59"; số dài hơn (MINH THƯ A2B FTG "952:08" — lượt làm tiếp qua đêm
+     trước AWord Đợt 492) TRÀN ô làm cả dòng lệch cột. Cả bảng (mọi dòng một act) cùng nới theo số DÀI NHẤT ⇒ vẫn thẳng cột. */
+  var dGiay = Math.max.apply(null, [0].concat(ds.map(function(e){ return e.chua ? 0 : chuGiayPop(e.giay).length; })));
+  var wGiay = dGiay > 5 ? ' style="--w-giay:' + dGiay + 'ch"' : '';
   var hang = ds.map(function(e, i){
     // v1.136.0 — em `mien` (thầy ✕ ở lesson này): xám, không hạng, điểm vẫn hiện.
     var full = !e.chua && !e.mien && e.diem >= moc;
     var huy = full && i < 3;
     var lop = e.mien ? 'mien' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
     if (A.khoaTen(e.ten) === toi) lop += ' toi';
-    return '<span class="xh-dong ' + lop + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
+    return '<span class="xh-dong ' + lop + '"' + wGiay + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
       '<span class="xh-hang">' + ((e.chua || e.mien) ? '–' : (huy ? veHuyPop(i + 1) : (i + 1))) + '</span>' +
       '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
       '<span class="xh-diem">' + (e.chua ? '—' : Math.round((e.tho && e.tho.diem) || e.diem)) + '</span>' +

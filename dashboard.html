@@ -1550,7 +1550,7 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .pop-ds.ngang{display:flex; flex-wrap:wrap; align-items:flex-start; gap:0 14px}
 .xh-cot{flex:1 1 214px; min-width:0}
 .xh-cot .doi-vach{margin-left:0; margin-right:0}
-.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch 4.8ch;
+.xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch var(--w-giay,4.8ch);   /* v1.263.4: --w-giay = cột giờ nới theo số dài nhất CỦA BẢNG */
   gap:6px; align-items:center; padding:0 6px; border-radius:7px;
   height:24px; font-weight:700; font-size:12px; line-height:1}
 /* ⛔ `odd` chứ không phải `even` như `bai.html`: ở đây vạch tên act là con ĐẦU
@@ -6168,13 +6168,17 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<span class="lb">' + A.chuAnToan(A.tenO(a.ten, true)) +
         '<span class="tong">' + daLam + '/' + t.siSo + ' đã làm</span></span>' +
       '<span class="line"></span></span>';
+    // ⭐ v1.263.4 (thầy 07/10) — cột GIỜ rộng 4.8ch vừa "59:59"; số dài hơn (MINH THƯ A2B FTG "952:08" — lượt làm tiếp qua đêm
+    // trước AWord Đợt 492) TRÀN ô làm cả dòng lệch cột. Cả bảng (mọi dòng một act) cùng nới theo số DÀI NHẤT ⇒ vẫn thẳng cột.
+    var dGiay = Math.max.apply(null, [0].concat(ds.map(function (e) { return e.chua ? 0 : chuGiayDb(e.giay).length; })));
+    var wGiay = dGiay > 5 ? ' style="--w-giay:' + dGiay + 'ch"' : '';
     var hang = ds.map(function (e, i) {
       // v1.136.0 — em `mien`: không hạng/huy chương, chữ xám, điểm + thời gian vẫn hiện.
       var full = !e.chua && !e.mien && e.diem >= moc;
       var huy = full && i < 3;               // huy chương: ba hạng đầu, phải full
       var lop = e.mien ? 'mien' : (e.chua ? 'chua' : ((full && i === 0) ? 'hc' : (full ? 'du' : 'co')));
       var o = (e.chua || e.mien) ? '–' : (huy ? veHuyDb(i + 1) : (i + 1));
-      return '<span class="xh-dong ' + lop + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
+      return '<span class="xh-dong ' + lop + '"' + wGiay + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
         '<span class="xh-hang">' + o + '</span>' +
         '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
         '<span class="xh-diem">' + (e.chua ? '—' : Math.round(e.tho.diem)) + '</span>' +

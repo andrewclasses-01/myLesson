@@ -1385,6 +1385,8 @@ body.gio-het .card.con-thieu{animation:hao-quang-the 3.4s ease-in-out infinite}
   pointer-events:none; font-weight:800; font-size:34px; letter-spacing:.06em;
   color:var(--ink); opacity:0}
 .ng-bao.hien{animation:bao-5s .9s ease forwards}
+/* v1.270.0 — dòng nhỏ dưới máy nghe khi mở lại bài nghe dở; bấm phát là tự tắt */
+.ng-tiep{margin:6px 2px 0; font-size:12.5px; font-weight:700; color:var(--muted); text-align:center}
 @keyframes bao-5s{0%{opacity:0} 30%{opacity:.3} 65%{opacity:.3} 100%{opacity:0}}
 
 .ng-toc-boc{position:relative; flex:none; display:flex; align-items:center}
@@ -2126,7 +2128,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=232"></script>
+<script src="config.js?v=233"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -4283,6 +4285,33 @@ function noiTrinhPhat(sec, maNghe){
   });
   am.addEventListener('timeupdate', function(){ nhipNghe(maNghe, am); });
   am.addEventListener('seeked', function(){ GIAY_HIEN_NGHE[maNghe] = am.currentTime; });
+
+  /* ⭐ v1.270.0 — NGHE TIẾP (xem khối NGHE_VT). Ghi vị trí khi đang phát / dừng / tua; hết bài ⇒ 0.
+     Chỉ ghi SAU khi em đã đụng vào máy nghe (`vtDaDung`) — đặt sẵn vị trí lúc mở trang không tính là nghe. */
+  var vtDaDung = false, vtDong = null;
+  am.addEventListener('play', function(){ vtDaDung = true; if (vtDong) { vtDong.remove(); vtDong = null; } });
+  am.addEventListener('timeupdate', function(){ if (vtDaDung && !am.paused) vtGhi(maNghe, am.currentTime); });
+  am.addEventListener('pause', function(){ if (vtDaDung && !am.ended) vtGhi(maNghe, am.currentTime); });
+  am.addEventListener('seeked', function(){ if (vtDaDung && !am.ended) vtGhi(maNghe, am.currentTime); });
+  am.addEventListener('ended', function(){ vtDaDung = true; vtGhi(maNghe, 0); });
+  (function datLaiVt(){
+    var v = NGHE_VT[maNghe];
+    if (!v || !(v.g >= VT_TOI_THIEU)) return;
+    var dat = function(){
+      if (vtDaDung || am.currentTime > 0.5) return;            // em đã tự bấm/tua rồi thì thôi
+      var d = am.duration;
+      if (d && isFinite(d) && v.g >= d - VT_LUI) return;        // sát cuối bài ⇒ coi như nghe hết, từ đầu
+      var t = Math.max(0, v.g - VT_LUI);
+      am.currentTime = t; veThanh();
+      GIAY_HIEN_NGHE[maNghe] = t;                                // mốc đo nghe đi từ đây, không cộng oan cú nhảy
+      vtDong = document.createElement('div');
+      vtDong.className = 'ng-tiep';
+      vtDong.textContent = 'Nghe tiếp từ ' + chuGio(t);
+      hop.insertAdjacentElement('afterend', vtDong);
+    };
+    if (am.readyState >= 1) dat();
+    else am.addEventListener('loadedmetadata', dat, { once: true });
+  })();
   am.addEventListener('play', function(){
     chamLan('nghe'); CHAM_LUC_NGHE[maNghe] = Date.now();   // v1.122.0
     ngoiDongDung(false); NGOI_VUA_NGHE = false; giuSangNghe(true);   // v1.244.0 — hết khúc dừng chép, giữ màn sáng
@@ -5065,6 +5094,44 @@ var NGHE_FS_BAN = false;
 var ngheFsHen = null;
 var NGHE_FS_NHIP_MS = 20000;
 
+/* ⭐⭐ v1.270.0 (thầy chốt 08/10/2026) — NGHE TIẾP: em nghe dở, thoát ra, mở lại thì nghe tiếp từ chỗ dừng.
+   Vị trí nhớ TRÊN MÁY CHỦ, trong CHÍNH tài liệu `lessonAudioTienDo` (trường `vt` = { maNghe: {g: giây, l: ms} })
+   ⇒ đổi máy / trình duyệt xoá bộ nhớ vẫn còn (luật: myLesson app tools/dang-luat-nghe-tiep.js).
+   Mở lại: thanh nghe đặt sẵn vị trí cũ LÙI 3 giây + dòng nhỏ "Nghe tiếp từ m:ss"; em tự bấm phát.
+   Nghe HẾT bài ⇒ g = 0 ⇒ lần sau từ đầu. Đọc 1 lượt lúc mở bài (`napTienDoNgheFs`), ghi chung nhịp `dayTienDoNgheFs`. */
+var NGHE_VT = {};            // {maNghe: {g: giây, l: ms lúc ghi}}
+var VT_LUI = 3;              // thầy chốt: lùi 3 giây cho khỏi hụt chữ
+var VT_TOI_THIEU = 5;        // nghe chưa tới 5 giây thì coi như chưa nghe
+function vtGhi(maNghe, g){
+  g = Math.max(0, Math.round((Number(g) || 0) * 10) / 10);
+  var cu = NGHE_VT[maNghe];
+  if (cu && Math.abs(cu.g - g) < 0.5) return;   // timeupdate bắn ~4 lần/giây — chỉ ghi khi đổi đáng kể
+  NGHE_VT[maNghe] = { g: g, l: A.gioNay() };
+  NGHE_FS_BAN = true;
+}
+function vtTuFs(fields){
+  var ra = {};
+  try {
+    var m = fields.vt && fields.vt.mapValue && fields.vt.mapValue.fields;
+    if (!m) return ra;
+    Object.keys(m).forEach(function(id){
+      var f = (m[id].mapValue && m[id].mapValue.fields) || {};
+      var so = function(x){ return x ? Number(x.doubleValue != null ? x.doubleValue : x.integerValue) : NaN; };
+      var g = so(f.g), l = so(f.l);
+      if (isFinite(g) && g >= 0) ra[id] = { g: g, l: isFinite(l) ? l : 0 };
+    });
+  } catch (e) {}
+  return ra;
+}
+function vtRaFs(){
+  var fields = {};
+  Object.keys(NGHE_VT).slice(0, 20).forEach(function(id){
+    fields[id] = { mapValue: { fields: { g: { doubleValue: NGHE_VT[id].g },
+                                         l: { integerValue: String(Math.round(NGHE_VT[id].l || 0)) } } } };
+  });
+  return fields;
+}
+
 function congKhucNghe(maNghe, a, b){
   if (b <= a) return;
   var ds = (NGHE_XONG[maNghe] || []).slice();
@@ -5215,6 +5282,10 @@ function napTienDoNgheFs(){
       Object.keys(chung).forEach(function(id){
         chung[id].forEach(function(r){ congKhucNghe(id, r[0], r[1]); });
       });
+      var vtCu = vtTuFs(f);   // v1.270.0 — vị trí nghe dở (bản mới hơn thắng)
+      Object.keys(vtCu).forEach(function(id){
+        if (!NGHE_VT[id] || (vtCu[id].l || 0) > (NGHE_VT[id].l || 0)) NGHE_VT[id] = vtCu[id];
+      });
       var tongCu = ngheTongTuFs(f);
       Object.keys(tongCu).forEach(function(id){ if (!NGHE_TONG[id]) NGHE_TONG[id] = tongCu[id]; });
       return true;
@@ -5235,6 +5306,7 @@ function dayTienDoNgheFs(gap){
     tong: { mapValue: { fields: tongFields } },
     luc:  { integerValue: String(A.gioNay()) }
   } };
+  if (Object.keys(NGHE_VT).length) thanObj.fields.vt = { mapValue: { fields: vtRaFs() } };   // v1.270.0 — nghe tiếp
   var hVe = (window.NWP && NWP.tieuDeNgay) ? NWP.tieuDeNgay() : {};   // v1.161.0 — như dayTienDoFs
   if (!hVe.Authorization) return;
   var tdVe = Object.assign({ 'Content-Type': 'application/json' }, hVe);

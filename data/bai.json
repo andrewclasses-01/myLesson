@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-08 19:29:26",
+  "capNhat": "2026-10-08 22:47:08",
   "bai": {
     "A1C": [
       {
@@ -754,6 +754,50 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_8.10_STAGE_LSA2-S3.T4.P3-4-5",
+        "tieuDe": "A1B_8.10_STAGE LSA2-S3.T4.P3-4-5",
+        "tenHien": "A1B_8.10_STAGE LSA2-S3.T4.P3-4-5",
+        "dang": "STAGE",
+        "ngay": "8.10",
+        "han": "2026-10-13T19:45",
+        "maLesson": "LSA2-S3.T4.P3-4-5",
+        "taoLuc": "2026-10-08",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSA2-S3.T4.P3-4-5",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1B%2FA1B_8.10_STAGE_LSA2-S3.T4.P3-4-5%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "cv47fv",
+            "mau": "ANAGRAM",
+            "han": "2026-10-11T00:00"
+          },
+          {
+            "loai": "nghe",
+            "ten": "DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSA2-S3.T4.P3-4-5",
+            "han": "2026-10-11T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSA2-S3.T4.P3-4-5 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "b5vp35",
+            "mau": "QUIZ",
+            "han": "2026-10-13T19:45"
+          }
+        ]
+      },
       {
         "id": "A1B_6.10_WORDS_LSA2-S3.T4.P3-4-5",
         "tieuDe": "A1B_6.10_WORDS LSA2-S3.T4.P3-4-5",

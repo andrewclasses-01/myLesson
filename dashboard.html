@@ -1755,11 +1755,22 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .bm-hop.hq .bm-giua{display:flex}
 .bm-giua-ruot{display:flex; align-items:center; gap:10px; margin:0 auto; min-width:0; max-width:100%}
 /* v1.133.0 — thầy chốt: cụm giữa TO hơn (ô hạn chữ 12/đồng hồ 16, thanh chặng cao 32 chữ 10.5). */
-.hq-han{display:flex; align-items:center; gap:10px; padding:6px 13px; border-radius:11px; background:var(--vang-nhat); border:1px solid #F5DDB0; white-space:nowrap; flex:none}
-.hq-han b{font:800 12px/1.2 var(--font); color:#8a5b0e; letter-spacing:.04em}
-.hq-han b i{font-style:normal; font-weight:700; color:#B08A3E}
+/* ⭐ v1.281.0 (08/10, thầy duyệt mẫu B + đầu thanh 1i) — KHỐI "GIAO ── thanh thời gian ── HẠN · đồng hồ" thay ô hạn vàng.
+   Mẫu: `D:\OTHERS\CLAUDE\myLesson - thiet ke hop quan ly\mau-giao-han.html` (B) + `mau-dau-thanh.html` (1i). Thanh cập nhật ở `nhipDongHo`. */
+.hq-han{--c:#0E7C6E; --c-nhat:#7CC6B9; display:flex; align-items:center; gap:12px; padding:6px 14px; border-radius:11px; background:#fff; border:1px solid var(--vien); box-shadow:0 1px 2px rgba(16,40,36,.05); white-space:nowrap; flex:none}
+.hq-han.gap{--c:#D93B40; --c-nhat:#F3B37C}
+.hq-moc{display:flex; flex-direction:column; gap:3px}
+.hq-moc small{font:800 9.5px/1 var(--font); letter-spacing:.1em; color:var(--nhat)}
+.hq-moc b{font:800 12.5px/1 var(--font); font-variant-numeric:tabular-nums; color:#0B6357}
+.hq-moc-han{text-align:right} .hq-moc-han b{color:#8a5b0e} .hq-han.gap .hq-moc-han b{color:#B03A3E}
+.hq-tg{position:relative; width:150px; height:6px; flex:none; border-radius:99px; background:#EDF2F1}
+.hq-tg .da{position:absolute; inset:0 auto 0 0; width:0; border-radius:99px; background:linear-gradient(90deg,var(--c-nhat),var(--c))}
+.hq-tg .dau{position:absolute; top:50%; left:0; width:8px; height:5px; margin:-2.5px 0 0 -6px; border-radius:50%; background:var(--c); filter:blur(2px); opacity:.45; pointer-events:none}
+.hq-tg.rong .dau{display:none}
+.hq-dem{padding-left:12px; border-left:1px solid var(--vien)}
 .hq-han .dhho{font-size:16px; line-height:1}
-.hq-han.gap{background:var(--do-nhat); border-color:#F3C4BE} .hq-han.gap b{color:#B03A3E}
+@media (max-width:1200px){ .hq-tg{width:90px} .hq-han{gap:9px; padding:6px 11px} .hq-dem{padding-left:9px} }
+@media (max-width:640px){ .hq-han > .hq-moc:first-child, .hq-tg{display:none} }
 /* Thanh chặng trong đầu hộp: TÁI DÙNG `.st-bar`/`.st-khuc` (CSS chung phía trên, bản chép thứ ba của lop/bai),
    ép mọi khúc CÙNG cao 28 (khúc đang/kết không nhô), khúc là <button>. */
 .bm-giua .st-bar{width:auto; flex:0 1 340px; min-width:170px}
@@ -3230,11 +3241,14 @@ button.mk-em:hover{border-color:currentColor}
    Các dòng chia đều phần dư (cao tối đa 56px); màn quá cao thì dòng "Quản lý & bảo mật" dồn xuống đáy.
    Khung giữa + chat tự dài theo vì `hdKeoDai()` kéo hàng 2 cột tới đáy nút baoMat.
    Chỉ dashboard (nw-thanh.css dùng chung giữ nguyên) ⇒ bộ chọn `.nwb-ql > .nwb-ql-cot` để thắng file chung nạp sau.
-   ⭐ v1.218.0 (thầy chốt) — TRẦN = đúng cỡ màn 1080 (vùng trang 911px ⇒ cột 817px): cửa sổ cao hơn thì KHÔNG giãn thêm. */
+   ~~⭐ v1.218.0 — TRẦN 817px~~ BỎ ở v1.281.0.
+   ⭐⭐ v1.281.0 (08/10, thầy chốt — xem trước trên Chrome 1920×1080 thật): cột có 19 mục cần 887px > 817 ⇒ cột CUỘN + cả trang dư 70px.
+   Nay: cột cao ĐÚNG màn (không trần — cửa sổ cao hơn/thấp hơn đều tự theo), KHÔNG CUỘN; dòng `flex:1 1 0` co được tới 30px
+   (padding dọc 0, chữ không xuống dòng), giãn tối đa 56px. Màn 1080: mỗi dòng ≈ 41px, đủ cả "Quản lý & bảo mật". */
 @media (min-width:901px){
-  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:min(calc(100dvh - 62px - 14px - 18px), 817px); padding-bottom:0}
-  .nwb-ql > .nwb-ql-cot > .nwb-ql-muc{flex:1 1 auto; max-height:56px}
-  .nwb-ql > .nwb-ql-cot > .nwb-ql-vach{flex:none}
+  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:calc(100dvh - 62px - 14px - 18px); max-height:none; overflow:hidden; padding-bottom:0}
+  .nwb-ql > .nwb-ql-cot > .nwb-ql-muc{flex:1 1 0; min-height:30px; max-height:56px; padding-top:0; padding-bottom:0; white-space:nowrap}
+  .nwb-ql > .nwb-ql-cot > .nwb-ql-vach{flex:none; margin:6px 10px}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-vach:last-of-type{margin-top:auto}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-muc:has(+ .nwb-ql-vach:last-of-type){margin-bottom:8px}
 }
@@ -3789,7 +3803,7 @@ tr.qm-hang-tam td{background:#fffbeb}
          đứng CHÍNH GIỮA so với hai mép hộp (thầy chốt), không phải giữa khoảng trống còn lại. -->
     <div class="bm-trai" id="bmTrai" title="Đúp = chép ẢNH cả hộp này để dán (Ctrl+V) gửi người khác">
       <img class="bm-av" src="assets/avatar-tron.jpg" alt="">
-      <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Xem như giáo viên</div></div>
+      <div><div class="bm-ten">Thầy Andrew</div><div class="bm-nho">Giáo viên</div></div>
     </div>
     <!-- ⭐ v1.132.0 — GIỮA hàng đầu: ô hạn + thanh chặng mũi tên (bấm/đúp), xem `hqVeDauGiua`; ⚙ Cài đặt bài từ v1.132.1 ở cuối dải tab (`hqTabsRuot`) -->
     <div class="bm-giua" id="bmGiua"></div>
@@ -3978,7 +3992,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=234"></script>
+<script src="config.js?v=235"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -6347,6 +6361,13 @@ tr.qm-hang-tam td{background:#fffbeb}
       var tieng = con / TIENG;
       e.className = 'dhho ' + (tieng > 24 ? 'xanh' : (tieng > 12 ? 'cam' : 'do'));
     });
+    // ⭐ v1.281.0 — thanh thời gian GIAO→HẠN ở đầu hộp quản lý bài: phần đã trôi (đầu thanh = vệt mờ nhỏ, mẫu 1i).
+    Array.prototype.forEach.call(document.querySelectorAll('.hq-tg[data-den]'), function (e) {
+      var tu = +e.getAttribute('data-tu'), den = +e.getAttribute('data-den');
+      var p = (tu && den > tu) ? Math.min(1, Math.max(0, (Date.now() - tu) / (den - tu))) : 0;
+      e.firstChild.style.width = e.lastChild.style.left = (p * 100) + '%';
+      e.classList.toggle('rong', !(tu && den > tu));
+    });
     A.nhipNghi(document);          // ⭐ v1.48.0 — đồng hồ của thẻ "không giao bài"
     nhipKhucCho();                 // ⭐ v1.130.0 — khúc "OPEN IN" của thẻ STAGE
   }
@@ -6859,7 +6880,9 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ⭐ v1.211.0 — thầy: khung giữa + khung chat KÉO DÀI tới đúng mép dưới nút "Quản lý & bảo mật" (cột trái, sticky đáy màn).
   //   Đo thật (không đoán CSS): đáy nút đó − đỉnh hàng 2 cột ⇒ min-height. Nội dung nhiều hơn thì vẫn dài ra như cũ.
   function hdKeoDai() {
-    var hai = document.querySelector('.hai-cot'), nut = document.querySelector('#nwbQlCot [data-muc="baoMat"]');
+    // ⭐ v1.281.0 — đo ĐÁY CỘT MENU (= đáy màn − 18px, cột không cuộn nữa) thay vì đáy nút baoMat: cột từng tràn + cuộn
+    //   ⇒ nút baoMat nằm khuất dưới đáy màn ⇒ khung giữa bị kéo dài quá màn, cả trang cuộn thêm 70px (màn 1080).
+    var hai = document.querySelector('.hai-cot'), nut = document.getElementById('nwbQlCot');
     if (!hai) return;
     if (!nut || window.innerWidth <= 900) { hai.style.minHeight = ''; return; }
     if (window.scrollY > 2 || !nut.getBoundingClientRect().height) return;   // cột trái sticky: chỉ đo khi trang ở đầu + đã hiện
@@ -7455,31 +7478,48 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ---- ⭐ v1.132.0 — GIỮA HÀNG ĐẦU HỘP: ô hạn + thanh chặng mũi tên (thay thanh tổng quan riêng của v1.131; ⚙ từ v1.132.1 dời xuống cuối dải tab) ----
   // ⛔ Thanh chặng chỉ VẼ MỘT LẦN cho mỗi bài, về sau chỉ đổi class: nếu vẽ lại innerHTML ngay ở cú bấm thứ nhất
   // thì cú thứ hai rơi vào nút MỚI ⇒ trình duyệt không bắn `dblclick` (đã cắn ở mẫu v4).
+  // ⭐ v1.281.0 — MỐC GIAO của bài: `giaoLuc` "YYYY-MM-DDTHH:MM" (app v2.142.0 ghi lúc ĐẨY LẦN ĐẦU, đẩy lại giữ nguyên;
+  //   bài cũ điền từ lịch sử git `data/bai.json` bằng app `tools/dien-gio-giao.js`). Thiếu thì lùi về NGÀY `taoLuc` (không giờ).
+  //   Trả { moc: ms, chu: "15:30 · 7/10" | "7/10" } hoặc null.
+  function hqGiao(b) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/.exec(String((b && b.giaoLuc) || ''));
+    if (m) return { moc: new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime(), chu: m[4] + ':' + m[5] + ' · ' + (+m[3]) + '/' + (+m[2]) };
+    var d = /^(\d{4})-(\d{2})-(\d{2})$/.exec(A.ngayGiaoBai(b));
+    return d ? { moc: new Date(+d[1], +d[2] - 1, +d[3]).getTime(), chu: (+d[3]) + '/' + (+d[2]) } : null;
+  }
   function hqVeDauGiua() {
     var b = HQ.b, t = HQ.t, hop = $('#bmGiua');
     var moc = A.mocHan(b);
     var st = tinhTrangThe(t, moc, A.daSuaHan(b));
     var tt = A.trangThaiThe(b), khoa = tt === 'khoa';
     var chu0 = A.chuHan(b) || (moc == null ? '' : chuNgay(moc));
-    var chu = chu0 ? 'Hạn ' + A.chuAnToan(chu0) : 'Chưa đặt hạn';
+    // ⭐ v1.281.0 (08/10, thầy duyệt mẫu B + đầu thanh 1i — `D:\OTHERS\CLAUDE\myLesson - thiet ke hop quan ly\mau-dau-thanh.html`):
+    //   ô hạn thành KHỐI "GIAO ── thanh thời gian ── HẠN · đồng hồ". `nhan` = chữ nhỏ trên, `chu` = mốc dưới.
+    var nhan = 'HẠN', chu = chu0 ? A.chuAnToan(chu0) : 'Chưa đặt';
     var choMo = 0, laStage = !!(t.stage && t.chang), xong = st.du;
     if (laStage) {
       var coSo = t.chang.filter(function (x) { return x.so; });
       if (HQ.chang === 'all') {
         var cuoi = coSo[coSo.length - 1];
-        chu = 'S1→S' + coSo.length + ' <i>· hạn cuối</i> ' + A.chuAnToan((cuoi && cuoi.hanHien) ? chuHanChangDb(cuoi.hanHien) : '—');
+        nhan = 'HẠN CUỐI · S1→S' + coSo.length;
+        chu = A.chuAnToan((cuoi && cuoi.hanHien) ? chuHanChangDb(cuoi.hanHien) : '—');
       } else {
         var c = t.chang[HQ.chang];
         if (c && c.so) {
-          chu = 'S' + c.so + ' · ' + A.chuAnToan(c.hanHien ? chuHanChangDb(c.hanHien) : '—');
+          nhan = 'HẠN STAGE ' + c.so;
+          chu = A.chuAnToan(c.hanHien ? chuHanChangDb(c.hanHien) : '—');
           if (!st.du && !khoa && A.changChoMo(t.chang) === c) choMo = 1;
           if (!st.du && c.moc != null) moc = c.moc;
           if (c.tt === 'xong') xong = true;   // chặng này cả lớp đã xong ⇒ COMPLETE
         } else chu = 'Không hạn';
       }
     }
-    var han = '<span class="hq-han' + (st.tt === 'gap' && !khoa ? ' gap' : '') + '"><b>' + chu + '</b>' +
-      '<span class="dhho" data-moc="' + (moc == null ? 0 : moc) + '" data-xong="' + (xong ? 1 : 0) + '" data-khoa="' + (khoa ? 1 : 0) + '" data-chomo="' + choMo + '">…</span></span>';
+    var giao = hqGiao(b);
+    var han = '<span class="hq-han' + (st.tt === 'gap' && !khoa ? ' gap' : '') + '">' +
+      '<span class="hq-moc"><small>GIAO</small><b>' + (giao ? A.chuAnToan(giao.chu) : '—') + '</b></span>' +
+      '<span class="hq-tg" data-tu="' + (giao ? giao.moc : 0) + '" data-den="' + (moc == null ? 0 : moc) + '"><i class="da"></i><i class="dau"></i></span>' +
+      '<span class="hq-moc hq-moc-han"><small>' + nhan + '</small><b>' + chu + '</b></span>' +
+      '<span class="hq-dem"><span class="dhho" data-moc="' + (moc == null ? 0 : moc) + '" data-xong="' + (xong ? 1 : 0) + '" data-khoa="' + (khoa ? 1 : 0) + '" data-chomo="' + choMo + '">…</span></span></span>';
     var thanh = hop.querySelector('#hqThanhChang');
     if (hop.getAttribute('data-id') === b.id && hop.querySelector('#hqHanO') && (!laStage || thanh)) {
       hop.querySelector('#hqHanO').innerHTML = han;

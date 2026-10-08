@@ -3982,7 +3982,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=82"></script>
+<script src="js/chung.js?v=83"></script>
 <script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=20"></script>
@@ -11175,9 +11175,9 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ---------------- KHO LỚN ----------------
   var KL = { mo: false, lop: null, ky: 30, loc: 'tatca', dangDoc: false };
   var KL_NGAY = 86400000, KL_GIO = 3600000;
-  var KL_MAU = { WORDS: '#2a78d6', DICTS: '#eb6834', RD: '#1baf7a', WS: '#eda100', STAGE: '#e87ba4' };
+  var KL_MAU = { WORDS: '#2a78d6', DICTS: '#eb6834', RD: '#1baf7a', WS: '#eda100', STAGE: '#e87ba4', REVIEW: '#7c5cd6' };   // v1.267.0 + REVIEW
   var KL_MAU_KHAC = '#8AA09C';
-  var KL_TEN_DANG = { WORDS: 'WORDS', DICTS: 'DICTS', RD: 'READING', WS: 'WORKSHEET', STAGE: 'STAGE' };
+  var KL_TEN_DANG = { WORDS: 'WORDS', DICTS: 'DICTS', RD: 'READING', WS: 'WORKSHEET', STAGE: 'STAGE', REVIEW: 'REVIEW' };
   function klE(s) { return A.chuAnToan(String(s == null ? '' : s)); }
   function klDang(b) { return dangNgan(b.dang); }
   function klMau(b) { return KL_MAU[klDang(b)] || KL_MAU_KHAC; }

@@ -1922,6 +1922,9 @@
     'SP CHECK': 'SPEAKING CHECK',
     // v1.76.0 — dạng bài chia chặng: thầy chốt giữ nguyên chữ STAGE
     'STAGE': 'STAGE',
+    // ⭐ v1.267.0 (08/10/2026, thầy chốt) — dạng bài ÔN TẬP (app myLesson v2.139.0, Loại REVIEW): thẻ "ÔN TẬP NGÀY 5/10",
+    // góc phải trang bài "ÔN TẬP / <mã lesson>". Dashboard của thầy vẫn ghi mã REVIEW (dangNgan, không qua bảng này).
+    'REVIEW': 'ÔN TẬP',
     // ⭐ v1.88.0 (10/09/2026) — WORKSHEET: chỉ bài giấy, không act nào. Card tự
     // dựng tiêu đề riêng (`veWorksheetChu` bên lop.html) nên đây chỉ là lưới an
     // toàn nếu `tenBai()` phải lùi về tên dạng ở chỗ khác (vd Kho bài).

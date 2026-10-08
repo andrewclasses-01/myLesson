@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.22.0 (dba4e13) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.0 (b3ffdfa) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -89,9 +89,11 @@ function tinhKetQuaThang(m, y) {
   const dd = diemdanh.docThang(m, y);                 // buổi học từng em từ myStudent
   const ngayBatDau = kho.docNgayBatDau().ds;
   kho.apDungNgayBatDau(dd, ngayBatDau, m, y);
+  dd.m = m; dd.y = y;   // v0.23.0 — phi.js cần tháng để tính hệ số buổi theo NGÀY (doiHeSo)
   const giaDinh = kho.docGiaDinh(dd.hocSinhDs);
   const bang = phi.tinhThang(dd, caiDat, giaDinh);    // đơn vị thu + tiền cần đóng
   let thang = kho.docThang(m, y);                      // sao kê + gán tay + ghi đè đã lưu
+  phi.apDungChinhTay(bang.units, thang.ghiDe || {}, caiDat);   // v0.23.0 — chỉnh tay hóa đơn tháng này (miễn giảm / giảm thêm)
   const hocMay = kho.docHocMay();
   const dsLopBiet = (dd.lopDs || []).map((L) => L.ma_lop);
 
@@ -742,6 +744,13 @@ function catHs(cd, maLop, ten) {
   return Object.assign({}, catLop(cd, maLop), hs[maLop + '|' + khoaTen(ten)] || hs[maLop + '|' + ten]);
 }
 
+function heSoTaiNgay(catL, iso) {
+  let hs = catL.heSoBuoi || 1;
+  const ds = Array.isArray(catL.doiHeSo) ? catL.doiHeSo.slice().sort((a, b) => String(a.tuNgay).localeCompare(String(b.tuNgay))) : [];
+  for (const d of ds) if (d && d.tuNgay && iso >= d.tuNgay && Number(d.heSoBuoi) > 0) hs = Number(d.heSoBuoi);
+  return hs;
+}
+
 const TRAN_TIEU_HOC = 1000000;
 
 function phiTho(buoi, cat) {
@@ -789,9 +798,16 @@ function tinhThang(dd, caiDat, giaDinh) {
   function buoiCuaId(maLop, id) {
     const L = (dd.lopMap || {})[maLop];
     const h = L && id !== undefined && L.hocSinh[String(id)];
-    const heSo = catLop(cd, maLop).heSoBuoi || 1;
+    const catL = catLop(cd, maLop);
+    const heSo = catL.heSoBuoi || 1;
+    let buoi = (h ? h.buoiCoMat : 0) * heSo;
+    if (h && dd.m && dd.y && Array.isArray(catL.doiHeSo) && catL.doiHeSo.length) {
+      const pad = (n) => String(n).padStart(2, '0');
+      buoi = (h.lich || []).filter((b) => b.coMat && !b.hocThu)
+        .reduce((s, b) => s + heSoTaiNgay(catL, `${dd.y}-${pad(dd.m)}-${pad(b.ngay)}`), 0);
+    }
     return {
-      buoi: (h ? h.buoiCoMat : 0) * heSo,
+      buoi,
       vang: h ? h.buoiVang : 0,
       choDuyet: h ? h.choDuyet : 0,
       ngay: h ? h.ngayCoMat : [],
@@ -888,13 +904,43 @@ function tinhThang(dd, caiDat, giaDinh) {
       buoi: mems.reduce((s, x) => s + x.buoi, 0),
       choDuyet: mems.reduce((s, x) => s + x.choDuyet, 0),
       giamPct: f.giamPct || 0,
+      tho: tong,   // v0.23.0 — phí thô cả nhà (đã trần từng con, chưa giảm) cho chỉnh tay hóa đơn
       expected: floorStep(tong * (100 - (f.giamPct || 0)) / 100, 50000),
     });
   }
   return { units, canhBao };
 }
 
-module.exports = { tinhThang, phiLe, phiTho, floorStep, catLop, catHs };
+function apDungChinhTay(units, ghiDe, cd) {
+  for (const u of units) {
+    const g = (ghiDe || {})[u.id];
+    if (!g) continue;
+    const coMien = g.mienGiamPct !== undefined && g.mienGiamPct !== null && g.mienGiamPct !== '';
+    const gt = g.giamThem && Number(g.giamThem.giaTri) > 0 ? g.giamThem : null;
+    if (!coMien && !gt) continue;
+    let tho; let pctCu; let coTran;
+    if (u.kind === 'fam') {
+      tho = Number(u.tho) || 0;
+      pctCu = u.giamPct || 0; coTran = true;
+    } else {
+      const cat = u.cat || {};
+      tho = phiTho(u.buoi, cat); pctCu = cat.giamPct || 0; coTran = cat.tran > 0 || cat.tieuHoc;
+    }
+    const pct = coMien ? Math.max(0, Math.min(100, Number(g.mienGiamPct) || 0)) : pctCu;
+    let tien = (pct || coTran) ? floorStep(tho * (100 - pct) / 100, 50000) : tho;
+    const sauMien = tien;
+    let tru = 0;
+    if (gt) {
+      if (gt.kieu === 'pct') { const p = Math.max(0, Math.min(100, Number(gt.giaTri))); tien = floorStep(tien * (100 - p) / 100, 50000); tru = sauMien - tien; }
+      else { tru = Math.min(tien, Math.round(Number(gt.giaTri))); tien -= tru; }
+    }
+    u.chinhTay = { goc: u.expected, tho, pct, coMien, sauMien, giamThem: gt ? { lyDo: String(gt.lyDo || ''), kieu: gt.kieu === 'pct' ? 'pct' : 'tien', giaTri: Number(gt.giaTri), tru } : null };
+    u.expected = Math.max(0, tien);
+  }
+  return units;
+}
+
+module.exports = { tinhThang, phiLe, phiTho, floorStep, catLop, catHs, heSoTaiNgay, apDungChinhTay };
 
 };
   G["E:\\LAP TRINH APP\\myPay\\src\\main\\lib\\kho-pay.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -2192,7 +2238,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.22.0";
-  G.__MA = "dba4e13";
+  G.__PHIEN_BAN = "0.23.0";
+  G.__MA = "b3ffdfa";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

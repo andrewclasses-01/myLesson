@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.22.0 (dba4e13) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.0 (b3ffdfa) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -245,11 +245,13 @@
   function giuaHangHtml(pl, u) {
     const c = pl && pl.chot;
     const gc = ghiChuCuaU(u);
-    if (!c && !gc) return '';
+    const ctay = u && u.chinhTay;   // v0.23.0 — có chỉnh tay hóa đơn tháng này
+    if (!c && !gc && !ctay) return '';
     const tieuDe = c ? (c.loai === 'tang' ? 'Được tặng học phí' : 'Đã chốt xong phí') + (c.theo ? ` (theo tháng ${c.m}/${c.y})` : '') + ' — nháy đúp xem chi tiết' : '';
     return '<span class="giua-hang">' +
       (c ? `<span class="sao-chot ${c.loai}${c.theo ? ' theo' : ''}" title="${esc(tieuDe)}">★</span>` : '') +
-      (gc ? `<span class="gc-icon" title="${esc(gc.chu)}\n— nháy đúp để sửa">📝</span>` : '') + '</span>';
+      (gc ? `<span class="gc-icon" title="${esc(gc.chu)}\n— nháy đúp để sửa">📝</span>` : '') +
+      (ctay ? `<span class="ct-icon" title="Có chỉnh tay hóa đơn tháng này (gốc ${vnd(ctay.goc)}đ) — mở hóa đơn ⇒ ✎ Chỉnh tay">✎</span>` : '') + '</span>';
   }
 
   function moCanh(neo, html) {
@@ -1083,6 +1085,9 @@
         <td><input type="number" class="cdTran" value="${c.tran}" step="100000"></td>
         <td><input type="number" class="cdGiam" value="${c.giamPct}" min="0" max="100"></td>
         <td><input type="number" class="cdHeSo" value="${c.heSoBuoi}" min="1" max="2"></td>
+        <td style="white-space:nowrap" title="v0.23.0 — từ ngày này 1 buổi tính theo hệ số mới (vd lớp chuyển cuối tuần → trong tuần). Trống = không đổi.">
+          <input type="date" class="cdDoiNgay" value="${esc(((c.doiHeSo || [])[0] || {}).tuNgay || '')}" style="width:130px">
+          → <input type="number" class="cdDoiHeSo" value="${((c.doiHeSo || [])[0] || {}).heSoBuoi || ''}" min="1" max="2" style="width:52px"></td>
       </tr>`;
     }).join('');
     $$('#thanCdLop tr').forEach((tr) => {
@@ -1097,6 +1102,8 @@
             giamPct: parseInt(tr.querySelector('.cdGiam').value, 10) || 0,
             heSoBuoi: parseInt(tr.querySelector('.cdHeSo').value, 10) || 1,
           };
+          const nDoi = tr.querySelector('.cdDoiNgay').value; const hDoi = parseInt(tr.querySelector('.cdDoiHeSo').value, 10) || 0;
+          patch.lop[L].doiHeSo = nDoi && hDoi ? [{ tuNgay: nDoi, heSoBuoi: hDoi }] : [];
           await goi('ghiCaiDat', patch);
           await napThang(); baoToast('Đã lưu mức phí lớp ' + L + '.');
         };
@@ -1429,6 +1436,44 @@
     dongMan(); await napThang(); baoToast('Đã lưu.');
   }
 
+  function moCanhChinhTay(neo, u) {
+    const g = ((S.du.thang || {}).ghiDe || {})[u.id] || {};
+    const gt = g.giamThem || {};
+    const mien = g.mienGiamPct === undefined || g.mienGiamPct === null ? '' : g.mienGiamPct;
+    const pctCu = u.kind === 'fam' ? (u.giamPct || 0) : ((u.cat || {}).giamPct || 0);
+    const el = moCanh(neo, `
+      <div class="muc tt">✎ <b>Chỉnh tay tháng ${S.m}/${S.y}</b> — ${esc(u.label)}</div>
+      <div class="cm-than">
+        <label class="ct-nhan">Miễn giảm (%) <small>— trống = theo mức có sẵn (${pctCu}%)</small></label>
+        <input type="number" id="ctMien" class="ct-o" min="0" max="100" step="1" value="${esc(String(mien))}" placeholder="${pctCu}">
+        <label class="ct-nhan">Lý do giảm thêm</label>
+        <input type="text" id="ctLyDo" class="ct-o" maxlength="120" value="${esc(gt.lyDo || '')}" placeholder="vd: nghỉ ốm dài ngày">
+        <label class="ct-nhan">Giảm thêm</label>
+        <div style="display:flex;gap:6px"><input type="number" id="ctGiam" class="ct-o" min="0" step="1" value="${gt.giaTri || ''}" style="flex:1">
+          <select id="ctKieu" class="ct-o" style="width:78px"><option value="tien"${gt.kieu !== 'pct' ? ' selected' : ''}>đồng</option><option value="pct"${gt.kieu === 'pct' ? ' selected' : ''}>%</option></select></div>
+        <div class="cm-phu" id="ctXem"></div>
+        <div class="cm-nut"><button class="btn primary" id="ctLuuCT">Lưu</button><button class="btn" id="ctHuyCT">Hủy</button>
+          ${(g.mienGiamPct !== undefined && g.mienGiamPct !== null) || g.giamThem ? '<button class="btn" id="ctBoCT" style="margin-left:auto">Bỏ chỉnh tay</button>' : ''}</div>
+      </div>`);
+    el.querySelector('#ctXem').textContent = `Hiện cần đóng: ${vnd(u.expected)}đ` + (u.chinhTay ? ` (gốc ${vnd(u.chinhTay.goc)}đ)` : '');
+    setTimeout(() => { const o = $('#ctMien'); if (o) o.focus(); }, 30);
+    const luu = async (patch, chu) => {
+      await goi('ghiDeUnit', S.m, S.y, u.id, patch);
+      dongCanh(); await napThang();
+      moHopHd(u.id);
+      baoToast(chu);
+    };
+    $('#ctHuyCT').onclick = () => dongCanh();
+    $('#ctLuuCT').onclick = () => {
+      const m = $('#ctMien').value.trim(); const v = Number($('#ctGiam').value) || 0;
+      luu({
+        mienGiamPct: m === '' ? null : Math.max(0, Math.min(100, Number(m) || 0)),
+        giamThem: v > 0 ? { lyDo: $('#ctLyDo').value.trim(), kieu: $('#ctKieu').value === 'pct' ? 'pct' : 'tien', giaTri: v } : null,
+      }, 'Đã lưu chỉnh tay tháng ' + S.m + '/' + S.y + '.');
+    };
+    if ($('#ctBoCT')) $('#ctBoCT').onclick = () => luu({ mienGiamPct: null, giamThem: null }, 'Đã bỏ chỉnh tay tháng này.');
+  }
+
   function chuTat(ten) { const p = String(ten || '').trim().split(/\s+/); return ((p.length > 1 ? p[p.length - 2][0] : '') + (p[p.length - 1] || '?')[0]).toUpperCase(); }
   function ngayVN(iso) { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || '')); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; }
   function veTtinHs(uid) {
@@ -1505,6 +1550,7 @@
       $('#hdHangNut').innerHTML = !u ? '<button class="btn" data-dong>Đóng</button>' : `
         <button class="btn" id="hdSaoChep">Sao chép ảnh</button>
         <button class="btn" id="hdTaiAnh">Tải ảnh</button>
+        <button class="btn" id="hdChinhTay" title="Miễn giảm / giảm thêm RIÊNG tháng này">✎ Chỉnh tay${u.chinhTay ? ' •' : ''}</button>
         <button class="btn" id="hdDayWebEm" disabled title="Chưa mở — sẽ làm ở đợt sau">Đẩy web (em này)…</button>
         <span class="keo"></span>
         ${kq.chotTay && kq.chotTay[u.id]
@@ -1516,6 +1562,7 @@
         await goi('saoChepAnh', $('#hdCanvas').toDataURL('image/png'));
         baoToast('Đã sao chép ảnh hóa đơn.');
       };
+      $('#hdChinhTay').onclick = () => moCanhChinhTay($('#hdChinhTay'), u);
       $('#hdTaiAnh').onclick = async () => {
         const ten = `${S.y}-${String(S.m).padStart(2, '0')}/${u.classes[0]} - ${u.label}.png`;
         const p = await goi('ghiHoaDon', ten, $('#hdCanvas').toDataURL('image/png'));
@@ -1631,7 +1678,8 @@
       ? (u.members || []).map((m) => ({ ten: m.ten, lop: m.lop, lich: m.lich, buoi: m.buoi, vang: m.vang, choDuyet: m.choDuyet, hocThu: m.hocThu, so: m.id }))
       : [{ ten: u.label, lop: u.classes[0], lich: u.lich, buoi: u.buoi, vang: u.vang, choDuyet: u.choDuyet, hocThu: u.hocThu, so: u.hsId }];
     const W = 760;
-    const headH = 88; const titleH = 90; const sumH = 190;
+    const ctH = u.chinhTay ? 64 : 0;   // v0.23.0 — thêm chỗ cho dòng Miễn giảm / Giảm thêm
+    const headH = 88; const titleH = 90; const sumH = 190 + ctH;
     const calH = caoLichThang(S.m, S.y);          // v0.7.0 — chiều cao THẬT, không hằng số cứng
     const H = headH + titleH + blocks.length * calH + sumH;
     const cv = $('#hdCanvas'); cv.width = W; cv.height = H;
@@ -1660,11 +1708,15 @@
     g.strokeStyle = 'rgba(15,23,42,.15)'; g.beginPath(); g.moveTo(30, yy); g.lineTo(W - 30, yy); g.stroke();
     yy += 34;
     const dong = [['Tổng số buổi', String(u.buoi)]];
-    if (u.kind === 'fam') dong.push(['Hệ số gia đình', String(u.heSo || '')]);
-    else {
+    const ctTay = u.chinhTay;   // v0.23.0 — chỉnh tay tháng này: Miễn giảm THAY ưu đãi có sẵn; trống thì không hiện
+    if (u.kind === 'fam') {
+      if (ctTay && ctTay.coMien) { if (ctTay.pct > 0) dong.push(['Miễn giảm', '−' + ctTay.pct + '%']); }
+      else dong.push(['Hệ số gia đình', String(u.heSo || (u.giamPct ? '−' + u.giamPct + '%' : ''))]);
+    } else {
       if (u.cat && u.cat.tieuHoc) dong.push(['Học sinh tiểu học', 'trần 1.000.000đ']);
       else if (u.cat && u.cat.tran > 0) dong.push(['Trần tháng', vnd(u.cat.tran) + ' đ']);
-      if (u.cat && u.cat.giamPct > 0) dong.push(['Ưu đãi', '−' + u.cat.giamPct + '%']);
+      if (ctTay && ctTay.coMien) { if (ctTay.pct > 0) dong.push(['Miễn giảm', '−' + ctTay.pct + '%']); }
+      else if (u.cat && u.cat.giamPct > 0) dong.push(['Ưu đãi', '−' + u.cat.giamPct + '%']);
       const tu = tamUngCuaHs(u.hsId);
       if (tu) {
         const daTruThangNay = (tu.lichSu || []).some((h) => h.loai === 'tru' && h.m === S.m && h.y === S.y);
@@ -1674,6 +1726,10 @@
         })();
         dong.push(['Số dư HP trước còn lại' + (daTruThangNay ? '' : ' (chưa trừ tháng này)'), vnd(soSauThang) + 'đ']);
       }
+    }
+    if (ctTay && ctTay.giamThem && ctTay.giamThem.tru > 0) {
+      dong.push(['Giảm thêm' + (ctTay.giamThem.lyDo ? ' (' + ctTay.giamThem.lyDo + ')' : ''),
+        '−' + vnd(ctTay.giamThem.tru) + ' đ' + (ctTay.giamThem.kieu === 'pct' ? ' (' + ctTay.giamThem.giaTri + '%)' : '')]);
     }
     g.font = '600 18px Segoe UI';
     for (const [a, b2] of dong) {

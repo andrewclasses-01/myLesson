@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.24.0 (5cefa37) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -35,6 +35,7 @@
   const daBaoLechChot = new Set(); // "m-y" đã hiện popup lệch chốt trong phiên này — khỏi hiện lặp mỗi lần refresh nhỏ
   async function napThang() {
     S.du = await goi('docThang', S.m, S.y);
+    try { S.phiCu = await goi('docPhiCu', S.m, S.y); } catch (_) { S.phiCu = {}; }
     veTatCa();
     const key = S.m + '-' + S.y;
     if ((S.du.lechChot || []).length && S.du.thang.chot && !daBaoLechChot.has(key)) {
@@ -122,9 +123,11 @@
     const mapNo = banDoNoThangNay();   // v0.7.0 — nhãn "Nợ phí •" / "Đóng sau •"
     const nhanNo = (u, coTien) => {
       const d = mapNo.get(khoaNoCua(u));
-      if (!d) return '';
+      const cu = phiCuCua(u);
+      const nhanCu = cu.length ? `<i class="no-nhan cu" title="${esc(cu.map((x) => `Tháng ${x.m}/${x.y}: ${vnd(x.soTien)}`).join('\n') + '\nTổng phí cũ: ' + vnd(cu.reduce((s, x) => s + x.soTien, 0)))}">Có phí cũ</i> ` : '';
+      if (!d) return nhanCu;
       const chu = (d.kieu === 'sau' ? 'Đóng sau' : 'Nợ phí') + (coTien ? ' •' : '');
-      return `<i class="no-nhan ${d.kieu === 'sau' ? 'sau' : 'no'}">${chu}</i> `;
+      return nhanCu + `<i class="no-nhan ${d.kieu === 'sau' ? 'sau' : 'no'}">${chu}</i> `;
     };
     const theoLop = {};
     function vaoLop(lop, row) { (theoLop[lop] = theoLop[lop] || []).push(row); }
@@ -246,13 +249,23 @@
     const c = pl && pl.chot;
     const gc = ghiChuCuaU(u);
     const ctay = u && u.chinhTay;   // v0.23.0 — có chỉnh tay hóa đơn tháng này
-    if (!c && !gc && !ctay) return '';
+    const gui = u && daGuiCua(u);    // v0.25.0 — đã gửi hóa đơn tháng này cho phụ huynh
+    if (!c && !gc && !ctay && !gui) return '';
     const tieuDe = c ? (c.loai === 'tang' ? 'Được tặng học phí' : 'Đã chốt xong phí') + (c.theo ? ` (theo tháng ${c.m}/${c.y})` : '') + ' — nháy đúp xem chi tiết' : '';
     return '<span class="giua-hang">' +
       (c ? `<span class="sao-chot ${c.loai}${c.theo ? ' theo' : ''}" title="${esc(tieuDe)}">★</span>` : '') +
       (gc ? `<span class="gc-icon" title="${esc(gc.chu)}\n— nháy đúp để sửa">📝</span>` : '') +
-      (ctay ? `<span class="ct-icon" title="Có chỉnh tay hóa đơn tháng này (gốc ${vnd(ctay.goc)}đ) — mở hóa đơn ⇒ ✎ Chỉnh tay">✎</span>` : '') + '</span>';
+      (ctay ? `<span class="ct-icon" title="Có chỉnh tay hóa đơn tháng này (gốc ${vnd(ctay.goc)}đ) — mở hóa đơn ⇒ ✎ Chỉnh tay">✎</span>` : '') +
+      (gui ? `<span class="gui-icon" title="Đã gửi hóa đơn tháng này cho phụ huynh (${esc(gioGuiChu(gui))})">✈</span>` : '') + '</span>';
   }
+  function phiCuCua(u) { return (u && (S.phiCu || {})[khoaNoCua(u)]) || []; }
+  function daGuiCua(u) { const g = ((S.du && S.du.thang && S.du.thang.ghiDe) || {})[u.id]; return (g && g.daGui) || ''; }
+  function gioGuiChu(iso) {
+    const d = new Date(iso); if (isNaN(d)) return '';
+    const h = (n) => String(n).padStart(2, '0');
+    return `${h(d.getDate())}/${h(d.getMonth() + 1)} ${h(d.getHours())}:${h(d.getMinutes())}`;
+  }
+  function sdtCua(u) { const o = ((S.du && S.du.lienHe) || {})[khoaNguoiU(u)]; return (o && o.sdt) || ''; }
 
   function moCanh(neo, html) {
     let el = $('#ctxMo');
@@ -1472,7 +1485,7 @@
         <h3>Hóa đơn tháng ${S.m}/${S.y}</h3>
         ${choDs ? `<input class="timkiem" id="hdTim" placeholder="Gõ tên để lọc…">
           <div class="chon-ds" id="hdDs" style="max-height:220px"></div>`
-          : `<p class="mota"><a href="#" id="hdDoiNguoi">← Chọn người khác</a></p><div class="hd-ttin" id="hdTtin"></div>`}
+          : `<p class="mota"><a href="#" id="hdDoiNguoi">← Chọn người khác</a></p><div class="hd-ttin" id="hdTtin"></div>${phiCuChu(dang)}`}
         <div class="hd-khung"><canvas id="hdCanvas" class="hd-anh"></canvas></div>
         <div class="hangnut" id="hdHangNut" style="flex-wrap:wrap"></div>`;
       $('#manHd').classList.add('on');
@@ -1493,16 +1506,20 @@
         return;
       }
       $('#hdDoiNguoi').onclick = (e) => { e.preventDefault(); dang = null; choDs = true; ve(); };
-      veHoaDon(dang);
+      veHoaDonHop(dang);
       veTtinHs(dang);
       veHangNut();
     }
     function veHangNut() {
+      veHangNutLai = veHangNut;
       const u = dang && kq.units.find((x) => x.id === dang);
       const daDong = u && (u.id in kq.done);
       $('#hdHangNut').innerHTML = !u ? '<button class="btn" data-dong>Đóng</button>' : `
         <button class="btn" id="hdSaoChep">Sao chép ảnh</button>
         <button class="btn" id="hdTaiAnh">Tải ảnh</button>
+        <button class="btn hd-zalo" id="hdZalo" title="Chép ảnh hóa đơn + mở khung chat Zalo của phụ huynh (Ctrl+V để dán ảnh)">Gửi Zalo PH</button>
+        <button class="btn hd-sdt" id="hdSdt" title="${sdtCua(u) ? 'Sửa số Zalo phụ huynh' : 'Thêm số Zalo phụ huynh'}">${sdtCua(u) ? '✎ ' + esc(sdtCua(u)) : '+ Số Zalo PH'}</button>
+        <label class="btn hd-gui${daGuiCua(u) ? ' on' : ''}" title="Đánh dấu đã gửi hóa đơn tháng ${S.m}/${S.y} cho phụ huynh"><input type="checkbox" id="hdDaGui"${daGuiCua(u) ? ' checked' : ''}> Đã gửi${daGuiCua(u) ? ' <small>' + esc(gioGuiChu(daGuiCua(u))) + '</small>' : ''}</label>
         <button class="btn" id="hdChinhTay" title="Miễn giảm / giảm thêm RIÊNG tháng này">✎ Chỉnh tay${u.chinhTay ? ' •' : ''}</button>
         <button class="btn" id="hdDayWebEm" disabled title="Chưa mở — sẽ làm ở đợt sau">Đẩy web (em này)…</button>
         <span class="keo"></span>
@@ -1514,6 +1531,22 @@
       $('#hdSaoChep').onclick = async () => {
         await goi('saoChepAnh', $('#hdCanvas').toDataURL('image/png'));
         baoToast('Đã sao chép ảnh hóa đơn.');
+        moHopDaGui(u, veHangNut);
+      };
+      $('#hdDaGui').onchange = async (e) => { await ghiDaGui(u, e.target.checked); veHangNut(); };
+      $('#hdSdt').onclick = (e) => { e.stopPropagation(); moCanhSdt($('#hdSdt'), u, null); };
+      $('#hdZalo').onclick = async (e) => {
+        e.stopPropagation();
+        const guiDi = async () => {
+          const sdt = sdtCua(u);
+          await goi('saoChepAnh', $('#hdCanvas').toDataURL('image/png'));
+          await goi('moLienKet', 'https://zalo.me/' + sdt);
+          baoToast('Đã chép ảnh + mở Zalo ' + sdt + ' — bấm Ctrl+V rồi Enter để gửi.');
+          moHopDaGui(u, veHangNut);
+        };
+        if (await chiaSeAnhDt(u)) return;
+        if (sdtCua(u)) await guiDi();
+        else moCanhSdt($('#hdZalo'), u, guiDi);
       };
       $('#hdChinhTay').onclick = (e) => { e.stopPropagation(); moCanhChinhTay($('#hdChinhTay'), u); };
       $('#hdTaiAnh').onclick = async () => {
@@ -2076,6 +2109,108 @@
       return yy + hdSlogan(g, W, yy);
     });
   }
+
+  let hdLuot = 0;
+  function phiCuChu(uid) {
+    const u = S.du.ketQua.units.find((x) => x.id === uid);
+    const cu = phiCuCua(u);
+    if (!cu.length) return '';
+    const tong = cu.reduce((s, x) => s + x.soTien, 0);
+    return `<p class="mota hd-phicu">⚠ Còn phí cũ chưa đóng: ${cu.map((x) => `tháng ${x.m}/${x.y} <b>${vnd(x.soTien)}</b>`).join(' · ')}` +
+      `${cu.length > 1 ? ` (tổng <b>${vnd(tong)}</b>)` : ''} ⇒ hóa đơn GỘP các tháng${u && (u.id in S.du.ketQua.done) ? ' (tháng này đã đóng)' : ''}.</p>`;
+  }
+  async function veHoaDonHop(uid) {
+    const kq = S.du.ketQua;
+    const u = kq.units.find((x) => x.id === uid);
+    if (!u) return;
+    const cu = phiCuCua(u);
+    const luot = ++hdLuot;
+    if (!cu.length) { veHoaDon(uid); return; }
+    const cv = $('#hdCanvas'); const m = S.m; const y = S.y;
+    const boNho = {};
+    const khoi = [];
+    for (const d of cu) {
+      let uu = null; let motPhan = 0;
+      try {
+        const key = d.y + '-' + d.m;
+        const du = boNho[key] || (boNho[key] = await goi('docThang', d.m, d.y));
+        uu = u.kind === 'fam'
+          ? du.ketQua.units.find((z) => z.kind === 'fam' && String(z.idNha) === String(u.idNha))
+          : du.ketQua.units.find((z) => z.kind !== 'fam' && String(z.hsId) === String(u.hsId));
+        const gd = uu && ((du.thang || {}).ghiDe || {})[uu.id];
+        motPhan = Math.max(0, Math.round((gd && gd.dongMotPhan) || 0));
+      } catch (_) { uu = null; }   // tháng quá cũ / không đọc được ⇒ in phần tiền, bỏ lịch
+      if (uu && !(uu.buoi > 0)) uu = null;   // tháng không có điểm danh (nợ thêm tay) ⇒ đừng vẽ lịch trống "0 buổi · học phí gốc 0 đ"
+      khoi.push({ m: d.m, y: d.y, soTien: d.soTien, u: uu || null, motPhan });
+    }
+    const thieu = (u.id in kq.done) ? 0 : thieuThucTe(u);
+    if (thieu > 0) khoi.push({ m, y, soTien: thieu, u, motPhan: motPhanCua(u) });
+    const o = { loai: u.kind === 'fam' ? 'nha' : 'hs', ten: u.label, hsId: u.hsId, idNha: u.idNha, lop: (u.classes || [])[0] || '' };
+    const anh = await hdChuanBi();
+    if (luot !== hdLuot || !document.body.contains(cv)) return;   // thầy đã đổi người / đóng hộp trong lúc chờ
+    veHoaDonNo(cv, o, khoi, anh);
+  }
+  async function ghiDaGui(u, bat) {
+    await goi('ghiDeUnit', S.m, S.y, u.id, { daGui: bat ? new Date().toISOString() : null });
+    chonUid = u.id; await napThang();
+  }
+  function moHopDaGui(u, sau) {
+    let man = $('#manDaGui');
+    if (!man) {
+      man = document.createElement('div'); man.className = 'man'; man.id = 'manDaGui'; man.style.zIndex = '80';
+      man.innerHTML = '<div class="hop glass hop-dagui" id="hopDaGui"></div>';
+      man.addEventListener('click', (e) => { if (e.target === man) man.classList.remove('on'); });
+      document.body.appendChild(man);
+    }
+    $('#hopDaGui').innerHTML = `
+      <h3>Đã gửi hóa đơn cho phụ huynh chưa?</h3>
+      <p class="mota">${esc(u.label)} — hóa đơn tháng ${S.m}/${S.y}</p>
+      <div class="dagui-nut">
+        <button class="btn primary" id="dgCo">✓ ĐÃ GỬI</button>
+        <button class="btn" id="dgChua">Chưa gửi</button>
+      </div>`;
+    man.classList.add('on');
+    const dong = () => man.classList.remove('on');
+    $('#dgCo').onclick = async () => { dong(); await ghiDaGui(u, true); if (sau) sau(); baoToast(`${u.label}: đã đánh dấu đã gửi.`); };
+    $('#dgChua').onclick = dong;
+    setTimeout(() => { const b = $('#dgCo'); if (b) b.focus(); }, 30);
+  }
+  function moCanhSdt(neo, u, sauKhiLuu) {
+    const cu = sdtCua(u);
+    moCanh(neo, `
+      <div class="muc tt">Số Zalo phụ huynh — ${esc(u.label)}</div>
+      <div class="cm-than">
+        <input id="sdtSo" class="ct-o" type="tel" inputmode="tel" maxlength="16" placeholder="vd 0912345678" value="${esc(cu)}">
+        <div class="cm-nut"><button class="btn primary" id="sdtLuu">${sauKhiLuu ? 'Lưu + gửi' : 'Lưu'}</button><button class="btn" id="sdtHuy">Hủy</button>
+          ${cu ? '<button class="btn" id="sdtXoa" style="margin-left:auto">Xoá</button>' : ''}</div>
+      </div>`);
+    setTimeout(() => { const o = $('#sdtSo'); if (o) { o.focus(); o.select(); } }, 30);
+    const luu = async (so, xoa) => {
+      if (!so && !xoa) { if (cu) baoToast('Muốn xoá số Zalo thì bấm nút Xoá.'); else dongCanh(); return; }
+      const ds = await goi('ghiLienHe', khoaNguoiU(u), so);
+      if (S.du) S.du.lienHe = ds;
+      dongCanh();
+      if ($('#manHd').classList.contains('on')) veHangNutLai();   // nút số Zalo trên hộp hóa đơn hiện số mới
+      baoToast(so ? `${u.label}: đã lưu số Zalo ${sdtCua(u)}.` : `${u.label}: đã xoá số Zalo.`);
+      if (so && sauKhiLuu) await sauKhiLuu();
+    };
+    $('#sdtHuy').onclick = () => dongCanh();
+    $('#sdtLuu').onclick = () => luu($('#sdtSo').value.trim());
+    $('#sdtSo').onkeydown = (e) => { if (e.key === 'Enter') { e.preventDefault(); luu($('#sdtSo').value.trim()); } };
+    if ($('#sdtXoa')) $('#sdtXoa').onclick = () => luu('', true);
+  }
+  async function chiaSeAnhDt(u) {
+    const camUng = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
+    if (!camUng || !navigator.canShare || !navigator.share) return false;
+    const blob = await new Promise((ok) => $('#hdCanvas').toBlob(ok, 'image/png'));
+    if (!blob) return false;
+    const file = new File([blob], `Hoa don ${S.m}-${S.y} - ${khongDauHd(u.label)}.png`, { type: 'image/png' });
+    if (!navigator.canShare({ files: [file] })) return false;
+    try { await navigator.share({ files: [file] }); } catch (e) { if (e && e.name === 'AbortError') return true; return false; }
+    moHopDaGui(u, () => veHangNutLai());
+    return true;
+  }
+  let veHangNutLai = () => {};   // moHopHd gắn = veHangNut của hộp đang mở
 
   function veHoaDon(uid) {
     const kq = S.du.ketQua;

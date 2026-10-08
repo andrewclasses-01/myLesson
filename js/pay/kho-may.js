@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.1 (a546fc7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -125,6 +125,14 @@
   });
   may.KENH['hoadon:moThuMuc'] = bocWeb(function () { throw new Error('Trên web ảnh hóa đơn nằm ở thư mục Tải xuống của máy'); });
   may.KENH['saoke:mo'] = bocWeb(function () { throw new Error('Trên web không mở lại được file Excel gốc'); });
+  // v0.25.0 — mở khung chat Zalo phụ huynh ở tab mới (vẫn trong cú bấm của thầy nên không bị chặn pop-up)
+  may.KENH['lienket:mo'] = bocWeb(function (url) {
+    if (!/^https:\/\/zalo\.me\/0\d{9}$/.test(String(url || ''))) throw new Error('LIEN_KET_KHONG_CHO_PHEP');
+    var w = window.open(url, '_blank');
+    if (!w) throw new Error('Trình duyệt chặn mở tab mới — cho phép pop-up với trang này rồi bấm lại');
+    try { w.opener = null; } catch (e) { /* bỏ qua */ }
+    return true;
+  });
   may.KENH['fs:trangthai'] = bocWeb(function () { return { coKhoa: true }; });
   may.KENH['app:thongtin'] = bocWeb(function () { return { version: G.__PHIEN_BAN + ' web', dataDir: 'Firestore (payKho)' }; });
   may.KENH['fs:day'] = bocWeb(function () { throw new Error('Đẩy hóa đơn lên trang học sinh: làm ở Đợt 3'); });

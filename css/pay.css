@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.1 (a546fc7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -486,6 +486,20 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .ctx-mo .ct-o{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text)}
 .ctx-mo .ct-o:focus{outline:none;border-color:var(--accent)}
 .ct-icon{font-size:12px;color:var(--amber);padding:2px 3px;user-select:none}
+
+/* ---------- v0.25.0 (09/10/2026): Có phí cũ · Đã gửi · Zalo phụ huynh ---------- */
+.no-nhan.cu{color:#c2410c}
+.gui-icon{font-size:12px;color:var(--accent);padding:2px 3px;user-select:none}
+.hop .mota.hd-phicu{color:#9a3412;background:rgba(194,65,12,.08);border-radius:10px;padding:7px 10px;margin:-4px 0 10px}
+.btn.hd-gui{display:inline-flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.btn.hd-gui input{margin:0;width:16px;height:16px;accent-color:var(--green)}
+.btn.hd-gui.on{color:var(--green);border-color:var(--green-line);background:var(--green-soft)}
+.btn.hd-gui small{font-weight:600;opacity:.75}
+.btn.hd-sdt{font-variant-numeric:tabular-nums}
+.hop.hop-dagui{width:min(460px,92vw);text-align:center}
+.hop-dagui h3{font-size:18px}
+.dagui-nut{display:flex;gap:12px;margin-top:16px}
+.dagui-nut .btn{flex:1;font-size:17px;font-weight:800;padding:18px 12px;border-radius:14px}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

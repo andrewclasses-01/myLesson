@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.24.0 (5cefa37) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -128,7 +128,8 @@ function tinhKetQuaThang(m, y) {
 
   const lechChot = kho.soSanhChot(thang.chot, bang.units);
   const ghiChu = kho.docGhiChu().ds;
-  return { dd, bang, thang, ketQua, ketQuaGiaoDich, caiDat, giaDinh, lechChot, ghiChu, ngayBatDau };
+  const lienHe = kho.docLienHe().ds;   // v0.25.0 — số Zalo phụ huynh theo người
+  return { dd, bang, thang, ketQua, ketQuaGiaoDich, caiDat, giaDinh, lechChot, ghiChu, ngayBatDau, lienHe };
 }
 
 function timUnitTheoMa(m, y, loai, hsId, idNha) {
@@ -270,29 +271,65 @@ ipcMain.handle('hocmay:ds', boc(async () => kho.docHocMay()));
 ipcMain.handle('hocmay:sua', boc(async (id, patch) => kho.suaHocMay(id, patch)));
 ipcMain.handle('hocmay:xoa', boc(async (id) => kho.xoaHocMay(id)));
 
-ipcMain.handle('nophi:chuagannhan', boc(async () => {
+function quetChuaDong(den, daDong) {
   const homNay = new Date();
+  const moc = den ? den.y * 12 + den.m : homNay.getFullYear() * 12 + homNay.getMonth() + 1;
   const tbd = (kho.docCaiDat() || {}).thangBatDau;
   const dsThang = diemdanh.dsThangCoDuLieu()
-    .filter((t) => t.y < homNay.getFullYear() || (t.y === homNay.getFullYear() && t.m < homNay.getMonth() + 1))
+    .filter((t) => t.y * 12 + t.m < moc)
     .filter((t) => !tbd || t.y > tbd.y || (t.y === tbd.y && t.m >= tbd.m));
   const ket = [];
   for (const { m, y } of dsThang) {
-    let bang; let ketQua;
-    try { ({ bang, ketQua } = tinhKetQuaThang(m, y)); } catch (_) { continue; }
+    let bang; let ketQua; let thang;
+    try { ({ bang, ketQua, thang } = tinhKetQuaThang(m, y)); } catch (_) { continue; }
     for (const u of bang.units) {
       if (!(u.buoi > 0)) continue;         // tháng đó lớp không học — bỏ qua
-      if (u.id in ketQua.done) continue;   // đã đóng (khớp giao dịch tự động/tay, hoặc thầy đánh dấu daDong)
       const loai = u.kind === 'fam' ? 'nha' : 'hs';
-      if (kho.coNoPhi(loai, u.hsId, u.idNha, m, y)) continue;         // đã gắn nhãn rồi
+      if (u.id in ketQua.done) {           // đã đóng (khớp giao dịch tự động/tay, thầy đánh dấu daDong, chốt/tặng)
+        if (daDong) daDong.add((loai === 'nha' ? 'N|' + u.idNha : 'H|' + u.hsId) + '|' + y + '-' + m);
+        continue;
+      }
+      const motPhan = Math.max(0, Math.round((((thang.ghiDe || {})[u.id] || {}).dongMotPhan) || 0));
       ket.push({
         m, y, loai, hsId: u.hsId || null, idNha: u.idNha || null,
         ten: u.label, lop: (u.classes || []).join(', '), soTien: u.expected || 0, buoi: u.buoi,
+        motPhan, conThieu: Math.max(0, (u.expected || 0) - motPhan),
+        coNhan: kho.coNoPhi(loai, u.hsId, u.idNha, m, y),
       });
     }
   }
+  return ket;
+}
+ipcMain.handle('nophi:chuagannhan', boc(async () => {
+  const ket = quetChuaDong(null).filter((r) => !r.coNhan);   // đã gắn nhãn rồi ⇒ không hiện ở bảng này
   ket.sort((a, b) => (b.y - a.y) || (b.m - a.m) || a.ten.localeCompare(b.ten, 'vi'));
   return ket;
+}));
+
+ipcMain.handle('phicu:ds', boc(async (m, y) => {
+  const moc = Number(y) * 12 + Number(m);
+  const daDong = new Set();
+  const quet = quetChuaDong({ m: Number(m), y: Number(y) }, daDong);
+  const ket = {};
+  const them = (khoa, d) => { (ket[khoa] = ket[khoa] || []).push(d); };
+  for (const d of kho.docNoPhiTho().dong) {
+    if (!(d.y * 12 + d.m < moc)) continue;
+    const khoa = d.loai === 'nha' ? 'N|' + d.idNha : 'H|' + d.hsId;
+    if (daDong.has(khoa + '|' + d.y + '-' + d.m)) continue;
+    them(khoa, { m: d.m, y: d.y, soTien: Number(d.soTien) || 0, kieu: d.kieu === 'sau' ? 'sau' : 'no', motPhan: 0 });
+  }
+  for (const r of quet) {
+    if (r.coNhan || !(r.conThieu > 0)) continue;
+    them(r.loai === 'nha' ? 'N|' + r.idNha : 'H|' + r.hsId, { m: r.m, y: r.y, soTien: r.conThieu, kieu: '', motPhan: r.motPhan });
+  }
+  for (const k of Object.keys(ket)) ket[k].sort((a, b) => (a.y - b.y) || (a.m - b.m));
+  return ket;
+}));
+ipcMain.handle('lienhe:ghi', boc(async (khoa, sdt) => kho.ghiLienHe(khoa, sdt)));
+ipcMain.handle('lienket:mo', boc(async (url) => {
+  if (!/^https:\/\/zalo\.me\/0\d{9}$/.test(String(url || ''))) throw new Error('LIEN_KET_KHONG_CHO_PHEP');
+  await shell.openExternal(url);
+  return true;
 }));
 
 ipcMain.handle('hoadon:ghi', boc(async (tenFile, dataUrl) => hoadon.ghiPng(tenFile, dataUrl)));
@@ -360,6 +397,9 @@ contextBridge.exposeInMainWorld('mypay', {
   xoaChotTay: goi('chottay:xoa'),
   ghiGhiChu: goi('ghichu:ghi'),
   ghiNgayBatDau: goi('ngaybatdau:ghi'),
+  docPhiCu: goi('phicu:ds'),
+  ghiLienHe: goi('lienhe:ghi'),
+  moLienKet: goi('lienket:mo'),
   dongBoTen: goi('dongbo:ten'),
   dsHocMay: goi('hocmay:ds'),
   suaHocMay: goi('hocmay:sua'),
@@ -1486,6 +1526,32 @@ function ghiGhiChu(khoa, chu) {
   return o.ds;
 }
 
+const F_LIENHE = path.join(GOC_DATA, 'lien-he.json');
+function docLienHe() {
+  const o = docJson(F_LIENHE, { ds: {} });
+  if (!o.ds || typeof o.ds !== 'object' || Array.isArray(o.ds)) o.ds = {};
+  return o;
+}
+function chuanSdt(s) {
+  let x = String(s || '').replace(/[\s.\-()]/g, '');
+  if (/^\+?84\d{9}$/.test(x)) x = '0' + x.replace(/^\+?84/, '');
+  return /^0\d{9}$/.test(x) ? x : '';
+}
+function ghiLienHe(khoa, sdt) {
+  const k = String(khoa || '');
+  if (!/^(H\|\d+|N\|.+)$/.test(k)) throw new Error('KHOA_LIEN_HE_SAI');
+  const o = docLienHe();
+  const tho = String(sdt || '').trim();
+  if (!tho) delete o.ds[k];
+  else {
+    const so = chuanSdt(tho);
+    if (!so) throw new Error('Số điện thoại chưa đúng (cần 10 chữ số, vd 0912345678)');
+    o.ds[k] = { sdt: so, luc: new Date().toISOString() };
+  }
+  ghiJson(F_LIENHE, o);
+  return o.ds;
+}
+
 const F_NGAYBD = path.join(GOC_DATA, 'ngay-bat-dau.json');
 function docNgayBatDau() {
   const o = docJson(F_NGAYBD, { ds: {} });
@@ -1558,6 +1624,7 @@ module.exports = {
   boSuaTay, donSuaTay,
   docChotTay, themChotTay, xoaChotTay, chotTayPhu, apDungChotTay,
   docGhiChu, ghiGhiChu,
+  docLienHe, ghiLienHe, chuanSdt,
   docNgayBatDau, ghiNgayBatDau, apDungNgayBatDau,
 };
 
@@ -2244,7 +2311,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.24.0";
-  G.__MA = "5cefa37";
+  G.__PHIEN_BAN = "0.25.0";
+  G.__MA = "62594a7";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

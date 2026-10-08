@@ -243,6 +243,10 @@
         }
         A.thoat();
         veManVao(A.chuanMa(nho.ma));
+        // v1.268.0 — MỘT TÀI KHOẢN MỘT MÁY: máy này vừa bị đẩy ra vì em đăng nhập ở máy khác (nw-phien.js biDay)
+        var biDay = P.lyDoBiDay ? P.lyDoBiDay() : null;
+        if (biDay) loi('Tài khoản của em vừa đăng nhập ở máy khác' + (biDay.may && biDay.may !== '?' ? ' (' + biDay.may + ')' : '') +
+                       ' nên máy này đã tự đăng xuất. Muốn học ở máy này thì em đăng nhập lại nhé (máy kia sẽ tự thoát).');
         return;
       }
     }

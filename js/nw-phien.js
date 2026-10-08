@@ -85,7 +85,60 @@
   async function dangNhap(ma, mk) {
     var f = await fb();
     var r = await f.au.signInWithEmailAndPassword(f.auth, await emailTuMa(ma), mk);
+    // v1.268.0 — MỘT TÀI KHOẢN MỘT MÁY: máy này nhận phiên ⇒ máy cũ tự đăng xuất. Ghi hỏng (mạng/luật) KHÔNG chặn em vào học.
+    try { await nhanMay(r.user); } catch (e) { console.warn('[phien] chưa ghi được phiên máy', e); }
     return r.user;
+  }
+
+  // ---------- ⭐⭐ v1.268.0 (thầy chốt 08/10/2026) — MỘT TÀI KHOẢN MỘT MÁY ----------
+  // Đăng nhập ở máy mới ⇒ máy cũ TỰ ĐĂNG XUẤT ngay (vài giây), kể cả đang làm bài. Mỗi lần ĐĂNG NHẬP BẰNG MẬT KHẨU tạo một
+  // "mã phiên" mới: ghi lên `phienHs/{uid}` (luật: chỉ đúng em ghi — myLesson app tools/dang-luat-phien-hs.js) và nhớ trong máy
+  // (localStorage — mọi tab cùng trình duyệt dùng chung ⇒ là MỘT máy). Trang lớp/bài (`gac`) NGHE phienHs/{uid}: mã trên máy
+  // chủ khác mã máy mình ⇒ đăng xuất, về màn đăng nhập kèm lời báo. Máy đã đăng nhập TỪ TRƯỚC bản này (chưa có mã) ⇒ tự nhận
+  // phiên lần đầu gặp. ⛔ Thầy đăng nhập thay em (`__thayVao`) KHÔNG ghi mã, KHÔNG nghe — không bao giờ đá em.
+  // Lượt AWord đang dở ở máy bị đá vẫn được giữ trên máy chủ (AWord Đợt 495) ⇒ máy mới bấm CONTINUE làm tiếp.
+  // ⚠️ Điện thoại cài app + Safari trên CÙNG máy = 2 kho riêng = 2 "máy". Lượt đọc: 1 mỗi trang mở (+1 mỗi lần đổi máy).
+  var KHOA_PHIEN_MAY = 'ac_phien_may', KHOA_BI_DAY = 'ac_bi_day';
+  function gioNay() { return Math.round(window.gioChuan ? window.gioChuan() : Date.now()); }
+  function maPhienMay(uid) {
+    try { return ((JSON.parse(localStorage.getItem(KHOA_PHIEN_MAY) || '{}') || {})[uid]) || ''; } catch (e) { return ''; }
+  }
+  function nhoPhienMay(uid, id) {
+    try { var m = {}; m[uid] = id; localStorage.setItem(KHOA_PHIEN_MAY, JSON.stringify(m)); } catch (e) { }
+  }
+  function tenMay() {
+    var ua = navigator.userAgent || '', app = false;
+    try { app = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true; } catch (e) { }
+    return ((ua.match(/iPhone|iPad|Android|Windows|Macintosh|CrOS|Linux/) || ['?'])[0] + (/Zalo/i.test(ua) ? ' Zalo' : '') + (app ? ' app' : '')).slice(0, 60);
+  }
+  async function nhanMay(u) {
+    if (window.__thayVao || !laHocSinh(u)) return;
+    var id = Array.prototype.map.call(crypto.getRandomValues(new Uint8Array(9)), function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+    nhoPhienMay(u.uid, id);
+    var f = await fb();
+    await f.fs.setDoc(f.fs.doc(f.db, 'phienHs', u.uid), { phien: id, luc: gioNay(), may: tenMay() });
+  }
+  var _ngheMay = null;
+  function canhMotMay(u) {
+    if (_ngheMay || window.__thayVao || !laHocSinh(u)) return;
+    _ngheMay = function () { };
+    var dau = maPhienMay(u.uid) ? Promise.resolve() : nhanMay(u)['catch'](function (e) { console.warn('[phien] chưa nhận được phiên máy', e); });
+    dau.then(fb).then(function (f) {
+      _ngheMay = f.fs.onSnapshot(f.fs.doc(f.db, 'phienHs', u.uid), function (s) {
+        var d = s.exists() ? s.data() : null, cua = maPhienMay(u.uid);
+        if (!d || !d.phien || !cua || d.phien === cua) return;
+        biDay(d);
+      }, function (e) { console.warn('[phien] không nghe được phiên máy', e); });
+    })['catch'](function (e) { console.warn('[phien] không nghe được phiên máy', e); });
+  }
+  function biDay(d) {
+    try { if (typeof _ngheMay === 'function') _ngheMay(); } catch (e) { }
+    try { sessionStorage.setItem(KHOA_BI_DAY, JSON.stringify({ may: String(d.may || ''), luc: +d.luc || 0 })); } catch (e) { }
+    thoat()['catch'](function () { }).then(function () { veDangNhap(); });
+  }
+  // Màn đăng nhập hỏi: máy này vừa bị đẩy ra vì đăng nhập ở máy khác? (đọc một lần rồi xoá) ⇒ { may, luc } | null
+  function lyDoBiDay() {
+    try { var s = sessionStorage.getItem(KHOA_BI_DAY); sessionStorage.removeItem(KHOA_BI_DAY); return s ? JSON.parse(s) : null; } catch (e) { return null; }
   }
 
   // Hồ sơ nwUsers/{uid} — 1 lượt đọc, chỉ ở màn đăng nhập / lúc canh cửa lần đầu trong tab.
@@ -139,6 +192,7 @@
     }
     fb().then(function () { return phienCuaMa(ma); }).then(function (u) {
       if (!u) { veDangNhap(); return; }
+      canhMotMay(u);      // v1.268.0 — một tài khoản một máy
       lamMoiVe(false);    // v1.161.0 — giữ sẵn vé cho các đường ghi REST (tieuDeNgay)
       // hồ sơ: đọc 1 lần mỗi tab (sessionStorage) — đỡ tốn lượt đọc Firestore mỗi lần chuyển trang
       var daGac = '';
@@ -232,6 +286,6 @@
   }
 
   window.NWP = { fb: fb, emailTuMa: emailTuMa, userHienTai: userHienTai, phienCuaMa: phienCuaMa,
-    dangNhap: dangNhap, hoSo: hoSo, datMatKhau: datMatKhau, thoat: thoat, gac: gac, chuLoi: chuLoi,
+    dangNhap: dangNhap, hoSo: hoSo, datMatKhau: datMatKhau, thoat: thoat, gac: gac, chuLoi: chuLoi, lyDoBiDay: lyDoBiDay,
     tieuDe: tieuDe, tieuDeNgay: tieuDeNgay };
 })();

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.1 (125b054) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.2 (a4de8f0) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -1086,6 +1086,9 @@
       tr.querySelectorAll('input').forEach((inp) => {
         inp.onchange = async () => {
           const L = tr.dataset.lop;
+          const nDoi0 = tr.querySelector('.cdDoiNgay').value; const hDoi0 = tr.querySelector('.cdDoiHeSo').value.trim();
+          const laODoi = inp.classList.contains('cdDoiNgay') || inp.classList.contains('cdDoiHeSo');
+          if (laODoi && !!nDoi0 !== !!hDoi0) { baoToast(`Lớp ${L}: điền nốt ${nDoi0 ? 'hệ số mới' : 'ngày bắt đầu'} để lưu đổi hệ số.`); return; }
           const patch = { lop: {} };
           patch.lop[L] = {
             thu: tr.querySelector('.cdThu').checked,
@@ -1095,9 +1098,11 @@
             heSoBuoi: parseInt(tr.querySelector('.cdHeSo').value, 10) || 1,
           };
           const nDoi = tr.querySelector('.cdDoiNgay').value; const hDoi = parseInt(tr.querySelector('.cdDoiHeSo').value, 10) || 0;
-          patch.lop[L].doiHeSo = nDoi && hDoi ? [{ tuNgay: nDoi, heSoBuoi: hDoi }] : [];
+          patch.lop[L].doiHeSo = nDoi && hDoi ? [{ tuNgay: nDoi, heSoBuoi: hDoi }] : (!nDoi0 && !hDoi0 ? [] : ((cd.lop[L] || {}).doiHeSo || []));
           await goi('ghiCaiDat', patch);
-          await napThang(); baoToast('Đã lưu mức phí lớp ' + L + '.');
+          await napThang();
+          const dh = patch.lop[L].doiHeSo[0];
+          baoToast('Đã lưu mức phí lớp ' + L + (dh ? ` — từ ${dh.tuNgay.split('-').reverse().join('/')} tính hệ số ${dh.heSoBuoi}` : '') + '.');
         };
       });
     });

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.0 (1727d76) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.1 (125b054) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 

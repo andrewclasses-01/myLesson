@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (e84ef78) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.16.0 (d866402) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — BÀN THỬ (ban-thu.js) · Đợt 1 (03/10/2026)
    CHỈ chạy trên máy (localhost/127.0.0.1) khi địa chỉ có ?banthu=<file json>: thay Firestore bằng KHO GIẢ trong bộ
@@ -68,6 +68,8 @@
     TotpMultiFactorGenerator: { FACTOR_ID: 'totp', assertionForSignIn: function (uid, ma) { return { ma: ma }; } }
   };
   var batDauLuc = Date.now();
+  // 08/10/2026 — phiên Dashboard giả: mặc định CÓ (vào thẳng); ?nodash=1 ⇒ Dashboard chưa đăng nhập ⇒ phải đăng nhập myPay.
+  var dashGia = q.get('nodash') ? null : { email: 'banthu@quantri.andrewclasses.com' };
 
   var san = fetch(q.get('banthu'), { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error('Không đọc được file bàn thử ' + r.status); return r.json(); }).then(function (j) {
     Object.keys(j).forEach(function (t) { Object.keys(j[t]).forEach(function (id) { kho(t).set(id, j[t][id]); }); });
@@ -76,6 +78,7 @@
   window.PayBanThu = {
     san: san, DB: DB,
     dem: function () { return { docDoc: demDoc, ghi: demGhi }; },
+    dash: function () { return dashGia; },
     phien: function (u) { return u && u.banThu ? { u: u, het: q.get('hethan') ? batDauLuc + Number(q.get('hethan')) * 1000 : Date.now() + 6 * 3600 * 1000 } : null; },
     suaTuMayKhac: function (id, fn) {
       var o = sao(kho('payKho').get(id)); fn(o); o.phien = (Number(o.phien) || 0) + 1; o.may = 'may-khac';

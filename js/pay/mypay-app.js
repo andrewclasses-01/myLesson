@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (e84ef78) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.16.0 (d866402) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -203,22 +203,70 @@
         });
         return;
       }
-      let clickHen = 0;
-      el.onclick = () => {
-        clearTimeout(clickHen);
-        clickHen = setTimeout(() => {
-          $$('#luoiLop .hsrow.dangchon').forEach((x) => x.classList.remove('dangchon'));
-          el.classList.add('dangchon');
-        }, 200);
-      };
-      el.ondblclick = () => { clearTimeout(clickHen); moHopHd(el.dataset.uid); };
+      el.ondblclick = () => { moHopHd(el.dataset.uid); };
       el.addEventListener('contextmenu', (e) => {
         e.preventDefault();
-        clearTimeout(clickHen);
-        moCtxHs(e.clientX, e.clientY, el.dataset.uid);
+        chonHang(el);
+        const uid = el.dataset.uid;
+        const bay = Date.now();
+        clearTimeout(ctxPhaiHen);
+        if (ctxPhaiTruoc && ctxPhaiTruoc.uid === uid && bay - ctxPhaiTruoc.luc < PHAI_DUP_MS) {
+          ctxPhaiTruoc = null;
+          doiDaDongNhanh(uid);
+          return;
+        }
+        ctxPhaiTruoc = { uid, luc: bay };
+        const x = e.clientX; const y = e.clientY;
+        ctxPhaiHen = setTimeout(() => { ctxPhaiTruoc = null; moCtxHs(x, y, uid); }, PHAI_DUP_MS);
       });
     });
+    if (chonUid) {
+      const r = $$('#luoiLop .hsrow').find((x) => x.dataset.uid === chonUid && !x.dataset.khoa);
+      if (r) r.classList.add('dongchon');
+    }
   }
+
+  const PHAI_DUP_MS = 320;
+  let ctxPhaiHen = 0; let ctxPhaiTruoc = null; let dangDoiDong = false;
+  async function doiDaDongNhanh(uid) {
+    if (dangDoiDong) return;
+    const kq = S.du.ketQua;
+    const u = kq.units.find((z) => z.id === uid);
+    if (!u) return;
+    const daDong = u.id in kq.done;
+    if (daDong) {
+      const m = kq.matched.find((x) => x.u.id === u.id);
+      const gd = (S.du.thang && S.du.thang.ghiDe && S.du.thang.ghiDe[u.id]) || {};
+      if (!(gd.daDong && m && m.ti === -1)) {
+        baoToast(`${u.label} đã đóng qua giao dịch ngân hàng — muốn bỏ thì gỡ ở tab Giao dịch.`);
+        return;
+      }
+    } else if (!u.buoi) {
+      baoToast(`${u.label} không có buổi học nào tháng này — không cần đánh dấu.`);
+      return;
+    }
+    dangDoiDong = true;
+    try {
+      await goi('ghiDeUnit', S.m, S.y, u.id, { daDong: !daDong });
+      chonUid = u.id;
+      await napThang();
+      baoToast(daDong ? `${u.label}: đã đổi lại CHƯA ĐÓNG.` : `${u.label}: đã đánh dấu ĐÃ ĐÓNG.`);
+    } catch (e) { /* goi() đã tự báo lỗi */ } finally { dangDoiDong = false; }
+  }
+
+  let chonUid = null;
+  function chonHang(el) {
+    if (!el || el.classList.contains('khoa')) return;
+    const laHs = el.classList.contains('hsrow');
+    const vung = (laHs && el.closest('#luoiLop')) || el.closest('tbody') || el.parentElement;
+    if (vung) vung.querySelectorAll('.dongchon').forEach((x) => { if (x !== el) x.classList.remove('dongchon'); });
+    el.classList.add('dongchon');
+    if (laHs && el.closest('#luoiLop')) chonUid = el.dataset.uid;
+  }
+  document.addEventListener('click', (e) => {
+    const h = e.target.closest && e.target.closest('.hsrow, .bang tbody tr, .no-dong');
+    if (h) chonHang(h);
+  });
 
 
   function veGiaoDich() {

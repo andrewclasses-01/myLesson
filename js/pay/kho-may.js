@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.15.0 (e84ef78) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.16.0 (d866402) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -22,6 +22,8 @@
     storageBucket: 'aword-70dae.firebasestorage.app', messagingSenderId: '399279049436', appId: '1:399279049436:web:b9b34dcfb34732aa744219'
   };
   var DUOI_QT = '@quantri.andrewclasses.com';
+  var EMAIL_THAY = 'namdaptrai01@gmail.com';   // ⛔ phải khớp js/thay.js (đăng nhập Google của thầy trên Dashboard)
+  var TEN_APP = 'mypay';                        // app Firebase RIÊNG cho phiên myPay (08/10/2026)
   var GOC_E = 'E:\\LAP TRINH APP';
   var DIR_DATA = GOC_E + '\\myPay-data';
   var DIR_SO = GOC_E + '\\myData\\Diem danh';
@@ -158,19 +160,64 @@
   }
 
   // ───────── Firestore ─────────
-  // ⭐ 06/10/2026 (thầy chốt) — PHIÊN myPay RIÊNG, CHỈ SỐNG TRONG TAB: initializeAuth + browserSessionPersistence ⇒ KHÔNG đọc
-  // phiên dashboard (IndexedDB, nhớ 30 ngày), đóng tab là mất phiên, đăng xuất ở đây không đá dashboard. Vào bằng tài khoản
-  // quản trị ID + mật khẩu + mã 6 số; máy chủ (luật payPhien, tools/dang-luat-pay-phien.js kho web) chỉ mở kho học phí cho
-  // phiên có mã 6 số (sign_in_second_factor 'totp') đăng nhập trong 6 giờ ⇒ phiên dashboard / vé app ký uid 'thay' bị chặn.
-  // ⛔ pay.html KHÔNG được nạp file nào gọi getAuth() trước chỗ này (thay.js, chat.js…) — initializeAuth sẽ hỏng.
+  // ⭐ 06/10/2026 (thầy chốt) — PHIÊN myPay RIÊNG: vào bằng tài khoản quản trị ID + mật khẩu + mã 6 số; máy chủ (luật payPhien,
+  // tools/dang-luat-pay-phien.js kho web) chỉ mở kho học phí cho phiên có mã 6 số (sign_in_second_factor 'totp') đăng nhập
+  // trong 6 giờ ⇒ phiên dashboard / vé app ký uid 'thay' bị chặn.
+  // ⭐ 08/10/2026 (thầy chốt, myPay v0.16.0) — MÁY NHỚ PHIÊN 6 GIỜ, kể cả đóng tab (trước: đóng tab = thoát). Phiên myPay nằm
+  // trong app Firebase RIÊNG tên 'mypay' (IndexedDB khoá `…:mypay`) nên KHÔNG đụng phiên dashboard (app [DEFAULT]) — đăng xuất
+  // bên này không đá bên kia. KHOÁ THÊM (thầy chọn "gắn với Dashboard"): chỉ vào thẳng khi Dashboard trên máy đó cũng đang
+  // đăng nhập tài khoản thầy (đọc phiên [DEFAULT] — chỉ đọc); Dashboard đăng xuất ⇒ myPay thoát theo.
+  // ⛔ App Check (js/app-check.js) chỉ gắn vào app [DEFAULT] ⇒ app 'mypay' mượn mã App Check đã cất ('awc_ac') qua CustomProvider.
   function moKho() {
     if (window.PayBanThu) return window.PayBanThu.san;     // bàn thử trên máy (ban-thu.js tự kiểm localhost + ?banthu)
-    return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-auth.js'), import(SDK + '/firebase-firestore.js')]).then(function (m) {
-      var app = m[0].getApps().length ? m[0].getApp() : m[0].initializeApp(CAU_HINH);
+    var acMod = import(SDK + '/firebase-app-check.js')['catch'](function () { return null; });
+    return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-auth.js'), import(SDK + '/firebase-firestore.js'), acMod]).then(function (m) {
+      // [DEFAULT] tạo TRƯỚC (app-check.js gọi getApp() mặc định) — chỉ để đọc phiên Dashboard
+      var coMacDinh = m[0].getApps().some(function (x) { return x.name === '[DEFAULT]'; });
+      var appDash = coMacDinh ? m[0].getApp() : m[0].initializeApp(CAU_HINH);
+      // phiên myPay cũ (≤ v0.15.0) nằm ở sessionStorage của [DEFAULT] — xoá kẻo getAuth() mặc định nhặt nó làm phiên Dashboard
+      try { sessionStorage.removeItem('firebase:authUser:' + CAU_HINH.apiKey + ':[DEFAULT]'); } catch (e) { /* thôi */ }
+      var aDash = m[1].getAuth(appDash);
+      var app = m[0].getApps().filter(function (x) { return x.name === TEN_APP; })[0] || m[0].initializeApp(CAU_HINH, TEN_APP);
+      ganAppCheck(m[3], app);
       var a;
-      try { a = m[1].initializeAuth(app, { persistence: m[1].browserSessionPersistence }); }
+      try { a = m[1].initializeAuth(app, { persistence: [m[1].indexedDBLocalPersistence, m[1].browserLocalPersistence] }); }
       catch (e) { a = m[1].getAuth(app); }   // đã có Auth (không nên xảy ra) — máy chủ vẫn chặn phiên không đủ điều kiện
-      return { fs: m[2], db: m[2].getFirestore(app), au: m[1], a: a };
+      return { fs: m[2], db: m[2].getFirestore(app), au: m[1], a: a, aDash: aDash };
+    });
+  }
+  // Mã App Check cho app 'mypay' = mã app-check.js đã cất cho [DEFAULT] (localStorage 'awc_ac' {t, het}); chưa có thì chờ tối đa 10 s.
+  function ganAppCheck(c, app) {
+    if (!c) return;
+    function layMa() {
+      return new Promise(function (xong, hong) {
+        var bd = Date.now();
+        (function thu() {
+          var o = null; try { o = JSON.parse(localStorage.getItem('awc_ac') || 'null'); } catch (e) { o = null; }
+          if (o && o.t && o.het > Date.now() + 60000) { xong({ token: o.t, expireTimeMillis: o.het }); return; }
+          if (Date.now() - bd > 10000) { hong(new Error('chua-co-ma-app-check')); return; }
+          setTimeout(thu, 500);
+        })();
+      });
+    }
+    try { c.initializeAppCheck(app, { provider: new c.CustomProvider({ getToken: layMa }), isTokenAutoRefreshEnabled: true }); }
+    catch (e) { /* App Check hỏng thì chạy như cũ (máy chủ đang chỉ theo dõi) */ }
+  }
+  // Dashboard trên máy này có đang đăng nhập tài khoản THẦY? (quản trị ID+mã 6 số, hoặc Google của thầy — KHÔNG tính vé app uid 'thay')
+  function laThayDash(u) {
+    return !!(u && u.email && (u.email.slice(-DUOI_QT.length) === DUOI_QT || (u.email === EMAIL_THAY && u.emailVerified)));
+  }
+  function choDash(k) {
+    if (window.PayBanThu) return Promise.resolve(window.PayBanThu.dash());
+    return new Promise(function (xong) {
+      var dung = k.au.onAuthStateChanged(k.aDash, function (u) { dung(); xong(laThayDash(u) ? u : null); });
+    });
+  }
+  // Mở myPay lúc Dashboard đang đăng nhập thầy mà Dashboard đăng xuất (tab khác) ⇒ myPay thoát theo.
+  function ngheDash() {
+    if (window.PayBanThu || !K.aDash) return;
+    K.au.onAuthStateChanged(K.aDash, function (u) {
+      if (!laThayDash(u)) dangXuat('Dashboard trên máy này vừa đăng xuất — myPay cũng thoát. Thầy đăng nhập lại nhé.');
     });
   }
   var HAN_PHIEN = 6 * 3600 * 1000;   // ⛔ phải khớp luật payPhien (21600000 ms)
@@ -220,7 +267,7 @@
       function ve(buoc, loi) {
         var m = document.getElementById('pyMan'); if (m) { m.classList.remove('loi'); m.classList.add('dn'); }
         man('<div class="py-dn-tieu">myPay · Học phí</div>' +
-          '<div class="py-dn-phu">Mỗi lần mở myPay thầy đăng nhập lại. Đóng tab là tự đăng xuất; tối đa 6 giờ.</div>' +
+          '<div class="py-dn-phu">Đăng nhập một lần, máy này nhớ 6 giờ (kể cả đóng tab) khi Dashboard vẫn đăng nhập. Bấm Đăng xuất để thoát ngay.</div>' +
           '<form id="pyDn" class="py-dn" autocomplete="off">' +
           (buoc === 'ma'
             ? '<input id="pyDnMa" inputmode="numeric" maxlength="6" placeholder="Mã 6 số (Google Authenticator)" autocomplete="one-time-code">'
@@ -438,12 +485,16 @@
   function khoiDong() {
     man('Đang kiểm tra phiên đăng nhập của thầy…');
     var lyDo = ''; try { lyDo = sessionStorage.getItem('py_ly_do') || ''; sessionStorage.removeItem('py_ly_do'); } catch (e) { /* thôi */ }
-    return moKho().then(function (k) { K = k; return choPhien(k); }).then(function (ph) {
-      if (ph) return ph;
-      // chưa đăng nhập / phiên cũ không đủ điều kiện (quá 6 giờ…) ⇒ thoát hẳn rồi hỏi đăng nhập
+    var coDash = false;
+    return moKho().then(function (k) { K = k; return Promise.all([choPhien(k), choDash(k)]); }).then(function (r) {
+      var ph = r[0]; coDash = !!r[1];
+      if (ph && coDash) return ph;     // phiên myPay còn hạn (≤ 6 giờ) + Dashboard đang đăng nhập thầy ⇒ vào thẳng
+      if (ph && !lyDo) lyDo = 'Dashboard trên máy này chưa đăng nhập — thầy đăng nhập lại myPay nhé.';
+      // chưa đăng nhập / phiên cũ không đủ điều kiện (quá 6 giờ, Dashboard đã thoát…) ⇒ thoát hẳn rồi hỏi đăng nhập
       return Promise.resolve(K.a && K.a.currentUser ? K.au.signOut(K.a) : null)['catch'](function () {}).then(function () { return hoiDangNhap(K, lyDo); });
     }).then(function (ph) {
       canhGioHet(ph.het);
+      if (coDash) ngheDash();
       man('Đang tải dữ liệu học phí…');
       return napPayKho().then(function (n) {
         if (!n) throw new Error('Chưa có dữ liệu myPay trên mạng (chưa dời từ máy lên).');

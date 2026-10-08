@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.16.0 (d866402) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.17.0 (3e7cb9f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -60,6 +60,7 @@
 
   function phanLoai(u) {
     const kq = S.du.ketQua;
+    if (kq.chotTay && kq.chotTay[u.id]) return { loai: 'du', m: null, chot: kq.chotTay[u.id] };
     if (u.id in kq.done) {
       const m = kq.matched.find((x) => x.u.id === u.id
         || (x.u.kind === 'grp' && (x.u.members || []).some((mm) => mm.id === u.id)));
@@ -157,6 +158,7 @@
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${!giadinh && trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${!giadinh && pl.loai !== 'du' ? conDuBadge(u) : ''}
+            ${saoChotHtml(pl, u)}
             <span class="tien">${giadinh ? nhanNo(u, false) : nhanNo(u, true) + (pl.loai === 'chuadong' || pl.loai === 'motphan' ? vnd(u.expected) : vnd(daNhan ?? u.expected))}</span>
           </div>`;
       };
@@ -189,6 +191,7 @@
             <span class="ten">${esc(u.label)} <small>· ${u.buoi} buổi</small></span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
+            ${saoChotHtml(pl, u)}
             <span class="tien">${nhanNo(u, true)}${pl.loai === 'chuadong' || pl.loai === 'motphan' ? vnd(u.expected) : vnd(daNhan ?? u.expected)}</span>
           </div>`;
         }).join('');
@@ -196,6 +199,8 @@
     }
 
     $$('#luoiLop .hsrow').forEach((el) => {
+      const sao = el.querySelector('.sao-chot');
+      if (sao) sao.addEventListener('dblclick', (e) => { e.stopPropagation(); moHopSaoChot(el.dataset.uid); });
       if (el.dataset.khoa) {
         el.addEventListener('contextmenu', (e) => {
           e.preventDefault();
@@ -226,6 +231,82 @@
     }
   }
 
+  const TEN_CHOT = { chot: 'Chốt xong phí', tang: 'Tặng học phí' };
+  function saoChotHtml(pl, u) {
+    const c = pl && pl.chot;
+    if (!c) return '';
+    const tieuDe = (c.loai === 'tang' ? 'Được tặng học phí' : 'Đã chốt xong phí') + (c.theo ? ` (theo tháng ${c.m}/${c.y})` : '') + ' — nháy đúp xem chi tiết';
+    return `<span class="sao-chot ${c.loai}${c.theo ? ' theo' : ''}" title="${esc(tieuDe)}">★</span>`;
+  }
+  function trangThaiTruocChot(u) {
+    const pl = phanLoai(u);
+    if (pl.chot) return (pl.chot.loai === 'tang' ? 'Đang được tặng' : 'Đang chốt xong') + ` (tháng ${pl.chot.m}/${pl.chot.y})`;
+    if (pl.loai === 'chuadong') return 'Chưa đóng ' + vnd(u.expected) + 'đ';
+    if (pl.loai === 'motphan' || pl.loai === 'lech') return ghiChuCua(pl, u);
+    if (pl.loai === 'khongbuoi') return 'Không có buổi';
+    return 'Đã đóng đủ';
+  }
+  function moHopChotTay(u, loai) {
+    const truoc = trangThaiTruocChot(u);
+    $('#hopMotPhan').innerHTML = `
+      <h3>${TEN_CHOT[loai]} — ${esc(u.label)}</h3>
+      <p class="mota">Tháng <b>${S.m}/${S.y}</b> và <b>mọi tháng trước</b> của ${u.kind === 'fam' ? 'nhà' : 'em'} này sẽ hiện
+        ${loai === 'tang' ? '<b>được tặng</b>' : '<b>xong phí</b>'} — không còn thiếu/thừa. Dòng nợ phí các tháng đó (nếu có) tự xoá.<br>
+        Hiện tại: <b>${esc(truoc)}</b></p>
+      <textarea id="ctGhiChu" rows="3" maxlength="500" placeholder="Ghi chú (không bắt buộc)" style="width:100%;box-sizing:border-box"></textarea>
+      <div class="hangnut">
+        <button class="btn primary" id="ctLuu">Xác nhận</button>
+        <button class="btn" data-dong>Hủy</button>
+      </div>`;
+    $('#manMotPhan').classList.add('on');
+    setTimeout(() => { const o = $('#ctGhiChu'); if (o) o.focus(); }, 30);
+    $('#ctLuu').onclick = async () => {
+      $('#ctLuu').disabled = true;
+      try {
+        const r = await goi('themChotTay', {
+          loai, doiTuong: u.kind === 'fam' ? 'nha' : 'hs', hsId: u.hsId, idNha: u.idNha, m: S.m, y: S.y,
+          ghiChu: $('#ctGhiChu').value.trim(), truoc, tenLuc: u.label, lopLuc: (u.classes || []).join(', '),
+        });
+        dongMan(); chonUid = u.id; await napThang();
+        if (r.daXoaNo) await napNoPhi();
+        baoToast(`${u.label}: ${loai === 'tang' ? 'đã ghi TẶNG học phí' : 'đã CHỐT XONG phí'} tới tháng ${S.m}/${S.y}` +
+          (r.daXoaNo ? ` · xoá ${r.daXoaNo} dòng nợ phí` : '') + '.');
+      } catch (e) { const n = $('#ctLuu'); if (n) n.disabled = false; }
+    };
+  }
+  function moHopSaoChot(uid) {
+    const kq = S.du.ketQua;
+    const u = kq.units.find((z) => z.id === uid);
+    const c = u && kq.chotTay && kq.chotTay[uid];
+    if (!c) return;
+    const luc = c.luc ? new Date(c.luc).toLocaleString('vi-VN') : '';
+    const ten = c.loai === 'tang' ? 'Tặng học phí' : 'Chốt xong phí';
+    $('#hopMotPhan').innerHTML = `
+      <h3><span class="sao-chot ${c.loai}">★</span> ${ten} — ${esc(u.label)}</h3>
+      <p class="mota">
+        ${c.theo ? `Tháng ${S.m}/${S.y} xong phí <b>theo ${ten.toLowerCase()} ở tháng ${c.m}/${c.y}</b>.<br>` : ''}
+        Áp dụng: <b>tháng ${c.m}/${c.y} và mọi tháng trước</b>.<br>
+        Lúc thao tác: <b>${esc(luc)}</b><br>
+        Trạng thái lúc đó: <b>${esc(c.truoc || '—')}</b><br>
+        Ghi chú: <b>${c.ghiChu ? esc(c.ghiChu) : '(không có)'}</b></p>
+      <div class="hangnut" id="ctHang">
+        <button class="btn" id="ctBo">Bỏ ${ten.toLowerCase()}</button>
+        <button class="btn primary" data-dong>Đóng</button>
+      </div>`;
+    $('#manMotPhan').classList.add('on');
+    $('#ctBo').onclick = () => {
+      $('#ctHang').innerHTML = `
+        <span class="tt">Bỏ ${ten.toLowerCase()} tháng ${c.m}/${c.y}? Các tháng đó tính lại như thường (dòng nợ phí đã xoá KHÔNG tự hiện lại).</span>
+        <button class="btn primary" id="ctBoOk">Bỏ</button>
+        <button class="btn" data-dong>Hủy</button>`;
+      $('#ctBoOk').onclick = async () => {
+        await goi('xoaChotTay', c.id);
+        dongMan(); chonUid = u.id; await napThang();
+        baoToast(`${u.label}: đã bỏ ${ten.toLowerCase()}.`);
+      };
+    };
+  }
+
   const PHAI_DUP_MS = 320;
   let ctxPhaiHen = 0; let ctxPhaiTruoc = null; let dangDoiDong = false;
   async function doiDaDongNhanh(uid) {
@@ -233,6 +314,10 @@
     const kq = S.du.ketQua;
     const u = kq.units.find((z) => z.id === uid);
     if (!u) return;
+    if (kq.chotTay && kq.chotTay[u.id]) {
+      baoToast(`${u.label} đang ${kq.chotTay[u.id].loai === 'tang' ? 'được tặng học phí' : 'chốt xong phí'} — muốn bỏ thì nháy đúp ngôi sao ★.`);
+      return;
+    }
     const daDong = u.id in kq.done;
     if (daDong) {
       const m = kq.matched.find((x) => x.u.id === u.id);
@@ -1229,7 +1314,9 @@
         <button class="btn" id="hdTaiAnh">Tải ảnh</button>
         <button class="btn" id="hdDayWebEm" disabled title="Chưa mở — sẽ làm ở đợt sau">Đẩy web (em này)…</button>
         <span class="keo"></span>
-        <button class="btn ${daDong ? '' : 'primary'}" id="hdDanhDauDong">${daDong ? '✓ Đã đóng — bỏ đánh dấu' : 'Đánh dấu ĐÃ ĐÓNG'}</button>
+        ${kq.chotTay && kq.chotTay[u.id]
+          ? `<button class="btn" disabled title="Nháy đúp ngôi sao ★ ở trang Tháng để xem / bỏ">★ ${kq.chotTay[u.id].loai === 'tang' ? 'Được tặng học phí' : 'Đã chốt xong phí'}</button>`
+          : `<button class="btn ${daDong ? '' : 'primary'}" id="hdDanhDauDong">${daDong ? '✓ Đã đóng — bỏ đánh dấu' : 'Đánh dấu ĐÃ ĐÓNG'}</button>`}
         <button class="btn" data-dong>Đóng</button>`;
       if (!u) return;
       $('#hdSaoChep').onclick = async () => {
@@ -1241,7 +1328,7 @@
         const p = await goi('ghiHoaDon', ten, $('#hdCanvas').toDataURL('image/png'));
         baoToast('Đã lưu: ' + p);
       };
-      $('#hdDanhDauDong').onclick = () => {
+      if ($('#hdDanhDauDong')) $('#hdDanhDauDong').onclick = () => {
         $('#hdHangNut').innerHTML = `
           <span class="tt">${daDong ? 'Bỏ đánh dấu đã đóng của' : 'Xác nhận ĐÃ NHẬN tiền của'} <b>${esc(u.label)}</b>?</span>
           <span class="keo"></span>
@@ -1402,8 +1489,10 @@
     g.fillText(vnd(u.expected) + ' đ', W - 30, yy + 2); g.textAlign = 'left';
     yy += 44;
     const daDong = u.id in kq.done;
+    const ct = kq.chotTay && kq.chotTay[u.id];   // v0.17.0
     g.fillStyle = daDong ? '#15803d' : '#b45309'; g.font = '700 18px Segoe UI';
-    g.fillText(daDong ? '✓ ĐÃ NHẬN — Cảm ơn phụ huynh!' : 'Hạn nộp: 16/' + String(S.m === 12 ? 1 : S.m + 1).padStart(2, '0') + '/' + (S.m === 12 ? S.y + 1 : S.y), 30, yy);
+    g.fillText(ct ? (ct.loai === 'tang' ? '★ ĐƯỢC TẶNG HỌC PHÍ — Chúc em học tốt!' : '★ ĐÃ CHỐT XONG PHÍ — Cảm ơn phụ huynh!')
+      : daDong ? '✓ ĐÃ NHẬN — Cảm ơn phụ huynh!' : 'Hạn nộp: 16/' + String(S.m === 12 ? 1 : S.m + 1).padStart(2, '0') + '/' + (S.m === 12 ? S.y + 1 : S.y), 30, yy);
   }
 
   function moCtxHs(x, y, uid) {
@@ -1422,8 +1511,13 @@
       <div class="muc" id="ctxThemNo">Thêm vào nợ phí…</div>
       <div class="muc" id="ctxDongSau">Đóng sau…</div>
       <div class="muc" id="ctxMotPhan">${mp ? 'Sửa số đã đóng một phần…' : 'Đóng một phần…'}</div>
-      ${tu && tu.soDu ? '<div class="muc" id="ctxTamUng">Đóng từ HP còn dư…</div>' : ''}`;
+      ${tu && tu.soDu ? '<div class="muc" id="ctxTamUng">Đóng từ HP còn dư…</div>' : ''}
+      <hr>
+      <div class="muc" id="ctxChotTay"><span class="sao-chot chot">★</span> Chốt xong phí…</div>
+      <div class="muc" id="ctxTangHp"><span class="sao-chot tang">★</span> Tặng học phí…</div>`;
     datViTriCtx(el, x, y);
+    $('#ctxChotTay').onclick = () => { dongCtx(); moHopChotTay(u, 'chot'); };
+    $('#ctxTangHp').onclick = () => { dongCtx(); moHopChotTay(u, 'tang'); };
     $('#ctxThemNo').onclick = () => { dongCtx(); moHopThemNo(u, 'no'); };
     $('#ctxDongSau').onclick = () => { dongCtx(); moHopThemNo(u, 'sau'); };
     $('#ctxMotPhan').onclick = () => { dongCtx(); moHopMotPhan(u); };

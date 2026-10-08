@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.16.0 (d866402) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.17.0 (3e7cb9f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -413,6 +413,13 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .hsrow.dongchon,.hsrow.dongchon:hover,.no-dong.dongchon,.no-dong.dongchon:hover{background:rgba(37,99,235,.17);box-shadow:inset 3px 0 0 var(--accent)}
 .bang tr.dongchon td,.bang tr.dongchon:hover td{background:rgba(37,99,235,.15)}
 .bang tr.dongchon td:first-child{box-shadow:inset 3px 0 0 var(--accent)}
+
+/* ---------- v0.17.0 (08/10/2026): ★ chốt xong phí (xanh) / tặng học phí (hồng); mờ = phủ từ chốt ở tháng sau ---------- */
+.sao-chot{font-size:13px;line-height:1;padding:2px 4px;cursor:pointer;user-select:none}
+.hsrow .sao-chot{margin-left:auto}
+.sao-chot.chot{color:var(--accent)}
+.sao-chot.tang{color:#db2777}
+.sao-chot.theo{opacity:.55}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.20.0 (4d2bb40) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.21.0 (094223f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -466,6 +466,12 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 #nutXacNhan{margin-top:10px;width:100%;justify-content:center}
 #nutXacNhan.tat{opacity:.45;cursor:not-allowed}
 @media (max-width:1180px){.gd-luoi{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(320px,1fr) auto}}
+
+/* ---------- v0.21.0 (08/10/2026): thẻ GIA ĐÌNH — mỗi con một dòng (tên · lớp · buổi), phần còn lại căn giữa cụm ---------- */
+.hsrow.fam-row{padding-top:7px;padding-bottom:7px}
+.hsrow .fam-ten{display:flex;flex-direction:column;gap:2px;min-width:0;white-space:normal;overflow:visible}
+.hsrow .fam-em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
+.hsrow.fam-row + .hsrow.fam-row{border-top:1px solid var(--glass-border);border-top-left-radius:0;border-top-right-radius:0}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

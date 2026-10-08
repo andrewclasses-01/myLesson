@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.20.0 (4d2bb40) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.21.0 (094223f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -186,9 +186,10 @@
         sx.map(({ u, pl }) => {
           const gc = ghiChuCua(pl, u);
           const daNhan = (u.id in kq.done) && kq.done[u.id] >= 0 ? kq.txns[kq.done[u.id]].amount : null;
-          return `<div class="hsrow ${pl.loai}" data-uid="${esc(u.id)}">
+          const mems = (u.members || []).length ? u.members : [{ ten: u.label, lop: '', buoi: u.buoi }];
+          return `<div class="hsrow fam-row ${pl.loai}" data-uid="${esc(u.id)}" title="${esc(u.label)} — tổng ${u.buoi} buổi">
             <span class="cham"></span>
-            <span class="ten">${esc(u.label)} <small>· ${u.buoi} buổi</small></span>
+            <span class="ten fam-ten">${mems.map((mm) => `<span class="fam-em">${esc(mm.ten)} <small>· ${mm.lop ? esc(mm.lop) + ' · ' : ''}${mm.buoi} buổi</small></span>`).join('')}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${giuaHangHtml(pl, u)}

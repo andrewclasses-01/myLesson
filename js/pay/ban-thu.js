@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.20.0 (4d2bb40) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.21.0 (094223f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — BÀN THỬ (ban-thu.js) · Đợt 1 (03/10/2026)
    CHỈ chạy trên máy (localhost/127.0.0.1) khi địa chỉ có ?banthu=<file json>: thay Firestore bằng KHO GIẢ trong bộ

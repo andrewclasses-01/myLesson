@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.21.0 (094223f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.22.0 (dba4e13) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -130,9 +130,9 @@
     function vaoLop(lop, row) { (theoLop[lop] = theoLop[lop] || []).push(row); }
     for (const u of kq.units) {
       if (u.kind === 'fam') {
-        for (const m of u.members || []) vaoLop(m.lop, { u, giadinh: true, ten: m.ten, buoi: m.buoi });
+        for (const m of u.members || []) vaoLop(m.lop, { u, giadinh: true, ten: m.ten, buoi: m.buoi, hs: m.id, hocThu: m.hocThu });
       } else {
-        vaoLop(u.classes[0], { u, giadinh: false, ten: u.label, buoi: u.buoi });
+        vaoLop(u.classes[0], { u, giadinh: false, ten: u.label, buoi: u.buoi, hs: u.hsId, hocThu: u.hocThu });
       }
     }
     const luoi = $('#luoiLop');
@@ -147,14 +147,14 @@
       card.className = 'lop-card glass';
       const pct = coThuUnitIds.size ? Math.round(daDongUnitIds.size / coThuUnitIds.size * 100) : 0;
       const veHang = (r) => {
-        const { u, giadinh, ten, buoi } = r;
+        const { u, giadinh, ten, buoi, hs, hocThu } = r;
         const pl = phanLoai(u);
         const gc = ghiChuCua(pl, u);
         const daNhan = (u.id in kq.done) && kq.done[u.id] >= 0 ? kq.txns[kq.done[u.id]].amount : null;
         const th = laTieuHoc(lop, ten);
-        return `<div class="hsrow ${pl.loai}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
+        return `<div class="hsrow ${pl.loai}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}" data-hs="${esc(String(hs ?? ''))}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
             <span class="cham"></span>
-            <span class="ten">${esc(ten)}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi</small></span>
+            <span class="ten">${esc(ten)}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi${hocThuChu(hocThu)}</small></span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${!giadinh && trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${!giadinh && pl.loai !== 'du' ? conDuBadge(u) : ''}
@@ -189,7 +189,7 @@
           const mems = (u.members || []).length ? u.members : [{ ten: u.label, lop: '', buoi: u.buoi }];
           return `<div class="hsrow fam-row ${pl.loai}" data-uid="${esc(u.id)}" title="${esc(u.label)} — tổng ${u.buoi} buổi">
             <span class="cham"></span>
-            <span class="ten fam-ten">${mems.map((mm) => `<span class="fam-em">${esc(mm.ten)} <small>· ${mm.lop ? esc(mm.lop) + ' · ' : ''}${mm.buoi} buổi</small></span>`).join('')}</span>
+            <span class="ten fam-ten">${mems.map((mm) => `<span class="fam-em">${esc(mm.ten)} <small>· ${mm.lop ? esc(mm.lop) + ' · ' : ''}${mm.buoi} buổi${hocThuChu(mm.hocThu)}</small></span>`).join('')}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${giuaHangHtml(pl, u)}
@@ -209,13 +209,14 @@
         if (u) moCanhGhiChu(gcI, u);
       });
       if (el.dataset.khoa) {
+        el.ondblclick = (e) => { if (e.ctrlKey || e.metaKey) moCanhNgayBd(el); };   // v0.22.0 — ngày bắt đầu tính phí vẫn đặt được
         el.addEventListener('contextmenu', (e) => {
           e.preventDefault();
           baoToast('Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới.');
         });
         return;
       }
-      el.ondblclick = () => { moHopHd(el.dataset.uid); };
+      el.ondblclick = (e) => { if (e.ctrlKey || e.metaKey) { moCanhNgayBd(el); return; } moHopHd(el.dataset.uid); };
       el.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         chonHang(el);
@@ -349,6 +350,65 @@
     $('#gcHuy').onclick = () => dongCanh();
     $('#gcLuu').onclick = () => luu($('#gcChu').value.trim());
     if ($('#gcXoa')) $('#gcXoa').onclick = () => luu('');
+  }
+
+  function hocThuChu(n) { return n ? ` <span class="hoc-thu">(+${n} học thử)</span>` : ''; }
+  function ngayBdCua(so) { const o = ((S.du && S.du.ngayBatDau) || {})[String(so)]; return o ? o.ngay : ''; }
+  function moCanhNgayBd(el) {
+    const kq = S.du.ketQua;
+    const u = kq.units.find((z) => z.id === el.dataset.uid);
+    if (!u) return;
+    let ds;
+    if (u.kind === 'fam') {
+      const mems = u.members || [];
+      ds = el.dataset.hs ? mems.filter((m) => String(m.id) === el.dataset.hs) : mems;
+      ds = ds.map((m) => ({ so: m.id, ten: m.ten, lop: m.lop, lich: m.lich || [] }));
+    } else ds = [{ so: u.hsId, ten: u.label, lop: (u.classes || [])[0] || '', lich: u.lich || [] }];
+    ds = ds.filter((p) => /^\d+$/.test(String(p.so)));
+    if (!ds.length) { baoToast('Em này chưa có mã số — không đặt được ngày bắt đầu.'); return; }
+    const pad = (n) => String(n).padStart(2, '0');
+    const xemTruoc = (p, v) => {
+      let tinh = 0; let thu = 0;
+      for (const b of p.lich) {
+        if (!b.coMat) continue;
+        if (v && `${S.y}-${pad(S.m)}-${pad(b.ngay)}` < v) thu++; else tinh++;
+      }
+      return { tinh, thu };
+    };
+    moCanh(el, `
+      <div class="muc tt">📅 <b>Ngày bắt đầu tính phí</b>${u.kind === 'fam' && ds.length > 1 ? ' — ' + esc(u.label) : ''}</div>
+      <div class="cm-than">
+        ${ds.map((p, i) => `<div class="nbd-em"><div><b>${esc(p.ten)}</b> <small style="color:var(--text-dim)">${esc(p.lop)}</small></div>
+          <input type="date" class="nbd-o" data-i="${i}" value="${esc(ngayBdCua(p.so))}">
+          <div class="cm-phu nbd-xem" data-i="${i}"></div></div>`).join('')}
+        <div class="cm-nut"><button class="btn primary" id="nbdLuu">Lưu</button><button class="btn" id="nbdHuy">Hủy</button></div>
+        <div class="cm-phu">Buổi TRƯỚC ngày này = học thử: không tính phí ở mọi tháng, hóa đơn ghi "Học thử". Để trống = tính mọi buổi.</div>
+      </div>`);
+    const veXem = (i) => {
+      const p = ds[i]; const v = $(`.nbd-o[data-i="${i}"]`).value;
+      const x = xemTruoc(p, v);
+      let chu = `Tháng ${S.m}/${S.y}: <b>${x.tinh}</b> buổi tính phí` + (x.thu ? ` · <b>${x.thu}</b> học thử` : '');
+      if (u.kind !== 'fam' && !x.tinh && (u.id in kq.done) && !(kq.chotTay && kq.chotTay[u.id])) {
+        chu += '<br><span style="color:var(--danger)">⚠ Tháng này đã ghi nhận đóng tiền — đổi xong em không còn buổi tính phí, khoản tiền đó sẽ không gắn với ai.</span>';
+      }
+      $(`.nbd-xem[data-i="${i}"]`).innerHTML = chu;
+    };
+    ds.forEach((p, i) => { veXem(i); $(`.nbd-o[data-i="${i}"]`).addEventListener('input', () => veXem(i)); });
+    setTimeout(() => { const o = $('.nbd-o'); if (o) o.focus(); }, 30);
+    $('#nbdHuy').onclick = () => dongCanh();
+    $('#nbdLuu').onclick = async () => {
+      $('#nbdLuu').disabled = true;
+      try {
+        let doi = 0;
+        for (let i = 0; i < ds.length; i++) {
+          const v = $(`.nbd-o[data-i="${i}"]`).value || '';
+          if (v === ngayBdCua(ds[i].so)) continue;
+          await goi('ghiNgayBatDau', ds[i].so, v); doi++;
+        }
+        dongCanh(); chonUid = u.id; await napThang();
+        baoToast(doi ? `Đã lưu ngày bắt đầu tính phí (${doi} em) — mọi tháng đã tính lại.` : 'Không có gì thay đổi.');
+      } catch (e) { const n = $('#nbdLuu'); if (n) n.disabled = false; }
+    };
   }
 
   const PHAI_DUP_MS = 320;
@@ -1377,13 +1437,13 @@
     const hop = $('#hdTtin');
     if (!u || !hop) return;
     const ds = u.kind === 'fam'
-      ? (u.members || []).map((m) => ({ so: m.id, ten: m.ten, lop: m.lop, buoi: m.buoi }))
-      : [{ so: u.hsId, ten: u.label, lop: (u.classes || [])[0] || '', buoi: u.buoi }];
+      ? (u.members || []).map((m) => ({ so: m.id, ten: m.ten, lop: m.lop, buoi: m.buoi, hocThu: m.hocThu }))
+      : [{ so: u.hsId, ten: u.label, lop: (u.classes || [])[0] || '', buoi: u.buoi, hocThu: u.hocThu }];
     const gc = ghiChuCuaU(u);
     hop.innerHTML = ds.map((e, i) => `<div class="hd-em" data-i="${i}">
         <div class="av">${esc(chuTat(e.ten))}</div>
         <div class="tt"><div class="ten">${esc(e.ten)}</div>
-          <div>Số học sinh <b>${esc(String(e.so || '—'))}</b> · Lớp tháng này <b>${esc(e.lop)}</b> · <b>${e.buoi}</b> buổi</div>
+          <div>Số học sinh <b>${esc(String(e.so || '—'))}</b> · Lớp tháng này <b>${esc(e.lop)}</b> · <b>${e.buoi}</b> buổi${e.hocThu ? ` (+${e.hocThu} học thử)` : ''}${ngayBdCua(e.so) ? ` · Tính phí từ <b>${esc(ngayBdCua(e.so).split('-').reverse().join('/'))}</b>` : ''}</div>
           <div class="them"></div></div></div>`).join('') +
       (gc ? `<div class="hd-gc">📝 ${esc(gc.chu)}</div>` : '');
     if (!(window.PayWeb && window.PayWeb.thongTinHs)) return;
@@ -1508,14 +1568,17 @@
       soHang = Math.max(soHang, row + 1);
       const cx = x0 + col * cellW; const cy = gridTop + row * cellH;
       const info = lichMap.get(d);
-      g.fillStyle = !info ? '#f1f5f9' : (info.coMat ? '#dcfce7' : '#fee2e2');
+      const thu = info && info.hocThu && info.coMat;   // v0.22.0 — buổi học thử (trước ngày bắt đầu tính phí)
+      g.fillStyle = !info ? '#f1f5f9' : thu ? '#e0e7ff' : (info.coMat ? '#dcfce7' : '#fee2e2');
       g.fillRect(cx + 2, cy + 2, cellW - 4, cellH - 4);
-      g.fillStyle = !info ? '#94a3b8' : (info.coMat ? '#166534' : '#991b1b');
+      g.fillStyle = !info ? '#94a3b8' : thu ? '#3730a3' : (info.coMat ? '#166534' : '#991b1b');
       g.font = '700 13px Segoe UI'; g.textAlign = 'left';
       g.fillText(String(d), cx + 6, cy + 15);
       if (info) {
         g.textAlign = 'center';
-        if (info.coMat) {
+        if (thu) {
+          veChuVuaO(g, 'Học thử', cx + cellW / 2, cy + 20, cellW - 6, CAO_O - 22);
+        } else if (info.coMat) {
           g.font = '600 12px Segoe UI';
           g.fillText('✓', cx + cellW / 2, cy + CAO_O - 12);
         } else {
@@ -1565,8 +1628,8 @@
     const u = kq.units.find((x) => x.id === uid);
     if (!u) return;
     const blocks = u.kind === 'fam'
-      ? (u.members || []).map((m) => ({ ten: m.ten, lop: m.lop, lich: m.lich, buoi: m.buoi, vang: m.vang, choDuyet: m.choDuyet }))
-      : [{ ten: u.label, lop: u.classes[0], lich: u.lich, buoi: u.buoi, vang: u.vang, choDuyet: u.choDuyet }];
+      ? (u.members || []).map((m) => ({ ten: m.ten, lop: m.lop, lich: m.lich, buoi: m.buoi, vang: m.vang, choDuyet: m.choDuyet, hocThu: m.hocThu, so: m.id }))
+      : [{ ten: u.label, lop: u.classes[0], lich: u.lich, buoi: u.buoi, vang: u.vang, choDuyet: u.choDuyet, hocThu: u.hocThu, so: u.hsId }];
     const W = 760;
     const headH = 88; const titleH = 90; const sumH = 190;
     const calH = caoLichThang(S.m, S.y);          // v0.7.0 — chiều cao THẬT, không hằng số cứng
@@ -1586,8 +1649,10 @@
     g.fillText('Lớp: ' + u.classes.join(', '), 30, headH + 68);
     let yy = headH + titleH;
     for (const b of blocks) {
+      const nbd = ngayBdCua(b.so);   // v0.22.0
       const tieuDe = `${b.ten} — ${b.lop} (${b.buoi} buổi có mặt` +
-        (b.vang ? `, ${b.vang} vắng` : '') + (b.choDuyet ? `, ${b.choDuyet} chưa chốt` : '') + ')';
+        (b.vang ? `, ${b.vang} vắng` : '') + (b.choDuyet ? `, ${b.choDuyet} chưa chốt` : '') +
+        (b.hocThu ? `, ${b.hocThu} học thử` : '') + ')' + (nbd ? ` · tính phí từ ${nbd.split('-').reverse().join('/')}` : '');
       veLichThang(g, 30, yy, W - 60, tieuDe, b.lich);
       yy += calH;
     }

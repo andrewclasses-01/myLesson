@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.21.0 (094223f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.22.0 (dba4e13) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -87,6 +87,8 @@ function boc(ham) {
 function tinhKetQuaThang(m, y) {
   const caiDat = kho.docCaiDat();
   const dd = diemdanh.docThang(m, y);                 // buổi học từng em từ myStudent
+  const ngayBatDau = kho.docNgayBatDau().ds;
+  kho.apDungNgayBatDau(dd, ngayBatDau, m, y);
   const giaDinh = kho.docGiaDinh(dd.hocSinhDs);
   const bang = phi.tinhThang(dd, caiDat, giaDinh);    // đơn vị thu + tiền cần đóng
   let thang = kho.docThang(m, y);                      // sao kê + gán tay + ghi đè đã lưu
@@ -124,7 +126,7 @@ function tinhKetQuaThang(m, y) {
 
   const lechChot = kho.soSanhChot(thang.chot, bang.units);
   const ghiChu = kho.docGhiChu().ds;
-  return { dd, bang, thang, ketQua, ketQuaGiaoDich, caiDat, giaDinh, lechChot, ghiChu };
+  return { dd, bang, thang, ketQua, ketQuaGiaoDich, caiDat, giaDinh, lechChot, ghiChu, ngayBatDau };
 }
 
 function timUnitTheoMa(m, y, loai, hsId, idNha) {
@@ -252,6 +254,7 @@ ipcMain.handle('nophi:nopbu', boc(async (id) => {
 ipcMain.handle('chottay:them', boc(async (dl) => kho.themChotTay(dl)));
 ipcMain.handle('chottay:xoa', boc(async (id) => kho.xoaChotTay(id)));
 ipcMain.handle('ghichu:ghi', boc(async (khoa, chu) => kho.ghiGhiChu(khoa, chu)));
+ipcMain.handle('ngaybatdau:ghi', boc(async (hsId, ngay) => kho.ghiNgayBatDau(hsId, ngay)));
 
 ipcMain.handle('thang:chot', boc(async (m, y) => {
   const { bang } = tinhKetQuaThang(m, y);
@@ -354,6 +357,7 @@ contextBridge.exposeInMainWorld('mypay', {
   themChotTay: goi('chottay:them'),
   xoaChotTay: goi('chottay:xoa'),
   ghiGhiChu: goi('ghichu:ghi'),
+  ghiNgayBatDau: goi('ngaybatdau:ghi'),
   dongBoTen: goi('dongbo:ten'),
   dsHocMay: goi('hocmay:ds'),
   suaHocMay: goi('hocmay:sua'),
@@ -792,6 +796,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       choDuyet: h ? h.choDuyet : 0,
       ngay: h ? h.ngayCoMat : [],
       lich: h ? h.lich : [],
+      hocThu: h ? (h.hocThu || 0) : 0,   // v0.22.0 — buổi có mặt TRƯỚC ngày bắt đầu tính phí (kho-pay.apDungNgayBatDau)
     };
   }
 
@@ -829,7 +834,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       classes: [maLop],
       names: [hs.ten],
       maDangNhap: hs.ma_dang_nhap || '',
-      buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich,
+      buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich, hocThu: b.hocThu,
       cat,
       expected: phiLe(b.buoi, cat),
     });
@@ -850,7 +855,7 @@ function tinhThang(dd, caiDat, giaDinh) {
         id: idDonVi(maLop, h.id),                    // 06/10/2026 — theo SỐ, xem vòng 1
         hsId: h.id,                                  // v0.6.0 — xem chú thích ở vòng 1
         kind: 'reg', label: ten, classes: [maLop], names: [ten], maDangNhap: '',
-        buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich,
+        buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich, hocThu: b.hocThu,
         cat, expected: phiLe(b.buoi, cat), daNghi: !conHoc, lopCu: conHoc,
       });
       daId.add(maLop + '|' + h.id);
@@ -868,7 +873,7 @@ function tinhThang(dd, caiDat, giaDinh) {
         const b = buoiCuaId(lop, m.id);
         const cat = catEm(lop, [tenSoLop(lop, m.id), m.ten]);
         tong += phiTho(b.buoi, cat);
-        mems.push({ id: m.id, lop, ten: m.ten, buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, lich: b.lich });
+        mems.push({ id: m.id, lop, ten: m.ten, buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, lich: b.lich, hocThu: b.hocThu });
       }
     }
     if (!mems.length) continue;
@@ -1429,6 +1434,43 @@ function ghiGhiChu(khoa, chu) {
   return o.ds;
 }
 
+const F_NGAYBD = path.join(GOC_DATA, 'ngay-bat-dau.json');
+function docNgayBatDau() {
+  const o = docJson(F_NGAYBD, { ds: {} });
+  if (!o.ds || typeof o.ds !== 'object' || Array.isArray(o.ds)) o.ds = {};
+  return o;
+}
+function ghiNgayBatDau(hsId, ngay) {
+  const k = String(hsId || '');
+  if (!/^\d+$/.test(k)) throw new Error('THIEU_MA_SO_HS');
+  const n = String(ngay || '').trim();
+  if (n && !/^\d{4}-\d{2}-\d{2}$/.test(n)) throw new Error('NGAY_SAI');
+  const o = docNgayBatDau();
+  if (n) o.ds[k] = { ngay: n, luc: new Date().toISOString() }; else delete o.ds[k];
+  ghiJson(F_NGAYBD, o);
+  return o.ds;
+}
+function apDungNgayBatDau(dd, ds, m, y) {
+  if (!ds || !Object.keys(ds).length) return dd;
+  const pad = (n) => String(n).padStart(2, '0');
+  for (const L of Object.values(dd.lopMap || {})) {
+    for (const H of Object.values(L.hocSinh || {})) {
+      const bd = ds[String(H.id)];
+      if (!bd || !bd.ngay) continue;
+      H.hocThu = 0;
+      for (const b of H.lich || []) {
+        if (`${y}-${pad(m)}-${pad(b.ngay)}` >= bd.ngay) continue;
+        b.hocThu = true;
+        if (b.coMat) {
+          H.buoiCoMat--; H.hocThu++;
+          H.ngayCoMat = (H.ngayCoMat || []).filter((x) => x !== `${b.ngay}/${m}`);
+        } else H.buoiVang--;
+      }
+    }
+  }
+  return dd;
+}
+
 function apDungChotTay(kq, units, ds, m, y) {
   kq.chotTay = {};
   if (!ds || !ds.length) return kq;
@@ -1464,6 +1506,7 @@ module.exports = {
   boSuaTay, donSuaTay,
   docChotTay, themChotTay, xoaChotTay, chotTayPhu, apDungChotTay,
   docGhiChu, ghiGhiChu,
+  docNgayBatDau, ghiNgayBatDau, apDungNgayBatDau,
 };
 
 };
@@ -2149,7 +2192,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.21.0";
-  G.__MA = "094223f";
+  G.__PHIEN_BAN = "0.22.0";
+  G.__MA = "dba4e13";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

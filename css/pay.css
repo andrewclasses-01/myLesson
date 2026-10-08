@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.21.0 (094223f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.22.0 (dba4e13) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -472,6 +472,13 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .hsrow .fam-ten{display:flex;flex-direction:column;gap:2px;min-width:0;white-space:normal;overflow:visible}
 .hsrow .fam-em{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35}
 .hsrow.fam-row + .hsrow.fam-row{border-top:1px solid var(--glass-border);border-top-left-radius:0;border-top-right-radius:0}
+
+/* ---------- v0.22.0 (08/10/2026): ngày bắt đầu tính phí (Ctrl + nháy đúp tên em) ---------- */
+.hoc-thu{color:#4f46e5;font-weight:700}
+.ctx-mo .nbd-em{padding:6px 0;border-bottom:1px solid var(--glass-border)}
+.ctx-mo .nbd-em:last-of-type{border-bottom:0}
+.ctx-mo .nbd-o{margin-top:5px;width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:7px 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text)}
+.ctx-mo .nbd-o:focus{outline:none;border-color:var(--accent)}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

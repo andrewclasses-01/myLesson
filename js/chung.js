@@ -1985,6 +1985,9 @@
     var m = /^WORD\s+PRACTICE\s*(\d*)$/i.exec(s);
     if (m) return 'WORDS' + (m[1] ? ' ' + m[1] : '');
     if (ngan && /^PRONUNCIATION$/i.test(s)) return 'PRONUNC';
+    // v1.269.0 (thầy chốt 08/10/2026) — trang lớp rút "FIND THE GAP n" -> "FTGAP n" (trang bài giữ đủ).
+    var g = ngan && /^FIND\s+THE\s+GAP\s*(\d*)$/i.exec(s);
+    if (g) return 'FTGAP' + (g[1] ? ' ' + g[1] : '');
     return s;
   }
 

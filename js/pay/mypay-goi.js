@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.19.0 (4126fe9) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.20.0 (4d2bb40) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -164,7 +164,7 @@ ipcMain.handle('gan:tay', boc(async (m, y, ti, unitIds, hoc) => kho.ganTay(m, y,
 ipcMain.handle('gan:huy', boc(async (m, y, ti) => kho.huyGan(m, y, ti)));
 
 function laChac(mm) {
-  return (mm.via === 'L1' || mm.via === 'L1b') && mm.u && mm.u.kind !== 'grp' && mm.status === 'ĐỦ' && Number(mm.diff) === 0;
+  return (mm.via === 'L1' || mm.via === 'L1b' || mm.via === 'L0') && mm.u && mm.u.kind !== 'grp' && mm.status === 'ĐỦ' && Number(mm.diff) === 0;
 }
 function ungVienXacNhan(ketQuaGiaoDich, chiChac) {
   const ung = [];
@@ -2149,7 +2149,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.19.0";
-  G.__MA = "4126fe9";
+  G.__PHIEN_BAN = "0.20.0";
+  G.__MA = "4d2bb40";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

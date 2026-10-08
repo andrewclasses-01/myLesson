@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.19.0 (4126fe9) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.20.0 (4d2bb40) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -490,7 +490,7 @@
       if (m) {
         const laMau = (m.via === 'L0' || m.via === 'L2');
         const canXem = m.via !== 'TAY' && !m.chac && !m.daDuyet;
-        const lyDo = laMau ? 'mẫu đã học' : m.u.kind === 'grp' ? 'gộp nhiều em'
+        const lyDo = laMau ? (m.via === 'L2' ? 'mẫu đã học (khớp lỏng)' : 'mẫu đã học') : m.u.kind === 'grp' ? 'gộp nhiều em'
           : (m.status !== 'ĐỦ' || Number(m.diff)) ? 'lệch tiền' : 'tên 1 âm tiết';
         const via = m.via === 'TAY' ? 'thầy gán' : m.chac ? 'tự khớp chắc' : lyDo;
         xdHtml = canXem

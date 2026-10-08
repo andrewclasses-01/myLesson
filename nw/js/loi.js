@@ -923,8 +923,31 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   // (27/09/2026, rà XSS sau tấn công Tr0ngX) LINK TRONG THÔNG BÁO do NGƯỜI KHÁC ghi (`nwUsers/{tôi}/thongBao.link`)
   // chỉ được là trang trong site: `ten.html?a=b#neo`. `javascript:`/`data:`/link ngoài ⇒ không đi. Luật Firestore cũng ràng cùng khuôn.
   NW.linkAnToan = function (s) { return /^[a-z0-9-]+\.html(\?[A-Za-z0-9_=&%.-]*)?(#[A-Za-z0-9_-]*)?$/i.test(String(s || '')); };
-  NW.di = function (href) { location.href = NW.duong(href); };
-  NW.thay = function (href) { location.replace(NW.duong(href)); };
+  NW.di = function (href) { if (NW.laNhung) { NW.diMe(href); return; } location.href = NW.duong(href); };
+  NW.thay = function (href) { if (NW.laNhung) { NW.diMe(href); return; } location.replace(NW.duong(href)); };
+
+  // ⭐ web v1.280.0 (08/10/2026) — CHẾ ĐỘ NHÚNG `?nhung=1`: trang Tin nhắn chạy trong KHUNG GIỮ SỐNG của trang lớp/khóa/dashboard
+  //   (js/tn-khung.js). Khung không có thanh riêng; mọi lượt chuyển trang đi ở CỬA SỔ MẸ (link <a> nhờ <base target=_top>,
+  //   NW.di/NW.thay qua NW.diMe); khung đang ẨN thì không được ghi "đã xem" (NW.anTrongKhung).
+  NW.laNhung = (function () {
+    if (!/[?&]nhung=1(&|$)/.test(location.search) || window.parent === window) return false;
+    try { return window.parent.location.origin === location.origin; } catch (e) { return false; }
+  })();
+  NW.diMe = function (href) {
+    var u = new URL(NW.duong(href), location.href).href;
+    try { window.top.location.href = u; } catch (e) { location.href = u; }
+  };
+  NW.anTrongKhung = function () {
+    if (!NW.laNhung) return false;
+    try { var k = window.parent.TnKhung; return !!(k && !k.dangMo()); } catch (e) { return false; }
+  };
+  NW.khongXem = function () { return document.hidden || NW.anTrongKhung(); };
+  NW.baoMe = function (tk, x) {
+    if (!NW.laNhung) return;
+    var d = { tk: tk }; if (x) for (var k in x) d[k] = x[k];
+    try { window.parent.postMessage(d, location.origin); } catch (e) { }
+  };
+  if (NW.laNhung) { var baseTop = document.createElement('base'); baseTop.target = '_top'; document.head.appendChild(baseTop); }
   // Bam vao the <a> nao cung nan duong TRUOC khi trinh duyet di (ca bam chuot giua / Ctrl+bam / ban phim).
   if (NW.laBanThu()) {
     var nanA = function (e) {

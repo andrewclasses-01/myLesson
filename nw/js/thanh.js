@@ -319,7 +319,14 @@
       return { user: null, hoSo: NW.toi, laThay: !!NW.toi.laThay, banThu: true };
     }
     // ⭐ 29/09/2026: tab "thầy đăng nhập thay em" ⇒ mạng xã hội chạy DƯỚI TÊN EM (phiên trong tab, js/thay-vao.js).
-    var ph = await NW.phien();
+    // ⭐ v1.280.0 — chế độ NHÚNG (khung giữ sống của trang lớp/dashboard, NW.laNhung): phiên có vấn đề gì thì KHÔNG tự chuyển trang
+    //   trong khung — báo 'loi' về trang mẹ (js/tn-khung.js bỏ khung; em đang mở khung thì sang trang Tin nhắn riêng để xử lý đúng).
+    var ph;
+    try { ph = await NW.phien(); } catch (e) { if (NW.laNhung) { NW.baoMe('loi', { ly: 'phien' }); return new Promise(function () { }); } throw e; }
+    if (NW.laNhung && (!ph || ph.thieuHoSo || (ph.hoSo.khoa && !ph.laThay) || (ph.hoSo.phaiDoiMk && !ph.laThay && !NW.dangThayVao))) {
+      NW.baoMe('loi', { ly: !ph ? 'chuaDangNhap' : 'hoSo' });
+      return new Promise(function () { });
+    }
     if (!ph && NW.dangThayVao) {
       manBao('Phiên đăng nhập thay đã hết', 'Tab này đang ở chế độ thầy đăng nhập thay học sinh nhưng phiên đã hết (quá 30 phút hoặc đã thoát). Mở lại từ hồ sơ em trên dashboard nhé.',
         '<a class="btn primary wide" href="' + an(CFG.LINK_DASHBOARD) + '">Về trang quản lý</a>');

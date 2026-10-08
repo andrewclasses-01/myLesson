@@ -169,6 +169,15 @@
     window.addEventListener('resize', m.dongNgay);
     nen.onclick = function (e) { bamNen(m, e); };
     requestAnimationFrame(function () { pop.classList.add('mo'); });
+    // ⭐ v1.280.0 — trang có KHUNG TIN NHẮN GIỮ SỐNG (js/tn-khung.js) ⇒ o.moTrang(q) mở khung thay vì sang trang (trả false ⇒ sang trang như cũ)
+    function diTrang(q, href) {
+      if (o.moTrang) { TP.dong(); if (o.moTrang(q || '')) return; }
+      location.href = href;
+    }
+    pop.querySelector('.tp-chan').addEventListener('click', function (e) {
+      if (!o.moTrang || e.ctrlKey || e.metaKey || e.shiftKey) return;   // Ctrl+bấm vẫn mở tab mới như link thường
+      e.preventDefault(); diTrang('', trang);
+    });
 
     var khu = pop.querySelector('.tp-ds');
     function ve() {
@@ -198,7 +207,7 @@
       // ⭐ máy tính: mở HỘP CHAT NHỎ góc dưới, giữ nguyên trang đang xem · điện thoại (≤640px): sang trang Tin nhắn như Facebook
       if (it && window.innerWidth > 640) { TP.dong(); TP.moHop(it); return; }
       if (it && it.hop) { moChatTrongHop(m, it); return; }   // v1.254.0 — điện thoại: chat ngay trong hộp
-      location.href = (it && it.q) ? trang + (trang.indexOf('?') < 0 ? '?' : '&') + it.q : phong(id);
+      diTrang(it && it.q ? it.q : 'phong=' + encodeURIComponent(id), (it && it.q) ? trang + (trang.indexOf('?') < 0 ? '?' : '&') + it.q : phong(id));
     });
     Promise.resolve(TP.nguon ? TP.nguon() : mau()).then(function (ds) { if (mo === m) { m.cuoc = ds || []; ve(); } })
       .catch(function () { if (mo === m) khu.innerHTML = '<div class="tp-trong">Chưa tải được tin nhắn. Bấm "Xem tất cả" để mở trang Tin nhắn.</div>'; });

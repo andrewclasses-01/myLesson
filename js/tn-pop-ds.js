@@ -314,7 +314,7 @@
   // ---------- TIN MỚI: tự cuộn hộp chat lên ----------
   var daNghe = false, thay = {};   // thay[phongId] = mốc tin cuối đã xử lý
   TP.batNghe = function () {
-    if (daNghe || laBanThu() || /[?&]hop=1(&|$)/.test(location.search)) return;   // khung nhúng hộp chat nhỏ: không đếm, không tự mở hộp
+    if (daNghe || laBanThu() || /[?&](hop|nhung)=1(&|$)/.test(location.search)) return;   // khung nhúng hộp chat nhỏ / v1.280.0 khung giữ sống (mượn sổ trang mẹ): không đếm, không tự mở hộp
     daNghe = true;
     nguoiDangNhap().then(function (me) {
       if (!me) return;

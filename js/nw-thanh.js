@@ -163,22 +163,32 @@
     if (!t) return;
     e.preventDefault();
     var ma = t.getAttribute('data-ma');
+    // ⭐ v1.280.0 (08/10/2026) — KHUNG TIN NHẮN GIỮ SỐNG (js/tn-khung.js): trang Tin nhắn đã nạp sẵn trong khung ẩn ⇒ mở/đóng tức thì.
+    var KH = window.TnKhung && TnKhung.coThe() ? TnKhung : null;
     // ⭐ 03/10/2026 — icon CHUÔNG mở HỘP THÔNG BÁO ngay tại trang (thầy: trước đây bấm chuông nhảy sang trang Tin nhắn rồi hiện cả 2 hộp)
     if (ma === 'chuong' && window.TnPop && TnPop.coTB && TnPop.coTB()) {
       if (choThayVao()) return;
       TnPop.moTB(t, { laThay: laThay, dieu: function (link) {
+        if (/^tinnhan\.html/.test(link) && KH) { KH.mo(link.split('?')[1] || ''); return; }   // v1.280.0 — mở đúng phòng trong khung
         if (window.AC_THU || /^tinnhan\.html/.test(link)) { location.href = 'nw/' + link; return; }
         moSap('chuong');   // trang thật: các trang myNetwork khác chưa mở ⇒ hộp "sắp ra mắt"
       } });
       return;
     }
     // ⭐ 03/10/2026 thiết kế — icon TIN NHẮN mở HỘP THẢ XUỐNG kiểu Facebook (js/tn-pop.js); "Xem tất cả trong Tin nhắn" mới sang trang.
+    //   v1.280.0: "Xem tất cả" (và dòng chat ở điện thoại khi không chat được trong hộp) mở KHUNG thay vì sang trang. Khung đang mở ⇒ đứng yên.
+    if (ma === 'tinNhan' && KH && KH.dangMo()) return;
     if (ma === 'tinNhan' && TRANG_NW.tinNhan && window.TnPop && TnPop.coThe()) {
       if (choThayVao()) return;
-      TnPop.mo(t, { trang: TRANG_NW.tinNhan, phong: function (id) { return TRANG_NW.tinNhan + '?phong=' + encodeURIComponent(id); } });
+      TnPop.mo(t, { trang: TRANG_NW.tinNhan, phong: function (id) { return TRANG_NW.tinNhan + '?phong=' + encodeURIComponent(id); },
+        moTrang: KH ? function (q) { return KH.mo(q); } : null });
       return;
     }
-    if (ma === 'baiTap' || ma === 'quanLy') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (ma === 'baiTap' || ma === 'quanLy') {
+      if (KH && KH.dangMo()) { KH.an(); return; }   // v1.280.0 — từ Tin nhắn về: trang còn nguyên chỗ đang cuộn
+      window.scrollTo({ top: 0, behavior: 'smooth' }); return;
+    }
+    if (ma === 'tinNhan' && KH && !choThayVao()) { KH.mo(''); return; }
     if (TRANG_NW[ma]) { if (!choThayVao()) location.href = TRANG_NW[ma]; return; }
     moSap(ma);
   });
@@ -260,7 +270,7 @@
     var b = e.target.closest('.nwb-ql-muc');
     if (!b) return;
     var ma = b.getAttribute('data-muc');
-    if (ma === 'baiTap') { window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
+    if (ma === 'baiTap') { if (window.TnKhung && TnKhung.dangMo()) { TnKhung.an(); return; } window.scrollTo({ top: 0, behavior: 'smooth' }); return; }
     if (ma === 'hoatDong') { if (window.qlMoHoatDong) window.qlMoHoatDong(); return; }
     if (ma === 'dangKy' && window.qlMoDangKy) { window.qlMoDangKy(); return; }
     if (ma === 'baoMat') { if (window.qlMoBaoMat) window.qlMoBaoMat(); return; }

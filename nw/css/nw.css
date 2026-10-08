@@ -1680,3 +1680,10 @@ body.trang-hop .tn-ds, body.trang-hop .tn-info, body.trang-hop .tn-phong-dau{dis
 body.trang-hop .tn .tn-phong{display:flex!important; height:100dvh}
 body.trang-hop .tn-phong .tn-chao > *{display:none}
 body.trang-hop .tn-phong .tn-chao::after{content:'Đang mở cuộc trò chuyện…'; color:#65707F; font-size:14px}
+
+/* ============================================================
+   v1.280.0 (08/10/2026) — KHUNG GIỮ SỐNG của trang lớp/khóa/dashboard (nw/tinnhan.html?nhung=1, js/tn-khung.js):
+   đủ danh sách + phòng như trang Tin nhắn, chỉ bỏ thanh (trang mẹ đã có thanh) ⇒ cao đúng bằng khung nhúng
+   ============================================================ */
+body.trang-nhung{--cao-thanh:0px}
+body.trang-nhung .main.tn-main{height:100dvh}

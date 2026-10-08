@@ -15,7 +15,7 @@
 <title>Tin nhắn · Andrew Classes Network</title>
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="../css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/nw.css?v=31">
+<link rel="stylesheet" href="css/nw.css?v=32">
 <link rel="stylesheet" href="../css/chat-ui.css?v=20">   <!-- ⭐ web v1.198.0 khuôn chat Zalo dùng chung -->
 <link rel="preconnect" href="https://firestore.googleapis.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -24,22 +24,23 @@
 </head>
 <body class="trang-tn">
 <script>if (/[?&]hop=1(&|$)/.test(location.search)) document.body.classList.add('trang-hop');</script>   <!-- 03/10: khung nhúng của hộp chat nhỏ (js/tn-pop.js) — chỉ phòng chat -->
+<script>if (/[?&]nhung=1(&|$)/.test(location.search) && window.parent !== window) document.body.classList.add('trang-nhung');</script>   <!-- v1.280.0: khung GIỮ SỐNG của trang lớp/khóa/dashboard (js/tn-khung.js) — đủ danh sách + phòng, không thanh -->
 <main class="main mot tn-main">
   <div id="tn"></div>
 </main>
 <script src="config.js?v=15"></script>
 <script src="../js/thay-vao.js?v=3"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
-<script src="js/loi.js?v=24"></script>
-<script src="../js/tn-pop.js?v=11"></script>
-<script src="../js/tn-pop-ds.js?v=6"></script>
-<script src="js/thanh.js?v=25"></script>
+<script src="js/loi.js?v=25"></script>
+<script src="../js/tn-pop.js?v=12"></script>
+<script src="../js/tn-pop-ds.js?v=7"></script>
+<script src="js/thanh.js?v=26"></script>
 <script src="../js/nw-phien.js?v=9"></script>   <!-- ⭐ 02/10/2026 nhóm lớp = chat lớp myLesson (cùng app Firebase + phiên) -->
 <script src="../js/chat.js?v=36"></script>
 <script src="../js/chat-ui.js?v=20"></script>
-<script src="js/chat.js?v=28"></script>
+<script src="js/chat.js?v=29"></script>
 <script src="../js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script>
-NW.dungThanh({ tab: 'tinNhan', hop: document.body.classList.contains('trang-hop') }).then(function () { NW.Chat.dung(NW.$('#tn')); });
+NW.dungThanh({ tab: 'tinNhan', hop: document.body.classList.contains('trang-hop') || NW.laNhung }).then(function () { NW.Chat.dung(NW.$('#tn')); NW.baoMe('san'); });
 </script>
 </body>
 </html>

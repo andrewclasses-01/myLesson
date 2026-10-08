@@ -548,7 +548,7 @@
         var cu = TIN.filter(function (t) { return t.luc < mocDau && t._cu; });
         TIN = cu.concat(moi);
         if (snap.size < 30) hetCu = true;
-        veTin(); danhDauDoc(p);
+        veTin(); if (!NW.anTrongKhung()) danhDauDoc(p);   // v1.280.0 — khung giữ sống đang ẩn: chưa tính là đã đọc (xemLai lo khi hiện)
       }, function (e) { $('#tnCuon', khuPhong).innerHTML = '<div class="tn-trong">' + an(NW.chuLoiKho(e)) + '</div>'; });
     }
     Chat.ngheKhiTao(function (id) { if (chon === id) ngheTin(id, nguoiHienTai || timPhong(id) || {}); });
@@ -730,8 +730,11 @@
       });
       // ⭐ v1.253.0 — sổ chưa đọc CHUNG (../js/tn-pop-ds.js) có kênh sống tin cuối từng lớp + mốc "đã xem" gộp mọi máy ⇒ nhận từ đó:
       //   tin lớp mới nhảy lên đầu danh sách NGAY, chấm chưa đọc tắt khi đã xem ở máy khác. Khung nhúng (hop=1) không chạy sổ ⇒ cách cũ.
-      if (window.TnPop && TnPop.ngheSo && !/[?&]hop=1(&|$)/.test(location.search)) {
-        TnPop.ngheSo(function (st) {
+      // v1.280.0 — khung giữ sống (nhung=1): MƯỢN sổ của trang mẹ (cùng nhà) ⇒ không mở thêm kênh tin cuối từng lớp
+      var TPS = window.TnPop;
+      if (NW.laNhung) { try { if (window.parent.TnPop && window.parent.TnPop.ngheSo) TPS = window.parent.TnPop; } catch (e) { } }
+      if (TPS && TPS.ngheSo && !/[?&]hop=1(&|$)/.test(location.search)) {
+        TPS.ngheSo(function (st) {
           PHONG_LOP.forEach(function (p) {
             var o = st.lop[p.lop]; if (!o) return;
             var x = o.x;
@@ -740,7 +743,7 @@
           });
           veDs();
         });
-        if (TnPop.batNghe) TnPop.batNghe();   // khởi động sổ ngay (mặc định chờ 2,5 giây)
+        if (TPS.batNghe) TPS.batNghe();   // khởi động sổ ngay (mặc định chờ 2,5 giây)
         return;
       }
       // tin cuối từng lớp — MỘT lượt đọc/lớp (getDocs limit 1, không mở kênh sống)
@@ -806,7 +809,7 @@
         if (chon !== p.id) return;
         TIN_SONG = ds; gop(); veTin();
         var cuoi = ds[ds.length - 1];
-        if (cuoi) { datTinCuoiLop(p, cuoi); if (!document.hidden) ghiXemMay(p, cuoi.luc); else veDs(); }
+        if (cuoi) { datTinCuoiLop(p, cuoi); if (!NW.khongXem()) ghiXemMay(p, cuoi.luc); else veDs(); }
       }, function (e) { var c = $('#tnCuon', khuPhong); if (c) c.innerHTML = '<div class="tn-trong">' + an(AWChat.chuLoi(e)) + '</div>'; u.khoa(true, 'Chưa mở được phòng chat.'); });
       u.datXem({});
       if (AWChat.ngheXem) AWChat.ngheXem(p.lop, function (m) { if (chon === p.id) u.datXem(m); });
@@ -826,10 +829,16 @@
       dungNghe = function () { AWChat.thoi(); if (goKc) goKc(); if (goCam) goCam(); clearTimeout(henCam); };
     }
     var taiCuLop = function () { };
-    document.addEventListener('visibilitychange', function () {
+    // tab quay lại màn hình / v1.280.0 khung giữ sống vừa HIỆN ('tk-hien' do js/tn-khung.js bắn) ⇒ phòng đang mở tính là đã xem
+    function xemLai() {
+      if (NW.khongXem()) return;
       var p = chon && timPhong(chon);
-      if (!document.hidden && p && p._lop && TIN.length) ghiXemMay(p, TIN[TIN.length - 1].luc);
-    });
+      if (!p) return;
+      if (p._lop) { if (TIN.length) ghiXemMay(p, TIN[TIN.length - 1].luc); }
+      else if (TIN.length) danhDauDoc(p);
+    }
+    document.addEventListener('visibilitychange', xemLai);
+    window.addEventListener('tk-hien', xemLai);
     napPhongLop();
 
     // ---------- nhận danh sách phòng từ kênh chung ----------
@@ -843,7 +852,22 @@
         lanDau = false;
         var voi = NW.thamSo('voi'), phong = NW.thamSo('phong');
         if (phong) { /* mở bằng thuMoCho() khi phòng đã có trong danh sách */ }
-        else if (voi) NW.hoSo(voi).then(function (hs) { if (hs) return Chat.moRieng(Object.assign({ uid: voi }, hs)).then(function (id) { var pMoi = { id: id, loai: 'rieng', thanhVien: [toi.uid, voi], tv: {}, tinCuoi: null, docLuc: {} }; pMoi.tv[voi] = NW.tomTat(Object.assign({ uid: voi }, hs)); moPhong(id, pMoi); }); }).catch(function (e) { NW.toast(NW.chuLoiKho(e), true); });
+        else if (voi) moVoi(voi);
+      }
+    });
+    function moVoi(voi) {
+      NW.hoSo(voi).then(function (hs) { if (hs) return Chat.moRieng(Object.assign({ uid: voi }, hs)).then(function (id) { var pMoi = { id: id, loai: 'rieng', thanhVien: [toi.uid, voi], tv: {}, tinCuoi: null, docLuc: {} }; pMoi.tv[voi] = NW.tomTat(Object.assign({ uid: voi }, hs)); moPhong(id, pMoi); }); }).catch(function (e) { NW.toast(NW.chuLoiKho(e), true); });
+    }
+    // ⭐ v1.280.0 — khung giữ sống: trang mẹ (js/tn-khung.js) gửi {tk:'mo', q:'phong=…[&tin=…&luc=…]' | 'voi=…'} ⇒ mở đúng phòng
+    if (NW.laNhung) window.addEventListener('message', function (e) {
+      if (e.origin !== location.origin || e.source !== window.parent) return;
+      var d = e.data || {};
+      if (d.tk !== 'mo' || !d.q) return;
+      var s = new URLSearchParams(String(d.q));
+      if (s.get('phong')) { CHO_MO = { phong: s.get('phong'), tin: s.get('tin') || '', luc: Number(s.get('luc')) || 0 }; thuMoCho(); }
+      else if (s.get('voi')) {
+        var v = s.get('voi'), co = PHONG.filter(function (p) { return p.loai !== 'nhom' && (p.thanhVien || []).indexOf(v) >= 0; })[0];
+        if (co) moPhong(co.id); else moVoi(v);
       }
     });
 

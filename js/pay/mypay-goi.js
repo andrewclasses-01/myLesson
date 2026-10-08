@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.18.0 (37ab2d7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.19.0 (4126fe9) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -108,10 +108,10 @@ function tinhKetQuaThang(m, y) {
   const ketQuaGiaoDich = engine.doiSoat(bang.units, thang.txns || [], hocMay, thang.ganTay || {}, {}, dsLopBiet);
   const duyet = thang.duyetMau || {};
   for (const mm of ketQuaGiaoDich.matched) {
-    if (mm.ti >= 0 && (mm.via === 'L0' || mm.via === 'L2')) {
-      const tx = ketQuaGiaoDich.txns[mm.ti];
-      mm.daDuyet = !!(tx && duyet[kho.khoaTxn(tx)]);
-    }
+    if (mm.ti < 0) continue;
+    const tx = ketQuaGiaoDich.txns[mm.ti];
+    mm.chac = laChac(mm);
+    mm.daDuyet = !!(tx && duyet[kho.khoaTxn(tx)]);
   }
   const xnMap = new Map((thang.xacNhan || []).map((x) => [x.khoa, x]));
   for (const t of ketQuaGiaoDich.txns) t.daXacNhanRoi = xnMap.has(kho.khoaTxn(t));
@@ -147,7 +147,7 @@ ipcMain.handle('saoke:chon', boc(async () => {
 ipcMain.handle('saoke:nap', boc(async (m, y, duongDans) => {
   const ds = [];
   for (const p of duongDans) ds.push(Object.assign(saoke.docFile(p), { duongDan: p })); // tự vá file lỗi, CHỈ ĐỌC
-  return kho.napSaoKe(m, y, ds);
+  return kho.napSaoKe(m, y, ds);   // v0.19.0 — tự vào Tháng KHÔNG làm ở đây: renderer kiểm lệch tháng trước rồi mới gọi giaodich:tuvao
 }));
 ipcMain.handle('saoke:xoa', boc(async (m, y, tenFile) => kho.xoaSaoKe(m, y, tenFile)));
 ipcMain.handle('saoke:mo', boc(async (m, y, tenFile) => {
@@ -163,13 +163,16 @@ ipcMain.handle('saoke:mo', boc(async (m, y, tenFile) => {
 ipcMain.handle('gan:tay', boc(async (m, y, ti, unitIds, hoc) => kho.ganTay(m, y, ti, unitIds, hoc)));
 ipcMain.handle('gan:huy', boc(async (m, y, ti) => kho.huyGan(m, y, ti)));
 
-function ungVienXacNhan(ketQuaGiaoDich) {
+function laChac(mm) {
+  return (mm.via === 'L1' || mm.via === 'L1b') && mm.u && mm.u.kind !== 'grp' && mm.status === 'ĐỦ' && Number(mm.diff) === 0;
+}
+function ungVienXacNhan(ketQuaGiaoDich, chiChac) {
   const ung = [];
   for (const mm of ketQuaGiaoDich.matched) {
     if (mm.ti < 0) continue; // "thầy đánh dấu đã đóng" không phải giao dịch sao kê thật
     const tx = ketQuaGiaoDich.txns[mm.ti];
     if (!tx || tx.daXacNhanRoi) continue; // đã ghi cứng từ trước — bỏ qua, khỏi ghi trùng
-    if ((mm.via === 'L0' || mm.via === 'L2') && !mm.daDuyet) continue;
+    if (chiChac ? !laChac(mm) : !(mm.via === 'TAY' || laChac(mm) || mm.daDuyet)) continue;
     const unitIds = mm.u.kind === 'grp' ? (mm.u.members || []).map((x) => x.id) : [mm.u.id];
     ung.push({ content: tx.content, amount: tx.amount, ngay: tx.ngay, nguon: tx.nguon, unitIds, via: mm.via, hit: mm.hit });
   }
@@ -179,8 +182,16 @@ ipcMain.handle('giaodich:xacnhan', boc(async (m, y) => {
   const { ketQuaGiaoDich } = tinhKetQuaThang(m, y);
   const ung = ungVienXacNhan(ketQuaGiaoDich);
   const kq = kho.themXacNhan(m, y, ung);
+  kho.donSuaTay(m, y);   // v0.19.0 — xác nhận xong dọn bảng Sửa tay
   return { them: kq.them, tongUng: ung.length };
 }));
+function tuXacNhanChac(m, y) {
+  const { ketQuaGiaoDich } = tinhKetQuaThang(m, y);
+  const ung = ungVienXacNhan(ketQuaGiaoDich, true);
+  return ung.length ? kho.themXacNhan(m, y, ung).them : 0;
+}
+ipcMain.handle('giaodich:tuvao', boc(async (m, y) => ({ them: tuXacNhanChac(m, y) })));
+ipcMain.handle('suatay:bo', boc(async (m, y, khoa) => kho.boSuaTay(m, y, khoa)));
 ipcMain.handle('giaodich:lamsach', boc(async (m, y) => kho.lamSachGiaoDich(m, y)));
 ipcMain.handle('giaodich:huyxacnhan', boc(async (m, y, khoa) => kho.xoaMotXacNhan(m, y, khoa)));
 ipcMain.handle('gan:goiy', boc(async (m, y, ti) => {
@@ -321,6 +332,8 @@ contextBridge.exposeInMainWorld('mypay', {
   xacNhanGiaoDich: goi('giaodich:xacnhan'),
   lamSachGiaoDich: goi('giaodich:lamsach'),
   huyXacNhan: goi('giaodich:huyxacnhan'),
+  boSuaTay: goi('suatay:bo'),
+  tuVaoThang: goi('giaodich:tuvao'),
   ghiCaiDat: goi('caidat:ghi'),
   docCaiDat: goi('caidat:doc'),
   ghiGiaDinh: goi('giadinh:ghi'),
@@ -1163,6 +1176,7 @@ function docThang(m, y) {
   if (!t.duyetMau) t.duyetMau = {};
   if (!t.xacNhan) t.xacNhan = [];
   if (t.xacNhanDaDiCu === undefined) t.xacNhanDaDiCu = false;
+  if (!Array.isArray(t.suaTay)) t.suaTay = [];   // v0.19.0 — sửa tay ĐANG CHỜ xác nhận (bảng "Sửa tay" ở Giao dịch)
   return t;
 }
 function ghiThang(m, y, t) { ghiJson(fThang(m, y), t); return t; }
@@ -1222,15 +1236,44 @@ function xoaSaoKe(m, y, ten) {
   t.saoKe = t.saoKe.filter((x) => x.ten !== ten);
   t.txns = t.txns.filter((x) => x.nguon !== ten);
   t.txns.forEach((x, i) => { x.ti = i; });
+  const conKhoa = new Set(t.txns.map(khoaTxn));   // v0.19.0 — gỡ file ⇒ bỏ dòng sửa tay của giao dịch thuộc file đó
+  t.suaTay = (t.suaTay || []).filter((x) => conKhoa.has(x.khoa));
   return ghiThang(m, y, t);
 }
 
 function khoaTxn(tx) { return (String(tx.content) + '|' + tx.amount).toUpperCase(); }
+function trangThaiTxn(t, k) { return { gan: t.ganTay[k] ? { unitIds: (t.ganTay[k].unitIds || []).slice() } : null, duyet: !!t.duyetMau[k] }; }
+function giongNhau(a, b) {
+  return a.duyet === b.duyet && JSON.stringify(a.gan ? a.gan.unitIds.slice().sort() : null) === JSON.stringify(b.gan ? b.gan.unitIds.slice().sort() : null);
+}
+function ghiSuaTay(t, tx, truoc, loai) {
+  const k = khoaTxn(tx);
+  const cu = t.suaTay.find((x) => x.khoa === k);
+  const goc = cu ? cu.truoc : truoc;
+  t.suaTay = t.suaTay.filter((x) => x.khoa !== k);
+  const nay = trangThaiTxn(t, k);
+  if (giongNhau(goc, nay)) return;
+  t.suaTay.push({ khoa: k, content: tx.content, amount: tx.amount, ngay: tx.ngay || '', loai,
+    unitIds: nay.gan ? nay.gan.unitIds : [], truoc: goc, luc: new Date().toISOString() });
+}
+function boSuaTay(m, y, khoa) {
+  const t = docThang(m, y);
+  const d = t.suaTay.find((x) => x.khoa === khoa);
+  if (!d) return t;
+  if (d.truoc.gan) t.ganTay[khoa] = { unitIds: d.truoc.gan.unitIds, luc: new Date().toISOString() }; else delete t.ganTay[khoa];
+  if (d.truoc.duyet) t.duyetMau[khoa] = { luc: new Date().toISOString() }; else delete t.duyetMau[khoa];
+  t.suaTay = t.suaTay.filter((x) => x.khoa !== khoa);
+  return ghiThang(m, y, t);
+}
+function donSuaTay(m, y) { const t = docThang(m, y); t.suaTay = []; return ghiThang(m, y, t); }
+
 function ganTay(m, y, ti, unitIds, hoc) {
   const t = docThang(m, y);
   const tx = t.txns[ti];
   if (!tx) throw new Error('KHONG_THAY_GIAO_DICH');
+  const truoc = trangThaiTxn(t, khoaTxn(tx));
   t.ganTay[khoaTxn(tx)] = { unitIds: unitIds || [], luc: new Date().toISOString() };
+  ghiSuaTay(t, tx, truoc, 'gan');
   ghiThang(m, y, t);
   let hocKq = null;
   if (hoc && hoc.target) hocKq = themHocMay([hoc]); // học mẫu cho các tháng sau
@@ -1239,15 +1282,17 @@ function ganTay(m, y, ti, unitIds, hoc) {
 function huyGan(m, y, ti) {
   const t = docThang(m, y);
   const tx = t.txns[ti];
-  if (tx) delete t.ganTay[khoaTxn(tx)];
+  if (tx) { const truoc = trangThaiTxn(t, khoaTxn(tx)); delete t.ganTay[khoaTxn(tx)]; ghiSuaTay(t, tx, truoc, 'huyGan'); }
   return ghiThang(m, y, t);
 }
 function duyetMau(m, y, ti, bat) {
   const t = docThang(m, y);
   const tx = t.txns[ti];
   if (!tx) throw new Error('KHONG_THAY_GIAO_DICH');
+  const truoc = trangThaiTxn(t, khoaTxn(tx));
   if (bat) t.duyetMau[khoaTxn(tx)] = { luc: new Date().toISOString() };
   else delete t.duyetMau[khoaTxn(tx)];
+  ghiSuaTay(t, tx, truoc, bat ? 'duyet' : 'boDuyet');
   return ghiThang(m, y, t);
 }
 function ghiDeUnit(m, y, unitId, patch) {
@@ -1301,7 +1346,7 @@ function xoaMotXacNhan(m, y, khoa) {
 }
 function lamSachGiaoDich(m, y) {
   const t = docThang(m, y);
-  t.saoKe = []; t.txns = []; t.ganTay = {}; t.duyetMau = {};
+  t.saoKe = []; t.txns = []; t.ganTay = {}; t.duyetMau = {}; t.suaTay = [];
   return ghiThang(m, y, t);
 }
 
@@ -1416,6 +1461,7 @@ module.exports = {
   docNoPhi, docNoPhiTho, themNoPhi, themNoPhiRieng, xoaNoPhi, coNoPhi,
   themXacNhan, xoaMotXacNhan, lamSachGiaoDich, diCuXacNhan,
   docTamUngTho, docTamUng, soDuTamUng, themTamUng, xoaTamUng, truTamUng, soDuSauThang,
+  boSuaTay, donSuaTay,
   docChotTay, themChotTay, xoaChotTay, chotTayPhu, apDungChotTay,
   docGhiChu, ghiGhiChu,
 };
@@ -2103,7 +2149,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.18.0";
-  G.__MA = "37ab2d7";
+  G.__PHIEN_BAN = "0.19.0";
+  G.__MA = "4126fe9";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

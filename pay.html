@@ -14,11 +14,11 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#f4f6fa">
 <title>myPay · Học phí · Andrew Classes</title>
-<!-- ⛔ TRANG SINH TỰ ĐỘNG từ kho myPay (web/pay-khung.html + src/renderer/index.html) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY. myPay v0.18.0 -->
-<link rel="stylesheet" href="css/pay.css?v=2a411d0a">
+<!-- ⛔ TRANG SINH TỰ ĐỘNG từ kho myPay (web/pay-khung.html + src/renderer/index.html) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY. myPay v0.19.0 -->
+<link rel="stylesheet" href="css/pay.css?v=419700f6">
 <script src="js/app-check.js?v=4"></script>
-<script src="js/pay/ban-thu.js?v=2a411d0a"></script>
-<script src="js/pay/giao-dien-web.js?v=2a411d0a"></script>
+<script src="js/pay/ban-thu.js?v=419700f6"></script>
+<script src="js/pay/giao-dien-web.js?v=419700f6"></script>
 </head>
 <body>
 <div id="pyMan" class="py-man"><div class="py-the glass"><div class="py-quay"></div><div id="pyManChu">Đang mở myPay…</div></div></div>
@@ -83,9 +83,9 @@
         <div class="to">Kéo file sao kê ngân hàng (.xlsx) thả vào đây</div>
         <div>hoặc bấm nút "Chọn file sao kê" — app tự đọc, tự vá file lỗi, không sửa file gốc</div>
       </div>
-      <!-- v0.9.0 — nút XÁC NHẬN cùng hàng với thẻ file, bên phải. Chuột phải để Làm sạch
-           / xem-hủy đã xác nhận (thầy chốt: gọn, không cần menu xổ xuống). -->
-      <div class="hang-file">
+      <!-- v0.19.0 (08/10/2026, thầy chốt) — nút XÁC NHẬN chuyển xuống ĐÁY bảng "Sửa tay" (bên phải bảng giao dịch). Chuột phải
+           nút đó vẫn mở Làm sạch / xem-hủy đã xác nhận. Bảng giao dịch + bảng Sửa tay nằm GIỮA trang, cột sát nhau. -->
+      <div class="hang-file gd-giua">
         <div class="filelist" id="dsFile"></div>
         <span class="keo"></span>
         <!-- v0.12.0 — tìm nhanh trong bảng giao dịch, gõ tới đâu lọc tới đó, không cần
@@ -94,17 +94,23 @@
           <input type="text" id="gdTimNoiDung" placeholder="Tìm nội dung…">
           <input type="text" id="gdTimSoTien" placeholder="Tìm số tiền…" inputmode="numeric">
         </div>
-        <span class="keo"></span>
-        <button class="btn primary" id="nutXacNhan" title="Đưa các giao dịch đã khớp vào Tháng chính thức. Chuột phải để Làm sạch / xem đã xác nhận.">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
-          XÁC NHẬN
-        </button>
       </div>
-      <div class="cuon glass" style="padding:0 4px">
-        <table class="bang" id="bangGd">
-          <thead><tr><th style="width:44px">STT</th><th style="width:100px">Ngày</th><th style="width:60px">Giờ</th><th style="width:110px;text-align:right">Số tiền</th><th>Nội dung</th><th style="width:150px">Xác định</th><th style="width:180px">Kết quả</th><th style="width:180px"></th></tr></thead>
-          <tbody id="thanGd"></tbody>
-        </table>
+      <div class="gd-luoi">
+        <div class="cuon glass gd-bang" style="padding:0 4px">
+          <table class="bang" id="bangGd">
+            <thead><tr><th style="width:40px">STT</th><th style="width:88px">Ngày</th><th style="width:48px">Giờ</th><th style="width:100px;text-align:right">Số tiền</th><th>Nội dung</th><th style="width:150px">Xác định</th><th style="width:150px">Kết quả</th><th style="width:132px"></th></tr></thead>
+            <tbody id="thanGd"></tbody>
+          </table>
+        </div>
+        <aside class="gd-suatay glass">
+          <div class="st-dau">Sửa tay <span class="st-dem" id="stDem">0</span></div>
+          <div class="st-phu">Gán / hủy gán / "Đúng rồi" đang chờ — bấm XÁC NHẬN để đưa vào Tháng. Đóng tab vẫn giữ.</div>
+          <div class="st-ds" id="stDs"></div>
+          <button class="btn primary tat" id="nutXacNhan" title="Áp dụng các sửa tay đang chờ vào Tháng. Chuột phải: Làm sạch / xem đã xác nhận.">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+            XÁC NHẬN
+          </button>
+        </aside>
       </div>
     </section>
 
@@ -218,10 +224,10 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako_inflate.min.js"></script>
-<script src="js/pay/may-ao.js?v=2a411d0a"></script>
-<script src="js/pay/nap-du-lieu.js?v=2a411d0a"></script>
-<script src="js/pay/mypay-goi.js?v=2a411d0a"></script>
-<script src="js/pay/kho-may.js?v=2a411d0a"></script>
-<script src="js/pay/mypay-app.js?v=2a411d0a"></script>
+<script src="js/pay/may-ao.js?v=419700f6"></script>
+<script src="js/pay/nap-du-lieu.js?v=419700f6"></script>
+<script src="js/pay/mypay-goi.js?v=419700f6"></script>
+<script src="js/pay/kho-may.js?v=419700f6"></script>
+<script src="js/pay/mypay-app.js?v=419700f6"></script>
 </body>
 </html>

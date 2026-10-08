@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.18.0 (37ab2d7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.19.0 (4126fe9) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -414,6 +414,55 @@
       el.ondblclick = () => { goi('moFileSaoKe', S.m, S.y, el.dataset.mo).catch(() => {}); };
     });
     veHangGiaoDich(t, kq);
+    veSuaTay();
+  }
+
+  const TEN_SUA = { gan: 'Gán tay', huyGan: 'Hủy gán', duyet: 'Đúng rồi', boDuyet: 'Bỏ xác nhận' };
+  function chacChuaVao() {
+    const kq = S.du.ketQuaGiaoDich;
+    return kq.matched.filter((mm) => mm.ti >= 0 && mm.chac && kq.txns[mm.ti] && !kq.txns[mm.ti].daXacNhanRoi);
+  }
+  function soChoXacNhan() { return (((S.du.thang || {}).suaTay) || []).length + (chacChuaVao().length ? 1 : 0); }
+  function veSuaTay() {
+    const hop = $('#stDs'); if (!hop) return;
+    const kq = S.du.ketQuaGiaoDich;
+    const ds = ((S.du.thang || {}).suaTay) || [];
+    const khoaTx = (tx) => (String(tx.content) + '|' + tx.amount).toUpperCase();
+    const tenCua = (ids) => ids.map((id) => { const u = kq.units.find((z) => z.id === id); return u ? u.label : id; }).join(' + ');
+    const dong = ds.slice().sort((a, b) => String(b.luc).localeCompare(String(a.luc))).map((d) => {
+      const ti = kq.txns.findIndex((tx) => khoaTx(tx) === d.khoa);
+      const mm = ti >= 0 ? kq.matched.find((x) => x.ti === ti) : null;
+      const ai = d.unitIds && d.unitIds.length ? tenCua(d.unitIds) : (mm ? mm.u.label : '');
+      const kq2 = d.loai === 'huyGan' ? (mm ? `trả về máy khớp: <b>${esc(mm.u.label)}</b>` : 'bỏ người nhận')
+        : d.loai === 'boDuyet' ? 'chưa chắc — chờ xem lại' : `→ <b>${esc(ai || '?')}</b>`;
+      const gio = d.luc ? new Date(d.luc).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '';
+      return `<div class="st-dong" data-ti="${ti}"><button class="x" data-bo-st="${esc(d.khoa)}" title="Bỏ sửa này (trả về như trước)">✕</button>
+        <div><span class="st-loai ${d.loai}">${TEN_SUA[d.loai] || d.loai}</span><b>${vnd(d.amount)}</b> · ${esc(String(d.ngay || '').split(' ')[0])} <small style="color:var(--text-dim)">${esc(gio)}</small></div>
+        <div class="st-nd">${esc(d.content)}</div><div class="st-kq">${kq2}</div></div>`;
+    });
+    const chac = chacChuaVao();
+    if (chac.length) {
+      const tong = chac.reduce((a, mm) => a + (kq.txns[mm.ti].amount || 0), 0);
+      dong.push(`<div class="st-dong" data-ti="${chac[0].ti}"><div><span class="st-loai tuKhop">Tự khớp chắc</span><b>${chac.length}</b> giao dịch · ${vnd(tong)}đ</div>
+        <div class="st-nd">Máy khớp chắc chắn nhưng CHƯA vào Tháng (file có vẻ thuộc tháng khác nên không tự đưa vào). XÁC NHẬN để đưa vào tháng ${S.m}/${S.y}.</div></div>`);
+    }
+    hop.innerHTML = dong.join('') || '<div class="st-rong">Chưa có sửa tay nào đang chờ.</div>';
+    const n = soChoXacNhan();
+    $('#stDem').textContent = n; $('#stDem').classList.toggle('co', n > 0);
+    $('#nutXacNhan').classList.toggle('tat', n === 0);
+    $$('#stDs [data-bo-st]').forEach((b) => {
+      b.onclick = async (e) => {
+        e.stopPropagation();
+        await goi('boSuaTay', S.m, S.y, b.getAttribute('data-bo-st'));
+        await napThang(); baoToast('Đã bỏ sửa tay đó — giao dịch trở về như trước.');
+      };
+    });
+    $$('#stDs .st-dong').forEach((el) => {
+      el.onclick = () => {
+        const tr = $(`#thanGd tr[data-ti="${el.dataset.ti}"]`);
+        if (tr) { tr.scrollIntoView({ block: 'center', behavior: 'smooth' }); chonHang(tr); }
+      };
+    });
   }
 
   function veHangGiaoDich(t, kq) {
@@ -440,18 +489,20 @@
       const m = kq.matched.find((x) => x.ti === ti);
       if (m) {
         const laMau = (m.via === 'L0' || m.via === 'L2');
-        const canXem = laMau && !m.daDuyet;
-        const via = m.via === 'TAY' ? 'thầy gán' : (laMau ? 'mẫu đã học' : 'tự khớp');
+        const canXem = m.via !== 'TAY' && !m.chac && !m.daDuyet;
+        const lyDo = laMau ? 'mẫu đã học' : m.u.kind === 'grp' ? 'gộp nhiều em'
+          : (m.status !== 'ĐỦ' || Number(m.diff)) ? 'lệch tiền' : 'tên 1 âm tiết';
+        const via = m.via === 'TAY' ? 'thầy gán' : m.chac ? 'tự khớp chắc' : lyDo;
         xdHtml = canXem
           ? `<span class="nhan amber">⚠ ${esc(m.u.label)}</span>`
           : `<span class="nhan xanh">✓ ${esc(m.u.label)}</span>`;
         kqHtml = canXem
-          ? '<small style="color:var(--amber)">mẫu đã học — cần xác nhận</small>'
-          : `<small style="color:var(--text-dim)">${via}${laMau ? ' · đã xác nhận' : ''}</small>`;
+          ? `<small style="color:var(--amber)">${lyDo} — cần xác nhận</small>`
+          : `<small style="color:var(--text-dim)">${via}${m.daDuyet && !m.chac && m.via !== 'TAY' ? ' · đã bấm Đúng rồi' : ''}</small>`;
         if (m.via === 'TAY') nut = `<button class="btn nho" data-huy="${ti}">Hủy gán</button>`;
         else if (canXem) nut = `<button class="btn nho primary" data-duyet="${ti}">Đúng rồi</button>
           <button class="btn nho" data-gan="${ti}">Gán tay</button>`;
-        else if (laMau) nut = `<button class="btn nho" data-boduyet="${ti}">Bỏ xác nhận</button>`;
+        else if (m.daDuyet && !m.chac) nut = `<button class="btn nho" data-boduyet="${ti}">Bỏ xác nhận</button>`;
       } else if (dsReview.has(ti)) {
         const r = kq.review.find((x) => x.ti === ti);
         xdHtml = '<span class="nhan tim">chưa rõ</span>';
@@ -464,7 +515,7 @@
         xdHtml = '<span class="nhan xam">ngoài diện</span>';
         nut = `<button class="btn nho" data-gan="${ti}">Gán</button>`;
       }
-      hang.push(`<tr><td>${ti + 1}</td><td>${esc((tx.ngay || '').split(' ')[0])}</td>
+      hang.push(`<tr data-ti="${ti}"><td>${ti + 1}</td><td>${esc((tx.ngay || '').split(' ')[0])}</td>
         <td style="color:var(--text-dim)">${esc(gioCuaTx(tx.ngay))}</td>
         <td class="sotien">${vnd(tx.amount)}</td><td>${esc(tx.note || tx.content)}</td>
         <td>${xdHtml}</td><td>${kqHtml}</td><td>${nut}</td></tr>`);
@@ -479,7 +530,7 @@
     $$('#thanGd [data-duyet]').forEach((b) => {
       b.onclick = async () => {
         await goi('duyetMau', S.m, S.y, parseInt(b.dataset.duyet, 10), true);
-        await napThang(); baoToast('Đã xác nhận giao dịch này là đúng.');
+        await napThang(); baoToast('Đã thêm vào bảng Sửa tay — bấm XÁC NHẬN để đưa vào Tháng.');
       };
     });
     $$('#thanGd [data-boduyet]').forEach((b) => {
@@ -584,14 +635,19 @@
     baoToast('Đang đọc ' + paths.length + ' file…');
     await goi('napSaoKe', S.m, S.y, paths);
     await napThang();
-    baoToast('Đã nạp sao kê + đối soát xong.');
-    kiemLechThang(paths); // v0.11.0 — cảnh báo khi file khả năng thuộc tháng khác
+    if (kiemLechThang(paths)) { baoToast('Đã nạp sao kê — file có vẻ thuộc tháng khác, CHƯA tự đưa vào Tháng.'); return; }
+    await tuVaoThangChac('Đã nạp sao kê + đối soát xong');
+  }
+  async function tuVaoThangChac(dau) {
+    const r = await goi('tuVaoThang', S.m, S.y);
+    if (r.them) await napThang();
+    baoToast(`${dau} · ${r.them} giao dịch khớp chắc chắn đã tự vào Tháng ${S.m}/${S.y}.`);
   }
 
   function kiemLechThang(paths) {
     const tenMoi = new Set(paths.map((p) => String(p).split(/[\\/]/).pop()));
     const txnsMoi = ((S.du.thang || {}).txns || []).filter((t) => tenMoi.has(t.nguon) && t.ngay);
-    if (txnsMoi.length < 3) return; // quá ít giao dịch có ngày — không đủ để đoán
+    if (txnsMoi.length < 3) return false; // quá ít giao dịch có ngày — không đủ để đoán
     const dem = {};
     for (const t of txnsMoi) {
       const p = String(t.ngay).split('/');
@@ -601,22 +657,23 @@
       dem[k] = (dem[k] || 0) + 1;
     }
     const tong = Object.values(dem).reduce((a, b) => a + b, 0);
-    if (!tong) return;
+    if (!tong) return false;
     let modeK = null; let modeN = 0;
     for (const [k, n] of Object.entries(dem)) if (n > modeN) { modeN = n; modeK = k; }
-    if (!modeK || modeN / tong < 0.5) return; // không có tháng nào áp đảo — khỏi đoán bừa
+    if (!modeK || modeN / tong < 0.5) return false; // không có tháng nào áp đảo — khỏi đoán bừa
     const [modeY, modeM] = modeK.split('-').map(Number);
     let ySuggest = modeY; let mSuggest = modeM - 1;
     if (mSuggest < 1) { mSuggest = 12; ySuggest--; }
-    if (mSuggest === S.m && ySuggest === S.y) return; // đúng tháng rồi — im lặng, đúng luật cũ
+    if (mSuggest === S.m && ySuggest === S.y) return false; // đúng tháng rồi — im lặng, đúng luật cũ
     moHopLechThang(mSuggest, ySuggest, modeM, modeY, [...tenMoi], paths);
+    return true;
   }
   function moHopLechThang(mSuggest, ySuggest, modeM, modeY, tenFiles, paths) {
     xacNhan('⚠ File có thể thuộc tháng khác',
       `Phần lớn giao dịch trong ${tenFiles.length === 1 ? `file "${tenFiles[0]}"` : `${tenFiles.length} file vừa nạp`} ` +
       `có ngày thuộc Tháng ${modeM}/${modeY}. Theo thói quen thu tiền (học phí một tháng thường đóng vào khoảng ` +
       `ngày 16 tháng SAU), file này khả năng cao là học phí Tháng ${mSuggest}/${ySuggest} — nhưng đang được nạp ` +
-      `vào Tháng ${S.m}/${S.y}.`,
+      `vào Tháng ${S.m}/${S.y}. (Bấm Hủy = để nguyên tháng này; giao dịch khớp chắc sẽ CHỜ trong bảng Sửa tay, không tự vào Tháng.)`,
       `Chuyển sang Tháng ${mSuggest}/${ySuggest}`, async () => {
         baoToast('Đang chuyển sang Tháng ' + mSuggest + '/' + ySuggest + '…');
         const mCu = S.m; const yCu = S.y;
@@ -625,7 +682,7 @@
         await goi('napSaoKe', S.m, S.y, paths);
         await napThang();
         luuThangCuoiXem();
-        baoToast(`Đã chuyển sang Tháng ${mSuggest}/${ySuggest} và nạp lại sao kê ở đó.`);
+        await tuVaoThangChac(`Đã chuyển sang Tháng ${mSuggest}/${ySuggest} và nạp lại sao kê ở đó`);
       });
   }
 
@@ -641,21 +698,17 @@
     }
     return { dem, tong };
   }
-  function moXacNhan() {
-    const { dem, tong } = demUngVienXacNhan();
-    if (!dem) {
-      baoToast('Không có giao dịch mới nào để xác nhận — hoặc đã vào Tháng hết rồi, hoặc còn "chưa rõ"/"mơ hồ" cần xử trước.');
-      return;
-    }
-    xacNhan('Xác nhận đưa vào Tháng ' + S.m + '/' + S.y,
-      `Sẽ ghi cứng ${dem} giao dịch (tổng ${vnd(tong)}đ) vào Tháng ${S.m}/${S.y}. Từ giờ dù xoá file hay dòng ở ` +
-      'Giao dịch, dữ liệu này vẫn còn nguyên bên Tháng. Giao dịch còn "chưa rõ"/"mơ hồ" hoặc mẫu đã học chưa ' +
-      'bấm "Đúng rồi" sẽ KHÔNG bị đưa vào — vẫn nằm ở Giao dịch để thầy xử tiếp.',
-      'Xác nhận', async () => {
-        const kq = await goi('xacNhanGiaoDich', S.m, S.y);
-        await napThang();
-        baoToast(`Đã xác nhận ${kq.them} giao dịch vào Tháng ${S.m}/${S.y}.`);
-      });
+  let dangXacNhan = false;
+  async function moXacNhan() {
+    if (dangXacNhan) return;
+    if (!soChoXacNhan()) { baoToast('Chưa có sửa tay nào đang chờ — gán / bấm "Đúng rồi" ở bảng giao dịch trước.'); return; }
+    dangXacNhan = true;
+    try {
+      const n = ((S.du.thang || {}).suaTay || []).length;
+      const kq = await goi('xacNhanGiaoDich', S.m, S.y);
+      await napThang();
+      baoToast(`Đã áp dụng ${n} sửa tay · ${kq.them} giao dịch vào Tháng ${S.m}/${S.y}.`);
+    } catch (e) { /* goi() đã báo */ } finally { dangXacNhan = false; }
   }
   function moCtxXacNhan(x, y) {
     const soDaXacNhan = ((S.du.thang || {}).xacNhan || []).length;

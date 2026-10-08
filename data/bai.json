@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-07 22:37:18",
+  "capNhat": "2026-10-08 09:46:51",
   "bai": {
     "A1C": [
       {
@@ -1453,6 +1453,34 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_3.10_REVIEW_7_JOB",
+        "tieuDe": "NNTNG4_3.10_REVIEW 7 JOB",
+        "tenHien": "NNTNG4_3.10_REVIEW 7 JOB",
+        "dang": "REVIEW",
+        "ngay": "3.10",
+        "han": "2026-10-10T08:00",
+        "maLesson": "7 JOB",
+        "taoLuc": "2026-10-08",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "32sr23",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "n5bkep",
+            "mau": "TYPE THE ANSWER"
+          }
+        ]
+      },
       {
         "id": "NNTNG4_26.9_STAGE_7_JOB",
         "tieuDe": "NNTNG4_26.9_STAGE 7 JOB",

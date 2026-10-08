@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.0 (b3ffdfa) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.1 (a546fc7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -1562,7 +1562,7 @@
         await goi('saoChepAnh', $('#hdCanvas').toDataURL('image/png'));
         baoToast('Đã sao chép ảnh hóa đơn.');
       };
-      $('#hdChinhTay').onclick = () => moCanhChinhTay($('#hdChinhTay'), u);
+      $('#hdChinhTay').onclick = (e) => { e.stopPropagation(); moCanhChinhTay($('#hdChinhTay'), u); };
       $('#hdTaiAnh').onclick = async () => {
         const ten = `${S.y}-${String(S.m).padStart(2, '0')}/${u.classes[0]} - ${u.label}.png`;
         const p = await goi('ghiHoaDon', ten, $('#hdCanvas').toDataURL('image/png'));

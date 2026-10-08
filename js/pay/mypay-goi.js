@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.0 (b3ffdfa) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.1 (a546fc7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -2238,7 +2238,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.23.0";
-  G.__MA = "b3ffdfa";
+  G.__PHIEN_BAN = "0.23.1";
+  G.__MA = "a546fc7";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

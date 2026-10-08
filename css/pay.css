@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.17.0 (3e7cb9f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.18.0 (37ab2d7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -416,10 +416,29 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 
 /* ---------- v0.17.0 (08/10/2026): ★ chốt xong phí (xanh) / tặng học phí (hồng); mờ = phủ từ chốt ở tháng sau ---------- */
 .sao-chot{font-size:13px;line-height:1;padding:2px 4px;cursor:pointer;user-select:none}
-.hsrow .sao-chot{margin-left:auto}
+.hsrow .giua-hang{margin-left:auto;display:inline-flex;align-items:center;gap:1px}
 .sao-chot.chot{color:var(--accent)}
 .sao-chot.tang{color:#db2777}
 .sao-chot.theo{opacity:.55}
+
+/* ---------- v0.18.0 (08/10/2026): 📝 ghi chú nhanh · ô mở cạnh menu (flyout) · thông tin học sinh trên hộp hóa đơn ---------- */
+.gc-icon{font-size:12px;line-height:1;padding:2px 3px;cursor:pointer;user-select:none}
+.ctxmenu.ctx-mo{z-index:61;width:300px;min-width:0}
+.ctx-mo .cm-than{padding:4px 8px 8px}
+.ctx-mo .cm-chu{font-size:13px;line-height:1.65}
+.ctx-mo textarea{width:100%;box-sizing:border-box;font:inherit;font-size:13px;padding:8px 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--glass-bg);color:var(--text);resize:vertical}
+.ctx-mo textarea:focus{outline:none;border-color:var(--accent)}
+.ctx-mo .cm-nut{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;align-items:center}
+.ctx-mo .cm-phu{font-size:11.5px;color:var(--text-dim);margin-top:6px;line-height:1.45}
+.hd-ttin{display:flex;flex-direction:column;gap:8px;margin:0 0 10px}
+.hd-em{display:flex;gap:12px;align-items:center;padding:10px 12px;border-radius:14px;background:var(--accent-soft);border:1px solid var(--accent-line)}
+.hd-em .av{width:64px;height:64px;flex:0 0 64px;border-radius:50%;background:rgba(var(--phu),.1);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px;color:var(--text-dim);overflow:hidden}
+.hd-em .av img{width:100%;height:100%;object-fit:cover}
+.hd-em .tt{min-width:0;flex:1;font-size:12.5px;line-height:1.55;color:var(--text-dim)}
+.hd-em .tt .ten{font-size:16px;font-weight:800;color:var(--text)}
+.hd-em .tt b{color:var(--text)}
+.hd-em .nhan-lt{display:inline-block;padding:1px 8px;border-radius:99px;font-size:11px;font-weight:800;background:var(--amber-soft);color:var(--amber)}
+.hd-gc{font-size:12.5px;padding:8px 12px;border-radius:12px;background:rgba(var(--phu),.05);white-space:pre-wrap}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

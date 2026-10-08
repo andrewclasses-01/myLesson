@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.17.0 (3e7cb9f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.18.0 (37ab2d7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -123,7 +123,8 @@ function tinhKetQuaThang(m, y) {
   kho.apDungChotTay(ketQua, bang.units, kho.docChotTay().ds, m, y);
 
   const lechChot = kho.soSanhChot(thang.chot, bang.units);
-  return { dd, bang, thang, ketQua, ketQuaGiaoDich, caiDat, giaDinh, lechChot };
+  const ghiChu = kho.docGhiChu().ds;
+  return { dd, bang, thang, ketQua, ketQuaGiaoDich, caiDat, giaDinh, lechChot, ghiChu };
 }
 
 function timUnitTheoMa(m, y, loai, hsId, idNha) {
@@ -239,6 +240,7 @@ ipcMain.handle('nophi:nopbu', boc(async (id) => {
 
 ipcMain.handle('chottay:them', boc(async (dl) => kho.themChotTay(dl)));
 ipcMain.handle('chottay:xoa', boc(async (id) => kho.xoaChotTay(id)));
+ipcMain.handle('ghichu:ghi', boc(async (khoa, chu) => kho.ghiGhiChu(khoa, chu)));
 
 ipcMain.handle('thang:chot', boc(async (m, y) => {
   const { bang } = tinhKetQuaThang(m, y);
@@ -338,6 +340,7 @@ contextBridge.exposeInMainWorld('mypay', {
   chotThang: goi('thang:chot'),
   themChotTay: goi('chottay:them'),
   xoaChotTay: goi('chottay:xoa'),
+  ghiGhiChu: goi('ghichu:ghi'),
   dongBoTen: goi('dongbo:ten'),
   dsHocMay: goi('hocmay:ds'),
   suaHocMay: goi('hocmay:sua'),
@@ -1364,6 +1367,23 @@ function chotTayPhu(ds, khoa, m, y) {
   return tot;
 }
 
+const F_GHICHU = path.join(GOC_DATA, 'ghi-chu.json');
+function docGhiChu() {
+  const o = docJson(F_GHICHU, { ds: {} });
+  if (!o.ds || typeof o.ds !== 'object' || Array.isArray(o.ds)) o.ds = {};
+  return o;
+}
+function ghiGhiChu(khoa, chu) {
+  const k = String(khoa || '');
+  if (!/^(H\|\d+|N\|.+)$/.test(k)) throw new Error('KHOA_GHI_CHU_SAI');
+  const o = docGhiChu();
+  const c = String(chu || '').trim().slice(0, 2000);
+  if (c) o.ds[k] = { chu: c, luc: new Date().toISOString() };
+  else delete o.ds[k];
+  ghiJson(F_GHICHU, o);
+  return o.ds;
+}
+
 function apDungChotTay(kq, units, ds, m, y) {
   kq.chotTay = {};
   if (!ds || !ds.length) return kq;
@@ -1397,6 +1417,7 @@ module.exports = {
   themXacNhan, xoaMotXacNhan, lamSachGiaoDich, diCuXacNhan,
   docTamUngTho, docTamUng, soDuTamUng, themTamUng, xoaTamUng, truTamUng, soDuSauThang,
   docChotTay, themChotTay, xoaChotTay, chotTayPhu, apDungChotTay,
+  docGhiChu, ghiGhiChu,
 };
 
 };
@@ -2082,7 +2103,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.17.0";
-  G.__MA = "3e7cb9f";
+  G.__PHIEN_BAN = "0.18.0";
+  G.__MA = "37ab2d7";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.17.0 (3e7cb9f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.18.0 (37ab2d7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -183,7 +183,7 @@
       var a;
       try { a = m[1].initializeAuth(app, { persistence: [m[1].indexedDBLocalPersistence, m[1].browserLocalPersistence] }); }
       catch (e) { a = m[1].getAuth(app); }   // đã có Auth (không nên xảy ra) — máy chủ vẫn chặn phiên không đủ điều kiện
-      return { fs: m[2], db: m[2].getFirestore(app), au: m[1], a: a, aDash: aDash };
+      return { fs: m[2], db: m[2].getFirestore(app), au: m[1], a: a, aDash: aDash, app: app };
     });
   }
   // Mã App Check cho app 'mypay' = mã app-check.js đã cất cho [DEFAULT] (localStorage 'awc_ac' {t, het}); chưa có thì chờ tối đa 10 s.
@@ -331,6 +331,7 @@
 
   var bangSo = null;                // payMaHs/so
   var soHsTheoGid = new Map();      // hsSo/soCai: gid → số học sinh vĩnh viễn (Đợt 4, 06/10/2026)
+  var soCaiGoc = null;              // hsSo/soCai nguyên bản (v0.18.0 — dải thông tin học sinh trên hộp hóa đơn)
   var bangThang = {};               // 'yyyy-MM' → { ngay: {...} }
   var thangDoi = new Set();         // bảng ngày tháng nào vừa dựng lại (cần ghi lên)
   var nguon = { hs: [], lop: [] };
@@ -359,6 +360,7 @@
     ]).then(function (r) {
       nguon.hs = r[0]; nguon.lop = r[1];
       soHsTheoGid = ND.bangSoHs(r[4]);
+      soCaiGoc = r[4] || null;
       r[2].forEach(function (d) {
         if (d.__id === 'so') bangSo = { so: d.so || {}, tiep: d.tiep || ND.SO_DAU };
         else if (/^ngay-/.test(d.__id)) bangThang[d.__id.slice(5)] = { ngay: d.ngay || {} };
@@ -513,6 +515,65 @@
       loiSan(e);
     });
   }
-  window.PayWeb = { may: may, nap: nap, san: san, luuLenMang: luuLenMang, moChonFileNgay: moChonFileNgay, duongTai: duongTai, dangXuat: dangXuat };
+  // ───────── v0.18.0 (08/10/2026) — THÔNG TIN MỘT HỌC SINH cho dải đầu hộp hóa đơn (chỉ xem) ─────────
+  // số học sinh (100001+) ⇒ sổ hộ tịch hsSo/soCai.nguoi[số] {t tên, ma, ns, vao, w số web, g/gx gid} + roster (lớp đang học /
+  // Lưu trữ = mọi dòng active 0 / archived_at) + ảnh 96px kho `lessonAvatar/<lớp>.em[<số web>].a` (dashboard ghi — nguồn ảnh
+  // duy nhất; quét MỌI lớp nên em Lưu trữ còn ảnh ở lớp cũ vẫn ra). Kho ảnh đọc 1 lần/trang (~11 lượt), hỏng ⇒ không ảnh.
+  var _anhTheoW = null;
+  function napAnh() {
+    if (_anhTheoW) return _anhTheoW;
+    _anhTheoW = (K ? docTatCa(K.fs.collection(K.db, 'lessonAvatar')) : Promise.resolve([])).then(function (docs) {
+      var m = new Map();
+      docs.forEach(function (d) {
+        var em = d.em || {};
+        Object.keys(em).forEach(function (w) {
+          var e = em[w] || {};
+          if (!e.a || e.xoa || !/^[A-Za-z0-9+/=]+$/.test(e.a)) return;
+          var cu = m.get(w);
+          if (!cu || Number(e.u || 0) > Number(cu.u || 0)) m.set(w, { a: e.a, u: e.u });
+        });
+      });
+      return m;
+    }, function () { return new Map(); });
+    return _anhTheoW;
+  }
+  function thongTinHs(so) {
+    var ng = soCaiGoc && soCaiGoc.nguoi && soCaiGoc.nguoi[String(so)];
+    if (!ng) return Promise.resolve(null);
+    var gids = (ng.g || []).concat(ng.gx || []);
+    var dong = (nguon.hs || []).filter(function (h) { return gids.indexOf(h.gid) >= 0 && !h.deleted; });
+    var dangHoc = dong.filter(function (h) { return Number(h.active == null ? 1 : h.active) === 1 && !h.archived_at; });
+    var uniq = function (a) { return a.filter(function (x, i) { return x && a.indexOf(x) === i; }); };
+    var kq = {
+      ten: ng.t || '', ma: ng.ma || '', ns: ng.ns || '', vao: ng.vao || '',
+      lopHoc: uniq(dangHoc.map(function (h) { return h.class_code; })),
+      luuTru: !dangHoc.length, lopCu: uniq(dong.map(function (h) { return h.class_code; })), anh: ''
+    };
+    if (!ng.w) return Promise.resolve(kq);
+    return napAnh().then(function (m) {
+      var a = m.get(String(ng.w));
+      if (a) { kq.anh = 'data:image/jpeg;base64,' + a.a; return kq; }
+      return anhTuBoSuuTap(ng.w).then(function (b) { if (b) kq.anh = 'data:image/jpeg;base64,' + b; return kq; });
+    });
+  }
+  // Em không còn trong kho ảnh theo lớp (vd đã Lưu trữ) ⇒ hỏi hàm máy chủ qlAnhDaiDien {viec:'kho'} — đúng đường dashboard
+  // mở bộ sưu tập ảnh của em: ảnh đang dùng (nho 96px) hoặc hienTai (ảnh lớn đặt trước khi có bộ sưu tập). Chỉ khi mở hóa đơn.
+  var _boSuuTap = {};
+  function anhTuBoSuuTap(w) {
+    if (window.PayBanThu || !K || !K.app) return Promise.resolve('');
+    if (_boSuuTap[w]) return _boSuuTap[w];
+    _boSuuTap[w] = import(SDK + '/firebase-functions.js').then(function (fm) {
+      return fm.httpsCallable(fm.getFunctions(K.app, 'asia-southeast1'), 'qlAnhDaiDien', { timeout: 30000 })({ viec: 'kho', ids: [Number(w)] });
+    }).then(function (r) {
+      var d = (r && r.data) || {};
+      var ds = d.ds || [];
+      var dung = ds.filter(function (x) { return x.id === d.dung; })[0];
+      var b = (dung && dung.nho) || d.hienTai || (ds.length ? ds[ds.length - 1].nho : '') || '';
+      b = String(b).replace(/^data:image\/jpeg;base64,/, '');
+      return /^[A-Za-z0-9+/=]+$/.test(b) ? b : '';
+    })['catch'](function () { return ''; });
+    return _boSuuTap[w];
+  }
+  window.PayWeb = { may: may, nap: nap, san: san, luuLenMang: luuLenMang, moChonFileNgay: moChonFileNgay, duongTai: duongTai, dangXuat: dangXuat, thongTinHs: thongTinHs };
   khoiDong();
 })();

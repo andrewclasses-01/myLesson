@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.0 (1727d76) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -129,21 +129,44 @@
       const chu = (d.kieu === 'sau' ? 'Đóng sau' : 'Nợ phí') + (coTien ? ' •' : '');
       return nhanCu + `<i class="no-nhan ${d.kieu === 'sau' ? 'sau' : 'no'}">${chu}</i> `;
     };
-    const theoLop = {};
-    function vaoLop(lop, row) { (theoLop[lop] = theoLop[lop] || []).push(row); }
+    const doanTh = (S.du.bang && S.du.bang.doan) || { moc: 0, lop: {} };
+    const khoaThe = (lop, doan) => (doan ? lop + '\u0001' + doan : lop);
+    function cacThe(lopMacDinh, lich) {
+      const ra = new Map();
+      for (const b of lich || []) {
+        const lop = b.lop || lopMacDinh; const doan = b.doan || ''; const k = khoaThe(lop, doan);
+        if (!ra.has(k)) ra.set(k, { lop, doan, buoi: 0, hocThu: 0 });
+        const t = ra.get(k);
+        if (b.coMat && b.hocThu) t.hocThu++;
+        else if (b.coMat) t.buoi += b.s || 1;
+      }
+      if (!ra.size) {   // chưa có buổi nào (em mới / cả tháng chưa học) ⇒ thẻ lớp hiện tại (lớp tách đôi ⇒ đoạn MỚI)
+        const d = doanTh.lop[lopMacDinh]; const doan = d ? (d.tach ? 'MOI' : d.nhan) : '';
+        ra.set(khoaThe(lopMacDinh, doan), { lop: lopMacDinh, doan, buoi: 0, hocThu: 0 });
+      }
+      return [...ra.values()];
+    }
+    const theoLop = {}; const theTt = {};
+    function vaoLop(t, row) { const k = khoaThe(t.lop, t.doan); theTt[k] = t; (theoLop[k] = theoLop[k] || []).push(row); }
     for (const u of kq.units) {
       if (u.kind === 'fam') {
-        for (const m of u.members || []) vaoLop(m.lop, { u, giadinh: true, ten: m.ten, buoi: m.buoi, hs: m.id, hocThu: m.hocThu });
+        for (const m of u.members || []) {
+          for (const t of cacThe(m.lop, m.lich)) vaoLop(t, { u, giadinh: true, ten: m.ten, buoi: t.buoi, hs: m.id, hocThu: t.hocThu, lop: t.lop });
+        }
       } else {
-        vaoLop(u.classes[0], { u, giadinh: false, ten: u.label, buoi: u.buoi, hs: u.hsId, hocThu: u.hocThu });
+        const ds = cacThe(u.classes[0], u.lich);
+        const tongLop = ds.length > 1 ? `Em học ${ds.length} lớp trong tháng — tổng ${u.buoi} buổi, MỘT hóa đơn gộp (nháy đúp ở thẻ nào cũng được)` : '';
+        for (const t of ds) vaoLop(t, { u, giadinh: false, ten: u.label, buoi: t.buoi, hs: u.hsId, hocThu: t.hocThu, lop: t.lop, tongLop, soLop: ds.length });
       }
     }
     const luoi = $('#luoiLop');
     luoi.innerHTML = '';
-    const tenLops = Object.keys(theoLop).sort();
+    const thuDoan = { '': 0, CU: 1, MOI: 2 };
+    const tenLops = Object.keys(theoLop).sort((a, b) => theTt[a].lop.localeCompare(theTt[b].lop) || thuDoan[theTt[a].doan] - thuDoan[theTt[b].doan]);
     const bac = { chuadong: 0, lech: 1, du: 2, khongbuoi: 3 };
-    for (const lop of tenLops) {
-      const dsRow = theoLop[lop];
+    for (const khoa of tenLops) {
+      const { lop, doan } = theTt[khoa];
+      const dsRow = theoLop[khoa];
       const coThuUnitIds = new Set(dsRow.filter((r) => r.buoi > 0).map((r) => r.u.id));
       const daDongUnitIds = new Set(dsRow.filter((r) => r.buoi > 0 && r.u.id in kq.done).map((r) => r.u.id));
       const card = document.createElement('div');
@@ -157,7 +180,7 @@
         const th = laTieuHoc(lop, ten);
         return `<div class="hsrow ${pl.loai}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}" data-hs="${esc(String(hs ?? ''))}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
             <span class="cham"></span>
-            <span class="ten">${esc(ten)}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi${hocThuChu(hocThu)}</small></span>
+            <span class="ten">${esc(ten)}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi${hocThuChu(hocThu)}</small>${r.tongLop ? ` <span class="nhieu-lop" title="${esc(r.tongLop)}">${r.soLop} lớp</span>` : ''}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${!giadinh && trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${!giadinh && pl.loai !== 'du' ? conDuBadge(u) : ''}
@@ -168,7 +191,10 @@
       const thuong = dsRow.filter((r) => !r.giadinh)
         .sort((a, b) => (bac[phanLoai(a.u).loai] - bac[phanLoai(b.u).loai]) || a.ten.localeCompare(b.ten, 'vi'));
       const giadinh = dsRow.filter((r) => r.giadinh).sort((a, b) => a.ten.localeCompare(b.ten, 'vi'));
-      card.innerHTML = `<h3>${esc(lop)} <span class="dem">${daDongUnitIds.size}/${coThuUnitIds.size} đã đóng</span></h3>
+      const mocTh = doanTh.moc || 0;
+      const nhanDoan = doan === 'CU' ? `<span class="the-doan cu">CŨ${mocTh ? ' · đến ' + (mocTh - 1) + '/' + S.m : ''}</span>`
+        : doan === 'MOI' ? `<span class="the-doan moi">MỚI${mocTh ? ' · từ ' + mocTh + '/' + S.m : ''}</span>` : '';
+      card.innerHTML = `<h3>${esc(lop)} ${nhanDoan}<span class="dem">${daDongUnitIds.size}/${coThuUnitIds.size} đã đóng</span></h3>
         <div class="tienbar"><i style="width:${pct}%"></i></div>` +
         thuong.map(veHang).join('') +
         (giadinh.length ? '<div class="hs-vach"></div>' + giadinh.map(veHang).join('') : '');
@@ -1076,6 +1102,24 @@
       });
     });
     veThangBatDau(cd);
+    veMocDoiLop(cd);
+  }
+
+  function veMocDoiLop(cd) {
+    const o = $('#cdMocDoiLop'); if (!o) return;
+    const ds = Array.isArray(cd.mocDoiLop) ? cd.mocDoiLop : ['2026-09-21'];
+    if (document.activeElement !== o) o.value = ds.map((s) => String(s).split('-').reverse().join('/')).join(', ');
+    $('#nutLuuMocDoiLop').onclick = async () => {
+      const raw = o.value.split(',').map((s) => s.trim()).filter(Boolean);
+      const iso = [];
+      for (const s of raw) {
+        const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s);
+        if (!m) { baoToast('Ngày chưa đúng dạng dd/mm/yyyy: ' + s); return; }
+        iso.push(`${m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`);
+      }
+      await goi('ghiCaiDat', { mocDoiLop: iso });
+      await napThang(); baoToast(iso.length ? 'Đã lưu mốc đổi lớp.' : 'Đã bỏ mốc đổi lớp.');
+    };
   }
 
   const TEN_THANG = ['', 'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4', 'Tháng 5', 'Tháng 6',
@@ -1728,15 +1772,17 @@
     const ngay = [];
     for (let d = 1; d <= soNgay; d++) {
       const hom = [];
-      for (const c of ds) { const b = (c.lich || []).find((z) => z.ngay === d); if (b) hom.push({ ten: c.ten, b }); }
+      for (const c of ds) { const b = (c.lich || []).find((z) => z.ngay === d); if (b) hom.push({ ten: c.ten, nhan: c.nhan || '', b }); }
       ngay.push(hom);
     }
+    const fNhan = fHd(600, 10.5);
     const dongNha = (hom) => {
       const coMat = hom.some((z) => z.b.coMat);
       return hom.map((z) => {
-        if (z.b.coMat) return { z, kieu: z.b.hocThu ? 'thu' : 'co', h: 15 };
+        const them = z.nhan ? 13 : 0;
+        if (z.b.coMat) return { z, kieu: z.b.hocThu ? 'thu' : 'co', h: 15 + them };
         const ld = hdNgat(g, hoaDauHd(z.b.lyDo) || 'Vắng', fLd, cw - 16 - (coMat ? 8 : 0));
-        return { z, kieu: 'vang', nen: coMat, ld, h: (coMat ? 8 : 0) + 15 + 2 + ld.length * 14 };
+        return { z, kieu: 'vang', nen: coMat, ld, h: (coMat ? 8 : 0) + 15 + them + 2 + ld.length * 14 };
       });
     };
     const veTen = (s, x0, yb, wMax, mau) => {
@@ -1792,9 +1838,12 @@
             let x0 = cx + 8; let ty = yy; let wT = cw - 16;
             if (z.nen) { hdKhung(g, cx + 5, yy, cw - 10, z.h, 10, '#fbd5d1'); x0 = cx + 11; ty = yy + 4; wT = cw - 22; }
             veTen(z.z.ten, x0, ty + 12, wT, '#9f1d1d');
-            z.ld.forEach((l, i) => hdChu(g, l, x0, ty + 15 + 2 + (i + 1) * 14 - 3, fLd, '#9f1d1d'));
+            const tn = z.z.nhan ? 13 : 0;
+            if (tn) hdChu(g, z.z.nhan, x0, ty + 12 + 13, fNhan, '#b45353');
+            z.ld.forEach((l, i) => hdChu(g, l, x0, ty + tn + 15 + 2 + (i + 1) * 14 - 3, fLd, '#9f1d1d'));
           } else {
             const doi = (z.z.b.s || 1) > 1; const tw = z.kieu === 'thu' ? hdDo(g, 'học thử', fHd(600, 10.5)) : doi ? 15 * 1.45 : 15;
+            if (z.z.nhan) hdChu(g, z.z.nhan, cx + 8, yy + 12 + 13, fNhan, z.kieu === 'thu' ? '#7c5cc4' : '#3f7a57');
             veTen(z.z.ten, cx + 8, yy + 12, cw - 16 - tw - 3, z.kieu === 'thu' ? '#5b21b6' : '#14532d');
             if (z.kieu === 'thu') hdChu(g, 'học thử', cx + cw - 8, yy + 12, fHd(600, 10.5), '#5b21b6', 'right');
             else hdTich(g, cx + cw - 8 - tw, yy, 15, doi);
@@ -1805,6 +1854,26 @@
       h += ch + (r < soHang - 1 ? gap : 0);
     }
     return h;
+  }
+
+  function lopNganHd(lop) { return String(lop || '').replace(/[\s-]/g, ''); }
+  function nhanLopHd(b) { return lopNganHd(b.lop) + (b.tach ? (b.doan === 'CU' ? ' cũ' : ' mới') : ''); }
+  function nhomLichHd(ds) {
+    const nhanNguoi = {};
+    const nhom = ds.map((c) => {
+      const g = new Map();
+      for (const b of c.lich || []) { const k = b.lop ? nhanLopHd(b) : ''; if (!g.has(k)) g.set(k, []); g.get(k).push(b); }
+      const kn = String(c.id ?? c.ten);
+      (nhanNguoi[kn] = nhanNguoi[kn] || new Set());
+      for (const k of g.keys()) nhanNguoi[kn].add(k);
+      return { c, g, kn };
+    });
+    const ra = [];
+    for (const { c, g, kn } of nhom) {
+      if (nhanNguoi[kn].size < 2) { ra.push(c); continue; }
+      for (const [k, lich] of g) ra.push(c.laNha ? { id: c.id, ten: c.ten, nhan: k, lich } : { id: c.id, ten: k, lich });
+    }
+    return { ds: ra, coNhieu: Object.values(nhanNguoi).some((s) => s.size > 1) };
   }
 
   function hdLichNho(g, x, y, w, m, yr, lich) {
@@ -1867,6 +1936,8 @@
         cat.tieuHoc ? 'học phí tối đa tiểu học' : 'theo học phí tối đa', goc - tho);
       pct = ct && ct.coMien ? ct.pct : (cat.giamPct || 0);
       tenPct = 'Giảm ưu tiên: ' + pct + '%'; motPct = pct + '%';
+      const pcts = u.phan && !(ct && ct.coMien) ? [...new Set(u.phan.map((p) => p.giamPct || 0))] : null;
+      if (pcts && pcts.length > 1) { pct = Math.max(...pcts); tenPct = 'Giảm ưu tiên (theo từng lớp: ' + u.phan.map((p) => lopNganHd(p.lop) + ' ' + (p.giamPct || 0) + '%').join(', ') + ')'; motPct = 'theo từng lớp'; }
     }
     const sauMien = ct ? ct.sauMien : u.expected;
     const lechTron = tho - sauMien;
@@ -2007,8 +2078,9 @@
     const conNha = nha ? gomConHd(u.members) : null;
     const dau = nha
       ? { nha: true, con: conNha, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` }
-      : { ten: u.label, lop: (u.classes || [])[0] || '', so: u.hsId, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` };
-    const lichDs = nha ? (u.members || []).map((x) => ({ ten: x.ten, lich: x.lich })) : [{ ten: u.label, lich: u.lich }];
+      : { ten: u.label, lop: u.phan ? u.phan.map((p) => p.lop).join(' → ') : (u.classes || [])[0] || '', so: u.hsId, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` };
+    const nl = nhomLichHd(nha ? (u.members || []).map((x) => ({ id: x.id, ten: x.ten, lich: x.lich, laNha: true })) : [{ id: u.hsId, ten: u.label, lich: u.lich }]);
+    const lichDs = nl.ds;
     const { goc, khoan } = khoanGiamHd(u);
     const phu = [];
     if (!nha) {
@@ -2022,11 +2094,12 @@
     const cuoiDong = ct ? { nhan: 'Trạng thái', gt: ct.loai === 'tang' ? '★ Được tặng học phí' : '★ Đã chốt xong phí', mau: ct.loai === 'tang' ? '#db2777' : '#15803d' }
       : (u.id in kq.done) ? { nhan: 'Trạng thái', gt: '✓ Đã nhận — cảm ơn phụ huynh', mau: '#15803d' }
         : { nhan: 'Hạn nộp', gt: hanNopHd(m, y), mau: '#d97706' };
-    const tk = { dongBuoi: nha ? conNha.map((c) => ({ ten: c.ten, buoi: c.buoi })) : [{ buoi: u.buoi }], goc, khoan, cuoi: u.expected, phu, cuoiDong };
+    const tk = { dongBuoi: nha ? conNha.map((c) => ({ ten: c.ten, buoi: c.buoi }))
+      : u.phan ? u.phan.map((p) => ({ ten: lopNganHd(p.lop), buoi: p.buoi })) : [{ buoi: u.buoi }], goc, khoan, cuoi: u.expected, phu, cuoiDong };
     const nd = noiDungCkHd(u.label, (u.classes || [])[0], conNha);
     hdVe(cv, W, (g) => {
       let yy = hdDau(g, W, 0, dau);
-      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, lichDs, nha);
+      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, lichDs, nha || nl.coNhieu);
       yy += 22; yy += hdTongKet(g, 32, yy, W - 64, tk);
       yy += 22; yy += hdNganHang(g, 32, yy, W - 64, nd, anh);
       return yy + hdSlogan(g, W, yy);
@@ -2101,7 +2174,7 @@
           const dongCt = t.chiTiet ? hdNgat(g, t.chiTiet, fHd(400, 14), W - 64) : [];
           dongCt.forEach((l, i) => hdChu(g, l, 32, yy + 14 + i * 19, fHd(400, 14), '#6b778d'));
           yy += dongCt.length * 19 + 10;
-          if (t.u) yy += hdLich(g, 32, yy, W - 64, t.m, t.y, (t.u.members || []).map((x) => ({ ten: x.ten, lich: x.lich })), true);
+          if (t.u) yy += hdLich(g, 32, yy, W - 64, t.m, t.y, nhomLichHd((t.u.members || []).map((x) => ({ id: x.id, ten: x.ten, lich: x.lich, laNha: true }))).ds, true);
           else { hdChu(g, '(không đọc được lịch học tháng này)', 32, yy + 16, fHd(500, 14), '#8592a6'); yy += 24; }
         }
       }

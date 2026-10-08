@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.0 (1727d76) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -500,6 +500,12 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .hop-dagui h3{font-size:18px}
 .dagui-nut{display:flex;gap:12px;margin-top:16px}
 .dagui-nut .btn{flex:1;font-size:17px;font-weight:800;padding:18px 12px;border-radius:14px}
+
+/* ---------- v0.26.0 (09/10/2026): thẻ lớp CŨ / MỚI quanh mốc đổi lớp · em học 2 lớp ---------- */
+.lop-card h3 .the-doan{font-size:11px;font-weight:800;letter-spacing:.04em;padding:2px 8px;border-radius:8px;vertical-align:middle}
+.lop-card h3 .the-doan.cu{color:#9a3412;background:rgba(194,65,12,.10)}
+.lop-card h3 .the-doan.moi{color:var(--green);background:var(--green-soft)}
+.nhieu-lop{font-size:10.5px;font-weight:800;color:var(--tim);background:var(--tim-soft);border-radius:6px;padding:1px 6px;white-space:nowrap}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.25.0 (62594a7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.0 (1727d76) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -84,6 +84,23 @@ function boc(ham) {
   };
 }
 
+function doiBiDanh(units, thang) {
+  const map = {};
+  for (const u of units) for (const a of u.aliasIds || []) map[a] = u.id;
+  if (!Object.keys(map).length) return thang;
+  const doi = (id) => map[id] || id;
+  const doiDs = (ds) => [...new Set((ds || []).map(doi))];
+  const ghiDe = {};
+  const ds = Object.entries(thang.ghiDe || {});
+  for (const [k, v] of ds) if (map[k]) ghiDe[map[k]] = Object.assign({}, ghiDe[map[k]], v);   // id cũ trước…
+  for (const [k, v] of ds) if (!map[k]) ghiDe[k] = Object.assign({}, ghiDe[k], v);            // …id gộp đè lên
+  const ganTay = {};
+  for (const [k, v] of Object.entries(thang.ganTay || {})) ganTay[k] = v && v.unitIds ? Object.assign({}, v, { unitIds: doiDs(v.unitIds) }) : v;
+  const xacNhan = (thang.xacNhan || []).map((x) => (x.unitIds ? Object.assign({}, x, { unitIds: doiDs(x.unitIds) }) : x));
+  const suaTay = (thang.suaTay || []).map((x) => (x.unitIds ? Object.assign({}, x, { unitIds: doiDs(x.unitIds) }) : x));
+  return Object.assign({}, thang, { ghiDe, ganTay, xacNhan, suaTay });
+}
+
 function tinhKetQuaThang(m, y) {
   const caiDat = kho.docCaiDat();
   const dd = diemdanh.docThang(m, y);                 // buổi học từng em từ myStudent
@@ -92,7 +109,7 @@ function tinhKetQuaThang(m, y) {
   dd.m = m; dd.y = y;   // v0.23.0 — phi.js cần tháng để tính hệ số buổi theo NGÀY (doiHeSo)
   const giaDinh = kho.docGiaDinh(dd.hocSinhDs);
   const bang = phi.tinhThang(dd, caiDat, giaDinh);    // đơn vị thu + tiền cần đóng
-  let thang = kho.docThang(m, y);                      // sao kê + gán tay + ghi đè đã lưu
+  let thang = doiBiDanh(bang.units, kho.docThang(m, y));   // sao kê + gán tay + ghi đè đã lưu (v0.26.0 — id lớp cũ ⇒ id gộp)
   phi.apDungChinhTay(bang.units, thang.ghiDe || {}, caiDat);   // v0.23.0 — chỉnh tay hóa đơn tháng này (miễn giảm / giảm thêm)
   const hocMay = kho.docHocMay();
   const dsLopBiet = (dd.lopDs || []).map((L) => L.ma_lop);
@@ -106,7 +123,7 @@ function tinhKetQuaThang(m, y) {
       const unitIds = mm.u.kind === 'grp' ? (mm.u.members || []).map((x) => x.id) : [mm.u.id];
       diCu.push({ content: tx.content, amount: tx.amount, ngay: tx.ngay, nguon: tx.nguon, unitIds, via: mm.via, hit: mm.hit });
     }
-    thang = kho.diCuXacNhan(m, y, diCu);
+    thang = doiBiDanh(bang.units, kho.diCuXacNhan(m, y, diCu));
   }
 
   const ketQuaGiaoDich = engine.doiSoat(bang.units, thang.txns || [], hocMay, thang.ganTay || {}, {}, dsLopBiet);
@@ -784,11 +801,26 @@ function catHs(cd, maLop, ten) {
   return Object.assign({}, catLop(cd, maLop), hs[maLop + '|' + khoaTen(ten)] || hs[maLop + '|' + ten]);
 }
 
+function laChuNhat(iso) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(String(iso || ''));
+  return !!m && new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getDay() === 0;
+}
 function heSoTaiNgay(catL, iso) {
+  if (laChuNhat(iso)) return 2;
   let hs = catL.heSoBuoi || 1;
   const ds = Array.isArray(catL.doiHeSo) ? catL.doiHeSo.slice().sort((a, b) => String(a.tuNgay).localeCompare(String(b.tuNgay))) : [];
   for (const d of ds) if (d && d.tuNgay && iso >= d.tuNgay && Number(d.heSoBuoi) > 0) hs = Number(d.heSoBuoi);
   return hs;
+}
+
+const MOC_DOI_LOP_MAC_DINH = ['2026-09-21'];
+function mocTrongThang(cd, m, y) {
+  if (!m || !y) return 0;
+  const ds = Array.isArray(cd && cd.mocDoiLop) ? cd.mocDoiLop : MOC_DOI_LOP_MAC_DINH;
+  const dau = `${y}-${String(m).padStart(2, '0')}-`;
+  const x = ds.map(String).filter((s) => s.startsWith(dau)).sort()[0];
+  const d = x ? Number(x.slice(8, 10)) : 0;
+  return d > 1 ? d : 0;   // mốc ngày 1 = cả tháng là lớp mới, không có đoạn cũ
 }
 
 const TRAN_TIEU_HOC = 1000000;
@@ -835,13 +867,32 @@ function tinhThang(dd, caiDat, giaDinh) {
     }
   }
 
+  const moc = mocTrongThang(cd, dd.m, dd.y);   // số ngày của mốc trong tháng này, 0 = không có
+  const doanLop = {};
+  if (moc) {
+    for (const [maLop, L] of Object.entries(dd.lopMap || {})) {
+      const truoc = new Set(); const sau = new Set();
+      for (const h of Object.values(L.hocSinh || {})) for (const b of h.lich || []) (b.ngay < moc ? truoc : sau).add(String(h.id));
+      if (!truoc.size && !sau.size) continue;
+      let ra = 0; let vao = 0;
+      for (const i of truoc) if (!sau.has(i)) ra++;
+      for (const i of sau) if (!truoc.has(i)) vao++;
+      doanLop[maLop] = truoc.size && sau.size ? { tach: ra >= 3 && vao >= 3, nhan: '' } : { tach: false, nhan: truoc.size ? 'CU' : 'MOI' };
+    }
+  }
+  function doanCuaNgay(maLop, ngay) {
+    const d = doanLop[maLop];
+    if (!d) return '';
+    return d.tach ? (ngay < moc ? 'CU' : 'MOI') : d.nhan;
+  }
+
   function buoiCuaId(maLop, id) {
     const L = (dd.lopMap || {})[maLop];
     const h = L && id !== undefined && L.hocSinh[String(id)];
     const catL = catLop(cd, maLop);
     const heSo = catL.heSoBuoi || 1;
     let buoi = (h ? h.buoiCoMat : 0) * heSo;
-    if (h && dd.m && dd.y && Array.isArray(catL.doiHeSo) && catL.doiHeSo.length) {
+    if (h && dd.m && dd.y) {
       const pad = (n) => String(n).padStart(2, '0');
       buoi = (h.lich || []).filter((b) => b.coMat && !b.hocThu)
         .reduce((s, b) => s + heSoTaiNgay(catL, `${dd.y}-${pad(dd.m)}-${pad(b.ngay)}`), 0);
@@ -853,7 +904,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       vang: h ? h.buoiVang : 0,
       choDuyet: h ? h.choDuyet : 0,
       ngay: h ? h.ngayCoMat : [],
-      lich: h ? (h.lich || []).map((b) => Object.assign({}, b, { s: sNgay(b) })) : [],
+      lich: h ? (h.lich || []).map((b) => Object.assign({}, b, { s: sNgay(b), lop: maLop, doan: doanCuaNgay(maLop, b.ngay), tach: !!(doanLop[maLop] && doanLop[maLop].tach) })) : [],
       hocThu: h ? (h.hocThu || 0) : 0,   // v0.22.0 — buổi có mặt TRƯỚC ngày bắt đầu tính phí (kho-pay.apDungNgayBatDau)
     };
   }
@@ -875,51 +926,74 @@ function tinhThang(dd, caiDat, giaDinh) {
   };
 
   const units = [];
-  const daId = new Set(); // "LỚP|mã số" đã có unit (vòng roster) — chống trùng ở 1b
+  const rosterTheoId = new Map((dd.hocSinhDs || []).map((hs) => [String(hs.id), hs]));
+  const emLop = new Map();   // mã số -> { id, hs (roster | null), lops: [mã lớp], tenSo }
+  const themLop = (id, maLop, tenSo) => {
+    const k = String(id);
+    if (!emLop.has(k)) emLop.set(k, { id, hs: rosterTheoId.get(k) || null, lops: [], tenSo: '' });
+    const e = emLop.get(k);
+    if (!e.lops.includes(maLop)) e.lops.push(maLop);
+    if (tenSo && !e.tenSo) e.tenSo = tenSo;
+  };
   for (const hs of dd.hocSinhDs || []) {
     const maLop = hs.lop;
     if (!catLop(cd, maLop).thu) continue;
     if (trongNhaId.has(String(hs.id))) continue; // em trong gia đình → tính ở unit nhà (mọi lớp)
     const b = buoiCuaId(maLop, hs.id);
     const hocLopKhac = (lopCoHoc[String(hs.id)] || []).some((l) => l !== maLop && catLop(cd, l).thu);
-    if (!b.buoi && !b.choDuyet && hocLopKhac) continue;   // v0.15.0 — tháng này em học lớp khác ⇒ để vòng 1b tính đúng lớp đó
-    const cat = catEm(maLop, [hs.ten, tenSoLop(maLop, hs.id)]);   // v0.15.0 — tên hiện tại, rồi tên trong sổ tháng đó (em đổi tên)
-    units.push({
-      id: idDonVi(maLop, hs.id),
-      hsId: hs.id,
-      kind: 'reg',
-      label: hs.ten,
-      classes: [maLop],
-      names: [hs.ten],
-      maDangNhap: hs.ma_dang_nhap || '',
-      buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich, hocThu: b.hocThu,
-      cat,
-      goc: b.buoi * (cat.donGia || 150000), tho: phiTho(b.buoi, cat),   // v0.24.0 — hóa đơn: học phí gốc + phí sau trần
-      expected: phiLe(b.buoi, cat),
-    });
-    daId.add(maLop + '|' + hs.id);
+    if (!b.buoi && !b.choDuyet && hocLopKhac) continue;   // v0.15.0 — tháng này em chỉ học lớp khác ⇒ lớp đó vào ở vòng 1b
+    themLop(hs.id, maLop, tenSoLop(maLop, hs.id));
   }
   for (const [maLop, L] of Object.entries(dd.lopMap || {})) {
     if (!catLop(cd, maLop).thu) continue;
     for (const h of Object.values(L.hocSinh)) {
       if (!h.buoiCoMat) continue;
-      if (daId.has(maLop + '|' + h.id)) continue;
       if (trongNhaId.has(String(h.id))) continue;   // v0.15.0 — con trong gia đình: buổi mọi lớp cộng ở unit nhà
-      const conHoc = (dd.hocSinhDs || []).some((x) => String(x.id) === String(h.id));
+      const conHoc = rosterTheoId.has(String(h.id));
       if (conHoc && !lopThat(maLop)) continue;      // v0.15.0 — em thật trong lớp THỬ: bỏ
-      const ten = h.ten;
-      const b = buoiCuaId(maLop, h.id);
-      const cat = catHs(cd, maLop, ten);
-      units.push({
-        id: idDonVi(maLop, h.id),                    // 06/10/2026 — theo SỐ, xem vòng 1
-        hsId: h.id,                                  // v0.6.0 — xem chú thích ở vòng 1
-        kind: 'reg', label: ten, classes: [maLop], names: [ten], maDangNhap: '',
-        buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich, hocThu: b.hocThu,
-        cat, expected: phiLe(b.buoi, cat), daNghi: !conHoc, lopCu: conHoc,
-        goc: b.buoi * (cat.donGia || 150000), tho: phiTho(b.buoi, cat),   // v0.24.0 — xem vòng 1
-      });
-      daId.add(maLop + '|' + h.id);
+      themLop(h.id, maLop, h.ten);
     }
+  }
+  const ngayCuoi = (maLop, id) => {
+    const L = (dd.lopMap || {})[maLop]; const h = L && L.hocSinh[String(id)];
+    return h && h.lich && h.lich.length ? Math.max(...h.lich.map((b) => b.ngay)) : 0;
+  };
+  for (const e of emLop.values()) {
+    const hs = e.hs;
+    const lops = e.lops.slice().sort((a, b) => ngayCuoi(a, e.id) - ngayCuoi(b, e.id));   // lớp học trước đứng trước
+    const chinh = hs && lops.includes(hs.lop) ? hs.lop : lops[lops.length - 1];
+    const ten = hs ? hs.ten : e.tenSo;
+    const phan = lops.map((maLop) => {
+      const b = buoiCuaId(maLop, e.id);
+      const cat = hs ? catEm(maLop, [hs.ten, tenSoLop(maLop, e.id)]) : catHs(cd, maLop, tenSoLop(maLop, e.id) || ten);
+      return { lop: maLop, b, cat, goc: b.buoi * (cat.donGia || 150000), tho: phiTho(b.buoi, cat), expected: phiLe(b.buoi, cat) };
+    });
+    const pChinh = phan.find((p) => p.lop === chinh);
+    const tong = (f) => phan.reduce((s, p) => s + f(p), 0);
+    const u = {
+      id: idDonVi(chinh, e.id),
+      hsId: e.id,                                   // v0.6.0 — nợ phí / tạm ứng khoá theo `hsId`
+      kind: 'reg',
+      label: ten,
+      classes: [chinh, ...lops.filter((l) => l !== chinh)],   // lớp chính đứng đầu (hóa đơn, nội dung chuyển khoản, ghép sao kê)
+      names: [ten],
+      maDangNhap: hs ? (hs.ma_dang_nhap || '') : '',
+      buoi: tong((p) => p.b.buoi), vang: tong((p) => p.b.vang), choDuyet: tong((p) => p.b.choDuyet),
+      ngayCoMat: [].concat(...phan.map((p) => p.b.ngay)),
+      lich: [].concat(...phan.map((p) => p.b.lich)).sort((a, b) => a.ngay - b.ngay),
+      hocThu: tong((p) => p.b.hocThu),
+      cat: pChinh.cat,
+      goc: tong((p) => p.goc), tho: tong((p) => p.tho),   // v0.24.0 — hóa đơn: học phí gốc + phí sau trần
+      expected: tong((p) => p.expected),
+    };
+    if (!hs) { u.daNghi = true; u.lopCu = false; }
+    else if (!lops.includes(hs.lop)) { u.daNghi = false; u.lopCu = true; }   // v0.15.0 — em VẪN học (đã chuyển lớp)
+    if (phan.length > 1) {
+      u.aliasIds = lops.filter((l) => l !== chinh).map((l) => idDonVi(l, e.id));
+      u.phan = phan.map((p) => ({ lop: p.lop, buoi: p.b.buoi, vang: p.b.vang, goc: p.goc, tho: p.tho, expected: p.expected,
+        giamPct: p.cat.giamPct || 0, tran: p.cat.tran || 0, tieuHoc: !!p.cat.tieuHoc }));
+    }
+    units.push(u);
   }
 
   for (const f of fams) {
@@ -954,7 +1028,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       expected: floorStep(tong * (100 - (f.giamPct || 0)) / 100, 50000),
     });
   }
-  return { units, canhBao };
+  return { units, canhBao, doan: { moc, lop: doanLop } };   // v0.26.0 — đoạn CŨ/MỚI quanh mốc đổi lớp (để hiện)
 }
 
 function apDungChinhTay(units, ghiDe, cd) {
@@ -968,12 +1042,14 @@ function apDungChinhTay(units, ghiDe, cd) {
     if (u.kind === 'fam') {
       tho = Number(u.tho) || 0;
       pctCu = u.giamPct || 0; coTran = true;
+    } else if (u.phan) {
+      tho = Number(u.tho) || 0; pctCu = null; coTran = true;
     } else {
       const cat = u.cat || {};
       tho = phiTho(u.buoi, cat); pctCu = cat.giamPct || 0; coTran = cat.tran > 0 || cat.tieuHoc;
     }
     const pct = coMien ? Math.max(0, Math.min(100, Number(g.mienGiamPct) || 0)) : pctCu;
-    let tien = (pct || coTran) ? floorStep(tho * (100 - pct) / 100, 50000) : tho;
+    let tien = pct === null ? u.expected : (pct || coTran) ? floorStep(tho * (100 - pct) / 100, 50000) : tho;
     const sauMien = tien;
     let tru = 0;
     if (gt) {
@@ -986,7 +1062,7 @@ function apDungChinhTay(units, ghiDe, cd) {
   return units;
 }
 
-module.exports = { tinhThang, phiLe, phiTho, floorStep, catLop, catHs, heSoTaiNgay, apDungChinhTay };
+module.exports = { tinhThang, phiLe, phiTho, floorStep, catLop, catHs, heSoTaiNgay, apDungChinhTay, laChuNhat, mocTrongThang };
 
 };
   G["E:\\LAP TRINH APP\\myPay\\src\\main\\lib\\kho-pay.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -2311,7 +2387,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.25.0";
-  G.__MA = "62594a7";
+  G.__PHIEN_BAN = "0.26.0";
+  G.__MA = "1727d76";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-08 09:46:51",
+  "capNhat": "2026-10-08 10:50:40",
   "bai": {
     "A1C": [
       {
@@ -3475,6 +3475,55 @@
       }
     ],
     "B1B": [
+      {
+        "id": "B1B_7.10_DICTS_LSB1-S3.T3.P2",
+        "tieuDe": "B1B_7.10_DICTS LSB1-S3.T3.P2",
+        "tenHien": "B1B_7.10_DICTS LSB1-S3.T3.P2",
+        "dang": "DICTS",
+        "ngay": "7.10",
+        "han": "2026-10-10T19:45",
+        "maLesson": "LSB1-S3.T3.P2",
+        "taoLuc": "2026-10-08",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSB1-S3.T3.P2",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB1B%2FB1B_7.10_DICTS_LSB1-S3.T3.P2%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "ptx34d",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S3.T3.P2"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSB1-S3.T3.P2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "cv6ma6",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "FIND THE GAP",
+            "act": "LSB1-S3.T3.P2 / FIND THE GAP",
+            "yeuCau": "100% requirement",
+            "ma": "jdn6d2",
+            "mau": "FIND THE GAP"
+          }
+        ]
+      },
       {
         "id": "B1B_3.10_DICTS_LSB1-S3.T3.P1",
         "tieuDe": "B1B_3.10_DICTS LSB1-S3.T3.P1",

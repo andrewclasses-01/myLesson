@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-07 14:57:10",
+  "capNhat": "2026-10-08 10:08:31",
   "nguon": "dashboard",
   "lop": [
     {
@@ -1259,10 +1259,14 @@
           "sinhNhat": ""
         },
         {
-          "id": 203,
-          "ten": "Minh Đức",
-          "ma": "MAIMINHDUC21122017",
-          "sinhNhat": ""
+          "id": 246,
+          "ten": "Gia Hân",
+          "ma": "NGUYENNGOCGIAHAN09022018",
+          "sinhNhat": "02-09",
+          "vao": "2026-10-08",
+          "tenCu": [
+            "Nguyễn Ngọc Gia Hân"
+          ]
         },
         {
           "id": 162,
@@ -1277,15 +1281,19 @@
           "sinhNhat": ""
         },
         {
+          "id": 245,
+          "ten": "Minh Lâm",
+          "ma": "TRANHOANGMINHLAM03012017",
+          "sinhNhat": "01-03",
+          "vao": "2026-10-08",
+          "tenCu": [
+            "Trần Hoàng Minh Lâm"
+          ]
+        },
+        {
           "id": 163,
           "ten": "Minh Phúc",
           "ma": "NGOMINHPHUC02022018",
-          "sinhNhat": ""
-        },
-        {
-          "id": 168,
-          "ten": "Minh Quang",
-          "ma": "DAOMINHQUANG16112017",
           "sinhNhat": ""
         },
         {
@@ -1317,6 +1325,16 @@
           "ten": "Quang Tùng",
           "ma": "BUIQUANGTUNG05032018",
           "sinhNhat": ""
+        },
+        {
+          "id": 244,
+          "ten": "Thanh Mai",
+          "ma": "DOTHANHMAI09022018",
+          "sinhNhat": "02-09",
+          "vao": "2026-10-10",
+          "tenCu": [
+            "Đỗ Thanh Mai"
+          ]
         },
         {
           "id": 153,

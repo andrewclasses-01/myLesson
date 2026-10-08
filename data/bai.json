@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-08 11:05:42",
+  "capNhat": "2026-10-08 19:29:26",
   "bai": {
     "A1C": [
       {
@@ -1743,6 +1743,45 @@
       }
     ],
     "A1A": [
+      {
+        "id": "A1A_8.10_STAGE_LSB1-S1.T2.P1",
+        "tieuDe": "A1A_8.10_STAGE LSB1-S1.T2.P1",
+        "tenHien": "A1A_8.10_STAGE LSB1-S1.T2.P1",
+        "dang": "STAGE",
+        "ngay": "8.10",
+        "han": "2026-10-12T19:45",
+        "maLesson": "LSB1-S1.T2.P1",
+        "taoLuc": "2026-10-08",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "s4a3fp",
+            "mau": "QUIZ",
+            "han": "2026-10-10T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "7r8dp6",
+            "mau": "ANAGRAM",
+            "han": "2026-10-11T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "xh7bgg",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-10-12T19:45"
+          }
+        ]
+      },
       {
         "id": "A1A_5.10_DICTS_LSB1-S1.T1.P3-4",
         "tieuDe": "A1A_5.10_DICTS LSB1-S1.T1.P3-4",

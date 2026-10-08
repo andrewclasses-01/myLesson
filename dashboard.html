@@ -619,9 +619,17 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
   50%{filter:drop-shadow(0 2px 4px rgba(242,169,59,.42)) drop-shadow(0 0 22px rgba(242,169,59,.78))}
 }
 .lop-btn.chon.cho{animation:lopChoHaoQuangChon 1.8s ease-in-out infinite}
+/* ⭐ v1.266.0 (08/10/2026, mẫu A thầy chốt — `myLesson - thiet ke the lop cho bai/mau-v1.html`) — thẻ ĐANG CHỌN mà
+   ĐANG CHỜ BÀI: nền xanh lục đặc ⇒ CAM VÀNG ĐẶC (#E8901A), chữ trắng, hào quang vàng vẫn nháy. Khỏi lẫn với lớp đã giao.
+   ⛔ App myLesson tô ô lớp đang chọn + chờ bài CÙNG MÀU (main.css `.lop-truot.cho`) — đổi một bên thì đổi cả hai.
+   ⛔ Bộ chọn dài hơn các luật `.lop-btn.lb3.chon …`/`.lop-btn.lbB.chon …` viết SAU trong file ⇒ thắng nhờ độ ưu tiên. */
+.lop-btn.chon.cho{background:#E8901A; border-color:#E8901A}
+.lop-btn.lbB.chon.cho .lb-luc, .lop-btn.lb3.chon.cho .lb-ma{color:#FFF4E0}
+.lop-btn.lb3.chon.cho .lb-dang{background:rgba(255,255,255,.22); color:#fff}
+.lop-btn.lbB.chon.cho::before{background:rgba(255,255,255,.6)}
 @media (prefers-reduced-motion:reduce){
   .lop-btn.cho{animation:none; background:var(--vang-nhat); filter:drop-shadow(0 2px 4px rgba(242,169,59,.3)) drop-shadow(0 0 14px rgba(242,169,59,.5))}
-  .lop-btn.chon.cho{animation:none; background:var(--xanh); filter:drop-shadow(0 2px 4px rgba(242,169,59,.3)) drop-shadow(0 0 14px rgba(242,169,59,.5))}
+  .lop-btn.chon.cho{animation:none; background:#E8901A; filter:drop-shadow(0 2px 4px rgba(242,169,59,.3)) drop-shadow(0 0 14px rgba(242,169,59,.5))}
 }
 .lop-btn.chon .lb-tt.giao{color:#D3F5E4} .lop-btn.chon .lb-tt.giao i{background:#7FEAB4}
 .lop-btn.chon .lb-tt.cho{color:#FDECC9} .lop-btn.chon .lb-tt.cho i{background:var(--vang)}
@@ -3974,7 +3982,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=81"></script>
+<script src="js/chung.js?v=82"></script>
 <script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=20"></script>
@@ -4340,6 +4348,35 @@ tr.qm-hang-tam td{background:#fffbeb}
     });
   }
   setInterval(capNhatLucThe, 30000);
+
+  // ⭐⭐ v1.266.0 (08/10/2026, thầy chốt) — TRẠNG THÁI LỚP CHO APP myLesson + TỰ ĐỔI KHI HẾT HẠN.
+  // (1) `bangTrangThaiLop()` = { maLop: 'giao'|'cho'|'khong' } cho mọi lớp + khóa — CÙNG `trangThaiBai()` vẽ thẻ.
+  // (2) Mỗi lần vẽ thẻ lớp (`veLopGrid`) ⇒ `guiTrangThaiApp()`: chạy TRONG app (`__mylessonApp`, app tiêm lúc dom-ready)
+  //     thì in marker console `MYLESSON:LOP:TT:{…}` — app nghe `console-message`, cho ô lớp bên app nháy vàng theo.
+  //     App cũng tự hỏi `window.__mlTrangThaiLop()` (marker lần đầu có thể in TRƯỚC khi app kịp tiêm cờ).
+  // (3) Trước đây trang đang mở KHÔNG tự chuyển "Đã giao" → "Chờ" khi bài hết hạn (chỉ đếm chữ `capNhatLucThe`) ⇒
+  //     mỗi phút so bảng trạng thái; khác lần vẽ trước thì vẽ lại thẻ lớp (đang kéo-thả sắp xếp thì để lượt sau).
+  var TT_LOP_DA_VE = '', TT_LOP_DA_GUI = '';
+  function bangTrangThaiLop() {
+    var ra = {};
+    (DL.lop || []).concat(DL.khoa || []).forEach(function (l) { ra[l.maLop] = trangThaiBai(l); });
+    return ra;
+  }
+  function guiTrangThaiApp(bang) {
+    if (!window.__mylessonApp) return;
+    var s = JSON.stringify(bang || bangTrangThaiLop());
+    if (s === TT_LOP_DA_GUI) return;
+    TT_LOP_DA_GUI = s;
+    try { console.log('MYLESSON:LOP:TT:' + s); } catch (e) {}
+  }
+  window.__mlTrangThaiLop = function () {
+    TT_LOP_DA_GUI = '';                       // app vừa hỏi ⇒ lần vẽ sau in lại marker dù không đổi
+    return DL.lop.length ? JSON.stringify(bangTrangThaiLop()) : '';
+  };
+  setInterval(function () {
+    if (!DL.lop.length || DANG_SAP_XEP) return;
+    if (JSON.stringify(bangTrangThaiLop()) !== TT_LOP_DA_VE) veLopGrid();
+  }, 60000);
   function veLopGrid() {
     var xep = DL.lop.slice().sort(function (a, b) {
       // v1.35.0 — lọc bằng `A.conHan` (thẻ khoá đã qua mốc vẫn là còn hạn → xếp lên đầu)
@@ -4360,6 +4397,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#lopGrid').innerHTML = xep.map(theLopBtnHtml).join('');
     veKhoaGrid();
     if (KHO_NHO_LOP) datViTriKhoNho();   // v1.203.0
+    var bangTt = bangTrangThaiLop();     // v1.266.0 — nhớ bảng vừa vẽ + báo app myLesson
+    TT_LOP_DA_VE = JSON.stringify(bangTt);
+    guiTrangThaiApp(bangTt);
   }
 
   // ⭐⭐ 11/09/2026 — CỘT RIÊNG CHO CÁC LỚP KHÓA HỌC (`DL.khoa`, myStudent
@@ -11528,6 +11568,34 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#sbPanel').classList.remove('mo');
     document.body.style.overflow = '';
   }
+
+  // ⭐⭐ v1.266.0 (08/10/2026, thầy chốt "làm mới êm") — app myLesson ĐẨY BÀI XONG gọi `window.__mlLamMoi()`:
+  // đọc lại dữ liệu bài (`A.lamMoiDl()` bỏ bản nhớ napDuLieu + đệm 60 giây lessonHan/lessonNghi — NO HOMEWORK ghi
+  // lessonNghi) rồi vẽ lại y như lúc mở trang. KHÔNG tải lại trang ⇒ không chớp trắng, giữ lớp đang chọn, chat, cuộn.
+  // Gọi dồn nhiều lần (đẩy nhiều bài liền) ⇒ lượt đang chạy xong mới chạy thêm ĐÚNG MỘT lượt nữa.
+  var LAM_MOI = { dang: null, them: false };
+  window.__mlLamMoi = function () {
+    if (LAM_MOI.dang) { LAM_MOI.them = true; return LAM_MOI.dang; }
+    if (!A.lamMoiDl) return Promise.resolve('khong');   // chung.js cũ trong cache ⇒ app tự tải lại cả trang
+    A.lamMoiDl();
+    LAM_MOI.dang = A.napDuLieu().then(function (dl) {
+      DL = dl;
+      if (!DL.lop.some(function (l) { return l.maLop === LOP_CHON; }) &&
+          !(DL.khoa || []).some(function (l) { return l.maLop === LOP_CHON; })) LOP_CHON = DL.lop[0] ? DL.lop[0].maLop : '';
+      veTat();
+      return docDiemCuaCacBai(dsBaiConHanMoiLop().concat(
+        A.baiCuaLop(DL, LOP_CHON, 'ql').map(function (b) { return { b: b, maLop: LOP_CHON }; })
+      )).then(veTat);
+    }).then(function () { return 'ok'; }, function (e) {
+      console.warn('[làm mới] lỗi:', e && e.message);
+      return 'loi';
+    }).then(function (kq) {
+      LAM_MOI.dang = null;
+      if (LAM_MOI.them) { LAM_MOI.them = false; return window.__mlLamMoi(); }
+      return kq;
+    });
+    return LAM_MOI.dang;
+  };
 
   // ---------- khởi động ----------
   function batDau() {

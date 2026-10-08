@@ -360,6 +360,13 @@
     } catch (e) { return null; }
   }
 
+  // ⭐ v1.266.0 — LÀM MỚI ÊM (dashboard `__mlLamMoi`, app myLesson gọi sau khi đẩy bài): bỏ bản nhớ `nhoDl` + đệm
+  // 60 giây của lessonHan/lessonNghi ⇒ lượt `napDuLieu()` kế tiếp đọc lại TƯƠI mọi nguồn. Chỉ gọi lúc chủ động làm mới.
+  function lamMoiDl() {
+    nhoDl = null;
+    try { sessionStorage.removeItem(KHOA_HAN); sessionStorage.removeItem(KHOA_NGHI); } catch (e) {}
+  }
+
   // Đọc lop.json + bai.json. `?t=` + no-store để không dính bản cũ trong máy —
   // GitHub Pages giữ cache ~10 phút, thiếu chốt này là thầy đẩy bài mới mà học
   // sinh vẫn thấy bài cũ.
@@ -3625,7 +3632,7 @@
     nghiConHieuLuc: nghiConHieuLuc,
     theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, chuanTen: chuanTen, khoaEm: khoaEm, datBangEm: datBangEm, lopHien: lopHien,
-    napDuLieu: napDuLieu, napJson: napJson,
+    napDuLieu: napDuLieu, napJson: napJson, lamMoiDl: lamMoiDl,
     lopTheoMa: lopTheoMa, baiCuaLop: baiCuaLop, timTheoMa: timTheoMa,
     // ⭐⭐ v1.95.0 — em nào có mặt ở một bài (bỏ em vào lớp sau ngày giao)
     ngayGiaoBai: ngayGiaoBai, emCoMatOBai: emCoMatOBai, caLopCuaBai: caLopCuaBai,

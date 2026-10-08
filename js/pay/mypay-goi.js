@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.1 (a546fc7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.24.0 (5cefa37) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -806,12 +806,14 @@ function tinhThang(dd, caiDat, giaDinh) {
       buoi = (h.lich || []).filter((b) => b.coMat && !b.hocThu)
         .reduce((s, b) => s + heSoTaiNgay(catL, `${dd.y}-${pad(dd.m)}-${pad(b.ngay)}`), 0);
     }
+    const pad2 = (n) => String(n).padStart(2, '0');
+    const sNgay = (b) => (dd.m && dd.y ? heSoTaiNgay(catL, `${dd.y}-${pad2(dd.m)}-${pad2(b.ngay)}`) : heSo);
     return {
       buoi,
       vang: h ? h.buoiVang : 0,
       choDuyet: h ? h.choDuyet : 0,
       ngay: h ? h.ngayCoMat : [],
-      lich: h ? h.lich : [],
+      lich: h ? (h.lich || []).map((b) => Object.assign({}, b, { s: sNgay(b) })) : [],
       hocThu: h ? (h.hocThu || 0) : 0,   // v0.22.0 — buổi có mặt TRƯỚC ngày bắt đầu tính phí (kho-pay.apDungNgayBatDau)
     };
   }
@@ -852,6 +854,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       maDangNhap: hs.ma_dang_nhap || '',
       buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich, hocThu: b.hocThu,
       cat,
+      goc: b.buoi * (cat.donGia || 150000), tho: phiTho(b.buoi, cat),   // v0.24.0 — hóa đơn: học phí gốc + phí sau trần
       expected: phiLe(b.buoi, cat),
     });
     daId.add(maLop + '|' + hs.id);
@@ -873,6 +876,7 @@ function tinhThang(dd, caiDat, giaDinh) {
         kind: 'reg', label: ten, classes: [maLop], names: [ten], maDangNhap: '',
         buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, ngayCoMat: b.ngay, lich: b.lich, hocThu: b.hocThu,
         cat, expected: phiLe(b.buoi, cat), daNghi: !conHoc, lopCu: conHoc,
+        goc: b.buoi * (cat.donGia || 150000), tho: phiTho(b.buoi, cat),   // v0.24.0 — xem vòng 1
       });
       daId.add(maLop + '|' + h.id);
     }
@@ -888,8 +892,10 @@ function tinhThang(dd, caiDat, giaDinh) {
       for (const lop of cacLop) {
         const b = buoiCuaId(lop, m.id);
         const cat = catEm(lop, [tenSoLop(lop, m.id), m.ten]);
-        tong += phiTho(b.buoi, cat);
-        mems.push({ id: m.id, lop, ten: m.ten, buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, lich: b.lich, hocThu: b.hocThu });
+        const tho1 = phiTho(b.buoi, cat);
+        tong += tho1;
+        mems.push({ id: m.id, lop, ten: m.ten, buoi: b.buoi, vang: b.vang, choDuyet: b.choDuyet, lich: b.lich, hocThu: b.hocThu,
+          goc: b.buoi * (cat.donGia || 150000), tho: tho1, tieuHoc: !!cat.tieuHoc });   // v0.24.0 — hóa đơn: gốc + trần từng con
       }
     }
     if (!mems.length) continue;
@@ -2238,7 +2244,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.23.1";
-  G.__MA = "a546fc7";
+  G.__PHIEN_BAN = "0.24.0";
+  G.__MA = "5cefa37";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

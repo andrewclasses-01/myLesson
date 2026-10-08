@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.23.1 (a546fc7) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.24.0 (5cefa37) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -993,19 +993,16 @@
     $('#manHdTong').classList.add('on');
     const khoi = [];
     for (const d of o.dong) {
-      let ds = [];
+      let u = null; let motPhan = 0;
       try {
         const du = await goi('docThang', d.m, d.y);
-        const u = o.loai === 'nha'
+        u = o.loai === 'nha'
           ? du.ketQua.units.find((z) => z.kind === 'fam' && String(z.idNha) === String(o.idNha))
           : du.ketQua.units.find((z) => String(z.hsId) === String(o.hsId));
-        if (u) {
-          ds = u.kind === 'fam'
-            ? (u.members || []).map((mm) => ({ ten: mm.ten, lop: mm.lop, lich: mm.lich, buoi: mm.buoi, vang: mm.vang }))
-            : [{ ten: u.label, lop: (u.classes || [])[0] || '', lich: u.lich, buoi: u.buoi, vang: u.vang }];
-        }
-      } catch (_) { ds = []; }  // tháng quá cũ / không đọc được sổ ngày → in phần tiền, bỏ lịch
-      khoi.push({ m: d.m, y: d.y, soTien: d.soTien, ds });
+        const gd = u && ((du.thang || {}).ghiDe || {})[u.id];
+        motPhan = Math.max(0, Math.round((gd && gd.dongMotPhan) || 0));
+      } catch (_) { u = null; }  // tháng quá cũ / không đọc được sổ ngày → in phần tiền, bỏ lịch
+      khoi.push({ m: d.m, y: d.y, soTien: Number(d.soTien) || 0, u: u || null, motPhan });
     }
     $('#hopHdTong').innerHTML = `
       <h3>Hóa đơn tổng — ${esc(o.ten)}</h3>
@@ -1028,50 +1025,6 @@
     };
   }
 
-  function veHoaDonTong(o, khoi) {
-    const W = 760;
-    const headH = 88; const titleH = 90; const thangDauH = 40; const sumH = 150;
-    const caoKhoi = (k) => thangDauH + Math.max(1, k.ds.length) * caoLichThang(k.m, k.y);
-    const H = headH + titleH + khoi.reduce((s, k) => s + caoKhoi(k), 0) + sumH;
-    const cv = $('#hdTongCanvas'); cv.width = W; cv.height = H;
-    const g = cv.getContext('2d');
-    g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#b91c1c'; g.fillRect(0, 0, W, headH);
-    g.fillStyle = '#ffffff'; g.font = '800 30px Segoe UI'; g.textAlign = 'left';
-    g.fillText('ANDREW CLASSES', 30, 50);
-    g.font = '700 17px Segoe UI'; g.textAlign = 'right';
-    g.fillText('HỌC PHÍ CÒN NỢ', W - 30, 48);
-    g.textAlign = 'left';
-    g.fillStyle = '#0f172a'; g.font = '800 26px Segoe UI';
-    g.fillText(o.ten + (o.loai === 'nha' ? ' (đóng gộp gia đình)' : ''), 30, headH + 40);
-    g.fillStyle = '#526074'; g.font = '600 16px Segoe UI';
-    g.fillText((o.lop ? 'Lớp: ' + o.lop + ' · ' : '') + khoi.length + ' tháng còn nợ', 30, headH + 68);
-    let yy = headH + titleH;
-    for (const k of khoi) {
-      g.fillStyle = '#b91c1c'; g.font = '800 19px Segoe UI'; g.textAlign = 'left';
-      g.fillText(`THÁNG ${k.m}/${k.y}`, 30, yy + 20);
-      g.textAlign = 'right'; g.fillText(vnd(k.soTien) + ' đ', W - 30, yy + 20); g.textAlign = 'left';
-      yy += thangDauH;
-      const caoLich = caoLichThang(k.m, k.y);
-      if (!k.ds.length) {
-        g.fillStyle = '#8592a6'; g.font = '600 15px Segoe UI';
-        g.fillText('(không đọc được lịch học của tháng này)', 30, yy + 20);
-        yy += caoLich;
-      } else {
-        for (const b of k.ds) {
-          const tieuDe = `${b.ten} — ${b.lop} (${b.buoi} buổi có mặt` + (b.vang ? `, ${b.vang} vắng` : '') + ')';
-          veLichThang(g, 30, yy, W - 60, tieuDe, b.lich, k.m, k.y);
-          yy += caoLich;
-        }
-      }
-    }
-    yy += 8;
-    g.strokeStyle = 'rgba(15,23,42,.15)'; g.beginPath(); g.moveTo(30, yy); g.lineTo(W - 30, yy); g.stroke();
-    yy += 40;
-    g.fillStyle = '#0f172a'; g.font = '800 22px Segoe UI'; g.fillText('TỔNG CỘNG CÒN NỢ', 30, yy);
-    g.fillStyle = '#b91c1c'; g.font = '800 34px Segoe UI'; g.textAlign = 'right';
-    g.fillText(vnd(o.tong) + ' đ', W - 30, yy + 2); g.textAlign = 'left';
-  }
 
   function veCaiDat() {
     const cd = S.du.caiDat;
@@ -1587,168 +1540,550 @@
   }
 
   function soNgayThang(m, y) { return new Date(y, m, 0).getDate(); }
-  const CAO_O = 52;
-  function soHangLich(m, y) {
-    const dow = new Date(y, m - 1, 1).getDay();
-    return Math.ceil(((dow === 0 ? 6 : dow - 1) + soNgayThang(m, y)) / 7);
+  function cotNgay1(m, y) { const d = new Date(y, m - 1, 1).getDay(); return d === 0 ? 6 : d - 1; }
+  const HD_TL = 2;
+  const HD_F = { than: '"Be Vietnam Pro", "Segoe UI", sans-serif', mong: 'Montserrat, "Segoe UI", sans-serif', ld: 'Lexend, "Be Vietnam Pro", "Segoe UI", sans-serif' };
+  const fHd = (w, px, ho, nghieng) => (nghieng ? 'italic ' : '') + w + ' ' + px + 'px ' + HD_F[ho || 'than'];
+  const HD_TK = { stk: '102886342975', chu: 'HKD PHAM XUAN NINH' };
+  const HD_QR = 'data:image/png;base64,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';
+  const HD_LOGO = 'data:image/png;base64,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';   // VietinBank 186×48
+  let hdSan = null;
+  function hdChuanBi() {
+    if (hdSan) return hdSan;
+    const mo = (src) => new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = src; });
+    let phong = Promise.resolve();
+    if (document.fonts && document.fonts.load) {
+      const ds = ['400', '500', '600', '700', '800'].map((w) => fHd(w, 16))
+        .concat([fHd(400, 16, 'than', true), fHd(300, 16, 'mong'), fHd(600, 16, 'mong'), fHd(500, 16, 'ld')]);
+      phong = Promise.race([Promise.all(ds.map((f) => document.fonts.load(f, 'Điểm đ').catch(() => null))), new Promise((ok) => setTimeout(ok, 3000))]);
+    }
+    hdSan = Promise.all([mo(HD_QR), mo(HD_LOGO), phong]).then(([qr, logo]) => ({ qr, logo }));
+    return hdSan;
   }
-  function caoLichThang(m, y) { return 32 + 22 + soHangLich(m, y) * CAO_O + 16; }
-  function veLichThang(g, x0, y0, w, tieuDe, lich, mm, yy2) {
-    const m = mm || S.m; const y = yy2 || S.y;
-    const lichMap = new Map((lich || []).map((d) => [d.ngay, d]));
-    g.fillStyle = '#0f172a'; g.font = '700 18px Segoe UI'; g.textAlign = 'left';
-    g.fillText(tieuDe, x0, y0 + 18);
-    const top = y0 + 32;
-    const cols = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
-    const cellW = w / 7;
-    g.font = '600 13px Segoe UI'; g.fillStyle = '#8592a6';
-    cols.forEach((c, i) => { g.textAlign = 'center'; g.fillText(c, x0 + i * cellW + cellW / 2, top + 14); });
-    const soNgay = soNgayThang(m, y);
-    const dowNgay1 = new Date(y, m - 1, 1).getDay(); // 0=CN..6=T7
-    const colNgay1 = dowNgay1 === 0 ? 6 : dowNgay1 - 1;
-    const cellH = CAO_O;
-    const gridTop = top + 22;
-    let soHang = 1;
-    for (let d = 1; d <= soNgay; d++) {
-      const idx = colNgay1 + (d - 1);
-      const col = idx % 7; const row = Math.floor(idx / 7);
-      soHang = Math.max(soHang, row + 1);
-      const cx = x0 + col * cellW; const cy = gridTop + row * cellH;
-      const info = lichMap.get(d);
-      const thu = info && info.hocThu && info.coMat;   // v0.22.0 — buổi học thử (trước ngày bắt đầu tính phí)
-      g.fillStyle = !info ? '#f1f5f9' : thu ? '#e0e7ff' : (info.coMat ? '#dcfce7' : '#fee2e2');
-      g.fillRect(cx + 2, cy + 2, cellW - 4, cellH - 4);
-      g.fillStyle = !info ? '#94a3b8' : thu ? '#3730a3' : (info.coMat ? '#166534' : '#991b1b');
-      g.font = '700 13px Segoe UI'; g.textAlign = 'left';
-      g.fillText(String(d), cx + 6, cy + 15);
-      if (info) {
-        g.textAlign = 'center';
-        if (thu) {
-          veChuVuaO(g, 'Học thử', cx + cellW / 2, cy + 20, cellW - 6, CAO_O - 22);
-        } else if (info.coMat) {
-          g.font = '600 12px Segoe UI';
-          g.fillText('✓', cx + cellW / 2, cy + CAO_O - 12);
-        } else {
-          veChuVuaO(g, (info.lyDo || 'Vắng').trim(), cx + cellW / 2, cy + 20, cellW - 6, CAO_O - 22);
-        }
+  let hdNhap = null;   // canvas nháp để đo
+  function hdDoG() { if (!hdNhap) hdNhap = document.createElement('canvas').getContext('2d'); return hdNhap; }
+  function hdLs(g, ls) { if ('letterSpacing' in g) g.letterSpacing = (ls || 0) + 'px'; }
+  function hdDo(g, s, f, ls) { g.font = f; hdLs(g, ls); const w = g.measureText(String(s)).width; hdLs(g, 0); return w; }
+  function hdChu(g, s, x, y, f, mau, canh, ls) {
+    g.font = f; g.fillStyle = mau; g.textAlign = canh || 'left'; g.textBaseline = 'alphabetic'; hdLs(g, ls);
+    g.fillText(String(s), x + (ls ? (canh === 'right' ? ls : canh === 'center' ? ls / 2 : 0) : 0), y);
+    hdLs(g, 0); g.textAlign = 'left';
+  }
+  function hdKhung(g, x, y, w, h, r, nen, vien, day) {
+    g.beginPath();
+    if (g.roundRect) g.roundRect(x, y, w, h, r); else g.rect(x, y, w, h);
+    if (nen) { g.fillStyle = nen; g.fill(); }
+    if (vien) { g.strokeStyle = vien; g.lineWidth = day || 1; g.stroke(); }
+  }
+  function hdVach(g, x1, y, x2, mau, net, day) {
+    g.save(); g.strokeStyle = mau; g.lineWidth = day || 1; if (net) g.setLineDash([4, 3]);
+    g.beginPath(); g.moveTo(x1, y); g.lineTo(x2, y); g.stroke(); g.restore();
+  }
+  function hdNgat(g, s, f, wMax) {
+    g.font = f; hdLs(g, 0);
+    const ra = []; let cur = '';
+    for (const t of String(s || '').split(/\s+/).filter(Boolean)) {
+      const thu = cur ? cur + ' ' + t : t;
+      if (g.measureText(thu).width <= wMax) { cur = thu; continue; }
+      if (cur) ra.push(cur);
+      cur = t;
+      while (cur.length > 1 && g.measureText(cur).width > wMax) {
+        let i = cur.length - 1;
+        while (i > 1 && g.measureText(cur.slice(0, i)).width > wMax) i--;
+        ra.push(cur.slice(0, i)); cur = cur.slice(i);
       }
     }
-    return (gridTop + soHang * cellH) - y0 + 16; // chiều cao khối đã dùng
+    if (cur) ra.push(cur);
+    return ra.length ? ra : [''];
+  }
+  function hdTich(g, x, y, co, doi) {
+    const k = co / 24;
+    g.save(); g.translate(x, y); g.scale(k, k);
+    g.strokeStyle = '#12b04f'; g.lineWidth = 2.6; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath();
+    if (doi) { g.moveTo(3, 12.6); g.lineTo(7.4, 16.9); g.lineTo(17, 7.4); g.moveTo(14.4, 15.3); g.lineTo(16, 16.9); g.lineTo(25.6, 7.4); }
+    else { g.moveTo(5, 12.6); g.lineTo(9.4, 16.9); g.lineTo(19, 7.4); }
+    g.stroke(); g.restore();
+  }
+  function hdIcon(g, cx, cy, nha) {
+    g.save();
+    g.fillStyle = '#e6f6f3'; g.beginPath(); g.arc(cx, cy, 30, 0, Math.PI * 2); g.fill();
+    g.translate(cx - 15, cy - 15); g.scale(1.25, 1.25);
+    g.strokeStyle = '#0f766e'; g.lineWidth = 1.8; g.lineCap = 'round'; g.lineJoin = 'round';
+    const ds = nha ? ['M3 19.5c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6', 'M15.6 14.3c.5-.1 1-.2 1.6-.2 2.6 0 4.3 1.9 4.3 4.6']
+      : ['M21.4 10.2 12 5 2.6 10.2 12 15.4l9.4-5.2z', 'M6.5 12.4v4.2c0 1.6 2.5 3 5.5 3s5.5-1.4 5.5-3v-4.2', 'M21.4 10.2v5'];
+    for (const p of ds) g.stroke(new Path2D(p));
+    if (nha) { g.beginPath(); g.arc(9, 8, 3.2, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.arc(17.2, 9.4, 2.5, 0, Math.PI * 2); g.stroke(); }
+    g.restore();
+  }
+  function hoaDauHd(s) { s = String(s || '').trim(); return s ? s[0].toLocaleUpperCase('vi') + s.slice(1) : ''; }
+  function khongDauHd(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
+  const tienHd = (n) => vnd(Math.round(n || 0)) + ' đ';
+  function hanNopHd(m, y) { return '16/' + String(m === 12 ? 1 : m + 1).padStart(2, '0') + '/' + (m === 12 ? y + 1 : y); }
+  function gomConHd(mems) {
+    const map = new Map();
+    for (const x of mems || []) {
+      const k = String(x.id);
+      const o = map.get(k) || { so: x.id, ten: x.ten, lop: [], buoi: 0 };
+      if (x.lop && !o.lop.includes(x.lop)) o.lop.push(x.lop);
+      o.buoi += x.buoi || 0;
+      map.set(k, o);
+    }
+    return [...map.values()].map((o) => Object.assign(o, { lop: o.lop.join(', ') }));
   }
 
-  function veChuVuaO(g, chu, xGiua, yTren, wMax, hMax) {
-    for (const co of [11, 10, 9, 8]) {
-      g.font = '600 ' + co + 'px Segoe UI';
-      const cao = co + 2;
-      const dong = ngatDong(g, chu, wMax);
-      const quaRong = dong.some((d) => g.measureText(d).width > wMax);
-      if (!quaRong && dong.length * cao <= hMax) {
-        dong.forEach((d, i) => g.fillText(d, xGiua, yTren + (i + 1) * cao));
-        return;
+  function hdVe(cv, W, veTat) {
+    const H = Math.ceil(veTat(hdDoG()));
+    cv.width = Math.ceil(W * HD_TL); cv.height = Math.ceil(H * HD_TL);
+    const g = cv.getContext('2d');
+    g.setTransform(HD_TL, 0, 0, HD_TL, 0, 0);
+    g.imageSmoothingQuality = 'high';
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
+    veTat(g);
+  }
+
+  function hdDau(g, W, y0, d) {
+    const top = y0 + 30; const R = W - 32;
+    const coT = d.coThang || 30;
+    const fT1 = fHd(300, coT, 'mong'); const fT2 = fHd(600, coT, 'mong');
+    const wT2 = hdDo(g, d.thang, fT2);
+    const rw = Math.max(hdDo(g, d.nhan, fHd(700, 12.5), 2.25), hdDo(g, 'Tháng ', fT1) + wT2);
+    const xVach = R - rw - 18;
+    const xChu = 32 + 60 + 16; const wChu = xVach - 16 - xChu;
+    let hKhoi;
+    if (!d.nha) {
+      hKhoi = 64;
+      let co = 28; while (co > 18 && hdDo(g, d.ten, fHd(800, co)) > wChu) co--;
+      hdIcon(g, 62, top + 30, false);
+      hdChu(g, d.ten, xChu, top + 30, fHd(800, co), '#152036');
+      hdChu(g, `Lớp ${d.lop} · Mã số học sinh ${d.so}`, xChu, top + 56, fHd(400, 15), '#5d6a82');
+    } else {
+      const con = d.con || [];
+      hKhoi = 52 + con.length * 22;
+      const tenNha = con.map((c) => c.ten).join(' + ');
+      let co = 26; while (co > 16 && hdDo(g, tenNha, fHd(800, co)) > wChu) co--;
+      hdIcon(g, 62, top + 30, true);
+      hdChu(g, 'GIA ĐÌNH', xChu, top + 12, fHd(700, 13), '#8b96a9', 'left', 1.8);
+      hdChu(g, tenNha, xChu, top + 42, fHd(800, co), '#152036');
+      con.forEach((c, i) => {
+        const yb = top + 68 + i * 22;
+        hdChu(g, c.ten, xChu, yb, fHd(700, 14.5), '#152036');
+        hdChu(g, ` · Lớp ${c.lop} · Mã số ${c.so}`, xChu + hdDo(g, c.ten, fHd(700, 14.5)), yb, fHd(400, 14.5), '#5d6a82');
+      });
+    }
+    const giua = top + hKhoi / 2;
+    g.fillStyle = '#e2e8f0'; g.fillRect(xVach, top + 2, 2, hKhoi - 4);
+    hdChu(g, d.nhan, R, giua - 8, fHd(700, 12.5), d.mauNhan || '#0f766e', 'right', 2.25);
+    hdChu(g, d.thang, R, giua + 22, fT2, '#152036', 'right');
+    hdChu(g, 'Tháng ', R - wT2, giua + 22, fT1, '#152036', 'right');
+    return 30 + hKhoi + 6;
+  }
+
+  function hdHangThu(g, x, y, cw, gap, co, cao) {
+    ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].forEach((t, i) => {
+      const cx = x + i * (cw + gap); const cuoi = i >= 5;
+      hdChu(g, t, cx + cw / 2, y + cao - (co > 13 ? 11 : 7), fHd(800, co), cuoi ? '#0f766e' : '#334155', 'center', co * 0.06);
+      g.fillStyle = cuoi ? '#99d6cf' : '#e2e8f0'; g.fillRect(cx, y + cao - 2, cw, 2);
+    });
+    return cao;
+  }
+
+  function hdLich(g, x, y, w, m, yr, ds, nha) {
+    const gap = 8; const cw = (w - 6 * gap) / 7;
+    let h = hdHangThu(g, x, y, cw, gap, 15, 36) + gap;
+    const lech = cotNgay1(m, yr); const soNgay = soNgayThang(m, yr);
+    const fLd = fHd(500, nha ? 11.5 : 12.5, 'ld');
+    const ngay = [];
+    for (let d = 1; d <= soNgay; d++) {
+      const hom = [];
+      for (const c of ds) { const b = (c.lich || []).find((z) => z.ngay === d); if (b) hom.push({ ten: c.ten, b }); }
+      ngay.push(hom);
+    }
+    const dongNha = (hom) => {
+      const coMat = hom.some((z) => z.b.coMat);
+      return hom.map((z) => {
+        if (z.b.coMat) return { z, kieu: z.b.hocThu ? 'thu' : 'co', h: 15 };
+        const ld = hdNgat(g, hoaDauHd(z.b.lyDo) || 'Vắng', fLd, cw - 16 - (coMat ? 8 : 0));
+        return { z, kieu: 'vang', nen: coMat, ld, h: (coMat ? 8 : 0) + 15 + 2 + ld.length * 14 };
+      });
+    };
+    const veTen = (s, x0, yb, wMax, mau) => {
+      let co = 12.5; while (co > 9.5 && hdDo(g, s, fHd(600, co)) > wMax) co -= 0.5;
+      hdChu(g, s, x0, yb, fHd(600, co), mau);
+    };
+    const soHang = Math.ceil((lech + soNgay) / 7);
+    for (let r = 0; r < soHang; r++) {
+      let ch = nha ? 104 : 78;
+      const noiDung = {};
+      for (let c = 0; c < 7; c++) {
+        const d = r * 7 + c - lech + 1; if (d < 1 || d > soNgay) continue;
+        const hom = ngay[d - 1]; if (!hom.length) continue;
+        if (nha) {
+          const dd = dongNha(hom); noiDung[d] = dd;
+          ch = Math.max(ch, 33 + dd.reduce((s, z) => s + z.h, 0) + 5 * (dd.length - 1) + 9);
+        } else if (!hom[0].b.coMat) {
+          const ld = hdNgat(g, hoaDauHd(hom[0].b.lyDo) || 'Vắng', fLd, cw - 16); noiDung[d] = ld;
+          ch = Math.max(ch, 33 + ld.length * 15.6 + 8);
+        }
+      }
+      const cy = y + h;
+      for (let c = 0; c < 7; c++) {
+        const d = r * 7 + c - lech + 1; if (d < 1 || d > soNgay) continue;
+        const cx = x + c * (cw + gap); const hom = ngay[d - 1];
+        if (!hom.length) {
+          hdKhung(g, cx + 0.75, cy + 0.75, cw - 1.5, ch - 1.5, 15.25, '#ffffff', '#eef1f5', 1.5);
+          hdChu(g, String(d), cx + 10, cy + 26, fHd(700, 20), '#b3bccb');
+          continue;
+        }
+        const coMat = hom.some((z) => z.b.coMat);
+        const thuHet = hom.every((z) => z.b.coMat && z.b.hocThu);
+        hdKhung(g, cx, cy, cw, ch, 16, thuHet ? '#ede9fe' : coMat ? '#e7f6ee' : '#fdeceb');
+        hdChu(g, String(d), cx + 10, cy + 26, fHd(700, 20), thuHet ? '#5b21b6' : coMat ? '#14532d' : '#9f1d1d');
+        if (!nha) {
+          const b = hom[0].b;
+          if (b.coMat && b.hocThu) hdChu(g, 'Học thử', cx + cw / 2, cy + ch - 11, fHd(500, 12.5, 'ld'), '#5b21b6', 'center');
+          else if (b.coMat) {
+            const s = Math.max(1, Math.round(b.s || 1));
+            let tx = cx + cw - 9 - (s * 24 + (s - 1) * 4);
+            for (let i = 0; i < s; i++) { hdTich(g, tx, cy + ch - 9 - 24, 24); tx += 28; }
+          } else {
+            const ld = noiDung[d];
+            ld.forEach((l, i) => hdChu(g, l, cx + cw / 2, cy + ch - 11 - (ld.length - 1 - i) * 15.6, fLd, '#9f1d1d', 'center'));
+          }
+          continue;
+        }
+        const dd = noiDung[d];
+        const tong = dd.reduce((s, z) => s + z.h, 0) + 5 * (dd.length - 1);
+        let yy = cy + 33 + ((ch - 33 - 9) - tong) / 2;
+        for (const z of dd) {
+          if (z.kieu === 'vang') {
+            let x0 = cx + 8; let ty = yy; let wT = cw - 16;
+            if (z.nen) { hdKhung(g, cx + 5, yy, cw - 10, z.h, 10, '#fbd5d1'); x0 = cx + 11; ty = yy + 4; wT = cw - 22; }
+            veTen(z.z.ten, x0, ty + 12, wT, '#9f1d1d');
+            z.ld.forEach((l, i) => hdChu(g, l, x0, ty + 15 + 2 + (i + 1) * 14 - 3, fLd, '#9f1d1d'));
+          } else {
+            const doi = (z.z.b.s || 1) > 1; const tw = z.kieu === 'thu' ? hdDo(g, 'học thử', fHd(600, 10.5)) : doi ? 15 * 1.45 : 15;
+            veTen(z.z.ten, cx + 8, yy + 12, cw - 16 - tw - 3, z.kieu === 'thu' ? '#5b21b6' : '#14532d');
+            if (z.kieu === 'thu') hdChu(g, 'học thử', cx + cw - 8, yy + 12, fHd(600, 10.5), '#5b21b6', 'right');
+            else hdTich(g, cx + cw - 8 - tw, yy, 15, doi);
+          }
+          yy += z.h + 5;
+        }
+      }
+      h += ch + (r < soHang - 1 ? gap : 0);
+    }
+    return h;
+  }
+
+  function hdLichNho(g, x, y, w, m, yr, lich) {
+    const gap = 4; const cw = (w - 6 * gap) / 7; const ch = 40;
+    let h = hdHangThu(g, x, y, cw, gap, 11.5, 22) + gap;
+    const lech = cotNgay1(m, yr); const soNgay = soNgayThang(m, yr); const vang = [];
+    for (let d = 1; d <= soNgay; d++) {
+      const i = lech + d - 1;
+      const cx = x + (i % 7) * (cw + gap); const cy = y + h + Math.floor(i / 7) * (ch + gap);
+      const b = (lich || []).find((z) => z.ngay === d);
+      if (!b) {
+        hdKhung(g, cx + 0.5, cy + 0.5, cw - 1, ch - 1, 9.5, '#ffffff', '#eef1f5', 1);
+        hdChu(g, String(d), cx + 6, cy + 15, fHd(700, 13), '#b3bccb');
+      } else if (b.coMat && b.hocThu) {
+        hdKhung(g, cx, cy, cw, ch, 10, '#ede9fe');
+        hdChu(g, String(d), cx + 6, cy + 15, fHd(700, 13), '#5b21b6');
+        hdChu(g, 'Thử', cx + cw - 5, cy + ch - 6, fHd(700, 10.5), '#5b21b6', 'right');
+      } else if (b.coMat) {
+        hdKhung(g, cx, cy, cw, ch, 10, '#e7f6ee');
+        hdChu(g, String(d), cx + 6, cy + 15, fHd(700, 13), '#14532d');
+        const doi = (b.s || 1) > 1;
+        hdTich(g, cx + cw - 4 - (doi ? 23.2 : 16), cy + ch - 3 - 16, 16, doi);
+      } else {
+        vang.push(`${d}/${m}: ${hoaDauHd(b.lyDo) || 'Vắng'}`);
+        hdKhung(g, cx, cy, cw, ch, 10, '#fdeceb');
+        hdChu(g, String(d), cx + 6, cy + 15, fHd(700, 13), '#9f1d1d');
+        hdChu(g, 'Vắng', cx + cw - 5, cy + ch - 6, fHd(700, 11), '#b42318', 'right');
       }
     }
-    g.font = '600 8px Segoe UI';
-    const dong = ngatDongCung(g, chu, wMax);
-    dong.forEach((d, i) => g.fillText(d, xGiua, yTren + (i + 1) * 10));
-  }
-  function ngatDong(g, chu, wMax) {
-    const tu = chu.split(/\s+/).filter(Boolean);
-    const ds = []; let cur = '';
-    for (const t of tu) {
-      const thu = cur ? cur + ' ' + t : t;
-      if (cur && g.measureText(thu).width > wMax) { ds.push(cur); cur = t; } else cur = thu;
+    const soHang = Math.ceil((lech + soNgay) / 7);
+    h += soHang * ch + (soHang - 1) * gap;
+    if (vang.length) {
+      h += 8;
+      for (const v of vang) for (const l of hdNgat(g, v, fHd(500, 12.5, 'ld'), w)) { h += 18; hdChu(g, l, x, y + h - 5, fHd(500, 12.5, 'ld'), '#9f1d1d'); }
     }
-    if (cur) ds.push(cur);
-    return ds.length ? ds : [chu];
+    return h;
   }
-  function ngatDongCung(g, chu, wMax) {
-    const ds = []; let cur = '';
-    for (const c of chu) {
-      if (cur && g.measureText(cur + c).width > wMax) { ds.push(cur); cur = c; } else cur += c;
+
+  function khoanGiamHd(u) {
+    const ct = u.chinhTay; const ra = [];
+    const them = (ten, mot, tru) => { if (tru > 0) ra.push({ ten, mot, tru }); };
+    let goc; let tho; let pct; let tenPct; let motPct;
+    if (u.kind === 'fam') {
+      const mems = u.members || [];
+      goc = mems.reduce((s, x) => s + (x.goc || 0), 0);
+      tho = u.tho !== undefined ? Number(u.tho) : goc;
+      for (const x of mems) {
+        if ((x.tho || 0) < (x.goc || 0)) {
+          const th = x.tieuHoc ? ' tiểu học' : '';
+          them(`Giảm theo học phí tối đa${th} (${x.ten})`, `học phí tối đa${th} (${x.ten})`, x.goc - x.tho);
+        }
+      }
+      pct = ct && ct.coMien ? ct.pct : (u.giamPct || 0);
+      tenPct = 'Giảm gia đình: ' + pct + '%'; motPct = pct + '% gia đình';
+    } else {
+      const cat = u.cat || {};
+      goc = u.goc !== undefined ? u.goc : (u.buoi || 0) * (cat.donGia || 150000);
+      tho = u.tho !== undefined ? u.tho : goc;
+      if (tho < goc) them(cat.tieuHoc ? 'Giảm theo học phí tối đa tiểu học' : 'Giảm theo học phí tối đa',
+        cat.tieuHoc ? 'học phí tối đa tiểu học' : 'theo học phí tối đa', goc - tho);
+      pct = ct && ct.coMien ? ct.pct : (cat.giamPct || 0);
+      tenPct = 'Giảm ưu tiên: ' + pct + '%'; motPct = pct + '%';
     }
-    if (cur) ds.push(cur);
-    return ds;
+    const sauMien = ct ? ct.sauMien : u.expected;
+    const lechTron = tho - sauMien;
+    if (lechTron > 0) {
+      if (pct > 0) them(tenPct, motPct, lechTron);
+      else if (ra.length) ra[ra.length - 1].tru += lechTron;
+      else them('Làm tròn học phí', 'làm tròn học phí', lechTron);
+    }
+    const gt = ct && ct.giamThem;
+    if (gt && gt.tru > 0) {
+      const ly = hoaDauHd(gt.lyDo);
+      them('Giảm thêm' + (gt.kieu === 'pct' ? ': ' + gt.giaTri + '%' : '') + (ly ? ' (' + ly + ')' : ''),
+        gt.kieu === 'pct' ? gt.giaTri + '%' + (ly ? ' · ' + ly : '') : (ly || 'giảm thêm'), gt.tru);
+    }
+    return { goc, khoan: ra };
+  }
+
+  function hdTongKet(g, x, y, w, tk) {
+    const L = x + 22; const R = x + w - 22; let yy = y + 6; let dau = true;
+    const NH = fHd(600, 17);
+    const dong = (nhan, veGt, cao) => {
+      if (!dau) hdVach(g, L, yy, R, '#e3e8f1', true, 1);
+      const yb = yy + cao / 2 + 6;
+      hdChu(g, nhan, L, yb, NH, '#56627a'); veGt(yb); yy += cao; dau = false;
+    };
+    const phai = (s, f, mau) => (yb) => hdChu(g, s, R, yb, f, mau, 'right');
+    if (tk.dongBuoi.length === 1 && !tk.dongBuoi[0].ten) dong('Tổng số buổi học', phai(tk.dongBuoi[0].buoi + ' buổi', fHd(800, 18), '#152036'), 46);
+    else {
+      dong('Tổng số buổi học', (yb) => {
+        let co = 16; let ph;
+        const dung = () => {
+          ph = [];
+          tk.dongBuoi.forEach((c, i) => {
+            if (i) ph.push([' · ', fHd(400, co), '#c3cad6']);
+            ph.push([c.ten, fHd(600, co), '#56627a'], [' ' + c.buoi + ' buổi', fHd(400, co), '#152036']);
+          });
+          return ph.reduce((s, p) => s + hdDo(g, p[0], p[1]), 0);
+        };
+        let tw = dung();
+        while (co > 12 && tw > R - L - 170) { co -= 0.5; tw = dung(); }
+        let xx = R - tw;
+        for (const p of ph) { hdChu(g, p[0], xx, yb, p[1], p[2]); xx += hdDo(g, p[0], p[1]); }
+      }, 46);
+    }
+    if (tk.khoan.length) {
+      dong('Học phí gốc', phai(tienHd(tk.goc), fHd(700, 18), '#152036'), 46);
+      const mot = tk.khoan.length === 1;
+      const hb = mot ? 46 : 12 + 26 + 4 + tk.khoan.length * 24 + 10;
+      yy += 2;
+      hdKhung(g, L, yy, R - L, hb, 16, '#eef9f2');
+      const iL = L + 16; const iR = R - 16;
+      const fNhan = fHd(700, 14);
+      if (mot) {
+        const k = tk.khoan[0]; const yb = yy + 29;
+        hdChu(g, 'MIỄN GIẢM:', iL, yb, fNhan, '#2f7a52', 'left', 1.4);
+        hdChu(g, k.mot, iL + hdDo(g, 'MIỄN GIẢM:', fNhan, 1.4) + 10, yb, fHd(600, 16), '#245c3f');
+        hdChu(g, '−' + tienHd(k.tru), iR, yb, fHd(700, 17), '#0f8a4a', 'right');
+      } else {
+        const yb = yy + 12 + 17;
+        const tong = tk.khoan.reduce((s, k) => s + k.tru, 0);
+        hdChu(g, 'MIỄN GIẢM', iL, yb, fNhan, '#2f7a52', 'left', 1.4);
+        const so = '−' + tienHd(tong);
+        hdChu(g, so, iR, yb, fHd(700, 17), '#0f8a4a', 'right');
+        hdChu(g, 'Tổng: ', iR - hdDo(g, so, fHd(700, 17)), yb, fHd(600, 14), '#2f7a52', 'right');
+        const top = yy + 12 + 26 + 4;
+        g.fillStyle = '#c6e8d3'; g.fillRect(iL + 4, top, 2, tk.khoan.length * 24);
+        tk.khoan.forEach((k, i) => {
+          const yb2 = top + i * 24 + 17;
+          hdChu(g, k.ten, iL + 20, yb2, fHd(400, 14.5, 'than', true), '#3f6b54');
+          hdChu(g, '−' + tienHd(k.tru), iR, yb2, fHd(400, 14.5, 'than', true), '#2f7a52', 'right');
+        });
+      }
+      yy += hb + 6;
+    }
+    dong('Học phí', phai(tienHd(tk.cuoi), fHd(800, 24), '#2557d6'), 54);
+    for (const [a, b] of tk.phu || []) dong(a, phai(b, fHd(700, 17), '#152036'), 46);
+    dong(tk.cuoiDong.nhan, phai(tk.cuoiDong.gt, fHd(800, 18), tk.cuoiDong.mau), 46);
+    yy += 6;
+    hdKhung(g, x + 0.75, y + 0.75, w - 1.5, yy - y - 1.5, 22, null, '#e3e8f1', 1.5);
+    return yy - y;
+  }
+
+  function hdTongKetNo(g, x, y, w, th, tong, han) {
+    const L = x + 22; const R = x + w - 22; let yy = y + 6;
+    hdChu(g, 'CÁC THÁNG CHƯA ĐÓNG', L, yy + 22, fHd(700, 13), '#8b96a9', 'left', 1.56); yy += 32;
+    for (const t of th) {
+      hdVach(g, L, yy, R, '#e3e8f1', true, 1);
+      const yb = yy + 26; const nh = `Học phí tháng ${t.m}/${t.y}`;
+      hdChu(g, nh, L, yb, fHd(600, 17), '#56627a');
+      if (t.motPhan > 0) hdChu(g, ` (còn lại sau khi đã đóng ${tienHd(t.motPhan)})`, L + hdDo(g, nh, fHd(600, 17)), yb, fHd(400, 14, 'than', true), '#8b96a9');
+      hdChu(g, tienHd(t.soTien), R, yb, fHd(700, 18), '#152036', 'right');
+      yy += 40;
+    }
+    hdVach(g, L, yy, R, '#e3e8f1', false, 1.5);
+    hdChu(g, 'Tổng cộng cần đóng', L, yy + 35, fHd(800, 18), '#152036');
+    hdChu(g, tienHd(tong), R, yy + 36, fHd(800, 26), '#2557d6', 'right');
+    yy += 54;
+    hdVach(g, L, yy, R, '#e3e8f1', true, 1);
+    hdChu(g, 'Hạn nộp', L, yy + 29, fHd(600, 17), '#56627a');
+    hdChu(g, han, R, yy + 29, fHd(800, 18), '#d97706', 'right');
+    yy += 46 + 6;
+    hdKhung(g, x + 0.75, y + 0.75, w - 1.5, yy - y - 1.5, 22, null, '#e3e8f1', 1.5);
+    return yy - y;
+  }
+
+  function hdNganHang(g, x, y, w, noiDung, anh) {
+    const h = 200;
+    hdKhung(g, x, y, w, h, 24, '#f6f8fc');
+    const fV = [fHd(600, 18), fHd(500, 14.5), fHd(600, 14.5)]; const ls = [0.9, 0.44, 0.73];
+    const gt = [HD_TK.stk.replace(/(\d{4})(?=\d)/g, '$1 '), HD_TK.chu, noiDung];
+    const wv = Math.max(...gt.map((s, i) => hdDo(g, s, fV[i], ls[i])));
+    const tw = 104 + 10 + wv; const gx = x + (w - (160 + 22 + tw)) / 2;
+    const qy = y + 20;
+    g.save(); g.shadowColor = 'rgba(20,30,60,.10)'; g.shadowBlur = 6; g.shadowOffsetY = 1;
+    hdKhung(g, gx, qy, 160, 160, 18, '#ffffff'); g.restore();
+    if (anh && anh.qr) g.drawImage(anh.qr, gx + 10, qy + 10, 140, 140);
+    const tx = gx + 182; const ty = y + 25;
+    if (anh && anh.logo) g.drawImage(anh.logo, tx, ty, 20 * anh.logo.width / anh.logo.height, 20);
+    ['Số tài khoản', 'Chủ tài khoản', 'Nội dung'].forEach((nh, i) => {
+      const ry = ty + 30 + i * 40;
+      g.fillStyle = '#e6eaf2'; g.fillRect(tx, ry, tw, 1);
+      hdChu(g, nh, tx, ry + 26, fHd(500, 13), '#8b96a9');
+      hdChu(g, gt[i], tx + 114, ry + 26, fV[i], i === 0 ? '#1b2742' : i === 1 ? '#2c3850' : '#2557d6', 'left', ls[i]);
+    });
+    return h;
+  }
+  function hdSlogan(g, W, y) {
+    hdChu(g, 'ANDREW CLASSES', W / 2, y + 37, fHd(300, 15, 'mong'), '#8f9bb0', 'center', 6.3);
+    return 63;
+  }
+  function noiDungCkHd(ten, lop, conNha) {
+    if (conNha) return conNha.map((c) => khongDauHd(c.ten).toUpperCase()).join(' ');
+    return (khongDauHd(ten).toUpperCase() + ' ' + String(lop || '').replace(/-/g, '')).trim();
+  }
+
+  function veHoaDonMot(cv, u, kq, m, y, anh) {
+    const nha = u.kind === 'fam'; const W = nha ? 880 : 760;
+    const conNha = nha ? gomConHd(u.members) : null;
+    const dau = nha
+      ? { nha: true, con: conNha, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` }
+      : { ten: u.label, lop: (u.classes || [])[0] || '', so: u.hsId, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` };
+    const lichDs = nha ? (u.members || []).map((x) => ({ ten: x.ten, lich: x.lich })) : [{ ten: u.label, lich: u.lich }];
+    const { goc, khoan } = khoanGiamHd(u);
+    const phu = [];
+    if (!nha) {
+      const tu = tamUngCuaHs(u.hsId);
+      if (tu) {
+        const bg = (tu.lichSu || []).filter((h) => h.loai === 'tru' && h.m === m && h.y === y).pop();
+        phu.push(['Số dư học phí đóng trước' + (bg ? '' : ' (chưa trừ tháng này)'), tienHd(bg ? bg.sauDu : tu.soDu)]);
+      }
+    }
+    const ct = kq.chotTay && kq.chotTay[u.id];
+    const cuoiDong = ct ? { nhan: 'Trạng thái', gt: ct.loai === 'tang' ? '★ Được tặng học phí' : '★ Đã chốt xong phí', mau: ct.loai === 'tang' ? '#db2777' : '#15803d' }
+      : (u.id in kq.done) ? { nhan: 'Trạng thái', gt: '✓ Đã nhận — cảm ơn phụ huynh', mau: '#15803d' }
+        : { nhan: 'Hạn nộp', gt: hanNopHd(m, y), mau: '#d97706' };
+    const tk = { dongBuoi: nha ? conNha.map((c) => ({ ten: c.ten, buoi: c.buoi })) : [{ buoi: u.buoi }], goc, khoan, cuoi: u.expected, phu, cuoiDong };
+    const nd = noiDungCkHd(u.label, (u.classes || [])[0], conNha);
+    hdVe(cv, W, (g) => {
+      let yy = hdDau(g, W, 0, dau);
+      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, lichDs, nha);
+      yy += 22; yy += hdTongKet(g, 32, yy, W - 64, tk);
+      yy += 22; yy += hdNganHang(g, 32, yy, W - 64, nd, anh);
+      return yy + hdSlogan(g, W, yy);
+    });
+  }
+
+  function veHoaDonTong(o, khoi) {
+    const cv = $('#hdTongCanvas');
+    hdChuanBi().then((anh) => { if (document.body.contains(cv)) veHoaDonNo(cv, o, khoi, anh); });
+  }
+  function veHoaDonNo(cv, o, khoi, anh) {
+    const nha = o.loai === 'nha'; const W = nha ? 880 : 760;
+    const coU = khoi.filter((k) => k.u); const uMoi = coU.length ? coU[coU.length - 1].u : null;
+    const namCuoi = khoi.length ? khoi[khoi.length - 1].y : S.y;
+    const thang = khoi.every((k) => k.y === namCuoi) ? khoi.map((k) => k.m).join(' + ') + '/' + namCuoi : khoi.map((k) => k.m + '/' + k.y).join(' + ');
+    const coThang = khoi.length > 3 ? 22 : 28;
+    const conNha = nha ? (uMoi ? gomConHd(uMoi.members) : [{ ten: o.ten, lop: o.lop || '', so: '' }]) : null;
+    const lop = (uMoi && (uMoi.classes || [])[0]) || o.lop || '';
+    const dau = nha ? { nha: true, con: conNha, nhan: 'HỌC PHÍ CHƯA ĐÓNG', mauNhan: '#c2410c', thang, coThang }
+      : { ten: o.ten, lop, so: o.hsId, nhan: 'HỌC PHÍ CHƯA ĐÓNG', mauNhan: '#c2410c', thang, coThang };
+    const th = khoi.map((k) => {
+      const ph = [];
+      if (k.u) {
+        const { goc, khoan } = khoanGiamHd(k.u);
+        ph.push(nha ? gomConHd(k.u.members).map((c) => `${c.ten} ${c.buoi} buổi`).join(' · ') : `${k.u.buoi} buổi`);
+        ph.push('Học phí gốc ' + tienHd(goc));
+        const tongGiam = khoan.reduce((s, x) => s + x.tru, 0);
+        const p = khoan.length === 1 ? /^(\d+)%/.exec(khoan[0].mot) : null;
+        if (tongGiam > 0) ph.push('Miễn giảm ' + (p ? p[1] + '% ' : '') + '−' + tienHd(tongGiam));
+        if (k.motPhan > 0) ph.push('Đã đóng ' + tienHd(k.motPhan));
+      }
+      return { m: k.m, y: k.y, u: k.u, soTien: k.soTien, motPhan: k.motPhan, chiTiet: ph.join(' · ') };
+    });
+    const tong = th.reduce((s, t) => s + t.soTien, 0);
+    const nd = noiDungCkHd(o.ten, lop, conNha);
+    const cuoi = khoi.length ? khoi[khoi.length - 1] : { m: S.m, y: S.y };
+    const moc = (cuoi.y * 12 + cuoi.m) > (S.y * 12 + S.m) ? cuoi : { m: S.m, y: S.y };
+    const theThang = (g, x, y, w, t, hCo) => {
+      let yy = y + 14;
+      hdChu(g, 'Tháng ', x + 14, yy + 20, fHd(300, 22, 'mong'), '#152036');
+      hdChu(g, `${t.m}/${t.y}`, x + 14 + hdDo(g, 'Tháng ', fHd(300, 22, 'mong')), yy + 20, fHd(600, 22, 'mong'), '#152036');
+      yy += 28;
+      const dongCt = t.chiTiet ? hdNgat(g, t.chiTiet, fHd(400, 12.5), w - 28) : [];
+      dongCt.forEach((l, i) => hdChu(g, l, x + 14, yy + 13 + i * 17, fHd(400, 12.5), '#6b778d'));
+      yy += dongCt.length * 17 + 8;
+      if (t.u) yy += hdLichNho(g, x + 14, yy, w - 28, t.m, t.y, t.u.lich);
+      else { hdChu(g, '(không đọc được lịch học tháng này)', x + 14, yy + 16, fHd(500, 13), '#8592a6'); yy += 24; }
+      yy += 14;
+      const h = Math.max(yy - y, hCo || 0);
+      hdKhung(g, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 20, null, '#e3e8f1', 1.5);
+      return h;
+    };
+    hdVe(cv, W, (g) => {
+      let yy = hdDau(g, W, 0, dau);
+      yy += 22; yy += hdTongKetNo(g, 32, yy, W - 64, th, tong, hanNopHd(moc.m, moc.y));
+      if (!nha) {
+        yy += 18;
+        const cw = (W - 64 - 16) / 2;
+        for (let i = 0; i < th.length; i += 2) {
+          const cap = th.slice(i, i + 2);
+          const hRow = Math.max(...cap.map((t) => theThang(hdDoG(), 0, 0, cw, t, 0)));
+          const x0 = cap.length === 1 ? 32 + (W - 64 - cw) / 2 : 32;   // tháng lẻ cuối nằm giữa
+          cap.forEach((t, j) => theThang(g, x0 + j * (cw + 16), yy, cw, t, hRow));
+          yy += hRow + (i + 2 < th.length ? 16 : 0);
+        }
+      } else {
+        for (const t of th) {
+          yy += 20;
+          hdChu(g, 'Tháng ', 32, yy + 20, fHd(300, 22, 'mong'), '#152036');
+          hdChu(g, `${t.m}/${t.y}`, 32 + hdDo(g, 'Tháng ', fHd(300, 22, 'mong')), yy + 20, fHd(600, 22, 'mong'), '#152036');
+          yy += 28;
+          const dongCt = t.chiTiet ? hdNgat(g, t.chiTiet, fHd(400, 14), W - 64) : [];
+          dongCt.forEach((l, i) => hdChu(g, l, 32, yy + 14 + i * 19, fHd(400, 14), '#6b778d'));
+          yy += dongCt.length * 19 + 10;
+          if (t.u) yy += hdLich(g, 32, yy, W - 64, t.m, t.y, (t.u.members || []).map((x) => ({ ten: x.ten, lich: x.lich })), true);
+          else { hdChu(g, '(không đọc được lịch học tháng này)', 32, yy + 16, fHd(500, 14), '#8592a6'); yy += 24; }
+        }
+      }
+      yy += 22; yy += hdNganHang(g, 32, yy, W - 64, nd, anh);
+      return yy + hdSlogan(g, W, yy);
+    });
   }
 
   function veHoaDon(uid) {
     const kq = S.du.ketQua;
     const u = kq.units.find((x) => x.id === uid);
     if (!u) return;
-    const blocks = u.kind === 'fam'
-      ? (u.members || []).map((m) => ({ ten: m.ten, lop: m.lop, lich: m.lich, buoi: m.buoi, vang: m.vang, choDuyet: m.choDuyet, hocThu: m.hocThu, so: m.id }))
-      : [{ ten: u.label, lop: u.classes[0], lich: u.lich, buoi: u.buoi, vang: u.vang, choDuyet: u.choDuyet, hocThu: u.hocThu, so: u.hsId }];
-    const W = 760;
-    const ctH = u.chinhTay ? 64 : 0;   // v0.23.0 — thêm chỗ cho dòng Miễn giảm / Giảm thêm
-    const headH = 88; const titleH = 90; const sumH = 190 + ctH;
-    const calH = caoLichThang(S.m, S.y);          // v0.7.0 — chiều cao THẬT, không hằng số cứng
-    const H = headH + titleH + blocks.length * calH + sumH;
-    const cv = $('#hdCanvas'); cv.width = W; cv.height = H;
-    const g = cv.getContext('2d');
-    g.fillStyle = '#ffffff'; g.fillRect(0, 0, W, H);
-    g.fillStyle = '#2563eb'; g.fillRect(0, 0, W, headH);
-    g.fillStyle = '#ffffff'; g.font = '800 30px Segoe UI'; g.textAlign = 'left';
-    g.fillText('ANDREW CLASSES', 30, 50);
-    g.font = '700 17px Segoe UI'; g.textAlign = 'right';
-    g.fillText(`HỌC PHÍ THÁNG ${S.m}/${S.y}`, W - 30, 48);
-    g.textAlign = 'left';
-    g.fillStyle = '#0f172a'; g.font = '800 26px Segoe UI';
-    g.fillText(u.label + (u.kind === 'fam' ? ' (đóng gộp gia đình)' : ''), 30, headH + 40);
-    g.fillStyle = '#526074'; g.font = '600 16px Segoe UI';
-    g.fillText('Lớp: ' + u.classes.join(', '), 30, headH + 68);
-    let yy = headH + titleH;
-    for (const b of blocks) {
-      const nbd = ngayBdCua(b.so);   // v0.22.0
-      const tieuDe = `${b.ten} — ${b.lop} (${b.buoi} buổi có mặt` +
-        (b.vang ? `, ${b.vang} vắng` : '') + (b.choDuyet ? `, ${b.choDuyet} chưa chốt` : '') +
-        (b.hocThu ? `, ${b.hocThu} học thử` : '') + ')' + (nbd ? ` · tính phí từ ${nbd.split('-').reverse().join('/')}` : '');
-      veLichThang(g, 30, yy, W - 60, tieuDe, b.lich);
-      yy += calH;
-    }
-    yy += 16;
-    g.strokeStyle = 'rgba(15,23,42,.15)'; g.beginPath(); g.moveTo(30, yy); g.lineTo(W - 30, yy); g.stroke();
-    yy += 34;
-    const dong = [['Tổng số buổi', String(u.buoi)]];
-    const ctTay = u.chinhTay;   // v0.23.0 — chỉnh tay tháng này: Miễn giảm THAY ưu đãi có sẵn; trống thì không hiện
-    if (u.kind === 'fam') {
-      if (ctTay && ctTay.coMien) { if (ctTay.pct > 0) dong.push(['Miễn giảm', '−' + ctTay.pct + '%']); }
-      else dong.push(['Hệ số gia đình', String(u.heSo || (u.giamPct ? '−' + u.giamPct + '%' : ''))]);
-    } else {
-      if (u.cat && u.cat.tieuHoc) dong.push(['Học sinh tiểu học', 'trần 1.000.000đ']);
-      else if (u.cat && u.cat.tran > 0) dong.push(['Trần tháng', vnd(u.cat.tran) + ' đ']);
-      if (ctTay && ctTay.coMien) { if (ctTay.pct > 0) dong.push(['Miễn giảm', '−' + ctTay.pct + '%']); }
-      else if (u.cat && u.cat.giamPct > 0) dong.push(['Ưu đãi', '−' + u.cat.giamPct + '%']);
-      const tu = tamUngCuaHs(u.hsId);
-      if (tu) {
-        const daTruThangNay = (tu.lichSu || []).some((h) => h.loai === 'tru' && h.m === S.m && h.y === S.y);
-        const soSauThang = (() => {
-          const bg = (tu.lichSu || []).filter((h) => h.loai === 'tru' && h.m === S.m && h.y === S.y).pop();
-          return bg ? bg.sauDu : tu.soDu;
-        })();
-        dong.push(['Số dư HP trước còn lại' + (daTruThangNay ? '' : ' (chưa trừ tháng này)'), vnd(soSauThang) + 'đ']);
-      }
-    }
-    if (ctTay && ctTay.giamThem && ctTay.giamThem.tru > 0) {
-      dong.push(['Giảm thêm' + (ctTay.giamThem.lyDo ? ' (' + ctTay.giamThem.lyDo + ')' : ''),
-        '−' + vnd(ctTay.giamThem.tru) + ' đ' + (ctTay.giamThem.kieu === 'pct' ? ' (' + ctTay.giamThem.giaTri + '%)' : '')]);
-    }
-    g.font = '600 18px Segoe UI';
-    for (const [a, b2] of dong) {
-      g.fillStyle = '#526074'; g.fillText(a, 30, yy);
-      g.fillStyle = '#0f172a'; g.textAlign = 'right'; g.fillText(b2, W - 30, yy); g.textAlign = 'left';
-      yy += 32;
-    }
-    yy += 14;
-    g.fillStyle = '#0f172a'; g.font = '800 22px Segoe UI'; g.fillText('CẦN ĐÓNG', 30, yy);
-    g.fillStyle = '#2563eb'; g.font = '800 34px Segoe UI'; g.textAlign = 'right';
-    g.fillText(vnd(u.expected) + ' đ', W - 30, yy + 2); g.textAlign = 'left';
-    yy += 44;
-    const daDong = u.id in kq.done;
-    const ct = kq.chotTay && kq.chotTay[u.id];   // v0.17.0
-    g.fillStyle = daDong ? '#15803d' : '#b45309'; g.font = '700 18px Segoe UI';
-    g.fillText(ct ? (ct.loai === 'tang' ? '★ ĐƯỢC TẶNG HỌC PHÍ — Chúc em học tốt!' : '★ ĐÃ CHỐT XONG PHÍ — Cảm ơn phụ huynh!')
-      : daDong ? '✓ ĐÃ NHẬN — Cảm ơn phụ huynh!' : 'Hạn nộp: 16/' + String(S.m === 12 ? 1 : S.m + 1).padStart(2, '0') + '/' + (S.m === 12 ? S.y + 1 : S.y), 30, yy);
+    const cv = $('#hdCanvas'); const m = S.m; const y = S.y;
+    hdChuanBi().then((anh) => { if (document.body.contains(cv)) veHoaDonMot(cv, u, kq, m, y, anh); });
   }
-
   function moCtxHs(x, y, uid) {
     const kq = S.du.ketQua;
     const u = kq.units.find((z) => z.id === uid);

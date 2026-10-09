@@ -3069,6 +3069,9 @@ button.mk-em:hover{border-color:currentColor}
 .lb3 .lb-h3 .lb-them:hover{filter:brightness(.95)}
 .lb3 .lb-ma{font:700 12px/1.15 ui-monospace,Consolas,monospace; color:#2B3D3A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
 .lb3 .lb-ma.trong{font-family:var(--font); color:var(--nhat); font-weight:600}
+/* v1.289.0 — "Chưa có bài" mang class `trong` ⇒ dính luật chung `.trong{padding:26px 18px; text-align:center; font-size:13px}`
+   (ô trống to các khung khác) ⇒ thẻ lớp/khóa chưa có bài cao vọt ~117px (thầy chụp NỀN TẢNG K10). Trả về như chữ mã bài. */
+.lop-btn.lb3 .lb-ma.trong{padding:0; text-align:left; font-size:12px; line-height:17.5px}   /* = cao ô chữ dạng bài ⇒ thẻ bằng thẻ có bài */
 .lop-btn.lb3.cho .lb-dang{background:#F1F4F3; color:#A3B1AE}
 .lop-btn.lb3.cho .lb-ma{color:#A3B1AE}
 .lb3 .lb-cham{top:5px; right:5px; width:8px; height:8px}
@@ -3997,7 +4000,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=240"></script>
+<script src="config.js?v=241"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -7003,6 +7006,14 @@ tr.qm-hang-tam td{background:#fffbeb}
       n = document.createElement('div'); n.id = 'hdpNen'; n.className = 'hdp-nen'; n.hidden = true;
       n.innerHTML = '<div class="hdp-hop" role="dialog" aria-modal="true"><div class="hdp-dau" id="hdpDau"></div><div class="hdp-than" id="hdpThan"></div></div>';
       document.body.appendChild(n);
+      // v1.289.0 — pop-up vẽ lại từng phần (danh sách em, chi tiết em, bảng lượt) ⇒ đè ảnh kho sau mỗi lượt vẽ.
+      // ⛔ Chỉ childList (đè ảnh đổi `src` = thuộc tính, không tự gọi lại mình).
+      try {
+        new MutationObserver(function () {
+          clearTimeout(HDP.henAnh);
+          HDP.henAnh = setTimeout(function () { if (window.avKhoDe) window.avKhoDe(n); }, 120);
+        }).observe(n, { childList: true, subtree: true });
+      } catch (e) {}
       n.addEventListener('click', function (e) {
         if (e.target === n || e.target.closest('[data-hdp-dong]')) return hdpDong();
         var b;
@@ -13031,6 +13042,19 @@ tr.qm-hang-tam td{background:#fffbeb}
       });
     }, 200);
   }
+  // v1.289.0 — ô HOẠT ĐỘNG toàn hệ (`hdVe`) + 2 pop-up phóng to vẽ avatar của MỌI lớp, nhưng `batAvatarKho` chỉ theo dõi
+  // lớp ĐANG CHỌN, còn `window.avKhoDe` (hdVe gọi từ v1.211.0) CHƯA TỪNG được viết ⇒ em có ảnh trong kho `lessonAvatar` mà
+  // chưa có file tĩnh assets/avatar/… (Long A1-C, Gia Hân NT4, cả khóa K10…) chỉ hiện chữ tắt. Nay: đè ảnh kho cho đúng
+  // những lớp có mặt trong khối `goc` (kho mỗi lớp đệm 10 phút trong máy ⇒ vẽ lại liên tục không tốn lượt đọc).
+  window.avKhoDe = function (goc) {
+    if (!goc || !goc.querySelectorAll) return;
+    var co = {};
+    [].forEach.call(goc.querySelectorAll('[data-av-lop]'), function (el) { co[A.avSlugLop(el.getAttribute('data-av-lop'))] = 1; });
+    tatCaLop().forEach(function (l) {
+      if (!co[A.avSlugLop(l.tenGoc || l.maLop)]) return;
+      try { A.deAvatarKho(l.tenGoc || l.maLop, l.hocSinh || [], l.hsDb || []); } catch (e) {}
+    });
+  };
   function batAnhHopQm() {
     anhHopQm();
     if (ANH_QM_TAI) return;

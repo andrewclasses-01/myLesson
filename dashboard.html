@@ -4028,7 +4028,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=242"></script>
+<script src="config.js?v=243"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -14282,6 +14282,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     hamQl().then(function (fn) { return fn(Object.assign({ viec: viec }, d)); }).then(function (r) {
       var kq = (r && r.data) || {};
       QR = null; HSO_NHO = {}; NK = null; SOHS = null;
+      // v1.291.0 — đọc lại danh sách tài khoản: thêm/đổi ID em khi hộp đang mở ⇒ bản cũ không có em mới ⇒ cột Mật khẩu hiện
+      //   "chưa có tài khoản" dù máy chủ đã tạo xong (ca Nguyễn Phong Ngọc Linh K10, 09/10 — tài khoản hs_264 có thật).
+      MK_KQ = null; MK_LOI = '';
       return napLaiLop().then(function () { return kq; });
     }).then(function (kq) {
       if (viec === 'khoiPhuc' && QC && QC.viec === 'themHs') {      // v1.259.0 khôi phục từ hộp "học sinh cũ"
@@ -14297,8 +14300,8 @@ tr.qm-hang-tam td{background:#fffbeb}
         $('#qcThan').innerHTML = '<div class="mk-hoi"><p>Em đã có trên web. Máy myStudent sẽ tự kéo về trong vài phút (để gán ảnh mặt).</p>' +
           (kq.so ? '<div class="qc-kq"><span>Số học sinh</span><code class="qm-ma">' + qmE(kq.so) + '</code></div>' : '') +
           '<div class="qc-kq"><span>ID đăng nhập</span><code class="qm-ma">' + qmE(kq.ma) + '</code><button type="button" class="qm-nut" data-qc-chep="' + qmE(kq.ma) + '">Chép</button></div>' +
-          (kq.mkTam ? '<div class="qc-kq"><span>Mật khẩu tạm (hiện MỘT lần)</span><code class="qm-ma">' + qmE(kq.mkTam) + '</code><button type="button" class="qm-nut" data-qc-chep="' + qmE(kq.mkTam) + '">Chép</button></div>' +
-            '<p class="qm-p">Đưa em ID + mật khẩu tạm; lần đầu vào em phải đặt mật khẩu riêng.</p>' : '<p class="qm-p">Người đặc biệt / không có tài khoản riêng.</p>') +
+          (kq.mkTam ? '<div class="qc-kq"><span>Mật khẩu ban đầu</span><code class="qm-ma">' + qmE(kq.mkTam) + '</code><button type="button" class="qm-nut" data-qc-chep="' + qmE(kq.mkTam) + '">Chép</button></div>' +
+            '<p class="qm-p">Đưa em ID + mật khẩu này; lần đầu vào em phải đặt mật khẩu riêng.</p>' : '<p class="qm-p">Người đặc biệt / không có tài khoản riêng.</p>') +
           '<div class="mk-nut"><button type="button" class="chinh" data-qc-dong>Xong</button></div></div>';
         veBaoMat();
         return;

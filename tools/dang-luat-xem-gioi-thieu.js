@@ -159,7 +159,7 @@ async function kiem() {
     const suaGt = (tk) => goi(`${FS_GOC}/${pHs}${k}&updateMask.fieldPaths=xemGt&updateMask.fieldPaths=capNhat`, { method: 'PATCH', headers: tk ? A(tk) : {}, json: { fields: { xemGt, capNhat: { integerValue: String(Date.now()) } } } });
     ok('HỌC SINH tự ghi xemGt = 200', (await suaGt(tHs)).status, 200);
     ok('HỌC SINH tự ghi ẢNH ĐẠI DIỆN vẫn = 403', (await sua(tHs, 'anh', 'https://x/anh.jpg')).status, 403);
-    ok('HỌC SINH tự ghi ảnh BÌA vẫn = 200', (await sua(tHs, 'bia', 'https://x/bia.jpg')).status, 200);
+    ok('HỌC SINH ghi ảnh BÌA ngoài kho nw/ vẫn = 403 (luật 02/10)', (await sua(tHs, 'bia', 'https://x/bia.jpg')).status, 403);
     ok('HỌC SINH ghi trường lạ = 403', (await sua(tHs, 'vaiTro', 'thay')).status, 403);
     ok('NGƯỜI LẠ ghi xemGt = 403', (await suaGt(null)).status, 403);
   } finally {

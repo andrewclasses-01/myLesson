@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-08 10:08:31",
+  "capNhat": "2026-10-09 14:12:46",
   "nguon": "dashboard",
   "lop": [
     {
@@ -290,10 +290,13 @@
         },
         {
           "id": 239,
-          "ten": "Quang",
+          "ten": "Nhật Quang",
           "ma": "NHATQUANG24112015",
-          "sinhNhat": "",
-          "vao": "2026-10-01"
+          "sinhNhat": "11-24",
+          "vao": "2026-10-01",
+          "tenCu": [
+            "Quang"
+          ]
         },
         {
           "id": 75,
@@ -1355,6 +1358,201 @@
     }
   ],
   "khoa": [
+    {
+      "maLop": "NNTNGK10",
+      "tenGoc": "NỀN TẢNG K10",
+      "loai": "khoa",
+      "hocSinh": [
+        {
+          "id": 260,
+          "ten": "Anh Thư",
+          "ma": "VUANHTHU29012016",
+          "sinhNhat": "01-29",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Vũ Anh Thư"
+          ]
+        },
+        {
+          "id": 253,
+          "ten": "Bảo Ngọc",
+          "ma": "DANGTHIBAONGOC31052015",
+          "sinhNhat": "05-31",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Đặng Thị Bảo Ngọc"
+          ]
+        },
+        {
+          "id": 251,
+          "ten": "Đoàn Ngọc Bảo An",
+          "ma": "DOANNGOCBAOAN28052015",
+          "sinhNhat": "05-28",
+          "vao": "2026-10-09"
+        },
+        {
+          "id": 250,
+          "ten": "Gia Minh",
+          "ma": "NGUYENGIAMINH23082014",
+          "sinhNhat": "08-23",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Nguyễn Gia Minh"
+          ]
+        },
+        {
+          "id": 258,
+          "ten": "Hà Anh",
+          "ma": "NGUYENHAANH11092016",
+          "sinhNhat": "09-11",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Nguyễn Hà Anh"
+          ]
+        },
+        {
+          "id": 249,
+          "ten": "Hoàng Ngân",
+          "ma": "TRANHOANGNGAN22022015",
+          "sinhNhat": "02-22",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Trần Hoàng Ngân"
+          ]
+        },
+        {
+          "id": 247,
+          "ten": "Khánh Diên",
+          "ma": "NGUYENKHANHDIEN15042015",
+          "sinhNhat": "04-15",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Nguyễn Khánh Diên"
+          ]
+        },
+        {
+          "id": 248,
+          "ten": "Khánh Duy",
+          "ma": "NGUYENKHANHDUY15042015",
+          "sinhNhat": "04-15",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Nguyễn Khánh Duy"
+          ]
+        },
+        {
+          "id": 261,
+          "ten": "Khánh Lâm",
+          "ma": "CHUKHANHLAM04032016",
+          "sinhNhat": "03-04",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Chu Khánh Lâm"
+          ]
+        },
+        {
+          "id": 255,
+          "ten": "Lăng Ngọc Linh",
+          "ma": "LANGNGOCLINH14052015",
+          "sinhNhat": "05-14",
+          "vao": "2026-10-09"
+        },
+        {
+          "id": 256,
+          "ten": "Minh Cường",
+          "ma": "PHAMMINHCUONG07022015",
+          "sinhNhat": "02-07",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Phạm Minh Cường"
+          ]
+        },
+        {
+          "id": 259,
+          "ten": "Minh Quang",
+          "ma": "BUIMINHQUANG26032015",
+          "sinhNhat": "03-26",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Bùi Minh Quang"
+          ]
+        },
+        {
+          "id": 240,
+          "ten": "Ngọc Ánh",
+          "ma": "TRUONGNGOCANH20102016",
+          "sinhNhat": "10-20",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Trương Ngọc Ánh"
+          ]
+        },
+        {
+          "id": 264,
+          "ten": "Nguyễn Phong Ngọc Linh",
+          "ma": "NGUYENPHONGNGOCLINH03092017",
+          "sinhNhat": "09-03",
+          "vao": "2026-10-09"
+        },
+        {
+          "id": 263,
+          "ten": "Nhật Quang",
+          "ma": "NHATQUANG24112015",
+          "sinhNhat": "11-24",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Quang"
+          ]
+        },
+        {
+          "id": 257,
+          "ten": "Phạm Bảo An",
+          "ma": "PHAMBAOAN13022015",
+          "sinhNhat": "02-13",
+          "vao": "2026-10-09"
+        },
+        {
+          "id": 254,
+          "ten": "Phong Linh",
+          "ma": "NGUYENNGOCPHONGLINH19112015",
+          "sinhNhat": "11-19",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Nguyễn Ngọc Phong Linh"
+          ]
+        },
+        {
+          "id": 252,
+          "ten": "Phương Anh",
+          "ma": "DANGPHUONGANH07122013",
+          "sinhNhat": "12-07",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Đặng Phương Anh"
+          ]
+        },
+        {
+          "id": 262,
+          "ten": "Phương Linh",
+          "ma": "DANGPHUONGLINH12072015",
+          "sinhNhat": "",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Linh"
+          ]
+        },
+        {
+          "id": 241,
+          "ten": "Quỳnh Chi",
+          "ma": "DAOQUYNHCHI12042016",
+          "sinhNhat": "04-12",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Đào Quỳnh Chi"
+          ]
+        }
+      ]
+    },
     {
       "maLop": "NNTNGK9",
       "tenGoc": "NỀN TẢNG K9",

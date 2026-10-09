@@ -703,6 +703,7 @@ body.mo-menu .side.trai{transform:none}
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
+<link rel="stylesheet" href="css/gioi-thieu.css?v=1">   <!-- v1.286.0 phim giới thiệu khóa mới + thẻ GIỚI THIỆU -->
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 <script src="js/day.js?v=3"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
@@ -778,12 +779,13 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=236"></script>
+<script src="config.js?v=237"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=84"></script>
 <script src="js/nw-phien.js?v=9"></script>
+<script src="js/gioi-thieu.js?v=1"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
 <script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
@@ -833,6 +835,9 @@ var DIEM = {}, CHUAN = {};   /* mã act -> danh sách điểm / chuẩn đủ đ
 var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
 var BAI_CU = [];         /* thẻ dưới vạch */
 var dangDocDiem = true;
+/* ⭐ v1.286.0 (09/10/2026, thầy chốt) — PHIM GIỚI THIỆU khóa mới (NỀN TẢNG K10+, js/gioi-thieu.js): GT_CTX = em + khóa;
+   GT_HIEN = đã xem xong (hoặc thầy xem như em) ⇒ khóa CHƯA có bài nào thì cột bài có thẻ GIỚI THIỆU để xem lại. */
+var GT_CTX = null, GT_HIEN = false;
 
 var IC_GIO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 
@@ -1372,7 +1377,10 @@ function dungCot(){
     cu = BAI_CU.slice(0, 2);
     dsThe = cu.slice();
   }
-  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + cu.map(veTheCu).join('');
+  var theGt = (!BAI_MOI && !BAI_CU.length && GT_HIEN && GT_CTX && window.GioiThieu) ? GioiThieu.theHtml(GT_CTX) : '';   // v1.286.0
+  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + theGt + cu.map(veTheCu).join('');
+  var nutGt = $('#gtkThe');
+  if (nutGt) nutGt.onclick = function(){ GioiThieu.mo(GT_CTX, { lai: true, daXong: true }); };
 
   document.querySelectorAll('.the').forEach(function(t, i){
     var b = dsThe[i] || {};
@@ -1545,6 +1553,16 @@ A.napDuLieu().then(function(dl){
   dienDanhTinh();
   doCaoDau(); doSanChat();
   dungCot();                 /* hiện "đang đọc kết quả" trước */
+
+  /* v1.286.0 — phim giới thiệu khóa mới: chưa xem xong ⇒ TỰ MỞ (chạy tiếp màn dở); xong rồi ⇒ thẻ GIỚI THIỆU */
+  if (window.GioiThieu && GioiThieu.apDung(LOP)) {
+    GT_CTX = { lop: LOP, lopMa: LOP_DL, ma: MA_HS, ten: TOI, vaiTro: EM.vaiTro };
+    if (GioiThieu.laThay(GT_CTX)) GT_HIEN = true;   // thầy xem như em: không tự mở, chỉ có thẻ để bấm xem thử
+    else GioiThieu.docTrangThai(GT_CTX).then(function(st){
+      if (st.xong) { GT_HIEN = true; if (!dangDocDiem) dungCot(); return; }
+      GioiThieu.mo(GT_CTX, { man: st.man, khiXong: function(){ GT_HIEN = true; if (!dangDocDiem) dungCot(); } });
+    });
+  }
 
   var ds = A.baiCuaLop(dl, LOP_DL).map(theTuBai);
   BAI_MOI = null;

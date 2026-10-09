@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#061a16">
+<title>Giới thiệu khóa học</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&family=Patrick+Hand&display=swap&subset=vietnamese" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<!-- Phim giới thiệu khóa mới (NỀN TẢNG K10+) — mở trong iframe bởi js/gioi-thieu.js (khoa.html). Thiết kế = mockup v4 thầy chốt 09/10/2026. -->
+<div class="nen" aria-hidden="true">
+  <i class="dom d1"></i><i class="dom d2"></i><i class="dom d3"></i>
+  <div class="bui"></div><div class="hat"></div>
+</div>
+<canvas id="phao"></canvas>
+
+<header class="tren">
+  <div class="vach-tien" id="vachTien"></div>
+  <div class="tren-dong">
+    <span class="nhan-khoa ten-khoa">NỀN TẢNG K10</span>
+    <!-- v3: bỏ "Để sau" — lần đầu BẮT BUỘC xem tới "Vâng!". Nút Đóng chỉ hiện khi XEM LẠI (đã xem xong trước đó). -->
+    <button class="de-sau an" id="nutDong" type="button">Đóng</button>
+  </div>
+</header>
+
+<main class="san" id="san">
+
+  <!-- 1 · CHÀO MỪNG -->
+  <section class="man" data-ten="Chào mừng">
+    <div class="khung giua">
+      <div class="vong-anh r" style="--d:0">
+        <svg class="vong-xoay" viewBox="0 0 200 200"><circle cx="100" cy="100" r="96" class="vx1"/><circle cx="100" cy="100" r="88" class="vx2"/></svg>
+        <div class="anh-tron"><img class="anh-em" alt=""></div>
+        <span class="lap l1"></span><span class="lap l2"></span><span class="lap l3"></span>
+      </div>
+      <p class="mat r" style="--d:2">CHÀO MỪNG EM ĐẾN VỚI</p>
+      <h1 class="tieu-lon r" style="--d:3"><span class="lanh ten-khoa-dau">Khóa NỀN TẢNG</span><span class="k10 k-so">K10</span></h1>
+      <p class="ten-em r" style="--d:4">Thầy Andrew chào mừng <span class="ten-hs">Minh Thư</span> đến với hành trình cùng thầy trong 8&nbsp;tháng&nbsp;tới!</p>
+    </div>
+  </section>
+
+  <!-- 2 · THƯ CỦA THẦY -->
+  <section class="man" data-ten="Thư của Thầy">
+    <div class="khung">
+      <div class="thu">
+        <div class="thu-anh r" style="--d:0"><img src="assets/thay-doc.jpg" alt=""><span class="thu-ky">Thầy Andrew</span></div>
+        <div class="thu-giay r" style="--d:2">
+          <p class="mat">LỜI NHẮN CỦA THẦY</p>
+          <p class="viet-tay" id="thuChu"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3 · BẢN ĐỒ TRANG HỌC -->
+  <section class="man" data-ten="Trang học của em">
+    <div class="khung">
+      <p class="mat r" style="--d:0">TRANG HỌC CỦA EM</p>
+      <h2 class="tieu r" style="--d:1">Mọi thứ nằm gọn<br>trên một thanh</h2>
+      <div class="thanh-mau r" style="--d:2" id="thanhMau"></div>
+      <ul class="ds-tab" id="dsTab"></ul>
+    </div>
+  </section>
+
+  <!-- 4 · TAB BÀI TẬP -->
+  <section class="man" data-ten="Tab Bài tập">
+    <div class="khung">
+      <p class="mat r" style="--d:0">TAB BÀI TẬP</p>
+      <h2 class="tieu r" style="--d:1">Mỗi bài là một <em>thẻ mũi tên</em></h2>
+      <div class="the-boc r" style="--d:2">
+        <div class="the moi gio-duong" id="theMau">
+          <div class="the-in tt-duong">
+            <div class="the-body">
+              <div class="t-chu"><span class="t-ten">LESSON 20</span><span class="t-chude">Động từ khuyết thiếu – CAN</span></div>
+              <div class="t-han"><span class="han-dong">HẠN NỘP</span><span class="han-vach"></span><span class="dhho xanh" id="dhho">2 ngày 05:12</span></div>
+            </div>
+            <div class="the-diem">
+              <div class="xem-dau"><div class="chon-xem"><i class="chon-thumb"></i><span data-xem="em" class="on ten-hs-hoa">MINH THƯ</span><span data-xem="lop">CẢ LỚP</span></div></div>
+              <div class="diem-rows" id="diemRows"></div>
+            </div>
+            <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg></div>
+          </div>
+        </div>
+      </div>
+      <div class="chu-thich r" style="--d:3"><i class="cham" id="chamTT"></i><span id="chuTT">Xanh dương — còn thoải mái thời gian</span></div>
+      <div class="chu-them r" style="--d:4">
+        <span><b>Xem bài giảng</b> → mở khoá bài tập</span>
+        <span><b>Đạt 100%</b> mới sang bài sau</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5 · CHAT NHÓM -->
+  <section class="man" data-ten="Chat nhóm khóa">
+    <div class="khung">
+      <p class="mat r" style="--d:0">CHAT NHÓM CẢ KHÓA</p>
+      <h2 class="tieu r" style="--d:1">Cùng hỏi, cùng học<br>với cả khóa</h2>
+      <div class="chat r" style="--d:2">
+        <div class="chat-dau"><span class="chat-av">NTK1</span><div><b class="ten-khoa-du">Khóa NỀN TẢNG K10</b><small>Thầy Andrew</small></div></div>
+        <div class="chat-than" id="chatNhom"></div>
+        <div class="chat-o"><span>Nhắn cho cả khóa…</span><i class="tim"></i></div>
+      </div>
+      <p class="nho r" style="--d:3">Trên điện thoại: chat nhóm nằm trong tab <b>Tin nhắn</b></p>
+    </div>
+  </section>
+
+  <!-- 6 · TIN NHẮN RIÊNG -->
+  <section class="man" data-ten="Tin nhắn riêng">
+    <div class="khung">
+      <p class="mat r" style="--d:0">TIN NHẮN RIÊNG VỚI THẦY</p>
+      <h2 class="tieu r" style="--d:1">Chỗ nào khó,<br><em>nhắn riêng thầy</em></h2>
+      <div class="chat rieng r" style="--d:2">
+        <div class="chat-dau"><img class="chat-av anh" src="assets/thay-tron.jpg" alt=""><div><b>Thầy Andrew</b><small class="xanh">● Đang hoạt động</small></div></div>
+        <div class="chat-than" id="chatRieng"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · THÔNG BÁO -->
+  <section class="man" data-ten="Thông báo">
+    <div class="khung giua">
+      <div class="chuong-to r" style="--d:0"><svg viewBox="0 0 24 24"><path d="M6.2 8.5a5.8 5.8 0 0 1 11.6 0c0 6.5 2.7 8.3 2.7 8.3H3.5s2.7-1.8 2.7-8.3"/><path d="M10.4 20.5a1.8 1.8 0 0 0 3.2 0"/></svg><i class="so-do">4</i></div>
+      <p class="mat r" style="--d:1">THÔNG BÁO</p>
+      <h2 class="tieu r" style="--d:2">Không bỏ lỡ điều gì</h2>
+      <div class="ds-tb" id="dsTb"></div>
+    </div>
+  </section>
+
+  <!-- 8 · GAME -->
+  <section class="man" data-ten="Game">
+    <div class="khung">
+      <p class="mat r" style="--d:0">HỌC MÀ CHƠI</p>
+      <h2 class="tieu r" style="--d:1">Những game em sẽ chơi</h2>
+      <div class="game r" style="--d:2">
+        <div class="game-dau"><span class="game-ten" id="gameTen">TYPE THE ANSWER</span><span class="game-so" id="gameSo">1/6</span></div>
+        <div class="game-san" id="gameSan"></div>
+        <div class="game-cham" id="gameCham"></div>
+      </div>
+      <div class="game-chip r" style="--d:3" id="gameChip"></div>
+      <p class="nho r" style="--d:4"><b>21 kiểu game</b> · 167 bài luyện · 7.110 câu hỏi</p>
+    </div>
+  </section>
+
+  <!-- 9 · THI ĐẤU -->
+  <section class="man" data-ten="Thi đấu online">
+    <div class="khung">
+      <p class="mat r" style="--d:0">THI ĐẤU TIẾNG ANH TRỰC TUYẾN</p>
+      <h2 class="tieu r" style="--d:1">Thi tài với bạn<br><em>khắp các lớp</em></h2>
+      <div class="dua r" style="--d:2">
+        <div class="dua-dau"><span class="truc-tiep"><i></i>TRỰC TIẾP</span><span>BT2 · Câu với “can”</span></div>
+        <div class="dua-ds" id="duaDs"></div>
+      </div>
+      <div class="khoa-mo r" style="--d:3"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.3 10.5V7.6a3.7 3.7 0 0 1 7.4 0v2.9"/></svg><div><b>Sắp được mở cho em</b><span>Khi em đạt trình độ, thầy sẽ mở khoá.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 10 · KHO SAO + ĐỔI QUÀ -->
+  <section class="man" data-ten="Kho sao & Đổi quà">
+    <div class="khung">
+      <p class="mat r" style="--d:0">KHO SAO &amp; ĐỔI QUÀ</p>
+      <h2 class="tieu r" style="--d:1">Chăm luyện tập,<br><em>sao về đầy ví</em></h2>
+      <div class="vi r" style="--d:2" id="vi">
+        <svg class="vi-sao" viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5L2.6 9.4l6.5-.9z"/></svg>
+        <div><small>VÍ SAO CỦA <span class="ten-hs-hoa">MINH THƯ</span></small><b id="soSao">0</b></div>
+      </div>
+      <div class="ke-qua r" style="--d:3" id="keQua"></div>
+      <div class="khoa-mo r" style="--d:4"><svg viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.4"/><path d="M8.3 10.5V7.6a3.7 3.7 0 0 1 7.4 0v2.9"/></svg><div><b>Sắp được mở cho em</b><span>Khi em đạt trình độ, thầy sẽ mở khoá.</span></div></div>
+    </div>
+  </section>
+
+  <!-- 11 · HÀNH TRÌNH -->
+  <section class="man" data-ten="Hành trình 8 tháng">
+    <div class="khung">
+      <p class="mat r" style="--d:0">HÀNH TRÌNH 8 THÁNG</p>
+      <p class="cau-chay r" style="--d:1"><span id="cauChay">She plays.</span></p>
+      <div class="lo-trinh r" style="--d:2"><svg id="loTrinh" viewBox="0 0 340 600"></svg></div>
+    </div>
+  </section>
+
+  <!-- 12 · SẴN SÀNG -->
+  <section class="man" data-ten="Sẵn sàng">
+    <div class="khung giua">
+      <div class="doi r" style="--d:0">
+        <div class="doi-anh"><img class="anh-em" alt=""></div>
+        <svg class="doi-noi" viewBox="0 0 60 24"><path d="M2 12h56" /><path d="M30 6.5l1.6 3.3 3.6.5-2.6 2.5.6 3.6-3.2-1.7-3.2 1.7.6-3.6-2.6-2.5 3.6-.5z" class="ns"/></svg>
+        <div class="doi-anh"><img src="assets/thay-tron.jpg" alt=""></div>
+      </div>
+      <p class="mat r" style="--d:1">MỌI THỨ ĐÃ SẴN SÀNG</p>
+      <h2 class="tieu loi-cuoi r" style="--d:2"><span class="ten-hs">Minh Thư</span>, hãy chuẩn bị sẵn&nbsp;sàng và chờ <em>nhiệm&nbsp;vụ đầu&nbsp;tiên</em> của Thầy&nbsp;nhé!</h2>
+    </div>
+  </section>
+</main>
+
+<footer class="duoi">
+  <button class="nut-lui" id="nutLui" type="button" aria-label="Quay lại"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="nut-tiep" id="nutTiep" type="button"><span>Tiếp tục</span><svg viewBox="0 0 24 24"><path d="M5 12h13M13 6l6 6-6 6"/></svg></button>
+</footer>
+
+<div class="thong" id="thong"></div>
+
+<script src="main.js?v=1"></script>
+</body>
+</html>

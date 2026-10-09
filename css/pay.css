@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.2 (a4de8f0) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.27.0 (e99c6db) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -22,6 +22,9 @@
   --accent-line:rgba(37,99,235,.42);
   --accent-doi:#ffffff;
   --accent-ink:#1d4ed8;
+  --gui-bg:#edf3ff;      /* v0.27.0 — hàng đã gửi hóa đơn */
+  --gui-hover:#e3ecff;
+  --gui-line:#93b4f5;
   --chu-noi:#1e40af;
   --green:#15803d;
   --green-soft:rgba(21,128,61,.12);
@@ -506,6 +509,29 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .lop-card h3 .the-doan.cu{color:#9a3412;background:rgba(194,65,12,.10)}
 .lop-card h3 .the-doan.moi{color:var(--green);background:var(--green-soft)}
 .nhieu-lop{font-size:10.5px;font-weight:800;color:var(--tim);background:var(--tim-soft);border-radius:6px;padding:1px 6px;white-space:nowrap}
+
+/* ---------- v0.27.0: nháy đúp hóa đơn ⇒ khung phóng to (cuộn chuột zoom, kéo di chuyển) ---------- */
+.hd-anh{cursor:zoom-in}
+#hdXemLon{position:fixed;inset:0;background:rgba(15,23,42,.8);display:none;z-index:9000;overflow:hidden;cursor:grab;touch-action:none}
+#hdXemLon.mo{display:block}
+#hdXemLon.keo{cursor:grabbing}
+#hdXemLon img{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;max-height:none;background:#fff;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);user-select:none;-webkit-user-drag:none;pointer-events:none}
+#hdXemLon .goi{position:fixed;top:18px;left:50%;transform:translateX(-50%);color:#e2e8f0;font-size:13px;font-weight:600;
+  background:rgba(15,23,42,.6);padding:6px 14px;border-radius:99px;pointer-events:none;white-space:nowrap}
+#hdXemLon .dong{position:fixed;top:14px;right:16px;width:40px;height:40px;border-radius:99px;border:0;background:#fff;
+  color:#0f172a;font-size:18px;font-weight:800;cursor:pointer}
+#hdXemLon .thanh{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);display:flex;gap:6px;align-items:center;
+  background:#fff;color:#152036;border-radius:14px;padding:6px 8px;box-shadow:0 10px 30px rgba(0,0,0,.3);font-weight:700;font-size:13px;cursor:default}
+#hdXemLon .thanh button{border:0;background:#eef2f7;color:#152036;border-radius:9px;min-width:34px;height:32px;padding:0 10px;
+  font:inherit;font-weight:800;font-size:15px;cursor:pointer}
+#hdXemLon .thanh button:hover{background:#e2e8f0}
+#hdXemLon .thanh .pt{min-width:56px;text-align:center;font-variant-numeric:tabular-nums}
+
+/* ---------- v0.27.0: hàng ĐÃ GỬI hóa đơn (chưa xong) — nền xanh dương nhạt cả hàng + vạch trái, xếp xuống trên nhóm đã xong ---------- */
+.hsrow.dagui{background:var(--gui-bg);box-shadow:inset 3px 0 0 var(--gui-line)}
+.hsrow.dagui:hover{background:var(--gui-hover)}
+.hsrow.dagui + .hsrow.dagui{margin-top:2px}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

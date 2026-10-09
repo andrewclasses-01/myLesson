@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.26.2 (a4de8f0) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.27.0 (e99c6db) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -163,7 +163,10 @@
     luoi.innerHTML = '';
     const thuDoan = { '': 0, CU: 1, MOI: 2 };
     const tenLops = Object.keys(theoLop).sort((a, b) => theTt[a].lop.localeCompare(theTt[b].lop) || thuDoan[theTt[a].doan] - thuDoan[theTt[b].doan]);
-    const bac = { chuadong: 0, lech: 1, du: 2, khongbuoi: 3 };
+    const bac = { chuadong: 0, motphan: 0, lech: 1, du: 2, khongbuoi: 3 };
+    const coGui = (u, pl) => pl.loai !== 'du' && pl.loai !== 'khongbuoi' && !!daGuiCua(u);
+    const nhomXep = (u, pl) => (pl.loai === 'khongbuoi' ? 3 : pl.loai === 'du' ? 2 : coGui(u, pl) ? 1 : 0);
+    const soXep = (ua, pa, ub, pb) => (nhomXep(ua, pa) - nhomXep(ub, pb)) || (bac[pa.loai] - bac[pb.loai]);
     for (const khoa of tenLops) {
       const { lop, doan } = theTt[khoa];
       const dsRow = theoLop[khoa];
@@ -178,7 +181,7 @@
         const gc = ghiChuCua(pl, u);
         const daNhan = (u.id in kq.done) && kq.done[u.id] >= 0 ? kq.txns[kq.done[u.id]].amount : null;
         const th = laTieuHoc(lop, ten);
-        return `<div class="hsrow ${pl.loai}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}" data-hs="${esc(String(hs ?? ''))}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
+        return `<div class="hsrow ${pl.loai}${coGui(u, pl) ? ' dagui' : ''}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}" data-hs="${esc(String(hs ?? ''))}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
             <span class="cham"></span>
             <span class="ten">${esc(ten)}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi${hocThuChu(hocThu)}</small>${r.tongLop ? ` <span class="nhieu-lop" title="${esc(r.tongLop)}">${r.soLop} lớp</span>` : ''}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
@@ -189,8 +192,9 @@
           </div>`;
       };
       const thuong = dsRow.filter((r) => !r.giadinh)
-        .sort((a, b) => (bac[phanLoai(a.u).loai] - bac[phanLoai(b.u).loai]) || a.ten.localeCompare(b.ten, 'vi'));
-      const giadinh = dsRow.filter((r) => r.giadinh).sort((a, b) => a.ten.localeCompare(b.ten, 'vi'));
+        .sort((a, b) => soXep(a.u, phanLoai(a.u), b.u, phanLoai(b.u)) || a.ten.localeCompare(b.ten, 'vi'));
+      const giadinh = dsRow.filter((r) => r.giadinh)
+        .sort((a, b) => soXep(a.u, phanLoai(a.u), b.u, phanLoai(b.u)) || a.ten.localeCompare(b.ten, 'vi'));
       const mocTh = doanTh.moc || 0;
       const nhanDoan = doan === 'CU' ? `<span class="the-doan cu">CŨ${mocTh ? ' · đến ' + (mocTh - 1) + '/' + S.m : ''}</span>`
         : doan === 'MOI' ? `<span class="the-doan moi">MỚI${mocTh ? ' · từ ' + mocTh + '/' + S.m : ''}</span>` : '';
@@ -209,14 +213,14 @@
       const card = document.createElement('div');
       card.className = 'lop-card glass';
       const sx = fams.map((u) => ({ u, pl: phanLoai(u) }))
-        .sort((a, b) => (bac[a.pl.loai] - bac[b.pl.loai]) || a.u.label.localeCompare(b.u.label, 'vi'));
+        .sort((a, b) => soXep(a.u, a.pl, b.u, b.pl) || a.u.label.localeCompare(b.u.label, 'vi'));
       card.innerHTML = `<h3>GIA ĐÌNH <span class="dem">${daDong}/${coThu.length} đã đóng</span></h3>
         <div class="tienbar"><i style="width:${pct}%"></i></div>` +
         sx.map(({ u, pl }) => {
           const gc = ghiChuCua(pl, u);
           const daNhan = (u.id in kq.done) && kq.done[u.id] >= 0 ? kq.txns[kq.done[u.id]].amount : null;
           const mems = (u.members || []).length ? u.members : [{ ten: u.label, lop: '', buoi: u.buoi }];
-          return `<div class="hsrow fam-row ${pl.loai}" data-uid="${esc(u.id)}" title="${esc(u.label)} — tổng ${u.buoi} buổi">
+          return `<div class="hsrow fam-row ${pl.loai}${coGui(u, pl) ? ' dagui' : ''}" data-uid="${esc(u.id)}" title="${esc(u.label)} — tổng ${u.buoi} buổi">
             <span class="cham"></span>
             <span class="ten fam-ten">${mems.map((mm) => `<span class="fam-em">${esc(mm.ten)} <small>· ${mm.lop ? esc(mm.lop) + ' · ' : ''}${mm.buoi} buổi${hocThuChu(mm.hocThu)}</small></span>`).join('')}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
@@ -1686,10 +1690,11 @@
     else { g.moveTo(5, 12.6); g.lineTo(9.4, 16.9); g.lineTo(19, 7.4); }
     g.stroke(); g.restore();
   }
-  function hdIcon(g, cx, cy, nha) {
+  function hdIcon(g, cx, cy, nha, r) {
+    r = r || 30; const k = r / 30;
     g.save();
-    g.fillStyle = '#e6f6f3'; g.beginPath(); g.arc(cx, cy, 30, 0, Math.PI * 2); g.fill();
-    g.translate(cx - 15, cy - 15); g.scale(1.25, 1.25);
+    g.fillStyle = '#e6f6f3'; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.fill();
+    g.translate(cx - 15 * k, cy - 15 * k); g.scale(1.25 * k, 1.25 * k);
     g.strokeStyle = '#0f766e'; g.lineWidth = 1.8; g.lineCap = 'round'; g.lineJoin = 'round';
     const ds = nha ? ['M3 19.5c0-3.3 2.7-5.6 6-5.6s6 2.3 6 5.6', 'M15.6 14.3c.5-.1 1-.2 1.6-.2 2.6 0 4.3 1.9 4.3 4.6']
       : ['M21.4 10.2 12 5 2.6 10.2 12 15.4l9.4-5.2z', 'M6.5 12.4v4.2c0 1.6 2.5 3 5.5 3s5.5-1.4 5.5-3v-4.2', 'M21.4 10.2v5'];
@@ -1730,20 +1735,22 @@
     const wT2 = hdDo(g, d.thang, fT2);
     const rw = Math.max(hdDo(g, d.nhan, fHd(700, 12.5), 2.25), hdDo(g, 'Tháng ', fT1) + wT2);
     const xVach = R - rw - 18;
-    const xChu = 32 + 60 + 16; const wChu = xVach - 16 - xChu;
-    let hKhoi;
+    let hKhoi; let ri; let chuTren; let chuDuoi;
     if (!d.nha) {
-      hKhoi = 64;
+      hKhoi = 64; ri = 30;
+      const xChu = 32 + ri * 2 + 16; const wChu = xVach - 16 - xChu;
       let co = 28; while (co > 18 && hdDo(g, d.ten, fHd(800, co)) > wChu) co--;
-      hdIcon(g, 62, top + 30, false);
       hdChu(g, d.ten, xChu, top + 30, fHd(800, co), '#152036');
       hdChu(g, `Lớp ${d.lop} · Mã số học sinh ${d.so}`, xChu, top + 56, fHd(400, 15), '#5d6a82');
+      chuTren = top + 30 - co * 0.74; chuDuoi = top + 56 + 4;
     } else {
       const con = d.con || [];
       hKhoi = 52 + con.length * 22;
+      chuTren = top + 12 - 10; chuDuoi = top + 68 + (con.length - 1) * 22 + 4;
+      ri = Math.max(30, Math.min(46, Math.round((chuDuoi - chuTren) * 0.42)));
+      const xChu = 32 + ri * 2 + 18; const wChu = xVach - 16 - xChu;
       const tenNha = con.map((c) => c.ten).join(' + ');
       let co = 26; while (co > 16 && hdDo(g, tenNha, fHd(800, co)) > wChu) co--;
-      hdIcon(g, 62, top + 30, true);
       hdChu(g, 'GIA ĐÌNH', xChu, top + 12, fHd(700, 13), '#8b96a9', 'left', 1.8);
       hdChu(g, tenNha, xChu, top + 42, fHd(800, co), '#152036');
       con.forEach((c, i) => {
@@ -1752,6 +1759,7 @@
         hdChu(g, ` · Lớp ${c.lop} · Mã số ${c.so}`, xChu + hdDo(g, c.ten, fHd(700, 14.5)), yb, fHd(400, 14.5), '#5d6a82');
       });
     }
+    hdIcon(g, 32 + ri, (chuTren + chuDuoi) / 2, !!d.nha, ri);
     const giua = top + hKhoi / 2;
     g.fillStyle = '#e2e8f0'; g.fillRect(xVach, top + 2, 2, hKhoi - 4);
     hdChu(g, d.nhan, R, giua - 8, fHd(700, 12.5), d.mauNhan || '#0f766e', 'right', 2.25);
@@ -1919,54 +1927,59 @@
 
   function khoanGiamHd(u) {
     const ct = u.chinhTay; const ra = [];
-    const them = (ten, mot, tru) => { if (tru > 0) ra.push({ ten, mot, tru }); };
-    let goc; let tho; let pct; let tenPct; let motPct;
+    const them = (ten, mot, tru, phu) => { if (tru > 0) ra.push({ ten, mot, tru, phu: phu || '' }); };
+    let goc; let tho; let pct; let tenPct; let motPct; let phuPct = ''; let gocCon = null;
     if (u.kind === 'fam') {
       const mems = u.members || [];
       goc = mems.reduce((s, x) => s + (x.goc || 0), 0);
       tho = u.tho !== undefined ? Number(u.tho) : goc;
+      const theoSo = new Map();
+      for (const x of mems) {
+        const o = theoSo.get(String(x.id)) || { ten: x.ten, buoi: 0, goc: 0 };
+        o.buoi += x.buoi || 0; o.goc += x.goc || 0; theoSo.set(String(x.id), o);
+      }
+      gocCon = [...theoSo.values()];
       for (const x of mems) {
         if ((x.tho || 0) < (x.goc || 0)) {
-          const th = x.tieuHoc ? ' tiểu học' : '';
-          them(`Giảm theo học phí tối đa${th} (${x.ten})`, `học phí tối đa${th} (${x.ten})`, x.goc - x.tho);
+          if (x.tieuHoc) them(`Học sinh Tiểu học (${x.ten})`, `Học sinh Tiểu học (${x.ten})`, x.goc - x.tho);
+          else them(`Học phí tối đa (${x.ten})`, `Học phí tối đa (${x.ten})`, x.goc - x.tho);
         }
       }
       pct = ct && ct.coMien ? ct.pct : (u.giamPct || 0);
-      tenPct = 'Giảm gia đình: ' + pct + '%'; motPct = pct + '% gia đình';
+      tenPct = 'Gia đình'; phuPct = pct + '%'; motPct = pct + '% gia đình';
     } else {
       const cat = u.cat || {};
       goc = u.goc !== undefined ? u.goc : (u.buoi || 0) * (cat.donGia || 150000);
       tho = u.tho !== undefined ? u.tho : goc;
-      if (tho < goc) them(cat.tieuHoc ? 'Giảm theo học phí tối đa tiểu học' : 'Giảm theo học phí tối đa',
-        cat.tieuHoc ? 'học phí tối đa tiểu học' : 'theo học phí tối đa', goc - tho);
+      if (tho < goc) them(cat.tieuHoc ? 'Học sinh Tiểu học' : 'Học phí tối đa', cat.tieuHoc ? 'Học sinh Tiểu học' : 'Học phí tối đa', goc - tho);
       pct = ct && ct.coMien ? ct.pct : (cat.giamPct || 0);
-      tenPct = 'Giảm ưu tiên: ' + pct + '%'; motPct = pct + '%';
+      tenPct = 'Ưu tiên'; phuPct = pct + '%'; motPct = pct + '%';
       const pcts = u.phan && !(ct && ct.coMien) ? [...new Set(u.phan.map((p) => p.giamPct || 0))] : null;
-      if (pcts && pcts.length > 1) { pct = Math.max(...pcts); tenPct = 'Giảm ưu tiên (theo từng lớp: ' + u.phan.map((p) => lopNganHd(p.lop) + ' ' + (p.giamPct || 0) + '%').join(', ') + ')'; motPct = 'theo từng lớp'; }
+      if (pcts && pcts.length > 1) { pct = Math.max(...pcts); phuPct = 'theo từng lớp: ' + u.phan.map((p) => lopNganHd(p.lop) + ' ' + (p.giamPct || 0) + '%').join(', '); motPct = 'theo từng lớp'; }
     }
     const sauMien = ct ? ct.sauMien : u.expected;
     const lechTron = tho - sauMien;
     if (lechTron > 0) {
-      if (pct > 0) them(tenPct, motPct, lechTron);
+      if (pct > 0) them(tenPct, motPct, lechTron, phuPct);
       else if (ra.length) ra[ra.length - 1].tru += lechTron;
-      else them('Làm tròn học phí', 'làm tròn học phí', lechTron);
+      else them('Làm tròn học phí', 'Làm tròn học phí', lechTron);
     }
     const gt = ct && ct.giamThem;
     if (gt && gt.tru > 0) {
       const ly = hoaDauHd(gt.lyDo);
-      them('Giảm thêm' + (gt.kieu === 'pct' ? ': ' + gt.giaTri + '%' : '') + (ly ? ' (' + ly + ')' : ''),
-        gt.kieu === 'pct' ? gt.giaTri + '%' + (ly ? ' · ' + ly : '') : (ly || 'giảm thêm'), gt.tru);
+      them('Giảm thêm', gt.kieu === 'pct' ? gt.giaTri + '%' + (ly ? ' · ' + ly : '') : (ly || 'Giảm thêm'), gt.tru,
+        [gt.kieu === 'pct' ? gt.giaTri + '%' : '', ly].filter(Boolean).join(' · '));
     }
-    return { goc, khoan: ra };
+    return { goc, khoan: ra, gocCon };
   }
 
   function hdTongKet(g, x, y, w, tk) {
     const L = x + 22; const R = x + w - 22; let yy = y + 6; let dau = true;
     const NH = fHd(600, 17);
-    const dong = (nhan, veGt, cao) => {
+    const dong = (nhan, veGt, cao, mauNhan) => {
       if (!dau) hdVach(g, L, yy, R, '#e3e8f1', true, 1);
       const yb = yy + cao / 2 + 6;
-      hdChu(g, nhan, L, yb, NH, '#56627a'); veGt(yb); yy += cao; dau = false;
+      hdChu(g, nhan, L, yb, NH, mauNhan || '#56627a'); veGt(yb); yy += cao; dau = false;
     };
     const phai = (s, f, mau) => (yb) => hdChu(g, s, R, yb, f, mau, 'right');
     if (tk.dongBuoi.length === 1 && !tk.dongBuoi[0].ten) dong('Tổng số buổi học', phai(tk.dongBuoi[0].buoi + ' buổi', fHd(800, 18), '#152036'), 46);
@@ -1987,38 +2000,51 @@
         for (const p of ph) { hdChu(g, p[0], xx, yb, p[1], p[2]); xx += hdDo(g, p[0], p[1]); }
       }, 46);
     }
-    if (tk.khoan.length) {
-      dong('Học phí gốc', phai(tienHd(tk.goc), fHd(700, 18), '#152036'), 46);
-      const mot = tk.khoan.length === 1;
-      const hb = mot ? 46 : 12 + 26 + 4 + tk.khoan.length * 24 + 10;
-      yy += 2;
-      hdKhung(g, L, yy, R - L, hb, 16, '#eef9f2');
+    const oChiTiet = (td, dongs, tongNhan, tongGt, mau) => {
+      if (!dau) { hdVach(g, L, yy, R, '#e3e8f1', true, 1); }
+      yy += 8;
+      const hb = 14 + 18 + 8 + dongs.length * 25 + 8 + 1 + 44;
+      hdKhung(g, L, yy, R - L, hb, 16, mau.nen);
       const iL = L + 16; const iR = R - 16;
-      const fNhan = fHd(700, 14);
-      if (mot) {
-        const k = tk.khoan[0]; const yb = yy + 29;
-        hdChu(g, 'MIỄN GIẢM:', iL, yb, fNhan, '#2f7a52', 'left', 1.4);
-        hdChu(g, k.mot, iL + hdDo(g, 'MIỄN GIẢM:', fNhan, 1.4) + 10, yb, fHd(600, 16), '#245c3f');
-        hdChu(g, '−' + tienHd(k.tru), iR, yb, fHd(700, 17), '#0f8a4a', 'right');
-      } else {
-        const yb = yy + 12 + 17;
-        const tong = tk.khoan.reduce((s, k) => s + k.tru, 0);
-        hdChu(g, 'MIỄN GIẢM', iL, yb, fNhan, '#2f7a52', 'left', 1.4);
-        const so = '−' + tienHd(tong);
-        hdChu(g, so, iR, yb, fHd(700, 17), '#0f8a4a', 'right');
-        hdChu(g, 'Tổng: ', iR - hdDo(g, so, fHd(700, 17)), yb, fHd(600, 14), '#2f7a52', 'right');
-        const top = yy + 12 + 26 + 4;
-        g.fillStyle = '#c6e8d3'; g.fillRect(iL + 4, top, 2, tk.khoan.length * 24);
-        tk.khoan.forEach((k, i) => {
-          const yb2 = top + i * 24 + 17;
-          hdChu(g, k.ten, iL + 20, yb2, fHd(400, 14.5, 'than', true), '#3f6b54');
-          hdChu(g, '−' + tienHd(k.tru), iR, yb2, fHd(400, 14.5, 'than', true), '#2f7a52', 'right');
-        });
-      }
-      yy += hb + 6;
+      hdChu(g, td, iL, yy + 14 + 14, fHd(700, 14), mau.td, 'left', 1.4);
+      const top = yy + 14 + 18 + 8;
+      g.fillStyle = mau.vach; g.fillRect(iL + 4, top, 2, dongs.length * 25);
+      dongs.forEach((d, i) => {
+        const yb = top + i * 25 + 17;
+        let xx = iL + 20;
+        hdChu(g, d.ten, xx, yb, fHd(400, 15, 'than', true), mau.ct);
+        if (d.phu) { xx += hdDo(g, d.ten, fHd(400, 15, 'than', true)); hdChu(g, '  ' + d.phu, xx, yb, fHd(400, 13.5, 'than', true), mau.ctNhat); }
+        hdChu(g, d.gt, iR, yb, fHd(400, 15, 'than', true), mau.ctSo, 'right');
+      });
+      const yv = top + dongs.length * 25 + 8;
+      g.fillStyle = mau.vach; g.fillRect(iL, yv, iR - iL, 1);
+      hdChu(g, tongNhan, iL, yv + 29, fHd(700, 16), mau.tongChu);
+      hdChu(g, tongGt, iR, yv + 30, fHd(800, 19), mau.tongSo, 'right');
+      yy += hb + 8; dau = false;
+    };
+    const XAM = { nen: '#f3f5fa', td: '#6b778d', vach: '#dde3ee', ct: '#46526a', ctNhat: '#8b96a9', ctSo: '#46526a', tongChu: '#152036', tongSo: '#152036' };
+    const XANH = { nen: '#eef9f2', td: '#2f7a52', vach: '#c6e8d3', ct: '#3f6b54', ctNhat: '#6f9a82', ctSo: '#2f7a52', tongChu: '#1f5c3c', tongSo: '#0f8a4a' };
+    const coGocCon = tk.gocCon && tk.gocCon.length > 1;
+    if (coGocCon) {
+      oChiTiet('HỌC PHÍ GỐC', tk.gocCon.map((c) => ({ ten: c.ten, phu: c.buoi + ' buổi', gt: tienHd(c.goc) })), 'Tổng học phí gốc', tienHd(tk.goc), XAM);
+    } else if (tk.khoan.length) dong('Học phí gốc', phai(tienHd(tk.goc), fHd(700, 18), '#152036'), 46);
+    if (tk.khoan.length === 1) {
+      const k = tk.khoan[0];
+      yy += 2;
+      hdKhung(g, L, yy, R - L, 46, 16, '#eef9f2');
+      const iL = L + 16; const iR = R - 16; const yb = yy + 29; const fNhan = fHd(700, 14);
+      hdChu(g, 'MIỄN GIẢM:', iL, yb, fNhan, '#2f7a52', 'left', 1.4);
+      hdChu(g, k.mot, iL + hdDo(g, 'MIỄN GIẢM:', fNhan, 1.4) + 10, yb, fHd(600, 16), '#245c3f');
+      hdChu(g, tienHd(k.tru), iR, yb, fHd(700, 17), '#0f8a4a', 'right');
+      yy += 46 + 6; dau = false;
+    } else if (tk.khoan.length > 1) {
+      oChiTiet('MIỄN GIẢM', tk.khoan.map((k) => ({ ten: k.ten, phu: k.phu, gt: tienHd(k.tru) })), 'Tổng miễn giảm', tienHd(tk.khoan.reduce((s, k) => s + k.tru, 0)), XANH);
     }
-    dong('Học phí', phai(tienHd(tk.cuoi), fHd(800, 24), '#2557d6'), 54);
-    for (const [a, b] of tk.phu || []) dong(a, phai(b, fHd(700, 17), '#152036'), 46);
+    dong(coGocCon || tk.khoan.length ? 'Học phí cuối' : 'Học phí', phai(tienHd(tk.cuoi), fHd(800, 24), '#2557d6'), 54);
+    for (const [a, b, k] of tk.phu || []) {
+      if (k && k.to) dong(a, phai(b, fHd(800, 24), k.mau), 54, k.mauNhan || k.mau);
+      else dong(a, phai(b, fHd(700, k ? 18 : 17), (k && k.mau) || '#152036'), 46, k && (k.mauNhan || k.mau));
+    }
     dong(tk.cuoiDong.nhan, phai(tk.cuoiDong.gt, fHd(800, 18), tk.cuoiDong.mau), 46);
     yy += 6;
     hdKhung(g, x + 0.75, y + 0.75, w - 1.5, yy - y - 1.5, 22, null, '#e3e8f1', 1.5);
@@ -2085,31 +2111,83 @@
       ? { nha: true, con: conNha, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` }
       : { ten: u.label, lop: u.phan ? u.phan.map((p) => p.lop).join(' → ') : (u.classes || [])[0] || '', so: u.hsId, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` };
     const nl = nhomLichHd(nha ? (u.members || []).map((x) => ({ id: x.id, ten: x.ten, lich: x.lich, laNha: true })) : [{ id: u.hsId, ten: u.label, lich: u.lich }]);
-    const lichDs = nl.ds;
-    const { goc, khoan } = khoanGiamHd(u);
+    const { goc, khoan, gocCon } = khoanGiamHd(u);
+    const ct = kq.chotTay && kq.chotTay[u.id];
+    const xong = !!ct || (u.id in kq.done);
     const phu = [];
     if (!nha) {
       const tu = tamUngCuaHs(u.hsId);
       if (tu) {
         const bg = (tu.lichSu || []).filter((h) => h.loai === 'tru' && h.m === m && h.y === y).pop();
-        phu.push(['Số dư học phí đóng trước' + (bg ? '' : ' (chưa trừ tháng này)'), tienHd(bg ? bg.sauDu : tu.soDu)]);
+        const du = bg ? bg.truocDu : tu.soDu;
+        phu.push(['Số dư học phí đóng trước', tienHd(du)]);
+        const thieu = (u.expected || 0) - du;
+        if (thieu > 0) { if (!xong) phu.push(['Số tiền còn thiếu', tienHd(thieu), { to: true, mau: '#c2410c', mauNhan: '#9a3412' }]); }
+        else phu.push(['Số dư còn lại', tienHd(-thieu), { mau: '#0f8a4a', mauNhan: '#2f7a52' }]);
       }
     }
-    const ct = kq.chotTay && kq.chotTay[u.id];
     const cuoiDong = ct ? { nhan: 'Trạng thái', gt: ct.loai === 'tang' ? '★ Được tặng học phí' : '★ Đã chốt xong phí', mau: ct.loai === 'tang' ? '#db2777' : '#15803d' }
       : (u.id in kq.done) ? { nhan: 'Trạng thái', gt: '✓ Đã nhận — cảm ơn phụ huynh', mau: '#15803d' }
         : { nhan: 'Hạn nộp', gt: hanNopHd(m, y), mau: '#d97706' };
     const tk = { dongBuoi: nha ? conNha.map((c) => ({ ten: c.ten, buoi: c.buoi }))
-      : u.phan ? u.phan.map((p) => ({ ten: lopNganHd(p.lop), buoi: p.buoi })) : [{ buoi: u.buoi }], goc, khoan, cuoi: u.expected, phu, cuoiDong };
+      : u.phan ? u.phan.map((p) => ({ ten: lopNganHd(p.lop), buoi: p.buoi })) : [{ buoi: u.buoi }], goc, khoan, gocCon, cuoi: u.expected, phu, cuoiDong };
     const nd = noiDungCkHd(u.label, (u.classes || [])[0], conNha);
     hdVe(cv, W, (g) => {
       let yy = hdDau(g, W, 0, dau);
-      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, lichDs, nha || nl.coNhieu);
+      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, nl.ds, nha || nl.coNhieu);
       yy += 22; yy += hdTongKet(g, 32, yy, W - 64, tk);
       yy += 22; yy += hdNganHang(g, 32, yy, W - 64, nd, anh);
       return yy + hdSlogan(g, W, yy);
     });
   }
+
+  function moXemLonHd(cv) {
+    let xem = document.getElementById('hdXemLon');
+    if (!xem) {
+      xem = document.createElement('div'); xem.id = 'hdXemLon';
+      xem.innerHTML = '<div class="goi">Cuộn chuột: phóng to / thu nhỏ · Kéo: di chuyển · Esc hoặc nháy đúp: đóng</div><img alt="">'
+        + '<button class="dong" title="Đóng (Esc)">✕</button>'
+        + '<div class="thanh"><button data-l="-">−</button><span class="pt">100%</span><button data-l="+">+</button><button data-l="vua">Vừa màn</button><button data-l="1">100%</button></div>';
+      document.body.appendChild(xem);
+      const anh = xem.querySelector('img'); const pt = xem.querySelector('.pt');
+      const z = { k: 1, tx: 0, ty: 0, keo: null };
+      const ap = () => { anh.style.transform = `translate(${z.tx}px,${z.ty}px) scale(${z.k})`; pt.textContent = Math.round(z.k * 100) + '%'; };
+      const zoomTai = (cx, cy, k) => { k = Math.min(6, Math.max(0.3, k)); z.tx = cx - (cx - z.tx) * k / z.k; z.ty = cy - (cy - z.ty) * k / z.k; z.k = k; ap(); };
+      z.vua = () => {
+        const w = anh.naturalWidth / HD_TL; const h = anh.naturalHeight / HD_TL;
+        anh.style.width = w + 'px';
+        z.k = Math.min((innerWidth - 40) / w, (innerHeight - 110) / h, 3);
+        z.tx = (innerWidth - w * z.k) / 2; z.ty = Math.max(20, (innerHeight - 70 - h * z.k) / 2); ap();
+      };
+      const dong = () => { xem.classList.remove('mo'); document.removeEventListener('keydown', z.phim, true); };
+      z.phim = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); dong(); } };
+      z.dong = dong;
+      xem.addEventListener('wheel', (e) => { e.preventDefault(); zoomTai(e.clientX, e.clientY, z.k * Math.exp(-e.deltaY * 0.0015)); }, { passive: false });
+      xem.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.thanh, .dong')) return;
+        z.keo = { x: e.clientX - z.tx, y: e.clientY - z.ty }; xem.classList.add('keo'); xem.setPointerCapture(e.pointerId);
+      });
+      xem.addEventListener('pointermove', (e) => { if (!z.keo) return; z.tx = e.clientX - z.keo.x; z.ty = e.clientY - z.keo.y; ap(); });
+      const tha = () => { z.keo = null; xem.classList.remove('keo'); };
+      xem.addEventListener('pointerup', tha); xem.addEventListener('pointercancel', tha);
+      xem.addEventListener('dblclick', (e) => { if (!e.target.closest('.thanh')) dong(); });
+      xem.querySelector('.dong').onclick = dong;
+      xem.querySelector('.thanh').addEventListener('click', (e) => {
+        const l = e.target.dataset && e.target.dataset.l; if (!l) return;
+        const cx = innerWidth / 2; const cy = innerHeight / 2;
+        if (l === '+') zoomTai(cx, cy, z.k * 1.25); else if (l === '-') zoomTai(cx, cy, z.k / 1.25); else if (l === 'vua') z.vua(); else zoomTai(cx, cy, 1);
+      });
+      xem._z = z;
+    }
+    const z = xem._z; const anh = xem.querySelector('img');
+    anh.onload = z.vua; anh.src = cv.toDataURL('image/png');
+    xem.classList.add('mo');
+    document.addEventListener('keydown', z.phim, true);
+  }
+  document.addEventListener('dblclick', (e) => {
+    const cv = e.target.closest && e.target.closest('canvas.hd-anh');
+    if (cv && cv.width > 0) { e.preventDefault(); moXemLonHd(cv); }
+  });
 
   function veHoaDonTong(o, khoi) {
     const cv = $('#hdTongCanvas');

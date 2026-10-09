@@ -1,0 +1,108 @@
+/* sao-dash.css — hộp "Sao học sinh" trên dashboard (10/10/2026, bản mẫu v3 thầy chốt). Lớp sd-* riêng, dùng token :root của dashboard. */
+.sd-nen, .sd-nen *, .sd-pop, .sd-pop *{box-sizing:border-box}
+.sd-nen{position:fixed; inset:0; z-index:85; display:grid; place-items:center; padding:18px; background:rgba(22,35,42,.46);
+  opacity:0; pointer-events:none; transition:opacity .24s var(--em)}
+.sd-nen.mo{opacity:1; pointer-events:auto}
+.sd-hop{width:min(1320px,100%); height:min(860px,calc(100vh - 36px)); background:var(--nen); border-radius:22px; display:flex; flex-direction:column;
+  overflow:hidden; box-shadow:0 26px 64px rgba(22,35,42,.3); transform:translateY(16px) scale(.98); transition:transform .26s var(--em)}
+.sd-nen.mo .sd-hop{transform:none}
+.sd-dau{display:flex; align-items:center; gap:12px; flex-wrap:wrap; padding:16px 20px; background:var(--the); border-bottom:1px solid var(--vien)}
+.sd-dau h2{margin:0; font-size:21px; display:flex; align-items:center; gap:8px}
+.sd-sao-an{display:inline-flex; cursor:default; user-select:none}
+.sd-sao-an svg{width:24px; height:24px; fill:#F3B21B}
+.sd-sao-an.nhay{animation:sd-nhay .5s var(--em)}
+@keyframes sd-nhay{0%{transform:scale(1) rotate(0)}50%{transform:scale(1.3) rotate(36deg)}100%{transform:scale(1) rotate(72deg)}}
+.sd-chip-lop{display:flex; gap:6px; flex-wrap:wrap}
+.sd-chip{border:1px solid var(--vien); background:var(--the); border-radius:99px; padding:6px 12px; font:inherit; font-weight:700; font-size:12.5px; color:var(--mo); cursor:pointer}
+.sd-chip.on{background:var(--xanh); border-color:var(--xanh); color:#fff}
+.sd-chip b{margin-left:5px}
+.sd-chip.cong-chip b{color:var(--la)} .sd-chip.tru-chip b{color:var(--do)} .sd-chip.on b{color:#fff}
+.sd-chip.vien{border-style:dashed}
+.sd-tim{margin-left:auto; border:1px solid var(--vien); border-radius:12px; padding:8px 12px; font:inherit; font-size:13px; width:210px}
+.sd-x{border:0; background:var(--nen); width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; color:var(--mo)}
+.sd-than{flex:1; min-height:0; display:grid; grid-template-columns:1fr 310px; gap:16px; padding:16px 20px; overflow:hidden}
+.sd-giua{display:flex; flex-direction:column; gap:14px; min-width:0; min-height:0}
+.sd-phai{display:flex; flex-direction:column; gap:14px; overflow:auto; min-height:0}
+.sd-the{background:var(--the); border:1px solid var(--vien); border-radius:16px; box-shadow:var(--bong); padding:14px 16px}
+.sd-the h3{margin:0 0 10px; font-size:14px}
+.sd-so-tom{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+.sd-so-tom .nh{font-size:11.5px; font-weight:700; color:var(--mo); letter-spacing:.04em; text-transform:uppercase}
+.sd-so-tom .gt{font-size:28px; font-weight:800; margin-top:4px}
+.sd-so-tom .gt.xanh{color:var(--la)} .sd-so-tom .gt.vang{color:#b7791f}
+.sd-so-tom .phu{font-size:12px; color:var(--nhat); font-weight:600}
+.sd-bang-boc{flex:1; min-height:0; overflow:auto; padding:0}
+.sd-bang{width:100%; border-collapse:collapse; font-size:13.5px}
+.sd-bang th{position:sticky; top:0; background:var(--the); text-align:left; font-size:11.5px; color:var(--mo); font-weight:700; letter-spacing:.03em;
+  padding:10px 12px; border-bottom:1px solid var(--vien); text-transform:uppercase; z-index:1}
+.sd-bang td{padding:8px 12px; border-bottom:1px solid #EEF3F2; vertical-align:middle}
+.sd-bang tr:hover td{background:#FAFCFB}
+.sd-bang .giua{text-align:center; white-space:nowrap}
+.sd-bang .mo{color:var(--mo); font-weight:600}
+.sd-bang .so-sao{font-weight:800; font-size:16px; color:#9A6A12; font-variant-numeric:tabular-nums}
+.sd-bang .tuan{color:var(--la); font-weight:800}
+.cam{color:#b7791f; font-weight:700}
+.sd-ten{display:flex; align-items:center; gap:10px; font-weight:700}
+.sd-ten small{display:block; color:var(--nhat); font-weight:600; font-size:11.5px}
+.sd-av{position:relative; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:800; font-size:12px; flex:none; overflow:hidden}
+.sd-av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.sd-pm{width:30px; height:30px; border-radius:9px; border:1px solid var(--vien); background:var(--the); font-weight:800; font-size:16px; cursor:pointer}
+.sd-pm.cong{background:var(--la-nhat); border-color:#bfe3cf; color:var(--la)}
+.sd-pm.tru{background:var(--do-nhat); border-color:#f4c9c2; color:var(--do)}
+.sd-lk{color:var(--xanh); font-weight:700; font-size:12.5px; cursor:pointer}
+.sd-buoi{border:1px solid #F5E3C0; background:#FFFBF2; border-radius:12px; padding:10px 12px; margin-bottom:8px}
+.sd-buoi .l1{display:flex; justify-content:space-between; font-weight:800; font-size:13.5px}
+.sd-buoi .l2{font-size:12px; color:var(--mo); margin:3px 0 8px; font-weight:600}
+.sd-nut{font:inherit; font-weight:800; font-size:12.5px; border:0; border-radius:10px; padding:8px 12px; cursor:pointer}
+.sd-nut.vang{background:var(--vang); color:#fff} .sd-nut.xam{background:var(--nen); color:var(--mo)} .sd-nut.xanh{background:var(--xanh); color:#fff}
+.sd-nut:disabled{opacity:.5; cursor:default}
+.sd-cai{display:flex; align-items:center; justify-content:space-between; font-size:13px; font-weight:600; padding:6px 0; gap:10px}
+.sd-cai input[type=number]{width:64px; border:1px solid var(--vien); border-radius:9px; padding:6px 8px; font:inherit; text-align:center; font-weight:800}
+.sd-ghi-chu{font-size:12px; color:var(--mo); margin-top:6px}
+.sd-cai-tin{font-size:12px; color:var(--la); font-weight:700; min-height:16px; margin-top:4px}
+.sd-nk{font-size:12.5px; color:var(--mo); border-left:2px solid var(--vien); padding:2px 0 8px 10px; margin-left:4px}
+.sd-nk b{color:var(--chu)} .sd-nk b.la, .la{color:var(--la)} .sd-nk b.do, .do{color:var(--do)}
+.sd-trong{padding:30px 10px; text-align:center; color:var(--mo); font-weight:600; font-size:13.5px}
+.sd-trong.nho{padding:10px 4px; font-size:12.5px}
+/* hộp nổi (cộng/trừ, lịch sử, lý do nhanh) — trên hộp sao */
+.sd-pop{position:fixed; inset:0; z-index:95; background:rgba(22,35,42,.42); display:grid; place-items:center; padding:16px}
+.sd-pop-hop{background:#fff; border-radius:20px; width:min(440px,100%); max-height:88vh; overflow:auto; padding:20px; box-shadow:0 26px 64px rgba(22,35,42,.3)}
+.sd-pop-hop.rong{width:min(860px,100%)}
+.sd-pop-hop h3{margin:0 0 4px; font-size:17px}
+.sd-mo{color:var(--mo); font-size:13px; margin-bottom:14px}
+.sd-dem{display:flex; align-items:center; justify-content:center; gap:14px; margin:6px 0 14px}
+.sd-dem button{width:44px; height:44px; border-radius:12px; border:1px solid var(--vien); background:var(--nen); font-size:20px; font-weight:800; cursor:pointer}
+.sd-dem .s{font-size:40px; font-weight:800; min-width:90px; text-align:center}
+.sd-dem .s.la{color:var(--la)} .sd-dem .s.do{color:var(--do)}
+.sd-ly{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px}
+.sd-lydo{width:100%; border:1px solid var(--vien); border-radius:12px; padding:10px; font:inherit; font-size:13px; resize:none; height:56px}
+.sd-lydo.loi{border-color:var(--do)}
+.sd-canh{background:var(--do-nhat); color:#b2402f; font-size:12px; font-weight:700; border-radius:10px; padding:8px 10px; margin-top:8px}
+.sd-tin{font-size:12.5px; color:var(--mo); font-weight:600; min-height:16px; margin-top:8px}
+.sd-cuoi{display:flex; gap:8px; justify-content:flex-end; margin-top:14px}
+.sd-cuoi.gian{justify-content:space-between}
+.sd-ls{max-height:60vh; overflow:auto}
+.sd-ls-dong{display:grid; grid-template-columns:52px 1fr 60px; gap:10px; align-items:center; padding:9px 0; border-bottom:1px solid #EEF3F2; font-size:13px}
+.sd-ls-dong .ng{color:var(--nhat); font-weight:700; font-size:12px}
+.sd-ls-dong .vc b{display:block} .sd-ls-dong .vc small{color:var(--mo); font-weight:600}
+.sd-ls-dong .sv{text-align:right; font-weight:800; font-size:15px}
+.sd-cl2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
+.sd-cl-cot{border:1px solid var(--vien); border-radius:14px; padding:12px}
+.sd-cl-cot h4{margin:0 0 10px; font-size:13.5px}
+.sd-cl-cot h4 small{color:var(--nhat); font-weight:600}
+.sd-cl-cot.cong h4{color:var(--la)} .sd-cl-cot.tru h4{color:var(--do)}
+.sd-cl-dong{display:grid; grid-template-columns:22px 1fr 74px 28px; gap:6px; align-items:center; margin-bottom:6px}
+.sd-cl-dong .keo{display:flex; flex-direction:column; gap:1px}
+.sd-cl-dong .keo button{border:0; background:none; color:var(--nhat); cursor:pointer; font-size:10px; line-height:1; padding:1px}
+.sd-cl-dong input{border:1px solid var(--vien); border-radius:9px; padding:7px 9px; font:inherit; font-size:13px; width:100%}
+.sd-cl-dong .sn{display:flex; align-items:center; border:1px solid var(--vien); border-radius:9px; overflow:hidden}
+.sd-cl-dong .sn span{padding:0 6px; font-weight:800; color:var(--mo)}
+.sd-cl-dong .sn input{border:0; padding:7px 4px; text-align:center; font-weight:800}
+.sd-cl-dong .xoa{border:0; background:var(--nen); width:28px; height:28px; border-radius:8px; cursor:pointer; color:var(--mo)}
+.sd-cl-them{width:100%; border:1px dashed var(--vien); background:none; border-radius:10px; padding:8px; font:inherit; font-weight:700; font-size:12.5px; color:var(--mo); cursor:pointer; margin-top:4px}
+.sd-toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%); z-index:99; background:#16232A; color:#fff; font-weight:700; font-size:14px; padding:12px 18px; border-radius:14px}
+@media (max-width:900px){
+  .sd-than{grid-template-columns:1fr; overflow:auto}
+  .sd-so-tom, .sd-cl2{grid-template-columns:1fr}
+  .sd-tim{width:100%; margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){ .sd-nen, .sd-hop{transition:none} }

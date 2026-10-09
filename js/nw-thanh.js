@@ -236,6 +236,7 @@
     { ma: 'hoatDong', chu: 'Hoạt động', ic: P('<path d="M3 12h4l3-8 4 16 3-8h4"/>'), icm: ICM.hoatDong },   // thiết kế ĐT 7 — Đang hoạt động + Bài tập gần đây (window.qlMoHoatDong)
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, icm: ICM.dangKy },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
     { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, icm: ICM.top },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
+    { ma: 'sao', chu: 'Sao', ic: ICQ.sao },   // ⭐ 10/10/2026 — hộp Sao học sinh: ví + cộng/trừ + lý do nhanh (js/sao-dash.js window.SaoDash)
     { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, icm: ICM.qua },
     { ma: 'khoBai', chu: 'Kho bài', ic: ICQ.kho, icm: ICM.khoBai },   // v1.203.0 — thay "Bài đã xoá": pop-up lớn mọi lớp (window.qlMoKhoLon)
     { ma: 'baiCheck', chu: 'Bài check', ic: ICQ.baiCheck },   // v1.205.0 — bài check AWord theo bộ đề (window.qlMoBaiCheck)
@@ -279,6 +280,7 @@
     if (ma === 'baiCheck') { if (window.qlMoBaiCheck) window.qlMoBaiCheck(); return; }
     if (ma === 'guiTb') { if (window.ACDay) ACDay.moGuiThay(); return; }
     if (ma === 'nhacHan') { if (window.ACDay) ACDay.moNhacHan(); return; }
+    if (ma === 'sao') { if (window.SaoDash) window.SaoDash.mo(); return; }
     if (ma === 'top' || ma === 'qua' || ma === 'kholuutru') { if (window.qlMoMuc) window.qlMoMuc(ma); return; }
     // Trang thử: mục Network ⇒ trang quản lý myNetwork (nw/quanly.html?muc=…, cùng mã mục)
     if (window.AC_THU && m_NW[ma]) { location.href = 'nw/quanly.html?muc=' + ma; return; }

@@ -54,7 +54,7 @@
     var l = document.createElement('link');
     l.id = 'vq-css';
     l.rel = 'stylesheet';
-    l.href = 'css/vi-qua.css?v=1';
+    l.href = 'css/vi-qua.css?v=2';
     document.head.appendChild(l);
   })();
 
@@ -187,7 +187,6 @@
           '<div><h3></h3><p></p></div>' +
           '<button class="vq-x" type="button" title="Đóng" aria-label="Đóng">' + IC.dong + '</button>' +
         '</div>' +
-        '<div class="vq-canh">' + IC.canh + '<span>' + esc(CANH_BAO) + '</span></div>' +
         '<div class="vq-than"></div>' +
       '</div>';
     document.body.appendChild(nen);
@@ -215,6 +214,153 @@
     nen.querySelector('.vq-dau h3').textContent = tieu;
     nen.querySelector('.vq-dau p').textContent = phu;
   }
+  // ⭐ 10/10/2026 — dải đỏ "dữ liệu mẫu" KHÔNG còn gắn sẵn vào mọi pop-up (ví sao nay là số THẬT):
+  // chỉ còn ở tab Tặng sao cho bạn + pop-up Đổi quà (hai phần vẫn đang xây dựng — thầy chốt).
+  function daiDo() { return '<div class="vq-canh">' + IC.canh + '<span>' + esc(CANH_BAO) + '</span></div>'; }
+
+  /* ============================================================
+     ⭐ 10/10/2026 — VÍ SAO THẬT (thầy chốt + "ok build" thưởng sao; thiết kế THIET KE THUONG SAO.md)
+     · saoTong/chung   = ví CẢ TRƯỜNG { em: { '<số HS>': { s, m (ID đăng nhập), t (tên gọi), l (lớp) } } } — 1 lượt đọc,
+                         tìm dòng của em theo ID đăng nhập (m). Bảng sao lớp = các dòng cùng l.
+     · saoLichSu/<số>  = lịch sử ví (CHỈ đọc khi mở ví, hoặc khi tổng sao đổi so với lần xem trước).
+     · Pop-up SAO MỚI: nhớ TRÊN MÁY (localStorage `acSaoXem_<số>` = {luc, s}) — mỗi đợt sao mới chỉ hiện MỘT lần.
+     ⛔ Học sinh CHỈ ĐỌC (luật Firestore chặn ghi). Ví do hàm máy chủ apDotSao sửa (sao.js).
+     ============================================================ */
+  var VI = { trangThai: 'chua', ma: '', so: null, s: 0, l: '', em: {}, lichSu: null, hua: null };
+  var chuanMa = function (s) { return String(s || '').replace(/\s+/g, '').toUpperCase(); };
+  var maLop = function (s) {
+    return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'D').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  };
+  var khongDau = function (s) {
+    return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toUpperCase().replace(/\s+/g, ' ').trim();
+  };
+  function khoFs() { return (window.AWChat && AWChat.kho) ? AWChat.kho() : Promise.reject(new Error('khong-co-kho')); }
+  function taiVi(ma) {
+    ma = chuanMa(ma);
+    if (!ma) return Promise.resolve(VI);
+    if (VI.hua && VI.ma === ma) return VI.hua;
+    VI.ma = ma;
+    VI.hua = khoFs().then(function (f) {
+      return f.fs.getDoc(f.fs.doc(f.db, 'saoTong', 'chung'));
+    }).then(function (d) {
+      var em = (d && d.exists() && d.data().em) || {};
+      VI.em = em; VI.so = null; VI.s = 0; VI.l = '';
+      Object.keys(em).forEach(function (so) {
+        if (em[so] && em[so].m === ma) { VI.so = so; VI.s = Number(em[so].s) || 0; VI.l = em[so].l || ''; }
+      });
+      VI.trangThai = 'xong';
+      return VI;
+    })['catch'](function () { VI.trangThai = 'loi'; VI.hua = null; return VI; });
+    return VI.hua;
+  }
+  function taiLichSu() {
+    if (!VI.so) return Promise.resolve([]);
+    if (VI.lichSu) return Promise.resolve(VI.lichSu);
+    return khoFs().then(function (f) {
+      return f.fs.getDoc(f.fs.doc(f.db, 'saoLichSu', VI.so));
+    }).then(function (d) {
+      VI.lichSu = (d && d.exists() && d.data().moc) || [];
+      return VI.lichSu;
+    })['catch'](function () { return []; });
+  }
+  // Huy hiệu dưới avatar (.sao-hieu — chữ số là NÚT CHỮ đầu tiên) + ô "SAO ĐANG CÓ" (.vi-to .so).
+  function veSoSao() {
+    var n = String(VI.s);
+    Array.prototype.forEach.call(document.querySelectorAll('.sao-hieu'), function (h) {
+      var t = h.firstChild;
+      if (t && t.nodeType === 3) t.nodeValue = n; else h.insertBefore(document.createTextNode(n), h.firstChild);
+    });
+    Array.prototype.forEach.call(document.querySelectorAll('.vi-to .so'), function (o) { o.textContent = n; });
+  }
+
+  var THU = ['Chủ nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+  function ngayTach(s) {
+    var p = String(s || '').split('-');
+    var d = new Date(+p[0], +p[1] - 1, +p[2]);
+    return { d: p[2] || '?', m: +p[1] || 0, thu: isNaN(d.getTime()) ? '' : THU[d.getDay()] };
+  }
+  // Lịch sử ví gom theo NGÀY (thầy chốt 09/10): mới nhất trước.
+  function gomTheoNgay(ds) {
+    var nhom = [], cuoi = null;
+    ds.slice().sort(function (a, b) { return (b.luc || 0) - (a.luc || 0); }).forEach(function (x) {
+      if (!cuoi || cuoi.ngay !== x.ngay) { cuoi = { ngay: x.ngay, tieu: [], dong: [], tong: 0, moi: false }; nhom.push(cuoi); }
+      if (x.nhom && cuoi.tieu.indexOf(x.nhom) < 0) cuoi.tieu.push(x.nhom);
+      cuoi.dong.push(x); cuoi.tong += Number(x.so) || 0;
+      if (x._moi) cuoi.moi = true;
+    });
+    return nhom;
+  }
+  function nguonSao(x) {
+    var a = String(x.app || '');
+    if (a === 'dashboard') return x.ai || 'Thầy Andrew';
+    return a ? a : (x.ai || '');
+  }
+
+  /* ---------- POP-UP SAO MỚI (giữa màn, ưu tiên điện thoại) ---------- */
+  var KHOA_XEM = 'acSaoXem_';
+  function docXem(so) { try { return JSON.parse(localStorage.getItem(KHOA_XEM + so) || 'null'); } catch (e) { return null; } }
+  function ghiXem(so, luc, s) { try { localStorage.setItem(KHOA_XEM + so, JSON.stringify({ luc: luc, s: s })); } catch (e) { /* máy chặn lưu: thôi */ } }
+  function kiemSaoMoi(ctx) {
+    if (!VI.so || !document.querySelector('.vi-to')) return;
+    var x = docXem(VI.so);
+    if (x && x.s === VI.s) return;                         // tổng không đổi ⇒ khỏi đọc lịch sử (đỡ 1 lượt đọc)
+    taiLichSu().then(function (ds) {
+      var moc = x ? (x.luc || 0) : (Date.now() - 3 * 864e5);   // máy mới: chỉ coi 3 ngày gần nhất là "mới"
+      var maxLuc = ds.reduce(function (a, m) { return Math.max(a, m.luc || 0); }, moc);
+      var moi = ds.filter(function (m) { return (m.luc || 0) > moc && Number(m.so) > 0; });
+      if (!moi.length) { ghiXem(VI.so, maxLuc, VI.s); return; }
+      moSaoMoi(ctx, moi, function () { ghiXem(VI.so, maxLuc, VI.s); });
+    });
+  }
+  function moSaoMoi(ctx, moi, xong) {
+    var tong = moi.reduce(function (a, x) { return a + (Number(x.so) || 0); }, 0);
+    var g = gomTheoNgay(moi);
+    var ten = String(ctx.ten || '').trim().split(/\s+/).slice(-2).join(' ');
+    var nen = document.createElement('div');
+    nen.className = 'vq-sm-nen';
+    nen.innerHTML = '<div class="vq-sm-hop" role="dialog" aria-modal="true">' +
+      '<div class="vq-sm-tia"></div>' +
+      '<div class="vq-sm-sao">' + IC.saoDac + '<b>+' + tong + '</b></div>' +
+      '<div class="vq-sm-chuc">Chúc mừng ' + esc(ten || 'em') + '!</div>' +
+      '<div class="vq-sm-phu">Em vừa được thêm <b>' + tong + ' sao</b></div>' +
+      g.map(function (n) {
+        var t = ngayTach(n.ngay);
+        return '<div class="vq-sm-ngay"><div class="vq-sm-ngay-dau"><span class="vq-sm-d">' + esc(t.d + '/' + t.m) + '</span><span>' +
+          esc([t.thu].concat(n.tieu).filter(Boolean).join(' · ')) + '</span></div>' +
+          n.dong.map(function (d) { return '<div class="vq-sm-dong"><b>+' + d.so + '</b><span>' + esc(d.viec) + '</span></div>'; }).join('') + '</div>';
+      }).join('') +
+      '<div class="vq-sm-tong">Ví của em: <s>' + (VI.s - tong) + '</s> → <b>' + VI.s + ' ★</b></div>' +
+      '<button class="vq-sm-nut" type="button" data-ok>Tuyệt vời!</button>' +
+      '<button class="vq-sm-phu-nut" type="button" data-vi>Xem ví sao</button>' +
+      '</div>';
+    document.body.appendChild(nen);
+    var daDong = false;
+    var dongPop = function () {
+      if (daDong) return; daDong = true;
+      nen.classList.add('di');
+      setTimeout(function () { nen.remove(); }, 300);
+      xong();
+    };
+    nen.querySelector('[data-ok]').onclick = dongPop;
+    nen.querySelector('[data-vi]').onclick = function () { dongPop(); moVi(ctx); };
+    nen.addEventListener('click', function (e) { if (e.target === nen) dongPop(); });
+  }
+
+  // Nạp ví khi trang đã biết em là ai (layCtx có ID) — thử mỗi 1 giây, tối đa ~60 lần.
+  function batDauVi(layCtx) {
+    var lan = 0;
+    var thu = function () {
+      var c = {};
+      try { c = layCtx() || {}; } catch (e) { c = {}; }
+      if (!c.ma) { if (++lan < 60) setTimeout(thu, 1000); return; }
+      taiVi(c.ma).then(function () {
+        if (VI.trangThai !== 'xong') return;
+        veSoSao();
+        kiemSaoMoi(c);
+      });
+    };
+    thu();
+  }
 
   function avNho(ctx, ten) {
     var tu = String(ten || '').trim().split(/\s+/);
@@ -234,19 +380,45 @@
     var nen = dungKhung('vqVi');
     datDau(nen, IC.saoDac, 'THÔNG TIN VÍ', ctx.ten + ' · Lớp ' + ctx.lop);
     var than = nen.querySelector('.vq-than');
+    than.innerHTML = '<div class="vq-trong">Đang mở ví sao của em…</div>';
+    mo(nen);
+    // ⭐ 10/10/2026 — SỐ THẬT: ví (saoTong) + lịch sử (saoLichSu). Lỗi/chưa có ⇒ nói rõ, KHÔNG bịa số.
+    taiVi(ctx.ma).then(function () { return taiLichSu(); }).then(function (lichSu) { veVi(ctx, than, lichSu); });
+  }
 
-    var hang = 1, ds = (ctx.caLop || []).slice();
-    var bang = ds.map(function (t, i) { return { ten: t, sao: (t === ctx.ten ? MAU_VI.dangCo : saoMau(t, i)) }; });
-    bang.sort(function (a, b) { return b.sao - a.sao; });
-    for (var i = 0; i < bang.length; i++) if (bang[i].ten === ctx.ten) { hang = i + 1; break; }
+  function veVi(ctx, than, lichSu) {
+    if (VI.trangThai === 'loi') {
+      than.innerHTML = '<div class="vq-trong">Chưa mở được ví sao — em kiểm tra mạng rồi thử lại nhé.</div>';
+      return;
+    }
+    var daKiem = 0, daTieu = 0;
+    lichSu.forEach(function (x) { var n = Number(x.so) || 0; if (n > 0) daKiem += n; else daTieu -= n; });
+    // Bảng sao lớp: các dòng ví cùng lớp (l) + bạn trong danh sách lớp chưa có sao (0). Ghép tên bỏ dấu.
+    var lopMa = maLop(ctx.lopMa || ctx.lop);
+    var bang = [], daCo = {};
+    Object.keys(VI.em).forEach(function (so) {
+      var e = VI.em[so] || {};
+      if (so !== VI.so && maLop(e.l) !== lopMa) return;
+      bang.push({ ten: e.t || '—', sao: Number(e.s) || 0, toi: so === VI.so });
+      daCo[khongDau(e.t)] = 1;
+    });
+    (ctx.caLop || []).forEach(function (t) {
+      var k = khongDau(t);
+      var co = Object.keys(daCo).some(function (x) { return x && (x === k || k.slice(-x.length - 1) === ' ' + x); });
+      if (!co) bang.push({ ten: t, sao: t === ctx.ten ? VI.s : 0, toi: t === ctx.ten && !VI.so });
+    });
+    if (!VI.so && !bang.some(function (d) { return d.toi; })) bang.push({ ten: ctx.ten, sao: 0, toi: true });
+    bang.sort(function (a, b) { return b.sao - a.sao || String(a.ten).localeCompare(String(b.ten), 'vi'); });
+    var hang = 1;
+    for (var i = 0; i < bang.length; i++) if (bang[i].toi) { hang = i + 1; break; }
 
     than.innerHTML =
       '<div class="vq-tong">' +
-        '<div><div class="vq-lon">' + MAU_VI.dangCo + '</div>' +
+        '<div><div class="vq-lon">' + VI.s + '</div>' +
           '<div class="vq-nhan">SAO ĐANG CÓ</div></div>' +
         '<div class="vq-3o">' +
-          '<div class="vq-o"><b>' + MAU_VI.daKiem + '</b><span>ĐÃ KIẾM</span></div>' +
-          '<div class="vq-o"><b>' + MAU_VI.daTieu + '</b><span>ĐÃ TIÊU</span></div>' +
+          '<div class="vq-o"><b>' + daKiem + '</b><span>ĐÃ KIẾM</span></div>' +
+          '<div class="vq-o"><b>' + daTieu + '</b><span>ĐÃ TIÊU</span></div>' +
           '<div class="vq-o"><b>#' + hang + '</b><span>HẠNG TRONG LỚP</span></div>' +
         '</div>' +
       '</div>' +
@@ -259,19 +431,27 @@
 
     var noi = than.querySelector('.vq-noi');
 
+    // Thầy chốt 09/10: NGÀY to bên trái, bên phải MỖI LÝ DO MỘT DÒNG.
     function veLichSu() {
-      noi.innerHTML = '<div class="vq-the">' + MAU_VI.lichSu.map(function (d) {
-        return '<div class="vq-dong">' +
-          '<span class="vq-so ' + (d.so >= 0 ? 'cong' : 'tru') + '">' + soCoDau(d.so) + '</span>' +
-          '<span class="vq-viec"><b>' + esc(d.viec) + '</b>' +
-            '<span>' + esc(d.ngay + ' · ' + d.ai) + '</span></span>' +
-          '</div>';
+      if (!lichSu.length) { noi.innerHTML = '<div class="vq-the"><div class="vq-trong">Chưa có sao nào — cố gắng trong giờ học để nhận sao nhé!</div></div>'; return; }
+      noi.innerHTML = '<div class="vq-the vq-ls2">' + gomTheoNgay(lichSu).map(function (g) {
+        var n = ngayTach(g.ngay);
+        return '<div class="vq-ng">' +
+          '<div class="vq-ng-trai"><b>' + esc(n.d) + '</b><span>THG ' + n.m + '</span><small>' + esc(n.thu) + '</small></div>' +
+          '<div class="vq-ng-phai">' +
+            '<div class="vq-ng-dau"><span>' + esc(g.tieu.join(' · ') || 'Sao') + '</span>' +
+              '<b class="' + (g.tong >= 0 ? 'cong' : 'tru') + '">' + soCoDau(g.tong) + ' ★</b></div>' +
+            g.dong.map(function (d) {
+              return '<div class="vq-ly"><span class="vq-ly-so ' + (d.so >= 0 ? 'cong' : 'tru') + '">' + soCoDau(d.so) + '</span>' +
+                '<span class="vq-ly-chu">' + esc(d.viec) + '</span><small>' + esc(nguonSao(d)) + '</small></div>';
+            }).join('') +
+          '</div></div>';
       }).join('') + '</div>';
     }
 
     function veTang() {
       var ban = (ctx.caLop || []).filter(function (t) { return t !== ctx.ten; });
-      noi.innerHTML =
+      noi.innerHTML = daiDo() +
         '<div class="vq-form">' +
           '<div class="vq-hang-o">' +
             '<div><label>TẶNG CHO BẠN</label><select class="vq-ban">' +
@@ -279,7 +459,7 @@
                           : '<option>Lớp mình chưa có danh sách bạn</option>') +
             '</select></div>' +
             '<div><label>SỐ SAO</label><input class="vq-sosao" type="number" min="1" max="' +
-              MAU_VI.dangCo + '" value="5"></div>' +
+              Math.max(1, VI.s) + '" value="1"></div>' +
           '</div>' +
           '<label>LỜI NHẮN</label>' +
           '<textarea class="vq-nhan-chu" maxlength="200" placeholder="Cảm ơn bạn đã giúp mình hôm nay…"></textarea>' +
@@ -292,7 +472,7 @@
 
     function veBangLop() {
       noi.innerHTML = '<div class="vq-the">' + (bang.length ? bang.map(function (d, i) {
-        return '<div class="vq-dong"' + (d.ten === ctx.ten ? ' style="background:var(--accent-soft)"' : '') + '>' +
+        return '<div class="vq-dong"' + (d.toi ? ' style="background:var(--accent-soft)"' : '') + '>' +
           '<span class="vq-hang">' + (i + 1) + '</span>' +
           avNho(ctx, d.ten) +
           '<span class="vq-viec"><b>' + esc(d.ten) + '</b></span>' +
@@ -311,16 +491,16 @@
       };
     });
     veLichSu();
-    mo(nen);
   }
 
   /* ============================================================
-     POP-UP 2 — ĐĂNG KÝ ĐỔI QUÀ
+     POP-UP 2 — ĐĂNG KÝ ĐỔI QUÀ (⛔ vẫn là MẪU — giữ dải đỏ; số sao em đang có là số THẬT)
      ============================================================ */
   function moQua(ctx) {
     var nen = dungKhung('vqQua');
-    datDau(nen, IC.qua, 'ĐĂNG KÝ ĐỔI QUÀ', 'Em đang có ' + MAU_VI.dangCo + ' sao');
+    datDau(nen, IC.qua, 'ĐĂNG KÝ ĐỔI QUÀ', 'Em đang có ' + VI.s + ' sao');
     var than = nen.querySelector('.vq-than');
+    if (!nen.querySelector('.vq-canh')) than.insertAdjacentHTML('beforebegin', daiDo());
     than.innerHTML = '<div class="vq-trong">Đang mở kho quà của thầy…</div>';
     mo(nen);
 
@@ -400,8 +580,8 @@
         '<div class="vq-dong"><span class="vq-viec"><b>Phí đổi quà (' + thue + '%)</b></span>' +
           '<span class="vq-so tru">' + phi + ' ★</span></div>' +
         '<div class="vq-dong"><span class="vq-viec"><b>Tổng trừ vào ví</b>' +
-          '<span>Ví em còn ' + (MAU_VI.dangCo - tong) + ' sao sau khi đổi</span></span>' +
-          '<span class="vq-so ' + (MAU_VI.dangCo >= tong ? 'cong' : 'tru') + '">' + tong + ' ★</span></div>' +
+          '<span>Ví em còn ' + (VI.s - tong) + ' sao sau khi đổi</span></span>' +
+          '<span class="vq-so ' + (VI.s >= tong ? 'cong' : 'tru') + '">' + tong + ' ★</span></div>' +
       '</div>' +
       '<div style="display:flex; gap:10px; margin-top:14px">' +
         '<button class="vq-nut" type="button" data-ok="1">Đăng ký đổi</button>' +
@@ -540,10 +720,15 @@
       };
     }
 
+    // ⭐ 10/10/2026 — nạp ví sao THẬT: số dưới avatar + ô SAO ĐANG CÓ + pop-up sao mới (một lần mỗi đợt).
+    batDauVi(layCtx);
+
     // Đóng sidebar rồi mở lại thì luôn về trang menu chính.
     opt.veChinh = function () { hop.classList.remove('vq-o-vi'); };
     return opt.veChinh;
   }
 
-  window.AWVi = { dungMenu: dungMenu, moVi: moVi, moQua: moQua, CHUA_XONG: CHUA_XONG };
+  window.AWVi = { dungMenu: dungMenu, moVi: moVi, moQua: moQua, CHUA_XONG: CHUA_XONG,
+    // ⭐ 10/10/2026 — cho trang khác (myNetwork) đọc số sao thật của em
+    taiVi: function (ma) { return taiVi(ma).then(function () { return VI.trangThai === 'xong' ? { so: VI.so, s: VI.s } : null; }); } };
 })();

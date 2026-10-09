@@ -3062,6 +3062,11 @@ button.mk-em:hover{border-color:currentColor}
 .lb3 .lb-luc{color:var(--nhat); font-weight:600; overflow:hidden; text-overflow:ellipsis}
 .lb3 .lb-khoa{margin:-3px 0 -3px auto; flex:none; font:800 9px/1 var(--font); letter-spacing:.08em; color:#B45309; background:#FFF1E0; border-radius:4px; padding:3px 5px}
 .lb3 .lb-dang{flex:none; font:800 9.5px/1 var(--font); letter-spacing:.06em; padding:4px 6px; border-radius:5px; background:var(--xanh-nhat); color:var(--xanh)}
+/* v1.285.0 — thẻ lớp/khóa CHƯA CÓ EM (ghép từ roster): viền đứt + nút "+ Thêm học sinh" nổi trên lb-main */
+.lop-btn.lb3.rong{border-style:dashed}
+.lb3 .lb-h3 .lb-them{pointer-events:auto; position:relative; z-index:2; flex:none; border:0; cursor:pointer; font:800 11px/1 var(--font);
+  padding:5px 8px; border-radius:6px; background:var(--xanh-nhat); color:var(--xanh)}
+.lb3 .lb-h3 .lb-them:hover{filter:brightness(.95)}
 .lb3 .lb-ma{font:700 12px/1.15 ui-monospace,Consolas,monospace; color:#2B3D3A; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-width:0}
 .lb3 .lb-ma.trong{font-family:var(--font); color:var(--nhat); font-weight:600}
 .lop-btn.lb3.cho .lb-dang{background:#F1F4F3; color:#A3B1AE}
@@ -3992,7 +3997,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=235"></script>
+<script src="config.js?v=236"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -4243,6 +4248,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   // NAY CHẠY THẬT: lớp có thẻ "không giao bài" còn hạn thì trạng thái là 'khong'.
   // ⛔ Bài thật CÒN HẠN đứng trước — thầy chốt: có bài thật thì thẻ nghỉ tự ẩn.
   function trangThaiBai(l) {
+    if (l.rong) return 'khong';   // v1.285.0 — lớp chưa có em: không tính chờ bài
     var ds = A.baiCuaLop(DL, l.maLop, 'ql');
     var conHan = ds.some(A.conHan);   // v1.35.0
     if (conHan) return 'giao';
@@ -4329,6 +4335,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var chu2 = tt === 'giao' ? 'Đã giao' : (tt === 'cho' ? 'Chờ' : 'Không giao bài');
     var luc = kieu ? chuLucThe(kieu, x.moc) : (tt === 'giao' ? 'chưa đặt hạn' : '');
     var maBai = b ? (A.maLesson(b) || (b.tenBai ? b.tenBai : '') || A.tenBai(b)) : '';
+    if (l.rong) return theLopRongHtml(l, mL);
     // ⭐⭐ v1.203.0 (01/10/2026, mẫu "nút lớp B" thầy chốt) — THẺ 2 DÒNG + VẠCH MÀU TRẠNG THÁI bên trái
     // (xanh lá = đã giao · vàng = chờ · xám = không giao bài, `data-tt`). BỎ nút sĩ số (Thiết lập lớp) + nút kho:
     // kho bài nay mở bằng BẤM ĐÚP thẻ (`moKhoNho`, tự đo 2 cú bấm — chonLop vẽ lại thẻ giữa 2 cú).
@@ -4347,6 +4354,37 @@ tr.qm-hang-tam td{background:#fffbeb}
         : '<span class="lb-ma trong">Chưa có bài</span>') +
         (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') + '</div>' +
     '</div>';
+  }
+  // v1.285.0 (09/10/2026, thầy chốt) — thẻ lớp/khóa CHƯA CÓ EM: cùng khung thẻ B, dòng 2 = nút "+ Thêm học sinh"
+  // (mở hộp Thêm học sinh đã chọn sẵn lớp này). Bấm chỗ khác trên thẻ vẫn chọn lớp như thường.
+  function theLopRongHtml(l, mL) {
+    var ten = l.tenGoc || l.maLop;
+    return '<div class="lop-btn lb3 lbB rong' + (l.maLop === LOP_CHON ? ' chon' : '') + '" data-malop="' + mL + '" data-tt="khong" title="Lớp chưa có học sinh — bấm + Thêm học sinh">' +
+      '<button class="lb-main" data-lop="' + mL + '" aria-label="Chọn ' + A.chuAnToan(ten) + '"></button>' +
+      '<div class="lb-h1"><span class="lb-ten">' + tenTheLop(ten) + '</span><span class="lb-luc">Chưa có em</span></div>' +
+      '<div class="lb-h3"><button type="button" class="lb-them" data-them-hs-lop="' + A.chuAnToan(ten) + '">+ Thêm học sinh</button>' +
+        (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') + '</div>' +
+    '</div>';
+  }
+  // v1.285.0 — `lessonWeb/lop` (máy chủ dung-lop.js) CHỈ có lớp ≥ 1 em ⇒ lớp/khóa vừa "Thêm lớp / khóa" không có thẻ.
+  // Ghép thêm lớp còn sống trong roster (QR) mà DL chưa có, đánh dấu `rong:1` (gỡ đi rồi ghép lại mỗi lần vẽ —
+  // có em đầu tiên thì máy chủ đưa lớp vào DL thật, bản ghép tự biến mất). Roster chỉ đọc được khi thầy đăng nhập.
+  function ghepLopRong() {
+    DL.lop = (DL.lop || []).filter(function (l) { return !l.rong; });
+    DL.khoa = (DL.khoa || []).filter(function (l) { return !l.rong; });
+    if (!QR || !QR.lop) {
+      if (!QR && THAY_PHIEN && DL.lop.length) qrNap().then(function () { veLopGrid(); }, function () { });
+      return;
+    }
+    var co = {};
+    tatCaLop().forEach(function (l) { co[l.maLop] = 1; });
+    qrLop(true).forEach(function (r) {
+      var ma = String(r.code).replace(/[^A-Za-z0-9]/g, '').toUpperCase();
+      if (!ma || co[ma]) return;
+      co[ma] = 1;
+      var m = { maLop: ma, tenGoc: r.code, hocSinh: [], rong: 1 };
+      if (r.loai === 'khoa') { m.loai = 'khoa'; DL.khoa.push(m); } else DL.lop.push(m);
+    });
   }
   function chuLucB(tt, kieu, luc) {
     if (tt === 'cho') return 'Chờ' + (luc ? ' • ' + luc : '');
@@ -4392,6 +4430,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (JSON.stringify(bangTrangThaiLop()) !== TT_LOP_DA_VE) veLopGrid();
   }, 60000);
   function veLopGrid() {
+    ghepLopRong();   // v1.285.0 — lớp/khóa chưa có em
     var xep = DL.lop.slice().sort(function (a, b) {
       // v1.35.0 — lọc bằng `A.conHan` (thẻ khoá đã qua mốc vẫn là còn hạn → xếp lên đầu)
       var da = A.baiCuaLop(DL, a.maLop, 'ql').filter(A.conHan).map(A.mocHan);
@@ -11725,6 +11764,8 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (e.target.closest('[data-sx-luu]')) return void luuSapXep();
       if (e.target.closest('[data-sx-huy]')) return void huySapXep();
 
+      var themHs = e.target.closest('[data-them-hs-lop]');   // v1.285.0 — thẻ lớp chưa có em
+      if (themHs) return void qcMo('themHs', { lopSan: themHs.getAttribute('data-them-hs-lop') });
       var lopBtn = e.target.closest('.lb-main[data-lop]');
       if (lopBtn) return void bamTheLop(lopBtn.dataset.lop);   // v1.203.0 — đúp = kho nhỏ
 
@@ -13825,7 +13866,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           qcO('', 'Ngày tham gia lớp', '<input id="qcVao" type="date" value="' + qcHomNay() + '">') +
           qcO('', 'Ghi chú', qcInput('qcGhi', '', ' placeholder="VD: em của BẢO HÂN" maxlength="120"')) + '</div>' +
         '<div class="qc-nhan">Ghi danh vào (một lớp chính + khóa nếu có)</div><div class="qc-chips">' +
-          song.map(function (l) { return '<button type="button" class="qm-chip" data-qc-chip data-lop="' + qmE(l.code) + '">' + qmE(l.code) + (l.loai === 'khoa' ? ' · khóa' : '') + '</button>'; }).join('') + '</div>' +
+          song.map(function (l) { return '<button type="button" class="qm-chip' + (l.code === QC.lopSan ? ' chon' : '') + '" data-qc-chip data-lop="' + qmE(l.code) + '">' + qmE(l.code) + (l.loai === 'khoa' ? ' · khóa' : '') + '</button>'; }).join('') + '</div>' +
         '<label class="qc-tick"><input type="checkbox" id="qcDb"> Người đặc biệt (phụ huynh luyện bài cùng con) — không tính sĩ số / điểm danh / xếp hạng</label>' +
         qcNutCuoi('Lưu', 'Mật khẩu TẠM hiện MỘT lần sau khi lưu — thầy đưa em, em vào là bắt đặt mật khẩu riêng.');
     } else if (QC.viec === 'suaHs') {
@@ -14987,6 +15028,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   });
   AWThay.theoDoi(function (u) {
     THAY_PHIEN = u; veThayDn(); if (u) dkDemMoi();
+    if (u && DL.lop.length) veLopGrid();   // v1.285.0 — có phiên thầy ⇒ đọc roster, hiện lớp/khóa chưa có em
     if (u && LOP_CHON) ngheDsCamLop();   // 🔇 v1.216.0 — danh sách cấm chỉ thầy đọc: có phiên rồi mới nghe lại được
     if (qmDangMo()) { MK_KQ = null; MK_LOI = ''; HSO_NHO = {}; NK = null; veBaoMat(); }   // v1.166.0 — vừa đăng nhập/thoát khi hộp đang mở ⇒ đọc lại
   })['catch'](function () {

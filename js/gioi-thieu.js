@@ -13,7 +13,7 @@
    ============================================================ */
 (function () {
   'use strict';
-  var PHIEN = '1';   // đổi khi sửa gioi-thieu/ ⇒ iframe không dùng bản cũ trong bộ nhớ đệm
+  var PHIEN = '2';   // đổi khi sửa gioi-thieu/ ⇒ iframe không dùng bản cũ trong bộ nhớ đệm
   var DS_MAN = 12;
 
   function laKhoaApDung(tenKhoa) {
@@ -100,6 +100,7 @@
       if (e.origin !== location.origin || e.source !== khung.contentWindow || !e.data) return;
       var d = e.data;
       if (d.gtSan) {
+        boChe();   // phim đã sẵn sàng phủ kín ⇒ gỡ màn che chờ
         khung.contentWindow.postMessage({ gtBatDau: { ten: ctx.ten, anh: anhEm(), khoa: ctx.lop, man: man, lai: lai } }, location.origin);
         try { khung.contentWindow.focus(); } catch (x) { }
       } else if (d.gtMan !== undefined) {
@@ -124,9 +125,30 @@
     play: '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z"/></svg>'
   };
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function chuTatCua(ten) { return String(ten || '').trim().split(/\s+/).slice(-2).map(function (w) { return w[0] || ''; }).join('').toUpperCase(); }
+  // v1.287.0 (thầy chốt 09/10) — giữa là ảnh THẦY + ảnh EM, quanh là ảnh NHỎ XÍU của các bạn cùng khóa (tối đa 8, thiếu thì chấm tròn trống).
+  function vungBay(ctx) {
+    var ban = (ctx.ban || []).filter(function (t) { return t && t !== ctx.ten; }).slice(0, 8);
+    var s = '';
+    for (var i = 0; i < 8; i++) {
+      s += ban[i] ? '<span class="gtk-ban b' + (i + 1) + '" data-av="' + esc(ban[i]) + '">' + esc(chuTatCua(ban[i])) + '</span>'
+                  : '<span class="gtk-ban b' + (i + 1) + ' rong"></span>';
+    }
+    return '<span class="gtk-bay" aria-hidden="true">' + s +
+      '<span class="gtk-gb gtk-thay"><img src="gioi-thieu/assets/thay-tron.jpg" alt=""></span>' +
+      '<span class="gtk-gb gtk-em" data-av="' + esc(ctx.ten) + '">' + esc(chuTatCua(ctx.ten)) + '</span>' +
+      '<i class="gtk-lap a"></i><i class="gtk-lap b"></i><i class="gtk-lap c"></i>' +
+    '</span>';
+  }
+  // Gắn ảnh thật cho các ô [data-av] — khoa.html truyền A.gaAvatar (ảnh lớp nền + ảnh sống từ kho, thiếu ảnh ⇒ chữ tắt).
+  function ganAnh(goc, gan) {
+    if (!goc || !gan) return;
+    Array.prototype.forEach.call(goc.querySelectorAll('[data-av]'), function (el) {
+      var ten = el.getAttribute('data-av');
+      try { gan(el, ten, chuTatCua(ten)); } catch (e) { }
+    });
+  }
   function theHtml(ctx) {
-    var chuTat = String(ctx.ten || '').trim().split(/\s+/).slice(-2).map(function (w) { return w[0] || ''; }).join('').toUpperCase();
-    var a = anhEm();
     return '<button type="button" class="gtk-the" id="gtkThe" title="Xem lại giới thiệu khóa học">' +
       '<span class="gtk-in"><span class="gtk-sao" aria-hidden="true"></span>' +
         '<span class="gtk-body">' +
@@ -135,22 +157,42 @@
           '<span class="gtk-chu">Hành trình 8 tháng cùng Thầy Andrew</span>' +
           '<span class="gtk-duoi"><span class="gtk-ic">' +
             '<i><img src="gioi-thieu/assets/thay-tron.jpg" alt=""></i><i>' + IC.tin + '</i><i>' + IC.game + '</i><i>' + IC.sao + '</i><i>' + IC.co + '</i>' +
-            '<b>' + DS_MAN + ' màn</b></span><span class="gtk-da">ĐÃ XEM ✓</span></span>' +
+            '</span><span class="gtk-da">ĐÃ XEM ✓</span></span>' +
         '</span>' +
-        '<span class="gtk-bay" aria-hidden="true">' +
-          '<span class="gtk-gb gtk-thay"><img src="gioi-thieu/assets/thay-tron.jpg" alt=""></span>' +
-          '<span class="gtk-gb gtk-em">' + esc(chuTat) + (a ? '<img src="' + esc(a) + '" alt="" onerror="this.remove()">' : '') + '</span>' +
-          '<i class="gtk-lap a"></i><i class="gtk-lap b"></i><i class="gtk-lap c"></i>' +
-        '</span>' +
+        vungBay(ctx) +
         '<span class="gtk-play">' + IC.play + '</span>' +
       '</span></button>';
   }
+
+  // ---------- v1.287.0 (thầy chốt 09/10) — MÀN CHE CHỜ: vừa đăng nhập/đổi mật khẩu xong vào trang là che kín NGAY, em không thấy
+  // trang thường trước phim. Chỉ che khi máy này CHƯA ghi "đã xem xong" / "khóa này không áp dụng"; trang biết chắc rồi thì gỡ.
+  // Phòng hờ: tự gỡ sau 8 giây (mạng hỏng/không nạp được dữ liệu — không bao giờ kẹt màn đen).
+  var che = null;
+  function khoaKhong(lopMa) { return 'ac_gt_khong_' + String(lopMa || ''); }
+  function boChe() { if (!che) return; var c = che; che = null; c.classList.add('ra'); setTimeout(function () { c.remove(); }, 400); }
+  function cheSom() {
+    if (window.__thayVao) return;
+    var em = null; try { em = JSON.parse(localStorage.getItem('mylesson_hs')); } catch (e) { }
+    if (!em || !em.ma || !em.lop) return;
+    if (localStorage.getItem(khoaKhong(em.lop))) return;
+    if (docLs({ ma: em.ma, lopMa: em.lop }).xong) return;
+    che = document.createElement('div');
+    che.className = 'gtk-che';
+    che.innerHTML = '<span>ANDREW CLASSES</span>';
+    (document.body || document.documentElement).appendChild(che);
+    setTimeout(boChe, 8000);
+  }
+  function khongApDung(lopMa) { try { localStorage.setItem(khoaKhong(lopMa), '1'); } catch (e) { } boChe(); }
+  try { cheSom(); } catch (e) { }
 
   window.GioiThieu = {
     apDung: laKhoaApDung,
     docTrangThai: docTrangThai,
     mo: mo,
     theHtml: theHtml,
-    laThay: laThay
+    ganAnh: ganAnh,
+    laThay: laThay,
+    boChe: boChe,
+    khongApDung: khongApDung
   };
 })();

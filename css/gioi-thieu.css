@@ -47,24 +47,46 @@ html.gtk-mo, html.gtk-mo body{overflow:hidden}
 .gtk-da{font:800 9.5px/1 var(--sans,'Montserrat',sans-serif); letter-spacing:.1em; color:#7ee2a8; padding:5px 8px; border-radius:99px;
   background:rgba(24,169,87,.16); border:1px solid rgba(24,169,87,.4)}
 /* ảnh THẦY + ảnh EM nhỏ bay lơ lửng (thầy chốt 09/10 — thay ảnh thầy to) */
-.gtk-bay{position:relative; flex:none; width:96px; height:120px; margin-right:4px}
-.gtk-gb{position:absolute; border-radius:50%; overflow:hidden; background:#0E7C6E; display:grid; place-items:center;
+/* v1.287.0 (thầy chốt 09/10) — GIỮA là ảnh THẦY + ảnh EM, quanh là ảnh NHỎ XÍU của các bạn cùng khóa; cả cụm lùi vào trong cho cân */
+.gtk-bay{position:relative; flex:none; width:150px; aspect-ratio:1; margin-right:44px}
+.gtk-gb{position:absolute; z-index:2; border-radius:50%; overflow:hidden; background:#0E7C6E; display:grid; place-items:center;
   color:#fff; font:800 14px/1 var(--sans,'Montserrat',sans-serif);
   box-shadow:0 0 0 2px #f3d38a, 0 0 0 5px rgba(217,169,74,.16), 0 6px 18px rgba(0,0,0,.45), 0 0 18px rgba(217,169,74,.35)}
-.gtk-gb img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
-.gtk-thay{width:52px; height:52px; left:6px; top:14px; animation:gtk-bay1 4.2s ease-in-out infinite}
-.gtk-em{width:42px; height:42px; right:4px; bottom:16px; animation:gtk-bay2 3.6s ease-in-out .6s infinite;
+.gtk-gb img, .gtk-ban img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%}
+.gtk-thay{width:35%; aspect-ratio:1; left:19%; top:22%; animation:gtk-bay1 4.2s ease-in-out infinite}
+.gtk-em{width:29%; aspect-ratio:1; left:47%; top:47%; z-index:3; animation:gtk-bay2 3.6s ease-in-out .6s infinite;
   box-shadow:0 0 0 2px #7fe0cb, 0 0 0 5px rgba(34,195,164,.16), 0 6px 18px rgba(0,0,0,.45), 0 0 18px rgba(34,195,164,.35)}
 .gtk-em img{object-position:50% 25%}
-@keyframes gtk-bay1{0%,100%{transform:translate(0,0) rotate(-3deg)} 50%{transform:translate(3px,-7px) rotate(3deg)}}
-@keyframes gtk-bay2{0%,100%{transform:translate(0,0) rotate(3deg)} 50%{transform:translate(-3px,-8px) rotate(-3deg)}}
-.gtk-lap{position:absolute; width:10px; height:10px; background:#f3d38a;
+@keyframes gtk-bay1{0%,100%{transform:translate(0,0) rotate(-3deg)} 50%{transform:translate(3px,-6px) rotate(3deg)}}
+@keyframes gtk-bay2{0%,100%{transform:translate(0,0) rotate(3deg)} 50%{transform:translate(-3px,-7px) rotate(-3deg)}}
+.gtk-ban{position:absolute; width:13%; aspect-ratio:1; border-radius:50%; overflow:hidden; display:grid; place-items:center;
+  background:#1d5a4e; color:#cfe3de; font:800 7px/1 var(--sans,'Montserrat',sans-serif);
+  box-shadow:0 0 0 1.5px rgba(255,255,255,.75), 0 3px 8px rgba(0,0,0,.4); opacity:.92; animation:gtk-troi 5s ease-in-out infinite}
+.gtk-ban.rong{background:rgba(255,255,255,.06); box-shadow:0 0 0 1.2px rgba(255,255,255,.28)}
+.gtk-ban.b1{left:4%; top:8%; animation-delay:-.4s} .gtk-ban.b2{left:41%; top:0; animation-delay:-1.6s; width:11%}
+.gtk-ban.b3{left:78%; top:9%; animation-delay:-2.8s} .gtk-ban.b4{left:88%; top:43%; animation-delay:-.9s; width:11%}
+.gtk-ban.b5{left:78%; top:80%; animation-delay:-3.5s} .gtk-ban.b6{left:30%; top:87%; animation-delay:-2.1s; width:11%}
+.gtk-ban.b7{left:2%; top:72%; animation-delay:-4.2s} .gtk-ban.b8{left:-3%; top:42%; animation-delay:-1.2s; width:10%}
+@keyframes gtk-troi{0%,100%{transform:translate(0,0)} 33%{transform:translate(2px,-4px)} 66%{transform:translate(-2px,2px)}}
+.gtk-lap{position:absolute; z-index:4; width:10px; height:10px; background:#f3d38a;
   clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%); animation:gtk-lap 2.6s ease-in-out infinite}
-.gtk-lap.a{right:10px; top:10px} .gtk-lap.b{left:4px; bottom:22px; width:7px; height:7px; animation-delay:.9s}
-.gtk-lap.c{left:52%; top:52%; width:6px; height:6px; animation-delay:1.7s; background:#7fe0cb}
+.gtk-lap.a{left:58%; top:20%} .gtk-lap.b{left:16%; top:60%; width:7px; height:7px; animation-delay:.9s}
+.gtk-lap.c{left:80%; top:62%; width:6px; height:6px; animation-delay:1.7s; background:#7fe0cb}
 @keyframes gtk-lap{0%,100%{transform:scale(.4) rotate(0); opacity:.3} 50%{transform:scale(1) rotate(90deg); opacity:1}}
 .gtk-play{position:absolute; right:0; top:0; bottom:0; width:var(--mui); display:grid; place-items:center;
   background:linear-gradient(160deg,#f7dc96,#d9a94a 60%,#b8893a)}
 .gtk-play svg{width:18px; height:18px; fill:#2a1d05; margin-right:20px}
-@media (max-width:360px){ .gtk-ten{font-size:24px} .gtk-bay{width:80px} }
-@media (prefers-reduced-motion:reduce){ .gtk-the,.gtk-gb,.gtk-lap,.gtk-ten,.gtk-in::after{animation:none} }
+@media (max-width:520px){
+  .gtk-bay{width:100px; margin-right:4px} .gtk-ban{font-size:0}
+  .gtk-body{padding:14px 4px 12px 14px} .gtk-ten{font-size:23px} .gtk-mat{font-size:9.5px; letter-spacing:.14em}
+  .gtk-chu{font-size:12px} .gtk-ic i{width:24px; height:24px; margin-right:-6px} .gtk-duoi{gap:8px; margin-top:8px}
+}
+@media (max-width:360px){ .gtk-ten{font-size:21px} .gtk-bay{width:86px} }
+@media (prefers-reduced-motion:reduce){ .gtk-the,.gtk-gb,.gtk-ban,.gtk-lap,.gtk-ten,.gtk-in::after{animation:none} }
+
+/* v1.287.0 — màn che chờ (vào trang là che NGAY tới khi phim mở / biết đã xem xong) */
+.gtk-che{position:fixed; inset:0; z-index:9998; display:grid; place-items:center;
+  background:radial-gradient(120% 80% at 50% 0%,#0d2f28 0%,#061a16 55%,#040f0d 100%); transition:opacity .4s}
+.gtk-che span{font:800 11px/1 var(--sans,'Montserrat',sans-serif); letter-spacing:.32em; color:rgba(243,211,138,.75); animation:gtk-nhip 1.6s ease-in-out infinite}
+.gtk-che.ra{opacity:0; pointer-events:none}
+@keyframes gtk-nhip{50%{opacity:.35}}

@@ -384,12 +384,18 @@
       //   Tắt/Bật thông báo (thông báo đẩy + số đỏ; lưu nwUsers/<uid>/rieng/tatLop qua js/day.js — chung mọi máy).
       if (p._lop) {
         if (!window.ACDay || NW.laBanThu()) return;
-        var tatL = tatTB(p);
-        NW.menuNho(nut, [{ ic: tatL ? IC.chuongBat : IC.chuongTat, chu: tatL ? 'Bật thông báo' : 'Tắt thông báo', onclick: function () {
-          p.tat = p.tat || {}; p.tat[toi.uid] = !tatL; veDs();
-          ACDay.datTatLop(p.lop, !tatL).then(function () { NW.toast(!tatL ? 'Đã tắt thông báo nhóm lớp này.' : 'Đã bật lại thông báo.'); },
-            function (e) { p.tat[toi.uid] = tatL; veDs(); NW.toast(NW.chuLoiKho(e), true); });
-        } }]);
+        // ⭐ v1.290.0 (09/10, thầy chốt) — TẮT TẠM 1/3/5/8 giờ · đến 7h sáng mai · tắt hẳn; CHUNG kho với dashboard
+        //   (Quản lý & bảo mật › Thông báo, ⋮ ô chat) ⇒ tắt ở đâu cũng thấy ở đây. Đang tắt ⇒ mục đầu ghi rõ tới lúc nào + Bật lại.
+        var tatL = tatTB(p), datL = function (v) {
+          p.tat = p.tat || {}; p.tat[toi.uid] = !!v; veDs();
+          ACDay.datTatLop(p.lop, v).then(function () {
+            NW.toast(v ? ACDay.chuTat(ACDay.dangTat(p.lop)) + ' — nhóm lớp này.' : 'Đã bật lại thông báo.');
+          }, function (e) { p.tat[toi.uid] = tatL; veDs(); NW.toast(NW.chuLoiKho(e), true); });
+        };
+        var its = tatL
+          ? [{ ic: IC.chuongBat, chu: 'Bật lại thông báo (' + ACDay.chuTat(ACDay.dangTat(p.lop)).toLowerCase() + ')', onclick: function () { datL(false); } }]
+          : ACDay.MUC_TAT.map(function (m) { return { ic: IC.chuongTat, chu: m.chu, onclick: function () { datL(m.k); } }; });
+        NW.menuNho(nut, its);
         return;
       }
       var chua = chuaDoc(p), tat = tatTB(p), items = [];
@@ -726,6 +732,11 @@
       veDs();
       thuMoCho();   // v1.224.0 — link thông báo trỏ vào nhóm lớp
       if (window.ACDay && !NW.laBanThu()) ACDay.tatLopDs().then(function (ds) {   // v1.255.0 — nhóm lớp đã tắt thông báo: hiện chuông gạch
+        PHONG_LOP.forEach(function (p) { p.tat = {}; p.tat[toi.uid] = ds.indexOf(p.lop) >= 0; }); veDs();
+      });
+      // v1.290.0 — đổi ở nơi khác (dashboard, tab khác) hoặc hết giờ tắt tạm ⇒ chuông gạch đổi theo
+      if (window.ACDay && !NW.laBanThu()) window.addEventListener('ac-tn-tat', function (e) {
+        var ds = ((e.detail || {}).ds) || [];
         PHONG_LOP.forEach(function (p) { p.tat = {}; p.tat[toi.uid] = ds.indexOf(p.lop) >= 0; }); veDs();
       });
       // ⭐ v1.253.0 — sổ chưa đọc CHUNG (../js/tn-pop-ds.js) có kênh sống tin cuối từng lớp + mốc "đã xem" gộp mọi máy ⇒ nhận từ đó:

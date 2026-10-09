@@ -80,24 +80,90 @@
   }
 
   // ---------- tắt thông báo NHÓM LỚP ----------
-  var _tatLop = null;
-  function tatLopDs() {
-    if (_tatLop) return _tatLop;
+  // ⭐ v1.290.0 (09/10/2026, thầy chốt) — TẮT TẠM: mỗi phần tử danh sách là "MÃLỚP" (tắt hẳn, như cũ) hoặc "MÃLỚP@<ms hết hạn>"
+  //   (tắt tạm 1/3/5/8 giờ · đến 7h sáng mai). Giữ nguyên MỘT danh sách chuỗi ⇒ KHÔNG cần đổi luật kho (dayThietBi.tatLop là list,
+  //   rieng/tatLop.ds là list); máy chủ dayTinLop đọc cùng khuôn (hết hạn = bật lại, không ai phải dọn). Bản trang CŨ coi
+  //   "A1C@…" là mã lạ ⇒ chỉ mất tắt tạm, không hỏng gì.
+  //   ĐỒNG BỘ 3 nơi (Quản lý & bảo mật › Thông báo · ⋮ ô chat dashboard · ⋯ nhóm lớp trang Tin nhắn): cùng đọc/ghi nwUsers/<uid>/rieng/tatLop;
+  //   cùng trình duyệt báo nhau qua localStorage (sự kiện storage) + 'ac-tn-tat'; máy khác đọc lại khi quay lại trang (≥ 20 giây).
+  var K_TAT = 'ac_tat_lop';
+  var _tatLop = null, TAT_RAW = null, TAT_DOC_LUC = 0, TAT_HEN = null;
+  function docTat(ds) {   // { maLop: 'han' | ms hết hạn } — chỉ phần CÒN hiệu lực
+    var o = {}, nay = Date.now();
+    (ds || []).forEach(function (s) {
+      if (typeof s !== 'string' || !s) return;
+      var i = s.lastIndexOf('@');
+      if (i < 0) { o[s] = 'han'; return; }
+      var lop = s.slice(0, i), den = Number(s.slice(i + 1)) || 0;
+      if (lop && den > nay && o[lop] !== 'han' && !(o[lop] > den)) o[lop] = den;
+    });
+    return o;
+  }
+  function ghiTat(o) { return Object.keys(o).map(function (k) { return o[k] === 'han' ? k : k + '@' + Math.round(o[k]); }); }
+  function dsHieuLuc() { return Object.keys(docTat(TAT_RAW)); }
+  function phatTat() {
+    var ds = dsHieuLuc();
+    clearTimeout(TAT_HEN);                     // hết hạn tắt tạm sớm nhất ⇒ báo lại (chuông/số đỏ đổi đúng lúc)
+    var o = docTat(TAT_RAW), som = 0;
+    Object.keys(o).forEach(function (k) { if (o[k] !== 'han' && (!som || o[k] < som)) som = o[k]; });
+    if (som) TAT_HEN = setTimeout(phatTat, Math.min(2147483000, som - Date.now() + 500));
+    try { window.dispatchEvent(new CustomEvent('ac-tn-tat', { detail: { ds: ds, cai: o } })); } catch (e) { }
+  }
+  function napTat(moi) {   // danh sách THÔ trong kho
+    if (_tatLop && !moi) return _tatLop;
     _tatLop = toi().then(function (me) {
       if (!me) return [];
       return me.f.fs.getDoc(me.f.fs.doc(me.f.db, 'nwUsers', me.uid, 'rieng', 'tatLop')).then(function (s) {
         var d = s.exists() ? s.data() : {}; return Array.isArray(d.ds) ? d.ds.filter(function (x) { return typeof x === 'string'; }) : [];
       });
-    }).catch(function () { _tatLop = null; return []; });
+    }).then(function (ds) {
+      var doi = JSON.stringify(ds) !== JSON.stringify(TAT_RAW);
+      TAT_RAW = ds; TAT_DOC_LUC = Date.now();
+      if (doi) phatTat();
+      return ds;
+    }).catch(function () { _tatLop = null; return TAT_RAW || []; });
     return _tatLop;
   }
+  // Mã các lớp ĐANG tắt (hẳn hoặc tạm còn hạn) — giữ khuôn cũ cho tn-pop-ds.js / nw/js/chat.js.
+  function tatLopDs() { return napTat().then(function () { return dsHieuLuc(); }); }
+  // Trạng thái một lớp: { tat: false } | { tat: 'han' } | { tat: 'tam', den: ms }. Đồng bộ (bản đã đọc), dùng sau tatLopDs()/caiTat().
+  function dangTat(lop) {
+    var v = docTat(TAT_RAW)[lop];
+    return v === 'han' ? { tat: 'han' } : v ? { tat: 'tam', den: v } : { tat: false };
+  }
+  function caiTat(moi) { return napTat(moi).then(function () { return docTat(TAT_RAW); }); }
+  // Các mức tắt (thầy chốt 09/10): 1 · 3 · 5 · 8 giờ · đến 7h sáng mai · tắt hẳn (đến khi bật lại).
+  var MUC_TAT = [{ k: '1', chu: 'Tắt 1 giờ' }, { k: '3', chu: 'Tắt 3 giờ' }, { k: '5', chu: 'Tắt 5 giờ' }, { k: '8', chu: 'Tắt 8 giờ' },
+    { k: 'sang', chu: 'Tắt đến 7h sáng mai' }, { k: 'han', chu: 'Tắt đến khi bật lại' }];
+  function denCua(k) {
+    if (k === 'han') return 'han';
+    if (k === 'sang') {   // 7:00 kế tiếp (đang 0h–6h59 ⇒ 7h sáng nay)
+      var d = new Date(); if (d.getHours() >= 7) d.setDate(d.getDate() + 1);
+      d.setHours(7, 0, 0, 0); return d.getTime();
+    }
+    return Date.now() + (Number(k) || 1) * 3600e3;
+  }
+  function chuTat(tt) {   // "Đang bật" · "Đã tắt" · "Tắt đến 15:30" · "Tắt đến 07:00 mai"
+    if (!tt || !tt.tat) return 'Đang bật';
+    if (tt.tat === 'han') return 'Đã tắt';
+    var d = new Date(tt.den), nay = new Date(), hh = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+    var homNay = d.toDateString() === nay.toDateString();
+    nay.setDate(nay.getDate() + 1);
+    return 'Tắt đến ' + hh + (homNay ? '' : d.toDateString() === nay.toDateString() ? ' mai' : ' ' + d.getDate() + '/' + (d.getMonth() + 1));
+  }
+  // tat: true | 'han' = tắt hẳn · false = bật · số ms (mốc hết hạn) = tắt tạm · '1'/'3'/'5'/'8'/'sang' = mức trong MUC_TAT.
   function datTatLop(lop, tat) {
-    return Promise.all([toi(), tatLopDs()]).then(function (kq) {
-      var me = kq[0], ds = kq[1].filter(function (x) { return x !== lop; });
+    return Promise.all([toi(), napTat()]).then(function (kq) {
+      var me = kq[0];
       if (!me) throw new Error('chua-dang-nhap');
-      if (tat) ds.push(lop);
-      ds = ds.slice(0, 60);
-      _tatLop = Promise.resolve(ds);
+      if (typeof tat === 'string' && tat !== 'han') tat = denCua(tat);
+      var o = docTat(kq[1]);   // dọn luôn các mốc đã hết hạn
+      delete o[lop];
+      if (tat === true || tat === 'han') o[lop] = 'han';
+      else if (typeof tat === 'number' && tat > Date.now()) o[lop] = tat;
+      var ds = ghiTat(o).slice(0, 60);
+      TAT_RAW = ds; TAT_DOC_LUC = Date.now(); _tatLop = Promise.resolve(ds);
+      ls(K_TAT, JSON.stringify({ uid: me.uid, ds: ds, luc: Date.now() }));   // trang khác cùng trình duyệt nghe 'storage'
       var fs = me.f.fs, db = me.f.db;
       return fs.setDoc(fs.doc(db, 'nwUsers', me.uid, 'rieng', 'tatLop'), { ds: ds, luc: Date.now() }).then(function () {
         // chép sang mọi máy đã bật của mình (máy chủ lọc theo tatLop của từng máy — không phải đọc thêm lúc gửi)
@@ -105,9 +171,44 @@
           var b = fs.writeBatch(db); s.forEach(function (d) { b.update(d.ref, { tatLop: ds }); }); return b.commit();
         }).catch(function (e) { console.warn('[day] chép tắt lớp sang máy', e); });
       }).then(function () {
-        try { window.dispatchEvent(new CustomEvent('ac-tn-tat', { detail: { ds: ds } })); } catch (e) { }
-        return ds;
+        phatTat();
+        return dsHieuLuc();
       });
+    });
+  }
+  window.addEventListener('storage', function (e) {
+    if (e.key !== K_TAT || !e.newValue) return;
+    try { var v = JSON.parse(e.newValue); if (Array.isArray(v.ds)) { TAT_RAW = v.ds; TAT_DOC_LUC = Date.now(); _tatLop = Promise.resolve(v.ds); phatTat(); } } catch (x) { }
+  });
+  // Quay lại trang (máy khác có thể vừa đổi) ⇒ đọc lại kho, tối đa 1 lần / 20 giây; chỉ khi trang đã từng đọc.
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState === 'visible' && TAT_RAW && Date.now() - TAT_DOC_LUC > 20000) napTat(true);
+  });
+
+  // ---------- MÁY ĐÃ BẬT THÔNG BÁO của người đang đăng nhập (v1.290.0 — bảng Thông báo trên dashboard) ----------
+  function tenMay(ua) {
+    ua = String(ua || '');
+    var may = /iPhone/.test(ua) ? 'iPhone' : /iPad/.test(ua) ? 'iPad' : /Android/.test(ua) ? 'Điện thoại Android' : /Windows/.test(ua) ? 'Máy tính Windows' : /Mac OS X|Macintosh/.test(ua) ? 'Máy Mac' : /Linux/.test(ua) ? 'Máy Linux' : 'Máy khác';
+    var tr = /Edg\//.test(ua) ? 'Edge' : /CriOS|Chrome\//.test(ua) ? 'Chrome' : /FxiOS|Firefox\//.test(ua) ? 'Firefox' : /Safari\//.test(ua) ? 'Safari' : '';
+    return may + (tr ? ' · ' + tr : '');
+  }
+  function idMayNay() { return String(ls(K_MOC) || '').split('|')[2] || ''; }
+  function mayCuaToi() {
+    return toi().then(function (me) {
+      if (!me) throw new Error('chua-dang-nhap');
+      var fs = me.f.fs;
+      return fs.getDocs(fs.query(fs.collection(me.f.db, 'dayThietBi'), fs.where('uid', '==', me.uid))).then(function (s) {
+        var nay = trangThai() === 'bat' ? idMayNay() : '', ds = [];
+        s.forEach(function (d) { var x = d.data() || {}; ds.push({ id: d.id, ten: tenMay(x.ua), luc: Number(x.luc) || 0, mayNay: d.id === nay }); });
+        return ds.sort(function (a, b) { return (b.mayNay - a.mayNay) || (b.luc - a.luc); });
+      });
+    });
+  }
+  function goMay(id) {
+    if (id && id === idMayNay() && trangThai() === 'bat') return tat();
+    return toi().then(function (me) {
+      if (!me) throw new Error('chua-dang-nhap');
+      return me.f.fs.deleteDoc(me.f.fs.doc(me.f.db, 'dayThietBi', id));
     });
   }
 
@@ -115,7 +216,7 @@
   function luuMay(me, sub) {
     var j = sub.toJSON ? sub.toJSON() : sub;
     var o = { endpoint: String(j.endpoint || ''), keys: { p256dh: String((j.keys || {}).p256dh || ''), auth: String((j.keys || {}).auth || '') } };
-    return Promise.all([sha1(o.endpoint), tatLopDs()]).then(function (kq) {
+    return Promise.all([sha1(o.endpoint), napTat()]).then(function (kq) {   // v1.290.0 — chép danh sách THÔ (kèm tắt tạm)
       var id = kq[0];
       var doc = { uid: me.uid, ma: me.ma, thay: me.thay, lops: me.lops, tatLop: kq[1], sub: o, ua: UA.slice(0, 160), luc: Date.now(), goc: GOC.slice(0, 200) };
       return me.f.fs.setDoc(me.f.fs.doc(me.f.db, 'dayThietBi', id), doc).then(function () {
@@ -184,7 +285,19 @@
       }).then(function (sub) {
         return sha1(sub.endpoint).then(function (id) {
           var moc = [me.uid, me.lops.join(','), id, new Date().toISOString().slice(0, 10)].join('|');
-          if (ls(K_MOC) !== moc) return luuMay(me, sub);
+          if (ls(K_MOC) === moc) return;
+          // v1.290.0 — máy này đã bị GỠ từ máy khác (bảng "Máy đã bật thông báo" trên dashboard): cùng id cũ mà tài liệu không còn
+          //   ⇒ tắt hẳn ở đây, KHÔNG tự đăng ký lại (bản cũ mỗi ngày luuMay lại ⇒ gỡ xong hôm sau máy tự hiện lại).
+          //   Đọc tài liệu không có ⇒ luật trả permission-denied (resource null) ⇒ coi như đã bị gỡ.
+          if (String(ls(K_MOC) || '').split('|')[2] === id) {
+            return me.f.fs.getDoc(me.f.fs.doc(me.f.db, 'dayThietBi', id)).then(function (d) { return d.exists(); }, function (e) {
+              if (e && e.code === 'permission-denied') return false; throw e;
+            }).then(function (con) {
+              if (con) return luuMay(me, sub);
+              return sub.unsubscribe().catch(function () { }).then(function () { ls(K_BAT, null); ls(K_MOC, null); veNut(); });
+            });
+          }
+          return luuMay(me, sub);
         });
       });
     }).catch(function (e) { console.warn('[day] đồng bộ máy', e); });
@@ -443,7 +556,9 @@
     };
   }
 
-  window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, goKhiThoat: goKhiThoat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop, moGuiThay: moGuiThay, moNhacHan: moNhacHan, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
+  window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, goKhiThoat: goKhiThoat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop,
+    caiTat: caiTat, dangTat: dangTat, chuTat: chuTat, MUC_TAT: MUC_TAT, mayCuaToi: mayCuaToi, goMay: goMay,   // v1.290.0
+    moGuiThay: moGuiThay, moNhacHan: moNhacHan, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
   setTimeout(dongBo, 3000);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') veNut(); });
 })();

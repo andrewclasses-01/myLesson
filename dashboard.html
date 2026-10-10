@@ -864,7 +864,10 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .bm-em-av{position:relative; width:var(--em-d); height:var(--em-d); border-radius:50%; overflow:hidden;
   display:grid; place-items:center; color:#fff; font:800 calc(var(--em-d) * .32)/1 var(--font); flex:none;
   box-shadow:0 2px 5px rgba(16,40,36,.16)}
-.bm-em-anh{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+/* v1.298.0 — `.bm-em-av > img` ⇒ phủ cả thẻ do `A.deAvatarKho()` (chung.js) TỰ DỰNG với class `av-anh` khi em CHƯA có file
+   tĩnh (thẻ `bm-em-anh` 404 ⇒ onerror tự gỡ). Thiếu luật này ảnh kho 96px nằm nguyên cỡ trong ô 26px ⇒ chỉ thấy góc trên-trái,
+   trông như "bị zoom" (Gia Hân/Minh Lâm/Thanh Mai NT4 — mọi em thầy tải ảnh trên dashboard mà chưa có file tĩnh). */
+.bm-em-anh, .bm-em-av > img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 
 .bm-em-trong{font:700 12px/1.5 var(--font); color:var(--nhat); padding:6px 2px 2px}
 
@@ -4074,7 +4077,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=247"></script>
+<script src="config.js?v=248"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->

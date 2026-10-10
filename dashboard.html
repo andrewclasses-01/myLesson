@@ -2169,7 +2169,32 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .qs-song.tat{color:var(--mo); background:#EEF2F1} .qs-song.tat i{background:#9AA9A5; animation:none}
 .qs-dong{width:36px; height:36px; border-radius:10px; border:1px solid var(--vien); background:#fff; font:800 16px/1 var(--font); color:var(--mo); cursor:pointer; flex:none}
 .qs-dong:hover{border-color:#C81E3A; color:#C81E3A}
-.qs-khung{flex:1; min-height:0; background:#E9F1F8; display:grid; place-items:center; padding:14px}
+.qs-than{flex:1; min-height:0; display:flex}
+.qs-khung{flex:1; min-width:0; min-height:0; background:#E9F1F8; display:grid; place-items:center; padding:14px}
+/* ⭐ v1.295.0 — cột BÀI LÀM TRỰC TIẾP (AWord Đợt 497 gửi bài làm từng câu sau mỗi lần dựng lại ván) */
+.qs-bl{flex:none; width:clamp(300px,28vw,420px); border-left:1px solid var(--vien); display:flex; flex-direction:column; min-height:0; background:#FAFCFB}
+.qs-bl-dau{flex:none; padding:12px 14px 10px; border-bottom:1px solid var(--vien)}
+.qs-bl-dau h4{margin:0 0 6px; font:800 11px/1 var(--font); letter-spacing:.12em; color:var(--nhat)}
+.qs-bl-so{display:flex; gap:12px; font:700 12.5px/1 var(--font); color:var(--mo)} .qs-bl-so b{font-size:17px; color:var(--chu)}
+.qs-bl-so .d b{color:#15803D} .qs-bl-so .s b{color:#D23B30}
+.qs-bl-o{display:flex; flex-wrap:wrap; gap:3px; margin-top:9px}
+.qs-bl-o i{width:20px; height:20px; border-radius:5px; font:800 9.5px/20px var(--font); text-align:center; font-style:normal; color:#fff; background:#C9D3D1; font-variant-numeric:tabular-nums}
+.qs-bl-o i.dung{background:#22A55A} .qs-bl-o i.sai{background:#E0564A} .qs-bl-o i.moi{outline:2px solid #FF4D57; outline-offset:1px; animation:qsMoi 1.2s ease-in-out 3}
+.qs-bl-ds{flex:1; min-height:0; overflow-y:auto; padding:10px 12px 14px; display:flex; flex-direction:column; gap:8px}
+.qs-c{flex:none; border:1px solid var(--vien); border-radius:12px; background:#fff; padding:10px 12px; font:600 13px/1.4 var(--font)}
+.qs-c.moi{border-color:#FF8A95; box-shadow:0 0 0 3px #FFE1E5; animation:qsMoiThe .5s ease both}
+@keyframes qsMoi{50%{outline-color:transparent}}
+@keyframes qsMoiThe{0%{transform:translateY(-6px); opacity:0}100%{transform:none; opacity:1}}
+.qs-c-dau{display:flex; align-items:center; gap:6px; margin-bottom:5px; font:800 10.5px/1 var(--font); letter-spacing:.08em; color:var(--nhat)}
+.qs-c-dau .dau{margin-left:auto; width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font-size:13px; color:#fff}
+.qs-c.dung .dau{background:#22A55A} .qs-c.sai .dau{background:#E0564A}
+.qs-c-dau .moi-nhan{color:#C81E3A}
+.qs-c .cau{color:var(--chu); font-weight:700; margin-bottom:6px}
+.qs-c .dong{display:flex; gap:6px; font-size:12.5px; margin-top:2px} .qs-c .dong span{flex:none; width:62px; color:var(--mo)}
+.qs-c .dong div{color:var(--mo)}
+.qs-c.dung .em b{color:#15803D} .qs-c.sai .em b{color:#D23B30; text-decoration:line-through; text-decoration-thickness:1.5px}
+.qs-c .da b{color:#15803D}
+.qs-bl-trong{padding:22px 16px; text-align:center; font:600 13px/1.5 var(--font); color:var(--mo)}
 .qs-khung iframe{width:100%; height:100%; border:0; border-radius:12px; background:#fff}
 .qs-chan{flex:none; padding:8px 18px; border-top:1px solid var(--vien); font:600 12px/1.4 var(--font); color:var(--mo)}
 /* POP-UP BÀI LÀM — chữ to để chiếu trước lớp (A−/A+ đổi `--z`) */
@@ -4049,7 +4074,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=244"></script>
+<script src="config.js?v=245"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -9462,7 +9487,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   //    `play.html?g=<code>&xem=1` (quan-sat.js `xemVan`): dựng lại ĐÚNG ván em đang thấy, KHÔNG ghi gì, không bấm được.
   //  Đóng khung (✕ / nền / Esc) ⇒ xoá cờ ⇒ viên cuộn ngược lên. Luật cờ: myLesson tools/dang-luat-quan-sat.js.
   //  ⚠️ Template chưa biết lưu ván (Balloon pop, Maze chase, Running…, Speaking cards) không có tplJ ⇒ khung báo "chưa có ván".
-  var QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '' };
+  var QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '', rv: null, moi: {} };
   var QS_NHIP_MS = 20000;
   function qsxGuiKhung() {
     var f = $('#qsKhung'); if (!f || !f.contentWindow || !QSX.san) return;
@@ -9491,15 +9516,15 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (QSX.ma) dongQuanSat();
     var dl = hqCtDuLieu(); if (!dl) return;
     var lopGoc = hqLopGoc(dl.t), slug = avSlugLop(lopGoc);
-    QSX = { ma: ma, code: code, nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '' };
+    QSX = { ma: ma, code: code, nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '', rv: null, moi: {} };
     var src = A.CFG.AWORD + '/play.html?g=' + encodeURIComponent(code) + '&xem=1&nhung=1&n=' + encodeURIComponent(dl.ten) + '&lop=' + encodeURIComponent(lopGoc || '');
     $('#qsHop').innerHTML = '<div class="qs-dau">' + veEmAvDb(dl.ten, slug, lopGoc) + '<div><div class="t1">' + A.chuAnToan(dl.ten) + ' · XEM TRỰC TIẾP</div>' +
       '<div class="t2">' + A.chuAnToan(muc || '') + ' · <span id="qsTrangThai"></span></div></div>' +
       '<span class="qs-song" id="qsSong"><i></i>ĐANG QUAN SÁT</span><button type="button" class="qs-dong" id="qsDong" title="Thôi xem (Esc)">✕</button></div>' +
-      '<div class="qs-khung"><iframe id="qsKhung" allow="fullscreen" src="' + A.chuAnToan(src) + '"></iframe></div>' +
-      '<div class="qs-chan">Chỉ XEM: thầy không bấm được vào ván, không ghi điểm, không phát tiếng. Ván dựng lại sau mỗi câu em trả lời (Quiz: hiện câu kế tiếp em sắp làm).</div>';
+      '<div class="qs-than"><div class="qs-khung"><iframe id="qsKhung" allow="fullscreen" src="' + A.chuAnToan(src) + '"></iframe></div><div class="qs-bl" id="qsBl"></div></div>' +
+      '<div class="qs-chan">Chỉ XEM: thầy không bấm được vào ván, không ghi điểm, không phát tiếng. Ván dựng lại sau mỗi câu em trả lời — khung trái là câu em ĐANG/SẮP làm, câu VỪA làm (đáp án em chọn) ở cột BÀI LÀM bên phải.</div>';
     $('#qsNen').classList.add('mo');
-    qsxVeTrangThai();
+    qsxVeTrangThai(); qsxVeBL();
     var maMo = ma;
     spDb().then(function (f) {
       if (QSX.ma !== maMo) return;
@@ -9524,13 +9549,48 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (typeof QSX.bo === 'function') { try { QSX.bo(); } catch (e) { } }
     var f0 = $('#qsKhung'); if (f0) f0.src = 'about:blank';
     $('#qsHop').innerHTML = '';
-    QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '' };
+    QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '', rv: null, moi: {} };
     if (ma) spDb().then(function (f) { return f.fs.deleteDoc(f.fs.doc(f.db, 'quanSat', ma)); })['catch'](function () { });
   }
+  // ⭐⭐ v1.295.0 (thầy chốt 10/10/2026) — CỘT BÀI LÀM TRỰC TIẾP: sau mỗi lần dựng lại ván, khung xem AWord (Đợt 497) gửi bài làm từng câu
+  // `AWORD:XEM_BL {rv:[{q,a,y,ok,c,o}]}` (rv null = template không có buildReview). Câu VỪA làm (lần trước chưa trả lời, nay đã trả lời)
+  // nháy viền đỏ + nhãn "VỪA LÀM"; danh sách câu đã làm xếp MỚI NHẤT TRÊN (theo thứ tự câu — em làm tuần tự). Ván xong / rời ván
+  // (lamTiep bị xoá) ⇒ GIỮ bài làm cuối cùng đã thấy.
+  function qsxVeBL() {
+    var o = $('#qsBl'); if (!o) return;
+    var rv = QSX.rv;
+    if (!rv) { o.innerHTML = '<div class="qs-bl-dau"><h4>BÀI LÀM TRỰC TIẾP</h4></div><div class="qs-bl-trong">' + (QSX.rv === false ? 'Dạng game này chưa gửi được bài làm từng câu — xem ván ở khung bên trái.' : 'Đang chờ bài làm của em…') + '</div>'; return; }
+    var tt = function (q) { return !q.a ? 'trong' : (q.ok ? 'dung' : 'sai'); };
+    var nD = rv.filter(function (q) { return tt(q) === 'dung'; }).length, nS = rv.filter(function (q) { return tt(q) === 'sai'; }).length;
+    var o2 = rv.map(function (q, k) { return '<i class="' + tt(q) + (QSX.moi[k] ? ' moi' : '') + '" title="Câu ' + (k + 1) + '">' + (k + 1) + '</i>'; }).join('');
+    var ds = [];
+    for (var k = rv.length - 1; k >= 0; k--) {
+      var q = rv[k]; if (!q.a) continue;
+      var t = tt(q);
+      var opts = Array.isArray(q.o) && q.o.length > 1 ? '<div class="dong"><span>Lựa chọn</span><div>' + q.o.map(function (x) { return A.chuAnToan(x); }).join(' · ') + '</div></div>' : '';
+      ds.push('<div class="qs-c ' + t + (QSX.moi[k] ? ' moi' : '') + '"><div class="qs-c-dau">CÂU ' + (k + 1) + (QSX.moi[k] ? ' <span class="moi-nhan">· VỪA LÀM</span>' : '') +
+        '<span class="dau">' + (t === 'dung' ? '✓' : '✗') + '</span></div><div class="cau">' + A.chuAnToan(q.q) + '</div>' + opts +
+        '<div class="dong em"><span>Em chọn</span><b>' + A.chuAnToan(q.y == null ? '' : q.y) + '</b></div>' +
+        (t === 'sai' ? '<div class="dong da"><span>Đáp án</span><b>' + A.chuAnToan(q.c || '') + '</b></div>' : '') + '</div>');
+    }
+    o.innerHTML = '<div class="qs-bl-dau"><h4>BÀI LÀM TRỰC TIẾP</h4><div class="qs-bl-so"><span class="d"><b>' + nD + '</b> đúng</span><span class="s"><b>' + nS + '</b> sai</span><span><b>' + (rv.length - nD - nS) + '</b> chưa làm</span></div>' +
+      '<div class="qs-bl-o">' + o2 + '</div></div><div class="qs-bl-ds">' + (ds.length ? ds.join('') : '<div class="qs-bl-trong">Em chưa trả lời câu nào.</div>') + '</div>';
+  }
   window.addEventListener('message', function (e) {
-    if (e.origin !== A.CFG.AWORD || !e.data || e.data.type !== 'AWORD:XEM_SAN') return;
+    if (e.origin !== A.CFG.AWORD || !e.data) return;
     var f = $('#qsKhung'); if (!f || e.source !== f.contentWindow || e.data.code !== QSX.code) return;
-    QSX.san = true; qsxGuiKhung();
+    if (e.data.type === 'AWORD:XEM_SAN') { QSX.san = true; qsxGuiKhung(); return; }
+    if (e.data.type !== 'AWORD:XEM_BL') return;
+    var rv = Array.isArray(e.data.rv) ? e.data.rv.slice(0, 300) : null;
+    if (!rv) { if (!QSX.rv) { QSX.rv = false; qsxVeBL(); } return; }
+    var cu = Array.isArray(QSX.rv) ? QSX.rv : null, moi = {};
+    rv.forEach(function (q, k) { if (q && q.a && (!cu || !cu[k] || !cu[k].a)) moi[k] = true; });
+    if (!cu) {   // lần đầu mở khung: không biết câu nào mới ⇒ coi câu đã làm CUỐI CÙNG (theo thứ tự câu) là câu vừa làm
+      moi = {};
+      for (var k = rv.length - 1; k >= 0; k--) if (rv[k] && rv[k].a) { moi[k] = true; break; }
+    }
+    QSX.rv = rv; QSX.moi = moi;
+    qsxVeBL();
   });
   // Đóng tab dashboard khi đang xem ⇒ cố xoá cờ (không kịp thì bai.html tự tắt sau 60 s không nhịp).
   window.addEventListener('pagehide', function () { if (QSX.ma) { var ma = QSX.ma; spDb().then(function (f) { f.fs.deleteDoc(f.fs.doc(f.db, 'quanSat', ma)); }); } });

@@ -339,6 +339,11 @@
     }
     var _phongCho = {};
     function tatTB(p) { return !!((p.tat || {})[toi.uid]); }
+    // v1.300.0 — THẦY: nhóm lớp / nhóm tự lập đang "chỉ báo khi nhắc tới thầy" ⇒ dấu @ cạnh tên (đọc danh sách tatLop đã nạp ở js/day.js)
+    function nhacTB(p) {
+      if (!toi.laThay || !window.ACDay || !ACDay.datNhacLop || (!p.lop && p.loai !== 'nhom')) return false;
+      try { return !!ACDay.dangTat(p.lop || ('p:' + p.id)).nhac; } catch (e) { return false; }
+    }
     function veDs() {
       var ds = xepPhong(PHONG.filter(function (p) { return !(PHONG_LOP.length && p.lop); }).concat(PHONG_LOP)).filter(function (p) { return !timChu || NW.khongDau(tenPhong(p).toLowerCase()).indexOf(timChu) >= 0; });
       var ghiChu = CHO_RIENG || timChu ? '' : '<div class="tn-sap-rieng">' + IC.khoa + 'Tính năng chat riêng sẽ sớm được bật.</div>';
@@ -350,7 +355,7 @@
         var cuoi = tc.luc ? ((tc.uid === toi.uid ? (toi.laThay ? 'Thầy: ' : 'Em: ') : (p.loai === 'nhom' ? (tc.ten || '').split(' ').pop() + ': ' : '')) + (tc.chu || (tc.hinh ? '📷 Ảnh' : ''))) : '';
         var cuoiHtml = cuoi ? an(cuoi) + '<span class="gio"> · ' + an(gioNgan(tc.luc || p.capNhat)) + '</span>' : '<span class="tn-moi-chu">' + (laVoiThay(p) ? 'Nhắn cho thầy' : 'Bắt đầu trò chuyện') + '</span>';
         return '<div class="tn-muc' + (p.id === chon ? ' chon' : '') + (chua ? ' chua' : '') + (p.loai === 'nhom' ? ' nhom' : '') + (laNhomLop(p) ? ' lop' : '') + '" data-id="' + an(p.id) + '" role="button" tabindex="0">' + avPhong(p) +
-          '<span class="tt"><span class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + (tatTB(p) ? '<span class="tat" title="Đã tắt thông báo">' + IC.chuongTat + '</span>' : '') + '</span>' +
+          '<span class="tt"><span class="ten">' + an(tenPhong(p)) + (laNhomLop(p) ? NW.huyHieuLop() : p.loai !== 'nhom' ? tichNeuThay(nguoiKia(p)) : '') + (tatTB(p) ? '<span class="tat" title="Đã tắt thông báo">' + IC.chuongTat + '</span>' : nhacTB(p) ? '<span class="tat nhac" title="Chỉ báo khi nhắc tới thầy">@</span>' : '') + '</span>' +
           '<span class="cuoi">' + cuoiHtml + '</span></span>' +
           (chua ? '<span class="cham"></span>' : '') +
           (p._cho || (p._lop && !window.ACDay) ? '' : '<button type="button" class="menu" data-menu aria-label="Tuỳ chọn" title="Tuỳ chọn">' + IC.baCham + '</button>') + '</div>';
@@ -413,6 +418,19 @@
       else if (CHO_RIENG && CO_CN) items.push({ ic: IC.caNhan, chu: 'Xem trang cá nhân', onclick: function () { NW.di('canhan.html?uid=' + nguoiKia(p).uid); } });
       if (p.loai !== 'nhom' && CHO_RIENG) items.push({ ic: IC.xoa, chu: 'Xoá đoạn chat', nguy: true, onclick: function () { xoaCuoc(p); } });
       items.push({ ic: IC.baoCao, chu: 'Báo cáo', onclick: function () { baoCaoCuoc(p); } });
+      // ⭐ v1.300.0 (10/10, thầy chốt) — NHÓM TỰ LẬP, chỉ THẦY: "chỉ báo khi nhắc tới thầy" — phần tử "p:<phòng>#nhac" trong tatLop của thầy
+      //   (js/day.js datNhacLop; máy chủ dayTinRieng lọc: Andrew/thầy/thay oi/teacher hoặc trả lời tin của thầy). Đọc danh sách xong mới mở menu.
+      if (p.loai === 'nhom' && toi.laThay && window.ACDay && ACDay.datNhacLop && !NW.laBanThu()) {
+        var khoaN = 'p:' + p.id;
+        ACDay.caiTat().then(function () { return !!ACDay.dangTat(khoaN).nhac; }, function () { return false; }).then(function (nhacP) {
+          items.splice(2, 0, { ic: nhacP ? IC.chuongBat : IC.chuongTat, chu: nhacP ? 'Báo lại mọi tin (đang chỉ khi nhắc tới thầy)' : 'Chỉ báo khi nhắc tới thầy', onclick: function () {
+            ACDay.datNhacLop(khoaN, !nhacP).then(function () { NW.toast(nhacP ? 'Đã báo lại mọi tin — nhóm này.' : 'Chỉ báo khi tin nhắc tới thầy — nhóm này.'); veDs(); },
+              function (e) { NW.toast(NW.chuLoiKho(e), true); });
+          } });
+          NW.menuNho(nut, items);
+        });
+        return;
+      }
       NW.menuNho(nut, items);
     }
     async function capNhatPhong(p, patch, capNhatTaiCho) {

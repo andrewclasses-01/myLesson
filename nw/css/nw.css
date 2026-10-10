@@ -1086,6 +1086,7 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .tn-muc:hover .cham,.tn-muc:hover .cuoi .gio{visibility:hidden}
 .tn-muc .ten .tat{display:inline-grid; color:var(--muted); margin-left:2px}
 .tn-muc .ten .tat .ic{width:13px; height:13px}
+.tn-muc .ten .tat.nhac{font:800 12px/1 inherit; color:#2B59C3}   /* v1.300.0 — thầy: chỉ báo khi nhắc tới thầy */
 .tn-muc.nhom .av-nhom{width:52px; height:52px}
 @media (hover:none){ .tn-muc .menu{display:none} }   /* điện thoại: giữ cuộc chat = mở menu */
 

@@ -4085,7 +4085,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=249"></script>
+<script src="config.js?v=250"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -12810,7 +12810,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       //   "thay oi" / teacher, hoặc em TRẢ LỜI tin của thầy (máy chủ day-thong-bao.js nhacThay). Tắt hẳn/tắt tạm vẫn thắng.
       var dsLop = tatCaLop(), soNhac = dsLop.filter(function (l) { return ACDay.dangTat(l.maLop).nhac; }).length;
       h += '<div class="tbq-nhac"><div class="tbq-ten"><b>@ Chỉ báo khi nhắc tới thầy</b><small>Tin thường không báo. Vẫn báo khi tin có chữ <i>Andrew</i>, <i>thầy</i>, <i>thay oi</i>, <i>teacher</i> hoặc em trả lời tin của thầy. ' +
-        (soNhac ? 'Đang bật ở ' + soNhac + '/' + dsLop.length + ' lớp.' : 'Chưa bật lớp nào.') + '</small></div><div class="tbq-chon">' +
+        (soNhac ? 'Đang bật ở ' + soNhac + '/' + dsLop.length + ' lớp.' : 'Chưa bật lớp nào.') + ' Nhóm tự lập: bấm ⋯ ở nhóm trong trang Tin nhắn.</small></div><div class="tbq-chon">' +
         (soNhac < dsLop.length ? '<button type="button" class="qm-nut chinh" data-tbq-nhac-ca="1">Bật cho tất cả lớp</button>' : '') +
         (soNhac ? '<button type="button" class="qm-nut" data-tbq-nhac-ca="0">Tắt cho tất cả</button>' : '') + '</div></div>';
     }

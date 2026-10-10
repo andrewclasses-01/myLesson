@@ -485,6 +485,14 @@ a{color:inherit}
 .tbq-ten small{display:block; font-size:12px; font-weight:700; color:#1f7a4d; margin-top:2px}
 .tbq-ten small.xam{color:var(--mo); font-weight:600}
 .tbq-lop.tat .tbq-ten small{color:#B45309}
+/* v1.299.0 — chế độ "chỉ khi nhắc tới thầy" */
+.tbq-nhac{display:flex; align-items:center; gap:12px; padding:12px 14px; margin:0 0 6px; border-radius:12px; background:#F1F6FF; border:1px solid #D6E2FB}
+.tbq-nhac .tbq-ten small{color:var(--mo); font-weight:600; line-height:1.45}
+.tbq-nhac .tbq-ten i{font-style:normal; font-weight:800; color:#2B59C3}
+.tbq-lop.nhac .tbq-ten small{color:#2B59C3}
+.tbq-chon .tbq-nut-nhac{margin-right:6px}
+.tbq-chon .tbq-nut-nhac.bat{background:#2B59C3; border-color:#2B59C3; color:#fff}
+@media (max-width:640px){ .tbq-nhac{flex-wrap:wrap} }
 .tbq-chon{display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end}
 .tbq-chon .qm-nut:disabled{opacity:.5; cursor:wait}
 .tbq-nay{display:inline-block; margin-left:6px; padding:2px 6px; border-radius:5px; background:var(--xanh-nhat); color:var(--xanh); font:800 10px/1.2 var(--font); letter-spacing:.04em; vertical-align:middle}
@@ -3650,7 +3658,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=20">
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
-<script src="js/day.js?v=4"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
+<script src="js/day.js?v=5"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
 <body>
 
@@ -4077,7 +4085,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=248"></script>
+<script src="config.js?v=249"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -12797,10 +12805,21 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<button type="button" class="tbq-may" id="tbqMay"><i>' + QM_IC.tb + '</i><span><b class="nh">Thông báo</b><small class="mo-ta"></small></span><em>›</em></button></section>';
     h += '<section class="tbq-khoi"><h5>Tin nhắn các lớp</h5><p class="qm-p">Tắt tạm thì hết giờ tự bật lại. Đổi ở đây là đổi luôn ở nút ⋮ ô chat và trang Tin nhắn, trên mọi máy của thầy.</p>';
     if (!TBQ.cai) h += '<p class="qm-p">Đang đọc…</p>';
-    else h += tatCaLop().map(function (l) {
+    else {
+      // ⭐ v1.299.0 (10/10/2026, thầy chốt) — "CHỈ KHI NHẮC TỚI THẦY": lớp bật chế độ này chỉ đẩy tin có chữ Andrew / thầy /
+      //   "thay oi" / teacher, hoặc em TRẢ LỜI tin của thầy (máy chủ day-thong-bao.js nhacThay). Tắt hẳn/tắt tạm vẫn thắng.
+      var dsLop = tatCaLop(), soNhac = dsLop.filter(function (l) { return ACDay.dangTat(l.maLop).nhac; }).length;
+      h += '<div class="tbq-nhac"><div class="tbq-ten"><b>@ Chỉ báo khi nhắc tới thầy</b><small>Tin thường không báo. Vẫn báo khi tin có chữ <i>Andrew</i>, <i>thầy</i>, <i>thay oi</i>, <i>teacher</i> hoặc em trả lời tin của thầy. ' +
+        (soNhac ? 'Đang bật ở ' + soNhac + '/' + dsLop.length + ' lớp.' : 'Chưa bật lớp nào.') + '</small></div><div class="tbq-chon">' +
+        (soNhac < dsLop.length ? '<button type="button" class="qm-nut chinh" data-tbq-nhac-ca="1">Bật cho tất cả lớp</button>' : '') +
+        (soNhac ? '<button type="button" class="qm-nut" data-tbq-nhac-ca="0">Tắt cho tất cả</button>' : '') + '</div></div>';
+    }
+    if (TBQ.cai) h += tatCaLop().map(function (l) {
       var tt = ACDay.dangTat(l.maLop), tat = !!tt.tat;
-      return '<div class="tbq-lop' + (tat ? ' tat' : '') + '" data-tbq-lop="' + qmE(l.maLop) + '"><div class="tbq-ten"><b>' + qmE(l.tenGoc || l.maLop) + '</b>' +
-        '<small>' + qmE(ACDay.chuTat(tt)) + '</small></div><div class="tbq-chon">' +
+      return '<div class="tbq-lop' + (tat ? ' tat' : '') + (tt.nhac && !tat ? ' nhac' : '') + '" data-tbq-lop="' + qmE(l.maLop) + '"><div class="tbq-ten"><b>' + qmE(l.tenGoc || l.maLop) + '</b>' +
+        '<small>' + qmE(ACDay.chuTat(tt)) + (tat && tt.nhac ? ' · sau đó chỉ khi nhắc tới thầy' : '') + '</small></div><div class="tbq-chon">' +
+        '<button type="button" class="qm-nut tbq-nut-nhac' + (tt.nhac ? ' bat' : '') + '" data-tbq-nhac="' + (tt.nhac ? '0' : '1') + '" title="' +
+        (tt.nhac ? 'Đang chỉ báo khi nhắc tới thầy — bấm để báo lại mọi tin' : 'Chỉ báo khi tin nhắc tới thầy') + '">@ Chỉ khi nhắc' + (tt.nhac ? ' ✓' : '') + '</button>' +
         (tat ? '<button type="button" class="qm-nut chinh" data-tbq-dat="bat">Bật lại</button>'
           : ACDay.MUC_TAT.map(function (m) {
             var ngan = { '1': '1 giờ', '3': '3 giờ', '5': '5 giờ', '8': '8 giờ', sang: 'Đến 7h sáng', han: 'Tắt hẳn' }[m.k] || m.chu;
@@ -12839,6 +12858,18 @@ tr.qm-hang-tam td{background:#fffbeb}
         .then(function () { return ACDay.caiTat(); }).then(function (o) { TBQ.cai = o; tbqVe(); });
       return true;
     }
+    // v1.299.0 — chế độ "chỉ khi nhắc tới thầy": từng lớp (data-tbq-nhac) · tất cả lớp (data-tbq-nhac-ca)
+    var n = e.target.closest('[data-tbq-nhac], [data-tbq-nhac-ca]');
+    if (n) {
+      var ca = n.hasAttribute('data-tbq-nhac-ca'), batN = (n.getAttribute(ca ? 'data-tbq-nhac-ca' : 'data-tbq-nhac')) === '1';
+      var lopN = ca ? tatCaLop().map(function (l) { return l.maLop; }) : n.closest('[data-tbq-lop]').getAttribute('data-tbq-lop');
+      [].forEach.call(n.parentNode.querySelectorAll('button'), function (b) { b.disabled = true; });
+      ACDay.datNhacLop(lopN, batN).then(function () {
+        baoToast((ca ? 'Tất cả lớp' : tbqTenLop(lopN)) + ': ' + (batN ? 'chỉ báo khi tin nhắc tới thầy.' : 'báo lại mọi tin.'));
+      }, function (x) { baoToast('Chưa đổi được (' + tbqLoi(x) + '). Thử lại nhé.'); })
+        .then(function () { return ACDay.caiTat(); }).then(function (o) { TBQ.cai = o; tbqVe(); });
+      return true;
+    }
     var g = e.target.closest('[data-tbq-go]');
     if (g) {
       if (!window.confirm('Gỡ thông báo khỏi "' + g.getAttribute('data-tbq-ten') + '"? Máy đó sẽ không nhận thông báo nữa (muốn nhận lại thì bật trên chính máy đó).')) return true;
@@ -12866,6 +12897,11 @@ tr.qm-hang-tam td{background:#fffbeb}
         m.hidden = true;
         if (v === 'tatca') return void moHopBaoMat('tb');
         if (chuaThay(null)) return;
+        if (v === 'nhac1' || v === 'nhac0') {   // v1.299.0 — chỉ báo khi nhắc tới thầy
+          return void ACDay.datNhacLop(lop, v === 'nhac1').then(function () {
+            baoToast(tbqTenLop(lop) + ': ' + (v === 'nhac1' ? 'chỉ báo khi tin nhắc tới thầy.' : 'báo lại mọi tin.'));
+          }, function (x) { baoToast('Chưa đổi được (' + tbqLoi(x) + '). Thử lại nhé.'); });
+        }
         ACDay.datTatLop(lop, v === 'bat' ? false : v).then(function () {
           baoToast(tbqTenLop(lop) + ': ' + (v === 'bat' ? 'đã bật lại thông báo.' : ACDay.chuTat(ACDay.dangTat(lop)).toLowerCase() + '.'));
         }, function (x) { baoToast('Chưa đổi được (' + tbqLoi(x) + '). Thử lại nhé.'); });
@@ -12879,7 +12915,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     var ve = function () {
       var tt = ACDay.dangTat(lop);
       m.innerHTML = dau(ACDay.chuTat(tt)) +
-        (tt.tat ? '<button type="button" role="menuitem" data-tb="bat"><span>🔔</span><div>Bật lại thông báo</div></button>'
+        (tt.nhac ? '<button type="button" role="menuitem" data-tb="nhac0"><span>🔔</span><div>Báo lại mọi tin<small>Đang chỉ báo khi nhắc tới thầy</small></div></button>'
+          : '<button type="button" role="menuitem" data-tb="nhac1"><span>@</span><div>Chỉ báo khi nhắc tới thầy<small>Andrew · thầy · thay oi · trả lời tin thầy</small></div></button>') +
+        (tt.tat ?'<button type="button" role="menuitem" data-tb="bat"><span>🔔</span><div>Bật lại thông báo</div></button>'
           : ACDay.MUC_TAT.map(function (x) { return '<button type="button" role="menuitem" data-tb="' + x.k + '"><span>🔕</span><div>' + qmE(x.chu) + '</div></button>'; }).join('')) +
         '<button type="button" role="menuitem" data-tb="tatca"><span>⚙</span><div>Quản lý tất cả…<small>Mọi lớp + các máy nhận thông báo</small></div></button>';
     };

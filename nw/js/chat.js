@@ -395,6 +395,14 @@
         var its = tatL
           ? [{ ic: IC.chuongBat, chu: 'Bật lại thông báo (' + ACDay.chuTat(ACDay.dangTat(p.lop)).toLowerCase() + ')', onclick: function () { datL(false); } }]
           : ACDay.MUC_TAT.map(function (m) { return { ic: IC.chuongTat, chu: m.chu, onclick: function () { datL(m.k); } }; });
+        // ⭐ v1.299.0 (10/10, thầy chốt) — THẦY: "chỉ báo khi nhắc tới thầy" (Andrew/thầy/thay oi/teacher/trả lời tin thầy); chung kho với dashboard.
+        if (toi.laThay && ACDay.datNhacLop) {
+          var nhacL = !!ACDay.dangTat(p.lop).nhac;
+          its.unshift({ ic: nhacL ? IC.chuongBat : IC.chuongTat, chu: nhacL ? 'Báo lại mọi tin (đang chỉ khi nhắc tới thầy)' : 'Chỉ báo khi nhắc tới thầy', onclick: function () {
+            ACDay.datNhacLop(p.lop, !nhacL).then(function () { NW.toast(nhacL ? 'Đã báo lại mọi tin — nhóm lớp này.' : 'Chỉ báo khi tin nhắc tới thầy — nhóm lớp này.'); },
+              function (e) { NW.toast(NW.chuLoiKho(e), true); });
+          } });
+        }
         NW.menuNho(nut, its);
         return;
       }

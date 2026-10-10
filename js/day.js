@@ -91,7 +91,7 @@
   function docTat(ds) {   // { maLop: 'han' | ms hết hạn } — chỉ phần CÒN hiệu lực
     var o = {}, nay = Date.now();
     (ds || []).forEach(function (s) {
-      if (typeof s !== 'string' || !s) return;
+      if (typeof s !== 'string' || !s || s.indexOf('#') >= 0) return;   // "MÃLỚP#nhac" là chế độ nhắc (v1.299.0), không phải tắt
       var i = s.lastIndexOf('@');
       if (i < 0) { o[s] = 'han'; return; }
       var lop = s.slice(0, i), den = Number(s.slice(i + 1)) || 0;
@@ -100,6 +100,17 @@
     return o;
   }
   function ghiTat(o) { return Object.keys(o).map(function (k) { return o[k] === 'han' ? k : k + '@' + Math.round(o[k]); }); }
+  // ⭐ v1.299.0 (10/10/2026, thầy chốt) — "CHỈ BÁO KHI NHẮC TỚI THẦY" (máy thầy): phần tử "MÃLỚP#nhac" trong CÙNG danh sách
+  //   (luật kho chỉ đòi list ≤ 60 chuỗi ⇒ không đổi luật). Độc lập với tắt: lớp vừa ở chế độ nhắc vừa tắt tạm ⇒ tắt thắng, hết giờ
+  //   tắt thì quay về chế độ nhắc. Máy chủ (day-thong-bao.js nhacThay) đẩy khi tin/tên tin được trả lời có "andrew"/"thầy"/
+  //   "thay oi"/"teacher". Bản trang CŨ đọc "A1C#nhac" như một mã lớp lạ đang tắt hẳn ⇒ không hiện ở đâu, ghi lại vẫn giữ nguyên.
+  var DUOI_NHAC = '#nhac';
+  function docNhac(ds) {   // { maLop: true }
+    var o = {};
+    (ds || []).forEach(function (s) { if (typeof s === 'string' && s.length > DUOI_NHAC.length && s.slice(-DUOI_NHAC.length) === DUOI_NHAC) o[s.slice(0, -DUOI_NHAC.length)] = true; });
+    return o;
+  }
+  function ghiNhac(o) { return Object.keys(o).map(function (k) { return k + DUOI_NHAC; }); }
   function dsHieuLuc() { return Object.keys(docTat(TAT_RAW)); }
   function phatTat() {
     var ds = dsHieuLuc();
@@ -127,10 +138,12 @@
   // Mã các lớp ĐANG tắt (hẳn hoặc tạm còn hạn) — giữ khuôn cũ cho tn-pop-ds.js / nw/js/chat.js.
   function tatLopDs() { return napTat().then(function () { return dsHieuLuc(); }); }
   // Trạng thái một lớp: { tat: false } | { tat: 'han' } | { tat: 'tam', den: ms }. Đồng bộ (bản đã đọc), dùng sau tatLopDs()/caiTat().
+  // v1.299.0 — kèm `nhac: true` khi lớp đang ở chế độ "chỉ báo khi nhắc tới thầy".
   function dangTat(lop) {
-    var v = docTat(TAT_RAW)[lop];
-    return v === 'han' ? { tat: 'han' } : v ? { tat: 'tam', den: v } : { tat: false };
+    var v = docTat(TAT_RAW)[lop], nhac = !!docNhac(TAT_RAW)[lop];
+    return v === 'han' ? { tat: 'han', nhac: nhac } : v ? { tat: 'tam', den: v, nhac: nhac } : { tat: false, nhac: nhac };
   }
+  function cacLopNhac() { return Object.keys(docNhac(TAT_RAW)); }
   function caiTat(moi) { return napTat(moi).then(function () { return docTat(TAT_RAW); }); }
   // Các mức tắt (thầy chốt 09/10): 1 · 3 · 5 · 8 giờ · đến 7h sáng mai · tắt hẳn (đến khi bật lại).
   var MUC_TAT = [{ k: '1', chu: 'Tắt 1 giờ' }, { k: '3', chu: 'Tắt 3 giờ' }, { k: '5', chu: 'Tắt 5 giờ' }, { k: '8', chu: 'Tắt 8 giờ' },
@@ -144,7 +157,7 @@
     return Date.now() + (Number(k) || 1) * 3600e3;
   }
   function chuTat(tt) {   // "Đang bật" · "Đã tắt" · "Tắt đến 15:30" · "Tắt đến 07:00 mai"
-    if (!tt || !tt.tat) return 'Đang bật';
+    if (!tt || !tt.tat) return tt && tt.nhac ? 'Chỉ khi nhắc tới thầy' : 'Đang bật';
     if (tt.tat === 'han') return 'Đã tắt';
     var d = new Date(tt.den), nay = new Date(), hh = ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
     var homNay = d.toDateString() === nay.toDateString();
@@ -161,19 +174,34 @@
       delete o[lop];
       if (tat === true || tat === 'han') o[lop] = 'han';
       else if (typeof tat === 'number' && tat > Date.now()) o[lop] = tat;
-      var ds = ghiTat(o).slice(0, 60);
-      TAT_RAW = ds; TAT_DOC_LUC = Date.now(); _tatLop = Promise.resolve(ds);
-      ls(K_TAT, JSON.stringify({ uid: me.uid, ds: ds, luc: Date.now() }));   // trang khác cùng trình duyệt nghe 'storage'
-      var fs = me.f.fs, db = me.f.db;
-      return fs.setDoc(fs.doc(db, 'nwUsers', me.uid, 'rieng', 'tatLop'), { ds: ds, luc: Date.now() }).then(function () {
-        // chép sang mọi máy đã bật của mình (máy chủ lọc theo tatLop của từng máy — không phải đọc thêm lúc gửi)
-        return fs.getDocs(fs.query(fs.collection(db, 'dayThietBi'), fs.where('uid', '==', me.uid))).then(function (s) {
-          var b = fs.writeBatch(db); s.forEach(function (d) { b.update(d.ref, { tatLop: ds }); }); return b.commit();
-        }).catch(function (e) { console.warn('[day] chép tắt lớp sang máy', e); });
-      }).then(function () {
-        phatTat();
-        return dsHieuLuc();
-      });
+      return luuDs(me, ghiTat(o).concat(ghiNhac(docNhac(kq[1]))));   // v1.299.0 — giữ nguyên các lớp ở chế độ nhắc
+    });
+  }
+  // v1.299.0 — bật/tắt chế độ "chỉ báo khi nhắc tới thầy" cho MỘT lớp hoặc NHIỀU lớp (mảng) trong một lượt ghi.
+  function datNhacLop(lops, bat) {
+    lops = [].concat(lops || []).filter(Boolean);
+    return Promise.all([toi(), napTat()]).then(function (kq) {
+      var me = kq[0];
+      if (!me) throw new Error('chua-dang-nhap');
+      var n = docNhac(kq[1]);
+      lops.forEach(function (l) { if (bat) n[l] = true; else delete n[l]; });
+      return luuDs(me, ghiTat(docTat(kq[1])).concat(ghiNhac(n)));
+    });
+  }
+  // Ghi danh sách THÔ (tắt + chế độ nhắc) vào kho + chép sang mọi máy đã bật của mình.
+  function luuDs(me, ds) {
+    ds = ds.slice(0, 60);
+    TAT_RAW = ds; TAT_DOC_LUC = Date.now(); _tatLop = Promise.resolve(ds);
+    ls(K_TAT, JSON.stringify({ uid: me.uid, ds: ds, luc: Date.now() }));   // trang khác cùng trình duyệt nghe 'storage'
+    var fs = me.f.fs, db = me.f.db;
+    return fs.setDoc(fs.doc(db, 'nwUsers', me.uid, 'rieng', 'tatLop'), { ds: ds, luc: Date.now() }).then(function () {
+      // chép sang mọi máy đã bật của mình (máy chủ lọc theo tatLop của từng máy — không phải đọc thêm lúc gửi)
+      return fs.getDocs(fs.query(fs.collection(db, 'dayThietBi'), fs.where('uid', '==', me.uid))).then(function (s) {
+        var b = fs.writeBatch(db); s.forEach(function (d) { b.update(d.ref, { tatLop: ds }); }); return b.commit();
+      }).catch(function (e) { console.warn('[day] chép tắt lớp sang máy', e); });
+    }).then(function () {
+      phatTat();
+      return dsHieuLuc();
     });
   }
   window.addEventListener('storage', function (e) {
@@ -558,6 +586,7 @@
 
   window.ACDay = { trangThai: trangThai, bat: bat, tat: tat, goKhiThoat: goKhiThoat, gan: gan, veNut: veNut, tatLopDs: tatLopDs, datTatLop: datTatLop,
     caiTat: caiTat, dangTat: dangTat, chuTat: chuTat, MUC_TAT: MUC_TAT, mayCuaToi: mayCuaToi, goMay: goMay,   // v1.290.0
+    datNhacLop: datNhacLop, cacLopNhac: cacLopNhac,   // v1.299.0 — chỉ báo khi nhắc tới thầy
     moGuiThay: moGuiThay, moNhacHan: moNhacHan, IC: { chuong: CHUONG, chuongTat: CHUONG_TAT } };
   setTimeout(dongBo, 3000);
   document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') veNut(); });

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-09 18:37:17",
+  "capNhat": "2026-10-10 13:15:54",
   "bai": {
     "A1C": [
       {
@@ -2194,6 +2194,238 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L07",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 23: BÀI GIẢNG 23: TẠO CÂU HỎI Ở HIỆN TẠI ĐƠN KHI KHÔNG CÓ ĐỘNG TỪ",
+        "tenBai": "LESSON 23",
+        "maLesson": "LESSON 23",
+        "han": "2026-10-14T23:59",
+        "taoLuc": "2026-10-10",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BÀI TẬP 1: TẠO CÂU HỎI KHI CẦN SỬ DỤNG ĐỘNG TỪ MƯỢN \"BE\"",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "n45sxw"
+          },
+          {
+            "loai": "act",
+            "ten": "BT BỔ SUNG: TẠO CÂU TRẢ LỜI CHO CÂU HỎI XÁC NHẬN VỚI ĐỘNG TỪ MƯỢN \"BE\"",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "uczq5j"
+          },
+          {
+            "loai": "act",
+            "ten": "BÀI TẬP 2: PHÂN BIỆT - TẠO CÂU HỎI VỚI 3 DẠNG ĐỘNG TỪ",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "rvwjnz"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 23",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "8utzx7"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 23: TẠO CÂU HỎI Ở HIỆN TẠI ĐƠN KHI KHÔNG CÓ ĐỘNG TỪ",
+          "video": "https://www.youtube.com/watch?v=jDr5jOwCqcg",
+          "doan": [
+            {
+              "id": "dmv1zqf6znnil",
+              "ten": "Đặt mục tiêu buổi học",
+              "tu": "00:00",
+              "den": "00:33",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6z2r3a"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6z2r3a",
+              "ten": "Review hành trình hiện tại",
+              "tu": "00:33",
+              "den": "03:54",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6z3koo"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6z3koo",
+              "ten": "Ôn lại nguyên tắc đặt câu hỏi",
+              "tu": "03:54",
+              "den": "04:57",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6zqxvd"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6zqxvd",
+              "ten": "Tạo câu hỏi xác nhận với trường hợp có động từ mượn",
+              "tu": "04:57",
+              "den": "10:42",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6zf0rl"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6zf0rl",
+              "ten": "Tạo câu hỏi xin thông tin với trường hợp có động từ mượn",
+              "tu": "10:42",
+              "den": "14:18",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6zw29v"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6zw29v",
+              "ten": "Đàm đạo cuộc sống",
+              "tu": "14:18",
+              "den": "00:14:47",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6zdp2v"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6zdp2v",
+              "ten": "Trường hợp không thể tạo câu hỏi xác nhận theo cách thông thường",
+              "tu": "00:14:47",
+              "den": "16:36",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6z45yk"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6z45yk",
+              "ten": "Bí quyết xử lý trong trường hợp vừa nêu",
+              "tu": "16:36",
+              "den": "24:47",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6z4xsc"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv1zqf6z4xsc",
+              "ten": "HD BT1 - Tạo câu hỏi trong trường hợp mượn động từ bé",
+              "tu": "24:47",
+              "den": "00:27:06",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv1zw28jdqe"
+              ]
+            },
+            {
+              "id": "dmv1zqf6zywun",
+              "ten": "HD BT2 - Phân biệt và tạo câu hỏi ở 3 dạng động từ",
+              "tu": "00:27:11",
+              "den": "00:28:12",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv1zw31vmby"
+              ]
+            },
+            {
+              "id": "dmv1zqf6z6plg",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "28:18",
+              "den": "28:30",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv1zw3gztnn"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmv1zw28jdqe",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BÀI TẬP 1: TẠO CÂU HỎI KHI CẦN SỬ DỤNG ĐỘNG TỪ MƯỢN \"BE\"",
+            "actTen": "BT1. TAO CAU HOI VOI \"BE\"",
+            "ma": "n45sxw",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv1zw2pn6if"
+              ]
+            }
+          },
+          {
+            "id": "btmv1zw2pn6if",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT BỔ SUNG: TẠO CÂU TRẢ LỜI CHO CÂU HỎI XÁC NHẬN VỚI ĐỘNG TỪ MƯỢN \"BE\"",
+            "actTen": "BT BO SUNG. TAO CAU TRA LOI VOI CAU HOI XAC NHAN KHI KHONG CO DONG TU",
+            "ma": "uczq5j",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6zywun"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmv1zw31vmby",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BÀI TẬP 2: PHÂN BIỆT - TẠO CÂU HỎI VỚI 3 DẠNG ĐỘNG TỪ",
+            "actTen": "BT2. PHAN BIET - TAO CAU HOI VOI 3 DANG DONG TU",
+            "ma": "rvwjnz",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv1zqf6z6plg"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmv1zw3gztnn",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 23",
+            "actTen": "TRAC NGHIEM BAI GIANG 23 - TAO CAU HOI O HIEN TAI DON KHI KHONG CO DONG TU",
+            "ma": "8utzx7",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-10T13:15"
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L06",
         "dang": "KHOA",

@@ -26,10 +26,10 @@
     B: { ten: 'Bộ lớp 3–4 (6 phần)', bai: [
       { code: 'x98bsj', ma: 'P1', ten: 'Chọn từ đúng', n: 30, chon: true, chuan: 4.4 },
       { code: 'xxdvu5', ma: 'P2', ten: 'Gõ từ tiếng Anh', n: 30, chuan: 12.6 },
-      { code: 'g3wh9q', ma: 'P3', ten: 'A hay An', n: 20, chon: true, chuan: 3.5 },
-      { code: 'p3xryn', ma: 'P4', ten: 'Số ít, số nhiều', n: 20, chuan: 9.5 },
-      { code: 'zwfvda', ma: 'P5', ten: 'Tạo câu', n: 15, chuan: 20 },
-      { code: 'ct632d', ma: 'P6', ten: 'Trí nhớ nhanh', n: 10, chon: true, chuan: 4.4 }] }
+      { code: 'g3wh9q', ma: 'P3', ten: 'A, an hay không đếm được', n: 30, chon: true, chuan: 3.5 },
+      { code: 'p3xryn', ma: 'P4', ten: 'Số ít, số nhiều', n: 30, chuan: 9.5 },
+      { code: 'zwfvda', ma: 'P5', ten: 'Tạo câu', n: 20, chuan: 20 },
+      { code: 'ct632d', ma: 'P6', ten: 'Nghe - hiểu - ghi nhớ', n: 10, chon: true, chuan: 4.4 }] }
   };
   var MOI_BAI = BO_DE.A.bai.concat(BO_DE.B.bai);
   function boCua(h) { return (h && h.phat && BO_DE[h.phat.bo]) ? h.phat.bo : (h && BO_DE[h.boDe]) ? h.boDe : 'A'; }

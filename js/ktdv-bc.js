@@ -251,7 +251,7 @@
     var c3 = CACH.BT3 ? Math.round(CACH.BT3.c * 100) : 100, coChuan = qd.ds.some(function (x) { return x.chuan < 1; });
     var boB = (s.bai || []).some(function (b) { return /^P\d$/.test(b.ma); });
     h += '<details class="kqp-vs"><summary>Vì sao tính điểm như vậy?</summary><p>' + (boB
-      ? 'Sáu phần: chọn từ → gõ từ → a / an → số ít, số nhiều → tạo câu → trí nhớ nhanh (xem phim rồi trả lời). Mỗi câu có thời gian theo tốc độ chuẩn của học sinh cùng trình độ. Phần càng khó thì càng nhiều điểm ('
+      ? 'Sáu phần: chọn từ → gõ từ → a / an / không đếm được → số ít, số nhiều → tạo câu → nghe - hiểu - ghi nhớ (xem phim rồi trả lời). Mỗi câu có thời gian theo tốc độ chuẩn của học sinh cùng trình độ. Phần càng khó thì càng nhiều điểm ('
       : 'Ba phần khó dần: tạo cụm số ít → cụm số nhiều → tạo câu. Phần càng khó thì càng nhiều điểm (') +
       qd.ds.map(function (x) { return so(x.toiDa); }).join(' / ') + ' điểm).</p>' + (coChuan ? '<p>Mỗi phần có một <b>mức chuẩn</b> — số câu đúng cần có để coi là đã vững. Đạt mức chuẩn là được trọn điểm phần đó, vì với phần khó như tạo câu, làm đúng ' + c3 + '% đã là rất tốt.</p>'
       : '<p><b>Tạo câu</b> là kỹ năng chính để con nói và viết được tiếng Anh, nên chiếm phần lớn số điểm. Điểm mỗi phần tính theo tỉ lệ câu con làm đúng trong phần đó.</p>') + '</details>';

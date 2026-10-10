@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.27.0 (e99c6db) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — DỰNG "FILE" myPay TỪ DỮ LIỆU FIRESTORE (nap-du-lieu.js) · Đợt 1 (03/10/2026)
 
@@ -151,8 +151,15 @@
     return { phien_ban_dinh_dang: 1, app: 'myPay web (Firestore)', tong: ds.length, cac_lop: ds };
   }
   // Sổ ngày Firestore (cac_lop là CHUỖI JSON) → sổ ngày đúng khuôn file, id đã đổi sang SỐ myPay.
-  function dungSoNgay(docSo, ids, bangSo) {
+  // ⭐ v0.28.0 (10/10/2026, thầy chốt) — boGid: Set gid HỌC SINH ĐẶC BIỆT (myStudent special_student, vd Nguyễn Hải) ⇒ BỎ HẲN khỏi sổ:
+  //   không đơn vị thu, không hóa đơn, không gợi ý gán, không đếm. (Danh sách học sinh vốn đã lọc các em này ở locHocSinh.)
+  function dungSoNgay(docSo, ids, bangSo, boGid) {
     var cacLop = typeof docSo.cac_lop === 'string' ? JSON.parse(docSo.cac_lop || '[]') : (docSo.cac_lop || []);
+    if (boGid && boGid.size) {
+      cacLop.forEach(function (L) {
+        L.hoc_sinh = (L.hoc_sinh || []).filter(function (h) { return !boGid.has(ids[L.lop + '|' + h.id]); });
+      });
+    }
     cacLop.forEach(function (L) {
       (L.hoc_sinh || []).forEach(function (h) {
         var khoa = ids[L.lop + '|' + h.id];

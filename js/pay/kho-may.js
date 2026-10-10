@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.27.0 (e99c6db) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -419,9 +419,11 @@
         thangDoi.clear();
         may.datFile(DIR_SHARED + '\\hoc_sinh.json', JSON.stringify(ND.dungHocSinhJson(nguon.hs, nguon.lop, bangSo)));
         may.datFile(DIR_SHARED + '\\lop.json', JSON.stringify(ND.dungLopJson(nguon.lop)));
+        // v0.28.0 — học sinh ĐẶC BIỆT (special_student) bỏ hẳn khỏi sổ điểm danh myPay
+        var boGid = new Set(nguon.hs.filter(function (h) { return h.special_student; }).map(function (h) { return h.gid; }));
         soDocs.forEach(function (d) {
           var b = bangThang[ND.thangCuaNgayHt(d.ngay_hien_thi)].ngay[d.ngay_hien_thi];
-          may.datFile(DIR_SO + '\\' + d.ngay_hien_thi + '.json', JSON.stringify(ND.dungSoNgay(d, b.ids, bangSo)));
+          may.datFile(DIR_SO + '\\' + d.ngay_hien_thi + '.json', JSON.stringify(ND.dungSoNgay(d, b.ids, bangSo, boGid)));
         });
         return soDocs.length;
       });

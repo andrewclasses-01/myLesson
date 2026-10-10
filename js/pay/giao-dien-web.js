@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.27.0 (e99c6db) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — CHỈNH GIAO DIỆN CHO WEB + ĐIỆN THOẠI (giao-dien-web.js) · Đợt 1 (03/10/2026)
    Giao diện myPay (mypay-app.js) giữ NGUYÊN; file này chỉ bù chỗ màn cảm ứng thiếu:

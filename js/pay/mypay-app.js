@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.27.0 (e99c6db) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -121,14 +121,22 @@
   function veLuoiLop() {
     const kq = S.du.ketQua;
     const mapNo = banDoNoThangNay();   // v0.7.0 — nhãn "Nợ phí •" / "Đóng sau •"
-    const nhanNo = (u, coTien) => {
+    const cacNo = (u) => {
+      const ds = phiCuCua(u).map((x) => ({ m: x.m, y: x.y, soTien: x.soTien || 0 }));
       const d = mapNo.get(khoaNoCua(u));
-      const cu = phiCuCua(u);
-      const nhanCu = cu.length ? `<i class="no-nhan cu" title="${esc(cu.map((x) => `Tháng ${x.m}/${x.y}: ${vnd(x.soTien)}`).join('\n') + '\nTổng phí cũ: ' + vnd(cu.reduce((s, x) => s + x.soTien, 0)))}">Có phí cũ</i> ` : '';
-      if (!d) return nhanCu;
-      const chu = (d.kieu === 'sau' ? 'Đóng sau' : 'Nợ phí') + (coTien ? ' •' : '');
-      return nhanCu + `<i class="no-nhan ${d.kieu === 'sau' ? 'sau' : 'no'}">${chu}</i> `;
+      if (d && !ds.some((x) => x.m === d.m && x.y === d.y)) ds.push({ m: d.m, y: d.y, soTien: d.soTien || 0 });
+      return ds;
     };
+    const coNo = (u) => cacNo(u).length > 0;
+    const nhanNo = (u, coTien) => {
+      const ds = cacNo(u);
+      if (!ds.length) return '';
+      const tong = ds.reduce((s, x) => s + x.soTien, 0);
+      const tip = ds.map((x) => `Tháng ${x.m}/${x.y}: ${vnd(x.soTien)}`).join('\n') + '\nTổng nợ: ' + vnd(tong);
+      return `<i class="no-nhan cono" title="${esc(tip)}">Có nợ phí${coTien ? ' • ' + vnd(tong) : ''}</i> `;
+    };
+    const laPhNam = (u) => (u.kind === 'fam' ? (u.members || []).some((m) => phNamCua(m.id)) : phNamCua(u.hsId));
+    const chuPhNam = ' <span class="ph-nam">(PH nam)</span>';
     const doanTh = (S.du.bang && S.du.bang.doan) || { moc: 0, lop: {} };
     const khoaThe = (lop, doan) => (doan ? lop + '\u0001' + doan : lop);
     function cacThe(lopMacDinh, lich) {
@@ -165,8 +173,13 @@
     const tenLops = Object.keys(theoLop).sort((a, b) => theTt[a].lop.localeCompare(theTt[b].lop) || thuDoan[theTt[a].doan] - thuDoan[theTt[b].doan]);
     const bac = { chuadong: 0, motphan: 0, lech: 1, du: 2, khongbuoi: 3 };
     const coGui = (u, pl) => pl.loai !== 'du' && pl.loai !== 'khongbuoi' && !!daGuiCua(u);
-    const nhomXep = (u, pl) => (pl.loai === 'khongbuoi' ? 3 : pl.loai === 'du' ? 2 : coGui(u, pl) ? 1 : 0);
-    const soXep = (ua, pa, ub, pb) => (nhomXep(ua, pa) - nhomXep(ub, pb)) || (bac[pa.loai] - bac[pb.loai]);
+    const nhomXep = (u, pl) => (coNo(u) ? 1 : pl.loai === 'khongbuoi' ? 4 : pl.loai === 'du' ? 3 : coGui(u, pl) ? 2 : 0);
+    const soXep = (ua, pa, ub, pb) => (nhomXep(ua, pa) - nhomXep(ub, pb))
+      || (nhomXep(ua, pa) === 0 ? (laPhNam(ub) ? 1 : 0) - (laPhNam(ua) ? 1 : 0) : 0) || (bac[pa.loai] - bac[pb.loai]);
+    const noiCum = (ds, cumCua, ve) => {
+      let truoc = null;
+      return ds.map((r) => { const c = cumCua(r); const v = truoc !== null && c !== truoc ? '<div class="hs-vach"></div>' : ''; truoc = c; return v + ve(r); }).join('');
+    };
     for (const khoa of tenLops) {
       const { lop, doan } = theTt[khoa];
       const dsRow = theoLop[khoa];
@@ -181,9 +194,10 @@
         const gc = ghiChuCua(pl, u);
         const daNhan = (u.id in kq.done) && kq.done[u.id] >= 0 ? kq.txns[kq.done[u.id]].amount : null;
         const th = laTieuHoc(lop, ten);
-        return `<div class="hsrow ${pl.loai}${coGui(u, pl) ? ' dagui' : ''}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}" data-hs="${esc(String(hs ?? ''))}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
+        const cum = giadinh ? -1 : nhomXep(u, pl);
+        return `<div class="hsrow ${pl.loai}${cum === 2 ? ' dagui' : ''}${cum === 1 ? ' cono' : ''}${giadinh ? ' giadinh khoa' : ''}${th ? ' tieuhoc' : ''}" data-uid="${esc(u.id)}" data-hs="${esc(String(hs ?? ''))}"${giadinh ? ' data-khoa="1" title="Em này thuộc gia đình nhiều con — thao tác ở thẻ GIA ĐÌNH bên dưới"' : ''}>
             <span class="cham"></span>
-            <span class="ten">${esc(ten)}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi${hocThuChu(hocThu)}</small>${r.tongLop ? ` <span class="nhieu-lop" title="${esc(r.tongLop)}">${r.soLop} lớp</span>` : ''}</span>
+            <span class="ten">${esc(ten)}${phNamCua(hs) ? chuPhNam : ''}${th ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${giadinh ? ' <small>(gia đình)</small>' : ''} <small>· ${buoi} buổi${hocThuChu(hocThu)}</small>${r.tongLop ? ` <span class="nhieu-lop" title="${esc(r.tongLop)}">${r.soLop} lớp</span>` : ''}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${!giadinh && trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${!giadinh && pl.loai !== 'du' ? conDuBadge(u) : ''}
@@ -200,8 +214,8 @@
         : doan === 'MOI' ? `<span class="the-doan moi">MỚI${mocTh ? ' · từ ' + mocTh + '/' + S.m : ''}</span>` : '';
       card.innerHTML = `<h3>${esc(lop)} ${nhanDoan}<span class="dem">${daDongUnitIds.size}/${coThuUnitIds.size} đã đóng</span></h3>
         <div class="tienbar"><i style="width:${pct}%"></i></div>` +
-        thuong.map(veHang).join('') +
-        (giadinh.length ? '<div class="hs-vach"></div>' + giadinh.map(veHang).join('') : '');
+        noiCum(thuong, (r) => nhomXep(r.u, phanLoai(r.u)), veHang) +
+        (giadinh.length ? (thuong.length ? '<div class="hs-vach"></div>' : '') + giadinh.map(veHang).join('') : '');
       luoi.appendChild(card);
     }
 
@@ -216,19 +230,20 @@
         .sort((a, b) => soXep(a.u, a.pl, b.u, b.pl) || a.u.label.localeCompare(b.u.label, 'vi'));
       card.innerHTML = `<h3>GIA ĐÌNH <span class="dem">${daDong}/${coThu.length} đã đóng</span></h3>
         <div class="tienbar"><i style="width:${pct}%"></i></div>` +
-        sx.map(({ u, pl }) => {
+        noiCum(sx, (r) => nhomXep(r.u, r.pl), ({ u, pl }) => {
           const gc = ghiChuCua(pl, u);
           const daNhan = (u.id in kq.done) && kq.done[u.id] >= 0 ? kq.txns[kq.done[u.id]].amount : null;
           const mems = (u.members || []).length ? u.members : [{ ten: u.label, lop: '', buoi: u.buoi }];
-          return `<div class="hsrow fam-row ${pl.loai}${coGui(u, pl) ? ' dagui' : ''}" data-uid="${esc(u.id)}" title="${esc(u.label)} — tổng ${u.buoi} buổi">
+          const cum = nhomXep(u, pl);
+          return `<div class="hsrow fam-row ${pl.loai}${cum === 2 ? ' dagui' : ''}${cum === 1 ? ' cono' : ''}" data-uid="${esc(u.id)}" title="${esc(u.label)} — tổng ${u.buoi} buổi">
             <span class="cham"></span>
-            <span class="ten fam-ten">${mems.map((mm) => `<span class="fam-em">${esc(mm.ten)} <small>· ${mm.lop ? esc(mm.lop) + ' · ' : ''}${mm.buoi} buổi${hocThuChu(mm.hocThu)}</small></span>`).join('')}</span>
+            <span class="ten fam-ten">${mems.map((mm) => `<span class="fam-em">${esc(mm.ten)}${phNamCua(mm.id) ? chuPhNam : ''} <small>· ${mm.lop ? esc(mm.lop) + ' · ' : ''}${mm.buoi} buổi${hocThuChu(mm.hocThu)}</small></span>`).join('')}</span>
             ${gc ? `<span class="ghichu">${esc(gc)}</span>` : ''}
             ${trungTien(u) ? '<span class="ghichu canhbao-trung" title="Vừa có ghi tay đóng một phần, vừa khớp được giao dịch ngân hàng — kiểm tra lại kẻo tính trùng một lần tiền">⚠ trùng?</span>' : ''}
             ${giuaHangHtml(pl, u)}
             <span class="tien">${nhanNo(u, true)}${pl.loai === 'chuadong' || pl.loai === 'motphan' ? vnd(u.expected) : vnd(daNhan ?? u.expected)}</span>
           </div>`;
-        }).join('');
+        });
       luoi.appendChild(card);
     }
 
@@ -328,6 +343,7 @@
       <div class="muc tt">Hiện tại: <b>${esc(truoc)}</b></div>
       <div class="cm-than">
         <textarea id="ctGhiChu" rows="3" maxlength="500" placeholder="Ghi chú (không bắt buộc)"></textarea>
+        <div class="cm-phim"><kbd>Enter</kbd> xác nhận · <kbd>Shift</kbd>+<kbd>Enter</kbd> xuống dòng</div>
         <div class="cm-nut"><button class="btn primary" id="ctLuu">Xác nhận</button><button class="btn" id="ctHuy">Hủy</button></div>
         <div class="cm-phu">Dòng nợ phí các tháng đó (nếu có) tự xoá.</div>
       </div>`);
@@ -383,6 +399,7 @@
       <div class="muc tt">📝 <b>Ghi chú</b> — ${esc(u.label)}${luc ? ` <small>(sửa ${esc(luc)})</small>` : ''}</div>
       <div class="cm-than">
         <textarea id="gcChu" rows="4" maxlength="2000" placeholder="Ghi chú cho ${u.kind === 'fam' ? 'nhà' : 'em'} này (mọi tháng đều thấy)">${gc ? esc(gc.chu) : ''}</textarea>
+        <div class="cm-phim"><kbd>Enter</kbd> lưu · <kbd>Shift</kbd>+<kbd>Enter</kbd> xuống dòng</div>
         <div class="cm-nut"><button class="btn primary" id="gcLuu">Lưu</button><button class="btn" id="gcHuy">Hủy</button>
           ${gc ? '<button class="btn" id="gcXoa" style="margin-left:auto">Xoá</button>' : ''}</div>
       </div>`);
@@ -919,14 +936,13 @@
             <span class="tien">${vnd(d.soTien)}đ</span>
             <span class="nutnho">
               <button class="btn nho" data-ganNo="${i}">Nợ phí</button>
-              <button class="btn nho" data-ganSau="${i}">Đóng sau</button>
             </span>
           </div>`;
     }).join('');
     khu.innerHTML = `
       <div class="lop-card glass" style="margin-top:14px">
         <h3>⚠ Chưa gắn nhãn <span class="dem">${ds.length} lượt · tháng trước</span></h3>
-        <p class="mota">Còn chưa đóng ở tháng trước nhưng chưa được đánh dấu Nợ phí hay Đóng sau.
+        <p class="mota">Còn chưa đóng ở tháng trước nhưng chưa được đánh dấu Nợ phí.
           Gắn nhãn ngay bên dưới, xong dòng này sẽ tự biến mất và chuyển vào đúng ô của em/nhà đó.</p>
         <div class="co-mo-day"><div class="cuon-noibo" id="cuonChuaGanNhan">${hang}</div></div>
       </div>`;
@@ -944,10 +960,9 @@
         soTien: d.soTien, tenLuc: d.ten, lopLuc: d.lop,
       });
       await napNoPhi();
-      baoToast(`Đã gắn ${kieu === 'sau' ? 'Đóng sau' : 'Nợ phí'} cho ${d.ten} — tháng ${d.m}/${d.y}.`);
+      baoToast(`Đã gắn Nợ phí cho ${d.ten} — tháng ${d.m}/${d.y}.`);
     };
     $$('#khuChuaGanNhan [data-ganNo]').forEach((b) => { b.onclick = ganNhan(parseInt(b.getAttribute('data-ganNo'), 10), 'no'); });
-    $$('#khuChuaGanNhan [data-ganSau]').forEach((b) => { b.onclick = ganNhan(parseInt(b.getAttribute('data-ganSau'), 10), 'sau'); });
   }
   function veNoPhi() {
     const dl = S.no || { o: [], soDong: 0 };
@@ -955,12 +970,10 @@
     const dem = $('#demNoPhi');
     dem.textContent = dl.o.length;
     dem.hidden = !dl.o.length;
-    const soSau = dl.o.reduce((s, o) => s + o.dong.filter((d) => d.kieu === 'sau').length, 0);
     $('#chipNoPhi').innerHTML = dl.o.length
       ? `<div class="omdem">
            <span class="o do">Tổng <b>${vnd(tongTien)}đ</b></span>
            <span class="o">${dl.o.length} người · ${dl.soDong} khoản</span>
-           ${soSau ? `<span class="o amber">Đóng sau <b>${soSau}</b></span>` : ''}
          </div>`
       : '';
     const luoi = $('#luoiNoPhi');
@@ -975,16 +988,16 @@
         <h3>${esc(o.ten)} <span class="dem">${esc(o.lop || '')}</span></h3>
         ${o.mat ? '<div class="no-mat">⚠ Mã số này không còn trong danh sách myStudent (em đã nghỉ hẳn?) — tên hiển thị là tên lúc thêm nợ.</div>' : ''}
         ${o.dong.map((d) => `
-          <div class="no-dong ${d.kieu === 'sau' ? 'sau' : 'no'}">
+          <div class="no-dong no">
             <span class="kythang">Tháng ${d.m}/${d.y}</span>
-            <i class="no-nhan ${d.kieu === 'sau' ? 'sau' : 'no'}">${d.kieu === 'sau' ? 'Đóng sau' : 'Nợ phí'}</i>
+            <i class="no-nhan no">Nợ phí</i>
             <span class="tien">${vnd(d.soTien)}đ</span>
             <span class="nutnho">
               <button class="btn nho primary" data-nopbu="${esc(d.id)}">Đã nộp bù</button>
               <button class="btn nho" data-bodong="${esc(d.id)}" title="Thầy thêm nhầm dòng này — bỏ đi, KHÔNG đụng gì tới tháng cũ">Thêm nhầm</button>
             </span>
           </div>`).join('')}
-        <div class="no-tong"><span>Tổng${o.tongSau && o.tongNo ? ` <small style="font-weight:600;color:var(--text-dim)">(nợ ${vnd(o.tongNo)} + đóng sau ${vnd(o.tongSau)})</small>` : ''}</span><span class="tien">${vnd(o.tong)}đ</span></div>
+        <div class="no-tong"><span>Tổng</span><span class="tien">${vnd(o.tong)}đ</span></div>
         <div class="hangnut" style="margin-top:8px">
           <button class="btn" data-hdtong="${esc(o.khoa)}">Hóa đơn tổng ${o.dong.length} tháng…</button>
         </div>
@@ -1268,16 +1281,48 @@
     });
   }
 
-  const QL = { tab: 'hs', nhap: null, hs: [] };
+  const QL = { tab: 'hs', nhap: null, hs: [], cat: {}, loc: 'all', tim: '', locGd: 'all', timGd: '', moThem: -1, timThem: '' };
 
   async function moHopQlHs() {
     QL.hs = await goi('dsHocSinh');
+    QL.cat = JSON.parse(JSON.stringify((S.du.caiDat && S.du.caiDat.hocSinh) || {}));
     QL.nhap = (S.du.giaDinh.families || []).map((f) => ({
       id: f.id, ten: f.ten, giamPct: f.giamPct || 0, ids: (f.members || []).map((m) => m.id),
     }));
-    QL.tab = 'hs';
+    QL.tab = 'hs'; QL.loc = 'all'; QL.tim = ''; QL.locGd = 'all'; QL.timGd = ''; QL.moThem = -1;
     veQlHs();
     $('#manQlHs').classList.add('on');
+  }
+  const khoaQl = (h) => h.lop + '|' + khoaTen(h.ten);
+  const catQl = (h) => QL.cat[khoaQl(h)] || {};
+  const rieng = (c) => !!(c.tieuHoc || c.giamPct > 0 || c.tran > 0);
+  const thieuLy = (c) => c.giamPct > 0 && !String(c.lyDo || '').trim();
+  const viTat = (t) => String(t || '').trim().split(/\s+/).slice(-2).map((x) => x[0] || '').join('').toUpperCase();
+  const phNamCua = (so) => !!((S.du && S.du.caiDat && S.du.caiDat.phNam) || {})[String(so)];
+  const SVG_TIM = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>';
+  const SVG_NHA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9" r="2.6"/><path d="M15.8 14.2c2.4.1 4.1 1.7 4.7 4.8"/></svg>';
+  const SVG_XOA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></svg>';
+  const SVG_BOT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+
+  function hoiQl(o) {
+    const cu = $('#qlHoi'); if (cu) cu.remove();
+    const m = document.createElement('div');
+    m.id = 'qlHoi'; m.className = 'ql-hoi-nen';
+    m.innerHTML = `<div class="ql-hoi glass" role="alertdialog" aria-modal="true">
+      <span class="ql-hoi-ic">${o.ic}</span>
+      <h3>${esc(o.tieuDe)}</h3>
+      ${o.nha ? `<div class="ql-hoi-nha">${SVG_NHA}<span>${esc(o.nha)}</span></div>` : ''}
+      <p>${esc(o.chu)}</p>
+      <div class="ql-hoi-nut"><button class="btn" id="qlHoiThoi">Thôi</button><button class="btn ql-do" id="qlHoiCo">${esc(o.nut)}</button></div>
+    </div>`;
+    document.body.appendChild(m);
+    const phim = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); dong(); } };
+    const dong = () => { document.removeEventListener('keydown', phim, true); m.remove(); };
+    document.addEventListener('keydown', phim, true);
+    $('#qlHoiThoi').onclick = dong;
+    $('#qlHoiCo').onclick = () => { dong(); o.lam(); };
+    m.addEventListener('click', (e) => { if (e.target === m) dong(); });
+    $('#qlHoiThoi').focus();
   }
 
   function tenCuaId(id) {
@@ -1286,172 +1331,317 @@
   }
 
   function veQlHs() {
+    const soNha = QL.nhap.length;
     $('#hopQlHs').innerHTML = `
       <h3>Quản lý học sinh</h3>
-      <div class="qlhs-tab">
-        <button class="${QL.tab === 'hs' ? 'on' : ''}" data-tab="hs">Học sinh</button>
-        <button class="${QL.tab === 'gd' ? 'on' : ''}" data-tab="gd">Gia đình nhiều con</button>
+      <div class="ql-tabs">
+        <button class="${QL.tab === 'hs' ? 'on' : ''}" data-tab="hs">Học sinh <span class="ql-dem">${QL.hs.length}</span></button>
+        <button class="${QL.tab === 'gd' ? 'on' : ''}" data-tab="gd">Gia đình nhiều con <span class="ql-dem">${soNha}</span></button>
       </div>
-      <div class="cuon" style="max-height:60vh" id="qlThan"></div>
-      <div class="hangnut">
-        ${QL.tab === 'gd' ? '<button class="btn" id="qlThemNha">+ Thêm gia đình</button><span class="keo"></span>' : ''}
+      <div id="qlThan"></div>
+      <div class="hangnut ql-chan">
+        <span class="ql-canh" id="qlCanh"></span>
         <button class="btn primary" id="qlLuu">Lưu</button>
         <button class="btn" data-dong>Đóng</button>
       </div>`;
-    $$('#hopQlHs .qlhs-tab button').forEach((b) => {
-      b.onclick = () => { QL.tab = b.dataset.tab; veQlHs(); };
+    $$('#hopQlHs .ql-tabs button').forEach((b) => {
+      b.onclick = () => { QL.tab = b.dataset.tab; QL.moThem = -1; veQlHs(); };
     });
     if (QL.tab === 'hs') veQlTabHs(); else veQlTabGd();
     $('#qlLuu').onclick = luuQlHs;
-    const themNha = $('#qlThemNha');
-    if (themNha) {
-      themNha.onclick = () => {
-        QL.nhap.push({ id: 'n' + Date.now().toString(36), ten: '', giamPct: 15, ids: [] });
-        veQlHs();
-      };
+  }
+  function capNhatCanhQl() {
+    const el = $('#qlCanh'); if (!el) return;
+    if (QL.tab === 'hs') {
+      const n = QL.hs.filter((h) => thieuLy(catQl(h))).length;
+      el.textContent = n ? `⚠ ${n} em có giảm % nhưng chưa ghi lý do (vẫn lưu được)` : '';
+    } else {
+      const n = QL.nhap.filter((f) => conHocNha(f) < 2).length;
+      el.textContent = n ? `⚠ ${n} nhà chỉ còn 1 con đang học (hoặc chưa có con) — nên xem lại` : '';
     }
   }
 
   function veQlTabHs() {
-    const cd = S.du.caiDat;
-    const trongNha = new Set(QL.nhap.flatMap((f) => f.ids.map(String)));
-    const theoLop = {};
-    for (const h of QL.hs) (theoLop[h.lop] = theoLop[h.lop] || []).push(h);
-    const lops = Object.keys(theoLop).sort();
     $('#qlThan').innerHTML = `
-      <p class="mota">Tiểu học = trần cứng 1.000.000đ (thắng mọi trần riêng). Trần 0 = không trần.
-        Muốn bỏ mức riêng của em nào thì gõ về 0 + bỏ tick rồi bấm Lưu — em đó quay về mức
-        mặc định của lớp. Em thuộc gia đình nhiều con vẫn cài mức riêng ở đây bình thường —
-        phần giảm của CẢ NHÀ nằm ở tab bên cạnh.</p>` +
-      lops.map((lop) => `
-        <div class="qlhs-lop">
-          <h4>${esc(lop)}</h4>
-          <table class="bang"><thead><tr><th>Em</th><th style="width:80px">Tiểu học</th><th style="width:90px">Giảm %</th><th style="width:120px">Trần riêng</th></tr></thead>
-            <tbody>${theoLop[lop].sort((a, b) => a.ten.localeCompare(b.ten, 'vi')).map((h) => {
-              const cat = (cd.hocSinh || {})[lop + '|' + khoaTen(h.ten)] || {};
-              return `<tr data-lop="${esc(lop)}" data-ten="${esc(h.ten)}">
-                <td style="font-weight:700" class="${cat.tieuHoc ? 'la' : ''}">${esc(h.ten)}${cat.tieuHoc ? ' <span class="th-nhan">(Tiểu học)</span>' : ''}${trongNha.has(String(h.id)) ? ' <small style="color:var(--text-dim)">· gia đình</small>' : ''}</td>
-                <td><input type="checkbox" class="qlTieuHoc" ${cat.tieuHoc ? 'checked' : ''}></td>
-                <td><input type="number" class="qlGiam" value="${cat.giamPct || 0}" min="0" max="100" style="width:64px"></td>
-                <td><input type="number" class="qlTran" value="${cat.tran || 0}" step="100000" style="width:110px"></td>
-              </tr>`;
-            }).join('')}</tbody></table>
-        </div>`).join('');
-    $$('#qlThan .qlTieuHoc').forEach((cb) => {
-      cb.onchange = () => {
-        const td = cb.closest('tr').querySelector('td');
-        const nhan = td.querySelector('.th-nhan');
-        if (cb.checked && !nhan) td.insertAdjacentHTML('beforeend', ' <span class="th-nhan">(Tiểu học)</span>');
-        if (!cb.checked && nhan) nhan.remove();
-        td.classList.toggle('la', cb.checked);
+      <div class="ql-loc">
+        <label class="ql-tim">${SVG_TIM}<input id="qlTim" type="text" placeholder="Tìm tên em…" autocomplete="off" value="${esc(QL.tim)}"></label>
+        <div class="ql-chips" id="qlChips"></div>
+      </div>
+      <div class="ql-cuon" id="qlCuon">
+        <div class="ql-cot ql-daucot"><span>Học sinh</span><span>Tiểu học</span><span>Giảm</span><span>Lý do giảm</span><span>Trần riêng</span></div>
+        <div id="qlDs"></div>
+      </div>`;
+    $('#qlTim').oninput = () => { QL.tim = $('#qlTim').value.trim(); veQlDsHs(); };
+    $('#qlDs').addEventListener('contextmenu', (e) => {
+      const r = e.target.closest('.ql-hang'); if (!r) return;
+      e.preventDefault();
+      const h = QL.hs.find((x) => String(x.id) === r.dataset.id); if (!h) return;
+      moCtxPhNam(e.clientX, e.clientY, h);
+    });
+    veQlDsHs();
+  }
+  function veQlChipsHs() {
+    const ds = [['all', 'Tất cả', QL.hs.length], ['rieng', 'Có mức riêng', QL.hs.filter((h) => rieng(catQl(h))).length],
+      ['th', 'Tiểu học', QL.hs.filter((h) => catQl(h).tieuHoc).length], ['thieu', 'Chưa ghi lý do', QL.hs.filter((h) => thieuLy(catQl(h))).length, 'cam']];
+    $('#qlChips').innerHTML = ds.map(([k, t, n, c]) => `<button class="ql-chip ${c || ''} ${QL.loc === k ? 'on' : ''}" data-k="${k}">${t} <b>${n}</b></button>`).join('');
+    $$('#qlChips .ql-chip').forEach((b) => { b.onclick = () => { QL.loc = b.dataset.k; veQlDsHs(); }; });
+  }
+  function veQlDsHs() {
+    veQlChipsHs(); capNhatCanhQl();
+    const trongNha = new Set(QL.nhap.flatMap((f) => f.ids.map(String)));
+    const q = QL.tim.toLowerCase();
+    const khop = (h) => { const c = catQl(h); return (!q || h.ten.toLowerCase().includes(q)) &&
+      (QL.loc === 'all' || (QL.loc === 'rieng' && rieng(c)) || (QL.loc === 'th' && c.tieuHoc) || (QL.loc === 'thieu' && thieuLy(c))); };
+    const theoLop = {};
+    for (const h of QL.hs) if (khop(h)) (theoLop[h.lop] = theoLop[h.lop] || []).push(h);
+    const lops = Object.keys(theoLop).sort();
+    const tongLop = {}; for (const h of QL.hs) tongLop[h.lop] = (tongLop[h.lop] || 0) + 1;
+    $('#qlDs').innerHTML = lops.length ? lops.map((lop) => `
+      <div class="ql-nhom"><b>${esc(lop)}</b><span>${tongLop[lop]} em</span></div>` +
+      theoLop[lop].sort((a, b) => a.ten.localeCompare(b.ten, 'vi')).map((h) => hangQlHtml(h, trongNha)).join('')).join('')
+      : '<div class="ql-trong">Không có em nào khớp.</div>';
+    ganQlHang($('#qlDs'));
+  }
+  function hangQlHtml(h, trongNha) {
+    const c = catQl(h);
+    const ly = c.giamPct > 0
+      ? `<div class="ql-ly${thieuLy(c) ? ' thieu' : ''}"><div class="ql-o"><input class="qlLy" type="text" maxlength="60" value="${esc(c.lyDo || '')}" placeholder="Chưa ghi lý do" autocomplete="off"></div><div class="ql-goi"></div></div>`
+      : '<span class="ql-gach">—</span>';
+    const tran = c.tieuHoc
+      ? '<div class="ql-o khoa" title="Học sinh Tiểu học: trần cứng 1.000.000 đ">1.000.000 đ</div>'
+      : `<div class="ql-o${c.tran > 0 ? ' co' : ''}"><input class="qlTran" type="text" inputmode="numeric" maxlength="9" value="${c.tran > 0 ? vnd(c.tran) : ''}">${c.tran > 0 ? '<span class="dv">đ</span>' : ''}</div>`;
+    return `<div class="ql-hang ql-cot${rieng(c) ? ' rieng' : ''}" data-id="${esc(String(h.id))}">
+      <div class="ql-em"><span class="ql-av">${esc(viTat(h.ten))}</span><div class="ql-ten-k"><div class="ql-ten">${esc(h.ten)}${phNamCua(h.id) ? ' <span class="ph-nam">(PH nam)</span>' : ''}</div>${trongNha.has(String(h.id)) ? '<div class="ql-phu"><span class="ql-tag">gia đình</span></div>' : ''}</div></div>
+      <label class="ql-sw" title="Học sinh Tiểu học"><input type="checkbox" class="qlTh" ${c.tieuHoc ? 'checked' : ''}><span class="r"></span></label>
+      <div class="ql-o${c.giamPct > 0 ? ' co' : ''}"><input class="qlGiam" type="text" inputmode="numeric" maxlength="2" value="${c.giamPct || 0}"><span class="dv">%</span></div>
+      ${ly}
+      ${tran}
+    </div>`;
+  }
+  function veLaiHangQl(h) {
+    const r = $$('#qlDs .ql-hang').find((x) => x.dataset.id === String(h.id));
+    if (!r) return null;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = hangQlHtml(h, new Set(QL.nhap.flatMap((f) => f.ids.map(String))));
+    const moi = tmp.firstElementChild;
+    r.replaceWith(moi); ganQlHang(moi); veQlChipsHs(); capNhatCanhQl();
+    return moi;
+  }
+  function suaCatQl(h, sua) {
+    const k = khoaQl(h);
+    QL.cat[k] = Object.assign({ donGia: 150000 }, QL.cat[k] || {}, sua);
+  }
+  function ganQlHang(goc) {
+    const hsCua = (el) => QL.hs.find((x) => String(x.id) === el.closest('.ql-hang').dataset.id);
+    const tim = (sel) => [...goc.querySelectorAll(sel)];
+    const nhanO = (o) => {
+      o.addEventListener('wheel', () => o.blur(), { passive: true });   // cuộn chuột KHÔNG đổi số
+      o.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); o.blur(); } });   // Enter = nhận ô
+      o.addEventListener('focus', () => o.select());
+    };
+    tim('.qlTh').forEach((cb) => { cb.onchange = () => { const h = hsCua(cb); suaCatQl(h, { tieuHoc: cb.checked }); veLaiHangQl(h); }; });
+    tim('.qlGiam').forEach((o) => {
+      nhanO(o);
+      o.onchange = () => {
+        const h = hsCua(o); const cu = catQl(h).giamPct || 0;
+        const moi = Math.min(99, parseInt(o.value.replace(/\D/g, ''), 10) || 0);
+        suaCatQl(h, { giamPct: moi });
+        const r = veLaiHangQl(h);
+        if (!cu && moi > 0 && !catQl(h).lyDo && r) { const l = r.querySelector('.qlLy'); if (l) setTimeout(() => l.focus(), 0); }
       };
     });
+    tim('.qlTran').forEach((o) => {
+      nhanO(o);
+      o.onchange = () => { const h = hsCua(o); suaCatQl(h, { tran: Math.min(9000000, parseInt(o.value.replace(/\D/g, ''), 10) || 0) }); veLaiHangQl(h); };
+    });
+    tim('.qlLy').forEach((o) => {
+      const khoi = o.closest('.ql-ly');
+      const moGoi = () => {
+        const dem = new Map();
+        for (const c of Object.values(QL.cat)) { const t = c && c.giamPct > 0 && String(c.lyDo || '').trim(); if (t) dem.set(t, (dem.get(t) || 0) + 1); }
+        const q = o.value.trim().toLowerCase();
+        const ds = [...dem].sort((a, b) => b[1] - a[1]).filter(([t]) => (!q || t.toLowerCase().includes(q)) && t !== o.value.trim());
+        khoi.querySelector('.ql-goi').innerHTML = ds.length ? '<div class="ql-goi-tt">Lý do đã dùng</div>' +
+          ds.map(([t, n]) => `<div class="ql-goi-mot" data-t="${esc(t)}">${esc(t)}<small>${n} em</small></div>`).join('') : '';
+        khoi.classList.toggle('mo', ds.length > 0);
+      };
+      o.addEventListener('focus', moGoi);
+      o.oninput = () => { suaCatQl(hsCua(o), { lyDo: o.value }); khoi.classList.toggle('thieu', !o.value.trim()); moGoi(); veQlChipsHs(); capNhatCanhQl(); };
+      o.addEventListener('blur', () => setTimeout(() => khoi.classList.remove('mo'), 150));
+      o.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); o.blur(); }
+        if (e.key === 'Escape' && khoi.classList.contains('mo')) { e.preventDefault(); e.stopPropagation(); khoi.classList.remove('mo'); }
+      });
+      khoi.querySelector('.ql-goi').addEventListener('mousedown', (e) => {
+        const d = e.target.closest('[data-t]'); if (!d) return;
+        e.preventDefault(); o.value = d.dataset.t; suaCatQl(hsCua(o), { lyDo: d.dataset.t });
+        khoi.classList.remove('thieu', 'mo'); veQlChipsHs(); capNhatCanhQl();
+      });
+    });
+  }
+  function moCtxPhNam(x, y, h) {
+    const el = $('#ctxHs');
+    const dang = phNamCua(h.id);
+    el.innerHTML = `<div class="muc tt">${esc(h.ten)} · ${esc(h.lop)}</div><hr>
+      <div class="muc" id="ctxPhNam"><span class="ph-tich${dang ? ' on' : ''}">${dang ? '✓' : ''}</span> PH nam</div>`;
+    datViTriCtx(el, x, y);
+    $('#ctxPhNam').onclick = async () => {
+      dongCtx();
+      const ds = Object.assign({}, (S.du.caiDat && S.du.caiDat.phNam) || {});
+      if (dang) delete ds[String(h.id)]; else ds[String(h.id)] = true;
+      await goi('ghiCaiDat', { phNam: ds });
+      S.du.caiDat.phNam = ds;
+      veQlDsHs(); veLuoiLop();
+      baoToast(`${h.ten}: ${dang ? 'đã bỏ' : 'đã đánh dấu'} PH nam.`);
+    };
   }
 
+  function conHocNha(f) { return f.ids.filter((id) => !tenCuaId(id).mat).length; }
+  const tenNhaQl = (f) => String(f.ten || '').trim() || f.ids.map((id) => tenCuaId(id).ten).join(' + ') || 'Gia đình mới';
   function veQlTabGd() {
     $('#qlThan').innerHTML = `
-      <p class="mota">Cần đóng cả nhà = tổng phí từng con (đã tính trần riêng, chưa giảm lẻ) trừ
-        % giảm của nhà, làm tròn xuống 50.000đ. Nhóm khoá theo MÃ SỐ học sinh nên đổi tên bên
-        myStudent không ảnh hưởng gì.</p>` +
-      (QL.nhap.length ? QL.nhap.map((f, i) => `
-        <div class="nha-khoi" data-i="${i}">
-          <div class="nha-dau">
-            <input type="text" class="nhaTen" value="${esc(f.ten)}" placeholder="Tên nhà (để trống = ghép tên các em)">
-            <label>Giảm % <input type="number" class="nhaGiam" value="${f.giamPct}" min="0" max="100"></label>
-            <button class="btn nho" data-xoaNha="${i}">Xóa nhà</button>
-          </div>
-          <div class="nha-mems">
-            ${f.ids.map((id) => {
-              const h = tenCuaId(id);
-              return `<span class="nha-chip ${h.mat ? 'mat' : ''}">${esc(h.ten)}${h.lop ? ` <small>${esc(h.lop)}</small>` : ''}
-                <button data-botMem="${i}|${id}" title="Bớt em này">✕</button></span>`;
-            }).join('')}
-            <button class="btn nho" data-themMem="${i}">+ Thêm em</button>
-          </div>
-        </div>`).join('') : '<p class="mota">Chưa có gia đình nào — bấm "+ Thêm gia đình" bên dưới.</p>');
-
-    $$('#qlThan [data-xoaNha]').forEach((b) => {
-      b.onclick = () => {
-        const i = parseInt(b.getAttribute('data-xoaNha'), 10);
-        docNhapTuMan();
-        QL.nhap.splice(i, 1);
-        veQlHs();
-      };
-    });
-    $$('#qlThan [data-botMem]').forEach((b) => {
-      b.onclick = () => {
-        const [i, id] = b.getAttribute('data-botMem').split('|');
-        docNhapTuMan();
-        const f = QL.nhap[parseInt(i, 10)];
-        f.ids = f.ids.filter((x) => String(x) !== String(id));
-        veQlHs();
-      };
-    });
-    $$('#qlThan [data-themMem]').forEach((b) => {
-      b.onclick = () => { docNhapTuMan(); moChonHs(parseInt(b.getAttribute('data-themMem'), 10)); };
-    });
+      <div class="ql-loc">
+        <label class="ql-tim">${SVG_TIM}<input id="qlTimGd" type="text" placeholder="Tìm tên con hoặc tên nhà…" autocomplete="off" value="${esc(QL.timGd)}"></label>
+        <div class="ql-chips" id="qlChipsGd"></div>
+        <span class="keo"></span>
+        <button class="btn ql-nhe" id="qlThemNha">+ Thêm gia đình</button>
+      </div>
+      <div class="ql-cuon ql-nhas" id="qlDsGd"></div>
+      <p class="mota ql-mota">Cần đóng cả nhà = tổng phí từng con (đã tính trần riêng, KHÔNG tính giảm riêng từng em) trừ % giảm của nhà,
+        làm tròn xuống 50.000đ. Nhóm khoá theo SỐ học sinh nên đổi tên bên myStudent không ảnh hưởng gì.</p>`;
+    $('#qlTimGd').oninput = () => { QL.timGd = $('#qlTimGd').value.trim(); veQlDsGd(); };
+    $('#qlThemNha').onclick = () => {
+      QL.nhap.unshift({ id: 'n' + Date.now().toString(36), ten: '', giamPct: 15, ids: [] });
+      QL.moThem = 0; QL.timThem = ''; QL.locGd = 'all'; QL.timGd = ''; $('#qlTimGd').value = '';
+      veQlDsGd();
+      const t = $('#qlChonTim'); if (t) t.focus();
+    };
+    veQlDsGd();
   }
-
-  function docNhapTuMan() {
-    $$('#qlThan .nha-khoi').forEach((khoi) => {
-      const f = QL.nhap[parseInt(khoi.dataset.i, 10)];
-      if (!f) return;
-      f.ten = khoi.querySelector('.nhaTen').value.trim();
-      f.giamPct = parseInt(khoi.querySelector('.nhaGiam').value, 10) || 0;
-    });
+  function veQlDsGd() {
+    const xem = (f) => conHocNha(f) < 2;
+    const chips = [['all', 'Tất cả', QL.nhap.length], ['xem', 'Cần xem lại', QL.nhap.filter(xem).length, 'cam']];
+    $('#qlChipsGd').innerHTML = chips.map(([k, t, n, c]) => `<button class="ql-chip ${c || ''} ${QL.locGd === k ? 'on' : ''}" data-k="${k}">${t} <b>${n}</b></button>`).join('');
+    $$('#qlChipsGd .ql-chip').forEach((b) => { b.onclick = () => { QL.locGd = b.dataset.k; QL.moThem = -1; veQlDsGd(); }; });
+    const dem = $('#hopQlHs .ql-tabs [data-tab="gd"] .ql-dem'); if (dem) dem.textContent = QL.nhap.length;
+    capNhatCanhQl();
+    const q = QL.timGd.toLowerCase();
+    const hien = QL.nhap.map((f, i) => ({ f, i })).filter(({ f, i }) => i === QL.moThem || ((QL.locGd === 'all' || xem(f)) &&
+      (!q || tenNhaQl(f).toLowerCase().includes(q) || f.ids.some((id) => tenCuaId(id).ten.toLowerCase().includes(q)))));
+    $('#qlDsGd').innerHTML = hien.length ? hien.map(({ f, i }) => nhaQlHtml(f, i)).join('')
+      : `<div class="ql-trong">${QL.nhap.length ? 'Không có nhà nào khớp.' : 'Chưa có gia đình nào — bấm "+ Thêm gia đình".'}</div>`;
+    ganQlGd();
   }
-
-  function moChonHs(iNha) {
+  function nhaQlHtml(f, i) {
+    const mems = f.ids.map((id) => ({ id, h: tenCuaId(id) }));
+    const lops = [...new Set(mems.map((m) => m.h.lop).filter(Boolean))];
+    const con = conHocNha(f);
+    return `<div class="ql-nha${i === QL.moThem ? ' dang-them' : ''}" data-i="${i}">
+      <div class="ql-nha-dau">
+        <span class="ql-nha-ic">${SVG_NHA}</span>
+        <div class="ql-nha-ten"><input class="nhaTen" type="text" maxlength="80" value="${esc(f.ten || '')}" placeholder="${esc(mems.map((m) => m.h.ten).join(' + ') || 'Đặt tên nhà hoặc thêm con')}" title="Tên nhà — để trống = ghép tên các con">
+          <div class="ql-phu"><span>${mems.length} con${lops.length ? ' · ' + esc(lops.join(', ')) : ''}</span>${con < 2 ? `<span class="ql-tag cam">${con ? 'Chỉ còn 1 con đang học' : 'Chưa có con nào đang học'}</span>` : ''}</div></div>
+        <div class="ql-nha-giam"><span class="ql-nho">Giảm cả nhà</span><div class="ql-o${f.giamPct > 0 ? ' co' : ''}"><input class="nhaGiam" type="text" inputmode="numeric" maxlength="2" value="${f.giamPct || 0}"><span class="dv">%</span></div></div>
+        <button class="ql-icbtn" data-bonha="1" title="Bỏ nhóm gia đình (các con vẫn còn, chỉ không tính chung nữa)">${SVG_XOA}</button>
+      </div>
+      ${mems.map(({ id, h }) => `<div class="ql-con${h.mat ? ' nghi' : ''}">
+        <div class="ql-em"><span class="ql-av">${esc(h.mat ? '?' : viTat(h.ten))}</span><span class="ql-ten">${esc(h.ten)}${!h.mat && phNamCua(id) ? ' <span class="ph-nam">(PH nam)</span>' : ''}</span></div>
+        <span class="ql-lop">${esc(h.lop || '—')}</span>
+        <div class="ql-muc">${mucRiengQl(h)}</div>
+        <button class="ql-icbtn" data-bot="${esc(String(id))}" title="Bớt khỏi nhà">${SVG_BOT}</button>
+      </div>`).join('')}
+      <div class="ql-them-con"><button class="ql-them-nut" data-them="1">+ Thêm con vào nhà</button>${i === QL.moThem ? chonConHtml() : ''}</div>
+    </div>`;
+  }
+  function mucRiengQl(h) {
+    if (h.mat) return '<span class="ql-tag xam">Không còn trong danh sách</span>';
+    const c = catQl(h); const r = [];
+    if (c.tieuHoc) r.push('<span class="ql-tag tieu">Tiểu học · trần 1.000.000 đ</span>');
+    else if (c.tran > 0) r.push(`<span class="ql-tag">Trần ${vnd(c.tran)} đ</span>`);
+    if (c.giamPct > 0) r.push(`<span class="ql-tag gach" title="Ở trong nhà thì chỉ áp % giảm của cả nhà">Giảm riêng ${c.giamPct}%</span><span class="ql-ghi">không áp khi tính cả nhà</span>`);
+    return r.join('');
+  }
+  function chonConHtml() {
+    return `<div class="ql-chon"><label class="ql-tim">${SVG_TIM}<input id="qlChonTim" type="text" placeholder="Gõ tên hoặc lớp…" autocomplete="off" value="${esc(QL.timThem)}"></label>
+      <div class="ql-chon-ds" id="qlChonDs">${chonConDs()}</div></div>`;
+  }
+  function chonConDs() {
     const daCo = new Set(QL.nhap.flatMap((f) => f.ids.map(String)));
-    $('#hopChonHs').innerHTML = `
-      <h3>Thêm em vào gia đình</h3>
-      <p class="mota">Chỉ hiện các em CHƯA thuộc nhà nào.</p>
-      <input class="timkiem" id="chonTim" placeholder="Gõ tên hoặc lớp để lọc…">
-      <div class="chon-ds" id="chonDs"></div>
-      <div class="hangnut"><button class="btn" id="chonDong">Đóng</button></div>`;
-    $('#manChonHs').classList.add('on');
-    function ve(loc) {
-      const q = (loc || '').toUpperCase();
-      const ds = QL.hs
-        .filter((h) => !daCo.has(String(h.id)))
-        .filter((h) => !q || h.ten.toUpperCase().includes(q) || h.lop.toUpperCase().includes(q))
-        .sort((a, b) => (a.lop + a.ten).localeCompare(b.lop + b.ten, 'vi'));
-      $('#chonDs').innerHTML = ds.map((h) =>
-        `<div class="chon-hs" data-id="${h.id}"><span>${esc(h.ten)}</span><small>${esc(h.lop)}</small></div>`
-      ).join('') || '<div class="chon-hs" style="color:var(--text-dim)">Không còn em nào.</div>';
-      $$('#chonDs .chon-hs[data-id]').forEach((el) => {
-        el.onclick = () => {
-          QL.nhap[iNha].ids.push(parseInt(el.dataset.id, 10));
-          $('#manChonHs').classList.remove('on');
-          veQlHs();
-        };
+    const q = QL.timThem.toLowerCase();
+    const ds = QL.hs.filter((h) => !daCo.has(String(h.id)) && (!q || (h.ten + ' ' + h.lop).toLowerCase().includes(q)));
+    const lops = [...new Set(ds.map((h) => h.lop))].sort();
+    return lops.map((l) => `<div class="ql-chon-lop">${esc(l)}</div>` + ds.filter((h) => h.lop === l).sort((a, b) => a.ten.localeCompare(b.ten, 'vi'))
+      .map((h) => `<div class="ql-chon-mot" data-chon="${esc(String(h.id))}"><span class="ql-av">${esc(viTat(h.ten))}</span>${esc(h.ten)}<small>${catQl(h).tieuHoc ? 'Tiểu học' : ''}</small></div>`).join('')).join('')
+      || '<div class="ql-trong">Không còn em nào chưa thuộc nhà.</div>';
+  }
+  function ganQlGd() {
+    const nhaCua = (el) => QL.nhap[parseInt(el.closest('.ql-nha').dataset.i, 10)];
+    const enterNhan = (o) => o.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); o.blur(); } });
+    $$('#qlDsGd .nhaTen').forEach((o) => { o.oninput = () => { nhaCua(o).ten = o.value; }; enterNhan(o); });
+    $$('#qlDsGd .nhaGiam').forEach((o) => {
+      o.addEventListener('wheel', () => o.blur(), { passive: true });
+      enterNhan(o);
+      o.addEventListener('focus', () => o.select());
+      o.onchange = () => {
+        const f = nhaCua(o); f.giamPct = Math.min(99, parseInt(o.value.replace(/\D/g, ''), 10) || 0);
+        o.value = f.giamPct; o.parentElement.classList.toggle('co', f.giamPct > 0);
+      };
+    });
+    $$('#qlDsGd [data-bonha]').forEach((b) => {
+      b.onclick = () => {
+        const f = nhaCua(b); const n = f.ids.length;
+        hoiQl({ ic: SVG_XOA, tieuDe: 'Bỏ nhóm gia đình này?', nha: tenNhaQl(f), nut: 'Bỏ nhóm',
+          chu: (n ? `${n} con vẫn là học sinh bình thường, chỉ không tính chung tiền và không còn giảm ${f.giamPct || 0}% cả nhà nữa.` : 'Nhà này chưa có con nào.') + ' Bấm Lưu mới ghi thật.',
+          lam: () => { QL.nhap.splice(QL.nhap.indexOf(f), 1); QL.moThem = -1; veQlDsGd(); } });
+      };
+    });
+    $$('#qlDsGd [data-bot]').forEach((b) => {
+      b.onclick = () => {
+        const f = nhaCua(b); const id = b.dataset.bot; const h = tenCuaId(id);
+        hoiQl({ ic: SVG_BOT, tieuDe: `Bớt ${h.ten} khỏi nhà?`, nha: tenNhaQl(f), nut: 'Bớt khỏi nhà',
+          chu: `${h.ten}${h.lop ? ' (' + h.lop + ')' : ''} vẫn là học sinh bình thường, chỉ không tính chung tiền với nhà này nữa.` +
+            (f.ids.length === 2 ? ' Nhà sẽ chỉ còn 1 con.' : '') + ' Bấm Lưu mới ghi thật.',
+          lam: () => { f.ids = f.ids.filter((x) => String(x) !== String(id)); veQlDsGd(); } });
+      };
+    });
+    $$('#qlDsGd [data-them]').forEach((b) => {
+      b.onclick = () => {
+        const i = parseInt(b.closest('.ql-nha').dataset.i, 10);
+        QL.moThem = QL.moThem === i ? -1 : i; QL.timThem = '';
+        veQlDsGd();
+        const t = $('#qlChonTim'); if (t) t.focus();
+      };
+    });
+    const t = $('#qlChonTim');
+    if (t) {
+      t.oninput = () => { QL.timThem = t.value.trim(); $('#qlChonDs').innerHTML = chonConDs(); };
+      t.addEventListener('keydown', (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); QL.moThem = -1; veQlDsGd(); } });
+      $('#qlChonDs').addEventListener('click', (e) => {
+        const d = e.target.closest('[data-chon]'); const f = QL.nhap[QL.moThem]; if (!d || !f) return;
+        const h = QL.hs.find((x) => String(x.id) === d.dataset.chon);
+        f.ids.push(h ? h.id : d.dataset.chon);
+        QL.moThem = -1; veQlDsGd();
       });
     }
-    ve('');
-    $('#chonTim').oninput = () => ve($('#chonTim').value);
-    $('#chonDong').onclick = () => $('#manChonHs').classList.remove('on');
   }
 
   async function luuQlHs() {
-    if (QL.tab === 'hs') {
-      const patch = { hocSinh: {} };
-      $$('#qlThan tbody tr').forEach((tr) => {
-        const k = tr.dataset.lop + '|' + khoaTen(tr.dataset.ten);   // v0.14.0 — khoá luôn TÊN IN HOA
-        const cat = (S.du.caiDat.hocSinh || {})[k] || {};
-        const tieuHoc = tr.querySelector('.qlTieuHoc').checked;
-        const giamPct = parseInt(tr.querySelector('.qlGiam').value, 10) || 0;
-        const tran = parseInt(tr.querySelector('.qlTran').value, 10) || 0;
-        if (!tieuHoc && !giamPct && !tran) {
-          if (Object.keys(cat).length) patch.hocSinh[k] = null;
-          return;
-        }
-        patch.hocSinh[k] = Object.assign({ donGia: 150000 }, cat, { tieuHoc, giamPct, tran });
-      });
-      await goi('ghiCaiDat', patch);
-    } else {
-      docNhapTuMan();
-      await goi('ghiGiaDinh', { families: QL.nhap });
+    const goc = (S.du.caiDat.hocSinh || {});
+    const patch = { hocSinh: {} };
+    for (const h of QL.hs) {
+      const k = khoaQl(h); const c = QL.cat[k]; const cu = goc[k];
+      if (!c || JSON.stringify(c) === JSON.stringify(cu)) continue;
+      const tieuHoc = !!c.tieuHoc; const giamPct = Math.min(99, parseInt(c.giamPct, 10) || 0); const tran = Math.min(9000000, parseInt(c.tran, 10) || 0);
+      const lyDo = giamPct > 0 ? String(c.lyDo || '').trim() : '';
+      if (!tieuHoc && !giamPct && !tran) { if (cu && Object.keys(cu).length) patch.hocSinh[k] = null; continue; }
+      const o = Object.assign({ donGia: 150000 }, cu, { tieuHoc, giamPct, tran });
+      if (lyDo) o.lyDo = lyDo; else delete o.lyDo;
+      patch.hocSinh[k] = o;
     }
+    if (Object.keys(patch.hocSinh).length) await goi('ghiCaiDat', patch);
+    const nhaGoc = JSON.stringify((S.du.giaDinh.families || []).map((f) => ({ id: f.id, ten: f.ten, giamPct: f.giamPct || 0, ids: (f.members || []).map((m) => m.id) })));
+    const nha = QL.nhap.map((f) => ({ id: f.id, ten: String(f.ten || '').trim(), giamPct: f.giamPct || 0, ids: f.ids }));
+    if (JSON.stringify(nha) !== nhaGoc) await goi('ghiGiaDinh', { families: nha });
     dongMan(); await napThang(); baoToast('Đã lưu.');
   }
 
@@ -1953,7 +2143,8 @@
       tho = u.tho !== undefined ? u.tho : goc;
       if (tho < goc) them(cat.tieuHoc ? 'Học sinh Tiểu học' : 'Học phí tối đa', cat.tieuHoc ? 'Học sinh Tiểu học' : 'Học phí tối đa', goc - tho);
       pct = ct && ct.coMien ? ct.pct : (cat.giamPct || 0);
-      tenPct = 'Ưu tiên'; phuPct = pct + '%'; motPct = pct + '%';
+      const lyDo = !(ct && ct.coMien) && String(cat.lyDo || '').trim();
+      tenPct = lyDo ? hoaDauHd(lyDo) : 'Ưu tiên'; phuPct = pct + '%'; motPct = pct + '%';
       const pcts = u.phan && !(ct && ct.coMien) ? [...new Set(u.phan.map((p) => p.giamPct || 0))] : null;
       if (pcts && pcts.length > 1) { pct = Math.max(...pcts); phuPct = 'theo từng lớp: ' + u.phan.map((p) => lopNganHd(p.lop) + ' ' + (p.giamPct || 0) + '%').join(', '); motPct = 'theo từng lớp'; }
     }
@@ -2003,7 +2194,7 @@
     const oChiTiet = (td, dongs, tongNhan, tongGt, mau) => {
       if (!dau) { hdVach(g, L, yy, R, '#e3e8f1', true, 1); }
       yy += 8;
-      const hb = 14 + 18 + 8 + dongs.length * 25 + 8 + 1 + 44;
+      const hb = 14 + 18 + 8 + dongs.length * 25 + (tongNhan ? 8 + 1 + 44 : 12);
       hdKhung(g, L, yy, R - L, hb, 16, mau.nen);
       const iL = L + 16; const iR = R - 16;
       hdChu(g, td, iL, yy + 14 + 14, fHd(700, 14), mau.td, 'left', 1.4);
@@ -2016,10 +2207,12 @@
         if (d.phu) { xx += hdDo(g, d.ten, fHd(400, 15, 'than', true)); hdChu(g, '  ' + d.phu, xx, yb, fHd(400, 13.5, 'than', true), mau.ctNhat); }
         hdChu(g, d.gt, iR, yb, fHd(400, 15, 'than', true), mau.ctSo, 'right');
       });
-      const yv = top + dongs.length * 25 + 8;
-      g.fillStyle = mau.vach; g.fillRect(iL, yv, iR - iL, 1);
-      hdChu(g, tongNhan, iL, yv + 29, fHd(700, 16), mau.tongChu);
-      hdChu(g, tongGt, iR, yv + 30, fHd(800, 19), mau.tongSo, 'right');
+      if (tongNhan) {
+        const yv = top + dongs.length * 25 + 8;
+        g.fillStyle = mau.vach; g.fillRect(iL, yv, iR - iL, 1);
+        hdChu(g, tongNhan, iL, yv + 29, fHd(700, 16), mau.tongChu);
+        hdChu(g, tongGt, iR, yv + 30, fHd(800, 19), mau.tongSo, 'right');
+      }
       yy += hb + 8; dau = false;
     };
     const XAM = { nen: '#f3f5fa', td: '#6b778d', vach: '#dde3ee', ct: '#46526a', ctNhat: '#8b96a9', ctSo: '#46526a', tongChu: '#152036', tongSo: '#152036' };
@@ -2028,17 +2221,9 @@
     if (coGocCon) {
       oChiTiet('HỌC PHÍ GỐC', tk.gocCon.map((c) => ({ ten: c.ten, phu: c.buoi + ' buổi', gt: tienHd(c.goc) })), 'Tổng học phí gốc', tienHd(tk.goc), XAM);
     } else if (tk.khoan.length) dong('Học phí gốc', phai(tienHd(tk.goc), fHd(700, 18), '#152036'), 46);
-    if (tk.khoan.length === 1) {
-      const k = tk.khoan[0];
-      yy += 2;
-      hdKhung(g, L, yy, R - L, 46, 16, '#eef9f2');
-      const iL = L + 16; const iR = R - 16; const yb = yy + 29; const fNhan = fHd(700, 14);
-      hdChu(g, 'MIỄN GIẢM:', iL, yb, fNhan, '#2f7a52', 'left', 1.4);
-      hdChu(g, k.mot, iL + hdDo(g, 'MIỄN GIẢM:', fNhan, 1.4) + 10, yb, fHd(600, 16), '#245c3f');
-      hdChu(g, tienHd(k.tru), iR, yb, fHd(700, 17), '#0f8a4a', 'right');
-      yy += 46 + 6; dau = false;
-    } else if (tk.khoan.length > 1) {
-      oChiTiet('MIỄN GIẢM', tk.khoan.map((k) => ({ ten: k.ten, phu: k.phu, gt: tienHd(k.tru) })), 'Tổng miễn giảm', tienHd(tk.khoan.reduce((s, k) => s + k.tru, 0)), XANH);
+    if (tk.khoan.length) {
+      oChiTiet('MIỄN GIẢM', tk.khoan.map((k) => ({ ten: k.ten, phu: k.phu, gt: tienHd(k.tru) })),
+        tk.khoan.length > 1 ? 'Tổng miễn giảm' : '', tienHd(tk.khoan.reduce((s, k) => s + k.tru, 0)), XANH);
     }
     dong(coGocCon || tk.khoan.length ? 'Học phí cuối' : 'Học phí', phai(tienHd(tk.cuoi), fHd(800, 24), '#2557d6'), 54);
     for (const [a, b, k] of tk.phu || []) {
@@ -2389,7 +2574,6 @@
       ${tu && tu.soDu ? `<div class="muc tt">Còn dư HP trước: <b style="color:var(--green)">${vnd(tu.soDu)}</b></div>` : ''}
       <hr>
       <div class="muc" id="ctxThemNo">Thêm vào nợ phí…</div>
-      <div class="muc" id="ctxDongSau">Đóng sau…</div>
       <div class="muc" id="ctxMotPhan">${mp ? 'Sửa số đã đóng một phần…' : 'Đóng một phần…'}</div>
       ${tu && tu.soDu ? '<div class="muc" id="ctxTamUng">Đóng từ HP còn dư…</div>' : ''}
       <hr>
@@ -2402,7 +2586,6 @@
     $('#ctxTangHp').onclick = () => moCanhChotTay($('#ctxTangHp'), u, 'tang');
     $('#ctxGhiChu').onclick = () => moCanhGhiChu($('#ctxGhiChu'), u);
     $('#ctxThemNo').onclick = () => { dongCtx(); moHopThemNo(u, 'no'); };
-    $('#ctxDongSau').onclick = () => { dongCtx(); moHopThemNo(u, 'sau'); };
     $('#ctxMotPhan').onclick = () => { dongCtx(); moHopMotPhan(u); };
     if (tu && tu.soDu) $('#ctxTamUng').onclick = () => { dongCtx(); moHopTruTamUng(u, tu, thieu); };
   }
@@ -2436,8 +2619,8 @@
         <b>${vnd(soTien)}đ</b> của tháng ${S.m}/${S.y}.
         Số tiền được CHỤP CỨNG tại đây — sau này mức phí có đổi thì khoản cũ vẫn đứng yên.
         ${u.kind === 'fam' ? 'Đây là khoản của CẢ NHÀ (đóng gộp). ' : ''}
-        ${cu ? `<b style="color:var(--amber)">Em/nhà này đã có dòng tháng ${cu.m}/${cu.y} dạng
-          "${cu.kieu === 'sau' ? 'Đóng sau' : 'Nợ phí'}" — bấm tiếp sẽ ĐỔI thành "${ten}", không đẻ thêm dòng.</b>` : ''}</p>
+        ${cu ? `<b style="color:var(--amber)">Em/nhà này đã có khoản nợ tháng ${cu.m}/${cu.y} (${vnd(cu.soTien)}đ) — bấm tiếp sẽ
+          THAY bằng số mới, không đẻ thêm dòng.</b>` : ''}</p>
       <div class="hangnut">
         <button class="btn primary" id="noXacNhan">${laSau ? 'Đánh dấu đóng sau' : 'Thêm vào nợ phí'}</button>
         <button class="btn" data-dong>Hủy</button>
@@ -2782,6 +2965,20 @@
     $$('.man').forEach((m) => m.addEventListener('click', (e) => { if (e.target === m) dongMan(); }));
     document.addEventListener('click', (e) => { if (e.target.closest('[data-dong]')) dongMan(); if (!e.target.closest('.ctxmenu')) dongCtx(); });
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { dongMan(); dongCtx(); } });
+    document.addEventListener('keydown', (e) => {
+      const o = e.target;
+      if (e.key !== 'Enter' || !o || o.tagName !== 'TEXTAREA' || e.isComposing) return;
+      if (e.altKey) {
+        e.preventDefault();
+        o.setRangeText('\n', o.selectionStart, o.selectionEnd, 'end');
+        o.dispatchEvent(new Event('input', { bubbles: true }));
+        return;
+      }
+      if (e.shiftKey || e.ctrlKey || e.metaKey) return;
+      const khung = o.closest('.ctxmenu, .hop');
+      const nut = khung && khung.querySelector('.btn.primary:not([disabled])');
+      if (nut) { e.preventDefault(); nut.click(); }
+    });
     $('#nutQlHs').onclick = moHopQlHs;
     $('#nutHocMay').onclick = moHopHocMay;
     $('#nutHoaDon').onclick = () => moHopHd();

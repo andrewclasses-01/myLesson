@@ -2128,7 +2128,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=243"></script>
+<script src="config.js?v=244"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -2975,6 +2975,50 @@ window.addEventListener('message', function(e){
     if (fs[i].contentWindow === e.source) { fs[i].setAttribute('data-van', d.dangChoi ? '1' : '0'); return; }
   }
 });
+
+/* ⭐⭐ v1.294.0 (thầy chốt 10/10/2026) — THẦY QUAN SÁT TRỰC TIẾP (AWord Đợt 496). Thầy bấm XEM ở dòng ĐANG LÀM của dashboard
+   ⇒ dashboard ghi cờ `quanSat/{mã em}` = {code, luc} (nhịp 20 s, đóng khung xem ⇒ xoá). Trang này nghe cờ của CHÍNH em và báo
+   vào khung AWord đang mở đúng bài đó: {type:'AWORD:QUAN_SAT', code, dang} (gửi ĐÍCH DANH origin AWord). AWord hiện viên
+   "Thầy Andrew đang quan sát trực tiếp" trong khung game + gửi trạng thái ván ngay sau mỗi câu.
+   Cờ coi là CÒN khi nhịp gần nhất < 60 s (thầy đóng tab dashboard đột ngột không kịp xoá ⇒ tự tắt) — so mốc `luc` của máy chủ
+   với GIỜ CHUẨN (`A.gioNay`, máy em lệch giờ vẫn đúng), sau đó đếm bằng đồng hồ máy từ lúc nhận nhịp.
+   Khung AWord mở SAU khi thầy đã bấm XEM ⇒ AWord báo `AWORD:QS_SAN` ⇒ trả lời ngay khung đó.
+   ⛔ Thầy đăng nhập thay / xem như em (`__thayVao`) và HS đặc biệt (phụ huynh) KHÔNG nghe. Luật: myLesson tools/dang-luat-quan-sat.js. */
+var QS_SONG_MS = 60000;
+var QS = { code: '', nhan: 0 };
+function qsMaBai(f) { var m = /[?&]g=([^&#]+)/.exec(f.getAttribute('src') || ''); return m ? decodeURIComponent(m[1]) : ''; }
+function qsDang(code) { return !!code && QS.code === code && Date.now() - QS.nhan < QS_SONG_MS; }
+function qsGui(f) {
+  var code = qsMaBai(f);
+  if (!code || !f.contentWindow) return;
+  var dang = qsDang(code);
+  if (f.getAttribute('data-qs') === (dang ? '1' : '0')) return;
+  f.setAttribute('data-qs', dang ? '1' : '0');
+  try { f.contentWindow.postMessage({ type: 'AWORD:QUAN_SAT', code: code, dang: dang }, AWORD); } catch (e) { }
+}
+function qsBaoHet() { var gs = document.querySelectorAll('.game iframe'); for (var i = 0; i < gs.length; i++) qsGui(gs[i]); }
+window.addEventListener('message', function (e) {
+  if (e.origin !== AWORD || !e.data || e.data.type !== 'AWORD:QS_SAN') return;
+  var gs = document.querySelectorAll('.game iframe');
+  for (var i = 0; i < gs.length; i++) if (gs[i].contentWindow === e.source) { gs[i].removeAttribute('data-qs'); qsGui(gs[i]); return; }
+});
+function qsNghe() {
+  if (window.__thayVao || LA_DAC_BIET || !MA_HS || !window.NWP) return;
+  NWP.userHienTai().then(function (u) {
+    if (!u) return;
+    return NWP.fb().then(function (f) {
+      f.fs.onSnapshot(f.fs.doc(f.db, 'quanSat', MA_HS), function (s) {
+        var d = s.exists() ? s.data() : null;
+        var luc = d && d.luc && d.luc.toMillis ? d.luc.toMillis() : 0;
+        var tuoi = luc ? Math.max(0, A.gioNay() - luc) : Infinity;
+        if (d && d.code && tuoi < QS_SONG_MS) { QS.code = String(d.code); QS.nhan = Date.now() - tuoi; }
+        else QS.code = '';
+        qsBaoHet();
+      }, function (er) { console.warn('[quanSat] không nghe được', er && er.code); });
+    });
+  })['catch'](function () { });
+  setInterval(qsBaoHet, 5000);   // nhịp thầy ngừng (đóng tab đột ngột) ⇒ tự tắt sau 60 s
+}
 
 function moAct(khung){
   var bia = khung.querySelector('.game-cover');
@@ -6824,6 +6868,7 @@ A.napDuLieu().then(function(dl){
   // v1.211.0 — báo "đang làm bài" cho dashboard (BAI nạp sau ⇒ đọc lười mỗi nhịp)
   if (window.ACOnline) ACOnline.bat('bai', function(){ return { lop: LOP_DL, ma: MA_HS, ten: TOI, bai: BAI ? ((BAI.dang ? BAI.dang + ' ' : '') + (A.maLesson(BAI) || A.tenBai(BAI) || '')) : '' }; });
   LA_DAC_BIET = !!EM.dacBiet;
+  qsNghe();   // ⭐ v1.294.0 — thầy quan sát trực tiếp (AWord Đợt 496)
   LA_GV = EM.vaiTro === 'gv';
   var l = A.lopTheoMa(dl, LOP_DL);
   EM_LA_KHOA = !!(l && A.laKhoa(l));   /* ⭐ 12/09/2026 — xem chú thích ở khai báo đầu file */

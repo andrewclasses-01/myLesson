@@ -2153,6 +2153,25 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-ct-hop:not(.zoom) .hq-ct-cuon{overflow-y:scroll}
 .hq-ct-hop:not(.zoom) .hq-ct-bang td{padding-left:calc(7px*var(--k)); padding-right:calc(7px*var(--k))}
 .hq-ct-hop:not(.zoom) .hq-ct-chip, .hq-ct-hop:not(.zoom) .hq-ct-giua > .hq-ct-khoi > h4{width:0; min-width:100%; box-sizing:border-box}
+/* ⭐ v1.294.0 — XEM TRỰC TIẾP: nút XEM ở dòng ĐANG LÀM + khung xem (AWord play.html?xem=1 dựng lại ván từ lamTiep) */
+.qs-nut{display:inline-flex; align-items:center; gap:4px; margin-left:6px; padding:calc(3px*var(--k)) calc(8px*var(--k)); border-radius:99px; border:1px solid #FFC9CD; background:#FFF1F2; color:#C81E3A; font:800 calc(9.5px*var(--k))/1 var(--font); letter-spacing:.06em; cursor:pointer; vertical-align:middle}
+.qs-nut svg{width:1.25em; height:1.25em; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.qs-nut:hover{background:#FFE1E5; border-color:#FF8A95}
+.qs-nen{position:fixed; inset:0; background:rgba(16,35,42,.6); display:none; place-items:center; z-index:97}
+.qs-nen.mo{display:grid; animation:hq-mo0 .18s ease both}
+.qs-hop{width:min(96vw,1400px); height:92vh; background:#fff; border-radius:18px; box-shadow:0 24px 70px rgba(0,0,0,.4); display:flex; flex-direction:column; overflow:hidden}
+.qs-dau{flex:none; display:flex; align-items:center; gap:14px; padding:12px 18px; border-bottom:1px solid var(--vien)}
+.qs-dau .bm-em-av{--em-d:42px; width:42px; height:42px; font-size:14px; flex:none}
+.qs-dau .t1{font:800 18px/1.2 var(--font)} .qs-dau .t2{font:600 12.5px/1.4 var(--font); color:var(--mo); margin-top:2px}
+.qs-dau .t2 b{color:var(--chu)}
+.qs-song{margin-left:auto; display:flex; align-items:center; gap:8px; font:800 11px/1 var(--font); letter-spacing:.12em; color:#C81E3A; background:#FFF1F2; border-radius:99px; padding:7px 12px}
+.qs-song i{width:8px; height:8px; border-radius:50%; background:#FF4D57; animation:hqDangLam 1.2s ease-in-out infinite}
+.qs-song.tat{color:var(--mo); background:#EEF2F1} .qs-song.tat i{background:#9AA9A5; animation:none}
+.qs-dong{width:36px; height:36px; border-radius:10px; border:1px solid var(--vien); background:#fff; font:800 16px/1 var(--font); color:var(--mo); cursor:pointer; flex:none}
+.qs-dong:hover{border-color:#C81E3A; color:#C81E3A}
+.qs-khung{flex:1; min-height:0; background:#E9F1F8; display:grid; place-items:center; padding:14px}
+.qs-khung iframe{width:100%; height:100%; border:0; border-radius:12px; background:#fff}
+.qs-chan{flex:none; padding:8px 18px; border-top:1px solid var(--vien); font:600 12px/1.4 var(--font); color:var(--mo)}
 /* POP-UP BÀI LÀM — chữ to để chiếu trước lớp (A−/A+ đổi `--z`) */
 .bl-nen{position:fixed; inset:0; background:rgba(16,35,42,.6); display:none; place-items:center; z-index:96}
 .bl-nen.mo{display:grid; animation:hq-mo0 .18s ease both}
@@ -3856,6 +3875,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="hq-ct-nen" id="hqCtNen"><div class="hq-ct-hop" id="hqCtHop"></div></div>
 <!-- ⭐ v1.148.0 — pop-up BÀI LÀM từng câu (đúp một dòng ở bảng LƯỢT LUYỆN TẬP), xem `hqMoBaiLam` -->
 <div class="bl-nen" id="blNen"><div class="bl-hop" id="blHop"></div></div>
+<!-- ⭐ v1.294.0 — XEM TRỰC TIẾP em đang làm (nút XEM ở dòng ĐANG LÀM), xem `moQuanSat` -->
+<div class="qs-nen" id="qsNen"><div class="qs-hop" id="qsHop"></div></div>
 <div class="nt-nen" id="ntNen"><div class="nt-hop" id="ntHop"></div></div>
 <!-- ⭐ v1.138.0 — chụp ảnh cả hộp (đúp "Thầy Andrew"), xem `hqChupHop` -->
 <div class="chup-nhay" id="chupNhay"></div><div class="chup-xem" id="chupXem"></div><div class="chup-bao" id="chupBao"></div>
@@ -4028,7 +4049,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=243"></script>
+<script src="config.js?v=244"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -9187,6 +9208,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       x.luot.forEach(function (l) {
         var lh = l.duaTop ? 'duatop' : l.loai;
         dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: lh, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[lh], tay: !!l.tay, dau100: l.dau100, lt: l.lt || '', code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
+                    maEm: (dl.h && dl.h.ma) || '',   // ⭐ v1.294.0 — nút XEM trực tiếp (quanSat/{ma} · lamTiep/{ma}/bai/{code})
                     xy: l.mauSo ? l.dung + '/' + l.mauSo : (l.loai === 'do' ? (l.dung ? l.dung + ' câu' : '—') : '—'),
                     pt: l.mistakes ? '—' : (l.pt != null ? l.pt + '%' : ''), mo: l.mistakes || (l.loai === 'do' && !l.dung), full: !l.mistakes && l.pt >= 100 });
       });
@@ -9240,7 +9262,9 @@ tr.qm-hang-tam td{background:#fffbeb}
         var dLuc = new Date(l.luc || 0);
         // ⭐ v1.260.0 — lượt ĐẠT 100% ĐẦU TIÊN của act: tô cả dòng xanh + ★ (thầy thấy ngay em xong nhiệm vụ ở lượt nào)
         var lopTr = [l.id && HQ.ct && HQ.ct.chonId === l.id ? 'chon' : '', l.dau100 ? 'dau100' : ''].filter(Boolean).join(' ');
-        return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (lopTr ? ' class="' + lopTr + '"' : '') + (l.dau100 ? ' title="Lần đầu đạt 100% ' + A.chuAnToan(l.muc) + ' — em xong nhiệm vụ ở lượt này"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '"' + (l.lt ? ' title="' + A.chuAnToan(hqChuLt(l.lt)) + '"' : '') + '>' + l.nhan + '</span>' + (l.dau100 ? '<span class="sao100">★</span>' : '') + (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
+        return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (lopTr ? ' class="' + lopTr + '"' : '') + (l.dau100 ? ' title="Lần đầu đạt 100% ' + A.chuAnToan(l.muc) + ' — em xong nhiệm vụ ở lượt này"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '"' + (l.lt ? ' title="' + A.chuAnToan(hqChuLt(l.lt)) + '"' : '') + '>' + l.nhan + '</span>' + (l.dau100 ? '<span class="sao100">★</span>' : '') +
+          (l.loai === 'danglam' && l.maEm && l.code ? '<button type="button" class="qs-nut" data-qsxem="' + A.chuAnToan(l.code) + '" data-qsma="' + A.chuAnToan(l.maEm) + '" data-qsmuc="' + A.chuAnToan(l.muc) + '" title="Xem trực tiếp em đang làm — em sẽ thấy “Thầy Andrew đang quan sát trực tiếp”"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>XEM</button>' : '') +   // ⭐ v1.294.0
+          (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
           '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '"' + (l.tPt ? ' title="' + A.chuAnToan(l.tPt) + '"' : '') + '>' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }
@@ -9430,6 +9454,86 @@ tr.qm-hang-tam td{background:#fffbeb}
     });
   }
   function dongBaiLam() { $('#blNen').classList.remove('mo'); BL.id = null; }
+
+  // ⭐⭐ v1.294.0 (thầy chốt 10/10/2026) — XEM TRỰC TIẾP EM ĐANG LÀM (AWord Đợt 496). Nút XEM ở dòng ĐANG LÀM ⇒ khung xem:
+  //  ① bật cờ `quanSat/{ma}` = {code, luc: giờ máy chủ}, nhịp lại mỗi 20 s (bai.html của em coi cờ chết sau 60 s không nhịp) ⇒
+  //    em thấy viên "Thầy Andrew đang quan sát trực tiếp" cuộn xuống trong khung game, AWord gửi ván lên NGAY sau mỗi câu;
+  //  ② nghe `lamTiep/{ma}/bai/{code}` (lượt dở giữ trên máy chủ, Đợt 495 — thầy đọc được) ⇒ chuyển `tplJ` vào khung AWord
+  //    `play.html?g=<code>&xem=1` (quan-sat.js `xemVan`): dựng lại ĐÚNG ván em đang thấy, KHÔNG ghi gì, không bấm được.
+  //  Đóng khung (✕ / nền / Esc) ⇒ xoá cờ ⇒ viên cuộn ngược lên. Luật cờ: myLesson tools/dang-luat-quan-sat.js.
+  //  ⚠️ Template chưa biết lưu ván (Balloon pop, Maze chase, Running…, Speaking cards) không có tplJ ⇒ khung báo "chưa có ván".
+  var QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '' };
+  var QS_NHIP_MS = 20000;
+  function qsxGuiKhung() {
+    var f = $('#qsKhung'); if (!f || !f.contentWindow || !QSX.san) return;
+    try { f.contentWindow.postMessage({ type: 'AWORD:XEM_TT', code: QSX.code, tt: QSX.tt }, A.CFG.AWORD); } catch (e) { }
+  }
+  function qsxVeTrangThai() {
+    var o = $('#qsTrangThai'); if (!o) return;
+    var t = null; try { t = QSX.tt && QSX.tt.tplJ ? JSON.parse(QSX.tt.tplJ) : null; } catch (e) { t = null; }
+    var tien = t && t.tong ? ' · đã làm <b>' + (t.daLam | 0) + '/' + (t.tong | 0) + '</b> câu' : '';
+    o.innerHTML = QSX.coLoi ? '⚠ ' + A.chuAnToan(QSX.coLoi)
+      : (QSX.luc ? 'Ván em cập nhật lúc <b>' + new Date(QSX.luc).toLocaleTimeString('vi-VN', { hour12: false }) + '</b>' + tien : 'Đang chờ ván của em…') +
+        ' · em thấy “Thầy Andrew đang quan sát trực tiếp” trong khung game cho tới khi thầy đóng khung này.';
+    var s = $('#qsSong'); if (s) s.classList.toggle('tat', !!QSX.coLoi);
+  }
+  function qsxCo(f) {   // nhịp cờ quanSat — lỗi (chưa đăng luật / mất phiên thầy) thì báo, khung xem vẫn chạy
+    return f.fs.setDoc(f.fs.doc(f.db, 'quanSat', QSX.ma), { code: QSX.code, luc: f.fs.serverTimestamp() }).then(function () {
+      if (QSX.coLoi) { QSX.coLoi = ''; qsxVeTrangThai(); }
+    })['catch'](function (e) {
+      var c = String((e && (e.code || e.message)) || e);
+      QSX.coLoi = /permission/i.test(c) ? 'Chưa bật được cờ quan sát (cần phiên thầy 🔐 / luật quanSat) — em chưa thấy viên, ván cập nhật chậm hơn (15 s).' : 'Chưa bật được cờ quan sát: ' + c;
+      qsxVeTrangThai();
+    });
+  }
+  function moQuanSat(code, ma, muc) {
+    if (chuaThay()) return;
+    if (QSX.ma) dongQuanSat();
+    var dl = hqCtDuLieu(); if (!dl) return;
+    var lopGoc = hqLopGoc(dl.t), slug = avSlugLop(lopGoc);
+    QSX = { ma: ma, code: code, nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '' };
+    var src = A.CFG.AWORD + '/play.html?g=' + encodeURIComponent(code) + '&xem=1&nhung=1&n=' + encodeURIComponent(dl.ten) + '&lop=' + encodeURIComponent(lopGoc || '');
+    $('#qsHop').innerHTML = '<div class="qs-dau">' + veEmAvDb(dl.ten, slug, lopGoc) + '<div><div class="t1">' + A.chuAnToan(dl.ten) + ' · XEM TRỰC TIẾP</div>' +
+      '<div class="t2">' + A.chuAnToan(muc || '') + ' · <span id="qsTrangThai"></span></div></div>' +
+      '<span class="qs-song" id="qsSong"><i></i>ĐANG QUAN SÁT</span><button type="button" class="qs-dong" id="qsDong" title="Thôi xem (Esc)">✕</button></div>' +
+      '<div class="qs-khung"><iframe id="qsKhung" allow="fullscreen" src="' + A.chuAnToan(src) + '"></iframe></div>' +
+      '<div class="qs-chan">Chỉ XEM: thầy không bấm được vào ván, không ghi điểm, không phát tiếng. Ván dựng lại sau mỗi câu em trả lời (Quiz: hiện câu kế tiếp em sắp làm).</div>';
+    $('#qsNen').classList.add('mo');
+    qsxVeTrangThai();
+    var maMo = ma;
+    spDb().then(function (f) {
+      if (QSX.ma !== maMo) return;
+      qsxCo(f);
+      QSX.nhip = setInterval(function () { if (QSX.ma === maMo) qsxCo(f); }, QS_NHIP_MS);
+      QSX.bo = f.fs.onSnapshot(f.fs.doc(f.db, 'lamTiep', ma, 'bai', code), function (s) {
+        if (QSX.ma !== maMo) return;
+        var d = s.exists() ? s.data() : null;
+        QSX.tt = d && d.tplJ ? { tplJ: d.tplJ, timeCost: d.timeCost || 0, gioMs: d.gioMs, activeMs: d.activeMs || 0 } : null;
+        QSX.luc = d ? (+d.luc || Date.now()) : 0;
+        qsxVeTrangThai(); qsxGuiKhung();
+      }, function (e) {
+        QSX.coLoi = 'Chưa đọc được ván của em: ' + String((e && (e.code || e.message)) || e);
+        qsxVeTrangThai();
+      });
+    });
+  }
+  function dongQuanSat() {
+    $('#qsNen').classList.remove('mo');
+    var ma = QSX.ma;
+    if (QSX.nhip) clearInterval(QSX.nhip);
+    if (typeof QSX.bo === 'function') { try { QSX.bo(); } catch (e) { } }
+    var f0 = $('#qsKhung'); if (f0) f0.src = 'about:blank';
+    $('#qsHop').innerHTML = '';
+    QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '' };
+    if (ma) spDb().then(function (f) { return f.fs.deleteDoc(f.fs.doc(f.db, 'quanSat', ma)); })['catch'](function () { });
+  }
+  window.addEventListener('message', function (e) {
+    if (e.origin !== A.CFG.AWORD || !e.data || e.data.type !== 'AWORD:XEM_SAN') return;
+    var f = $('#qsKhung'); if (!f || e.source !== f.contentWindow || e.data.code !== QSX.code) return;
+    QSX.san = true; qsxGuiKhung();
+  });
+  // Đóng tab dashboard khi đang xem ⇒ cố xoá cờ (không kịp thì bai.html tự tắt sau 60 s không nhịp).
+  window.addEventListener('pagehide', function () { if (QSX.ma) { var ma = QSX.ma; spDb().then(function (f) { f.fs.deleteDoc(f.fs.doc(f.db, 'quanSat', ma)); }); } });
   function blAnh(src) {
     if (!src || typeof src !== 'object') return '';
     var u = src.image || src.img || src.imageUrl || (src.media && src.media.url) || '';
@@ -12022,6 +12126,9 @@ tr.qm-hang-tam td{background:#fffbeb}
       /* ⭐ v1.180.0 — NHẬP ĐIỂM TAY + xoá lượt nhập tay. */
       if (e.target.closest('#hqCtNhapTay') && HQ.ct) { ntMo(); return; }
       var ntX = e.target.closest('[data-ntxoa]'); if (ntX) { e.stopPropagation(); ntXoa(ntX.dataset.ntcode, ntX.dataset.ntxoa, ntX); return; }
+      /* ⭐ v1.294.0 — XEM TRỰC TIẾP em đang làm (dòng ĐANG LÀM) · đóng khung xem */
+      var qsN = e.target.closest('[data-qsxem]'); if (qsN) { e.stopPropagation(); moQuanSat(qsN.dataset.qsxem, qsN.dataset.qsma, qsN.dataset.qsmuc); return; }
+      if (e.target.closest('#qsDong') || e.target.id === 'qsNen') { dongQuanSat(); return; }
       /* ⭐ v1.150.0 — nhãn "25/9 ✕" ⇒ bỏ lọc ngày. */
       if (e.target.closest('#hqCtNgayBo') && HQ.ct) { HQ.ct.ngay = null; hqCtCapNhatMuc(true); return; }
       /* ⭐ v1.148.0 — bấm CHẤM đồ thị ⇒ bảng cuộn tới + tô dòng; bấm DÒNG bảng ⇒ tô dòng + chấm sáng (KHÔNG vẽ lại ⇒ đúp vẫn bắt được). */
@@ -12252,6 +12359,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         [function () { return mo('#hanPop'); }, dongHanPop],
         [function () { return mo('#rcMenu'); }, dongRcMenu],
         [function () { return mo('#khoMenu'); }, dongKhoMenu],
+        [function () { return mo('#qsNen'); }, dongQuanSat],   // v1.294.0 — khung XEM TRỰC TIẾP nằm TRÊN pop-up em
         [function () { return mo('#ntNen'); }, ntDong],   // v1.180.0 — form nhập điểm tay nằm TRÊN pop-up em
         [function () { return mo('#blNen'); }, dongBaiLam],   // v1.148.0 — pop-up bài làm nằm TRÊN pop-up em
         [function () { return mo('#hqCtNen'); }, dongHqChiTiet],

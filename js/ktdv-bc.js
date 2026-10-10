@@ -29,7 +29,9 @@
 
   // ---- ĐIỂM QUY ĐỔI THEO ĐỘ KHÓ (07/10/2026) ----
   // w = điểm tối đa của phần (thang 100) · c = mức chuẩn (tỉ lệ câu đúng để được trọn điểm phần) · sao = độ khó hiện cho phụ huynh
-  var CACH = { BT1: { w: 10, c: 1, sao: 1 }, BT2: { w: 20, c: 1, sao: 2 }, BT3: { w: 70, c: 1, sao: 3 } };
+  var CACH = { BT1: { w: 10, c: 1, sao: 1 }, BT2: { w: 20, c: 1, sao: 2 }, BT3: { w: 70, c: 1, sao: 3 },
+    // ⭐ 10/10/2026 — BỘ ĐỀ LỚP 3–4 (6 phần, mã P1–P6): 10 · 15 · 10 · 15 · 35 · 15 — tạo câu nặng nhất (như BT3 của bộ cũ)
+    P1: { w: 10, c: 1, sao: 1 }, P2: { w: 15, c: 1, sao: 2 }, P3: { w: 10, c: 1, sao: 1 }, P4: { w: 15, c: 1, sao: 2 }, P5: { w: 35, c: 1, sao: 3 }, P6: { w: 15, c: 1, sao: 2 } };
   function cachCua(b) { return CACH[b.ma] || { w: b.n || 1, c: 1, sao: 1 }; }
   function mot(x) { return Math.round(x * 10) / 10; }
   function so(x) { return String(mot(x)).replace('.', ','); }
@@ -212,7 +214,7 @@
     }
     return '<div class="kqp-hang ' + (ok ? 'ok' : 'sai') + '"><div class="kqp-h-stt">' + x.i + '</div>' +
       '<div class="kqp-h-de" data-l="Đề">' + E(x.q) + '</div>' +
-      '<div class="kqp-h-bl" data-l="Con viết">' + (x.y ? E(x.y) : '<em>—</em>') + '</div>' +
+      '<div class="kqp-h-bl" data-l="' + (b.chon ? 'Con chọn' : 'Con viết') + '">' + (x.y ? E(x.y) : '<em>—</em>') + '</div>' +
       '<div class="kqp-h-nx" data-l="Nhận xét">' + nx + '</div></div>';
   }
 
@@ -247,7 +249,10 @@
         '<div class="kqp-phan-c">' + chu + '</div></div>';
     }).join('') + '</div>';
     var c3 = CACH.BT3 ? Math.round(CACH.BT3.c * 100) : 100, coChuan = qd.ds.some(function (x) { return x.chuan < 1; });
-    h += '<details class="kqp-vs"><summary>Vì sao tính điểm như vậy?</summary><p>Ba phần khó dần: tạo cụm số ít → cụm số nhiều → tạo câu. Phần càng khó thì càng nhiều điểm (' +
+    var boB = (s.bai || []).some(function (b) { return /^P\d$/.test(b.ma); });
+    h += '<details class="kqp-vs"><summary>Vì sao tính điểm như vậy?</summary><p>' + (boB
+      ? 'Sáu phần: chọn từ → gõ từ → a / an → số ít, số nhiều → tạo câu → trí nhớ nhanh (xem phim rồi trả lời). Mỗi câu có thời gian theo tốc độ chuẩn của học sinh cùng trình độ. Phần càng khó thì càng nhiều điểm ('
+      : 'Ba phần khó dần: tạo cụm số ít → cụm số nhiều → tạo câu. Phần càng khó thì càng nhiều điểm (') +
       qd.ds.map(function (x) { return so(x.toiDa); }).join(' / ') + ' điểm).</p>' + (coChuan ? '<p>Mỗi phần có một <b>mức chuẩn</b> — số câu đúng cần có để coi là đã vững. Đạt mức chuẩn là được trọn điểm phần đó, vì với phần khó như tạo câu, làm đúng ' + c3 + '% đã là rất tốt.</p>'
       : '<p><b>Tạo câu</b> là kỹ năng chính để con nói và viết được tiếng Anh, nên chiếm phần lớn số điểm. Điểm mỗi phần tính theo tỉ lệ câu con làm đúng trong phần đó.</p>') + '</details>';
     // nhận xét

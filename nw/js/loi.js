@@ -633,12 +633,20 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
     return _tuCam;
   }
   // Trả từ cấm đầu tiên tìm thấy (so theo TỪ, không so giữa chuỗi: "cc" không bắt "success").
+  // 10/10: so GIỮ DẤU — bỏ dấu cả câu thì "cho" thành "chó", "ngủ" thành "ngu" (thầy gõ "Thầy không cho bỏ dở" bị chặn).
+  // Riêng cụm ≥2 chữ ("óc chó") vẫn bắt cả khi gõ không dấu ("oc cho") vì cụm đủ hiếm để không oan.
+  function chuanTu(s) {
+    return String(s || '').normalize('NFC').toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+  }
   NW.kiemTuCam = async function (chu) {
     var ds = await dsTuCam();
-    var t = ' ' + khongDau(chu).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
+    var t = ' ' + chuanTu(chu) + ' ';
+    var tKd = ' ' + khongDau(t).replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ') + ' ';
     for (var i = 0; i < ds.length; i++) {
-      var w = ' ' + khongDau(ds[i]).replace(/\s+/g, ' ') + ' ';
-      if (w.trim() && t.indexOf(w) >= 0) return ds[i];
+      var w = chuanTu(ds[i]);
+      if (!w) continue;
+      if (t.indexOf(' ' + w + ' ') >= 0) return ds[i];
+      if (w.indexOf(' ') > 0 && tKd.indexOf(' ' + khongDau(w) + ' ') >= 0) return ds[i];
     }
     return null;
   };

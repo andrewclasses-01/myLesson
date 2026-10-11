@@ -392,6 +392,8 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
         return { user: u, hoSo: null, laThay: laThay, thieuHoSo: true };
       }
       NW.toi = Object.assign({}, hs, { uid: u.uid, laThay: laThay || hs.vaiTro === 'gv', user: u });
+      // v1.309.0 — HỌC SINH HỌC THỬ (nwUsers.thu, máy chủ qlHocSinh ghi): tin nhắn chỉ thấy thầy, không nhóm lớp
+      NW.toi.thu = !NW.toi.laThay && hs.thu === true;
       return { user: u, hoSo: hs, laThay: NW.toi.laThay };
     })();
     return _phienP;

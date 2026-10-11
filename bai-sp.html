@@ -733,7 +733,7 @@ body.mo-menu .side.trai{transform:none}
    Hai mục "Thông tin ví" · "Đăng ký đổi quà" vẫn báo "đang xây dựng" khi bấm. */
 </style>
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
-<script src="js/day.js?v=5"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
+<script src="js/day.js?v=6"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
 <body>
 
@@ -820,18 +820,18 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=257"></script>
+<script src="config.js?v=258"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=88"></script>
+<script src="js/chung.js?v=89"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới. -->
 <script src="js/chat.js?v=36"></script>
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
-<script src="js/vi-qua.js?v=7"></script>
+<script src="js/vi-qua.js?v=8"></script>
 <script>
 /* ============================================================
    TRANG SPEAKING SLIDE — bản THẬT (web v1.9.0, 23/08/2026).
@@ -1431,7 +1431,7 @@ function veDauTrang(){
   A.gaAvatar(document.querySelector('.side-head .av'), LOP, TOI, chuTat);
   /* Chấm đỏ tin nhắn mới: 1 lượt đọc có đệm 60 giây (xem `A.chatChuaDoc`).
      Chỉ HIỆN ở đây; tắt chấm là việc của khung chat bên trang lớp. */
-  A.chatChuaDoc(LOP_DL, MA_HS).then(A.veChamDo)['catch'](function(){});
+  if (!(EM && EM.thu)) A.chatChuaDoc(LOP_DL, MA_HS).then(A.veChamDo)['catch'](function(){});   // v1.309.0 học thử: không chat lớp
   var tenTren = document.querySelector('.who .ten');
   if (tenTren) tenTren.textContent = TOI;
   var tenSide = document.querySelector('.side-head .ten');
@@ -1482,6 +1482,7 @@ A.napDuLieu().then(function(dl){
   if (!BAI) { veTrangLop(); return; }
   /* ⭐ v1.35.0 — bài đang TẠM KHOÁ: không cho mở, về trang lớp kèm `khoa=1` (xem bai.html). */
   if (A.trangThaiThe(BAI) === 'khoa') { veTrangLop('khoa=1'); return; }
+  if (EM.thu && !A.theChoHocThu(BAI, EM.vao)) { veTrangLop(); return; }   // v1.309.0 học thử: thẻ trước ngày vào
 
   /* Khoá buổi trong Firestore = lớp + ngày + mã bài. Lấy đúng ba thứ đó từ
      chính bài này, KHÔNG gõ tay: buổi khác / lớp khác là một danh sách tích

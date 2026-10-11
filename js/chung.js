@@ -804,7 +804,9 @@
 
      Từ đây:
        `caLopDayDu(l)`    = TRỌN danh sách lớp — lưới em, THỜI LƯỢNG, leaderboard, avatar.
-       `emKhongTinh(l,b)` = [{ten, ly:'tay'|'muon', vao}] — ô "Không tính ở bài này".
+       `emKhongTinh(l,b)` = [{ten, ly:'tay'|'muon'|'thu', vao}] — ô "Không tính ở bài này".
+       ⭐ v1.309.0 (11/10/2026) — HỌC SINH HỌC THỬ (`h.thu`, roster status 'thu'): LUÔN ở đây với ly 'thu', mọi bài,
+       mọi chặng ⇒ không vào x/N, không giữ chặng STAGE, xếp cuối chữ xám (xepHangAct). Không ↩ được (đổi ở Quản lý HS).
        `caLopCuaBai(l,b)` = em ĐANG TÍNH (đầy đủ trừ không tính) — x/N, "thiếu", xét chặng.
      ⛔ `caLopCuaBai` GIỮ NGUYÊN TÊN vì 4 trang đang gọi nó cho phép ĐẾM; chỗ nào cần
      "cả lớp để HIỆN" thì gọi `caLopDayDu`. Đổi nhầm hai cái là hoặc bêu em không thuộc bài,
@@ -835,15 +837,17 @@
         var m = {}; boQuaChangCua(b, s).forEach(function (t) { m[khoaTen(t)] = 1; }); return m;
       });
       return ((l && l.hocSinh) || []).filter(function (h) {
+        if (h.thu) return true;
         var k = khoaTen(h.ten);
         return bang.length && bang.every(function (m) { return m[k]; });
-      }).map(function (h) { return { ten: h.ten, ly: 'tay', vao: String(h.vao || '') }; });
+      }).map(function (h) { return { ten: h.ten, ly: h.thu ? 'thu' : 'tay', vao: String(h.vao || '') }; });
     }
     var bo = {}, tinh = {}, ra = [];
     boQuaCua(b).forEach(function (t) { bo[khoaTen(t)] = 1; });
     tinhCaCua(b).forEach(function (t) { tinh[khoaTen(t)] = 1; });
     ((l && l.hocSinh) || []).forEach(function (h) {
       var k = khoaTen(h.ten);
+      if (h.thu) { ra.push({ ten: h.ten, ly: 'thu', vao: String(h.vao || '') }); return; }
       if (bo[k]) { ra.push({ ten: h.ten, ly: 'tay', vao: String(h.vao || '') }); return; }
       // ↩ của thầy (`tinhCa`) thắng luật ngày vào lớp.
       if (emVaoMuon(h, b, l) && !tinh[k]) ra.push({ ten: h.ten, ly: 'muon', vao: String(h.vao || '') });
@@ -1122,7 +1126,34 @@
       if (window.NWP && window.NWP.gac) window.NWP.gac(em.ma);
       else console.warn('[phien] trang này chưa nạp js/nw-phien.js — không canh cửa được');
     }
+    // ⭐ v1.309.0 — HỌC SINH HỌC THỬ: gắn cờ `thu` + ngày vào lớp (kể cả thầy xem như em ⇒ thấy đúng trang em thấy).
+    var ht = emHocThu(dl, em);
+    if (ht) { em.thu = true; em.vao = String(ht.vao || '').slice(0, 10); }
     return em;
+  }
+
+  /* ⭐⭐ v1.309.0 (11/10/2026, thầy chốt) — HỌC SINH HỌC THỬ (`h.thu` trong lop.json, roster status 'thu').
+       · chỉ thấy thẻ bài giao TỪ NGÀY VÀO (thẻ còn hạn vào ngày đó vẫn hiện) — `theChoHocThu`
+       · ẩn chat lớp, tin nhắn chỉ thấy thầy · x/N + STAGE không tính, xếp hạng cuối chữ xám (`emKhongTinh` ly 'thu').
+     Lên học chính (dashboard) ⇒ mất cờ ⇒ thấy toàn bộ bài lớp như học sinh chính. */
+  function emHocThu(dl, em) {
+    if (!em || em.dacBiet || em.vaiTro === 'gv') return null;
+    var l = lopTheoMa(dl, em.lop), ma = chuanMa(em.ma);
+    var ds = ((l && l.hocSinh) || []).filter(function (h) { return chuanMa(h.ma) === ma; });
+    var h = ds.filter(function (x) { return !x.bs; })[0] || ds[0];
+    return h && h.thu ? h : null;
+  }
+  function tenHocThu(l) {   // tên các em học thử của một lớp/khóa (bảng sao, @nhắc…)
+    return ((l && l.hocSinh) || []).filter(function (h) { return h.thu; }).map(function (h) { return h.ten; });
+  }
+  function theChoHocThu(b, vao) {
+    vao = String(vao || '').slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(vao)) return true;
+    var g = ngayGiaoBai(b);
+    if (g && g >= vao) return true;
+    var m = mocHan(b);
+    if (m == null || !isFinite(m)) return !g;
+    return m >= Date.parse(vao + 'T00:00:00+07:00');   // hạn còn tới ngày em vào ⇒ vẫn hiện
   }
 
   // Chuỗi query (KHÔNG có dấu & hay ? ở đầu) để GIỮ NGUYÊN chế độ xem khi
@@ -3423,7 +3454,8 @@
      ⛔ Kho lỗi/mất mạng thì coi như KHÔNG có bài mới — thà thiếu một chấm đỏ còn hơn
      doạ em bằng chấm đỏ oan (cùng tinh thần "đừng lùi mù" của luật 8). */
   function coBaiChuaXong(dl, maLop, tenEm) {
-    var ds = baiCuaLop(dl, maLop).filter(conHan).slice(0, 3);
+    var lx = lopTheoMa(dl, maLop), hx = lx && ((lx.hocSinh || []).filter(function (h) { return h.thu && h.ten === tenEm; })[0]);
+    var ds = baiCuaLop(dl, maLop).filter(conHan).filter(function (b) { return !hx || theChoHocThu(b, hx.vao); }).slice(0, 3);   // v1.309.0 học thử
     var acts = [];
     for (var i = 0; i < ds.length; i++) {
       var k = actCuaBai(ds[i]);
@@ -3679,6 +3711,7 @@
     // ⭐⭐ v1.95.0 — em nào có mặt ở một bài (bỏ em vào lớp sau ngày giao)
     ngayGiaoBai: ngayGiaoBai, emCoMatOBai: emCoMatOBai, caLopCuaBai: caLopCuaBai,
     caLopDayDu: caLopDayDu, emKhongTinh: emKhongTinh, emVaoMuon: emVaoMuon,
+    emHocThu: emHocThu, theChoHocThu: theChoHocThu, tenHocThu: tenHocThu,   // v1.309.0 học sinh học thử
     xepHangAct: xepHangAct,
     // ⭐⭐ v1.82.0 — HỌC SINH ĐẶC BIỆT (phụ huynh luyện bài cùng con)
     emDacBietTheoMa: emDacBietTheoMa,

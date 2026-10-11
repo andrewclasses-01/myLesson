@@ -35,7 +35,7 @@
       // Thầy: mọi lớp trong kho cấu hình (nếu có) — hoặc chỉ tìm theo tên ở màn nhắn mới.
       var cf = await Chat.dsLop();
       for (var i = 0; i < cf.length; i++) (await NW.nguoiTheoLop(cf[i].ma).catch(function () { return []; })).forEach(them);
-    } else {
+    } else if (!toi.thu) {   // v1.309.0 học thử: chỉ nhắn được thầy
       var lops = toi.cacLop || [toi.lop];
       for (var j = 0; j < lops.length; j++) (await NW.nguoiTheoLop(lops[j]).catch(function () { return []; })).forEach(them);
     }
@@ -266,7 +266,7 @@
     var timChu = '';
     hop.className = 'card tn';
     // ⭐ 02/10/2026 thầy chốt: HS chưa có chat riêng ⇒ danh sách = NHÓM LỚP (mọi lớp em học, huy hiệu) + Thầy Andrew + dòng "sẽ sớm được bật"
-    var CHO_RIENG = !!(toi.laThay || CFG.BAT_CHAT_RIENG);
+    var CHO_RIENG = !!(toi.laThay || (!toi.thu && CFG.BAT_CHAT_RIENG));   // v1.309.0 học thử: luôn chỉ cuộc với thầy
     var IC_LUI = '<svg class="ic" viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M15 5l-7 7 7 7"/></svg>';   // 02/10 thầy: nút quay lại (điện thoại) = dấu <
     // ⭐ 02/10/2026 thầy chốt: NHÓM LỚP = CHÍNH CHAT LỚP myLesson (kho classChat, js/chat.js AWChat) — nhắn ở đây thì trang lớp/khóa/dashboard
     //   thấy ngay và ngược lại. Phòng lớp là phòng "ảo" (id 'lop:<mã lớp>', _lop:true): thành viên = danh sách lớp trong lop.json.
@@ -742,7 +742,7 @@
         var dl = await fetch(CFG.GOC_DL + 'data/lop.json', { cache: 'no-cache' }).then(function (r) { return r.json(); });
         DS_LOP = (dl.lop || []).concat(dl.khoa || []);
       } catch (e) { console.warn('[tn] chưa nạp được danh sách lớp', e); return; }
-      var can = toi.laThay ? DS_LOP.map(function (l) { return l.maLop; }) : (toi.cacLop || [toi.lop]).filter(Boolean);
+      var can = toi.laThay ? DS_LOP.map(function (l) { return l.maLop; }) : toi.thu ? [] : (toi.cacLop || [toi.lop]).filter(Boolean);   // v1.309.0 học thử: không nhóm lớp
       var hopLop = /^lop:(.+)$/.exec(NW.thamSo('phong') || '');   // ⭐ 03/10 khung nhúng của hộp chat nhỏ: chỉ nạp ĐÚNG lớp đang mở (đỡ lượt đọc tin cuối từng lớp)
       if (/[?&]hop=1(&|$)/.test(location.search) && hopLop) can = can.filter(function (m) { return m === hopLop[1]; });
       PHONG_LOP = can.map(function (ma, i) {

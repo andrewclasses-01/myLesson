@@ -128,7 +128,7 @@
   // ---------- vẽ danh sách ----------
   function ve() {
     if (!khuDs) return;
-    var chiThay = !NW.caiDat().danhBa;
+    var chiThay = !NW.caiDat().danhBa || !!(NW.toi && NW.toi.thu);   // v1.309.0 học thử: danh bạ chỉ thầy
     var d = ds.filter(function (n) { return chiThay ? n.vaiTro === 'gv' : true; });
     if (loc) {
       var k = NW.khongDau(loc.toLowerCase());

@@ -184,7 +184,7 @@
       }
       var phu =[x.ma, x.ngaySinh ? ngaySinhVN(x.ngaySinh) : '', x.truong || '', x.lopTruong ? 'lớp ' + x.lopTruong : ''].filter(Boolean).join(' · ');
       return '<div class="ktq-dong" data-ktq-ma="' + E(x.ma) + '">' + anhHtml(x, 44) +
-        '<div class="ktq-ten"><b>' + E(x.ten) + '</b><span>' + E(phu) + '</span>' + (x.trangThai === 'da-chuyen' ? '<span class="ktq-chuyen">Đã vào học: ' + E(x.chuyenSang || '') + '</span>' : '') + '</div>' +
+        '<div class="ktq-ten"><b>' + E(x.ten) + '</b><span>' + E(phu) + '</span>' + (x.trangThai === 'da-chuyen' ? '<span class="ktq-chuyen">' + (laThuNay(x.ma) ? 'Học thử: ' : 'Đã vào học: ') + E(x.chuyenSang || '') + '</span>' : '') + '</div>' +
         oPhat(x) +
         '<div class="ktq-oo">' + o + '</div>' +
         '<div class="ktq-hd"><button type="button" class="ktq-nut nho" data-ktq="bc">Báo cáo</button><button type="button" class="ktq-nut phu nho" data-ktq="menu" title="Tuỳ chọn">⋯</button></div></div>';
@@ -340,7 +340,7 @@
     var m = document.createElement('div');
     m.className = 'ktq-menu'; m.id = 'ktqMenu';
     var chuyen = h.trangThai === 'da-chuyen';
-    var muc = chuyen ? [['bc', 'Xem báo cáo']] : (h.phat && h.phat.bo && !daBatDau(h) ? [['thuHoi', 'Thu hồi phát bài']] : []).concat([['sua', 'Sửa thông tin'], ['anh', 'Ảnh đại diện'], ['mk', 'Đặt lại mật khẩu'], ['link', 'Mở trang kiemtra (xem như em)'], ['chuyen', 'Chuyển sang học chính…'], [h.luuTru ? 'moLai' : 'luu', h.luuTru ? 'Mở lại tài khoản' : 'Lưu trữ (khoá tài khoản)']]);
+    var muc = chuyen ? [['bc', 'Xem báo cáo']] : (h.phat && h.phat.bo && !daBatDau(h) ? [['thuHoi', 'Thu hồi phát bài']] : []).concat([['sua', 'Sửa thông tin'], ['anh', 'Ảnh đại diện'], ['mk', 'Đặt lại mật khẩu'], ['link', 'Mở trang kiemtra (xem như em)'], ['chuyen', 'Chuyển sang học chính…'], ['thu', 'Chuyển sang học thử…'], [h.luuTru ? 'moLai' : 'luu', h.luuTru ? 'Mở lại tài khoản' : 'Lưu trữ (khoá tài khoản)']]);
     m.innerHTML = muc.map(function (x) { return '<button type="button" data-ktq-m="' + x[0] + '">' + x[1] + '</button>'; }).join('');
     document.body.appendChild(m);
     var r = nut.getBoundingClientRect();
@@ -358,6 +358,7 @@
       if (v === 'anh') return moAnh(h);
       if (v === 'mk') return moDatLaiMk(h);
       if (v === 'chuyen') return moChuyen(h);
+      if (v === 'thu') return moChuyen(h, true);   // v1.309.0 học sinh học thử
       if (v === 'link') return window.open(TRANG_KT, '_blank', 'noopener');
       if (v === 'luu' || v === 'moLai') return luuTru(h, v === 'luu');
     };
@@ -434,20 +435,28 @@
     return fetch(url).then(function (r) { if (!r.ok) throw new Error('ảnh ' + r.status); return r.blob(); })
       .then(function (bl) { return catVuong(new File([bl], 'a.jpg', { type: bl.type || 'image/jpeg' }), canh); });
   }
-  function moChuyen(h) {
+  // v1.309.0 — em (theo ID) HIỆN đang là học thử? đọc danh sách lớp sống (lên học chính rồi thì hết nhãn)
+  function laThuNay(ma) {
+    var m = String(ma || '').replace(/\s+/g, '').toUpperCase();
+    return (S.dsLop ? S.dsLop() : []).some(function (l) { return ((l && l.hocSinh) || []).some(function (x) { return x.thu && String(x.ma || '').replace(/\s+/g, '').toUpperCase() === m; }); });
+  }
+  // v1.309.0 (11/10/2026) — `thu` = vào lớp dạng HỌC SINH HỌC THỬ (roster status 'thu'): chỉ thấy bài từ ngày vào, không chat lớp,
+  //   không tính sĩ số / STAGE, xếp hạng cuối chữ xám. Lên học chính sau ở Quản lý & bảo mật › hồ sơ em.
+  function moChuyen(h, thu) {
     var ds = (S.dsLop ? S.dsLop() : []).filter(function (l) { return l && l.tenGoc; });
     if (!ds.length) return tb('Chưa đọc được danh sách lớp — đóng Kho bài rồi mở lại.', true);
     var hom = new Date(), homNay = hom.getFullYear() + '-' + String(hom.getMonth() + 1).padStart(2, '0') + '-' + String(hom.getDate()).padStart(2, '0');
-    moHop('Chuyển sang học chính — ' + h.ten,
+    moHop((thu ? 'Chuyển sang học thử — ' : 'Chuyển sang học chính — ') + h.ten,
       '<p>Em sẽ được ghi danh vào lớp/khóa bên dưới với <b>đúng ID ' + E(h.ma) + '</b> và mật khẩu hiện tại (lần đầu vào andrewclasses.com em sẽ đặt mật khẩu riêng). Ảnh đại diện đi theo em. Kết quả kiểm tra đầu vào vẫn giữ ở mục này.</p>' +
+      (thu ? '<p><b>HỌC THỬ:</b> em chỉ thấy bài giao từ ngày vào học, không có ô chat lớp (tin nhắn chỉ với thầy), không tính vào sĩ số / STAGE, xếp hạng cuối chữ xám. Lên học chính ở Quản lý &amp; bảo mật › hồ sơ em.</p>' : '') +
       '<div class="ktq-form"><label><span>Lớp / khóa</span><select name="lop">' + ds.map(function (l) { return '<option value="' + E(l.tenGoc) + '">' + E((l.loai === 'khoa' ? 'KHÓA ' : '') + l.tenGoc) + '</option>'; }).join('') + '</select></label>' +
       '<label><span>Vào học từ</span><input type="date" name="vao" value="' + homNay + '"></label></div>', [
       { chu: 'Huỷ', phu: true, bam: dongHop },
-      { chu: 'CHUYỂN', bam: function (b, than) {
+      { chu: thu ? 'VÀO HỌC THỬ' : 'CHUYỂN', bam: function (b, than) {
         var lop = than.querySelector('[name=lop]').value, vao = than.querySelector('[name=vao]').value;
         cho(b, 'Đang ghi danh…');
         var ghiDanh = function (boQua) {
-          return goi('qlHocSinh', Object.assign({ viec: 'themHs', ten: h.ten, hoTen: h.hoTen || '', ngaySinh: h.ngaySinh || '', ma: h.ma, ghiChu: 'Từ kiểm tra đầu vào', ghiDanh: [{ lop: lop, vao: vao }] }, boQua ? { boQuaTrung: true } : {}))
+          return goi('qlHocSinh', Object.assign({ viec: 'themHs', ten: h.ten, hoTen: h.hoTen || '', ngaySinh: h.ngaySinh || '', ma: h.ma, ghiChu: 'Từ kiểm tra đầu vào', ghiDanh: [{ lop: lop, vao: vao }], hocThu: !!thu }, boQua ? { boQuaTrung: true } : {}))
             ['catch'](function (e) {   // v1.259.0 — trùng học sinh cũ ⇒ hỏi
               if (!boQua && laTrung(e) && window.confirm(chuTrung(e.details.trung) + '\n\nVẫn ghi danh hồ sơ KTĐV này (giữ số của hồ sơ KTĐV)?')) return ghiDanh(true);
               throw e;
@@ -462,7 +471,7 @@
             })['catch'](function (e) { tb('Đã ghi danh nhưng chưa chuyển được ảnh: ' + chuLoi(e) + ' — đặt lại ảnh ở mục Học sinh.', true); });
           })
           .then(function () { return goi('qlKtdv', { viec: 'daChuyen', ma: h.ma, lop: lop }); })
-          .then(function () { dongHop(); tb('Đã chuyển ' + h.ten + ' vào ' + lop + '.'); S.ds = null; napHet().then(veDs); },
+          .then(function () { dongHop(); tb('Đã chuyển ' + h.ten + ' vào ' + lop + (thu ? ' (học thử).' : '.')); S.ds = null; napHet().then(veDs); },
             function (e) { thoi(b); tb(chuLoi(e), true); });
       } }
     ]);

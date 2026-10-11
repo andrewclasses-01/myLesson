@@ -61,7 +61,7 @@
         try { x = JSON.parse(((r[2] && r[2].data()) || {}).json || 'null'); } catch (e) { x = null; }
         S.lop = ((x && x.lop) || []).filter(function (l) { return (l.hocSinh || []).length; }).map(function (l) {
           return { ma: maLop(l.maLop || l.tenGoc), ten: String(l.tenGoc || l.maLop), slug: l.tenGoc || l.maLop,
-            em: (l.hocSinh || []).map(function (h) { return { ten: h.ten, ma: chuanMa(h.ma), so: S.maSo[chuanMa(h.ma)] || null }; }) };
+            em: (l.hocSinh || []).map(function (h) { return { ten: h.ten, ma: chuanMa(h.ma), so: S.maSo[chuanMa(h.ma)] || null, thu: !!h.thu }; }) };   // v1.309.0 thu = học thử
         });
         if (!S.chon && S.lop.length) S.chon = S.lop[0].ma;
         var c = (r[3] && r[3].exists && r[3].exists()) ? r[3].data() : {};
@@ -154,11 +154,11 @@
     });
     var L = lopChon() || { em: [], ten: '' };
     var tongLop = 0, tuanLop = 0;
-    L.em.forEach(function (e) { if (e.so) { tongLop += Number((S.vi[e.so] || {}).s) || 0; tuanLop += S.tuan[e.so] || 0; } });
+    L.em.forEach(function (e) { if (e.so && !e.thu) { tongLop += Number((S.vi[e.so] || {}).s) || 0; tuanLop += S.tuan[e.so] || 0; } });
     var tamTong = S.buoi.reduce(function (a, b) { return a + b.tam; }, 0);
     $('.sd-giua', nen).innerHTML =
       '<div class="sd-so-tom">' +
-        '<div class="sd-the"><div class="nh">Sao đang có · lớp ' + esc(L.ten) + '</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + L.em.length + ' học sinh</div></div>' +
+        '<div class="sd-the"><div class="nh">Sao đang có · lớp ' + esc(L.ten) + '</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + L.em.filter(function (e) { return !e.thu; }).length + ' học sinh</div></div>' +
         '<div class="sd-the"><div class="nh">Cộng 7 ngày qua</div><div class="gt xanh">+' + tuanLop + '</div><div class="phu">lớp ' + esc(L.ten) + '</div></div>' +
         '<div class="sd-the"><div class="nh">Buổi chưa chốt</div><div class="gt vang">' + S.buoi.length + '</div><div class="phu">còn ' + tamTong + ' ⭐ trong rổ tạm</div></div>' +
       '</div>' +
@@ -173,9 +173,10 @@
     var L = lopChon() || { em: [] };
     var k = String(S.tim || '').trim().toLowerCase();
     var ds = L.em.filter(function (e) { return !k || String(e.ten).toLowerCase().indexOf(k) >= 0 || String(e.so || '').indexOf(k) >= 0; });
+    ds = ds.filter(function (e) { return !e.thu; }).concat(ds.filter(function (e) { return e.thu; }));   // v1.309.0 học thử luôn cuối
     tb.innerHTML = ds.length ? ds.map(function (e, i) {
       var v = e.so ? (Number((S.vi[e.so] || {}).s) || 0) : null;
-      return '<tr><td><div class="sd-ten">' + avHtml(L, e.ten, i) + '<span>' + esc(e.ten) + '<small>' + esc(L.ten) + '</small></span></div></td>' +
+      return '<tr' + (e.thu ? ' style="opacity:.55"' : '') + '><td><div class="sd-ten">' + avHtml(L, e.ten, i) + '<span>' + esc(e.ten) + '<small>' + esc(L.ten) + (e.thu ? ' · học thử' : '') + '</small></span></div></td>' +
         '<td class="mo">' + (e.so ? esc(e.so) : '<span class="cam">chưa có số</span>') + '</td>' +
         '<td class="so-sao">' + (v == null ? '—' : '⭐ ' + v) + '</td>' +
         '<td class="tuan">' + (e.so && S.tuan[e.so] ? '+' + S.tuan[e.so] : '') + '</td>' +

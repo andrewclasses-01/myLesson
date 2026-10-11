@@ -189,7 +189,10 @@
     Array.prototype.forEach.call(tb.querySelectorAll('[data-ls]'), function (b) {
       b.onclick = function () { moLichSu(b.getAttribute('data-ls')); };
     });
-    if (A.deAvatarKho) { try { A.deAvatarKho(tb); } catch (e) { /* thiếu ảnh: giữ chữ tắt */ } }
+    // v1.307.0 — bản 10/10 gọi `A.deAvatarKho(tb)`: tham số đầu là TÊN LỚP chứ không phải khối DOM ⇒ không bao giờ đè được ảnh
+    // (em mới chỉ có ảnh kho — Gia Hân NT4 — đứng chữ tắt) + hỏi Firestore tài liệu `lessonAvatar/objecthtml…` không có thật.
+    // `window.avKhoDe` (dashboard) tự dò các lớp có `data-av-lop` trong khối rồi đè ảnh kho đúng từng lớp.
+    if (window.avKhoDe) { try { window.avKhoDe(tb); } catch (e) { /* thiếu ảnh: giữ chữ tắt */ } }
   }
   function avHtml(L, ten, i) {
     var chu = String(ten || '?').trim().split(/\s+/).slice(-2).map(function (t) { return t.charAt(0); }).join('').toUpperCase();

@@ -108,6 +108,13 @@
     function lay(u) {
       try { return fetch(u, { cache: 'no-store' }); } catch (e) { return null; }
     }
+    // ⚡ v1.304.0 (audit 11/10/2026, đợt tốc độ) — lop.json/bai.json: 'no-cache' + KHÔNG ?t= ⇒ trình duyệt VẪN hỏi lại máy chủ
+    //    mỗi lần (dữ liệu tươi y như cũ) nhưng file không đổi thì nhận 304 thay vì tải lại ~20 KB nén + đọc lại 166 KB JSON.
+    //    Bản sống là kho tức thì lessonWeb/* (luôn tươi, bản mới hơn thắng — chung.js moiHon/mocCuaLop) nên kể cả CDN có trả
+    //    bản cũ vài phút cũng không sai gì.
+    function layDl(u) {
+      try { return fetch(u, { cache: 'no-cache' }); } catch (e) { return null; }
+    }
     function conDem(khoa, giay) {
       try {
         var o = JSON.parse(sessionStorage.getItem(khoa) || 'null');
@@ -127,8 +134,8 @@
     } catch (e) { lopDoan = ''; }
     var gocDl = (/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825') ? 'https://andrewclasses.com/' : '';   // 29/09: trang thử đọc dữ liệu trang thật (= config.js AC_GOC_DL)
     window.__napSom = {
-      'data/lop.json': lay(gocDl + 'data/lop.json?t=' + t),
-      'data/bai.json': lay(gocDl + 'data/bai.json?t=' + t),
+      'data/lop.json': layDl(gocDl + 'data/lop.json'),
+      'data/bai.json': layDl(gocDl + 'data/bai.json'),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
       lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,

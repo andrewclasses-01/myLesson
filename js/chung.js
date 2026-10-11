@@ -736,7 +736,10 @@
   }
 
   function napJson(duong) {
-    var p = laySom(duong) || fetch((/^data\//.test(duong) ? (window.AC_GOC_DL || '') : '') + duong + '?t=' + Date.now(), { cache: 'no-store' });
+    // v1.304.0 — file dữ liệu data/*: 'no-cache' (hỏi lại máy chủ, 304 khi không đổi) thay vì ?t= + no-store (luôn tải lại). Xem som.js layDl.
+    var p = laySom(duong) || (/^data\//.test(duong)
+      ? fetch((window.AC_GOC_DL || '') + duong, { cache: 'no-cache' })
+      : fetch(duong + '?t=' + Date.now(), { cache: 'no-store' }));
     return p
       .then(function (r) { return r.ok ? r.json() : null; })
       .catch(function () { return null; });

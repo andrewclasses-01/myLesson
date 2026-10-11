@@ -1,0 +1,45 @@
+# v1.305.0 (11/10/2026, đợt tốc độ sau audit, thầy cho làm) — XUẤT BẢN THU GỌN myLesson Web lên GitHub Pages.
+# Mỗi lần push main (kể cả app myLesson đẩy bài/lop.json): dựng _site bằng tools/xuat-ban.mjs (esbuild thu gọn TỪNG file
+# .js/.css + từng khối <script>/<style> nhúng trong .html; data/ và ảnh chép nguyên; KHÔNG xuất bản tools/ và *.md) rồi
+# đưa lên Pages. Push dồn dập ⇒ chỉ bản mới nhất được xuất bản (cancel-in-progress).
+# ⛔ Cần Settings › Pages › Build and deployment › Source = "GitHub Actions" (đã đổi 11/10/2026).
+# KIỂM BẢN LIVE: python tools/kiem-live.py  (so build.json live với HEAD — đừng so băm .js/.css/.html trực tiếp nữa).
+name: Xuat ban myLesson Web (thu gon)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm i --no-save --no-package-lock esbuild@0.28.2
+      - run: node tools/xuat-ban.mjs _site
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.d.outputs.page_url }}
+    steps:
+      - id: d
+        uses: actions/deploy-pages@v4

@@ -3,3 +3,6 @@
 firebase-admin.json
 push.json
 *.pem
+
+# v1.305.0 - ban dung thu cua tools/xuat-ban.mjs
+_site/

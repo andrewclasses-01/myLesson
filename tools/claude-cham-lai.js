@@ -18,7 +18,7 @@
 //   node tools/claude-cham-lai.js --go <ID>      gỡ phần Claude đã ghi (ghiChu + claudeLuc + claudeGhiChu), trả về lời giải thích tự động
 //
 // ⛔ Sau --ghi: link đã gửi phụ huynh KHÔNG tự đổi — thầy mở báo cáo trên dashboard, đọc lại rồi bấm “Cập nhật link PH”.
-// ⛔ Khoá câu = "BT<bài>:<số câu bắt đầu từ 1>" (giống cột STT trong file Excel). Chỉ ĐỌC kho results/ktdvHoSo/assignments; chỉ GHI ktdvBaoCao/<ID>.
+// ⛔ Khoá câu = "<mã phần>:<số câu bắt đầu từ 1>" — bộ A: BT1..BT3 (giống cột STT file Excel) · bộ B: P1..P6 (tool tự biết em làm bộ nào). Chỉ ĐỌC kho results/ktdvHoSo/assignments; chỉ GHI ktdvBaoCao/<ID>.
 'use strict';
 const fs = require('fs');
 const os = require('os');
@@ -29,8 +29,17 @@ const PROJECT = 'aword-70dae';
 const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/(default)/documents`;
 const KHOA_UNG_VIEN = [path.join(process.env.LOCALAPPDATA || '', 'AndrewClasses', 'firebase-admin.json'),
   'E:\\LAP TRINH APP\\mySpeaking-data\\data\\firebase-admin.json', 'D:\\APP AND DATA\\mySpeaking-data\\data\\firebase-admin.json'];
-// 3 bài giao (⛔ khớp js/ktdv-ql.js BAI)
-const BAI = [{ ma: 'BT1', code: '5576de', ten: 'Tạo cụm số ít', n: 40 }, { ma: 'BT2', code: 'bc52sb', ten: 'Tạo cụm số nhiều', n: 20 }, { ma: 'BT3', code: 'khszvm', ten: 'Tạo câu', n: 50 }];
+// BỘ ĐỀ (⛔ khớp js/ktdv-ql.js BO_DE): A = bộ cũ 3 phần (khoá câu BT1:7) · B = bộ lớp 3–4, 6 phần (khoá câu P1:7) — 11/10/2026
+const BO_DE = {
+  A: [{ ma: 'BT1', code: '5576de', ten: 'Tạo cụm số ít', n: 40 }, { ma: 'BT2', code: 'bc52sb', ten: 'Tạo cụm số nhiều', n: 20 }, { ma: 'BT3', code: 'khszvm', ten: 'Tạo câu', n: 50 }],
+  B: [{ ma: 'P1', code: 'x98bsj', ten: 'Chọn từ đúng', n: 30, chon: true, chuan: 4.4 }, { ma: 'P2', code: 'xxdvu5', ten: 'Gõ từ tiếng Anh', n: 30, chuan: 12.6 },
+    { ma: 'P3', code: 'g3wh9q', ten: 'A, an hay không đếm được', n: 30, chon: true, chuan: 3.5 }, { ma: 'P4', code: 'p3xryn', ten: 'Số ít, số nhiều', n: 30, chuan: 9.5 },
+    { ma: 'P5', code: 'zwfvda', ten: 'Tạo câu', n: 20, chuan: 20 }, { ma: 'P6', code: 'ct632d', ten: 'Nghe - hiểu - ghi nhớ', n: 10, chon: true, chuan: 4.4 }]
+};
+const MOI_BAI = BO_DE.A.concat(BO_DE.B);
+// bộ đề của em — giống boCua() trong ktdv-ql.js: phat.bo (thầy đã phát) > boDe > 'A'
+function boCua(h) { return (h && h.phat && BO_DE[h.phat.bo]) ? h.phat.bo : (h && BO_DE[h.boDe]) ? h.boDe : 'A'; }
+function baiCua(h) { return BO_DE[boCua(h)]; }
 
 function goi(url, o) {
   o = o || {};
@@ -91,7 +100,7 @@ async function lietKe(coll) {
   return out;
 }
 async function docKetQua() {
-  const q = { structuredQuery: { from: [{ collectionId: 'results' }], where: { fieldFilter: { field: { fieldPath: 'assignmentId' }, op: 'IN', value: { arrayValue: { values: BAI.map((b) => ({ stringValue: b.code })) } } } } } };
+  const q = { structuredQuery: { from: [{ collectionId: 'results' }], where: { fieldFilter: { field: { fieldPath: 'assignmentId' }, op: 'IN', value: { arrayValue: { values: MOI_BAI.map((b) => ({ stringValue: b.code })) } } } } } };
   const r = await goi(`${BASE}:runQuery`, { method: 'POST', headers: await H(), body: JSON.stringify(q) });
   if (r.s !== 200) throw new Error('RUNQUERY_' + r.s);
   return r.j.filter((x) => x.document).map((x) => Object.assign({ id: x.document.name.split('/').pop() }, docObj(x.document)));
@@ -120,13 +129,13 @@ async function cmdDs() {
   let dem = 0;
   hoso.sort((a, b) => (b.tao || 0) - (a.tao || 0)).forEach((h) => {
     const M = String(h.ma).toUpperCase();
-    const ls = BAI.map((b) => ({ b, k: luot[M + '|' + b.code] })).filter((x) => x.k);
+    const ls = baiCua(h).map((b) => ({ b, k: luot[M + '|' + b.code] })).filter((x) => x.k);
     if (!ls.length) return;
     if (ten && khongDau(h.ten + ' ' + (h.hoTen || '')).indexOf(ten) < 0) return;
     if (ngay && !ls.some((x) => vn(x.k.createdAt) === ngay)) return;
     dem++;
     const b = bcTheo[M];
-    console.log(`• ${h.ten}${h.hoTen ? ' (' + h.hoTen + ')' : ''}  — ID ${h.ma}${h.trangThai === 'da-chuyen' ? '  [đã vào học]' : ''}`);
+    console.log(`• ${h.ten}${h.hoTen ? ' (' + h.hoTen + ')' : ''}  — ID ${h.ma} · bộ ${boCua(h)}${h.trangThai === 'da-chuyen' ? '  [đã vào học]' : ''}`);
     ls.forEach((x) => console.log(`    ${x.b.ma} ${x.b.ten}: ${x.k.score}/${x.k.total}${x.k.doDang ? ' (DỞ DANG)' : ''} · nộp ${vnGio(x.k.createdAt)}`));
     console.log('    báo cáo: ' + (b ? (b.token ? 'đã gửi PH ' + (b.guiLuc ? vnGio(b.guiLuc) : '') : 'đã lưu') : 'chưa mở') + (b && b.claudeLuc ? ' · Claude chấm lại ' + vnGio(b.claudeLuc) : ''));
   });
@@ -139,16 +148,17 @@ async function cmdXuat() {
   const hoso = (await lietKe('ktdvHoSo')).find((h) => String(h.ma).toUpperCase() === M);
   if (!hoso) throw new Error('Không có hồ sơ ID ' + M);
   const [kq, bc] = await Promise.all([docKetQua(), docDoc('ktdvBaoCao/' + M)]);
-  const luot = chonLuot(kq), out = { hs: { ma: hoso.ma, ten: hoso.ten, hoTen: hoso.hoTen || '', truong: hoso.truong || '', lopTruong: hoso.lopTruong || '' }, bai: {}, baoCaoHienTai: bc || null };
-  for (const b of BAI) {
+  const luot = chonLuot(kq), out = { hs: { ma: hoso.ma, ten: hoso.ten, hoTen: hoso.hoTen || '', ngaySinh: hoso.ngaySinh || '', truong: hoso.truong || '', lopTruong: hoso.lopTruong || '', boDe: boCua(hoso) }, bai: {}, baoCaoHienTai: bc || null };
+  for (const b of baiCua(hoso)) {
     const k = luot[M + '|' + b.code];
     if (!k) { out.bai[b.ma] = { ten: b.ten, chuaNop: true }; continue; }
     const a = await docDoc('assignments/' + b.code), items = (a && a.activity && a.activity.content && a.activity.content.items) || [];
     out.bai[b.ma] = {
       ten: b.ten, code: b.code, nopLuc: vnGio(k.createdAt), doDang: !!k.doDang, diemMay: k.score + '/' + k.total,
+      chon: !!b.chon, giayMoiCau: (k.review || []).length ? +((k.review.reduce((s, r) => s + (r.ms || 0), 0) / k.review.length / 1000).toFixed(1)) : null, giayChuan: b.chuan || null,
       cau: (k.review || []).map((r, i) => ({
         k: b.ma + ':' + (i + 1), de: r.question, conViet: r.yourText || '', dapAn: r.correctText, dapAnChapNhan: (items[i] && items[i].acceptedAnswers) || [r.correctText],
-        mayCham: r.yourCorrect ? 'dung' : 'sai', ghiChuHienTai: bc && bc.ghiChu && bc.ghiChu[b.ma + ':' + (i + 1)] || undefined,
+        mayCham: r.yourCorrect ? 'dung' : 'sai', giay: r.ms ? +(r.ms / 1000).toFixed(1) : undefined, hetGio: r.hetGio || undefined, ghiChuHienTai: bc && bc.ghiChu && bc.ghiChu[b.ma + ':' + (i + 1)] || undefined,
         suaHienTai: bc && bc.sua && (b.code + ':' + i) in bc.sua ? bc.sua[b.code + ':' + i] : undefined
       }))
     };
@@ -169,8 +179,8 @@ async function cmdGhi() {
   const cu = (await docDoc('ktdvBaoCao/' + M)) || {};
   const bc = Object.assign({ sua: {}, loai: {}, ghiChu: {}, uuDiem: '', hanChe: '', guiLuc: 0, token: '', ma: hoso.ma, ten: hoso.ten }, cu);
   bc.sua = bc.sua || {}; bc.ghiChu = bc.ghiChu || {};
-  const soCau = {}; BAI.forEach((b) => { soCau[b.ma] = b; });
-  const kiemKhoa = (k) => { const m = /^(BT[123]):(\d+)$/.exec(k); if (!m || +m[2] < 1 || +m[2] > soCau[m[1]].n) throw new Error('khoá câu không hợp lệ: ' + k + ' (dạng BT1:7, số câu 1..n)'); return m; };
+  const soCau = {}; baiCua(hoso).forEach((b) => { soCau[b.ma] = b; });
+  const kiemKhoa = (k) => { const m = /^([A-Z]+\d):(\d+)$/.exec(k); if (!m || !soCau[m[1]] || +m[2] < 1 || +m[2] > soCau[m[1]].n) throw new Error('khoá câu không hợp lệ: ' + k + ' (bộ ' + boCua(hoso) + ': ' + Object.keys(soCau).join('/') + ', dạng ' + Object.keys(soCau)[0] + ':7, số câu 1..n)'); return m; };
   let nGc = 0, nSua = 0;
   Object.keys(inp.ghiChu || {}).forEach((k) => { kiemKhoa(k); bc.ghiChu[k] = String(inp.ghiChu[k]).slice(0, 420); nGc++; });
   Object.keys(inp.sua || {}).forEach((k) => { const m = kiemKhoa(k); bc.sua[soCau[m[1]].code + ':' + (+m[2] - 1)] = !!inp.sua[k]; nSua++; });
@@ -194,12 +204,12 @@ async function cmdCapNhatLink() {
   const s = JSON.parse(cs.json), gc = bc.ghiChu || {}, sua = bc.sua || {};
   s.bai.forEach((b) => {
     if (b.chua || !b.ds) return;
-    const B = BAI.find((x) => x.ma === b.ma);
+    const B = MOI_BAI.find((x) => x.ma === b.ma);
     b.ds.forEach((x) => {
       const sk = B.code + ':' + (x.i - 1);
       if (sk in sua) x.ok = !!sua[sk];
       const key = b.ma + ':' + x.i;
-      x.g = x.ok ? '' : String(key in gc ? gc[key] : goiY(x.y, x.c, x.q)).slice(0, 420);
+      x.g = x.ok ? '' : String(key in gc ? gc[key] : (B.chon ? '' : goiY(x.y, x.c, x.q))).slice(0, 420);   // phần chọn đáp án: không có nháp tự động (giống ktdv-ql.js)
     });
     b.d = b.ds.filter((x) => x.ok).length;
   });

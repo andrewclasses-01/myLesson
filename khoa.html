@@ -1143,8 +1143,8 @@ function hangLop(k){
     '<span class="td-tich">' + (du ? '✓' : '') + '</span></span>';
 }
 
-/* ⭐ 11/10/2026 — THẺ LESSON CHƯƠNG (khóa NỀN TẢNG — Phần A…): mỗi hàng là MỘT BƯỚC (XEM = video hướng dẫn + video
-   mẫu · B1 đọc sách · B2/B3 act AWord · B4 gửi video Zalo) thay cho vùng điểm act. Bước nào xong đọc từ bản tóm tắt mà
+/* ⭐ 11/10/2026 — THẺ LESSON CHƯƠNG (khóa NỀN TẢNG — Phần A…): mỗi hàng là MỘT BƯỚC (B1 đọc sách · B2/B3 act AWord ·
+   B4 video mẫu · B5 quay + gửi Zalo) thay cho vùng điểm act. Bước nào xong đọc từ bản tóm tắt mà
    trang bài ghi trong máy (`awc_khoa_buoc_<id bài>_<mã em>`, bai.html `luuTomTatKhoa`) + điểm AWord thật (act đã giao). */
 function hangBuocChuong(nhan, xong, so, tong, dangLam){
   var pt = xong ? 100 : (tong > 0 ? Math.round(so / tong * 100) : 0);
@@ -1157,11 +1157,8 @@ function hangBuocChuong(nhan, xong, so, tong, dangLam){
 function veDiemChuong(b){
   var g = b.goc || {}, tt = {};
   try { tt = JSON.parse(localStorage.getItem('awc_khoa_buoc_' + g.id + '_' + MA_HS) || '{}') || {}; } catch (e) { tt = {}; }
-  var doan = (g.baiGiang && g.baiGiang.doan) || [], dx = tt.doan || {}, bx = tt.bt || {};
-  var tongXem = (g.huongDan ? 1 : 0) + (doan.length ? 1 : 0);
-  var soXem = (g.huongDan && tt.hd ? 1 : 0) + (doan.length && doan.every(function(d){ return dx[d.id]; }) ? 1 : 0);
+  var bx = tt.bt || {};
   var hang = [];
-  if (tongXem) hang.push(hangBuocChuong('XEM', soXem >= tongXem, soXem, tongXem, soXem > 0));
   (g.bt || []).forEach(function(x, i){
     var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
     var nhan = 'B' + (m ? m[1] : (i + 1));

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-11 10:54:31",
+  "capNhat": "2026-10-11 10:58:32",
   "bai": {
     "A1C": [
       {
@@ -525,6 +525,43 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_9.10_READING_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2B_9.10_READING DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2B_9.10_READING DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "READING",
+        "ngay": "9.10",
+        "han": "2026-10-12T17:45",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-11",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "DS-S5.I1.W1 / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "4cdv4v",
+            "mau": "TRUE OR FALSE"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "DS-S5.I1.W1 / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "nqc7tz",
+            "mau": "FIND THE MATCH"
+          },
+          {
+            "loai": "act",
+            "ten": "READING QUIZ",
+            "act": "DS-S5.I1.W1 / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "dh2hvr",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-11T10:58"
+      },
       {
         "id": "B2B_5.10_WORKSHEET_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2B_5.10_WORKSHEET DS-S5.I1.W1 BONES AND MUSCLES",

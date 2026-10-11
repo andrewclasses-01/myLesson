@@ -2902,6 +2902,10 @@ var daSuoiMa = false;
 function suoiAWord(url){
   try {
     fetch(url).catch(function(){});
+    // ⛔ v1.302.0 (audit 11/10/2026) — làm nóng TỪNG module bằng fetch() CHỈ trên Chromium (cùng nếp AWord play.html Đợt 481):
+    //    WebKit (iPad/iPhone) KHÔNG gộp fetch() với modulepreload/import của khung AWord ⇒ mỗi file JS tải tới 3 lần (~181 KB × 3)
+    //    đúng lúc em bấm READY trên mạng lớp. `navigator.userAgentData` chỉ Chromium có.
+    if (!navigator.userAgentData) return;
     if (daSuoiMa) return;
     daSuoiMa = true;
     fetch(AWORD + '/play.html')

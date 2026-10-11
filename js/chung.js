@@ -775,6 +775,10 @@
      thiếu, bảng kết quả, xét chặng STAGE đều đọc danh sách này. So chuỗi 'YYYY-MM-DD'
      là đủ (cùng khuôn, không cần Date). */
   function ngayGiaoBai(b) {
+    // ⛔ v1.303.0 (audit 11/10/2026) — ƯU TIÊN `giaoLuc` (lúc đẩy LẦN ĐẦU, app giữ nguyên khi đẩy lại — app v2.142.0) rồi mới tới
+    //    `taoLuc` (bị đè bằng NGÀY ĐẨY LẠI mỗi lần sửa bài ⇒ em vào lớp giữa hai lần đẩy bị tính oan vào sĩ số bài).
+    var g = String((b && b.giaoLuc) || '').slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(g)) return g;
     var t = String((b && b.taoLuc) || '').slice(0, 10);
     if (/^\d{4}-\d{2}-\d{2}$/.test(t)) return t;
     var h = String(hanCua(b) || '').slice(0, 10);

@@ -23,6 +23,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execSync } from 'node:child_process';
 import { transform } from 'esbuild';
+import { xuatAnhKho } from './anh-kho-tinh.mjs';   // v1.308.0 — điền ảnh đại diện em mới từ kho lessonAvatar
 
 const GOC = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
 const RA = path.resolve(GOC, process.argv[2] || '_site');
@@ -97,6 +98,9 @@ for (const [p, td] of duyet(GOC)) {
     loi.push(`${td}: ${String(e.message || e).split('\n')[0]}`);
   }
 }
-fs.writeFileSync(path.join(RA, 'build.json'), JSON.stringify({ sha, luc: new Date().toISOString(), thuGon, giuNguyen, boQua, loi, nguon }, null, 0));
+// v1.308.0 — ảnh đại diện em CHƯA có file tĩnh: lấy từ kho `lessonAvatar` ghi thẳng vào bản xuất bản (không commit). Lỗi ⇒ chỉ báo.
+const ak = await xuatAnhKho(RA);
+const anhKho = { ghi: ak.ghi, go: ak.go, loi: ak.loi.length };
+fs.writeFileSync(path.join(RA, 'build.json'), JSON.stringify({ sha, luc: new Date().toISOString(), thuGon, giuNguyen, boQua, loi, anhKho, nguon }, null, 0));
 console.log(`xuat-ban: ${thuGon} file thu gọn (${Math.round(truoc / 1024)} KB → ${Math.round(sau / 1024)} KB), ${giuNguyen} giữ nguyên, ${boQua} bỏ qua, ${loi.length} lỗi → ${RA}`);
 if (loi.length) console.log(' - ' + loi.join('\n - '));

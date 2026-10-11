@@ -10,6 +10,9 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  # v1.308.0 — mỗi giờ dựng lại để ảnh đại diện em mới (kho lessonAvatar ⇒ tools/anh-kho-tinh.mjs) lên file tĩnh dù không có push.
+  schedule:
+    - cron: '17 * * * *'
 
 permissions:
   contents: read

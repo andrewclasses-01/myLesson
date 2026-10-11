@@ -408,9 +408,12 @@
       if (!co) bang.push({ ten: t, sao: t === ctx.ten ? VI.s : 0, toi: t === ctx.ten && !VI.so });
     });
     if (!VI.so && !bang.some(function (d) { return d.toi; })) bang.push({ ten: ctx.ten, sao: 0, toi: true });
-    bang.sort(function (a, b) { return b.sao - a.sao || String(a.ten).localeCompare(String(b.ten), 'vi'); });
-    var hang = 1;
-    for (var i = 0; i < bang.length; i++) if (bang[i].toi) { hang = i + 1; break; }
+    // ⭐ v1.309.0 — HỌC SINH HỌC THỬ: vẫn có sao, nhưng LUÔN cuối bảng, chữ xám, không đánh số hạng.
+    var thuK = {}; (ctx.thuLop || []).forEach(function (t) { thuK[khongDau(t)] = 1; });
+    bang.forEach(function (d) { d.thu = !!thuK[khongDau(d.ten)]; });
+    bang.sort(function (a, b) { return (a.thu - b.thu) || b.sao - a.sao || String(a.ten).localeCompare(String(b.ten), 'vi'); });
+    var hang = '—';
+    for (var i = 0; i < bang.length; i++) if (bang[i].toi) { hang = bang[i].thu ? '—' : i + 1; break; }
 
     than.innerHTML =
       '<div class="vq-tong">' +
@@ -419,7 +422,7 @@
         '<div class="vq-3o">' +
           '<div class="vq-o"><b>' + daKiem + '</b><span>ĐÃ KIẾM</span></div>' +
           '<div class="vq-o"><b>' + daTieu + '</b><span>ĐÃ TIÊU</span></div>' +
-          '<div class="vq-o"><b>#' + hang + '</b><span>HẠNG TRONG LỚP</span></div>' +
+          '<div class="vq-o"><b>' + (hang === '—' ? hang : '#' + hang) + '</b><span>HẠNG TRONG LỚP</span></div>' +
         '</div>' +
       '</div>' +
       '<div class="vq-tab">' +
@@ -472,8 +475,9 @@
 
     function veBangLop() {
       noi.innerHTML = '<div class="vq-the">' + (bang.length ? bang.map(function (d, i) {
-        return '<div class="vq-dong"' + (d.toi ? ' style="background:var(--accent-soft)"' : '') + '>' +
-          '<span class="vq-hang">' + (i + 1) + '</span>' +
+        var st = (d.toi ? 'background:var(--accent-soft);' : '') + (d.thu ? 'opacity:.5;filter:grayscale(1)' : '');
+        return '<div class="vq-dong"' + (st ? ' style="' + st + '"' : '') + (d.thu ? ' title="Học thử"' : '') + '>' +
+          '<span class="vq-hang">' + (d.thu ? '–' : (i + 1)) + '</span>' +
           avNho(ctx, d.ten) +
           '<span class="vq-viec"><b>' + esc(d.ten) + '</b></span>' +
           '<span class="vq-so cong">' + d.sao + ' ★</span>' +

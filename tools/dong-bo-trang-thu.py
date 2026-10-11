@@ -20,7 +20,7 @@ import io, os, shutil, subprocess, sys, tarfile, tempfile
 
 WEB = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 THU = r'E:\LAP TRINH APP\andrewclasses-thu'
-BO = ('data/', 'assets/avatar/', 'tools/')
+BO = ('data/', 'assets/avatar/', 'tools/', '.github/')   # 11/10/2026: .github/workflows (xuat-ban.yml, v1.308.0) — kho thử không chạy xuất bản; token không có quyền workflow ⇒ push bị từ chối
 BO_FILE = ('CNAME', 'README.md', '.gitignore')
 GIU_THU = ('README.md', '.gitignore')
 

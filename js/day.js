@@ -57,7 +57,7 @@
         if (!u) return null;
         return u.getIdTokenResult().then(function (r) {
           var c = r.claims || {}, hs = c.hs === true;
-          return { f: f, u: u, uid: u.uid, hs: hs, thay: !hs && c.thay === true, ma: hs ? String(c.ma || '') : 'GV', lops: hs && c.lops ? String(c.lops).split(',') : [] };
+          return { f: f, u: u, uid: u.uid, hs: hs, thay: !hs && c.thay === true, ma: hs ? String(c.ma || '') : 'GV', lops: hs && c.lops && c.thu !== true ? String(c.lops).split(',') : [] };   // v1.309.0 học thử: không nhận đẩy chat lớp
         });
       });
     });

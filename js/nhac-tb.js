@@ -122,7 +122,7 @@
     return napDl().then(function (dl) {
       var l = (dl.lop || []).concat(dl.khoa || []).filter(function (x) { return x.maLop === maLop; })[0];
       if (!l) return 0;
-      var hs = l.hocSinh || [], laThay = tin.vaiTro === 'gv';
+      var hs = (l.hocSinh || []).filter(function (h) { return !h.thu; }), laThay = tin.vaiTro === 'gv';   // v1.309.0 học thử không ở chat lớp
       var ten = timTen(tin.chu, hs.map(function (h) { return h.ten; }).concat([TEN_THAY]));
       if (!ten.length) return 0;
       var uids = [];

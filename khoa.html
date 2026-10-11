@@ -717,7 +717,7 @@ body.mo-menu .side.trai{transform:none}
 <link rel="stylesheet" href="css/gioi-thieu.css?v=2">   <!-- v1.286.0 phim giới thiệu khóa mới + thẻ GIỚI THIỆU -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400&display=swap&subset=vietnamese">   <!-- v1.287.0 chữ "KHÓA HỌC ĐANG ĐƯỢC CHUẨN BỊ…" -->
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
-<script src="js/day.js?v=5"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
+<script src="js/day.js?v=6"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
 <body>
 
@@ -791,18 +791,18 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=257"></script>
+<script src="config.js?v=258"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=88"></script>
+<script src="js/chung.js?v=89"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <script src="js/gioi-thieu.js?v=2"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
 <script src="js/chat.js?v=36"></script>
-<script src="js/nhac-tb.js?v=1"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
+<script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
-<script src="js/vi-qua.js?v=7"></script>
+<script src="js/vi-qua.js?v=8"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
 function chuAnToan(x){ return window.AWC.chuAnToan(x); }
@@ -843,6 +843,7 @@ var KHOA = null;         /* bản ghi khóa học ({maLop,tenGoc,hocSinh,loai:'k
 var CA_LOP = [];         /* tên cả khóa (những em cùng theo khóa này) */
 var LOP_OBJ = null;      /* v1.136.0 — đối tượng khóa (cần cho `A.emKhongTinh`) */
 var SI_SO = 0;
+var CA_TINH = [];        /* v1.309.0 — tên em ĐANG TÍNH (bỏ học sinh học thử) — x/N, sĩ số */
 var DIEM = {}, CHUAN = {};   /* mã act -> danh sách điểm / chuẩn đủ điểm */
 var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
 var BAI_CU = [];         /* thẻ dưới vạch */
@@ -1130,8 +1131,8 @@ function hangEm(k){
 function hangLop(k){
   if (k.loai === 'sach') return hangSach(k);
   var ds = DIEM[k.ma] || [], chuan = CHUAN[k.ma], n = 0;
-  for (var i = 0; i < CA_LOP.length; i++) {
-    if (A.xongAct(ds, CA_LOP[i], chuan)) n++;
+  for (var i = 0; i < CA_TINH.length; i++) {
+    if (A.xongAct(ds, CA_TINH[i], chuan)) n++;
   }
   var pt = SI_SO > 0 ? Math.round(n / SI_SO * 100) : 0;
   var du = SI_SO > 0 && n >= SI_SO;
@@ -1598,7 +1599,9 @@ A.napDuLieu().then(function(dl){
   LOP_SLUG = avSlugLop(LOP);
   LOP_OBJ = l;
   CA_LOP = A.caLopDayDu(l);
-  SI_SO = CA_LOP.length;
+  // ⭐ v1.309.0 — học sinh học thử không vào sĩ số / x/N (vẫn ở CA_LOP để hiện xám cuối bảng xếp hạng)
+  CA_TINH = (l.hocSinh || []).filter(function(h){ return !h.thu; }).map(function(h){ return h.ten; });
+  SI_SO = CA_TINH.length;
   A.batAvatarKho(LOP, l.hocSinh || [], l.hsDb || []);
 
   dienDanhTinh();
@@ -1621,7 +1624,9 @@ A.napDuLieu().then(function(dl){
     });
   } else if (window.GioiThieu) GioiThieu.khongApDung(LOP_DL);   // khóa cũ (K9…) ⇒ lần sau khỏi che màn chờ
 
-  var ds = A.baiCuaLop(dl, LOP_DL).map(theTuBai);
+  var ds = A.baiCuaLop(dl, LOP_DL)
+    .filter(function(b){ return !EM.thu || A.theChoHocThu(b, EM.vao); })   // v1.309.0 học thử: thẻ từ ngày vào
+    .map(theTuBai);
   BAI_MOI = null;
   for (var i = 0; i < ds.length; i++) {
     if (ds[i].conHan) { BAI_MOI = ds[i]; break; }
@@ -1642,7 +1647,9 @@ A.napDuLieu().then(function(dl){
     dangDocDiem = false;
     dungCot();
     choTruoc = chupCho();
-    noiChat();
+    // v1.309.0 — học sinh học thử: không có ô chat lớp/khóa
+    if (EM.thu) { var chatCot = document.querySelector('.chat-cot'); if (chatCot) chatCot.hidden = true; }
+    else noiChat();
   });
 })['catch'](function(e){
   dangDocDiem = false;
@@ -1654,7 +1661,7 @@ A.napDuLieu().then(function(dl){
 var veMenuChinh = AWVi.dungMenu({
   hop: $('#dsMenu'),
   layCtx: function(){
-    return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, baoToast: baoToast };
+    return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, thuLop: A.tenHocThu(LOP_OBJ), baoToast: baoToast };
   }
 });
 function dongHet(){ document.body.classList.remove('mo-menu'); }
@@ -1692,7 +1699,7 @@ var UI_CHAT = ChatUI.tao({
     return veAv(String(t.ten || '?'), soMauAv(t.ten));
   },
   nhan: function(t){ return t.vaiTro === 'gv' ? '<span class="cu-nhan">THẦY</span>' : ''; },
-  dsNhac: function(){ return CA_LOP.concat(['Thầy Andrew']); },
+  dsNhac: function(){ return CA_TINH.concat(['Thầy Andrew']); },   // v1.309.0 bỏ em học thử (không ở chat)
   gui: function(g){
     if (KHAN_CAP_CHAT) return Promise.reject(Object.assign(new Error('khoa'), { code: 'awc/chat-khoa' }));
     if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' }));   // v1.216.0
@@ -1842,7 +1849,7 @@ function baoToast(chu){
 setInterval(nhipDongHo, 1000);
 </script>
 <script src="js/tn-pop.js?v=12"></script>
-<script src="js/tn-pop-ds.js?v=7"></script>
+<script src="js/tn-pop-ds.js?v=8"></script>
 <script src="js/tn-khung.js?v=1"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=32"></script>
 </body>

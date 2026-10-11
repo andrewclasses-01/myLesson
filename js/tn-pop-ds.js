@@ -64,7 +64,9 @@
           var c = r.claims || {};
           var laThay = c.thay === true || (window.NW && NW.toi && NW.toi.uid === u.uid && NW.toi.laThay);
           var lops = c.lops ? String(c.lops).split(',').filter(Boolean) : ((window.NW && NW.toi && NW.toi.cacLop) || []);
-          return { f: f, u: u, uid: u.uid, laThay: !!laThay, ma: laThay ? 'GV' : String(c.ma || ''), lops: lops };
+          // v1.309.0 — HỌC SINH HỌC THỬ (claim thu): không có nhóm lớp, chỉ cuộc với thầy
+          var thu = !laThay && c.thu === true;
+          return { f: f, u: u, uid: u.uid, laThay: !!laThay, ma: laThay ? 'GV' : String(c.ma || ''), lops: thu ? [] : lops, thu: thu };
         });
       });
     });
@@ -222,7 +224,7 @@
     return it;
   }
   function loc(me, ds) {   // luật y trang Tin nhắn: cuộc em đã xoá giấu tới khi có tin mới; HS chưa bật chat riêng chỉ có cuộc với thầy
-    var choRieng = !!(me.laThay || (window.NW && NW.CFG && NW.CFG.BAT_CHAT_RIENG));
+    var choRieng = !!(me.laThay || (!me.thu && window.NW && NW.CFG && NW.CFG.BAT_CHAT_RIENG));
     return ds.filter(function (p) {
       if (((p.anLuc || {})[me.uid] || 0) >= (p.capNhat || 0)) return false;
       if (p.loai !== 'nhom' && !p.tinCuoi) return false;   // 03/10: phòng riêng chưa có tin nào — không hiện

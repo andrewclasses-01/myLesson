@@ -878,6 +878,7 @@ function ngayCuaISO(s){
    sau dấu ':' đầu tiên. Chưa có `baiGiang.tieuDe` thì lùi về tên dạng bài
    chung (`A.tenBai`) để KHÔNG BAO GIỜ hiện trống trơn. */
 function tenBaiGiang(b){
+  if (b.kieu === 'CHUONG' && b.noiDung) return String(b.noiDung).trim();   // 11/10/2026 — lesson CHƯƠNG: tên chương
   var bg = b.baiGiang || {};
   var t = String(bg.tieuDe || '').trim();
   if (!t) return A.tenBai(b);
@@ -1142,7 +1143,45 @@ function hangLop(k){
     '<span class="td-tich">' + (du ? '✓' : '') + '</span></span>';
 }
 
+/* ⭐ 11/10/2026 — THẺ LESSON CHƯƠNG (khóa NỀN TẢNG — Phần A…): mỗi hàng là MỘT BƯỚC (XEM = video hướng dẫn + video
+   mẫu · B1 đọc sách · B2/B3 act AWord · B4 gửi video Zalo) thay cho vùng điểm act. Bước nào xong đọc từ bản tóm tắt mà
+   trang bài ghi trong máy (`awc_khoa_buoc_<id bài>_<mã em>`, bai.html `luuTomTatKhoa`) + điểm AWord thật (act đã giao). */
+function hangBuocChuong(nhan, xong, so, tong, dangLam){
+  var pt = xong ? 100 : (tong > 0 ? Math.round(so / tong * 100) : 0);
+  return '<span class="td-dong">' +
+    '<span class="td-ten">' + A.chuAnToan(nhan) + '</span>' +
+    '<span class="td-bar"><i class="' + mauTheoPhanTram(pt, xong) + '" style="width:' + pt + '%"></i></span>' +
+    '<span class="td-so' + (xong ? ' m-la' : (dangLam ? '' : ' em-chua')) + '">' + (xong ? 'Xong' : (tong > 0 ? (so + '/' + tong) : '—')) + '</span>' +
+    '<span class="td-tich">' + (xong ? '✓' : '') + '</span></span>';
+}
+function veDiemChuong(b){
+  var g = b.goc || {}, tt = {};
+  try { tt = JSON.parse(localStorage.getItem('awc_khoa_buoc_' + g.id + '_' + MA_HS) || '{}') || {}; } catch (e) { tt = {}; }
+  var doan = (g.baiGiang && g.baiGiang.doan) || [], dx = tt.doan || {}, bx = tt.bt || {};
+  var tongXem = (g.huongDan ? 1 : 0) + (doan.length ? 1 : 0);
+  var soXem = (g.huongDan && tt.hd ? 1 : 0) + (doan.length && doan.every(function(d){ return dx[d.id]; }) ? 1 : 0);
+  var hang = [];
+  if (tongXem) hang.push(hangBuocChuong('XEM', soXem >= tongXem, soXem, tongXem, soXem > 0));
+  (g.bt || []).forEach(function(x, i){
+    var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
+    var nhan = 'B' + (m ? m[1] : (i + 1));
+    var xong = !!bx[x.id];
+    if (!xong && x.ma && (x.loai === 'acts' || x.loai === 'act')) {
+      var ds = DIEM[x.ma] || [], chuan = CHUAN[x.ma];
+      xong = A.xongAct(ds, TOI, chuan);
+      var toi = null, k = A.khoaTen(TOI);
+      for (var j = 0; j < ds.length; j++) if (A.khoaTen(ds[j].ten) === k) { toi = ds[j]; break; }
+      var tho = toi && toi.tho ? toi.tho : null;
+      var tong = (tho && tho.tong > 0) ? tho.tong : mauSoDe(chuan);
+      if (!xong) { hang.push(hangBuocChuong(nhan, false, tho ? tho.diem : 0, tong, !!tho)); return; }
+    }
+    hang.push(hangBuocChuong(nhan, xong, 0, 0, false));
+  });
+  return '<span class="the-diem"><span class="diem-rows"><span class="hang-grp hang-grp-em">' + hang.join('') + '</span></span></span>';
+}
+
 function veDiem(b){
+  if (b.goc && b.goc.kieu === 'CHUONG') return veDiemChuong(b);   // 11/10/2026
   var khoi = b.khoi || [];
   if (!khoi.length) {
     return '<span class="the-diem chi-tay"><span class="xem-chu">Bài giao trên giấy — chưa có bài tập online nào.</span></span>';

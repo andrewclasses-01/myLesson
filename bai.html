@@ -2007,6 +2007,35 @@ body.mo-menu .side.trai{transform:none}
   background:var(--ground); border:1px dashed var(--line); color:var(--muted); font-weight:700; font-size:13px}
 .cho-giao svg{width:20px; height:20px; flex:none; stroke:currentColor; stroke-width:2.2; fill:none;
   stroke-linecap:round; stroke-linejoin:round}
+
+/* ---------- ⭐ 11/10/2026 — LESSON CHƯƠNG (khóa NỀN TẢNG, Phần A…): chuẩn bị · video hướng dẫn · đọc sách · gửi Zalo ---------- */
+.step.chuanbi{background:#FCF3E2; color:#9A5B00}
+.step.hd{background:#E3F1EE; color:var(--accent)}
+.step.hd svg,.step.chuanbi svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.cb-luoi{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+.cb-o{display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--line); border-radius:14px; background:#fff}
+.cb-o .cb-ic{width:52px; height:52px; border-radius:12px; display:grid; place-items:center; flex:none}
+.cb-o .cb-ic svg{width:26px; height:26px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.cb-o b{display:block; font-size:14px}
+.cb-o small{display:block; color:var(--muted); font-size:12.5px; line-height:1.4; margin-top:2px}
+.hd-khung{position:relative; width:100%; aspect-ratio:16/9; border-radius:14px; overflow:hidden; background:#1b2427}
+.hd-khung iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.hd-xem{display:flex; align-items:center; gap:10px; margin-top:10px; font-size:13px; font-weight:700; color:var(--muted)}
+.hd-xem .hd-bar{flex:1; height:8px; border-radius:9px; background:var(--line); overflow:hidden}
+.hd-xem .hd-bar i{display:block; height:100%; width:0; background:#F2A93B; transition:width .4s}
+.hd-xem.xong .hd-bar i{background:var(--accent)}
+.hd-xem.xong{color:var(--accent)}
+.buoc-than{display:grid; gap:12px}
+.buoc-chu{font-size:14px; line-height:1.55; color:var(--ink)}
+.buoc-chu b{color:var(--accent)}
+.nut-buoc{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:12px; padding:11px 18px;
+  font:800 14px var(--sans); cursor:pointer; background:var(--accent); color:#fff; text-decoration:none}
+.nut-buoc.phu{background:#fff; color:var(--accent); border:1.5px solid var(--accent)}
+.nut-buoc.zalo{background:#0068FF}
+.nut-buoc[disabled]{opacity:.55; cursor:default}
+.nut-hang{display:flex; flex-wrap:wrap; gap:8px}
+.luu-y{font-size:12.5px; color:#7A4A00; background:#FCF3E2; border-radius:10px; padding:9px 12px; line-height:1.5}
+@media (max-width:640px){ .cb-luoi{grid-template-columns:minmax(0,1fr)} }
 </style>
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 <script src="js/day.js?v=5"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
@@ -2253,6 +2282,12 @@ var LA_KHOA = false;
 var TT_KHOA = null;
 var DOAN_XONG = {};
 var YT_PLAYER = null;
+/* ⭐ 11/10/2026 — LESSON CHƯƠNG: `HD_KHOA` = tiến độ VIDEO HƯỚNG DẪN (myDocument, nhúng iframe) — các khúc giây đã xem
+   THẬT `khuc:[[a,b],…]` + tổng `tong` (video tự báo). `BT_TAY` = bài tập "tự đánh dấu xong" (loại `sach`: Con đã đọc xong ·
+   loại `zalo`: Đã gửi video) `{[id bt]: mốc ms}`. Cả hai nhớ localStorage theo máy (đồng bộ nhiều máy: cần thêm trường vào
+   luật lessonVideoTienDo khi đưa lên thật — xem GHI CHU). */
+var HD_KHOA = { khuc: [], tong: 0 };
+var BT_TAY = {};
 // ⭐⭐ 12/09/2026 (vá bug thật thầy báo) — `LA_KHOA` chỉ biết khi ĐÃ có `BAI`
 // (đọc được từ `?id=`). Nút "Về trang chính của lớp" (`#nutVe`) và mọi đường lùi
 // `veTrangLop()` còn chạy TRƯỚC/KHÔNG CÓ `BAI` (vd `id` sai, bài đang tạm khoá,
@@ -4824,6 +4859,7 @@ function chuoiGioDoanKhoa(giay){
 // Em này đã đạt điểm tối đa của act `x.ma` chưa — dùng LẠI đúng `DIEM`/`CHUAN`
 // mà `boot` đã đọc cho mọi act trong `KHOI` (không đọc thêm gì).
 function btXongKhoa(x){
+  if (x && (x.loai === 'sach' || x.loai === 'zalo')) return !!BT_TAY[x.id];   // 11/10/2026 — tự đánh dấu xong
   if (!x || !x.ma) return false;
   return A.xongAct(DIEM[x.ma] || [], TOI, CHUAN[x.ma]);
 }
@@ -4881,7 +4917,8 @@ function tinhDuongDiKhoa(){
   doan.forEach(function(d){ coDoan[d.id] = d; });
   bt.forEach(function(x){ coBt[x.id] = x; });
   var moD = {}, moB = {}, xongD = {}, xongB = {};
-  if (doan.length) moD[doan[0].id] = true;
+  // ⭐ 11/10/2026 — bài có VIDEO HƯỚNG DẪN (myDocument): phải xem hết hướng dẫn thì Đoạn 1 mới mở.
+  if (doan.length && daXongHdKhoa()) moD[doan[0].id] = true;
 
   function apDich(dich){
     if (!dich || dich.lam !== 'moNhay') return;
@@ -4913,6 +4950,7 @@ function lyDoChuaMoDoanKhoa(id, TT){
   var bg = BAI.baiGiang || {};
   var doan = bg.doan || [], bt = BAI.bt || [];
   var ly = null;
+  if (doan.length && doan[0].id === id && !daXongHdKhoa()) return 'Cần xem hết video hướng dẫn trước';
   doan.forEach(function(d){
     if (ly || d.lam !== 'moNhay' || (d.doanMo || []).indexOf(id) === -1) return;
     if (!TT.xongD[d.id]) ly = 'Cần xem phần ' + (d.ten || 'đoạn trước') + ' trước';
@@ -4929,6 +4967,8 @@ function lyDoChuaMoDoanKhoa(id, TT){
 // lên nhãn ngắn phía trên rồi, khỏi lặp lại trong tên).
 function tenThatBtKhoa(x){
   var t = String(x.tieuDe || x.actTen || '').trim();
+  var mb = /^B[UƯ]ỚC\s*\d{1,2}\s*[·:.\-–]\s*(.+)$/i.exec(t);   // 11/10/2026 — "BƯỚC 2 · TỰ LUYỆN TẬP" ⇒ "TỰ LUYỆN TẬP"
+  if (mb) return mb[1];
   var m = /^BT\d+\.\s*(.+)$/i.exec(t);
   if (m) return m[1];
   var m2 = /^TRAC\s*NGHIEM[^-]*-\s*(.+)$/i.exec(t);
@@ -5865,7 +5905,7 @@ function veTheXongKhoa(x, so){
   // ⭐ v1.107.0 (thầy chốt 15/09) — bấm thẻ xanh: KHÔNG mở pop-up nữa, thay bằng
   // "đẩy ra" khung act thật (READY + leaderboard) NGAY TẠI CHỖ, thẻ xanh biến
   // mất luôn (thay thế trong DOM, không phải lớp phủ) — xem `moRongTheXongKhoa`.
-  sec.onclick = function(){ moRongTheXongKhoa(x, so, sec); };
+  if (x.ma) sec.onclick = function(){ moRongTheXongKhoa(x, so, sec); };   // 11/10/2026 — sách/zalo không có khung act
   return sec;
 }
 
@@ -5882,6 +5922,7 @@ function moRongTheXongKhoa(x, so, theCu){
 }
 
 function veTheSachKhoa(x, so){
+  if (BAI && BAI.kieu === 'CHUONG') return veTheDocSachKhoa(x, so);   // 11/10/2026
   var sec = document.createElement('section');
   sec.className = 'card';
   sec.setAttribute('data-btid', x.id);
@@ -5893,6 +5934,167 @@ function veTheSachKhoa(x, so){
     'Làm nội dung trong sách' + (x.trang ? (' trang ' + chuAnToan(x.trang)) : '') +
     ' rồi mang lên lớp / Zalo cho thầy chữa nhé.</div></div>';
   return sec;
+}
+
+/* ⭐ 11/10/2026 — LESSON CHƯƠNG: thẻ ĐỌC SÁCH (Bước 1) + thẻ GỬI VIDEO ZALO (Bước 4) — tự đánh dấu xong. */
+function khoaBtTayKho(){ return 'awc_khoa_tay_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
+function napBtTayKhoa(){
+  BT_TAY = {};
+  try { var o = JSON.parse(localStorage.getItem(khoaBtTayKho()) || '{}'); if (o && typeof o === 'object' && !Array.isArray(o)) BT_TAY = o; } catch (e) {}
+}
+function danhDauBtTayKhoa(x){
+  BT_TAY[x.id] = A.gioNay();
+  try { localStorage.setItem(khoaBtTayKho(), JSON.stringify(BT_TAY)); } catch (e) {}
+  capNhatSauKhiDoiKhoa();
+  var moi = document.querySelector('.card[data-btid="' + String(x.id).replace(/[^A-Za-z0-9_-]/g, '') + '"]');
+  if (moi) { moi.scrollIntoView({ behavior: 'smooth', block: 'center' }); nhayTheKhoa(moi); }
+}
+var IC_SACH_KHOA = '<svg viewBox="0 0 24 24"><path d="M4 4.5h6a3 3 0 0 1 3 3v12a2.5 2.5 0 0 0-2.5-2.5H4zM20 4.5h-6a3 3 0 0 0-3 3v12a2.5 2.5 0 0 1 2.5-2.5H20z"/></svg>';
+function dauTheBuocKhoa(x, so, lopStep, ic){
+  return '<div class="card-head"><span class="step ' + lopStep + '">' + (ic || so) + '</span>' +
+    '<div class="ch-chu"><h2>' + chuAnToan(NHAN_BT_KHOA[x.id] || ('BƯỚC ' + so)) + '</h2>' +
+    '<div class="ch-ma">' + chuAnToan(tenThatBtKhoa(x)) + '</div></div></div>';
+}
+function veTheDocSachKhoa(x, so){
+  var sec = document.createElement('section');
+  sec.className = 'card';
+  sec.setAttribute('data-btid', x.id);
+  sec.innerHTML = dauTheBuocKhoa(x, so, 'sach') +
+    '<div class="buoc-than">' +
+      '<div class="sach-info">' + IC_SACH_KHOA + 'Đọc kỹ sách NỀN TẢNG TIẾNG ANH' + (x.trang ? (' từ trang ' + chuAnToan(x.trang)) : '') + '</div>' +
+      '<div class="buoc-chu">Em đọc chậm, đọc kỹ nhé — bước sau thầy hỏi <b>đúng những gì có trong mấy trang này</b> đấy. Đọc xong thì bấm nút bên dưới.</div>' +
+      '<div class="nut-hang"><button type="button" class="nut-buoc" data-xong>✓ Con đã đọc xong</button></div>' +
+    '</div>';
+  sec.querySelector('[data-xong]').onclick = function(){ danhDauBtTayKhoa(x); };
+  return sec;
+}
+function veTheZaloKhoa(x, so){
+  var sec = document.createElement('section');
+  sec.className = 'card';
+  sec.setAttribute('data-btid', x.id);
+  var tenLop = LOP || 'lớp';
+  sec.innerHTML = dauTheBuocKhoa(x, so, 'video', '<svg viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>') +
+    '<div class="buoc-than">' +
+      '<div class="buoc-chu">Làm <b>giống Bước 3</b>, nhưng lần này phụ huynh dùng một điện thoại khác <b>quay video</b> lại lúc con trả lời các câu hỏi — theo đúng video bài làm mẫu ở trên. Quay xong, phụ huynh <b>gửi video lên nhóm Zalo ' + chuAnToan(tenLop) + '</b> rồi bấm "Đã gửi video".</div>' +
+      '<div class="luu-y">Lưu ý: quay ở <b>độ phân giải thấp</b> cho video nhẹ, dễ gửi. Video dài thì có thể <b>cắt thành nhiều đoạn</b> khi gửi.</div>' +
+      '<div class="nut-hang">' +
+        (BAI.zalo ? '<a class="nut-buoc zalo" href="' + chuAnToan(BAI.zalo) + '" target="_blank" rel="noopener">Mở nhóm Zalo của lớp</a>' : '') +
+        '<button type="button" class="nut-buoc' + (BAI.zalo ? ' phu' : '') + '" data-xong>✓ Đã gửi video</button>' +
+      '</div>' +
+    '</div>';
+  sec.querySelector('[data-xong]').onclick = function(){
+    if (!confirm('Phụ huynh đã gửi video thu hoạch lên nhóm Zalo của lớp rồi phải không?')) return;
+    danhDauBtTayKhoa(x);
+  };
+  return sec;
+}
+
+/* ⭐ 11/10/2026 — KHỐI CHUẨN BỊ + VIDEO HƯỚNG DẪN (myDocument) của lesson CHƯƠNG. */
+function veTheChuanBiKhoa(){
+  var sach = (BAI.bt || []).filter(function(x){ return x.loai === 'sach'; })[0];
+  var sec = document.createElement('section');
+  sec.className = 'card';
+  sec.id = 'theChuanBiKhoa';
+  sec.innerHTML =
+    '<div class="card-head"><span class="step chuanbi"><svg viewBox="0 0 24 24"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"/></svg></span>' +
+      '<div class="ch-chu"><h2>CÁC MỤC CẦN CHUẨN BỊ</h2><div class="ch-ma">Phụ huynh chuẩn bị giúp con trước khi bắt đầu nhé</div></div></div>' +
+    '<div class="cb-luoi">' +
+      '<div class="cb-o"><span class="cb-ic" style="background:#FFF4D6;color:#B0532A">' + IC_SACH_KHOA + '</span><div><b>Sách NỀN TẢNG TIẾNG ANH</b>' +
+        '<small>' + (sach && sach.trang ? ('Chương này nằm ở trang ' + chuAnToan(sach.trang)) : 'Sách của khóa học') + '</small></div></div>' +
+      '<div class="cb-o"><span class="cb-ic" style="background:#E3F1EE;color:#0E7C6E"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg></span><div><b>Điện thoại / máy tính bảng</b>' +
+        '<small>Đã đăng nhập andrewclasses.com bằng tài khoản của con — mọi bài tập nằm ngay trên trang này</small></div></div>' +
+    '</div>';
+  return sec;
+}
+function docGocKhoa(){
+  return String((A.CFG && A.CFG.DOC_GOC) || 'https://document.andrewclasses.com/').replace(/\/?$/, '/');
+}
+function khoaHdKho(){ return 'awc_khoa_hd_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
+function napHdKhoa(){
+  HD_KHOA = { khuc: [], tong: 0 };
+  try {
+    var o = JSON.parse(localStorage.getItem(khoaHdKho()) || 'null');
+    if (o && Array.isArray(o.khuc)) HD_KHOA = { khuc: o.khuc, tong: +o.tong || 0 };
+  } catch (e) {}
+  if (!HD_KHOA.tong && BAI.huongDan && BAI.huongDan.giay) HD_KHOA.tong = +BAI.huongDan.giay || 0;
+}
+function luuHdKhoa(){ try { localStorage.setItem(khoaHdKho(), JSON.stringify(HD_KHOA)); } catch (e) {} }
+function congKhucHdKhoa(a, b){
+  if (!(b > a)) return;
+  var ds = HD_KHOA.khuc.slice(); ds.push([a, b]);
+  ds.sort(function(x, y){ return x[0] - y[0]; });
+  var gop = [];
+  ds.forEach(function(r){
+    if (gop.length && r[0] <= gop[gop.length - 1][1] + 0.05) gop[gop.length - 1][1] = Math.max(gop[gop.length - 1][1], r[1]);
+    else gop.push(r.slice());
+  });
+  HD_KHOA.khuc = gop;
+}
+function tyLeHdKhoa(){
+  if (!HD_KHOA.tong) return 0;
+  var tong = 0;
+  HD_KHOA.khuc.forEach(function(r){ var s = Math.max(0, r[0]), e = Math.min(HD_KHOA.tong, r[1]); if (e > s) tong += e - s; });
+  return Math.min(1, tong / HD_KHOA.tong);
+}
+// Không có video hướng dẫn ⇒ coi như đã xong (bài khóa học cũ chạy y như trước).
+function daXongHdKhoa(){ return !(BAI && BAI.huongDan && BAI.huongDan.doc) || tyLeHdKhoa() >= NGUONG_XONG_DOAN_KHOA; }
+function veTheHuongDanKhoa(){
+  var hd = BAI.huongDan;
+  var sec = document.createElement('section');
+  sec.className = 'card';
+  sec.id = 'theHuongDanKhoa';
+  var src = docGocKhoa() + String(hd.doc).replace(/^\/+|\/+$/g, '') + '/?nhung=1';
+  sec.innerHTML =
+    '<div class="card-head"><span class="step hd"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M10 8.5v7l6-3.5z"/></svg></span>' +
+      '<div class="ch-chu"><h2>' + chuAnToan(hd.tieuDe || 'VIDEO HƯỚNG DẪN') + '</h2>' +
+      '<div class="ch-ma">Phụ huynh xem hết video để hình dung nhiệm vụ của con — xem hết mới mở các phần sau</div></div></div>' +
+    '<div class="hd-khung"><iframe src="' + chuAnToan(src) + '" allow="fullscreen" allowfullscreen title="Video hướng dẫn"></iframe></div>' +
+    '<div class="hd-xem" id="hdXemKhoa"><span>Đã xem</span><span class="hd-bar"><i></i></span><b>0%</b></div>';
+  return sec;
+}
+function veTienDoHdKhoa(){
+  var o = $('#hdXemKhoa');
+  if (!o) return;
+  var pt = Math.round(tyLeHdKhoa() * 100), xong = daXongHdKhoa();
+  o.classList.toggle('xong', xong);
+  o.querySelector('i').style.width = (xong ? 100 : pt) + '%';
+  o.querySelector('b').textContent = xong ? '✓ Đã xem hết' : (pt + '%');
+}
+// Nhịp "progress" (mỗi giây) / "ended" từ khung myDocument: cộng khúc giây đã xem THẬT (không phải tua),
+// cùng luật trần tốc độ 1.5x của bài giảng YouTube.
+var HD_T_TRUOC = null, HD_LUC_TRUOC = 0;
+window.addEventListener('message', function(e){
+  if (!LA_KHOA || !BAI || !BAI.huongDan) return;
+  var d = e.data;
+  if (!d || d.nguon !== 'myDocument' || e.origin !== docGocKhoa().replace(/\/$/, '')) return;
+  var daXongTruoc = daXongHdKhoa();
+  if ((d.su_kien === 'ready' || d.su_kien === 'progress') && +d.tong > 0) HD_KHOA.tong = +d.tong;
+  if (d.su_kien === 'progress' && isFinite(d.t)) {
+    var luc = Date.now(), t = +d.t;
+    if (HD_T_TRUOC != null) {
+      var delta = t - HD_T_TRUOC, that = (luc - HD_LUC_TRUOC) / 1000;
+      if (delta > 0 && delta < 2.5 && delta <= that * TOC_DO_MAX_KHOA * 1.25 + 0.3) congKhucHdKhoa(HD_T_TRUOC, t);
+    }
+    HD_T_TRUOC = t; HD_LUC_TRUOC = luc;
+    luuHdKhoa();
+  } else if (d.su_kien === 'seek' || d.su_kien === 'pause' || d.su_kien === 'play') {
+    HD_T_TRUOC = (d.su_kien === 'pause') ? null : (isFinite(d.t) ? +d.t : null);
+    HD_LUC_TRUOC = Date.now();
+  } else if (d.su_kien === 'ended') {
+    HD_T_TRUOC = null;
+  }
+  veTienDoHdKhoa();
+  if (daXongHdKhoa() !== daXongTruoc) {
+    capNhatSauKhiDoiKhoa();
+    var bg = $('#theBaiGiangKhoa');
+    if (bg) { baoToast('Đã xem hết video hướng dẫn — giờ xem tiếp video bài làm mẫu nhé!'); bg.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+  }
+});
+// Tóm tắt các bước đã xong của em ở bài này ⇒ trang khóa (khoa.html) vẽ thẻ lesson CHƯƠNG theo bước.
+function luuTomTatKhoa(){
+  if (!BAI || BAI.kieu !== 'CHUONG' || !TT_KHOA) return;
+  var o = { hd: daXongHdKhoa(), doan: TT_KHOA.xongD, bt: TT_KHOA.xongB, luc: Date.now() };
+  try { localStorage.setItem('awc_khoa_buoc_' + BAI.id + '_' + (MA_HS || ''), JSON.stringify(o)); } catch (e) {}
 }
 
 function veTheChoGiaoKhoa(x, so){
@@ -5915,6 +6117,7 @@ function dungTheBtKhoa(x, so, TT){
   if (TT.xongB[x.id]) return veTheXongKhoa(x, so);   // v1.106.0 — xong thì thẻ xanh, không ẩn
   if (!TT.moB[x.id]) return veTheChoKhoa(x, so);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
+  if (x.loai === 'zalo') return veTheZaloKhoa(x, so);   // 11/10/2026
   if (!x.ma) return veTheChoGiaoKhoa(x, so);
   return dungTheActKhoa(x, so);
 }
@@ -6088,8 +6291,10 @@ function chuKhongDauKhoa(s){
     .replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase();
 }
 function loaiNhanBtKhoa(x){
-  if (x.loai === 'sach') return { k: 'sach' };
   var t = chuKhongDauKhoa(x.tieuDe || x.actTen);
+  var mb = /^\s*BUOC\s*(\d{1,2})\b/.exec(t);          // 11/10/2026 — lesson CHƯƠNG: "BƯỚC n · …"
+  if (mb) return { k: 'buoc', so: +mb[1] };
+  if (x.loai === 'sach') return { k: 'sach' };
   var m = /^\s*BT\s*(\d{1,3})\b/.exec(t);
   if (m) return { k: 'bt', so: +m[1] };
   if (/TRAC\s+NGHIEM/.test(t)) return { k: 'tn' };
@@ -6097,6 +6302,7 @@ function loaiNhanBtKhoa(x){
 }
 function nhanBtKhoa(x, demBt){
   var l = loaiNhanBtKhoa(x);
+  if (l.k === 'buoc') return 'BƯỚC ' + l.so;
   if (l.k === 'sach') return 'BT SÁCH' + (x.trang ? ' ' + x.trang : '');
   if (l.k === 'tn') return 'TN BÀI GIẢNG';
   return 'BÀI TẬP ' + (l.k === 'bt' ? l.so : demBt);
@@ -6223,6 +6429,8 @@ function capNhatSauKhiDoiKhoa(){
   });
   canhLb();
   canhTenTheKhoaDT();   // v1.109.0 — thẻ vừa thay thì đo lại cỡ tên (điện thoại)
+  veTienDoHdKhoa();     // 11/10/2026 — lesson CHƯƠNG
+  luuTomTatKhoa();
 }
 
 // Chế độ "tập trung" (đèn 💡): phóng cả thẻ BÀI GIẢNG ra giữa màn hình, làm
@@ -6340,10 +6548,14 @@ function ganNutKhoa(){
 
 function veCacPhanKhoa(hop){
   var bg = BAI.baiGiang || {};
+  napHdKhoa();          // 11/10/2026 — lesson CHƯƠNG: tiến độ video hướng dẫn + bước tự đánh dấu (máy này)
+  napBtTayKhoa();
   TT_KHOA = tinhDuongDiKhoa();
   tinhNhanBtKhoa();
   var thanhWrap = $('#thanhBtKhoaWrap');
   if (thanhWrap && (BAI.bt || []).length) { thanhWrap.hidden = false; veThanhBtKhoa(); }
+  if (BAI.kieu === 'CHUONG') hop.appendChild(veTheChuanBiKhoa());                 // 11/10/2026
+  if (BAI.huongDan && BAI.huongDan.doc) { hop.appendChild(veTheHuongDanKhoa()); veTienDoHdKhoa(); }
   if (bg.video || (bg.doan || []).length) {
     hop.appendChild(veTheBaiGiangKhoa(bg));
     ganNutKhoa();
@@ -6366,6 +6578,7 @@ function veCacPhanKhoa(hop){
   });
   canhLb();
   canhTenTheKhoaDT();   // v1.109.0 — đo ngay + đo lại ở `fonts.ready` (font chưa về thì số sai)
+  luuTomTatKhoa();      // 11/10/2026
 }
 
 // ⭐ Điểm act vừa đổi (nộp bài / AWord báo NOP) trong khi đang xem bài khóa

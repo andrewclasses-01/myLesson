@@ -2406,9 +2406,27 @@
   // (chắc chắn nhất); không có thì lùi về so tên lỏng với tên kho đang giữ.
   // `dsDb` (tuỳ chọn): [{ten}] danh sách HS ĐẶC BIỆT của lớp (`l.hsDb`) — tên nào
   // trùng danh sách này bị CHẶN dò ảnh hoàn toàn, xem chú thích ⭐⭐ ở trên.
+  // ⭐ v1.306.0 (11/10/2026) — HIỆN NGAY ẢNH TRONG MÁY, KIỂM KHO SAU (thầy chốt).
+  // Ca thật: hộp ÔN TẬP lớp Nền tảng 4 — 16 em cũ có file tĩnh hiện tức thì, còn Gia Hân / Minh Lâm / Thanh Mai
+  // (em MỚI, chỉ có ảnh trong kho `lessonAvatar`, KHÔNG có file `assets/avatar/…`) đứng chữ tắt khá lâu. Vì bản
+  // cũ quá 10 phút (`AV_KIEM_GIAY`) là CHỜ lượt hỏi mốc qua mạng rồi mới đè — dù ảnh vẫn nằm sẵn trong localStorage.
+  // Nay: có bản trong máy ⇒ đè NGAY từ bản đó, rồi mới chờ `napAvatarKho()`; kho trả gói KHÁC (mốc đổi / tải lại
+  // 24 giờ) thì đè lần hai. Không tốn thêm lượt đọc nào — lượt hỏi kho vẫn y như cũ, chỉ không bắt màn hình chờ nó.
+  // ⛔ So `em !== cu.em` theo THAM CHIẾU: `napAvatarKho` trả đúng object `cu.em` khi mốc không đổi / kho hỏng ⇒ khỏi quét DOM lần hai.
   function deAvatarKho(lopGoc, dsEm, dsDb) {
+    var cu = null, soDau = 0;
+    try {
+      cu = lopGoc ? docAvatarMay(avSlugLop(lopGoc)) : null;
+      if (cu) soDau = deAnhLop(lopGoc, cu.em, dsEm, dsDb);
+    } catch (e) { cu = null; }
     return napAvatarKho(lopGoc).then(function (em) {
-      var ids = Object.keys(em);
+      if (cu && em === cu.em) return soDau;
+      return deAnhLop(lopGoc, em, dsEm, dsDb);
+    })['catch'](function () { return soDau; });
+  }
+
+  function deAnhLop(lopGoc, em, dsEm, dsDb) {
+      var ids = Object.keys(em || {});
       if (!ids.length) return 0;
 
       var theoTen = {};                       // mã số của từng em, tra theo tên
@@ -2483,7 +2501,6 @@
         }
       }
       return de;
-    })['catch'](function () { return 0; });
   }
 
   // Bật một lần cho cả trang: đè ngay, rồi đè lại mỗi khi trang vẽ thêm ô avatar mới

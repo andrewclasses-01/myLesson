@@ -5097,6 +5097,7 @@ function napTienDoFs(){
     .then(function(j){
       var chung = khucTuFs((j && j.fields) || {});
       chamGopTuFs('video', (j && j.fields) || {});   // v1.122.0
+      gopChuongTuFs((j && j.fields) || {});           // 12/10/2026 — LESSON CHƯƠNG
       var truoc = JSON.stringify(khucPhang());
       Object.keys(chung).forEach(function(id){
         chung[id].forEach(function(r){ congKhucXemKhoa(id, r[0], r[1]); });
@@ -5123,6 +5124,86 @@ function napTienDoFs(){
       return sau !== truoc;
     })['catch'](function(){ return false; });
 }
+/* ⭐⭐ 12/10/2026 (thầy chốt "làm luôn phần đồng bộ tiến độ lên kho cho nhiều máy") — LESSON CHƯƠNG: các bước KHÔNG có
+   điểm AWord nay đi chung tài liệu `lessonVideoTienDo/<ma>__<bai>`, trường `chuong` (luật tools/dang-luat-tien-do-chuong.js):
+     hd  = {pct, xong}                       slide HƯỚNG DẪN (myDocument)
+     tay = {idBước: ms}                      bước tự đánh dấu (đọc sách · đã gửi video Zalo)
+     vid = {idBước: {tong, khuc:[a,b,…]}}    khúc giây đã xem THẬT của video bài làm mẫu (mảng PHẲNG — Firestore cấm mảng lồng)
+   Gộp kiểu HỢP như khúc video bài giảng: % lấy lớn hơn, đã xong thì giữ xong, mốc đánh dấu giữ cái SỚM nhất, khúc gộp lại
+   ⇒ máy nào cũng không mất. Chỉ gửi kèm khi `BAI.kieu === 'CHUONG'` (bài thường gói y như cũ). localStorage vẫn là bản máy. */
+function laChuongFs(){ return !!(BAI && BAI.kieu === 'CHUONG'); }
+function soFsChuong(v){ return v ? Number(v.integerValue != null ? v.integerValue : v.doubleValue) : NaN; }
+function gopKhucDsChuong(ds){
+  var g = [];
+  ds.filter(function(r){ return r && isFinite(r[0]) && isFinite(r[1]) && r[1] > r[0]; })
+    .sort(function(p, q){ return p[0] - q[0]; })
+    .forEach(function(r){
+      if (g.length && r[0] <= g[g.length - 1][1] + 0.05) g[g.length - 1][1] = Math.max(g[g.length - 1][1], r[1]);
+      else g.push([r[0], r[1]]);
+    });
+  return g;
+}
+function gopChuong(a, b){
+  var r = { hd: { pct: Math.max(+(a.hd || {}).pct || 0, +(b.hd || {}).pct || 0), xong: !!((a.hd || {}).xong || (b.hd || {}).xong) }, tay: {}, vid: {} };
+  [a, b].forEach(function(s){
+    Object.keys(s.tay || {}).forEach(function(id){ var t = +s.tay[id]; if (t > 0 && !(r.tay[id] > 0 && r.tay[id] <= t)) r.tay[id] = t; });
+    Object.keys(s.vid || {}).forEach(function(id){
+      var v = s.vid[id] || {}, d = r.vid[id] || (r.vid[id] = { khuc: [], tong: 0 });
+      d.tong = Math.max(d.tong, +v.tong || 0);
+      d.khuc = gopKhucDsChuong(d.khuc.concat(v.khuc || []));
+    });
+  });
+  return r;
+}
+function chuanChuong(s){ return JSON.stringify(gopChuong(s, { hd: {}, tay: {}, vid: {} })); }
+function chuongTuFs(f){
+  var r = { hd: {}, tay: {}, vid: {} };
+  try {
+    var c = f && f.mapValue && f.mapValue.fields; if (!c) return r;
+    var hd = c.hd && c.hd.mapValue && c.hd.mapValue.fields;
+    if (hd) r.hd = { pct: soFsChuong(hd.pct) || 0, xong: !!(hd.xong && hd.xong.booleanValue) };
+    var tay = (c.tay && c.tay.mapValue && c.tay.mapValue.fields) || {};
+    Object.keys(tay).forEach(function(id){ var t = soFsChuong(tay[id]); if (t > 0) r.tay[id] = t; });
+    var vid = (c.vid && c.vid.mapValue && c.vid.mapValue.fields) || {};
+    Object.keys(vid).forEach(function(id){
+      var m = (vid[id].mapValue && vid[id].mapValue.fields) || {};
+      var vs = (m.khuc && m.khuc.arrayValue && m.khuc.arrayValue.values) || [], ds = [];
+      for (var i = 0; i + 1 < vs.length; i += 2) ds.push([soFsChuong(vs[i]), soFsChuong(vs[i + 1])]);
+      r.vid[id] = { tong: soFsChuong(m.tong) || 0, khuc: gopKhucDsChuong(ds) };
+    });
+  } catch (e) {}
+  return r;
+}
+function chuongRaFs(){
+  var tay = {}, vid = {};
+  Object.keys(BT_TAY).forEach(function(id){ var t = +BT_TAY[id]; if (t > 0) tay[id] = { integerValue: String(Math.round(t)) }; });
+  Object.keys(BT_VID).forEach(function(id){
+    var v = BT_VID[id] || {}, ds = [];
+    (v.khuc || []).forEach(function(r){ ds.push({ doubleValue: Math.round(r[0] * 10) / 10 }, { doubleValue: Math.round(r[1] * 10) / 10 }); });
+    vid[id] = { mapValue: { fields: { tong: { doubleValue: +v.tong || 0 }, khuc: { arrayValue: ds.length ? { values: ds } : {} } } } };
+  });
+  return { mapValue: { fields: {
+    hd: { mapValue: { fields: { pct: { doubleValue: Math.round(+HD_KHOA.pct || 0) }, xong: { booleanValue: !!HD_KHOA.xong } } } },
+    tay: { mapValue: { fields: tay } },
+    vid: { mapValue: { fields: vid } }
+  } } };
+}
+// Lúc mở bài: gộp bản CHUNG vào máy (ghi lại localStorage để `veCacPhanKhoa` nạp đúng bản đã gộp);
+// máy này có thứ bản chung chưa có ⇒ đẩy lên ngay.
+function gopChuongTuFs(fields){
+  if (!laChuongFs()) return;
+  napHdKhoa(); napBtTayKhoa(); napVidBtKhoa();
+  var may = { hd: HD_KHOA, tay: BT_TAY, vid: BT_VID }, chung = chuongTuFs(fields.chuong);
+  var gop = gopChuong(may, chung), sGop = chuanChuong(gop);
+  if (sGop !== chuanChuong(may)) {
+    HD_KHOA = gop.hd; BT_TAY = gop.tay; BT_VID = gop.vid;
+    luuHdKhoa(); luuTayKhoa(); luuVidBtKhoa();
+  }
+  if (sGop !== chuanChuong(chung)) { TIEN_DO_FS_BAN = true; setTimeout(function(){ dayTienDoFs(); }, 1500); }
+}
+// Có bước mới (đọc xong hướng dẫn / tự đánh dấu / xem thêm video mẫu) ⇒ đẩy lên luôn (bài chương ghi rất thưa).
+function dayChuongNgay(){ if (!laChuongFs()) return; TIEN_DO_FS_BAN = true; dayTienDoFs(); }
+
 // Đẩy bản máy lên Firestore (chỉ khi có gì mới). `gap` = đang rời trang ->
 // dùng keepalive để yêu cầu sống sót sau khi tab đóng.
 function dayTienDoFs(gap){
@@ -5136,6 +5217,7 @@ function dayTienDoFs(gap){
     khuc: { mapValue: { fields: khucRaFs() } },
     luc:  { integerValue: String(A.gioNay()) }
   } };
+  if (laChuongFs()) than.fields.chuong = chuongRaFs();   // 12/10/2026 — LESSON CHƯƠNG: bước tự đánh dấu + video mẫu
   if (VI_TRI_KHOA.luc) {   // v1.97.0
     than.fields.vt = { doubleValue: VI_TRI_KHOA.t };
     than.fields.vtLuc = { integerValue: String(VI_TRI_KHOA.luc) };
@@ -5942,9 +6024,11 @@ function napBtTayKhoa(){
   BT_TAY = {};
   try { var o = JSON.parse(localStorage.getItem(khoaBtTayKho()) || '{}'); if (o && typeof o === 'object' && !Array.isArray(o)) BT_TAY = o; } catch (e) {}
 }
+function luuTayKhoa(){ try { localStorage.setItem(khoaBtTayKho(), JSON.stringify(BT_TAY)); } catch (e) {} }
 function danhDauBtTayKhoa(x){
   BT_TAY[x.id] = A.gioNay();
-  try { localStorage.setItem(khoaBtTayKho(), JSON.stringify(BT_TAY)); } catch (e) {}
+  luuTayKhoa();
+  dayChuongNgay();   // 12/10/2026 — lên kho để máy khác thấy
   capNhatSauKhiDoiKhoa();
   var moi = document.querySelector('.card[data-btid="' + String(x.id).replace(/[^A-Za-z0-9_-]/g, '') + '"]');
   if (moi) { moi.scrollIntoView({ behavior: 'smooth', block: 'center' }); nhayTheKhoa(moi); }
@@ -6038,6 +6122,7 @@ window.addEventListener('message', function(e){
   else if (d.su_kien === 'ended') { HD_KHOA.pct = 100; HD_KHOA.xong = true; }
   else return;
   luuHdKhoa();
+  dayChuongNgay();   // 12/10/2026 — tối đa ~9 lượt ghi/bài (mỗi trang slide một lượt)
   veTienDoHdKhoa();
   if (daXongHdKhoa() !== daXongTruoc) {
     capNhatSauKhiDoiKhoa();
@@ -6106,7 +6191,7 @@ function moVideoBtKhoa(x, hostId, sec){
   if (!id) return;
   chuanBiYoutubeKhoa().then(function(){
     if (!document.getElementById(hostId)) return;
-    var t0 = 0, luc0 = 0, hen = null;
+    var t0 = 0, luc0 = 0, hen = null, lucDay = Date.now();
     var nhip = function(){
       var p = VID_BT_PLAYER[x.id];
       if (!p || !p.getCurrentTime) return;
@@ -6114,11 +6199,13 @@ function moVideoBtKhoa(x, hostId, sec){
       var delta = now - t0, that = luc0 ? (lucNay - luc0) / 1000 : 0.5;
       var v = BT_VID[x.id] || (BT_VID[x.id] = { khuc: [], tong: 0 });
       var dur = p.getDuration ? p.getDuration() : 0; if (dur > 0) v.tong = dur;
-      if (delta > 0.05 && delta < 1.8 && delta <= that * TOC_DO_MAX_KHOA * 1.15) { congKhucVidBtKhoa(x, t0, now); luuVidBtKhoa(); }
+      if (delta > 0.05 && delta < 1.8 && delta <= that * TOC_DO_MAX_KHOA * 1.15) { congKhucVidBtKhoa(x, t0, now); luuVidBtKhoa(); TIEN_DO_FS_BAN = true; }
       t0 = now; luc0 = lucNay;
       veTienDoVidBtKhoa(x, sec);
+      if (lucNay - lucDay > 20000) { lucDay = lucNay; dayChuongNgay(); }   // 12/10/2026 — ghi thưa lúc đang phát
       if (daXongVidBtKhoa(x)) {
         clearInterval(hen);
+        dayChuongNgay();
         try { p.pauseVideo(); } catch (e) {}
         baoToast('Đã xem hết video bài làm mẫu — giờ sang bước quay video nhé!');
         setTimeout(function(){
@@ -6136,7 +6223,8 @@ function moVideoBtKhoa(x, hostId, sec){
         onStateChange: function(e){
           clearInterval(hen);
           if (e.data === YT.PlayerState.PLAYING) { t0 = VID_BT_PLAYER[x.id].getCurrentTime(); luc0 = Date.now(); hen = setInterval(nhip, 500); }
-          else if (e.data === YT.PlayerState.ENDED) nhip();
+          else if (e.data === YT.PlayerState.ENDED) { nhip(); dayChuongNgay(); }
+          else if (e.data === YT.PlayerState.PAUSED) dayChuongNgay();   // 12/10/2026
         },
         onPlaybackRateChange: function(e){
           if (e && e.data > TOC_DO_MAX_KHOA) { try { VID_BT_PLAYER[x.id].setPlaybackRate(TOC_DO_MAX_KHOA); } catch (er) {} baoToast('Video chỉ xem tối đa ' + TOC_DO_MAX_KHOA + 'x'); }
@@ -7077,6 +7165,9 @@ function veDauTrang(){
     var m = /:\s*(.+)$/.exec(t);
     return m ? m[1] : '';
   })();
+  // ⭐ 12/10/2026 (thầy chốt) — LESSON CHƯƠNG: dòng trên = TÊN LESSON ("PHẦN A: CHƯƠNG 1"), dòng dưới = NỘI DUNG
+  // ("CUỘC SỐNG CỦA CHÚNG TA CÓ Ý NGHĨA LÀ GÌ?") — không lặp lại tên như bản 11/10.
+  if (LA_KHOA && BAI.kieu === 'CHUONG' && BAI.noiDung) chuDeKhoa = String(BAI.noiDung).trim();
   if (dbMa) dbMa.textContent = chuDeKhoa || A.maLesson(BAI);
 
   /* Ô hạn: chữ ở dòng trên (đồng hồ do veDongHo lo). ⭐ v1.85.0 — tách ra

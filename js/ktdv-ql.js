@@ -101,15 +101,22 @@
       var ds = [];
       r[0].forEach(function (d) { var x = d.data(); if (x && x.ma) ds.push(x); });
       ds.sort(function (a, b) { return (b.tao || 0) - (a.tao || 0); });
-      var kq = {};
+      var kq = {}, soNop = {};
+      // ⛔ v1.302.0 (audit 11/10/2026) — `createdAt` do MÁY EM ghi: lượt mang giờ TƯƠNG LAI (> giờ chuẩn + 10 phút)
+      //    là giả/hỏng đồng hồ ⇒ bỏ qua, nếu không nó đứng đầu "mới nhất" VĨNH VIỄN và che mọi lượt thật.
+      var tran = (typeof window.gioChuan === 'function' ? window.gioChuan() : Date.now()) + 600000;
       r[1].forEach(function (d) {
         var x = d.data(); if (!x || !x.ma) return;
+        if ((x.createdAt || 0) > tran) return;
         var k = String(x.ma).toUpperCase() + '|' + x.assignmentId;
+        if (!x.doDang) soNop[k] = (soNop[k] || 0) + 1;
         var cu = kq[k];
         // lượt NỘP HẲN mới nhất (lượt dở doDang chỉ dùng khi chưa có lượt nộp hẳn)
         var tot = function (a) { return (a.doDang ? 0 : 1e15) + (a.createdAt || 0); };
         if (!cu || tot(x) > tot(cu)) kq[k] = Object.assign({ id: d.id }, x);
       });
+      // v1.302.0 — số lượt NỘP HẲN (bình thường = 1; > 1 ⇒ ô điểm báo để thầy soát)
+      Object.keys(kq).forEach(function (k) { kq[k]._soNop = soNop[k] || 0; });
       var log = {};
       r[2].forEach(function (snap, i) {
         if (!snap) return;
@@ -165,7 +172,7 @@
     h += '<div class="ktq-ds">' + hien.map(function (x) {
       var o = baiCua(x).map(function (b) {
         var t = tinhTrang(x, b);
-        if (t.loai === 'xong') { var p = Math.round(100 * t.k.score / (t.k.total || b.n)); return '<span class="ktq-o xong" title="' + E(b.ma + ' ' + b.ten + ': ' + t.k.score + '/' + t.k.total) + '"><b>' + b.ma + '</b>' + p + '%</span>'; }
+        if (t.loai === 'xong') { var p = Math.round(100 * t.k.score / (t.k.total || b.n)), nhieu = (t.k._soNop || 0) > 1; return '<span class="ktq-o xong" title="' + E(b.ma + ' ' + b.ten + ': ' + t.k.score + '/' + t.k.total + (nhieu ? ' — ⚠ ' + t.k._soNop + ' lượt nộp, đang hiện lượt mới nhất' : '')) + '"><b>' + b.ma + '</b>' + p + '%' + (nhieu ? ' ⚠' : '') + '</span>'; }
         if (t.loai === 'dang') return '<span class="ktq-o dang" title="' + E(b.ma + ': đang làm / bỏ dở (' + t.lg.length + ' lượt)') + '"><b>' + b.ma + '</b>đang làm</span>';
         return '<span class="ktq-o"><b>' + b.ma + '</b>chưa</span>';
       }).join('');

@@ -344,11 +344,23 @@
     if (!b) return a;
     return String(b.capNhat || '') >= String(a.capNhat || '') ? b : a;
   }
-  // Đè mảng bài của MỘT lớp từ kho lên `dl.bai` khi kho mới hơn mốc chung của bai.json
+  // Đè mảng bài của MỘT lớp từ kho lên `dl.bai` khi kho mới hơn mốc CỦA LỚP ĐÓ trong bai.json
   // (hoặc bai.json chưa có lớp đó).
-  function apBaiKho(dl, mocTinh, doc) {
+  // ⛔⛔ v1.302.0 (audit 11/10/2026) — so MỐC THEO LỚP (`capNhatLop[lop]`, app v2.154.0 trở đi đóng
+  //    mỗi lần lưu/xoá bài của lớp đó), KHÔNG so với `capNhat` chung cả file: máy A đẩy lớp A làm
+  //    mốc chung mới hơn ⇒ bản bai.json CŨ của lớp B (máy A chưa kéo bài máy B vừa đẩy) thắng kho
+  //    lớp B ⇒ bài máy B BIẾN MẤT trên web dù cả hai máy đều báo xong.
+  //    · bai.json ĐỜI MỚI (có `capNhatLop`) mà THIẾU lớp này ⇒ mảng bài lớp đó trong file có từ TRƯỚC
+  //      khi đổi nếp (chưa lần nào lưu lại bằng app mới) ⇒ cũ hơn kho ⇒ mốc rỗng, kho thắng.
+  //    · bai.json ĐỜI CŨ (không có `capNhatLop`) ⇒ lùi về mốc chung như trước (không làm tốt hơn được).
+  function mocCuaLop(baiTinh, lop) {
+    var m = baiTinh && baiTinh.capNhatLop;
+    if (m && typeof m === 'object') return String(m[lop] || '');
+    return String((baiTinh && baiTinh.capNhat) || '');
+  }
+  function apBaiKho(dl, baiTinh, doc) {
     if (!doc || !doc.lop || !Array.isArray(doc.bai)) return;
-    if (String(doc.capNhat || '') >= String(mocTinh || '') || !dl.bai[doc.lop]) dl.bai[doc.lop] = doc.bai;
+    if (String(doc.capNhat || '') >= mocCuaLop(baiTinh, doc.lop) || !dl.bai[doc.lop]) dl.bai[doc.lop] = doc.bai;
   }
   // Tài liệu bài xin sớm ở som.js chỉ dùng được khi đoán ĐÚNG lớp.
   function baiSomCua(maLop) {
@@ -407,19 +419,19 @@
         // là nó rơi mất TẠI ĐÂY — mọi hàm tra cứu vẫn đúng mà trang vẫn hỏng, không một
         // tiếng động (đã mất một lượt kiểm mới tìm ra, 08/09/2026).
         var dl = { lop: lopDung.lop || [], khoa: lopDung.khoa || [], bai: baiTinh.bai || {} };
-        var mocTinh = baiTinh.capNhat || '';
         // ⭐ v1.119.0 — BÀI: dashboard đè mọi lớp; trang học sinh đè đúng lớp của em.
+        // v1.302.0 — mốc so theo lớp (`mocCuaLop`), truyền nguyên `baiTinh`.
         if (quanLy) {
           var ds = r[5] || [];
-          for (var i = 0; i < ds.length; i++) apBaiKho(dl, mocTinh, ds[i]);
+          for (var i = 0; i < ds.length; i++) apBaiKho(dl, baiTinh, ds[i]);
           return dl;
         }
         var maLop = lopDoan;
         try { var em = emDangHoc(dl); if (em && em.lop) maLop = em.lop; } catch (e) { /* chưa đăng nhập */ }
         if (!maLop) return dl;                       // màn đăng nhập: không cần bài
-        if (maLop === lopDoan) { apBaiKho(dl, mocTinh, r[5]); return dl; }
+        if (maLop === lopDoan) { apBaiKho(dl, baiTinh, r[5]); return dl; }
         // đoán sai lớp (em ở 2 nơi vừa đổi nơi, `?nhu=` không kèm `?lop=`) ⇒ xin thêm 1 lượt
-        return docKhoWeb('bai_' + maLop).then(function (doc) { apBaiKho(dl, mocTinh, doc); return dl; });
+        return docKhoWeb('bai_' + maLop).then(function (doc) { apBaiKho(dl, baiTinh, doc); return dl; });
       });
     return nhoDl;
   }

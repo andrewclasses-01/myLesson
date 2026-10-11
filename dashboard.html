@@ -9536,13 +9536,16 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<div class="qs-chan">Chỉ XEM: thầy không bấm được vào ván, không ghi điểm, không phát tiếng. Ván dựng lại sau mỗi câu em trả lời — khung trái là câu em ĐANG/SẮP làm, câu VỪA làm (đáp án em chọn) ở cột BÀI LÀM bên phải.</div>';
     $('#qsNen').classList.add('mo');
     qsxVeTrangThai(); qsxVeBL();
-    var maMo = ma;
+    // ⛔ v1.302.0 (audit 11/10/2026) — so CHÍNH phiên xem (QSX là object mới mỗi lần mở/đóng), không so mã em: bấm XEM hai lần
+    //    (2 act của cùng em / bấm đúp) khi SDK chưa nạp xong ⇒ lượt bấm đầu từng gắn interval + onSnapshot lamTiep rồi bị lượt sau
+    //    ghi đè biến ⇒ không ai huỷ được, và snapshot của act CŨ đổ `tt` vào khung đang xem act MỚI (quan-sat.js chỉ so code).
+    var phien = QSX;
     spDb().then(function (f) {
-      if (QSX.ma !== maMo) return;
+      if (QSX !== phien) return;
       qsxCo(f);
-      QSX.nhip = setInterval(function () { if (QSX.ma === maMo) qsxCo(f); }, QS_NHIP_MS);
+      QSX.nhip = setInterval(function () { if (QSX === phien) qsxCo(f); }, QS_NHIP_MS);
       QSX.bo = f.fs.onSnapshot(f.fs.doc(f.db, 'lamTiep', ma, 'bai', code), function (s) {
-        if (QSX.ma !== maMo) return;
+        if (QSX !== phien) return;
         var d = s.exists() ? s.data() : null;
         QSX.tt = d && d.tplJ ? { tplJ: d.tplJ, timeCost: d.timeCost || 0, gioMs: d.gioMs, activeMs: d.activeMs || 0 } : null;
         QSX.luc = d ? (+d.luc || Date.now()) : 0;

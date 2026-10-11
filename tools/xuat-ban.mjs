@@ -21,11 +21,13 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { fileURLToPath } from 'node:url';
 import { execSync } from 'node:child_process';
 import { transform } from 'esbuild';
 import { xuatAnhKho } from './anh-kho-tinh.mjs';   // v1.308.0 — điền ảnh đại diện em mới từ kho lessonAvatar
 
-const GOC = path.resolve(path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, '$1')), '..');
+// v1.308.0 — `fileURLToPath`: `URL.pathname` giữ `%20` ⇒ chạy tay trong "E:\LAP TRINH APP\myLesson Web" (có dấu cách) trỏ sai thư mục.
+const GOC = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const RA = path.resolve(GOC, process.argv[2] || '_site');
 const BO_QUA_THU_MUC = new Set(['.git', '.github', 'node_modules', '_site', 'tools']);
 const KHONG_XUAT_BAN = /\.md$/i;

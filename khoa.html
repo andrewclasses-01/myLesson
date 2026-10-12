@@ -1828,10 +1828,12 @@ A.napDuLieu().then(function(dl){
     /* 12/10/2026 — CHỈ thầy với danh tính THẦY (`?gv=1`) mới xem kiểu "xem lại". Xem như em / đăng nhập thay ⇒ đi đường của EM:
        đọc tiến độ phim THẬT của em trên máy chủ (đã xong ⇒ thẻ; đang dở ⇒ mở tiếp đúng màn), thao tác không ghi lên máy chủ. */
     if (EM.vaiTro === 'gv') {
-      /* v1.287.0 — thầy xem như em: phim TỰ MỞ một lần mỗi tab (có nút Đóng, không ghi gì) để thầy thấy đúng như em; sau đó chỉ có thẻ */
+      /* v1.287.0 — thầy: phim TỰ MỞ một lần (có nút Đóng, không ghi gì) để thầy thấy đúng như em; sau đó chỉ có thẻ.
+         12/10/2026 (thầy báo "đã xong mấy lần vẫn ra") — dấu "đã tự mở" trước nhớ theo TAB (sessionStorage) mà dashboard/app mở
+         trang khóa ở tab/khung MỚI mỗi lần ⇒ lần nào cũng như lần đầu. Nay nhớ theo MÁY (localStorage): mỗi khóa tự mở đúng 1 lần/máy. */
       GT_HIEN = true;
       var khoaTab = 'gtk_thay_' + LOP_DL, daMo = false;
-      try { daMo = !!sessionStorage.getItem(khoaTab); sessionStorage.setItem(khoaTab, '1'); } catch (e) {}
+      try { daMo = !!(localStorage.getItem(khoaTab) || sessionStorage.getItem(khoaTab)); localStorage.setItem(khoaTab, '1'); } catch (e) {}
       if (!daMo) GioiThieu.mo(GT_CTX, { lai: true, daXong: true });
     }
     else GioiThieu.docTrangThai(GT_CTX).then(function(st){

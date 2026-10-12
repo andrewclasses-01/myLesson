@@ -4931,8 +4931,13 @@ function tinhDuongDiKhoa(){
     doan.forEach(function(d){
       if (moD[d.id] && daXongDoanKhoa(d) && !xongD[d.id]) { xongD[d.id] = true; apDich(d); doi = true; }
     });
-    bt.forEach(function(x){
-      if (moB[x.id] && btXongKhoa(x) && !xongB[x.id]) { xongB[x.id] = true; apDich(x.xong); doi = true; }
+    bt.forEach(function(x, i){
+      if (moB[x.id] && btXongKhoa(x) && !xongB[x.id]) {
+        xongB[x.id] = true; apDich(x.xong); doi = true;
+        // ⭐ 12/10/2026 VÁ — lesson CHƯƠNG: xong bước nào MỞ LUÔN bước kế (bài soạn ra có chuỗi `xong.bt` RỖNG ⇒ HS xong
+        //   Bước 1 kẹt ở Bước 2 "CHƯA MỞ KHOÁ" — Nhật Quang K10 báo). Thầy (`LA_GV`) vốn mở hết nên không thấy lỗi.
+        if (BAI.kieu === 'CHUONG' && bt[i + 1]) moB[bt[i + 1].id] = true;
+      }
     });
   }
   if (LA_GV) {   // thiết kế KNT 12 — thầy: mở hết (xong/chưa xong vẫn tính thật)

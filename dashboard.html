@@ -5513,7 +5513,9 @@ tr.qm-hang-tam td{background:#fffbeb}
   function nhanRowKh(k) {
     if (k.loai === 'sach') return 'SÁCH' + (k.trang ? ' ' + A.chuAnToan(k.trang) : '');
     var ten = String(k.ten || '').trim();
-    var m = /^BT\s*0*([0-9]+)/i.exec(ten);
+    // 12/10/2026 — BẢN CHÉP luật `nhanRow` khoa.html: "BÀI TẬP 1" → BT1, "BT/BÀI TẬP BỔ SUNG" → BTBS.
+    if (/^(?:BT|B[ÀA]I\s*T[ẬA]P)\s*B[ỔO]\s*SUNG/i.test(ten)) return 'BTBS';
+    var m = /^(?:BT|B[ÀA]I\s*T[ẬA]P)\s*0*([0-9]+)/i.exec(ten);
     if (m) return 'BT' + m[1];
     if (/QUIZ/i.test(k.mau || '') || /TR[ẮA]C\s*NGHI[ỆE]M/i.test(ten)) return 'TNBG';
     return A.chuAnToan(ten) || 'BT';
@@ -8086,7 +8088,9 @@ tr.qm-hang-tam td{background:#fffbeb}
   // Nhãn NGẮN cho cột act (khóa học: "BT1. Tìm cụm từ…" → BT1 · quiz → TNBG; lớp chính: WORDS 1…).
   function hqNhanAct(a) {
     var ten = String(a.ten || '').trim();
-    var m = /^BT\s*0*([0-9]+)/i.exec(ten);
+    // 12/10/2026 — cùng luật `nhanRow` khoa.html: "BÀI TẬP 1" → BT1, "BT/BÀI TẬP BỔ SUNG" → BTBS.
+    if (/^(?:BT|B[ÀA]I\s*T[ẬA]P)\s*B[ỔO]\s*SUNG/i.test(ten)) return 'BTBS';
+    var m = /^(?:BT|B[ÀA]I\s*T[ẬA]P)\s*0*([0-9]+)/i.exec(ten);
     if (m) return 'BT' + m[1];
     if (/QUIZ/i.test(a.mau || '') && /TR[ẮA]C\s*NGHI[ỆE]M/i.test(ten)) return 'TNBG';
     return A.tenO(ten, true);

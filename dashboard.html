@@ -2334,6 +2334,13 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .bxh-dong.tay{grid-template-columns:minmax(0,1fr) auto; padding:0 calc(var(--f)*.45) 0 calc(var(--f)*.6)}
 .bxh-dong.tay .xong{font:800 calc(var(--f)*.8)/1 var(--font); color:#16A34A; background:var(--la-nhat); padding:calc(var(--f)*.28) calc(var(--f)*.5); border-radius:99px; white-space:nowrap}
 .bxh-dong.tay.chua .xong{color:#D3DCDA; background:none}
+/* 12/10/2026 — nút THẦY TÍCH bước zalo (bảng XẾP HẠNG + pop-up kết quả) */
+.zalo-tich{font:800 11.5px/1 var(--font); padding:5px 9px; border-radius:99px; border:1.5px dashed var(--vien-dam); background:#fff; color:var(--xanh); cursor:pointer; white-space:nowrap}
+.zalo-tich:hover{border-style:solid; border-color:var(--xanh); background:var(--xanh-nhat)}
+.zalo-tich.co{border:1.5px solid transparent; background:var(--la-nhat); color:#16A34A}
+.zalo-tich.co:hover{border-color:#16A34A}
+.zalo-tich:disabled{opacity:.5; cursor:wait}
+.bxh-dong.tay .zalo-tich{font-size:calc(var(--f)*.8); padding:calc(var(--f)*.28) calc(var(--f)*.5)}
 .hq-xh-phai{--f:13px; --av:26px; min-width:0; min-height:0; border:1px solid var(--vien); border-radius:14px; background:var(--the); display:flex; flex-direction:column; overflow:hidden}
 .bd-dau{flex:none; display:flex; align-items:baseline; justify-content:center; gap:10px; padding:10px 14px 8px; border-bottom:1px solid var(--vien)}
 .bd-dau b{font:800 calc(var(--f)*.95)/1.2 var(--font); letter-spacing:.06em; text-transform:uppercase; white-space:nowrap}
@@ -5626,9 +5633,53 @@ tr.qm-hang-tam td{background:#fffbeb}
     } catch (e) {}
     return r;
   }
+  function xnTuFsKh(j) {
+    var r = {}, m = (j && j.fields && j.fields.tay && j.fields.tay.mapValue && j.fields.tay.mapValue.fields) || {};
+    Object.keys(m).forEach(function (id) { var x = soFsKh(m[id]); if (x > 0) r[id] = x; });
+    return r;
+  }
+  /* ⭐ 12/10/2026 (thầy chốt) — THẦY TÍCH bước "gửi video lên nhóm Zalo" ngay trong bảng chi tiết (tab XẾP HẠNG hộp quản lý +
+     tab bước của pop-up kết quả). Ghi `lessonXacNhan/<mã em>__<id bài>` { ma, bai, lop, luc, tay: {<id bước>: mốc ms | 0 = gỡ} }
+     bằng setDoc merge (luật: chỉ laThay() ghi — tools/dang-luat-xac-nhan-zalo.js). Học sinh không tự tích được nữa. */
+  function nutTichZaloDb(b, x, ten, xong, maLop) {
+    return '<button type="button" class="zalo-tich' + (xong ? ' co' : '') + '" data-zalo-tich="' + A.chuAnToan(ten) + '" data-bai="' + A.chuAnToan(b.id) +
+      '" data-bt="' + A.chuAnToan(x.id) + '" data-lop="' + A.chuAnToan(maLop || '') + '" title="' + (xong ? 'Thầy đã xác nhận · bấm để bỏ tích' : 'Bấm để xác nhận em đã nộp video lên nhóm Zalo') + '">' +
+      (xong ? 'Xong ✓' : '+ Tích') + '</button>';
+  }
+  function tichZaloDb(n) {
+    var bId = n.getAttribute('data-bai'), btId = n.getAttribute('data-bt'), ten = n.getAttribute('data-zalo-tich'), maLop = n.getAttribute('data-lop');
+    var td = CHUONG_TD[bId]; if (!td || td === 'dang' || n.disabled) return;
+    var c = td[ten] || (td[ten] = { tay: {}, vid: {} }); c.xn = c.xn || {};
+    var co = (c.xn[btId] || 0) > 0;
+    if (co && !confirm('Bỏ tích "đã nộp video Zalo" của ' + ten + '?')) return;
+    n.disabled = true;
+    if (chuaThay(n)) return;
+    var l = A.lopTheoMa(DL, maLop) || {}, h = (l.hocSinh || []).filter(function (x) { return x.ten === ten; })[0];
+    if (!h || !String(h.ma || '').trim()) { n.disabled = false; baoToast('Không tìm thấy mã học sinh của ' + ten + '.'); return; }
+    var ma = A.chuanMa(h.ma), moi = co ? 0 : A.gioNay(), tay = {}; tay[btId] = moi;
+    spDb().then(function (f) {
+      return f.fs.setDoc(f.fs.doc(f.db, 'lessonXacNhan', ma + '__' + bId), { ma: ma, bai: String(bId), lop: String(maLop || ''), luc: Date.now(), tay: tay }, { merge: true });
+    }).then(function () {
+      c.xn[btId] = moi;
+      veTat();
+      if (HQ.b && HQ.b.id === bId && HQ.tab === 'xh') hqVeLai();
+      if (POP_TAB.b && POP_TAB.b.id === bId && $('#popNen').classList.contains('mo')) { veTabsDb(); veRuotTabDb(); }
+      baoToast(co ? 'Đã bỏ tích của ' + ten + '.' : 'Đã xác nhận ' + ten + ' nộp video ✓');
+    })['catch'](function (e) {
+      n.disabled = false;
+      baoToast('Không lưu được: ' + ((e && (e.code || e.message)) || 'lỗi không rõ'));
+    });
+  }
+  // bắt ở pha CAPTURE: nút nằm trong dòng có `dblclick` mở chi tiết em ⇒ chặn cả click lẫn dblclick lọt xuống dòng
+  document.addEventListener('click', function (e) {
+    var n = e.target.closest && e.target.closest('[data-zalo-tich]'); if (!n) return;
+    e.stopPropagation(); e.preventDefault(); tichZaloDb(n);
+  }, true);
+  document.addEventListener('dblclick', function (e) { if (e.target.closest && e.target.closest('[data-zalo-tich]')) { e.stopPropagation(); e.preventDefault(); } }, true);
   function xongBuocTayKh(c, x) {
     if (!c) return false;
-    if (x.loai === 'sach' || x.loai === 'zalo') return (c.tay[x.id] || 0) > 0;
+    if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan, `tichZaloDb`)
+    if (x.loai === 'sach') return (c.tay[x.id] || 0) > 0;
     var v = c.vid[x.id]; if (!v || !(v.tong > 0)) return false;
     var g = [], phu = 0;   // gộp khúc chồng nhau rồi cộng phần nằm trong [0, tong]
     v.khuc.filter(function (r) { return isFinite(r[0]) && isFinite(r[1]) && r[1] > r[0]; })
@@ -5647,10 +5698,10 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (i >= ds.length) return Promise.resolve();
       var h = ds[i++], u = urlTienDoVideoDb(A.chuanMa(h.ma), b.id);
       if (!u) return ke();
-      return fetch(u, { cache: 'no-store' })
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) { ra[h.ten] = chuongTuFsKh(((j && j.fields) || {}).chuong); })
-        ['catch'](function () { ra[h.ten] = { tay: {}, vid: {} }; })
+      var doc = function (x) { return fetch(x, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })['catch'](function () { return null; }); };
+      // 12/10/2026 — đọc kèm dấu THẦY xác nhận bước zalo (`lessonXacNhan`, cùng id `<mã>__<bài>`) ⇒ `xn`
+      return Promise.all([doc(u), doc(u.replace('/lessonVideoTienDo/', '/lessonXacNhan/'))])
+        .then(function (kq) { var c = chuongTuFsKh(((kq[0] && kq[0].fields) || {}).chuong); c.xn = xnTuFsKh(kq[1]); ra[h.ten] = c; })
         .then(ke);
     }
     var chay = [];
@@ -6573,7 +6624,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       return '<span class="xh-dong tay ' + (e.mien ? 'mien' : (e.xong ? 'du' : 'chua')) + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
         '<span class="xh-hang">' + (e.xong && !e.mien ? '✓' : '–') + '</span>' +
         '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
-        '<span class="xh-diem">' + (e.xong ? 'Đã xong' : '—') + '</span></span>';
+        '<span class="xh-diem">' + (a.buoc.loai === 'zalo' ? nutTichZaloDb(b, a.buoc, e.ten, e.xong, LOP_CHON) : (e.xong ? 'Đã xong' : '—')) + '</span></span>';
     }).join('') + '</div>';
   }
   function veTabsDb() {
@@ -8728,7 +8779,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<span class="phu" title="' + A.chuAnToan(a.ten) + '">' + A.chuAnToan(ten) + '</span></div><div class="bxh-ds">' +
       ds.map(function (e) {
         return '<div class="bxh-dong tay ' + (e.x ? 'du' : 'chua') + '" data-hq-em="' + A.chuAnToan(e.h.ten) + '" title="Đúp để xem chi tiết"><span class="ten"' + tenGonTitle(e.h.ten) + '>' + tenGon(e.h.ten) + '</span>' +
-          '<span class="xong">' + (e.x ? 'Xong ✓' : '—') + '</span></div>';
+          (a.buoc.loai === 'zalo' ? nutTichZaloDb(HQ.b, a.buoc, e.h.ten, e.x, HQ.t.maLop) : '<span class="xong">' + (e.x ? 'Xong ✓' : '—') + '</span>') + '</div>';
       }).join('') + '</div></div>';
   }
   var HQ_GAN_HAN_MS = 5 * 3600 * 1000;

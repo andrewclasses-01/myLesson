@@ -478,6 +478,11 @@ i.m-duong{background:var(--m-duong)} i.m-la{background:var(--m-la)}
   white-space:normal; text-align:center; line-height:1.35}
 .doi-vach .lb .tong{margin-left:6px; font-weight:700; letter-spacing:.03em; color:var(--muted); white-space:nowrap}
 .doi-vach .lb .tong::before{content:'•'; margin-right:6px; color:var(--line)}
+/* thiết kế K10 7 (12/10/2026, thầy chốt) — pop-up kết quả lesson CHƯƠNG: tab cho MỌI bước; bước KHÔNG có điểm (đọc sách,
+   video mẫu, gửi Zalo) chỉ hiện "Đã xong" (xanh) / "—" (chưa xong, đỏ) — không hạng, không giờ. */
+.xh-dong.tay{grid-template-columns:22px minmax(0,1fr) auto}
+.xh-dong.tay .xh-diem{padding:0 4px; font-size:11.5px}
+.xh-dong.tay.du .xh-diem,.xh-dong.tay.du .xh-hang{color:var(--m-la)}
 .xh-dong{display:grid; grid-template-columns:22px minmax(0,1fr) 3.6ch var(--w-giay,4.8ch);   /* v1.263.4: --w-giay = cột giờ nới theo số dài nhất CỦA BẢNG */
   gap:6px; align-items:center; padding:0 6px; border-radius:7px;
   height:24px; font-weight:700; font-size:12px; line-height:1}
@@ -1215,7 +1220,12 @@ function docChuongFs(g){
   }
   var chay = [];
   for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
-  Promise.all(chay).then(function(){ CHUONG_FS[g.id] = ra; if (!dangDocDiem) dungCot(); });
+  Promise.all(chay).then(function(){
+    CHUONG_FS[g.id] = ra;
+    if (!dangDocDiem) dungCot();
+    // pop-up kết quả đang mở bài này (tab bước không điểm chờ "đang đọc…") ⇒ vẽ lại
+    if (POP && POP.b && POP.b.goc && POP.b.goc.id === g.id && $('#popNen').classList.contains('mo')) { veTabsPop(); veRuotPop(); }
+  });
 }
 /* Hàng CẢ LỚP của một bước (chế độ thầy): số em đang tính đã xong / sĩ số. `n === null` = đang đọc. */
 function hangBuocLop(nhan, n, avHtml){
@@ -1337,8 +1347,15 @@ function veTheCu(b){
 var POP = { b: null, acts: [], i: 0, che: 'em' };
 function actsCuaThe(b){
   var ds = (b.khoi || []).filter(function(k){ return k.loai === 'act' && k.ma; });
-  // thiết kế K10 5 — lesson CHƯƠNG: tab pop-up ghi "BƯỚC n" theo bước chứa act đó (trước ra "TNBG | TNBG")
-  if (b.goc && b.goc.kieu === 'CHUONG') ds = ds.map(function(k){ return Object.assign({}, k, { nhanBuoc: nhanBuocTheoMa(b.goc, k.ma) }); });
+  // thiết kế K10 5+7 — lesson CHƯƠNG: MỖI BƯỚC một tab "BƯỚC n" (theo `bt`), bước không có điểm mang `tay` + `buoc`
+  if (b.goc && b.goc.kieu === 'CHUONG' && (b.goc.bt || []).length) {
+    ds = b.goc.bt.map(function(x, i){
+      var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
+      var nhan = 'BƯỚC ' + (m ? m[1] : (i + 1));
+      if (laBuocAct(x)) return { loai: 'act', ma: x.ma, mau: x.mau, ten: x.tieuDe || x.actTen || nhan, nhanBuoc: nhan };
+      return { tay: true, buoc: x, ten: x.tieuDe || nhan, nhanBuoc: nhan };
+    });
+  }
   return ds;
 }
 function nhanBuocTheoMa(g, ma){
@@ -1443,10 +1460,46 @@ function veKetQuaEm(k){
         '<span class="hang' + (q.hang && q.hang <= 3 ? ' top' : '') + '">Hạng ' + q.hang + '/' + SI_SO + '</span></div>' +
     '</div>';
 }
+function fsChuongPop(){
+  var g = POP.b && POP.b.goc; if (!g) return null;
+  var fs = CHUONG_FS[g.id];
+  if (!fs) { docChuongFs(g); return null; }
+  return fs === 'dang' ? null : fs;
+}
+function xongTayPop(ten, k, fs){
+  if (fs && xongBuocTayC(fs[ten], k.buoc)) return true;
+  if (A.khoaTen(ten) !== A.khoaTen(TOI)) return false;
+  try { var tt = JSON.parse(localStorage.getItem('awc_khoa_buoc_' + POP.b.goc.id + '_' + MA_HS) || '{}') || {}; return !!(tt.bt || {})[k.buoc.id]; } catch (e) { return false; }
+}
+function veCotTayPop(k){
+  var fs = fsChuongPop();
+  if (!fs) return vachActPop(k, 'đang đọc…') + '<div class="pop-trong">Đang đọc tiến độ của cả lớp…</div>';
+  var mien = khongTinhPop();
+  var ds = CA_LOP.map(function(ten, i){ return { ten: ten, i: i, mien: mien.indexOf(ten) >= 0, xong: xongTayPop(ten, k, fs) }; });
+  ds.sort(function(a, b){ return (a.mien - b.mien) || (b.xong - a.xong) || (a.i - b.i); });
+  var n = ds.filter(function(e){ return e.xong && !e.mien; }).length, toi = A.khoaTen(TOI);
+  return vachActPop(k, n + '/' + SI_SO + ' đã xong') + ds.map(function(e){
+    var lop = 'tay ' + (e.mien ? 'mien' : (e.xong ? 'du' : 'chua')) + (A.khoaTen(e.ten) === toi ? ' toi' : '');
+    return '<span class="xh-dong ' + lop + '"' + (e.mien ? ' title="Không tính ở bài này"' : '') + '>' +
+      '<span class="xh-hang">' + (e.xong && !e.mien ? '✓' : '–') + '</span>' +
+      '<span class="xh-ten">' + A.chuAnToan(e.ten) + '</span>' +
+      '<span class="xh-diem">' + (e.xong ? 'Đã xong' : '—') + '</span></span>';
+  }).join('');
+}
+function veEmTayPop(k){
+  var xong = xongTayPop(TOI, k, fsChuongPop());
+  return vachActPop(k, xong ? 'đã xong' : 'chưa xong') + (xong
+    ? '<div class="kq-em"><div class="kq-so du"><b>✓</b><em>ĐÃ XONG</em></div></div>'
+    : '<div class="pop-trong">Em chưa xong bước này.<br>Bấm vào phần đầu thẻ để mở bài nhé.</div>');
+}
 function veTabsPop(){
   $('#popTabs').innerHTML = POP.acts.map(function(k, i){
     var phu;
-    if (POP.che === 'lop') {
+    if (k.tay) {   // thiết kế K10 7 — bước không điểm
+      var fs = fsChuongPop();
+      if (POP.che === 'lop') phu = fs ? (CA_TINH.filter(function(ten){ return xongTayPop(ten, k, fs); }).length + '/' + SI_SO) : '…';
+      else phu = xongTayPop(TOI, k, fs) ? 'Xong' : '—';
+    } else if (POP.che === 'lop') {
       var daLam = xepActPop(k.ma).filter(function(e){ return !e.chua; }).length;
       phu = daLam + '/' + SI_SO;
     } else {
@@ -1460,7 +1513,8 @@ function veTabsPop(){
 function veRuotPop(){
   var k = POP.acts[POP.i];
   if (!k) { $('#popDs').innerHTML = ''; return; }
-  $('#popDs').innerHTML = POP.che === 'lop' ? veCotActPop(k) : veKetQuaEm(k);
+  $('#popDs').innerHTML = k.tay ? (POP.che === 'lop' ? veCotTayPop(k) : veEmTayPop(k))
+    : (POP.che === 'lop' ? veCotActPop(k) : veKetQuaEm(k));
   $('#popDs').scrollTop = 0;
 }
 function moPopKetQua(b, che){

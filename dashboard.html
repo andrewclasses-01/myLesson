@@ -1554,6 +1554,10 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
     #E5A20D 58%, var(--chu) 74%);
   background-size:230% 100%; -webkit-background-clip:text; background-clip:text;
   color:transparent; animation:lap-lanh-chu-kh 4.4s ease-in-out infinite}
+/* thiết kế K10 6 (12/10/2026) — thẻ lesson CHƯƠNG: tên "PHẦN A: CHƯƠNG 1 NGÀY 12/10" dài hơn "LESSON 23" ⇒ màn ~1280 bị cắt "NGÀ…".
+   Chữ tự co theo bề ngang khối chữ (container query), trần 19px như cũ, sàn 14px. */
+.the.khoa-hoc.chuong .t-chu{container-type:inline-size}
+.the.khoa-hoc.chuong .t-ten{font-size:clamp(14px, 5.8cqi, 19px)}
 @keyframes lap-lanh-chu-kh{0%{background-position:190% 0} 60%,100%{background-position:-40% 0}}
 @media (prefers-reduced-motion:reduce){ .the.khoa-hoc .t-ten{animation:none; background-position:0 0} }
 .the.khoa-hoc .t-chude{font:600 13.4px/1.4 var(--mono); color:var(--mo); letter-spacing:.01em;
@@ -5688,7 +5692,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       khoi = b.bt;
       ruot = b.bt.map(function (x, i) { return hangBuocChuongKh(b, x, i, t); }).join('');
     }
-    return '<div class="the khoa-hoc' + lopThem + '" role="button" tabindex="0" data-id="' + id + '">' +
+    return '<div class="the khoa-hoc' + lopThem + (b.kieu === 'CHUONG' ? ' chuong' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
           '<span class="t-chu">' +

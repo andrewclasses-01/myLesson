@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-10 21:42:06",
+  "capNhat": "2026-10-11 22:29:16",
   "nguon": "dashboard",
   "lop": [
     {
@@ -414,6 +414,17 @@
           "sinhNhat": "",
           "bs": 1,
           "vao": "2026-10-01"
+        },
+        {
+          "id": 242,
+          "ten": "Minh Thúy",
+          "ma": "TRANTHIMINHTHUY12032013",
+          "sinhNhat": "03-12",
+          "vao": "2026-10-11",
+          "tenCu": [
+            "Trần Thị Minh Thúy"
+          ],
+          "thu": 1
         },
         {
           "id": 132,
@@ -1391,6 +1402,16 @@
           "vao": "2026-10-09",
           "tenCu": [
             "Đặng Thị Bảo Ngọc"
+          ]
+        },
+        {
+          "id": 267,
+          "ten": "Đan Thư",
+          "ma": "TRANNGUYENDANTHU08062016",
+          "sinhNhat": "06-08",
+          "vao": "2026-10-11",
+          "tenCu": [
+            "Trần Nguyễn Đan Thư"
           ]
         },
         {

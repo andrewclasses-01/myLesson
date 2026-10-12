@@ -3486,6 +3486,17 @@ function datChu(el, chu){
   el.insertBefore(document.createTextNode(chu), el.firstChild);
 }
 
+/* thiết kế K9 3 (12/10/2026) — THẦY mở từ dashboard (`?gv=1`): avatar thanh đầu/sidebar = ẢNH THẦY (cùng ảnh khung chat
+   `assets/avatar-tron.jpg`), KHÔNG tra kho ảnh HS theo tên "Thầy Andrew" (không có ⇒ trước ra chữ tắt "TA"), ẩn huy hiệu sao. */
+function avThay(el){
+  if (!el) return;
+  A.gaAvatar(el, LOP, TOI, 'GV', true);              // khongAnh=true: gỡ ảnh cũ, KHÔNG gắn data-av-em (kho ảnh không đè lên)
+  var img = document.createElement('img');
+  img.className = 'av-anh'; img.alt = ''; img.src = 'assets/avatar-tron.jpg';
+  img.onerror = function(){ if (img.parentNode) img.parentNode.removeChild(img); };
+  el.insertBefore(img, el.firstChild);
+  var h = el.querySelector('.sao-hieu'); if (h) h.style.display = 'none';
+}
 function dienDanhTinh(){
   /* Chữ tắt trên avatar: hai chữ cái đầu của hai từ CUỐI trong tên
      (NGUYỄN BẢO AN -> BA), đúng lối bản mẫu. */
@@ -3499,6 +3510,7 @@ function dienDanhTinh(){
   // v1.83.0 — HS đặc biệt: KHÔNG tra ảnh (xem chú thích ⭐⭐ ở gaAvatar/js/chung.js).
   A.gaAvatar($('#nutMenu'), LOP, TOI, chuTat, LA_DAC_BIET);
   A.gaAvatar(document.querySelector('.side-head .av'), LOP, TOI, chuTat, LA_DAC_BIET);
+  if (EM && EM.vaiTro === 'gv') { avThay($('#nutMenu')); avThay(document.querySelector('.side-head .av')); }
 
   var tenTren = document.querySelector('.who .ten');
   if (tenTren) tenTren.textContent = TOI;

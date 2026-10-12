@@ -12174,7 +12174,8 @@ tr.qm-hang-tam td{background:#fffbeb}
       // phần thân còn lại (mặc định) vẫn mở hộp quản lý bài như cũ.
       var playBtn = e.target.closest('.the[data-id] .play');
       if (playBtn) {
-        window.open('lop.html?gv=1&lop=' + encodeURIComponent(LOP_CHON), '_blank');
+        // thiết kế K9 3 (12/10/2026) — lớp KHÓA mở trang khóa (khoa.html) như học sinh thấy; trước luôn mở lop.html ⇒ thẻ kiểu lớp thường.
+        window.open((laKhoaHoc() ? 'khoa.html' : 'lop.html') + '?gv=1&lop=' + encodeURIComponent(LOP_CHON), '_blank');
         return;
       }
       // ⭐ v1.88.0 — WORKSHEET không có điểm nào để mở bảng — vùng nhắc của nó

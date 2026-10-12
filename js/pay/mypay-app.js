@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.30.0 (f02e366) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.31.0 (0bcce2c) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -2129,9 +2129,9 @@
     return cao;
   }
 
-  function hdLich(g, x, y, w, m, yr, ds, nha) {
+  function hdLich(g, x, y, w, m, yr, ds, nha, hang) {
     const gap = 8; const cw = (w - 6 * gap) / 7;
-    const gon = cw < 90; const pad = gon ? 5 : 8; const tCo = gon ? 12 : 15;
+    const gon = cw < 110; const pad = gon ? 6 : 8; const tCo = gon ? 12 : 15;
     let h = hdHangThu(g, x, y, cw, gap, 15, 36) + gap;
     const lech = cotNgay1(m, yr); const soNgay = soNgayThang(m, yr);
     const fLd = fHd(500, nha ? 11.5 : 12.5, 'ld');
@@ -2160,7 +2160,8 @@
       hdChu(g, s, x0, yb, fHd(600, co), mau);
     };
     const soHang = Math.ceil((lech + soNgay) / 7);
-    for (let r = 0; r < soHang; r++) {
+    const r0 = hang ? hang.r0 : 0; const r1 = hang ? hang.r1 : soHang - 1;
+    for (let r = r0; r <= r1; r++) {
       let ch = nha ? 104 : 78;
       const noiDung = {};
       for (let c = 0; c < 7; c++) {
@@ -2222,11 +2223,19 @@
           yy += z.h + 5;
         }
       }
-      h += ch + (r < soHang - 1 ? gap : 0);
+      h += ch + (r < r1 ? gap : 0);
     }
     return h;
   }
 
+  function hangLichHd(m, yr, dsLich, can) {
+    const lech = cotNgay1(m, yr); const soHang = Math.ceil((lech + soNgayThang(m, yr)) / 7);
+    const co = new Set();
+    for (const l of dsLich || []) for (const b of l || []) co.add(Math.floor((lech + b.ngay - 1) / 7));
+    let r0 = co.size ? Math.min(...co) : 0; let r1 = co.size ? Math.max(...co) : soHang - 1;
+    while (can && r1 - r0 + 1 < can && (r1 < soHang - 1 || r0 > 0)) { if (r0 > 0) r0--; else r1++; }
+    return { r0, r1, n: r1 - r0 + 1 };
+  }
   function lopNganHd(lop) { return String(lop || '').replace(/[\s-]/g, ''); }
   function nhanLopHd(b) { return lopNganHd(b.lop) + (b.tach ? (b.doan === 'CU' ? ' cũ' : ' mới') : ''); }
   function nhomLichHd(ds) {
@@ -2461,7 +2470,7 @@
     const nd = noiDungCkHd(u.label, (u.classes || [])[0], conNha);
     hdVe(cv, W, (g) => {
       let yy = hdDau(g, W, 0, dau);
-      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, nl.ds, nha || nl.coNhieu);
+      yy += 18; yy += hdLich(g, 32, yy, W - 64, m, y, nl.ds, nha || nl.coNhieu, hangLichHd(m, y, nl.ds.map((z) => z.lich)));
       yy += 22; yy += hdTongKet(g, 32, yy, W - 64, tk);
       yy += 22; yy += hdNganHang(g, 32, yy, W - 64, nd, anh);
       return yy + hdSlogan(g, W, yy);
@@ -2521,14 +2530,17 @@
     const cv = $('#hdTongCanvas');
     hdChuanBi().then((anh) => { if (document.body.contains(cv)) veHoaDonNo(cv, o, khoi, anh); });
   }
-  function hdLichNho(g, x, y, w, m, yr, lich) {
+  function hdLichNho(g, x, y, w, m, yr, lich, hang) {
     const gap = 4; const cw = (w - 6 * gap) / 7; const ch = 44;
     let h = hdHangThu(g, x, y, cw, gap, 11.5, 22) + gap;
     const lech = cotNgay1(m, yr); const soNgay = soNgayThang(m, yr);
     const fLd = fHd(500, 9.5, 'ld');
+    const soHangT = Math.ceil((lech + soNgay) / 7);
+    const r0 = hang ? hang.r0 : 0; const r1 = hang ? hang.r1 : soHangT - 1;
     for (let d = 1; d <= soNgay; d++) {
-      const i = lech + d - 1;
-      const cx = x + (i % 7) * (cw + gap); const cy = y + h + Math.floor(i / 7) * (ch + gap);
+      const i = lech + d - 1; const r = Math.floor(i / 7);
+      if (r < r0 || r > r1) continue;
+      const cx = x + (i % 7) * (cw + gap); const cy = y + h + (r - r0) * (ch + gap);
       const b = (lich || []).find((z) => z.ngay === d);
       if (!b) {
         hdKhung(g, cx + 0.5, cy + 0.5, cw - 1, ch - 1, 9.5, '#ffffff', '#eef1f5', 1);
@@ -2550,7 +2562,7 @@
         ld.forEach((l, k) => hdChu(g, l, cx + 4, cy + ch - 5 - (ld.length - 1 - k) * 11, fLd, '#b42318'));
       }
     }
-    const soHang = Math.ceil((lech + soNgay) / 7);
+    const soHang = r1 - r0 + 1;
     return h + soHang * ch + (soHang - 1) * gap;
   }
   function hdTienThang(g, x, y, w, ds, k) {
@@ -2595,7 +2607,7 @@
     return yy - y;
   }
   function veHoaDonNo(cv, o, khoi, anh) {
-    const nha = o.loai === 'nha'; const W = nha ? 1240 : 760;
+    const nha = o.loai === 'nha'; const W = nha ? 1560 : 760;   // v0.31.0 — nhà 1240 ⇒ 1560: tên con + tích một dòng
     const coU = khoi.filter((k) => k.u); const uMoi = coU.length ? coU[coU.length - 1].u : null;
     const namCuoi = khoi.length ? khoi[khoi.length - 1].y : S.y;
     const thang = khoi.every((k) => k.y === namCuoi) ? khoi.map((k) => k.m).join(' + ') + '/' + namCuoi : khoi.map((k) => k.m + '/' + k.y).join(' + ');
@@ -2633,6 +2645,7 @@
     const nd = noiDungCkHd(o.ten, lop, conNha);
     const cuoi = khoi.length ? khoi[khoi.length - 1] : { m: S.m, y: S.y };
     const moc = (cuoi.y * 12 + cuoi.m) > (S.y * 12 + S.m) ? cuoi : { m: S.m, y: S.y };
+    const lichCua = (t) => (t.u ? (nha ? (t.u.members || []).map((z) => z.lich) : [t.u.lich]) : []);
     const theThang = (g, x, y, w, t, hCo) => {
       const P = 16; const wi = w - P * 2;
       let yy = y + 14;
@@ -2650,8 +2663,8 @@
       yy += 4;
       if (t.u) {
         yy += nha
-          ? hdLich(g, x + P, yy, wi, t.m, t.y, nhomLichHd((t.u.members || []).map((z) => ({ id: z.id, ten: z.ten, lich: z.lich, laNha: true }))).ds, true)
-          : hdLichNho(g, x + P, yy, wi, t.m, t.y, t.u.lich);
+          ? hdLich(g, x + P, yy, wi, t.m, t.y, nhomLichHd((t.u.members || []).map((z) => ({ id: z.id, ten: z.ten, lich: z.lich, laNha: true }))).ds, true, t.hang)
+          : hdLichNho(g, x + P, yy, wi, t.m, t.y, t.u.lich, t.hang);
       } else { hdChu(g, '(không đọc được lịch học tháng này)', x + P, yy + 16, fHd(500, 13), '#8592a6'); yy += 24; }
       yy += 14;
       const kT = nha ? 1.2 : 1;
@@ -2668,6 +2681,8 @@
       const cw = (W - 64 - 16) / 2;
       for (let i = 0; i < th.length; i += 2) {
         const cap = th.slice(i, i + 2);
+        const can = Math.max(...cap.map((t) => (t.u ? hangLichHd(t.m, t.y, lichCua(t)).n : 0)));
+        for (const t of cap) if (t.u) t.hang = hangLichHd(t.m, t.y, lichCua(t), can);
         const hRow = Math.max(...cap.map((t) => theThang(hdDoG(), 0, 0, cw, t, 0)));
         const x0 = cap.length === 1 ? 32 + (W - 64 - cw) / 2 : 32;   // tháng lẻ cuối nằm giữa
         cap.forEach((t, j) => theThang(g, x0 + j * (cw + 16), yy, cw, t, hRow));

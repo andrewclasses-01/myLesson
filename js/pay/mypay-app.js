@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.31.0 (0bcce2c) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.32.0 (8ff86c2) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -2339,7 +2339,8 @@
   }
 
   function hdTongKet(g, x, y, w, tk) {
-    const L = x + 22; const R = x + w - 22; let yy = y + 6; let dau = true;
+    const pad = tk.trongThe ? 0 : 22;
+    const L = x + pad; const R = x + w - pad; let yy = y + (tk.trongThe ? 0 : 6); let dau = !tk.trongThe;
     const NH = fHd(600, 17);
     const dong = (nhan, veGt, cao, mauNhan) => {
       if (!dau) hdVach(g, L, yy, R, '#e3e8f1', true, 1);
@@ -2404,7 +2405,8 @@
       if (k && k.to) dong(a, phai(b, fHd(800, 24), k.mau), 54, k.mauNhan || k.mau);
       else dong(a, phai(b, fHd(700, k ? 18 : 17), (k && k.mau) || '#152036'), 46, k && (k.mauNhan || k.mau));
     }
-    dong(tk.cuoiDong.nhan, phai(tk.cuoiDong.gt, fHd(800, 18), tk.cuoiDong.mau), 46);
+    if (tk.cuoiDong) dong(tk.cuoiDong.nhan, phai(tk.cuoiDong.gt, fHd(800, 18), tk.cuoiDong.mau), 46);
+    if (tk.trongThe) return yy - y;
     yy += 6;
     hdKhung(g, x + 0.75, y + 0.75, w - 1.5, yy - y - 1.5, 22, null, '#e3e8f1', 1.5);
     return yy - y;
@@ -2585,7 +2587,8 @@
     }
     return yy - y + 2;
   }
-  function hdTongKetNo(g, x, y, w, th, tong, han) {
+  function hdTongKetNo(g, x, y, w, th, tong, han, dd) {
+    if (dd && dd.length) return hdTongKetNoDaDong(g, x, y, w, th, tong, han, dd);
     const L = x + 22; const R = x + w - 22; let yy = y + 6;
     hdChu(g, 'TỔNG HỌC PHÍ CÁC THÁNG', L, yy + 22, fHd(700, 13), '#8b96a9', 'left', 1.56); yy += 32;
     for (const t of th) {
@@ -2597,6 +2600,32 @@
     }
     hdVach(g, L, yy, R, '#e3e8f1', false, 1.5);
     hdChu(g, 'Tổng học phí', L, yy + 35, fHd(800, 18), '#152036');
+    hdChu(g, tienHd(tong), R, yy + 36, fHd(800, 26), '#2557d6', 'right');
+    yy += 54;
+    hdVach(g, L, yy, R, '#e3e8f1', true, 1);
+    hdChu(g, 'Hạn nộp', L, yy + 29, fHd(600, 17), '#56627a');
+    hdChu(g, han, R, yy + 29, fHd(800, 18), '#d97706', 'right');
+    yy += 46 + 6;
+    hdKhung(g, x + 0.75, y + 0.75, w - 1.5, yy - y - 1.5, 22, null, '#e3e8f1', 1.5);
+    return yy - y;
+  }
+  function hdTongKetNoDaDong(g, x, y, w, th, tong, han, dd) {
+    const L = x + 22; const R = x + w - 22; let yy = y + 6;
+    hdChu(g, 'TỔNG HỌC PHÍ CÁC THÁNG', L, yy + 22, fHd(700, 13), '#8b96a9', 'left', 1.56); yy += 32;
+    const dongThuong = (nhan, gt, fN, mN, fG, mG) => {
+      hdVach(g, L, yy, R, '#e3e8f1', true, 1);
+      hdChu(g, nhan, L, yy + 26, fN, mN); hdChu(g, gt, R, yy + 26, fG, mG, 'right'); yy += 40;
+    };
+    for (const t of th) dongThuong(`Tháng ${t.m}/${t.y}`, tienHd(t.soTien), fHd(600, 17), '#56627a', fHd(700, 18), '#152036');
+    dongThuong('Tổng học phí', tienHd(th.reduce((s, t) => s + t.soTien, 0)), fHd(800, 17), '#152036', fHd(800, 18), '#152036');
+    for (const d of dd) {
+      hdVach(g, L, yy, R, '#e3e8f1', true, 1);
+      const nh = 'Đã đóng trước'; hdChu(g, nh, L, yy + 26, fHd(500, 16.5, 'than', true), '#0f766e');
+      hdChu(g, ` (tháng ${d.m}/${d.y})`, L + hdDo(g, nh, fHd(500, 16.5, 'than', true)), yy + 26, fHd(400, 15, 'than', true), '#5f9e95');
+      hdChu(g, tienHd(d.tien), R, yy + 26, fHd(500, 16.5, 'than', true), '#0f766e', 'right'); yy += 40;
+    }
+    hdVach(g, L, yy, R, '#e3e8f1', false, 1.5);
+    hdChu(g, 'Học phí còn thiếu', L, yy + 35, fHd(800, 18), '#152036');
     hdChu(g, tienHd(tong), R, yy + 36, fHd(800, 26), '#2557d6', 'right');
     yy += 54;
     hdVach(g, L, yy, R, '#e3e8f1', true, 1);
@@ -2618,30 +2647,28 @@
       : { ten: o.ten, lop, so: o.hsId, nhan: 'HỌC PHÍ CHƯA ĐÓNG', mauNhan: '#c2410c', thang, coThang };
     const mauCon = {}; (conNha || []).forEach((c, i) => { mauCon[String(c.so)] = MAU_CON_HD[i % MAU_CON_HD.length]; });
     const th = khoi.map((k) => {
-      const tien = [];
-      if (k.u) {
+      const tien = []; let tk = null;
+      const hocPhi = k.u ? (k.u.expected || 0) : k.soTien + (k.motPhan || 0);
+      if (k.u && nha) {
+        const { goc, khoan, gocCon } = khoanGiamHd(k.u);
+        tk = { trongThe: true, dongBuoi: gomConHd(k.u.members).map((c) => ({ ten: c.ten, buoi: c.buoi })), goc, khoan, gocCon, cuoi: hocPhi, phu: [] };
+      } else if (k.u) {
         const { goc, khoan } = khoanGiamHd(k.u);
         const coGiam = khoan.some((x) => x.tru > 0);
-        if (nha) {
-          for (const c of gomConHd(k.u.members)) {
-            const gocCon = (k.u.members || []).filter((x) => String(x.id) === String(c.so)).reduce((s, x) => s + (x.goc || 0), 0);
-            tien.push({ nhan: `${c.ten} · ${c.buoi} buổi`, gt: tienHd(gocCon), cham: mauCon[String(c.so)] || MAU_CON_HD[0] });
-          }
-          if (coGiam) tien.push({ nhan: 'Học phí gốc', gt: tienHd(goc) });
-        } else if (coGiam) tien.push({ nhan: `${k.u.buoi} buổi · Học phí gốc`, gt: tienHd(goc) });
-        for (const x of khoan) if (x.tru > 0) tien.push({ nhan: x.ten + (x.phu ? ' ' + x.phu : ''), gt: tienHd(x.tru), kieu: 'giam' });
-        const hocPhi = k.motPhan > 0 ? Math.max(0, goc - khoan.reduce((s, x) => s + x.tru, 0)) : k.soTien;
-        if (nha) tien.push({ nhan: 'Học phí cuối', gt: tienHd(hocPhi), kieu: 'chot' });
-        else if (coGiam) tien.push({ nhan: 'Học phí', gt: tienHd(hocPhi), kieu: 'chot' });
-        else tien.push({ nhan: `${k.u.buoi} buổi · Học phí tháng ${k.m}`, gt: tienHd(hocPhi), kieu: k.motPhan > 0 ? '' : 'mot' });
-      } else tien.push({ nhan: `Học phí tháng ${k.m}`, gt: tienHd(k.soTien + (k.motPhan || 0)), kieu: k.motPhan > 0 ? '' : 'mot' });
-      if (k.motPhan > 0) {
+        if (coGiam) {
+          tien.push({ nhan: `${k.u.buoi} buổi · Học phí gốc`, gt: tienHd(goc) });
+          for (const x of khoan) if (x.tru > 0) tien.push({ nhan: x.ten + (x.phu ? ' ' + x.phu : ''), gt: tienHd(x.tru), kieu: 'giam' });
+          tien.push({ nhan: 'Học phí', gt: tienHd(hocPhi), kieu: 'chot' });
+        } else tien.push({ nhan: `${k.u.buoi} buổi · Học phí tháng ${k.m}`, gt: tienHd(hocPhi), kieu: k.motPhan > 0 ? '' : 'mot' });
+      } else tien.push({ nhan: `Học phí tháng ${k.m}`, gt: tienHd(hocPhi), kieu: k.motPhan > 0 && !nha ? '' : 'mot' });
+      if (k.motPhan > 0 && !nha) {
         tien.push({ nhan: 'Đã đóng trước', gt: tienHd(k.motPhan), kieu: 'dong' });
         tien.push({ nhan: 'Học phí còn thiếu', gt: tienHd(k.soTien), kieu: 'chot' });
       }
-      return { m: k.m, y: k.y, u: k.u, soTien: k.soTien, tien };
+      return { m: k.m, y: k.y, u: k.u, soTien: nha ? hocPhi : k.soTien, conThieu: k.soTien, motPhan: k.motPhan || 0, tien, tk };
     });
-    const tong = th.reduce((s, t) => s + t.soTien, 0);
+    const tong = th.reduce((s, t) => s + t.conThieu, 0);
+    const ddNha = nha ? th.filter((t) => t.motPhan > 0).map((t) => ({ m: t.m, y: t.y, tien: t.motPhan })) : [];
     const nd = noiDungCkHd(o.ten, lop, conNha);
     const cuoi = khoi.length ? khoi[khoi.length - 1] : { m: S.m, y: S.y };
     const moc = (cuoi.y * 12 + cuoi.m) > (S.y * 12 + S.m) ? cuoi : { m: S.m, y: S.y };
@@ -2668,10 +2695,11 @@
       } else { hdChu(g, '(không đọc được lịch học tháng này)', x + P, yy + 16, fHd(500, 13), '#8592a6'); yy += 24; }
       yy += 14;
       const kT = nha ? 1.2 : 1;
-      const hTien = hdTienThang(hdDoG(), 0, 0, wi, t.tien, kT);
+      const veTien = (gg, xx, yt) => (t.tk ? hdTongKet(gg, xx, yt, wi, t.tk) : hdTienThang(gg, xx, yt, wi, t.tien, kT));
+      const hTien = veTien(hdDoG(), 0, 0);
       const tuNhien = yy - y + hTien + 14;
       const h = Math.max(tuNhien, hCo || 0);
-      hdTienThang(g, x + P, y + h - 14 - hTien, wi, t.tien, kT);
+      veTien(g, x + P, y + h - 14 - hTien);
       hdKhung(g, x + 0.75, y + 0.75, w - 1.5, h - 1.5, 22, null, '#e3e8f1', 1.5);
       return tuNhien;
     };
@@ -2688,7 +2716,7 @@
         cap.forEach((t, j) => theThang(g, x0 + j * (cw + 16), yy, cw, t, hRow));
         yy += hRow + (i + 2 < th.length ? 16 : 0);
       }
-      yy += 18; yy += hdTongKetNo(g, 32, yy, W - 64, th, tong, hanNopHd(moc.m, moc.y));
+      yy += 18; yy += hdTongKetNo(g, 32, yy, W - 64, th, tong, hanNopHd(moc.m, moc.y), ddNha);
       yy += 22; yy += hdNganHang(g, 32, yy, W - 64, nd, anh);
       return yy + hdSlogan(g, W, yy);
     });

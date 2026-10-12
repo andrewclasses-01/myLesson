@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.31.0 (0bcce2c) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.32.0 (8ff86c2) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -331,11 +331,14 @@ ipcMain.handle('phicu:ds', boc(async (m, y) => {
   const quet = quetChuaDong({ m: Number(m), y: Number(y) }, daDong);
   const ket = {};
   const them = (khoa, d) => { (ket[khoa] = ket[khoa] || []).push(d); };
+  const songTheo = new Map(quet.map((r) => [(r.loai === 'nha' ? 'N|' + r.idNha : 'H|' + r.hsId) + '|' + r.y + '-' + r.m, r]));
   for (const d of kho.docNoPhiTho().dong) {
     if (!(d.y * 12 + d.m < moc)) continue;
     const khoa = d.loai === 'nha' ? 'N|' + d.idNha : 'H|' + d.hsId;
     if (daDong.has(khoa + '|' + d.y + '-' + d.m)) continue;
-    them(khoa, { m: d.m, y: d.y, soTien: Number(d.soTien) || 0, kieu: d.kieu === 'sau' ? 'sau' : 'no', motPhan: 0 });
+    const song = songTheo.get(khoa + '|' + d.y + '-' + d.m);
+    them(khoa, { m: d.m, y: d.y, soTien: song ? song.conThieu : (Number(d.soTien) || 0), soTienChup: Number(d.soTien) || 0,
+      kieu: d.kieu === 'sau' ? 'sau' : 'no', motPhan: song ? song.motPhan : 0 });
   }
   for (const r of quet) {
     if (r.coNhan || !(r.conThieu > 0)) continue;
@@ -2495,7 +2498,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.31.0";
-  G.__MA = "0bcce2c";
+  G.__PHIEN_BAN = "0.32.0";
+  G.__MA = "8ff86c2";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

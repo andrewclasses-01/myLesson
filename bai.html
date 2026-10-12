@@ -2029,7 +2029,9 @@ body.mo-menu .side.trai{transform:none}
 .nut-buoc.zalo{background:#0068FF}
 .quay-du{margin:12px 0 10px; padding:12px 14px; border-radius:12px; background:#FEF2F2; border:2px solid #DC2626; color:#B91C1C; font-size:19px; font-weight:900; line-height:1.25; letter-spacing:.02em; text-align:center}
 .quay-du small{display:block; margin-top:5px; font-size:13.5px; font-weight:700; letter-spacing:0; color:#991B1B}
-.cho-xn{margin-top:12px; padding:10px 12px; border-radius:10px; background:#FFF7E6; color:#8A5A00; font-size:13.5px; line-height:1.45}
+.luu-y.zl{font-size:13.5px; padding:10px 14px}
+.luu-y.zl ul{margin:4px 0 0; padding-left:20px}
+.luu-y.zl li{margin:2px 0}
 .nut-buoc[disabled]{opacity:.55; cursor:default}
 .nut-hang{display:flex; flex-wrap:wrap; gap:8px}
 .luu-y{font-size:12.5px; color:#7A4A00; background:#FCF3E2; border-radius:10px; padding:9px 12px; line-height:1.5}
@@ -6099,12 +6101,13 @@ function veTheZaloKhoa(x, so){
     '<div class="buoc-than">' +
       '<div class="buoc-chu">Làm <b>giống Bước 3</b>, nhưng lần này phụ huynh dùng một điện thoại khác <b>quay video</b> lại lúc con trả lời các câu hỏi — theo đúng video bài làm mẫu ở trên. Quay xong, phụ huynh <b>gửi video lên nhóm Zalo ' + chuAnToan(tenLop) + '</b>.</div>' +
       '<div class="quay-du">BẮT BUỘC QUAY ĐỦ ' + (soCauQuay ? 'TOÀN BỘ ' + soCauQuay + ' CÂU HỎI' : 'TOÀN BỘ CÂU HỎI') + '<small>từ câu 1 đến câu cuối cùng — quay thiếu câu thầy không tính là đã nộp.</small></div>' +
-      '<div class="luu-y">Lưu ý: quay ở <b>độ phân giải thấp</b> cho video nhẹ, dễ gửi. Video dài thì có thể <b>cắt thành nhiều đoạn</b> khi gửi.</div>' +
-      '<div class="nut-hang">' +
-        (BAI.zalo ? '<a class="nut-buoc zalo" href="' + chuAnToan(BAI.zalo) + '" target="_blank" rel="noopener">Mở nhóm Zalo của lớp</a>' : '') +
-      '</div>' +
-      // 12/10/2026 (thầy chốt) — em KHÔNG tự bấm "Đã gửi video": thầy xem video trong nhóm rồi tích trên dashboard.
-      '<div class="cho-xn">⏳ Gửi xong là được — thầy xem video rồi sẽ <b>tích xác nhận</b> cho con. Thầy tích xong, bước này mới hiện <b>Xong</b>.</div>' +
+      // 12/10/2026 (thầy chốt) — một ô Lưu ý gạch đầu dòng; BỎ ô "Gửi xong là được" (rời rạc). Em không tự bấm "Đã gửi video":
+      // thầy xem video trong nhóm rồi tích trên dashboard.
+      '<div class="luu-y zl"><b>Lưu ý:</b><ul>' +
+        '<li>Quay ở <b>độ phân giải thấp</b> cho video nhẹ và gửi nhanh hơn.</li>' +
+        '<li>Video dài có thể <b>cắt thành nhiều đoạn</b> bằng tính năng cắt có sẵn khi chọn gửi ảnh trên Zalo.</li>' +
+      '</ul></div>' +
+      (BAI.zalo ? '<div class="nut-hang"><a class="nut-buoc zalo" href="' + chuAnToan(BAI.zalo) + '" target="_blank" rel="noopener">Mở nhóm Zalo của lớp</a></div>' : '') +
     '</div>';
   return sec;
 }

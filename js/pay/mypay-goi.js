@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.32.0 (8ff86c2) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.32.1 (e5ba864) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -258,7 +258,18 @@ ipcMain.handle('tamung:tru', boc(async (m, y, hsId, soTienCanTru) => {
 
 ipcMain.handle('nophi:doc', boc(async () => {
   const hsDs = diemdanh.docHocSinh();
-  return kho.docNoPhi(hsDs, kho.docGiaDinh(hsDs));
+  const nho = {};
+  const tinhLai = (d) => {
+    const k = d.y + '-' + d.m;
+    if (!(k in nho)) { try { nho[k] = tinhKetQuaThang(d.m, d.y); } catch (_) { nho[k] = null; } }
+    const kq = nho[k]; if (!kq) return null;
+    const u = d.loai === 'nha' ? kq.bang.units.find((x) => x.kind === 'fam' && String(x.idNha) === String(d.idNha))
+      : kq.bang.units.find((x) => x.kind !== 'fam' && String(x.hsId) === String(d.hsId));
+    if (!u || !(u.buoi > 0)) return null;
+    const motPhan = Math.max(0, Math.round((((kq.thang.ghiDe || {})[u.id] || {}).dongMotPhan) || 0));
+    return Math.max(0, (u.expected || 0) - motPhan);
+  };
+  return kho.docNoPhi(hsDs, kho.docGiaDinh(hsDs), tinhLai);
 }));
 ipcMain.handle('nophi:them', boc(async (dong) => kho.themNoPhi(dong)));
 ipcMain.handle('nophi:themrieng', boc(async (dong) => kho.themNoPhiRieng(dong)));
@@ -1259,13 +1270,15 @@ function docNoPhiTho() {
   if (!Array.isArray(o.dong)) o.dong = [];
   return o;
 }
-function docNoPhi(hocSinhDs, giaDinh) {
+function docNoPhi(hocSinhDs, giaDinh, tinhLai) {
   const tho = docNoPhiTho();
   const theoId = new Map((hocSinhDs || []).map((h) => [String(h.id), h]));
   const theoNha = new Map((((giaDinh || {}).families) || []).map((f) => [String(f.id), f]));
   const oMap = new Map();
-  for (const d of tho.dong) {
+  for (const d0 of tho.dong) {
+    const d = Object.assign({}, d0);
     d.kieu = d.kieu === 'sau' ? 'sau' : 'no';   // dòng ghi bằng v0.6.0 chưa có `kieu` → coi là nợ
+    if (tinhLai) { const moi = tinhLai(d); if (moi !== null && moi !== undefined) { d.soTienChup = Number(d.soTien) || 0; d.soTien = moi; } }
     const khoaO = d.loai === 'nha' ? 'N|' + d.idNha : 'H|' + d.hsId;
     if (!oMap.has(khoaO)) {
       let ten = d.tenLuc || '(không rõ)'; let lop = d.lopLuc || ''; let mat = true;
@@ -2498,7 +2511,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.32.0";
-  G.__MA = "8ff86c2";
+  G.__PHIEN_BAN = "0.32.1";
+  G.__MA = "e5ba864";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

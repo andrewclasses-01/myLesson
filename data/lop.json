@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-11 22:29:16",
+  "capNhat": "2026-10-12 11:06:55",
   "nguon": "dashboard",
   "lop": [
     {
@@ -408,7 +408,7 @@
           "sinhNhat": ""
         },
         {
-          "id": 238,
+          "id": 232,
           "ten": "Long",
           "ma": "LONG12052016",
           "sinhNhat": "",
@@ -1526,7 +1526,7 @@
           "vao": "2026-10-09"
         },
         {
-          "id": 263,
+          "id": 239,
           "ten": "Nhật Quang",
           "ma": "NHATQUANG24112015",
           "sinhNhat": "11-24",
@@ -1637,7 +1637,7 @@
           "vao": "2026-09-15"
         },
         {
-          "id": 216,
+          "id": 142,
           "ten": "Hà Anh",
           "ma": "NGUYENHAANH12092015",
           "sinhNhat": "",
@@ -1665,7 +1665,7 @@
           "vao": "2026-09-17"
         },
         {
-          "id": 214,
+          "id": 155,
           "ten": "Mạc Minh Khang",
           "ma": "MACMINHKHANG29052017",
           "sinhNhat": "",
@@ -1700,7 +1700,7 @@
           "vao": "2026-09-15"
         },
         {
-          "id": 224,
+          "id": 143,
           "ten": "Ngọc Linh",
           "ma": "KHONGNGOCLINH31032014",
           "sinhNhat": "",

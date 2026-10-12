@@ -4221,6 +4221,24 @@ tr.qm-hang-tam td{background:#fffbeb}
       });
     }
     var xongHet = (daDoc && acts.length) ? (caLop.length - thieu.length) : null;
+    // ⭐ thiết kế K10 2 (12/10/2026, thầy chốt) — lesson CHƯƠNG: "xong" = xong ĐỦ MỌI BƯỚC (cả sách/video/Zalo, không chỉ act)
+    // ⇒ màu thẻ (xanh đủ / đỏ gấp) + danh sách em thiếu tính trên đủ các bước. Chưa đọc xong tiến độ bước ⇒ xongHet null (không xanh sớm).
+    if (b.kieu === 'CHUONG' && daDoc) {
+      var buocTay = (b.bt || []).filter(function (x) { return !(x.ma && (x.loai === 'acts' || x.loai === 'act')); });
+      if (buocTay.length) {
+        var tdC = CHUONG_TD[b.id];
+        if (!tdC || tdC === 'dang') { xongHet = null; docChuongCuaBai(b, maLop); }
+        else {
+          thieu = [];
+          caLop.forEach(function (ten) {
+            var con = acts.filter(function (a) { return !coTrongDiem(DIEM[a.ma] || [], ten, a.ma); }).length +
+              buocTay.filter(function (x) { return !xongBuocTayKh(tdC[ten], x); }).length;
+            if (con) thieu.push({ ten: ten, so: con });
+          });
+          xongHet = caLop.length - thieu.length;
+        }
+      }
+    }
     // ⭐ #2 — thẻ SPEAKING CHECK (nhận theo tên dạng bài, y hệt lop.html
     // theTuBai()): doiSp đổ vào sau khi đọc Firestore, xem capNhatSpeakingChoBai().
     var laSp = /SP\s*CHECK/i.test(b.dang || '');
@@ -5589,10 +5607,10 @@ tr.qm-hang-tam td{background:#fffbeb}
     g.forEach(function (r) { var a = Math.max(0, r[0]), b2 = Math.min(v.tong, r[1]); if (b2 > a) phu += b2 - a; });
     return phu >= v.tong - 1.5;
   }
-  function docChuongCuaBai(b) {
+  function docChuongCuaBai(b, maLop) {
     if (CHUONG_TD[b.id]) return;
     CHUONG_TD[b.id] = 'dang';
-    var lopNay = LOP_CHON, l = A.lopTheoMa(DL, lopNay) || {};
+    var bang = CHUONG_TD, l = A.lopTheoMa(DL, maLop || LOP_CHON) || {};
     var ds = (l.hocSinh || []).filter(function (h) { return String(h.ma || '').trim(); });
     var ra = {}, i = 0;
     function ke() {
@@ -5608,7 +5626,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var chay = [];
     for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
     Promise.all(chay).then(function () {
-      if (LOP_CHON !== lopNay || CHUONG_TD[b.id] !== 'dang') return;
+      if (CHUONG_TD !== bang || CHUONG_TD[b.id] !== 'dang') return;   // đã đổi lớp (chonLop thay bảng mới) ⇒ bỏ
       CHUONG_TD[b.id] = ra;
       veTat();
     });
@@ -5621,7 +5639,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var caLop = A.caLopCuaBai(A.lopTheoMa(DL, LOP_CHON), b), siSo = caLop.length;
     var td = CHUONG_TD[b.id];
     if (!td || td === 'dang') {
-      docChuongCuaBai(b);
+      docChuongCuaBai(b, LOP_CHON);
       return '<span class="td-dong"><span class="td-ten" title="' + tieu + '">' + nhan + '</span>' +
         '<span class="td-bar"><i style="width:0%"></i></span>' +
         '<span class="td-so" style="color:var(--nhat)">…</span><span class="td-tich"></span></span>';

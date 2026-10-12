@@ -1460,6 +1460,39 @@ function veKetQuaEm(k){
         '<span class="hang' + (q.hang && q.hang <= 3 ? ' top' : '') + '">Hạng ' + q.hang + '/' + SI_SO + '</span></div>' +
     '</div>';
 }
+/* ⭐ thiết kế ƯU TIÊN PHẦN CÒN THIẾU (12/10/2026, thầy chốt "mọi nơi") — bấm thanh tiến trình ⇒ pop-up mở ĐÚNG phần lớp còn thiếu
+   đầu tiên: pop-up dạng TAB chọn tab đó; dạng CỘT cuộn tới cột đó (máy tính đủ chỗ thì các cột đã nằm ngang, điện thoại cột
+   xếp dọc ⇒ cuộn xuống); STAGE chọn chặng SỚM NHẤT còn em chưa xong. BẢN CHÉP ở lop.html · khoa.html · dashboard.html.
+   Khung pop-up lúc mở còn đang trượt (transform scale) ⇒ đo bằng rect rồi chia tỉ lệ. */
+function cuonPopToi(el){
+  var ds = document.getElementById('popDs');
+  if (!el || !ds) return;
+  requestAnimationFrame(function(){   // chờ khung pop-up hiện (đo lúc còn ẩn ra 0)
+    var r = ds.getBoundingClientRect(), s = (r.height / ds.offsetHeight) || 1;
+    ds.scrollTop += (el.getBoundingClientRect().top - r.top) / s - 2;
+  });
+}
+function cuonTabPopToi(){
+  var bar = document.getElementById('popTabs'), t = bar && bar.querySelector('.pop-tab.on');
+  if (!t) return;
+  requestAnimationFrame(function(){
+    var r = bar.getBoundingClientRect(), s = (r.width / bar.offsetWidth) || 1;
+    bar.scrollLeft += (t.getBoundingClientRect().left - r.left) / s - 12;
+  });
+}
+/* Tab này còn thiếu? — chế độ CẢ LỚP: còn em (đang tính) chưa xong; chế độ EM: chính em chưa xong. */
+function buocThieuPop(k){
+  if (k.tay) {
+    var fs = fsChuongPop();
+    if (POP.che === 'lop') return !!fs && CA_TINH.some(function(ten){ return !xongTayPop(ten, k, fs); });
+    return !xongTayPop(TOI, k, fs);
+  }
+  if (POP.che === 'lop') {
+    var c = CHUAN[k.ma], moc = (c && !c.tru) ? c.dinh : 0;
+    return xepActPop(k.ma).some(function(e){ return !e.mien && (e.chua || e.diem < moc); });
+  }
+  return !ketQuaEm(k).xong;
+}
 function fsChuongPop(){
   var g = POP.b && POP.b.goc; if (!g) return null;
   var fs = CHUONG_FS[g.id];
@@ -1521,11 +1554,13 @@ function moPopKetQua(b, che){
   var acts = actsCuaThe(b);
   if (!acts.length) { baoToast('Bài này chưa có bài tập online nào.'); return; }
   POP = { b: b, acts: acts, i: 0, che: che === 'lop' ? 'lop' : 'em' };
+  for (var iT = 0; iT < acts.length; iT++) if (buocThieuPop(acts[iT])) { POP.i = iT; break; }   // ưu tiên phần còn thiếu
   $('#popTieu').textContent = POP.che === 'lop' ? 'KẾT QUẢ CẢ LỚP' : 'KẾT QUẢ CỦA ' + chuAnToan(TOI);
   $('#popPhu').textContent = b.lesson + (b.chuDe ? ' • ' + b.chuDe : '');
   veTabsPop();
   veRuotPop();
   $('#popNen').classList.add('mo');
+  cuonTabPopToi();   // điện thoại: thanh tab tràn ngang ⇒ kéo tab đang chọn vào tầm nhìn
 }
 function dongPop(){ $('#popNen').classList.remove('mo'); }
 $('#popDong').onclick = dongPop;

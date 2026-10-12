@@ -2706,6 +2706,31 @@ function xepActPop(ma, caLopDu, khongTinh){
   return A.xepHangAct(DIEM_ACT[ma] || [], caLopDu || CA_LOP, khongTinh || []);
 }
 
+/* ⭐ thiết kế ƯU TIÊN PHẦN CÒN THIẾU (12/10/2026, thầy chốt "mọi nơi") — bấm thanh tiến trình ⇒ pop-up mở ĐÚNG phần lớp còn thiếu
+   đầu tiên: pop-up dạng TAB chọn tab đó; dạng CỘT cuộn tới cột đó (máy tính đủ chỗ thì các cột đã nằm ngang, điện thoại cột
+   xếp dọc ⇒ cuộn xuống); STAGE chọn chặng SỚM NHẤT còn em chưa xong. BẢN CHÉP ở lop.html · khoa.html · dashboard.html.
+   Khung pop-up lúc mở còn đang trượt (transform scale) ⇒ đo bằng rect rồi chia tỉ lệ. */
+function cuonPopToi(el){
+  var ds = document.getElementById('popDs');
+  if (!el || !ds) return;
+  requestAnimationFrame(function(){   // chờ khung pop-up hiện (đo lúc còn ẩn ra 0)
+    var r = ds.getBoundingClientRect(), s = (r.height / ds.offsetHeight) || 1;
+    ds.scrollTop += (el.getBoundingClientRect().top - r.top) / s - 2;
+  });
+}
+function cuonTabPopToi(){
+  var bar = document.getElementById('popTabs'), t = bar && bar.querySelector('.pop-tab.on');
+  if (!t) return;
+  requestAnimationFrame(function(){
+    var r = bar.getBoundingClientRect(), s = (r.width / bar.offsetWidth) || 1;
+    bar.scrollLeft += (t.getBoundingClientRect().left - r.left) / s - 12;
+  });
+}
+/* Act này còn em (đang tính) chưa đủ điểm? — cùng luật "full" của `veCotActPop`. */
+function actThieuPop(a, caLopDu, khongTinh){
+  var c = CHUAN_ACT[a.ma], moc = (c && !c.tru) ? c.dinh : 0;
+  return xepActPop(a.ma, caLopDu, khongTinh).some(function(e){ return !e.mien && (e.chua || e.diem < moc); });
+}
 function veCotActPop(a, moAct, cham, caLop, siSo, caLopDu, khongTinh){
   caLop = caLop || CA_LOP;
   if (siSo == null) siSo = caLop.length;
@@ -2771,6 +2796,17 @@ function vePopChang(){
     var x = (popChangB.bai || []).filter(function(y){ return y.ma === a.ma; })[0] || {};   /* v1.137.0 — theo chặng */
     return veCotActPop(a, c.mo, cham, x.caLop || popChangB.caLop, x.siSo != null ? x.siSo : popChangB.siSo, popChangB.caLopDu, x.khongTinh || popChangB.khongTinh);
   }).join('');
+  // ưu tiên phần còn thiếu — cuộn tới act ĐẦU TIÊN của chặng còn em chưa xong
+  if (c.mo) {
+    var iThieu = -1;
+    c.acts.some(function(a, j){
+      var x = (popChangB.bai || []).filter(function(y){ return y.ma === a.ma; })[0] || {};
+      if (actThieuPop(a, popChangB.caLopDu || x.caLop || popChangB.caLop, x.khongTinh || popChangB.khongTinh)) { iThieu = j; return true; }
+      return false;
+    });
+    $('#popDs').scrollTop = 0;
+    if (iThieu > 0) cuonPopToi($('#popDs').querySelectorAll('.xh-cot')[iThieu]);
+  }
 }
 
 /* ⭐⭐ v1.95.0 (thầy chốt 13/09/2026) — BẤM VÙNG THANH CỦA THẺ THƯỜNG ⇒ BẢNG CHI TIẾT
@@ -2791,12 +2827,19 @@ function moPopChiTiet(b){
     return veCotActPop(a, true, [], a.caLop || b.caLop, a.siSo != null ? a.siSo : b.siSo, b.caLopDu, a.khongTinh || b.khongTinh);   /* v1.137.0 */
   }).join('');
   $('#popNen').classList.add('mo');
+  // ưu tiên phần còn thiếu — cuộn tới act ĐẦU TIÊN còn em chưa xong
+  var iThieu = -1;
+  acts.some(function(a, j){ if (actThieuPop(a, b.caLopDu || a.caLop || b.caLop, a.khongTinh || b.khongTinh)) { iThieu = j; return true; } return false; });
+  $('#popDs').scrollTop = 0;
+  if (iThieu > 0) cuonPopToi($('#popDs').querySelectorAll('.xh-cot')[iThieu]);
 }
 
 function moPopChang(b){
   popChangB = b;
   if (!b._chang) b._chang = changCuaThe(b);
   popChangI = A.changHien(b._chang);
+  // ưu tiên phần còn thiếu — chặng SỚM NHẤT đã mở mà còn em chưa xong (vd chặng 1 quá hạn còn sót bạn)
+  for (var iC = 0; iC < b._chang.length; iC++) if (b._chang[iC].mo && !b._chang[iC].caLopXong) { popChangI = iC; break; }
   $('#popPhu').textContent = b.ten + (b.ma ? ' • ' + b.ma : '');
   $('#popThanh').hidden = false;
   vePopChang();

@@ -1479,7 +1479,8 @@ function dungCot(){
       vung.onclick = function(e){
         if (e.target.closest('[data-xem]')) return;
         e.preventDefault(); e.stopPropagation();
-        moPopKetQua(b, t.classList.contains('lop') ? 'lop' : 'em');
+        // thiết kế K9 4 — chế độ thầy không còn nút đổi xem ⇒ pop-up luôn là KẾT QUẢ CẢ LỚP
+        moPopKetQua(b, (t.classList.contains('lop') || (EM && EM.vaiTro === 'gv')) ? 'lop' : 'em');
       };
     }
   });

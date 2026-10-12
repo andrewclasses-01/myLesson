@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.32.1 (e5ba864) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.34.0 (7688d35) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -365,12 +365,22 @@
   }
   function sdtCua(u) { const o = ((S.du && S.du.lienHe) || {})[khoaNguoiU(u)]; return (o && o.sdt) || ''; }
 
-  function moCanh(neo, html, lop) {
+  function moCanh(neo, html, lop, viTri) {
     let el = $('#ctxMo');
     if (!el) { el = document.createElement('div'); el.id = 'ctxMo'; document.body.appendChild(el); }
     el.className = 'ctxmenu glass ctx-mo' + (lop ? ' ' + lop : '');   // v0.29.0 — lớp riêng (vd ô Chỉnh riêng rộng hơn), đặt TRƯỚC khi đo
     el.innerHTML = html;
+    el.style.maxHeight = ''; el.style.overflowY = ''; el.style.bottom = '';
     el.classList.add('on');
+    if (viTri === 'tren') {
+      const rn = neo.getBoundingClientRect();
+      const w = el.offsetWidth;
+      el.style.left = Math.max(8, Math.min(rn.right - w, window.innerWidth - w - 8)) + 'px';
+      el.style.top = 'auto';
+      el.style.bottom = Math.max(8, window.innerHeight - rn.top + 8) + 'px';
+      el.style.maxHeight = Math.max(160, rn.top - 16) + 'px'; el.style.overflowY = 'auto';
+      return el;
+    }
     const khung = (neo.closest && neo.closest('.ctxmenu:not(#ctxMo)')) || neo;
     const rk = khung.getBoundingClientRect(); const rn = neo.getBoundingClientRect(); const r = el.getBoundingClientRect();
     let x = rk.right + 6;
@@ -1773,7 +1783,7 @@
   function tinhThuGiam(nen, r) {
     const so0 = (x) => { const n = Math.round(Number(x)); return n > 0 ? n : 0; };
     const cap = (goc, th, tran) => (th ? Math.min(goc, 1000000) : tran > 0 ? Math.min(goc, tran) : goc);
-    const doiTran = (o, x) => !!o && ('th' in o || 'tran' in o) && (!!o.th !== !!x.th || so0(o.tran) !== so0(x.tran));
+    const doiTran = (o, x) => !!o && ('tran' in o) && so0(o.tran) !== so0(x.tran);
     const g = Math.min(99, so0(r.g));
     let tho; let tru = 0;
     if (nen.kind === 'fam') {
@@ -1781,17 +1791,14 @@
       for (const x of nen.con) {
         if (x.goc === undefined) continue;
         const o = (r.con || {})[String(x.id)];
-        if (doiTran(o, x)) tho += cap(x.goc, !!o.th, so0(o.tran)) - x.tho;
+        if (doiTran(o, x)) tho += cap(x.goc, !!x.th, so0(o.tran)) - x.tho;
       }
       tru += Math.round(tho * g / 100);
       for (const x of nen.con) { const m = (r.con || {})[String(x.id)] || {}; if (x.ngay) tru += so0(m.b) * x.ngay; tru += so0(m.c); }
     } else {
       const gocTong = nen.phan.reduce((s, p) => s + (p.goc === undefined ? p.tho : p.goc), 0);
-      const thoCong = nen.phan.reduce((s, p) => s + p.tho, 0);
-      const capN = nen.th ? 1000000 : so0(nen.tran);
-      if (doiTran(r, nen)) { tho = cap(gocTong, !!r.th, so0(r.tran)); tru += Math.round(tho * g / 100); }
-      else if (nen.phan.length > 1 && capN > 0 && thoCong > capN) { tho = capN; tru += Math.round(tho * g / 100); }
-      else { tho = thoCong; tru += nen.phan.reduce((s, p) => s + Math.round(p.tho * g / 100), 0); }
+      tho = cap(gocTong, !!nen.th, doiTran(r, nen) ? so0(r.tran) : so0(nen.tran));
+      tru += Math.round(tho * g / 100);
       if (nen.ngay) tru += so0(r.b) * nen.ngay; tru += so0(r.c);
     }
     return Math.floor(Math.max(0, tho - tru) / 50000) * 50000;
@@ -1804,7 +1811,7 @@
         gly: nen.gly, b: nen.b, bly: nen.bly, c: nen.c, cly: nen.cly };
     const nhap = JSON.parse(JSON.stringify(u.chinhRieng || cai));
     delete nhap.luc;
-    const boSungTran = (o, oc) => { if (!('th' in o)) o.th = !!oc.th; if (!('tran' in o)) o.tran = oc.tran || 0; };
+    const boSungTran = (o, oc) => { delete o.th; if (!('tran' in o)) o.tran = oc.tran || 0; };
     if (fam) {
       nhap.con = nhap.con || {};
       for (const x of nen.con) {
@@ -1820,35 +1827,29 @@
       for (const x of nen.con) {
         const k = String(x.id);
         dongs.push({ dau: `<b>${esc(x.ten)}</b> <small>· ${x.ngay} ngày đi học</small>` });
-        them('t' + k, nhap.con[k], cai.con[k], 'th', 'Tiểu học', '', '', 0);
         them('r' + k, nhap.con[k], cai.con[k], 'tran', 'Trần riêng', 'cả tháng', 'đ', 9000000);
         them('b' + k, nhap.con[k], cai.con[k], 'b', 'Theo buổi', `× ${x.ngay} ngày`, 'đ/buổi', 500000);
         them('c' + k, nhap.con[k], cai.con[k], 'c', 'Cố định', 'cả tháng', 'đ', 9000000);
       }
     } else {
       const nhieuLop = nen.phan.length > 1;
-      them('th', nhap, cai, 'th', 'Tiểu học', '', '', 0);
       them('tran', nhap, cai, 'tran', 'Trần riêng', nhieuLop ? 'tổng các lớp' : 'cả tháng', 'đ', 9000000);
       them('g', nhap, cai, 'g', 'Giảm %', nhieuLop ? 'áp mọi lớp' : '', '%', 99);
       them('b', nhap, cai, 'b', 'Giảm theo buổi', `× ${nen.ngay} ngày đi học`, 'đ/buổi', 500000);
       them('c', nhap, cai, 'c', 'Giảm cố định', 'cả tháng', 'đ', 9000000);
     }
     const coLy = (d) => d.f === 'g' || d.f === 'b' || d.f === 'c';
-    const soCua = (d) => (d.f === 'th' ? (d.o.th ? 1 : 0) : Number(d.o[d.f]) || 0);
-    const soCai = (d) => (d.f === 'th' ? (d.oc.th ? 1 : 0) : Number(d.oc[d.f]) || 0);
+    const soCua = (d) => Number(d.o[d.f]) || 0;
+    const soCai = (d) => Number(d.oc[d.f]) || 0;
     const doi = (d) => soCua(d) !== soCai(d) || (coLy(d) && soCua(d) > 0 && String(d.o[d.f + 'ly'] || '').trim() !== String(d.oc[d.f + 'ly'] || '').trim());
     const hienSo = (d) => (d.f === 'g' ? String(soCua(d)) : vnd(soCua(d)));
     const SVG_VE = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
-    const tieuDeVe = (d) => 'Trả về theo Cài đặt: ' + (d.f === 'th' ? (d.oc.th ? 'Tiểu học' : 'không phải Tiểu học')
-      : d.f === 'tran' ? (soCai(d) ? vnd(soCai(d)) + ' đ' : 'không có trần riêng')
-        : soCai(d) ? (d.f === 'g' ? d.oc[d.f] + '%' : vnd(d.oc[d.f]) + ' ' + d.dv) + (d.oc[d.f + 'ly'] ? ' · ' + d.oc[d.f + 'ly'] : '') : 'không giảm');
-    const oGiua = (d) => (d.f === 'th'
-      ? `<div class="cr-sw"><label class="ql-sw"><input class="crSw" type="checkbox"${d.o.th ? ' checked' : ''}><span class="r"></span></label></div>`
-      : `<div class="cr-o"><input class="crSo" type="text" inputmode="numeric" autocomplete="off" maxlength="${d.f === 'g' ? 2 : 9}" value="${hienSo(d)}"><span class="dv">${d.dv}</span></div>`);
+    const tieuDeVe = (d) => 'Trả về theo Cài đặt: ' + (d.f === 'tran' ? (soCai(d) ? vnd(soCai(d)) + ' đ' : 'không có trần riêng')
+      : soCai(d) ? (d.f === 'g' ? d.oc[d.f] + '%' : vnd(d.oc[d.f]) + ' ' + d.dv) + (d.oc[d.f + 'ly'] ? ' · ' + d.oc[d.f + 'ly'] : '') : 'không giảm');
+    const oGiua = (d) => `<div class="cr-o"><input class="crSo" type="text" inputmode="numeric" autocomplete="off" maxlength="${d.f === 'g' ? 2 : 9}" value="${hienSo(d)}"><span class="dv">${d.dv}</span></div>`;
     const oPhai = (d) => (coLy(d) ? `<div class="cr-o ly"><input class="crLy" type="text" maxlength="60" autocomplete="off" value="${esc(d.o[d.f + 'ly'] || '')}"></div>`
       : '<div class="cr-phu"></div>');
-    const chuPhu = (d) => (d.f === 'th' ? (d.o.th ? 'Trần 1.000.000 đ cả tháng' : 'Không áp trần tiểu học')
-      : d.o.th ? 'Đang là Tiểu học — trần riêng không dùng' : soCua(d) ? '' : '0 = không có trần');
+    const chuPhu = (d) => (d.oc.th ? 'Tiểu học — trần 1.000.000 đ' : soCua(d) ? '' : '0 = không có trần');
     const el = moCanh(neo, `
       <div class="muc tt">✎ <b>Chỉnh riêng tháng ${S.m}/${S.y}</b> — ${esc(u.label)}</div>
       <div class="cm-than cr-than">
@@ -1865,7 +1866,7 @@
         <div class="cm-nut"><button class="btn primary" id="crLuu">Lưu</button><button class="btn" id="crHuy">Hủy</button>
           <span class="cr-phim"><kbd>Enter</kbd> nhận ô</span>
           ${u.chinhRieng ? '<button class="btn cr-bo" id="crBo">Bỏ chỉnh riêng</button>' : ''}</div>
-      </div>`, 'cr-hop');
+      </div>`, 'cr-hop', 'tren');   // v0.34.0 (thầy chốt) — mở PHÍA TRÊN nút Chỉnh riêng
     const capNhat = () => {
       for (const r of el.querySelectorAll('.cr-dong')) {
         const d = dongs[Number(r.dataset.i)]; const co = soCua(d) > 0;
@@ -1873,19 +1874,13 @@
         const ly = r.querySelector('.crLy');
         if (ly) { ly.disabled = !co; ly.placeholder = co ? 'Lý do (hiện trên hóa đơn)' : '—'; }
         const phu = r.querySelector('.cr-phu'); if (phu) phu.textContent = chuPhu(d);
-        if (d.f === 'tran') r.classList.toggle('mo', !!d.o.th);   // tiểu học thắng trần riêng ⇒ ô trần mờ
+        if (d.f === 'tran') { r.classList.toggle('mo', !!d.oc.th); r.querySelector('.crSo').disabled = !!d.oc.th; }   // tiểu học thắng ⇒ mờ + khoá
       }
       const moi = tinhThuGiam(nen, nhap);
       el.querySelector('#crKet').innerHTML = (moi !== u.expected ? `<s>${vnd(u.expected)} đ</s>` : '') + `<b>${vnd(moi)} đ</b>`;
     };
     for (const r of el.querySelectorAll('.cr-dong')) {
       const d = dongs[Number(r.dataset.i)];
-      if (d.f === 'th') {   // v0.33.0 — công tắc Tiểu học
-        const sw = r.querySelector('.crSw');
-        sw.onchange = () => { d.o.th = sw.checked; capNhat(); };
-        r.querySelector('.cr-ve').onclick = () => { d.o.th = !!d.oc.th; sw.checked = d.o.th; capNhat(); };
-        continue;
-      }
       const s = r.querySelector('.crSo'); const ly = r.querySelector('.crLy');
       const enter = (o) => o.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); o.blur(); } });
       s.addEventListener('wheel', () => s.blur(), { passive: true });   // cuộn chuột KHÔNG đổi số
@@ -1917,8 +1912,7 @@
     const sach = (o) => {
       const r = {};
       for (const f of ['g', 'b', 'c']) if (f in o) { r[f] = Number(o[f]) || 0; r[f + 'ly'] = r[f] ? String(o[f + 'ly'] || '').trim() : ''; }
-      if ('th' in o) r.th = !!o.th;                       // v0.33.0
-      if ('tran' in o) r.tran = Number(o.tran) || 0;
+      if ('tran' in o) r.tran = Number(o.tran) || 0;      // v0.33.0 (v0.34.0: không còn lưu th — Tiểu học theo Cài đặt)
       return r;
     };
     el.querySelector('#crHuy').onclick = () => dongCanh();
@@ -2388,10 +2382,10 @@
       goc = u.goc !== undefined ? u.goc : (u.buoi || 0) * (cat.donGia || 150000);
       tho = u.tho !== undefined ? u.tho : goc;
       if (tho < goc) them(cat.tieuHoc ? 'Học sinh Tiểu học' : 'Học phí tối đa', cat.tieuHoc ? 'Học sinh Tiểu học' : 'Học phí tối đa', goc - tho);
-      pct = ct && ct.coMien ? ct.pct : u.tranTong ? u.tranTong.g : (cat.giamPct || 0);
+      pct = ct && ct.coMien ? ct.pct : (cat.giamPct || 0);
       const lyDo = !(ct && ct.coMien) && String(cat.lyDo || '').trim();
       tenPct = lyDo ? hoaDauHd(lyDo) : 'Ưu tiên'; phuPct = pct + '%'; motPct = pct + '%';
-      const pcts = u.phan && !u.tranTong && !(ct && ct.coMien) ? [...new Set(u.phan.map((p) => p.giamPct || 0))] : null;
+      const pcts = u.phan && !(ct && ct.coMien) ? [...new Set(u.phan.map((p) => p.giamPct || 0))] : null;
       if (pcts && pcts.length > 1) { pct = Math.max(...pcts); phuPct = 'theo từng lớp: ' + u.phan.map((p) => lopNganHd(p.lop) + ' ' + (p.giamPct || 0) + '%').join(', '); motPct = 'theo từng lớp'; }
     }
     const sauMien = ct ? ct.sauMien : u.expected;

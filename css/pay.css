@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.32.1 (e5ba864) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.34.0 (7688d35) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -718,8 +718,7 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .cr-ve{width:26px;height:26px;border-radius:8px;border:0;background:none;color:var(--rieng);cursor:pointer;display:grid;place-items:center;visibility:hidden;padding:0}
 .cr-ve:hover{background:var(--rieng-soft)}
 .cr-dong.doi .cr-ve{visibility:visible}
-/* v0.33.0 — dòng Tiểu học (công tắc) + Trần riêng (không ô lý do) trong Chỉnh riêng */
-.cr-sw{display:flex;align-items:center;height:34px;padding:0 4px}
+/* v0.33.0 — dòng Trần riêng (không ô lý do) trong Chỉnh riêng; v0.34.0 bỏ dòng công tắc Tiểu học */
 .cr-phu{font-size:11.5px;font-weight:600;color:var(--placeholder);line-height:1.3;min-width:0}
 .cr-dong.mo .cr-o{opacity:.45}
 .cr-dong.doi .cr-phu{color:var(--rieng)}

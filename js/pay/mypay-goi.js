@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.33.0 (e5ba864) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.34.0 (7688d35) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -894,15 +894,14 @@ function tinhTienMoi(nen, rieng) {
   const khoan = [];
   const tran = [];
   let tho; let pct = 0; let thHieuLuc = false;
-  const doiTran = (r, x) => !!r && ('th' in r || 'tran' in r) && (!!r.th !== !!x.th || so0(r.tran) !== so0(x.tran));
+  const doiTran = (r, x) => !!r && ('tran' in r) && so0(r.tran) !== so0(x.tran);
   if (nen.kind === 'fam') {
     tho = nen.tho;
     for (const x of nen.con) {
       if (x.goc === undefined) continue;
       const r = rieng && rieng.con && rieng.con[String(x.id)];
-      const doi = doiTran(r, x);
-      const th = doi ? !!r.th : !!x.th;
-      const t = doi ? capTho(x.goc, th, so0(r.tran)) : x.tho;
+      const th = !!x.th;
+      const t = doiTran(r, x) ? capTho(x.goc, th, so0(r.tran)) : x.tho;
       tho += t - x.tho;
       if (x.goc - t > 0) tran.push({ ai: x.ten, th, tru: x.goc - t });
     }
@@ -917,24 +916,12 @@ function tinhTienMoi(nen, rieng) {
     }
   } else {
     const gocTong = nen.phan.reduce((s, p) => s + (p.goc === undefined ? p.tho : p.goc), 0);
-    const thoCong = nen.phan.reduce((s, p) => s + p.tho, 0);
     const gChinh = rieng ? Math.min(99, so0(rieng.g)) : (nen.gChinh !== undefined ? nen.gChinh : (nen.phan[0] || {}).g || 0);
-    let gs;
-    if (doiTran(rieng, nen)) {
-      thHieuLuc = !!rieng.th; tho = capTho(gocTong, thHieuLuc, so0(rieng.tran)); gs = null;
-    } else {
-      thHieuLuc = !!nen.th;
-      const cap = nen.th ? TRAN_TIEU_HOC : so0(nen.tran);
-      if (nen.phan.length > 1 && cap > 0 && thoCong > cap) { tho = cap; gs = null; }   // em 2 lớp chạm trần tổng ⇒ % lớp chính
-      else { tho = thoCong; gs = rieng ? nen.phan.map(() => gChinh) : nen.phan.map((p) => p.g); }
-    }
+    thHieuLuc = !!nen.th;
+    tho = capTho(gocTong, thHieuLuc, doiTran(rieng, nen) ? so0(rieng.tran) : so0(nen.tran));
     if (gocTong - tho > 0) tran.push({ th: thHieuLuc, tru: gocTong - tho });
-    pct = gs ? nen.phan.reduce((s, p, i) => s + Math.round(p.tho * gs[i] / 100), 0) : Math.round(tho * gChinh / 100);
-    const khac = gs && new Set(gs).size > 1;
-    if (pct > 0) {
-      khoan.push({ loai: 'pct', ly: rieng ? String(rieng.gly || '').trim() : nen.gly,
-        phu: khac ? 'theo từng lớp: ' + nen.phan.map((p, i) => p.lop + ' ' + gs[i] + '%').join(', ') : (gs ? gs[0] : gChinh) + '%', tru: pct });
-    }
+    pct = Math.round(tho * gChinh / 100);
+    if (pct > 0) khoan.push({ loai: 'pct', ly: rieng ? String(rieng.gly || '').trim() : nen.gly, phu: gChinh + '%', tru: pct });
     const m = rieng ? { b: so0(rieng.b), bly: String(rieng.bly || '').trim(), c: so0(rieng.c), cly: String(rieng.cly || '').trim() } : nen;
     if (m.b && nen.ngay) khoan.push({ loai: 'buoi', ly: m.bly, tru: m.b * nen.ngay });
     if (m.c) khoan.push({ loai: 'cd', ly: m.cly, tru: m.c });
@@ -1081,8 +1068,9 @@ function tinhThang(dd, caiDat, giaDinh) {
     });
     const pChinh = phan.find((p) => p.lop === chinh);
     const tong = (f) => phan.reduce((s, p) => s + f(p), 0);
-    const capChinh = pChinh.cat.tieuHoc ? TRAN_TIEU_HOC : so0(pChinh.cat.tran);
-    const chamTranTong = phan.length > 1 && capChinh > 0 && tong((p) => p.tho) > capChinh;
+    const catC = pChinh.cat;
+    const gocTong = tong((p) => p.goc);
+    const thoTong = capTho(gocTong, !!catC.tieuHoc, so0(catC.tran));
     const u = {
       id: idDonVi(chinh, e.id),
       hsId: e.id,                                   // v0.6.0 — nợ phí / tạm ứng khoá theo `hsId`
@@ -1096,22 +1084,21 @@ function tinhThang(dd, caiDat, giaDinh) {
       lich: [].concat(...phan.map((p) => p.b.lich)).sort((a, b) => a.ngay - b.ngay),
       hocThu: tong((p) => p.b.hocThu),
       cat: pChinh.cat,
-      goc: tong((p) => p.goc), tho: chamTranTong ? capChinh : tong((p) => p.tho),   // v0.24.0 — hóa đơn: học phí gốc + phí sau trần
-      expected: chamTranTong ? floorStep(capChinh * (100 - so0(pChinh.cat.giamPct)) / 100, 50000) : tong((p) => p.expected),
+      goc: gocTong, tho: thoTong,   // v0.24.0 — hóa đơn: học phí gốc + phí sau trần
+      expected: (!catC.giamPct && !(catC.tran > 0)) ? thoTong : floorStep(thoTong * (100 - so0(catC.giamPct)) / 100, 50000),
     };
-    if (chamTranTong) u.tranTong = { th: !!pChinh.cat.tieuHoc, g: so0(pChinh.cat.giamPct) };   // hóa đơn: một mức % (lớp chính)
     if (!hs) { u.daNghi = true; u.lopCu = false; }
     else if (!lops.includes(hs.lop)) { u.daNghi = false; u.lopCu = true; }   // v0.15.0 — em VẪN học (đã chuyển lớp)
     const biDanh = lops.filter((l) => l !== chinh).map((l) => idDonVi(l, e.id));
     for (const l of lops) for (const c of (dd.lopGop || {})[l] || []) biDanh.push(idDonVi(c, e.id));
     if (biDanh.length) u.aliasIds = biDanh;
     if (phan.length > 1) {
-      u.phan = phan.map((p) => ({ lop: p.lop, buoi: p.b.buoi, vang: p.b.vang, goc: p.goc, tho: p.tho, expected: p.expected,
-        giamPct: p.cat.giamPct || 0, tran: p.cat.tran || 0, tieuHoc: !!p.cat.tieuHoc }));
+      u.phan = phan.map((p) => ({ lop: p.lop, buoi: p.b.buoi, vang: p.b.vang, goc: p.goc,
+        giamPct: catC.giamPct || 0, tran: catC.tran || 0, tieuHoc: !!catC.tieuHoc }));
     }
     if (moi) {
-      u.nenGiam = Object.assign({ kind: 'reg', phan: phan.map((p) => ({ lop: p.lop, goc: p.goc, tho: p.tho, g: so0(p.cat.giamPct) })),
-        th: !!pChinh.cat.tieuHoc, tran: so0(pChinh.cat.tran), gChinh: so0(pChinh.cat.giamPct),   // v0.33.0 — trần tổng + Chỉnh riêng
+      u.nenGiam = Object.assign({ kind: 'reg', phan: phan.map((p) => ({ lop: p.lop, goc: p.goc, tho: p.goc, g: so0(catC.giamPct) })),
+        th: !!catC.tieuHoc, tran: so0(catC.tran), gChinh: so0(catC.giamPct),   // v0.33.0 — trần tổng + Chỉnh riêng
         gly: String(pChinh.cat.lyDo || '').trim(), ngay: soNgayHoc(u.lich) }, mucCuaCat(pChinh.cat));
       u.giam = tinhTienMoi(u.nenGiam, null);
       u.expected = u.giam.expected;
@@ -1144,14 +1131,13 @@ function tinhThang(dd, caiDat, giaDinh) {
       const lopCat = cuaCon.some((x) => x.lop === m.lop) ? m.lop : cuaCon[0].lop;
       const cat = catEm(lopCat, [m.ten, tenSoLop(lopCat, m.id)]);
       catCon[String(m.id)] = cat;
-      const cap = cat.tieuHoc ? TRAN_TIEU_HOC : so0(cat.tran);
-      let vuot = cuaCon.reduce((s, x) => s + x.tho, 0) - cap;
-      if (cuaCon.length < 2 || !(cap > 0) || vuot <= 0) continue;
+      if (cuaCon.length < 2) continue;
+      for (const x of cuaCon) { tong += x.goc - x.tho; x.tho = x.goc; x.tieuHoc = !!cat.tieuHoc; }
+      let vuot = cuaCon.reduce((s, x) => s + x.goc, 0) - capTho(cuaCon.reduce((s, x) => s + x.goc, 0), !!cat.tieuHoc, so0(cat.tran));
       tong -= vuot;
       for (let i = cuaCon.length - 1; i >= 0 && vuot > 0; i--) {
         const bot = Math.min(cuaCon[i].tho, vuot); cuaCon[i].tho -= bot; vuot -= bot;
       }
-      for (const x of cuaCon) x.tieuHoc = !!cat.tieuHoc;   // nhãn trần trên hóa đơn theo đúng loại trần đã cắt
     }
     let nenGiam = null;
     if (moi) {
@@ -2565,7 +2551,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.33.0";
-  G.__MA = "e5ba864";
+  G.__PHIEN_BAN = "0.34.0";
+  G.__MA = "7688d35";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

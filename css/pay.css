@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.29.0 (664632e) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay — giao diện SÁNG (thầy chốt 01/09/2026: "tương tự giao diện Bright
    của myLesson"). Bộ token chép từ myLesson :root[data-theme="bright"] —
@@ -51,6 +51,7 @@
   --danger-soft:rgba(220,38,38,.13);
   --tim:#7c3aed;
   --tim-soft:rgba(124,58,237,.12);
+  --rieng:#6d28d9; --rieng-soft:#f3eefe; --rieng-line:rgba(109,40,217,.38);   /* v0.29.0 — "Chỉnh riêng" */
   --tim-line:rgba(124,58,237,.4);
   --warn-bg:#fef7e6;
   --warn-line:rgba(180,83,9,.32);
@@ -557,6 +558,8 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .cm-phim kbd{font:600 11px var(--font);border:1px solid var(--glass-border);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--ql-o-bg)}
 .ph-tich{width:18px;height:18px;border-radius:6px;border:1.5px solid var(--vach-ro);display:inline-grid;place-items:center;font-size:12px;color:var(--ql-trang);vertical-align:middle;margin-right:6px}
 .ph-tich.on{background:var(--ph-nam);border-color:var(--ph-nam)}
+.ph-tich.th.on{background:var(--tim);border-color:var(--tim)}
+.ctx-phu{margin-left:10px;color:var(--placeholder);font-weight:600;font-size:11.5px}
 
 /* ---------- v0.28.0: hộp QUẢN LÝ HỌC SINH (thiết kế chốt: thiet-ke-cai-dat\QLHS - v5.html + QLHS gia dinh - v2.html) ---------- */
 #hopQlHs{padding:18px 0 0;display:flex;flex-direction:column;overflow:hidden}
@@ -580,12 +583,23 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .btn.ql-nhe{border-color:var(--accent-line);color:var(--chu-noi);background:var(--accent-soft);padding:7px 14px;font-size:13px}
 .ql-cuon{max-height:60vh;overflow:auto;position:relative}
 .ql-trong{padding:28px 22px;text-align:center;color:var(--placeholder);font-weight:600}
-.ql-cot{display:grid;grid-template-columns:minmax(170px,1fr) 64px 70px minmax(200px,1.6fr) 124px;gap:16px;align-items:center}
+/* v0.29.0 — Học sinh | GIẢM % / LÝ DO | GIẢM THEO BUỔI / LÝ DO | GIẢM CỐ ĐỊNH / LÝ DO | Trần riêng (tên cột căn giữa; bảng rộng ⇒ cuộn ngang khi màn hẹp) */
+.ql-cot{display:grid;grid-template-columns:minmax(180px,1fr) minmax(240px,1.2fr) minmax(300px,1.4fr) minmax(300px,1.4fr) 124px;gap:16px;align-items:center;min-width:1230px}
+.ql-daucot > span{text-align:center}
+.ql-daucot .cum{color:var(--text-dim)}
+.ql-daucot .cum i{font-style:normal;margin:0 3px;color:var(--placeholder)}
+.ql-cum{display:grid;gap:6px;align-items:center;min-width:0}
+.ql-cum.pct{grid-template-columns:62px minmax(0,1fr)}
+.ql-cum.tien{grid-template-columns:140px minmax(0,1fr)}
+.ql-cum .ql-o .dv{white-space:nowrap;font-size:11.5px}
+.ql-o.tat{background:repeating-linear-gradient(135deg,var(--ql-o-bg) 0 6px,rgba(var(--phu),.05) 6px 12px);border-color:transparent;justify-content:center;color:var(--placeholder);cursor:not-allowed}
+.ql-nha-ghi{font-size:11.5px;color:var(--placeholder);font-style:italic;padding-left:4px}
+.ql-tag.la{background:var(--ql-la-soft);border-color:var(--ql-la-line);color:var(--ql-la)}
 .ql-daucot{position:sticky;top:0;z-index:3;background:var(--glass-bg);padding:9px 22px;border-bottom:1px solid var(--glass-border);font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--placeholder)}
-.ql-nhom{position:sticky;top:35px;z-index:2;display:flex;gap:10px;align-items:baseline;padding:7px 22px;background:var(--ql-o-bg);border-block:1px solid var(--glass-border)}
+.ql-nhom{min-width:1274px;position:sticky;top:35px;z-index:2;display:flex;gap:10px;align-items:baseline;padding:7px 22px;background:var(--ql-o-bg);border-block:1px solid var(--glass-border)}
 .ql-nhom b{font-size:13.5px;letter-spacing:.02em}
 .ql-nhom span{font-size:12px;color:var(--placeholder);font-weight:600}
-.ql-hang{padding:9px 22px;border-bottom:1px solid var(--glass-border)}
+.ql-hang{padding:9px 22px;border-bottom:1px solid var(--glass-border);min-width:1274px}
 .ql-hang:hover{background:rgba(var(--phu),.025)}
 .ql-em{display:flex;align-items:center;gap:11px;min-width:0}
 .ql-av{width:32px;height:32px;border-radius:50%;flex:none;display:grid;place-items:center;font-size:12px;font-weight:800;background:var(--ql-av-bg);color:var(--text-dim)}
@@ -677,6 +691,34 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .ql-hoi-nut{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .ql-hoi-nut .btn{justify-content:center;padding:10px}
 .btn.ql-do{background:var(--danger);border-color:var(--danger);color:var(--ql-trang)}
+/* ── v0.29.0 (12/10/2026) — "Chỉnh riêng" 3 mức giảm một tháng (mẫu thầy chốt `Chinh tay - v1.html`) ── */
+.nhan-rieng{font-size:10.5px;font-weight:700;color:var(--rieng);background:var(--rieng-soft);border:1px solid var(--rieng-line);border-radius:99px;padding:0 7px;line-height:17px;white-space:nowrap;margin:0 2px;user-select:none}
+.btn.hd-rieng.on{background:var(--rieng-soft);border-color:var(--rieng-line);color:var(--rieng)}
+.ctx-mo.cr-hop{width:min(560px,calc(100vw - 24px))}
+.cr-hop .cr-mota{margin:0 0 6px}
+.cr-dong{display:grid;grid-template-columns:118px 136px minmax(0,1fr) 26px;gap:6px;align-items:center;padding:6px 0;border-top:1px dashed var(--glass-border)}
+.cr-ten{font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--text-dim);line-height:1.25}
+.cr-ten small{display:block;letter-spacing:0;text-transform:none;font-weight:600;color:var(--placeholder);font-size:11px}
+.cr-o{display:flex;align-items:center;gap:4px;height:34px;padding:0 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--ql-o-bg);min-width:0}
+.cr-o:focus-within{border-color:var(--accent-line);background:var(--glass-bg);box-shadow:0 0 0 3px var(--accent-soft)}
+.cr-o input{border:0;background:none;outline:none;width:100%;min-width:0;font:inherit;font-size:13px;font-weight:700;font-variant-numeric:tabular-nums;text-align:right;padding:0;color:var(--text)}
+.cr-o.ly input{text-align:left;font-weight:600}
+.cr-o input:disabled{cursor:default}
+.cr-o .dv{color:var(--placeholder);font-size:11.5px;font-weight:600;white-space:nowrap}
+.cr-dong.doi .cr-ten{color:var(--rieng)}
+.cr-dong.doi .cr-o{background:var(--rieng-soft);border-color:var(--rieng-line)}
+.cr-dong.doi .cr-o input{color:var(--rieng)}
+.cr-ve{width:26px;height:26px;border-radius:8px;border:0;background:none;color:var(--rieng);cursor:pointer;display:grid;place-items:center;visibility:hidden;padding:0}
+.cr-ve:hover{background:var(--rieng-soft)}
+.cr-dong.doi .cr-ve{visibility:visible}
+.cr-con{font-size:12.5px;margin:10px 0 0}
+.cr-con small{color:var(--placeholder);font-weight:600}
+.cr-ket{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px;padding:9px 12px;background:var(--ql-o-bg);border-radius:12px;font-size:13px;font-weight:700}
+.cr-ket b{font-size:16px;color:var(--accent);font-variant-numeric:tabular-nums}
+.cr-ket s{color:var(--placeholder);font-variant-numeric:tabular-nums;margin-right:6px;font-weight:600}
+.cr-phim{font-size:11.5px;color:var(--placeholder)}
+.cr-phim kbd{font:600 11px inherit;border:1px solid var(--glass-border);border-bottom-width:2px;border-radius:5px;padding:0 5px}
+.btn.cr-bo{margin-left:auto;color:var(--rieng);border-color:var(--rieng-line)}
 
 
 /* ───── phần riêng trang web (web/pay-web.css) ───── */

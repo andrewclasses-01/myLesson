@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (e061b9a) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.29.0 (664632e) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -111,7 +111,8 @@ function tinhKetQuaThang(m, y) {
   const giaDinh = kho.docGiaDinh(dd.hocSinhDs);
   const bang = phi.tinhThang(dd, caiDat, giaDinh);    // đơn vị thu + tiền cần đóng
   let thang = doiBiDanh(bang.units, kho.docThang(m, y));   // sao kê + gán tay + ghi đè đã lưu (v0.26.0 — id lớp cũ ⇒ id gộp)
-  phi.apDungChinhTay(bang.units, thang.ghiDe || {}, caiDat);   // v0.23.0 — chỉnh tay hóa đơn tháng này (miễn giảm / giảm thêm)
+  phi.apDungChinhTay(bang.units, thang.ghiDe || {}, caiDat);   // v0.23.0 — chỉnh tay hóa đơn tháng này (miễn giảm / giảm thêm) — tháng < 10/2026
+  phi.apDungChinhRieng(bang.units, thang.ghiDe || {});        // v0.29.0 — tháng ≥ 10/2026: "Chỉnh riêng" 3 mức giảm
   const hocMay = kho.docHocMay();
   const dsLopBiet = (dd.lopDs || []).map((L) => L.ma_lop);
 
@@ -864,6 +865,48 @@ function phiLe(buoi, cat) {
   return floorStep(tho * (100 - (cat.giamPct || 0)) / 100, 50000);
 }
 
+const CACH_MOI_TU = { m: 10, y: 2026 };
+function dungCachMoi(m, y) { return !!(m && y) && (Number(y) * 12 + Number(m)) >= (CACH_MOI_TU.y * 12 + CACH_MOI_TU.m); }
+function soNgayHoc(lich) { return new Set((lich || []).filter((b) => b.coMat && !b.hocThu).map((b) => b.ngay)).size; }
+function so0(x) { const n = Math.round(Number(x)); return n > 0 ? n : 0; }
+function mucCuaCat(cat) {
+  const c = cat || {};
+  return { b: so0(c.giamBuoi), bly: String(c.lyDoBuoi || '').trim(), c: so0(c.giamCoDinh), cly: String(c.lyDoCoDinh || '').trim() };
+}
+function tinhTienMoi(nen, rieng) {
+  const khoan = [];
+  let tho; let pct = 0;
+  if (nen.kind === 'fam') {
+    tho = nen.tho;
+    const g = rieng ? Math.min(99, so0(rieng.g)) : nen.g;
+    pct = Math.round(tho * g / 100);
+    if (pct > 0) khoan.push({ loai: 'pct', ly: rieng ? String(rieng.gly || '').trim() : nen.gly, phu: g + '%', tru: pct });
+    for (const x of nen.con) {
+      const r = rieng && rieng.con && rieng.con[String(x.id)];
+      const m = r ? { b: so0(r.b), bly: String(r.bly || '').trim(), c: so0(r.c), cly: String(r.cly || '').trim() } : x;
+      if (m.b && x.ngay) khoan.push({ loai: 'buoi', ly: m.bly, ai: x.ten, tru: m.b * x.ngay });
+      if (m.c) khoan.push({ loai: 'cd', ly: m.cly, ai: x.ten, tru: m.c });
+    }
+  } else {
+    tho = nen.phan.reduce((s, p) => s + p.tho, 0);
+    const gs = rieng ? nen.phan.map(() => Math.min(99, so0(rieng.g))) : nen.phan.map((p) => p.g);
+    pct = nen.phan.reduce((s, p, i) => s + Math.round(p.tho * gs[i] / 100), 0);
+    const khac = new Set(gs).size > 1;
+    if (pct > 0) {
+      khoan.push({ loai: 'pct', ly: rieng ? String(rieng.gly || '').trim() : nen.gly,
+        phu: khac ? 'theo từng lớp: ' + nen.phan.map((p, i) => p.lop + ' ' + gs[i] + '%').join(', ') : gs[0] + '%', tru: pct });
+    }
+    const m = rieng ? { b: so0(rieng.b), bly: String(rieng.bly || '').trim(), c: so0(rieng.c), cly: String(rieng.cly || '').trim() } : nen;
+    if (m.b && nen.ngay) khoan.push({ loai: 'buoi', ly: m.bly, tru: m.b * nen.ngay });
+    if (m.c) khoan.push({ loai: 'cd', ly: m.cly, tru: m.c });
+  }
+  let sau = tho - khoan.reduce((s, k) => s + k.tru, 0);
+  for (let i = khoan.length - 1; i >= 0 && sau < 0; i--) { const bot = Math.min(khoan[i].tru, -sau); khoan[i].tru -= bot; sau += bot; }
+  const ra = khoan.filter((k) => k.tru > 0);
+  const expected = floorStep(Math.max(0, sau), 50000);
+  return { expected, khoan: ra, lamTron: Math.max(0, sau) - expected };
+}
+
 function tinhThang(dd, caiDat, giaDinh) {
   const cd = caiDat || kho.docCaiDat();
   const fams = (giaDinh && giaDinh.families) || [];
@@ -954,6 +997,7 @@ function tinhThang(dd, caiDat, giaDinh) {
   };
 
   const units = [];
+  const moi = dungCachMoi(dd.m, dd.y);   // v0.29.0 — tháng ≥ 10/2026: ba mức giảm + làm tròn cuối
   const rosterTheoId = new Map((dd.hocSinhDs || []).map((hs) => [String(hs.id), hs]));
   const emLop = new Map();   // mã số -> { id, hs (roster | null), lops: [mã lớp], tenSo }
   const themLop = (id, maLop, tenSo) => {
@@ -1023,6 +1067,12 @@ function tinhThang(dd, caiDat, giaDinh) {
       u.phan = phan.map((p) => ({ lop: p.lop, buoi: p.b.buoi, vang: p.b.vang, goc: p.goc, tho: p.tho, expected: p.expected,
         giamPct: p.cat.giamPct || 0, tran: p.cat.tran || 0, tieuHoc: !!p.cat.tieuHoc }));
     }
+    if (moi) {
+      u.nenGiam = Object.assign({ kind: 'reg', phan: phan.map((p) => ({ lop: p.lop, tho: p.tho, g: so0(p.cat.giamPct) })),
+        gly: String(pChinh.cat.lyDo || '').trim(), ngay: soNgayHoc(u.lich) }, mucCuaCat(pChinh.cat));
+      u.giam = tinhTienMoi(u.nenGiam, null);
+      u.expected = u.giam.expected;
+    }
     units.push(u);
   }
 
@@ -1043,7 +1093,22 @@ function tinhThang(dd, caiDat, giaDinh) {
       }
     }
     if (!mems.length) continue;
+    let nenGiam = null;
+    if (moi) {
+      const con = [];
+      for (const m of f.members || []) {
+        if (m.mat) continue;
+        const cuaCon = mems.filter((x) => String(x.id) === String(m.id));
+        if (!cuaCon.length) continue;
+        const lopCat = cuaCon.some((x) => x.lop === m.lop) ? m.lop : cuaCon[0].lop;
+        con.push(Object.assign({ id: m.id, ten: m.ten, ngay: soNgayHoc([].concat(...cuaCon.map((x) => x.lich || []))) },
+          mucCuaCat(catEm(lopCat, [m.ten, tenSoLop(lopCat, m.id)]))));
+      }
+      nenGiam = { kind: 'fam', tho: tong, g: so0(f.giamPct), gly: '', con };
+    }
+    const giamMoi = nenGiam ? tinhTienMoi(nenGiam, null) : null;
     units.push({
+      ...(nenGiam ? { nenGiam, giam: giamMoi } : {}),
       id: 'F|' + f.id,
       idNha: f.id,
       kind: 'fam',
@@ -1055,7 +1120,7 @@ function tinhThang(dd, caiDat, giaDinh) {
       choDuyet: mems.reduce((s, x) => s + x.choDuyet, 0),
       giamPct: f.giamPct || 0,
       tho: tong,   // v0.23.0 — phí thô cả nhà (đã trần từng con, chưa giảm) cho chỉnh tay hóa đơn
-      expected: floorStep(tong * (100 - (f.giamPct || 0)) / 100, 50000),
+      expected: giamMoi ? giamMoi.expected : floorStep(tong * (100 - (f.giamPct || 0)) / 100, 50000),
     });
   }
   return { units, canhBao, doan: { moc, lop: doanLop } };   // v0.26.0 — đoạn CŨ/MỚI quanh mốc đổi lớp (để hiện)
@@ -1065,6 +1130,7 @@ function apDungChinhTay(units, ghiDe, cd) {
   for (const u of units) {
     const g = (ghiDe || {})[u.id];
     if (!g) continue;
+    if (u.nenGiam) continue;   // v0.29.0 — tháng ≥ 10/2026 dùng "Chỉnh riêng" (apDungChinhRieng), không dùng ô chỉnh tay cũ
     const coMien = g.mienGiamPct !== undefined && g.mienGiamPct !== null && g.mienGiamPct !== '';
     const gt = g.giamThem && Number(g.giamThem.giaTri) > 0 ? g.giamThem : null;
     if (!coMien && !gt) continue;
@@ -1092,7 +1158,19 @@ function apDungChinhTay(units, ghiDe, cd) {
   return units;
 }
 
-module.exports = { tinhThang, phiLe, phiTho, floorStep, catLop, catHs, heSoTaiNgay, apDungChinhTay, laChuNhat, mocTrongThang, doiTenLopThang };
+function apDungChinhRieng(units, ghiDe) {
+  for (const u of units) {
+    const cr = u.nenGiam && ((ghiDe || {})[u.id] || {}).chinhRieng;
+    if (!cr || typeof cr !== 'object') continue;
+    u.giamCaiDat = u.giam;
+    u.giam = tinhTienMoi(u.nenGiam, cr);
+    u.chinhRieng = cr;
+    u.expected = u.giam.expected;
+  }
+  return units;
+}
+
+module.exports = { tinhThang, phiLe, phiTho, floorStep, catLop, catHs, heSoTaiNgay, apDungChinhTay, apDungChinhRieng, tinhTienMoi, dungCachMoi, laChuNhat, mocTrongThang, doiTenLopThang };
 
 };
   G["E:\\LAP TRINH APP\\myPay\\src\\main\\lib\\kho-pay.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -2417,7 +2495,7 @@ module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay
 };
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.28.0";
-  G.__MA = "e061b9a";
+  G.__PHIEN_BAN = "0.29.0";
+  G.__MA = "664632e";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

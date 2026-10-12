@@ -1562,6 +1562,8 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .the.khoa-hoc .td-dong{grid-template-columns:minmax(0,46px) minmax(60px,1fr) minmax(30px,auto) 16px;
   column-gap:8px; min-height:0}
 .the.khoa-hoc .td-ten{font-size:11px; line-height:1.3}
+/* thiết kế K10 1 — thẻ lesson CHƯƠNG: nhãn "BƯỚC n" dài hơn "BT1" ⇒ cột tên 54px (46px cắt "BƯỚC…"). */
+.the.khoa-hoc .the-diem.chuong .td-dong{grid-template-columns:minmax(0,54px) minmax(60px,1fr) minmax(30px,auto) 16px}
 .the.khoa-hoc .td-bar{height:8px}
 .the.khoa-hoc .td-so{font-size:11.5px}
 .the.khoa-hoc .td-so.em-chua{color:#A9B6B3}
@@ -5504,6 +5506,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     return m ? (Number(m[3]) + '/' + Number(m[2])) : '';
   }
   function tenBaiGiangKh(b) {
+    if (b.kieu === 'CHUONG' && b.noiDung) return String(b.noiDung).trim();   // thiết kế K10 1 — lesson CHƯƠNG: tên chương (y `tenBaiGiang` khoa.html)
     var bg = b.baiGiang || {};
     var t = String(bg.tieuDe || '').trim();
     if (!t) return A.tenBai(b);
@@ -5527,8 +5530,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     return 'm-do';
   }
   // Một hàng CẢ LỚP: số em (trong sĩ số của bài) đã xong / sĩ số — y `hangLop()` khoa.html.
-  function hangKhoa(k, t) {
-    var nhan = nhanRowKh(k);
+  function hangKhoa(k, t, nhanEp) {
+    var nhan = nhanEp || nhanRowKh(k);   // nhanEp: thẻ lesson CHƯƠNG ép "BƯỚC n" (thiết kế K10 1)
     if (k.loai === 'sach' || !k.ma) {
       return '<span class="td-dong td-dong-sach"><span class="td-ten">' + nhan + '</span>' +
         '<span class="td-bar"></span><span class="td-so em-chua">—</span><span class="td-tich"></span></span>';
@@ -5548,6 +5551,88 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<span class="td-bar"><i class="' + m + '" style="width:' + pt + '%"></i>' +
         avMocHtml(DIEM[a.ma], lopGocMoc) + '</span>' +
       '<span class="td-so' + (du ? ' m-la' : '') + '">' + a.xong + '/' + t.siSo + '</span>' +
+      '<span class="td-tich">' + (du ? '✓' : '') + '</span>' +
+    '</span>';
+  }
+  /* ⭐ thiết kế K10 1 (12/10/2026) — THẺ LESSON CHƯƠNG (khóa NỀN TẢNG, `b.kieu === 'CHUONG'`): mỗi BƯỚC trong `b.bt` một hàng
+     "BƯỚC n", số = em CẢ LỚP (sĩ số của bài, `t.acts[..].caLop`/`A.caLopCuaBai`) đã xong bước đó:
+       · bước `acts` (có mã bài giao) — điểm AWord, y hàng act cũ (`hangKhoa`).
+       · bước `sach`/`zalo` (tự đánh dấu) · `video` (xem đủ) — đọc trường `chuong` của `lessonVideoTienDo/<ma>__<bai>` từng em
+         (bai.html ghi, xem `chuongTuFs`/`btXongKhoa` bên đó — BẢN CHÉP luật xong: tay>0; video phủ ≥ tổng − 1.5 giây).
+     Đọc 1 tài liệu/em/bài, 6 lượt song song, nhớ trong `CHUONG_TD` tới khi đổi lớp (chonLop xoá). */
+  var CHUONG_TD = {};   // b.id -> 'dang' | { <tên em>: {tay:{}, vid:{}} }
+  function soFsKh(v) { return v ? Number(v.integerValue != null ? v.integerValue : v.doubleValue) : NaN; }
+  function chuongTuFsKh(f) {
+    var r = { tay: {}, vid: {} };
+    try {
+      var c = f && f.mapValue && f.mapValue.fields; if (!c) return r;
+      var tay = (c.tay && c.tay.mapValue && c.tay.mapValue.fields) || {};
+      Object.keys(tay).forEach(function (id) { var x = soFsKh(tay[id]); if (x > 0) r.tay[id] = x; });
+      var vid = (c.vid && c.vid.mapValue && c.vid.mapValue.fields) || {};
+      Object.keys(vid).forEach(function (id) {
+        var m = (vid[id].mapValue && vid[id].mapValue.fields) || {};
+        var vs = (m.khuc && m.khuc.arrayValue && m.khuc.arrayValue.values) || [], ds = [];
+        for (var i = 0; i + 1 < vs.length; i += 2) ds.push([soFsKh(vs[i]), soFsKh(vs[i + 1])]);
+        r.vid[id] = { tong: soFsKh(m.tong) || 0, khuc: ds };
+      });
+    } catch (e) {}
+    return r;
+  }
+  function xongBuocTayKh(c, x) {
+    if (!c) return false;
+    if (x.loai === 'sach' || x.loai === 'zalo') return (c.tay[x.id] || 0) > 0;
+    var v = c.vid[x.id]; if (!v || !(v.tong > 0)) return false;
+    var g = [], phu = 0;   // gộp khúc chồng nhau rồi cộng phần nằm trong [0, tong]
+    v.khuc.filter(function (r) { return isFinite(r[0]) && isFinite(r[1]) && r[1] > r[0]; })
+      .sort(function (p, q) { return p[0] - q[0]; })
+      .forEach(function (r) { if (g.length && r[0] <= g[g.length - 1][1] + 0.05) g[g.length - 1][1] = Math.max(g[g.length - 1][1], r[1]); else g.push([r[0], r[1]]); });
+    g.forEach(function (r) { var a = Math.max(0, r[0]), b2 = Math.min(v.tong, r[1]); if (b2 > a) phu += b2 - a; });
+    return phu >= v.tong - 1.5;
+  }
+  function docChuongCuaBai(b) {
+    if (CHUONG_TD[b.id]) return;
+    CHUONG_TD[b.id] = 'dang';
+    var lopNay = LOP_CHON, l = A.lopTheoMa(DL, lopNay) || {};
+    var ds = (l.hocSinh || []).filter(function (h) { return String(h.ma || '').trim(); });
+    var ra = {}, i = 0;
+    function ke() {
+      if (i >= ds.length) return Promise.resolve();
+      var h = ds[i++], u = urlTienDoVideoDb(A.chuanMa(h.ma), b.id);
+      if (!u) return ke();
+      return fetch(u, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) { ra[h.ten] = chuongTuFsKh(((j && j.fields) || {}).chuong); })
+        ['catch'](function () { ra[h.ten] = { tay: {}, vid: {} }; })
+        .then(ke);
+    }
+    var chay = [];
+    for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
+    Promise.all(chay).then(function () {
+      if (LOP_CHON !== lopNay || CHUONG_TD[b.id] !== 'dang') return;
+      CHUONG_TD[b.id] = ra;
+      veTat();
+    });
+  }
+  function hangBuocChuongKh(b, x, i, t) {
+    var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
+    var nhan = 'BƯỚC ' + (m ? m[1] : (i + 1));
+    var tieu = A.chuAnToan(x.tieuDe || nhan);
+    if (x.ma && (x.loai === 'acts' || x.loai === 'act')) return hangKhoa({ ten: x.tieuDe || nhan, ma: x.ma, mau: x.mau }, t, nhan);
+    var caLop = A.caLopCuaBai(A.lopTheoMa(DL, LOP_CHON), b), siSo = caLop.length;
+    var td = CHUONG_TD[b.id];
+    if (!td || td === 'dang') {
+      docChuongCuaBai(b);
+      return '<span class="td-dong"><span class="td-ten" title="' + tieu + '">' + nhan + '</span>' +
+        '<span class="td-bar"><i style="width:0%"></i></span>' +
+        '<span class="td-so" style="color:var(--nhat)">…</span><span class="td-tich"></span></span>';
+    }
+    var xong = caLop.filter(function (ten) { return xongBuocTayKh(td[ten], x); }).length;
+    var pt = siSo ? Math.min(100, Math.round(xong / siSo * 100)) : 0;
+    var du = siSo > 0 && xong >= siSo;
+    return '<span class="td-dong">' +
+      '<span class="td-ten" title="' + tieu + '">' + nhan + '</span>' +
+      '<span class="td-bar"><i class="' + mauTheoPhanTramKh(pt, du) + '" style="width:' + pt + '%"></i></span>' +
+      '<span class="td-so' + (du ? ' m-la' : '') + '">' + xong + '/' + siSo + '</span>' +
       '<span class="td-tich">' + (du ? '✓' : '') + '</span>' +
     '</span>';
   }
@@ -5571,6 +5656,10 @@ tr.qm-hang-tam td{background:#fffbeb}
     var ruot = khoi.length
       ? khoi.map(function (k) { return hangKhoa(k, t); }).join('')
       : 'Bài giao trên giấy — chưa có bài tập online nào.';
+    if (b.kieu === 'CHUONG' && (b.bt || []).length) {   // thiết kế K10 1 — một hàng mỗi BƯỚC (trước chỉ 2 hàng act, nhãn "TNBG")
+      khoi = b.bt;
+      ruot = b.bt.map(function (x, i) { return hangBuocChuongKh(b, x, i, t); }).join('');
+    }
     return '<div class="the khoa-hoc' + lopThem + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
@@ -5582,7 +5671,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           veHanCard(b, moc, st, t) +
         '</span>' +
         /* v1.130.0 — bỏ cột icon ⚙/⊕ (xem `veTheCard`); menu ⚙ nay ở đầu hộp quản lý bài. */
-        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + '">' +
+        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + (b.kieu === 'CHUONG' ? ' chuong' : '') + '">' +
           '<span class="diem-rows">' + ruot + '</span>' +
         '</span>' +
         '<span class="play">' + (ttThe === 'khoa'
@@ -10981,6 +11070,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 
   function chonLop(maLop, epMoi) {
     LOP_CHON = maLop;
+    CHUONG_TD = {};   // thiết kế K10 1 — đọc lại tiến độ bước lesson CHƯƠNG mỗi lần chọn lớp
     try { localStorage.setItem('mylesson_ql_lop', maLop); } catch (e) {}
     /* ⭐ v1.55.0 — ảnh đại diện mới nhất từ kho `lessonAvatar`, neo theo MÃ SỐ em.
        Gọi ở ĐÂY chứ không phải lúc nạp trang: dashboard đổi lớp liên tục, mỗi lớp

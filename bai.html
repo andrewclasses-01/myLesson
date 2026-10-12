@@ -2027,6 +2027,8 @@ body.mo-menu .side.trai{transform:none}
   font:800 14px var(--sans); cursor:pointer; background:var(--accent); color:#fff; text-decoration:none}
 .nut-buoc.phu{background:#fff; color:var(--accent); border:1.5px solid var(--accent)}
 .nut-buoc.zalo{background:#0068FF}
+.quay-du{margin:12px 0 10px; padding:12px 14px; border-radius:12px; background:#FEF2F2; border:2px solid #DC2626; color:#B91C1C; font-size:19px; font-weight:900; line-height:1.25; letter-spacing:.02em; text-align:center}
+.quay-du small{display:block; margin-top:5px; font-size:13.5px; font-weight:700; letter-spacing:0; color:#991B1B}
 .cho-xn{margin-top:12px; padding:10px 12px; border-radius:10px; background:#FFF7E6; color:#8A5A00; font-size:13.5px; line-height:1.45}
 .nut-buoc[disabled]{opacity:.55; cursor:default}
 .nut-hang{display:flex; flex-wrap:wrap; gap:8px}
@@ -6090,9 +6092,13 @@ function veTheZaloKhoa(x, so){
   sec.className = 'card';
   sec.setAttribute('data-btid', x.id);
   var tenLop = LOP || 'lớp';
+  // 12/10/2026 (thầy) — số câu phải quay = số câu của bước act ĐỨNG TRƯỚC ("giống Bước 3"), đọc từ chuẩn act; không đọc được thì chữ chung.
+  var soCauQuay = 0;
+  (BAI.bt || []).some(function(y){ if (y === x) return true; if (y.ma && CHUAN[y.ma] && +CHUAN[y.ma].soCau > 0) soCauQuay = +CHUAN[y.ma].soCau; return false; });
   sec.innerHTML = dauTheBuocKhoa(x, so, 'video', '<svg viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>') +
     '<div class="buoc-than">' +
       '<div class="buoc-chu">Làm <b>giống Bước 3</b>, nhưng lần này phụ huynh dùng một điện thoại khác <b>quay video</b> lại lúc con trả lời các câu hỏi — theo đúng video bài làm mẫu ở trên. Quay xong, phụ huynh <b>gửi video lên nhóm Zalo ' + chuAnToan(tenLop) + '</b>.</div>' +
+      '<div class="quay-du">BẮT BUỘC QUAY ĐỦ ' + (soCauQuay ? 'TOÀN BỘ ' + soCauQuay + ' CÂU HỎI' : 'TOÀN BỘ CÂU HỎI') + '<small>từ câu 1 đến câu cuối cùng — quay thiếu câu thầy không tính là đã nộp.</small></div>' +
       '<div class="luu-y">Lưu ý: quay ở <b>độ phân giải thấp</b> cho video nhẹ, dễ gửi. Video dài thì có thể <b>cắt thành nhiều đoạn</b> khi gửi.</div>' +
       '<div class="nut-hang">' +
         (BAI.zalo ? '<a class="nut-buoc zalo" href="' + chuAnToan(BAI.zalo) + '" target="_blank" rel="noopener">Mở nhóm Zalo của lớp</a>' : '') +

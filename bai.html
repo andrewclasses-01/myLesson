@@ -4978,18 +4978,24 @@ function tenThatBtKhoa(x){
 // ---------- localStorage: các khúc giây em này ĐÃ XEM THẬT theo từng đoạn
 // (⛔ theo MÁY, chưa đồng bộ nhiều máy — xem lời cảnh báo ở khai báo
 // `DOAN_XONG` đầu file) ----------
+/* ⭐ thiết kế THẦY VÀO NHƯ EM (12/10/2026, thầy chốt) — tab "xem như em" / "đăng nhập thay" (js/thay-vao.js ⇒ `window.__thayVao`):
+   thấy ĐÚNG tiến độ thật của em (đọc từ máy chủ, không lẫn bản cũ trong máy thầy), thao tác của thầy CHỈ nhớ trong TAB này
+   (sessionStorage) và KHÔNG ghi lên máy chủ (`dayTienDoFs` dừng) — em đăng nhập lại không thấy gì của thầy.
+   Nộp bài AWord khi đăng nhập thay vẫn ghi như cũ (thầy chốt: chỉ phim giới thiệu + tiến độ bước). */
+function laThayVaoTd(){ return !!(window.__thayVao || (typeof EM !== 'undefined' && EM && EM.xemNhu)); }   // cả `?nhu=` kiểu cũ (em chưa có tài khoản)
+function khoTd(){ try { return laThayVaoTd() ? window.sessionStorage : window.localStorage; } catch (e) { return null; } }
 function khoaDoanXongKho(){ return 'awc_khoa_doan_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
 function napDoanXongKhoa(){
   DOAN_XONG = {};
   try {
-    var kho = JSON.parse(localStorage.getItem(khoaDoanXongKho()) || '{}');
+    var kho = JSON.parse(khoTd().getItem(khoaDoanXongKho()) || '{}');
     // ⛔ bản cũ (trước 13/09/2026) lưu MẢNG id (boolean) — bỏ qua, coi như
     // chưa xem gì, không cố đọc/quy đổi (chỉ mất tiến độ cục bộ của bản demo).
     if (kho && typeof kho === 'object' && !Array.isArray(kho)) DOAN_XONG = kho;
   } catch (e) { /* localStorage chặn (chế độ ẩn danh) -> coi như chưa xem gì, không vỡ trang */ }
 }
 function luuDoanXongKhoa(){
-  try { localStorage.setItem(khoaDoanXongKho(), JSON.stringify(DOAN_XONG)); } catch (e) {}
+  try { khoTd().setItem(khoaDoanXongKho(), JSON.stringify(DOAN_XONG)); } catch (e) {}
 }
 
 /* ⭐⭐⭐ v1.96.0 (14/09/2026) — ĐỒNG BỘ TIẾN ĐỘ XEM VIDEO NHIỀU MÁY qua Firestore.
@@ -5024,14 +5030,14 @@ function khoaViTriKho(){ return 'awc_khoa_vt_' + (BAI ? BAI.id : '') + '_' + (MA
 function napViTriKhoa(){
   VI_TRI_KHOA = { t: 0, luc: 0 };
   try {
-    var o = JSON.parse(localStorage.getItem(khoaViTriKho()) || 'null');
+    var o = JSON.parse(khoTd().getItem(khoaViTriKho()) || 'null');
     if (o && isFinite(o.t) && isFinite(o.luc)) VI_TRI_KHOA = { t: +o.t, luc: +o.luc };
   } catch (e) {}
 }
 function ghiViTriKhoa(t){
   if (!isFinite(t) || t < 0) return;
   VI_TRI_KHOA = { t: Math.round(t * 10) / 10, luc: Date.now() };
-  try { localStorage.setItem(khoaViTriKho(), JSON.stringify(VI_TRI_KHOA)); } catch (e) {}
+  try { khoTd().setItem(khoaViTriKho(), JSON.stringify(VI_TRI_KHOA)); } catch (e) {}
   TIEN_DO_FS_BAN = true;
 }
 // Giây để đặt sẵn lúc mở bài (0 = xem từ đầu).
@@ -5118,7 +5124,7 @@ function napTienDoFs(){
         var vtLuc = f.vtLuc && Number(f.vtLuc.integerValue != null ? f.vtLuc.integerValue : f.vtLuc.doubleValue);
         if (isFinite(vt) && isFinite(vtLuc) && vtLuc > (VI_TRI_KHOA.luc || 0)) {
           VI_TRI_KHOA = { t: vt, luc: vtLuc };
-          try { localStorage.setItem(khoaViTriKho(), JSON.stringify(VI_TRI_KHOA)); } catch (e) {}
+          try { khoTd().setItem(khoaViTriKho(), JSON.stringify(VI_TRI_KHOA)); } catch (e) {}
         } else if (VI_TRI_KHOA.luc && (!isFinite(vtLuc) || VI_TRI_KHOA.luc > vtLuc)) TIEN_DO_FS_BAN = true;
       } catch (e) {}
       return sau !== truoc;
@@ -5208,6 +5214,7 @@ function dayChuongNgay(){ if (!laChuongFs()) return; TIEN_DO_FS_BAN = true; dayT
 // dùng keepalive để yêu cầu sống sót sau khi tab đóng.
 function dayTienDoFs(gap){
   if (!TIEN_DO_FS_BAN) return;
+  if (laThayVaoTd()) return;   // thầy vào như em: KHÔNG ghi tiến độ lên máy chủ (xem `khoTd`)
   var u = urlTienDoFs();
   if (!u) return;
   var than = { fields: {
@@ -5575,7 +5582,7 @@ function chamCua(loai){
   if (CHAM[loai]) return CHAM[loai];
   var c = chamRong();
   try {
-    var o = JSON.parse(localStorage.getItem(chamKhoaKho(loai)) || 'null');
+    var o = JSON.parse(khoTd().getItem(chamKhoaKho(loai)) || 'null');
     if (o && isFinite(o.giay)) {
       c = { giay: +o.giay || 0, that: +o.that || 0, lan: Math.round(+o.lan || 0), ngay: (o.ngay && typeof o.ngay === 'object') ? o.ngay : {}, phien: chamPhienSach(o.phien),
             ngoi: +o.ngoi || 0, ngayN: (o.ngayN && typeof o.ngayN === 'object') ? o.ngayN : {}, goc: +o.goc || 0 };
@@ -5586,7 +5593,7 @@ function chamCua(loai){
   return c;
 }
 function chamLuu(loai){
-  try { localStorage.setItem(chamKhoaKho(loai), JSON.stringify(CHAM[loai])); } catch (e) {}
+  try { khoTd().setItem(chamKhoaKho(loai), JSON.stringify(CHAM[loai])); } catch (e) {}
 }
 function chamHomNay(){ return chamNgayCua(A.gioNay()); }   // v1.174.0 — ngày theo giờ máy chủ
 // Cộng một nhịp phát THẬT: `giay` giây băng, `that` giây đồng hồ (đã chặn trần ở nơi gọi).
@@ -6022,9 +6029,9 @@ function veTheSachKhoa(x, so){
 function khoaBtTayKho(){ return 'awc_khoa_tay_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
 function napBtTayKhoa(){
   BT_TAY = {};
-  try { var o = JSON.parse(localStorage.getItem(khoaBtTayKho()) || '{}'); if (o && typeof o === 'object' && !Array.isArray(o)) BT_TAY = o; } catch (e) {}
+  try { var o = JSON.parse(khoTd().getItem(khoaBtTayKho()) || '{}'); if (o && typeof o === 'object' && !Array.isArray(o)) BT_TAY = o; } catch (e) {}
 }
-function luuTayKhoa(){ try { localStorage.setItem(khoaBtTayKho(), JSON.stringify(BT_TAY)); } catch (e) {} }
+function luuTayKhoa(){ try { khoTd().setItem(khoaBtTayKho(), JSON.stringify(BT_TAY)); } catch (e) {} }
 function danhDauBtTayKhoa(x){
   BT_TAY[x.id] = A.gioNay();
   luuTayKhoa();
@@ -6080,9 +6087,9 @@ function docGocKhoa(){
 function khoaHdKho(){ return 'awc_khoa_hd_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
 function napHdKhoa(){
   HD_KHOA = { pct: 0, xong: false };
-  try { var o = JSON.parse(localStorage.getItem(khoaHdKho()) || 'null'); if (o && typeof o === 'object') HD_KHOA = { pct: +o.pct || 0, xong: !!o.xong }; } catch (e) {}
+  try { var o = JSON.parse(khoTd().getItem(khoaHdKho()) || 'null'); if (o && typeof o === 'object') HD_KHOA = { pct: +o.pct || 0, xong: !!o.xong }; } catch (e) {}
 }
-function luuHdKhoa(){ try { localStorage.setItem(khoaHdKho(), JSON.stringify(HD_KHOA)); } catch (e) {} }
+function luuHdKhoa(){ try { khoTd().setItem(khoaHdKho(), JSON.stringify(HD_KHOA)); } catch (e) {} }
 // Không có hướng dẫn ⇒ coi như đã xong (bài khóa học cũ chạy y như trước).
 function daXongHdKhoa(){ return !(BAI && BAI.huongDan && BAI.huongDan.doc) || HD_KHOA.xong; }
 function veTheHuongDanKhoa(){
@@ -6137,9 +6144,9 @@ window.addEventListener('message', function(e){
 function khoaVidKho(){ return 'awc_khoa_btvid_' + (BAI ? BAI.id : '') + '_' + (MA_HS || ''); }
 function napVidBtKhoa(){
   BT_VID = {};
-  try { var o = JSON.parse(localStorage.getItem(khoaVidKho()) || '{}'); if (o && typeof o === 'object' && !Array.isArray(o)) BT_VID = o; } catch (e) {}
+  try { var o = JSON.parse(khoTd().getItem(khoaVidKho()) || '{}'); if (o && typeof o === 'object' && !Array.isArray(o)) BT_VID = o; } catch (e) {}
 }
-function luuVidBtKhoa(){ try { localStorage.setItem(khoaVidKho(), JSON.stringify(BT_VID)); } catch (e) {} }
+function luuVidBtKhoa(){ try { khoTd().setItem(khoaVidKho(), JSON.stringify(BT_VID)); } catch (e) {} }
 function tyLeVidBtKhoa(x){
   var v = BT_VID[x.id]; if (!v || !(v.tong > 0)) return 0;
   var tong = 0;
@@ -6238,7 +6245,7 @@ function moVideoBtKhoa(x, hostId, sec){
 function luuTomTatKhoa(){
   if (!BAI || BAI.kieu !== 'CHUONG' || !TT_KHOA) return;
   var o = { hd: daXongHdKhoa(), doan: TT_KHOA.xongD, bt: TT_KHOA.xongB, luc: Date.now() };
-  try { localStorage.setItem('awc_khoa_buoc_' + BAI.id + '_' + (MA_HS || ''), JSON.stringify(o)); } catch (e) {}
+  try { khoTd().setItem('awc_khoa_buoc_' + BAI.id + '_' + (MA_HS || ''), JSON.stringify(o)); } catch (e) {}
 }
 
 function veTheChoGiaoKhoa(x, so){

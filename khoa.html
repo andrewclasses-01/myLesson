@@ -802,7 +802,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=89"></script>
 <script src="js/nw-phien.js?v=9"></script>
-<script src="js/gioi-thieu.js?v=2"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
+<script src="js/gioi-thieu.js?v=3"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
 <script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
@@ -1254,7 +1254,7 @@ function veDiemChuong(b){
     });
     return '<span class="the-diem"><span class="diem-rows"><span class="hang-grp hang-grp-em">' + hangL.join('') + '</span></span></span>';
   }
-  try { tt = JSON.parse(localStorage.getItem('awc_khoa_buoc_' + g.id + '_' + MA_HS) || '{}') || {}; } catch (e) { tt = {}; }
+  try { tt = JSON.parse(((window.__thayVao || (EM && EM.xemNhu)) ? sessionStorage : localStorage).getItem('awc_khoa_buoc_' + g.id + '_' + MA_HS) || '{}') || {}; } catch (e) { tt = {}; }
   var bx = tt.bt || {};
   var hang = [];
   (g.bt || []).forEach(function(x, i){
@@ -1502,7 +1502,7 @@ function fsChuongPop(){
 function xongTayPop(ten, k, fs){
   if (fs && xongBuocTayC(fs[ten], k.buoc)) return true;
   if (A.khoaTen(ten) !== A.khoaTen(TOI)) return false;
-  try { var tt = JSON.parse(localStorage.getItem('awc_khoa_buoc_' + POP.b.goc.id + '_' + MA_HS) || '{}') || {}; return !!(tt.bt || {})[k.buoc.id]; } catch (e) { return false; }
+  try { var tt = JSON.parse(((window.__thayVao || (EM && EM.xemNhu)) ? sessionStorage : localStorage).getItem('awc_khoa_buoc_' + POP.b.goc.id + '_' + MA_HS) || '{}') || {}; return !!(tt.bt || {})[k.buoc.id]; } catch (e) { return false; }
 }
 function veCotTayPop(k){
   var fs = fsChuongPop();
@@ -1817,8 +1817,10 @@ A.napDuLieu().then(function(dl){
 
   /* v1.286.0 — phim giới thiệu khóa mới: chưa xem xong ⇒ TỰ MỞ (chạy tiếp màn dở); xong rồi ⇒ thẻ GIỚI THIỆU */
   if (window.GioiThieu && GioiThieu.apDung(LOP)) {
-    GT_CTX = { lop: LOP, lopMa: LOP_DL, ma: MA_HS, ten: TOI, vaiTro: EM.vaiTro, ban: CA_LOP };
-    if (GioiThieu.laThay(GT_CTX)) {
+    GT_CTX = { lop: LOP, lopMa: LOP_DL, ma: MA_HS, ten: TOI, vaiTro: EM.vaiTro, xemNhu: !!EM.xemNhu, ban: CA_LOP };
+    /* 12/10/2026 — CHỈ thầy với danh tính THẦY (`?gv=1`) mới xem kiểu "xem lại". Xem như em / đăng nhập thay ⇒ đi đường của EM:
+       đọc tiến độ phim THẬT của em trên máy chủ (đã xong ⇒ thẻ; đang dở ⇒ mở tiếp đúng màn), thao tác không ghi lên máy chủ. */
+    if (EM.vaiTro === 'gv') {
       /* v1.287.0 — thầy xem như em: phim TỰ MỞ một lần mỗi tab (có nút Đóng, không ghi gì) để thầy thấy đúng như em; sau đó chỉ có thẻ */
       GT_HIEN = true;
       var khoaTab = 'gtk_thay_' + LOP_DL, daMo = false;

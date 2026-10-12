@@ -26,6 +26,16 @@
   function docLs(ctx) { try { return JSON.parse(localStorage.getItem(khoaLs(ctx))) || {}; } catch (e) { return {}; } }
   function ghiLs(ctx, st) { try { localStorage.setItem(khoaLs(ctx), JSON.stringify(st)); } catch (e) { } }
   function bay() { return window.gioChuan ? window.gioChuan() : Date.now(); }
+  // 12/10/2026 — THẦY VÀO NHƯ EM (xem như em / đăng nhập thay, js/thay-vao.js): đọc tiến độ THẬT của em trên máy chủ, thao tác của
+  // thầy chỉ nhớ trong TAB này (sessionStorage), không ghi máy chủ, không đụng bản localStorage (máy thầy có thể còn bản cũ).
+  function laThayVao(ctx) { return !!(window.__thayVao || (ctx && ctx.xemNhu && ctx.vaiTro !== 'gv')); }
+  function docSs(ctx) { try { return JSON.parse(sessionStorage.getItem(khoaLs(ctx))) || {}; } catch (e) { return {}; } }
+  function ghiSs(ctx, st) { try { sessionStorage.setItem(khoaLs(ctx), JSON.stringify(st)); } catch (e) { } }
+  // Tài khoản em để ĐỌC (kể cả khi thầy vào như em — phiên Firebase lúc đó là của em, uid hs_…).
+  function uidDoc() {
+    if (!window.NWP) return Promise.resolve(null);
+    return NWP.userHienTai().then(function (u) { return u && /^hs_/.test(u.uid) ? u : null; })['catch'](function () { return null; });
+  }
 
   // Tài khoản HỌC SINH thật đang đăng nhập (uid hs_…) — null nếu là thầy / chế độ xem như em / chưa đăng nhập.
   function uidEm() {
@@ -35,15 +45,16 @@
 
   // Trạng thái = gộp máy này + máy chủ (xong ở đâu cũng tính xong; màn dở lấy màn xa nhất).
   function docTrangThai(ctx) {
-    var ls = docLs(ctx);
-    return uidEm().then(function (u) {
+    var thayVao = laThayVao(ctx);
+    var ls = thayVao ? docSs(ctx) : docLs(ctx);
+    return (thayVao ? uidDoc() : uidEm()).then(function (u) {
       if (!u) return null;
       return NWP.hoSo(u).then(function (h) { return (h && h.xemGt && h.xemGt[ctx.lopMa]) || null; })['catch'](function () { return null; });
     }).then(function (sv) {
       sv = sv || {};
       var st = { man: Math.max(+ls.man || 0, +sv.man || 0), xong: !!(ls.xong || sv.xong) };
       if (st.xong) st.man = 0;
-      if (sv.xong && !ls.xong) ghiLs(ctx, st);   // máy khác đã xem xong ⇒ máy này nhớ luôn
+      if (sv.xong && !ls.xong && !thayVao) ghiLs(ctx, st);   // máy khác đã xem xong ⇒ máy này nhớ luôn
       return st;
     });
   }
@@ -69,6 +80,7 @@
       .then(function () { dangGhi = false; if (hangGhi) ghiMayChu(ctx, hangGhi); });
   }
   function luu(ctx, st) {
+    if (laThayVao(ctx)) { ghiSs(ctx, st); return; }   // thầy vào như em: chỉ nhớ trong tab
     if (laThay(ctx)) return;
     ghiLs(ctx, st);
     ghiMayChu(ctx, st);

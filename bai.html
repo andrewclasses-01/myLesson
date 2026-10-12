@@ -858,6 +858,25 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   .top-in:has(.wsb:not([hidden])) .dau-bai .db-ten{font-size:11px}
 }
 /* Khối VIDEO Drive (bài cũ) — khung 16:9 */
+.game.la-slide{--ti-le:56.25%; background:#0b1220}   /* v1.323.0 — slide 16:9 */
+.game.la-slide iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
+.the-slide .sl-lb{display:flex; flex-direction:column}
+.the-slide .lb-head .sl-dem{position:absolute; right:4px; top:50%; transform:translateY(-50%); font-weight:800; font-size:11px; color:var(--muted)}
+.the-slide .lb-ds{flex:1; overflow:auto}
+.lb-row.sl-nop{grid-template-columns:minmax(0,1fr) auto auto; gap:8px}
+.lb-row.sl-nop.chua .lb-name{color:var(--muted)}
+.lb-row.sl-nop.da .lb-name{color:var(--m-la, #16a34a)}
+.lb-row.sl-nop .sl-trang{font-size:10.5px; font-weight:800; color:var(--m-la, #16a34a); white-space:nowrap}
+.lb-row.sl-nop .sl-gio{font-size:10.5px; color:var(--muted); font-variant-numeric:tabular-nums; min-width:34px; text-align:right}
+.sl-xn{margin:8px auto 0; display:block; height:34px; padding:0 18px; border-radius:999px; border:0; cursor:pointer;
+  background:#0f766e; color:#fff; font:800 11px/1 inherit; letter-spacing:.12em}
+.sl-xn.da-xn{background:#16a34a}
+.sl-hoi{display:none; position:absolute; left:8px; right:8px; bottom:52px; z-index:5; padding:12px; border-radius:12px;
+  background:#fff; box-shadow:0 12px 30px rgba(16,24,40,.22); font-size:12.5px; font-weight:600; text-align:center}
+.sl-hoi.mo{display:block}
+.sl-hoi div{display:flex; gap:8px; justify-content:center; margin-top:10px}
+.sl-hoi button{height:30px; padding:0 12px; border-radius:999px; border:1px solid var(--line); background:#fff; font:700 11.5px inherit; cursor:pointer}
+.sl-hoi button[data-xn="1"]{background:#16a34a; border-color:#16a34a; color:#fff}
 .video-khung{position:relative; border-radius:14px; overflow:hidden; background:#000; padding-top:56.25%}
 .video-khung iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
 /* Khối loại chưa biết — không biến mất câm */
@@ -2167,7 +2186,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=89"></script>
+<script src="js/chung.js?v=90"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -3284,6 +3303,7 @@ function conThieu(ma){
    Nay: `ws` → thẻ tải PDF + N ô nộp ảnh · `video` → khung Drive · loại lạ →
    thẻ xám "chưa hỗ trợ" (thêm loại mới = thêm một dòng ở đây + ở `napBai`). */
 var VE_KHOI_THEO_LOAI = {
+  slide: function(k, so){ return veKhoiSlide(k, so); },   // v1.323.0 — thẻ slide (xem `veKhoiSlide`)
   ws: function(k, so){ return veKhoiWs(k, so); },
   video: function(k, so){ return veKhoiVideo(k, so); }
 };
@@ -4193,6 +4213,160 @@ function wsMoLightbox(sec, k, n){
 }
 
 /* Khối VIDEO Drive (bài soạn trước 19/08/2026) — trước đây bị bỏ qua; nay nhúng khung xem. */
+
+/* ============================================================
+   ⭐⭐ v1.323.0 (thầy chốt 12/10/2026) — THẺ SLIDE (khối `loai:'slide'`, app myLesson v2.159.0).
+   Bài SP SLIDE nay mở bằng CHÍNH trang này (`b.trang === 'bai'`): slide + act AWord + worksheet một chỗ.
+   · Khung 16:9 (slide myDocument/Canva), bìa READY như act — bấm mới nạp iframe.
+   · `k.nop` (dạng SP SLIDE) ⇒ cột phải = DANH SÁCH NỘP VIDEO + nút XÁC NHẬN NỘP BÀI (chép từ `bai-sp.html`, cùng
+     kho Firestore `spSubmissions/<LỚP>_<ngày>_<mã>/students/<mã em>` ⇒ dashboard đọc như cũ). Slide nộp THỨ HAI
+     trở đi trong cùng bài thêm đuôi `__o<vị trí>` (hai slide không dính chung danh sách).
+   · Không `nop` (slide gắn vào WORDS/READING…) ⇒ slide trải trọn bề ngang, không cột phải.
+   ============================================================ */
+var SL_FB_SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
+var SL_FB_CONFIG = {
+  apiKey: 'AIzaSyAV_yoyAQM2fKKdOsJyuAxxf4AN7MsF7XY',
+  authDomain: 'aword-70dae.firebaseapp.com',
+  projectId: 'aword-70dae',
+  storageBucket: 'aword-70dae.firebasestorage.app',
+  messagingSenderId: '399279049436',
+  appId: '1:399279049436:web:b9b34dcfb34732aa744219'
+};
+var _slFb = null;
+function slFbDb(){
+  if (!_slFb) {
+    _slFb = (async function(){
+      var appMod = await import(SL_FB_SDK + '/firebase-app.js');
+      var fsMod  = await import(SL_FB_SDK + '/firebase-firestore.js');
+      var app = (appMod.getApps && appMod.getApps().length) ? appMod.getApp() : appMod.initializeApp(SL_FB_CONFIG);
+      if (window.__veDocSan) { try { await window.__veDocSan; } catch (e) { } }
+      return { fs: fsMod, db: fsMod.getFirestore(app) };
+    })();
+  }
+  return _slFb;
+}
+/* Khoá danh sách nộp: y công thức `bai-sp.html buoiId` (lớp gọn + ngày "12-10" + mã lesson slug). */
+function slBuoiId(k){
+  var ma = (A.maLesson(BAI) || BAI.id).toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  var dau = KHOI.filter(function(x){ return x.loai === 'slide' && x.nop; })[0];
+  return LOP_DL + '_' + String(BAI.ngay || '').replace(/\./g, '-') + '_' + ma + (dau && dau !== k ? '__o' + k.o : '');
+}
+var SL_NOP = {};   /* buoiId ⇒ { maHS: {ten, tickedAt} } */
+function slXep(id){
+  var ds = SL_NOP[id] || {};
+  var theoTen = {};
+  CA_LOP.forEach(function(t){ theoTen[A.chuanTen(t)] = t; });
+  var da = Object.keys(ds).filter(function(m){ return !!theoTen[A.chuanTen(ds[m].ten)]; })
+    .map(function(m){ return { ten: theoTen[A.chuanTen(ds[m].ten)], gio: ds[m].tickedAt }; })
+    .sort(function(a, b){ return a.gio - b.gio; });
+  var co = {}; da.forEach(function(e){ co[e.ten] = 1; });
+  return da.concat(CA_LOP.filter(function(t){ return !co[t]; }).map(function(t){ return { ten: t, chua: true }; }));
+}
+function slTenGoi(t){ var tu = String(t || '').trim().split(/\s+/); var c = tu[tu.length - 1] || ''; return c.charAt(0) + c.slice(1).toLowerCase(); }
+function slGio(ms){ var d = new Date(ms), p = d.getMinutes(); return d.getHours() + ':' + (p < 10 ? '0' : '') + p; }
+function slVeDs(sec, id){
+  var ds = sec.querySelector('.lb-ds');
+  if (!ds) return;
+  var xep = slXep(id);
+  ds.innerHTML = xep.map(function(e){
+    var toi = A.chuanTen(e.ten) === A.chuanTen(TOI);
+    return '<div class="lb-row sl-nop' + (e.chua ? ' chua' : ' da') + (toi ? ' me' : '') + '">' +
+      '<span class="lb-name">' + chuAnToan(tenTat(e.ten)) + '</span>' +
+      '<span class="sl-trang">' + (e.chua ? '' : '✓ Đã nộp') + '</span>' +
+      '<span class="sl-gio">' + (e.chua ? '' : slGio(e.gio)) + '</span></div>';
+  }).join('');
+  var dem = xep.filter(function(e){ return !e.chua; }).length;
+  var h = sec.querySelector('.sl-dem'); if (h) h.textContent = dem + '/' + xep.length;
+  var nut = sec.querySelector('.sl-xn'); if (nut) nut.classList.toggle('da-xn', !!(SL_NOP[id] || {})[MA_HS]);
+  sec.classList.toggle('con-thieu', xep.some(function(e){ return e.chua; }));
+}
+function slNghe(sec, id){
+  slFbDb().then(function(fb){
+    fb.fs.onSnapshot(fb.fs.collection(fb.db, 'spSubmissions', id, 'students'), function(snap){
+      var moi = {}; snap.forEach(function(d){ moi[d.id] = d.data(); });
+      SL_NOP[id] = moi; slVeDs(sec, id);
+    }, function(err){ console.error('[slide] danh sách nộp:', err); });
+  })['catch'](function(e){ console.error('[slide] Firebase:', e); });
+}
+async function slXacNhan(id, daNop){
+  if (!MA_HS || LA_GV) { baoToast('Chế độ xem — không ghi nộp bài.'); return; }
+  if (daNop === !!(SL_NOP[id] || {})[MA_HS]) return;
+  try {
+    var fb = await slFbDb();
+    if (window.NWP && NWP.userHienTai) await NWP.userHienTai()['catch'](function(){ return null; });
+    var ref = fb.fs.doc(fb.db, 'spSubmissions', id, 'students', MA_HS);
+    if (daNop) { await fb.fs.setDoc(ref, { ten: TOI, tickedAt: A.gioNay() }); baoToast('Đã ghi nhận — cảm ơn em!'); }
+    else { await fb.fs.deleteDoc(ref); baoToast('Đã bỏ đánh dấu nộp bài.'); }
+  } catch (e) { console.error('[slide] ghi nộp:', e); baoToast('Chưa lưu được — thử lại sau nhé.'); }
+}
+function veKhoiSlide(k, so){
+  /* ⛔ HỌC SINH ĐẶC BIỆT không thấy danh sách nộp của cả lớp (luật v1.82.0, như `bai-sp.html` đá về lớp) ⇒ slide chỉ để xem. */
+  if (LA_DAC_BIET) k = Object.assign({}, k, { nop: false });
+  var sec = document.createElement('section');
+  sec.className = 'card the-slide' + (k.nop ? ' co-nop' : '');
+  var id = k.nop ? slBuoiId(k) : '';
+  var dongDuoi = ghepKhongLap([A.maLesson(BAI), 'SLIDE']).join(' • ');
+  sec.innerHTML =
+    '<div class="card-head"><span class="step">' + so + '</span>' +
+      '<div class="ch-chu"><h2>' + chuAnToan(k.ten || 'SLIDE') + '</h2><div class="ch-ma">' + chuAnToan(dongDuoi) + '</div></div>' +
+      '<div class="card-nut' + (k.nop ? ' co-td' : '') + '">' +
+        '<button class="ic-nut den" title="Tắt bớt ánh sáng xung quanh">' + IC_DEN + '</button>' +
+        '<button type="button" class="ic-nut phong-nut" title="Toàn màn hình" aria-label="Toàn màn hình">' + IC_PHONG + '</button>' +
+      '</div></div>' +
+    '<div class="than' + (k.nop ? '' : ' mot') + '">' +
+      '<div class="game la-slide">' +
+        '<div class="game-cover"><div class="bia-th">ANDREW CLASSES</div><div class="bia-giua">' +
+          '<div class="bia-ten">' + chuAnToan(k.ten || 'SLIDE') + '</div>' +
+          '<div class="bia-o-nut"><button class="bia-ready" type="button">READY</button></div>' +
+          '<div class="bia-em">' + chuAnToan(TOI) + ' • ' + chuAnToan(LOP_HIEN) + '</div></div></div>' +
+      '</div>' +
+      (k.nop
+        ? '<div class="lb-cot"><div class="lb sl-lb">' +
+            '<div class="lb-head"><h3>NỘP BÀI VIDEO</h3><span class="sl-dem"></span></div>' +
+            '<div class="lb-ds"></div>' +
+            '<button type="button" class="sl-xn">XÁC NHẬN NỘP BÀI</button>' +
+            '<div class="sl-hoi"><p>' + chuAnToan(slTenGoi(TOI)) + ', em xác nhận là đã nộp bài video trên nhóm rồi chứ?</p>' +
+              '<div><button type="button" data-xn="1">Vâng, em đã nộp</button><button type="button" data-xn="0">Em chưa nộp</button></div></div>' +
+          '</div></div>'
+        : '') +
+    '</div>';
+  var khung = sec.querySelector('.game');
+  sec.querySelector('.game-cover').onclick = function(){
+    if (khung.querySelector('iframe')) return;
+    var f = document.createElement('iframe');
+    f.setAttribute('allow', 'fullscreen; autoplay');
+    f.setAttribute('allowfullscreen', '');
+    f.src = k.slide;
+    khung.insertBefore(f, khung.firstChild);
+    var bia = khung.querySelector('.game-cover');
+    bia.classList.add('dang-mo');
+    setTimeout(function(){ bia.remove(); }, 340);
+  };
+  var nutDen = sec.querySelector('.ic-nut.den');
+  nutDen.onclick = function(){ if (khung.classList.contains('sang')) tatDen(); else batDen(khung, nutDen, k); };
+  sec.querySelector('.phong-nut').onclick = function(){
+    var f = khung.querySelector('iframe');
+    if (!f) { sec.querySelector('.game-cover').onclick(); f = khung.querySelector('iframe'); }
+    var el = khung;
+    if (el.requestFullscreen) el.requestFullscreen()['catch'](function(){});
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  };
+  if (k.nop) {
+    var hoi = sec.querySelector('.sl-hoi');
+    sec.querySelector('.sl-xn').onclick = function(e){ e.stopPropagation(); hoi.classList.toggle('mo'); };
+    hoi.onclick = function(e){
+      e.stopPropagation();
+      var b = e.target.closest('[data-xn]'); if (!b) return;
+      hoi.classList.remove('mo');
+      slXacNhan(id, b.getAttribute('data-xn') === '1');
+    };
+    document.addEventListener('click', function(){ hoi.classList.remove('mo'); });
+    slVeDs(sec, id);
+    slNghe(sec, id);
+  }
+  return sec;
+}
+
 function veKhoiVideo(k, so){
   var sec = document.createElement('section');
   sec.className = 'card';
@@ -7348,6 +7522,7 @@ A.napDuLieu().then(function(dl){
     if (k.loai === 'nghe' || k.loai === 'audio') return !!k.maNghe;
     if (k.loai === 'ws') return !!String(k.ten || '').trim();
     if (k.loai === 'video') return !!k.driveId;
+    if (k.loai === 'slide') return /^https:\/\//i.test(String(k.slide || ''));   // v1.323.0
     return k.loai === 'act' && !!k.ma;
   }).map(function(k){
     if (k.loai === 'ws') {
@@ -7355,6 +7530,8 @@ A.napDuLieu().then(function(dl){
                o: (k.o != null && +k.o >= 0) ? +k.o : k._vt, han: k.han || '' };
     }
     if (k.loai === 'video') return { loai: 'video', ten: k.ten || '', driveId: String(k.driveId || '') };
+    if (k.loai === 'slide') return { loai: 'slide', ten: k.ten || 'SLIDE', slide: String(k.slide), nop: !!k.nop,
+                                     o: (k.o != null && +k.o >= 0) ? +k.o : k._vt, han: k.han || '' };
     return {
       loai: (k.loai === 'nghe' || k.loai === 'audio') ? 'audio' : 'act',
       ten: k.ten || '', ma: k.ma || '', maNghe: k.maNghe || '',

@@ -2108,6 +2108,9 @@
     if (d === 'WORKSHEET') {
       return (b.khoi || []).some(function (k) { return k && k.loai === 'ws' && k.tep; }) ? 'bai.html' : '';
     }
+    // ⭐ v1.323.0 — app myLesson v2.159.0 đánh `trang:'bai'` cho bài có ô SLIDE (kể cả mọi bài SP SLIDE mới):
+    // slide + act + worksheet chung trang `bai.html`. Bài SP cũ (không cờ) vẫn mở `bai-sp.html`.
+    if (b.trang === 'bai') return 'bai.html';
     if (d.indexOf('SP') === 0 || d.indexOf('SLIDE') >= 0) return 'bai-sp.html';
     return 'bai.html';
   }

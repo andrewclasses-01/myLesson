@@ -177,6 +177,13 @@ button{cursor:pointer}
   margin:0 0 4px;font-size:15px;letter-spacing:.02em;display:flex;align-items:center;gap:8px;
 }
 .lop-card h3 .dem{margin-left:auto;font-size:12px;color:var(--text-dim);font-weight:700}
+/* v0.33.0 — bút chì góc thẻ lớp: đổi HẠN NỘP cả tháng của lớp; nhãn tím "Hạn dd/mm" khi khác mặc định */
+.lop-card h3 .han-but{flex:none;width:26px;height:26px;margin:-4px -4px -4px -2px;border:0;border-radius:8px;background:none;color:var(--text-dim);cursor:pointer;display:grid;place-items:center;padding:0;opacity:.55;transition:opacity .15s,background .15s}
+.lop-card h3 .han-but:hover,.lop-card h3 .han-but:focus-visible{opacity:1;background:rgba(var(--phu),.07);color:var(--text)}
+.lop-card h3 .han-but.co{opacity:1;color:var(--rieng)}
+.lop-card h3 .han-rieng{font-size:11px;font-weight:800;color:var(--rieng);background:var(--rieng-soft);border:1px solid var(--rieng-line);border-radius:99px;padding:0 8px;line-height:18px;white-space:nowrap}
+.hn-o{width:100%;height:36px;padding:0 10px;border-radius:10px;border:1px solid var(--glass-border);background:var(--ql-o-bg);font:inherit;font-size:14px;font-weight:700;color:var(--text);margin:4px 0 6px}
+.hn-o:focus{outline:none;border-color:var(--accent-line);box-shadow:0 0 0 3px var(--accent-soft)}
 .tienbar{height:5px;border-radius:99px;background:rgba(var(--phu),.08);overflow:hidden;margin:4px 0 8px}
 .tienbar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .5s var(--ease)}
 .hsrow{
@@ -711,6 +718,11 @@ tr.da-xac-nhan .nhan.xanh{opacity:.85}
 .cr-ve{width:26px;height:26px;border-radius:8px;border:0;background:none;color:var(--rieng);cursor:pointer;display:grid;place-items:center;visibility:hidden;padding:0}
 .cr-ve:hover{background:var(--rieng-soft)}
 .cr-dong.doi .cr-ve{visibility:visible}
+/* v0.33.0 — dòng Tiểu học (công tắc) + Trần riêng (không ô lý do) trong Chỉnh riêng */
+.cr-sw{display:flex;align-items:center;height:34px;padding:0 4px}
+.cr-phu{font-size:11.5px;font-weight:600;color:var(--placeholder);line-height:1.3;min-width:0}
+.cr-dong.mo .cr-o{opacity:.45}
+.cr-dong.doi .cr-phu{color:var(--rieng)}
 .cr-con{font-size:12.5px;margin:10px 0 0}
 .cr-con small{color:var(--placeholder);font-weight:600}
 .cr-ket{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-top:8px;padding:9px 12px;background:var(--ql-o-bg);border-radius:12px;font-size:13px;font-weight:700}

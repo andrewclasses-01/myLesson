@@ -4204,6 +4204,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         });
       }
       return { ten: k.ten, ma: k.ma, mau: k.mau || '', xong: xong, caLop: caA, siSo: caA.length,
+               nhanBuoc: b.kieu === 'CHUONG' ? nhanBuocTheoMaKh(b, k.ma) : '',   // thiết kế K10 5 — tab pop-up "BƯỚC n"
                khongTinh: stageCo ? A.khongTinhCuaAct(l, b, k.ma) : null };
     });
 
@@ -5532,6 +5533,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     return (i >= 0 ? t.slice(i + 1).trim() : t) || A.tenBai(b);
   }
   function nhanRowKh(k) {
+    if (k.nhanBuoc) return k.nhanBuoc;   // thiết kế K10 5 — act thuộc bước của lesson CHƯƠNG (`tinhBai` gắn)
     if (k.loai === 'sach') return 'SÁCH' + (k.trang ? ' ' + A.chuAnToan(k.trang) : '');
     var ten = String(k.ten || '').trim();
     // 12/10/2026 — BẢN CHÉP luật `nhanRow` khoa.html: "BÀI TẬP 1" → BT1, "BT/BÀI TẬP BỔ SUNG" → BTBS.
@@ -5578,6 +5580,14 @@ tr.qm-hang-tam td{background:#fffbeb}
        · bước `sach`/`zalo` (tự đánh dấu) · `video` (xem đủ) — đọc trường `chuong` của `lessonVideoTienDo/<ma>__<bai>` từng em
          (bai.html ghi, xem `chuongTuFs`/`btXongKhoa` bên đó — BẢN CHÉP luật xong: tay>0; video phủ ≥ tổng − 1.5 giây).
      Đọc 1 tài liệu/em/bài, 6 lượt song song, nhớ trong `CHUONG_TD` tới khi đổi lớp (chonLop xoá). */
+  function nhanBuocTheoMaKh(b, ma) {   // act của lesson CHƯƠNG nằm ở bước nào ⇒ "BƯỚC n" (rỗng nếu không thấy)
+    var bt = b.bt || [];
+    for (var i = 0; i < bt.length; i++) if (bt[i].ma === ma) {
+      var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(bt[i].tieuDe || ''));
+      return 'BƯỚC ' + (m ? m[1] : (i + 1));
+    }
+    return '';
+  }
   var CHUONG_TD = {};   // b.id -> 'dang' | { <tên em>: {tay:{}, vid:{}} }
   function soFsKh(v) { return v ? Number(v.integerValue != null ? v.integerValue : v.doubleValue) : NaN; }
   function chuongTuFsKh(f) {

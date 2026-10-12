@@ -1186,6 +1186,13 @@ function veDiem(b){
   if (!khoi.length) {
     return '<span class="the-diem chi-tay"><span class="xem-chu">Bài giao trên giấy — chưa có bài tập online nào.</span></span>';
   }
+  /* thiết kế K9 4 (12/10/2026, thầy chốt) — THẦY mở từ dashboard (`?gv=1`): bỏ nút đổi xem, LUÔN hiện hàng CẢ LỚP
+     (thầy không làm bài ⇒ hàng "của em" toàn 0/0). Hàng cả lớp đặt trong khung `.hang-grp-em` (khung đang hiện sẵn). */
+  if (EM && EM.vaiTro === 'gv') {
+    return '<span class="the-diem"><span class="diem-rows">' +
+      '<span class="hang-grp hang-grp-em">' + khoi.map(hangLop).join('') + '</span>' +
+    '</span></span>';
+  }
   return '<span class="the-diem">' +
     '<span class="xem-dau">' +
       '<span class="chon-xem"><span class="chon-thumb"></span>' +

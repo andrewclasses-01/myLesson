@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-12 22:41:26",
+  "capNhat": "2026-10-12 23:30:39",
   "bai": {
     "A1C": [
       {
@@ -534,6 +534,7 @@
         "han": "2026-10-16T19:45",
         "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
         "taoLuc": "2026-10-12",
+        "trang": "bai",
         "khoi": [
           {
             "loai": "ws",
@@ -546,7 +547,9 @@
             "loai": "slide",
             "ten": "SPEAKING PRACTICE",
             "yeuCau": "Video Speaking Requirement",
-            "slide": "https://document.andrewclasses.com/slide/khoa-hoc/bones-muscles-sp/?nhung=1"
+            "slide": "https://document.andrewclasses.com/slide/khoa-hoc/bones-muscles-sp/?nhung=1",
+            "o": 0,
+            "nop": 1
           }
         ],
         "giaoLuc": "2026-10-12T22:41"
@@ -4529,6 +4532,6 @@
   "capNhatLop": {
     "NNTNGK10": "2026-10-12 08:24:40",
     "A1A": "2026-10-12 22:18:14",
-    "B2B": "2026-10-12 22:41:26"
+    "B2B": "2026-10-12 23:30:39"
   }
 }

@@ -2335,8 +2335,8 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .bxh-dong.tay .xong{font:800 calc(var(--f)*.8)/1 var(--font); color:#16A34A; background:var(--la-nhat); padding:calc(var(--f)*.28) calc(var(--f)*.5); border-radius:99px; white-space:nowrap}
 .bxh-dong.tay.chua .xong{color:#D3DCDA; background:none}
 /* 12/10/2026 — nút THẦY TÍCH bước zalo (bảng XẾP HẠNG + pop-up kết quả) */
-.zalo-tich{font:800 11.5px/1 var(--font); padding:5px 9px; border-radius:99px; border:1.5px dashed var(--vien-dam); background:#fff; color:var(--xanh); cursor:pointer; white-space:nowrap}
-.zalo-tich:hover{border-style:solid; border-color:var(--xanh); background:var(--xanh-nhat)}
+.zalo-tich{font:800 11.5px/1 var(--font); padding:5px 9px; border-radius:99px; border:1.5px dashed #F2C4C4; background:#fff; color:#DC2626; cursor:pointer; white-space:nowrap; -webkit-user-select:none; user-select:none}
+.zalo-tich:hover{border-style:solid; border-color:#DC2626; background:#FEF2F2}
 .zalo-tich.co{border:1.5px solid transparent; background:var(--la-nhat); color:#16A34A}
 .zalo-tich.co:hover{border-color:#16A34A}
 .zalo-tich:disabled{opacity:.5; cursor:wait}
@@ -5643,15 +5643,14 @@ tr.qm-hang-tam td{background:#fffbeb}
      bằng setDoc merge (luật: chỉ laThay() ghi — tools/dang-luat-xac-nhan-zalo.js). Học sinh không tự tích được nữa. */
   function nutTichZaloDb(b, x, ten, xong, maLop) {
     return '<button type="button" class="zalo-tich' + (xong ? ' co' : '') + '" data-zalo-tich="' + A.chuAnToan(ten) + '" data-bai="' + A.chuAnToan(b.id) +
-      '" data-bt="' + A.chuAnToan(x.id) + '" data-lop="' + A.chuAnToan(maLop || '') + '" title="' + (xong ? 'Thầy đã xác nhận · bấm để bỏ tích' : 'Bấm để xác nhận em đã nộp video lên nhóm Zalo') + '">' +
-      (xong ? 'Xong ✓' : '+ Tích') + '</button>';
+      '" data-bt="' + A.chuAnToan(x.id) + '" data-lop="' + A.chuAnToan(maLop || '') + '" title="Bấm đúp để đổi ' + (xong ? 'thành Chưa nộp' : 'thành Đã nộp') + '">' +
+      (xong ? 'Đã nộp' : 'Chưa nộp') + '</button>';
   }
   function tichZaloDb(n) {
     var bId = n.getAttribute('data-bai'), btId = n.getAttribute('data-bt'), ten = n.getAttribute('data-zalo-tich'), maLop = n.getAttribute('data-lop');
     var td = CHUONG_TD[bId]; if (!td || td === 'dang' || n.disabled) return;
     var c = td[ten] || (td[ten] = { tay: {}, vid: {} }); c.xn = c.xn || {};
     var co = (c.xn[btId] || 0) > 0;
-    if (co && !confirm('Bỏ tích "đã nộp video Zalo" của ' + ten + '?')) return;
     n.disabled = true;
     if (chuaThay(n)) return;
     var l = A.lopTheoMa(DL, maLop) || {}, h = (l.hocSinh || []).filter(function (x) { return x.ten === ten; })[0];
@@ -5664,18 +5663,21 @@ tr.qm-hang-tam td{background:#fffbeb}
       veTat();
       if (HQ.b && HQ.b.id === bId && HQ.tab === 'xh') hqVeLai();
       if (POP_TAB.b && POP_TAB.b.id === bId && $('#popNen').classList.contains('mo')) { veTabsDb(); veRuotTabDb(); }
-      baoToast(co ? 'Đã bỏ tích của ' + ten + '.' : 'Đã xác nhận ' + ten + ' nộp video ✓');
+      baoToast(ten + (co ? ': Chưa nộp' : ': Đã nộp ✓'));
     })['catch'](function (e) {
       n.disabled = false;
       baoToast('Không lưu được: ' + ((e && (e.code || e.message)) || 'lỗi không rõ'));
     });
   }
-  // bắt ở pha CAPTURE: nút nằm trong dòng có `dblclick` mở chi tiết em ⇒ chặn cả click lẫn dblclick lọt xuống dòng
+  // 12/10/2026 (thầy chốt) — nút "Chưa nộp" ⇄ "Đã nộp": BẤM ĐÚP mới đổi (bấm đơn không làm gì, tránh lỡ tay; khỏi hỏi lại).
+  // Bắt ở pha CAPTURE: nút nằm trong dòng có `dblclick` mở chi tiết em ⇒ chặn cả click lẫn dblclick lọt xuống dòng.
   document.addEventListener('click', function (e) {
+    if (e.target.closest && e.target.closest('[data-zalo-tich]')) { e.stopPropagation(); e.preventDefault(); }
+  }, true);
+  document.addEventListener('dblclick', function (e) {
     var n = e.target.closest && e.target.closest('[data-zalo-tich]'); if (!n) return;
     e.stopPropagation(); e.preventDefault(); tichZaloDb(n);
   }, true);
-  document.addEventListener('dblclick', function (e) { if (e.target.closest && e.target.closest('[data-zalo-tich]')) { e.stopPropagation(); e.preventDefault(); } }, true);
   function xongBuocTayKh(c, x) {
     if (!c) return false;
     if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan, `tichZaloDb`)

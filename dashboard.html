@@ -14307,6 +14307,14 @@ tr.qm-hang-tam td{background:#fffbeb}
     return null;
   }
   function soHsHien(ma) { if (!SOHS) return '…'; return soTheoMaHs(ma) || '—'; }
+  /* ⭐ MỘT SỐ HỌC SINH (12/10/2026, thầy chốt GĐ1): mọi chỗ HIỆN cho thầy dùng SỐ HỌC SINH 6 chữ số. Tài khoản `hs_<n>` (số web
+     3 chữ số) chỉ còn là mã máy bên trong — tra ngược qua `hsSo/soCai.nguoi[so].w` (danh sách số web của người đó) hoặc mã đăng nhập. */
+  function soHsTuUid(x) {
+    if (!SOHS || !x) return '';
+    var m = /^hs_(\d+)$/.exec(String(x)), ng = SOHS.nguoi || {};
+    if (m) { for (var n in ng) { if ((ng[n].w || []).indexOf(+m[1]) >= 0) return n; } return ''; }
+    return soTheoMaHs(x) || '';
+  }
   function nsHsHien(ma, sn) {
     var n = soTheoMaHs(ma), P = n && SOHS.nguoi[n], m = P && /^(\d{4})-(\d{2})-(\d{2})$/.exec(P.ns || '');
     return m ? m[3] + '/' + m[2] + '/' + m[1] : (sn || 'chưa có');
@@ -15444,12 +15452,13 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (!NK) { docNhatKy(); return hsoCho(); }
     if (NK.dang) return hsoCho();
     if (NK.loi) return '<p class="qm-p">' + NK.loi + '</p>';
+    if (!SOHS) { napSo().then(function () { if (qmDangMo('nk')) veBaoMat(); }, function () {}); }   // cần sổ số học sinh để hiện số
     if (!NK.ds.length) return '<p class="qm-p">Chưa có thao tác nào được ghi.</p>';
     return '<table class="qm-bang"><thead><tr><th>Lúc</th><th>Việc</th><th>Học sinh</th><th>Người làm</th></tr></thead><tbody>' +
       NK.ds.map(function (x) {
         var d = new Date(x.luc);
         return '<tr><td>' + hsoNgay(x.luc) + '/' + d.getFullYear() + ' ' + ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2) + '</td><td>' + qmE(x.viec) + '</td>' +
-          '<td>' + qmE(x.ten) + ' <small class="qm-nhat">' + qmE(x.uid) + '</small></td><td>' + qmE(x.boi) + '</td></tr>';
+          '<td>' + qmE(x.ten) + ' <small class="qm-nhat">' + qmE(soHsTuUid(x.uid)) + '</small></td><td>' + qmE(x.boi) + '</td></tr>';   // GĐ1 — số học sinh 6 chữ số
       }).join('') + '</tbody></table>' +
       '';
   }

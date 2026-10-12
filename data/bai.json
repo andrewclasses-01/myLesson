@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-12 22:18:14",
+  "capNhat": "2026-10-12 22:41:26",
   "bai": {
     "A1C": [
       {
@@ -525,6 +525,32 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_12.10_SP_SLIDE_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2B_12.10_SP SLIDE DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2B_12.10_SP SLIDE DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "SP SLIDE",
+        "ngay": "12.10",
+        "han": "2026-10-16T19:45",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-12",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "DS-S5.I1.W1 SPEAKING GUIDE",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB2B%2FB2B_12.10_SP_SLIDE_DS-S5.I1.W1_BONES_AND_MUSCLES%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "slide",
+            "ten": "SPEAKING PRACTICE",
+            "yeuCau": "Video Speaking Requirement",
+            "slide": "https://document.andrewclasses.com/slide/khoa-hoc/bones-muscles-sp/?nhung=1"
+          }
+        ],
+        "giaoLuc": "2026-10-12T22:41"
+      },
       {
         "id": "B2B_9.10_READING_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2B_9.10_READING DS-S5.I1.W1 BONES AND MUSCLES",
@@ -4502,6 +4528,7 @@
   },
   "capNhatLop": {
     "NNTNGK10": "2026-10-12 08:24:40",
-    "A1A": "2026-10-12 22:18:14"
+    "A1A": "2026-10-12 22:18:14",
+    "B2B": "2026-10-12 22:41:26"
   }
 }

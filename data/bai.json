@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-13 06:46:33",
+  "capNhat": "2026-10-13 17:12:48",
   "bai": {
     "A1C": [
       {
@@ -366,6 +366,43 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_11.10_SP_SLIDE_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2A_11.10_SP SLIDE DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2A_11.10_SP SLIDE DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "SP SLIDE",
+        "ngay": "11.10",
+        "han": "2026-10-18T14:00",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-13",
+        "trang": "bai",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "DS-S5.I1.W1 SPEAKING GUIDE",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FB2A%2FB2A_11.10_SP_SLIDE_DS-S5.I1.W1_BONES_AND_MUSCLES%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "slide",
+            "ten": "SPEAKING PRACTICE",
+            "yeuCau": "Video Speaking Requirement",
+            "slide": "https://document.andrewclasses.com/slide/khoa-hoc/bones-muscles-sp/?nhung=1",
+            "o": 0,
+            "nop": 1
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "7375yf",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-13T17:12"
+      },
       {
         "id": "B2A_4.10_READING_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2A_4.10_READING DS-S5.I1.W1 BONES AND MUSCLES",
@@ -4596,6 +4633,7 @@
     "NNTNGK10": "2026-10-12 08:24:40",
     "A1A": "2026-10-12 22:18:14",
     "B2B": "2026-10-12 23:30:39",
-    "A1C": "2026-10-13 06:46:33"
+    "A1C": "2026-10-13 06:46:33",
+    "B2A": "2026-10-13 17:12:48"
   }
 }

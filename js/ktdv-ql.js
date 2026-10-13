@@ -29,9 +29,20 @@
       { code: 'g3wh9q', ma: 'P3', ten: 'A, an hay không đếm được', n: 30, chon: true, chuan: 3.5 },
       { code: 'p3xryn', ma: 'P4', ten: 'Số ít, số nhiều', n: 30, chuan: 9.5 },
       { code: 'zwfvda', ma: 'P5', ten: 'Tạo câu', n: 20, chuan: 20 },
-      { code: 'ct632d', ma: 'P6', ten: 'Nghe - hiểu - ghi nhớ', n: 10, chon: true, chuan: 4.4 }] }
+      { code: 'ct632d', ma: 'P6', ten: 'Nghe - hiểu - ghi nhớ', n: 10, chon: true, chuan: 4.4 }] },
+    // ⭐ 13/10/2026 — BỘ ĐỀ B1 (8 phần, AWord Đợt 510): 7 phần ngữ pháp (đề giấy "A2 to B1 ENTRANCE") + NGHE (PET 2, mỗi PART nghe 2 lần).
+    //   Chưa có lớp mẫu đo tốc độ ⇒ không đặt `chuan`. C8 có Part 3 gõ nhưng coi như Quiz (chon) khi tự phân loại.
+    C: { ten: 'Bộ B1 (8 phần, có nghe)', bai: [
+      { code: 'fqdmhq', ma: 'C1', ten: 'Thì động từ', n: 25 },
+      { code: 'dyabv6', ma: 'C2', ten: 'Câu điều kiện', n: 10 },
+      { code: '6tu6ek', ma: 'C3', ten: 'Câu bị động', n: 10 },
+      { code: 'kfxhr5', ma: 'C4', ten: 'So / too / either / neither', n: 10 },
+      { code: 'hrg835', ma: 'C5', ten: 'Mệnh đề quan hệ', n: 10 },
+      { code: 'qhrw3f', ma: 'C6', ten: 'Câu tường thuật', n: 10 },
+      { code: 'x4mwdz', ma: 'C7', ten: 'Dịch câu', n: 15 },
+      { code: 'egs7pp', ma: 'C8', ten: 'Nghe (PET)', n: 25, chon: true }] }
   };
-  var MOI_BAI = BO_DE.A.bai.concat(BO_DE.B.bai);
+  var MOI_BAI = BO_DE.A.bai.concat(BO_DE.B.bai, BO_DE.C.bai);
   function boCua(h) { return (h && h.phat && BO_DE[h.phat.bo]) ? h.phat.bo : (h && BO_DE[h.boDe]) ? h.boDe : 'A'; }
   function baiCua(h) { return BO_DE[boCua(h)].bai; }
   var BAI = BO_DE.A.bai;   // (giữ tên cũ cho bên ngoài — mọi chỗ theo em đều gọi baiCua(h))

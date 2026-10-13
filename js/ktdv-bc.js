@@ -31,7 +31,10 @@
   // w = điểm tối đa của phần (thang 100) · c = mức chuẩn (tỉ lệ câu đúng để được trọn điểm phần) · sao = độ khó hiện cho phụ huynh
   var CACH = { BT1: { w: 10, c: 1, sao: 1 }, BT2: { w: 20, c: 1, sao: 2 }, BT3: { w: 70, c: 1, sao: 3 },
     // ⭐ 10/10/2026 — BỘ ĐỀ LỚP 3–4 (6 phần, mã P1–P6): 10 · 15 · 10 · 15 · 35 · 15 — tạo câu nặng nhất (như BT3 của bộ cũ)
-    P1: { w: 10, c: 1, sao: 1 }, P2: { w: 15, c: 1, sao: 2 }, P3: { w: 10, c: 1, sao: 1 }, P4: { w: 15, c: 1, sao: 2 }, P5: { w: 35, c: 1, sao: 3 }, P6: { w: 15, c: 1, sao: 2 } };
+    P1: { w: 10, c: 1, sao: 1 }, P2: { w: 15, c: 1, sao: 2 }, P3: { w: 10, c: 1, sao: 1 }, P4: { w: 15, c: 1, sao: 2 }, P5: { w: 35, c: 1, sao: 3 }, P6: { w: 15, c: 1, sao: 2 },
+    // ⭐ 13/10/2026 — BỘ ĐỀ B1 (C1–C8): 15 · 10 · 8 · 7 · 10 · 10 · 20 · 20 — dịch câu + nghe nặng nhất
+    C1: { w: 15, c: 1, sao: 2 }, C2: { w: 10, c: 1, sao: 2 }, C3: { w: 8, c: 1, sao: 2 }, C4: { w: 7, c: 1, sao: 1 },
+    C5: { w: 10, c: 1, sao: 3 }, C6: { w: 10, c: 1, sao: 3 }, C7: { w: 20, c: 1, sao: 3 }, C8: { w: 20, c: 1, sao: 2 } };
   function cachCua(b) { return CACH[b.ma] || { w: b.n || 1, c: 1, sao: 1 }; }
   function mot(x) { return Math.round(x * 10) / 10; }
   function so(x) { return String(mot(x)).replace('.', ','); }

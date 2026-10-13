@@ -333,12 +333,13 @@
   function tinNhan(ten, ma, mk) {
     return 'Thầy gửi chị tài khoản và mật khẩu để con đăng nhập và làm bài kiểm tra:\n' +
       '• Trang kiểm tra: ' + TRANG_KT.replace('https://', '') + '\n• ID: ' + ma + '\n• Mật khẩu: ' + mk + '\n' +
-      'Con chỉ cần mở link, đăng nhập vào là có hướng dẫn đầy đủ. Con tự làm, không dùng phần mềm dịch, không dùng từ điển hay công cụ hỗ trợ ạ. Sau khi làm xong con báo thầy để thầy chấm và gửi kết quả ạ.';
+      'Khi nào sẵn sàng, con nhắn thầy để thầy mở bài cho con bắt đầu ạ. Con chỉ cần mở link, đăng nhập vào là có hướng dẫn đầy đủ.\n' +   // 13/10/2026 mẫu thầy chốt
+      'Con tự làm, không dùng phần mềm dịch, không dùng từ điển hay công cụ hỗ trợ ạ. Sau khi làm xong con báo thầy để thầy chấm và gửi kết quả ạ.';
   }
   function hienMatKhau(ten, ma, mk, tieuDe) {
     var tn = tinNhan(ten, ma, mk);
     moHop(tieuDe || 'Mật khẩu mới', '<div class="ktq-mk"><div><span>ID</span><b>' + E(ma) + '</b></div><div><span>Mật khẩu</span><b>' + E(mk) + '</b></div></div>' +
-      '<p class="ktq-goi">Mật khẩu chỉ hiện MỘT lần — chép gửi phụ huynh ngay. Em không phải đổi mật khẩu khi vào kiemtra.</p>' +
+      '<p class="ktq-goi">' + (mk === 'andrewclasses' ? 'Mật khẩu MẶC ĐỊNH của học sinh kiểm tra — chép tin nhắn gửi phụ huynh.' : 'Mật khẩu chỉ hiện MỘT lần — chép gửi phụ huynh ngay.') + ' Em không phải đổi mật khẩu khi vào kiemtra.</p>' +
       '<textarea class="ktq-tn" rows="8">' + E(tn) + '</textarea>', [
       { chu: 'Chép tin nhắn', phu: true, bam: function (b, than) { var t = than.querySelector('.ktq-tn'); t.select(); try { navigator.clipboard.writeText(t.value); } catch (e) { document.execCommand('copy'); } tb('Đã chép tin nhắn.'); } },
       { chu: 'Xong', bam: dongHop }

@@ -8726,7 +8726,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
 
   // ---- ⭐⭐ v1.143.0 (thầy duyệt mẫu v25→v33) — TAB XẾP HẠNG ----
-  // TRÁI: mỗi act của phạm vi đang xem một BẢNG XẾP HẠNG (đặt cạnh nhau; 4 act trở lên xuống 2 hàng). Mỗi em lấy lượt NỘP TỐT NHẤT
+  // TRÁI: mỗi act của phạm vi đang xem một BẢNG XẾP HẠNG (đặt cạnh nhau; v1.325.0: tới 5 act một hàng, 6 act trở lên xuống 2 hàng). Mỗi em lấy lượt NỘP TỐT NHẤT
   //   (điểm cao nhất, bằng điểm thì nhanh hơn); dòng = hạng (top 3 huy chương) · tên · điểm x/y (đủ điểm xanh) · thời gian làm lượt đó.
   //   Em chưa nộp lượt nào: tên đỏ, "—", cuối bảng. Góc bảng "x/y đã xong" = số em ĐỦ ĐIỂM (`coTrongDiem`).
   // PHẢI: cột ngang TỔNG THỜI GIAN luyện (video + nghe + act của phạm vi), nhiều → ít, giờ bên phải, trục giờ (v1.144.2: bỏ "trung bình", tiêu đề ra giữa — thầy chốt).
@@ -8803,7 +8803,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var hs = hqHocSinh(t).filter(function (h) { return !kt[A.khoaTen(h.ten)]; });
     if (!hs.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
-    var soA = pv.acts.length, cot = soA <= 3 ? soA : Math.ceil(soA / 2);
+    var soA = pv.acts.length, cot = soA <= 5 ? soA : Math.ceil(soA / 2);   // v1.325.0 (thầy duyệt mẫu v44, 13/10) — ≤ 5 act MỘT hàng, từ 6 act mới 2 hàng
     var trai = soA ? pv.acts.map(function (a) { return hqBxhAct(a, hs, t.acts.indexOf(a)); }).join('') : '<div class="bm-em-trong">Phạm vi này không có game AWord.</div>';
     // ⭐ thiết kế K10 8 (mẫu v43 A) — lesson CHƯƠNG: đủ MỌI BƯỚC theo thứ tự, một hàng; bước không điểm = bảng hẹp (⅔ bề ngang).
     var b = HQ.b, laCh = b.kieu === 'CHUONG' && (b.bt || []).length, td = laCh ? CHUONG_TD[b.id] : null, cotCss = '', soTay = 0;
@@ -8843,6 +8843,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     var loi = HQ.actLoi ? '<div class="hq-loi">' + A.chuAnToan(HQ.actLoi) + '</div>' : '';
     // v1.148.0 (mẫu v36) — MỘT act ⇒ hai nửa bằng nhau: nửa bảng act, nửa tổng thời gian (danh sách vẫn MỘT cột).
     var cotTrai = 'repeat(' + Math.max(1, cot) + ',minmax(0,1fr))', khung = soA === 1 ? ' style="grid-template-columns:minmax(0,1fr) minmax(0,1fr)"' : '';
+    // v1.325.0 (mẫu v44) — 4–5 act một hàng: mỗi bảng act ≈ cột TỔNG THỜI GIAN chia 1,2 (cột tổng rộng hơn bảng act một chút).
+    if (soA >= 4 && soA <= 5) khung = ' style="grid-template-columns:minmax(0,' + (soA / 1.2).toFixed(2) + 'fr) minmax(0,1fr)"';
     if (cotCss) { cotTrai = cotCss; khung = ' style="grid-template-columns:minmax(0,' + Math.max(1.5, soA * 0.7 + soTay * 0.45).toFixed(2) + 'fr) minmax(0,1fr)"'; }
     return loi + '<div class="hq-xh' + (HQ.hieu ? ' anim' : '') + '" id="hqXh"' + khung + '><div class="hq-xh-trai" style="grid-template-columns:' + cotTrai + '">' + trai + '</div>' +
       '<div class="hq-xh-phai" id="hqXhPhai" data-dinh="' + dinh + '" data-buoc="' + buoc + '">' + phai + '</div></div>';
@@ -15965,7 +15967,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/sao-dash.js?v=3"></script>   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
 <script src="js/ktdv-bc.js?v=10"></script>   <!-- 03/10/2026 bản báo cáo phụ huynh KT ĐẦU VÀO (bản chép ở repo kiemtra) -->
 <script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
-<script src="js/ktdv-ql.js?v=20"></script>
+<script src="js/ktdv-ql.js?v=21"></script>
 <script src="js/nhap-so.js?v=1"></script>   <!-- 07/10/2026 cuộn chuột không đổi số + Enter nhận ô -->   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
 </body>
 </html>

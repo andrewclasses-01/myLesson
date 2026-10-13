@@ -6466,12 +6466,22 @@ function veTheChoGiaoKhoa(x, so){
   return sec;
 }
 
+/* ⭐ 13/10/2026 (thầy chốt) — lesson CHƯƠNG: bước act mà bước quay video Zalo "làm giống" (act CUỐI CÙNG đứng trước bước
+   `zalo` — Bước 3 của K10) xong rồi vẫn LUÔN MỞ khung act, không thu thành thẻ xanh: phụ huynh phải mở lại act đó để quay
+   video Bước 5, khỏi bắt bấm thẻ xanh mới mở ra. Cùng cách dò với `soCauQuay` trong `veTheZaloKhoa`. */
+function luonMoBtKhoa(x){
+  if (!BAI || BAI.kieu !== 'CHUONG' || !x || !x.ma) return false;
+  var bt = BAI.bt || [], iz = -1;
+  bt.forEach(function(y, i){ if (iz < 0 && y.loai === 'zalo') iz = i; });
+  for (var i = iz - 1; i >= 0; i--) if (bt[i].ma) return bt[i] === x;
+  return false;
+}
 function dungTheBtKhoa(x, so, TT){
   // v1.107.0 — đã bấm mở rộng thì LUÔN là khung act thật (đừng thu lại thành
   // thẻ xanh chỉ vì tính lại đường đi — thầy chốt "mở tiếp bài khác thì khung
   // đã mở vẫn còn nguyên, chỉ tải lại trang mới thu về thẻ").
   if (MO_ROI_KHOA[x.id]) return x.loai === 'video' ? veTheVideoBtKhoa(x, so) : dungTheActKhoa(x, so);
-  if (TT.xongB[x.id]) return veTheXongKhoa(x, so);   // v1.106.0 — xong thì thẻ xanh, không ẩn
+  if (TT.xongB[x.id]) return luonMoBtKhoa(x) ? dungTheActKhoa(x, so) : veTheXongKhoa(x, so);   // v1.106.0 — xong thì thẻ xanh, không ẩn (trừ bước luôn mở)
   if (!TT.moB[x.id]) return veTheChoKhoa(x, so);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
   if (x.loai === 'zalo') return veTheZaloKhoa(x, so);   // 11/10/2026
@@ -6776,7 +6786,7 @@ function capNhatSauKhiDoiKhoa(){
     // ⭐ v1.107.0 — đã bấm "mở rộng" (`MO_ROI_KHOA`) thì LUÔN coi là 'mo', dù
     // `xongB` mãi mãi vẫn true — không thì hàm này (chạy 2 lần/giây lúc phát
     // video) sẽ thu khung act vừa mở lại về thẻ xanh ngay nhịp kế tiếp.
-    var muon = MO_ROI_KHOA[x.id] ? 'mo' : (TT_KHOA.xongB[x.id] ? 'xong' : (TT_KHOA.moB[x.id] ? 'mo' : 'khoa'));
+    var muon = (MO_ROI_KHOA[x.id] || (TT_KHOA.xongB[x.id] && luonMoBtKhoa(x))) ? 'mo' : (TT_KHOA.xongB[x.id] ? 'xong' : (TT_KHOA.moB[x.id] ? 'mo' : 'khoa'));   // 13/10/2026 — bước luôn mở
     var dang = !cu ? '' : (cu.classList.contains('xong') ? 'xong'
                 : (cu.classList.contains('st-cho') ? 'khoa' : 'mo'));
     // Thẻ xanh thì vẽ lại luôn (tĩnh, không mất gì) — để số câu/thời gian cập

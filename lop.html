@@ -1721,6 +1721,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
+<script src="js/nhac-ban.js?v=1"></script>   <!-- v1.333.0 nút REMIND trên thẻ STAGE -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=6"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -2933,11 +2934,12 @@ function veHan(b, tt){
   /* ⭐ v1.76.0 — THẺ STAGE: ô hạn nói về CHẶNG ĐANG CHẠY, không phải hạn cuối
      bài (thầy chốt 07/09) — đồng hồ cũng đếm tới hạn chặng đó. */
   var chu = b.han ? ('Hạn ' + b.han) : 'Chưa đặt hạn';
-  var rong = '', choMo = 0;
+  var rong = '', choMo = 0, nut = '';
   if (b.stage && b._chang) {
     var i = A.changHien(b._chang), c = b._chang[i];
     if (c && c.so && c.moc != null) {
       chu = 'Hạn chặng ' + c.so + ': ' + A.chuHanChang(c.hanHien);
+      nut = nutRemindThe(b, i, xongHet);   // v1.333.0
       if (!xongHet) moc = c.moc;
       rong = ' rong';
       /* ⭐⭐ v1.118.0 (thầy chốt 19/09/2026) — CHỜ MỞ KHÓA: chặng đang chạy còn em
@@ -2954,12 +2956,46 @@ function veHan(b, tt){
          `.han-dong` có `gap` nên phải để `gap:0`, xem CSS. */
       '<span class="han-dong">' + chu + '</span>' +
       '<span class="han-vach"></span>' +
+      (nut ? '<span class="han-duoi">' : '') +
       '<span class="dhho" data-moc="' + moc + '" data-xong="' + (xongHet ? 1 : 0) +
         '" data-khoa="' + (b.khoa ? 1 : 0) + '" data-chomo="' + choMo + '">…</span>' +
+      (nut ? nut + '</span>' : '') +
     '</span>' +
     (xongHet ? '<span class="tich-to">✓</span>' : '') +
   '</span>';
 }
+
+/* ⭐⭐ v1.333.0 (14/10/2026, thầy chốt mẫu `MAU NUT REMIND THE STAGE v1`) — NÚT REMIND trong ô hạn thẻ STAGE, cạnh đồng hồ.
+   CHỈ khi EM đã xong chặng đang chạy mà còn bạn chưa xong (em chưa xong ⇒ lo làm bài trước). Bấm ⇒ pop-up js/nhac-ban.js
+   gắn @ các bạn chưa xong (`c.thieu`) ⇒ gửi nhóm chat lớp. 1 lần/giờ mỗi STAGE, chung khoá với nút REMIND FRIENDS bai.html.
+   Thầy (vào từ dashboard `?gv=1`) không có nút — thầy dùng nút trên dashboard; thầy XEM NHƯ EM thấy nút nhưng GỬI không gửi. */
+var NHAC_THE = {};   // khoá giờ chờ → { so, sau, ban } của lần vẽ thẻ gần nhất
+function nutRemindThe(b, i, xongHet){
+  if (xongHet || b.khoa || !window.NhacBan || !window.AWChat || LA_DAC_BIET || !MA_HS || !TOI || !b.id) return '';
+  if (EM && EM.vaiTro === 'gv') return '';
+  var cac = b._chang, c = cac[i];
+  if (!c || !c.so || !c.mo) return '';
+  var laToi = function(t){ return A.khoaTen(t) === A.khoaTen(TOI); };
+  if (!(b.caLop || []).some(laToi)) return '';     // em không tính ở bài này (vào lớp sau ngày giao…)
+  var thieu = c.thieu || [];
+  if (!thieu.length || thieu.some(laToi)) return '';
+  var khoa = 'awc_nhac_' + b.id + '_c_' + c.so + '_' + MA_HS;   // ⛔ trùng `khoaNhac('c_'+so)` bên bai.html
+  NHAC_THE[khoa] = { so: c.so, sau: (cac[i + 1] && cac[i + 1].so) || 0, ban: thieu.slice() };
+  return NhacBan.nutHtml(khoa, '', 'Nhắc các bạn chưa xong STAGE ' + c.so);
+}
+// Bắt ở pha CAPTURE: thẻ là một <button> có onclick mở bài ⇒ chặn trước khi tới thẻ.
+document.addEventListener('click', function(e){
+  var n = e.target.closest && e.target.closest('.nut-remind[data-nhackhoa]');
+  if (!n) return;
+  e.stopPropagation(); e.preventDefault();
+  var k = n.getAttribute('data-nhackhoa'), x = NHAC_THE[k];
+  if (!x || !window.NhacBan) return;
+  NhacBan.mo({ so: x.so, sau: x.sau, ban: x.ban, khoa: k, lop: LOP_HIEN || LOP,
+    gui: function(chu){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu }); },
+    chan: function(){ return (window.__thayVao || (EM && EM.xemNhu)) ? 'Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).' : ''; },
+    bao: baoToast,
+    chuLoi: function(e){ return (window.AWChat && AWChat.chuLoi) ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.'; } });
+}, true);
 
 /* ⭐ v1.88.0 (10/09/2026) — THẺ WORKSHEET (ONLY WSHEET): buổi không giao bài
    nhóm, chỉ có bài tập giấy phát trực tiếp trên lớp. App đẩy nó như MỘT BÀI

@@ -4131,6 +4131,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=20"></script>
+<script src="js/nhac-ban.js?v=1"></script>   <!-- v1.333.0 nút REMIND trên thẻ STAGE -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=6"></script>
 <script>
@@ -5254,6 +5255,34 @@ tr.qm-hang-tam td{background:#fffbeb}
     return { tt: 'thuong', du: false };
   }
 
+  /* ⭐⭐ v1.333.0 (14/10/2026, thầy chốt mẫu `MAU NUT REMIND THE STAGE v1`) — NÚT REMIND trong ô hạn thẻ STAGE: còn em chưa
+     xong chặng đang chạy ⇒ bấm mở pop-up "NHẮC CẢ LỚP" (js/nhac-ban.js), @ các em chưa xong, gửi nhóm lớp dưới tên Thầy.
+     1 lần/giờ mỗi STAGE (khoá `…_GV`, nhớ trên máy thầy). Cùng nếp `nutRemindThe` bên lop.html. */
+  var NHAC_THE_DB = {};
+  function nutRemindDb(b, tThe, i) {
+    if (!window.NhacBan || !window.AWChat || !b || !b.id) return '';
+    var c = tThe.chang[i];
+    if (!c || !c.so || !c.mo || !(c.thieu || []).length) return '';
+    var khoa = 'awc_nhac_' + b.id + '_c_' + c.so + '_GV';
+    NHAC_THE_DB[khoa] = { so: c.so, sau: (tThe.chang[i + 1] && tThe.chang[i + 1].so) || 0, ban: c.thieu.slice(), lop: tThe.maLop || LOP_CHON };
+    return NhacBan.nutHtml(khoa, '', 'Nhắc các em chưa xong STAGE ' + c.so + ' vào nhóm lớp');
+  }
+  document.addEventListener('click', function (e) {
+    var n = e.target.closest && e.target.closest('.nut-remind[data-nhackhoa]');
+    if (!n) return;
+    e.stopPropagation(); e.preventDefault();   // thẻ bấm được (mở hộp quản lý bài) ⇒ chặn
+    var k = n.getAttribute('data-nhackhoa'), x = NHAC_THE_DB[k];
+    if (!x || !window.NhacBan) return;
+    var l = A.lopTheoMa(DL, x.lop) || {};
+    NhacBan.mo({ gv: true, so: x.so, sau: x.sau, ban: x.ban, khoa: k, lop: l.tenGoc || x.lop,
+      gui: function (chu) {
+        if (chuaThay(null)) return Promise.reject('__im');
+        return AWChat.gui(x.lop, { ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', chu: chu });
+      },
+      bao: baoToast,
+      chuLoi: function (e) { return AWChat.chuLoi ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.'; } });
+  }, true);
+
   function veHanCard(b, moc, st, tThe) {
     // ⭐ v1.35.0 — thẻ TẠM KHOÁ không nhận màu gấp; đồng hồ mang cờ `data-khoa`
     // (xem `nhipDongHo`). v1.56.0 — chỉ còn 2 huy hiệu: ẨN và TẠM KHOÁ.
@@ -5263,11 +5292,12 @@ tr.qm-hang-tam td{background:#fffbeb}
     var chu = A.chuHan(b) || (moc == null ? '' : chuNgay(moc));
     /* ⭐ v1.77.0 — thẻ STAGE: ô hạn nói về CHẶNG ĐANG CHẠY (giống hệt trang lớp
        của học sinh), không phải hạn cuối bài. */
-    var rong = '', choMo = 0;
+    var rong = '', choMo = 0, nut = '';
     if (tThe && tThe.stage && tThe.chang) {
-      var c = tThe.chang[A.changHien(tThe.chang)];
+      var iC = A.changHien(tThe.chang), c = tThe.chang[iC];
       if (c && c.so && c.moc != null) {
         chu = 'chặng ' + c.so + ': ' + chuHanChangDb(c.hanHien);
+        if (!st.du && !khoa) nut = nutRemindDb(b, tThe, iC);   // v1.333.0
         /* ⭐⭐ v1.118.0 — CHỜ MỞ KHÓA: cờ `data-chomo` cho đồng hồ (cùng nếp
            `veHan()` bên lop.html); tới hạn thì `nhipDongHo` in chữ + nháy đỏ. */
         if (!st.du && !khoa && A.changChoMo(tThe.chang) === c) choMo = 1;
@@ -5292,8 +5322,10 @@ tr.qm-hang-tam td{background:#fffbeb}
         (tt === 'an' ? '<em class="han-doi tt-an">🙈 ĐANG ẨN với học sinh</em>' : '') +
         (khoa ? '<em class="han-doi tt-khoa">🔒 đồng hồ đang dừng</em>' : '') +
         '<span class="han-vach"></span>' +
+        (nut ? '<span class="han-duoi">' : '') +
         '<span class="dhho" data-moc="' + (moc == null ? 0 : moc) + '" data-xong="' + (st.du ? 1 : 0) +
           '" data-khoa="' + (khoa ? 1 : 0) + '" data-chomo="' + choMo + '">…</span>' +
+        (nut ? nut + '</span>' : '') +
       '</span>' + (st.du ? '<span class="tich-to">✓</span>' : '') +
     '</span>';
   }

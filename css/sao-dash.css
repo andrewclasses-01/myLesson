@@ -18,6 +18,9 @@
 .sd-chip b{margin-left:5px}
 .sd-chip.cong-chip b{color:var(--la)} .sd-chip.tru-chip b{color:var(--do)} .sd-chip.on b{color:#fff}
 .sd-chip.vien{border-style:dashed}
+/* v1.335.0 thẻ KHÓA (K9, K10…) sau các lớp: vạch ngăn mảnh trước thẻ khóa đầu tiên */
+.sd-chip:not(.sd-chip-khoa) + .sd-chip-khoa{margin-left:9px; position:relative}
+.sd-chip:not(.sd-chip-khoa) + .sd-chip-khoa::before{content:""; position:absolute; left:-9px; top:5px; bottom:5px; width:1px; background:var(--vien-dam)}
 .sd-tim{margin-left:auto; border:1px solid var(--vien); border-radius:12px; padding:8px 12px; font:inherit; font-size:13px; width:210px}
 .sd-x{border:0; background:var(--nen); width:36px; height:36px; border-radius:50%; font-size:16px; cursor:pointer; color:var(--mo)}
 .sd-than{flex:1; min-height:0; display:grid; grid-template-columns:1fr 310px; gap:16px; padding:16px 20px; overflow:hidden}
@@ -40,14 +43,14 @@
 .sd-bang .mo{color:var(--mo); font-weight:600}
 .sd-bang .so-sao{font-weight:800; font-size:16px; color:#9A6A12; font-variant-numeric:tabular-nums}
 .sd-bang .tuan{color:var(--la); font-weight:800}
-.cam{color:#b7791f; font-weight:700}
+.sd-nen .cam, .sd-pop .cam{color:#b7791f; font-weight:700}
 .sd-ten{display:flex; align-items:center; gap:10px; font-weight:700}
 .sd-ten small{display:block; color:var(--nhat); font-weight:600; font-size:11.5px}
 .sd-av{position:relative; width:34px; height:34px; border-radius:50%; display:grid; place-items:center; color:#fff; font-weight:800; font-size:12px; flex:none; overflow:hidden}
 .sd-av img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
 .sd-pm{width:30px; height:30px; border-radius:9px; border:1px solid var(--vien); background:var(--the); font-weight:800; font-size:16px; cursor:pointer}
-.sd-pm.cong{background:var(--la-nhat); border-color:#bfe3cf; color:var(--la)}
-.sd-pm.tru{background:var(--do-nhat); border-color:#f4c9c2; color:var(--do)}
+.sd-pm.sd-cong{background:var(--la-nhat); border-color:#bfe3cf; color:var(--la)}
+.sd-pm.sd-tru{background:var(--do-nhat); border-color:#f4c9c2; color:var(--do)}
 .sd-lk{color:var(--xanh); font-weight:700; font-size:12.5px; cursor:pointer}
 .sd-buoi{border:1px solid #F5E3C0; background:#FFFBF2; border-radius:12px; padding:10px 12px; margin-bottom:8px}
 .sd-buoi .l1{display:flex; justify-content:space-between; font-weight:800; font-size:13.5px}
@@ -60,7 +63,7 @@
 .sd-ghi-chu{font-size:12px; color:var(--mo); margin-top:6px}
 .sd-cai-tin{font-size:12px; color:var(--la); font-weight:700; min-height:16px; margin-top:4px}
 .sd-nk{font-size:12.5px; color:var(--mo); border-left:2px solid var(--vien); padding:2px 0 8px 10px; margin-left:4px}
-.sd-nk b{color:var(--chu)} .sd-nk b.la, .la{color:var(--la)} .sd-nk b.do, .do{color:var(--do)}
+.sd-nk b{color:var(--chu)} .sd-nen .la, .sd-pop .la{color:var(--la)} .sd-nen .do, .sd-pop .do{color:var(--do)}
 .sd-trong{padding:30px 10px; text-align:center; color:var(--mo); font-weight:600; font-size:13.5px}
 .sd-trong.nho{padding:10px 4px; font-size:12.5px}
 /* hộp nổi (cộng/trừ, lịch sử, lý do nhanh) — trên hộp sao */
@@ -89,7 +92,7 @@
 .sd-cl-cot{border:1px solid var(--vien); border-radius:14px; padding:12px}
 .sd-cl-cot h4{margin:0 0 10px; font-size:13.5px}
 .sd-cl-cot h4 small{color:var(--nhat); font-weight:600}
-.sd-cl-cot.cong h4{color:var(--la)} .sd-cl-cot.tru h4{color:var(--do)}
+.sd-cl-cot.sd-cong h4{color:var(--la)} .sd-cl-cot.sd-tru h4{color:var(--do)}
 .sd-cl-dong{display:grid; grid-template-columns:22px 1fr 74px 28px; gap:6px; align-items:center; margin-bottom:6px}
 .sd-cl-dong .keo{display:flex; flex-direction:column; gap:1px}
 .sd-cl-dong .keo button{border:0; background:none; color:var(--nhat); cursor:pointer; font-size:10px; line-height:1; padding:1px}

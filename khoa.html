@@ -239,6 +239,26 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
   background:linear-gradient(135deg,#0E7C6E,#16A08E); box-shadow:var(--shadow);
   position:relative; transition:transform .18s var(--em), box-shadow .18s; overflow:visible}
 .av.me:hover{transform:scale(1.06); box-shadow:0 0 0 4px var(--accent-soft), var(--shadow)}
+/* ⭐ v1.335.0 (14/10/2026, thầy chốt: HS khóa cũng có ví sao) — chép nguyên từ lop.html. ĐỢT 4 → ĐỢT 11 (chép nguyên từ bai.html/bai-sp.html, 28/08 đồng bộ lại
+   lop.html cho khớp — bản cũ ở đây lệch phải + bị .av cắt mất một góc):
+   SỐ SAO nằm giữa đáy quả bóng avatar, khung nền trắng, kèm icon ngôi sao +
+   3 tia lấp lánh xung quanh. */
+.sao-hieu{position:absolute; left:50%; bottom:-2px; transform:translateX(-50%);
+  display:inline-flex; align-items:center; gap:1.5px;
+  padding:0 3.5px; border-radius:99px; background:#fff;
+  box-shadow:0 1px 3px rgba(22,35,42,.20);
+  font-size:9.5px; font-weight:800; white-space:nowrap; line-height:1.45;
+  color:#E5A20D; letter-spacing:.1px; font-variant-numeric:tabular-nums}
+/* ⛔ `:not(.lap)` — ba sparkle cũng là <svg> con trực tiếp của cụm này, không
+   loại chúng ra thì chúng ăn luôn cỡ của ngôi sao chính. */
+.sao-hieu > svg:not(.lap){width:9.5px; height:9.5px; fill:#F3B21B; flex:none}
+/* Sparkle quanh cụm số: 3 sao tí hon nhấp nháy lệch pha, chạy mãi (dùng lại
+   @keyframes lap-lanh đã có sẵn cho khối .sao-ve bên dưới). */
+.sao-hieu .lap{position:absolute; fill:#F7CE63; animation:lap-lanh 2.2s ease-in-out infinite}
+.sao-hieu .lap.l1{width:7px; height:7px; left:-10px; top:-4px; animation-delay:0s}
+.sao-hieu .lap.l2{width:6px; height:6px; right:-9px; top:6px; animation-delay:.7s}
+.sao-hieu .lap.l3{width:5px; height:5px; left:6px; top:-9px; animation-delay:1.4s}
+@media (prefers-reduced-motion: reduce){ .sao-hieu .lap{animation:none; opacity:.7} }
 .who{min-width:0}
 .who .ten{font-weight:800; font-size:18px; line-height:1.25; letter-spacing:-.01em;
   white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -644,6 +664,33 @@ body.mo-menu .side.trai{transform:none}
 .side-ds .mo-ta{font-size:11.5px; color:var(--muted); font-weight:600}
 .side-foot{padding:12px 18px 16px; border-top:1px solid var(--line);
   font-size:11px; color:var(--muted); font-weight:600}
+/* ⭐ v1.335.0 — ô SAO ĐANG CÓ trong menu (chép nguyên lop.html). */
+.vi-to{margin:14px 12px 6px; padding:18px 16px; border-radius:16px; text-align:center;
+  background:linear-gradient(160deg,#FEF6E6,#FCEFD8); border:1px solid #F5E3C0}
+.vi-to .so{font-size:38px; font-weight:800; color:#9A6A12; line-height:1.1}
+.vi-to .nh{font-size:12px; font-weight:700; color:#B08344; letter-spacing:.04em}
+/* Ô SAO trong menu (đợt 4): MỘT ngôi sao to, năm sao con lấp lánh quanh nó
+   — thay cho ba ngôi sao ⭐⭐⭐ của bản cũ. */
+.sao-ve{position:relative; width:104px; height:74px; margin:0 auto 2px}
+.sao-lon{position:absolute; left:50%; top:50%; width:52px; height:52px;
+  margin:-26px 0 0 -26px; fill:#F3B21B;
+  filter:drop-shadow(0 2px 6px rgba(226,160,20,.45));
+  animation:sao-tho 3.6s ease-in-out infinite}
+.sao-con{position:absolute; width:12px; height:12px; fill:#F7CE63;
+  animation:lap-lanh 2.6s ease-in-out infinite}
+.sao-con.c1{left:6px;  top:12px; width:14px; height:14px; animation-delay:0s}
+.sao-con.c2{right:8px; top:6px;                            animation-delay:.45s}
+.sao-con.c3{right:2px; bottom:14px; width:10px; height:10px; animation-delay:.9s}
+.sao-con.c4{left:14px; bottom:6px;  width:10px; height:10px; animation-delay:1.35s}
+.sao-con.c5{left:50%; top:-2px; margin-left:-5px; width:9px; height:9px; animation-delay:1.8s}
+@keyframes sao-tho{0%,100%{transform:scale(1)} 50%{transform:scale(1.06)}}
+@keyframes lap-lanh{
+  0%,100%{opacity:.25; transform:scale(.7) rotate(0deg)}
+  50%    {opacity:1;   transform:scale(1.15) rotate(35deg)}
+}
+@media (prefers-reduced-motion: reduce){
+  .sao-lon,.sao-con{animation:none} .sao-con{opacity:.85}
+}
 .toast{position:fixed; left:50%; bottom:26px; z-index:60; transform:translate(-50%,20px);
   background:var(--ink); color:#fff; font-size:13px; font-weight:600;
   border-radius:12px; padding:10px 18px; opacity:0; pointer-events:none;
@@ -673,6 +720,8 @@ body.mo-menu .side.trai{transform:none}
 
   .who .lop{display:none}
   .av.me{width:44px; height:44px; font-size:16px}
+  .sao-hieu{bottom:-2px; font-size:8.5px; padding:0 3px}
+  .sao-hieu > svg:not(.lap){width:8.5px; height:8.5px}
   .who .ten{font-size:15.5px}
   .top-in{gap:10px; padding:10px 18px}
 
@@ -729,7 +778,7 @@ body.mo-menu .side.trai{transform:none}
 <header class="top nwb">
   <!-- v1.140.0 (24/09): thanh myNetwork - avatar = trang ca nhan (sap ra mat) · 6 icon giua · nut menu mo sidebar phai -->
   <div class="nwb-in">
-    <div class="nwb-trai"><button class="av me" id="nutMenu" title="Mở menu của em"></button></div>
+    <div class="nwb-trai"><button class="av me" id="nutMenu" title="Mở menu của em"><span class="sao-hieu">0<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg><svg class="lap l1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg><svg class="lap l3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg></span></button></div>
     <nav class="nwb-tabs"></nav>
     <div class="nwb-phai"><button class="nwb-menu" id="nwbMenu" title="Menu" aria-label="Menu"></button></div>
   </div>
@@ -769,9 +818,22 @@ body.mo-menu .side.trai{transform:none}
       <svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>
     </button>
   </div>
-  <!-- ⛔ 11/09/2026 (thầy chốt) — bỏ hẳn khối "ví sao" đầu sidebar: khóa học
-       không có sao. `AWVi.dungMenu()` gọi bên dưới KHÔNG truyền `oSao` nữa
-       nên tự bỏ qua toàn bộ phần này (xem `js/vi-qua.js`). -->
+  <!-- ⭐ v1.335.0 (14/10/2026, thầy chốt) — HỌC SINH KHÓA CŨNG CÓ VÍ SAO (bỏ quyết định 11/09 "khóa học không có sao").
+       Một em một số HS = MỘT ví chung, em học cả lớp thường lẫn khóa thấy cùng một tổng. Số thật do js/vi-qua.js đổ vào. -->
+  <div class="vi-to">
+    <div class="sao-ve">
+      <svg class="sao-lon" viewBox="0 0 24 24"><path d="M12 2.2l3 6.2 6.8.9-4.9 4.8 1.2 6.7L12 17.6l-6.1 3.2 1.2-6.7L2.2 9.3l6.8-.9z"/></svg>
+      <svg class="sao-con c1" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c2" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c3" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c4" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+      <svg class="sao-con c5" viewBox="0 0 10 10"><path d="M5 0l1.1 3.9L10 5l-3.9 1.1L5 10 3.9 6.1 0 5l3.9-1.1z"/></svg>
+    </div>
+    <!-- v1.15.0 — số sao THẬT chưa có kho ⇒ 0 cho mọi em.
+           ⛔ Đừng gõ lại số giả: học sinh đọc con số này là tin ngay. -->
+      <div class="so">0</div>
+    <div class="nh">SAO ĐANG CÓ</div>
+  </div>
   <div class="side-ds" id="dsMenu"></div>
   <div class="side-foot">Lesson in Andrew Classes · <span id="verFoot"></span></div>
 </nav>
@@ -807,7 +869,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
-<script src="js/vi-qua.js?v=8"></script>
+<script src="js/vi-qua.js?v=9"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
 function chuAnToan(x){ return window.AWC.chuAnToan(x); }
@@ -1878,8 +1940,9 @@ A.napDuLieu().then(function(dl){
 /* ---------- SIDEBAR ---------- */
 var veMenuChinh = AWVi.dungMenu({
   hop: $('#dsMenu'),
+  oSao: document.querySelector('.vi-to'),   // v1.335.0 — HS khóa cũng có ví sao
   layCtx: function(){
-    return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, thuLop: A.tenHocThu(LOP_OBJ), baoToast: baoToast };
+    return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, dsLop: (LOP_OBJ && LOP_OBJ.hocSinh) || [], thuLop: A.tenHocThu(LOP_OBJ), baoToast: baoToast };
   }
 });
 function dongHet(){ document.body.classList.remove('mo-menu'); }

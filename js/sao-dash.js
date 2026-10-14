@@ -59,8 +59,11 @@
         S.vi = (r[1] && r[1].exists() && r[1].data().em) || {};
         var x = null;
         try { x = JSON.parse(((r[2] && r[2].data()) || {}).json || 'null'); } catch (e) { x = null; }
-        S.lop = ((x && x.lop) || []).filter(function (l) { return (l.hocSinh || []).length; }).map(function (l) {
-          return { ma: maLop(l.maLop || l.tenGoc), ten: String(l.tenGoc || l.maLop), slug: l.tenGoc || l.maLop,
+        // ⭐ v1.335.0 (14/10/2026, thầy chốt) — HỌC SINH KHÓA cũng có ví sao: thẻ khóa (x.khoa: NỀN TẢNG K9, K10…) xếp SAU các lớp.
+        // Em học cả lớp lẫn khóa: CÙNG số HS ⇒ cùng một ví, hiện đủ tổng ở cả hai thẻ.
+        var dsLop = ((x && x.lop) || []).concat(((x && x.khoa) || []).map(function (k) { return Object.assign({ khoa: 1 }, k); }));
+        S.lop = dsLop.filter(function (l) { return (l.hocSinh || []).length; }).map(function (l) {
+          return { ma: maLop(l.maLop || l.tenGoc), ten: String(l.tenGoc || l.maLop), slug: l.tenGoc || l.maLop, khoa: !!l.khoa,
             em: (l.hocSinh || []).map(function (h) { return { ten: h.ten, ma: chuanMa(h.ma), so: S.maSo[chuanMa(h.ma)] || null, thu: !!h.thu }; }) };   // v1.309.0 thu = học thử
         });
         if (!S.chon && S.lop.length) S.chon = S.lop[0].ma;
@@ -96,7 +99,7 @@
   function dungKhung() {
     if ($('#sdNen')) return $('#sdNen');
     var l = document.createElement('link');
-    l.rel = 'stylesheet'; l.href = 'css/sao-dash.css?v=1';
+    l.rel = 'stylesheet'; l.href = 'css/sao-dash.css?v=2';
     document.head.appendChild(l);
     var nen = document.createElement('div');
     nen.id = 'sdNen'; nen.className = 'sd-nen';
@@ -147,7 +150,7 @@
   function veHet() {
     var nen = $('#sdNen');
     $('.sd-chip-lop', nen).innerHTML = S.lop.map(function (l) {
-      return '<button type="button" class="sd-chip' + (l.ma === S.chon ? ' on' : '') + '" data-lop="' + esc(l.ma) + '">' + esc(l.ten) + '</button>';
+      return '<button type="button" class="sd-chip' + (l.ma === S.chon ? ' on' : '') + (l.khoa ? ' sd-chip-khoa' : '') + '" data-lop="' + esc(l.ma) + '">' + esc(l.ten) + '</button>';
     }).join('');
     Array.prototype.forEach.call(nen.querySelectorAll('.sd-chip-lop .sd-chip'), function (b) {
       b.onclick = function () { S.chon = b.getAttribute('data-lop'); veHet(); };
@@ -158,8 +161,8 @@
     var tamTong = S.buoi.reduce(function (a, b) { return a + b.tam; }, 0);
     $('.sd-giua', nen).innerHTML =
       '<div class="sd-so-tom">' +
-        '<div class="sd-the"><div class="nh">Sao đang có · lớp ' + esc(L.ten) + '</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + L.em.filter(function (e) { return !e.thu; }).length + ' học sinh</div></div>' +
-        '<div class="sd-the"><div class="nh">Cộng 7 ngày qua</div><div class="gt xanh">+' + tuanLop + '</div><div class="phu">lớp ' + esc(L.ten) + '</div></div>' +
+        '<div class="sd-the"><div class="nh">Sao đang có · ' + (L.khoa ? 'khóa ' : 'lớp ') + esc(L.ten) + '</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + L.em.filter(function (e) { return !e.thu; }).length + ' học sinh</div></div>' +
+        '<div class="sd-the"><div class="nh">Cộng 7 ngày qua</div><div class="gt xanh">+' + tuanLop + '</div><div class="phu">' + (L.khoa ? 'khóa ' : 'lớp ') + esc(L.ten) + '</div></div>' +
         '<div class="sd-the"><div class="nh">Buổi chưa chốt</div><div class="gt vang">' + S.buoi.length + '</div><div class="phu">còn ' + tamTong + ' ⭐ trong rổ tạm</div></div>' +
       '</div>' +
       '<div class="sd-the sd-bang-boc"><table class="sd-bang"><thead><tr><th>Học sinh</th><th>Số HS</th><th>Sao đang có</th><th>7 ngày</th>' +
@@ -180,8 +183,8 @@
         '<td class="mo">' + (e.so ? esc(e.so) : '<span class="cam">chưa có số</span>') + '</td>' +
         '<td class="so-sao">' + (v == null ? '—' : '⭐ ' + v) + '</td>' +
         '<td class="tuan">' + (e.so && S.tuan[e.so] ? '+' + S.tuan[e.so] : '') + '</td>' +
-        '<td class="giua nut-cot">' + (e.so ? '<button class="sd-pm cong" data-so="' + e.so + '" data-d="1" title="Cộng sao">+</button> ' +
-          '<button class="sd-pm tru" data-so="' + e.so + '" data-d="-1" title="Trừ sao">−</button>' : '') + '</td>' +
+        '<td class="giua nut-cot">' + (e.so ? '<button class="sd-pm sd-cong" data-so="' + e.so + '" data-d="1" title="Cộng sao">+</button> ' +
+          '<button class="sd-pm sd-tru" data-so="' + e.so + '" data-d="-1" title="Trừ sao">−</button>' : '') + '</td>' +
         '<td>' + (e.so ? '<span class="sd-lk" data-ls="' + e.so + '">Lịch sử</span>' : '') + '</td></tr>';
     }).join('') : '<tr><td colspan="6"><div class="sd-trong">Không có học sinh khớp.</div></td></tr>';
     Array.prototype.forEach.call(tb.querySelectorAll('.sd-pm'), function (b) {
@@ -300,7 +303,8 @@
       var nut = this; nut.disabled = true;
       $('.sd-tin', el).textContent = 'Đang ghi…';
       var L = lopChon();
-      var phieu = { nguon: 'dashboard', lop: (S.vi[so] || {}).l || (L && L.ma) || '', ngay: ngayVN(),
+      // v1.335.0 — lớp của phiếu = thẻ lớp/khóa thầy ĐANG mở (trước lấy lớp cũ trong ví ⇒ em học 2 nơi bị ghi sai chỗ)
+      var phieu = { nguon: 'dashboard', lop: (L && L.ma) || (S.vi[so] || {}).l || '', ngay: ngayVN(),
         nhom: dau > 0 ? 'Thầy Andrew thưởng' : 'Thầy Andrew điều chỉnh', ai: 'Thầy Andrew',
         dong: [{ so: so, n: dau * n, viec: lyDo, app: 'dashboard' }], tao: Date.now() };
       kho().then(function (f) {
@@ -369,7 +373,7 @@
     var nhap = JSON.parse(JSON.stringify(S.cai.lyDo || LYDO_GOC));
     var h = hopNoi('<h3>⚙️ Lý do nhanh</h3>' +
       '<div class="sd-mo">Các nút bấm sẵn trong hộp cộng/trừ sao. Mỗi lý do có <b>số sao mặc định</b> — bấm là điền luôn lý do + số sao (vẫn sửa tay được).</div>' +
-      '<div class="sd-cl2"><div class="sd-cl-cot cong" data-k="cong"></div><div class="sd-cl-cot tru" data-k="tru"></div></div>' +
+      '<div class="sd-cl2"><div class="sd-cl-cot sd-cong" data-k="cong"></div><div class="sd-cl-cot sd-tru" data-k="tru"></div></div>' +
       '<div class="sd-ghi-chu">Lưu vào kho chung — dashboard ở máy nào cũng thấy cùng một bộ lý do.</div><div class="sd-tin"></div>' +
       '<div class="sd-cuoi gian"><button class="sd-nut xam" type="button" data-goc>Khôi phục mặc định</button>' +
       '<span><button class="sd-nut xam" type="button" data-x>Huỷ</button> <button class="sd-nut xanh" type="button" data-ok>Lưu</button></span></div>', true);

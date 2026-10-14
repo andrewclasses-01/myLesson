@@ -396,18 +396,33 @@
     // Bảng sao lớp: các dòng ví cùng lớp (l) + bạn trong danh sách lớp chưa có sao (0). Ghép tên bỏ dấu.
     var lopMa = maLop(ctx.lopMa || ctx.lop);
     var bang = [], daCo = {};
-    Object.keys(VI.em).forEach(function (so) {
-      var e = VI.em[so] || {};
-      if (so !== VI.so && maLop(e.l) !== lopMa) return;
-      bang.push({ ten: e.t || '—', sao: Number(e.s) || 0, toi: so === VI.so });
-      daCo[khongDau(e.t)] = 1;
-    });
-    (ctx.caLop || []).forEach(function (t) {
-      var k = khongDau(t);
-      var co = Object.keys(daCo).some(function (x) { return x && (x === k || k.slice(-x.length - 1) === ' ' + x); });
-      if (!co) bang.push({ ten: t, sao: t === ctx.ten ? VI.s : 0, toi: t === ctx.ten && !VI.so });
-    });
-    if (!VI.so && !bang.some(function (d) { return d.toi; })) bang.push({ ten: ctx.ten, sao: 0, toi: true });
+    // ⭐ v1.335.0 (14/10/2026) — trang truyền `dsLop` (hocSinh có ID) ⇒ bảng dựng theo DANH SÁCH LỚP/KHÓA, ghép ví bằng ID.
+    // Em học CẢ lớp thường lẫn khóa có MỘT ví chung (`l` trong ví chỉ là lớp được thưởng gần nhất) ⇒ ghép theo `l` sẽ làm
+    // em đó thành 0 sao ở nơi còn lại. Trang không truyền `dsLop` ⇒ cách cũ (ghép theo `l` + tên).
+    var dsLop = (ctx.dsLop || []).filter(function (h) { return h && h.ma; });
+    if (dsLop.length) {
+      var soTheoMa = {}, coToi = false;
+      Object.keys(VI.em).forEach(function (so) { var e = VI.em[so] || {}; if (e.m) soTheoMa[chuanMa(e.m)] = so; });
+      dsLop.forEach(function (h) {
+        var m = chuanMa(h.ma), e = soTheoMa[m] ? VI.em[soTheoMa[m]] : null, toi = m === VI.ma;
+        if (toi) coToi = true;
+        bang.push({ ten: h.ten || (e && e.t) || '—', sao: e ? (Number(e.s) || 0) : 0, toi: toi });
+      });
+      if (!coToi) bang.push({ ten: ctx.ten, sao: VI.s, toi: true });
+    } else {
+      Object.keys(VI.em).forEach(function (so) {
+        var e = VI.em[so] || {};
+        if (so !== VI.so && maLop(e.l) !== lopMa) return;
+        bang.push({ ten: e.t || '—', sao: Number(e.s) || 0, toi: so === VI.so });
+        daCo[khongDau(e.t)] = 1;
+      });
+      (ctx.caLop || []).forEach(function (t) {
+        var k = khongDau(t);
+        var co = Object.keys(daCo).some(function (x) { return x && (x === k || k.slice(-x.length - 1) === ' ' + x); });
+        if (!co) bang.push({ ten: t, sao: t === ctx.ten ? VI.s : 0, toi: t === ctx.ten && !VI.so });
+      });
+      if (!VI.so && !bang.some(function (d) { return d.toi; })) bang.push({ ten: ctx.ten, sao: 0, toi: true });
+    }
     // ⭐ v1.309.0 — HỌC SINH HỌC THỬ: vẫn có sao, nhưng LUÔN cuối bảng, chữ xám, không đánh số hạng.
     var thuK = {}; (ctx.thuLop || []).forEach(function (t) { thuK[khongDau(t)] = 1; });
     bang.forEach(function (d) { d.thu = !!thuK[khongDau(d.ten)]; });

@@ -2067,6 +2067,35 @@ body.mo-menu .side.trai{transform:none}
 .luu-y.zl{font-size:13.5px; padding:10px 14px}
 .luu-y.zl ul{margin:4px 0 0; padding-left:20px}
 .luu-y.zl li{margin:2px 0}
+/* ⭐ v1.328.0 (14/10/2026, thầy chốt mẫu v4) — BƯỚC QUAY VIDEO có bài giao RIÊNG (AWord Đợt 512 `&quay=1`): khung act rộng hết thẻ
+   (không leaderboard), lời hướng dẫn + Lưu ý gập trong nút HƯỚNG DẪN cạnh tiêu đề, dưới act = vạch mảnh + ô QUAY ĐỦ. */
+.card.buoc-quay .than{grid-template-columns:minmax(0,1fr)}
+.qv-nut{flex:none; display:inline-flex; align-items:center; gap:7px; padding:8px 12px 8px 10px; border-radius:11px; cursor:pointer;
+  background:#fff; border:1.5px solid var(--accent); color:var(--accent); font:800 12.5px var(--sans); letter-spacing:.05em}
+.qv-nut svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.qv-nut .mui{width:13px; height:13px; transition:transform .25s var(--em)}
+.qv-nut[aria-expanded="true"]{background:var(--accent); color:#fff}
+.qv-nut[aria-expanded="true"] .mui{transform:rotate(180deg)}
+.qv-gap{display:grid; grid-template-rows:0fr; transition:grid-template-rows .32s var(--em)}
+.qv-gap.mo{grid-template-rows:1fr}
+.qv-gap > div{overflow:hidden; min-height:0}
+.qv-hop{margin:0 0 12px; border:1px solid #CFE5E0; background:#F4FAF8; border-radius:14px; padding:12px 16px; font-size:14px; line-height:1.55}
+.qv-hop ol{margin:0; padding-left:20px}
+.qv-hop ol li{margin:3px 0}
+.qv-hop b{color:var(--accent)}
+.qv-hop .luu-y{margin-top:10px}
+.qv-vach{height:1px; background:var(--line); margin:16px -18px 14px}
+.card.buoc-quay .quay-du{margin:0}
+.bia-ten .bia-quay{display:block; margin-top:.7em; font-size:.72em; font-weight:800; letter-spacing:.06em; color:#B91C1C}
+.vach-dut-khoa{display:flex; align-items:center; gap:12px; color:#8FA3A0; font-weight:800; font-size:11.5px; letter-spacing:.14em; white-space:nowrap}
+.vach-dut-khoa::before,.vach-dut-khoa::after{content:''; flex:1; border-top:2px dashed #C9D6D3}
+@media (max-width:620px){
+  #thanhBtKhoa .st-khuc.xong .tick{display:none}   /* 6 khúc (thêm HD) trên điện thoại: màu xanh đã đủ báo xong, nhường chỗ cho chữ */
+  .qv-nut .chu{display:none}
+  .qv-nut{padding:8px 9px}
+  .card.buoc-quay .quay-du{padding:8px 10px; border-width:1.5px; border-radius:10px; font-size:12px; letter-spacing:.01em}
+  .card.buoc-quay .quay-du small{margin-top:2px; font-size:11px; font-weight:600}
+}
 .nut-buoc[disabled]{opacity:.55; cursor:default}
 .nut-hang{display:flex; flex-wrap:wrap; gap:8px}
 .luu-y{font-size:12.5px; color:#7A4A00; background:#FCF3E2; border-radius:10px; padding:9px 12px; line-height:1.5}
@@ -2792,7 +2821,8 @@ function veBia(k){
   return '<div class="game-cover">' +
     '<div class="bia-th">ANDREW CLASSES</div>' +
     '<div class="bia-giua">' +
-      '<div class="bia-ten">' + chuAnToan(chuBia(k)) + '</div>' +
+      '<div class="bia-ten">' + chuAnToan(chuBia(k)) +
+        (k.quayCau ? '<span class="bia-quay">BÀI DÙNG ĐỂ QUAY VIDEO · CÂU 1 → ' + (+k.quayCau || '') + '</span>' : '') + '</div>' +   // v1.328.0
       '<div class="bia-o-nut"><button class="bia-ready" type="button">READY</button></div>' +
       '<div class="bia-em">' + TOI + ' \u2022 ' + LOP_HIEN + '</div>' +
     '</div>' +
@@ -6226,7 +6256,7 @@ function veTheXongKhoa(x, so){
 var MO_ROI_KHOA = {};
 function moRongTheXongKhoa(x, so, theCu){
   MO_ROI_KHOA[x.id] = true;
-  var khung = dungTheActKhoa(x, so);
+  var khung = x.loai === 'zalo' ? veTheZaloKhoa(x, so) : dungTheActKhoa(x, so);   // v1.328.0 — bước quay video có mã riêng
   khung.classList.add('act-mo-rong-khoa');
   if (theCu && theCu.parentNode) theCu.parentNode.replaceChild(khung, theCu);
 }
@@ -6281,7 +6311,55 @@ function veTheDocSachKhoa(x, so){
   sec.querySelector('[data-xong]').onclick = function(){ danhDauBtTayKhoa(x); };
   return sec;
 }
+/* ⭐⭐ v1.328.0 (14/10/2026, thầy chốt mẫu v4 `MAU BUOC QUAY VIDEO v4 14-10-2026.html`) — BƯỚC QUAY VIDEO có BÀI GIAO RIÊNG
+   (dòng ZALO được gán mã trong app myLesson): làm ngay trong thẻ này, không phải kéo lên Bước 3 nữa. Act mở ở CHẾ ĐỘ QUAY VIDEO
+   của AWord (Đợt 512, `&quay=1`): câu 1 → N lần lượt, không đồng hồ, nút BẮT ĐẦU LẠI, không lưu điểm (chỉ giờ luyện), tải lại = từ đầu.
+   Xong bước vẫn do THẦY xác nhận (xem video trong nhóm Zalo). Dòng ZALO không mã ⇒ thẻ cũ bên dưới (bài soạn trước 14/10). */
+var IC_QUAY_KHOA = '<svg viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>';
+function soCauQuayKhoa(x){
+  if (x.ma && CHUAN[x.ma] && +CHUAN[x.ma].soCau > 0) return +CHUAN[x.ma].soCau;
+  var n = 0;   // 12/10/2026 — số câu của bước act ĐỨNG TRƯỚC (cùng act), đọc từ chuẩn act
+  (BAI.bt || []).some(function(y){ if (y === x) return true; if (y.ma && CHUAN[y.ma] && +CHUAN[y.ma].soCau > 0) n = +CHUAN[y.ma].soCau; return false; });
+  return n;
+}
+function laBuocQuayKhoa(x){ return !!(x && x.loai === 'zalo' && x.ma && BAI && BAI.kieu === 'CHUONG'); }
+function veTheQuayKhoa(x, so){
+  var soCau = soCauQuayKhoa(x);
+  var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma, quayCau: soCau }, so);
+  sec.classList.add('buoc-quay');
+  sec.classList.remove('con-thieu');
+  sec.removeAttribute('data-ma');          // không leaderboard ⇒ đừng để các đường làm mới bảng tìm tới thẻ này
+  sec.setAttribute('data-btid', x.id);
+  var game = sec.querySelector('.game');
+  if (game) game.setAttribute('data-src', game.getAttribute('data-src') + '&quay=1');
+  var lb = sec.querySelector('.lb-cot'); if (lb) lb.remove();
+  var than = sec.querySelector('.than'); if (than) than.classList.add('mot');
+  var tam = document.createElement('div');
+  tam.innerHTML = dauTheBuocKhoa(x, so, 'video', IC_QUAY_KHOA);
+  var dau = tam.firstElementChild;
+  dau.insertAdjacentHTML('beforeend', '<button type="button" class="qv-nut" aria-expanded="false" title="Xem hướng dẫn quay video">' +
+    '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.4"/><path d="M12 17h.01"/></svg>' +
+    '<span class="chu">HƯỚNG DẪN</span><svg class="mui" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></button>');
+  var cu = sec.querySelector('.card-head');
+  if (cu) cu.parentNode.replaceChild(dau, cu); else sec.insertBefore(dau, sec.firstChild);
+  var cauChu = soCau ? ('từ câu 1 đến câu ' + soCau) : 'từ câu đầu tiên đến câu cuối cùng';
+  dau.insertAdjacentHTML('afterend', '<div class="qv-gap"><div><div class="qv-hop"><ol>' +
+      '<li>Phụ huynh dùng <b>một điện thoại khác</b> để quay.</li>' +
+      '<li>Phụ huynh <b>hỏi trực tiếp</b>, con <b>trả lời lần lượt ' + cauChu + '</b> bằng bài ngay bên dưới.</li>' +
+      '<li>Quay xong, phụ huynh <b>gửi video lên nhóm Zalo ' + chuAnToan(LOP || 'của lớp') + '</b>.</li>' +
+    '</ol><div class="luu-y zl"><b>Lưu ý:</b><ul>' +
+      '<li>Quay ở <b>độ phân giải thấp</b> cho video nhẹ và gửi nhanh hơn.</li>' +
+      '<li>Video dài có thể <b>cắt thành nhiều đoạn</b> bằng tính năng cắt có sẵn khi chọn gửi ảnh trên Zalo.</li>' +
+    '</ul></div></div></div></div>');
+  sec.insertAdjacentHTML('beforeend', '<div class="qv-vach"></div>' +
+    '<div class="quay-du">QUAY ĐỦ ' + (soCau ? 'TOÀN BỘ ' + soCau + ' CÂU HỎI' : 'TOÀN BỘ CÂU HỎI') +
+    '<small>từ câu 1 đến câu cuối cùng — quay thiếu câu thầy không tính là đã nộp.</small></div>');
+  var nut = dau.querySelector('.qv-nut'), gap = sec.querySelector('.qv-gap');
+  nut.onclick = function(e){ e.stopPropagation(); var mo = gap.classList.toggle('mo'); nut.setAttribute('aria-expanded', mo ? 'true' : 'false'); };
+  return sec;
+}
 function veTheZaloKhoa(x, so){
+  if (laBuocQuayKhoa(x)) return veTheQuayKhoa(x, so);   // v1.328.0
   var sec = document.createElement('section');
   sec.className = 'card';
   sec.setAttribute('data-btid', x.id);
@@ -6491,6 +6569,7 @@ function luonMoBtKhoa(x){
   if (!BAI || BAI.kieu !== 'CHUONG' || !x || !x.ma) return false;
   var bt = BAI.bt || [], iz = -1;
   bt.forEach(function(y, i){ if (iz < 0 && y.loai === 'zalo') iz = i; });
+  if (iz >= 0 && bt[iz].ma) return false;   // v1.328.0 — bước quay video có bài giao RIÊNG ⇒ không còn mượn act trước nó
   for (var i = iz - 1; i >= 0; i--) if (bt[i].ma) return bt[i] === x;
   return false;
 }
@@ -6767,7 +6846,15 @@ function veThanhBtKhoa(){
   var hop = $('#thanhBtKhoa');
   if (!hop) return;
   var daGanHienTai = false;
-  hop.innerHTML = (BAI.bt || []).map(function(x){
+  // ⭐ v1.328.0 (thầy chốt) — lesson CHƯƠNG có slide hướng dẫn ⇒ khúc ĐẦU TIÊN là HƯỚNG DẪN (điện thoại "HD").
+  var khucHd = '';
+  if (coHdKhoa()) {
+    var hdXong = daXongHdKhoa();
+    if (!hdXong) daGanHienTai = true;
+    khucHd = '<button type="button" class="st-khuc ' + (hdXong ? 'xong' : 'dang') + '" data-hd="1">' +
+      (hdXong ? '<span class="tick">✓</span>' : '') + '<span class="lbl">' + (laDienThoai() ? 'HD' : 'HƯỚNG DẪN') + '</span></button>';
+  }
+  hop.innerHTML = khucHd + (BAI.bt || []).map(function(x){
     var xong = !!TT_KHOA.xongB[x.id];
     var lop;
     if (xong) { lop = 'xong'; }
@@ -6779,6 +6866,7 @@ function veThanhBtKhoa(){
   }).join('');
   hop.querySelectorAll('.st-khuc').forEach(function(btn){
     btn.onclick = function(){
+      if (btn.getAttribute('data-hd')) { moHdTuThanhKhoa(); return; }   // v1.328.0
       var id = btn.getAttribute('data-btid').replace(/[^A-Za-z0-9_-]/g, '');
       if (BAI.kieu === 'CHUONG') { moBuocTuThanhKhoa(id); return; }   // 13/10/2026
       var el = document.querySelector('.card[data-btid="' + id + '"]');
@@ -6787,6 +6875,80 @@ function veThanhBtKhoa(){
       nhayTheKhoa(el);
     };
   });
+}
+
+/* ⭐⭐ v1.328.0 (14/10/2026, thầy chốt mẫu v4) — CHỈ CÒN BƯỚC QUAY VIDEO (hướng dẫn + mọi bước trước nó đã xong): thẻ bước quay video
+   LÊN ĐẦU, dưới nó vạch nét đứt "CÁC BƯỚC ĐÃ XONG", rồi thẻ xanh HƯỚNG DẪN (slide thu gọn — bấm mở lại) + các thẻ xanh Bước 1…n.
+   Thanh bước GIỮ thứ tự (thầy chốt) — chỉ thẻ trên trang đổi chỗ. Chỉ DỜI node (không dựng lại) và chỉ khi trạng thái ĐỔI. */
+var HOP_KHOA = null, BO_CUC_GON = false;
+function coHdKhoa(){ return !!(BAI && BAI.kieu === 'CHUONG' && BAI.huongDan && BAI.huongDan.doc); }
+function buocQuayKhoa(){
+  var bt = BAI.bt || [], q = null, iq = -1;
+  bt.forEach(function(y, i){ if (laBuocQuayKhoa(y)) { q = y; iq = i; } });
+  return q ? { x: q, i: iq } : null;
+}
+function laBoCucGonKhoa(){
+  if (!BAI || BAI.kieu !== 'CHUONG' || !TT_KHOA || !daXongHdKhoa()) return false;
+  var q = buocQuayKhoa(); if (!q || q.i < 1) return false;
+  var bt = BAI.bt || [];
+  for (var i = 0; i < q.i; i++) if (!TT_KHOA.xongB[bt[i].id]) return false;
+  return true;
+}
+function theBtKhoa(id){ return document.querySelector('.card[data-btid="' + String(id).replace(/[^A-Za-z0-9_-]/g, '') + '"]'); }
+function veTheHdGonKhoa(){
+  var hd = BAI.huongDan || {};
+  var sec = document.createElement('section');
+  sec.className = 'card st-cho kh xong';
+  sec.id = 'theHdGonKhoa';
+  sec.innerHTML = '<div class="st-cho-vien"><div class="st-cho-clip"><div class="st-cho-hang">' +
+      '<span class="st-nhan">HƯỚNG DẪN</span>' +
+      '<div class="st-cho-chu"><span class="st-cho-act">' + chuAnToan(hd.tieuDe || 'CÁCH LÀM BÀI TẬP') + '</span></div>' +
+      '<span class="st-trang xong">' + IC_TICK_KHOA + 'Completed</span>' +
+    '</div></div></div>';
+  sec.onclick = function(){ moHdGonKhoa(); };
+  return sec;
+}
+function moHdGonKhoa(){
+  var g = $('#theHdGonKhoa'), hd = $('#theHuongDanKhoa');
+  if (hd) hd.hidden = false;
+  if (g) g.remove();
+  return hd;
+}
+function moHdTuThanhKhoa(){
+  var hd = moHdGonKhoa();
+  if (!hd) return;
+  var top = document.querySelector('.top');
+  hd.style.scrollMarginTop = ((top ? top.getBoundingClientRect().height : 0) + 12) + 'px';
+  hd.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  nhayTheKhoa(hd);
+}
+function apBoCucKhoa(){
+  var hop = HOP_KHOA;
+  if (!hop || !BAI || BAI.kieu !== 'CHUONG') return;
+  var gon = laBoCucGonKhoa();
+  if (gon === BO_CUC_GON) return;
+  BO_CUC_GON = gon;
+  var q = buocQuayKhoa(); if (!q) return;
+  var theQ = theBtKhoa(q.x.id), hd = $('#theHuongDanKhoa'), vk = hop.querySelector('.vk-divider');
+  if (!theQ) return;
+  if (gon) {
+    var bt0 = theBtKhoa((BAI.bt || [])[0].id);
+    var neo = hd || vk || bt0;
+    if (!neo || neo === theQ) return;
+    var dut = $('#vachDutKhoa');
+    if (!dut) { dut = document.createElement('div'); dut.id = 'vachDutKhoa'; dut.className = 'vach-dut-khoa'; dut.textContent = 'CÁC BƯỚC ĐÃ XONG'; }
+    hop.insertBefore(theQ, neo);
+    hop.insertBefore(dut, neo);
+    if (hd) { hop.insertBefore(veTheHdGonKhoa(), hd); hd.hidden = true; }
+    if (vk) vk.hidden = true;
+  } else {
+    var truoc = theBtKhoa((BAI.bt || [])[q.i - 1].id);
+    if (truoc && truoc.parentNode === hop) hop.insertBefore(theQ, truoc.nextSibling);
+    var d2 = $('#vachDutKhoa'); if (d2) d2.remove();
+    moHdGonKhoa();
+    if (vk) vk.hidden = false;
+  }
+  canhTenTheKhoaDT();
 }
 
 /* ⭐ 13/10/2026 (thầy chốt) — lesson CHƯƠNG: bấm khúc BƯỚC n trên thanh ⇒ bước đã xong (thẻ xanh) MỞ RA khung làm thật
@@ -6846,6 +7008,7 @@ function capNhatSauKhiDoiKhoa(){
   canhLb();
   canhTenTheKhoaDT();   // v1.109.0 — thẻ vừa thay thì đo lại cỡ tên (điện thoại)
   veTienDoHdKhoa();     // 11/10/2026 — lesson CHƯƠNG
+  apBoCucKhoa();        // v1.328.0 — chỉ còn bước quay video ⇒ đưa nó lên đầu
   luuTomTatKhoa();
 }
 
@@ -6964,6 +7127,7 @@ function ganNutKhoa(){
 
 function veCacPhanKhoa(hop){
   var bg = BAI.baiGiang || {};
+  HOP_KHOA = hop; BO_CUC_GON = false;   // v1.328.0
   napHdKhoa();          // 11/10/2026 — lesson CHƯƠNG: tiến độ video hướng dẫn + bước tự đánh dấu (máy này)
   napBtTayKhoa();
   napVidBtKhoa();
@@ -6994,6 +7158,7 @@ function veCacPhanKhoa(hop){
     hop.appendChild(dungTheBtKhoa(x, i + 1, TT_KHOA));
   });
   canhLb();
+  apBoCucKhoa();        // v1.328.0
   canhTenTheKhoaDT();   // v1.109.0 — đo ngay + đo lại ở `fonts.ready` (font chưa về thì số sai)
   luuTomTatKhoa();      // 11/10/2026
 }
@@ -7331,6 +7496,17 @@ window.addEventListener('message', function(e){
   if (!sec) return;
   var nut = sec.querySelector('.lam-moi');
   if (nut) lamMoiBang(sec, String(d.code), nut);
+});
+
+/* ⭐ v1.328.0 — nút ⛶ TRONG khung act chế độ quay video (AWord Đợt 512) báo {type:'AWORD:PHONG'} ⇒ phóng to / thu nhỏ
+   đúng khung chứa iframe đó (cùng đường nút "Phóng to" v1.180.0 — chạy cả iPhone). */
+window.addEventListener('message', function(e){
+  if (e.origin !== AWORD) return;
+  var d = e.data;
+  if (!d || d.type !== 'AWORD:PHONG') return;
+  var f = Array.prototype.filter.call(document.querySelectorAll('.game iframe'), function(fr){ return fr.contentWindow === e.source; })[0];
+  var khung = f && f.closest('.game');
+  if (khung && khung.phongTo) khung.phongTo(!khung.classList.contains('phong'));
 });
 
 /* Đo lại khi: kéo giãn cửa sổ · đổi ngưỡng màn · nạp xong font (font đổi thì

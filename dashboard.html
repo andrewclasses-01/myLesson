@@ -4131,7 +4131,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/chat.js?v=36"></script>
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=20"></script>
-<script src="js/nhac-ban.js?v=1"></script>   <!-- v1.333.0 nút REMIND trên thẻ STAGE -->
+<script src="js/nhac-ban.js?v=2"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=6"></script>
 <script>
@@ -4158,6 +4158,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ⭐ #2 — thẻ SPEAKING CHECK: mã bài -> mảng tiến trình theo team (tinhDoiSp),
   // đổ vào SAU khi hỏi Firestore (nếp "hiện trước, đổ sau" y hệt trang lớp).
   var DOI_SP = {};
+  var DOI_SP_NOP = {};   // v1.334.0 — id bài ⇒ [tên em đã nộp SP CHECK] (từ `spDoiSpFs`, cho nút REMIND thẻ)
   var DOI_SP_HOI = {};   // mã bài đã hỏi rồi — khỏi hỏi lại mỗi lần vẽ lại thẻ
   // ⭐ v1.29.0 — mã bài -> câu BÁO VÌ SAO KHÔNG CÓ TIẾN TRÌNH. Trước đợt này mọi
   // ngả hỏng đều để thẻ đứng nguyên ở "Đang đọc dữ liệu speaking…" MÃI MÃI, nên
@@ -5267,6 +5268,42 @@ tr.qm-hang-tam td{background:#fffbeb}
     NHAC_THE_DB[khoa] = { so: c.so, sau: (tThe.chang[i + 1] && tThe.chang[i + 1].so) || 0, ban: c.thieu.slice(), lop: tThe.maLop || LOP_CHON };
     return NhacBan.nutHtml(khoa, '', 'Nhắc các em chưa xong STAGE ' + c.so + ' vào nhóm lớp');
   }
+  /* ⭐⭐ v1.334.0 (14/10/2026, thầy chốt mẫu `MAU NUT REMIND CAC DANG BAI v4`) — REMIND cho bài THƯỜNG + SPEAKING (trừ
+     WORKSHEET và lớp khóa học), thẻ còn hạn: còn em chưa xong ⇒ có nút. Cùng nếp `nutRemindBai` bên lop.html:
+     act AWord ⇒ `t.thieu` · SPEAKING CHECK ⇒ em chưa có tài liệu nộp (`DOI_SP_NOP`, khớp tên lỏng: trùng tên gọi cuối là
+     coi như ĐÃ nộp — thà sót còn hơn @ nhầm em đã nộp) · SPEAKING SKILL ⇒ đọc một lần kho XÁC NHẬN NỘP (`NhacBan.docDaNopVideo`).
+     Khoá `awc_nhac_<bài>_b_GV`. */
+  var NOP_VIDEO_DB = {};
+  function nutRemindBaiDb(b, t, st, het) {
+    if (het || st.du || !window.NhacBan || !window.AWChat || !b || !b.id || !t || laKhoaHoc()) return '';
+    if (/^WORKSHEET$/i.test(b.dang || '')) return '';
+    var tt = A.trangThaiThe(b);
+    if (tt === 'khoa' || tt === 'an') return '';
+    var caLop = t.caLop || [], loai = 'bai', thieu = null;
+    var idSl = NhacBan.slideNopId(b, t.maLop || LOP_CHON);
+    if (t.laSp) {
+      loai = 'video';
+      var nop = DOI_SP_NOP[b.id];
+      if (nop) {
+        var co = {}; nop.forEach(function (s) { var w = String(s || '').trim().split(/\s+/); co[A.khoaTen(s)] = 1; co[A.khoaTen(w[w.length - 1])] = 1; });
+        thieu = caLop.filter(function (ten) { var w = String(ten).trim().split(/\s+/); return !co[A.khoaTen(ten)] && !co[A.khoaTen(w[w.length - 1])]; });
+      }
+    } else if (idSl) {
+      loai = 'video';
+      if (!(b.id in NOP_VIDEO_DB)) {
+        NOP_VIDEO_DB[b.id] = null;
+        NhacBan.docDaNopVideo(idSl).then(function (ds) { if (!ds) return; NOP_VIDEO_DB[b.id] = ds; try { veKhuThe(); } catch (e) {} });
+      }
+      var da = NOP_VIDEO_DB[b.id];
+      if (da) { var c2 = {}; da.forEach(function (x) { c2[A.chuanTen(x)] = 1; }); thieu = caLop.filter(function (ten) { return !c2[A.chuanTen(ten)]; }); }
+    } else if ((t.acts || []).length && t.daDoc) {
+      thieu = (t.thieu || []).map(function (e) { return e.ten; });
+    }
+    if (!thieu || !thieu.length) return '';
+    var khoa = 'awc_nhac_' + b.id + '_b_GV';
+    NHAC_THE_DB[khoa] = { loai: loai, ten: A.tenBai(b), han: NhacBan.chuHan(A.mocHan(b)), ban: thieu, lop: t.maLop || LOP_CHON };
+    return NhacBan.nutHtml(khoa, '', loai === 'video' ? 'Nhắc các em chưa nộp video vào nhóm lớp' : 'Nhắc các em chưa xong bài vào nhóm lớp');
+  }
   document.addEventListener('click', function (e) {
     var n = e.target.closest && e.target.closest('.nut-remind[data-nhackhoa]');
     if (!n) return;
@@ -5274,7 +5311,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var k = n.getAttribute('data-nhackhoa'), x = NHAC_THE_DB[k];
     if (!x || !window.NhacBan) return;
     var l = A.lopTheoMa(DL, x.lop) || {};
-    NhacBan.mo({ gv: true, so: x.so, sau: x.sau, ban: x.ban, khoa: k, lop: l.tenGoc || x.lop,
+    NhacBan.mo({ gv: true, loai: x.loai || 'chang', so: x.so, sau: x.sau, ten: x.ten, han: x.han, ban: x.ban, khoa: k, lop: l.tenGoc || x.lop,
       gui: function (chu) {
         if (chuaThay(null)) return Promise.reject('__im');
         return AWChat.gui(x.lop, { ten: 'Thầy Andrew', ma: 'GV', vaiTro: 'gv', chu: chu });
@@ -5283,7 +5320,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       chuLoi: function (e) { return AWChat.chuLoi ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.'; } });
   }, true);
 
-  function veHanCard(b, moc, st, tThe) {
+  function veHanCard(b, moc, st, tThe, het) {
     // ⭐ v1.35.0 — thẻ TẠM KHOÁ không nhận màu gấp; đồng hồ mang cờ `data-khoa`
     // (xem `nhipDongHo`). v1.56.0 — chỉ còn 2 huy hiệu: ẨN và TẠM KHOÁ.
     var tt = A.trangThaiThe(b);
@@ -5297,7 +5334,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       var iC = A.changHien(tThe.chang), c = tThe.chang[iC];
       if (c && c.so && c.moc != null) {
         chu = 'chặng ' + c.so + ': ' + chuHanChangDb(c.hanHien);
-        if (!st.du && !khoa) nut = nutRemindDb(b, tThe, iC);   // v1.333.0
+        if (!st.du && !khoa && !het) nut = nutRemindDb(b, tThe, iC);   // v1.333.0 (v1.334.0: thẻ hết hạn không có nút)
         /* ⭐⭐ v1.118.0 — CHỜ MỞ KHÓA: cờ `data-chomo` cho đồng hồ (cùng nếp
            `veHan()` bên lop.html); tới hạn thì `nhipDongHo` in chữ + nháy đỏ. */
         if (!st.du && !khoa && A.changChoMo(tThe.chang) === c) choMo = 1;
@@ -5309,7 +5346,8 @@ tr.qm-hang-tam td{background:#fffbeb}
         if (!st.du) moc = c.moc;
         rong = ' rong';
       }
-    }
+    } else if (!(tThe && tThe.stage)) nut = nutRemindBaiDb(b, tThe, st, het);   // v1.334.0
+    if (nut) rong += ' co-nhac';   // v1.334.0 — ô hạn rộng bằng ô STAGE khi có nút (CSS trong js/nhac-ban.js)
     return '<span class="han-boc' + rong + '"><span class="' + lop + '">' +
         /* ⛔ v1.77.0 — BỎ ICON ĐỒNG HỒ ở ô hạn (thầy chốt 07/09, áp cho mọi dạng
            bài ở cả trang lớp lẫn dashboard). `.han-dong` phải `gap:0`. */
@@ -5870,7 +5908,7 @@ tr.qm-hang-tam td{background:#fffbeb}
               '<span class="t-ma">' + A.chuAnToan(A.maLesson(b)) + '</span>' +
             '</span>'
           )) +
-          veHanCard(b, moc, st, t) +
+          veHanCard(b, moc, st, t, het) +
         '</span>' +
         /* ⭐ v1.130.0 (22/09/2026, thầy chốt) — BỎ CỘT ICON ⚙/⊕ trên thẻ (khớp thẻ trang lớp);
            menu ⚙ dời lên đầu HỘP QUẢN LÝ BÀI (nút `#bmCaiDat`, cùng `data-rail-caidat`).
@@ -6325,6 +6363,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         var doi = tinhDoiSp(buoi.teams, docs);
         if (!doi.length) return bao('Buổi đã mở nhưng chưa chia team nào.');
         DOI_SP[b.id] = doi;
+        DOI_SP_NOP[b.id] = docs.map(function (d) { return d.student; });
         DOI_SP_LOI[b.id] = '';
         veKhuThe();
         if (BM_ID === b.id) moBaiModal(b.id);

@@ -1721,7 +1721,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
-<script src="js/nhac-ban.js?v=1"></script>   <!-- v1.333.0 nút REMIND trên thẻ STAGE -->
+<script src="js/nhac-ban.js?v=2"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=6"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -2948,7 +2948,9 @@ function veHan(b, tt){
          không có cờ này — vẫn HẾT HẠN). Giờ do đồng hồ quyết, xem `A.changChoMo`. */
       if (!xongHet && !b.khoa && A.changChoMo(b._chang) === c) choMo = 1;
     }
-  }
+  } else if (!b.stage) nut = nutRemindBai(b, xongHet);   // v1.334.0 — bài thường / SPEAKING
+  /* v1.334.0 — thẻ CÓ nút ⇒ ô hạn rộng bằng ô STAGE (`co-nhac`, CSS trong js/nhac-ban.js) ⇒ nút không tràn khỏi khung. */
+  if (nut) rong += ' co-nhac';
   var lop = 't-han' + (tt === 'gap' ? ' gap-gio' : (xongHet ? ' da-xong' : ''));
   return '<span class="han-boc' + rong + '"><span class="' + lop + '">' +
       /* ⛔ v1.76.0 — BỎ ICON ĐỒNG HỒ ở ô hạn của MỌI dạng bài (thầy chốt 07/09:
@@ -2983,6 +2985,41 @@ function nutRemindThe(b, i, xongHet){
   NHAC_THE[khoa] = { so: c.so, sau: (cac[i + 1] && cac[i + 1].so) || 0, ban: thieu.slice() };
   return NhacBan.nutHtml(khoa, '', 'Nhắc các bạn chưa xong STAGE ' + c.so);
 }
+/* ⭐⭐ v1.334.0 (14/10/2026, thầy chốt mẫu `MAU NUT REMIND CAC DANG BAI v4`) — NÚT REMIND cho bài THƯỜNG + SPEAKING (trừ WORKSHEET):
+   · bài có act AWord: em đã đủ điểm mọi act (không có tên trong `b.thieu`) mà còn bạn chưa xong ⇒ loại 'bai'.
+   · SPEAKING CHECK: em đã nộp (không có tên trong `BAI_SP.thieu`, đổ từ `spDoDaNop`) mà còn bạn chưa nộp ⇒ loại 'video'.
+   · SPEAKING SKILL (ô slide có `nop`): đọc MỘT lần danh sách XÁC NHẬN NỘP BÀI (`NhacBan.docDaNopVideo`, kho spSubmissions)
+     rồi vẽ lại cột; em đã xác nhận mà còn bạn chưa ⇒ loại 'video'.
+   Khoá giờ chờ `awc_nhac_<bài>_b_<mã>` — TRÙNG dải REMIND FRIENDS đầu trang bai.html (nhắc một nơi, nơi kia cũng xám). */
+var NOP_VIDEO = {};   // id bài ⇒ [tên đã xác nhận nộp video] (null = đang đọc / đọc hỏng)
+function nutRemindBai(b, xongHet){
+  if (xongHet || b.khoa || !window.NhacBan || !window.AWChat || LA_DAC_BIET || !MA_HS || !TOI || !b.id || b.loai === 'wsheet') return '';
+  if (EM && EM.vaiTro === 'gv') return '';
+  var laToi = function(t){ return A.khoaTen(t) === A.khoaTen(TOI); };
+  var caLop = b.caLop || [];
+  if (!caLop.some(laToi)) return '';
+  var loai = 'bai', thieu = [];
+  var idSl = NhacBan.slideNopId(b.goc, LOP_DL);
+  if (b.loai === 'spcheck') { loai = 'video'; thieu = (b.thieu || []).map(function(e){ return e.ten; }); }
+  else if (idSl) {
+    loai = 'video';
+    if (!(b.id in NOP_VIDEO)) {
+      NOP_VIDEO[b.id] = null;
+      NhacBan.docDaNopVideo(idSl).then(function(ds){ if (!ds) return; NOP_VIDEO[b.id] = ds; try { dungCot(); } catch (e) {} });
+    }
+    var da = NOP_VIDEO[b.id];
+    if (!da) return '';
+    var co = {}; da.forEach(function(t){ co[A.chuanTen(t)] = 1; });
+    thieu = caLop.filter(function(t){ return !co[A.chuanTen(t)]; });
+  } else {
+    if (!(b.bai || []).some(function(x){ return x.ma; })) return '';   // bài không act nào (bài viết tay…) ⇒ không đo được
+    thieu = (b.thieu || []).map(function(e){ return e.ten; });
+  }
+  if (!thieu.length || thieu.some(laToi)) return '';
+  var khoa = 'awc_nhac_' + b.id + '_b_' + MA_HS;   // ⛔ trùng `khoaNhac('b')` bên bai.html
+  NHAC_THE[khoa] = { loai: loai, ten: b.ten, han: NhacBan.chuHan(b.hanMoc), ban: thieu.slice() };
+  return NhacBan.nutHtml(khoa, '', loai === 'video' ? 'Nhắc các bạn chưa nộp video' : 'Nhắc các bạn chưa xong bài này');
+}
 // Bắt ở pha CAPTURE: thẻ là một <button> có onclick mở bài ⇒ chặn trước khi tới thẻ.
 document.addEventListener('click', function(e){
   var n = e.target.closest && e.target.closest('.nut-remind[data-nhackhoa]');
@@ -2990,7 +3027,7 @@ document.addEventListener('click', function(e){
   e.stopPropagation(); e.preventDefault();
   var k = n.getAttribute('data-nhackhoa'), x = NHAC_THE[k];
   if (!x || !window.NhacBan) return;
-  NhacBan.mo({ so: x.so, sau: x.sau, ban: x.ban, khoa: k, lop: LOP_HIEN || LOP,
+  NhacBan.mo({ loai: x.loai || 'chang', so: x.so, sau: x.sau, ten: x.ten, han: x.han, ban: x.ban, khoa: k, lop: LOP_HIEN || LOP,
     gui: function(chu){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu }); },
     chan: function(){ return (window.__thayVao || (EM && EM.xemNhu)) ? 'Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).' : ''; },
     bao: baoToast,

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-13 17:12:48",
+  "capNhat": "2026-10-14 07:48:13",
   "bai": {
     "A1C": [
       {
@@ -4614,10 +4614,10 @@
             "id": "btc01zalo",
             "loai": "zalo",
             "trang": "",
-            "tieuDe": "BƯỚC 5 · QUAY VIDEO THU HOẠCH",
-            "actTen": "",
-            "ma": "",
-            "mau": "",
+            "tieuDe": "BƯỚC 5 · QUAY VIDEO TRẢ LỜI CÂU HỎI",
+            "actTen": "CHUONG 1 - CUOC SONG CO Y NGHIA GI?",
+            "ma": "y33d64",
+            "mau": "QUIZ",
             "xong": {
               "lam": "moNhay",
               "doanMo": [],
@@ -4630,7 +4630,7 @@
     ]
   },
   "capNhatLop": {
-    "NNTNGK10": "2026-10-12 08:24:40",
+    "NNTNGK10": "2026-10-14 07:48:13",
     "A1A": "2026-10-12 22:18:14",
     "B2B": "2026-10-12 23:30:39",
     "A1C": "2026-10-13 06:46:33",

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-14 11:23:54",
+  "capNhat": "2026-10-14 14:27:50",
   "bai": {
     "A1C": [
       {
@@ -1793,6 +1793,64 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_10.10_STAGE_8_FAMILY_AND_ROOM",
+        "tieuDe": "NNTNG4_10.10_STAGE 8 FAMILY AND ROOM",
+        "tenHien": "NNTNG4_10.10_STAGE 8 FAMILY AND ROOM",
+        "dang": "STAGE",
+        "ngay": "10.10",
+        "han": "2026-10-17T08:00",
+        "maLesson": "8 FAMILY AND ROOM",
+        "taoLuc": "2026-10-14",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "gcajyz",
+            "mau": "QUIZ",
+            "han": "2026-10-16T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "838y5n",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-10-16T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "8 FAMILY AND ROOM / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "wfc6gx",
+            "mau": "TRUE OR FALSE",
+            "han": "2026-10-17T08:00"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "8 FAMILY AND ROOM / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "js2qpy",
+            "mau": "FIND THE MATCH",
+            "han": "2026-10-17T08:00"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "8 FAMILY AND ROOM / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "6ar7ke",
+            "mau": "OPEN THE BOX",
+            "han": "2026-10-17T08:00"
+          }
+        ],
+        "giaoLuc": "2026-10-14T14:27"
+      },
       {
         "id": "NNTNG4_3.10_REVIEW_7_JOB",
         "tieuDe": "NNTNG4_3.10_REVIEW 7 JOB",
@@ -4656,6 +4714,7 @@
     "B2B": "2026-10-12 23:30:39",
     "A1C": "2026-10-13 06:46:33",
     "B2A": "2026-10-13 17:12:48",
-    "A1B": "2026-10-14 11:23:54"
+    "A1B": "2026-10-14 11:23:54",
+    "NNTNG4": "2026-10-14 14:27:50"
   }
 }

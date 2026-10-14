@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-14 07:48:13",
+  "capNhat": "2026-10-14 11:23:54",
   "bai": {
     "A1C": [
       {
@@ -949,6 +949,27 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_13.10_WORDS_CAU_BI_DONG",
+        "tieuDe": "A1B_13.10_WORDS CAU BI DONG",
+        "tenHien": "A1B_13.10_WORDS CAU BI DONG",
+        "dang": "WORDS",
+        "ngay": "13.10",
+        "han": "2026-10-15T19:45",
+        "maLesson": "CAU BI DONG",
+        "taoLuc": "2026-10-14",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "quy835",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-14T11:23"
+      },
       {
         "id": "A1B_8.10_STAGE_LSA2-S3.T4.P3-4-5",
         "tieuDe": "A1B_8.10_STAGE LSA2-S3.T4.P3-4-5",
@@ -4634,6 +4655,7 @@
     "A1A": "2026-10-12 22:18:14",
     "B2B": "2026-10-12 23:30:39",
     "A1C": "2026-10-13 06:46:33",
-    "B2A": "2026-10-13 17:12:48"
+    "B2A": "2026-10-13 17:12:48",
+    "A1B": "2026-10-14 11:23:54"
   }
 }

@@ -1744,8 +1744,8 @@
      Luật mở chặng (thầy chốt, đừng suy diễn lại):
        · Chặng 1 mở ngay.
        · Chặng k mở khi MỌI em (trừ em thầy bỏ qua) đã xong MỌI act của chặng k−1
-         VÀ đã tới mốc "hạn chặng k−1 trừ 12 tiếng". Xong sớm hơn thì đếm lùi tới
-         mốc đó rồi mở — thầy chốt "mở chặng 2 trong vòng 12 tiếng".
+         VÀ đã tới mốc "hạn chặng k−1 trừ 24 tiếng". Xong sớm hơn thì đếm lùi tới
+         mốc đó rồi mở — thầy chốt "mở chặng 2 trong vòng 12 tiếng" (07/09), NỚI THÀNH 24 TIẾNG (14/10/2026, web v1.331.0).
        · Quá hạn chặng k−1 mà còn em chưa xong ⇒ chặng k KHÔNG mở, hiện tên các em
          đó; các em ấy xong (hoặc thầy bỏ qua) thì mở ngay.
        · Thầy bấm "Mở chặng kế" trên dashboard ⇒ `moChang` trong kho `lessonHan`.
@@ -1755,7 +1755,7 @@
      trang đã đọc sẵn, ở đây chỉ tính thêm.
      ========================================================================== */
 
-  var CHO_MO_MS = 12 * 60 * 60 * 1000;   // mở sớm nhất là 12 tiếng trước hạn chặng trước
+  var CHO_MO_MS = 24 * 60 * 60 * 1000;   // mở sớm nhất là 24 tiếng trước hạn chặng trước (14/10/2026: 12 ⇒ 24, thầy chốt) — ⛔ chép y ở may-chu/functions/nhac-han.js
 
   function laBaiStage(b) {
     return String((b && b.dang) || '').trim().toUpperCase() === 'STAGE';

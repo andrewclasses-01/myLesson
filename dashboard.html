@@ -10904,7 +10904,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#hpGhi').textContent = (sua ? 'Chặng này đang dùng hạn riêng (hạn lúc đẩy bài: ' + chuHanChangDb(x.c.han) + '). '
                                     : 'Chặng này đang dùng hạn lúc đẩy bài. ') +
       (x.laCuoi ? 'Đây là chặng cuối: hạn này cũng là hạn của cả thẻ. '
-                : 'Chặng ' + x.sau.so + ' mở sớm nhất 12 tiếng trước hạn này. ') + 'Bỏ trống giờ thì lấy 23:59.';
+                : 'Chặng ' + x.sau.so + ' mở sớm nhất 24 tiếng trước hạn này. ') + 'Bỏ trống giờ thì lấy 23:59.';
     $('#hpBo').hidden = !sua;
     var p = $('#hanPop');
     p.classList.add('mo');
@@ -10966,7 +10966,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       return void moXnPop($('#hanPop'), {
         tieuDe: 'Đặt hạn chặng ' + so + '?',
         chu: 'Hạn chặng ' + so + ' thành ' + gio + ' ngày ' + (+d[2]) + '/' + (+d[1]) + '/' + d[0] + '. ' +
-             (x.laCuoi ? 'Đây là chặng cuối nên hạn của cả thẻ cũng đổi theo. ' : 'Chặng ' + x.sau.so + ' mở sớm nhất 12 tiếng trước mốc này. ') +
+             (x.laCuoi ? 'Đây là chặng cuối nên hạn của cả thẻ cũng đổi theo. ' : 'Chặng ' + x.sau.so + ' mở sớm nhất 24 tiếng trước mốc này. ') +
              'Muốn bỏ thì bấm “Về mặc định”.',
         nutOk: 'Đặt hạn này',
         khiOk: function () { dongHanPop(); if (x.laCuoi) hsGhi(id, moc); else ghiHanChang(id, so, moc); }

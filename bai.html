@@ -2632,6 +2632,7 @@ function lamMoiBang(sec, ma, nut){
     });
     doLb();
     danhDauXongStage();   // thiết kế KNT 11 — vừa nộp đủ 100% ⇒ READY xanh lá + tích ngay
+    xetSapLaiStage();     // v1.331.0 — em vừa xong trọn STAGE ⇒ tự sắp lại trang
     tua.classList.remove('dang-tai');
     tua.textContent = tenCu;
     nut.classList.remove('quay');
@@ -7450,7 +7451,26 @@ function changCuaKhoi(){
      em đã xong ở DƯỚI. Mặc định mở STAGE ĐANG CẦN LÀM (đã mở + em chưa xong, sớm nhất); bấm thanh / thẻ = chọn STAGE đó.
    · "Em xong STAGE" = mọi act của chặng đủ điểm (`emXongActStage`); chặng không có act ⇒ theo trạng thái chặng (`tt` xong).
    Thay bố cục thiết kế KNT 10 (mọi chặng đầy đủ + băng màu nhóm) — `ganBangNhom`/`MO_ROI_STAGE` không còn dùng ở đây. */
-var CHANG_CAN;
+var CHANG_CAN, HEN_SAP_LAI = null;
+/* ⭐ v1.331.0 (14/10/2026, thầy chốt) — TỰ SẮP LẠI NGAY KHI EM XONG: mỗi lần bảng điểm một act làm mới (lượt nộp về), tính lại
+   STAGE đang cần làm; đổi (em vừa xong trọn STAGE đang làm) ⇒ chờ 2,5 giây cho em kịp thấy màn kết quả AWord rồi vẽ lại trang:
+   STAGE đó xuống dưới vạch, mở STAGE kế (hoặc thu gọn hết nếu đang chờ các bạn). */
+function xetSapLaiStage(){
+  if (!LA_STAGE || !CHANG) return;
+  CHANG = tinhChang();
+  if (changCanLam() === CHANG_CAN) return;
+  var xongSo = (CHANG[CHANG_XEM] && emXongChang(CHANG_XEM)) ? CHANG[CHANG_XEM].so : null;
+  clearTimeout(HEN_SAP_LAI);
+  HEN_SAP_LAI = setTimeout(function(){
+    veCacPhan();
+    if (xongSo) baoToast('Em đã xong STAGE ' + xongSo + '!');
+    var el = (CHANG_XEM >= 0 && document.querySelector('#cacPhan [data-chang="' + CHANG_XEM + '"]')) || document.querySelector('#cacPhan');
+    if (!el) return;
+    var top = document.querySelector('.top');
+    el.style.scrollMarginTop = ((top ? top.getBoundingClientRect().height : 0) + 12) + 'px';
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 2500);
+}
 function emXongChang(ci){
   var cua = changCuaKhoi(), co = false, het = true;
   KHOI.forEach(function(k, i){ if (cua[i] !== ci || k.loai !== 'act') return; co = true; if (!emXongActStage(k.ma)) het = false; });
@@ -7475,8 +7495,9 @@ function chonChang(i){
 function veCacPhanStage(hop){
   CHANG = tinhChang();
   var can = changCanLam();
-  if (can !== CHANG_CAN) { CHANG_CAN = can; if (can != null) CHANG_XEM = can; }
-  if (CHANG_XEM == null || !CHANG[CHANG_XEM] || !moChang(CHANG_XEM)) CHANG_XEM = (can != null) ? can : A.changHien(CHANG);
+  // v1.331.0 — không còn STAGE nào cần làm (xong hết / đang chờ các bạn) ⇒ -1 = không mở STAGE nào (mọi thứ thu gọn)
+  if (can !== CHANG_CAN) { CHANG_CAN = can; CHANG_XEM = (can != null) ? can : -1; }
+  if (CHANG_XEM !== -1 && (CHANG_XEM == null || !CHANG[CHANG_XEM] || !moChang(CHANG_XEM))) CHANG_XEM = (can != null) ? can : -1;
   hop.appendChild(veThanhChang());
 
   var cua = changCuaKhoi(), dauCho = true;

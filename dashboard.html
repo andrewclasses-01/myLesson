@@ -7878,6 +7878,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     hqVeDauGiua();
     $('#bmThan').innerHTML = '<div class="hq-tabs" id="hqTabs">' + hqTabsRuot() + '</div>' +
       '<div class="hq-than" id="hqThan">' + hqVeTab() + '</div>';
+    if (window.SaoXh) SaoXh.sauVe();   // v1.337.0 huy hiệu sao đã thưởng/phạt ở bài này
     hqVuaKhung();
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(hqVuaKhung);   // đo lại khi font web tải xong
   }
@@ -7888,6 +7889,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (HQ.tab === 'nop' && !hqPhamVi().ws.length) HQ.tab = 'bt';   // chặng đang xem không có sheet ⇒ về tab BÀI TẬP
     var tb = $('#hqTabs'); if (tb) tb.innerHTML = hqTabsRuot();
     var th = $('#hqThan'); if (th) { var cuon = th.scrollTop; th.innerHTML = hqVeTab(); th.scrollTop = cuon; }
+    if (window.SaoXh) SaoXh.sauVe();   // v1.337.0
     hqVuaKhung();
     // ⭐ v1.141.0 — chuyển cảnh CHỈ khi thầy thao tác (đổi tab / đổi chặng); dữ liệu về dần thì vẽ lại tĩnh, khỏi nhấp nháy
     if (HQ.hieu) { HQ.hieu = false; hqNhay(th, 'hq-vao'); }
@@ -8066,6 +8068,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     return tab('xh', 'Xếp hạng', null) + tab('bt', 'Bài tập', soAct ? soAct + ' act' : null) + tab('tl', 'Thời lượng', null) +
       tab('gd', 'Gần đây', null) + tab('hs', 'Hiệu suất', null) +   // v1.154.0 — thầy chốt mẫu v42 (A · B)
       (ws.length ? tab('nop', 'Bài nộp', nopDu ? '✓' : null, true) : '') +
+      // ⭐ v1.337.0 (thầy chốt mẫu v4) — tab XẾP HẠNG: nút ⭐ thưởng/phạt CẢ LỚP ngay trước ⚙ (js/sao-xh.js).
+      (HQ.tab === 'xh' && window.SaoXh && HQ.t && !HQ.t.laSp ? SaoXh.nut() : '') +
       // ⭐ v1.132.1 — nút ⚙ Cài đặt bài (chỉ icon) đứng CUỐI dải tab (thầy chốt), menu vẫn qua `data-rail-caidat`.
       '<button type="button" class="hq-cd" data-rail-caidat="' + A.chuAnToan(HQ.b.id) + '" title="Cài đặt bài · đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_HQ + '</button>';
   }
@@ -8885,6 +8889,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     var hs = hqHocSinh(t).filter(function (h) { return !kt[A.khoaTen(h.ten)]; });
     if (!hs.length) return '<div class="bm-em-trong">Chưa có em nào</div>';
     var lopGoc = hqLopGoc(t), slug = avSlugLop(lopGoc);
+    // ⭐ v1.337.0 — ngữ cảnh THƯỞNG/PHẠT SAO trong bảng xếp hạng (js/sao-xh.js: giữ tên / nút ⭐ cả lớp)
+    window.__hqXh = { baiId: HQ.b.id, maBai: A.maLesson(HQ.b) || A.tenBai(HQ.b) || '', maLop: t.maLop, lopGoc: lopGoc,
+      hs: hs.map(function (h) { return { ten: h.ten, ma: h.ma }; }) };
     var soA = pv.acts.length, cot = soA <= 5 ? soA : Math.ceil(soA / 2);   // v1.325.0 (thầy duyệt mẫu v44, 13/10) — ≤ 5 act MỘT hàng, từ 6 act mới 2 hàng
     var trai = soA ? pv.acts.map(function (a) { return hqBxhAct(a, hs, t.acts.indexOf(a)); }).join('') : '<div class="bm-em-trong">Phạm vi này không có game AWord.</div>';
     // ⭐ thiết kế K10 8 (mẫu v43 A) — lesson CHƯƠNG: đủ MỌI BƯỚC theo thứ tự, một hàng; bước không điểm = bảng hẹp (⅔ bề ngang).
@@ -9398,6 +9405,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 
   // ---- ⭐⭐ v1.137.0 — VỪA KHUNG: THỜI LƯỢNG + BÀI NỘP tự tính cỡ cho cả lớp nằm gọn, không cuộn ----
   // Gọi sau mỗi lượt vẽ + khi đổi cỡ cửa sổ (ResizeObserver trên #bmThan) + khi font web tải xong.
+  window.__hqVuaKhung = function () { hqVuaKhung(); };   // v1.337.0 — js/sao-xh.js đo lại khi huy hiệu sao về sau
   function hqVuaKhung() {
     var than = $('#hqThan'); if (!than || !HQ.id || BM_ID !== HQ.id) return;
     than.classList.toggle('vua-tl2', HQ.tab === 'tl');
@@ -16047,7 +16055,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/tn-pop-ds.js?v=8"></script>
 <script src="js/tn-khung.js?v=1"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=33"></script>
-<script src="js/sao-dash.js?v=5"></script>   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
+<script src="js/sao-dash.js?v=5"></script>
+<script src="js/sao-xh.js?v=1"></script>   <!-- v1.337.0 thưởng/phạt sao ngay trong tab XẾP HẠNG (giữ tên · ⭐ cả lớp) -->   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
 <script src="js/ktdv-bc.js?v=10"></script>   <!-- 03/10/2026 bản báo cáo phụ huynh KT ĐẦU VÀO (bản chép ở repo kiemtra) -->
 <script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=21"></script>

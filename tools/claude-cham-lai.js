@@ -30,6 +30,7 @@ const BASE = `https://firestore.googleapis.com/v1/projects/${PROJECT}/databases/
 const KHOA_UNG_VIEN = [path.join(process.env.LOCALAPPDATA || '', 'AndrewClasses', 'firebase-admin.json'),
   'E:\\LAP TRINH APP\\mySpeaking-data\\data\\firebase-admin.json', 'D:\\APP AND DATA\\mySpeaking-data\\data\\firebase-admin.json'];
 // BỘ ĐỀ (⛔ khớp js/ktdv-ql.js BO_DE): A = bộ cũ 3 phần (khoá câu BT1:7) · B = bộ lớp 3–4, 6 phần (khoá câu P1:7) — 11/10/2026
+// ⛔ THÊM BỘ ĐỀ MỚI ⇒ sửa ĐỦ 6 chỗ (14/10/2026 quên phien.js ⇒ em được phát bộ C kẹt mãi màn chờ): kiemtra js/bai.js BO_DE · kiemtra js/phien.js (lọc claim phat) · myLesson Web js/ktdv-ql.js BO_DE · myLesson Web tools/claude-cham-lai.js BO_DE · myLesson may-chu/functions/ktdv.js BO_DE (+ deploy) · may-chu/functions/xoa-ktdv-thu.js CODES. Rà bằng grep một mã bài bộ cũ (vd x98bsj) ở cả 3 repo.
 const BO_DE = {
   A: [{ ma: 'BT1', code: '5576de', ten: 'Tạo cụm số ít', n: 40 }, { ma: 'BT2', code: 'bc52sb', ten: 'Tạo cụm số nhiều', n: 20 }, { ma: 'BT3', code: 'khszvm', ten: 'Tạo câu', n: 50 }],
   B: [{ ma: 'P1', code: 'x98bsj', ten: 'Chọn từ đúng', n: 30, chon: true, chuan: 4.4 }, { ma: 'P2', code: 'xxdvu5', ten: 'Gõ từ tiếng Anh', n: 30, chuan: 12.6 },

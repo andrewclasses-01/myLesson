@@ -15,6 +15,7 @@
   var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
   var KHOA_LOP = '__KTDV__';
   // BỘ ĐỀ — bài giao AWord (Courses / KIEM TRA DAU VAO). ⛔ PHẢI khớp trang kiemtra `js/bai.js` BO_DE.
+  //   ⛔ THÊM BỘ ĐỀ MỚI ⇒ sửa ĐỦ 6 chỗ (14/10/2026 quên phien.js ⇒ em được phát bộ C kẹt mãi màn chờ): kiemtra js/bai.js BO_DE · kiemtra js/phien.js (lọc claim phat) · myLesson Web js/ktdv-ql.js BO_DE · myLesson Web tools/claude-cham-lai.js BO_DE · myLesson may-chu/functions/ktdv.js BO_DE (+ deploy) · may-chu/functions/xoa-ktdv-thu.js CODES. Rà bằng grep một mã bài bộ cũ (vd x98bsj) ở cả 3 repo.
   //   A = bộ cũ 3 phần (AWord Đợt 440) · B = bộ LỚP 3–4, 6 phần (AWord Đợt 498, 10/10/2026: giờ từng câu, Quiz, hình, phim).
   //   chuan = giây/câu TRUNG VỊ của lớp NỀN TẢNG 4 (bài về nhà lần đầu, đo 10/10/2026) — báo cáo so tốc độ em với mức này.
   //   ⭐ PHÁT BÀI (10/10/2026): em đăng nhập xong phải chờ thầy bấm PHÁT BÀI (qlKtdv.phat ⇒ claim phat). Hồ sơ: boDe + phat{bo,luc}.

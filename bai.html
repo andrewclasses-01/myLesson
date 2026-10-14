@@ -7609,7 +7609,7 @@ function veCacPhanStage(hop){
      sửa thoải mái ⇒ GỬI VÀO NHÓM LỚP (`AWChat.gui`, các bạn bị @ nhận thông báo qua js/nhac-tb.js). Tin > 300 ký tự (luật kho)
      ⇒ tự chia nhiều tin, chỉ cắt trước dấu "@".
    · Thầy chốt: nút nhắc 1 LẦN / GIỜ cho mỗi STAGE · mỗi act (nhớ trên máy em); nhắn tay trong nhóm không giới hạn.
-     Chỉ em đã xong mới thấy nút. Thầy / học sinh đặc biệt / "thầy vào như em" không có nút.
+     Chỉ em đã xong mới thấy nút. Thầy / học sinh đặc biệt không có nút; "thầy vào như em" thấy đủ nhưng nút GỬI không gửi (v1.332.1).
    ========================================================================== */
 var NHAC_CACH_MS = 60 * 60 * 1000;
 var IC_CHUONG_NHAC = '<svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
@@ -7631,7 +7631,8 @@ var MAU_NHAC_ACT = [
   '{T} cùng về đích {A} nào! Ai chưa hiểu câu nào cứ hỏi nhóm nha ✨',
   'Cố lên {T}! Xong {A} là cả lớp tiến gần STAGE mới rồi, cần giúp cứ nhắn nhóm nha 🚀'
 ];
-function duocNhac(){ return !LA_GV && !LA_DAC_BIET && !window.__thayVao && !!MA_HS && !!window.AWChat; }
+// v1.332.1 — thầy XEM NHƯ EM (`laThayVaoTd`) vẫn THẤY dòng chờ + nút + pop-up y như em; chỉ nút GỬI không gửi (xem `guiNhacBan`).
+function duocNhac(){ return !LA_GV && !LA_DAC_BIET && !!MA_HS && !!window.AWChat; }
 function laToi(t){ return A.khoaTen(t) === A.khoaTen(TOI); }
 // Bạn chưa xong STAGE `ci` (đã trừ em bị bỏ qua — `c.thieu` của xetChang) / chưa xong act `k` (trong số bạn chưa xong STAGE đó).
 function banChuaXongChang(ci){ var c = CHANG[ci]; return ((c && c.thieu) || []).filter(function(t){ return !laToi(t); }); }
@@ -7745,6 +7746,7 @@ function guiNhacBan(){
   if (!NHB) return;
   var chu = String($('#nhbTin').innerText || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').trim();
   if (!chu) { baoToast('Tin nhắn đang trống.'); return; }
+  if (laThayVaoTd()) { baoToast('Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).'); return; }   // v1.332.1
   var pv = NHB.pv, nut = $('#nhbGui'), tran = (window.AWChat && AWChat.TOI_DA_CHU) || 300;
   nut.disabled = true;
   var tin = chiaTinNhac(chu, tran), i = 0;

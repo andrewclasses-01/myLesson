@@ -7865,7 +7865,8 @@ tr.qm-hang-tam td{background:#fffbeb}
            sx: (giuNap && HQ.sx) ? HQ.sx : { cot: 'tong', giam: true },
            gd: (giuNap && HQ.gd) || '7', hsEm: giuNap ? HQ.hsEm : null, lop: lop, chiCt: !!chiCt };   // v1.154.0 — khoảng lọc GẦN ĐÂY · em đang xem hồ sơ HIỆU SUẤT   // v1.138.0 — cách xếp THỜI LƯỢNG giữ khi vẽ lại, mở bài khác thì về mặc định
     // ⭐ v1.132.0 — phạm vi mặc định = CHẶNG ĐANG MỞ (thầy chốt); bài không STAGE = cả bài.
-    if (HQ.chang == null || (HQ.chang !== 'all' && !(t.chang && t.chang[HQ.chang]))) HQ.chang = (t.stage && t.chang) ? A.changHien(t.chang) : 'all';
+    // ⭐ v1.338.0 (14/10/2026, thầy chốt) — mặc định = MỌI CHẶNG ĐÃ MỞ KHOÁ ('mo'); mở hết rồi ⇒ cả hành trình ('all').
+    if (HQ.chang == null || (HQ.chang !== 'all' && HQ.chang !== 'mo' && !(t.chang && t.chang[HQ.chang]))) HQ.chang = hqChangMacDinh(t);
     $('#bmHop').classList.add('hq');
     hqVeKhung();
     if (!chiCt) { $('#bmNen').classList.add('mo'); $('#bmHop').classList.add('mo'); }
@@ -7899,6 +7900,22 @@ tr.qm-hang-tam td{background:#fffbeb}
   /* ⭐ v1.137.0 — ĐỔI CHẶNG ĐANG XEM (bấm thanh chặng / bấm khối chặng; 'all' = cả hành trình).
      Tab BÀI TẬP: KHÔNG vẽ lại danh sách chặng — chỉ đổi class sáng/mờ + vẽ lại lưới em, để cú bấm thứ hai của
      một cú ĐÚP vẫn rơi đúng khối cũ (vẽ lại innerHTML giữa hai cú bấm là trình duyệt không bắn `dblclick`). */
+  // ⭐ v1.338.0 — 'mo' = các chặng ĐÃ MỞ (c.mo; mục không thuộc chặng luôn tính). Mở hết ⇒ 'all'.
+  function hqChangMacDinh(t) {
+    if (!(t.stage && t.chang)) return 'all';
+    return t.chang.every(function (c) { return !c.so || c.mo; }) ? 'all' : 'mo';
+  }
+  // Chặng thứ i có nằm trong phạm vi đang xem không (khi KHÔNG phải 'all').
+  function hqXemChang(i) {
+    if (HQ.chang === 'mo') { var c = HQ.t && HQ.t.chang && HQ.t.chang[i]; return !!(c && (c.mo || !c.so)); }
+    return HQ.chang === i;
+  }
+  // ⭐ v1.338.0 — bấm ĐƠN một chặng: chặng đó đang là chặng sáng DUY NHẤT ⇒ cả hành trình; còn lại ⇒ xem riêng chặng đó.
+  function hqBamChang(i) {
+    var t = HQ.t, chiMot = HQ.chang !== 'all' && hqXemChang(i) &&
+      (t.chang || []).filter(function (c, k) { return c.so && hqXemChang(k); }).length === 1;
+    hqDoiChang(chiMot ? 'all' : i);
+  }
   function hqDoiChang(i) {
     HQ.chang = i; HQ_KT = null; HQ.hieu = true;
     if (HQ.mucBq) { HQ.mucBq = null; if (HQ.tab === 'bt') return hqVeLai(); }   // v1.202.0 — đang xem riêng một dòng ⇒ đổi chặng là thoát
@@ -7908,7 +7925,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var tb = $('#hqTabs'); if (tb) tb.innerHTML = hqTabsRuot();
     dsc.classList.toggle('mot-chang', i !== 'all');
     Array.prototype.forEach.call(dsc.querySelectorAll('[data-hqkhoi]'), function (k) {
-      k.classList.toggle('xem', i !== 'all' && +k.getAttribute('data-hqkhoi') === i);
+      k.classList.toggle('xem', i !== 'all' && hqXemChang(+k.getAttribute('data-hqkhoi')));
     });
     var lu = $('#hqLuoiEm'); if (lu) lu.outerHTML = hqLuoiEm();
     var sang = dsc.querySelector('.hq-khoi.xem');
@@ -7956,6 +7973,14 @@ tr.qm-hang-tam td{background:#fffbeb}
   function hqPhamVi() {
     var b = HQ.b, t = HQ.t, tatCaWs = A.wsHienCuaThe(b, null);
     var laStage = !!(t.stage && t.chang);
+    if (laStage && HQ.chang === 'mo') {   // v1.338.0 — gộp mọi chặng đã mở
+      var cMo = t.chang.filter(function (c) { return c.mo || !c.so; }), maMo = {}, hanMo = {};
+      cMo.forEach(function (c) { (c.acts || []).forEach(function (a) { maMo[a.ma] = 1; }); var h = String(c.han || '').trim(); if (h) hanMo[h] = 1; });
+      var ngheMo = cMo.some(function (c) { return (c.muc || []).some(function (k) { return k.loai === 'audio' || k.loai === 'nghe'; }); });
+      return { acts: t.acts.filter(function (a) { return maMo[a.ma]; }),
+               ws: tatCaWs.filter(function (x) { var h = String(x.k.han || '').trim(); return h ? !!hanMo[h] : true; }),
+               nghe: ngheMo && coBaiNgheKh(b), chu: 'các chặng đã mở' };
+    }
     if (!laStage || HQ.chang === 'all' || !t.chang[HQ.chang]) {
       return { acts: t.acts, ws: tatCaWs, nghe: coBaiNgheKh(b), chu: laStage ? 'cả hành trình' : 'cả bài' };
     }
@@ -7995,7 +8020,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         nhan = 'HẠN CUỐI · S1→S' + coSo.length;
         chu = A.chuAnToan((cuoi && cuoi.hanHien) ? chuHanChangDb(cuoi.hanHien) : '—');
       } else {
-        var c = t.chang[HQ.chang];
+        var c = t.chang[HQ.chang === 'mo' ? A.changHien(t.chang) : HQ.chang];   // v1.338.0 'mo' ⇒ hạn chặng đang mở
         if (c && c.so) {
           nhan = 'HẠN STAGE ' + c.so;
           chu = A.chuAnToan(c.hanHien ? chuHanChangDb(c.hanHien) : '—');
@@ -8024,7 +8049,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       }).join('') : '';
       hop.setAttribute('data-id', b.id);
       hop.innerHTML = '<span class="bm-giua-ruot"><span id="hqHanO" style="display:contents">' + han + '</span>' +
-        (laStage ? '<span class="st-bar" id="hqThanhChang" title="Bấm một chặng = xem riêng chặng đó · Đúp = xem cả hành trình">' + khuc + '</span>' : '') + '</span>';
+        (laStage ? '<span class="st-bar" id="hqThanhChang" title="Bấm một chặng = xem riêng chặng đó · Bấm lại chặng đang chọn = cả hành trình">' + khuc + '</span>' : '') + '</span>';
       thanh = hop.querySelector('#hqThanhChang');
     }
     if (thanh) {
@@ -8033,7 +8058,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       Array.prototype.forEach.call(thanh.querySelectorAll('[data-hqchang]'), function (k) {
         var i2 = +k.getAttribute('data-hqchang'), c3 = t.chang[i2] || {};
         var lop2 = c3.tt === 'xong' ? 'xong' : c3.tt === 'dang' ? 'dang' : c3.tt === 'ket' ? 'ket' : c3.tt === 'cho' ? 'cho' : 'xa';
-        k.className = 'st-khuc ' + lop2 + (i2 === HQ.chang ? ' xem' : '');
+        k.className = 'st-khuc ' + lop2 + (HQ.chang !== 'all' && hqXemChang(i2) ? ' xem' : '');
         var tick = k.querySelector('.tick');
         if (c3.tt === 'xong' && !tick) k.insertAdjacentHTML('afterbegin', '<span class="tick">✓</span>');
         else if (c3.tt !== 'xong' && tick) tick.remove();
@@ -8558,7 +8583,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       var muc = (c.muc || c.acts || []).filter(laMuc);
       // worksheet CHƯA xếp chặng (không `han`) không thuộc chặng nào ⇒ ghi ở khối chặng ĐANG MỞ (y thẻ).
       if (i === A.changHien(t.chang)) khoi.forEach(function (k) { if (k.loai === 'ws' && k.ten && !String(k.han || '').trim()) muc = muc.concat([k]); });
-      return '<div class="hq-khoi' + lop + (mot && i === HQ.chang ? ' xem' : '') + '" data-hqkhoi="' + i + '" title="Bấm = xem riêng chặng này · Đúp = cả hành trình">' +
+      return '<div class="hq-khoi' + lop + (mot && hqXemChang(i) ? ' xem' : '') + '" data-hqkhoi="' + i + '" title="Bấm = xem riêng chặng này · Bấm lại = cả hành trình">' +
         '<div class="hq-khoi-dau"><span class="hq-xem-chip">ĐANG XEM</span><span class="hq-khoi-ten">' + nhan + '</span>' + han + ktChip + nut + '</div>' +
         muc.map(function (k) { return hqHangMuc(k, danhSo(k), c.so); }).join('') + '</div>';
     }).join('') + '</div>';
@@ -8707,7 +8732,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     // ⭐ v1.139.0 (thầy duyệt mẫu v18) — TÊN ĐỎ: bài STAGE, chặng xét (chặng đang xem; xem cả hành trình ⇒ chặng ĐANG MỞ) đã mở mà em
     // chưa đụng bài nào của chặng: mọi act của chặng 0 phút + không lượt nào, và (nếu chặng có bài nghe) 0 phút nghe. Video không tính
     // (video là của cả bài). Em đang được bỏ qua ở chặng đó không tô. Chưa đọc xong dữ liệu chặng ⇒ chưa tô (khỏi báo động giả).
-    var cXet = (t.stage && t.chang) ? t.chang[HQ.chang === 'all' ? A.changHien(t.chang) : HQ.chang] : null;
+    var cXet = (t.stage && t.chang) ? t.chang[(HQ.chang === 'all' || HQ.chang === 'mo') ? A.changHien(t.chang) : HQ.chang] : null;
     var moCX = !!(cXet && (cXet.mo || /^(dang|ket|xong)$/.test(cXet.tt || '')));
     var actCX = moCX ? (cXet.acts || []) : [];
     var ngheCX = moCX && (cXet.muc || []).some(function (k) { return k.loai === 'audio' || k.loai === 'nghe'; }) && coBaiNgheKh(b);
@@ -9364,7 +9389,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   function hqTabBaiNop() {
     var b = HQ.b, t = HQ.t, ws = hqPhamVi().ws;
-    if (!ws.length) return '<div class="bm-em-trong">' + ((t.stage && t.chang && HQ.chang !== 'all') ? 'Chặng này không có worksheet.' : 'Bài này không có worksheet.') + '</div>';
+    if (!ws.length) return '<div class="bm-em-trong">' + ((t.stage && t.chang && typeof HQ.chang === 'number') ? 'Chặng này không có worksheet.' : 'Bài này không có worksheet.') + '</div>';
     if (!(HQ.nopSheet < ws.length)) HQ.nopSheet = 0;
     var w = ws[HQ.nopSheet], n = w.soTrang, ds = HQ.nop[w.o];
     var tai = w.k.tep ? '<a class="nut nho" href="' + A.chuAnToan(w.k.tep) + '" target="_blank" rel="noopener">Tải PDF</a>' : '';
@@ -10232,7 +10257,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     clearTimeout(dongHqChiTiet.h);
     dongHqChiTiet.h = setTimeout(function () { n.classList.remove('mo', 'dang-dong'); HQ.ct = null; if (HQ.chiCt) { HQ.chiCt = false; dongBaiModal(); } }, 180);
   }
-  function dongBaiModal() {
+  function dongBaiModal(boQua) {
+    // ⭐ v1.338.0 — còn SAO TẠM chưa đưa vào ví ⇒ hỏi ĐƯA VÀO VÍ / HỦY BỎ trước (js/sao-xh.js gọi lại dongBaiModal(true))
+    if (boQua !== true && window.SaoXh && SaoXh.chanDong(function () { dongBaiModal(true); })) return;
     $('#bmNen').classList.remove('mo');
     $('#bmHop').classList.remove('mo');
     BM_ID = null;
@@ -12620,7 +12647,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (hqTl2) { var kTl = hqTl2.getAttribute('data-hqtl2'); HQ.sx = (HQ.sx && HQ.sx.cot === kTl) ? { cot: 'tong', giam: true } : { cot: kTl, giam: true }; hqVeLai(); return; }
       /* ⭐ v1.132.0 — bấm MỘT khúc thanh chặng ⇒ xem riêng chặng đó (đúp ⇒ cả hành trình, xem `dblclick` dưới). */
       var hqCh = e.target.closest('[data-hqchang]');
-      if (hqCh) { hqDoiChang(+hqCh.dataset.hqchang); return; }
+      if (hqCh) { hqBamChang(+hqCh.dataset.hqchang); return; }   // v1.338.0 bấm lại chặng đang chọn = cả hành trình
       /* ⭐ v1.137.0 — tab BÀI NỘP: đổi sheet. */
       var hqSh = e.target.closest('[data-hqsheet]');
       if (hqSh) { HQ.nopSheet = +hqSh.dataset.hqsheet; hqVeLai(); return; }
@@ -12724,7 +12751,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       }
       /* ⭐ v1.137.0 (thầy chốt mẫu v9) — BẤM MỘT KHỐI CHẶNG ở tab BÀI TẬP = xem riêng chặng đó (nút trong khối vẫn là nút). */
       var hqKh = e.target.closest('[data-hqkhoi]');
-      if (hqKh && !e.target.closest('button, a')) { hqDoiChang(+hqKh.getAttribute('data-hqkhoi')); return; }
+      if (hqKh && !e.target.closest('button, a')) { hqBamChang(+hqKh.getAttribute('data-hqkhoi')); return; }
 
       /* ⭐ v1.77.0 — BỎ QUA MỘT EM ở bài STAGE (có hỏi xác nhận, thầy chốt). */
       var bq = e.target.closest('[data-boqua]');
@@ -16056,7 +16083,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/tn-khung.js?v=1"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=33"></script>
 <script src="js/sao-dash.js?v=5"></script>
-<script src="js/sao-xh.js?v=1"></script>   <!-- v1.337.0 thưởng/phạt sao ngay trong tab XẾP HẠNG (giữ tên · ⭐ cả lớp) -->   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
+<script src="js/sao-xh.js?v=2"></script>   <!-- v1.337.0 thưởng/phạt sao ngay trong tab XẾP HẠNG (giữ tên · ⭐ cả lớp) -->   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
 <script src="js/ktdv-bc.js?v=10"></script>   <!-- 03/10/2026 bản báo cáo phụ huynh KT ĐẦU VÀO (bản chép ở repo kiemtra) -->
 <script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=21"></script>

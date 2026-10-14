@@ -123,3 +123,51 @@
 .sx-tia-nho.phat{background:#FCA5A5; box-shadow:0 0 8px #EF4444}
 .sx-toast{position:fixed; left:50%; bottom:28px; transform:translateX(-50%); z-index:160; background:#16232A; color:#fff; font:700 14px/1.4 var(--font); padding:12px 18px; border-radius:14px; max-width:90vw}
 @media (prefers-reduced-motion:reduce){ .sx-tia{animation:none} }
+
+/* ══ v1.338.0 (thầy chốt mẫu v5): SAO TẠM · nút VÍ · hộp hỏi · ảnh em nuốt sao ══ */
+.sx-hh.tam{background:#FFFBEB; color:#B7791F; box-shadow:none; outline:1.5px dashed #F5B71E; outline-offset:-1.5px}
+.sx-hh.tam svg{fill:#F5B71E}
+.sx-hh.tam.phat{background:#FEF2F2; color:#DC2626; outline-color:#EF4444}
+.sx-hh.tam.phat svg{fill:#EF4444}
+.hq-vi-sao{position:relative; width:34px; height:34px; flex:none; align-self:center; margin:0 0 4px 6px; border:0; border-radius:11px; cursor:pointer; display:grid; place-items:center;
+  background:linear-gradient(180deg,#D8F5E6,#9FE3C0); box-shadow:inset 0 0 0 1px #7FD3A9; transition:transform .2s cubic-bezier(.2,1.6,.4,1), box-shadow .2s}
+.hq-vi-sao svg{width:20px; height:20px; fill:none; stroke:#0E7C5A; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.hq-vi-sao:not(:disabled):hover{transform:scale(1.08)}
+.hq-vi-sao:not(:disabled){animation:sx-vi-tho 1.8s ease-in-out infinite}
+@keyframes sx-vi-tho{0%,100%{box-shadow:inset 0 0 0 1px #7FD3A9, 0 0 0 0 rgba(22,163,74,.35)}50%{box-shadow:inset 0 0 0 1px #34B37A, 0 0 0 6px rgba(22,163,74,0)}}
+.hq-vi-sao:disabled{background:#EEF2F1; box-shadow:inset 0 0 0 1px #DCE4E2; cursor:default}
+.hq-vi-sao:disabled svg{stroke:#A9B8B5}
+.sx-vi-dem{position:absolute; top:-6px; right:-7px; min-width:17px; height:17px; padding:0 4px; border-radius:99px; background:#F59E0B; color:#fff; font:800 10px/17px var(--font); box-shadow:0 0 0 2px #fff}
+.hq-vi-sao + .hq-cd{margin-left:6px}
+.sx-xn-nen{position:fixed; inset:0; z-index:140; background:rgba(22,35,42,.42); display:grid; place-items:center; padding:16px; animation:sx-xn-nen .2s ease}
+@keyframes sx-xn-nen{from{opacity:0}}
+.sx-xn{position:relative; width:min(460px,100%); max-height:86vh; display:flex; flex-direction:column; background:#fff; border-radius:22px; box-shadow:0 26px 64px rgba(22,35,42,.35); font-family:var(--font); color:var(--chu); animation:sx-mo .26s cubic-bezier(.22,.9,.3,1); overflow:hidden}
+.sx-xn-dau{display:flex; gap:12px; align-items:center; padding:20px 50px 12px 20px}
+.sx-xn-ic{width:46px; height:46px; border-radius:14px; display:grid; place-items:center; flex:none; background:linear-gradient(180deg,#D8F5E6,#9FE3C0)}
+.sx-xn-ic svg{width:26px; height:26px; fill:none; stroke:#0E7C5A; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.sx-xn-ic.canh{background:linear-gradient(180deg,#FFF3C4,#FFD45C)}
+.sx-xn-ic.canh svg{fill:#F5A800; stroke:none}
+.sx-xn-dau b{display:block; font-size:18px; font-weight:800}
+.sx-xn-dau small{display:block; margin-top:2px; font-size:12.5px; font-weight:700; color:var(--mo)}
+.sx-xn-x{position:absolute; top:14px; right:14px; border:0; background:#F1F5F4; width:30px; height:30px; border-radius:50%; cursor:pointer; color:var(--mo)}
+.sx-xn-tong{display:flex; gap:8px; padding:0 20px 10px}
+.sx-xn-tong span{flex:1; text-align:center; border-radius:12px; padding:10px 6px; font:800 20px/1 var(--font)}
+.sx-xn-tong span small{display:block; margin-top:5px; font-size:10.5px; letter-spacing:.06em; font-weight:800}
+.sx-xn-tong .la{background:#FFF6DC; color:#B7791F} .sx-xn-tong .do{background:#FEF2F2; color:#DC2626} .sx-xn-tong .em{background:#F1F5F4}
+.sx-xn-ds{overflow:auto; padding:2px 20px 4px; min-height:0}
+.sx-xn-dong{display:grid; grid-template-columns:30px minmax(0,1fr) auto; gap:10px; align-items:center; padding:6px 0; border-bottom:1px solid #EEF3F2; font:700 13px/1.2 var(--font)}
+.sx-xn-dong .bm-em-av{--em-d:30px; width:30px; height:30px; font-size:11px}
+.sx-xn-dong .ly{display:block; font-size:10.5px; color:var(--nhat); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px}
+.sx-xn-dong .so{display:flex; gap:4px}
+.sx-xn-chu{padding:12px 20px 0; font:700 12.5px/1.5 var(--font); color:var(--mo)}
+.sx-xn .sx-loi{margin:10px 20px 0}
+.sx-xn-nut{display:flex; gap:10px; padding:16px 20px 20px}
+.sx-xn-nut button{flex:1; border:0; border-radius:14px; padding:13px 0; font:800 13.5px/1 var(--font); letter-spacing:.06em; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px}
+.sx-xn-nut .phu{background:#F1F5F4; color:var(--mo)}
+.sx-xn-nut .bo{background:#fff; color:#DC2626; box-shadow:inset 0 0 0 1.5px #F3B4B4}
+.sx-xn-nut .chinh{color:#fff; background:linear-gradient(180deg,#22C17A,#0E8F5A); box-shadow:0 6px 16px rgba(14,143,90,.3)}
+.sx-xn-nut .chinh:disabled{opacity:.7; cursor:default}
+.sx-xn-nut .chinh svg{width:18px; height:18px; fill:none; stroke:#fff; stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.sx-av-nuot{animation:sx-av-nuot .7s cubic-bezier(.2,1.5,.4,1)}
+@keyframes sx-av-nuot{0%{transform:scale(1)}30%{transform:scale(1.28) rotate(-6deg); box-shadow:0 0 0 3px #FFD45C, 0 0 18px 6px rgba(255,200,40,.75)}60%{transform:scale(.92) rotate(3deg)}100%{transform:scale(1)}}
+.sx-toast.la{background:#0E7C5A}

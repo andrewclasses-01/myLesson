@@ -8,9 +8,11 @@
      Thả sớm / bấm đúp = như cũ (đúp mở chi tiết em `data-hq-em`).
    · Nút ⭐ CẢ LỚP (dải tab, ngay trước ⚙) ⇒ pop-up dưới nút: cả lớp đủ bài ⇒ mặc định AWARD, có em thiếu ⇒ PUNISHMENT
      (phạt: Cả lớp / Chỉ em thiếu bài). Mặc định 1 sao.
-   · Chốt ⇒ tạo PHIẾU `saoDot` (nguon 'dashboard', bai = id thẻ) — hàm máy chủ `apDotSao` cộng/trừ ví + báo em (chỉ khi cộng).
-     Sao chói giữa màn rồi bay vào avatar cột TỔNG THỜI GIAN. Huy hiệu VÀNG (+) / ĐỎ (−) cạnh tên = đã thưởng/phạt ở bài này
-     (đọc lại các phiếu `bai == id thẻ`), hiện RIÊNG không bù trừ.
+   · v1.338.0 (thầy chốt mẫu v5): chốt trong pop-up = SAO TẠM (chỉ trong máy, huy hiệu VIỀN ĐỨT) — sao chói giữa màn rồi bay vào
+     avatar cột TỔNG THỜI GIAN. Nút VÍ (cạnh ⭐, trước ⚙) ⇒ hỏi lại ⇒ ghi PHIẾU `saoDot` thật (nguon dashboard, bai = id thẻ;
+     1 phiếu thưởng + 1 phiếu phạt) ⇒ hàm `apDotSao` cộng/trừ ví ⇒ ảnh em NUỐT sao tạm, huy hiệu thành ĐẶC (= đã vào ví).
+     Đóng pop-up chi tiết khi còn sao tạm ⇒ `chanDong` hỏi ĐƯA VÀO VÍ / HỦY BỎ. Vàng (+) / đỏ (−) riêng, không bù trừ.
+
 
    Dashboard đưa ngữ cảnh qua `window.__hqXh` (hqTabXepHang) và gọi `SaoXh.sauVe()` mỗi lần vẽ tab; số liệu bảng
    (thứ hạng, ai đủ bài) đọc thẳng từ DOM vừa vẽ ⇒ luôn khớp đúng cái thầy đang nhìn.
@@ -30,7 +32,7 @@
 
   (function gaCss() {
     if (document.getElementById('sx-css')) return;
-    var l = document.createElement('link'); l.id = 'sx-css'; l.rel = 'stylesheet'; l.href = 'css/sao-xh.css?v=1';
+    var l = document.createElement('link'); l.id = 'sx-css'; l.rel = 'stylesheet'; l.href = 'css/sao-xh.css?v=2';
     document.head.appendChild(l);
     var d = document.createElement('div');
     d.innerHTML = '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>' +
@@ -40,7 +42,7 @@
   })();
 
   // ── kho: số HS (hsSo) · ví (saoTong) · lý do nhanh (saoCaiDat) · phiếu của bài đang mở ───────────────────────────
-  var K = { maSo: null, vi: {}, ly: null, napLuc: 0, hua: null, dot: {}, dotHua: {} };
+  var K = { maSo: null, vi: {}, ly: null, napLuc: 0, hua: null, dot: {}, dotHua: {}, tam: {} };   // v1.338.0 tam = SAO TẠM { baiId: { số: [{n, ly, ten}] } }
   function napChung(ep) {
     if (K.hua && !ep && Date.now() - K.napLuc < 5 * 60e3) return K.hua;
     K.napLuc = Date.now();
@@ -156,28 +158,47 @@
   }
 
   // ── huy hiệu cạnh tên (cột TỔNG THỜI GIAN) ──
-  function hhHtml(ds) {
-    if (!ds || !ds.length) return '';
-    var t = ds.filter(function (x) { return x.n > 0; }), p = ds.filter(function (x) { return x.n < 0; });
+  // v1.338.0 — ĐÃ VÀO VÍ = huy hiệu ĐẶC (`vi`, từ phiếu saoDot) · SAO TẠM = viền đứt (`tam`, chỉ trong máy, chờ nút VÍ).
+  // Vàng (+) / đỏ (−) riêng, không bù trừ.
+  function hhHtml(daVi, tam) {
     var sum = function (a) { return a.reduce(function (s, x) { return s + x.n; }, 0); };
-    var tit = function (a) { return esc(a.map(function (x) { return (x.n > 0 ? '+' : '') + x.n + ' · ' + x.ly; }).join('\n')); };
-    return (t.length ? '<i class="sx-hh" title="' + tit(t) + '">+' + sum(t) + SAO + '</i>' : '') +
-      (p.length ? '<i class="sx-hh phat" title="' + tit(p) + '">' + sum(p) + SAO + '</i>' : '');
+    var tit = function (a, chu) { return esc(chu + '\n' + a.map(function (x) { return (x.n > 0 ? '+' : '') + x.n + ' · ' + x.ly; }).join('\n')); };
+    var chip = function (a, cls, chu) { return a.length ? '<i class="sx-hh ' + cls + '" title="' + tit(a, chu) + '">' + (sum(a) > 0 ? '+' : '') + sum(a) + SAO + '</i>' : ''; };
+    var duong = function (a) { return (a || []).filter(function (x) { return x.n > 0; }); }, am = function (a) { return (a || []).filter(function (x) { return x.n < 0; }); };
+    return chip(duong(daVi), 'vi', 'ĐÃ VÀO VÍ') + chip(am(daVi), 'vi phat', 'ĐÃ TRỪ KHỎI VÍ') +
+      chip(duong(tam), 'tam', 'SAO TẠM — chưa vào ví') + chip(am(tam), 'tam phat', 'PHẠT TẠM — chưa trừ ví');
   }
+  function tamCua(baiId) { return K.tam[baiId] || (K.tam[baiId] = {}); }
   function veHuyHieu(moi) {
-    var c = ctx(), m = c && K.dot[c.baiId]; if (!m) return false;
-    var doi = false;
+    var c = ctx(); if (!c) return false;
+    var m = K.dot[c.baiId] || {}, tm = K.tam[c.baiId] || {}, doi = false;
     [].forEach.call(document.querySelectorAll('#hqXh .bd-dong'), function (r) {
       var t = r.querySelector('.ten'); if (!t) return;
       var cu = t.querySelectorAll('.sx-hh'); [].forEach.call(cu, function (x) { x.remove(); });
-      var so = soCua(r.getAttribute('data-hq-em')), h = so ? hhHtml(m[so]) : '';
-      if (h) { t.insertAdjacentHTML('beforeend', h); doi = true; if (moi && moi[so]) [].forEach.call(t.querySelectorAll('.sx-hh'), function (x) { x.classList.add('moi'); }); }
+      var so = soCua(r.getAttribute('data-hq-em')), h = so ? hhHtml(m[so], tm[so]) : '';
+      if (h) { t.insertAdjacentHTML('beforeend', h); doi = true; if (moi && moi[so]) [].forEach.call(t.querySelectorAll(moi[so] === 'vi' ? '.sx-hh.vi' : '.sx-hh.tam'), function (x) { x.classList.add('moi'); }); }
       else if (cu.length) doi = true;
     });
+    capNhatVi();
     return doi;
+  }
+  // ── SAO TẠM của bài đang mở: [{ so, ten, cong, tru, ds:[{n, ly}] }] ──
+  function dsTam(baiId) {
+    var tm = K.tam[baiId] || {};
+    return Object.keys(tm).filter(function (so) { return tm[so].length; }).map(function (so) {
+      var a = tm[so];
+      return { so: so, ten: a[0].ten, ds: a, cong: a.filter(function (x) { return x.n > 0; }).reduce(function (s, x) { return s + x.n; }, 0),
+        tru: a.filter(function (x) { return x.n < 0; }).reduce(function (s, x) { return s + x.n; }, 0) };
+    });
+  }
+  function capNhatVi() {
+    var n = document.getElementById('hqViSao'), c = ctx(); if (!n) return;
+    var so = c ? dsTam(c.baiId).length : 0, d = n.querySelector('.sx-vi-dem');
+    n.disabled = !so; d.hidden = !so; d.textContent = so;
   }
   // Dashboard gọi sau mỗi lần vẽ tab (trước khi đo khung). Huy hiệu về sau ⇒ đo lại khung (`__hqVuaKhung`).
   function sauVe() {
+    capNhatVi();
     var c = ctx(); if (!c || !document.getElementById('hqXh')) return;
     veHuyHieu();
     if (!K.dot[c.baiId] || !K.maSo) {
@@ -252,13 +273,13 @@
     row.classList.add('sx-chon');
     o.khiDong = function () { var r = hangHien(row, ten); if (r) r.classList.remove('sx-chon'); row.classList.remove('sx-chon'); };
     function ve() {
-      var so = soCua(ten), vi = so ? (Number((K.vi[so] || {}).s) || 0) : null, da = (so && K.dot[c.baiId] && K.dot[c.baiId][so]) || [];
+      var so = soCua(ten), vi = so ? (Number((K.vi[so] || {}).s) || 0) : null, da = ((so && K.dot[c.baiId] && K.dot[c.baiId][so]) || []).concat(((so && K.tam[c.baiId] && K.tam[c.baiId][so]) || []).map(function (x) { return { n: x.n, ly: x.ly, tam: 1 }; }));
       o.el.className = 'sx-tp em' + (st.kieu === 'phat' ? ' phat' : '');
       o.el.innerHTML =
         '<div class="sx-dau">' + avHtml(ten) + '<div class="t"><b>' + esc(ten) + '</b><small>' + (so ? 'Ví đang có <i>⭐ ' + vi + '</i> · ' : (K.maSo ? '<span style="color:#DC2626">chưa có số HS</span> · ' : '')) + esc(c.lopGoc || '') + '</small></div><button class="sx-x" type="button" title="Đóng">✕</button></div>' +
         '<div class="sx-tab"><span class="nen"></span><button type="button" data-k="thuong">AWARD</button><button type="button" data-k="phat">PUNISHMENT</button></div>' +
         phanChung(st) +
-        (da.length ? '<div class="sx-da' + (da.some(function (x) { return x.ly === st.lyHien; }) ? ' do' : '') + '">Ở bài này đã ' + da.map(function (x) { return (x.n > 0 ? 'thưởng +' : 'phạt ') + x.n + ' (' + esc(String(x.ly).split(' / ')[0]) + ')'; }).join(', ') + '</div>' : '') +
+        (da.length ? '<div class="sx-da' + (da.some(function (x) { return x.ly === st.lyHien; }) ? ' do' : '') + '">Ở bài này đã ' + da.map(function (x) { return (x.n > 0 ? 'thưởng +' : 'phạt ') + x.n + ' (' + esc(String(x.ly).split(' / ')[0]) + ')' + (x.tam ? ' — tạm' : ''); }).join(', ') + '</div>' : '') +
         nutOk(st, null);
       ganChung(st, ve);
       o.el.querySelector('.sx-ok').onclick = function () {
@@ -325,29 +346,133 @@
     if (!K.maSo) napChung().then(function () { if (MO === o) ve(); })['catch'](function () { if (MO === o) baoLoi(o.el, 'Chưa đọc được kho sao — cần phiên thầy (🔐).'); });
   }
 
-  // ── GHI PHIẾU + màn sao ──
+  // ── v1.338.0 (thầy chốt mẫu v5): thưởng/phạt = SAO TẠM (chỉ trong máy), CHƯA ghi kho. Nút VÍ mới ghi phiếu thật. ──
   function ghiVaBay(ds, n, ly, laLop, soThieuSo) {
-    var c = ctx();
-    var phieu = { nguon: 'dashboard', lop: c.maLop || '', ngay: ngayVN(), bai: c.baiId || '', maBai: c.maBai || '',
-      nhom: n > 0 ? 'Thầy Andrew thưởng' : 'Thầy Andrew phạt', ai: 'Thầy Andrew',
-      dong: ds.map(function (x) { return { so: x.so, n: n, viec: ly, app: 'dashboard' }; }), tao: Date.now() };
-    var ghi = kho().then(function (f) { return f.fs.addDoc(f.fs.collection(f.db, 'saoDot'), phieu); });
-    // ghi ngay vào bộ nhớ để huy hiệu hiện liền khi sao bay tới (máy chủ áp ví sau vài giây)
-    var m = K.dot[c.baiId] = K.dot[c.baiId] || {}, moi = {};
-    ds.forEach(function (x) { (m[x.so] = m[x.so] || []).push({ n: n, ly: ly, tao: phieu.tao }); moi[x.so] = 1; var v = K.vi[x.so] = K.vi[x.so] || { s: 0 }; v.s = Math.max(0, (Number(v.s) || 0) + n); });
+    var c = ctx(), tm = tamCua(c.baiId), moi = {}, luc = Date.now();
+    ds.forEach(function (x) { (tm[x.so] = tm[x.so] || []).push({ n: n, ly: ly, ten: x.ten, tao: luc }); moi[x.so] = 'tam'; });
+    capNhatVi();
+    if (soThieuSo) toast(soThieuSo + ' em chưa có số học sinh nên không có ví để thưởng.');
     bayMan(ds.map(function (x) { return x.ten; }), n, ly, laLop, function () {
       if (veHuyHieu(moi) && window.__hqVuaKhung) window.__hqVuaKhung();
     });
-    ghi.then(function () {
-      if (soThieuSo) toast(soThieuSo + ' em chưa có số học sinh nên chưa ghi được sao.');
-      setTimeout(function () { napDot(c.baiId, true).then(function () { if (ctx() && ctx().baiId === c.baiId) veHuyHieu(); }); napChung(true)['catch'](function () {}); }, 6000);
-    })['catch'](function (e) {
-      ds.forEach(function (x) { var a = m[x.so] || []; for (var i = a.length - 1; i >= 0; i--) if (a[i].tao === phieu.tao) a.splice(i, 1); });
-      veHuyHieu();
-      var s = String((e && (e.code || e.message)) || e);
-      toast(s.indexOf('permission') >= 0 ? 'CHƯA GHI được sao — cần phiên thầy (🔐) / kiểm luật kho sao.' : 'CHƯA GHI được sao: ' + s.slice(0, 80));
+  }
+
+  // ── NÚT VÍ: hỏi lại ⇒ ghi phiếu `saoDot` thật (thưởng 1 phiếu, phạt 1 phiếu) ⇒ ảnh em NUỐT các sao tạm ──
+  var VI_IC = '<svg viewBox="0 0 24 24"><path d="M4 8.5V7a2.5 2.5 0 0 1 2.5-2.5H17a1.5 1.5 0 0 1 1.5 1.5v2.5"/><rect x="3" y="8.5" width="18" height="11.5" rx="2.6"/><path d="M21 12.5h-4.2a1.8 1.8 0 0 0 0 3.6H21"/><circle cx="16.9" cy="14.3" r=".6"/></svg>';
+  function hopHoi(html, cls) {
+    var nen = document.createElement('div'); nen.className = 'sx-xn-nen';
+    nen.innerHTML = '<div class="sx-xn ' + (cls || '') + '">' + html + '</div>'; document.body.appendChild(nen);
+    var phim = function (e) { if (e.key === 'Escape') { e.stopPropagation(); dong(); } };
+    var dong = function () { nen.remove(); document.removeEventListener('keydown', phim, true); };
+    document.addEventListener('keydown', phim, true);
+    nen.addEventListener('click', function (e) { if (e.target === nen) dong(); });
+    nen.querySelector('.sx-xn-x').onclick = dong;
+    return { el: nen, dong: dong };
+  }
+  function bangTam(ds) {
+    var cong = ds.reduce(function (s, x) { return s + x.cong; }, 0), tru = ds.reduce(function (s, x) { return s + x.tru; }, 0);
+    var chip = function (n, cls) { return n ? '<i class="sx-hh ' + cls + '">' + (n > 0 ? '+' : '') + n + SAO + '</i>' : ''; };
+    return '<div class="sx-xn-tong"><span class="em">' + ds.length + '<small>HỌC SINH</small></span><span class="la">' + (cong ? '+' + cong : '0') + '<small>SAO THƯỞNG</small></span><span class="do">' + (tru || '0') + '<small>SAO PHẠT</small></span></div>' +
+      '<div class="sx-xn-ds">' + ds.map(function (x) {
+        return '<div class="sx-xn-dong">' + avHtml(x.ten) + '<span>' + esc(x.ten) + '<span class="ly">' + esc(x.ds.map(function (d) { return String(d.ly).split(' / ')[0]; }).join(' · ')) + '</span></span><span class="so">' + chip(x.cong, 'tam') + chip(x.tru, 'tam phat') + '</span></div>';
+      }).join('') + '</div>';
+  }
+  // Ghi phiếu thật cho mọi sao tạm của bài `baiId`. Trả Promise (lỗi ⇒ sao tạm GIỮ NGUYÊN).
+  function dayVaoVi(c, ds) {
+    var dong = function (laCong) {
+      var ra = [];
+      ds.forEach(function (x) { x.ds.forEach(function (d) { if ((d.n > 0) === laCong) ra.push({ so: x.so, n: d.n, viec: d.ly, app: 'dashboard' }); }); });
+      return ra;
+    };
+    var luc = Date.now(), phieu = function (laCong, dg) {
+      return { nguon: 'dashboard', lop: c.maLop || '', ngay: ngayVN(), bai: c.baiId || '', maBai: c.maBai || '',
+        nhom: laCong ? 'Thầy Andrew thưởng' : 'Thầy Andrew phạt', ai: 'Thầy Andrew', dong: dg, tao: luc };
+    };
+    var cg = dong(true), tr = dong(false);
+    return kho().then(function (f) {
+      var viec = [];
+      for (var i = 0; i < cg.length; i += 300) viec.push(f.fs.addDoc(f.fs.collection(f.db, 'saoDot'), phieu(true, cg.slice(i, i + 300))));
+      for (var j = 0; j < tr.length; j += 300) viec.push(f.fs.addDoc(f.fs.collection(f.db, 'saoDot'), phieu(false, tr.slice(j, j + 300))));
+      return Promise.all(viec);
     });
   }
+  // chốt xong: sao tạm ⇒ "đã vào ví" (bộ nhớ) + ảnh em nuốt sao. `sauDo` chạy khi hiệu ứng xong.
+  function nuotSao(c, ds, sauDo) {
+    var tm = tamCua(c.baiId), m = K.dot[c.baiId] = K.dot[c.baiId] || {}, moi = {};
+    ds.forEach(function (x) {
+      x.ds.forEach(function (d) { (m[x.so] = m[x.so] || []).push({ n: d.n, ly: d.ly, tao: Date.now() }); var v = K.vi[x.so] = K.vi[x.so] || { s: 0 }; v.s = Math.max(0, (Number(v.s) || 0) + d.n); });
+      delete tm[x.so]; moi[x.so] = 'vi';
+    });
+    capNhatVi();
+    var cho = 0;
+    ds.forEach(function (x, j) {
+      var r = hangTong(x.ten), a = r && r.querySelector('.bm-em-av'), chips = r ? [].slice.call(r.querySelectorAll('.sx-hh.tam')) : [];
+      if (!a) return;
+      var b = a.getBoundingClientRect();
+      cho = Math.max(cho, j * 70 + 520 + Math.max(0, chips.length - 1) * 90);
+      setTimeout(function () {
+        chips.forEach(function (ch, k) {
+          var q = ch.getBoundingClientRect(), dx = b.left + b.width / 2 - (q.left + q.width / 2), dy = b.top + b.height / 2 - (q.top + q.height / 2);
+          ch.style.position = 'relative'; ch.style.zIndex = 5;
+          hoatAnh(ch, [{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + dx * .55 + 'px,' + (dy - 14) + 'px) scale(1.15)', opacity: 1, offset: .45 }, { transform: 'translate(' + dx + 'px,' + dy + 'px) scale(.15)', opacity: 0 }],
+            { duration: 560, delay: k * 90, easing: 'cubic-bezier(.5,0,.4,1)', fill: 'forwards' });
+        });
+        setTimeout(function () {
+          var a2 = (hangTong(x.ten) || {}).querySelector ? hangTong(x.ten).querySelector('.bm-em-av') : a;
+          if (a2) { a2.classList.remove('sx-av-nuot'); void a2.offsetWidth; a2.classList.add('sx-av-nuot'); }
+          toeTia(b.left + b.width / 2, b.top + b.height / 2, false);
+        }, 520 + Math.max(0, chips.length - 1) * 90);
+      }, j * 70);
+    });
+    setTimeout(function () {
+      if (veHuyHieu(moi) && window.__hqVuaKhung) window.__hqVuaKhung();
+      var tb = document.createElement('div'); tb.className = 'sx-toast la'; tb.textContent = '✓ Đã đưa sao vào ví ' + ds.length + ' học sinh';
+      document.body.appendChild(tb); setTimeout(function () { tb.remove(); }, 2800);
+      setTimeout(function () { napDot(c.baiId, true).then(function () { if (ctx() && ctx().baiId === c.baiId) veHuyHieu(); }); napChung(true)['catch'](function () {}); }, 6000);
+      if (sauDo) sauDo();
+    }, cho + 250);
+  }
+  // Hộp "Đưa sao vào ví?" (nút VÍ) hoặc "Còn sao chưa đưa vào ví" (đóng pop-up). `khiXong(daDua)` sau khi xử lý.
+  var DANG_DUA = false;
+  function hoiVi(kieuDong, khiXong) {
+    var c = ctx(), ds = c ? dsTam(c.baiId) : []; if (!ds.length || DANG_DUA) return false;
+    var dau = kieuDong
+      ? '<div class="sx-xn-dau"><span class="sx-xn-ic canh">' + SAO + '</span><div><b>Còn sao chưa đưa vào ví</b><small>' + ds.length + ' học sinh còn sao TẠM ở bài này. Thầy muốn làm gì?</small></div></div>'
+      : '<div class="sx-xn-dau"><span class="sx-xn-ic">' + VI_IC + '</span><div><b>Đưa sao vào ví?</b><small>' + esc(c.lopGoc || '') + ' · ' + esc(c.maBai || '') + ' — sao tạm sẽ thành sao THẬT trong ví từng em.</small></div></div>';
+    var h = hopHoi('<button class="sx-xn-x" type="button" title="' + (kieuDong ? 'Quay lại' : 'Đóng') + '">✕</button>' + dau + bangTam(ds) +
+      (kieuDong ? '' : '<div class="sx-xn-chu">Em được thưởng sẽ nhận thông báo "+N⭐". Sau khi vào ví, muốn sửa thì cộng/trừ lại ở hộp <b>Sao học sinh</b>.</div>') +
+      '<div class="sx-loi" hidden></div><div class="sx-xn-nut">' + (kieuDong ? '<button type="button" class="bo" data-bo>HỦY BỎ</button>' : '<button type="button" class="phu" data-x>HUỶ</button>') +
+      '<button type="button" class="chinh" data-ok>' + VI_IC + 'ĐƯA VÀO VÍ</button></div>', kieuDong ? 'canh' : '');
+    var x = h.el.querySelector('[data-x]'); if (x) x.onclick = h.dong;
+    var bo = h.el.querySelector('[data-bo]');
+    if (bo) bo.onclick = function () {
+      h.dong(); K.tam[c.baiId] = {}; veHuyHieu(); if (window.__hqVuaKhung) window.__hqVuaKhung();
+      if (khiXong) khiXong(false);
+    };
+    var ok = h.el.querySelector('[data-ok]');
+    ok.onclick = function () {
+      ok.disabled = true; DANG_DUA = true; ok.lastChild.textContent = 'ĐANG GHI…';
+      dayVaoVi(c, ds).then(function () {
+        DANG_DUA = false; h.dong();
+        nuotSao(c, ds, khiXong ? function () { khiXong(true); } : null);
+      })['catch'](function (e) {
+        DANG_DUA = false; ok.disabled = false; ok.lastChild.textContent = 'ĐƯA VÀO VÍ';
+        var s = String((e && (e.code || e.message)) || e);
+        baoLoi(h.el, s.indexOf('permission') >= 0 ? 'CHƯA GHI được — cần phiên thầy (🔐) / kiểm luật kho sao. Sao tạm vẫn giữ nguyên.' : 'CHƯA GHI được: ' + s.slice(0, 80) + ' — sao tạm vẫn giữ nguyên.');
+      });
+    };
+    return true;
+  }
+  // Dashboard gọi trong dongBaiModal: còn sao tạm ⇒ hỏi, trả true (chặn đóng); `dongThat` = đóng thật sau khi xử lý.
+  function chanDong(dongThat) {
+    if (MO) MO.dong();
+    return hoiVi(true, function () { dongThat(); });
+  }
+  // còn sao tạm mà tải lại / đóng trang ⇒ trình duyệt hỏi lại
+  window.addEventListener('beforeunload', function (e) {
+    var coTam = Object.keys(K.tam).some(function (id) { return dsTam(id).length; });
+    if (coTam) { e.preventDefault(); e.returnValue = ''; }
+  });
   function toast(chu) {
     var t = document.createElement('div'); t.className = 'sx-toast'; t.textContent = chu;
     document.body.appendChild(t); setTimeout(function () { t.remove(); }, 4200);
@@ -446,6 +571,8 @@
   document.addEventListener('dblclick', function (e) { if (Date.now() - vuaMo < 700) { e.stopPropagation(); e.preventDefault(); } }, true);
   // nút ⭐ cả lớp (dashboard vẽ lại dải tab thường xuyên ⇒ bắt bằng ủy quyền)
   document.addEventListener('click', function (e) {
+    var v = e.target.closest && e.target.closest('#hqViSao');
+    if (v) { e.stopPropagation(); if (!v.disabled) { if (MO) MO.dong(); hoiVi(false, null); } return; }
     var n = e.target.closest && e.target.closest('#hqSaoLop'); if (!n) return;
     e.stopPropagation();
     if (MO && MO.el.classList.contains('lop')) return MO.dong();
@@ -455,8 +582,11 @@
   window.SaoXh = {
     // nút ⭐ cho dải tab (dashboard chèn ngay TRƯỚC nút ⚙)
     nut: function () {
-      return '<button type="button" class="hq-sao-lop" id="hqSaoLop" title="Thưởng / phạt sao CẢ LỚP ở bài này">' + SAO + '</button>';
+      return '<button type="button" class="hq-sao-lop" id="hqSaoLop" title="Thưởng / phạt sao CẢ LỚP ở bài này">' + SAO + '</button>' +
+        // v1.338.0 — nút VÍ: đưa SAO TẠM vào ví thật (sauVe() cập nhật số + bật/tắt)
+        '<button type="button" class="hq-vi-sao" id="hqViSao" title="THƯỞNG VÀO VÍ — đưa sao tạm vào ví thật" disabled>' + VI_IC + '<span class="sx-vi-dem" hidden></span></button>';
     },
-    sauVe: sauVe
+    sauVe: sauVe,
+    chanDong: chanDong
   };
 })();

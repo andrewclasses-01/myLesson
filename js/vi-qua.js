@@ -378,7 +378,7 @@
      ============================================================ */
   function moVi(ctx) {
     var nen = dungKhung('vqVi');
-    datDau(nen, IC.saoDac, 'THÔNG TIN VÍ', ctx.ten + ' · Lớp ' + ctx.lop);
+    datDau(nen, IC.saoDac, 'THÔNG TIN VÍ', ctx.ten + (ctx.khoa ? ' · Khóa ' : ' · Lớp ') + ctx.lop);   // v1.336.0 trang khóa: "Khóa …"
     var than = nen.querySelector('.vq-than');
     than.innerHTML = '<div class="vq-trong">Đang mở ví sao của em…</div>';
     mo(nen);
@@ -437,13 +437,13 @@
         '<div class="vq-3o">' +
           '<div class="vq-o"><b>' + daKiem + '</b><span>ĐÃ KIẾM</span></div>' +
           '<div class="vq-o"><b>' + daTieu + '</b><span>ĐÃ TIÊU</span></div>' +
-          '<div class="vq-o"><b>' + (hang === '—' ? hang : '#' + hang) + '</b><span>HẠNG TRONG LỚP</span></div>' +
+          '<div class="vq-o"><b>' + (hang === '—' ? hang : '#' + hang) + '</b><span>HẠNG TRONG ' + (ctx.khoa ? 'KHÓA' : 'LỚP') + '</span></div>' +
         '</div>' +
       '</div>' +
       '<div class="vq-tab">' +
         '<button type="button" data-tab="ls" class="chon">Lịch sử ví</button>' +
         '<button type="button" data-tab="tang">Tặng sao cho bạn</button>' +
-        '<button type="button" data-tab="lop">Bảng sao của lớp</button>' +
+        '<button type="button" data-tab="lop">Bảng sao của ' + (ctx.khoa ? 'khóa' : 'lớp') + '</button>' +
       '</div>' +
       '<div class="vq-noi"></div>';
 

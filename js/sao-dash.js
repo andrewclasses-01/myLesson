@@ -8,9 +8,10 @@
      (nguon 'dashboard'); hàm máy chủ `apDotSao` cộng/trừ ví + đẩy thông báo (chỉ khi cộng). Trừ chỉ làm được ở ĐÂY.
    · LÝ DO NHANH (mỗi lý do có số sao mặc định) — mở bằng BẤM ĐÚP ngôi sao cạnh chữ "Sao học sinh" (thầy chốt:
      nút ẩn) hoặc chip "⚙ Sửa lý do" trong hộp cộng/trừ. Lưu `saoCaiDat/chung.lyDo`.
-   · Cột phải: Buổi chưa chốt (rổ tạm `saoBuoi` còn lượt — chốt ở myTeam) · Cài đặt (trần sao/em/buổi, báo em) ·
-     Ghi gần đây (phiếu 7 ngày).
-   Chi phí đọc mỗi lần mở: hsSo/soCai + saoTong/chung + lessonWeb/lop + saoCaiDat + phiếu 7 ngày + rổ còn lượt.
+   · Cột phải: Ghi gần đây (phiếu 7 ngày).
+   · v1.336.0 (14/10/2026, thầy chốt): BỎ hẳn mục "Buổi chưa chốt" (buổi học không nhất thiết có sao — không đọc rổ
+     `saoBuoi` nữa); CÀI ĐẶT (trần sao/em/buổi, báo em) dời vào pop-up bấm ĐÚP ngôi sao (chung với Lý do nhanh).
+   Chi phí đọc mỗi lần mở: hsSo/soCai + saoTong/chung + lessonWeb/lop + saoCaiDat + phiếu 7 ngày.
    ⛔ Dùng CHUNG cửa Firebase `AWChat.kho()` (đừng initializeApp lần nữa).
    ⛔ Ô số: cuộn chuột KHÔNG đổi số, Enter = nhận ô (luật "ô nhập số liệu an toàn" 07/10).
    ============================================================ */
@@ -33,7 +34,7 @@
   };
   var MAU = ['#0E7C6E', '#3E7BFA', '#E0575B', '#F0821E', '#18A957', '#8b5cf6', '#0891b2', '#db2777', '#65a30d', '#ca8a04'];
 
-  var S = { lop: [], so: {}, maSo: {}, vi: {}, tuan: {}, gan: [], buoi: [], cai: { tran: 30, baoHs: true, lyDo: null }, chon: '', tim: '', nap: null };
+  var S = { lop: [], so: {}, maSo: {}, vi: {}, tuan: {}, gan: [], cai: { tran: 30, baoHs: true, lyDo: null }, chon: '', tim: '', nap: null };
   function kho() { return window.AWChat && AWChat.kho ? AWChat.kho() : Promise.reject(new Error('khong-co-kho')); }
 
   // ── nạp dữ liệu ─────────────────────────────────────────────────────────────────────────
@@ -46,8 +47,7 @@
         fs.getDoc(fs.doc(db, 'saoTong', 'chung')),
         fs.getDoc(fs.doc(db, 'lessonWeb', 'lop')),
         fs.getDoc(fs.doc(db, 'saoCaiDat', 'chung'))['catch'](function () { return null; }),
-        fs.getDocs(fs.query(fs.collection(db, 'saoDot'), fs.where('tao', '>=', tuan)))['catch'](function () { return null; }),
-        fs.getDocs(fs.collection(db, 'saoBuoi'))['catch'](function () { return null; })
+        fs.getDocs(fs.query(fs.collection(db, 'saoDot'), fs.where('tao', '>=', tuan)))['catch'](function () { return null; })
       ]).then(function (r) {
         var so = (r[0] && r[0].exists() && r[0].data().nguoi) || {};
         S.so = so; S.maSo = {};
@@ -78,18 +78,6 @@
           (p.dong || []).forEach(function (l) { if (Number(l.n) > 0) S.tuan[l.so] = (S.tuan[l.so] || 0) + Number(l.n); });
         });
         S.gan.sort(function (a, b) { return (b.tao || 0) - (a.tao || 0); });
-        S.buoi = [];
-        if (r[5]) r[5].forEach(function (d) {
-          if (d.id === '_hienTai' || d.id.indexOf('ZTEST') === 0) return;
-          var b = d.data() || {};
-          var luot = (b.luot || []).filter(function (l) { return l.loai !== 'doiHinh'; });
-          if (!luot.length) return;
-          var tam = luot.reduce(function (a, l) { return a + (Number(l.n) || 0) * ((l.nguoi || []).length); }, 0);
-          var em = {}; luot.forEach(function (l) { (l.nguoi || []).forEach(function (n) { em[n] = 1; }); });
-          S.buoi.push({ id: d.id, lop: b.lop || d.id.split('_')[0], ngay: b.ngay || d.id.split('_').pop(), tam: tam,
-            soEm: Object.keys(em).length, app: Array.from(new Set(luot.map(function (l) { return l.app; }))), luot: luot });
-        });
-        S.buoi.sort(function (a, b) { return b.ngay < a.ngay ? -1 : 1; });
       });
     });
     return S.nap;
@@ -99,7 +87,7 @@
   function dungKhung() {
     if ($('#sdNen')) return $('#sdNen');
     var l = document.createElement('link');
-    l.rel = 'stylesheet'; l.href = 'css/sao-dash.css?v=2';
+    l.rel = 'stylesheet'; l.href = 'css/sao-dash.css?v=3';
     document.head.appendChild(l);
     var nen = document.createElement('div');
     nen.id = 'sdNen'; nen.className = 'sd-nen';
@@ -158,12 +146,12 @@
     var L = lopChon() || { em: [], ten: '' };
     var tongLop = 0, tuanLop = 0;
     L.em.forEach(function (e) { if (e.so && !e.thu) { tongLop += Number((S.vi[e.so] || {}).s) || 0; tuanLop += S.tuan[e.so] || 0; } });
-    var tamTong = S.buoi.reduce(function (a, b) { return a + b.tam; }, 0);
+    var coSao = L.em.filter(function (e) { return e.so && !e.thu && (Number((S.vi[e.so] || {}).s) || 0) > 0; }).length;
     $('.sd-giua', nen).innerHTML =
       '<div class="sd-so-tom">' +
         '<div class="sd-the"><div class="nh">Sao đang có · ' + (L.khoa ? 'khóa ' : 'lớp ') + esc(L.ten) + '</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + L.em.filter(function (e) { return !e.thu; }).length + ' học sinh</div></div>' +
         '<div class="sd-the"><div class="nh">Cộng 7 ngày qua</div><div class="gt xanh">+' + tuanLop + '</div><div class="phu">' + (L.khoa ? 'khóa ' : 'lớp ') + esc(L.ten) + '</div></div>' +
-        '<div class="sd-the"><div class="nh">Buổi chưa chốt</div><div class="gt vang">' + S.buoi.length + '</div><div class="phu">còn ' + tamTong + ' ⭐ trong rổ tạm</div></div>' +
+        '<div class="sd-the"><div class="nh">Học sinh có sao</div><div class="gt vang">' + coSao + '</div><div class="phu">/ ' + L.em.filter(function (e) { return !e.thu; }).length + ' em</div></div>' +
       '</div>' +
       '<div class="sd-the sd-bang-boc"><table class="sd-bang"><thead><tr><th>Học sinh</th><th>Số HS</th><th>Sao đang có</th><th>7 ngày</th>' +
         '<th class="giua">Cộng / trừ</th><th></th></tr></thead><tbody></tbody></table></div>';
@@ -210,17 +198,6 @@
   function vePhai() {
     var nen = $('#sdNen'); var p = $('.sd-phai', nen);
     p.innerHTML =
-      '<div class="sd-the"><h3>🧺 Buổi chưa chốt</h3>' + (S.buoi.length ? S.buoi.map(function (b) {
-        return '<div class="sd-buoi"><div class="l1"><span>' + esc(b.lop) + ' · ' + esc(b.ngay.slice(8, 10) + '/' + b.ngay.slice(5, 7)) + '</span><span>' + b.tam + ' ⭐</span></div>' +
-          '<div class="l2">' + b.soEm + ' em · từ ' + esc(b.app.join(', ')) + (b.ngay < ngayVN() ? ' · ⚠ quên chốt' : '') + '</div>' +
-          '<button class="sd-nut xam" type="button" data-buoi="' + esc(b.id) + '">Xem chi tiết</button></div>';
-      }).join('') : '<div class="sd-trong nho">Không còn buổi nào chưa chốt.</div>') +
-      '<div class="sd-ghi-chu">Chốt sao ở <b>myTeam</b> (nút ⭐↑ cuối giờ).</div></div>' +
-      '<div class="sd-the"><h3>⚙️ Cài đặt</h3>' +
-        '<div class="sd-cai">Trần sao mỗi em / buổi <input type="number" class="sd-tran" min="1" max="200" value="' + S.cai.tran + '"></div>' +
-        '<label class="sd-cai">Báo học sinh khi có sao mới <input type="checkbox" class="sd-bao"' + (S.cai.baoHs ? ' checked' : '') + '></label>' +
-        '<div class="sd-ghi-chu">Vượt trần ⇒ màn chốt ở myTeam báo, thầy xác nhận mới ghi.</div>' +
-        '<div class="sd-cai-tin"></div></div>' +
       '<div class="sd-the"><h3>🕘 Ghi gần đây</h3>' + (S.gan.length ? S.gan.slice(0, 10).map(function (d) {
         var n = (d.dong || []).reduce(function (a, l) { return a + (Number(l.n) || 0); }, 0);
         var em = (d.dong || []).length;
@@ -231,19 +208,8 @@
           : 'Chốt ' + esc(d.nhom || d.lop || '') + ' · <b class="la">+' + n + ' ⭐</b>';
         return '<div class="sd-nk"><b>' + gio + '</b> · ' + mo + (d.xong ? '' : ' <span class="cam">(máy chủ chưa áp)</span>') + '<br><small>' + esc(d.nguon || '') + '</small></div>';
       }).join('') : '<div class="sd-trong nho">Chưa có phiếu nào trong 7 ngày.</div>') + '</div>';
-    Array.prototype.forEach.call(p.querySelectorAll('[data-buoi]'), function (b) {
-      b.onclick = function () { moBuoi(b.getAttribute('data-buoi')); };
-    });
-    var tran = $('.sd-tran', p), bao = $('.sd-bao', p);
-    tran.addEventListener('wheel', function (e) { e.preventDefault(); tran.blur(); }, { passive: false });
-    tran.addEventListener('keydown', function (e) { if (e.key === 'Enter') tran.blur(); });
-    tran.addEventListener('change', function () {
-      var v = Math.max(1, Math.min(200, Math.round(Number(tran.value) || 30))); tran.value = v; luuCai({ tran: v })['catch'](function () { });
-    });
-    bao.addEventListener('change', function () { luuCai({ baoHs: bao.checked })['catch'](function () { }); });
   }
-  function luuCai(thay) {
-    var tin = $('#sdNen .sd-cai-tin');
+  function luuCai(thay, tin) {
     return kho().then(function (f) {
       return f.fs.setDoc(f.fs.doc(f.db, 'saoCaiDat', 'chung'), Object.assign({ capNhat: Date.now() }, thay), { merge: true });
     }).then(function () {
@@ -354,30 +320,24 @@
     })['catch'](function () { $('.sd-ls', h.el).innerHTML = '<div class="sd-trong">Chưa đọc được lịch sử.</div>'; });
   }
 
-  // ── chi tiết buổi chưa chốt ─────────────────────────────────────────────────────────────
-  function moBuoi(id) {
-    var b = null; S.buoi.forEach(function (x) { if (x.id === id) b = x; });
-    if (!b) return;
-    var h = hopNoi('<h3>🧺 Rổ sao tạm · ' + esc(b.lop) + ' · ' + esc(b.ngay) + '</h3><div class="sd-mo">' + b.tam + ' ⭐ · ' + b.soEm + ' em — chốt ở myTeam (nút ⭐↑).</div>' +
-      '<div class="sd-ls">' + b.luot.slice().sort(function (x, y) { return (y.luc || 0) - (x.luc || 0); }).map(function (l) {
-        var t = new Date(l.luc || 0);
-        var ai = l.loai === 'doi' ? 'TEAM ' + (Number(l.doi) + 1) + ' · ' + (l.nguoi || []).length + ' em' : (l.nguoi || []).map(tenTheoSo).join(', ');
-        return '<div class="sd-ls-dong"><span class="ng">' + ('0' + t.getHours()).slice(-2) + ':' + ('0' + t.getMinutes()).slice(-2) + '</span>' +
-          '<span class="vc"><b>' + esc(ai) + '</b><small>' + esc(l.lyDo || '') + ' · ' + esc(l.app || '') + '</small></span><span class="sv la">+' + l.n + '</span></div>';
-      }).join('') + '</div><div class="sd-cuoi"><button class="sd-nut xam" type="button" data-x>Đóng</button></div>', true);
-    $('[data-x]', h.el).onclick = h.dong;
-  }
-
   // ── LÝ DO NHANH ─────────────────────────────────────────────────────────────────────────
   function moLyDo() {
     var nhap = JSON.parse(JSON.stringify(S.cai.lyDo || LYDO_GOC));
-    var h = hopNoi('<h3>⚙️ Lý do nhanh</h3>' +
+    var h = hopNoi('<h3>⚙️ Cài đặt sao</h3>' +
+      '<div class="sd-cai-hop">' +
+        '<div class="sd-cai">Trần sao mỗi em / buổi <span class="sd-cai-phu">myTeam hỏi lại khi vượt</span><input type="number" class="sd-tran" min="1" max="200" value="' + S.cai.tran + '"></div>' +
+        '<label class="sd-cai">Báo học sinh khi có sao mới <span class="sd-cai-phu">thông báo đẩy "+N⭐ cho …"</span><input type="checkbox" class="sd-bao"' + (S.cai.baoHs ? ' checked' : '') + '></label>' +
+      '</div>' +
+      '<h4 class="sd-cai-tieu">Lý do nhanh</h4>' +
       '<div class="sd-mo">Các nút bấm sẵn trong hộp cộng/trừ sao. Mỗi lý do có <b>số sao mặc định</b> — bấm là điền luôn lý do + số sao (vẫn sửa tay được).</div>' +
       '<div class="sd-cl2"><div class="sd-cl-cot sd-cong" data-k="cong"></div><div class="sd-cl-cot sd-tru" data-k="tru"></div></div>' +
       '<div class="sd-ghi-chu">Lưu vào kho chung — dashboard ở máy nào cũng thấy cùng một bộ lý do.</div><div class="sd-tin"></div>' +
       '<div class="sd-cuoi gian"><button class="sd-nut xam" type="button" data-goc>Khôi phục mặc định</button>' +
       '<span><button class="sd-nut xam" type="button" data-x>Huỷ</button> <button class="sd-nut xanh" type="button" data-ok>Lưu</button></span></div>', true);
-    var el = h.el;
+    var el = h.el, tran = $('.sd-tran', el), bao = $('.sd-bao', el);
+    tran.addEventListener('wheel', function (e) { e.preventDefault(); tran.blur(); }, { passive: false });
+    tran.addEventListener('keydown', function (e) { if (e.key === 'Enter') tran.blur(); });
+    tran.addEventListener('change', function () { tran.value = Math.max(1, Math.min(200, Math.round(Number(tran.value) || 30))); });
     function ve() {
       Array.prototype.forEach.call(el.querySelectorAll('.sd-cl-cot'), function (c) {
         var k = c.getAttribute('data-k'), ds = nhap[k], dau = k === 'cong' ? '+' : '−';
@@ -411,7 +371,8 @@
           .filter(function (l) { return l.t; });
       });
       $('.sd-tin', el).textContent = 'Đang lưu…';
-      luuCai({ lyDo: nhap }).then(function () { S.cai.lyDo = nhap; h.dong(); })['catch'](function (e) {
+      var tranMoi = Math.max(1, Math.min(200, Math.round(Number(tran.value) || 30)));
+      luuCai({ lyDo: nhap, tran: tranMoi, baoHs: bao.checked }).then(function () { S.cai.lyDo = nhap; h.dong(); baoNho('Đã lưu cài đặt sao.'); })['catch'](function (e) {
         $('.sd-tin', el).textContent = 'Chưa lưu được: ' + String((e && (e.code || e.message)) || e).slice(0, 60);
       });
     };

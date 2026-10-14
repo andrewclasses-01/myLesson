@@ -869,7 +869,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=20"></script>
-<script src="js/vi-qua.js?v=9"></script>
+<script src="js/vi-qua.js?v=10"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
 function chuAnToan(x){ return window.AWC.chuAnToan(x); }
@@ -1942,7 +1942,7 @@ var veMenuChinh = AWVi.dungMenu({
   hop: $('#dsMenu'),
   oSao: document.querySelector('.vi-to'),   // v1.335.0 — HS khóa cũng có ví sao
   layCtx: function(){
-    return { lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, dsLop: (LOP_OBJ && LOP_OBJ.hocSinh) || [], thuLop: A.tenHocThu(LOP_OBJ), baoToast: baoToast };
+    return { khoa: true, lop: LOP, lopMa: LOP_DL, ten: TOI, ma: MA_HS, caLop: CA_LOP, dsLop: (LOP_OBJ && LOP_OBJ.hocSinh) || [], thuLop: A.tenHocThu(LOP_OBJ), baoToast: baoToast };
   }
 });
 function dongHet(){ document.body.classList.remove('mo-menu'); }
@@ -2132,6 +2132,6 @@ setInterval(nhipDongHo, 1000);
 <script src="js/tn-pop.js?v=12"></script>
 <script src="js/tn-pop-ds.js?v=8"></script>
 <script src="js/tn-khung.js?v=1"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
-<script src="js/nw-thanh.js?v=32"></script>
+<script src="js/nw-thanh.js?v=33"></script>
 </body>
 </html>

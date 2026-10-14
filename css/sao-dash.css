@@ -109,3 +109,10 @@
   .sd-tim{width:100%; margin-left:0}
 }
 @media (prefers-reduced-motion:reduce){ .sd-nen, .sd-hop{transition:none} }
+/* v1.336.0 — Cài đặt sao nằm trong pop-up bấm đúp ngôi sao (trên Lý do nhanh) */
+.sd-cai-hop{border:1px solid var(--vien); border-radius:14px; padding:6px 14px; margin:10px 0 16px; background:#FFFBF2}
+.sd-cai-hop .sd-cai{padding:9px 0}
+.sd-cai-hop .sd-cai + .sd-cai{border-top:1px solid #F5E3C0}
+.sd-cai-phu{flex:1; font-size:11.5px; color:var(--nhat); font-weight:600}
+.sd-cai input[type=checkbox]{width:18px; height:18px; accent-color:var(--xanh)}
+.sd-cai-tieu{margin:0 0 4px; font-size:15px}

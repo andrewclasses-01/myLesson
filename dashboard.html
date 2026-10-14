@@ -2139,7 +2139,7 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .hq-ct-bang tr.dau100 td.pt.full{color:#15803D}
 .hq-ct-bang tr.dau100:hover td{background:rgba(255,255,255,.35)}
 .sao100{color:#16A34A; margin-left:.4em; font-size:1.1em; text-shadow:0 0 6px rgba(34,197,94,.55)}
-.hq-loai.nop{background:var(--la-nhat); color:#1F7A4D} .hq-loai.dodang{background:var(--do-nhat); color:#B03A3E} .hq-loai.causai{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.luyen{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.do{background:var(--do-nhat); color:#B03A3E} .hq-loai.video{background:var(--duong-nhat); color:#2B5FD0} .hq-loai.nghe{background:var(--vang-nhat); color:#8a5b0e}
+.hq-loai.nop{background:var(--la-nhat); color:#1F7A4D} .hq-loai.dodang{background:var(--do-nhat); color:#B03A3E} .hq-loai.causai{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.luyen{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.do{background:var(--do-nhat); color:#B03A3E} .hq-loai.video{background:var(--duong-nhat); color:#2B5FD0} .hq-loai.nghe{background:var(--vang-nhat); color:#8a5b0e} .hq-loai.quay{background:#FEE2E2; color:#B91C1C}
 /* hàng CHIP mục dưới bảng */
 .hq-ct-chip{flex:none; display:flex; gap:calc(6px*var(--k)); flex-wrap:wrap; align-items:center; margin-top:calc(8px*var(--k))}
 .hq-ct-chip button{cursor:pointer; border:1.5px solid var(--vien); background:#fff; color:var(--mo); font:800 calc(10px*var(--k))/1 var(--font); letter-spacing:.05em; text-transform:uppercase; padding:calc(6px*var(--k)) calc(11px*var(--k)); border-radius:99px; display:inline-flex; align-items:center; gap:6px; transition:background .18s, color .18s, border-color .18s}
@@ -7852,8 +7852,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (coBaiGiangKh(b) && !HQ.video) docTienDoVideoCuaBai(b.id, hs).then(function (map) { if (BM_ID !== b.id) return; HQ.video = map; chinhGioMay(); hqVeLai(); });
     // 3. nghe
     if (coBaiNgheKh(b) && !HQ.nghe) docTienDoNgheCuaBai(b.id, hs).then(function (kq) { if (BM_ID !== b.id) return; HQ.nghe = kq; chinhGioMay(); hqVeLai(); });
-    // 4. lượt luyện từng act (phiên thầy)
-    t.acts.forEach(function (a) {
+    // 4. lượt luyện từng act (phiên thầy) — v1.329.0: + bài giao QUAY VIDEO của lesson CHƯƠNG (chỉ hiện ở chi tiết em, cộng vào tổng)
+    t.acts.concat(hqQuayCua(b)).forEach(function (a) {
       if (HQ.act[a.ma]) return;
       docLuyenAct(a.ma).then(function (ds) { if (BM_ID !== b.id) return; HQ.act[a.ma] = ds; hqVeLai(); })
         ['catch'](function (e) {
@@ -8271,6 +8271,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (!c) return 0;
       return c + (d.attemptId && lechId[d.attemptId] != null ? lechId[d.attemptId] : lechKhongD(bangEm, c));
     }
+    var laQuay = hqLaQuay(ma);   // v1.329.0
     (HQ.act[ma] || []).forEach(function (d) {
       if (A.khoaEm(d) !== k) return;               // v1.134.0 — lượt luyện có `ma` thì theo mã
       if (+d.createdAt > batDauMoi) batDauMoi = +d.createdAt;   // v1.260.0 — ván bắt đầu muộn nhất (kể cả ván bị lọc bên dưới)
@@ -8314,6 +8315,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       else if (dangLam) loai = 'danglam';
       else if (chuaXong && (+d.createdAt || 0) >= HQ_MOC_GIU && A.gioNay() - (+d.updatedAt || +d.createdAt || 0) < HQ_GIU_MS) loai = 'chuaxong';
       else loai = 'do';
+      if (laQuay) loai = 'quay';   // v1.329.0 — mọi lượt của bài giao quay video (xong hay dừng giữa chừng) = QUAY VIDEO
       luot.push({ luc: lucPl(d), capNhat: +d.updatedAt || +d.createdAt || 0, lt: String(d.lt || ''), giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
                   diem: diem, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes,
                   // v1.148.0 — nối BÀI LÀM: lượt đã nộp (NỘP / NỘP DỞ) ⇒ results/{attemptId}; lượt khác ⇒ practiceLog/{mã}/entries/{id}
@@ -8344,7 +8346,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (moc100 == null) { if (l.loai === 'nop' && hqLuotDat(l, ma)) { l.dau100 = true; moc100 = l.luc || 0; } return; }
       if (!l.mistakes && (l.loai === 'dodang' || l.loai === 'do' || l.loai === 'chuaxong')) l.duaTop = true;
     });
-    var ra = { giay: 0, moTab: 0, uoc: false, nop: 0, luyen: 0, do: 0, dodang: 0, causai: 0, danglam: 0, chuaxong: 0, duatop: 0, luot: luot };
+    var ra = { giay: 0, moTab: 0, uoc: false, nop: 0, luyen: 0, do: 0, dodang: 0, causai: 0, danglam: 0, chuaxong: 0, duatop: 0, quay: 0, luot: luot };
     luot.forEach(function (l) { ra.giay += l.giay; ra.moTab += Math.max(l.moTab, l.giay); if (l.uoc) ra.uoc = true; ra[l.duaTop ? 'duatop' : l.loai]++; });
     return ra;
   }
@@ -8364,10 +8366,19 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (/QUIZ/i.test(a.mau || '') && /TR[ẮA]C\s*NGHI[ỆE]M/i.test(ten)) return 'TNBG';
     return A.tenO(ten, true);
   }
+  // ⭐ v1.329.0 (14/10/2026, thầy chốt) — BÀI GIAO QUAY VIDEO (lesson CHƯƠNG: dòng `zalo` có mã, AWord Đợt 512 `&quay=1`, không điểm —
+  //   chỉ practiceLog mode "practice"). KHÔNG thành cột/đoạn riêng ở tab THỜI LƯỢNG; giờ của nó CỘNG vào TỔNG của em, còn từng lượt
+  //   (nhãn QUAY VIDEO) chỉ hiện khi đúp xem CHI TIẾT một em.
+  function hqQuayCua(b) {
+    return ((b && b.kieu === 'CHUONG' && b.bt) || []).filter(function (x) { return x.loai === 'zalo' && x.ma; })
+      .map(function (x) { return { ma: x.ma, ten: 'QUAY VIDEO', mau: 'QUIZ', quay: true }; });
+  }
+  function hqLaQuay(ma) { return hqQuayCua(HQ.b).some(function (q) { return q.ma === ma; }); }
   function hqTongEm(ten, pv) {
     pv = pv || hqPhamVi();
     var s = hqGioVideo(ten) + (pv.nghe ? hqGioNghe(ten) : 0);
     pv.acts.forEach(function (a) { s += hqGioAct(a.ma, ten).giay; });
+    hqQuayCua(HQ.b).forEach(function (q) { s += hqGioAct(q.ma, ten).giay; });   // v1.329.0
     return s;
   }
   function hqChuLuc(ms) {
@@ -8864,7 +8875,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   //     ⛔ Bấm chọn em KHÔNG vẽ lại danh sách/biểu đồ (chỉ đổi class + ruột hồ sơ) — vẽ lại giữa 2 cú bấm là mất `dblclick`.
   // ================================================================
   var HQ_GD_KHOANG = [['1', 'Hôm nay'], ['3', '3 ngày'], ['7', '7 ngày'], ['giao', 'Từ ngày giao']];
-  var HQ_NHAN_LOAI = { nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', video: 'XEM', nghe: 'NGHE', danglam: 'ĐANG LÀM', chuaxong: 'CHƯA XONG', duatop: 'ĐUA TOP' };   // v1.260.0 — 3 nhãn cuối
+  var HQ_NHAN_LOAI = { quay: 'QUAY VIDEO', nop: 'NỘP', dodang: 'BỎ DỞ', causai: 'LUYỆN TẬP', luyen: 'LUYỆN TẬP', do: 'BỎ DỞ', video: 'XEM', nghe: 'NGHE', danglam: 'ĐANG LÀM', chuaxong: 'CHƯA XONG', duatop: 'ĐUA TOP' };   // v1.260.0 — 3 nhãn cuối
   var HQ_THU = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
   function hqEmTinh() { var kt = hqKt(hqSoDangXem()); return hqHocSinh(HQ.t).filter(function (h) { return !kt[A.khoaTen(h.ten)]; }); }
   function hqThuNgay(ms) { var d = new Date(ms); return HQ_THU[d.getDay()] + ' ' + d.getDate() + '/' + (d.getMonth() + 1); }
@@ -9518,17 +9529,17 @@ tr.qm-hang-tam td{background:#fffbeb}
     var h = hqHocSinh(t).filter(function (x) { return x.ten === ten; })[0]; if (!h) return null;
     var nay = hqNgayDau(Date.now()), giao = hqNgayGiao(b), moc = A.mocHan(b);
     var cuoi = moc != null ? hqNgayDau(moc) : nay; if (cuoi < nay) cuoi = nay;
-    var acts = t.acts.map(function (a, j) {
+    var acts = t.acts.concat(hqQuayCua(b)).map(function (a, j) {   // v1.329.0 — + QUAY VIDEO (không điểm, không vẽ đồ thị)
       var c = CHUAN[a.ma], soCau = (c && +c.soCau > 0) ? +c.soCau : null;
       var luot = hqGioAct(a.ma, ten).luot.slice().sort(function (x, y) { return (x.luc || 0) - (y.luc || 0); }).map(function (l, q) {
         var dung = Math.max(0, +l.diem || 0);
-        var mauSo = l.loai === 'do' ? soCau : (l.loai === 'dodang' ? (hqMauAct(a.ma) || null) : (+l.tong || null));
+        var mauSo = a.quay ? null : l.loai === 'do' ? soCau : (l.loai === 'dodang' ? (hqMauAct(a.ma) || null) : (+l.tong || null));
         var pt = mauSo ? Math.min(100, Math.round(dung / mauSo * 100)) : null;
         // v1.148.0 (thầy chốt) — KHÔNG vẽ chấm lượt LUYỆN TẬP (CÂU SAI = Start with mistakes, LUYỆN cũ): mẫu số chỉ là số câu sai ⇒ % sai trên đồ thị.
         return { id: 'a' + j + '-' + q, code: l.code, pl: l.pl, rid: l.rid, coBl: l.coBl, tay: !!l.tay,
                  luc: l.luc, giay: l.giay, moTab: l.moTab, uoc: l.uoc, loai: l.loai, dung: dung, mauSo: mauSo, pt: pt, mistakes: !!l.mistakes,
                  dau100: !!l.dau100, duaTop: !!l.duaTop, dat: hqLuotDat(l, a.ma), lt: l.lt || '',
-                 ve: !l.mistakes && l.loai !== 'luyen' && l.loai !== 'causai' && pt != null && (l.loai !== 'do' || dung > 0) };
+                 ve: !a.quay && !l.mistakes && l.loai !== 'luyen' && l.loai !== 'causai' && pt != null && (l.loai !== 'do' || dung > 0) };
       });
       // ⭐⭐ v1.260.0 (thầy chốt 06/10) — SAU LƯỢT 100% ĐẦU TIÊN em đã xong nhiệm vụ, lượt sau là CÀY lên hạng ⇒ đồ thị tiến triển
       // CHỈ vẽ lượt lại đạt tối đa VÀ hiệu suất (câu đúng / giây làm thật) ≥ lượt vẽ ngay trước — lượt hụt / bỏ giữa chừng không
@@ -9542,7 +9553,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         if (hs != null && hsTruoc != null && hs < hsTruoc) { l.ve = false; return; }
         if (hs != null) hsTruoc = hs;
       });
-      return { k: 'a' + j, ma: a.ma, nhan: hqNhanAct(a), mau: MAU_TT[j % MAU_TT.length], soCau: soCau, luot: luot };
+      return { k: 'a' + j, ma: a.ma, nhan: a.quay ? 'QUAY VIDEO' : hqNhanAct(a), mau: a.quay ? '#DC2626' : MAU_TT[j % MAU_TT.length], soCau: soCau, luot: luot, quay: !!a.quay };
     });
     // phút theo ngày: [video, nghe, {mã act: giây}]
     var theo = {};
@@ -10008,12 +10019,13 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (!ct.zoom) {
       var gVideo = hqGioVideo(ten), gNghe = hqGioNghe(ten), gAct = 0, nop = 0, luyen = 0, doo = 0, dua = 0, dang = 0, chua = 0, soNgay = 0;
       // v1.147.0 — "luyện" gồm LUYỆN cũ + CÂU SAI. v1.151.0 — lượt dở (dodang) nay hiện là BỎ DỞ ⇒ đếm vào "bỏ dở" cho khớp bảng.
-      dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'nop') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else if (l.duaTop) dua++; else if (l.loai === 'danglam') dang++; else if (l.loai === 'chuaxong') chua++; else doo++; }); });   // v1.260.0 — ĐUA TOP · đang làm/chưa xong tách khỏi bỏ dở
+      var quay = 0;   // v1.329.0 — lượt QUAY VIDEO đếm riêng
+      dl.acts.forEach(function (x) { x.luot.forEach(function (l) { gAct += l.giay; if (l.loai === 'quay') quay++; else if (l.loai === 'nop') nop++; else if (l.loai === 'luyen' || l.loai === 'causai') luyen++; else if (l.duaTop) dua++; else if (l.loai === 'danglam') dang++; else if (l.loai === 'chuaxong') chua++; else doo++; }); });   // v1.260.0 — ĐUA TOP · đang làm/chưa xong tách khỏi bỏ dở
       Object.keys(dl.theo).forEach(function (kh) { var n = dl.theo[kh], a2 = 0; Object.keys(n[2]).forEach(function (kk) { a2 += n[2][kk]; }); if (n[0] + n[1] + a2 > 0) soNgay++; });
       var tong = gVideo + gNghe + gAct, soNgayToiNay = Math.max(1, Math.round((dl.nay - dl.giao) / 86400000) + 1);
       // ⭐ v1.153.0 (thầy chốt 25/09) — ĐIỂM TỐT NHẤT của TỪNG act (không chỉ act cao nhất; video/nghe không tính):
       // điểm nộp chính thức (DIEM); chưa nộp mà có lượt dở ⇒ % lượt dở cao nhất, chữ nhạt; chưa đụng ⇒ "—".
-      var totDs = dl.acts.map(function (x, j) {
+      var totDs = dl.acts.filter(function (x) { return !x.quay; }).map(function (x, j) {   // v1.329.0 — quay video không điểm (đứng CUỐI dl.acts ⇒ j vẫn khớp t.acts)
         var a = t.acts[j], em = (DIEM[a.ma] || []).filter(function (e) { return A.khoaTen(e.ten) === A.khoaTen(ten); })[0];
         if (em) return { x: x, pt: +em.diem || 0, tit: em.tho ? em.tho.diem + '/' + em.tho.tong + ' câu' : '' };
         var dang = x.luot.filter(function (l) { return l.ve; }).map(function (l) { return l.pt; });
@@ -10026,7 +10038,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       hop.innerHTML = dau + '<div class="hq-ct-giua"><div class="hq-ct-trai"><div class="hq-tiles">' +
           tile('Tổng luyện tập', hqChuGio(tong), (coBaiGiangKh(b) ? 'video ' + hqPhut(gVideo) + 'p' + (phuVd != null ? ' (phủ ' + phuVd + '%)' : '') + ' · ' : '') + (coBaiNgheKh(b) ? 'nghe ' + hqPhut(gNghe) + 'p' + (phuNg != null ? ' (' + phuNg + '%)' : '') + ' · ' : '') + 'act ' + hqPhut(gAct) + 'p') +
           tile('Ngày có luyện', soNgay + ' <small>/ ' + soNgayToiNay + ' ngày</small>', 'trung bình ' + Math.round(hqPhut(tong) / soNgayToiNay) + ' phút/ngày') +
-          tile('Lượt AWord', String(nop + luyen + doo + dua + dang + chua), nop + ' nộp · ' + luyen + ' luyện tập · ' + doo + ' bỏ dở' + (dua ? ' · ' + dua + ' đua top' : '') + (dang ? ' · ' + dang + ' đang làm' : '') + (chua ? ' · ' + chua + ' chưa xong' : '')) +
+          tile('Lượt AWord', String(nop + luyen + doo + dua + dang + chua + quay), nop + ' nộp · ' + luyen + ' luyện tập · ' + doo + ' bỏ dở' + (dua ? ' · ' + dua + ' đua top' : '') + (dang ? ' · ' + dang + ' đang làm' : '') + (chua ? ' · ' + chua + ' chưa xong' : '') + (quay ? ' · ' + quay + ' quay video' : '')) +
           '<div class="hq-tile hq-tot"><span>Điểm tốt nhất</span><div class="hq-tot-ds' + (totDs.length > 3 ? ' hai' : '') + '">' + (totDs.length ? totDs.map(function (d) {
             return '<div' + (d.tit ? ' title="' + A.chuAnToan(d.tit) + '"' : '') + '><i style="background:' + d.x.mau + '"></i><em>' + A.chuAnToan(d.x.nhan) + '</em><b class="' + (d.pt == null ? 'rong' : d.dang ? 'dang' : d.pt >= 100 ? 'full' : '') + '">' + (d.pt == null ? '—' : d.pt + '<small>%</small>') + '</b></div>';
           }).join('') : '<div class="rong">chưa có act</div>') + '</div></div>' +

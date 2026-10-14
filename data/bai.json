@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-14 14:27:50",
+  "capNhat": "2026-10-14 19:27:08",
   "bai": {
     "A1C": [
       {
@@ -1442,6 +1442,35 @@
       }
     ],
     "A2B": [
+      {
+        "id": "A2B_14.10_WORDS_LSB1-S1.T2.P2",
+        "tieuDe": "A2B_14.10_WORDS LSB1-S1.T2.P2",
+        "tenHien": "A2B_14.10_WORDS LSB1-S1.T2.P2",
+        "dang": "WORDS",
+        "ngay": "14.10",
+        "han": "2026-10-16T17:45",
+        "maLesson": "LSB1-S1.T2.P2",
+        "taoLuc": "2026-10-14",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "23zhm4",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "gjxnyf",
+            "mau": "ANAGRAM"
+          }
+        ],
+        "giaoLuc": "2026-10-14T19:27"
+      },
       {
         "id": "A2B_9.10_STAGE_LSB1-S1.T2.P1",
         "tieuDe": "A2B_9.10_STAGE LSB1-S1.T2.P1",
@@ -4715,6 +4744,7 @@
     "A1C": "2026-10-13 06:46:33",
     "B2A": "2026-10-13 17:12:48",
     "A1B": "2026-10-14 11:23:54",
-    "NNTNG4": "2026-10-14 14:27:50"
+    "NNTNG4": "2026-10-14 14:27:50",
+    "A2B": "2026-10-14 19:27:08"
   }
 }

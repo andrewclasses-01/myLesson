@@ -8069,6 +8069,7 @@ A.napDuLieu().then(function(dl){
   LA_KHOA = String(BAI.dang || '').trim().toUpperCase() === 'KHOA';
   var bgKhoa = LA_KHOA ? (BAI.baiGiang || {}) : {};
   var trongKhoa = LA_KHOA && !KHOI.length && !(bgKhoa.doan || []).length && !(BAI.bt || []).length;
+  if (LA_KHOA && BAI.kieu === 'GIOITHIEU') trongKhoa = true;   // v1.340.0 — bài GIỚI THIỆU không có trang bài: về trang khóa (thẻ mở phim)
   if ((!KHOI.length && !LA_KHOA) || trongKhoa) { veTrangLop(); return; }
   if (LA_KHOA) { napDoanXongKhoa(); napViTriKhoa(); }   // v1.97.0 thêm vị trí
 

@@ -1,8 +1,9 @@
 /* ============================================================
    gioi-thieu.js — PHIM GIỚI THIỆU KHÓA MỚI + THẺ "GIỚI THIỆU" (khoa.html) · v1.286.0 (09/10/2026, thầy chốt mockup v4)
 
-   - Chỉ áp cho KHÓA NỀN TẢNG K10 trở đi (tên khóa "NỀN TẢNG K<số>", số ≥ 10). ⛔ "NỀN TẢNG 4" (không có chữ K) là
-     LỚP THƯỜNG, không phải khóa — không áp.
+   - ⭐ v1.340.0: áp cho lớp được GIAO bài GIỚI THIỆU (`kieu:'GIOITHIEU'`, app myLesson tab COURSE) — xem `baiCua`.
+     Còn hạn / chưa đặt hạn ⇒ tự bật cho em chưa xem; qua hạn ⇒ không tự bật, thẻ vẫn bấm xem được.
+     (Trước v1.340.0: theo tên khóa "NỀN TẢNG K<số≥10>".)
    - Lần đầu vào khóa: phim TỰ MỞ, BẮT BUỘC xem tới màn cuối bấm "Vâng!" (không có nút Để sau / Đóng).
      Tắt giữa chừng ⇒ lần đăng nhập sau phim tự mở lại, CHẠY TIẾP từ màn đang dở.
    - Đã xem xong ⇒ khóa CHƯA có bài nào thì cột bài hiện THẺ GIỚI THIỆU (bấm = xem lại, lúc đó mới có nút Đóng).
@@ -160,16 +161,20 @@
       try { gan(el, ten, chuTatCua(ten)); } catch (e) { }
     });
   }
-  function theHtml(ctx) {
-    return '<button type="button" class="gtk-the" id="gtkThe" title="Xem lại giới thiệu khóa học">' +
+  // v1.340.0 — `opt` (tuỳ chọn): { xong: em đã xem hết chưa (mặc định true — kiểu cũ), han: chữ hạn để hiện khi CHƯA xem }.
+  function theHtml(ctx, opt) {
+    opt = opt || {};
+    var xong = opt.xong !== false;
+    return '<button type="button" class="gtk-the' + (xong ? '' : ' chua') + '" id="gtkThe" title="' + (xong ? 'Xem lại giới thiệu khóa học' : 'Xem giới thiệu khóa học') + '">' +
       '<span class="gtk-in"><span class="gtk-sao" aria-hidden="true"></span>' +
         '<span class="gtk-body">' +
           '<span class="gtk-mat">KHÓA ' + esc(String(ctx.lop || '').toLocaleUpperCase('vi')) + '</span>' +
           '<span class="gtk-ten">GIỚI THIỆU</span>' +
           '<span class="gtk-chu">Hành trình 8 tháng cùng Thầy Andrew</span>' +
+          (!xong && opt.han ? '<span class="gtk-han">Hạn ' + esc(opt.han) + '</span>' : '') +
           '<span class="gtk-duoi"><span class="gtk-ic">' +
             '<i><img src="gioi-thieu/assets/thay-tron.jpg" alt=""></i><i>' + IC.tin + '</i><i>' + IC.game + '</i><i>' + IC.sao + '</i><i>' + IC.co + '</i>' +
-            '</span><span class="gtk-da">ĐÃ XEM ✓</span></span>' +
+            '</span><span class="gtk-da' + (xong ? '' : ' chua') + '">' + (xong ? 'ĐÃ XEM ✓' : 'XEM NGAY') + '</span></span>' +
         '</span>' +
         vungBay(ctx) +
         '<span class="gtk-play">' + IC.play + '</span>' +
@@ -197,8 +202,17 @@
   function khongApDung(lopMa) { try { localStorage.setItem(khoaKhong(lopMa), '1'); } catch (e) { } boChe(); }
   try { cheSom(); } catch (e) { }
 
+  // ⭐ v1.340.0 (15/10/2026, thầy chốt) — GIỚI THIỆU là một BÀI do app myLesson giao (THIẾT LẬP LESSON khóa NEN TANG TIENG ANH,
+  // dòng đầu; tab COURSE đặt GIAO → HẠN): `bai.json` có bài `kieu:'GIOITHIEU'` (khoi/bt rỗng). Lớp CÓ bài này mới có phim;
+  // còn hạn (hoặc chưa đặt hạn) mới TỰ BẬT; qua hạn chỉ còn thẻ để em tự bấm xem. Bỏ hẳn lối nhận lớp theo tên "NỀN TẢNG K≥10".
+  function baiCua(dsBai) {
+    for (var i = 0; i < (dsBai || []).length; i++) if (dsBai[i] && dsBai[i].kieu === 'GIOITHIEU') return dsBai[i];
+    return null;
+  }
+
   window.GioiThieu = {
-    apDung: laKhoaApDung,
+    baiCua: baiCua,
+    apDung: laKhoaApDung,   // ⛔ không còn dùng để quyết định (giữ cho trang cũ trong bộ nhớ đệm)
     docTrangThai: docTrangThai,
     mo: mo,
     theHtml: theHtml,

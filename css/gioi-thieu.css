@@ -46,6 +46,11 @@ html.gtk-mo, html.gtk-mo body{overflow:hidden}
 .gtk-ic b{margin-left:14px; font:800 11px/1 var(--sans,'Montserrat',sans-serif); color:#a9c4bd; white-space:nowrap}
 .gtk-da{font:800 9.5px/1 var(--sans,'Montserrat',sans-serif); letter-spacing:.1em; color:#7ee2a8; padding:5px 8px; border-radius:99px;
   background:rgba(24,169,87,.16); border:1px solid rgba(24,169,87,.4)}
+/* v1.340.0 — thẻ của em CHƯA xem hết phim: chip vàng "XEM NGAY" + dòng hạn (giao ở app myLesson tab COURSE) */
+.gtk-da.chua{color:#1b1206; background:var(--gtk-vang,#E8B65A); border-color:transparent; animation:gtk-nhay 1.6s ease-in-out infinite}
+@keyframes gtk-nhay{0%,100%{box-shadow:0 0 0 0 rgba(232,182,90,.55)} 50%{box-shadow:0 0 0 6px rgba(232,182,90,0)}}
+.gtk-han{display:block; margin-top:4px; font:800 10.5px/1.2 var(--sans,'Montserrat',sans-serif); letter-spacing:.08em; color:var(--gtk-vang,#E8B65A); text-transform:uppercase}
+@media (prefers-reduced-motion:reduce){ .gtk-da.chua{animation:none} }
 /* ảnh THẦY + ảnh EM nhỏ bay lơ lửng (thầy chốt 09/10 — thay ảnh thầy to) */
 /* v1.287.0 (thầy chốt 09/10) — GIỮA là ảnh THẦY + ảnh EM, quanh là ảnh NHỎ XÍU của các bạn cùng khóa; cả cụm lùi vào trong cho cân */
 .gtk-bay{position:relative; flex:none; width:150px; aspect-ratio:1; margin-right:44px}

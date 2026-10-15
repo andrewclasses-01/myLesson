@@ -1568,6 +1568,9 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .the.khoa-hoc .td-ten{font-size:11px; line-height:1.3}
 /* thiết kế K10 1 — thẻ lesson CHƯƠNG: nhãn "BƯỚC n" dài hơn "BT1" ⇒ cột tên 54px (46px cắt "BƯỚC…"). */
 .the.khoa-hoc .the-diem.chuong .td-dong{grid-template-columns:minmax(0,54px) minmax(60px,1fr) minmax(30px,auto) 16px}
+/* v1.340.0 — thẻ GIỚI THIỆU: một hàng "ĐÃ XEM" (rộng hơn "BƯỚC n") */
+.the.khoa-hoc .the-diem.gt .td-dong{grid-template-columns:minmax(0,64px) minmax(60px,1fr) minmax(30px,auto) 16px}
+.the.khoa-hoc .the-diem.gt .td-ten{white-space:nowrap}
 .the.khoa-hoc .td-bar{height:8px}
 .the.khoa-hoc .td-so{font-size:11.5px}
 .the.khoa-hoc .td-so.em-chua{color:#A9B6B3}
@@ -4269,6 +4272,14 @@ tr.qm-hang-tam td{background:#fffbeb}
         }
       }
     }
+    // ⭐ v1.340.0 — bài GIỚI THIỆU (app giao, `kieu:'GIOITHIEU'`): "xong" = em đã xem HẾT phim (nwUsers.xemGt, `gtCuaEm`).
+    if (b.kieu === 'GIOITHIEU') {
+      if (!GT_XEM) { xongHet = null; thieu = []; docXemGt(); }
+      else {
+        thieu = caLop.filter(function (ten) { return !gtCuaEm(ten, maLop).xong; }).map(function (ten) { return { ten: ten, so: 1 }; });
+        xongHet = caLop.length - thieu.length;
+      }
+    }
     // ⭐ #2 — thẻ SPEAKING CHECK (nhận theo tên dạng bài, y hệt lop.html
     // theTuBai()): doiSp đổ vào sau khi đọc Firestore, xem capNhatSpeakingChoBai().
     var laSp = /SP\s*CHECK/i.test(b.dang || '');
@@ -5622,7 +5633,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     return m ? (Number(m[3]) + '/' + Number(m[2])) : '';
   }
   function tenBaiGiangKh(b) {
-    if (b.kieu === 'CHUONG' && b.noiDung) return String(b.noiDung).trim();   // thiết kế K10 1 — lesson CHƯƠNG: tên chương (y `tenBaiGiang` khoa.html)
+    if ((b.kieu === 'CHUONG' || b.kieu === 'GIOITHIEU') && b.noiDung) return String(b.noiDung).trim();   // thiết kế K10 1 — lesson CHƯƠNG: tên chương (y `tenBaiGiang` khoa.html) · v1.340.0 GIỚI THIỆU
     var bg = b.baiGiang || {};
     var t = String(bg.tieuDe || '').trim();
     if (!t) return A.tenBai(b);
@@ -5809,6 +5820,83 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<span class="td-tich">' + (du ? '✓' : '') + '</span>' +
     '</span>';
   }
+  /* ⭐ v1.340.0 (15/10/2026, thầy chốt) — THẺ GIỚI THIỆU (bài `kieu:'GIOITHIEU'`, app myLesson giao ở tab COURSE): một hàng "ĐÃ XEM"
+     x/sĩ số = em đã xem HẾT phim giới thiệu. Nguồn: `nwUsers/<uid>.xemGt.<mã lớp>` ({man, xong}) do js/gioi-thieu.js ghi.
+     Đọc nwUsers (vaiTro 'hs') MỘT lượt (~190 tài liệu, luật cho phiên thầy đọc — y hộp Mật khẩu HS `docMatKhau`), nhớ tới khi tải lại.
+     Em ↔ tài khoản: uid `hs_<id>` (id trong lop.json) có lớp khớp (y `mkCua`); không thấy thì khớp theo TÊN + lớp. */
+  var GT_XEM = null, GT_XEM_DANG = false, GT_XEM_LOI = '';
+  var GT_SO_MAN = 12;
+  function docXemGt() {
+    if (GT_XEM || GT_XEM_DANG || GT_XEM_LOI) return;
+    if (THAY_PHIEN === null) { GT_XEM_LOI = 'Cần phiên của thầy để đọc tiến độ xem giới thiệu'; return; }
+    GT_XEM_DANG = true;
+    AWChat.kho().then(function (f) {
+      return f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('vaiTro', '==', 'hs')));
+    }).then(function (snap) {
+      var m = {};
+      snap.forEach(function (d) {
+        var x = d.data() || {};
+        m[d.id] = { ten: x.ten || '', cacLop: (x.cacLop && x.cacLop.length ? x.cacLop : [x.lop || '']), xemGt: x.xemGt || {} };
+      });
+      GT_XEM = m; GT_XEM_DANG = false;
+      veTat();
+      if (POP_GT && $('#popNen').classList.contains('mo')) moPopGt(POP_GT);
+    }, function (e) {
+      GT_XEM_DANG = false;
+      GT_XEM_LOI = String((e && (e.code || e.message)) || '').indexOf('permission-denied') >= 0
+        ? loiPhien('Chưa đọc được tiến độ xem giới thiệu') : 'Chưa đọc được tiến độ xem giới thiệu.';
+      veTat();
+    });
+  }
+  function gtCuaEm(ten, maLop) {
+    if (!GT_XEM) return {};
+    var l = A.lopTheoMa(DL, maLop) || {}, h = (l.hocSinh || []).filter(function (x) { return x.ten === ten; })[0];
+    var coLop = function (x) { return x && x.cacLop.indexOf(maLop) >= 0; };
+    var x = h && h.id != null ? GT_XEM['hs_' + h.id] : null;
+    if (!coLop(x)) {
+      x = null;
+      for (var k in GT_XEM) if (GT_XEM[k].ten === ten && coLop(GT_XEM[k])) { x = GT_XEM[k]; break; }
+    }
+    return (x && x.xemGt[maLop]) || {};
+  }
+  function hangGtKh(t) {
+    if (!GT_XEM) {
+      return '<span class="td-dong"><span class="td-ten"' + (GT_XEM_LOI ? ' title="' + A.chuAnToan(GT_XEM_LOI) + '"' : '') + '>ĐÃ XEM</span>' +
+        '<span class="td-bar"><i style="width:0%"></i></span>' +
+        '<span class="td-so" style="color:var(--nhat)">' + (GT_XEM_LOI ? '—' : '…') + '</span><span class="td-tich"></span></span>';
+    }
+    var xong = t.xongHet || 0, siSo = t.siSo;
+    var pt = siSo ? Math.min(100, Math.round(xong / siSo * 100)) : 0;
+    var du = siSo > 0 && xong >= siSo;
+    return '<span class="td-dong">' +
+      '<span class="td-ten" title="Em đã xem hết phim giới thiệu">ĐÃ XEM</span>' +
+      '<span class="td-bar"><i class="' + mauTheoPhanTramKh(pt, du) + '" style="width:' + pt + '%"></i></span>' +
+      '<span class="td-so' + (du ? ' m-la' : '') + '">' + xong + '/' + siSo + '</span>' +
+      '<span class="td-tich">' + (du ? '✓' : '') + '</span>' +
+    '</span>';
+  }
+  // Bấm thẻ GIỚI THIỆU (thân thẻ hoặc vùng điểm) ⇒ pop-up "ai đã xem / ai chưa" (khung pop-up chung, kiểu `moPopCaLop`).
+  var POP_GT = null;
+  function moPopGt(b) {
+    var t = tinhBai(b, LOP_CHON);
+    popRong(0);
+    POP_GT = b;   // sau popRong (popRong xoá dấu này cho mọi pop-up khác)
+    $('#popPhu').textContent = 'GIỚI THIỆU • ' + (GT_XEM ? (t.xongHet + '/' + t.siSo + ' em đã xem hết') : (GT_XEM_LOI || 'đang đọc…'));
+    var ds = (t.caLop || []).map(function (ten) {
+      var g = gtCuaEm(ten, LOP_CHON);
+      return { ten: ten, du: !!g.xong, man: +g.man || 0 };
+    }).sort(function (p, q) { return (q.du - p.du) || (q.man - p.man); });
+    $('#popDs').innerHTML = !GT_XEM ? '' : ds.map(function (e, i) {
+      return '<div class="pop-dong ' + (e.du ? 'du' : 'thieu') + '">' +
+        '<span class="pop-hang">' + (i + 1) + '</span>' +
+        '<span class="pop-ten">' + A.chuAnToan(e.ten) + '</span>' +
+        '<span class="pop-phu">' + (e.du ? 'đã xem hết' : (e.man > 0 ? 'đang xem dở · màn ' + (e.man + 1) + '/' + GT_SO_MAN : 'chưa xem')) + '</span>' +
+        (e.du ? '<span class="pop-cuoi">✓</span>' : '<span class="pop-cuoi so">—</span>') +
+      '</div>';
+    }).join('');
+    $('#popNen').classList.add('mo');
+    if (!GT_XEM) docXemGt();
+  }
   function veTheCardKhoa(b, het) {
     var t = tinhBai(b, LOP_CHON);
     var moc = A.mocHan(b);
@@ -5833,6 +5921,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       khoi = b.bt;
       ruot = b.bt.map(function (x, i) { return hangBuocChuongKh(b, x, i, t); }).join('');
     }
+    if (b.kieu === 'GIOITHIEU') { khoi = [1]; ruot = hangGtKh(t); }   // v1.340.0 — một hàng ĐÃ XEM x/sĩ số
     return '<div class="the khoa-hoc' + lopThem + (b.kieu === 'CHUONG' ? ' chuong' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
@@ -5844,7 +5933,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           veHanCard(b, moc, st, t) +
         '</span>' +
         /* v1.130.0 — bỏ cột icon ⚙/⊕ (xem `veTheCard`); menu ⚙ nay ở đầu hộp quản lý bài. */
-        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + (b.kieu === 'CHUONG' ? ' chuong' : '') + '">' +
+        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + (b.kieu === 'CHUONG' ? ' chuong' : '') + (b.kieu === 'GIOITHIEU' ? ' chuong gt' : '') + '">' +
           '<span class="diem-rows">' + ruot + '</span>' +
         '</span>' +
         '<span class="play">' + (ttThe === 'khoa'
@@ -6419,6 +6508,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ⛔ Phải gọi ở CẢ BA lối mở, không thì khung rộng của lần trước còn nguyên.
   function popRong(n) {
     var k = $('#popKhung'), d = $('#popDs');
+    POP_GT = null;   // v1.340.0 — pop-up GIỚI THIỆU tự vẽ lại khi đọc xong; pop-up khác mở thì thôi
     // v1.113.0 — mọi pop-up khác đi qua đây: tắt dạng TAB (thẻ khóa học) nếu đang bật.
     k.classList.remove('tab');
     k.classList.remove('nop');   // v1.120.0 — pop-up bài nộp ảnh
@@ -6787,6 +6877,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       else if (t.acts.length) moPopCaLop(b, t);
       return;
     }
+    if (b.kieu === 'GIOITHIEU') return moPopGt(b);   // v1.340.0
     // ⭐ v1.113.0 — thẻ khóa học mở pop-up dạng TAB (mỗi BT một tab), xem `moPopTabAct`.
     if (laKhoaHoc()) return moPopTabAct(b, t);
     moPopChiTietAct(b, t);
@@ -7846,6 +7937,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var b = null;
     for (var i = 0; i < ds.length; i++) if (ds[i].id === id) { b = ds[i]; break; }
     if (!b) return;
+    if (b.kieu === 'GIOITHIEU' && !chiCt && lop === LOP_CHON) return void moPopGt(b);   // v1.340.0 — không có hộp quản lý bài (không act/điểm)
     var t = tinhBai(b, lop);
     var ttBm = A.trangThaiThe(b);
     var nhanBm = KHO_NHAN[ttBm] || null;

@@ -768,7 +768,7 @@ body.mo-menu .side.trai{transform:none}
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=21">
-<link rel="stylesheet" href="css/gioi-thieu.css?v=2">   <!-- v1.286.0 phim giới thiệu khóa mới + thẻ GIỚI THIỆU -->
+<link rel="stylesheet" href="css/gioi-thieu.css?v=3">   <!-- v1.286.0 phim giới thiệu khóa mới + thẻ GIỚI THIỆU -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400&display=swap&subset=vietnamese">   <!-- v1.287.0 chữ "KHÓA HỌC ĐANG ĐƯỢC CHUẨN BỊ…" -->
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 <script src="js/day.js?v=6"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
@@ -864,7 +864,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=91"></script>
 <script src="js/nw-phien.js?v=9"></script>
-<script src="js/gioi-thieu.js?v=3"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
+<script src="js/gioi-thieu.js?v=4"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
 <script src="js/chat.js?v=37"></script>
 <script src="js/nhac-tb.js?v=3"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
@@ -916,8 +916,15 @@ var BAI_MOI = null;      /* thẻ trên vạch (bài mới nhất còn hạn) */
 var BAI_CU = [];         /* thẻ dưới vạch */
 var dangDocDiem = true;
 /* ⭐ v1.286.0 (09/10/2026, thầy chốt) — PHIM GIỚI THIỆU khóa mới (NỀN TẢNG K10+, js/gioi-thieu.js): GT_CTX = em + khóa;
-   GT_HIEN = đã xem xong (hoặc thầy xem như em) ⇒ khóa CHƯA có bài nào thì cột bài có thẻ GIỚI THIỆU để xem lại. */
-var GT_CTX = null, GT_HIEN = false;
+   (v1.340.0: thẻ GIỚI THIỆU nay là một bài do app giao — xem GT_BAI/GT_ST/veTheGt bên dưới.) */
+var GT_CTX = null;
+/* ⭐ v1.340.0 — GT_BAI = bài GIỚI THIỆU app giao cho lớp (kieu 'GIOITHIEU') · GT_ST = tiến độ phim của em ({xong, man}; null = đang đọc) */
+var GT_BAI = null, GT_ST = null;
+function laTheGt(b){ return !!(b && b.goc && b.goc.kieu === 'GIOITHIEU'); }
+function veTheGt(b){
+  var xong = !GT_ST || !!GT_ST.xong;   // chưa đọc xong tiến độ ⇒ vẽ kiểu "đã xem" (khỏi nháy chữ XEM NGAY)
+  return GioiThieu.theHtml(GT_CTX, { xong: xong, han: b.han });
+}
 
 var IC_GIO = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg>';
 
@@ -1679,7 +1686,7 @@ function dungCot(){
   }
   var tren, cu, dsThe;
   if (BAI_MOI) {
-    tren = veTheMoi(BAI_MOI, tinhHinhGio(BAI_MOI));
+    tren = laTheGt(BAI_MOI) ? veTheGt(BAI_MOI) : veTheMoi(BAI_MOI, tinhHinhGio(BAI_MOI));   // v1.340.0
     cu = BAI_CU.slice(0, 1);
     dsThe = [BAI_MOI].concat(cu);
   } else {
@@ -1689,11 +1696,18 @@ function dungCot(){
     cu = BAI_CU.slice(0, 2);
     dsThe = cu.slice();
   }
-  var theGt = (!BAI_MOI && !BAI_CU.length && GT_HIEN && GT_CTX && window.GioiThieu) ? GioiThieu.theHtml(GT_CTX) : '';   // v1.286.0
-  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + theGt + cu.map(veTheCu).join('');
+  // ⭐ v1.340.0 — thẻ GIỚI THIỆU (bài `kieu:'GIOITHIEU'`) đứng đúng chỗ của nó trong danh sách như mọi bài, vẽ bằng thẻ vàng đồng
+  // riêng (`.gtk-the`, không có class `.the`) ⇒ bỏ khỏi `dsThe` để chỉ số `.the` ↔ bài bên dưới vẫn khớp.
+  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + cu.map(function(b){ return laTheGt(b) ? veTheGt(b) : veTheCu(b); }).join('');
+  dsThe = dsThe.filter(function(b){ return !laTheGt(b); });
   var nutGt = $('#gtkThe');
   if (nutGt) {
-    nutGt.onclick = function(){ GioiThieu.mo(GT_CTX, { lai: true, daXong: true }); };
+    nutGt.onclick = function(){
+      // chưa xem hết ⇒ mở kiểu BẮT BUỘC (xem tiếp màn dở, xong mới tính); xem rồi / thầy ⇒ xem lại có nút Đóng
+      if (GT_ST && !GT_ST.xong && !(EM && EM.vaiTro === 'gv'))
+        GioiThieu.mo(GT_CTX, { man: GT_ST.man, khiXong: function(){ GT_ST = { xong: true, man: 0 }; dungCot(); } });
+      else GioiThieu.mo(GT_CTX, { lai: true, daXong: true });
+    };
     GioiThieu.ganAnh(nutGt, function(el, ten, chuTat){ A.gaAvatar(el, LOP, ten, chuTat, false); });   // v1.287.0 ảnh em + các bạn
   }
 
@@ -1884,8 +1898,15 @@ A.napDuLieu().then(function(dl){
   doCaoDau(); doSanChat();
   dungCot();                 /* hiện "đang đọc kết quả" trước */
 
-  /* v1.286.0 — phim giới thiệu khóa mới: chưa xem xong ⇒ TỰ MỞ (chạy tiếp màn dở); xong rồi ⇒ thẻ GIỚI THIỆU */
-  if (window.GioiThieu && GioiThieu.apDung(LOP)) {
+  var dsGoc = A.baiCuaLop(dl, LOP_DL)
+    .filter(function(b){ return !EM.thu || A.theChoHocThu(b, EM.vao); });   // v1.309.0 học thử: thẻ từ ngày vào
+
+  /* v1.286.0 — phim giới thiệu khóa mới: chưa xem xong ⇒ TỰ MỞ (chạy tiếp màn dở); xong rồi ⇒ thẻ GIỚI THIỆU
+     ⭐ v1.340.0 (15/10/2026, thầy chốt) — chỉ lớp được GIAO bài GIỚI THIỆU (app myLesson, `kieu:'GIOITHIEU'`); qua hạn ⇒ không tự bật
+     (thẻ trong danh sách vẫn bấm xem được). Thẻ GIỚI THIỆU nay là MỘT BÀI trong danh sách (`veTheGt`), không còn chỉ hiện lúc khóa trống. */
+  GT_BAI = window.GioiThieu && GioiThieu.baiCua ? GioiThieu.baiCua(dsGoc) : null;
+  if (GT_BAI) {
+    var gtTuBat = A.conHan(GT_BAI) && A.trangThaiThe(GT_BAI) !== 'khoa';
     GT_CTX = { lop: LOP, lopMa: LOP_DL, ma: MA_HS, ten: TOI, vaiTro: EM.vaiTro, xemNhu: !!EM.xemNhu, ban: CA_LOP };
     /* 12/10/2026 — CHỈ thầy với danh tính THẦY (`?gv=1`) mới xem kiểu "xem lại". Xem như em / đăng nhập thay ⇒ đi đường của EM:
        đọc tiến độ phim THẬT của em trên máy chủ (đã xong ⇒ thẻ; đang dở ⇒ mở tiếp đúng màn), thao tác không ghi lên máy chủ. */
@@ -1893,20 +1914,24 @@ A.napDuLieu().then(function(dl){
       /* v1.287.0 — thầy: phim TỰ MỞ một lần (có nút Đóng, không ghi gì) để thầy thấy đúng như em; sau đó chỉ có thẻ.
          12/10/2026 (thầy báo "đã xong mấy lần vẫn ra") — dấu "đã tự mở" trước nhớ theo TAB (sessionStorage) mà dashboard/app mở
          trang khóa ở tab/khung MỚI mỗi lần ⇒ lần nào cũng như lần đầu. Nay nhớ theo MÁY (localStorage): mỗi khóa tự mở đúng 1 lần/máy. */
-      GT_HIEN = true;
+      GT_ST = { xong: true, man: 0 };
       var khoaTab = 'gtk_thay_' + LOP_DL, daMo = false;
-      try { daMo = !!(localStorage.getItem(khoaTab) || sessionStorage.getItem(khoaTab)); localStorage.setItem(khoaTab, '1'); } catch (e) {}
-      if (!daMo) GioiThieu.mo(GT_CTX, { lai: true, daXong: true });
+      try { daMo = !!(localStorage.getItem(khoaTab) || sessionStorage.getItem(khoaTab)); if (gtTuBat) localStorage.setItem(khoaTab, '1'); } catch (e) {}
+      if (!daMo && gtTuBat) GioiThieu.mo(GT_CTX, { lai: true, daXong: true });
     }
     else GioiThieu.docTrangThai(GT_CTX).then(function(st){
-      if (st.xong) { GT_HIEN = true; GioiThieu.boChe(); if (!dangDocDiem) dungCot(); return; }
-      GioiThieu.mo(GT_CTX, { man: st.man, khiXong: function(){ GT_HIEN = true; if (!dangDocDiem) dungCot(); } });
+      GT_ST = st;
+      if (st.xong || !gtTuBat) {
+        if (!gtTuBat) GioiThieu.khongApDung(LOP_DL); else GioiThieu.boChe();   // qua hạn ⇒ lần sau khỏi che màn chờ
+        if (!dangDocDiem) dungCot();
+        return;
+      }
+      if (!dangDocDiem) dungCot();
+      GioiThieu.mo(GT_CTX, { man: st.man, khiXong: function(){ GT_ST = { xong: true, man: 0 }; if (!dangDocDiem) dungCot(); } });
     });
-  } else if (window.GioiThieu) GioiThieu.khongApDung(LOP_DL);   // khóa cũ (K9…) ⇒ lần sau khỏi che màn chờ
+  } else if (window.GioiThieu) GioiThieu.khongApDung(LOP_DL);   // lớp chưa được giao GIỚI THIỆU ⇒ lần sau khỏi che màn chờ
 
-  var ds = A.baiCuaLop(dl, LOP_DL)
-    .filter(function(b){ return !EM.thu || A.theChoHocThu(b, EM.vao); })   // v1.309.0 học thử: thẻ từ ngày vào
-    .map(theTuBai);
+  var ds = dsGoc.map(theTuBai);
   BAI_MOI = null;
   for (var i = 0; i < ds.length; i++) {
     if (ds[i].conHan) { BAI_MOI = ds[i]; break; }

@@ -1,0 +1,60 @@
+/* ============================================================
+   css/tran.css — TRẬN A SHOW SPEED ONLINE (web v1.347.0, 15/10/2026). Chép phần "on-*" của mẫu v2 thầy duyệt
+   (D:\OTHERS\CLAUDE\DAU GAME ONLINE - thiet ke\mau-v2\game.html). Skin sân neon = game/wordshake.css (chép AWord).
+   ============================================================ */
+html,body.trang-tran{height:100%;margin:0}
+body.trang-tran{background:radial-gradient(120% 90% at 50% 30%,#0A2418 0%,#04110B 60%,#020A06 100%);color:#E6FFF1;overflow:hidden;font-family:"Be Vietnam Pro","Segoe UI",system-ui,sans-serif}
+
+  #tranApp{height:100%;display:flex;align-items:center;justify-content:center}
+.wsg{padding:0}
+/* name chips beside the score boxes */
+.on-chip{position:absolute;top:12px;height:32px;display:flex;align-items:center;gap:8px;font:700 15px/1 var(--ws-vf);color:var(--ws-txt);white-space:nowrap}
+.on-chip.r{flex-direction:row-reverse}
+.on-av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font:800 12px/1 var(--ws-vf);color:#03150C;background:var(--ws-neon);box-shadow:0 0 10px rgba(61,245,138,.6)}
+.on-chip.r .on-av{background:var(--ws-cyan);box-shadow:0 0 10px rgba(55,215,255,.6)}
+.on-chip small{font:600 11px/1 var(--ws-vf);color:var(--ws-dim);letter-spacing:.08em}
+.on-dot{width:8px;height:8px;border-radius:50%;background:#3DF58A;box-shadow:0 0 6px #3DF58A}
+/* score numbers stay visible during play (online: you see the opponent's score) */
+.wsg-score b{opacity:1}
+/* centre columns get a name header */
+.on-cols{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ws-hair);position:relative}
+.on-cols::before{content:"";position:absolute;left:50%;top:8px;bottom:0;border-left:1px dashed var(--ws-hair)}
+.on-col{display:flex;flex-direction:column;min-height:0}
+.on-col h4{margin:0;padding:8px 10px 2px;font:800 11px/1 var(--ws-gf);letter-spacing:.24em;color:var(--ws-neon)}
+.on-col.c1 h4{text-align:right;color:var(--ws-cyan)}
+.on-col ol{list-style:none;margin:0;padding:6px 10px 0;overflow:auto;display:flex;flex-direction:column;gap:3px;scrollbar-width:thin;scrollbar-color:rgba(61,245,138,.3) transparent}
+.on-col li{display:flex;gap:7px;align-items:baseline;min-width:0}
+.on-col li b{font:italic 800 17px/1.3 var(--ws-gf);letter-spacing:.03em;color:var(--ws-neon2);flex:none}
+.on-col.c1 li{flex-direction:row-reverse;text-align:right}
+.on-col.c1 li b{color:var(--ws-cyan2)}
+.on-col li span{font:500 13px/1.35 var(--ws-vf);color:#8DB9A2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.on-col li.new{animation:wsg-pop .35s}
+/* lobby */
+.on-vs{display:flex;align-items:center;justify-content:center;gap:34px}
+.on-p{display:flex;flex-direction:column;align-items:center;gap:10px;width:150px}
+.on-p .on-av{width:84px;height:84px;font-size:28px}
+.on-p b{font:700 18px/1.2 var(--ws-vf)}
+.on-p.r .on-av{background:var(--ws-cyan);box-shadow:0 0 18px rgba(55,215,255,.7)}
+.on-p.l .on-av{box-shadow:0 0 18px rgba(61,245,138,.7)}
+.on-x{font:italic 800 40px/1 var(--ws-gf);color:var(--ws-txt);text-shadow:0 0 18px rgba(230,255,241,.6)}
+.on-meta{font:800 13px/1 var(--ws-gf);letter-spacing:.22em;color:var(--ws-dim)}
+.on-meta em{font-style:normal;color:var(--ws-amber)}
+.on-cd{font:italic 800 76px/1 var(--ws-gf);color:var(--ws-neon2);text-shadow:0 0 30px rgba(61,245,138,.9);min-height:76px}
+.on-cd.go{color:#fff}
+/* result */
+.on-res h2{margin:0;font:italic 800 54px/1 var(--ws-gf);text-shadow:0 0 26px rgba(61,245,138,.8)}
+.on-res.lose h2{color:#C9D6CF;text-shadow:0 0 18px rgba(127,168,147,.6)}
+.on-res.draw h2{color:var(--ws-amber);text-shadow:0 0 22px rgba(255,194,61,.7)}
+.on-sc{font:italic 800 34px/1 var(--ws-gf);letter-spacing:.04em}
+.on-sc .a{color:var(--ws-neon2)} .on-sc .b{color:var(--ws-cyan2)} .on-sc i{color:var(--ws-dim);margin:0 10px;font-style:normal}
+.on-pts{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.on-pill{padding:7px 14px;border-radius:4px;transform:skewX(-14deg);font:italic 800 16px/1 var(--ws-gf);letter-spacing:.06em;background:rgba(61,245,138,.12);border:1px solid rgba(61,245,138,.5);color:var(--ws-neon2)}
+.on-pill span{display:block;transform:skewX(14deg)}
+.on-pill.gold{background:var(--ws-amber);color:#231600;border-color:var(--ws-amber);box-shadow:0 0 16px rgba(255,194,61,.6)}
+.on-pill.mute{background:transparent;color:var(--ws-dim);border-color:rgba(127,168,147,.5)}
+.on-btns{display:flex;gap:14px}
+.on-btns .wsg-b{height:46px;padding:0 26px;font-size:20px}
+.on-btns .wsg-b.ghost{background:transparent;border:1.5px solid rgba(61,245,138,.6);color:var(--ws-neon2)}
+.wsg-askbox .sub{font:600 15px/1.4 var(--ws-vf);color:#CFEFDD;margin:-10px 0 20px}
+.on-res .wsg-miss{max-width:560px}
+.on-p.port .on-av{width:64px;height:64px;font-size:22px}

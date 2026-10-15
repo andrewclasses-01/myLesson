@@ -1,0 +1,209 @@
+/* =============================================================
+   A SHOW SPEED (ex-Wordshake, fixed GAME) — Đợt 386. Neon arcade skin, approved design v4.
+   Đợt 387: strip 69 → 56px (boxes 40px), tools 29px — the drawing is 1280x508.
+   Drawn at AWord's real 1280px fight geometry (69px strip, boards
+   392 | 440 | 392 x 408) inside .wsg-cv, then scaled to fit (see fit()).
+   Everything is scoped to .wsg.
+   ============================================================= */
+@import url("https://fonts.googleapis.com/css2?family=Saira:ital,wght@0,700;0,800;1,700;1,800&family=Be+Vietnam+Pro:wght@500;600;700&display=swap");
+
+.wsg{
+  --ws-neon:#3DF58A; --ws-neon2:#9BFFC4; --ws-cyan:#37D7FF; --ws-cyan2:#B4F0FF;
+  --ws-red:#FF4B5C; --ws-amber:#FFC23D; --ws-txt:#E6FFF1; --ws-dim:#7FA893;
+  --ws-g0:#030D09; --ws-g1:#05170F; --ws-cell:rgba(9,38,26,.88); --ws-hair:rgba(61,245,138,.2);
+  --ws-gf:"Saira","Baloo 2",system-ui,sans-serif;
+  --ws-vf:"Be Vietnam Pro","Baloo 2","Segoe UI",system-ui,sans-serif;
+  position:relative; width:100%; padding:12px 0 0; box-sizing:border-box; user-select:none; -webkit-user-select:none;
+}
+.wsg *,.wsg *::before,.wsg *::after{box-sizing:border-box}
+/* :where() keeps this reset at element weight, so every .wsg-* button rule below wins over it */
+:where(.wsg) button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;-webkit-tap-highlight-color:transparent;touch-action:manipulation;padding:0}
+.wsg svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.wsg-vp{position:relative;margin:0 auto;overflow:hidden}
+.wsg-cv{position:absolute;left:0;top:0;width:1280px;height:508px;transform-origin:0 0}
+
+/* ---------- stage ---------- */
+.wsg-stage{position:absolute;border-radius:8px;overflow:hidden;display:flex;flex-direction:column;color:var(--ws-txt);
+  background:radial-gradient(ellipse 75% 65% at 50% 42%,#0F4029 0%,var(--ws-g1) 62%,var(--ws-g0) 100%);
+  border:1px solid rgba(61,245,138,.38);box-shadow:0 12px 30px rgba(3,17,11,.35),inset 0 0 48px rgba(61,245,138,.08)}
+.wsg-stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(61,245,138,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(61,245,138,.07) 1px,transparent 1px);
+  background-size:46px 46px;background-position:center}
+.wsg-stage>*:not(.wsg-bubs){position:relative;z-index:1}
+
+/* ---------- HUD strip ---------- */
+/* Đợt 387 (thầy): strip boxes 62 → 40px tall, so the boards sit higher (y 56) */
+.wsg-hudline{position:absolute;left:12px;width:1256px;top:27px;height:2px;background:linear-gradient(90deg,transparent,rgba(61,245,138,.6) 18%,rgba(230,255,241,.35) 50%,rgba(55,215,255,.6) 82%,transparent)}
+.wsg-score{position:absolute;top:8px;height:40px;width:220px;transform:translateX(-50%) skewX(-14deg);display:grid;place-items:center;border-radius:4px;
+  background:linear-gradient(180deg,#0C2E20,#04130C);border:2px solid var(--ws-neon);box-shadow:0 0 16px rgba(61,245,138,.4),inset 0 0 22px rgba(61,245,138,.16)}
+.wsg-score b{display:block;transform:skewX(14deg);font:italic 800 31px/1 var(--ws-gf);color:var(--ws-neon2);text-shadow:0 0 14px rgba(61,245,138,.9);font-variant-numeric:tabular-nums}
+.wsg-score.s1{border-color:var(--ws-cyan);box-shadow:0 0 16px rgba(55,215,255,.4),inset 0 0 22px rgba(55,215,255,.16);background:linear-gradient(180deg,#0B2833,#04121A)}
+.wsg-score.s1 b{color:var(--ws-cyan2);text-shadow:0 0 14px rgba(55,215,255,.9)}
+.wsg-score.lead{box-shadow:0 0 30px rgba(61,245,138,.75),inset 0 0 26px rgba(61,245,138,.25)}
+.wsg-score.s1.lead{box-shadow:0 0 30px rgba(55,215,255,.75),inset 0 0 26px rgba(55,215,255,.25)}
+.wsg-score.bump b{animation:wsg-bump .55s cubic-bezier(.22,.9,.3,1)}
+/* Đợt 395 — the leader's box grows on its first number past the other team's score */
+.wsg-score{transition:transform .4s cubic-bezier(.3,1.5,.5,1),box-shadow .4s}
+.wsg-score.big{transform:translateX(-50%) skewX(-14deg) scale(1.3);z-index:3;box-shadow:0 0 34px rgba(61,245,138,.85),inset 0 0 26px rgba(61,245,138,.3)}
+.wsg-score.s1.big{box-shadow:0 0 34px rgba(55,215,255,.85),inset 0 0 26px rgba(55,215,255,.3)}
+/* ⭐ Đợt 401 — time's up: the score boxes slide from the strip (centre y 28) to the middle
+   (y 56 + 408/2 = 260), a little bigger, over the dimmed boards; the leader's box grows further.
+   ⭐ Đợt 458: --tx/--ty/--sc come from boxPlan() (JS): side by side in the middle for the count,
+   then back on their own board; they stay there on the result screen. */
+.wsg-score.down{z-index:4;transform:translateX(-50%) translate(var(--tx,0px),var(--ty,232px)) skewX(-14deg) scale(var(--sc,1.4));
+  transition:transform .8s cubic-bezier(.22,1,.36,1),box-shadow .4s}
+.wsg-score.down.big{transition:transform .5s cubic-bezier(.3,1.35,.5,1),box-shadow .4s;box-shadow:0 0 44px rgba(61,245,138,.9),inset 0 0 26px rgba(61,245,138,.3)}
+.wsg-score.s1.down.big{box-shadow:0 0 44px rgba(55,215,255,.9),inset 0 0 26px rgba(55,215,255,.3)}
+/* Đợt 458 — the dim: the two team boards AND, during the count, the centre board too — so the two
+   boxes (side by side over the middle) stand out of a dark, blurred background */
+.wsg.ending .wsg-stage[data-side]>*{filter:brightness(.35) saturate(.6) blur(4px);transition:filter .6s ease}
+.wsg.ending .wsg-stage[data-side]::before{opacity:.3;transition:opacity .6s ease}
+.wsg-stage:not([data-side])>*{transition:filter .6s ease}
+.wsg.ending-c .wsg-stage:not([data-side])>*{filter:brightness(.35) saturate(.6) blur(4px)}
+.wsg.ending-c .wsg-stage:not([data-side])::before{opacity:.3}
+/* Đợt 390 — score tank (ws-lib createTank): no number while playing, only the water;
+   the tank counts the number itself while it drains, then the real number returns */
+.wsg-score b{position:relative;z-index:1}
+.wsg-score.tank b{opacity:0}
+.wsg-tank .wst-num{font:italic 800 31px/1 var(--ws-gf);transform:skewX(14deg)}
+@keyframes wsg-bump{0%{transform:skewX(14deg) scale(1)}30%{transform:skewX(14deg) scale(1.4);color:#fff}100%{transform:skewX(14deg) scale(1)}}
+.wsg-clock{position:absolute;top:8px;height:40px;width:150px;left:640px;transform:translateX(-50%) skewX(-14deg);display:grid;place-items:center;border-radius:4px;
+  background:linear-gradient(180deg,#10261D,#030D09);border:2px solid rgba(230,255,241,.4);box-shadow:0 0 14px rgba(3,17,11,.35)}
+.wsg-clock span{display:block;transform:skewX(14deg);font:italic 800 28px/1 var(--ws-gf);color:var(--ws-txt);text-shadow:0 0 12px rgba(230,255,241,.7);font-variant-numeric:tabular-nums;letter-spacing:.04em}
+.wsg-clock.warn{border-color:var(--ws-red);animation:wsg-alarm 1s infinite}
+.wsg-clock.warn span{color:#FFD2D6;text-shadow:0 0 14px rgba(255,75,92,.95)}
+@keyframes wsg-alarm{0%,100%{box-shadow:0 0 8px rgba(255,75,92,.4)}50%{box-shadow:0 0 30px rgba(255,75,92,.95)}}
+
+/* ---------- tools under the boards — Đợt 387: game look (slanted, dark, neon edge),
+   29px tall = 2/3 of the old 44px white AWord buttons; only Home + Sound ---------- */
+.wsg-tools{position:absolute;left:640px;transform:translateX(-50%);display:flex;gap:12px;align-items:center}
+.wsg-tool{height:29px;width:48px;border-radius:4px;transform:skewX(-14deg);display:grid;place-items:center;color:var(--ws-neon2);font-size:16px;
+  background:linear-gradient(180deg,#0C2E20,#04130C);border:1.5px solid rgba(61,245,138,.7);box-shadow:0 0 10px rgba(61,245,138,.35),inset 0 0 10px rgba(61,245,138,.12);transition:filter .12s}
+.wsg-tool>span{display:grid;place-items:center;transform:skewX(14deg);filter:drop-shadow(0 0 4px rgba(61,245,138,.8))}
+.wsg-tool:active{filter:brightness(1.3)}
+.wsg-tool.off{color:var(--ws-dim);border-color:rgba(127,168,147,.5);box-shadow:none}
+.wsg-tool.off>span{filter:none}
+.wsg-tool[disabled]{opacity:.35;cursor:default;box-shadow:none}
+/* Đợt 395 — Options: icon + the level's name */
+.wsg-tool.wide{width:auto;padding:0 12px}
+.wsg-tool.wide>span{display:flex;gap:6px;align-items:center}
+.wsg-tool.wide em{font:italic 800 13px/1 var(--ws-gf);letter-spacing:.08em;text-transform:uppercase}
+.wsg-optbox{width:430px}
+.wsg-optbox .wsg-lab{margin-bottom:10px}
+.wsg-levels{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:22px}
+.wsg-levels button{position:relative;z-index:1;height:46px;border:1px solid rgba(61,245,138,.45);color:var(--ws-neon2);font:italic 800 19px/1 var(--ws-gf);text-transform:uppercase;letter-spacing:.06em;
+  border-radius:4px;transform:skewX(-14deg);background:rgba(61,245,138,.06);transition:color .25s}
+.wsg-levels button span{display:block;transform:skewX(14deg)}
+.wsg-levels button.on{color:#03150C;background:transparent}
+/* Đợt 395b — the chosen level's pill slides between the buttons (--i = 0/1/2) */
+.wsg-lvpill{position:absolute;left:0;top:0;height:46px;width:calc((100% - 20px) / 3);border-radius:4px;background:var(--ws-neon);box-shadow:0 0 14px rgba(61,245,138,.6);
+  transform:translateX(calc(var(--i, 0) * (100% + 10px))) skewX(-14deg);transition:transform .32s cubic-bezier(.3,1.25,.5,1)}
+.wsg-askbox .a.one{grid-template-columns:1fr;width:60%;margin:0 auto}
+
+/* ---------- "End this game?" (Home while playing) ---------- */
+/* the dim goes on the dark boards only — a see-through sheet would grey the light page around them */
+.wsg-ask{position:absolute;inset:0;z-index:10;display:grid;place-items:center}
+.wsg.asking .wsg-stage,.wsg.asking .wsg-score,.wsg.asking .wsg-clock{filter:brightness(.4) saturate(.7);transition:filter .15s}
+.wsg-askbox{width:360px;padding:26px 28px 24px;border-radius:8px;text-align:center;color:var(--ws-txt);
+  background:radial-gradient(ellipse 80% 70% at 50% 40%,#0F4029 0%,var(--ws-g1) 70%,var(--ws-g0) 100%);
+  border:2px solid var(--ws-neon);box-shadow:0 0 30px rgba(61,245,138,.45),inset 0 0 30px rgba(61,245,138,.12);animation:wsg-pop .25s}
+.wsg-askbox .q{font:italic 800 32px/1.1 var(--ws-gf);text-shadow:0 0 16px rgba(61,245,138,.7);margin-bottom:22px}
+.wsg-askbox .a{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.wsg-askbox .wsg-b{height:48px;font-size:22px}
+
+/* ---------- tiles ---------- */
+.wsg-t{border-radius:8px;background:var(--ws-cell);border:2px solid rgba(61,245,138,.55);color:var(--ws-neon2);
+  font-family:var(--ws-gf);font-weight:800;display:grid;place-items:center;line-height:1;
+  text-shadow:0 0 10px rgba(61,245,138,.75);box-shadow:inset 0 0 14px rgba(61,245,138,.14);
+  transition:transform .1s,background-color .12s,box-shadow .12s,border-color .12s}
+.wsg-t:active{transform:scale(.94)}
+.wsg-t.on{background:var(--ws-neon);border-color:var(--ws-neon2);color:#03150C;text-shadow:none;transform:scale(1.05);box-shadow:0 0 20px rgba(61,245,138,.8)}
+.wsg [data-side="1"] .wsg-t{border-color:rgba(55,215,255,.5);color:var(--ws-cyan2);text-shadow:0 0 10px rgba(55,215,255,.7);box-shadow:inset 0 0 14px rgba(55,215,255,.12)}
+.wsg [data-side="1"] .wsg-t.on{background:var(--ws-cyan);border-color:var(--ws-cyan2);color:#03150C;text-shadow:none;box-shadow:0 0 20px rgba(55,215,255,.8)}
+.wsg-t.idle{color:rgba(61,245,138,.25)!important;text-shadow:none!important}
+.wsg [data-side="1"] .wsg-t.idle{color:rgba(55,215,255,.25)!important}
+.wsg-t[disabled]{cursor:default}
+@keyframes wsg-jig{0%,100%{transform:rotate(0)}25%{transform:rotate(-7deg) scale(.96)}75%{transform:rotate(7deg) scale(.96)}}
+.wsg.shaking .wsg-t{animation:wsg-jig .1s linear infinite}
+.wsg-pv{display:flex;align-items:center;justify-content:center;border-radius:6px;background:rgba(0,0,0,.35);border:1px solid rgba(61,245,138,.3);
+  font-family:var(--ws-gf);font-weight:800;letter-spacing:.14em;color:var(--ws-txt);text-shadow:0 0 12px rgba(61,245,138,.7)}
+.wsg [data-side="1"] .wsg-pv{border-color:rgba(55,215,255,.3);text-shadow:0 0 12px rgba(55,215,255,.7)}
+
+/* ---------- slanted buttons ---------- */
+.wsg-btn2{display:grid;gap:12px}
+.wsg-b{border-radius:4px;transform:skewX(-14deg);display:grid;place-items:center;font:italic 800 20px/1 var(--ws-gf);text-transform:uppercase;letter-spacing:.06em;transition:filter .12s}
+.wsg-b>span{display:block;transform:skewX(14deg)}
+.wsg-b:active{filter:brightness(1.2)}
+.wsg-b.ent{background:linear-gradient(180deg,#6BFFA8,#22CF6C);color:#03150C;box-shadow:0 0 18px rgba(61,245,138,.45)}
+.wsg [data-side="1"] .wsg-b.ent{background:linear-gradient(180deg,#8AE9FF,#1FB5E3);box-shadow:0 0 18px rgba(55,215,255,.45)}
+.wsg-b.clr{background:linear-gradient(180deg,#FF7482,#DE2F43);color:#fff;box-shadow:0 0 14px rgba(255,75,92,.35)}
+.wsg-b[disabled]{filter:grayscale(.8) brightness(.6);cursor:default}
+
+/* ---------- bubbles ---------- */
+.wsg-bubs{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:3}
+.wsg-bub{position:absolute;left:50%;top:36%;transform:translateX(-50%);animation:wsg-rise 1.3s cubic-bezier(.22,.9,.3,1) forwards}
+.wsg-bub i{font:italic 800 34px/1 var(--ws-gf);min-width:78px;height:62px;padding:0 18px;border-radius:4px;display:grid;place-items:center;transform:skewX(-14deg);color:#03150C}
+.wsg-bub.ok i{background:var(--ws-neon);box-shadow:0 0 30px rgba(61,245,138,.9)}
+.wsg-bub.bad i{background:var(--ws-red);color:#fff;box-shadow:0 0 30px rgba(255,75,92,.9)}
+.wsg-bub.dup i{background:var(--ws-amber);font-size:24px;box-shadow:0 0 30px rgba(255,194,61,.9)}
+@keyframes wsg-rise{0%{opacity:0;transform:translate(-50%,18px) scale(.7)}15%{opacity:1;transform:translate(-50%,0) scale(1.08)}25%{transform:translate(-50%,0) scale(1)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-40px)}}
+
+/* ---------- centre board ---------- */
+.wsg-cen{padding:18px 22px 14px;display:flex;flex-direction:column;gap:12px;height:100%}
+.wsg-last{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:104px;justify-content:center}
+.wsg-last .w{font:italic 800 52px/1 var(--ws-gf);letter-spacing:.03em;color:var(--ws-txt);text-shadow:0 0 22px rgba(61,245,138,.75)}
+/* Đợt 387 — the word (or WINS) is dead centre; the arrow hangs outside it */
+.wsg .wt{position:relative;display:inline-block}
+.wsg .wt .wsg-arr{position:absolute;top:50%;transform:translateY(-50%)}
+.wsg .wt .wsg-arr.l{right:100%;margin-right:14px}
+.wsg .wt .wsg-arr.r{left:100%;margin-left:14px}
+/* the old centre word on its way to its team's column (see flyToList) */
+.wsg-fly{position:absolute;z-index:5;pointer-events:none;white-space:nowrap;transform-origin:0 0;
+  font:italic 800 52px/1 var(--ws-gf);letter-spacing:.03em;color:var(--ws-neon2);text-shadow:0 0 18px rgba(61,245,138,.8)}
+.wsg-fly.sd1{color:var(--ws-cyan2);text-shadow:0 0 18px rgba(55,215,255,.8)}
+.wsg-cols li.landing{visibility:hidden}
+.wsg-last.sd1 .w{text-shadow:0 0 22px rgba(55,215,255,.8)}
+.wsg-last .m{font:600 20px/1.35 var(--ws-vf);color:#CFEFDD;margin-top:8px;max-width:400px}
+.wsg-last .nt{font:500 13px/1.35 var(--ws-vf);color:var(--ws-dim)}
+.wsg-last.idle .w{color:rgba(61,245,138,.22);text-shadow:none}
+.wsg-arr{width:0;height:0;border-top:11px solid transparent;border-bottom:11px solid transparent;flex:none}
+.wsg-arr.l{border-right:16px solid var(--ws-neon);filter:drop-shadow(0 0 6px rgba(61,245,138,.9))}
+.wsg-arr.r{border-left:16px solid var(--ws-cyan);filter:drop-shadow(0 0 6px rgba(55,215,255,.9))}
+@keyframes wsg-pop{0%{transform:scale(.7);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:none}}
+.wsg-pop{animation:wsg-pop .35s}
+.wsg-cols{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--ws-hair);position:relative}
+.wsg-cols::before{content:"";position:absolute;left:50%;top:8px;bottom:0;border-left:1px dashed var(--ws-hair)}
+.wsg-cols ol{list-style:none;margin:0;padding:8px 10px 0;overflow:auto;display:flex;flex-direction:column;gap:3px;scrollbar-width:thin;scrollbar-color:rgba(61,245,138,.3) transparent}
+.wsg-cols li{display:flex;gap:7px;align-items:baseline;min-width:0}
+.wsg-cols li b{font:italic 800 17px/1.3 var(--ws-gf);letter-spacing:.03em;color:var(--ws-neon2);flex:none}
+.wsg-cols .c1 li b{color:var(--ws-cyan2)}
+.wsg-cols li span{font:500 13px/1.35 var(--ws-vf);color:#8DB9A2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1}
+.wsg-cols .c1 li{flex-direction:row-reverse;text-align:right}
+
+/* ready / result */
+.wsg-mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;height:100%;text-align:center;padding:18px 22px}
+.wsg-logo{font:italic 800 50px/1 var(--ws-gf);white-space:nowrap;letter-spacing:.02em;color:var(--ws-neon2);text-shadow:0 0 24px rgba(61,245,138,.8)}
+.wsg-logo span{color:var(--ws-txt);text-shadow:0 0 18px rgba(230,255,241,.6)}
+.wsg-play{background:linear-gradient(180deg,#6BFFA8,#22CF6C);color:#03150C;border-radius:4px;padding:14px 44px;font:italic 800 28px/1 var(--ws-gf);text-transform:uppercase;letter-spacing:.08em;transform:skewX(-14deg);box-shadow:0 0 26px rgba(61,245,138,.6)}
+.wsg-play span{display:block;transform:skewX(14deg)}
+.wsg-play[disabled]{filter:grayscale(.8) brightness(.6);cursor:default}
+.wsg-times{display:flex;gap:8px}
+.wsg-times button{border:1px solid rgba(61,245,138,.35);color:var(--ws-neon2);font:italic 800 17px/1 var(--ws-gf);padding:8px 14px;border-radius:4px;transform:skewX(-14deg);background:rgba(61,245,138,.06)}
+.wsg-times button span{display:block;transform:skewX(14deg)}
+/* Đợt 387 — one chip alone (double-tap): bigger, swipe ▲ +1 min / ▼ −1 min */
+.wsg-times.solo{animation:wsg-fade .2s ease}
+.wsg-tsolo{display:flex;flex-direction:column;align-items:center;gap:4px;touch-action:none;cursor:ns-resize}
+.wsg-tsolo button{font-size:24px!important;padding:10px 26px!important;min-width:132px}
+.wsg-tsolo i{width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;opacity:.75;filter:drop-shadow(0 0 5px rgba(61,245,138,.8))}
+.wsg-tsolo i.up{border-bottom:9px solid var(--ws-neon)}
+.wsg-tsolo i.dn{border-top:9px solid var(--ws-neon)}
+@keyframes wsg-fade{from{opacity:0}}
+.wsg-times button.on{background:var(--ws-neon);color:#03150C;box-shadow:0 0 14px rgba(61,245,138,.6)}
+.wsg-note{font:500 14px/1.35 var(--ws-vf);color:var(--ws-dim)}
+.wsg-res h2{margin:0;font:italic 800 58px/1 var(--ws-gf);color:var(--ws-txt);text-shadow:0 0 26px rgba(61,245,138,.8)}
+.wsg-lab{font:700 12px/1 var(--ws-gf);letter-spacing:.3em;color:var(--ws-dim)}
+.wsg-miss{display:grid;grid-template-columns:1fr 1fr;gap:3px 16px;text-align:left;width:100%}
+.wsg-miss div{min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wsg-miss b{font:italic 800 15px/1.35 var(--ws-gf);color:var(--ws-neon2)}
+.wsg-miss span{font:500 13px/1.35 var(--ws-vf);color:#8DB9A2}
+@media (prefers-reduced-motion:reduce){.wsg *{animation-duration:.01ms!important;transition:none!important}}

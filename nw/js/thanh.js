@@ -274,6 +274,8 @@
     // ⭐ v1.346.0 — KHUNG GIỮ SỐNG (?nhung=1) của trang lớp/khóa/dashboard thì PHẢI ghi nhịp: trang mẹ (không phải trang nw/)
     //   chưa từng ghi hoatDongLuc ⇒ em đang làm bài ở trang lớp mà bạn thấy offline. (Khung chỉ ghi khi tab đang hiện.)
     if (!hop || NW.laNhung) batNhip();
+    // ⭐ v1.347.0 — nghe LỜI MỜI THÁCH ĐẤU đến em (nw/js/thachdau.js) ở mọi trang nw/ + khung giữ sống của trang lớp/khóa/dashboard
+    if (NW.ThachDau && (!hop || NW.laNhung)) NW.ThachDau.nghe();
     var f = await NW.fb();
     var uid = NW.toi.uid;
     if (!hop) f.fs.onSnapshot(

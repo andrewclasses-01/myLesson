@@ -91,12 +91,32 @@
     var bay = Date.now();
     return (await GD.ds()).filter(function (g) { return GD.trangThai(g, bay) === 'dang'; }).length;
   };
+  // ⭐ Đợt 2: bảng còn giữ 30 trận mới nhất của lớp (`tran`, hàm máy chủ ghi) ⇒ GD.tranGanDay(gid, lop) sau khi gọi GD.bang
+  var TRAN_LOP = {};
   GD.bang = async function (gid, lop) {
-    if (NW.laBanThu()) return mau().bang[gid + '/' + lop] || {};
+    if (NW.laBanThu()) { TRAN_LOP[gid + '/' + lop] = []; return mau().bang[gid + '/' + lop] || {}; }
     try {
       var f = await NW.fb(), s = await f.fs.getDoc(f.fs.doc(f.db, 'giaiDau', gid, 'bang', lop));
-      return s.exists() ? (s.data().em || {}) : {};
+      var d = s.exists() ? s.data() : {};
+      TRAN_LOP[gid + '/' + lop] = d.tran || [];
+      return d.em || {};
     } catch (e) { console.warn('[giải đấu] bảng', e); return {}; }
+  };
+  GD.tranGanDay = function (gid, lop) { return TRAN_LOP[gid + '/' + lop] || []; };
+  // lịch sử trận của em (tdLichSu/{uid}, hàm máy chủ ghi — 30 trận mới nhất, cả giao hữu)
+  GD.lichSu = async function () {
+    if (NW.laBanThu()) return [];
+    try { var f = await NW.fb(), s = await f.fs.getDoc(f.fs.doc(f.db, 'tdLichSu', NW.toi.uid)); return s.exists() ? (s.data().ds || []) : []; }
+    catch (e) { return []; }
+  };
+  var KQ = { thang: ['T', 'Thắng'], hoa: ['H', 'Hòa'], thua: ['B', 'Thua'] };
+  GD.lichSuHtml = function (ds) {
+    if (!ds.length) return '<div class="trong">Em chưa đấu trận nào.</div>';
+    return ds.slice(0, 8).map(function (m) {
+      var k = KQ[m.kq] || KQ.hoa, d = { thang: 2, hoa: 1, thua: 0 }[m.kq] || 0;
+      return '<div class="gd-tran"><span class="kq ' + k[0] + '">' + k[0] + '</span><div class="gd-noi">Gặp <b>' + an(m.vsTen || '?') + '</b><small>' + an(NW.chuGio(m.luc)) + ' · ' + (m.giai ? 'Giải đấu' : 'Giao hữu') +
+        (m.ly ? ' · ' + an(/^roi/.test(m.ly) ? 'có bạn rời trận' : 'có bạn mất kết nối') : '') + '</small></div><span class="ty-so">' + (m.toi || 0) + '–' + (m.ban || 0) + '</span><span class="cong">' + (m.giai ? '+' + d : '—') + '</span></div>';
+    }).join('');
   };
   async function nguoiLop(lop) {
     if (NW.laBanThu()) return mau().nguoi.filter(function (n) { return n.cacLop.indexOf(lop) >= 0; });
@@ -159,9 +179,14 @@
             '<button type="button" class="gd-nut-td' + (giaoHuu ? ' gh' : '') + '" data-td="' + an(n.uid) + '"' + (o ? '' : ' disabled') + '>' + IC.kiem + (giaoHuu ? 'Giao hữu' : 'Thách đấu') + '</button></div>';
         }).join('') : '<div class="trong">Lớp chưa có bạn nào khác.</div>') + '</div>';
     }
-    function ganNutTd() {
-      // ⭐ Đợt 1: CHƯA đấu được (trận thật = Đợt 2) ⇒ hộp "sắp mở" (thầy chốt 15/10)
-      $$('[data-td]', than).forEach(function (b) { b.onclick = function () { NW.sapMo('Thách đấu'); }; });
+    // ⭐ Đợt 2 (v1.347.0): nút Thách đấu / Giao hữu ⇒ lời mời thật (js/thachdau.js) — ctx = { lop, giai, phut, lv, tenGiai }
+    function ganNutTd(ctx, ds) {
+      $$('[data-td]', than).forEach(function (b) {
+        b.onclick = function () {
+          var uid = b.getAttribute('data-td'), n = (ds.filter(function (x) { return x.n.uid === uid; })[0] || {}).n;
+          if (n && NW.ThachDau) NW.ThachDau.moi(n, ctx);
+        };
+      });
     }
     function biaHtml(g) {
       return '<div class="gd-bia"><b>' + an(g.ten.toUpperCase()) + '</b><span>A SHOW SPEED</span></div>';
@@ -172,9 +197,34 @@
       }).join('') + '</div>' : '';
     }
 
+    // ⭐ Đợt 2 — thầy xem các trận ĐANG ĐẤU của giải (tranDau giai == id, trangThai 'choi') + 30 trận gần đây của lớp (bảng)
+    async function dangDauHtml(g) {
+      if (g._tt !== 'dang' || banThu) return '';
+      var ds = [];
+      try {
+        var f = await NW.fb(), snap = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('giai', '==', g.id), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(30)));
+        snap.forEach(function (d) { ds.push(d.data()); });
+      } catch (e) { console.warn('[giải đấu] đang đấu', e); }
+      return '<div class="card gd-the"><h3><span class="gd-nhay"></span>Đang đấu<small>' + ds.length + ' trận</small></h3>' +
+        (ds.length ? ds.map(function (t) {
+          var con = Math.max(0, Math.round(((t.ketThuc || 0) - Date.now()) / 1000));
+          return '<div class="gd-tran"><div class="gd-noi">' + an(t.tenA) + ' <b>vs</b> ' + an(t.tenB) + '<small>' + an(tenLop(t.lop)) + ' · còn ' + Math.floor(con / 60) + ':' + hai(con % 60) + '</small></div>' +
+            '<span class="ty-so">' + ((t.diem || {}).a || 0) + '–' + ((t.diem || {}).b || 0) + '</span></div>';
+        }).join('') : '<div class="trong">Không có trận nào đang đấu.</div>') + '</div>';
+    }
+    function tranGanDayHtml(ds) {
+      if (!ds.length) return '<div class="trong">Chưa có trận nào.</div>';
+      return ds.slice(0, 12).map(function (m) {
+        var kq = m.kq === 'thang' ? an(m.tenA) + ' thắng' : m.kq === 'thua' ? an(m.tenB) + ' thắng' : 'Hòa';
+        return '<div class="gd-tran"><div class="gd-noi">' + an(m.tenA) + ' – ' + an(m.tenB) + '<small>' + an(NW.chuGio(m.luc)) + ' · ' + kq +
+          (m.ly ? ' · ' + (/^roi/.test(m.ly) ? 'có bạn rời trận' : 'có bạn mất kết nối') : '') + '</small></div><span class="ty-so">' + (m.da || 0) + '–' + (m.db || 0) + '</span></div>';
+      }).join('');
+    }
+
     // ===== HỌC SINH =====
     async function veHs() {
       var lopEm = (toi.cacLop && toi.cacLop.length ? toi.cacLop : [toi.lop]).filter(Boolean);
+      var lsHtml = GD.lichSuHtml(await GD.lichSu()), ctx = null, dsTd = [];
       var giaiCua = {};   // lớp → giải đang diễn ra của lớp đó
       DS.forEach(function (g) { if (g._tt === 'dang') g.lops.forEach(function (l) { if (lopEm.indexOf(l) >= 0 && !giaiCua[l]) giaiCua[l] = g; }); });
       var lopCo = lopEm.filter(function (l) { return giaiCua[l]; });
@@ -183,6 +233,7 @@
         var g = giaiCua[xemLop], ds = await hangLop(g, xemLop);
         var vt = 0; ds.forEach(function (x, i) { if (x.n.uid === toi.uid) vt = i; });
         var cua = (ds[vt] || {}).r, coTran = soTran(cua) > 0;
+        ctx = { lop: xemLop, giai: g.id, phut: g.phut, lv: g.lv, tenGiai: g.ten }; dsTd = ds;
         than.innerHTML =
           '<div class="card gd-hero">' + biaHtml(g) + '<div class="gd-noi">' +
             '<div class="meta"><span class="gd-pill dang">Đang diễn ra</span>' + ngay(g.tu) + ' → ' + ngay(g.den) + ' · ' + g.lops.map(tenLop).map(an).join(', ') + '</div>' +
@@ -195,11 +246,12 @@
           '</div></div>' +
           chipLop(lopCo, xemLop, 'data-lop') +
           '<div class="gd-luoi"><div class="card gd-the"><h3>' + IC.cup + 'Bảng xếp hạng ' + an(tenLop(xemLop)) + '<small>Tự cập nhật sau mỗi trận</small></h3>' + bangHtml(g, ds) + '</div>' +
-          '<div class="gd-cot">' + banHtml(ds, false) + '<div class="card gd-the"><h3>Trận của em</h3><div class="trong">Em chưa đấu trận nào.</div></div></div></div>';
+          '<div class="gd-cot">' + banHtml(ds, false) + '<div class="card gd-the"><h3>Trận của em</h3>' + lsHtml + '</div></div></div>';
       } else {
         // chưa có giải nào đang mở cho lớp em ⇒ đấu giao hữu + giải vừa xong
         if (lopEm.indexOf(xemLop) < 0) xemLop = lopEm.indexOf(toi.lop) >= 0 ? toi.lop : lopEm[0];
         var ds2 = xemLop ? (await nguoiLop(xemLop).catch(function () { return []; })).map(function (n) { return { n: n, r: null }; }) : [];
+        ctx = { lop: xemLop, giai: '' }; dsTd = ds2;
         var cu = DS.filter(function (x) { return x._tt === 'xong' && x.lops.indexOf(xemLop) >= 0; })[0];
         var top = cu ? (await hangLop(cu, xemLop)).filter(function (x) { return soTran(x.r) > 0; }).slice(0, 3) : [];
         var sap = DS.filter(function (x) { return x._tt === 'sap' && x.lops.some(function (l) { return lopEm.indexOf(l) >= 0; }); })[0];
@@ -209,10 +261,10 @@
           chipLop(lopEm, xemLop, 'data-lop') +
           '<div class="gd-luoi">' + (cu ? '<div class="card gd-the"><h3>' + IC.cup + 'Giải vừa xong</h3><div class="gd-cu"><b>' + an(cu.ten) + '</b> <span class="gd-pill xong">Đã xong</span>' +
             (top.length ? '<div class="top3">' + top.map(function (x, i) { return '<span>' + ['🥇', '🥈', '🥉'][i] + ' ' + an(x.n.ten) + ' · ' + GD.diem(x.r) + 'đ</span>'; }).join('') + '</div>' : '<p class="tiny">Giải chưa có trận nào.</p>') + '</div></div>' : '') +
-          '<div class="gd-cot">' + banHtml(ds2, true) + '</div></div>';
+          '<div class="gd-cot">' + banHtml(ds2, true) + '<div class="card gd-the"><h3>Trận của em</h3>' + lsHtml + '</div></div></div>';
       }
       $$('[data-lop]', than).forEach(function (b) { b.onclick = function () { xemLop = b.getAttribute('data-lop'); veHs(); }; });
-      ganNutTd();
+      ganNutTd(ctx, dsTd);
     }
 
     // ===== THẦY =====
@@ -245,7 +297,7 @@
       } else {
         var ds = await hangLop(g, xemLop);
         ct = chipLop(g.lops, xemLop, 'data-lopt') + '<div class="gd-luoi"><div class="card gd-the"><h3>' + IC.cup + 'Bảng xếp hạng ' + an(tenLop(xemLop)) + '<small>' + (g._tt === 'xong' ? 'Chốt lúc đóng giải' : 'Tự cập nhật') + '</small></h3>' + bangHtml(g, ds, true) + '</div>' +
-          '<div class="gd-cot"><div class="card gd-the"><h3>Trận gần đây<small>' + an(tenLop(xemLop)) + '</small></h3><div class="trong">Chưa có trận nào.</div></div></div></div>';
+          '<div class="gd-cot">' + (await dangDauHtml(g)) + '<div class="card gd-the"><h3>Trận gần đây<small>' + an(tenLop(xemLop)) + '</small></h3>' + tranGanDayHtml(GD.tranGanDay(g.id, xemLop)) + '</div></div></div>';
       }
       than.innerHTML = '<div class="gd-ds">' + the + '</div>' +
         '<div class="gd-ct-dau"><h2>' + an(g.ten) + '</h2><span class="gd-pill ' + t[0] + '">' + t[1] + '</span><div class="tac-vu">' + tacVu + '</div></div>' + ct;

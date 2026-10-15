@@ -146,3 +146,14 @@
   .gd-ct-dau .tac-vu{margin-left:0}
 }
 @media (prefers-reduced-motion:reduce){.gd-pill.dang::before{animation:none}}
+
+/* Đợt 2 (v1.347.0) — dòng trận: lịch sử của em · trận gần đây · đang đấu */
+.gd-tran{display:flex; align-items:center; gap:10px; padding:8px 0; border-top:1px solid var(--line); font-size:13.5px}
+.gd-the h3 + .gd-tran{border-top:0}
+.gd-tran .gd-noi{flex:1; min-width:0}
+.gd-tran .gd-noi small{display:block; color:var(--muted); font-size:11.5px; font-weight:600}
+.gd-tran .kq{width:30px; height:30px; border-radius:9px; display:grid; place-items:center; font-weight:900; font-size:13px; flex:none}
+.gd-tran .kq.T{background:#E4F6EC; color:var(--xanh-la)} .gd-tran .kq.H{background:var(--amber-soft); color:#B9771A} .gd-tran .kq.B{background:var(--do-soft); color:var(--do)}
+.gd-tran .ty-so{font-weight:900; font-size:15px; font-variant-numeric:tabular-nums}
+.gd-tran .cong{font-weight:800; font-size:12px; color:var(--accent); min-width:26px; text-align:right}
+.gd-nhay{width:8px; height:8px; border-radius:50%; background:var(--do); display:inline-block; animation:gd-nhay 1s infinite}

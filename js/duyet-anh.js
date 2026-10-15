@@ -164,7 +164,8 @@
         '<div class="phu">' + luc(x.luc) + (x.may ? ' · ' + E(x.may) : '') + '</div></div><span class="loai ' + x.loai + '">' + (x.loai === 'av' ? 'ẢNH ĐẠI DIỆN' : 'ẢNH BÌA') + '</span></div>' +
       '<div class="t-anh' + (x.loai === 'bia' ? ' bia' : '') + '"><div class="t-o"><div class="t-nh">ĐANG DÙNG</div>' + khung(x.cu, false, x.loai === 'bia' ? 'Bìa mặc định' : 'Chưa có ảnh') + '</div>' + I.mui +
         '<div class="t-o"><div class="t-nh moi">ẢNH MỚI</div>' + khung(x.url, nghi) + '</div></div>' +
-      '<div class="t-loc">' + locChip(x.loc) + '<span class="chip su">' + I.gio + E(su) + '</span></div>' +
+      '<div class="t-loc">' + (x.thayThu ? '<span class="chip nghi">' + I.tin + 'Thầy thử (đăng nhập thay em) · em không nhận thông báo</span>' : '') +
+        locChip(x.loc) + '<span class="chip su">' + I.gio + E(su) + '</span></div>' +
       '<div class="t-chan"><button class="nut tu" type="button" data-tu>' + I.x + 'TỪ CHỐI</button><button class="nut duyet" type="button" data-duyet>' + I.ok + 'DUYỆT</button></div>' +
       '<div class="t-tu"><div class="nh">LÝ DO TỪ CHỐI · EM SẼ THẤY</div><div class="ly">' + LY.map(function (l) { return '<button type="button">' + l + '</button>'; }).join('') + '</div>' +
         '<textarea placeholder="Thầy gõ lý do (em sẽ đọc được)…" maxlength="150"></textarea>' +

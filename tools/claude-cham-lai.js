@@ -207,6 +207,7 @@ async function cmdCapNhatLink() {
   require('../js/ktdv-bc.js');
   const goiY = global.window.KTDV_BC.goiY;
   const s = JSON.parse(cs.json), gc = bc.ghiChu || {}, sua = bc.sua || {};
+  s.bai = s.bai.filter((b) => !(bc.an || {})[b.ma]);   // 15/10/2026 bài thầy bỏ tích trên dashboard ⇒ không gửi phụ huynh
   s.bai.forEach((b) => {
     if (b.chua || !b.ds) return;
     const B = MOI_BAI.find((x) => x.ma === b.ma);

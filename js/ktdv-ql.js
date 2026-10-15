@@ -555,7 +555,7 @@
     document.body.appendChild(nen);
     document.documentElement.classList.add('ktbc-dang-mo');
     var trang = nen.querySelector('.ktbc-trang');
-    var BC = { sua: {}, loai: {}, ghiChu: {}, uuDiem: '', hanChe: '', guiLuc: 0, token: '' };
+    var BC = { sua: {}, loai: {}, ghiChu: {}, an: {}, uuDiem: '', hanChe: '', guiLuc: 0, token: '' };   // an: { C4: true } = bài thầy BỎ TÍCH, không gửi phụ huynh (15/10/2026)
     var doi = false, assign = {}, che = 'ph';
     var dong = function () {
       if (doi && !confirm('Có thay đổi chưa lưu. Đóng không lưu?')) return;
@@ -568,7 +568,7 @@
       napHet()
     ]).then(function (r) {
       if (r[0]) BC = Object.assign(BC, r[0]);
-      BC.ghiChu = BC.ghiChu || {};
+      BC.ghiChu = BC.ghiChu || {}; BC.an = BC.an || {};
       r[1].forEach(function (a, i) { if (a) assign[baiCua(h)[i].code] = a; });
       veBc();
     });
@@ -615,7 +615,8 @@
         v: 2, ten: h.ten, hoTen: h.hoTen || '', truong: h.truong || '', lopTruong: h.lopTruong || '',
         anh: (/^https?:\/\//.test(h.anh || '') && h.anh.length < 600) ? h.anh : '',
         ngayLam: ngayLam || 0, ngayBc: Date.now(), uuDiem: BC.uuDiem || '', hanChe: BC.hanChe || '',
-        bai: tk.map(function (o) {
+        // ⭐ 15/10/2026 — bài thầy bỏ tích (BC.an) KHÔNG có trong ảnh chụp ⇒ phụ huynh không thấy; tổng điểm quy về 100 theo các bài còn lại
+        bai: tk.filter(function (o) { return !BC.an[o.b.ma]; }).map(function (o) {
           if (!o.k) return { ma: o.b.ma, ten: o.b.ten, n: o.b.n, chua: true, chon: !!o.b.chon };
           // TẤT CẢ các câu (đúng + sai) như sheet Excel chấm: STT · đề · bài làm · nhận xét. Câu sai: lời giải thích = thầy đã sửa, chưa sửa thì nháp tự động.
           var ds = o.rv.map(function (r, i) {
@@ -639,7 +640,12 @@
       var h2 = '<div class="khong-in ktbc-goi ktbc-ph-goi">Đây là bản phụ huynh sẽ thấy. Sửa nhận xét và lời giải thích từng câu sai ngay trong trang (câu sai có sẵn nháp tự động), bấm <b>Lưu</b>, rồi <b>Gửi phụ huynh</b> để lấy link.' +
         (BC.claudeLuc ? '<br><b>Claude đã chấm lại ngày ' + gioVN(BC.claudeLuc) + '</b>' + (BC.claudeGhiChu ? ' — ' + E(BC.claudeGhiChu) : '') + ' (lời giải thích + nhận xét bên dưới là bản của Claude; chưa bấm “Cập nhật link PH” thì phụ huynh vẫn thấy bản cũ).' : '') +
         (BC.token ? '<br>Link đang dùng: <a href="' + E(linkKq(BC.token)) + '" target="_blank" rel="noopener">' + E(linkKq(BC.token).replace('https://', '')) + '</a>' + (BC.guiLuc ? ' · cập nhật ' + gioVN(BC.guiLuc) : '') + ' — sau khi sửa bấm “Cập nhật link PH” để phụ huynh thấy bản mới.' : '') + '</div>';
-      h2 += window.KTDV_BC.html(chup(tk), { sua: true });
+      // ⭐ 15/10/2026 — tích chọn bài gửi phụ huynh (mặc định tích hết); bỏ tích ⇒ bài đó biến khỏi bản phụ huynh + link
+      var soAn = tk.filter(function (o) { return BC.an[o.b.ma]; }).length;
+      h2 += '<div class="khong-in ktbc-chon"><b>Bài gửi phụ huynh:</b>' + tk.map(function (o) {
+        return '<label' + (BC.an[o.b.ma] ? ' class="bo"' : '') + '><input type="checkbox" data-bc-an="' + o.b.ma + '"' + (BC.an[o.b.ma] ? '' : ' checked') + '>' + o.b.ma + '. ' + E(o.b.ten) + (o.k ? '' : ' <i>(chưa nộp)</i>') + '</label>';
+      }).join('') + (soAn ? '<span class="ktbc-chon-ghi">Đang ẩn ' + soAn + ' bài — phụ huynh không thấy; tổng điểm chỉ tính các bài được tích.' + (BC.token ? ' Bấm “Cập nhật link PH” để link đã gửi cũng ẩn theo.' : '') + '</span>' : '') + '</div>';
+      h2 += soAn === tk.length ? '<div class="ktq-trong">Chưa tích bài nào — phụ huynh sẽ không thấy bài nào.</div>' : window.KTDV_BC.html(chup(tk), { sua: true });
       trang.innerHTML = h2;
       trang.querySelectorAll('[data-bc-nx]').forEach(function (t) {
         t.addEventListener('input', function () { BC[t.getAttribute('data-bc-nx')] = t.value; t.nextElementSibling.innerHTML = t.value.split(/\n+/).filter(Boolean).map(function (x) { return '<li>' + E(x) + '</li>'; }).join(''); doi = true; danhDau(); });
@@ -750,7 +756,7 @@
     }
     function danhDau() { var t = nen.querySelector('.ktbc-luu-tt'); t.textContent = doi ? '● chưa lưu' : ''; }
     function luu(them) {
-      var goc = { sua: BC.sua, loai: BC.loai, ghiChu: BC.ghiChu || {}, uuDiem: BC.uuDiem || '', hanChe: BC.hanChe || '', guiLuc: BC.guiLuc || 0, token: BC.token || '', claudeLuc: BC.claudeLuc || 0, claudeGhiChu: BC.claudeGhiChu || '', ma: h.ma, ten: h.ten, capNhat: Date.now() };
+      var goc = { sua: BC.sua, loai: BC.loai, ghiChu: BC.ghiChu || {}, an: BC.an || {}, uuDiem: BC.uuDiem || '', hanChe: BC.hanChe || '', guiLuc: BC.guiLuc || 0, token: BC.token || '', claudeLuc: BC.claudeLuc || 0, claudeGhiChu: BC.claudeGhiChu || '', ma: h.ma, ten: h.ten, capNhat: Date.now() };
       Object.assign(goc, them || {});
       return kho().then(function (f) { return f.fs.setDoc(f.fs.doc(f.db, 'ktdvBaoCao', String(h.ma)), goc); })
         .then(function () { Object.assign(BC, them || {}); doi = false; danhDau(); tb('Đã lưu báo cáo.'); }, function (e) { tb(chuLoi(e), true); });
@@ -758,6 +764,7 @@
 
     // ---- GỬI PHỤ HUYNH: ghi ảnh chụp vào kho riêng `ktdvChiaSe/{token}` ⇒ link ngắn kiemtra.andrewclasses.com/kq?c=… ----
     function guiPH(btn) {
+      if (baiCua(h).every(function (b) { return BC.an[b.ma]; })) { tb('Chưa tích bài nào để gửi phụ huynh.', true); return; }
       var token = BC.token || taoToken(), chu = btn.textContent;
       btn.disabled = true; btn.textContent = 'Đang tạo link…';
       var snap = chup();
@@ -790,6 +797,11 @@
     }
     function chep(chu) { try { navigator.clipboard.writeText(chu); } catch (e) { var t = document.createElement('textarea'); t.value = chu; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); } }
 
+    nen.addEventListener('change', function (e) {   // 15/10/2026 tích / bỏ tích bài gửi phụ huynh
+      var a = e.target.closest('[data-bc-an]'); if (!a) return;
+      if (a.checked) delete BC.an[a.getAttribute('data-bc-an')]; else BC.an[a.getAttribute('data-bc-an')] = true;
+      doi = true; danhDau(); var cu = nen.querySelector('.ktbc-cuon').scrollTop; veBc(); nen.querySelector('.ktbc-cuon').scrollTop = cu;
+    });
     nen.addEventListener('click', function (e) {
       var b = e.target.closest('[data-bc]');
       if (b) {
@@ -940,6 +952,10 @@
     '.ktbc-ky{margin-top:24px;font-size:11.5px;color:var(--nhat);text-align:right}' +
     '.ktbc-trang .kqp{max-width:720px;margin:0 auto} .ktbc-ph-goi{max-width:720px;margin:0 auto 14px!important;background:#F2F6F5;border-radius:10px;padding:8px 12px;line-height:1.5}' +
     '.ktbc-ph-goi a{color:var(--xanh);font-weight:700}' +
+    '.ktbc-chon{max-width:720px;margin:0 auto 14px;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:13px;border:1.5px solid #CFE3DF;border-radius:10px;padding:8px 12px;background:#fff}' +
+    '.ktbc-chon label{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;background:#E6F4F1;cursor:pointer;user-select:none}' +
+    '.ktbc-chon label.bo{background:#F3F4F4;color:#9AA7A5;text-decoration:line-through} .ktbc-chon label i{font-style:normal;font-size:11px;color:#8AA09C}' +
+    '.ktbc-chon input{margin:0;width:15px;height:15px;accent-color:#0E7C6E} .ktbc-chon-ghi{flex-basis:100%;font-size:12px;color:#A86A12}' +
     '.ktbc-gv{margin-left:6px;opacity:.85} .ktbc-gv-dau{margin-bottom:14px;padding:10px 14px;border-radius:10px;background:#FDF3E3;color:#8A5A12;font-size:13px} .ktbc-gv-dau b{display:block;font-size:13.5px;letter-spacing:.04em}' +
     '.ktq-lk{display:flex;gap:8px;align-items:center;margin-bottom:10px} .ktq-lk input{flex:1;min-width:0;font:700 14px var(--font);padding:10px;border:1px solid var(--vien-dam);border-radius:10px;color:var(--chu);background:#F7FAF9}' +
     '.ktq-lk a{font-weight:800;color:var(--xanh);white-space:nowrap}' +

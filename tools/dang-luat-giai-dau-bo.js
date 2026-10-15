@@ -198,7 +198,7 @@ async function kiem() {
     xoa.unshift('tranDau/' + TRAN);
     const tu = (uid, w) => goi(`${FS_GOC}/tranDau/${TRAN}/tu${k}&documentId=${w}`, { method: 'POST', headers: H2(tk[uid]), json: { fields: { uid: S(uid) } } });
     const r1 = await tu(A, 'apple_0'); ok('A gửi từ có đuôi bàn "apple_0" = 200', r1.status, 200); xoa.unshift('tranDau/' + TRAN + '/tu/apple_0');
-    ok('B gửi lại đúng từ đó (Taken) = 403', (await tu(Bb, 'apple_0')).status, 403);
+    ok('B gửi lại đúng từ đó (Taken: REST báo đã có) = 409', (await tu(Bb, 'apple_0')).status, 409);
     const r2 = await tu(A, 'go'); ok('A gửi từ 2 chữ "go" = 200', r2.status, 200); xoa.unshift('tranDau/' + TRAN + '/tu/go');
     ok('A gửi tên từ sai mẫu "Apple-1" = 403', (await tu(A, 'Apple-1')).status, 403);
     ok('C (cùng lớp, ngoài trận) đọc danh sách từ = 200', (await goi(`${FS_GOC}/tranDau/${TRAN}/tu${k}`, { headers: H2(tk[C]) })).status, 200);

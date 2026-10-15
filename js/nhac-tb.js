@@ -116,7 +116,7 @@
   }
 
   // ---------- chat LỚP (js/chat.js AWChat.gui gọi sau khi ghi tin thành công) ----------
-  // tin = {ten, ma, vaiTro, chu, luc}
+  // tin = {ten, ma, vaiTro, chu, luc, nhom?: [tên trong "@Bạn hiền"]}
   function sauGuiLop(maLop, tinId, tin) {
     if (!tinId || !/@/.test(String(tin.chu || ''))) return Promise.resolve(0);
     return napDl().then(function (dl) {
@@ -124,6 +124,8 @@
       if (!l) return 0;
       var hs = (l.hocSinh || []).filter(function (h) { return !h.thu; }), laThay = tin.vaiTro === 'gv';   // v1.309.0 học thử không ở chat lớp
       var ten = timTen(tin.chu, hs.map(function (h) { return h.ten; }).concat([TEN_THAY]));
+      // v1.339.0 — viên "@Bạn hiền" (nút REMIND): tên các bạn đi kèm tin (`nhom`) ⇒ báo từng em như bị @tên.
+      (tin.nhom || []).forEach(function (t) { if (t && t !== 'All' && ten.indexOf(t) < 0) ten.push(t); });
       if (!ten.length) return 0;
       var uids = [];
       ten.forEach(function (t) {

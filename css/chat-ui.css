@@ -278,6 +278,17 @@
 .cu-tip .e img{width:14px; height:14px}
 .cu-tip .e b{font-weight:500; font-size:11px; margin:0 2px 0 1px; opacity:.85}
 .cu-tip .them{opacity:.75; margin-top:2px; font-style:italic}
+/* ⭐ v1.339.0 — viên "@Bạn hiền" (nút REMIND, js/chat-ui.js vienNhom): bấm ⇒ ô danh sách tên; người xem có tên ⇒ viên CAM. */
+.cu-bh{display:inline-flex; align-items:center; gap:4px; margin:0 1px; padding:0 8px 0 7px; border-radius:999px; background:#E7F0FF; border:1px solid #BFD3FB;
+  color:#2B5FD0; font:600 .93em/1.55 var(--cu-font); white-space:nowrap; vertical-align:1px; cursor:pointer}
+.cu-bh i{font-style:normal; font-weight:700; font-size:.8em; background:#2B5FD0; color:#fff; border-radius:999px; padding:0 5px; line-height:1.45}
+.cu-bh.toi{background:#FFF1DC; border-color:#F6C27A; color:#B45309; animation:cuBhSang 1.8s ease-in-out infinite}
+.cu-bh.toi i{background:#DE7A12}
+@keyframes cuBhSang{0%,100%{box-shadow:0 0 0 0 rgba(222,122,18,0)} 50%{box-shadow:0 0 0 4px rgba(222,122,18,.22)}}
+@media (prefers-reduced-motion:reduce){.cu-bh.toi{animation:none}}
+.cu-tip.nhom .nhom-ds{display:flex; flex-direction:column; gap:3px}
+.cu-tip.nhom .nhom-ds span{padding:1px 0}
+.cu-tip.nhom .nhom-ds span.toi{color:#FFC27A; font-weight:600}
 .cu-ai{display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #EEF1F5}
 .cu-ai:last-child{border-bottom:0}
 .cu-ai .cu-av{width:32px; height:32px}

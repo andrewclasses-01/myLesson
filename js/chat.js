@@ -103,6 +103,16 @@
     appId: '1:399279049436:web:b9b34dcfb34732aa744219'
   };
   var TOI_DA_CHU = 300;      // phải khớp luật Firestore ở trên
+  /* ⭐ v1.339.0 (15/10/2026, thầy chốt mẫu `MAU REMIND BAN HIEN v1`) — NÚT REMIND gom các bạn chưa xong vào MỘT viên
+     "@Bạn hiền": tên các bạn đi kèm tin ở trường `nhom` (≤ 40 tên, luật `tools/dang-luat-ban-hien.js`). js/nhac-tb.js báo
+     từng em trong `nhom`; js/chat-ui.js vẽ viên bấm xem ai. Chỉ gắn `nhom` khi chữ tin CÓ "@Bạn hiền". */
+  var TAG_NHOM = '@Bạn hiền';
+  function nhomChuan(v) {
+    if (!Array.isArray(v)) return null;
+    var co = {}, ra = [];
+    v.forEach(function (t) { t = String(t == null ? '' : t).trim().slice(0, 60); if (t && !co[t] && ra.length < 40) { co[t] = 1; ra.push(t); } });
+    return ra.length ? ra : null;
+  }
   // ⛔⛔ CON SỐ NÀY LÀ TIỀN — ĐỪNG NÂNG LÊN CHO "XEM ĐƯỢC NHIỀU HƠN" (28/08/2026)
   // Firestore tính MỘT LƯỢT ĐỌC CHO MỖI TÀI LIỆU mà `onSnapshot` kéo về ở nhịp
   // đầu. `noiChat()` chạy TỰ ĐỘNG lúc mở `lop.html` (không đợi em bấm vào cột
@@ -238,9 +248,10 @@
             q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true   /* v1.186.0 — khuôn chat kiểu Zalo */
             , hinh: x.hinh || ''           /* v1.206.0 — ảnh thầy gửi */
             , he: heChuan(x.he)            /* v1.216.0 — tin hệ thống "… đã bị cấm chat" */
+            , nhom: nhomChuan(x.nhom)      /* v1.339.0 — tên trong viên "@Bạn hiền" (nút REMIND) */
           });
         });
-        ds.reverse();                              // Firestore trả mới->cũ, ta hiện cũ->mới
+        ds.reverse();                             // Firestore trả mới->cũ, ta hiện cũ->mới
         khiCo(ds);
       }, function (e) {
         if (khiLoi) khiLoi(e);
@@ -325,7 +336,7 @@
           chu: chuTin(x), luc: Number(x.createdAt) || 0,
           cx: x.cx || {}, may: x.may || '',
           q: x.q || null, sticker: x.sticker || '', thuHoi: x.thuHoi === true, hinh: x.hinh || '',
-          he: heChuan(x.he)
+          he: heChuan(x.he), nhom: nhomChuan(x.nhom)
         });
       });
       ds.reverse();
@@ -366,6 +377,8 @@
       if (tin.q && tin.q.id) goc.q = { id: String(tin.q.id).slice(0, 40), ten: String(tin.q.ten || '').slice(0, 60), chu: String(tin.q.chu || '').slice(0, 120) };
       if (tin.sticker && /^[a-z]{2,8}:[a-z0-9-]{2,24}$/.test(String(tin.sticker))) goc.sticker = String(tin.sticker);
       if (hinh) goc.hinh = hinh;   // v1.206.0 — chỉ thầy (luật chặn học sinh)
+      var nhom = chu.indexOf(TAG_NHOM) >= 0 ? nhomChuan(tin.nhom) : null;
+      if (nhom) goc.nhom = nhom;   // v1.339.0 — viên "@Bạn hiền" của nút REMIND
       /* (27/09/2026, sau tấn công Tr0ngX) Luật BẮT BUỘC dấu máy ⇒ bỏ ĐƯỜNG LÙI
          "gửi lại không kèm dấu máy" (v1.80.0) — gửi lại kiểu đó nay chắc chắn bị từ chối.
          Kho từ chối thì đổi thành lỗi dễ hiểu cho học sinh (xem chuLoi). */
@@ -379,7 +392,7 @@
         if (laHs && window.NWP && !u) { var l0 = new Error('chưa đăng nhập'); l0.code = 'awc/can-dang-nhap'; throw l0; }
         return f.fs.addDoc(oChat, kem).then(function (ref) {
           // ⭐ v1.224.0 (02/10/2026) — tin có @Tên ⇒ thông báo người được nhắc (js/nhac-tb.js; lỗi không làm hỏng tin đã gửi)
-          if (window.NhacTB && ref && /@/.test(chu)) { try { window.NhacTB.sauGuiLop(maLop, ref.id, { ten: goc.name, ma: goc.code, vaiTro: goc.role, chu: chu, luc: goc.createdAt }); } catch (x) { } }
+          if (window.NhacTB && ref && /@/.test(chu)) { try { window.NhacTB.sauGuiLop(maLop, ref.id, { ten: goc.name, ma: goc.code, vaiTro: goc.role, chu: chu, luc: goc.createdAt, nhom: nhom || [] }); } catch (x) { } }
           return ref;
         });
       })['catch'](function (e) {
@@ -484,7 +497,8 @@
     var choPhien = (!laThayGoi && window.NWP) ? window.NWP.userHienTai()['catch'](function () { return null; }) : Promise.resolve(null);
     return choPhien.then(db).then(function (f) {
       var refTin = f.fs.doc(f.db, 'classChat', maLop, 'messages', tinId);
-      var lenhThu = { thuHoi: true, text: '', cx: {}, q: f.fs.deleteField(), sticker: f.fs.deleteField(), hinh: f.fs.deleteField() };
+      var lenhThu = { thuHoi: true, text: '', cx: {}, q: f.fs.deleteField(), sticker: f.fs.deleteField(), hinh: f.fs.deleteField(),
+                      nhom: f.fs.deleteField() };   // v1.339.0 — tên trong "@Bạn hiền" đi theo chữ
       var thuTron = function () { return f.fs.updateDoc(refTin, lenhThu); };
       /* ⭐ v1.206.0 — BẢN CHÉP cho thầy: đọc tin gốc (1 lượt đọc) rồi CÙNG MỘT LƯỢT GHI vừa cất bản chép
          `classChat/<lớp>/thuHoi/<id>` (chỉ thầy đọc — dashboard hiện dưới "Tin nhắn đã bị thu hồi") vừa thu hồi.
@@ -681,7 +695,8 @@
              cần đổi: nó chỉ kiểm `tin is list`, không soi bên trong. */
           return { ten: t.ten, ma: t.ma, vaiTro: t.vaiTro, chu: t.chu, luc: t.luc,
                    cx: t.cx || {}, may: t.may || '',
-                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi, hinh: t.hinh || '', he: t.he || null };   /* v1.186.0 · hinh v1.206.0 · he v1.216.0 */
+                   q: t.q || null, sticker: t.sticker || '', thuHoi: !!t.thuHoi, hinh: t.hinh || '', he: t.he || null,
+                   nhom: t.nhom || null };   /* v1.186.0 · hinh v1.206.0 · he v1.216.0 · nhom v1.339.0 */
         })
       });
     });
@@ -768,7 +783,7 @@
     guiAnh: guiAnh, docThuHoi: docThuHoi,   /* ⭐ v1.206.0 — ảnh của thầy + bản chép tin thu hồi (chỉ thầy) */
     taiThem: taiThem, TOI_DA_TIN_THEM: TOI_DA_TIN_THEM,
     luuKho: luuKho, dsKho: dsKho, tinMoiNhat: tinMoiNhat,
-    chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU, coLink: coLink,
+    chuGio: chuGio, chuLoi: chuLoi, TOI_DA_CHU: TOI_DA_CHU, coLink: coLink, TAG_NHOM: TAG_NHOM,
     dauMay: dauMay,                    /* ⭐ v1.80.0 — xem khối "DẤU MÁY" đầu file */
     ngheKhanCap: ngheKhanCap, docKhanCap: docKhanCap, datKhanCap: datKhanCap,   /* 🚨 27/09/2026 */
     docCam: docCam, ngheCam: ngheCam, ngheDsCam: ngheDsCam, camChat: camChat, boCam: boCam,   /* 🔇 v1.216.0 — cấm chat từng em */

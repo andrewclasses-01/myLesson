@@ -7,61 +7,73 @@
      · 'chang' — bài STAGE: chưa xong STAGE đang chạy (câu chép y `MAU_NHAC_CHANG` bai.html).
      · 'bai'   — bài có act AWord (VOCABULARY · DICTATION · READING · REVIEW): chưa đủ điểm mọi act.
      · 'video' — SPEAKING SKILL (SP SLIDE) · SPEAKING CHECK: chưa XÁC NHẬN NỘP BÀI / chưa nộp.
+     · 'act'   — (v1.339.0) một act trong bài STAGE (nút REMIND trên thẻ act bai.html), o.ten = tên act.
    · 1 LẦN / GIỜ mỗi khoá, nhớ trên máy. STAGE: `awc_nhac_<bài>_c_<số chặng>_<mã HS>` (TRÙNG nút REMIND FRIENDS STAGE bai.html);
      bài thường + video: `awc_nhac_<bài>_b_<mã HS>` (thẻ lop.html ⇄ dải bai.html cùng khoá). Thầy dùng mã 'GV'.
    · Ô HẠN (thầy chốt 14/10): thẻ CÓ nút ⇒ trang thêm class `co-nhac` vào `.han-boc` ⇒ ô rộng bằng ô STAGE trên máy (230);
      điện thoại: nút chỉ còn chuông tròn, ô bài thường 106 (cũ 100), ô STAGE 144;
      `.han-duoi` là LƯỚI 2 NGĂN CỐ ĐỊNH (đồng hồ | nút) ⇒ nút KHÔNG nhích khi chữ số đồng hồ đổi (9:59:59 → 10:00:00, HẾT HẠN…).
      ⛔ ĐỪNG cho nút xuống hàng dưới đồng hồ: thẻ cao CỐ ĐỊNH 200px, ô hạn cao lên là ép mất cột avatar thiếu bài (đo 14/10).
-   ⛔ Pop-up STAGE riêng của bai.html (`moNhacBan`, id `nhbNen`) vẫn còn ⇒ pop-up module này dùng id RIÊNG (`nbm*`), chung class CSS.
+   ⭐⭐ v1.339.0 (15/10/2026, thầy chốt mẫu `MAU REMIND BAN HIEN v1 15-10-2026.html`) — CÂU TEEN + GOM "@Bạn hiền":
+     · Câu viết sẵn giọng trẻ trung (thầy tự sửa từng câu, mã A1…E5 trong mẫu) — THAY HẲN bộ câu cũ.
+     · Tin KHÔNG còn dãy @Tên1 @Tên2… mà chỉ MỘT viên `@Bạn hiền` (cả thầy lẫn học sinh); danh sách tên đi KÈM tin
+       (trường `nhom` của classChat — luật `tools/dang-luat-ban-hien.js`) ⇒ js/nhac-tb.js vẫn báo đúng từng em,
+       js/chat-ui.js vẽ viên bấm được (xem ai), em có tên thấy viên sáng cam.
+     · Câu có chữ "cậu" chỉ ra khi nhắc ĐÚNG 1 bạn. Loại 'act' (thẻ act bai.html) cũng đi qua pop-up này —
+       pop-up riêng `moNhacBan` của bai.html đã bỏ.
+     · o.gui(chu, nhom) — trang gửi `nhom` cùng tin (AWChat.gui tự chỉ gắn khi chữ có "@Bạn hiền").
    ========================================================================== */
 (function () {
   'use strict';
   var CACH_MS = 60 * 60 * 1000;
   var IC = '<svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
   var IC_XONG = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
-  // {T} = @tên · {S}/{N} = STAGE đang chạy / STAGE kế · {B} = tên bài · {H} = hạn ("17:45 ngày 16/10").
-  // Câu có {N} bị bỏ ở chặng cuối; câu có {H} bị bỏ khi bài chưa đặt hạn.
+  var TAG = '@Bạn hiền';   // ⛔ khớp js/chat.js TAG_NHOM + js/chat-ui.js
+  // {T} = @Bạn hiền · {S}/{N} = STAGE đang chạy / STAGE kế · {B} = tên bài · {H} = hạn ("17:45 ngày 16/10") · {A} = tên act.
+  // Câu có {N} bị bỏ ở chặng cuối; câu có {H} bị bỏ khi bài chưa đặt hạn; câu có "cậu" chỉ khi nhắc đúng 1 bạn.
   var MAU = {
     hs_chang: [
-      'Các bạn ơi, cùng hoàn thành STAGE {S} sớm nhé {T}! Có chỗ nào chưa hiểu cứ nhắn lên nhóm, mọi người giúp liền nha 💪',
-      '{T} ơi, cả lớp đang chờ các bạn xong STAGE {S} để mở STAGE {N} đó! Cố lên nha, bí chỗ nào hỏi nhóm nhé 😊',
-      'Nhắc nhẹ {T}: chỉ còn STAGE {S} nữa thôi là cả lớp sang STAGE {N} rồi! Cần giúp gì cứ nhắn nhóm nha 🙌',
-      'Hello {T}! Mình xong STAGE {S} rồi nè, các bạn làm nốt nhé. Câu nào khó cứ hỏi, cả lớp hỗ trợ ngay 👍',
-      '{T} ơi, mình cùng về đích STAGE {S} nào! Bạn nào kẹt câu nào nhắn lên nhóm để mọi người cùng gỡ nha ✨',
-      'Cả lớp chỉ còn chờ {T} thôi! Làm nhanh STAGE {S} để mình cùng mở STAGE {N} nhé, cần gì cứ hỏi nha 🚀',
-      'Team ơi {T}, STAGE {N} đang đợi chúng mình đó! Hoàn thành STAGE {S} sớm nha, chưa hiểu thì nhắn nhóm mọi người chỉ cho 💡',
-      'Cố lên {T}! Xong STAGE {S} là cả lớp mở STAGE {N} luôn. Có gì khó cứ nhắn lên đây, mình giúp nha 🤝'
-    ],
-    // v1.333.0 có 2 bộ (còn chặng sau / chặng cuối) — nay gộp, lọc theo {N} như bộ học sinh.
-    gv_chang: [
-      'Thầy nhắc {T}: các em hoàn thành STAGE {S} sớm nhé, cả lớp đang chờ để mở STAGE {N}. Chỗ nào chưa hiểu cứ nhắn lên nhóm nha!',
-      '{T} ơi, STAGE {S} còn thiếu bài của các em đó. Làm nốt trước hạn nhé, cần giúp gì nhắn thầy hoặc hỏi các bạn trong nhóm.',
-      'Cả lớp chỉ còn chờ {T} thôi! Các em làm xong STAGE {S} để lớp mình mở STAGE {N} nha 💪',
-      'Thầy nhắc {T}: các em hoàn thành STAGE {S} trước hạn nhé. Chỗ nào chưa hiểu cứ nhắn lên nhóm nha!'
+      'Nhanh lên nào mấy ní {T}! Nhanh nhanh cho cả lớp mở khóa nha huhu 🚀',
+      'Triển đi {T} ơi! Cả lớp đang đứng ngoài cổng nhà cậu rồi kìa 🚪',
+      'Cả nhà chờ tin {T} nhé 👀',
+      'Mấy ní {T} ơi triển đi, còn chờ đợi cái gì nữa hic 🥲',
+      'È hèm, {T} xem thế nào triển khai bài đi chứ nhỉ 😏',
+      'Alo alo {T}, nghe rõ trả lời 📢',
+      'Gét gô {T}! Kẹt chỗ nào ới tụi mình nha 🤝',
+      'Ủa {T} còn online hông dợ? STAGE {N} đang khóa chờ mấy ní đó 🔒',
+      'Tụi mình qua màn rồi nè, đợi {T} nữa thôi đó huhu 🚂',
+      'STAGE {S} còn thiếu {T}! Khó chỗ nào cứ nhắn cả lớp nha'
     ],
     hs_bai: [
-      'Các bạn ơi, cùng hoàn thành bài {B} trước hạn nhé {T}! Chỗ nào chưa hiểu cứ nhắn lên nhóm, mọi người giúp liền nha 💪',
-      '{T} ơi, bài {B} còn chưa xong đó! Hạn là {H}, cố lên nha, bí chỗ nào hỏi nhóm nhé 😊',
-      'Nhắc nhẹ {T}: nhớ làm xong bài {B} trước {H} nha. Cần giúp gì cứ nhắn nhóm, cả lớp hỗ trợ 🙌',
-      'Hello {T}! Mình xong bài {B} rồi nè, các bạn làm nốt nhé. Câu nào khó cứ hỏi, cả lớp hỗ trợ ngay 👍',
-      '{T} ơi, mình cùng về đích bài {B} nào! Bạn nào kẹt câu nào nhắn lên nhóm để mọi người cùng gỡ nha ✨',
-      'Cả lớp sắp xong bài {B} rồi, chỉ còn {T} thôi! Làm nốt trước {H} nhé, cần gì cứ hỏi nha 🚀'
+      'Nóng rồi nha {T}! Bài {B} hạn {H} đó 🔥',
+      'Có gì khó khăn {T} cứ nhắn nhé, tớ và lớp sẽ giúp cậu nha 💛',
+      'Deadline bài {B} đang dí tới nơi rồi {T} ơi, {H} là hết giờ ⏰',
+      '{T} ơi bài {B} làm đi cậu, huhu 💨',
+      'Ét o ét {T}! Bài {B} chưa xong kìa, kẹt câu nào ới cả lớp nha 🆘',
+      'Lớp mình sắp full bài {B} rồi, chỉ thiếu mỗi {T} thôi á 🥺',
+      'Khum phải dọa đâu nhưng {H} là đóng bài {B} rồi đó {T} 😬'
+    ],
+    hs_act: [
+      'Còn mỗi {A} thôi {T} ơi, triển nốt đi huhu 🏁',
+      '{A} dễ ẹc à {T}, làm cái một là xong, gét gô 💨',
+      '{T} ơi? Câu nào khó cứ quăng lên đây, tụi mình gỡ cho 🤝'
     ],
     hs_video: [
-      '{T} ơi, nhớ quay video bài {B} rồi nộp lên nhóm, xong vào trang bài bấm XÁC NHẬN NỘP BÀI nha! Hạn là {H} đó 🎤',
-      'Các bạn ơi {T}, cả lớp nộp video gần đủ rồi! Quay nốt bài {B} trước {H} nhé, cần giúp gì cứ hỏi nhóm 💪',
-      'Nhắc nhẹ {T}: nộp video xong nhớ bấm XÁC NHẬN NỘP BÀI trong trang bài nha, không là chưa được tính đâu 😊',
-      'Hello {T}! Mình nộp video bài {B} rồi nè, các bạn quay nốt nhé. Chưa rõ yêu cầu cứ hỏi nhóm nha 👍'
+      '{T} ơi lên đồ quay video bài {B} thôi! Nộp xong nhớ bấm XÁC NHẬN NỘP BÀI nha 🎬',
+      'Sân khấu là của {T}! Quay bài {B} nộp trước {H} nhé 🎤',
+      'Quay rồi mà chưa bấm XÁC NHẬN NỘP BÀI là coi như chưa nộp đó {T} 😵',
+      'Idol {T} ơi, fan đang hóng video bài {B} nè, hạn {H} nha 🌟'
+    ],
+    gv_chang: [
+      'È hèm {T}, STAGE {S} triển khai tới đâu rồi các em? 😏',
+      'Cả lớp đang chờ {T} để mở STAGE {N} nhé 💪'
     ],
     gv_bai: [
-      'Thầy nhắc {T}: các em hoàn thành bài {B} trước {H} nhé. Chỗ nào chưa hiểu cứ nhắn lên nhóm nha!',
-      '{T} ơi, bài {B} còn thiếu bài của các em đó. Làm nốt trước hạn nhé, cần giúp gì nhắn thầy hoặc hỏi các bạn trong nhóm.',
-      'Cả lớp gần xong bài {B} rồi, chỉ còn {T} thôi! Các em làm nốt trước {H} nha 💪'
+      'Nóng rồi nha {T}! Bài {B} hạn {H}, thầy ngồi chờ đây 🔥',
+      'Mấy ní {T} ơi, thầy chưa thấy bài {B} đâu nè. Còn chờ gì nữa hic 🥲'
     ],
     gv_video: [
-      'Thầy nhắc {T}: các em quay video bài {B}, nộp lên nhóm rồi bấm XÁC NHẬN NỘP BÀI trước {H} nhé!',
-      '{T} ơi, thầy chưa thấy video bài {B} của các em. Nộp trước hạn nha, cần giúp gì nhắn thầy!'
+      'Thầy hóng video bài {B} của {T} lắm rồi đó, nộp trước {H} nha 🎬'
     ]
   };
 
@@ -224,12 +236,18 @@
   function $(id) { return document.getElementById(id); }
   function dsMau() {
     var ds = MAU[(DANG.gv ? 'gv_' : 'hs_') + DANG.loai] || MAU.hs_bai;
-    return ds.filter(function (m) { return (DANG.sau || m.indexOf('{N}') < 0) && (DANG.han || m.indexOf('{H}') < 0); });
+    var mot = soBat() === 1;
+    var ra = ds.filter(function (m) { return (DANG.sau || m.indexOf('{N}') < 0) && (DANG.han || m.indexOf('{H}') < 0) && (mot || !/cậu/.test(m)); });
+    return ra.length ? ra : ['{T} ơi, triển đi nha 🚀'];
+  }
+  function soBat() { return DANG.ds.filter(function (b) { return b.bat; }).length; }
+  function nhom() { return DANG.ds.filter(function (b) { return b.bat; }).map(function (b) { return b.ten; });
   }
   function moTa(o) {
     var ai = o.gv ? 'các em' : 'các bạn';
     if (o.loai === 'video') return 'Nhắc ' + ai + ' chưa nộp video bài ' + o.ten;
     if (o.loai === 'bai') return 'Nhắc ' + ai + ' chưa xong bài ' + o.ten;
+    if (o.loai === 'act') return 'Nhắc ' + ai + ' chưa xong ' + o.ten;
     return 'Nhắc ' + ai + ' chưa xong STAGE ' + o.so;
   }
   function mo(o) {
@@ -247,7 +265,7 @@
       nen.innerHTML = '<div class="nhb-pop" role="dialog" aria-modal="true">' +
         '<div class="nhb-dau"><span class="bieu" id="nbmBieu">' + IC + '</span><div><h3 id="nbmTen"></h3><small id="nbmPhu"></small></div><button type="button" class="x" id="nbmDong" aria-label="Đóng">✕</button></div>' +
         '<div class="nhb-than"><div class="nhb-nhan"><span id="nbmNhan"></span><span id="nbmSo"></span></div><div class="nhb-ds" id="nbmDs"></div>' +
-          '<div class="nhb-nhan" style="margin-top:14px"><span>TIN NHẮN</span></div><div class="nhb-tin" id="nbmTin" contenteditable="true"></div>' +
+          '<div class="nhb-nhan" style="margin-top:14px"><span>TIN NHẮN</span><span id="nbmCau"></span></div><div class="nhb-tin" id="nbmTin" contenteditable="true"></div>' +
           '<div class="nhb-phu"><button type="button" class="nhb-doi" id="nbmDoi"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>Đổi câu khác</button>' +
           '<span class="nhb-ghi" id="nbmGhi"></span></div></div>' +
         '<div class="nhb-cuoi"><button type="button" class="nhb-huy" id="nbmHuy">HỦY</button><button type="button" class="nhb-gui" id="nbmGui"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>GỬI VÀO NHÓM LỚP</button></div></div>';
@@ -262,8 +280,8 @@
     $('nbmBieu').classList.toggle('gv', !!o.gv);
     $('nbmTen').textContent = o.gv ? 'NHẮC CẢ LỚP' : 'REMIND YOUR FRIENDS';
     $('nbmPhu').textContent = moTa(o) + (o.gv ? ' · gửi dưới tên Thầy' : '');
-    $('nbmNhan').textContent = (o.gv ? 'GẮN TÊN CÁC EM ' : 'GẮN TÊN CÁC BẠN ') + viec;
-    $('nbmGhi').textContent = 'Gửi vào nhóm chat lớp ' + (o.lop || '') + ' · ' + (o.gv ? 'các em' : 'các bạn') + ' được @ sẽ nhận thông báo';
+    $('nbmNhan').textContent = TAG.toUpperCase() + ' GỒM ' + (o.gv ? 'CÁC EM ' : 'CÁC BẠN ') + viec;
+    $('nbmGhi').textContent = 'Gửi vào nhóm chat lớp ' + (o.lop || '') + ' · ' + (o.gv ? 'các em' : 'các bạn') + ' trong ' + TAG + ' sẽ nhận thông báo';
     $('nbmGui').disabled = false;
     veBan(); veTin();
     nen.classList.add('mo');
@@ -275,25 +293,32 @@
     }).join('');
     $('nbmSo').textContent = DANG.ds.filter(function (b) { return b.bat; }).length + (DANG.gv ? ' em' : ' bạn');
     Array.prototype.forEach.call(ds.querySelectorAll('button'), function (n) {
-      n.onclick = function () { var b = DANG.ds[+n.getAttribute('data-i')]; b.bat = !b.bat; veBan(); veTin(); };
+      n.onclick = function () { var b = DANG.ds[+n.getAttribute('data-i')]; b.bat = !b.bat; veBan(); DANG.mau = 0; veTin(); };
     });
   }
   function veTin() {
-    var tag = DANG.ds.filter(function (b) { return b.bat; }).map(function (b) { return '<span class="tag">@' + anToan(b.ten) + '</span>'; }).join(' ');
-    $('nbmTin').innerHTML = anToan(dsMau()[DANG.mau]).replace(/\{T\}/g, tag || (DANG.gv ? 'các em' : 'các bạn'))
-      .replace(/\{S\}/g, DANG.so).replace(/\{N\}/g, DANG.sau).replace(/\{B\}/g, anToan(DANG.ten || '')).replace(/\{H\}/g, anToan(DANG.han || ''));
+    var ds = dsMau();
+    DANG.mau = DANG.mau % ds.length;
+    var tag = soBat() ? '<span class="tag" contenteditable="false">' + anToan(TAG) + '</span>' : (DANG.gv ? 'các em' : 'các bạn');
+    $('nbmTin').innerHTML = anToan(ds[DANG.mau]).replace(/\{T\}/g, tag)
+      .replace(/\{S\}/g, DANG.so).replace(/\{N\}/g, DANG.sau).replace(/\{B\}/g, anToan(DANG.ten || '')).replace(/\{H\}/g, anToan(DANG.han || ''))
+      .replace(/\{A\}/g, anToan(DANG.ten || ''));
+    $('nbmCau').textContent = ds.length > 1 ? (DANG.mau + 1) + '/' + ds.length : '';
   }
   function gui() {
     if (!DANG) return;
     var o = DANG, bao = o.bao || function () {};
     var chu = String($('nbmTin').innerText || '').replace(/ /g, ' ').replace(/[ \t]+/g, ' ').trim();
     if (!chu) { bao('Tin nhắn đang trống.'); return; }
+    var ds = nhom();
+    if (!ds.length) { bao(o.gv ? 'Chưa chọn em nào để nhắc.' : 'Chưa chọn bạn nào để nhắc.'); return; }
+    if (chu.indexOf(TAG) < 0) chu = TAG + ' ' + chu;   // lỡ xoá viên ⇒ gắn lại đầu tin (các bạn vẫn nhận thông báo)
     var chan = o.chan ? o.chan() : '';
     if (chan) { bao(chan); return; }
     var nut = $('nbmGui'), tran = (window.AWChat && AWChat.TOI_DA_CHU) || 300;
     nut.disabled = true;
     var tin = chia(chu, tran), i = 0;
-    var guiMot = function () { return i >= tin.length ? Promise.resolve() : Promise.resolve(o.gui(tin[i++])).then(guiMot); };
+    var guiMot = function () { return i >= tin.length ? Promise.resolve() : Promise.resolve(o.gui(tin[i++], ds)).then(guiMot); };
     guiMot().then(function () {
       try { localStorage.setItem(o.khoa, String(Date.now())); } catch (e) {}
       $('nbmNen').classList.remove('mo'); DANG = null;
@@ -301,7 +326,8 @@
         if (n.getAttribute('data-nhackhoa') !== o.khoa) return;
         n.classList.add('da'); n.classList.remove('rung'); n.title = chuCho(CACH_MS);
       });
-      bao('Đã gửi vào nhóm lớp — ' + (o.gv ? 'các em' : 'các bạn') + ' được @ sẽ nhận thông báo');
+      if (o.xong) { try { o.xong(); } catch (e) {} }
+      bao('Đã gửi vào nhóm lớp — ' + (o.gv ? 'các em' : 'các bạn') + ' trong ' + TAG + ' sẽ nhận thông báo');
     })['catch'](function (e) {
       nut.disabled = false;
       if (e === '__im') return;
@@ -310,5 +336,5 @@
   }
 
   window.NhacBan = { CACH_MS: CACH_MS, nutHtml: nutHtml, daiHtml: daiHtml, conCho: conCho, chuHan: chuHan, mo: mo, chia: chia,
-                     slideNopId: slideNopId, docDaNopVideo: docDaNopVideo };
+                     slideNopId: slideNopId, docDaNopVideo: docDaNopVideo, TAG: TAG };
 })();

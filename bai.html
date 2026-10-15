@@ -2291,9 +2291,9 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
-<script src="js/chat.js?v=36"></script>
+<script src="js/chat.js?v=37"></script>
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
-<script src="js/nhac-ban.js?v=2"></script>   <!-- v1.334.0 dải REMIND FRIENDS đầu trang (bài thường + SPEAKING) -->
+<script src="js/nhac-ban.js?v=3"></script>   <!-- v1.334.0 dải REMIND FRIENDS đầu trang (bài thường + SPEAKING) -->
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
      File này tự chèn css/vi-qua.css, trang không phải khai thêm. -->
 <script src="js/vi-qua.js?v=10"></script>
@@ -7617,25 +7617,8 @@ function veCacPhanStage(hop){
    ========================================================================== */
 var NHAC_CACH_MS = 60 * 60 * 1000;
 var IC_CHUONG_NHAC = '<svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>';
-var MAU_NHAC_CHANG = [
-  'Các bạn ơi, cùng hoàn thành STAGE {S} sớm nhé {T}! Có chỗ nào chưa hiểu cứ nhắn lên nhóm, mọi người giúp liền nha 💪',
-  '{T} ơi, cả lớp đang chờ các bạn xong STAGE {S} để mở STAGE {N} đó! Cố lên nha, bí chỗ nào hỏi nhóm nhé 😊',
-  'Nhắc nhẹ {T}: chỉ còn STAGE {S} nữa thôi là cả lớp sang STAGE {N} rồi! Cần giúp gì cứ nhắn nhóm nha 🙌',
-  'Hello {T}! Mình xong STAGE {S} rồi nè, các bạn làm nốt nhé. Câu nào khó cứ hỏi, cả lớp hỗ trợ ngay 👍',
-  '{T} ơi, mình cùng về đích STAGE {S} nào! Bạn nào kẹt câu nào nhắn lên nhóm để mọi người cùng gỡ nha ✨',
-  'Cả lớp chỉ còn chờ {T} thôi! Làm nhanh STAGE {S} để mình cùng mở STAGE {N} nhé, cần gì cứ hỏi nha 🚀',
-  'Team ơi {T}, STAGE {N} đang đợi chúng mình đó! Hoàn thành STAGE {S} sớm nha, chưa hiểu thì nhắn nhóm mọi người chỉ cho 💡',
-  'Cố lên {T}! Xong STAGE {S} là cả lớp mở STAGE {N} luôn. Có gì khó cứ nhắn lên đây, mình giúp nha 🤝'
-];
-var MAU_NHAC_ACT = [
-  'Các bạn ơi làm nốt {A} nhé {T}! Chỗ nào chưa hiểu cứ nhắn lên nhóm, mọi người giúp nha 💪',
-  '{T} ơi, còn {A} nữa thôi là xong rồi đó! Bí câu nào hỏi nhóm liền nhé 😊',
-  'Nhắc nhẹ {T}: nhớ hoàn thành {A} sớm nha. Cần gì cứ nhắn nhóm, cả lớp hỗ trợ 🙌',
-  'Hello {T}! {A} không khó lắm đâu, làm nốt nha. Kẹt chỗ nào nhắn lên đây mình chỉ cho 👍',
-  '{T} cùng về đích {A} nào! Ai chưa hiểu câu nào cứ hỏi nhóm nha ✨',
-  'Cố lên {T}! Xong {A} là cả lớp tiến gần STAGE mới rồi, cần giúp cứ nhắn nhóm nha 🚀'
-];
-// v1.332.1 — thầy XEM NHƯ EM (`laThayVaoTd`) vẫn THẤY dòng chờ + nút + pop-up y như em; chỉ nút GỬI không gửi (xem `guiNhacBan`).
+// v1.339.0 — câu viết sẵn (STAGE + act) chuyển hết sang js/nhac-ban.js (bộ câu teen + viên "@Bạn hiền", thầy chốt 15/10).
+// v1.332.1 — thầy XEM NHƯ EM (`laThayVaoTd`) vẫn THẤY dòng chờ + nút + pop-up y như em; chỉ nút GỬI không gửi (xem `chan` trong `moNhacBan`).
 function duocNhac(){ return !LA_GV && !LA_DAC_BIET && !!MA_HS && !!window.AWChat; }
 function laToi(t){ return A.khoaTen(t) === A.khoaTen(TOI); }
 // Bạn chưa xong STAGE `ci` (đã trừ em bị bỏ qua — `c.thieu` của xetChang) / chưa xong act `k` (trong số bạn chưa xong STAGE đó).
@@ -7685,89 +7668,24 @@ function nhipNhac(){
     n.innerHTML = IC_CHUONG_NHAC + (n.classList.contains('nho') ? 'REMIND' : 'REMIND FRIENDS');
   }
 }
-var NHB = null;   // pop-up đang mở: { pv, loai, ten(act), so, sau, ban:[{ten,bat}], mau }
+/* v1.339.0 — pop-up riêng (`nhbNen`) đã bỏ: STAGE + act đi qua pop-up dùng chung js/nhac-ban.js (NhacBan.mo, viên "@Bạn hiền").
+   Khoá giờ chờ giữ nguyên `khoaNhac(pv)`; gửi xong ⇒ `xong` đổi nút "REMIND" thành "ĐÃ NHẮC · mm:ss". */
 function moNhacBan(nut){
-  if (!duocNhac() || nut.hasAttribute('data-cho')) return;
+  if (!duocNhac() || nut.hasAttribute('data-cho') || !window.NhacBan) return;
   var pv = nut.getAttribute('data-nhacpv'), ci = +nut.getAttribute('data-nhacci'), ma = nut.getAttribute('data-nhacact');
   var c = CHANG[ci] || {}, sau = CHANG[ci + 1];
   var k = ma ? KHOI.filter(function(x){ return x.ma === ma; })[0] : null;
   var ban = k ? banChuaXongAct(k, ci) : banChuaXongChang(ci);
-  if (!ban.length) { baoToast('Các bạn đã xong hết rồi!'); return; }
-  var ds = k ? MAU_NHAC_ACT : MAU_NHAC_CHANG;
-  NHB = { pv: pv, loai: k ? 'act' : 'chang', ten: k ? A.tenO(k.ten || k.act || '') : '', so: c.so || 1, sau: (sau && sau.so) || ((c.so || 1) + 1),
-          ban: ban.map(function(t){ return { ten: t, bat: true }; }), mau: Math.floor(Math.random() * ds.length) };   // mỗi em một câu khác
-  var nen = $('#nhbNen');
-  if (!nen) {
-    nen = document.createElement('div');
-    nen.id = 'nhbNen'; nen.className = 'nhb-nen';
-    nen.innerHTML = '<div class="nhb-pop" role="dialog" aria-modal="true">' +
-      '<div class="nhb-dau"><span class="bieu">' + IC_CHUONG_NHAC + '</span><div><h3>REMIND YOUR FRIENDS</h3><small id="nhbPhu"></small></div><button type="button" class="x" id="nhbDong" aria-label="Đóng">✕</button></div>' +
-      '<div class="nhb-than"><div class="nhb-nhan"><span>GẮN TÊN CÁC BẠN CHƯA XONG</span><span id="nhbSo"></span></div><div class="nhb-ds" id="nhbDs"></div>' +
-        '<div class="nhb-nhan" style="margin-top:14px"><span>TIN NHẮN</span></div><div class="nhb-tin" id="nhbTin" contenteditable="true"></div>' +
-        '<div class="nhb-phu"><button type="button" class="nhb-doi" id="nhbDoi"><svg viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>Đổi câu khác</button>' +
-        '<span class="nhb-ghi" id="nhbGhi"></span></div></div>' +
-      '<div class="nhb-cuoi"><button type="button" class="nhb-huy" id="nhbHuy">HỦY</button><button type="button" class="nhb-gui" id="nhbGui"><svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4z"/></svg>GỬI VÀO NHÓM LỚP</button></div></div>';
-    document.body.appendChild(nen);
-    var dong = function(){ nen.classList.remove('mo'); NHB = null; };
-    $('#nhbDong').onclick = dong; $('#nhbHuy').onclick = dong;
-    nen.addEventListener('click', function(e){ if (e.target === nen) dong(); });
-    $('#nhbDoi').onclick = function(){ if (!NHB) return; NHB.mau = (NHB.mau + 1) % (NHB.loai === 'act' ? MAU_NHAC_ACT : MAU_NHAC_CHANG).length; veTinNhac(); };
-    $('#nhbGui').onclick = guiNhacBan;
-  }
-  $('#nhbPhu').textContent = 'Nhắc các bạn chưa xong ' + (NHB.loai === 'act' ? NHB.ten : 'STAGE ' + NHB.so);
-  $('#nhbGhi').textContent = 'Gửi vào nhóm chat lớp ' + (LOP || '') + ' · các bạn được @ sẽ nhận thông báo';
-  $('#nhbGui').disabled = false;
-  veBanNhac(); veTinNhac();
-  nen.classList.add('mo');
-}
-function veBanNhac(){
-  var ds = $('#nhbDs');
-  ds.innerHTML = NHB.ban.map(function(b, i){
-    return '<span class="nhb-ban' + (b.bat ? '' : ' bo') + '">' + chuAnToan(A.tenO(b.ten)) + '<button type="button" data-i="' + i + '" aria-label="' + (b.bat ? 'Bỏ' : 'Thêm') + '">' + (b.bat ? '✕' : '+') + '</button></span>';
-  }).join('');
-  $('#nhbSo').textContent = NHB.ban.filter(function(b){ return b.bat; }).length + ' bạn';
-  ds.querySelectorAll('button').forEach(function(n){ n.onclick = function(){ var b = NHB.ban[+n.getAttribute('data-i')]; b.bat = !b.bat; veBanNhac(); veTinNhac(); }; });
-}
-function veTinNhac(){
-  var tag = NHB.ban.filter(function(b){ return b.bat; }).map(function(b){ return '<span class="tag">@' + chuAnToan(b.ten) + '</span>'; }).join(' ');
-  var m = (NHB.loai === 'act' ? MAU_NHAC_ACT : MAU_NHAC_CHANG)[NHB.mau];
-  $('#nhbTin').innerHTML = chuAnToan(m).replace(/\{T\}/g, tag || 'các bạn').replace(/\{S\}/g, NHB.so).replace(/\{N\}/g, NHB.sau).replace(/\{A\}/g, chuAnToan(NHB.ten));
-}
-// Tin dài hơn trần chat ⇒ chia, chỉ cắt NGAY TRƯỚC một dấu "@" (không cắt đôi tên bạn).
-function chiaTinNhac(chu, tran){
-  var ra = [];
-  while (chu.length > tran) {
-    var cat = chu.lastIndexOf(' @', tran);
-    if (cat <= 0) cat = chu.lastIndexOf(' ', tran);
-    if (cat <= 0) cat = tran;
-    ra.push(chu.slice(0, cat).trim());
-    chu = chu.slice(cat).trim();
-  }
-  if (chu) ra.push(chu);
-  return ra;
-}
-function guiNhacBan(){
-  if (!NHB) return;
-  var chu = String($('#nhbTin').innerText || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').trim();
-  if (!chu) { baoToast('Tin nhắn đang trống.'); return; }
-  if (laThayVaoTd()) { baoToast('Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).'); return; }   // v1.332.1
-  var pv = NHB.pv, nut = $('#nhbGui'), tran = (window.AWChat && AWChat.TOI_DA_CHU) || 300;
-  nut.disabled = true;
-  var tin = chiaTinNhac(chu, tran), i = 0;
-  var guiMot = function(){
-    if (i >= tin.length) return Promise.resolve();
-    return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: tin[i++] }).then(guiMot);
-  };
-  guiMot().then(function(){
-    try { localStorage.setItem(khoaNhac(pv), String(Date.now())); } catch (e) {}
-    $('#nhbNen').classList.remove('mo'); NHB = null;
-    document.querySelectorAll('.nut-nhac[data-nhacpv="' + pv.replace(/["\\]/g, '') + '"]').forEach(function(n){ n.classList.add('da'); n.setAttribute('data-cho', '1'); });
-    nhipNhac();
-    baoToast('Đã gửi vào nhóm lớp — các bạn được @ sẽ nhận thông báo');
-  })['catch'](function(e){
-    nut.disabled = false;
-    baoToast((window.AWChat && AWChat.chuLoi) ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.');
-  });
+  NhacBan.mo({ loai: k ? 'act' : 'chang', ten: k ? A.tenO(k.ten || k.act || '') : '', so: c.so || 1,
+    sau: sau ? (sau.so || (c.so || 1) + 1) : 0, ban: ban, khoa: khoaNhac(pv), lop: LOP || '',
+    gui: function(chu, nhom){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu, nhom: nhom }); },
+    chan: function(){ return laThayVaoTd() ? 'Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).' : ''; },   // v1.332.1
+    xong: function(){
+      document.querySelectorAll('.nut-nhac[data-nhacpv="' + pv.replace(/["\\]/g, '') + '"]').forEach(function(n){ n.classList.add('da'); n.setAttribute('data-cho', '1'); });
+      nhipNhac();
+    },
+    bao: baoToast,
+    chuLoi: function(e){ return (window.AWChat && AWChat.chuLoi) ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.'; } });
 }
 document.addEventListener('click', function(e){
   var n = e.target.closest && e.target.closest('.nut-nhac[data-nhacpv]');
@@ -7824,7 +7742,7 @@ document.addEventListener('click', function(e){
   var dai = n.closest('.nhb-dai'), x = dai && dai._nhac;
   if (!x || !window.NhacBan) return;
   NhacBan.mo({ loai: x.loai, ten: A.tenBai(BAI), han: NhacBan.chuHan(A.mocHan(BAI)), ban: x.ban, khoa: n.getAttribute('data-nhackhoa'), lop: LOP || '',
-    gui: function(chu){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu }); },
+    gui: function(chu, nhom){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu, nhom: nhom }); },   // v1.339.0
     chan: function(){ return laThayVaoTd() ? 'Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).' : ''; },
     bao: baoToast,
     chuLoi: function(e){ return (window.AWChat && AWChat.chuLoi) ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.'; } });

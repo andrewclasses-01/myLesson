@@ -1591,7 +1591,7 @@ body.mo-menu .side.trai{transform:none}
 <link rel="stylesheet" href="css/tn-pop.css?v=9">
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
-<link rel="stylesheet" href="css/chat-ui.css?v=20">
+<link rel="stylesheet" href="css/chat-ui.css?v=21">
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 <script src="js/day.js?v=6"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
@@ -1717,11 +1717,11 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=91"></script>
 <script src="js/nw-phien.js?v=9"></script>
-<script src="js/chat.js?v=36"></script>
-<script src="js/nhac-tb.js?v=2"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
+<script src="js/chat.js?v=37"></script>
+<script src="js/nhac-tb.js?v=3"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
-<script src="js/chat-ui.js?v=20"></script>
-<script src="js/nhac-ban.js?v=2"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
+<script src="js/chat-ui.js?v=21"></script>
+<script src="js/nhac-ban.js?v=3"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=6"></script>
 <!-- ⭐ v1.38.0 — VÍ SAO + ĐỔI QUÀ dùng chung cho cả ba trang học sinh.
@@ -3028,7 +3028,7 @@ document.addEventListener('click', function(e){
   var k = n.getAttribute('data-nhackhoa'), x = NHAC_THE[k];
   if (!x || !window.NhacBan) return;
   NhacBan.mo({ loai: x.loai || 'chang', so: x.so, sau: x.sau, ten: x.ten, han: x.han, ban: x.ban, khoa: k, lop: LOP_HIEN || LOP,
-    gui: function(chu){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu }); },
+    gui: function(chu, nhom){ return AWChat.gui(LOP_DL, { ten: TOI, ma: MA_HS, vaiTro: (EM && EM.vaiTro) || 'hs', chu: chu, nhom: nhom }); },   // v1.339.0 "@Bạn hiền"
     chan: function(){ return (window.__thayVao || (EM && EM.xemNhu)) ? 'Thầy đang xem như em — tin KHÔNG được gửi (em bấm thì mới gửi).' : ''; },
     bao: baoToast,
     chuLoi: function(e){ return (window.AWChat && AWChat.chuLoi) ? AWChat.chuLoi(e) : 'Chưa gửi được, thử lại nhé.'; } });

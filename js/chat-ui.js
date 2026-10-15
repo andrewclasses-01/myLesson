@@ -138,6 +138,21 @@
     if (re) h = h.replace(re, '<span class="cu-nhac">@$1</span>');
     return thayEmoji(h, chiEmoji);
   }
+  /* ⭐ v1.339.0 (15/10/2026, thầy chốt mẫu `MAU REMIND BAN HIEN v1`) — viên "@Bạn hiền" của nút REMIND (js/nhac-ban.js):
+     tin có `nhom` (tên các bạn bị nhắc, js/chat.js) ⇒ chữ "@Bạn hiền" thành viên bấm được (data-cu="bh" ⇒ ô danh sách tên);
+     người xem có tên trong nhóm (`toiTen`) ⇒ viên sáng CAM. Tin không có `nhom` ⇒ để nguyên chữ. */
+  var TAG_NHOM = '@Bạn hiền';   // ⛔ khớp js/chat.js + js/nhac-ban.js
+  function vienNhom(h, t, toiTen) {
+    if (!t || !t.nhom || !t.nhom.length) return h;
+    var laToi = !!toiTen && t.nhom.indexOf(toiTen) >= 0;
+    return h.split(esc(TAG_NHOM)).join('<button type="button" class="cu-bh' + (laToi ? ' toi' : '') + '" data-cu="bh" title="Xem ai trong ' + esc(TAG_NHOM) + '">' +
+      esc(TAG_NHOM) + ' <i>' + t.nhom.length + '</i></button>');
+  }
+  function htmlNhom(t, toiTen) {
+    return '<h4>' + esc(TAG_NHOM) + ' · ' + t.nhom.length + ' người</h4><div class="nhom-ds">' + t.nhom.map(function (x) {
+      return '<span' + (x === toiTen ? ' class="toi"' : '') + '>' + esc(x) + (x === toiTen ? ' (cậu đó 👀)' : '') + '</span>';
+    }).join('') + '</div>';
+  }
   function tomTat(t) {
     if (!t) return '';
     if (t.thuHoi) return 'Tin nhắn đã bị thu hồi';
@@ -218,6 +233,7 @@
     if (POP.goi && !POP.goi.hidden && !t.closest('.cu-pop.cu-goi')) POP.goi.hidden = true;
     if (POP.chon1 && !POP.chon1.hidden && !t.closest('.cu-pop.cu-chon.mot') && !(NUT1 && NUT1.nut.contains(t))) POP.chon1.hidden = true;
     if (POP.khay2 && !POP.khay2.hidden && !t.closest('.cu-pop') && !(KHAY2.neo && KHAY2.neo.contains(t))) POP.khay2.hidden = true;
+    if (TIP && !TIP.hidden && TIP.classList.contains('nhom') && !t.closest('.cu-tip') && !t.closest('[data-cu="bh"]')) anTip();   // v1.339.0
   }, true);
   window.addEventListener('resize', function () { if (POP.chon) POP.chon.hidden = true; if (POP.menu) POP.menu.hidden = true; });
 
@@ -515,7 +531,7 @@
         // ⭐ v1.198.0 — tin ẢNH (myNetwork): ảnh nằm trong bong bóng, bấm để xem to (o.xemAnh)
         var anh = t.hinh ? '<button type="button" class="cu-hinh" data-cu="anh" aria-label="Xem ảnh"><img src="' + esc(t.hinh) + '" alt="Ảnh" loading="lazy" draggable="false">' +
           (t.tam && t.dangTai ? '<i class="xoay" aria-label="Đang tải ảnh lên"></i>' : '') + '</button>' : '';
-        than = '<div class="cu-bong' + (t.vaiTro === 'gv' ? ' thay' : '') + (t.hinh && !t.chu ? ' chianh' : '') + '">' + ten + q + anh + (t.chu ? giau(t.chu, reN) : '') + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
+        than = '<div class="cu-bong' + (t.vaiTro === 'gv' ? ' thay' : '') + (t.hinh && !t.chu ? ' chianh' : '') + '">' + ten + q + anh + (t.chu ? vienNhom(giau(t.chu, reN), t, o.toi && o.toi.ten) : '') + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
       }
       var cong = (t.thuHoi || t.tam) ? '' : '<div class="cu-cong"><button type="button" data-cu="tra" title="Trả lời" aria-label="Trả lời">' + IC.trich + '</button><button type="button" data-cu="them" title="Thêm" aria-label="Thêm">' + IC.ba + '</button></div>';
       return h + '<div class="cu-hang' + (toi ? ' toi' : '') + (cungNhom ? '' : ' dau') + ((t.tam || CHO_GUI[t.id]) ? ' cu-tam' : '') + '">' +
@@ -792,6 +808,10 @@
       if (viec === 'anhth') xemAnhTo(b.getAttribute('data-url'));
       if (viec === 'tra') datTra(t);
       if (viec === 'them') moMenu(t, b);
+      if (viec === 'bh' && t.nhom) {   // v1.339.0 — viên "@Bạn hiền": bấm lần nữa thì đóng
+        if (TIP && !TIP.hidden && TIP.classList.contains('nhom') && TIP._neo === b) { anTip(); return; }
+        hienTipHtml(b, htmlNhom(t, o.toi && o.toi.ten), 'xem nhom'); TIP._neo = b;
+      }
     }, true);
     khung.addEventListener('pointerdown', function (e) {
       var lk = e.target.closest('[data-cu="lk"]');

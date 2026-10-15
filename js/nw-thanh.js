@@ -285,7 +285,8 @@
     if (ma === 'duyetAnh') { if (window.DuyetAnh) window.DuyetAnh.mo(); return; }
     if (ma === 'top' || ma === 'qua' || ma === 'kholuutru') { if (window.qlMoMuc) window.qlMoMuc(ma); return; }
     // Trang thử: mục Network ⇒ trang quản lý myNetwork (nw/quanly.html?muc=…, cùng mã mục)
-    if (window.AC_THU && m_NW[ma]) { location.href = 'nw/quanly.html?muc=' + ma; return; }
+    // 15/10/2026 (v1.347.2, thầy chốt) — trang THẬT: mở riêng mục BÁO CÁO (thầy xem báo cáo của học sinh); các mục Network khác vẫn "sắp ra mắt".
+    if ((window.AC_THU || ma === 'baoCao') && m_NW[ma]) { location.href = 'nw/quanly.html?muc=' + ma; return; }
     moSap(ma);
   });
 })();

@@ -23,7 +23,7 @@
 // Bàn thử dữ liệu giả `?thu=1` / `?thu=thay` trên máy (NW.laBanThu) vẫn mở.
 if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825' ||
       (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=(1|thay)(&|$)/.test(location.search)) ||
-      /\/nw\/(tinnhan|canhan|khampha|giaidau|tran)\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 mở TIN NHẮN · 15/10/2026 (v1.345.0) mở TRANG CÁ NHÂN · (v1.346.0) mở KHÁM PHÁ + GIẢI ĐẤU trên trang thật
+      /\/nw\/(tinnhan|canhan|khampha|giaidau|tran|quanly)\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 mở TIN NHẮN · 15/10/2026 (v1.345.0) mở TRANG CÁ NHÂN · (v1.346.0) mở KHÁM PHÁ + GIẢI ĐẤU trên trang thật · (v1.347.2) mở QUẢN LÝ (chỉ thầy — học sinh bị đẩy ra) cho mục Báo cáo
   location.replace('../index.html');
   throw new Error('myNetwork chưa mở ở trang này');
 }

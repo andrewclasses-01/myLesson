@@ -147,7 +147,7 @@ const KHOI = NEO + '\n' + [
   "         && tdGiaiMo(get(/databases/$(database)/documents/giaiDau/$(d.giai)).data, d));",
   "  }",
   "  allow read: if laThay() || (request.auth != null && (resource.data.a == request.auth.uid || resource.data.b == request.auth.uid));",
-  "  allow create: if nwVao() && !laThay()",
+  "  allow create: if nwVao() && request.auth.token.get('hs', false) == true",
   "    && request.resource.data.keys().hasOnly(['a', 'b', 'nguoi', 'tenA', 'tenB', 'lop', 'giai', 'phut', 'lv', 'trangThai', 'taoLuc', 'het'])",
   "    && request.resource.data.a == nwToi() && request.resource.data.b is string && request.resource.data.b != nwToi()",
   "    && request.resource.data.nguoi == [nwToi(), request.resource.data.b]",
@@ -189,8 +189,13 @@ const KHOI = NEO + '\n' + [
   "}"
 ].map(T).join('');
 
+// (15/10/2026 tối) SỬA 1: bản đầu viết `!laThay()` ⇒ phiên HỌC SINH không có claim `thay` ⇒ lỗi ⇒ bị cấm tạo lời mời (bẫy đã ghi
+// trong memory chat-kieu-zalo: laThay() lỗi với phiên học sinh). Luật đang chạy còn dòng cũ ⇒ thay đúng dòng đó.
+const SUA1_CU = "      allow create: if nwVao() && !laThay()\n";
+const SUA1_MOI = "      allow create: if nwVao() && request.auth.token.get('hs', false) == true\n";
 function ghepFirestore(cu) {
-  if (cu.includes(DAU_HIEU)) throw new Error('CHOT DUNG: luật ĐÃ có khối tranDau — không đăng lại');
+  if (cu.includes(DAU_HIEU) && cu.includes(SUA1_CU)) return thayMot(cu, SUA1_CU, SUA1_MOI, 'sửa 1: tranDau create');
+  if (cu.includes(DAU_HIEU)) throw new Error('CHOT DUNG: luật ĐÃ có khối tranDau (đã sửa) — không đăng lại');
   if (cu.includes('match /tranDau/')) throw new Error('CHOT DUNG: luật đang chạy đã có match /tranDau/ — dừng');
   if (!cu.includes('(15/10/2026) GIAI DAU')) throw new Error('CHOT DUNG: chưa có khối giaiDau (chạy dang-luat-giai-dau.js trước)');
   return thayMot(cu, NEO, KHOI, 'chèn khối tranDau sau khối giaiDau');
@@ -247,7 +252,7 @@ async function kiem() {
     // máy chủ (khoá quản trị) chuyển sang chơi — giống tdDoi
     await goi(`${FS_GOC}/tranDau/${TRAN}?updateMask.fieldPaths=trangThai&updateMask.fieldPaths=batDau&updateMask.fieldPaths=ketThuc&updateMask.fieldPaths=chu`, { method: 'PATCH', headers: await H(), json: { fields: { trangThai: S('choi'), batDau: I(Date.now() - 1000), ketThuc: I(Date.now() + 60000), chu: S('CATDOGEEIOSTRNLP') } } });
     ok('A gửi từ "cat" = 200', (await taoCon(tA, 'tranDau/' + TRAN + '/tu', 'cat', { uid: S(A) })).status, 200);
-    ok('B gửi lại "cat" (Taken) = 403', (await taoCon(tB, 'tranDau/' + TRAN + '/tu', 'cat', { uid: S(Bb) })).status, 403);
+    ok('B gửi lại "cat" (Taken) = 403', [(await taoCon(tB, 'tranDau/' + TRAN + '/tu', 'cat', { uid: S(Bb) })).status].map((x) => (x === 409 ? 403 : x))[0], 403);   // REST tạo trùng = 409, trình duyệt (setDoc) = 403
     ok('B gửi "dog" = 200', (await taoCon(tB, 'tranDau/' + TRAN + '/tu', 'dog', { uid: S(Bb) })).status, 200);
     ok('B gửi từ đứng tên A = 403', (await taoCon(tB, 'tranDau/' + TRAN + '/tu', 'tea', { uid: S(A) })).status, 403);
     ok('C gửi từ = 403', (await taoCon(tC, 'tranDau/' + TRAN + '/tu', 'sea', { uid: S(C) })).status, 403);

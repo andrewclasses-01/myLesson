@@ -1,0 +1,71 @@
+/* nw/css/gui-anh.css — EM GỬI ẢNH CHỜ THẦY DUYỆT (15/10/2026, web v1.343.0) — chép từ mẫu mau-duyet-anh-v1 (mau-anh.css). Dùng biến màu nw.css. */
+.ga-av{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:50%; z-index:1}
+.av.kho .sao-hieu,.av.kho .doi-av{z-index:3}
+.ga-nhan{position:absolute; left:50%; top:-10px; transform:translateX(-50%); z-index:4; display:inline-flex; align-items:center; gap:4px;
+  padding:3px 9px 3px 7px; border-radius:999px; background:var(--amber); color:#fff; font:800 10.5px/1 var(--sans); letter-spacing:.04em;
+  white-space:nowrap; box-shadow:0 2px 6px rgba(0,0,0,.18); border:2px solid #fff}
+.ga-nhan svg,.ga-nhan-bia svg{width:13px; height:13px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round}
+.ga-nhan.tinh{position:static; transform:none; margin-top:-14px}
+.ga-bia{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; z-index:0}
+.bia .nut-tren,.bia .nut-ban{z-index:2}
+.ga-nhan-bia{position:absolute; left:12px; top:10px; z-index:2; display:inline-flex; align-items:center; gap:6px; padding:6px 11px;
+  border-radius:999px; background:rgba(242,169,59,.95); color:#fff; font:800 12px/1 var(--sans); box-shadow:0 2px 8px rgba(0,0,0,.2)}
+
+#gaTT{display:flex; flex-direction:column; gap:10px; margin-bottom:14px}
+#gaTT:empty{display:none}
+.ga-tt{display:flex; align-items:center; gap:12px; padding:12px 14px; border-left:4px solid var(--amber)}
+.ga-tt > svg{flex:none; width:26px; height:26px; fill:none; stroke:var(--amber); stroke-width:2.2; stroke-linecap:round}
+.ga-tt.tu-choi{border-left-color:var(--do)}
+.ga-tt.tu-choi > svg{stroke:var(--do)}
+.ga-tt .tt-chu{flex:1; min-width:0; display:flex; flex-direction:column; gap:3px; font-size:13px; line-height:1.45}
+.ga-tt .tt-chu span{color:var(--muted)}
+.ga-tt .tt-anh{flex:none; width:46px; height:46px; border-radius:50%; object-fit:cover}
+.ga-tt .tt-anh.bia{width:84px; border-radius:8px}
+.ga-tt .tt-anh.mo{filter:grayscale(.6); opacity:.7}
+@media (max-width:560px){ .ga-tt{flex-wrap:wrap} .ga-tt .tt-chu{flex-basis:calc(100% - 40px)} .ga-tt .btn{margin-left:auto} }
+
+.pop.ga-pop{width:min(460px,100%)}
+.pop.ga-pop .pop-body > *{flex-shrink:0}   /* pop-body là cột flex cuộn: không cho khối ảnh bị ép thấp */
+.mg-hai{display:grid; grid-template-columns:1fr 34px 1fr; align-items:center; gap:6px}
+.mg-hai .mg-anh{aspect-ratio:1; width:min(150px,100%); margin:0 auto; border-radius:50%; overflow:hidden; background:linear-gradient(120deg,#0E7C6E,#3E7BFA 55%,#9BE15D)}
+.mg-hai.bia{grid-template-columns:1fr; gap:4px}
+.mg-hai.bia .mg-mui{transform:rotate(90deg); justify-self:center}
+.mg-hai.bia .mg-anh{aspect-ratio:3/1; width:100%; border-radius:10px}
+.mg-anh img{width:100%; height:100%; object-fit:cover; display:block}
+.mg-o{text-align:center}
+.mg-nh{font:800 10.5px var(--sans); letter-spacing:.08em; color:var(--muted); margin-bottom:6px}
+.mg-nh.moi{color:var(--accent)}
+.mg-mui svg{width:26px; height:26px; fill:none; stroke:var(--muted); stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.mg-chon{display:flex; align-items:center; gap:7px; margin:12px 0 2px; flex-wrap:wrap}
+.mg-chon span{font:700 11.5px var(--sans); color:var(--muted); margin-right:2px}
+.mg-chon button{width:38px; height:38px; padding:0; border-radius:50%; overflow:hidden; border:2px solid transparent; cursor:pointer; background:none}
+.mg-chon button.bia{width:66px; height:24px; border-radius:6px}
+.mg-chon button.chon{border-color:var(--accent)}
+.mg-chon img{width:100%; height:100%; object-fit:cover; display:block}
+.mg-ghi{margin:4px 0 0; font-size:11px; color:#94A6A2; font-style:italic}
+.mg-tin,.mg-han{display:flex; gap:10px; align-items:flex-start; margin-top:12px; padding:10px 12px; border-radius:12px; font-size:13px; line-height:1.5}
+.mg-tin{background:var(--accent-soft)}
+.mg-han{background:#F3F6F5; color:var(--muted)}
+.mg-tin svg,.mg-han svg{flex:none; width:20px; height:20px; margin-top:1px; fill:none; stroke:var(--accent); stroke-width:2.2; stroke-linecap:round}
+.mg-han svg{stroke:var(--muted)}
+.mg-quy{margin-top:12px; padding:12px 14px; border:1.5px solid var(--amber); border-radius:12px; background:var(--amber-soft)}
+.quy-dau{display:flex; align-items:center; gap:8px; font-size:14px}
+.quy-dau svg{width:20px; height:20px; fill:none; stroke:#B8860B; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.mg-quy ul{margin:8px 0 10px; padding-left:20px; font-size:13px; line-height:1.55}
+.quy-ok{display:flex; align-items:center; gap:8px; font-weight:800; font-size:13.5px; cursor:pointer}
+.quy-ok input{width:18px; height:18px; accent-color:var(--accent)}
+#gaGui:disabled{opacity:.45; cursor:not-allowed}
+.mg-mot{width:150px; margin:0 auto 6px; text-align:center}
+.mg-mot img{width:150px; height:150px; border-radius:50%; object-fit:cover; display:block}
+.mg-mot.bia{width:100%}
+.mg-mot.bia img{width:100%; height:auto; aspect-ratio:3/1; border-radius:10px}
+.mg-p{margin:10px 0 0; text-align:center; font-size:14px; line-height:1.55}
+.mg-p.nho{font-size:12.5px; color:var(--muted)}
+.mg-to{width:64px; height:64px; margin:4px auto 0; border-radius:50%; display:grid; place-items:center; background:var(--accent-soft)}
+.mg-to svg{width:32px; height:32px; fill:none; stroke:var(--accent); stroke-width:2; stroke-linecap:round; stroke-linejoin:round}
+.mg-to.do{background:var(--do-soft)} .mg-to.do svg{stroke:var(--do)}
+
+.mg-anh .goc-chu{width:100%;height:100%;display:grid;place-items:center;color:#fff;font:800 40px var(--sans)}
+.ga-lk{margin-top:2px}
+.ga-link{border:0;background:none;padding:0;color:var(--do);font:700 12px var(--sans);text-decoration:underline;cursor:pointer}
+.ga-loi{margin:12px 0 0;padding:9px 12px;border-radius:10px;background:var(--do-soft);color:var(--do);font-size:13px;font-weight:600}

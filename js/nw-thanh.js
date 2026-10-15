@@ -237,6 +237,7 @@
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, icm: ICM.dangKy },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
     { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, icm: ICM.top },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
     { ma: 'sao', chu: 'Sao', ic: ICQ.sao, icm: ICM.sao },   // ⭐ 10/10/2026 — hộp Sao học sinh: ví + cộng/trừ + lý do nhanh (js/sao-dash.js window.SaoDash)
+    { ma: 'duyetAnh', chu: 'Duyệt ảnh', ic: P('<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-8 8.5"/>') },   // ⭐ 15/10/2026 v1.343.0 — ảnh em gửi chờ duyệt (js/duyet-anh.js window.DuyetAnh)
     { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, icm: ICM.qua },
     { ma: 'khoBai', chu: 'Kho bài', ic: ICQ.kho, icm: ICM.khoBai },   // v1.203.0 — thay "Bài đã xoá": pop-up lớn mọi lớp (window.qlMoKhoLon)
     { ma: 'baiCheck', chu: 'Bài check', ic: ICQ.baiCheck },   // v1.205.0 — bài check AWord theo bộ đề (window.qlMoBaiCheck)
@@ -281,6 +282,7 @@
     if (ma === 'guiTb') { if (window.ACDay) ACDay.moGuiThay(); return; }
     if (ma === 'nhacHan') { if (window.ACDay) ACDay.moNhacHan(); return; }
     if (ma === 'sao') { if (window.SaoDash) window.SaoDash.mo(); return; }
+    if (ma === 'duyetAnh') { if (window.DuyetAnh) window.DuyetAnh.mo(); return; }
     if (ma === 'top' || ma === 'qua' || ma === 'kholuutru') { if (window.qlMoMuc) window.qlMoMuc(ma); return; }
     // Trang thử: mục Network ⇒ trang quản lý myNetwork (nw/quanly.html?muc=…, cùng mã mục)
     if (window.AC_THU && m_NW[ma]) { location.href = 'nw/quanly.html?muc=' + ma; return; }

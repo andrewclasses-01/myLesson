@@ -16,6 +16,7 @@
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="../css/tn-pop.css?v=9">
 <link rel="stylesheet" href="css/nw.css?v=33">
+<link rel="stylesheet" href="css/gui-anh.css?v=1">   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt -->
 <link rel="stylesheet" href="../css/chat-ui.css?v=21">
 <link rel="preconnect" href="https://firestore.googleapis.com">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
@@ -47,6 +48,7 @@
 <script src="js/bai.js?v=15"></script>
 <script src="js/chat.js?v=33"></script>
 <script src="../js/cat-anh.js?v=2"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
+<script src="js/gui-anh.js?v=1"></script>   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt (hàm nwAnh) -->
 <script>
 // v0.4.0 (22/09/2026, mẫu v12 thầy chốt): bìa rộng · avatar to + sao · MỌI nút = icon trắng không nền nằm TRONG bìa
 // (mình: đổi bìa góc trên phải; sửa giới thiệu + chia sẻ link góc dưới phải · cùng lớp/bạn bè: nhắn tin + chia sẻ ·
@@ -72,8 +74,9 @@
     var laBan = ['minh', 'thay', 'cunglop', 'ban'].indexOf(qh.loai) >= 0;   // được xem đủ + nhắn tin
     var khoa = !laBan;
 
-    var moAnh = { doiAnh: false, doiBia: false };
-    if (cuaToi) { moAnh.doiAnh = await NW.congTac('doiAnh'); moAnh.doiBia = await NW.congTac('doiBia'); }
+    // ⭐ 15/10/2026 (web v1.343.0, thầy chốt mẫu duyệt ảnh v1) — trang CỦA EM: ảnh đại diện + ảnh bìa mới GỬI THẦY DUYỆT
+    // (js/gui-anh.js + hàm `nwAnh`). Thầy và bàn thử vẫn đổi thẳng như cũ.
+    var emGui = cuaToi && (!ph.banThu || !!window.__GA_THU_GOI) && toi.vaiTro !== 'gv' && !toi.laThay;
     var SAO = '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
     function thang(ms) { var d = new Date(Number(ms) || Date.now()); return (d.getMonth() + 1) + '/' + d.getFullYear(); }
     function lopsCua(h) { return (h.cacLop && h.cacLop.length ? h.cacLop : [h.lop]).filter(Boolean); }
@@ -104,10 +107,9 @@
         '</div>' +
         (khoa ? '' : '<div class="cn-tabs" id="cnTabs"><button type="button" class="chon" data-t="bai">BÀI VIẾT</button><button type="button" data-t="anh">ẢNH</button><button type="button" data-t="gt">GIỚI THIỆU</button></div>');
       if (cuaToi) {
-        // 15/10/2026 — công tắc nwCauHinh/caNhan (NW.congTac, đọc sẵn lúc vào trang): tắt ⇒ hộp "sắp mở".
-        // Ô chọn tệp phải mở NGAY trong cú bấm (không chờ đọc kho) nên dùng giá trị đã đọc sẵn.
-        $('#doiAv').onclick = function () { if (moAnh.doiAnh) moDoiAnh(); else NW.sapMo('Đổi ảnh đại diện'); };
-        $('#doiBia').onclick = function () { if (moAnh.doiBia) $('#fileBia').click(); else NW.sapMo('Đổi ảnh bìa'); };
+        // Em: NW.GuiAnh.bam (công tắc tắt ⇒ "sắp mở"; ô chọn tệp bìa mở NGAY trong cú bấm vì trạng thái đã đọc sẵn).
+        $('#doiAv').onclick = function () { if (emGui) NW.GuiAnh.bam('av'); else moDoiAnh(); };
+        $('#doiBia').onclick = function () { if (emGui) NW.GuiAnh.bam('bia'); else $('#fileBia').click(); };
         $('#suaGt').onclick = suaGt;
       }
       $('#chiaSe').onclick = function () { NW.chepLink(location.origin + location.pathname + '?uid=' + encodeURIComponent(uid)); };
@@ -215,8 +217,33 @@
         var nutAv = $('#nutAv'); if (nutAv) { var im = nutAv.querySelector('img'); if (im) im.src = url; else nutAv.insertAdjacentHTML('afterbegin', '<img src="' + an(url) + '" alt="">'); }
       });
     }
+    // Em: cắt ảnh như cũ ⇒ đưa dữ liệu cho hộp GỬI THẦY DUYỆT (không lưu gì ở đây).
+    function catAnhEm(xong) {
+      if (!window.CatAnh || !window.CatAnh.moKho) return NW.toast('Chưa tải được bộ cắt ảnh — tải lại trang.', true);
+      var x = null;
+      window.CatAnh.moKho({
+        tieuDe: 'Chọn ảnh đại diện mới',
+        taiKho: function () {
+          return NW.goiHam('qlAnhDaiDien', { viec: 'tuKho' }).then(function (k) {
+            return { ds: k.ds || [], dung: k.dung || '', hienTai: k.hienTai ? 'data:image/jpeg;base64,' + k.hienTai : (hs.anh || '') };
+          });
+        },
+        bo: function (id) { return NW.goiHam('qlAnhDaiDien', { viec: 'tuBoKho', id: id }); },
+        luu: async function (kq) { x = window.CatAnh.duLieu(kq, 480, 0.88); }
+      }).then(function (daLuu) { if (daLuu && x) xong(x); });
+    }
+    var biaXong = null;   // em đang chọn ảnh bìa ⇒ hàm nhận ảnh (NW.GuiAnh)
+    function chonBiaEm(xong) { biaXong = xong; $('#fileBia').click(); }
+    if (emGui) NW.GuiAnh.batDau({ hs: hs, catAnh: catAnhEm, chonBia: chonBiaEm });
+
     $('#fileBia').onchange = async function () {
       var file = this.files && this.files[0]; this.value = ''; if (!file) return;
+      if (biaXong) {
+        var nhan = biaXong; biaXong = null;
+        try { var b = await NW.nenAnh(file, { canhDai: CFG.ANH.bia }); nhan({ anh: await NW.blobB64(b) }); }
+        catch (e) { NW.toast(NW.chuLoiKho(e), true); }
+        return;
+      }
       try {
         NW.toast('Đang tải ảnh bìa…');
         var blob = await NW.nenAnh(file, { canhDai: CFG.ANH.bia });

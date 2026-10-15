@@ -278,7 +278,16 @@
         try { await capNhatHoSo({ bietDanh: nick, gioiThieu: chu, soThich: st }); NW.toast('Đã lưu.'); } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
       };
     }
+    // ⭐ 15/10/2026 (v1.346.1, thầy chốt) — KẾT BẠN CHƯA MỞ: nút vẫn hiện, bấm ⇒ hộp báo "sẽ được mở sau" (không gửi lời mời).
+    // Mở lại = đổi MO_KET_BAN thành true.
+    var MO_KET_BAN = false;
+    function ketBanSau() {
+      var p = NW.popMo({ tieuDe: 'Kết bạn', html: '<p style="margin:0;font-weight:600;line-height:1.55">Tính năng kết bạn sẽ được mở sau.</p>',
+        chan: '<button class="btn primary" data-dong>EM SẼ CHỜ!</button>' });
+      $('[data-dong]', p).onclick = NW.popDong;
+    }
     async function guiKetBan() {
+      if (!MO_KET_BAN) return ketBanSau();
       if (ph.banThu) { NW.toast('Bàn thử: không ghi thật.'); qh = { loai: 'choToi' }; ve(); return; }
       try {
         var f = await NW.fb();
@@ -290,6 +299,7 @@
       } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
     }
     async function dongYKetBan() {
+      if (!MO_KET_BAN) return ketBanSau();
       if (ph.banThu) { NW.toast('Bàn thử: không ghi thật.'); qh = { loai: 'ban' }; khoa = false; laBan = true; ve(); batDauBai(); return; }
       try {
         var f = await NW.fb();

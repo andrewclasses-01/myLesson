@@ -35,9 +35,13 @@ const BO_DE = {
   A: [{ ma: 'BT1', code: '5576de', ten: 'Tạo cụm số ít', n: 40 }, { ma: 'BT2', code: 'bc52sb', ten: 'Tạo cụm số nhiều', n: 20 }, { ma: 'BT3', code: 'khszvm', ten: 'Tạo câu', n: 50 }],
   B: [{ ma: 'P1', code: 'x98bsj', ten: 'Chọn từ đúng', n: 30, chon: true, chuan: 4.4 }, { ma: 'P2', code: 'xxdvu5', ten: 'Gõ từ tiếng Anh', n: 30, chuan: 12.6 },
     { ma: 'P3', code: 'g3wh9q', ten: 'A, an hay không đếm được', n: 30, chon: true, chuan: 3.5 }, { ma: 'P4', code: 'p3xryn', ten: 'Số ít, số nhiều', n: 30, chuan: 9.5 },
-    { ma: 'P5', code: 'zwfvda', ten: 'Tạo câu', n: 20, chuan: 20 }, { ma: 'P6', code: 'ct632d', ten: 'Nghe - hiểu - ghi nhớ', n: 10, chon: true, chuan: 4.4 }]
+    { ma: 'P5', code: 'zwfvda', ten: 'Tạo câu', n: 20, chuan: 20 }, { ma: 'P6', code: 'ct632d', ten: 'Nghe - hiểu - ghi nhớ', n: 10, chon: true, chuan: 4.4 }],
+  // 15/10/2026 — bộ C = B1 (8 phần, có nghe) — trước đây quên thêm ở đây nên --ds không thấy em làm bộ C
+  C: [{ ma: 'C1', code: 'fqdmhq', ten: 'Thì động từ', n: 25 }, { ma: 'C2', code: 'dyabv6', ten: 'Câu điều kiện', n: 10 }, { ma: 'C3', code: '6tu6ek', ten: 'Câu bị động', n: 10 },
+    { ma: 'C4', code: 'kfxhr5', ten: 'So / too / either / neither', n: 10 }, { ma: 'C5', code: 'hrg835', ten: 'Mệnh đề quan hệ', n: 10 }, { ma: 'C6', code: 'qhrw3f', ten: 'Câu tường thuật', n: 10 },
+    { ma: 'C7', code: 'x4mwdz', ten: 'Dịch câu', n: 15 }, { ma: 'C8', code: 'egs7pp', ten: 'Nghe (PET)', n: 25, chon: true }]
 };
-const MOI_BAI = BO_DE.A.concat(BO_DE.B);
+const MOI_BAI = BO_DE.A.concat(BO_DE.B, BO_DE.C);
 // bộ đề của em — giống boCua() trong ktdv-ql.js: phat.bo (thầy đã phát) > boDe > 'A'
 function boCua(h) { return (h && h.phat && BO_DE[h.phat.bo]) ? h.phat.bo : (h && BO_DE[h.boDe]) ? h.boDe : 'A'; }
 function baiCua(h) { return BO_DE[boCua(h)]; }

@@ -544,7 +544,11 @@
       var bo0 = f0.bo || null;
       // ⭐ v1.351.0 — bộ từ đang chọn trong hộp: act (bản đầy đủ đọc từ thư viện, hoặc null = giữ bo cũ) + tuỳ chọn
       var BO = { act: null, id: bo0 ? bo0.id : '', ten: bo0 ? bo0.ten : '', so: bo0 ? (bo0.tu || []).length : 0, bien: bo0 ? bo0.bien || '' : '',
-        bienDs: bo0 && bo0.bien ? [bo0.bien] : [], che: bo0 ? bo0.che : 'free', o: bo0 ? bo0.o || 12 : 12, chiBo: bo0 ? bo0.chiBo !== false : true };
+        bienDs: bo0 && bo0.bien ? [bo0.bien] : [], che: bo0 ? bo0.che : 'free', o: bo0 ? bo0.o || 12 : 12, chiBo: bo0 ? bo0.chiBo !== false : true,
+        goiY: bo0 ? bo0.goiY !== false : true, giong: bo0 ? !!bo0.giong : false, coGiong: bo0 ? !!bo0.giong : false };
+      // act có clip giọng đọc cho bộ gợi ý này không (VOICE của AWord: chỉ bộ tiếng Anh có clip)
+      var clipCua = function (it, k) { var x = k && it.voices && it.voices[k]; return (x && x.voice) || (!k ? it.voice || '' : ''); };
+      var actCoGiong = function (a, k) { return !!(a && a.content.items.some(function (it) { return clipCua(it, k); })); };
       var nut = function (ten, gt, chon, tat) { return '<button type="button" data-v="' + an(gt) + '" class="' + (chon ? 'on' : '') + '"' + (tat ? ' disabled' : '') + '>' + an(ten) + '</button>'; };
       var p = NW.popMo({ tieuDe: moi ? 'Tạo giải mới' : 'Sửa ' + g.ten, lop: 'gd-pop', html:
         (dang ? '<p class="gd-chu-dang">Giải đang chạy: đổi gì cũng chỉ áp cho trận MỚI — trận đang đấu giữ nguyên, bảng xếp hạng giữ nguyên.</p>' : '') +
@@ -563,6 +567,9 @@
           '<div class="gd-hai"><div id="gdOHop"><span class="lbl gd-lbl">Letters · One word</span><div class="gd-chon mot" id="gdO">' + SO_O.map(function (n) { return nut(String(n), n, n === BO.o); }).join('') + '</div></div>' +
           '<div id="gdChiBoHop"><span class="lbl gd-lbl">Free words</span><label class="gd-tich"><input type="checkbox" id="gdChiBo"' + (BO.chiBo ? ' checked' : '') + '> Word list only</label></div></div>' +
           '<p class="tiny gd-chu-bo" id="gdCheChu"></p>' +
+          // ⭐ v1.352.0 — gợi ý lật chữ (y Fight) + giọng đọc gợi ý (VOICE)
+          '<label class="gd-tich"><input type="checkbox" id="gdGoiY"' + (BO.goiY ? ' checked' : '') + '> Gợi ý lật chữ: 15 giây không ai tìm thêm từ ⇒ lật thêm 1 chữ (lật hết thì bỏ từ đó)</label>' +
+          '<label class="gd-tich" id="gdGiongHop"><input type="checkbox" id="gdGiong"' + (BO.giong ? ' checked' : '') + '> Gợi ý bằng GIỌNG ĐỌC (VOICE): ẩn chữ gợi ý, em bấm loa để nghe</label>' +
         '</div>' +
         '<div class="gd-hai"><div><span class="lbl gd-lbl">Mỗi trận</span><div class="gd-chon mot" id="gdPhut">' + PHUT.map(function (x) { return nut(x + ' phút', x, x === f0.phut); }).join('') + '</div></div>' +
         '<div id="gdLvHop"' + (bo0 ? ' hidden' : '') + '><span class="lbl gd-lbl">Độ khó (16 chữ ngẫu nhiên)</span><div class="gd-chon mot" id="gdLv">' + Object.keys(LV).map(function (k) { return nut(LV[k], k, k === f0.lv); }).join('') + '</div></div></div>' +
@@ -596,7 +603,11 @@
         $('#gdCheChu', p).textContent = CHE_GIAI[che] || '';
         $('#gdBien', p).innerHTML = (BO.bienDs.length ? BO.bienDs : ['']).map(function (k) { return k ? nut(BIEN_TEN[k] || k.toUpperCase(), k, k === BO.bien) : '<button type="button" class="on" disabled>Gợi ý của act</button>'; }).join('');
         ganChon($('#gdBien', p));
-        $$('#gdBien button[data-v]', p).forEach(function (b) { var cu = b.onclick; b.onclick = function () { cu(); BO.bien = b.getAttribute('data-v'); }; });
+        $$('#gdBien button[data-v]', p).forEach(function (b) { var cu = b.onclick; b.onclick = function () { cu(); BO.bien = b.getAttribute('data-v'); veBo(); }; });
+        // giọng đọc chỉ bật được khi act có clip cho bộ gợi ý đang chọn
+        var coG = BO.act ? actCoGiong(BO.act, BO.bien) : (bo0 && BO.bien === (bo0.bien || '') ? BO.coGiong : true);
+        $('#gdGiongHop', p).classList.toggle('tat', !coG);
+        if (!coG) $('#gdGiong', p).checked = false;
       }
       veBo();
       // thư viện AWord: act WORDS (có content.items[{word}]) — đọc MỘT lần mỗi lần mở hộp
@@ -604,7 +615,7 @@
       async function napThuVien() {
         if (TV) return TV;
         if (banThu) {
-          TV = [{ id: 'a1', title: '7 JOB / WORDS', content: { variants: ['eng1', 'eng2', 'vi1', 'vi2'], items: [{ word: 'doctor', clue: 'bác sĩ', clues: { eng1: 'a person who treats sick people', vi1: 'bác sĩ' } }, { word: 'nurse', clue: 'y tá', clues: { eng1: 'a person who cares for patients', vi1: 'y tá' } }, { word: 'farmer', clue: 'nông dân' }] } },
+          TV = [{ id: 'a1', title: '7 JOB / WORDS', content: { variants: ['eng1', 'eng2', 'vi1', 'vi2'], items: [{ word: 'doctor', clue: 'bác sĩ', clues: { eng1: 'a person who treats sick people', vi1: 'bác sĩ' }, voices: { eng1: { voice: 'clipmau1' } } }, { word: 'nurse', clue: 'y tá', clues: { eng1: 'a person who cares for patients', vi1: 'y tá' } }, { word: 'farmer', clue: 'nông dân' }] } },
             { id: 'a2', title: '1 BODY PARTS / WORDS', content: { items: [{ word: 'head', clue: 'đầu' }, { word: 'hand', clue: 'bàn tay' }] } }];
           return TV;
         }
@@ -646,20 +657,23 @@
       // act → bộ từ chép vào giải
       async function dungBo() {
         var che = $('#gdChe .on', p).getAttribute('data-v'), o = +$('#gdO .on', p).getAttribute('data-v'), chiBo = $('#gdChiBo', p).checked;
-        var a = BO.act;
-        // giữ act cũ mà đổi bộ gợi ý ⇒ đọc lại act từ thư viện (giải chỉ cất gợi ý của MỘT bộ)
-        if (!a && bo0 && BO.bien !== (bo0.bien || '')) {
+        var a = BO.act, goiY = $('#gdGoiY', p).checked, giong = $('#gdGiong', p).checked;
+        // giữ act cũ mà đổi bộ gợi ý / mới bật giọng đọc ⇒ đọc lại act từ thư viện (giải chỉ cất gợi ý + clip của MỘT bộ)
+        if (!a && bo0 && (BO.bien !== (bo0.bien || '') || (giong && !bo0.giong))) {
           var tv = await napThuVien(); a = tv.filter(function (x) { return x.id === bo0.id; })[0] || null;
           if (!a) throw new Error('Không thấy act ' + bo0.ten + ' trong thư viện nữa — thầy chọn lại act.');
         }
-        if (!a) return Object.assign({}, bo0, { che: che, o: o, chiBo: chiBo });
+        if (!a) return Object.assign({}, bo0, { che: che, o: o, chiBo: chiBo, goiY: goiY, giong: giong && !!bo0.giong });
         var k = BO.bien;
         var tu = a.content.items.map(function (it) {
           var m = k && it.clues && it.clues[k] != null ? it.clues[k] : it.clue;
-          return { w: String(it.word || '').trim().slice(0, 40), m: String(m || '').trim().slice(0, 200) };
+          var x = { w: String(it.word || '').trim().slice(0, 40), m: String(m || '').trim().slice(0, 200) }, v = giong ? clipCua(it, k) : '';
+          if (v) x.v = String(v).slice(0, 60);
+          return x;
         }).filter(function (x) { return /[A-Za-z]/.test(x.w); }).slice(0, 300);
         if (!tu.length) throw new Error('Act này không có từ nào.');
-        return { id: a.id, ten: String(a.title || '').slice(0, 80), che: che, o: o, chiBo: chiBo, bien: k || '', bienTen: k ? BIEN_TEN[k] || k.toUpperCase() : '', tu: tu };
+        return { id: a.id, ten: String(a.title || '').slice(0, 80), che: che, o: o, chiBo: chiBo, bien: k || '', bienTen: k ? BIEN_TEN[k] || k.toUpperCase() : '', tu: tu,
+          goiY: goiY, giong: giong && tu.some(function (x) { return x.v; }) };
       }
       // ô số: chỉ chữ số; Enter = nhận ô; KHÔNG dùng type=number (cuộn chuột đổi số — nếp "ô nhập số liệu an toàn")
       $$('.gd-sao input', p).forEach(function (i) {

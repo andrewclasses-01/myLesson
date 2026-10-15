@@ -19,6 +19,10 @@
 //   2. THEO DÕI (?xem=1, hoặc mở trận không phải của mình): bạn cùng lớp / thầy xem trực tiếp — không bàn chữ, ô giữa
 //      trải rộng (cột tên A | cột tên B), điểm 2 bên, không ghi gì. Luật: tools/dang-luat-giai-dau-bo.js (bạn cùng lớp đọc tu).
 // Bàn thử: ?thu=1&che=one|list|free (bộ từ mẫu) · &xem=1 (xem 2 máy đấu nhau).
+// ⭐ v1.352.0 — GỢI Ý LẬT CHỮ (y AWord Fight): 15 giây không ai tìm thêm từ ⇒ máy em XIN máy chủ một bước (`tu/zg<bước>_<van>`, hai máy
+//   cùng xin thì máy sau trượt vì tài liệu đã có); máy chủ lật thêm 1 chữ của từ ngắn nhất (goiY {i,k,chu}); lật hết = bỏ từ (tim '-',
+//   hien[i] = TỪ). Vạch mảnh dưới đầu bảng gợi ý chạy 15 giây. GIỌNG ĐỌC (giải bật): gợi ý ẩn chữ, nút loa phát clip voiceClips/{id};
+//   One word tự đọc khi sang bàn.
 // ============================================================
 import { loadDict, lookup, points, shuffle, wordsOn, createSfx, escapeHtml as esc } from "../game/ws-lib.js";
 
@@ -37,7 +41,8 @@ const sfx = createSfx();
 let dict = null, L = LAND, port = false;
 
 // trạng thái
-const G = { phase: "tai", T: null, ben: "a", order: shuffle([...Array(16).keys()]), sel: [], ask: false, roi: false, pop: false, lastKey: "", note: "", xem: XEM, van: -1, n: 16 };
+const G = { phase: "tai", T: null, ben: "a", order: shuffle([...Array(16).keys()]), sel: [], ask: false, roi: false, pop: false, lastKey: "", note: "", xem: XEM, van: -1, n: 16, xinGoi: {} };
+const GOI_MS = 15000;
 let TU = new Map();          // tên tài liệu từ → { w, v, uid, ok, d, i, m, luc }
 let LECH = 0;                // giờ máy chủ − giờ máy em (ms)
 let f = null, tranRef = null, toi = null, banThu = false;
@@ -154,6 +159,40 @@ function doiBan() {
   const dau = G.van < 0;
   G.van = v; G.n = n; G.order = shuffle([...Array(n).keys()]); G.sel = [];
   if (!dau && G.phase === "play") { render(); shake(); sfx.shake(); }
+  // One word + giọng đọc: tự đọc gợi ý của bàn mới (lần đầu đợi màn đếm ngược xong — xem vaoPha)
+  if (!dau && G.T.giong && G.T.che === "one") docGiong(((G.T.goi || [])[0] || {}).v);
+}
+// ⭐ v1.352.0 — GIỌNG ĐỌC: clip ở voiceClips/{id} (audio = data URL, ai cũng đọc được); đệm theo id
+const CLIP = new Map();
+let amDang = null;
+async function docGiong(id) {
+  if (!id || !sfx.on) return;
+  try {
+    if (!CLIP.has(id)) {
+      if (banThu || !f) return;
+      const s = await f.fs.getDoc(f.fs.doc(f.db, "voiceClips", id));
+      CLIP.set(id, s.exists() ? s.data().audio || "" : "");
+    }
+    const url = CLIP.get(id); if (!url) return;
+    if (amDang) amDang.pause();
+    amDang = new Audio(url); await amDang.play();
+  } catch (e) { console.warn("[trận] giọng đọc", e); }
+}
+// ⭐ v1.352.0 — GỢI Ý: đủ 15 giây không tiến triển ⇒ xin máy chủ lật một chữ (mỗi bước xin lại sau 3 giây nếu chưa thấy máy chủ đổi)
+const maBuoc = (n) => String.fromCharCode(97 + (Math.floor(n / 26) % 26)) + String.fromCharCode(97 + (n % 26));
+function xinGoi() {
+  const T = G.T;
+  if (!che() || !T.goiYBat || G.xem || banThu || !tranRef) return;
+  if (now() - (T.moc || T.batDau || 0) < GOI_MS) return;
+  const n = T.soGoi || 0, key = vanNay() + ":" + n;
+  if (G.xinGoi[key] && Date.now() - G.xinGoi[key] < 3000) return;
+  G.xinGoi[key] = Date.now();
+  f.fs.setDoc(f.fs.doc(tranRef, "tu", "zg" + maBuoc(n) + "_" + vanNay()), { uid: toi.uid, luc: f.fs.serverTimestamp() }).catch(() => { });
+}
+// vạch gợi ý: chạy đầy trong 15 giây kể từ lần tiến triển cuối (sửa tại chỗ mỗi nhịp, không vẽ lại)
+function veVachGoi() {
+  const v = cv.querySelector(".td-vach i"); if (!v || !G.T) return;
+  v.style.width = Math.min(100, Math.max(0, (now() - (G.T.moc || G.T.batDau || 0)) / GOI_MS * 100)) + "%";
 }
 function capNhatPha() {
   const T = G.T, cu = G.phase;
@@ -168,7 +207,11 @@ function capNhatPha() {
 function vaoPha(cu) {
   clearInterval(cdIv); clearInterval(clockIv);
   if (G.phase === "lobby") { render(); cdIv = setInterval(() => { if (now() >= G.T.batDau) { capNhatPha(); } else renderCentre(); }, 200); return; }
-  if (G.phase === "play") { render(); if (cu === "lobby" || cu === "cho" || cu === "tai") shake(); clockIv = setInterval(tick, 250); return; }
+  if (G.phase === "play") {
+    render(); if (cu === "lobby" || cu === "cho" || cu === "tai") shake(); clockIv = setInterval(tick, 250);
+    if (G.T.giong && G.T.che === "one" && cu !== "play") docGiong(((G.T.goi || [])[0] || {}).v);
+    return;
+  }
   if (G.phase === "count") {
     render(); root.classList.add("ending");
     if (G.xem) return;
@@ -191,6 +234,7 @@ function tick() {
   if (G.phase !== "play") return;
   const con = Math.max(0, Math.ceil((G.T.ketThuc - now()) / 1000));
   if (now() >= G.T.ketThuc) { G.phase = "count"; return vaoPha("play"); }
+  if (che() && G.T.goiYBat) { veVachGoi(); xinGoi(); }
   if (con !== conCu) {
     conCu = con;
     const c = cv.querySelector(".wsg-clock");
@@ -316,15 +360,22 @@ function meta() {
 }
 // ⭐ v1.351.0 — bảng GỢI Ý của bàn đang chơi (trận có bộ từ): mỗi từ một dòng — gợi ý + ô trống (số chữ) / từ đã tìm (màu bên tìm)
 function goiHtml() {
-  const T = G.T || {}, goi = T.goi || [], tim = T.tim || {}, v = vanNay();
+  const T = G.T || {}, goi = T.goi || [], tim = T.tim || {}, hien = T.hien || {}, gy = T.goiY, v = vanNay();
   const tuCua = (i) => { let w = ""; TU.forEach((x) => { if (x.ok === true && x.v === v && x.i === i) w = x.w; }); return w; };
   const mot = T.che === "one";
   const dong = goi.map((g, i) => {
-    const ai = tim[i], w = ai ? tuCua(i) : "", sd = ai ? (ai === uidBen(G.ben) ? 0 : 1) : -1;
-    const o = ai && w ? `<b>${esc(w.toUpperCase())}</b>` : `<i>${Array(g.n || 0).fill("_").join(" ")}</i>`;
-    return `<div class="td-g${ai ? " xong sd" + sd : ""}"><span class="m">${esc(g.m || "")}</span><span class="w">${o}</span></div>`;
+    const ai = tim[i], bo = ai === "-", w = bo ? hien[i] || "" : ai ? tuCua(i) : "", sd = ai && !bo ? (ai === uidBen(G.ben) ? 0 : 1) : -1;
+    // chữ đã lật (gợi ý) sáng lên, phần còn lại vẫn là ô trống
+    const lat = gy && gy.i === i ? String(gy.chu || "") : "";
+    const o = ai && w ? `<b>${esc(w.toUpperCase())}</b>`
+      : `<i>${Array.from({ length: g.n || 0 }, (_, j) => (j < lat.length ? `<em${j === lat.length - 1 ? ' class="moi"' : ""}>${esc(lat[j])}</em>` : "_")).join(" ")}</i>`;
+    const loa = T.giong && g.v ? `<button type="button" class="td-loa" data-do="giong" data-v="${esc(g.v)}" aria-label="Nghe gợi ý"><svg viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5Z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/></svg></button>` : "";
+    // giọng đọc: chữ gợi ý ẩn tới khi từ đã có người tìm / bị lật hết
+    const chu = T.giong && g.v && !ai ? "" : esc(g.m || "");
+    return `<div class="td-g${ai ? " xong" + (bo ? " bo" : " sd" + sd) : ""}">${loa}<span class="m">${chu}</span><span class="w">${o}</span></div>`;
   }).join("");
   return `<div class="td-bo${mot ? " mot" : ""}"><div class="td-bo-dau"><span>${esc(CHE_TEN[T.che] || "WORDS")}</span><span>BOARD ${v + 1}/${T.soVan || 1}</span></div>` +
+    (T.goiYBat && G.phase === "play" ? `<div class="td-vach"><i></i></div>` : "") +
     (G.xem ? `<div class="td-chu">${letters().map((c) => `<i>${esc(c)}</i>`).join("")}</div>` : "") +
     `<div class="td-goi">${dong}</div></div>`;
 }
@@ -407,6 +458,7 @@ cv.addEventListener("pointerdown", (e) => {
   if (d === "sound") { sfx.on = !sfx.on; return render(); }
   if (d === "back") return veGiai();
   if (d === "again") return dauLai();
+  if (d === "giong") return docGiong(b.dataset.v);
   if (G.phase !== "play" || G.ask || G.xem) return;
   if (d === "t") {
     const k = +b.dataset.k, i = G.sel.indexOf(k);
@@ -465,14 +517,27 @@ function keThu(cheThu, o) {   // bản rút gọn ws-chu.js keBo (máy chủ) �
 }
 async function datBanThu(v) {
   const b = KE_THU[v];
-  Object.assign(G.T, { van: v, chu: b.l, goi: b.w.map((w, i) => ({ m: b.m[i], n: w.length })), bam: await Promise.all(b.w.map(bamTu)), tim: {} });
+  Object.assign(G.T, { van: v, chu: b.l, goi: b.w.map((w, i) => ({ m: b.m[i], n: w.length })), bam: await Promise.all(b.w.map(bamTu)), tim: {}, hien: {}, goiY: null, soGoi: 0, moc: Math.max(Date.now(), G.T.batDau || 0) });
+}
+// bàn thử: một bước gợi ý như máy chủ (tran-dau.js tdTuBo nhánh zg)
+async function thuGoi() {
+  const T = G.T, b = KE_THU[vanNay()]; if (!b) return;
+  const con = b.w.map((_, k) => k).filter((k) => !T.tim[k]); if (!con.length) return;
+  const cu = T.goiY, j = cu && !T.tim[cu.i] ? cu.i : con.reduce((a, k) => (b.w[k].length < b.w[a].length ? k : a));
+  const kk = cu && cu.i === j ? cu.k + 1 : 1;
+  T.moc = Date.now(); T.soGoi++;
+  if (kk >= b.w[j].length) {
+    T.tim[j] = "-"; T.hien[j] = b.w[j]; T.goiY = null;
+    if (b.w.every((_, k) => T.tim[k])) { if (vanNay() + 1 < KE_THU.length) { await datBanThu(vanNay() + 1); doiBan(); } else T.ketThuc = Date.now(); }
+  } else T.goiY = { i: j, k: kk, chu: b.w[j].slice(0, kk) };
+  renderCentre();
 }
 // bàn thử: một từ được nhận (của em hoặc của máy) — chấm như máy chủ
 async function thuNhanTu(w, uid) {
   const T = G.T, up = w.toUpperCase(), v = vanNay(), b = KE_THU[v], i = b ? b.w.indexOf(up) : -1;
   const ben = uid === T.a ? "a" : "b";
   const d = i >= 0 ? diemBai(up) : points(w.length);
-  if (i >= 0) T.tim[i] = uid;
+  if (i >= 0) { T.tim[i] = uid; T.moc = Date.now(); if (T.goiY && T.goiY.i === i) T.goiY = null; }
   TU.set(tenTu(w), { w, v, uid, ok: true, d, i, m: i >= 0 ? b.m[i] : (lookup(dict, w) || {}).m || "", luc: Date.now() });
   T.diem[ben] += d;
   veDiem(); nayDiem(ben === G.ben ? 0 : 1);
@@ -491,7 +556,7 @@ async function chayBanThu() {
     trangThai: "choi", batDau: Date.now() + 4000, ketThuc: Date.now() + 4000 + phut * 60000, diem: { a: 0, b: 0 } };
   if (cheThu) {
     KE_THU = keThu(cheThu, +q.get("o") || 12);
-    Object.assign(G.T, { che: cheThu, chiBo: q.get("chiBo") !== "0", boTen: "FRUITS / WORDS", soVan: KE_THU.length });
+    Object.assign(G.T, { che: cheThu, chiBo: q.get("chiBo") !== "0", boTen: "FRUITS / WORDS", soVan: KE_THU.length, goiYBat: q.get("goi") !== "0" });
     await datBanThu(0);
   }
   doiBan();
@@ -513,11 +578,12 @@ async function chayBanThu() {
     };
     nuoc();
   };
-  may("may", 1);
+  if (q.get("may") !== "0") may("may", 1);   // &may=0: máy đứng im (soi gợi ý lật chữ)
   if (G.xem) may("may2", 0);
   capNhatPha();
   setInterval(() => {
     if (G.phase === "lobby" || G.phase === "play") capNhatPha();
+    if (G.phase === "play" && G.T.che && G.T.goiYBat) { veVachGoi(); if (Date.now() - G.T.moc >= GOI_MS) thuGoi(); }
     if (G.phase === "count" && !dangChot) {
       dangChot = true;
       setTimeout(() => {

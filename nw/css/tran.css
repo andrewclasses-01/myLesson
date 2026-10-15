@@ -82,3 +82,14 @@ body.trang-tran{background:radial-gradient(120% 90% at 50% 30%,#0A2418 0%,#04110
 .td-xem-nhan{position:absolute;right:14px;display:flex;align-items:center;gap:7px;font:800 12px/1 var(--ws-gf);letter-spacing:.18em;color:#FF8A8A}
 .td-xem-nhan i{width:9px;height:9px;border-radius:50%;background:#FF4D4D;box-shadow:0 0 8px #FF4D4D;animation:td-nhay 1s infinite}
 @keyframes td-nhay{50%{opacity:.25}}
+/* ⭐ v1.352.0 — gợi ý lật chữ (vạch 15 giây + chữ sáng) · từ bị lật hết (xám) · nút loa giọng đọc */
+.td-vach{height:3px;border-radius:2px;background:rgba(255,194,61,.15);overflow:hidden}
+.td-vach i{display:block;height:100%;width:0;background:var(--ws-amber);box-shadow:0 0 6px rgba(255,194,61,.7);transition:width .25s linear}
+.td-g .w em{font-style:normal;color:var(--ws-amber);letter-spacing:0}
+.td-g .w em.moi{animation:td-lat .5s}
+@keyframes td-lat{0%{transform:scale(1.8);opacity:0}100%{transform:none;opacity:1}}
+.td-g.bo{background:rgba(127,168,147,.08);border-color:rgba(127,168,147,.35)}
+.td-g.bo .w b{color:#9FB5AA;text-decoration:line-through rgba(159,181,170,.6)}
+.td-loa{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid rgba(61,245,138,.5);background:rgba(61,245,138,.12);color:var(--ws-neon2);display:grid;place-items:center;cursor:pointer;padding:0}
+.td-loa svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.td-bo.mot .td-loa{width:44px;height:44px}.td-bo.mot .td-loa svg{width:22px;height:22px}

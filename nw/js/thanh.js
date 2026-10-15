@@ -250,8 +250,9 @@
     };
   }
 
-  // ---------- nhịp "đang hoạt động" (v0.5.0): ghi hoatDongLuc vào hồ sơ mình 3 phút/lần khi tab đang mở ----------
-  var NHIP_MS = 3 * 60 * 1000, _nhipCuoi = 0;
+  // ---------- nhịp "đang hoạt động" (v0.5.0): ghi hoatDongLuc vào hồ sơ mình 1 phút/lần khi tab đang mở ----------
+  // ⭐ v1.346.0 (15/10/2026, đấu game online) — 3 phút → 1 phút (NW.ONLINE_MS 2,5 phút) để chấm xanh đúng hơn khi mời thách đấu.
+  var NHIP_MS = 60 * 1000, _nhipCuoi = 0;
   async function nhipOnline() {
     if (NW.laBanThu() || document.hidden || !NW.toi || NW.toi.laThay) return;
     if (!NW.caiDat().hoatDong) return;   // v0.9.2: em tắt "Trạng thái hoạt động" ⇒ không ghi nhịp ⇒ bạn thấy em offline
@@ -269,7 +270,10 @@
   // ---------- kênh nghe ----------
   async function moKenh(hop) {
     if (NW.laBanThu()) return;
-    if (!hop) batNhip();   // ⭐ 03/10 khung nhúng (hộp chat nhỏ): trang mẹ đã lo nhịp online + thông báo
+    // ⭐ 03/10 khung nhúng (hộp chat nhỏ): trang mẹ đã lo nhịp online + thông báo.
+    // ⭐ v1.346.0 — KHUNG GIỮ SỐNG (?nhung=1) của trang lớp/khóa/dashboard thì PHẢI ghi nhịp: trang mẹ (không phải trang nw/)
+    //   chưa từng ghi hoatDongLuc ⇒ em đang làm bài ở trang lớp mà bạn thấy offline. (Khung chỉ ghi khi tab đang hiện.)
+    if (!hop || NW.laNhung) batNhip();
     var f = await NW.fb();
     var uid = NW.toi.uid;
     if (!hop) f.fs.onSnapshot(

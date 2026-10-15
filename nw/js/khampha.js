@@ -9,11 +9,13 @@
 (function () {
   'use strict';
   var $ = NW.$, IC = NW.IC, an = NW.chuAnToan;
+  // ⭐ 15/10/2026 (thầy chốt, đấu game online Đợt 1) — thứ tự 4 ô: GIẢI ĐẤU · KHOÁ HỌC / TRÒ CHƠI · CHƯƠNG TRÌNH; tên ngắn
+  //   ("Giải đấu", "Trò chơi", "Chương trình"). Giải đấu nay là trang riêng giaidau.html (kho giaiDau), không còn mục nwKhamPha.
   var LOAI = {
-    troChoi:    { ten: 'Trò chơi tiếng Anh', mo: 'Chơi game luyện từ, nghe, đọc trên AWord', nut: 'CHƠI', mau: ['#0E7C6E', '#5CC9B6'], ic: '<path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/><rect x="2" y="6" width="20" height="12" rx="3"/>' },
-    giaiDau:    { ten: 'Giải đấu online', mo: 'Thi đấu với bạn khắp trung tâm, có bảng xếp hạng', nut: 'THAM GIA', mau: ['#E0575B', '#FF9A9C'], ic: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>' },
-    khoaHoc:    { ten: 'Khoá học', mo: 'Các khoá tự học có lộ trình, học đến đâu tính đến đó', nut: 'VÀO HỌC', mau: ['#3E7BFA', '#8BB4FF'], ic: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h5"/>' },
-    chuongTrinh:{ ten: 'Chương trình trung tâm', mo: 'Sự kiện, lớp mới, ưu đãi của Andrew Classes', nut: 'XEM', mau: ['#F2A93B', '#FFD27A'], ic: '<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M8 14h3M13 14h3M8 17.5h3"/>' }
+    giaiDau:    { ten: 'Giải đấu', mo: 'Thách đấu bạn cùng lớp, có bảng xếp hạng', nut: 'THAM GIA', mau: ['#E0575B', '#FF9A9C'], ic: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>', trang: 'giaidau.html' },
+    khoaHoc:    { ten: 'Khoá học', mo: 'Các khóa học chất lượng cao được thầy Andrew xây dựng', nut: 'VÀO HỌC', mau: ['#3E7BFA', '#8BB4FF'], ic: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h5"/>' },
+    troChoi:    { ten: 'Trò chơi', mo: 'Chơi game luyện từ, nghe, đọc trên AWord', nut: 'CHƠI', mau: ['#0E7C6E', '#5CC9B6'], ic: '<path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/><rect x="2" y="6" width="20" height="12" rx="3"/>' },
+    chuongTrinh:{ ten: 'Chương trình', mo: 'Sự kiện, lớp mới, ưu đãi của Andrew Classes', nut: 'XEM', mau: ['#F2A93B', '#FFD27A'], ic: '<rect x="3" y="4" width="18" height="17" rx="2.5"/><path d="M3 9.5h18M8 2.5v4M16 2.5v4"/><path d="M8 14h3M13 14h3M8 17.5h3"/>' }
   };
   var TEN_LOAI = Object.assign({ thongBao: { ten: 'Thông báo quan trọng', nut: 'MỞ' } }, LOAI);
   function icLoai(k) { return '<svg class="ic" viewBox="0 0 24 24">' + LOAI[k].ic + '</svg>'; }
@@ -23,7 +25,7 @@
     o = o || {}; var sua = !!m; m = m || { loai: o.loai || 'troChoi' };
     var anhMoi = null;   // {blob, url}
     var p = NW.popMo({ tieuDe: sua ? 'Sửa mục Khám phá' : 'Thêm mục Khám phá', html:
-      '<label class="lbl">Loại</label><select id="tmLoai" class="chon-o">' + Object.keys(TEN_LOAI).map(function (x) { return '<option value="' + x + '"' + (x === m.loai ? ' selected' : '') + '>' + an(TEN_LOAI[x].ten) + '</option>'; }).join('') + '</select>' +
+      '<label class="lbl">Loại</label><select id="tmLoai" class="chon-o">' + Object.keys(TEN_LOAI).filter(function (x) { return x !== 'giaiDau' || m.loai === 'giaiDau'; }).map(function (x) { return '<option value="' + x + '"' + (x === m.loai ? ' selected' : '') + '>' + an(TEN_LOAI[x].ten) + '</option>'; }).join('') + '</select>' +
       '<label class="lbl" style="margin-top:12px">Tiêu đề</label><input type="text" id="tmTieu" maxlength="80" value="' + an(m.tieuDe || '') + '" placeholder="VD: Rocket Race — WORDS 3">' +
       '<label class="lbl" style="margin-top:12px">Mô tả</label><textarea id="tmMo" rows="3" maxlength="600">' + an(m.moTa || '') + '</textarea>' +
       '<label class="lbl" style="margin-top:12px">Link (AWord, myLesson, Google Form…) — để trống thì nút chỉ mở pop-up</label><input type="text" id="tmLink" value="' + an(m.link || '') + '" placeholder="https://…">' +

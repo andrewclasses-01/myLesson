@@ -23,7 +23,7 @@
 // Bàn thử dữ liệu giả `?thu=1` / `?thu=thay` trên máy (NW.laBanThu) vẫn mở.
 if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825' ||
       (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=(1|thay)(&|$)/.test(location.search)) ||
-      /\/nw\/(tinnhan|canhan)\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 mở TIN NHẮN · 15/10/2026 (v1.345.0) mở TRANG CÁ NHÂN trên trang thật
+      /\/nw\/(tinnhan|canhan|khampha|giaidau)\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 mở TIN NHẮN · 15/10/2026 (v1.345.0) mở TRANG CÁ NHÂN · (v1.346.0) mở KHÁM PHÁ + GIẢI ĐẤU trên trang thật
   location.replace('../index.html');
   throw new Error('myNetwork chưa mở ở trang này');
 }
@@ -78,8 +78,9 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   }
   NW.chuAnToan = chuAnToan; NW.chuanMa = chuanMa; NW.khongDau = khongDau;
   NW.chuTat = chuTat; NW.itMau = itMau; NW.avHtml = avHtml;
-  // Online = có nhịp `hoatDongLuc` trong 5 phút (thanh.js ghi nhịp 3 phút/lần khi tab đang mở); bàn thử dùng cờ `online`.
-  NW.ONLINE_MS = 5 * 60 * 1000;
+  // Online = có nhịp `hoatDongLuc` trong 2,5 phút (thanh.js ghi nhịp 1 phút/lần khi tab đang mở); bàn thử dùng cờ `online`.
+  // ⭐ v1.346.0 (15/10/2026, đấu game online) — trước 5 phút / nhịp 3 phút: em đã đi 5 phút vẫn hiện online ⇒ mời thách đấu không ai nhận.
+  NW.ONLINE_MS = 150 * 1000;
   NW.dangOnline = function (hs) {
     if (!hs || hs.vaiTro === 'gv') return false;
     if (hs.online === true) return true;
@@ -524,7 +525,8 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   NW.HH_LOP = 1;
   // ⭐ 02/10/2026 — trang THẬT chỉ mở Tin nhắn: link sang trang nw/ khác ⇒ hộp "sắp ra mắt" thay vì bị cổng đá về trang chủ.
   // 15/10/2026 (v1.345.0, thầy chốt) — mở thêm TRANG CÁ NHÂN (canhan.html) trên trang thật.
-  NW.moDuoc = function (href) { return !!(CFG.LA_THU || NW.laBanThu() || /^(\.\/)?(tinnhan|canhan)\.html/.test(String(href || ''))); };
+  // 15/10/2026 (v1.346.0, thầy chốt) — mở thêm KHÁM PHÁ + GIẢI ĐẤU (khampha.html, giaidau.html).
+  NW.moDuoc = function (href) { return !!(CFG.LA_THU || NW.laBanThu() || /^(\.\/)?(tinnhan|canhan|khampha|giaidau)\.html/.test(String(href || ''))); };
   NW.sapRaMat = function (ten) {
     var p = NW.popMo({ tieuDe: ten || 'Sắp ra mắt', html: '<p style="margin:0;font-weight:600;line-height:1.55">Tính năng này sẽ sớm được ra mắt.<br><span class="tiny">00:00 · Chủ Nhật, 01/11/2026</span></p>',
       chan: '<button class="btn primary" data-dong>EM SẼ CHỜ!</button>' });

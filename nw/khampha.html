@@ -29,13 +29,14 @@
 <script src="config.js?v=16"></script>
 <script src="../js/thay-vao.js?v=3"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
 <script src="../js/chat-ui.js?v=21"></script>   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
-<script src="js/loi.js?v=29"></script>
+<script src="js/loi.js?v=30"></script>
 <script src="../js/tn-pop.js?v=12"></script>
 <script src="../js/tn-pop-ds.js?v=8"></script>
-<script src="js/thanh.js?v=26"></script>
+<script src="js/thanh.js?v=27"></script>
 <script src="js/bai.js?v=16"></script>
 <script src="../js/o-ngay.js?v=1"></script>
-<script src="js/khampha.js?v=13"></script>
+<script src="js/khampha.js?v=14"></script>
+<script src="js/giaidau.js?v=1"></script>   <!-- ⭐ 15/10/2026 đấu game online Đợt 1: đếm giải đang diễn ra cho ô Giải đấu -->
 <script>
 /* KHÁM PHÁ — v0.7.0 (mẫu v18+v19 thầy chốt 22/09): cổng hoạt động của trung tâm.
    Thông báo quan trọng → NỔI BẬT (bài thầy ghim từ menu ⋯ ở Bảng tin: nwPosts.noiBat) → 4 ô to → trang từng loại.
@@ -72,7 +73,11 @@
     var trang = $('#kpTrang');
     var banSet = await NW.dsBanUid();
     var MUC = ph.banThu ? mucMau() : await layMuc();
-    var NOI_BAT = await layNoiBat();
+    // ⭐ 15/10/2026 (thầy chốt) — TẠM ẨN "Nổi bật" (chưa có bài nào), mở lại sau: đổi HIEN_NOI_BAT = true
+    var HIEN_NOI_BAT = false;
+    var NOI_BAT = HIEN_NOI_BAT ? await layNoiBat() : [];
+    // ⭐ 15/10/2026 — ô Giải đấu đếm giải ĐANG DIỄN RA của em (kho giaiDau, js/giaidau.js) thay cho mục nwKhamPha
+    var GIAI_DANG = await NW.GiaiDau.demDang().catch(function () { return 0; });
 
     async function layMuc() {
       try {
@@ -99,20 +104,21 @@
       loaiDangXem = '';
       var tb = MUC.filter(function (m) { return m.loai === 'thongBao' && (!m.ketThuc || m.ketThuc > Date.now()); });
       trang.innerHTML =
-        '<div class="kp-dau"><h1>Khám phá</h1><p>Trò chơi, giải đấu, khoá học và chương trình của Andrew Classes.</p>' + (toi.laThay ? '<button class="btn soft nho" type="button" id="kpThem">' + IC.them + 'Thêm mục</button>' : '') + '</div>' +
+        '<div class="kp-dau"><h1>Khám phá</h1><p>Giải đấu, khoá học, trò chơi và chương trình của Andrew Classes.</p>' + (toi.laThay ? '<button class="btn soft nho" type="button" id="kpThem">' + IC.them + 'Thêm mục</button>' : '') + '</div>' +
         (tb.length ? '<div class="kp-tb">' + tb.map(function (m) {
           return '<button type="button" class="kp-tb-muc ' + (m.muc === 'cao' ? 'cao' : '') + '" data-tb="' + an(m.id) + '"><span class="ic-o">' + IC.chuong + '</span><span class="chu"><b>' + an(m.tieuDe) + '</b><small>' + an(m.moTa) + '</small></span>' + IC.tien + '</button>';
         }).join('') + '</div>' : '') +
-        '<div class="card o kp-muc"><div class="kp-tieu"><h3>Nổi bật</h3><span class="tiny">' + (toi.laThay ? 'Thầy ghim từ menu ⋯ của bài ở Bảng tin' : 'Bài thầy chọn cho cả mạng xem') + '</span></div>' +
-          '<div class="kp-cuon" id="noiBat"></div></div>' +
+        (HIEN_NOI_BAT ? '<div class="card o kp-muc"><div class="kp-tieu"><h3>Nổi bật</h3><span class="tiny">' + (toi.laThay ? 'Thầy ghim từ menu ⋯ của bài ở Bảng tin' : 'Bài thầy chọn cho cả mạng xem') + '</span></div>' +
+          '<div class="kp-cuon" id="noiBat"></div></div>' : '') +
+        // 15/10/2026 (thầy chốt): bỏ chữ "x mục" trên ô; ô Giải đấu chỉ còn "N đang diễn ra" khi có
         '<div class="kp-o">' + Object.keys(LOAI).map(function (k) {
-          var ds = cuaLoai(k), L = LOAI[k]; var dang = k === 'giaiDau' ? ds.filter(function (m) { return m.trangThai === 'dang'; }).length : 0;
+          var L = LOAI[k]; var dang = k === 'giaiDau' ? GIAI_DANG : 0;
           return '<button type="button" class="kp-o-muc" data-loai="' + k + '" style="--m1:' + L.mau[0] + ';--m2:' + L.mau[1] + '">' +
             '<span class="hinh">' + icLoai(k) + '</span><span class="than"><b>' + an(L.ten) + '</b><small>' + an(L.mo) + '</small>' +
-            '<span class="dem">' + ds.length + ' mục' + (dang ? ' · <em>' + dang + ' đang diễn ra</em>' : '') + '</span></span>' + IC.tien + '</button>';
+            (dang ? '<span class="dem"><em>' + dang + ' đang diễn ra</em></span>' : '') + '</span>' + IC.tien + '</button>';
         }).join('') + '</div>';
-      veNoiBat();
-      $$('[data-loai]', trang).forEach(function (b) { b.onclick = function () { veLoai(b.getAttribute('data-loai')); }; });
+      if (HIEN_NOI_BAT) veNoiBat();
+      $$('[data-loai]', trang).forEach(function (b) { b.onclick = function () { var k = b.getAttribute('data-loai'); if (LOAI[k].trang) NW.di(LOAI[k].trang); else veLoai(k); }; });
       $$('[data-tb]', trang).forEach(function (b) { b.onclick = function () { xemMuc(MUC.filter(function (m) { return m.id === b.getAttribute('data-tb'); })[0]); }; });
       var them = $('#kpThem'); if (them) them.onclick = function () { popMuc(null, 'thongBao'); };
       window.scrollTo(0, 0);
@@ -190,6 +196,7 @@
     function veLai() { if (loaiDangXem) veLoai(loaiDangXem); else veChinh(); }
 
     var loaiDau = NW.thamSo('loai');
+    if (loaiDau && LOAI[loaiDau] && LOAI[loaiDau].trang) { NW.thay(LOAI[loaiDau].trang); return; }   // link cũ ?loai=giaiDau ⇒ trang Giải đấu
     if (loaiDau && LOAI[loaiDau]) veLoai(loaiDau); else veChinh();
   });
 })();

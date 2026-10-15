@@ -40,11 +40,11 @@
 <script src="config.js?v=16"></script>
 <script src="../js/thay-vao.js?v=3"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
 <script src="../js/chat-ui.js?v=21"></script>   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
-<script src="js/loi.js?v=27"></script>
+<script src="js/loi.js?v=28"></script>
 <script src="../js/tn-pop.js?v=12"></script>
 <script src="../js/tn-pop-ds.js?v=8"></script>
 <script src="js/thanh.js?v=26"></script>
-<script src="js/bai.js?v=14"></script>
+<script src="js/bai.js?v=15"></script>
 <script src="js/chat.js?v=33"></script>
 <script src="../js/cat-anh.js?v=2"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
 <script>
@@ -72,6 +72,8 @@
     var laBan = ['minh', 'thay', 'cunglop', 'ban'].indexOf(qh.loai) >= 0;   // được xem đủ + nhắn tin
     var khoa = !laBan;
 
+    var moAnh = { doiAnh: false, doiBia: false };
+    if (cuaToi) { moAnh.doiAnh = await NW.congTac('doiAnh'); moAnh.doiBia = await NW.congTac('doiBia'); }
     var SAO = '<svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6 6.6.9-4.8 4.6 1.2 6.5L12 17.4 6.1 20.5l1.2-6.5L2.5 9.4l6.6-.9z"/></svg>';
     function thang(ms) { var d = new Date(Number(ms) || Date.now()); return (d.getMonth() + 1) + '/' + d.getFullYear(); }
     function lopsCua(h) { return (h.cacLop && h.cacLop.length ? h.cacLop : [h.lop]).filter(Boolean); }
@@ -102,8 +104,10 @@
         '</div>' +
         (khoa ? '' : '<div class="cn-tabs" id="cnTabs"><button type="button" class="chon" data-t="bai">BÀI VIẾT</button><button type="button" data-t="anh">ẢNH</button><button type="button" data-t="gt">GIỚI THIỆU</button></div>');
       if (cuaToi) {
-        $('#doiAv').onclick = moDoiAnh;
-        $('#doiBia').onclick = function () { $('#fileBia').click(); };
+        // 15/10/2026 — công tắc nwCauHinh/caNhan (NW.congTac, đọc sẵn lúc vào trang): tắt ⇒ hộp "sắp mở".
+        // Ô chọn tệp phải mở NGAY trong cú bấm (không chờ đọc kho) nên dùng giá trị đã đọc sẵn.
+        $('#doiAv').onclick = function () { if (moAnh.doiAnh) moDoiAnh(); else NW.sapMo('Đổi ảnh đại diện'); };
+        $('#doiBia').onclick = function () { if (moAnh.doiBia) $('#fileBia').click(); else NW.sapMo('Đổi ảnh bìa'); };
         $('#suaGt').onclick = suaGt;
       }
       $('#chiaSe').onclick = function () { NW.chepLink(location.origin + location.pathname + '?uid=' + encodeURIComponent(uid)); };

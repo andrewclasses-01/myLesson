@@ -24,6 +24,8 @@
   // o = { hop, lopMacDinh, sauKhiDang(bai, id) }
   Bai.soan = function (o) {
     var toi = NW.toi, hop = o.hop;
+    // 15/10/2026 — công tắc nwCauHinh/caNhan.dangBai (luật cũng chặn): tắt ⇒ em không thấy ô soạn. Thầy luôn thấy.
+    if (!toi.laThay) { hop.hidden = true; NW.congTac('dangBai').then(function (mo) { if (mo) hop.hidden = false; }); }
     hop.className = (hop.className + ' card soan').trim();
     hop.innerHTML = '<div class="soan-gon">' + NW.avHtml(toi) +
       '<button class="gia" id="soanMo" type="button">' + (toi.laThay ? 'Thầy muốn nhắn gì cho cả mạng?' : an(toi.ten || 'Em') + ' ơi, em đang nghĩ gì thế?') + '</button>' +

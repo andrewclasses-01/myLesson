@@ -529,6 +529,21 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
       chan: '<button class="btn primary" data-dong>EM SẼ CHỜ!</button>' });
     $('[data-dong]', p).onclick = NW.popDong;
   };
+  // ⭐ 15/10/2026 (thầy chốt, Bước 0 kiểm soát ảnh trang cá nhân) — CÔNG TẮC `nwCauHinh/caNhan` { doiAnh, doiBia, dangBai }.
+  //   Chốt thật là luật Firestore + hàm máy chủ; đây chỉ để em thấy hộp "sắp mở" thay vì báo lỗi. Thiếu tài liệu = TẮT.
+  //   Thầy + bàn thử luôn mở. Đọc một lần mỗi trang.
+  var _congTac = null;
+  NW.congTac = function (k) {
+    if (NW.laBanThu() || (NW.toi && NW.toi.laThay)) return Promise.resolve(true);
+    if (!_congTac) _congTac = NW.fb().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'nwCauHinh', 'caNhan')); })
+      .then(function (s) { return s.exists() ? s.data() : {}; }, function () { return {}; });
+    return _congTac.then(function (d) { return d[k] === true; });
+  };
+  NW.sapMo = function (ten) {
+    var p = NW.popMo({ tieuDe: ten, html: '<p style="margin:0;font-weight:600;line-height:1.55">Tính năng này sẽ sớm được mở.</p>',
+      chan: '<button class="btn primary" data-dong>EM SẼ CHỜ!</button>' });
+    $('[data-dong]', p).onclick = NW.popDong;
+  };
   NW.huyHieuLop = function (lop) {
     var k = +(NW.thamSo && NW.thamSo('hh')) || NW.HH_LOP;
     var vien = 'M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484z';

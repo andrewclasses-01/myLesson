@@ -4130,7 +4130,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=91"></script>
+<script src="js/chung.js?v=92"></script>
 <script src="js/chat.js?v=37"></script>
 <script src="js/nhac-tb.js?v=3"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=21"></script>
@@ -4236,7 +4236,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         });
       }
       return { ten: k.ten, ma: k.ma, mau: k.mau || '', xong: xong, caLop: caA, siSo: caA.length,
-               nhanBuoc: b.kieu === 'CHUONG' ? nhanBuocTheoMaKh(b, k.ma) : '',   // thiết kế K10 5 — tab pop-up "BƯỚC n"
+               nhanBuoc: A.laBaiBuoc(b) ? nhanBuocTheoMaKh(b, k.ma) : '',   // thiết kế K10 5 — tab pop-up "BƯỚC n"
                khongTinh: stageCo ? A.khongTinhCuaAct(l, b, k.ma) : null };
     });
 
@@ -4256,7 +4256,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var xongHet = (daDoc && acts.length) ? (caLop.length - thieu.length) : null;
     // ⭐ thiết kế K10 2 (12/10/2026, thầy chốt) — lesson CHƯƠNG: "xong" = xong ĐỦ MỌI BƯỚC (cả sách/video/Zalo, không chỉ act)
     // ⇒ màu thẻ (xanh đủ / đỏ gấp) + danh sách em thiếu tính trên đủ các bước. Chưa đọc xong tiến độ bước ⇒ xongHet null (không xanh sớm).
-    if (b.kieu === 'CHUONG' && daDoc) {
+    if (A.laBaiBuoc(b) && daDoc) {
       var buocTay = (b.bt || []).filter(function (x) { return !(x.ma && (x.loai === 'acts' || x.loai === 'act')); });
       if (buocTay.length) {
         var tdC = CHUONG_TD[b.id];
@@ -5633,7 +5633,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     return m ? (Number(m[3]) + '/' + Number(m[2])) : '';
   }
   function tenBaiGiangKh(b) {
-    if ((b.kieu === 'CHUONG' || b.kieu === 'GIOITHIEU') && b.noiDung) return String(b.noiDung).trim();   // thiết kế K10 1 — lesson CHƯƠNG: tên chương (y `tenBaiGiang` khoa.html) · v1.340.0 GIỚI THIỆU
+    if ((b.kieu === 'GIOITHIEU' || (b.dang === 'KHOA' && !String((b.baiGiang || {}).tieuDe || '').trim())) && b.noiDung)   /* v1.341.0 tự nhận: không tiêu đề bài giảng */ return String(b.noiDung).trim();   // thiết kế K10 1 — lesson CHƯƠNG: tên chương (y `tenBaiGiang` khoa.html) · v1.340.0 GIỚI THIỆU
     var bg = b.baiGiang || {};
     var t = String(bg.tieuDe || '').trim();
     if (!t) return A.tenBai(b);
@@ -5682,7 +5682,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<span class="td-tich">' + (du ? '✓' : '') + '</span>' +
     '</span>';
   }
-  /* ⭐ thiết kế K10 1 (12/10/2026) — THẺ LESSON CHƯƠNG (khóa NỀN TẢNG, `b.kieu === 'CHUONG'`): mỗi BƯỚC trong `b.bt` một hàng
+  /* ⭐ thiết kế K10 1 (12/10/2026) — THẺ LESSON CHƯƠNG (khóa NỀN TẢNG, `A.laBaiBuoc(b)`): mỗi BƯỚC trong `b.bt` một hàng
      "BƯỚC n", số = em CẢ LỚP (sĩ số của bài, `t.acts[..].caLop`/`A.caLopCuaBai`) đã xong bước đó:
        · bước `acts` (có mã bài giao) — điểm AWord, y hàng act cũ (`hangKhoa`).
        · bước `sach`/`zalo` (tự đánh dấu) · `video` (xem đủ) — đọc trường `chuong` của `lessonVideoTienDo/<ma>__<bai>` từng em
@@ -5917,12 +5917,12 @@ tr.qm-hang-tam td{background:#fffbeb}
     var ruot = khoi.length
       ? khoi.map(function (k) { return hangKhoa(k, t); }).join('')
       : 'Bài giao trên giấy — chưa có bài tập online nào.';
-    if (b.kieu === 'CHUONG' && (b.bt || []).length) {   // thiết kế K10 1 — một hàng mỗi BƯỚC (trước chỉ 2 hàng act, nhãn "TNBG")
+    if (A.laBaiBuoc(b) && (b.bt || []).length) {   // thiết kế K10 1 — một hàng mỗi BƯỚC (trước chỉ 2 hàng act, nhãn "TNBG")
       khoi = b.bt;
       ruot = b.bt.map(function (x, i) { return hangBuocChuongKh(b, x, i, t); }).join('');
     }
     if (b.kieu === 'GIOITHIEU') { khoi = [1]; ruot = hangGtKh(t); }   // v1.340.0 — một hàng ĐÃ XEM x/sĩ số
-    return '<div class="the khoa-hoc' + lopThem + (b.kieu === 'CHUONG' ? ' chuong' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
+    return '<div class="the khoa-hoc' + lopThem + (A.laBaiBuoc(b) ? ' chuong' : '') + '" role="button" tabindex="0" data-id="' + id + '">' +
       '<span class="the-in ' + lopNen + '">' +
         '<span class="the-body">' +
           '<span class="t-chu">' +
@@ -5933,7 +5933,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           veHanCard(b, moc, st, t) +
         '</span>' +
         /* v1.130.0 — bỏ cột icon ⚙/⊕ (xem `veTheCard`); menu ⚙ nay ở đầu hộp quản lý bài. */
-        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + (b.kieu === 'CHUONG' ? ' chuong' : '') + (b.kieu === 'GIOITHIEU' ? ' chuong gt' : '') + '">' +
+        '<span class="the-diem n' + khoi.length + (khoi.length ? '' : ' chi-tay') + (A.laBaiBuoc(b) ? ' chuong' : '') + (b.kieu === 'GIOITHIEU' ? ' chuong gt' : '') + '">' +
           '<span class="diem-rows">' + ruot + '</span>' +
         '</span>' +
         '<span class="play">' + (ttThe === 'khoa'
@@ -6759,7 +6759,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   // thiết kế K10 7 (12/10/2026, thầy chốt) — lesson CHƯƠNG: tab cho MỌI bước (`POP_TAB.ds`); bước không có điểm
   // (`tay`: đọc sách / video mẫu / gửi Zalo) = danh sách "Đã xong" / "—", đọc từ `CHUONG_TD` (cùng nguồn hàng BƯỚC trên thẻ).
   function dsTabDb(b, t) {
-    if (b.kieu !== 'CHUONG' || !(b.bt || []).length) return t.acts;
+    if (!A.laBaiBuoc(b) || !(b.bt || []).length) return t.acts;
     return b.bt.map(function (x, i) {
       var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
       var nhan = 'BƯỚC ' + (m ? m[1] : (i + 1));
@@ -6809,7 +6809,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#popDs').innerHTML = !a ? '' : (a.tay ? veCotTayDb(a, POP_TAB.t, POP_TAB.b) : veCotActDb(a, POP_TAB.t));
   }
   function moPopTabAct(b, t) {
-    $('#popPhu').textContent = (b.kieu === 'CHUONG' && b.noiDung)   // K10 7 — CHƯƠNG: "PHẦN A: CHƯƠNG 1 • <tên chương>" (trước lặp tên 2 lần)
+    $('#popPhu').textContent = (A.laBaiBuoc(b) && b.noiDung)   // K10 7 — CHƯƠNG: "PHẦN A: CHƯƠNG 1 • <tên chương>" (trước lặp tên 2 lần)
       ? A.maLesson(b) + ' • ' + String(b.noiDung).trim()
       : A.tenBai(b) + (A.maLesson(b) ? ' • ' + A.maLesson(b) : '');
     if (!t.acts.length) {
@@ -8562,7 +8562,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   //   chỉ practiceLog mode "practice"). KHÔNG thành cột/đoạn riêng ở tab THỜI LƯỢNG; giờ của nó CỘNG vào TỔNG của em, còn từng lượt
   //   (nhãn QUAY VIDEO) chỉ hiện khi đúp xem CHI TIẾT một em.
   function hqQuayCua(b) {
-    return ((b && b.kieu === 'CHUONG' && b.bt) || []).filter(function (x) { return x.loai === 'zalo' && x.ma; })
+    return ((b && A.laBaiBuoc(b) && b.bt) || []).filter(function (x) { return x.loai === 'zalo' && x.ma; })
       .map(function (x) { return { ma: x.ma, ten: 'QUAY VIDEO', mau: 'QUIZ', quay: true }; });
   }
   function hqLaQuay(ma) { return hqQuayCua(HQ.b).some(function (q) { return q.ma === ma; }); }
@@ -9012,7 +9012,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var soA = pv.acts.length, cot = soA <= 5 ? soA : Math.ceil(soA / 2);   // v1.325.0 (thầy duyệt mẫu v44, 13/10) — ≤ 5 act MỘT hàng, từ 6 act mới 2 hàng
     var trai = soA ? pv.acts.map(function (a) { return hqBxhAct(a, hs, t.acts.indexOf(a)); }).join('') : '<div class="bm-em-trong">Phạm vi này không có game AWord.</div>';
     // ⭐ thiết kế K10 8 (mẫu v43 A) — lesson CHƯƠNG: đủ MỌI BƯỚC theo thứ tự, một hàng; bước không điểm = bảng hẹp (⅔ bề ngang).
-    var b = HQ.b, laCh = b.kieu === 'CHUONG' && (b.bt || []).length, td = laCh ? CHUONG_TD[b.id] : null, cotCss = '', soTay = 0;
+    var b = HQ.b, laCh = A.laBaiBuoc(b) && (b.bt || []).length, td = laCh ? CHUONG_TD[b.id] : null, cotCss = '', soTay = 0;
     if (laCh) {
       var cacBuoc = dsTabDb(b, t).filter(function (a) { return a.tay ? !/^acts?$/.test(a.buoc.loai) : pv.acts.indexOf(a) >= 0; });
       soTay = cacBuoc.filter(function (a) { return a.tay; }).length;

@@ -701,6 +701,24 @@
     return moc == null || moc > gioNay();
   }
 
+  // ⭐⭐ v1.341.0 (15/10/2026, thầy chốt "tự nhận dạng") — bài KHÓA HỌC đi theo BƯỚC hay theo TIMELINE nhận theo NỘI DUNG,
+  // không theo nhãn `kieu:'CHUONG'` nữa (nút KIỂU ở app đã bỏ — bấm nhầm là học sinh kẹt bài). Mọi trang hỏi qua 3 hàm này:
+  //   · coBuocTay(b)  — có dòng SÁCH / VIDEO mẫu / ZALO (bước không có điểm AWord): lưu tiến độ lên kho, dashboard hiện từng BƯỚC.
+  //   · diTheoBuoc(b) — KHÔNG có đoạn bài giảng: xong hướng dẫn mở bước 1, xong bước i mở bước i+1 (có đoạn ⇒ theo timeline).
+  //   · laBaiBuoc(b)  — một trong hai ⇒ thẻ / pop-up / trang bài vẽ kiểu BƯỚC 1…n (lesson CHƯƠNG SÁCH cũ, cả bài trộn).
+  // Nhận cả bài gốc lẫn vỏ thẻ khoa.html (`b.goc`). Bài GIỚI THIỆU (`kieu:'GIOITHIEU'`) không bao giờ là bài BƯỚC.
+  var LOAI_BUOC_TAY = { sach: 1, video: 1, zalo: 1 };
+  function baiGocKhoa(b) { return (b && b.goc && b.goc.bt) ? b.goc : b; }
+  function coBuocTay(b) {
+    b = baiGocKhoa(b);
+    return !!(b && b.kieu !== 'GIOITHIEU' && (b.bt || []).some(function (x) { return x && LOAI_BUOC_TAY[x.loai]; }));
+  }
+  function diTheoBuoc(b) {
+    b = baiGocKhoa(b);
+    return !!(b && b.kieu !== 'GIOITHIEU' && (b.bt || []).length && !((b.baiGiang || {}).doan || []).length);
+  }
+  function laBaiBuoc(b) { return diTheoBuoc(b) || coBuocTay(b); }
+
   // Hạn ĐANG CÓ HIỆU LỰC của một thẻ: hạn sửa trước, rồi mới tới `bai.json`.
   function hanCua(b) {
     var h = HAN_SUA[(b && b.id) || ''];
@@ -3752,6 +3770,7 @@
     hanCua: hanCua, daSuaHan: daSuaHan, datHanSua: datHanSua,
     // v1.35.0 — trạng thái thẻ (ẩn / tạm khoá / xoá mềm) + "còn hạn" dùng chung
     trangThaiThe: trangThaiThe, datTrangThai: datTrangThai, conHan: conHan,
+    coBuocTay: coBuocTay, diTheoBuoc: diTheoBuoc, laBaiBuoc: laBaiBuoc,   // v1.341.0 tự nhận dạng bài BƯỚC
     // ⭐ v1.37.0 — avatar dùng chung + chấm đỏ tin nhắn mới
     avSlugLop: avSlugLop, avSlugTen: avSlugTen, avUrl: avUrl, gaAvatar: gaAvatar,
     napAvatarKho: napAvatarKho, deAvatarKho: deAvatarKho, batAvatarKho: batAvatarKho, quenAvatarKho: quenAvatarKho,

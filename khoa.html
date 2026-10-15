@@ -862,7 +862,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=91"></script>
+<script src="js/chung.js?v=92"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <script src="js/gioi-thieu.js?v=4"></script>   <!-- v1.286.0 phim giới thiệu khóa mới (cần NWP của nw-phien.js) -->
 <script src="js/chat.js?v=37"></script>
@@ -953,7 +953,7 @@ function ngayCuaISO(s){
    sau dấu ':' đầu tiên. Chưa có `baiGiang.tieuDe` thì lùi về tên dạng bài
    chung (`A.tenBai`) để KHÔNG BAO GIỜ hiện trống trơn. */
 function tenBaiGiang(b){
-  if (b.kieu === 'CHUONG' && b.noiDung) return String(b.noiDung).trim();   // 11/10/2026 — lesson CHƯƠNG: tên chương
+  if (b.dang === 'KHOA' && b.noiDung && !String((b.baiGiang || {}).tieuDe || '').trim()) return String(b.noiDung).trim();   // 11/10/2026 — lesson CHƯƠNG: tên chương · v1.341.0 tự nhận: không tiêu đề bài giảng
   var bg = b.baiGiang || {};
   var t = String(bg.tieuDe || '').trim();
   if (!t) return A.tenBai(b);
@@ -1351,7 +1351,7 @@ function veDiemChuong(b){
 }
 
 function veDiem(b){
-  if (b.goc && b.goc.kieu === 'CHUONG') return veDiemChuong(b);   // 11/10/2026
+  if (A.laBaiBuoc(b)) return veDiemChuong(b);   // 11/10/2026 · v1.341.0 tự nhận dạng (js/chung.js)
   var khoi = b.khoi || [];
   if (!khoi.length) {
     return '<span class="the-diem chi-tay"><span class="xem-chu">Bài giao trên giấy — chưa có bài tập online nào.</span></span>';
@@ -1423,7 +1423,7 @@ var POP = { b: null, acts: [], i: 0, che: 'em' };
 function actsCuaThe(b){
   var ds = (b.khoi || []).filter(function(k){ return k.loai === 'act' && k.ma; });
   // thiết kế K10 5+7 — lesson CHƯƠNG: MỖI BƯỚC một tab "BƯỚC n" (theo `bt`), bước không có điểm mang `tay` + `buoc`
-  if (b.goc && b.goc.kieu === 'CHUONG' && (b.goc.bt || []).length) {
+  if (b.goc && A.laBaiBuoc(b.goc)) {   // v1.341.0 tự nhận dạng
     ds = b.goc.bt.map(function(x, i){
       var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
       var nhan = 'BƯỚC ' + (m ? m[1] : (i + 1));

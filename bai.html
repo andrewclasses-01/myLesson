@@ -2287,7 +2287,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=91"></script>
+<script src="js/chung.js?v=92"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -5227,7 +5227,7 @@ function tinhDuongDiKhoa(){
         xongB[x.id] = true; apDich(x.xong); doi = true;
         // ⭐ 12/10/2026 VÁ — lesson CHƯƠNG: xong bước nào MỞ LUÔN bước kế (bài soạn ra có chuỗi `xong.bt` RỖNG ⇒ HS xong
         //   Bước 1 kẹt ở Bước 2 "CHƯA MỞ KHOÁ" — Nhật Quang K10 báo). Thầy (`LA_GV`) vốn mở hết nên không thấy lỗi.
-        if (BAI.kieu === 'CHUONG' && bt[i + 1]) moB[bt[i + 1].id] = true;
+        if (A.diTheoBuoc(BAI) && bt[i + 1]) moB[bt[i + 1].id] = true;   // v1.341.0 — nhận theo nội dung (không có đoạn bài giảng)
       }
     });
   }
@@ -5447,8 +5447,8 @@ function napTienDoFs(){
      tay = {idBước: ms}                      bước tự đánh dấu (đọc sách · đã gửi video Zalo)
      vid = {idBước: {tong, khuc:[a,b,…]}}    khúc giây đã xem THẬT của video bài làm mẫu (mảng PHẲNG — Firestore cấm mảng lồng)
    Gộp kiểu HỢP như khúc video bài giảng: % lấy lớn hơn, đã xong thì giữ xong, mốc đánh dấu giữ cái SỚM nhất, khúc gộp lại
-   ⇒ máy nào cũng không mất. Chỉ gửi kèm khi `BAI.kieu === 'CHUONG'` (bài thường gói y như cũ). localStorage vẫn là bản máy. */
-function laChuongFs(){ return !!(BAI && BAI.kieu === 'CHUONG'); }
+   ⇒ máy nào cũng không mất. Chỉ gửi kèm khi bài đi theo BƯỚC (`A.laBaiBuoc`, v1.341.0) (bài thường gói y như cũ). localStorage vẫn là bản máy. */
+function laChuongFs(){ return A.laBaiBuoc(BAI); }   // v1.341.0 — tự nhận dạng (js/chung.js)
 function soFsChuong(v){ return v ? Number(v.integerValue != null ? v.integerValue : v.doubleValue) : NaN; }
 function gopKhucDsChuong(ds){
   var g = [];
@@ -6316,7 +6316,7 @@ function veTheXongKhoa(x, so){
 function moRongTheXongKhoa(x){ chonKhoa(x.id); }
 
 function veTheSachKhoa(x, so){
-  if (BAI && BAI.kieu === 'CHUONG') return veTheDocSachKhoa(x, so);   // 11/10/2026
+  if (A.laBaiBuoc(BAI)) return veTheDocSachKhoa(x, so);   // 11/10/2026 · v1.341.0 tự nhận dạng
   var sec = document.createElement('section');
   sec.className = 'card';
   sec.setAttribute('data-btid', x.id);
@@ -6376,7 +6376,7 @@ function soCauQuayKhoa(x){
   (BAI.bt || []).some(function(y){ if (y === x) return true; if (y.ma && CHUAN[y.ma] && +CHUAN[y.ma].soCau > 0) n = +CHUAN[y.ma].soCau; return false; });
   return n;
 }
-function laBuocQuayKhoa(x){ return !!(x && x.loai === 'zalo' && x.ma && BAI && BAI.kieu === 'CHUONG'); }
+function laBuocQuayKhoa(x){ return !!(x && x.loai === 'zalo' && x.ma && A.laBaiBuoc(BAI)); }
 function veTheQuayKhoa(x, so){
   var soCau = soCauQuayKhoa(x);
   var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma, quayCau: soCau }, so);
@@ -6600,7 +6600,7 @@ function moVideoBtKhoa(x, hostId, sec){
 
 // Tóm tắt các bước đã xong của em ở bài này ⇒ trang khóa (khoa.html) vẽ thẻ lesson CHƯƠNG theo bước.
 function luuTomTatKhoa(){
-  if (!BAI || BAI.kieu !== 'CHUONG' || !TT_KHOA) return;
+  if (!A.laBaiBuoc(BAI) || !TT_KHOA) return;
   var o = { hd: daXongHdKhoa(), doan: TT_KHOA.xongD, bt: TT_KHOA.xongB, luc: Date.now() };
   try { khoTd().setItem('awc_khoa_buoc_' + BAI.id + '_' + (MA_HS || ''), JSON.stringify(o)); } catch (e) {}
 }
@@ -6621,7 +6621,7 @@ function veTheChoGiaoKhoa(x, so){
    `zalo` — Bước 3 của K10) xong rồi vẫn LUÔN MỞ khung act, không thu thành thẻ xanh: phụ huynh phải mở lại act đó để quay
    video Bước 5, khỏi bắt bấm thẻ xanh mới mở ra. Cùng cách dò với `soCauQuay` trong `veTheZaloKhoa`. */
 function luonMoBtKhoa(x){
-  if (!BAI || BAI.kieu !== 'CHUONG' || !x || !x.ma) return false;
+  if (!A.laBaiBuoc(BAI) || !x || !x.ma) return false;
   var bt = BAI.bt || [], iz = -1;
   bt.forEach(function(y, i){ if (iz < 0 && y.loai === 'zalo') iz = i; });
   if (iz >= 0 && bt[iz].ma) return false;   // v1.328.0 — bước quay video có bài giao RIÊNG ⇒ không còn mượn act trước nó
@@ -7066,7 +7066,7 @@ function apBoCucKhoa(){
   var dut = $('#vachDutKhoa');
   if (duoi.length) {
     if (!dut) { dut = document.createElement('div'); dut.id = 'vachDutKhoa'; dut.className = 'vach-dut-khoa'; hop.appendChild(dut); }
-    dut.textContent = BAI.kieu === 'CHUONG' ? 'CÁC BƯỚC ĐÃ XONG' : 'CÁC BÀI ĐÃ XONG';
+    dut.textContent = A.laBaiBuoc(BAI) ? 'CÁC BƯỚC ĐÃ XONG' : 'CÁC BÀI ĐÃ XONG';
     L.push(dut);
   } else if (dut) dut.remove();
   L = L.concat(duoi.map(nutMucKhoa)).filter(function(n){ return n && n.parentNode === hop; });
@@ -7257,7 +7257,7 @@ function veCacPhanKhoa(hop){
   capNhatChonKhoa();    // v1.330.0
   var thanhWrap = $('#thanhBtKhoaWrap');
   if (thanhWrap && (BAI.bt || []).length) { thanhWrap.hidden = false; veThanhBtKhoa(); }
-  var goiY = $('#goiYBtKhoa'); if (goiY) goiY.hidden = BAI.kieu !== 'CHUONG';   // 13/10/2026
+  var goiY = $('#goiYBtKhoa'); if (goiY) goiY.hidden = !A.laBaiBuoc(BAI);   // 13/10/2026
   // v1.330.0 — HƯỚNG DẪN / BÀI GIẢNG do `apBoCucKhoa` dựng (mở rộng nếu đang chọn, gọn nếu không). Vị trí con trỏ video
   //   đứng sẵn chỗ dừng lần trước dù khung chưa dựng (thanh đoạn đầu trang đọc nó).
   if (bg.video || (bg.doan || []).length) GIAY_HIEN_KHOA = viTriBatDauKhoa();
@@ -7895,7 +7895,8 @@ function veDauTrang(){
   })();
   // ⭐ 12/10/2026 (thầy chốt) — LESSON CHƯƠNG: dòng trên = TÊN LESSON ("PHẦN A: CHƯƠNG 1"), dòng dưới = NỘI DUNG
   // ("CUỘC SỐNG CỦA CHÚNG TA CÓ Ý NGHĨA LÀ GÌ?") — không lặp lại tên như bản 11/10.
-  if (LA_KHOA && BAI.kieu === 'CHUONG' && BAI.noiDung) chuDeKhoa = String(BAI.noiDung).trim();
+  // v1.341.0 — tự nhận dạng: không có tiêu đề bài giảng (lesson chương) ⇒ NỘI DUNG
+  if (LA_KHOA && BAI.noiDung && !String((BAI.baiGiang || {}).tieuDe || '').trim()) chuDeKhoa = String(BAI.noiDung).trim();
   if (dbMa) dbMa.textContent = chuDeKhoa || A.maLesson(BAI);
 
   /* Ô hạn: chữ ở dòng trên (đồng hồ do veDongHo lo). ⭐ v1.85.0 — tách ra

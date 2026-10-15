@@ -473,6 +473,8 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .bia [data-nh]::after{content:attr(data-nh); position:absolute; top:-26px; left:50%; transform:translateX(-50%); padding:3px 8px; border-radius:7px;
   background:var(--ink); color:#fff; font-size:10px; font-weight:800; white-space:nowrap; opacity:0; pointer-events:none; transition:opacity .15s}
 .bia [data-nh]:hover::after{opacity:1}
+/* v1.346.0 (15/10) — nút GÓC TRÊN (đổi ảnh bìa): chữ gợi ý hiện PHÍA DƯỚI nút, lệch trái (trước đây hiện trên nút ⇒ bìa cắt mất) */
+.bia .nut-tren [data-nh]::after{top:auto; bottom:-24px; left:auto; right:0; transform:none}
 .khoa-trang{padding:34px 20px; text-align:center; margin-bottom:14px}
 .khoa-trang .o-khoa{width:64px; height:64px; border-radius:50%; background:var(--accent-soft); color:var(--accent); display:grid; place-items:center; margin:0 auto 12px}
 .khoa-trang .o-khoa .ic{width:28px; height:28px}

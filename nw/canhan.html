@@ -15,7 +15,7 @@
 <title>Trang cá nhân · Andrew Classes Network</title>
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="../css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/nw.css?v=35">
+<link rel="stylesheet" href="css/nw.css?v=36">
 <link rel="stylesheet" href="css/gui-anh.css?v=1">   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt -->
 <link rel="stylesheet" href="../css/chat-ui.css?v=21">
 <link rel="preconnect" href="https://firestore.googleapis.com">
@@ -49,6 +49,7 @@
 <script src="js/chat.js?v=34"></script>
 <script src="../js/cat-anh.js?v=2"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
 <script src="js/gui-anh.js?v=1"></script>   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt (hàm nwAnh) -->
+<script src="js/cat-bia.js?v=1"></script>   <!-- 15/10/2026 v1.346.0 khung chỉnh/cắt ảnh bìa -->
 <script>
 // v0.4.0 (22/09/2026, mẫu v12 thầy chốt): bìa rộng · avatar to + sao · MỌI nút = icon trắng không nền nằm TRONG bìa
 // (mình: đổi bìa góc trên phải; sửa giới thiệu + chia sẻ link góc dưới phải · cùng lớp/bạn bè: nhắn tin + chia sẻ ·
@@ -241,17 +242,20 @@
     function chonBiaEm(xong) { biaXong = xong; $('#fileBia').click(); }
     if (emGui) NW.GuiAnh.batDau({ hs: hs, catAnh: catAnhEm, chonBia: chonBiaEm });
 
+    // ⭐ 15/10/2026 (v1.346.0, thầy yêu cầu) — chọn ảnh bìa xong ⇒ KHUNG CHỈNH/CẮT (nw/js/cat-bia.js: kéo, phóng to, xem phần
+    // thấy trên điện thoại) rồi mới gửi duyệt (em) / tải lên (thầy). Ảnh ra 1400×500 JPEG.
     $('#fileBia').onchange = async function () {
       var file = this.files && this.files[0]; this.value = ''; if (!file) return;
-      if (biaXong) {
-        var nhan = biaXong; biaXong = null;
-        try { var b = await NW.nenAnh(file, { canhDai: CFG.ANH.bia }); nhan({ anh: await NW.blobB64(b) }); }
-        catch (e) { NW.toast(NW.chuLoiKho(e), true); }
+      var nhan = biaXong; biaXong = null;
+      var blob = window.CatBia ? await window.CatBia.mo(file, { tieuDe: 'Chỉnh ảnh bìa', nutDung: nhan ? 'Tiếp tục' : 'Lưu' })
+        : await NW.nenAnh(file, { canhDai: CFG.ANH.bia });
+      if (!blob) return;                                        // bấm Hủy bỏ
+      if (nhan) {
+        try { nhan({ anh: await NW.blobB64(blob) }); } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
         return;
       }
       try {
         NW.toast('Đang tải ảnh bìa…');
-        var blob = await NW.nenAnh(file, { canhDai: CFG.ANH.bia });
         var url = ph.banThu ? URL.createObjectURL(blob) : await NW.taiAnh(blob, 'bia_' + Date.now().toString(36) + '.jpg');
         await capNhatHoSo({ bia: url }); NW.toast('Đã đổi ảnh bìa.');
       } catch (e) { NW.toast(NW.chuLoiKho(e), true); }

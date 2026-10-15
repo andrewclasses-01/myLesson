@@ -271,7 +271,7 @@
     // ⭐ 02/10/2026 thầy chốt: NHÓM LỚP = CHÍNH CHAT LỚP myLesson (kho classChat, js/chat.js AWChat) — nhắn ở đây thì trang lớp/khóa/dashboard
     //   thấy ngay và ngược lại. Phòng lớp là phòng "ảo" (id 'lop:<mã lớp>', _lop:true): thành viên = danh sách lớp trong lop.json.
     var PHONG_LOP = [], MA_TOI = '', DS_LOP = [];
-    var CO_CN = !!(CFG.LA_THU || NW.laBanThu());   // trang thật: trang cá nhân chưa mở ⇒ không đặt link
+    var CO_CN = NW.moDuoc('canhan.html');   // 15/10/2026 (v1.345.0): trang cá nhân đã mở cả trang thật ⇒ có link "Xem trang cá nhân"
     var THAY = [];   // hồ sơ thầy (để luôn có dòng "Thầy Andrew" kể cả khi chưa nhắn lần nào)
     // 02/10/2026 thầy: khung giữa khi chưa mở phòng = icon tròn lớn + tiêu đề + 1 dòng hướng dẫn + nút "Nhắn tin mới" (bấm = nút ✎)
     var TRONG_PHONG = '<div class="tn-trong tn-chao"><span class="tn-chao-ic">' + IC.tinNhan + '</span><b>Tin nhắn của ' + (toi.laThay ? 'thầy' : 'em') + '</b>' +

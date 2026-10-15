@@ -103,6 +103,21 @@
     } catch (e) { console.warn('[giải đấu] bảng', e); return {}; }
   };
   GD.tranGanDay = function (gid, lop) { return TRAN_LOP[gid + '/' + lop] || []; };
+  // ⭐ Đợt 3 (v1.348.0) — THẦY báo giải vào NHÓM CHAT từng lớp (classChat, tin role 'gv' — luật cho thầy). Lỗi lớp nào bỏ qua lớp đó.
+  GD.baoNhom = async function (g, daMo) {
+    var chu = '🏆 Giải đấu "' + g.ten + '" ' + (daMo ? 'đã mở' : 'sẽ mở lúc ' + gio(g.tu) + ' ngày ' + ngay(g.tu)) + '! Mỗi trận A Show Speed ' + g.phut + ' phút · ' +
+      (LV[g.lv] || g.lv) + ' · thắng +2, hòa +1. Vào Khám phá → Giải đấu, hoặc bấm ⚔ ngay trong nhóm chat để thách đấu bạn đang online. Giải đóng lúc ' + gio(g.den) + ' ngày ' + ngay(g.den) + '.';
+    if (NW.laBanThu()) { NW.toast('Bàn thử: đã báo vào nhóm chat ' + g.lops.length + ' lớp.'); return; }
+    var f = await NW.fb(), so = 0;
+    for (var i = 0; i < g.lops.length; i++) {
+      try {
+        await f.fs.addDoc(f.fs.collection(f.db, 'classChat', g.lops[i], 'messages'), { name: 'Thầy Andrew', code: 'GV', role: 'gv', text: chu.slice(0, 300),
+          createdAt: Date.now(), may: 'gd' + Math.random().toString(36).slice(2, 10) });
+        so++;
+      } catch (e) { console.warn('[giải đấu] báo nhóm', g.lops[i], e); }
+    }
+    if (so) NW.toast('Đã báo vào nhóm chat ' + so + ' lớp.');
+  };
   // lịch sử trận của em (tdLichSu/{uid}, hàm máy chủ ghi — 30 trận mới nhất, cả giao hữu)
   GD.lichSu = async function () {
     if (NW.laBanThu()) return [];
@@ -311,7 +326,7 @@
             if (!(await NW.hoi('Đóng ' + g.ten + '?', 'Học sinh không đấu tính điểm giải này được nữa. Bảng xếp hạng được giữ lại.', { ok: 'Đóng giải', nguy: true }))) return;
             return ghi(g, { dong: true }, 'Đã đóng ' + g.ten + '.');
           }
-          if (k === 'mo') return ghi(g, { tu: Date.now() }, 'Đã mở ' + g.ten + '.');
+          if (k === 'mo') { GD.baoNhom(Object.assign({}, g, { tu: Date.now() }), true); return ghi(g, { tu: Date.now() }, 'Đã mở ' + g.ten + '.'); }
           if (k === 'xoa') {
             if (!(await NW.hoi('Xoá ' + g.ten + '?', 'Giải chưa bắt đầu nên chưa có trận nào.', { ok: 'Xoá', nguy: true }))) return;
             if (banThu) { mau().giai = mau().giai.filter(function (x) { return x.id !== g.id; }); NW.toast('Đã xoá giải.'); return napLai(); }
@@ -347,6 +362,7 @@
         '<span class="lbl gd-lbl">Thưởng sao khi đóng giải · top 3 mỗi lớp</span><div class="gd-sao">' + ['Hạng 1', 'Hạng 2', 'Hạng 3'].map(function (t, i) {
           return '<label class="gd-o"><span>' + t + '</span><input type="text" inputmode="numeric" id="gdSao' + i + '" value="' + ((f0.sao || [])[i] || 0) + '" aria-label="Sao ' + t + '"><span>⭐</span></label>';
         }).join('') + '</div>' +
+        (moi ? '<label class="gd-tich"><input type="checkbox" id="gdBao" checked> Báo vào nhóm chat các lớp</label>' : '') +
         '<p class="gd-loi" id="gdLoi" role="alert"></p>',
         chan: '<button type="button" class="btn soft" data-dong>Thôi</button><button type="button" class="btn primary" id="gdOk">' + (moi ? 'Tạo giải' : 'Lưu') + '</button>' });
       $$('.gd-chon button[data-v]', p).forEach(function (b) {
@@ -394,6 +410,7 @@
             } else await f.fs.updateDoc(f.fs.doc(f.db, 'giaiDau', g.id), du);
           }
           if (moi) xemGiai = du.id;
+          if (moi && $('#gdBao', p) && $('#gdBao', p).checked) GD.baoNhom(du, tu <= Date.now());
           NW.popDong();
           NW.toast(moi ? (tu <= Date.now() ? 'Đã tạo và mở ' + ten + '.' : 'Đã tạo ' + ten + ', tự mở lúc ' + gio(tu) + ' ngày ' + ngay(tu) + '.') : 'Đã lưu thay đổi.');
           napLai();

@@ -158,6 +158,8 @@
       toi: { get khoa() { return toi.uid; }, get ten() { return toi.ten; } },
       laThay: !!toi.laThay,
       get hienTen() { return (c.phong() || {}).loai === 'nhom'; },   // chat 1-1: không in tên trên bong bóng
+      // ⚔ v1.348.0 — bàn thử (?thu=1): nhóm lớp mẫu là phòng nwChats ⇒ bật nút thách đấu để xem giao diện (thật: taoKhuonLop)
+      thachDau: (NW.laBanThu() && !toi.laThay) ? function () { return (c.phong() || {}).loai === 'nhom' ? 'A1C' : ''; } : null,
       laCuaToi: function (t) { return t.uid === toi.uid; },
       av: function (t) { return NW.avHtml({ ten: t.ten, anh: t.anh, vaiTro: t.vaiTro }, 'nho'); },
       nhan: function (t) { return t.vaiTro === 'gv' ? NW.tichHtml('nho') : ''; },
@@ -819,6 +821,7 @@
           return AWChat.gui(p.lop, Object.assign({ ten: tenToi, ma: MA_TOI, vaiTro: toi.laThay ? 'gv' : 'hs' }, g));
         },
         guiAnh: toi.laThay ? function (file) { return AWChat.guiAnh(p.lop, file); } : null,   // chỉ thầy gửi ảnh
+        thachDau: toi.laThay ? null : function () { return p.lop; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js)
         datCx: function (t, v) { return AWChat.datCx(p.lop, t.id, MA_TOI, v); },
         ghiXem: function (luc) { return AWChat.ghiXem(p.lop, MA_TOI, tenToi, luc); },
         thuHoi: function (t) { return AWChat.thuHoi(p.lop, t.id, !!toi.laThay); },

@@ -511,6 +511,12 @@
       var h = ngayMoi ? '<div class="cu-ngay">' + esc(mocNhip(t.luc)) + '</div>' : '';
       /* 🔇 v1.216.0 — TIN HỆ THỐNG "<TÊN> đã bị Thầy Andrew cấm chat!" (js/chat.js camChat): dòng giữa khung, avatar em + chữ,
          không bong bóng / cảm xúc / trả lời. Thầy có nút × xoá hẳn dòng này. Thời hạn cấm KHÔNG hiện (thầy chốt). */
+      /* ⚔ v1.348.0 (15/10/2026, đấu game online Đợt 3) — THẺ THÁCH ĐẤU trong chat nhóm lớp: tin `he:{loai:'td', id}` (id trận tranDau).
+         Thẻ do js/the-td.js vẽ + tự cập nhật (chờ nhận · đang đấu · kết quả); trang chưa nạp the-td.js thì hiện dòng chữ của tin. */
+      if (t.he && t.he.loai === 'td') {
+        return h + (window.TheTD ? window.TheTD.html(t.he.id) : '<div class="cu-he" data-i="' + i + '"><span class="chu">' + esc(t.chu || '⚔ Thách đấu') + '</span></div>') +
+          (o.sauTin ? (o.sauTin(t, i, ds) || '') : '');
+      }
       if (t.he && t.he.loai === 'cam') {
         return h + '<div class="cu-he" data-i="' + i + '" data-id="' + esc(t.id || '') + '">' +
           '<span class="cu-av">' + (o.av ? o.av({ ten: t.he.ten, ma: '', vaiTro: 'hs' }, i) : '') + '</span>' +
@@ -599,6 +605,7 @@
       khung.style.scrollBehavior = kieu;
       khung._cuDaVe = true;
       khung._cuDay = sat;
+      if (window.TheTD) window.TheTD.lap(khung);   // ⭐ v1.348.0 — thẻ THÁCH ĐẤU trong tin (js/the-td.js): nghe trạng thái trận, vẽ lại tại chỗ
       veXem(); henThuXem();   // v1.210.0
     };
     // ⭐ v1.198.0 — ảnh trong tin tải XONG sau lúc vẽ làm khung cao lên ⇒ đang ở đáy thì bám đáy tiếp (khỏi hụt tin cuối)
@@ -907,6 +914,8 @@
     chan.innerHTML = '<div class="cu-chan"><div class="cu-tra" hidden></div>' + (o.guiAnh ? '<div class="cu-anh-cho" hidden></div>' : '') + '<div class="cu-nhap">' +
       (o.guiAnh ? '<button type="button" class="ib" data-cu="guianh" title="Gửi ảnh" aria-label="Gửi ảnh">' + IC.anh + '</button><input type="file" accept="image/*" multiple hidden>' : '') +
       '<button type="button" class="ib" data-cu="khay" title="Emoji và sticker" aria-label="Mở emoji và sticker">' + IC.mat + '</button>' +
+      // ⚔ v1.348.0 — o.thachDau() -> mã lớp (chỉ học sinh, nhóm lớp): nút mời bạn đang online đấu A Show Speed (js/the-td.js)
+      (o.thachDau && window.TheTD ? '<button type="button" class="ib cu-kiem" data-cu-td="1" title="Thách đấu bạn đang online" aria-label="Thách đấu bạn đang online">' + window.TheTD.IC + '</button>' : '') +
       '<div class="cu-o" id="' + esc(o.idNhap || 'cuNhap') + '" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nhập tin nhắn" data-ph="Aa" spellcheck="false"></div>' +
       '<button type="button" class="ib gui" aria-label="Gửi"></button></div></div>';
     if (edSan) { var cho = $('.cu-o', chan); cho.parentNode.replaceChild(edSan, cho); edSan.setAttribute('contenteditable', 'true'); }
@@ -914,6 +923,13 @@
     var vung = null, TRA = null;
     var khuAnh = $('.cu-anh-cho', chan), ANH = [], TOI_DA_ANH = 6;   // v1.206.0 — ảnh chờ gửi (xem trước nhỏ trên ô nhập)
     ui.nhap = ed;
+    // ⚔ v1.348.0 — nút Thách đấu: chọn bạn đang online ⇒ tạo trận + gửi tin thẻ {he:{loai:'td', id}} qua chính o.gui của trang
+    var nutTd = $('[data-cu-td]', chan);
+    if (nutTd) nutTd.onclick = function (e) {
+      e.preventDefault();
+      var lop = o.thachDau && o.thachDau(); if (!lop || !window.TheTD) return;
+      window.TheTD.moChon(nutTd, lop, function (he, chu) { return o.gui({ chu: chu, he: he }); }, o.loi);
+    };
     function docEd(n) {
       var s = '';
       (n || ed).childNodes.forEach(function (c) {

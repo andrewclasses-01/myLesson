@@ -377,6 +377,8 @@
       if (tin.q && tin.q.id) goc.q = { id: String(tin.q.id).slice(0, 40), ten: String(tin.q.ten || '').slice(0, 60), chu: String(tin.q.chu || '').slice(0, 120) };
       if (tin.sticker && /^[a-z]{2,8}:[a-z0-9-]{2,24}$/.test(String(tin.sticker))) goc.sticker = String(tin.sticker);
       if (hinh) goc.hinh = hinh;   // v1.206.0 — chỉ thầy (luật chặn học sinh)
+      var heTd = tin.he ? heChuan(tin.he) : null;
+      if (heTd && heTd.loai === 'td') goc.he = heTd;   // ⚔ v1.348.0 — thẻ thách đấu (js/the-td.js); luật kiểm trận do chính em tạo, đúng lớp
       var nhom = chu.indexOf(TAG_NHOM) >= 0 ? nhomChuan(tin.nhom) : null;
       if (nhom) goc.nhom = nhom;   // v1.339.0 — viên "@Bạn hiền" của nút REMIND
       /* (27/09/2026, sau tấn công Tr0ngX) Luật BẮT BUỘC dấu máy ⇒ bỏ ĐƯỜNG LÙI
@@ -579,7 +581,10 @@
      KHÔNG ghi thời hạn (thầy chốt: trong tin không hiện, nhưng vẫn có hiệu lực). Luật: tools/dang-luat-cam-chat.js.
      ============================================================ */
   function heChuan(h) {
-    if (!h || typeof h !== 'object' || h.loai !== 'cam') return null;
+    if (!h || typeof h !== 'object') return null;
+    // ⚔ v1.348.0 — thẻ THÁCH ĐẤU (đấu game online Đợt 3): he = {loai:'td', id: <id trận tranDau>} — em tự gửi (luật kiểm trận là của em, đúng lớp)
+    if (h.loai === 'td') return /^[A-Za-z0-9_-]{1,40}$/.test(String(h.id || '')) ? { loai: 'td', id: String(h.id) } : null;
+    if (h.loai !== 'cam') return null;
     return { loai: 'cam', ten: String(h.ten || '?').slice(0, 60) };
   }
   function khoaMa(ma) { return String(ma || '').replace(/[^0-9A-Za-z_-]/g, '_').slice(0, 60); }
@@ -777,6 +782,7 @@
   }
 
   window.AWChat = {
+    db: db,                            /* ⚔ v1.348.0 — js/the-td.js đọc trận tranDau bằng cùng kho/phiên */
     nghe: nghe, thoi: thoi, gui: gui, suaCx: suaCx, xoa: xoa,
     datCx: datCx, thuHoi: thuHoi,      /* ⭐ v1.186.0 — khuôn chat kiểu Zalo (js/chat-ui.js) */
     ngheXem: ngheXem, ghiXem: ghiXem,       /* ⭐ v1.210.0 — "đã xem" tin cuối */

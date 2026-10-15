@@ -15,7 +15,7 @@
 <title>Trang cá nhân · Andrew Classes Network</title>
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="../css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/nw.css?v=33">
+<link rel="stylesheet" href="css/nw.css?v=34">
 <link rel="stylesheet" href="css/gui-anh.css?v=1">   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt -->
 <link rel="stylesheet" href="../css/chat-ui.css?v=21">
 <link rel="preconnect" href="https://firestore.googleapis.com">
@@ -99,11 +99,15 @@
             (hs.anh ? '<img src="' + an(hs.anh) + '" alt="" onerror="this.remove()">' : '') +
             (hs.vaiTro !== 'gv' ? '<span class="sao-hieu">' + (Number(hs.sao) || 0) + SAO + '</span>' : '') +
             (cuaToi ? '<button class="doi-av" id="doiAv" type="button" title="Đổi ảnh đại diện" aria-label="Đổi ảnh đại diện">' + IC.camera + '</button>' : '') + '</span>' +
-          '<div class="tt"><h1>' + an(hs.ten) + (hs.vaiTro === 'gv' ? '<span class="nhan-gv">THẦY</span>' : '') + '</h1>' +
-            '<div class="lop">' + (hs.vaiTro === 'gv' ? '<span>Giáo viên Andrew Classes</span>' :
-              '<span>Lớp ' + an(lops.join(' · ')) + '</span>' + lops.map(function (l) { return '<span class="nhan-lop">' + an(l) + '</span>'; }).join('')) +
-              (qh.loai === 'cunglop' ? '<span class="tiny">· cùng lớp với em</span>' : qh.loai === 'ban' ? '<span class="tiny">· bạn bè</span>' : '') + '</div>' +
-            (hs.gioiThieu ? '<div class="gt">' + NW.chuCoLink(hs.gioiThieu) + '</div>' : (cuaToi ? '<div class="gt tiny">Em chưa viết giới thiệu.</div>' : '')) + '</div>' +
+          // ⭐ 15/10/2026 (web v1.344.0, thầy chốt mẫu v2 kiểu B) — [avatar | TÊN + BIỆT DANH dưới tên | GIỚI THIỆU NHANH bên phải,
+          // vạch dọc ngăn]. Bỏ dòng lớp ở đầu trang (lớp vẫn ở tab GIỚI THIỆU). Điện thoại: giới thiệu xuống dưới, cả hàng.
+          '<div class="cn-ten"><h1>' + an(hs.ten) + (hs.vaiTro === 'gv' ? '<span class="nhan-gv">THẦY</span>' : '') + '</h1>' +
+            (hs.bietDanh ? '<div class="cn-nick">' + an(hs.bietDanh) + '</div>' :
+              hs.vaiTro === 'gv' ? '<div class="cn-nick">Giáo viên Andrew Classes</div>' :
+              cuaToi ? '<button type="button" class="cn-them" data-sua-gt>+ Thêm biệt danh</button>' : '') + '</div>' +
+          '<div class="cn-gt' + (hs.gioiThieu ? '' : ' trong') + '">' +
+            (hs.gioiThieu ? '<p>' + NW.chuCoLink(hs.gioiThieu) + '</p>' : '<p class="cn-goi">' + (cuaToi ? 'Em chưa viết giới thiệu.' : 'Chưa có giới thiệu.') + '</p>') +
+            (cuaToi && !hs.gioiThieu ? '<button type="button" class="cn-viet" data-sua-gt>' + IC.sua + '<span>Viết vài dòng về em</span></button>' : '') + '</div>' +
         '</div>' +
         (khoa ? '' : '<div class="cn-tabs" id="cnTabs"><button type="button" class="chon" data-t="bai">BÀI VIẾT</button><button type="button" data-t="anh">ẢNH</button><button type="button" data-t="gt">GIỚI THIỆU</button></div>');
       if (cuaToi) {
@@ -111,6 +115,7 @@
         $('#doiAv').onclick = function () { if (emGui) NW.GuiAnh.bam('av'); else moDoiAnh(); };
         $('#doiBia').onclick = function () { if (emGui) NW.GuiAnh.bam('bia'); else $('#fileBia').click(); };
         $('#suaGt').onclick = suaGt;
+        $$('[data-sua-gt]', hop).forEach(function (b) { b.onclick = suaGt; });   // "+ Thêm biệt danh" · "Viết vài dòng về em"
       }
       $('#chiaSe').onclick = function () { NW.chepLink(location.origin + location.pathname + '?uid=' + encodeURIComponent(uid)); };
       var kb = $('#ketBan'); if (kb) kb.onclick = guiKetBan;
@@ -253,16 +258,20 @@
     };
     // thầy chốt 22/09: em chỉ sửa được CÂU GIỚI THIỆU + SỞ THÍCH (lớp, ngày tham gia lấy tự động từ hồ sơ)
     function suaGt() {
+      // ⭐ 15/10/2026 (v1.344.0) — thêm BIỆT DANH (nick name) hiện ngay dưới tên, ≤ 30 ký tự, qua lọc từ cấm như giới thiệu.
       var p = NW.popMo({ tieuDe: 'Giới thiệu về em', html:
-        '<label class="lbl">Vài dòng về em</label><textarea id="gt" rows="4" maxlength="300" placeholder="Sở thích, môn yêu thích, mục tiêu…">' + an(hs.gioiThieu || '') + '</textarea>' +
+        '<label class="lbl">Biệt danh (nick name)</label><input type="text" id="gtNick" maxlength="30" placeholder="vd: Bin, Mèo con, Captain Nam…" value="' + an(hs.bietDanh || '') + '">' +
+        '<div class="tiny" style="margin-top:5px">Hiện ngay dưới tên em. Tối đa 30 ký tự.</div>' +
+        '<label class="lbl" style="margin-top:12px">Vài dòng về em</label><textarea id="gt" rows="4" maxlength="300" placeholder="Sở thích, môn yêu thích, mục tiêu…">' + an(hs.gioiThieu || '') + '</textarea>' +
         '<label class="lbl" style="margin-top:12px">Sở thích (ngắn gọn)</label><input type="text" id="gtSt" maxlength="80" placeholder="vẽ · bóng đá · mèo" value="' + an(hs.soThich || '') + '">',
         chan: '<button class="btn soft" data-dong>Thôi</button><button class="btn primary" id="gtOk">Lưu</button>' });
       $('[data-dong]', p).onclick = NW.popDong;
       $('#gtOk', p).onclick = async function () {
         var chu = $('#gt', p).value.trim().slice(0, 300), st = $('#gtSt', p).value.trim().slice(0, 80);
-        var tu = await NW.kiemTuCam(chu + ' ' + st); if (tu) { NW.toast('Có từ không phù hợp ("' + tu + '").', true); return; }
+        var nick = $('#gtNick', p).value.replace(/\s+/g, ' ').trim().slice(0, 30);
+        var tu = await NW.kiemTuCam(nick + ' ' + chu + ' ' + st); if (tu) { NW.toast('Có từ không phù hợp ("' + tu + '").', true); return; }
         NW.popDong();
-        try { await capNhatHoSo({ gioiThieu: chu, soThich: st }); NW.toast('Đã lưu.'); } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
+        try { await capNhatHoSo({ bietDanh: nick, gioiThieu: chu, soThich: st }); NW.toast('Đã lưu.'); } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
       };
     }
     async function guiKetBan() {
@@ -300,7 +309,7 @@
     // ---- dữ liệu giả bàn thử: hs_1 cùng lớp · hs_2 khác lớp chưa bạn · hs_3 khác lớp đã bạn · hs_4 bạn mời em ----
     function hoSoBanThu(u) {
       var ds = {
-        hs_1: { ten: 'MINH ANH', lop: 'A1C', cacLop: ['A1C', 'NNTNGK9'], gioiThieu: 'Em thích tiếng Anh 🌟', soThich: 'vẽ · mèo' },
+        hs_1: { ten: 'MINH ANH', bietDanh: 'Mèo con', lop: 'A1C', cacLop: ['A1C', 'NNTNGK9'], gioiThieu: 'Em thích tiếng Anh 🌟', soThich: 'vẽ · mèo' },
         hs_2: { ten: 'HÀ LINH', lop: 'B2B', cacLop: ['B2B'], gioiThieu: 'Thích K-pop và chụp ảnh 📷' },
         hs_3: { ten: 'BẢO NAM', lop: 'B2B', cacLop: ['B2B'], gioiThieu: 'Fan bóng đá ⚽' },
         hs_4: { ten: 'MINH TÚ', lop: 'NNTNGK9', cacLop: ['NNTNGK9'], gioiThieu: 'Xin chào!' },

@@ -475,7 +475,8 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .khoa-trang .o-khoa .ic{width:28px; height:28px}
 .khoa-trang h3{margin:0 0 6px; font-size:16px}
 .khoa-trang p{margin:0 0 14px; font-size:13.5px; color:var(--muted); font-weight:600}
-.ho-so{padding:0 22px 16px; display:flex; gap:18px; align-items:flex-end; flex-wrap:wrap}
+/* ⭐ 15/10/2026 (v1.344.0, mẫu v2 kiểu B thầy chốt) — lưới [avatar | tên + biệt danh | giới thiệu nhanh, vạch dọc ngăn] */
+.ho-so{padding:0 26px 18px; display:grid; grid-template-columns:auto minmax(120px,max-content) minmax(0,1fr); gap:22px; align-items:end}
 .av.kho{width:128px; height:128px; font-size:42px; margin-top:-56px; border:4px solid #fff; box-shadow:var(--shadow); overflow:visible}
 .av.kho img{border-radius:50%}
 .av.kho .sao-hieu{font-size:12px; padding:1px 7px; bottom:2px}
@@ -483,11 +484,19 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .av.kho .doi-av{position:absolute; right:2px; bottom:8px; width:34px; height:34px; border-radius:50%; background:#fff; border:1px solid var(--line);
   display:grid; place-items:center; color:var(--ink); box-shadow:var(--shadow)}
 .av.kho .doi-av .ic{width:17px; height:17px}
-.ho-so .tt{flex:1; min-width:220px; padding-top:12px}
-.ho-so h1{margin:0; font-size:24px; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; flex-wrap:wrap; line-height:1.2}
-.ho-so .lop{font-size:12.5px; color:var(--muted); font-weight:700; margin-top:3px; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-.ho-so .gt{margin-top:8px; font-size:14px; white-space:pre-wrap; line-height:1.5}
-.ho-so .nut{display:flex; gap:8px; flex-wrap:wrap; padding-bottom:4px}
+.cn-ten{min-width:0; padding-bottom:6px}
+.ho-so h1{margin:0; font-size:26px; letter-spacing:-.01em; display:flex; align-items:center; gap:8px; flex-wrap:wrap; line-height:1.2; overflow-wrap:anywhere}
+.cn-nick{margin-top:4px; font-size:14.5px; font-weight:700; color:var(--muted); overflow-wrap:anywhere}
+.cn-them{margin-top:6px; padding:0; border:0; background:none; color:var(--accent); font:800 12.5px var(--sans); cursor:pointer}
+.cn-them:hover{text-decoration:underline}
+.cn-gt{min-width:0; align-self:center; margin-top:14px; border-left:2px solid var(--line); padding:4px 0 4px 18px}
+.cn-gt p{margin:0; font-size:13.5px; line-height:1.5; white-space:pre-wrap; overflow-wrap:anywhere;
+  display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden}
+.cn-gt .cn-goi{color:var(--muted); font-style:italic}
+.cn-viet{margin-top:8px; display:inline-flex; align-items:center; gap:6px; padding:7px 12px; border-radius:10px; border:1px dashed var(--line);
+  background:#fff; color:var(--accent); font:800 12.5px var(--sans); cursor:pointer}
+.cn-viet .ic{width:15px; height:15px}
+.cn-viet:hover{border-color:var(--accent); background:var(--accent-soft)}
 .cn-tabs{display:flex; gap:4px; padding:6px 10px 0; border-top:1px solid var(--line); justify-content:center}
 .cn-tabs button{padding:12px 14px; font-size:12px; font-weight:800; letter-spacing:.08em; color:var(--muted); border-bottom:3px solid transparent; margin-bottom:-1px}
 .cn-tabs button.chon{color:var(--accent); border-bottom-color:var(--accent)}
@@ -515,9 +524,10 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 @media (max-width:640px){
   .bia{height:160px}
   .bia .nut-ban a,.bia .nut-ban button,.bia .nut-tren button{width:36px; height:36px}
-  .ho-so{padding:0 14px 14px; gap:12px}
+  .ho-so{padding:0 14px 14px; gap:12px; grid-template-columns:auto minmax(0,1fr)}
   .av.kho{width:96px; height:96px; font-size:32px; margin-top:-44px}
   .ho-so h1{font-size:20px}
+  .cn-gt{grid-column:1 / -1; margin-top:2px; border-left:0; border-top:1px solid var(--line); padding:10px 0 0}
   .cn-tabs button{padding:11px 10px; font-size:11px}
 }
 

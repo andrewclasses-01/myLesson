@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-15 08:30:00",
+  "capNhat": "2026-10-15 09:51:56",
   "bai": {
     "A1C": [
       {
@@ -2518,6 +2518,282 @@
     ],
     "NNTNGK9": [
       {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L12",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 24: BÀI GIẢNG 24: THÊM GIA VỊ CHO CÂU BẰNG TRẠNG TỪ TẦN SUẤT",
+        "tenBai": "LESSON 24",
+        "maLesson": "LESSON 24",
+        "noiDung": "THÊM GIA VỊ CHO CÂU BẰNG TRẠNG TỪ TẦN SUẤT",
+        "han": "2026-10-18T23:59",
+        "taoLuc": "2026-10-15",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. TÌM TRẠNG TỪ TẦN SUẤT",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "fgunrh"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. TẠO CÂU SỬ DỤNG TRẠNG TỪ TẦN SUẤT",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "u96rjv"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 24",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "sct724"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 24: THÊM GIA VỊ CHO CÂU BẰNG TRẠNG TỪ TẦN SUẤT",
+          "video": "https://www.youtube.com/watch?v=ewbrhOE0Pug",
+          "doan": [
+            {
+              "id": "dmv8x2cnkmd7f",
+              "ten": "Review hành trình hiện tại",
+              "tu": "00:00",
+              "den": "00:50",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkbyhv"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkbyhv",
+              "ten": "Khái niệm cơ bản về tần suất của một sự việc",
+              "tu": "00:50",
+              "den": "02:48",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkvnft"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkvnft",
+              "ten": "Ví dụ tiếp theo về tần suất của một sự việc",
+              "tu": "02:48",
+              "den": "04:44",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnk00ec"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnk00ec",
+              "ten": "Kết luận về việc thêm thành phần bổ sung tiếp theo ở hiện tại đơn",
+              "tu": "04:44",
+              "den": "07:18",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkkkgw"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkkkgw",
+              "ten": "Tính chất đặc trưng của gia vị: không thay đổi câu gốc",
+              "tu": "07:18",
+              "den": "00:09:52",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnke7kp"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnke7kp",
+              "ten": "Kết luận: tần suất là gì?",
+              "tu": "00:09:52",
+              "den": "10:50",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnksmw8"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnksmw8",
+              "ten": "Những từ tần suất (trạng từ tần suất) quan trọng",
+              "tu": "10:50",
+              "den": "00:15:48",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnk4tpy"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnk4tpy",
+              "ten": "Luyện đọc các trạng từ tần suất",
+              "tu": "00:15:48",
+              "den": "17:28",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkqf0q"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkqf0q",
+              "ten": "HD BT1 - Tìm trạng từ tần suất trong câu",
+              "tu": "17:28",
+              "den": "00:18:49",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv8xkud8a0f"
+              ]
+            },
+            {
+              "id": "dmv8x2cnki5ez",
+              "ten": "Tổng quan về tạo câu có sử dụng trạng từ tần suất",
+              "tu": "00:18:54",
+              "den": "00:19:59",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkkf82"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkkf82",
+              "ten": "Cách thêm trạng từ tần suất ở hiện tại đơn khi có động từ thường",
+              "tu": "00:19:59",
+              "den": "21:32",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnk3hjg"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnk3hjg",
+              "ten": "Lưu ý quan trọng để tránh lỗi mà rất nhiều học sinh mắc phải",
+              "tu": "21:32",
+              "den": "00:26:34",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnk8m8g"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnk8m8g",
+              "ten": "Cách thêm trạng từ tần suất ở hiện tại đơn khi có động từ khuyết thiếu hoặc \"be\"",
+              "tu": "00:26:34",
+              "den": "30:30",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkn6hm"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkn6hm",
+              "ten": "Chốt lại các cách thêm trạng từ tần suất ở hiện tại đơn",
+              "tu": "30:30",
+              "den": "33:58",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkuy8c"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkuy8c",
+              "ten": "HD BT2 - Tạo câu sử dụng trạng từ tần suất",
+              "tu": "33:58",
+              "den": "00:36:09",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv8xkv5wlsk"
+              ]
+            },
+            {
+              "id": "dmv8x2cnktjv5",
+              "ten": "Tư duy về việc bị sai và chưa hoàn hảo",
+              "tu": "00:36:14",
+              "den": "36:54",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnkqwuq"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmv8x2cnkqwuq",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "36:54",
+              "den": "37:32",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmv8xkvojnye"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmv8xkud8a0f",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. TÌM TRẠNG TỪ TẦN SUẤT",
+            "actTen": "BT1. TIM TRANG TU TAN SUAT",
+            "ma": "fgunrh",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnki5ez"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmv8xkv5wlsk",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. TẠO CÂU SỬ DỤNG TRẠNG TỪ TẦN SUẤT",
+            "actTen": "BT2. TAO CAU SU DUNG TRANG TU TAN SUAT",
+            "ma": "u96rjv",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmv8x2cnktjv5"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmv8xkvojnye",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 24",
+            "actTen": "TRAC NGHIEM BAI GIANG 24 - TRANG TU TAN SUAT",
+            "ma": "sct724",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-15T09:51"
+      },
+      {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L07",
         "dang": "KHOA",
         "tieuDe": "LESSON 23: BÀI GIẢNG 23: TẠO CÂU HỎI Ở HIỆN TẠI ĐƠN KHI KHÔNG CÓ ĐỘNG TỪ",
@@ -4796,6 +5072,7 @@
     "A1B": "2026-10-14 11:23:54",
     "NNTNG4": "2026-10-14 14:27:50",
     "A2B": "2026-10-14 19:27:08",
-    "B1B": "2026-10-14 21:53:42"
+    "B1B": "2026-10-14 21:53:42",
+    "NNTNGK9": "2026-10-15 09:51:56"
   }
 }

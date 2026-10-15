@@ -300,7 +300,9 @@
       var t = TT[g._tt];
       var tacVu = g._tt === 'dang' ? '<button type="button" class="gd-nut" data-tv="sua">' + IC.but + 'Sửa</button><button type="button" class="gd-nut do" data-tv="dong">' + IC.khoa + 'Đóng giải</button>'
         : g._tt === 'sap' ? '<button type="button" class="gd-nut" data-tv="sua">' + IC.but + 'Sửa</button><button type="button" class="gd-nut do" data-tv="xoa">Xoá</button><button type="button" class="gd-nut xanh" data-tv="mo">' + IC.play + 'Mở ngay</button>'
-          : '';
+          // ⭐ Đợt 4 (v1.349.0, thầy chốt) — hết giờ / đã đóng ⇒ THẦY bấm thưởng và tự quyết số sao từng em (không tự thưởng)
+          : g.daThuong ? '<button type="button" class="gd-nut" disabled>' + IC.sao + 'Đã thưởng sao</button>'
+            : '<button type="button" class="gd-nut vang" data-tv="thuong">' + IC.sao + 'Thưởng sao</button>';
       var ct;
       if (g._tt === 'sap') {
         ct = '<div class="card gd-the gd-tt"><h3>' + IC.cup + 'Giải chưa bắt đầu</h3>' +
@@ -323,9 +325,10 @@
           var k = b.getAttribute('data-tv');
           if (k === 'sua') return popGiai(g);
           if (k === 'dong') {
-            if (!(await NW.hoi('Đóng ' + g.ten + '?', 'Học sinh không đấu tính điểm giải này được nữa. Bảng xếp hạng được giữ lại.', { ok: 'Đóng giải', nguy: true }))) return;
+            if (!(await NW.hoi('Đóng ' + g.ten + '?', 'Học sinh không đấu tính điểm giải này được nữa. Bảng xếp hạng được giữ lại. Đóng xong thầy bấm "Thưởng sao" để chọn thưởng.', { ok: 'Đóng giải', nguy: true }))) return;
             return ghi(g, { dong: true }, 'Đã đóng ' + g.ten + '.');
           }
+          if (k === 'thuong') return popThuong(g);
           if (k === 'mo') { GD.baoNhom(Object.assign({}, g, { tu: Date.now() }), true); return ghi(g, { tu: Date.now() }, 'Đã mở ' + g.ten + '.'); }
           if (k === 'xoa') {
             if (!(await NW.hoi('Xoá ' + g.ten + '?', 'Giải chưa bắt đầu nên chưa có trận nào.', { ok: 'Xoá', nguy: true }))) return;
@@ -335,6 +338,118 @@
           }
         };
       });
+    }
+    // ===== ⭐ Đợt 4 — THƯỞNG SAO (thầy bấm, thầy quyết) =====
+    // Mỗi lớp: các em ĐÃ ĐẤU theo thứ hạng (điểm ↓ · thắng ↓ · số trận ↑; cả ba bằng nhau = CÙNG HẠNG, cùng sao — thầy chốt).
+    // Điền sẵn sao top 3 của giải, thầy sửa từng em (cả em ngoài top 3) ⇒ MỘT phiếu sao `saoDot` mỗi lớp (nguon 'dashboard', bai 'giai:<id>')
+    // ⇒ hàm apDotSao cộng vào ví + đẩy "+N⭐". Số học sinh 6 chữ số lấy từ hsSo/soCai (nguoi[số].w chứa số web hs_<n>).
+    function hangCung(ds) {
+      var r = 0;
+      return ds.map(function (x, i) {
+        var tr = ds[i - 1];
+        if (!tr || GD.diem(tr.r) !== GD.diem(x.r) || (tr.r || {}).t !== (x.r || {}).t || soTran(tr.r) !== soTran(x.r)) r = i + 1;
+        return Object.assign({ hang: r }, x);
+      });
+    }
+    function ngayVN() { return new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); }
+    async function soCuaUid() {
+      if (banThu) return function (uid) { return '1' + String(100000 + (+String(uid).replace(/\D/g, '') || 0)).slice(1); };
+      var f = await NW.fb(), s = await f.fs.getDoc(f.fs.doc(f.db, 'hsSo', 'soCai')), nguoi = s.exists() ? (s.data().nguoi || {}) : {}, theoW = {}, theoMa = {}, idMa = {};
+      var chuan = function (x) { return String(x || '').replace(/\s+/g, '').toUpperCase(); };
+      Object.keys(nguoi).forEach(function (so) {
+        var P = nguoi[so] || {};
+        (P.w || []).forEach(function (w) { theoW[String(w)] = so; });
+        if (P.ma) theoMa[chuan(P.ma)] = so;
+        (P.maCu || []).forEach(function (x) { if (!theoMa[chuan(x)]) theoMa[chuan(x)] = so; });
+      });
+      // đường phụ (đo 15/10: w nối 161/187 em, thêm lop.json id→mã ⇒ 186/187): uid hs_<id myStudent> ⇒ mã đăng nhập ⇒ số
+      try {
+        var dl = await fetch((NW.CFG.GOC_DL || '../') + 'data/lop.json', { cache: 'no-cache' }).then(function (r) { return r.json(); });
+        (dl.lop || []).concat(dl.khoa || []).forEach(function (L) { ((L && L.hocSinh) || []).forEach(function (h) { if (h && h.id != null && h.ma) idMa[String(h.id)] = chuan(h.ma); }); });
+      } catch (e) { console.warn('[giải đấu] lop.json', e); }
+      return function (uid) { var m = /^hs_(\d+)$/.exec(String(uid || '')); return m ? (theoW[m[1]] || theoMa[idMa[m[1]]] || '') : ''; };
+    }
+    async function popThuong(g) {
+      var p = NW.popMo({ tieuDe: 'Thưởng sao · ' + g.ten, lop: 'gd-pop', html: '<div class="trong">Đang tải bảng xếp hạng…</div>' });
+      var lopDs = [], timSo;
+      try {
+        timSo = await soCuaUid();
+        for (var i = 0; i < g.lops.length; i++) lopDs.push({ lop: g.lops[i], ds: hangCung((await hangLop(g, g.lops[i])).filter(function (x) { return soTran(x.r) > 0; })) });
+      } catch (e) { $('.pop-body', p).innerHTML = '<p class="gd-loi">' + an(NW.chuLoiKho(e)) + '</p>'; return; }
+      var sao = g.sao || [0, 0, 0];
+      $('.pop-body', p).innerHTML = '<p class="tiny" style="margin:0 0 6px">Điền sẵn top 3 mỗi lớp (' + sao.join(' · ') + ' sao). Thầy sửa số sao từng em — để 0 là không thưởng.</p>' +
+        lopDs.map(function (L) {
+          return '<div class="gd-th-lop"><b>' + an(tenLop(L.lop)) + '</b>' + (L.ds.length ? L.ds.map(function (x) {
+            var so = timSo(x.n.uid), mac = x.hang <= 3 ? (sao[x.hang - 1] || 0) : 0;
+            return '<div class="gd-th-dong" data-lop="' + an(L.lop) + '" data-uid="' + an(x.n.uid) + '" data-so="' + an(so) + '" data-hang="' + x.hang + '">' +
+              '<span class="gd-hang ' + (x.hang <= 3 ? 'h' + x.hang : '') + '">' + x.hang + '</span>' + NW.avHtml(x.n, 'nho') +
+              '<span class="ten"><b>' + an(x.n.ten) + '</b><small>' + GD.diem(x.r) + ' điểm · ' + (x.r.t || 0) + ' thắng · ' + soTran(x.r) + ' trận' + (so ? '' : ' · ⚠ chưa có số HS') + '</small></span>' +
+              '<label class="gd-o"><input type="text" inputmode="numeric" value="' + (so ? mac : 0) + '"' + (so ? '' : ' disabled') + ' aria-label="Sao cho ' + an(x.n.ten) + '"><span>⭐</span></label></div>';
+          }).join('') : '<p class="tiny">Lớp chưa có trận nào.</p>') + '</div>';
+        }).join('') +
+        '<label class="gd-tich"><input type="checkbox" id="gdThBao" checked> Báo kết quả vào nhóm chat các lớp</label>' +
+        '<p class="gd-loi" id="gdThLoi" role="alert"></p>';
+      var chan = document.createElement('div'); chan.className = 'pop-chan';
+      chan.innerHTML = '<span class="gd-th-tong" id="gdThTong"></span><button type="button" class="btn soft" data-dong>Thôi</button><button type="button" class="btn primary" id="gdThOk">Thưởng sao</button>';
+      p.appendChild(chan);
+      $('[data-dong]', chan).onclick = NW.popDong;
+      var tong = function () {
+        var n = 0, em = 0;
+        $$('.gd-th-dong input', p).forEach(function (i) { var v = +i.value || 0; if (v > 0 && !i.disabled) { n += v; em++; } });
+        $('#gdThTong', p).textContent = em ? n + ' ⭐ cho ' + em + ' em' : 'Chưa chọn em nào';
+        return { n: n, em: em };
+      };
+      $$('.gd-th-dong input', p).forEach(function (i) {
+        i.oninput = function () {
+          i.value = i.value.replace(/\D/g, '').slice(0, 3); if (+i.value > 200) i.value = '200'; tong();
+          // đổi số sau khi đã bấm lần 1 ⇒ phải xác nhận lại với tổng mới
+          var ok = $('#gdThOk', p); if (ok.getAttribute('data-xn')) { ok.removeAttribute('data-xn'); ok.textContent = 'Thưởng sao'; $('#gdThLoi', p).textContent = ''; }
+        };
+        i.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); i.blur(); } };
+      });
+      tong();
+      $('#gdThOk', p).onclick = async function () {
+        var t = tong(); if (!t.em) { $('#gdThLoi', p).textContent = 'Thầy chưa điền sao cho em nào.'; return; }
+        // xác nhận NGAY TRÊN NÚT (hộp hỏi chung NW.hoi sẽ thay mất hộp thưởng đang mở)
+        var nut = this;
+        if (nut.getAttribute('data-xn') !== String(t.n) + '/' + t.em) {
+          nut.setAttribute('data-xn', String(t.n) + '/' + t.em); nut.textContent = 'Bấm lần nữa: thưởng ' + t.n + ' ⭐';
+          $('#gdThLoi', p).textContent = 'Sao vào ví các em ngay, không tự hoàn lại được (muốn bớt thì trừ tay ở hộp Sao trên dashboard).';
+          return;
+        }
+        nut.disabled = true;
+        var theoLop = {};
+        $$('.gd-th-dong', p).forEach(function (d) {
+          var v = +$('input', d).value || 0, so = d.getAttribute('data-so'); if (v <= 0 || !so) return;
+          var h = +d.getAttribute('data-hang'), lop = d.getAttribute('data-lop');
+          (theoLop[lop] = theoLop[lop] || []).push({ so: so, n: v, viec: (h <= 3 ? 'Hạng ' + h + ' ' : 'Thưởng ') + g.ten + ' · ' + tenLop(lop), app: 'Giải đấu', _ten: $('.ten b', d).textContent, _hang: h });
+        });
+        try {
+          if (!banThu) {
+            var f = await NW.fb(), luc = Date.now();
+            for (var lop in theoLop) {
+              await f.fs.addDoc(f.fs.collection(f.db, 'saoDot'), { nguon: 'dashboard', lop: lop, ngay: ngayVN(), bai: 'giai:' + g.id, maBai: '',
+                nhom: 'Giải đấu: ' + g.ten, ai: 'Thầy Andrew', dong: theoLop[lop].map(function (x) { return { so: x.so, n: x.n, viec: x.viec, app: x.app }; }), tao: luc });
+            }
+            await f.fs.updateDoc(f.fs.doc(f.db, 'giaiDau', g.id), { daThuong: true, capNhat: Date.now() });
+          } else Object.assign(mau().giai.filter(function (x) { return x.id === g.id; })[0], { daThuong: true });
+          if ($('#gdThBao', p) && $('#gdThBao', p).checked) baoKetQua(g, theoLop);
+          NW.popDong();
+          NW.toast('Đã thưởng ' + t.n + ' ⭐ cho ' + t.em + ' em — sao vào ví các em ngay.');
+          napLai();
+        } catch (e) { nut.disabled = false; $('#gdThLoi', p).textContent = NW.chuLoiKho(e); }
+      };
+    }
+    // tin chúc mừng vào nhóm chat từng lớp (tin của thầy)
+    async function baoKetQua(g, theoLop) {
+      if (banThu) return;
+      var f = await NW.fb(), HC = ['🥇', '🥈', '🥉'];
+      for (var lop in theoLop) {
+        var ds = theoLop[lop].slice().sort(function (a, b) { return a._hang - b._hang; });
+        var chu = '🏆 Kết quả "' + g.ten + '": ' + ds.map(function (x) { return (x._hang <= 3 ? HC[x._hang - 1] + ' ' : '') + x._ten + ' +' + x.n + '⭐'; }).join(' · ') + '. Chúc mừng các em! 👏';
+        try { await f.fs.addDoc(f.fs.collection(f.db, 'classChat', lop, 'messages'), { name: 'Thầy Andrew', code: 'GV', role: 'gv', text: chu.slice(0, 300), createdAt: Date.now(), may: 'gd' + Math.random().toString(36).slice(2, 10) }); }
+        catch (e) { console.warn('[giải đấu] báo kết quả', lop, e); }
+      }
     }
     async function ghi(g, doi, bao) {
       doi.capNhat = Date.now();

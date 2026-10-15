@@ -159,3 +159,17 @@
 .gd-nhay{width:8px; height:8px; border-radius:50%; background:var(--do); display:inline-block; animation:gd-nhay 1s infinite}
 .gd-tich{display:flex; align-items:center; gap:8px; margin-top:14px; font-size:13.5px; font-weight:700; cursor:pointer}
 .gd-tich input{width:18px; height:18px; accent-color:var(--accent)}
+
+/* Đợt 4 (v1.349.0) — hộp THƯỞNG SAO của thầy */
+.gd-nut.vang{background:var(--amber-soft); border-color:#F3DDB3; color:#B9771A}
+.gd-th-lop{display:flex; flex-direction:column; gap:2px; margin-top:12px}
+.gd-th-lop > b{font-size:13px; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; margin-bottom:4px}
+.gd-th-dong{display:flex; align-items:center; gap:9px; padding:6px 0; border-top:1px solid var(--line)}
+.gd-th-dong .ten{flex:1; min-width:0}
+.gd-th-dong .ten b{display:block; font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.gd-th-dong .ten small{display:block; color:var(--muted); font-size:11.5px; font-weight:600}
+.gd-th-dong .gd-o{display:flex; align-items:center; gap:4px; border:1.5px solid var(--line); border-radius:10px; padding:0 8px; height:36px; width:78px; flex:none}
+.gd-th-dong .gd-o:focus-within{border-color:var(--accent)}
+.gd-th-dong .gd-o input{border:0; padding:0; width:100%; min-width:0; text-align:right; font-weight:800; background:transparent; height:32px}
+.gd-th-dong .gd-o input:focus{outline:0}
+.gd-th-tong{margin-right:auto; align-self:center; font-weight:800; font-size:13.5px; color:#B9771A}

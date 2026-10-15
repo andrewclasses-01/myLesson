@@ -49,6 +49,13 @@
   }
   function moTran(id) {
     var href = (laNw ? '' : 'nw/') + 'tran.html?id=' + encodeURIComponent(id);
+    // ⭐ v1.350.0 — đang ở HỘP CHAT NHỎ (khung tinnhan.html?hop=1 trong trang khác) ⇒ trận mở ở CẢ CỬA SỔ, không trong hộp
+    try {
+      if (window.top !== window && window.top.location.origin === location.origin) {
+        var u = new URL(window.NW && NW.duong ? NW.duong(href) : href, location.href).href;
+        window.top.location.href = u; return;
+      }
+    } catch (e) { }
     if (window.NW && NW.di) NW.di(href); else location.href = href;
   }
 
@@ -180,7 +187,7 @@
   async function banOnline(f, lop, uid) {
     var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('cacLop', 'array-contains', lop), f.fs.limit(60)));
     var ds = [], bay = Date.now();
-    s.forEach(function (d) { var x = d.data(); if (d.id !== uid && x.vaiTro !== 'gv' && x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: x.ten || '?' }); });
+    s.forEach(function (d) { var x = d.data(); if (d.id !== uid && x.vaiTro !== 'gv' && !x.nghiHoc && x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: x.ten || '?' }); });
     return ds.sort(function (a, b) { return String(a.ten).localeCompare(String(b.ten), 'vi'); });
   }
   function mauBan() { return [{ uid: 'hs_1', ten: 'Gia Bảo' }, { uid: 'hs_2', ten: 'Bảo Nam' }, { uid: 'hs_3', ten: 'Thảo Vy' }]; }

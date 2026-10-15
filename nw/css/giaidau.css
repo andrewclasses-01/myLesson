@@ -173,3 +173,9 @@
 .gd-th-dong .gd-o input{border:0; padding:0; width:100%; min-width:0; text-align:right; font-weight:800; background:transparent; height:32px}
 .gd-th-dong .gd-o input:focus{outline:0}
 .gd-th-tong{margin-right:auto; align-self:center; font-weight:800; font-size:13.5px; color:#B9771A}
+
+/* v1.350.0 — thầy huỷ kết quả một trận */
+.gd-huy{border:1px solid var(--line); background:var(--surface); color:var(--muted); font:700 11.5px/1 var(--sans); padding:6px 9px; border-radius:8px; cursor:pointer; white-space:nowrap}
+.gd-huy.xn{background:var(--do); border-color:var(--do); color:#fff}
+.gd-da-huy .gd-noi, .gd-da-huy .ty-so{text-decoration:line-through; color:var(--muted)}
+.gd-huy-nhan{font:700 11.5px/1 var(--sans); color:var(--do)}

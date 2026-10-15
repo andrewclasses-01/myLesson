@@ -612,7 +612,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
     var q = f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('cacLop', 'array-contains', lop), f.fs.limit(60));
     var snap = await f.fs.getDocs(q);
     var ds = [];
-    snap.forEach(function (d) { var x = d.data(); ds.push({ uid: d.id, ten: x.ten, anh: x.anh || '', lop: x.lop, cacLop: x.cacLop || [], vaiTro: x.vaiTro, hoatDongLuc: x.hoatDongLuc || 0 }); });
+    snap.forEach(function (d) { var x = d.data(); ds.push({ uid: d.id, ten: x.ten, anh: x.anh || '', lop: x.lop, cacLop: x.cacLop || [], vaiTro: x.vaiTro, hoatDongLuc: x.hoatDongLuc || 0, nghiHoc: !!x.nghiHoc /* v1.350.0: giải đấu lọc em đã nghỉ */ }); });
     ds.sort(function (a, b) { return khongDau(a.ten).localeCompare(khongDau(b.ten)); });
     try { sessionStorage.setItem(khoa, JSON.stringify({ luc: Date.now(), ds: ds })); } catch (e) { }
     ds.forEach(function (n) { if (!HS_RAM[n.uid]) HS_RAM[n.uid] = n; });

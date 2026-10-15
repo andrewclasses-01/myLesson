@@ -35,7 +35,7 @@
 <script src="js/thachdau.js?v=1"></script>   <!-- v1.347.0 nghe lời mời thách đấu -->
 <script src="../js/ic-ql.js?v=3"></script>   <!-- v1.203.1 icon màu cột trái, chung với dashboard -->
 <script src="js/bai.js?v=16"></script>
-<script src="js/chat.js?v=34"></script>
+<script src="js/chat.js?v=35"></script>
 <script src="../js/o-ngay.js?v=1"></script>
 <script src="js/khampha.js?v=13"></script>
 <script>
@@ -497,12 +497,16 @@
       var AN_BAI = {};
       function ve() {
         $('#bcDs').innerHTML = BAO_CAO.length ? BAO_CAO.map(function (b) {
-          var laChat = b.loai === 'chat';
+          // ⭐ 15/10/2026 (v1.346.2) — báo cáo ĐOẠN CHAT nay ghi phòng trong baiId 'chat:<phòng>' (luật nwBaoCao không cho trường loai/phongId
+          // ⇒ trước đây báo cáo chat bị từ chối 403). Đọc được cả kiểu cũ. Báo cáo ẢNH "không phải em gửi" (hàm nwAnh): tomTat 'anh:<id>'.
+          var laChat = b.loai === 'chat' || /^chat:/.test(b.baiId || '');
+          var phong = b.phongId || (laChat ? String(b.baiId || '').slice(5) : '');
+          var laAnh = /^anh:/.test(b.tomTat || '');
           return '<div class="ql-bc' + (b.trangThai === 'moi' ? ' moi' : '') + '" data-id="' + an(b.id) + '">' + NW.avHtml({ uid: b.tu, ten: b.tuTen, anh: b.tuAnh || '' }, 'nho') +
-            '<div class="than"><div class="ai"><b>' + an(b.tuTen) + '</b> báo ' + (laChat ? 'đoạn chat' : 'bài của') + ' <b>' + an(b.tenBai) + '</b><span class="luc">' + an(NW.chuGio(b.luc)) + '</span><span class="ql-tag ' + (b.trangThai === 'moi' ? 'do' : 'xam') + '">' + (b.trangThai === 'moi' ? 'MỚI' : 'ĐÃ XỬ LÝ') + '</span></div>' +
+            '<div class="than"><div class="ai"><b>' + an(b.tuTen) + '</b> ' + (laAnh ? 'báo ảnh gửi đi KHÔNG phải em gửi' : 'báo ' + (laChat ? 'đoạn chat' : 'bài của') + ' <b>' + an(b.tenBai) + '</b>') + '<span class="luc">' + an(NW.chuGio(b.luc)) + '</span><span class="ql-tag ' + (b.trangThai === 'moi' ? 'do' : 'xam') + '">' + (b.trangThai === 'moi' ? 'MỚI' : 'ĐÃ XỬ LÝ') + '</span></div>' +
             '<div class="ly-do">' + IC.baoCao + an(b.lyDo || '') + (b.chu ? ' — <i>' + an(b.chu) + '</i>' : '') + '</div>' +
-            (b.tomTat ? '<div class="trich">“' + an(b.tomTat) + '”</div>' : '') + '</div>' +
-            '<div class="nut">' + (laChat ? (b.phongId ? '<a class="btn soft nho" href="tinnhan.html?phong=' + an(b.phongId) + '" target="_blank">Mở đoạn chat</a>' : '') :
+            (b.tomTat && !laAnh ? '<div class="trich">“' + an(b.tomTat) + '”</div>' : '') + '</div>' +
+            '<div class="nut">' + (laAnh ? '' : laChat ? (phong ? '<a class="btn soft nho" href="tinnhan.html?phong=' + an(phong) + '" target="_blank">Mở đoạn chat</a>' : '') :
               ('<a class="btn soft nho" href="baidang.html?id=' + an(b.baiId) + '" target="_blank">Xem bài</a><button class="btn soft nho" data-an>' + (AN_BAI[b.baiId] ? 'Hiện lại bài' : 'Ẩn bài') + '</button>')) +
             (b.trangThai === 'moi' ? '<button class="btn primary nho" data-xong>Đã xử lý</button>' : '') + '</div></div>';
         }).join('') : '<div class="trong">' + IC.baoCao + 'Chưa có báo cáo nào.</div>';
@@ -641,7 +645,9 @@
       var baoCao = [
         { id: 'r1', tu: 'hs_4', tuTen: 'THU HÀ', baiId: 'x1', tenBai: 'TRANG ANH', lyDo: 'Ngôn từ không phù hợp', chu: 'Bạn ấy nói xấu bạn khác trong bình luận', tomTat: 'Cả lớp ơi mai kiểm tra WORDS 3…', luc: t0 - 40 * 60e3, trangThai: 'moi' },
         { id: 'r2', tu: 'hs_1', tuTen: 'MINH ANH', baiId: 'm3', tenBai: 'BẢO NAM', lyDo: 'Ảnh không phù hợp', chu: '', tomTat: 'Team 2 đây…', luc: t0 - 3 * H, trangThai: 'moi' },
-        { id: 'r3', tu: 'hs_9', tuTen: 'TRANG ANH', loai: 'chat', phongId: 'n2', tenBai: 'Lớp B2-B', lyDo: 'Spam', chu: '', tomTat: '', luc: t0 - 2 * D, trangThai: 'xong' }
+        { id: 'r3', tu: 'hs_9', tuTen: 'TRANG ANH', loai: 'chat', phongId: 'n2', tenBai: 'Lớp B2-B', lyDo: 'Spam', chu: '', tomTat: '', luc: t0 - 2 * D, trangThai: 'xong' },
+        { id: 'r4', tu: 'hs_1', tuTen: 'MINH ANH', baiId: 'chat:hs_1__hs_2', tenBai: 'HÀ LINH', uidBai: 'hs_2', lyDo: 'Nói xấu / bắt nạt', chu: 'Bạn nhắn tin chê em', tomTat: 'tin nhắn cuối', luc: t0 - 3 * 3600e3, trangThai: 'moi' },   // 15/10 kiểu mới
+        { id: 'r5', tu: 'hs_3', tuTen: 'BẢO NAM', baiId: '', tenBai: 'BẢO NAM', uidBai: 'hs_3', lyDo: 'Không phải em gửi ảnh', chu: 'Em báo: ảnh đại diện gửi lúc 23:47 KHÔNG phải em gửi.', tomTat: 'anh:x1', luc: t0 - 3600e3, trangThai: 'moi' }   // 15/10 hàm nwAnh
       ];
       return { dsLop: dsLop, hs: hs, nhom: nhom, bai: bai, muc: muc, baoCao: baoCao, tuCam: ['đồ điên', 'chửi'] };
     }

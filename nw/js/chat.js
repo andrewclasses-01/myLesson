@@ -467,7 +467,9 @@
         this.disabled = true;
         try {
           var f = await NW.fb();
-          await f.fs.addDoc(f.fs.collection(f.db, 'nwBaoCao'), { tu: toi.uid, tuTen: toi.ten, loai: 'chat', phongId: p.id, tenBai: tenPhong(p), baiId: '', uidBai: p.loai === 'nhom' ? '' : nguoiKia(p).uid,
+          // 15/10/2026 (v1.346.2) — phòng chat ghi trong baiId 'chat:<phòng>': luật nwBaoCao chỉ cho các khoá cố định, trước đây gửi
+          // thêm loai/phongId ⇒ máy chủ TỪ CHỐI (403, đo thật 15/10) ⇒ báo cáo chat chưa bao giờ tới thầy. nw/quanly.html đọc cả 2 kiểu.
+          await f.fs.addDoc(f.fs.collection(f.db, 'nwBaoCao'), { tu: toi.uid, tuTen: toi.ten, tenBai: tenPhong(p), baiId: 'chat:' + p.id, uidBai: p.loai === 'nhom' ? '' : nguoiKia(p).uid,
             lyDo: $('#bcLyDo', pop).value, chu: $('#bcChu', pop).value.trim().slice(0, 300), tomTat: ((p.tinCuoi || {}).chu || '').slice(0, 120), luc: Date.now(), trangThai: 'moi' });
           NW.popDong(); NW.toast('Đã gửi báo cáo tới thầy. Cảm ơn em.');
         } catch (e) { NW.toast(NW.chuLoiKho(e), true); this.disabled = false; }

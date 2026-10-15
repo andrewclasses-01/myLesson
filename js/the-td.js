@@ -24,7 +24,7 @@
   var banThu = function () { return !!(window.NW && NW.laBanThu && NW.laBanThu()); };
 
   // ---------- kho + danh tính (dùng chung app Firebase của trang) ----------
-  function kho() { return (window.NW && NW.fb) ? NW.fb() : window.AWChat.db(); }
+  function kho() { return (window.NW && NW.fb) ? NW.fb() : window.AWChat ? window.AWChat.db() : Promise.reject(new Error('chưa có kho')); }
   var _toi = null;
   function toi() {
     if (_toi) return _toi;
@@ -88,7 +88,9 @@
   // ---------- thẻ ----------
   var TRAN = {}, NGHE = {}, MOI_TAO = {};   // id → dữ liệu trận · id → đã nghe · id trận em vừa mời (tự vào trận khi bạn nhận)
   var TOI = { uid: '' };
-  toi().then(function (x) { TOI = x; veHet(); });
+  // đọc tài khoản LƯỜI: tệp này có thể nạp trước loi.js (trang nw/) — lần đầu cần vẽ thẻ / mở hộp chọn mới đọc
+  var _daDocToi = false;
+  function docToi() { if (_daDocToi) return; _daDocToi = true; setTimeout(function () { toi().then(function (x) { TOI = x; veHet(); }); }, 0); }
   function cardHtml(id) {
     var t = TRAN[id];
     if (!t) return '<div class="d">' + IC + 'Thách đấu<span>A Show Speed</span></div><div class="c"><div class="tt">Đang tải…</div></div>';
@@ -226,7 +228,7 @@
   window.TheTD = {
     IC: IC,
     html: function (id) { napCss(); id = String(id || ''); return '<div class="cu-td' + (moMo(TRAN[id]) ? ' mo' : '') + '" data-td="' + an(id) + '">' + cardHtml(id) + '</div>'; },
-    lap: function (khung) { (khung || document).querySelectorAll('.cu-td[data-td]').forEach(function (el) { nghe(el.getAttribute('data-td')); }); },
+    lap: function (khung) { docToi(); (khung || document).querySelectorAll('.cu-td[data-td]').forEach(function (el) { nghe(el.getAttribute('data-td')); }); },
     moChon: TheTD_moChon
   };
 })();

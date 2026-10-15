@@ -207,9 +207,27 @@
     setTimeout(function () { if (S.tab === 'cho') veCho(); datSo(Math.max(0, S.ds.length - Object.keys(S.cho).length)); }, 260);
     toast(chu, function () { clearTimeout(hen.t); delete S.cho[x.id]; if (S.tab === 'cho') veCho(); datSo(S.ds.length - Object.keys(S.cho).length); });
   }
+  // Duyệt / gỡ ảnh ĐẠI DIỆN xong ⇒ quên bản đệm ảnh của các lớp em đó (AWC.quenAvatarKho — trang nhớ ảnh tới 10 phút) và đè
+  // ảnh mới lên mọi ô của em đang hiện trên dashboard — y lượt thầy tự đổi ảnh (dashboard adGoi). Máy khác: tải lại trang ≤ 10 phút.
+  function lamMoiAnh(r) {
+    var A = window.AWC;
+    if (!r || r.loai !== 'av' || !r.lops || !A || !A.quenAvatarKho) return;
+    r.lops.forEach(function (l) { try { A.quenAvatarKho(l); } catch (e) { } });
+    var ten = {}, lop = {};
+    (r.tenHs || []).forEach(function (t) { ten[t] = 1; });
+    r.lops.forEach(function (l) { lop[A.avSlugLop(l)] = 1; });
+    $$('[data-av-em]').forEach(function (el) {
+      if (!ten[el.getAttribute('data-av-em')] || !lop[A.avSlugLop(el.getAttribute('data-av-lop'))]) return;
+      if (r.xoa || !r.nho) { $$('img', el).forEach(function (x) { x.remove(); }); return; }
+      var im = el.querySelector('img');
+      if (!im) { im = document.createElement('img'); im.className = 'av-anh'; im.alt = ''; el.insertBefore(im, el.firstChild); }
+      im.src = 'data:image/jpeg;base64,' + r.nho;
+    });
+  }
   function guiLenh(hen) {
     clearTimeout(hen.t);
-    goi(hen.d).then(function () {
+    goi(hen.d).then(function (r) {
+      lamMoiAnh(r);
       delete S.cho[hen.x.id];
       S.ds = S.ds.filter(function (y) { return y.id !== hen.x.id; });
     }, function (e) {
@@ -241,7 +259,7 @@
         var x = S.ds.filter(function (y) { return y.id === b.getAttribute('data-go'); })[0];
         if (!confirm('Gỡ ' + (x.loai === 'av' ? 'ảnh đại diện' : 'ảnh bìa') + ' của ' + x.ten + ' và trả lại ảnh trước đó?')) return;
         b.disabled = true; b.textContent = 'Đang gỡ…';
-        goi({ viec: 'go', id: x.id }).then(function () { toast('Đã gỡ ảnh của ' + x.ten + ' — trả về ảnh trước đó.'); x.trangThai = 'go'; veLs(false); },
+        goi({ viec: 'go', id: x.id }).then(function (r) { lamMoiAnh(r); toast('Đã gỡ ảnh của ' + x.ten + ' — trả về ảnh trước đó.'); x.trangThai = 'go'; veLs(false); },
           function (e) { toast(chuLoi(e)); b.disabled = false; b.textContent = 'Gỡ · trả ảnh cũ'; });
       };
     });

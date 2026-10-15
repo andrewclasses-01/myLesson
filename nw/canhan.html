@@ -15,7 +15,7 @@
 <title>Trang cá nhân · Andrew Classes Network</title>
 <link rel="stylesheet" href="assets/fonts.css">
 <link rel="stylesheet" href="../css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/nw.css?v=34">
+<link rel="stylesheet" href="css/nw.css?v=35">
 <link rel="stylesheet" href="css/gui-anh.css?v=1">   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt -->
 <link rel="stylesheet" href="../css/chat-ui.css?v=21">
 <link rel="preconnect" href="https://firestore.googleapis.com">
@@ -45,7 +45,7 @@
 <script src="../js/tn-pop.js?v=12"></script>
 <script src="../js/tn-pop-ds.js?v=8"></script>
 <script src="js/thanh.js?v=26"></script>
-<script src="js/bai.js?v=15"></script>
+<script src="js/bai.js?v=16"></script>
 <script src="js/chat.js?v=33"></script>
 <script src="../js/cat-anh.js?v=2"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
 <script src="js/gui-anh.js?v=1"></script>   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt (hàm nwAnh) -->
@@ -301,7 +301,7 @@
     function batDauBai() {
       if (daBatDau || khoa) return; daBatDau = true;
       if (cuaToi) { $('#soan').hidden = false; }
-      var dong = NW.Bai.dongBai({ hop: $('#dong'), loai: 'cuaNguoi', uid: uid, sauTai: gomAnh, chuTrong: cuaToi ? 'Em chưa đăng bài nào. Viết gì đó ở ô trên nhé!' : (hs.ten + ' chưa đăng bài nào.') });
+      var dong = NW.Bai.dongBai({ hop: $('#dong'), loai: 'cuaNguoi', uid: uid, sauTai: gomAnh, chuTrong: cuaToi ? 'Em chưa đăng bài nào.' : (hs.ten + ' chưa đăng bài nào.') });
       if (cuaToi) NW.Bai.soan({ hop: $('#soan'), sauKhiDang: function (bai, id) { dong.chenDau(bai, id); gomAnh([{ bai: bai, id: id }]); } });
     }
     batDauBai();

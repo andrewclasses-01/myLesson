@@ -258,6 +258,9 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .soan{padding:14px 16px}
 /* v0.2.0 — thu gọn: chỉ MỘT dòng "Em đang nghĩ gì?" + nút ảnh; bấm mới bung ô soạn đầy đủ (.soan.mo) */
 .soan-gon{display:flex; align-items:center; gap:12px}
+/* v1.344.1 — công tắc đăng bài TẮT: dòng báo thay ô soạn */
+.soan-cho{display:flex; align-items:center; gap:12px; font-size:14px; font-weight:600; color:var(--muted); line-height:1.45}
+.soan-cho .ic{flex:none; width:38px; height:38px; padding:9px; border-radius:50%; background:var(--accent-soft); color:var(--accent)}
 .soan-gon .gia{flex:1; min-width:0; text-align:left; padding:11px 16px; border-radius:999px; background:var(--ground); color:#8a9c98;
   font-weight:600; font-size:14.5px; border:1.5px solid transparent; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
   transition:border-color .15s, background-color .15s}

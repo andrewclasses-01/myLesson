@@ -24,13 +24,20 @@
   // o = { hop, lopMacDinh, sauKhiDang(bai, id) }
   Bai.soan = function (o) {
     var toi = NW.toi, hop = o.hop;
-    // 15/10/2026 — công tắc nwCauHinh/caNhan.dangBai (luật cũng chặn): tắt ⇒ em không thấy ô soạn. Thầy luôn thấy.
-    if (!toi.laThay) { hop.hidden = true; NW.congTac('dangBai').then(function (mo) { if (mo) hop.hidden = false; }); }
     hop.className = (hop.className + ' card soan').trim();
-    hop.innerHTML = '<div class="soan-gon">' + NW.avHtml(toi) +
-      '<button class="gia" id="soanMo" type="button">' + (toi.laThay ? 'Thầy muốn nhắn gì cho cả mạng?' : an(toi.ten || 'Em') + ' ơi, em đang nghĩ gì thế?') + '</button>' +
-      '</div>';   // v0.9.2 (thầy chốt 23/09): bỏ icon ảnh ở ô gọn — thêm ảnh đã có sẵn trong pop-up "Tạo bài viết"
-    $('#soanMo', hop).onclick = function () { moPop(false); };
+    function veGon() {
+      hop.innerHTML = '<div class="soan-gon">' + NW.avHtml(toi) +
+        '<button class="gia" id="soanMo" type="button">' + (toi.laThay ? 'Thầy muốn nhắn gì cho cả mạng?' : an(toi.ten || 'Em') + ' ơi, em đang nghĩ gì thế?') + '</button>' +
+        '</div>';   // v0.9.2 (thầy chốt 23/09): bỏ icon ảnh ở ô gọn — thêm ảnh đã có sẵn trong pop-up "Tạo bài viết"
+      $('#soanMo', hop).onclick = function () { moPop(false); };
+    }
+    // 15/10/2026 — công tắc nwCauHinh/caNhan.dangBai (luật cũng chặn). Thầy luôn thấy ô soạn.
+    // v1.344.1 (thầy chốt): công tắc TẮT ⇒ em thấy DÒNG BÁO thay cho ô soạn (trước đó giấu hẳn, em không biết vì sao).
+    if (toi.laThay) veGon();
+    else {
+      hop.innerHTML = '<div class="soan-cho">' + IC.dongHo + '<span>Tính năng đăng bài cá nhân sẽ sớm được mở, em hãy chờ nhé!</span></div>';
+      NW.congTac('dangBai').then(function (mo) { if (mo) veGon(); });
+    }
 
     // v13 — pop-up thêm: KÉO-THẢ / DÁN ảnh · xem trước dạng lưới như thẻ bài · GẮN THẺ BẠN · CẢM XÚC/HOẠT ĐỘNG
     function moPop(chonAnhNgay) {

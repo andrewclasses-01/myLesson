@@ -35,13 +35,13 @@
   // Tài khoản em để ĐỌC (kể cả khi thầy vào như em — phiên Firebase lúc đó là của em, uid hs_…).
   function uidDoc() {
     if (!window.NWP) return Promise.resolve(null);
-    return NWP.userHienTai().then(function (u) { return u && /^hs_/.test(u.uid) ? u : null; })['catch'](function () { return null; });
+    return NWP.userHienTai().then(function (u) { return u && window.ACHsUid.laTaiKhoanHs(u.uid) ? u : null; })['catch'](function () { return null; });
   }
 
   // Tài khoản HỌC SINH thật đang đăng nhập (uid hs_…) — null nếu là thầy / chế độ xem như em / chưa đăng nhập.
   function uidEm() {
     if (!window.NWP || window.__thayVao) return Promise.resolve(null);
-    return NWP.userHienTai().then(function (u) { return u && /^hs_/.test(u.uid) ? u : null; })['catch'](function () { return null; });
+    return NWP.userHienTai().then(function (u) { return u && window.ACHsUid.laTaiKhoanHs(u.uid) ? u : null; })['catch'](function () { return null; });
   }
 
   // Trạng thái = gộp máy này + máy chủ (xong ở đâu cũng tính xong; màn dở lấy màn xa nhất).

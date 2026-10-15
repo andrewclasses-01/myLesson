@@ -4126,13 +4126,14 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=266"></script>
+<script src="config.js?v=267"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=92"></script>
 <script src="js/chat.js?v=38"></script>
-<script src="js/nhac-tb.js?v=3"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
+<script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
+<script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=23"></script>
 <script src="js/the-td.js?v=6"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
 <script src="js/nhac-ban.js?v=3"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
@@ -5853,7 +5854,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (!GT_XEM) return {};
     var l = A.lopTheoMa(DL, maLop) || {}, h = (l.hocSinh || []).filter(function (x) { return x.ten === ten; })[0];
     var coLop = function (x) { return x && x.cacLop.indexOf(maLop) >= 0; };
-    var x = h && h.id != null ? GT_XEM['hs_' + h.id] : null;
+    var x = h && h.id != null ? GT_XEM[ACHsUid.uidCuaHs(h)] : null;
     if (!coLop(x)) {
       x = null;
       for (var k in GT_XEM) if (GT_XEM[k].ten === ten && coLop(GT_XEM[k])) { x = GT_XEM[k]; break; }
@@ -13917,7 +13918,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     // v1.170.2 — CHỈ nhận tài khoản có LỚP khớp nơi em đang học: số hs_<id> có thể trùng tài khoản CŨ đã khoá của em khác
     // (đợt đánh lại số K9 27/09 — ca PHƯƠNG MINH B2A id 234 trùng TK cũ MINH HOÀNG) ⇒ hiện sai + "Đặt lại MK" đặt nhầm người.
     for (var i = 0; i < p.ids.length; i++) {
-      var m = MK_THEO_UID['hs_' + p.ids[i]];
+      var m = MK_THEO_UID[ACHsUid.uidTuId(p.ids[i])];
       if (m && m.cacLop.some(function (l) { return p.noi.some(function (n) { return n.maLop === l; }); })) return m;
     }
     return null;
@@ -14637,8 +14638,7 @@ tr.qm-hang-tam td{background:#fffbeb}
      3 chữ số) chỉ còn là mã máy bên trong — tra ngược qua `hsSo/soCai.nguoi[so].w` (danh sách số web của người đó) hoặc mã đăng nhập. */
   function soHsTuUid(x) {
     if (!SOHS || !x) return '';
-    var m = /^hs_(\d+)$/.exec(String(x)), ng = SOHS.nguoi || {};
-    if (m) { for (var n in ng) { if ((ng[n].w || []).indexOf(+m[1]) >= 0) return n; } return ''; }
+    if (ACHsUid.laUid(x)) return ACHsUid.soTuUid(SOHS.nguoi, String(x));   // 16/10: bảng nối `uid` trước, số web `w` sau (nhật ký cũ)
     return soTheoMaHs(x) || '';
   }
   function nsHsHien(ma, sn) {

@@ -46,7 +46,7 @@
       return '';
     }
     var id = tim(dl.lop || []) || tim(dl.khoa || []);
-    return id ? 'hs_' + id : '';
+    return id ? window.ACHsUid.uidTuId(id) : '';
   }
   function tenLopHien(l) { var g = String(l.tenGoc || l.maLop || ''); return /[a-z]{3,}/i.test(khongDau(g)) ? g : 'Lớp ' + g; }
 

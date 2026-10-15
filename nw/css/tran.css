@@ -58,3 +58,27 @@ body.trang-tran{background:radial-gradient(120% 90% at 50% 30%,#0A2418 0%,#04110
 .wsg-askbox .sub{font:600 15px/1.4 var(--ws-vf);color:#CFEFDD;margin:-10px 0 20px}
 .on-res .wsg-miss{max-width:560px}
 .on-p.port .on-av{width:64px;height:64px;font-size:22px}
+/* ⭐ v1.351.0 — trận CÓ BỘ TỪ: bảng gợi ý của bàn đang chơi (lật ra khi có người tìm) */
+.td-cen-bo{gap:8px}
+.td-bo{flex:none;display:flex;flex-direction:column;gap:6px;max-height:48%;min-height:0}
+.td-bo-dau{display:flex;justify-content:space-between;font:800 11px/1 var(--ws-gf);letter-spacing:.22em;color:var(--ws-dim)}
+.td-bo-dau span:last-child{color:var(--ws-amber)}
+.td-goi{display:flex;flex-direction:column;gap:4px;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:rgba(61,245,138,.3) transparent}
+.td-g{display:flex;align-items:center;gap:12px;padding:6px 10px;border-radius:8px;background:rgba(61,245,138,.06);border:1px solid rgba(61,245,138,.18);min-width:0}
+.td-g .m{flex:1;min-width:0;font:600 15px/1.3 var(--ws-vf);color:#CFEFDD;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.td-g .w{flex:none;font:italic 800 17px/1 var(--ws-gf);letter-spacing:.06em}
+.td-g .w i{font-style:normal;color:rgba(61,245,138,.45);letter-spacing:.12em}
+.td-g.xong{background:rgba(61,245,138,.14);border-color:rgba(61,245,138,.55)}
+.td-g.xong .m{color:#8DB9A2}
+.td-g.sd0 .w b{color:var(--ws-neon2)}
+.td-g.sd1{background:rgba(55,215,255,.12);border-color:rgba(55,215,255,.5)}
+.td-g.sd1 .w b{color:var(--ws-cyan2)}
+.td-bo.mot .td-g{flex-direction:column;align-items:center;text-align:center;padding:12px 14px;gap:10px}
+.td-bo.mot .td-g .m{white-space:normal;font-size:21px;line-height:1.3}
+.td-bo.mot .td-g .w{font-size:28px}
+/* xem trực tiếp: dải chữ của bàn + nhãn đỏ */
+.td-chu{flex:none;display:flex;flex-wrap:wrap;gap:5px;justify-content:center}
+.td-chu i{width:30px;height:30px;display:grid;place-items:center;border-radius:6px;font:italic 800 16px/1 var(--ws-gf);font-style:normal;color:var(--ws-neon2);background:rgba(61,245,138,.1);border:1px solid rgba(61,245,138,.35)}
+.td-xem-nhan{position:absolute;right:14px;display:flex;align-items:center;gap:7px;font:800 12px/1 var(--ws-gf);letter-spacing:.18em;color:#FF8A8A}
+.td-xem-nhan i{width:9px;height:9px;border-radius:50%;background:#FF4D4D;box-shadow:0 0 8px #FF4D4D;animation:td-nhay 1s infinite}
+@keyframes td-nhay{50%{opacity:.25}}

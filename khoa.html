@@ -858,7 +858,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=263"></script>
+<script src="config.js?v=264"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -868,8 +868,8 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/chat.js?v=38"></script>
 <script src="js/nhac-tb.js?v=3"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
-<script src="js/chat-ui.js?v=22"></script>
-<script src="js/the-td.js?v=5"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/chat-ui.js?v=23"></script>
+<script src="js/the-td.js?v=6"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
 <script src="js/vi-qua.js?v=10"></script>
 <script>
 var $ = function(s){ return document.querySelector(s); };
@@ -2014,6 +2014,7 @@ var UI_CHAT = ChatUI.tao({
     /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay là tin hiện HAI LẦN. */
   },
   thachDau: function(){ return MA_HS && MA_HS !== 'GV' ? LOP_DL : ''; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js)
+  lopGiai: function(){ return LOP_DL || ''; },   // ⭐ v1.351.0 — dải ghim giải đấu đầu khung chat (js/the-td.js)
   datCx: function(t, v){ if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' })); return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
   ghiXem: function(luc){ return AWChat.ghiXem(LOP_DL, MA_HS, TOI, luc); },   // v1.210.0 — "đã xem" tin cuối
   thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },

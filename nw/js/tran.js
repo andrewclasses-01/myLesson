@@ -9,12 +9,24 @@
 //   tranDau/{id}/nhip/{uid} nhịp 10 giây · roi (rời trận) · xong (hết giờ ở máy em ⇒ máy chủ chốt)
 // Giờ trận = giờ MÁY CHỦ: lệch đồng hồ đo bằng serverTimestamp lúc ghi nhịp đầu (memory "mốc giờ phải bù lệch").
 // Bàn thử ?thu=1: đấu với MÁY (5–10 giây tìm một từ) — không ghi gì.
+//
+// ⭐ v1.351.0 (15/10/2026 tối, thầy) — hai việc mới:
+//   1. GIẢI CÓ BỘ TỪ (thầy chọn act AWord WORDS + tuỳ chọn như Fight): máy chủ gửi bàn ĐANG CHƠI (chu · goi[{m, n}] · bam ·
+//      tim · van/soVan · che one|list|free · chiBo). Ô giữa hiện GỢI Ý các từ của bàn (lật ra khi có người tìm); tìm hết ⇒
+//      máy chủ đổi bàn (chữ xáo lại, rung). Từ gửi lên = `tu/{từ}_{van}`. Máy em so BĂM (sha256(id:TỪ)) để báo đúng/sai
+//      ngay — giống máy chủ (tran-dau.js `bam`). One/List: +1 mỗi từ · Free: điểm×2; Free tắt "Word list only" ⇒ từ điển.
+//      Word list = ô như PHÍM (bấm lại được). One word: 8/12/16 ô.
+//   2. THEO DÕI (?xem=1, hoặc mở trận không phải của mình): bạn cùng lớp / thầy xem trực tiếp — không bàn chữ, ô giữa
+//      trải rộng (cột tên A | cột tên B), điểm 2 bên, không ghi gì. Luật: tools/dang-luat-giai-dau-bo.js (bạn cùng lớp đọc tu).
+// Bàn thử: ?thu=1&che=one|list|free (bộ từ mẫu) · &xem=1 (xem 2 máy đấu nhau).
 // ============================================================
 import { loadDict, lookup, points, shuffle, wordsOn, createSfx, escapeHtml as esc } from "../game/ws-lib.js";
 
 const q = new URLSearchParams(location.search);
 const ID = q.get("id") || "";
+const XEM = q.get("xem") === "1";
 const LV_TEN = { easy: "EASY", medium: "MEDIUM", hard: "HARD" };
+const CHE_TEN = { one: "ONE WORD", list: "WORD LIST", free: "FREE WORDS" };
 const LAND = { W: 1280, H: 508, Y: 56, BH: 408, B: { x: 12, w: 420 }, C: { x: 448, w: 820 }, sA: 222, sB: 1063, clock: 640, sw: 220, T: 62, gap: 10, pv: 46, btn: 44, g2: 12, tools: 474 };
 const PORT = { W: 420, H: 820, sA: 82, sB: 338, clock: 210, sw: 130, C: { x: 10, y: 92, w: 400, h: 262 }, B: { x: 10, y: 364, w: 400, h: 410 }, T: 68, gap: 9, pv: 40, btn: 42, g2: 10, tools: 784 };
 
@@ -25,8 +37,8 @@ const sfx = createSfx();
 let dict = null, L = LAND, port = false;
 
 // trạng thái
-const G = { phase: "tai", T: null, ben: "a", order: shuffle([...Array(16).keys()]), sel: [], ask: false, roi: false, pop: false, lastKey: "", note: "" };
-let TU = new Map();          // từ → { uid, ok, luc }
+const G = { phase: "tai", T: null, ben: "a", order: shuffle([...Array(16).keys()]), sel: [], ask: false, roi: false, pop: false, lastKey: "", note: "", xem: XEM, van: -1, n: 16 };
+let TU = new Map();          // tên tài liệu từ → { w, v, uid, ok, d, i, m, luc }
 let LECH = 0;                // giờ máy chủ − giờ máy em (ms)
 let f = null, tranRef = null, toi = null, banThu = false;
 let clockIv = null, nhipIv = null, cdIv = null, bot = null;
@@ -48,16 +60,31 @@ const uidBen = (k) => G.T && (k === "a" ? G.T.a : G.T.b);
 const tenBen = (k) => (G.T ? (k === "a" ? G.T.tenA : G.T.tenB) : "") || "?";
 const tat = (ten) => String(ten || "?").trim().split(/\s+/).map((w) => w[0]).join("").toUpperCase().slice(-2);
 const letters = () => (G.T && G.T.chu ? G.T.chu.split("") : []);
+const che = () => (G.T && G.T.che) || "";              // "" = A Show Speed 16 chữ ngẫu nhiên (như cũ)
+const vanNay = () => (G.T && G.T.van) || 0;
+const laPhim = () => che() === "list";                // Word list: ô như phím, bấm lại được
+// tên tài liệu từ: trận có bộ từ mang đuôi bàn
+const tenTu = (w) => (che() ? w + "_" + vanNay() : w);
+function tachTen(id) { const m = /^([a-z]+)(?:_(\d+))?$/.exec(id) || []; return { w: m[1] || id, v: m[2] != null ? +m[2] : -1 }; }
+const diemBai = (up) => (che() === "free" ? points(Math.min(7, Math.max(3, up.length))) * 2 : 1);
+// băm như máy chủ (tran-dau.js `bam`): sha256(id + ':' + TỪ) → 16 ký tự hex đầu
+async function bamTu(up) {
+  const id = banThu ? "thu" : ID;
+  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(id + ":" + up));
+  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 16);
+}
 
-// ---------- điểm (từ chưa bị máy chủ loại = có điểm) ----------
+// ---------- điểm ----------
 function diemBen(k) {
   if (G.T && G.T.trangThai === "xong" && G.T.diem) return G.T.diem[k] || 0;
+  // trận có bộ từ: điểm máy chủ cộng (diem.a/b tăng ngay khi chấm)
+  if (che()) return (G.T && G.T.diem && G.T.diem[k]) || 0;
   const uid = uidBen(k); let s = 0;
-  TU.forEach((x, w) => { if (x.uid === uid && x.ok !== false) s += points(w.length); });
+  TU.forEach((x) => { if (x.uid === uid && x.ok !== false) s += x.d != null && x.ok ? x.d : points(x.w.length); });
   return s;
 }
-function dsTu() {   // mọi từ hợp lệ, mới nhất trước
-  const a = []; TU.forEach((x, w) => { if (x.ok !== false) a.push({ w, uid: x.uid, luc: x.luc || 0 }); });
+function dsTu() {   // mọi từ hợp lệ, mới nhất trước (trận có bộ từ: chỉ từ máy chủ đã nhận)
+  const a = []; TU.forEach((x) => { if (che() ? x.ok === true : x.ok !== false) a.push(x); });
   return a.sort((p, q2) => q2.luc - p.luc);
 }
 
@@ -71,26 +98,46 @@ async function batDau() {
   if (!ID) { G.note = "Không tìm thấy trận."; return render(); }
   f = await NW.fb();
   tranRef = f.fs.doc(f.db, "tranDau", ID);
+  let ngheTu = false;
   f.fs.onSnapshot(tranRef, (s) => {
     if (!s.exists()) { G.note = "Không tìm thấy trận."; return render(); }
-    const T = s.data(); G.T = T; G.ben = T.a === toi.uid ? "a" : "b";
-    if (toi.uid !== T.a && toi.uid !== T.b) { G.note = "Em không ở trong trận này."; G.phase = "loi"; return render(); }
+    const T = s.data(); G.T = T;
+    const laNguoiChoi = toi.uid === T.a || toi.uid === T.b;
+    // ⭐ v1.351.0 — không phải người trong trận ⇒ XEM (bạn cùng lớp / thầy — luật đã cho đọc mới tới được đây)
+    if (!laNguoiChoi || XEM) G.xem = true;
+    G.ben = G.xem ? "a" : (T.a === toi.uid ? "a" : "b");
+    if (!ngheTu) { ngheTu = true; ngheDsTu(); if (!G.xem) batNhip(); }
+    doiBan();
     capNhatPha();
-  }, () => { G.note = "Không đọc được trận (có thể em không ở trong trận này)."; G.phase = "loi"; render(); });
+    if (G.phase === "play" || G.phase === "count") veDiem();
+  }, () => { G.note = "Không đọc được trận (có thể trận không thuộc lớp của em)."; G.phase = "loi"; render(); });
+}
+function ngheDsTu() {
   f.fs.onSnapshot(f.fs.collection(tranRef, "tu"), (snap) => {
     const moi = new Map();
-    snap.forEach((d) => { const x = d.data({ serverTimestamps: "estimate" }) || {}; moi.set(d.id, { uid: x.uid, ok: x.ok, luc: x.luc && x.luc.toMillis ? x.luc.toMillis() : 0 }); });
-    // từ mới của BẠN ⇒ tiếng + nảy (từ của em đã kêu lúc bấm Enter)
-    moi.forEach((x, w) => { if (!TU.has(w) && x.uid !== toi.uid && G.phase === "play") { sfx.ok(.65, points(w.length)); nayDiem(1); } });
+    snap.forEach((d) => {
+      const x = d.data({ serverTimestamps: "estimate" }) || {}, t = tachTen(d.id);
+      moi.set(d.id, { w: t.w, v: x.v != null ? x.v : t.v, uid: x.uid, ok: x.ok, d: x.d, i: x.i, m: x.m || "", luc: x.luc && x.luc.toMillis ? x.luc.toMillis() : 0 });
+    });
+    // từ mới của BẠN (xem: của cả hai) ⇒ tiếng + nảy (từ của em đã kêu lúc bấm Enter)
+    moi.forEach((x, id) => {
+      const cu = TU.get(id), daNhan = che() ? x.ok === true && !(cu && cu.ok === true) : !cu;
+      if (daNhan && (G.xem || x.uid !== toi.uid) && G.phase === "play") {
+        const ben = x.uid === uidBen(G.ben) ? 0 : 1;
+        sfx.ok(ben ? .65 : -.65, x.d || points(x.w.length)); nayDiem(ben);
+      }
+    });
     TU = moi;
     if (G.phase === "play" || G.phase === "count" || G.phase === "over") { veO(); veDiem(); }
-  });
+  }, () => { G.loiTu = true; if (G.phase === "play") renderCentre(); });
+}
+async function batNhip() {
   // nhịp đầu: đo lệch đồng hồ với máy chủ
   await nhip({});
   nhipIv = setInterval(() => { if (G.phase === "play" || G.phase === "lobby") nhip({}); }, 10000);
 }
 async function nhip(them) {
-  if (banThu || !tranRef) return;
+  if (banThu || !tranRef || G.xem) return;
   const r = f.fs.doc(tranRef, "nhip", toi.uid), t0 = Date.now();
   try {
     await f.fs.setDoc(r, Object.assign({ luc: Date.now(), sv: f.fs.serverTimestamp() }, them), { merge: true });
@@ -100,6 +147,14 @@ async function nhip(them) {
     }
   } catch (e) { console.warn("[trận] nhịp", e); }
 }
+// ⭐ v1.351.0 — bàn mới (chữ khác / số ô khác) ⇒ xáo vị trí riêng của em, bỏ chữ đang chọn, rung bàn
+function doiBan() {
+  const n = letters().length || 16, v = vanNay();
+  if (v === G.van && n === G.n) return;
+  const dau = G.van < 0;
+  G.van = v; G.n = n; G.order = shuffle([...Array(n).keys()]); G.sel = [];
+  if (!dau && G.phase === "play") { render(); shake(); sfx.shake(); }
+}
 function capNhatPha() {
   const T = G.T, cu = G.phase;
   if (T.trangThai === "moi" || T.trangThai === "nhan") G.phase = "cho";
@@ -108,6 +163,7 @@ function capNhatPha() {
   else { G.phase = "loi"; G.note = { tuchoi: "Bạn đã từ chối lời mời.", huy: "Lời mời đã huỷ.", het: "Lời mời đã hết hạn." }[T.trangThai] || "Trận không còn."; }
   if (G.phase !== cu) vaoPha(cu);
   else if (G.phase === "over") render();
+  else if (G.phase === "play" && che()) renderCentre();   // gợi ý lật / bàn đổi
 }
 function vaoPha(cu) {
   clearInterval(cdIv); clearInterval(clockIv);
@@ -115,6 +171,7 @@ function vaoPha(cu) {
   if (G.phase === "play") { render(); if (cu === "lobby" || cu === "cho" || cu === "tai") shake(); clockIv = setInterval(tick, 250); return; }
   if (G.phase === "count") {
     render(); root.classList.add("ending");
+    if (G.xem) return;
     // máy chủ chỉ chốt khi đã quá giờ hết + 2 giây (từ gửi trễ) ⇒ báo "xong" lúc +2,5 giây, nhắc lại lúc +9 giây nếu chưa có kết quả
     const cho = Math.max(0, (G.T.ketThuc || 0) + 2500 - now());
     setTimeout(() => { if (G.phase === "count") nhip({ xong: true }); }, cho);
@@ -123,8 +180,8 @@ function vaoPha(cu) {
   }
   if (G.phase === "over") {
     root.classList.remove("ending"); render();
-    const kq = ketQua(); if (kq === "thang") sfx.win(-.65);
-    if (NW.ThachDau) NW.ThachDau.nghe();   // nhận lời "Đấu lại" của bạn
+    const kq = ketQua(); if (kq === "thang" || G.xem) sfx.win(-.65);
+    if (!G.xem && NW.ThachDau) NW.ThachDau.nghe();   // nhận lời "Đấu lại" của bạn
     return;
   }
   render();
@@ -162,11 +219,12 @@ async function submit() {
   const w = G.sel.map((k) => chu[G.order[k]]).join("").toLowerCase();
   if (!w) return;
   G.sel = []; renderBoard();
+  if (che()) return submitBo(w);
   if (!lookup(dict, w)) { sfx.bad(-.65); return bubble("bad", "?"); }
   if (TU.has(w)) { sfx.dup(-.65); return bubble("dup", TU.get(w).uid === myUid() ? "Found" : "Taken"); }
   const p = points(w.length);
   sfx.ok(-.65, p); bubble("ok", "+" + p);
-  if (banThu) { TU.set(w, { uid: myUid(), ok: true, luc: Date.now() }); veO(); veDiem(); nayDiem(0); return; }
+  if (banThu) { TU.set(w, { w, v: -1, uid: myUid(), ok: true, d: p, luc: Date.now() }); veO(); veDiem(); nayDiem(0); return; }
   try {
     await f.fs.setDoc(f.fs.doc(tranRef, "tu", w), { uid: toi.uid, luc: f.fs.serverTimestamp() });
     nayDiem(0);
@@ -175,45 +233,70 @@ async function submit() {
     bubble("dup", now() > (G.T.ketThuc || 0) ? "Time" : "Taken");
   }
 }
-const myUid = () => (banThu ? "toi" : toi.uid);
+// ⭐ v1.351.0 — gửi một từ ở trận có bộ từ
+async function submitBo(w) {
+  const T = G.T, up = w.toUpperCase(), v = vanNay();
+  const i = (T.bam || []).indexOf(await bamTu(up));
+  const tim = T.tim || {};
+  let p;
+  if (i >= 0) {
+    if (tim[i]) { sfx.dup(-.65); return bubble("dup", tim[i] === myUid() ? "Found" : "Taken"); }
+    p = diemBai(up);
+  } else if (che() === "free" && !T.chiBo) {
+    if (w.length < 3 || !lookup(dict, w)) { sfx.bad(-.65); return bubble("bad", "?"); }
+    if (TU.has(tenTu(w))) { sfx.dup(-.65); return bubble("dup", TU.get(tenTu(w)).uid === myUid() ? "Found" : "Taken"); }
+    p = points(w.length);
+  } else { sfx.bad(-.65); return bubble("bad", "?"); }
+  sfx.ok(-.65, p); bubble("ok", "+" + p);
+  if (banThu) return thuNhanTu(w, myUid());
+  try {
+    await f.fs.setDoc(f.fs.doc(tranRef, "tu", tenTu(w)), { uid: toi.uid, luc: f.fs.serverTimestamp() });
+    nayDiem(0);
+  } catch (e) { bubble("dup", now() > (T.ketThuc || 0) ? "Time" : "Taken"); }
+}
+const myUid = () => (banThu ? (G.xem ? "may2" : "toi") : G.xem ? (G.T && G.T.a) : toi.uid);
 
 // ---------- vẽ ----------
 function render() {
   const over = G.phase === "over", kq = over ? ketQua() : "";
   root.classList.toggle("asking", G.ask);
+  root.classList.toggle("is-xem", G.xem);
   const sw = L.sw, chipY = port ? 56 : 12;
   const live = G.phase === "play" || G.phase === "count" || over;
   const con = G.T && G.T.ketThuc ? Math.max(0, Math.ceil((G.T.ketThuc - Math.max(now(), G.T.batDau || 0)) / 1000)) : (G.T ? G.T.phut * 60 : 120);
+  // xem: ô giữa trải rộng cả khung (không có bàn chữ)
+  const caKhung = port ? { x: L.C.x, y: L.C.y, w: L.C.w, h: L.B.y + L.B.h - L.C.y } : { x: L.B.x, y: L.Y, w: L.C.x + L.C.w - L.B.x, h: L.BH };
   cv.innerHTML =
     `<div class="wsg-hudline" style="left:${port ? 8 : 12}px;width:${L.W - (port ? 16 : 24)}px"></div>` +
     `<div class="wsg-score ${over && kq === "thang" ? "lead" : ""}" style="left:${L.sA}px;width:${sw}px${port ? ";height:36px" : ""}"><b ${port ? 'style="font-size:26px"' : ""}>${live ? diemBen(G.ben) : 0}</b></div>` +
     `<div class="wsg-clock ${G.phase === "play" && con <= 10 ? "warn" : ""}" style="left:${L.clock}px${port ? ";width:104px;height:36px" : ""}"><span ${port ? 'style="font-size:22px"' : ""}>${fmt(con)}</span></div>` +
     `<div class="wsg-score s1 ${over && kq === "thua" ? "lead" : ""}" style="left:${L.sB}px;width:${sw}px${port ? ";height:36px" : ""}"><b ${port ? 'style="font-size:26px"' : ""}>${live ? diemBen(khac()) : 0}</b></div>` +
     chips(chipY) +
-    (port && (over || G.phase === "loi")
-      ? stageHtml({ x: L.C.x, y: L.C.y, w: L.C.w, h: L.B.y + L.B.h - L.C.y }, centreHtml(), null)
+    (G.xem || (port && (over || G.phase === "loi"))
+      ? stageHtml(G.xem ? caKhung : { x: L.C.x, y: L.C.y, w: L.C.w, h: L.B.y + L.B.h - L.C.y }, centreHtml(), null)
       : stageHtml(port ? L.C : { x: L.C.x, y: L.Y, w: L.C.w, h: L.BH }, centreHtml(), null) +
         stageHtml(port ? L.B : { x: L.B.x, y: L.Y, w: L.B.w, h: L.BH }, boardHtml(), 0)) +
-    `<div class="wsg-tools" style="top:${L.tools}px;left:${port ? L.W / 2 : L.B.x + L.B.w / 2}px">` +
-      `<button class="wsg-tool" data-do="home" aria-label="Rời trận"><span><svg class="i" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.53l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span></button>` +
+    `<div class="wsg-tools" style="top:${L.tools}px;left:${port || G.xem ? L.W / 2 : L.B.x + L.B.w / 2}px">` +
+      `<button class="wsg-tool" data-do="home" aria-label="${G.xem ? "Thoát xem" : "Rời trận"}"><span><svg class="i" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.53l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span></button>` +
       `<button class="wsg-tool ${sfx.on ? "" : "off"}" data-do="sound" aria-label="Âm thanh"><span><svg class="i" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5Z"/>${sfx.on ? '<path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>' : '<path d="m22 9-6 6"/><path d="m16 9 6 6"/>'}</svg></span></button>` +
     `</div>` +
+    (G.xem ? `<div class="td-xem-nhan" style="top:${L.tools + 10}px"><i></i>${port ? "ĐANG XEM" : "ĐANG XEM TRỰC TIẾP"}</div>` : "") +
     (G.ask ? `<div class="wsg-ask"><div class="wsg-askbox"><div class="q">Leave the match?</div><div class="sub">${G.T && G.T.giai ? "You will lose this match (0 points)." : "You will lose this friendly match."}</div>` +
       `<div class="a"><button class="wsg-b clr" data-do="yes"><span>Leave</span></button><button class="wsg-b ent" data-do="no"><span>Stay</span></button></div></div></div>` : "");
 }
 function chips(y) {
-  const me = tenBen(G.ben), ban = tenBen(khac());
-  if (port) return `<div class="on-chip" style="left:16px;top:${y}px"><span class="on-av" style="width:24px;height:24px;font-size:10px">${esc(tat(me))}</span>You</div>` +
+  const me = G.xem ? tenBen("a") : "You", ban = tenBen(khac());
+  if (port) return `<div class="on-chip" style="left:16px;top:${y}px"><span class="on-av" style="width:24px;height:24px;font-size:10px">${esc(tat(tenBen(G.ben)))}</span>${esc(me)}</div>` +
     `<div class="on-chip r" style="right:16px;top:${y}px"><span class="on-av" style="width:24px;height:24px;font-size:10px">${esc(tat(ban))}</span>${esc(ban)}</div>`;
   const half = L.sw / 2 + 16;
-  return `<div class="on-chip" style="left:${L.sA + half}px"><span class="on-av">${esc(tat(me))}</span>You</div>` +
+  return `<div class="on-chip" style="left:${L.sA + half}px"><span class="on-av">${esc(tat(tenBen(G.ben)))}</span>${esc(me)}</div>` +
     `<div class="on-chip r" style="right:${L.W - L.sB + half}px"><span class="on-av">${esc(tat(ban))}</span>${esc(ban)}</div>`;
 }
 const stageHtml = (g, inner, side) => `<div class="wsg-stage" ${side != null ? `data-side="${side}"` : ""} style="left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px">${inner}</div>`;
 function boardHtml() {
   const live = G.phase === "play" && !G.ask, show = live || G.phase === "count" || G.phase === "over";
-  const chu = letters(), T = L.T, gap = L.gap, gw = T * 4 + gap * 3, fs = Math.round(T * 0.5);
-  const tiles = [...Array(16).keys()].map((k) =>
+  const chu = letters(), n = chu.length || 16, T = L.T, gap = L.gap, gw = T * 4 + gap * 3, fs = Math.round(T * 0.5);
+  const tiles = [...Array(n).keys()].map((k) =>
     `<button class="wsg-t ${G.sel.includes(k) ? "on" : ""} ${show && chu.length ? "" : "idle"}" data-do="t" data-k="${k}" style="width:${T}px;height:${T}px;font-size:${fs}px" ${live ? "" : "disabled"}>${show && chu.length ? chu[G.order[k]] : "?"}</button>`).join("");
   const word = G.sel.map((k) => chu[G.order[k]]).join("");
   return `<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:${L.g2}px;height:100%">
@@ -228,17 +311,31 @@ const arrow = (s) => `<span class="wsg-arr ${s ? "r" : "l"}"></span>`;
 const centred = (t, s) => `<span class="wt">${s === 0 ? arrow(0) : ""}${t}${s === 1 ? arrow(1) : ""}</span>`;
 function meta() {
   const T = G.T || {};
-  const t = (T.phut || 2) + " MIN · " + (LV_TEN[T.lv] || "EASY");
+  const t = (T.phut || 2) + " MIN · " + (T.che ? CHE_TEN[T.che] || "WORDS" : LV_TEN[T.lv] || "EASY");
   return (T.giai ? "TOURNAMENT" : "FRIENDLY") + " · " + t;
+}
+// ⭐ v1.351.0 — bảng GỢI Ý của bàn đang chơi (trận có bộ từ): mỗi từ một dòng — gợi ý + ô trống (số chữ) / từ đã tìm (màu bên tìm)
+function goiHtml() {
+  const T = G.T || {}, goi = T.goi || [], tim = T.tim || {}, v = vanNay();
+  const tuCua = (i) => { let w = ""; TU.forEach((x) => { if (x.ok === true && x.v === v && x.i === i) w = x.w; }); return w; };
+  const mot = T.che === "one";
+  const dong = goi.map((g, i) => {
+    const ai = tim[i], w = ai ? tuCua(i) : "", sd = ai ? (ai === uidBen(G.ben) ? 0 : 1) : -1;
+    const o = ai && w ? `<b>${esc(w.toUpperCase())}</b>` : `<i>${Array(g.n || 0).fill("_").join(" ")}</i>`;
+    return `<div class="td-g${ai ? " xong sd" + sd : ""}"><span class="m">${esc(g.m || "")}</span><span class="w">${o}</span></div>`;
+  }).join("");
+  return `<div class="td-bo${mot ? " mot" : ""}"><div class="td-bo-dau"><span>${esc(CHE_TEN[T.che] || "WORDS")}</span><span>BOARD ${v + 1}/${T.soVan || 1}</span></div>` +
+    (G.xem ? `<div class="td-chu">${letters().map((c) => `<i>${esc(c)}</i>`).join("")}</div>` : "") +
+    `<div class="td-goi">${dong}</div></div>`;
 }
 function centreHtml() {
   const T = G.T || {};
   if (G.phase === "tai" || G.phase === "cho" || G.phase === "loi")
-    return `<div class="wsg-mid"><div class="wsg-logo">A SHOW <span>SPEED</span></div><div class="wsg-note">${esc(G.note || (G.phase === "cho" ? "Getting the letters ready…" : "Loading…"))}</div>` +
+    return `<div class="wsg-mid"><div class="wsg-logo">A SHOW <span>SPEED</span></div><div class="wsg-note">${esc(G.note || (G.phase === "cho" ? (G.xem ? "Waiting for the match to start…" : "Getting the letters ready…") : "Loading…"))}</div>` +
       (G.phase === "loi" ? `<div class="on-btns"><button class="wsg-b ent" data-do="back"><span>Back</span></button></div>` : "") + `</div>`;
   if (G.phase === "lobby") {
     const cd = Math.max(0, Math.ceil((T.batDau - now()) / 1000));
-    return `<div class="wsg-mid"><div class="on-meta">${meta()}</div>
+    return `<div class="wsg-mid"><div class="on-meta">${meta()}</div>${T.boTen ? `<div class="wsg-note">${esc(T.boTen)}</div>` : ""}
       <div class="on-vs" ${port ? 'style="gap:14px"' : ""}><div class="on-p l ${port ? "port" : ""}"><span class="on-av">${esc(tat(tenBen(G.ben)))}</span><b>${esc(tenBen(G.ben))}</b></div>
       <div class="on-x">VS</div>
       <div class="on-p r ${port ? "port" : ""}"><span class="on-av">${esc(tat(tenBen(khac())))}</span><b>${esc(tenBen(khac()))}</b></div></div>
@@ -247,40 +344,48 @@ function centreHtml() {
   if (G.phase === "count") return `<div class="wsg-mid"><div class="wsg-logo">TIME'S <span>UP</span></div><div class="wsg-note">Checking the result…</div></div>`;
   if (G.phase === "over") {
     const kq = ketQua(), a = diemBen(G.ben), b = diemBen(khac()), ly = T.ly || "";
-    const toiBo = (G.ben === "a" && /A$/.test(ly)) || (G.ben === "b" && /B$/.test(ly)), banBo = ly && !toiBo;
-    const head = { thang: "YOU WIN", thua: toiBo ? (/^roi/.test(ly) ? "YOU LEFT" : "DISCONNECTED") : "YOU LOSE", hoa: "DRAW" }[kq];
+    const laLy = /^(roi|mat)[AB]$/.test(ly);
+    const toiBo = !G.xem && laLy && ((G.ben === "a" && /A$/.test(ly)) || (G.ben === "b" && /B$/.test(ly))), banBo = laLy && !toiBo;
+    const head = G.xem
+      ? (kq === "hoa" ? "DRAW" : esc(String(tenBen(kq === "thang" ? "a" : "b")).toUpperCase()) + " WINS")
+      : { thang: "YOU WIN", thua: toiBo ? (/^roi/.test(ly) ? "YOU LEFT" : "DISCONNECTED") : "YOU LOSE", hoa: "DRAW" }[kq];
     const pts = { thang: 2, hoa: 1, thua: 0 }[kq];
     const chu = letters();
-    const missed = chu.length ? wordsOn(dict, chu, 4).filter((w) => !TU.has(w) && !dict.get(w).base && dict.get(w).lv >= 1)
-      .sort((x, y) => y.length - x.length || dict.get(x).lv - dict.get(y).lv).slice(0, port ? 10 : 8) : [];
-    return `<div class="wsg-mid on-res ${kq === "thua" ? "lose" : kq === "hoa" ? "draw" : ""}" style="gap:${port ? 16 : 12}px">
+    let missed;
+    if (T.che) missed = (T.lo || []).map((x) => ({ w: x.w, m: x.m || "" }));
+    else missed = chu.length ? wordsOn(dict, chu, 4).filter((w) => !TU.has(w) && !dict.get(w).base && dict.get(w).lv >= 1)
+      .sort((x, y) => y.length - x.length || dict.get(x).lv - dict.get(y).lv).slice(0, port ? 10 : 8).map((w) => ({ w, m: lookup(dict, w)?.m || "" })) : [];
+    const boTen = banBo ? (G.xem ? tenBen(/A$/.test(ly) ? "a" : "b") : tenBen(khac())) : "";
+    return `<div class="wsg-mid on-res ${!G.xem && kq === "thua" ? "lose" : kq === "hoa" ? "draw" : ""}" style="gap:${port ? 16 : 12}px">
       <h2 ${port ? 'style="font-size:40px"' : ""}>${head}</h2>
-      ${banBo ? `<div class="wsg-note">${esc(tenBen(khac()))} ${/^roi/.test(ly) ? "left the match" : "lost connection"}.</div>` : ""}
+      ${banBo ? `<div class="wsg-note">${esc(boTen)} ${/^roi/.test(ly) ? "left the match" : "lost connection"}.</div>` : ""}
       <div class="on-sc"><span class="a">${a}</span><i>–</i><span class="b">${b}</span></div>
-      <div class="on-pts">${T.giai ? `<span class="on-pill ${pts ? "gold" : "mute"}"><span>+${pts} ${pts === 1 ? "POINT" : "POINTS"}</span></span>` : `<span class="on-pill mute"><span>FRIENDLY · NO POINTS</span></span>`}</div>
-      ${missed.length ? `<div class="wsg-lab">MISSED</div><div class="wsg-miss" ${port ? 'style="grid-template-columns:1fr"' : ""}>${missed.map((w) => `<div><b>${w.toUpperCase()}</b> <span>${esc(lookup(dict, w)?.m || "")}</span></div>`).join("")}</div>` : ""}
-      <div class="on-btns"><button class="wsg-b ghost" data-do="back"><span>Back</span></button><button class="wsg-b ent" data-do="again"><span>Rematch</span></button></div></div>`;
+      <div class="on-pts">${G.xem ? `<span class="on-pill ${T.giai ? "" : "mute"}"><span>${T.giai ? "TOURNAMENT" : "FRIENDLY"}</span></span>` : T.giai ? `<span class="on-pill ${pts ? "gold" : "mute"}"><span>+${pts} ${pts === 1 ? "POINT" : "POINTS"}</span></span>` : `<span class="on-pill mute"><span>FRIENDLY · NO POINTS</span></span>`}</div>
+      ${missed.length ? `<div class="wsg-lab">MISSED</div><div class="wsg-miss" ${port ? 'style="grid-template-columns:1fr"' : ""}>${missed.map((x) => `<div><b>${esc(x.w.toUpperCase())}</b> <span>${esc(x.m)}</span></div>`).join("")}</div>` : ""}
+      <div class="on-btns"><button class="wsg-b ghost" data-do="back"><span>Back</span></button>${G.xem ? "" : `<button class="wsg-b ent" data-do="again"><span>Rematch</span></button>`}</div></div>`;
   }
-  // đang chơi: từ mới nhất to giữa + 2 cột
+  // đang chơi: (bộ từ: bảng gợi ý) + từ mới nhất to giữa + 2 cột
   const ds = dsTu(), f0 = ds[0];
-  const side = (x) => (x.uid === myUid() ? 0 : 1);
-  const key = f0 ? f0.w : "";
+  const side = (x) => (x.uid === uidBen(G.ben) ? 0 : 1);
+  const key = f0 ? f0.w + f0.v : "";
   const pop = key && key !== G.lastKey ? "wsg-pop" : ""; G.lastKey = key;
-  const hit = f0 ? lookup(dict, f0.w) : null;
+  const nghia = (x) => x.m || (lookup(dict, x.w) || {}).m || "";
+  const hit = f0 && !che() ? lookup(dict, f0.w) : null;
   const last = f0
-    ? `<div class="wsg-last ${pop} sd${side(f0)}" ${port ? 'style="min-height:84px"' : ""}><div class="w" ${port ? 'style="font-size:40px"' : ""}>${centred(f0.w.toUpperCase(), side(f0))}</div>${hit && hit.m ? `<div class="m" ${port ? 'style="font-size:16px"' : ""}>${esc(hit.m)}</div>` : ""}${hit && hit.base ? `<div class="nt">form of ${esc(hit.base.toUpperCase())}</div>` : ""}</div>`
-    : `<div class="wsg-last idle" ${port ? 'style="min-height:84px"' : ""}><div class="w">· · ·</div></div>`;
-  const rows = (s) => ds.slice(1).filter((x) => side(x) === s).map((x) => { const h = lookup(dict, x.w); return `<li><b>${x.w.toUpperCase()}</b>${h && h.m ? `<span>${esc(h.m)}</span>` : ""}</li>`; }).join("");
-  return `<div class="wsg-cen" ${port ? 'style="padding:10px 12px 8px;gap:6px"' : ""}>${last}<div class="on-cols">
-    <div class="on-col c0"><h4>YOU</h4><ol>${rows(0)}</ol></div>
-    <div class="on-col c1"><h4>${esc(tenBen(khac()).toUpperCase())}</h4><ol>${rows(1)}</ol></div></div></div>`;
+    ? `<div class="wsg-last ${pop} sd${side(f0)}" ${port || che() ? `style="min-height:${che() ? 64 : 84}px"` : ""}><div class="w" ${port || che() ? `style="font-size:${che() ? 34 : 40}px"` : ""}>${centred(f0.w.toUpperCase(), side(f0))}</div>${nghia(f0) ? `<div class="m" ${port ? 'style="font-size:16px"' : ""}>${esc(nghia(f0))}</div>` : ""}${hit && hit.base ? `<div class="nt">form of ${esc(hit.base.toUpperCase())}</div>` : ""}</div>`
+    : `<div class="wsg-last idle" ${port || che() ? `style="min-height:${che() ? 64 : 84}px"` : ""}><div class="w">· · ·</div></div>`;
+  const rows = (s) => ds.slice(1).filter((x) => side(x) === s).map((x) => `<li><b>${esc(x.w.toUpperCase())}</b>${nghia(x) ? `<span>${esc(nghia(x))}</span>` : ""}</li>`).join("");
+  const hA = G.xem ? tenBen("a") : "YOU";
+  return `<div class="wsg-cen${che() ? " td-cen-bo" : ""}" ${port ? 'style="padding:10px 12px 8px;gap:6px"' : ""}>${che() ? goiHtml() : ""}${G.xem && !che() ? `<div class="td-chu">${letters().map((c) => `<i>${esc(c)}</i>`).join("")}</div>` : ""}${last}<div class="on-cols">
+    <div class="on-col c0"><h4>${esc(hA.toUpperCase())}</h4><ol>${rows(0)}</ol></div>
+    <div class="on-col c1"><h4>${esc(tenBen(khac()).toUpperCase())}</h4><ol>${rows(1)}</ol></div></div>${G.loiTu ? `<div class="wsg-note" style="text-align:center">Chưa xem được các từ của trận.</div>` : ""}</div>`;
 }
 function renderCentre() { const el = cv.querySelector(".wsg-stage:not([data-side])"); if (el) el.innerHTML = centreHtml(); }
 function veO() { if (G.phase === "play" || G.phase === "count") renderCentre(); else if (G.phase === "over") render(); }
 function veDiem() { const b = cv.querySelectorAll(".wsg-score b"); if (b.length === 2) { b[0].textContent = diemBen(G.ben); b[1].textContent = diemBen(khac()); } }
 function nayDiem(i) { const box = cv.querySelectorAll(".wsg-score")[i]; if (box) { box.classList.remove("bump"); void box.offsetWidth; box.classList.add("bump"); } }
 function renderBoard() {
-  const el = cv.querySelector('[data-side="0"]'); if (!el) return render();
+  const el = cv.querySelector('[data-side="0"]'); if (!el) return G.xem ? null : render();
   const keep = el.querySelector(".wsg-bubs"); el.innerHTML = boardHtml();
   if (keep) el.querySelector(".wsg-bubs").replaceWith(keep);
 }
@@ -296,33 +401,38 @@ cv.addEventListener("pointerdown", (e) => {
   const b = e.target.closest("[data-do]"); if (!b || b.disabled) return;
   const d = b.dataset.do;
   e.preventDefault();
-  if (d === "home") { if (G.phase === "play" || G.phase === "lobby") { G.ask = true; return render(); } return veGiai(); }
+  if (d === "home") { if (!G.xem && (G.phase === "play" || G.phase === "lobby")) { G.ask = true; return render(); } return veGiai(); }
   if (d === "no") { G.ask = false; return render(); }
   if (d === "yes") { G.ask = false; return roiTran(); }
   if (d === "sound") { sfx.on = !sfx.on; return render(); }
   if (d === "back") return veGiai();
   if (d === "again") return dauLai();
-  if (G.phase !== "play" || G.ask) return;
-  const chu = letters();
+  if (G.phase !== "play" || G.ask || G.xem) return;
   if (d === "t") {
     const k = +b.dataset.k, i = G.sel.indexOf(k);
-    if (i >= 0) { G.sel.splice(i, 1); sfx.untap(-.65); } else { G.sel.push(k); sfx.tap(-.65); }
+    // Word list: ô như phím — bấm lần nữa là THÊM chữ đó (bỏ bằng Clear / Backspace)
+    if (laPhim()) { G.sel.push(k); sfx.tap(-.65); }
+    else if (i >= 0) { G.sel.splice(i, 1); sfx.untap(-.65); } else { G.sel.push(k); sfx.tap(-.65); }
     renderBoard();
   } else if (d === "clr") { if (G.sel.length) sfx.clear(-.65); G.sel = []; renderBoard(); }
   else if (d === "ent") submit();
 });
 addEventListener("keydown", (e) => {
-  if (G.phase !== "play" || G.ask) return;
+  if (G.phase !== "play" || G.ask || G.xem) return;
   if (e.key === "Enter") return submit();
   if (e.key === "Backspace") { G.sel.pop(); return renderBoard(); }
   if (e.key === "Escape") { G.sel = []; return renderBoard(); }
   const ch = e.key.length === 1 ? e.key.toUpperCase() : "";
   if (!/^[A-Z]$/.test(ch)) return;
   const chu = letters();
-  const k = [...Array(16).keys()].find((k2) => !G.sel.includes(k2) && chu[G.order[k2]] === ch);
+  const k = [...Array(chu.length).keys()].find((k2) => (laPhim() || !G.sel.includes(k2)) && chu[G.order[k2]] === ch);
   if (k != null) { G.sel.push(k); sfx.tap(-.65); renderBoard(); }
 });
-function veGiai() { NW.di("giaidau.html"); }
+function veGiai() {
+  // xem: quay lại nơi vừa bấm "Theo dõi" (chat / trang giải)
+  if (G.xem && history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) return history.back();
+  NW.di("giaidau.html");
+}
 async function roiTran() {
   if (banThu) { G.T.trangThai = "xong"; G.T.kq = { a: "thua", b: "thang" }; G.T.ly = "roiA"; G.T.diem = { a: diemBen("a"), b: diemBen("b") }; clearTimeout(bot); G.phase = "over"; return vaoPha("play"); }
   G.roi = true; G.note = "";
@@ -337,32 +447,84 @@ async function dauLai() {
   NW.ThachDau.moi(ban, { lop: T.lop, giai: T.giai || "", phut: T.phut, lv: T.lv, tenGiai });
 }
 
-// ---------- bàn thử: đấu với máy ----------
+// ---------- bàn thử: đấu với MÁY (?che=one|list|free: bộ từ mẫu · ?xem=1: xem 2 máy đấu) ----------
+const BO_MAU = [["apple", "quả táo"], ["banana", "quả chuối"], ["orange", "quả cam"], ["grape", "quả nho"], ["lemon", "quả chanh"], ["mango", "quả xoài"],
+  ["cherry", "quả anh đào"], ["melon", "quả dưa"], ["peach", "quả đào"], ["pear", "quả lê"], ["plum", "quả mận"], ["kiwi", "quả kiwi"]];
+let KE_THU = [];
+function keThu(cheThu, o) {   // bản rút gọn ws-chu.js keBo (máy chủ) — chỉ cho bàn thử
+  const ds = shuffle(BO_MAU.map(([w, m]) => ({ up: w.toUpperCase(), m }))), rl = () => "EEEAAIIOOTTNNSSRRLLDDHCMPUGBYWF"[Math.random() * 31 | 0];
+  if (cheThu === "one") return ds.map((x) => { const n = Math.max(o, Math.ceil(x.up.length / 4) * 4), Lt = x.up.split(""); while (Lt.length < n) Lt.push(rl()); return { l: shuffle(Lt).join(""), w: [x.up], m: [x.m] }; });
+  const per = cheThu === "list" ? 4 : 2, out = [];
+  for (let i = 0; i < ds.length; i += per) {
+    const g = ds.slice(i, i + per), Lt = [];
+    if (cheThu === "list") { const s = new Set(g.flatMap((x) => x.up.split(""))); Lt.push(...s); while (Lt.length < 16) { const c = rl(); if (!Lt.includes(c)) Lt.push(c); } }
+    else { const need = {}; g.forEach((x) => { const c = {}; for (const ch of x.up) c[ch] = (c[ch] || 0) + 1; for (const ch in c) need[ch] = Math.max(need[ch] || 0, c[ch]); }); for (const ch in need) for (let k = 0; k < need[ch]; k++) Lt.push(ch); while (Lt.length < 16) Lt.push(rl()); }
+    out.push({ l: shuffle(Lt.slice(0, 16)).join(""), w: g.map((x) => x.up), m: g.map((x) => x.m) });
+  }
+  return out;
+}
+async function datBanThu(v) {
+  const b = KE_THU[v];
+  Object.assign(G.T, { van: v, chu: b.l, goi: b.w.map((w, i) => ({ m: b.m[i], n: w.length })), bam: await Promise.all(b.w.map(bamTu)), tim: {} });
+}
+// bàn thử: một từ được nhận (của em hoặc của máy) — chấm như máy chủ
+async function thuNhanTu(w, uid) {
+  const T = G.T, up = w.toUpperCase(), v = vanNay(), b = KE_THU[v], i = b ? b.w.indexOf(up) : -1;
+  const ben = uid === T.a ? "a" : "b";
+  const d = i >= 0 ? diemBai(up) : points(w.length);
+  if (i >= 0) T.tim[i] = uid;
+  TU.set(tenTu(w), { w, v, uid, ok: true, d, i, m: i >= 0 ? b.m[i] : (lookup(dict, w) || {}).m || "", luc: Date.now() });
+  T.diem[ben] += d;
+  veDiem(); nayDiem(ben === G.ben ? 0 : 1);
+  if (i >= 0 && b.w.every((_, k) => T.tim[k])) {
+    if (v + 1 < KE_THU.length) { await datBanThu(v + 1); doiBan(); }
+    else { T.ketThuc = Date.now(); }
+  }
+  renderCentre();
+}
 let dangChot = false;
-function chayBanThu() {
-  const phut = +q.get("phut") || 2, lv = q.get("lv") || "easy";
+async function chayBanThu() {
+  const phut = +q.get("phut") || 2, lv = q.get("lv") || "easy", cheThu = ["one", "list", "free"].includes(q.get("che")) ? q.get("che") : "";
   const chu = "EAIDTFJRNULHGPEG".split("");
   G.ben = "a";
-  G.T = { a: "toi", b: "may", tenA: "BẠN THỬ", tenB: q.get("ban") || "Gia Bảo", giai: q.get("giai") ? "thu" : "", phut, lv, chu: chu.join(""),
-    trangThai: "choi", batDau: Date.now() + 4000, ketThuc: Date.now() + 4000 + phut * 60000 };
-  const pool = shuffle(wordsOn(dict, chu, 2).filter((w) => w.length <= 5));
-  const nuoc = () => {
-    bot = setTimeout(() => {
-      if (G.phase === "play") {
-        while (pool.length && TU.has(pool[0])) pool.shift();
-        const w = pool.shift();
-        if (w) { TU.set(w, { uid: "may", ok: true, luc: Date.now() }); sfx.ok(.65, points(w.length)); veO(); veDiem(); nayDiem(1); }
-      }
-      if (G.phase !== "over") nuoc();
-    }, 5000 + Math.random() * 5000);
+  G.T = { a: G.xem ? "may2" : "toi", b: "may", tenA: G.xem ? "Gia Bảo" : "BẠN THỬ", tenB: q.get("ban") || (G.xem ? "Bảo Nam" : "Gia Bảo"), giai: q.get("giai") || cheThu ? "thu" : "", phut, lv, chu: chu.join(""),
+    trangThai: "choi", batDau: Date.now() + 4000, ketThuc: Date.now() + 4000 + phut * 60000, diem: { a: 0, b: 0 } };
+  if (cheThu) {
+    KE_THU = keThu(cheThu, +q.get("o") || 12);
+    Object.assign(G.T, { che: cheThu, chiBo: q.get("chiBo") !== "0", boTen: "FRUITS / WORDS", soVan: KE_THU.length });
+    await datBanThu(0);
+  }
+  doiBan();
+  const may = (uid, ben) => {
+    const nuoc = () => {
+      bot = setTimeout(() => {
+        if (G.phase === "play") {
+          if (G.T.che) {
+            const b = KE_THU[vanNay()], left = b ? b.w.filter((_, k) => !G.T.tim[k]) : [];
+            if (left.length && Math.random() < .7) { const w = left[Math.random() * left.length | 0].toLowerCase(); sfx.ok(ben ? .65 : -.65, 1); thuNhanTu(w, uid); }
+          } else {
+            const pool = shuffle(wordsOn(dict, letters(), 2).filter((w) => w.length <= 5 && !TU.has(w)));
+            const w = pool[0];
+            if (w) { TU.set(w, { w, v: -1, uid, ok: true, d: points(w.length), luc: Date.now() }); sfx.ok(ben ? .65 : -.65, points(w.length)); veO(); veDiem(); nayDiem(ben); }
+          }
+        }
+        if (G.phase !== "over") nuoc();
+      }, 4000 + Math.random() * 5000);
+    };
+    nuoc();
   };
-  nuoc();
+  may("may", 1);
+  if (G.xem) may("may2", 0);
   capNhatPha();
   setInterval(() => {
     if (G.phase === "lobby" || G.phase === "play") capNhatPha();
     if (G.phase === "count" && !dangChot) {
       dangChot = true;
-      setTimeout(() => { const a = diemBen("a"), b = diemBen("b"); G.T.diem = { a, b }; G.T.kq = { a: a > b ? "thang" : a < b ? "thua" : "hoa", b: a > b ? "thua" : a < b ? "thang" : "hoa" }; G.T.trangThai = "xong"; capNhatPha(); }, 1500);
+      setTimeout(() => {
+        const a = diemBen("a"), b = diemBen("b"); G.T.diem = { a, b }; G.T.kq = { a: a > b ? "thang" : a < b ? "thua" : "hoa", b: a > b ? "thua" : a < b ? "thang" : "hoa" };
+        if (G.T.che) { const bb = KE_THU[vanNay()]; G.T.lo = bb ? bb.w.map((w, i) => ({ w, m: bb.m[i] })).filter((_, i) => !G.T.tim[i]) : []; }
+        G.T.trangThai = "xong"; capNhatPha();
+      }, 1500);
     }
   }, 500);
 }

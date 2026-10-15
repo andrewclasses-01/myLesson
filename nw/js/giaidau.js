@@ -11,12 +11,26 @@
    khoảng thời gian (form chặn) ⇒ em bấm Thách đấu là biết ngay trận tính cho giải nào.
    Đợt 1: CHƯA đấu được — nút Thách đấu / Giao hữu hiện hộp "sắp mở". Thưởng sao top 3 làm ở đợt sau.
    Thắng +2 · hòa +1 · thua 0; xếp hạng: điểm ↓ · thắng ↓ · số trận ↑ · tên.
+
+   ⭐ v1.351.0 (15/10/2026 tối, thầy) —
+     · SỬA GIẢI ĐANG CHẠY: đổi được lớp, phút, độ khó, bộ từ, giờ đóng, sao (giờ mở đã qua thì giữ). Trận đang đấu không đổi;
+       lời mời mới theo thông số mới (luật tdGiaiMo so phút/độ khó với giải).
+     · BỘ TỪ = một act AWord WORDS (thư viện users/{AW_UID}/items của thầy — luật tools/dang-luat-giai-dau-bo.js cho phiên
+       thầy-từ-app đọc) + tuỳ chọn như Fight của A Show Speed: bộ gợi ý (ENG1/ENG2/VI1/VI2) · chế độ One word / Word list /
+       Free words · số ô (One word 8/12/16) · Word list only (Free words). Chép vào giải: `bo` { id, ten, che, o, chiBo, bien,
+       bienTen, tu[{w, m}] } — máy chủ (tran-dau.js) dựng bàn từ đây, không đọc lại act. Không chọn act ⇒ 16 chữ ngẫu nhiên như cũ.
+     · "Đang đấu" (thầy + học sinh) có nút THEO DÕI ⇒ tran.html?id=…&xem=1.
    ============================================================ */
 (function () {
   'use strict';
   var $ = NW.$, $$ = NW.$$, an = NW.chuAnToan;
   var GD = NW.GiaiDau = {};
   var PHUT = [2, 3, 5], LV = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+  var CHE = { one: 'One word', list: 'Word list', free: 'Free words' }, SO_O = [8, 12, 16];
+  var AW_UID = 'tpD5VivTD6g4NVceix4Zf3Ibefp1';   // chủ thư viện AWord (tài khoản Google của thầy)
+  var BIEN_TEN = { eng1: 'ENG1', eng2: 'ENG2', vi1: 'VI1', vi2: 'VI2' };
+  // một dòng mô tả cách đấu của giải: "A Show Speed · 2 phút · Easy" | "… · Free words · 7 JOB / WORDS"
+  GD.cachDau = function (g) { return g.bo ? (CHE[g.bo.che] || 'Bộ từ') + ' · ' + (g.bo.ten || '') : (LV[g.lv] || g.lv); };
   var TT = { dang: ['dang', 'Đang diễn ra'], sap: ['sap', 'Sắp diễn ra'], xong: ['xong', 'Đã xong'] };
   var THU_TT = { dang: 0, sap: 1, xong: 2 };
   var IC = {
@@ -113,7 +127,7 @@
   // ⭐ Đợt 3 (v1.348.0) — THẦY báo giải vào NHÓM CHAT từng lớp (classChat, tin role 'gv' — luật cho thầy). Lỗi lớp nào bỏ qua lớp đó.
   GD.baoNhom = async function (g, daMo) {
     var chu = '🏆 Giải đấu "' + g.ten + '" ' + (daMo ? 'đã mở' : 'sẽ mở lúc ' + gio(g.tu) + ' ngày ' + ngay(g.tu)) + '! Mỗi trận A Show Speed ' + g.phut + ' phút · ' +
-      (LV[g.lv] || g.lv) + ' · thắng +2, hòa +1. Vào Khám phá → Giải đấu, hoặc bấm ⚔ ngay trong nhóm chat để thách đấu bạn đang online. Giải đóng lúc ' + gio(g.den) + ' ngày ' + ngay(g.den) + '.';
+      GD.cachDau(g) + ' · thắng +2, hòa +1. Vào Khám phá → Giải đấu, hoặc bấm ⚔ ngay trong nhóm chat để thách đấu bạn đang online. Giải đóng lúc ' + gio(g.den) + ' ngày ' + ngay(g.den) + '.';
     if (NW.laBanThu()) { NW.toast('Bàn thử: đã báo vào nhóm chat ' + g.lops.length + ' lớp.'); return; }
     var f = await NW.fb(), so = 0;
     for (var i = 0; i < g.lops.length; i++) {
@@ -220,19 +234,30 @@
     }
 
     // ⭐ Đợt 2 — thầy xem các trận ĐANG ĐẤU của giải (tranDau giai == id, trangThai 'choi') + 30 trận gần đây của lớp (bảng)
-    async function dangDauHtml(g) {
-      if (g._tt !== 'dang' || banThu) return '';
+    // ⭐ v1.351.0 — học sinh cũng thấy (chỉ lớp em: truy vấn phải lọc lop để luật hsLop chứng minh được) + nút THEO DÕI
+    async function dangDauHtml(g, lop) {
+      if (g._tt !== 'dang') return '';
       var ds = [];
-      try {
-        var f = await NW.fb(), snap = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('giai', '==', g.id), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(30)));
-        snap.forEach(function (d) { ds.push(d.data()); });
+      if (banThu) ds = [{ id: 'mau-dang', a: 'hs_2', b: 'hs_3', tenA: 'Bảo Nam', tenB: 'Thảo Vy', lop: lop || g.lops[0], diem: { a: 8, b: 6 }, ketThuc: Date.now() + 75e3 }];
+      else try {
+        var f = await NW.fb(), w = [f.fs.where('giai', '==', g.id), f.fs.where('trangThai', '==', 'choi')];
+        if (!toi.laThay) w.push(f.fs.where('lop', '==', lop));
+        var snap = await f.fs.getDocs(f.fs.query.apply(null, [f.fs.collection(f.db, 'tranDau')].concat(w, [f.fs.limit(30)])));
+        snap.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > Date.now() - 15000) ds.push(Object.assign({ id: d.id }, t)); });
       } catch (e) { console.warn('[giải đấu] đang đấu', e); }
+      if (!toi.laThay && !ds.length) return '';
       return '<div class="card gd-the"><h3><span class="gd-nhay"></span>Đang đấu<small>' + ds.length + ' trận</small></h3>' +
         (ds.length ? ds.map(function (t) {
-          var con = Math.max(0, Math.round(((t.ketThuc || 0) - Date.now()) / 1000));
+          var con = Math.max(0, Math.round(((t.ketThuc || 0) - Date.now()) / 1000)), minh = t.a === toi.uid || t.b === toi.uid;
           return '<div class="gd-tran"><div class="gd-noi">' + an(t.tenA) + ' <b>vs</b> ' + an(t.tenB) + '<small>' + an(tenLop(t.lop)) + ' · còn ' + Math.floor(con / 60) + ':' + hai(con % 60) + '</small></div>' +
-            '<span class="ty-so">' + ((t.diem || {}).a || 0) + '–' + ((t.diem || {}).b || 0) + '</span></div>';
+            '<span class="ty-so">' + ((t.diem || {}).a || 0) + '–' + ((t.diem || {}).b || 0) + '</span>' +
+            (minh ? '' : '<button type="button" class="gd-xem" data-xem="' + an(t.id) + '">Theo dõi</button>') + '</div>';
         }).join('') : '<div class="trong">Không có trận nào đang đấu.</div>') + '</div>';
+    }
+    function ganXem() {
+      $$('[data-xem]', than).forEach(function (b) {
+        b.onclick = function () { var id = b.getAttribute('data-xem'); NW.di('tran.html?id=' + encodeURIComponent(id) + '&xem=1' + (banThu ? '&thu=1&che=free' : '')); };
+      });
     }
     // ⭐ v1.350.0 — thầy HUỶ KẾT QUẢ một trận (vd 2 em đấu "dàn xếp"): trừ lại thắng/hòa/thua của 2 em trong bảng lớp, trận gạch ngang.
     //   Chỉ khi giải CHƯA thưởng sao (thưởng rồi thì bảng đã chốt). Lịch sử riêng của 2 em (tdLichSu) giữ nguyên.
@@ -292,7 +317,8 @@
           '<div class="card gd-hero">' + biaHtml(g) + '<div class="gd-noi">' +
             '<div class="meta"><span class="gd-pill dang">Đang diễn ra</span>' + ngay(g.tu) + ' → ' + ngay(g.den) + ' · ' + g.lops.map(tenLop).map(an).join(', ') + '</div>' +
             '<h2>' + an(g.ten) + '</h2>' +
-            '<div class="meta"><span class="gd-pill ghi">A Show Speed</span><span class="gd-pill ghi">' + g.phut + ' phút</span><span class="gd-pill ghi">' + an(LV[g.lv] || g.lv) + '</span>' +
+            '<div class="meta"><span class="gd-pill ghi">A Show Speed</span><span class="gd-pill ghi">' + g.phut + ' phút</span><span class="gd-pill ghi">' + an(g.bo ? CHE[g.bo.che] || 'Bộ từ' : LV[g.lv] || g.lv) + '</span>' +
+              (g.bo ? '<span class="gd-pill ghi">Bộ từ: ' + an(g.bo.ten || '') + '</span>' : '') +
               (g.sao && g.sao.some(Boolean) ? '<span class="gd-pill vang">' + IC.sao + 'Top 3 mỗi lớp: ' + g.sao.join(' · ') + ' sao</span>' : '') + '</div>' +
             '<div class="gd-luat"><div class="t"><b>+2</b><span>Thắng</span></div><div class="h"><b>+1</b><span>Hòa</span></div><div class="b"><b>0</b><span>Thua</span></div></div>' +
             '<div class="gd-toi"><span class="so">' + (coTran ? '#' + (vt + 1) : '–') + '</span><div><b>' + an(tenLop(xemLop)) + ': ' + (coTran ? 'em hạng ' + (vt + 1) + ' · ' + GD.diem(cua) + ' điểm' : 'em chưa đấu trận nào') + '</b>' +
@@ -300,7 +326,7 @@
           '</div></div>' +
           chipLop(lopCo, xemLop, 'data-lop') +
           '<div class="gd-luoi"><div class="card gd-the"><h3>' + IC.cup + 'Bảng xếp hạng ' + an(tenLop(xemLop)) + '<small>Tự cập nhật sau mỗi trận</small></h3>' + bangHtml(g, ds) + '</div>' +
-          '<div class="gd-cot">' + banHtml(ds, false) + '<div class="card gd-the"><h3>Trận của em</h3>' + lsHtml + '</div></div></div>';
+          '<div class="gd-cot">' + (await dangDauHtml(g, xemLop)) + banHtml(ds, false) + '<div class="card gd-the"><h3>Trận của em</h3>' + lsHtml + '</div></div></div>';
       } else {
         // chưa có giải nào đang mở cho lớp em ⇒ đấu giao hữu + giải vừa xong
         if (lopEm.indexOf(xemLop) < 0) xemLop = lopEm.indexOf(toi.lop) >= 0 ? toi.lop : lopEm[0];
@@ -318,7 +344,7 @@
           '<div class="gd-cot">' + banHtml(ds2, true) + '<div class="card gd-the"><h3>Trận của em</h3>' + lsHtml + '</div></div></div>';
       }
       $$('[data-lop]', than).forEach(function (b) { b.onclick = function () { xemLop = b.getAttribute('data-lop'); veHs(); }; });
-      ganNutTd(ctx, dsTd);
+      ganNutTd(ctx, dsTd); ganXem();
     }
 
     // ===== THẦY =====
@@ -334,7 +360,7 @@
         var t = TT[x._tt];
         return '<button type="button" class="gd-gcard ' + x._tt + (x.id === g.id ? ' on' : '') + '" data-giai="' + an(x.id) + '"><span class="gd-gbia">' + an(x.ten.toUpperCase()) + '</span>' +
           '<span class="gd-noi"><span><span class="gd-pill ' + t[0] + '">' + t[1] + '</span></span><b>' + an(x.ten) + '</b><span class="chips">' + x.lops.map(function (l) { return '<i>' + an(tenLop(l)) + '</i>'; }).join('') + '</span>' +
-          '<small>' + ngay(x.tu) + ' → ' + ngay(x.den) + ' · ' + x.phut + ' phút · ' + an(LV[x.lv] || x.lv) + '</small></span></button>';
+          '<small>' + ngay(x.tu) + ' → ' + ngay(x.den) + ' · ' + x.phut + ' phút · ' + an(GD.cachDau(x)) + '</small></span></button>';
       }).join('');
       var t = TT[g._tt];
       var tacVu = g._tt === 'dang' ? '<button type="button" class="gd-nut" data-tv="sua">' + IC.but + 'Sửa</button><button type="button" class="gd-nut do" data-tv="dong">' + IC.khoa + 'Đóng giải</button>'
@@ -348,17 +374,22 @@
           '<div class="dong"><span>Tự mở lúc</span><b>' + gio(g.tu) + ' ngày ' + ngay(g.tu) + '</b></div>' +
           '<div class="dong"><span>Tự đóng lúc</span><b>' + gio(g.den) + ' ngày ' + ngay(g.den) + '</b></div>' +
           '<div class="dong"><span>Lớp tham gia</span><b>' + g.lops.map(tenLop).map(an).join(', ') + '</b></div>' +
-          '<div class="dong"><span>Mỗi trận</span><b>A Show Speed · ' + g.phut + ' phút · ' + an(LV[g.lv] || g.lv) + '</b></div>' +
+          '<div class="dong"><span>Mỗi trận</span><b>A Show Speed · ' + g.phut + ' phút · ' + an(GD.cachDau(g)) + '</b></div>' +
+          (g.bo ? '<div class="dong"><span>Bộ từ</span><b>' + an(g.bo.ten || '') + ' · ' + (g.bo.tu || []).length + ' từ · gợi ý ' + an(g.bo.bienTen || 'mặc định') +
+            (g.bo.che === 'one' ? ' · ' + (g.bo.o || 12) + ' ô' : '') + (g.bo.che === 'free' ? (g.bo.chiBo !== false ? ' · chỉ từ trong bộ' : ' · mọi từ có nghĩa') : '') + '</b></div>' : '') +
           '<div class="dong"><span>Thưởng top 3 mỗi lớp</span><b>' + (g.sao || []).join(' · ') + ' sao</b></div></div>';
       } else {
         var ds = await hangLop(g, xemLop);
         ct = chipLop(g.lops, xemLop, 'data-lopt') + '<div class="gd-luoi"><div class="card gd-the"><h3>' + IC.cup + 'Bảng xếp hạng ' + an(tenLop(xemLop)) + '<small>' + (g._tt === 'xong' ? 'Chốt lúc đóng giải' : 'Tự cập nhật') + '</small></h3>' + bangHtml(g, ds, true) + '</div>' +
-          '<div class="gd-cot">' + (await dangDauHtml(g)) + '<div class="card gd-the"><h3>Trận gần đây<small>' + an(tenLop(xemLop)) + '</small></h3>' + tranGanDayHtml(GD.tranGanDay(g.id, xemLop), g, xemLop) + '</div></div></div>';
+          '<div class="gd-cot">' + (await dangDauHtml(g, xemLop)) + '<div class="card gd-the"><h3>Trận gần đây<small>' + an(tenLop(xemLop)) + '</small></h3>' + tranGanDayHtml(GD.tranGanDay(g.id, xemLop), g, xemLop) + '</div></div></div>';
       }
       than.innerHTML = '<div class="gd-ds">' + the + '</div>' +
-        '<div class="gd-ct-dau"><h2>' + an(g.ten) + '</h2><span class="gd-pill ' + t[0] + '">' + t[1] + '</span><div class="tac-vu">' + tacVu + '</div></div>' + ct;
+        '<div class="gd-ct-dau"><h2>' + an(g.ten) + '</h2><span class="gd-pill ' + t[0] + '">' + t[1] + '</span><div class="tac-vu">' + tacVu + '</div>' +
+        // ⭐ v1.351.0 — thông số đang chạy, nhìn là biết (bấm Sửa để đổi)
+        '<p class="gd-ts">A Show Speed · ' + g.phut + ' phút · ' + an(GD.cachDau(g)) + ' · ' + g.lops.map(tenLop).map(an).join(', ') + ' · đóng ' + gio(g.den) + ' ngày ' + ngay(g.den) + '</p></div>' + ct;
       $$('[data-giai]', than).forEach(function (b) { b.onclick = function () { xemGiai = b.getAttribute('data-giai'); veThay(); }; });
       $$('[data-lopt]', than).forEach(function (b) { b.onclick = function () { xemLop = b.getAttribute('data-lopt'); veThay(); }; });
+      ganXem();
       // Huỷ kết quả: bấm 2 lần ngay trên nút (không mở hộp hỏi)
       $$('[data-huytran]', than).forEach(function (b) {
         b.onclick = function () {
@@ -510,15 +541,32 @@
       var lopDs = await GD.dsLop();
       var D = 86400e3, mai = new Date(Date.now() + D); mai.setHours(18, 0, 0, 0);
       var f0 = g ? g : { ten: '', lops: [], phut: 2, lv: 'easy', tu: mai.getTime(), den: mai.getTime() + 6 * D + 3 * 3600e3, sao: [30, 20, 10] };
+      var bo0 = f0.bo || null;
+      // ⭐ v1.351.0 — bộ từ đang chọn trong hộp: act (bản đầy đủ đọc từ thư viện, hoặc null = giữ bo cũ) + tuỳ chọn
+      var BO = { act: null, id: bo0 ? bo0.id : '', ten: bo0 ? bo0.ten : '', so: bo0 ? (bo0.tu || []).length : 0, bien: bo0 ? bo0.bien || '' : '',
+        bienDs: bo0 && bo0.bien ? [bo0.bien] : [], che: bo0 ? bo0.che : 'free', o: bo0 ? bo0.o || 12 : 12, chiBo: bo0 ? bo0.chiBo !== false : true };
       var nut = function (ten, gt, chon, tat) { return '<button type="button" data-v="' + an(gt) + '" class="' + (chon ? 'on' : '') + '"' + (tat ? ' disabled' : '') + '>' + an(ten) + '</button>'; };
       var p = NW.popMo({ tieuDe: moi ? 'Tạo giải mới' : 'Sửa ' + g.ten, lop: 'gd-pop', html:
+        (dang ? '<p class="gd-chu-dang">Giải đang chạy: đổi gì cũng chỉ áp cho trận MỚI — trận đang đấu giữ nguyên, bảng xếp hạng giữ nguyên.</p>' : '') +
         '<label class="lbl" for="gdTen">Tên giải</label><input type="text" id="gdTen" maxlength="40" autocomplete="off" value="' + an(f0.ten) + '" placeholder="Ví dụ: Speed Cup tuần 4">' +
         '<span class="lbl gd-lbl">Lớp tham gia · mỗi lớp một bảng xếp hạng</span><div class="gd-chon" id="gdLop">' +
-          (lopDs.length ? lopDs.map(function (l) { return nut(l.ten || l.ma, l.ma, f0.lops.indexOf(l.ma) >= 0, dang && g.lops.indexOf(l.ma) >= 0); }).join('') : '<span class="tiny">Chưa có danh sách lớp (nwCauHinh/lop).</span>') + '</div>' +
+          (lopDs.length ? lopDs.map(function (l) { return nut(l.ten || l.ma, l.ma, f0.lops.indexOf(l.ma) >= 0); }).join('') : '<span class="tiny">Chưa có danh sách lớp (nwCauHinh/lop).</span>') + '</div>' +
         '<span class="lbl gd-lbl">Game</span><div class="gd-chon mot"><button type="button" class="on">A Show Speed</button><button type="button" disabled>Quiz · sắp có</button></div>' +
-        '<div class="gd-hai"><div><span class="lbl gd-lbl">Mỗi trận</span><div class="gd-chon mot" id="gdPhut">' + PHUT.map(function (x) { return nut(x + ' phút', x, x === f0.phut, dang); }).join('') + '</div></div>' +
-        '<div><span class="lbl gd-lbl">Độ khó</span><div class="gd-chon mot" id="gdLv">' + Object.keys(LV).map(function (k) { return nut(LV[k], k, k === f0.lv, dang); }).join('') + '</div></div></div>' +
-        '<span class="lbl gd-lbl">Mở lúc</span><div class="gd-gio"><input type="date" class="chon-o" id="gdTuN" value="' + oNgay(f0.tu) + '"' + (dang ? ' disabled' : '') + '><input type="time" class="chon-o" id="gdTuG" value="' + gio(f0.tu) + '"' + (dang ? ' disabled' : '') + '></div>' +
+        // ⭐ v1.351.0 — BỘ TỪ: 16 chữ ngẫu nhiên (như cũ) | act AWord WORDS + tuỳ chọn như Fight
+        '<span class="lbl gd-lbl">Bộ chữ của trận</span><div class="gd-chon mot" id="gdNguon">' + nut('16 chữ ngẫu nhiên', 'ngau', !bo0) + nut('Act AWord WORDS', 'act', !!bo0) + '</div>' +
+        '<div class="gd-bo" id="gdBo"' + (bo0 ? '' : ' hidden') + '>' +
+          '<div class="gd-act"><div class="gd-noi"><b id="gdActTen">' + (bo0 ? an(bo0.ten) : 'Chưa chọn act') + '</b><small id="gdActSo">' + (bo0 ? BO.so + ' từ' : 'Bấm "Chọn act" để lấy bộ từ trong thư viện AWord') + '</small></div>' +
+            '<button type="button" class="gd-nut" id="gdActMo">Chọn act…</button></div>' +
+          '<div class="gd-thuvien" id="gdTv" hidden><input type="search" id="gdTvTim" placeholder="Tìm act (vd 7 JOB, DS-S4)…" autocomplete="off"><div class="gd-tv-ds" id="gdTvDs"><div class="trong">Đang tải thư viện…</div></div></div>' +
+          '<span class="lbl gd-lbl">Gợi ý (bộ chữ của act)</span><div class="gd-chon mot" id="gdBien"></div>' +
+          '<span class="lbl gd-lbl">A Show Speed mode</span><div class="gd-chon mot" id="gdChe">' + Object.keys(CHE).map(function (k) { return nut(CHE[k], k, k === BO.che); }).join('') + '</div>' +
+          '<div class="gd-hai"><div id="gdOHop"><span class="lbl gd-lbl">Letters · One word</span><div class="gd-chon mot" id="gdO">' + SO_O.map(function (n) { return nut(String(n), n, n === BO.o); }).join('') + '</div></div>' +
+          '<div id="gdChiBoHop"><span class="lbl gd-lbl">Free words</span><label class="gd-tich"><input type="checkbox" id="gdChiBo"' + (BO.chiBo ? ' checked' : '') + '> Word list only</label></div></div>' +
+          '<p class="tiny gd-chu-bo" id="gdCheChu"></p>' +
+        '</div>' +
+        '<div class="gd-hai"><div><span class="lbl gd-lbl">Mỗi trận</span><div class="gd-chon mot" id="gdPhut">' + PHUT.map(function (x) { return nut(x + ' phút', x, x === f0.phut); }).join('') + '</div></div>' +
+        '<div id="gdLvHop"' + (bo0 ? ' hidden' : '') + '><span class="lbl gd-lbl">Độ khó (16 chữ ngẫu nhiên)</span><div class="gd-chon mot" id="gdLv">' + Object.keys(LV).map(function (k) { return nut(LV[k], k, k === f0.lv); }).join('') + '</div></div></div>' +
+        '<span class="lbl gd-lbl">Mở lúc' + (dang ? ' · đã mở' : '') + '</span><div class="gd-gio"><input type="date" class="chon-o" id="gdTuN" value="' + oNgay(f0.tu) + '"' + (dang ? ' disabled' : '') + '><input type="time" class="chon-o" id="gdTuG" value="' + gio(f0.tu) + '"' + (dang ? ' disabled' : '') + '></div>' +
         '<span class="lbl gd-lbl">Đóng lúc</span><div class="gd-gio"><input type="date" class="chon-o" id="gdDenN" value="' + oNgay(f0.den) + '"><input type="time" class="chon-o" id="gdDenG" value="' + gio(f0.den) + '"></div>' +
         '<span class="lbl gd-lbl">Thưởng sao khi đóng giải · top 3 mỗi lớp</span><div class="gd-sao">' + ['Hạng 1', 'Hạng 2', 'Hạng 3'].map(function (t, i) {
           return '<label class="gd-o"><span>' + t + '</span><input type="text" inputmode="numeric" id="gdSao' + i + '" value="' + ((f0.sao || [])[i] || 0) + '" aria-label="Sao ' + t + '"><span>⭐</span></label>';
@@ -526,13 +574,93 @@
         (moi ? '<label class="gd-tich"><input type="checkbox" id="gdBao" checked> Báo vào nhóm chat các lớp</label>' : '') +
         '<p class="gd-loi" id="gdLoi" role="alert"></p>',
         chan: '<button type="button" class="btn soft" data-dong>Thôi</button><button type="button" class="btn primary" id="gdOk">' + (moi ? 'Tạo giải' : 'Lưu') + '</button>' });
-      $$('.gd-chon button[data-v]', p).forEach(function (b) {
-        b.onclick = function () {
-          if (b.disabled) return;
-          if (b.parentElement.id === 'gdLop') b.classList.toggle('on');
-          else $$('button', b.parentElement).forEach(function (x) { x.classList.toggle('on', x === b); });
-        };
-      });
+      function ganChon(hop) {
+        $$('button[data-v]', hop).forEach(function (b) {
+          b.onclick = function () {
+            if (b.disabled) return;
+            if (b.parentElement.id === 'gdLop') b.classList.toggle('on');
+            else $$('button', b.parentElement).forEach(function (x) { x.classList.toggle('on', x === b); });
+            if (b.parentElement.id === 'gdNguon' || b.parentElement.id === 'gdChe') veBo();
+          };
+        });
+      }
+      $$('.gd-chon', p).forEach(ganChon);
+      // ----- khu bộ từ -----
+      var CHE_GIAI = { one: 'Mỗi bàn MỘT từ: gợi ý + chữ của từ lẫn chữ mồi; ai ghép đúng trước +1.',
+        list: 'Mỗi bàn tối đa 5 từ, ô chữ như phím (bấm lại được); mỗi từ đúng +1.',
+        free: 'Mỗi bàn giấu 2–3 từ trong 16 chữ; từ của bài điểm ×2. Tắt "Word list only" thì mọi từ tiếng Anh có nghĩa cũng có điểm.' };
+      function veBo() {
+        var laAct = $('#gdNguon .on', p).getAttribute('data-v') === 'act', che = $('#gdChe .on', p).getAttribute('data-v');
+        $('#gdBo', p).hidden = !laAct; $('#gdLvHop', p).hidden = laAct;
+        $('#gdOHop', p).classList.toggle('tat', che !== 'one'); $('#gdChiBoHop', p).classList.toggle('tat', che !== 'free');
+        $('#gdCheChu', p).textContent = CHE_GIAI[che] || '';
+        $('#gdBien', p).innerHTML = (BO.bienDs.length ? BO.bienDs : ['']).map(function (k) { return k ? nut(BIEN_TEN[k] || k.toUpperCase(), k, k === BO.bien) : '<button type="button" class="on" disabled>Gợi ý của act</button>'; }).join('');
+        ganChon($('#gdBien', p));
+        $$('#gdBien button[data-v]', p).forEach(function (b) { var cu = b.onclick; b.onclick = function () { cu(); BO.bien = b.getAttribute('data-v'); }; });
+      }
+      veBo();
+      // thư viện AWord: act WORDS (có content.items[{word}]) — đọc MỘT lần mỗi lần mở hộp
+      var TV = null;
+      async function napThuVien() {
+        if (TV) return TV;
+        if (banThu) {
+          TV = [{ id: 'a1', title: '7 JOB / WORDS', content: { variants: ['eng1', 'eng2', 'vi1', 'vi2'], items: [{ word: 'doctor', clue: 'bác sĩ', clues: { eng1: 'a person who treats sick people', vi1: 'bác sĩ' } }, { word: 'nurse', clue: 'y tá', clues: { eng1: 'a person who cares for patients', vi1: 'y tá' } }, { word: 'farmer', clue: 'nông dân' }] } },
+            { id: 'a2', title: '1 BODY PARTS / WORDS', content: { items: [{ word: 'head', clue: 'đầu' }, { word: 'hand', clue: 'bàn tay' }] } }];
+          return TV;
+        }
+        var f = await NW.fb();
+        var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'users', AW_UID, 'items'), f.fs.where('kind', '==', 'act')));
+        TV = [];
+        s.forEach(function (d) {
+          var a = d.data(), it = a.content && a.content.items;
+          if (a.trashed || !Array.isArray(it) || !it.length || !it.some(function (x) { return x && x.word; })) return;
+          TV.push(Object.assign({ id: d.id }, a));
+        });
+        // act WORDS lên đầu, mới sửa trước
+        TV.sort(function (a, b) { return (/WORDS/i.test(b.title || '') - /WORDS/i.test(a.title || '')) || (b.updatedAt || 0) - (a.updatedAt || 0); });
+        return TV;
+      }
+      function veThuVien() {
+        var tim = NW.khongDau($('#gdTvTim', p).value.trim()).toLowerCase(), ds = (TV || []).filter(function (a) { return !tim || NW.khongDau(a.title || '').toLowerCase().indexOf(tim) >= 0; });
+        $('#gdTvDs', p).innerHTML = ds.length ? ds.slice(0, 60).map(function (a) {
+          return '<button type="button" data-act="' + an(a.id) + '"><b>' + an(a.title || '(không tên)') + '</b><small>' + a.content.items.length + ' từ' + (a.content.variants ? ' · ' + a.content.variants.map(function (k) { return BIEN_TEN[k] || k; }).join(' ') : '') + '</small></button>';
+        }).join('') : '<div class="trong">Không thấy act nào.</div>';
+        $$('[data-act]', p).forEach(function (b) {
+          b.onclick = function () {
+            var a = TV.filter(function (x) { return x.id === b.getAttribute('data-act'); })[0]; if (!a) return;
+            BO.act = a; BO.id = a.id; BO.ten = a.title || ''; BO.so = a.content.items.length;
+            BO.bienDs = (a.content.variants || []).filter(function (k) { return k !== 'pron'; });
+            BO.bien = BO.bienDs.indexOf(BO.bien) >= 0 ? BO.bien : (BO.bienDs.indexOf('vi1') >= 0 ? 'vi1' : BO.bienDs[0] || '');
+            $('#gdActTen', p).textContent = BO.ten; $('#gdActSo', p).textContent = BO.so + ' từ';
+            $('#gdTv', p).hidden = true; veBo();
+          };
+        });
+      }
+      $('#gdActMo', p).onclick = async function () {
+        var tv = $('#gdTv', p); tv.hidden = !tv.hidden; if (tv.hidden) return;
+        try { await napThuVien(); veThuVien(); $('#gdTvTim', p).focus(); }
+        catch (e) { $('#gdTvDs', p).innerHTML = '<div class="trong">Chưa đọc được thư viện AWord: ' + an(NW.chuLoiKho(e)) + '. Thầy đăng nhập Google đúng tài khoản AWord (hoặc mở từ app myLesson sau khi đăng luật mới).</div>'; }
+      };
+      $('#gdTvTim', p).oninput = veThuVien;
+      $('#gdTvTim', p).onkeydown = function (e) { if (e.key === 'Enter') e.preventDefault(); };
+      // act → bộ từ chép vào giải
+      async function dungBo() {
+        var che = $('#gdChe .on', p).getAttribute('data-v'), o = +$('#gdO .on', p).getAttribute('data-v'), chiBo = $('#gdChiBo', p).checked;
+        var a = BO.act;
+        // giữ act cũ mà đổi bộ gợi ý ⇒ đọc lại act từ thư viện (giải chỉ cất gợi ý của MỘT bộ)
+        if (!a && bo0 && BO.bien !== (bo0.bien || '')) {
+          var tv = await napThuVien(); a = tv.filter(function (x) { return x.id === bo0.id; })[0] || null;
+          if (!a) throw new Error('Không thấy act ' + bo0.ten + ' trong thư viện nữa — thầy chọn lại act.');
+        }
+        if (!a) return Object.assign({}, bo0, { che: che, o: o, chiBo: chiBo });
+        var k = BO.bien;
+        var tu = a.content.items.map(function (it) {
+          var m = k && it.clues && it.clues[k] != null ? it.clues[k] : it.clue;
+          return { w: String(it.word || '').trim().slice(0, 40), m: String(m || '').trim().slice(0, 200) };
+        }).filter(function (x) { return /[A-Za-z]/.test(x.w); }).slice(0, 300);
+        if (!tu.length) throw new Error('Act này không có từ nào.');
+        return { id: a.id, ten: String(a.title || '').slice(0, 80), che: che, o: o, chiBo: chiBo, bien: k || '', bienTen: k ? BIEN_TEN[k] || k.toUpperCase() : '', tu: tu };
+      }
       // ô số: chỉ chữ số; Enter = nhận ô; KHÔNG dùng type=number (cuộn chuột đổi số — nếp "ô nhập số liệu an toàn")
       $$('.gd-sao input', p).forEach(function (i) {
         i.oninput = function () { i.value = i.value.replace(/\D/g, '').slice(0, 3); };
@@ -546,8 +674,10 @@
         var lops = $$('#gdLop .on', p).map(function (b) { return b.getAttribute('data-v'); });
         var tu = dang ? g.tu : docGio('#gdTuN', '#gdTuG'), den = docGio('#gdDenN', '#gdDenG');
         var sao = [0, 1, 2].map(function (i) { return Math.min(999, +$('#gdSao' + i, p).value || 0); });
+        var laAct = $('#gdNguon .on', p).getAttribute('data-v') === 'act';
         if (!ten) return loi('Thầy đặt tên cho giải nhé.');
         if (!lops.length) return loi('Chọn ít nhất một lớp tham gia.');
+        if (laAct && !BO.act && !bo0) return loi('Thầy chọn act AWord WORDS cho bộ từ (hoặc chọn "16 chữ ngẫu nhiên").');
         if (!tu || !den) return loi('Chọn đủ ngày giờ mở và đóng.');
         if (den <= tu) return loi('Giờ đóng phải sau giờ mở.');
         if (den <= Date.now()) return loi('Giờ đóng đã qua rồi.');
@@ -558,8 +688,12 @@
           if (l && tu < x.den && den > x.tu) trung = tenLop(l) + ' đang có ' + x.ten + ' trùng thời gian.';
         });
         if (trung) return loi(trung);
+        var nutOk = this; nutOk.disabled = true;
+        var bo = null;
+        if (laAct) { try { bo = await dungBo(); } catch (e) { nutOk.disabled = false; return loi(e.message || String(e)); } }
         var du = { ten: ten, lops: lops, game: 'aShowSpeed', phut: +$('#gdPhut .on', p).getAttribute('data-v'), lv: $('#gdLv .on', p).getAttribute('data-v'), tu: tu, den: den, sao: sao, capNhat: Date.now() };
-        this.disabled = true;
+        // chỉ ghi khoá `bo` khi có bộ từ / cần xoá bộ cũ (giải 16 chữ ngẫu nhiên giữ đúng dạng cũ — lưu được cả khi luật mới chưa đăng)
+        if (bo) du.bo = bo; else if (bo0) du.bo = null;
         try {
           if (banThu) {
             if (moi) { du.id = 'm' + Date.now(); du.dong = false; mau().giai.push(du); } else Object.assign(mau().giai.filter(function (x) { return x.id === g.id; })[0], du);
@@ -573,9 +707,13 @@
           if (moi) xemGiai = du.id;
           if (moi && $('#gdBao', p) && $('#gdBao', p).checked) GD.baoNhom(du, tu <= Date.now());
           NW.popDong();
-          NW.toast(moi ? (tu <= Date.now() ? 'Đã tạo và mở ' + ten + '.' : 'Đã tạo ' + ten + ', tự mở lúc ' + gio(tu) + ' ngày ' + ngay(tu) + '.') : 'Đã lưu thay đổi.');
+          NW.toast(moi ? (tu <= Date.now() ? 'Đã tạo và mở ' + ten + '.' : 'Đã tạo ' + ten + ', tự mở lúc ' + gio(tu) + ' ngày ' + ngay(tu) + '.') : 'Đã lưu thay đổi' + (dang ? ' — áp cho các trận mới.' : '.'));
           napLai();
-        } catch (e) { this.disabled = false; loi(NW.chuLoiKho(e)); }
+        } catch (e) {
+          nutOk.disabled = false;
+          var ma = String((e && (e.code || e.message)) || '');
+          loi(bo && ma.indexOf('permission') >= 0 ? 'Chưa lưu được bộ từ: luật Firestore mới (tools/dang-luat-giai-dau-bo.js) chưa đăng.' : NW.chuLoiKho(e));
+        }
       };
       $('[data-dong]', p).onclick = NW.popDong;
       setTimeout(function () { var o = $('#gdTen', p); if (o && moi) o.focus(); }, 60);

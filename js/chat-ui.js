@@ -24,6 +24,7 @@
      sauTin(t, i, ds) -> html  // chèn sau hàng tin (vd avatar "đã xem")
    ⭐ v1.206.0: guiAnh nay XEM TRƯỚC (nút ảnh trước nút emoji · Ctrl+V · kéo thả) rồi bấm gửi; chat lớp chỉ dashboard có guiAnh.
      docThuHoi(t) -> Promise<{chu,q,sticker,hinh}|null>   // có ⇒ hiện nội dung tin đã thu hồi (dashboard thầy)
+   ⭐ v1.351.0: lopGiai() -> mã lớp   // có ⇒ DẢI GHIM GIẢI ĐẤU đầu khung (js/the-td.js TheTD.ghim; mọi chat nhóm lớp, cả thầy)
 
    Dữ liệu tin (thêm từ v1.186.0, trường cũ giữ nguyên):
      chu      chữ; emoji bộ riêng ghi dạng mã `:1f60a:` (xem EMOJI), nhắc tên dạng `@Tên`
@@ -606,6 +607,7 @@
       khung._cuDaVe = true;
       khung._cuDay = sat;
       if (window.TheTD) window.TheTD.lap(khung);   // ⭐ v1.348.0 — thẻ THÁCH ĐẤU trong tin (js/the-td.js): nghe trạng thái trận, vẽ lại tại chỗ
+      if (window.TheTD && window.TheTD.ghim && o.lopGiai) window.TheTD.ghim(khung, o.lopGiai());   // ⭐ v1.351.0 — dải ghim giải đấu (dính đầu khung)
       veXem(); henThuXem();   // v1.210.0
     };
     // ⭐ v1.198.0 — ảnh trong tin tải XONG sau lúc vẽ làm khung cao lên ⇒ đang ở đáy thì bám đáy tiếp (khỏi hụt tin cuối)
@@ -681,7 +683,8 @@
       return true;
     };
     function veLai() { ui.ve(ui.ds.map(function (t) { return t; }), dauHienTai()); }
-    function dauHienTai() { var c = khung.querySelector('.cu-ds'); var h = ''; if (c) { var n = khung.firstChild; while (n && n !== c) { h += n.outerHTML || ''; n = n.nextSibling; } } return h; }
+    // (v1.351.0: bỏ qua dải ghim giải đấu — nó là phần tử SỐNG của the-td.js, tự chèn lại sau mỗi lần vẽ)
+    function dauHienTai() { var c = khung.querySelector('.cu-ds'); var h = ''; if (c) { var n = khung.firstChild; while (n && n !== c) { if (!(n.classList && n.classList.contains('td-ghim'))) h += n.outerHTML || ''; n = n.nextSibling; } } return h; }
     function nay(id, k) {
       var b = khung.querySelector('.cu-w[data-id="' + cssEsc(id) + '"] .lk');
       if (b) { b.classList.remove('nay'); void b.offsetWidth; b.classList.add('nay'); if (k) noTung(b, k); }

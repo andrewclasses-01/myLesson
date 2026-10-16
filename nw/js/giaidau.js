@@ -160,6 +160,22 @@
     return (await NW.nguoiTheoLop(lop, 60 * 1000)).filter(function (n) { return n.vaiTro !== 'gv' && !n.nghiHoc; });   // v1.350.0 bỏ em đã nghỉ học
   }
 
+  // ⭐ v1.362.0 (16/10/2026, thầy) — ĐANG ĐẤU: bạn còn mở tab trận (tdDangDau/{uid} nhịp 30 giây, nw/js/tran.js) ⇒ { uid: 1 }
+  GD.dangDau = async function () {
+    if (NW.laBanThu()) return { hs_2: 1 };
+    try {
+      var f = await NW.fb(), s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tdDangDau'), f.fs.where('luc', '>', Date.now() - 75000), f.fs.limit(200))), r = {};
+      s.forEach(function (d) { r[d.id] = 1; });
+      return r;
+    } catch (e) { return {}; }
+  };
+  GD._dd = {};
+  // nút Thách đấu / Giao hữu + dòng trạng thái của một bạn (online · đang đấu · lần hoạt động cuối)
+  function ttBan(n) {
+    var o = NW.dangOnline(n), d = !!GD._dd[n.uid];
+    return { khoa: !o || d, chu: d ? '⚔ Đang đấu — chờ bạn thoát trận' : o ? 'Đang online' : (n.hoatDongLuc ? 'Hoạt động ' + NW.chuGio(n.hoatDongLuc) : 'Chưa online'), d: d };
+  }
+
   // ---------- dựng trang ----------
   GD.dung = async function (khung) {
     var toi = NW.toi, la = !!toi.laThay, banThu = NW.laBanThu();
@@ -175,6 +191,7 @@
     async function napLai() {
       (await GD.dsLop()).forEach(function (l) { TEN_LOP[l.ma] = l.ten || l.ma; });
       try { DS = await GD.ds(); } catch (e) { NW.toast(NW.chuLoiKho(e), true); DS = []; }
+      if (!la) GD._dd = await GD.dangDau();
       var bay = Date.now();
       DS.forEach(function (g) { g._tt = GD.trangThai(g, bay); });
       DS.sort(function (a, b) { return THU_TT[a._tt] - THU_TT[b._tt] || (a._tt === 'sap' ? a.tu - b.tu : b.tu - a.tu); });
@@ -210,13 +227,24 @@
       var on = ban.filter(NW.dangOnline).length;
       return '<div class="card gd-the"><h3>' + IC.kiem + (giaoHuu ? 'Giao hữu với bạn' : 'Thách đấu bạn') + '<small>' + on + ' bạn đang online</small></h3>' +
         (ban.length ? ban.map(function (n) {
-          var o = NW.dangOnline(n);
-          return '<div class="gd-ban' + (o ? '' : ' vang') + '">' + NW.avHtml(n) + '<div class="gd-noi"><b>' + an(n.ten) + '</b><small>' + (o ? 'Đang online' : (n.hoatDongLuc ? 'Hoạt động ' + an(NW.chuGio(n.hoatDongLuc)) : 'Chưa online')) + '</small></div>' +
-            '<button type="button" class="gd-nut-td' + (giaoHuu ? ' gh' : '') + '" data-td="' + an(n.uid) + '"' + (o ? '' : ' disabled') + '>' + IC.kiem + (giaoHuu ? 'Giao hữu' : 'Thách đấu') + '</button></div>';
+          var o = NW.dangOnline(n), tt = ttBan(n);
+          return '<div class="gd-ban' + (o ? '' : ' vang') + (tt.d ? ' dd' : '') + '" data-ban="' + an(n.uid) + '">' + NW.avHtml(n) + '<div class="gd-noi"><b>' + an(n.ten) + '</b><small>' + an(tt.chu) + '</small></div>' +
+            '<button type="button" class="gd-nut-td' + (giaoHuu ? ' gh' : '') + '" data-td="' + an(n.uid) + '"' + (tt.khoa ? ' disabled' : '') + '>' + IC.kiem + (giaoHuu ? 'Giao hữu' : 'Thách đấu') + '</button></div>';
         }).join('') : '<div class="trong">Lớp chưa có bạn nào khác.</div>') + '</div>';
     }
     // ⭐ Đợt 2 (v1.347.0): nút Thách đấu / Giao hữu ⇒ lời mời thật (js/thachdau.js) — ctx = { lop, giai, phut, lv, tenGiai }
     function ganNutTd(ctx, ds) {
+      // ⭐ v1.362.0 — 30 giây hỏi lại ai đang đấu, sửa TẠI CHỖ dòng trạng thái + nút (không vẽ lại cả trang)
+      clearInterval(GD._ddHen);
+      GD._ddHen = setInterval(async function () {
+        if (!document.querySelector('[data-ban]')) return;
+        GD._dd = await GD.dangDau();
+        $$('[data-ban]', than).forEach(function (el) {
+          var n = (ds.filter(function (x) { return x.n.uid === el.getAttribute('data-ban'); })[0] || {}).n; if (!n) return;
+          var tt = ttBan(n), b = el.querySelector('[data-td]'), sm = el.querySelector('.gd-noi small');
+          el.classList.toggle('dd', tt.d); if (sm) sm.textContent = tt.chu; if (b) b.disabled = tt.khoa;
+        });
+      }, 30000);
       $$('[data-td]', than).forEach(function (b) {
         b.onclick = function () {
           var uid = b.getAttribute('data-td'), n = (ds.filter(function (x) { return x.n.uid === uid; })[0] || {}).n;

@@ -200,3 +200,5 @@
 .gd-bo .tat{opacity:.4; pointer-events:none}
 .gd-bo .gd-tich{margin-top:6px}
 .gd-chu-bo{margin:8px 0 0; color:var(--muted)}
+/* ⭐ v1.362.0 — bạn ĐANG ĐẤU (còn mở tab trận): chữ cam, nút khoá */
+.gd-ban.dd .gd-noi small{color:#C2410C;font-weight:700}

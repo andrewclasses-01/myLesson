@@ -1,0 +1,79 @@
+/* ============================================================
+   css/xem.css — NGƯỜI XEM TRẬN (mẫu 16/10/2026): dải ĐANG XEM · ô tim mỗi bên · bình luận nổi · khung bình luận · tim bay.
+   Lớp phủ .xm nằm trên khung trận, cùng toạ độ + tỉ lệ; chỉ các phần bấm được mới nhận chuột.
+   ============================================================ */
+.xm{position:absolute;left:0;top:0;transform-origin:0 0;pointer-events:none;font-family:var(--ws-vf)}
+.xm>*{position:absolute}
+.xm [hidden]{display:none!important}
+
+/* avatar tròn (ảnh thật nếu có, không thì chữ tắt trên nền màu) */
+.xm-av{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;flex:none;font:800 10.5px/1 var(--ws-vf);font-style:normal;color:#fff;
+  box-shadow:0 0 0 2px #04110B,0 0 0 3px rgba(61,245,138,.35)}
+.xm-av.them{background:#123A28;color:var(--ws-neon2)}
+.xm-av.moi{animation:xm-vao .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes xm-vao{from{transform:scale(0)}}
+
+/* ô TIM mỗi bên (cạnh ô điểm): người chơi chỉ xem số, người xem bấm được */
+.xm-tim{transform:translateX(-50%);height:30px;padding:0 10px 0 8px;border-radius:999px;display:flex;align-items:center;gap:5px;border:1px solid rgba(255,107,138,.45);
+  background:rgba(40,8,18,.55);color:#FF7A96;font:800 14px/1 var(--ws-gf);font-variant-numeric:tabular-nums}
+.xm-tim svg{width:16px;height:16px;fill:currentColor}
+.xm-tim b{min-width:12px;text-align:left;color:#FFD2DC}
+.xm-tim.bam{pointer-events:auto;cursor:pointer;height:36px;padding:0 13px 0 10px;font-size:15px;box-shadow:0 0 14px rgba(255,90,130,.35)}
+.xm-tim.bam svg{width:19px;height:19px}
+.xm-tim.bam:hover{background:rgba(80,14,34,.7)}
+.xm-tim.bam:active{transform:translateX(-50%) scale(.92)}
+.xm-tim.nay svg{animation:xm-dap .35s}
+@keyframes xm-dap{50%{transform:scale(1.5)}}
+
+/* dải ĐANG XEM (góc dưới phải) */
+.xm-dai{display:flex;align-items:center;gap:8px;height:32px;padding:0 6px 0 10px;border-radius:999px;background:rgba(4,17,11,.75);border:1px solid rgba(61,245,138,.3)}
+.xm-mat{display:flex;align-items:center;gap:5px;color:#FF8A8A;font:800 13px/1 var(--ws-gf);letter-spacing:.06em}
+.xm-mat svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.xm-ds{display:flex}
+.xm-ds .xm-av+.xm-av{margin-left:-7px}
+
+/* NGƯỜI CHƠI: bình luận nổi (dưới lên, tối đa 3, mờ sau 5 giây) — không nhận chuột, không che bàn chữ */
+.xm-noi{display:flex;flex-direction:column;justify-content:flex-end;gap:6px;overflow:hidden}
+.xm-bong{display:flex;gap:8px;align-items:flex-start;padding:7px 10px;border-radius:14px;background:rgba(4,17,11,.82);border:1px solid rgba(61,245,138,.22);
+  animation:xm-len .35s cubic-bezier(.22,.9,.3,1);transition:opacity .6s,transform .6s;max-width:100%}
+.xm-bong.di{opacity:0;transform:translateY(-10px)}
+@keyframes xm-len{from{opacity:0;transform:translateY(14px)}}
+.xm-bong div,.xm-ds-bl li div{min-width:0;display:flex;flex-direction:column;gap:2px}
+.xm-bong b,.xm-ds-bl b{font:700 12px/1.2 var(--ws-vf);color:var(--ws-neon2)}
+.xm-bong span,.xm-ds-bl span{font:500 14px/1.35 var(--ws-vf);color:#E6FFF1;overflow-wrap:anywhere}
+.xm-ds-bl b em{font-style:normal;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:1px 5px;border-radius:999px;background:#2B4AA8;color:#fff;margin-left:4px}
+
+/* NGƯỜI XEM: khung bình luận */
+.xm-khung{pointer-events:auto;display:flex;flex-direction:column;border-radius:12px;background:rgba(4,17,11,.6);border:1px solid var(--ws-hair,rgba(61,245,138,.25));overflow:hidden}
+.xm-dau{flex:none;padding:10px 12px 6px;display:flex;flex-direction:column;gap:3px;border-bottom:1px solid rgba(61,245,138,.15)}
+.xm-dau span{font:800 11px/1 var(--ws-gf);letter-spacing:.24em;color:var(--ws-neon)}
+.xm-dau small{font:500 11.5px/1.3 var(--ws-vf);color:#8DB9A2}
+.xm-ds-bl{flex:1;min-height:0;overflow:auto;list-style:none;margin:0;padding:8px 10px;display:flex;flex-direction:column;gap:9px;scrollbar-width:thin;scrollbar-color:rgba(61,245,138,.3) transparent}
+.xm-ds-bl li{display:flex;gap:8px;align-items:flex-start;animation:xm-len .3s}
+.xm-ds-bl li.trong{color:#8DB9A2;font:500 13px/1.4 var(--ws-vf);display:block;text-align:center;padding:20px 6px}
+.xm-go{flex:none;position:relative;display:flex;gap:8px;padding:8px;border-top:1px solid rgba(61,245,138,.15)}
+.xm-o{flex:1;min-width:0;height:40px;border-radius:999px;border:1px solid rgba(61,245,138,.4);background:#06180F;color:#E6FFF1;padding:0 14px;font:500 15px/1 var(--ws-vf);outline:none}
+.xm-khung.port .xm-o{font-size:17px;height:44px}     /* điện thoại: ≥16px sau thu phóng ⇒ iPhone không tự phóng to */
+.xm-o::placeholder{color:#5F8C76}
+.xm-o:focus{border-color:var(--ws-neon);box-shadow:0 0 0 3px rgba(61,245,138,.18)}
+.xm-gui{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--ws-neon);color:#03150C;display:grid;place-items:center;cursor:pointer}
+.xm-khung.port .xm-gui{width:44px;height:44px}
+.xm-gui svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.xm-nho{position:absolute;left:12px;right:12px;bottom:calc(100% + 6px);padding:6px 10px;border-radius:10px;background:#3A1420;color:#FFD2DC;font:600 12.5px/1.3 var(--ws-vf);opacity:0;transition:opacity .2s;pointer-events:none}
+.xm-nho.hien{opacity:1}
+
+/* tim bay lượn quanh vùng bình luận */
+.xm-bay-lop{left:0;top:0;width:100%;height:100%;pointer-events:none}
+.xm-bay{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;color:#FF5C82;filter:drop-shadow(0 0 6px rgba(255,92,130,.7));
+  animation:xm-bay var(--t,2.2s) cubic-bezier(.3,.6,.4,1) forwards}
+.xm-bay.s1{color:#FF8FB1}
+.xm-bay svg{width:100%;height:100%;fill:currentColor}
+@keyframes xm-bay{
+  0%{transform:translate(0,0) scale(.3) rotate(0);opacity:0}
+  12%{opacity:1;transform:translate(calc(var(--dx) * -.3),calc(var(--dy) * .12)) scale(var(--to)) rotate(calc(var(--r) * -1))}
+  45%{transform:translate(calc(var(--dx) * .6),calc(var(--dy) * .5)) scale(var(--to)) rotate(var(--r))}
+  100%{transform:translate(var(--dx),var(--dy)) scale(calc(var(--to) * .8)) rotate(calc(var(--r) * -.5));opacity:0}
+}
+@media (prefers-reduced-motion:reduce){.xm-bay{animation-duration:.01s}.xm-bong,.xm-av.moi{animation:none}}
+.on-av.anh{background-size:cover;background-position:center;background-repeat:no-repeat}
+.xm-tim.nho{height:26px;padding:0 8px 0 6px;font-size:12.5px;gap:4px}.xm-tim.nho svg{width:14px;height:14px}.xm-tim.nho.bam{height:30px}

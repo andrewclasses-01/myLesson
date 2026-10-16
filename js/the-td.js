@@ -31,6 +31,21 @@
   var MAU = ['#0E7C6E', '#E0575B', '#3E7BFA', '#F0821E', '#8B5CF6', '#18A957', '#D9468F', '#2B9BB5'];
   var mau = function (ten) { var s = 0; ten = String(ten || ''); for (var i = 0; i < ten.length; i++) s += ten.charCodeAt(i); return MAU[s % MAU.length]; };
   var laNw = /\/nw\//.test(location.pathname);
+  // ⭐ v1.361.0 (16/10/2026 chiều, thầy) — AVATAR THẬT: ảnh nwUsers/{uid}.anh (đọc một lần mỗi uid, có ảnh thì vẽ lại thẻ); chưa có ⇒ chữ tắt trên nền màu
+  var ANH = {};
+  function anhUid(uid) {
+    if (!uid) return '';
+    if (uid in ANH) return ANH[uid] || '';
+    ANH[uid] = '';
+    if (banThu()) return '';
+    kho().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'nwUsers', uid)); })
+      .then(function (s) { var a = s.exists() ? (s.data().anh || '') : ''; if (a) { ANH[uid] = a; veHet(); } })['catch'](function () { });
+    return '';
+  }
+  function avI(uid, ten, cls) {
+    var a = anhUid(uid);
+    return '<i' + (cls ? ' class="' + cls + '"' : '') + ' style="background:' + (a ? "#DCE6E3 url('" + an(a) + "') center/cover no-repeat" : mau(ten)) + '">' + (a ? '' : an(tat(ten))) + '</i>';
+  }
   var banThu = function () { return !!(window.NW && NW.laBanThu && NW.laBanThu()); };
   var hai = function (n) { return (n < 10 ? '0' : '') + n; };
 
@@ -172,7 +187,10 @@
       '.td-chon i.anh{background:#DCE6FF center/cover no-repeat}' +
       '.td-chon .tt2{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#5F7370;padding:2px 6px 8px}.td-chon .tt2 .c{width:8px;height:8px;border-radius:50%;background:#1DA45C;flex:none}.td-chon .tt2 .c.tat{background:#B9C6C3}' +
       '.td-chon button.moi-nut{height:40px;justify-content:center;border-radius:12px;background:#3E6BE0;color:#fff;font-weight:700;font-size:14px;margin-top:4px}' +
-      '.td-chon button.moi-nut:hover{background:#3560CF}';
+      '.td-chon button.moi-nut:hover{background:#3560CF}' +
+      // ⭐ v1.361.0 — đang đấu: mờ, không bấm được, chữ cam
+      '.td-chon button.ban,.td-chon button[disabled]{opacity:.6;cursor:not-allowed}.td-chon button.ban:hover{background:none}.td-chon button.ban small{color:#C2410C;font-weight:700}' +
+      '.td-chon .tt2.dd{color:#C2410C;font-weight:700}.td-chon .tt2 .c.dd{background:#F0821E}.td-chon button.moi-nut[disabled]:hover{background:#3E6BE0}';
     document.head.appendChild(s);
   }
 
@@ -201,7 +219,7 @@
     if (t._khongDoc) return '<div class="d">' + IC + 'Thách đấu<span>A Show Speed</span></div><div class="c"><div class="tt">' + an(t._chu || 'Trận đấu của lớp') + '</div></div>';
     if (t.gv) return thayHtml(id);
     var xong = t.trangThai === 'xong', d = t.diem || {}, kqA = t.kq ? t.kq.a : '';
-    var ng = function (ten, diem, thang) { return '<div class="ng' + (thang ? ' th' : '') + '"><i style="background:' + mau(ten) + '">' + an(tat(ten)) + '</i>' + an(ten) + (xong || t.trangThai === 'choi' ? '<b>' + (diem || 0) + '</b>' : '') + '</div>'; };
+    var ng = function (ten, diem, thang, uid) { return '<div class="ng' + (thang ? ' th' : '') + '">' + avI(uid, ten) + an(ten) + (xong || t.trangThai === 'choi' ? '<b>' + (diem || 0) + '</b>' : '') + '</div>'; };
     var con = Math.max(0, Math.ceil(((t.het || 0) - Date.now()) / 1000));
     var het = t.trangThai === 'moi' && con <= 0;
     var duoi;
@@ -222,7 +240,7 @@
     var g = GIAI[t.giai] || {}, bo = t.boTen || (g.bo && g.bo.ten) || '', che = t.che || (g.bo && g.bo.che) || '';
     return '<div class="d">' + IC_CUP + 'Giải đấu<span>A Show Speed · ' + (t.phut || 2) + ' phút' + (che ? ' · ' + an(CHE_TEN[che] || '') : '') + '</span></div>' +
       (g.ten ? '<div class="gt">' + an(g.ten) + (bo ? '<small>Bộ từ: ' + an(bo) + '</small>' : '') + '</div>' : '') +
-      '<div class="g">' + ng(t.tenA, d.a, kqA === 'thang') + '<span class="vs">VS</span>' + ng(t.tenB, d.b, kqA === 'thua') + '</div><div class="c">' + duoi + '</div>';
+      '<div class="g">' + ng(t.tenA, d.a, kqA === 'thang', t.a) + '<span class="vs">VS</span>' + ng(t.tenB, d.b, kqA === 'thua', t.b) + '</div><div class="c">' + duoi + '</div>';
   }
   // ⭐ thầy giao hữu (16/10/2026) — thẻ trận có THẦY (t.gv = uid thầy; thầy mời em HOẶC em mời thầy). Thẻ to, đầu xanh dương.
   var AV_THAY = 'assets/avatar-tron.jpg';   // trang chính + nw/ đều có tệp này cùng đường tương đối
@@ -236,7 +254,7 @@
     var xong = t.trangThai === 'xong', d = t.diem || {}, kq = t.kq || {};
     var ng = function (k) {
       var laGv = (k === 'a') === gvA, ten = laGv ? 'Thầy Andrew' : (k === 'a' ? t.tenA : t.tenB);
-      var av = laGv ? '<i class="gv" style="background-image:url(' + AV_THAY + ')"></i>' : '<i style="background:' + mau(ten) + '">' + an(tat(ten)) + '</i>';
+      var av = laGv ? '<i class="gv" style="background-image:url(' + an(anhUid(t.gv) || AV_THAY) + ')"></i>' : avI(k === 'a' ? t.a : t.b, ten);
       return '<div class="ng' + (xong && kq[k] === 'thang' ? ' th' : '') + '">' + av + an(ten) + (xong || t.trangThai === 'choi' ? '<b>' + (d[k] || 0) + '</b>' : '') + '</div>';
     };
     var con = Math.max(0, Math.ceil(((t.het || 0) - Date.now()) / 1000)), duoi;
@@ -353,7 +371,7 @@
   async function banOnline(f, lop, uid) {
     var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('cacLop', 'array-contains', lop), f.fs.limit(60)));
     var ds = [], bay = Date.now();
-    s.forEach(function (d) { var x = d.data(); if (d.id !== uid && x.vaiTro !== 'gv' && x.vaiTro !== 'doi' && !x.nghiHoc && x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: x.ten || '?' }); });
+    s.forEach(function (d) { var x = d.data(); if (d.id !== uid && x.vaiTro !== 'gv' && x.vaiTro !== 'doi' && !x.nghiHoc && x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: x.ten || '?', anh: x.anh || '' }); });
     return ds.sort(function (a, b) { return String(a.ten).localeCompare(String(b.ten), 'vi'); });
   }
   function mauBan() { return [{ uid: 'hs_1', ten: 'Gia Bảo' }, { uid: 'hs_2', ten: 'Bảo Nam' }, { uid: 'hs_3', ten: 'Thảo Vy' }]; }
@@ -371,6 +389,15 @@
     try { var s = await f.fs.getDoc(f.fs.doc(f.db, 'nwUsers', uid)); var x = s.exists() ? s.data() : {}; return !!(x.hoatDongLuc && Date.now() - x.hoatDongLuc < ONLINE_MS); } catch (e) { return false; }
   }
 
+  // ⭐ v1.361.0 — ĐANG ĐẤU: người còn mở tab trận ghi tdDangDau/{uid} mỗi 30 giây (nw/js/tran.js) ⇒ { uid: 1 }
+  async function dsDangDau(f) {
+    if (banThu()) return { hs_2: 1 };
+    try {
+      var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tdDangDau'), f.fs.where('luc', '>', Date.now() - 75000), f.fs.limit(200))), r = {};
+      s.forEach(function (d) { r[d.id] = 1; });
+      return r;
+    } catch (e) { return {}; }
+  }
   // ---------- CÁCH ĐẤU của thầy (nhớ lần chọn trước trên máy này) ----------
   var CAI_KHOA = 'tdThayCai';
   function caiDoc() {
@@ -469,15 +496,18 @@
     var el = hop, g = null, ds = [], me = await toi(), bo = [], f = null;
     try {
       if (!banThu()) f = await kho();
-      if (me.laThay) { var r0 = await Promise.all([banThu() ? mauBan() : banOnline(f, lop, me.uid), dsBo(f)]); ds = r0[0]; bo = r0[1]; }
-      else if (banThu()) ds = (await thayOnline(f)).concat(mauBan());
-      else { var r = await Promise.all([giaiDangMo(f, lop), banOnline(f, lop, me.uid), thayOnline(f)]); g = r[0]; ds = r[2].concat(r[1]); }
+      var dd = {};
+      if (me.laThay) { var r0 = await Promise.all([banThu() ? mauBan() : banOnline(f, lop, me.uid), dsBo(f), dsDangDau(f)]); ds = r0[0]; bo = r0[1]; dd = r0[2]; }
+      else if (banThu()) { ds = (await thayOnline(f)).concat(mauBan()); dd = await dsDangDau(f); }
+      else { var r = await Promise.all([giaiDangMo(f, lop), banOnline(f, lop, me.uid), thayOnline(f), dsDangDau(f)]); g = r[0]; ds = r[2].concat(r[1]); dd = r[3]; }
+      ds.forEach(function (x) { x.dangDau = !!dd[x.uid]; if (x.anh) ANH[x.uid] = x.anh; });
     } catch (e) { ds = []; }
     if (hop !== el) return;
     var c = me.laThay ? caiDoc() : null;
     var dong = function (b) {
-      var av = b.laThay ? '<i class="anh" style="background-image:url(' + AV_THAY + ')"></i>' : '<i style="background:' + mau(b.ten) + '">' + an(tat(b.ten)) + '</i>';
-      return '<button type="button" data-uid="' + an(b.uid) + '">' + av + '<div><b>' + an(b.ten) + (b.laThay ? '<em class="gvb">THẦY</em>' : '') + '</b><small>' + (b.laThay ? 'Đang online · giao hữu 2 phút Easy' : 'Đang online') + '</small></div></button>';
+      var av = b.laThay ? '<i class="anh" style="background-image:url(' + an(anhUid(b.uid) || AV_THAY) + ')"></i>' : avI(b.uid, b.ten);
+      return '<button type="button" data-uid="' + an(b.uid) + '"' + (b.dangDau ? ' class="ban" disabled' : '') + '>' + av + '<div><b>' + an(b.ten) + (b.laThay ? '<em class="gvb">THẦY</em>' : '') + '</b><small>' +
+        (b.dangDau ? '⚔ Đang đấu — chờ ' + (b.laThay ? 'thầy' : 'bạn') + ' thoát trận' : b.laThay ? 'Đang online · giao hữu 2 phút Easy' : 'Đang online') + '</small></div></button>';
     };
     if (me.laThay) {
       el.classList.add('rong');
@@ -512,15 +542,16 @@
     hop.innerHTML = '<div class="t">Giao hữu</div><div class="p">Đang xem ' + (ban.laThay ? 'thầy' : an(ban.ten)) + ' có online không…</div>';
     document.body.appendChild(hop); datViTri(hop, nut);
     var el = hop, me = await toi(), f = banThu() ? null : await kho().catch(function () { return null; });
-    var r = await Promise.all([dangOnline(f, ban.uid), me.laThay ? dsBo(f) : []]), on = r[0], bo = r[1];
+    var r = await Promise.all([dangOnline(f, ban.uid), me.laThay ? dsBo(f) : [], dsDangDau(f)]), on = r[0], bo = r[1], ban2 = !!r[2][ban.uid];
     if (hop !== el) return;
     var c = me.laThay ? caiDoc() : null, ten = ban.laThay ? 'thầy' : ban.ten;
-    var trangThai = '<div class="tt2"><i class="c' + (on ? '' : ' tat') + '"></i>' + (on ? (ban.laThay ? 'Thầy' : an(ban.ten)) + ' đang online'
+    var trangThai = ban2 ? '<div class="tt2 dd"><i class="c dd"></i>' + (ban.laThay ? 'Thầy' : an(ban.ten)) + ' đang đấu — chờ ' + (ban.laThay ? 'thầy' : 'bạn') + ' thoát trận rồi mời nhé</div>'
+      : '<div class="tt2"><i class="c' + (on ? '' : ' tat') + '"></i>' + (on ? (ban.laThay ? 'Thầy' : an(ban.ten)) + ' đang online'
       : (ban.laThay ? 'Thầy' : an(ban.ten)) + ' không online — vẫn nhận được thông báo, lời mời chờ 60 giây') + '</div>';
     el.innerHTML = '<div class="t">' + (me.laThay ? 'Giao hữu với ' + an(ban.ten) : 'Mời thầy giao hữu') + '</div>' +
       (me.laThay ? '' : '<div class="p">A Show Speed · 2 phút · Easy · không tính điểm</div>') + trangThai +
       (me.laThay ? caiHtml(c, bo) : '') +
-      '<button type="button" class="moi-nut" data-moi>' + IC + '&nbsp;Mời ' + an(ten) + '</button>';
+      '<button type="button" class="moi-nut" data-moi' + (ban2 ? ' disabled' : '') + '>' + IC + '&nbsp;Mời ' + an(ten) + '</button>';
     if (me.laThay) lapCai(el, c, bo);
     datViTri(el, nut);
     el.querySelector('[data-moi]').onclick = function () {

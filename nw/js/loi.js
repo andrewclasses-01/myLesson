@@ -717,6 +717,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
     cv.width = Math.max(1, Math.round(sw * ty)); cv.height = Math.max(1, Math.round(sh * ty));
     var ctx = cv.getContext('2d');
     ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, cv.width, cv.height);   // PNG trong suốt → nền trắng
+    ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';   // v1.365.0 — thu nhỏ mịn (mặc định 'low' làm ảnh rỗ/mờ)
     ctx.drawImage(im, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
     if (im.close) try { im.close(); } catch (e) { }
     var blob = await new Promise(function (res) { cv.toBlob(res, 'image/jpeg', chatLuong); });

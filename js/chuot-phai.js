@@ -4,15 +4,15 @@
    (myPay có menu chuột phải riêng).
 
    1. Tắt HẲN menu chuột phải của trình duyệt. Máy tính: chuột phải ⇒ menu riêng theo chỗ bấm (avatar · biểu tượng nhóm lớp ·
-      link · chữ đang chọn · ô gõ) + Quay lại / Tải lại trang. Màn cảm ứng: NHẤN GIỮ 0,5 giây trên avatar / nhóm lớp / link ⇒
+      link · chữ đang chọn · ô gõ); chỗ khác không hiện gì (v1.365.0 bỏ Quay lại / Tải lại). Màn cảm ứng: NHẤN GIỮ 0,5 giây trên avatar / nhóm lớp / link ⇒
       menu trượt từ đáy (chữ thường giữ để bôi đen như cũ; ô gõ giữ nguyên menu dán của máy).
       Chỗ đã có nhấn giữ riêng (bong bóng chat, dòng Tin nhắn, nút cảm xúc, thẻ lớp dashboard, bảng xếp hạng) ⇒ để nguyên.
       Thành phần nào tự `preventDefault()` chuột phải (vd bong bóng chat mở menu tin) ⇒ menu này đứng yên.
    2. BẤM AVATAR ⇒ TRANG CÁ NHÂN (nw/canhan.html?uid=…) ở mọi nơi có avatar người:
         [data-uid] (NW.avHtml, avatar thầy) · [data-av-em][data-av-lop] (avatar trang lớp/khóa/dashboard, js/chung.js gaAvatar /
         veAv) · [data-ma-hs] (tin chat lớp ở trang nw/). Tra uid qua data/lop.json (+ js/hs-uid.js).
-      Avatar nằm TRONG một nút/link có việc riêng (dòng chat, ô chọn bạn) ⇒ bỏ qua. Dashboard: chờ 330 ms — bấm đúp vẫn là
-      việc cũ (hộp quản lý em) — rồi mở TAB MỚI (không rời dashboard). Trang trận (tran.html) không bấm avatar.
+      Avatar nằm TRONG một nút/link có việc riêng (dòng chat, ô chọn bạn) ⇒ bỏ qua. Dashboard: CHỈ khu trò chuyện (khung chat lớp,
+      hộp chat nhỏ) bấm 1 lần — chờ 470 ms (bấm đúp vẫn là hộp quản lý em) rồi mở TAB MỚI; mọi hộp của cột quản lý = chuột phải. Trang trận (tran.html) không bấm avatar.
    3. BẤM BIỂU TƯỢNG NHÓM LỚP ([data-nhom-lop="<mã lớp | tên gốc | lop:MÃ>"]) ⇒ pop-up bên cạnh: danh sách thành viên
       (Thầy Andrew + các em, không gồm em học thử). Bấm avatar/tên ⇒ trang cá nhân; nút tin nhắn cuối dòng ⇒ "Tính năng tin nhắn
       riêng sẽ sớm được ra mắt!" (dòng Thầy Andrew của học sinh ⇒ mở chat với thầy, tính năng đã có).
@@ -134,14 +134,29 @@
 
   // ---------- AI là chủ avatar này? → Promise<{uid, ten, thay}|null> ----------
   var AV_SEL = '[data-uid], [data-av-em], [data-ma-hs]';
-  function tenCua(el) { return el.getAttribute('data-ten') || el.getAttribute('data-av-em') || el.getAttribute('title') || ''; }
+  // ⭐ v1.365.0 — CHỈ cho chuột phải / nhấn giữ: ảnh `assets/avatar/<lớp>/<tên>.jpg` không mang dấu chủ (nhiều hộp ở cột quản lý
+  //   dashboard tự vẽ <img class="av-anh">) ⇒ tra lớp + tên từ chính đường dẫn ảnh. Ảnh thầy (avatar-tron) ⇒ hồ sơ thầy.
+  var RE_ANH = /assets\/avatar\/([a-z0-9]+)\/([a-z0-9-]+)\.jpg/;
+  function anhCua(t) {
+    if (!t || !t.closest) return null;
+    var im = t.tagName === 'IMG' ? t : (t.childElementCount <= 4 ? t.querySelector(':scope > img') : null);   // chỉ ô tròn chứa ảnh trực tiếp
+    if (!im || !im.getAttribute('src')) return null;
+    var s = im.getAttribute('src');
+    return RE_ANH.test(s) || /avatar-tron\.jpg/.test(s) ? im : null;
+  }
+  function tenCua(el) { return el.getAttribute('data-ten') || el.getAttribute('data-av-em') || el.getAttribute('title') || (el.tagName === 'IMG' && /avatar-tron/.test(el.getAttribute('src') || '') ? 'Thầy Andrew' : ''); }
   function nguoiCua(el) {
     var uid = el.getAttribute('data-uid');
     if (uid) return Promise.resolve({ uid: uid, ten: tenCua(el) || (uid === THAY_UID ? 'Thầy Andrew' : ''), thay: uid === THAY_UID });
     var ma = chuan(el.getAttribute('data-ma-hs')), em = el.getAttribute('data-av-em'), lop = el.getAttribute('data-av-lop');
+    var src = el.tagName === 'IMG' ? (el.getAttribute('src') || '') : '';
+    if (/avatar-tron\.jpg/.test(src)) return Promise.resolve({ uid: THAY_UID, ten: 'Thầy Andrew', thay: true });
+    var mAnh = RE_ANH.exec(src);
     return napDl().then(function (dl) {
       var ds = tatCaLop(dl), h = null;
-      if (ma) ds.some(function (l) { h = (l.hocSinh || []).filter(function (x) { return chuan(x.ma) === ma; })[0] || null; return !!h; });
+      var slugL = function (s) { return khongDau(s).replace(/[^a-z0-9]/g, ''); }, slugT = function (s) { return khongDau(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); };
+      if (mAnh) ds.some(function (l) { if (slugL(l.tenGoc || l.maLop) !== mAnh[1]) return false; h = (l.hocSinh || []).filter(function (x) { return slugT(x.ten) === mAnh[2]; })[0] || null; return !!h; });
+      else if (ma) ds.some(function (l) { h = (l.hocSinh || []).filter(function (x) { return chuan(x.ma) === ma; })[0] || null; return !!h; });
       else if (em) {
         var k = chuan(lop), tenK = khongDau(em).replace(/\s+/g, ' ').trim();
         var gan = ds.filter(function (l) { return !lop || chuan(l.maLop) === k || chuan(l.tenGoc) === k; });
@@ -252,8 +267,9 @@
     var nhom = nhomCua(t);
     if (nhom) muc.push({ chu: 'Xem thành viên lớp', ic: IC.nhom, lam: function () { M.moThanhVien(nhom.getAttribute('data-nhom-lop'), nhom); } }, '-');
     var av = !nhom && avCua(t);
+    if (!nhom && !av) { var im0 = anhCua(t); if (im0 && !im0.closest(KHONG_AV) && !laTrangTran()) av = im0; }   // v1.365.0 ảnh không mang dấu
     if (av) {
-      var ten = tenCua(av), anh = av.querySelector('img'), uid0 = av.getAttribute('data-uid');
+      var ten = tenCua(av), anh = av.tagName === 'IMG' ? av : av.querySelector('img'), uid0 = av.getAttribute('data-uid') || (ten === 'Thầy Andrew' && av.tagName === 'IMG' ? THAY_UID : '');
       if (ten) muc.push({ dau: '<span class="acm-av" style="background:' + mau(ten) + '">' + an(tat(ten)) + (anh && anh.getAttribute('src') ? '<img src="' + an(anh.getAttribute('src')) + '" alt="" onerror="this.remove()">' : '') + '</span><div><b>' + an(ten) + '</b><small>' + (uid0 === THAY_UID ? 'Giáo viên' : 'Học sinh') + '</small></div>' });
       muc.push({ chu: 'Xem trang cá nhân', ic: IC.nguoi, lam: function () { moNguoiCua(av); } });
       if (uid0 !== uidToi() || !uid0) muc.push({ chu: 'Nhắn tin riêng', ic: IC.tin, lam: function () { nguoiCua(av).then(function (ng) { M.nhanTin(ng); }, function () { M.sapRaMat(); }); } });
@@ -291,12 +307,8 @@
     muc.push({ chu: 'Chọn hết', ic: IC.chonHet, lam: function () { o.focus(); if (laO) o.select(); else document.execCommand('selectAll'); } });
     return muc;
   }
-  function mucChung() {
-    var muc = [];
-    if (history.length > 1) muc.push({ chu: 'Quay lại', ic: IC.lui, lam: function () { history.back(); } });
-    muc.push({ chu: 'Tải lại trang', ic: IC.taiLai, lam: function () { location.reload(); } });
-    return muc;
-  }
+  // ⛔ v1.365.0 (thầy chốt) — KHÔNG có "Quay lại / Tải lại trang" (thầy dùng phím + nút của trình duyệt). Chỗ không có việc riêng ⇒
+  //   chuột phải không hiện gì.
 
   // ---------- CHUỘT PHẢI (máy tính) ----------
   var _cham = 0;   // mốc lần chạm cuối — chuột phải do NHẤN GIỮ cảm ứng sinh ra (Android) thì không mở menu thứ hai
@@ -312,7 +324,7 @@
     var muc = o ? mucO(o) : mucRieng(t);
     var chon = !o && String(getSelection() || '').trim();
     if (chon) muc = [{ chu: 'Sao chép', ic: IC.chep, lam: function () { chep(chon); } }, '-'].concat(muc);
-    M.mo(muc.concat(['-'], mucChung()), e.clientX, e.clientY, false);
+    M.mo(muc, e.clientX, e.clientY, false);   // rỗng ⇒ M.mo không mở gì
   });
 
   // ---------- NHẤN GIỮ (cảm ứng) ----------
@@ -354,6 +366,10 @@
     if (bao && !av.contains(bao)) return;   // avatar trong dòng/nút có việc riêng (mở chat, chọn bạn…)
     if (av.getAttribute('data-uid') && av.getAttribute('data-uid') === uidToi() && TRONG_NW && /\/canhan\.html$/.test(location.pathname)) return;
     if (laDash()) {
+      // ⭐ v1.365.0 (thầy chốt) — dashboard là KHU SETUP: các tính năng ở cột quản lý (Hoạt động, Xếp hạng lớp, Sao, Duyệt ảnh, Kho bài,
+      //   Nhóm chat, Báo cáo…) và thẻ/hộp bài KHÔNG mở trang cá nhân bằng 1 cú bấm (cú bấm là việc của hộp) — chuột phải ⇒ "Xem trang cá
+      //   nhân". Chỉ khu TRÒ CHUYỆN (khung chat lớp, hộp chat nhỏ, hộp Tin nhắn) bấm avatar là mở.
+      if (!av.closest('.cot-chat, .tp-hop, .tp-pop')) return;
       // cú thứ 2 trong 470 ms ⇒ bấm đúp, để việc cũ (dashboard tự đo đúp 450 ms và hay VẼ LẠI ô giữa 2 cú ⇒ so theo giờ, không so phần tử)
       if (cho && Date.now() - cho.luc < 470) { clearTimeout(cho.hen); cho = null; return; }
       if (cho) clearTimeout(cho.hen);

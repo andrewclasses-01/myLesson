@@ -458,9 +458,17 @@
   }
 
   // Kết quả khung sửa ⇒ dữ liệu gửi máy chủ.
+  // ⭐ v1.365.0 (thầy: "ảnh tải lên giữ độ nét" — bóng myTeam phóng to tới 560px trên TOMKO) — ảnh LỚN 480 → 800px, JPEG 0.9
+  //   (không vượt độ phân giải thật của vùng cắt). Máy chủ chặn ảnh lớn > 400 KB (LON_MAX anh-dai-dien.js / nw-anh.js) ⇒ quá 390 KB
+  //   thì hạ chất lượng (tới 0.72) rồi mới hạ cạnh. Ảnh NHỎ 96px giữ nguyên (avatar nhỏ trên web).
   function duLieu(kq, canhLon, qLon) {
-    var c = kq.ctl, L = canhLon || 480;
-    var d = { lon: c.xuat(Math.max(96, Math.min(L, c.canhGoc())), qLon || 0.88), nho: c.xuat(96, 0.82), cat: c.cat() };
+    var c = kq.ctl, L = canhLon || 800, n = Math.max(96, Math.min(L, c.canhGoc())), q = qLon || 0.9;
+    var lon = c.xuat(n, q);
+    while (lon.length * 0.75 > 390 * 1024 && (q > 0.73 || n > 480)) {
+      if (q > 0.73) q -= 0.06; else n = Math.round(n * 0.85);
+      lon = c.xuat(n, q);
+    }
+    var d = { lon: lon, nho: c.xuat(96, 0.82), cat: c.cat() };
     if (kq.moi) d.goc = c.gocB64(1600, 0.85); else d.gocId = kq.id;
     return d;
   }

@@ -4392,7 +4392,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=273"></script>
+<script src="config.js?v=274"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -15797,8 +15797,8 @@ tr.qm-hang-tam td{background:#fffbeb}
   function adDungAnh() {
     var kq = AD.sua && AD.sua.ketQua();
     if (!kq) return void adBao(AD.sua && AD.sua.dangTai() ? 'Ảnh chưa tải xong — đợi một chút.' : 'Em chưa có ảnh — bấm nút máy ảnh để chọn ảnh.', true);
-    // lớn ≤480 px (theo số điểm ảnh gốc trong khung) + nhỏ 96 px + vị trí cắt + ảnh gốc (ảnh mới) / id (ảnh trong bộ sưu tập)
-    var x = window.CatAnh.duLieu(kq, 480, 0.88);
+    // lớn ≤800 px (v1.365.0, trước 480 — theo số điểm ảnh gốc trong khung) + nhỏ 96 px + vị trí cắt + ảnh gốc (ảnh mới) / id (ảnh trong bộ sưu tập)
+    var x = window.CatAnh.duLieu(kq);
     var p = AD.p, khoa = adKhoa(p);
     var muc = { lon: x.lon, nho: x.nho, goc: x.goc || '', gocId: x.gocId || '', cat: x.cat, nguon: kq.nguon, url: 'data:image/jpeg;base64,' + x.nho };
     if (AD.che === 'lop') { AD.cho[khoa] = muc; AD.xem = 'luoi'; AD.p = null; AD.mau = null; AD.moi = null; AD.khoP = null; return void adVe(); }
@@ -16672,9 +16672,9 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/duyet-anh.js?v=3"></script>   <!-- 15/10/2026 v1.343.0 hộp DUYỆT ẢNH học sinh (hàm nwAnh) -->
 <script src="js/sao-xh.js?v=2"></script>   <!-- v1.337.0 thưởng/phạt sao ngay trong tab XẾP HẠNG (giữ tên · ⭐ cả lớp) -->   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
 <script src="js/ktdv-bc.js?v=10"></script>   <!-- 03/10/2026 bản báo cáo phụ huynh KT ĐẦU VÀO (bản chép ở repo kiemtra) -->
-<script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
-<script src="js/ktdv-ql.js?v=22"></script>
+<script src="js/cat-anh.js?v=3"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
+<script src="js/ktdv-ql.js?v=23"></script>
 <script src="js/nhap-so.js?v=1"></script>   <!-- 07/10/2026 cuộn chuột không đổi số + Enter nhận ô -->   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
-<script src="js/chuot-phai.js?v=1"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
+<script src="js/chuot-phai.js?v=2"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 </body>
 </html>

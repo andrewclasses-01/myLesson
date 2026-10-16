@@ -42,14 +42,14 @@
 <script src="../js/thay-vao.js?v=3"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
 <script src="../js/chat-ui.js?v=25"></script>
 <script src="../js/the-td.js?v=9"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
-<script src="js/loi.js?v=35"></script>
+<script src="js/loi.js?v=36"></script>
 <script src="../js/tn-pop.js?v=13"></script>
 <script src="../js/tn-pop-ds.js?v=9"></script>
 <script src="js/thanh.js?v=30"></script>
 <script src="js/thachdau.js?v=3"></script>   <!-- v1.347.0 nghe lời mời thách đấu -->
 <script src="js/bai.js?v=16"></script>
 <script src="js/chat.js?v=39"></script>
-<script src="../js/cat-anh.js?v=2"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
+<script src="../js/cat-anh.js?v=3"></script>   <!-- v1.251.0 bộ cắt ảnh đại diện dùng chung -->
 <script src="js/gui-anh.js?v=1"></script>   <!-- 15/10/2026 v1.343.0 em gửi ảnh chờ thầy duyệt (hàm nwAnh) -->
 <script src="js/cat-bia.js?v=1"></script>   <!-- 15/10/2026 v1.346.0 khung chỉnh/cắt ảnh bìa -->
 <script>
@@ -204,8 +204,8 @@
             } else if (laEm) {
               // ⭐ 29/09/2026 (thầy chốt) — ẢNH ĐẠI DIỆN CỦA EM LÀ ẢNH CHUNG CẢ HỆ (trang lớp, bảng xếp hạng, myStudent, myTeam…):
               // đi qua hàm máy chủ `qlAnhDaiDien` (việc `tuDat`, tối đa 5 lần/ngày) — y đường thầy đổi trên dashboard; thầy đổi
-              // sau là đè lên. Luật không cho em tự ghi `anh` nữa. Lớn 480 px + nhỏ 96 px + ảnh gốc/id bộ sưu tập + vị trí cắt.
-              var x = window.CatAnh.duLieu(kq, 480, 0.88);
+              // sau là đè lên. Luật không cho em tự ghi `anh` nữa. Lớn 800 px (v1.365.0, trước 480) + nhỏ 96 px + ảnh gốc/id bộ sưu tập + vị trí cắt.
+              var x = window.CatAnh.duLieu(kq);
               var r = await NW.goiHam('qlAnhDaiDien', { viec: 'tuDat', lon: x.lon, nho: x.nho, cat: x.cat, goc: x.goc || '', gocId: x.gocId || '' });
               url = r.anhNw || '';
               if (!url) throw new Error('Máy chủ chưa trả ảnh mới — thử lại sau ít phút.');
@@ -237,7 +237,7 @@
           });
         },
         bo: function (id) { return NW.goiHam('qlAnhDaiDien', { viec: 'tuBoKho', id: id }); },
-        luu: async function (kq) { x = window.CatAnh.duLieu(kq, 480, 0.88); }
+        luu: async function (kq) { x = window.CatAnh.duLieu(kq); }   // v1.365.0 lớn 800 px
       }).then(function (daLuu) { if (daLuu && x) xong(x); });
     }
     var biaXong = null;   // em đang chọn ảnh bìa ⇒ hàm nhận ảnh (NW.GuiAnh)
@@ -338,6 +338,6 @@
   });
 })();
 </script>
-<script src="../js/chuot-phai.js?v=1"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
+<script src="../js/chuot-phai.js?v=2"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 </body>
 </html>

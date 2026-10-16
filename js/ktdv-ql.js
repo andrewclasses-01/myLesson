@@ -432,7 +432,7 @@
       },
       bo: function (id) { return goi('qlKtdv', { viec: 'boKho', ma: h.ma, id: id }); },
       luu: function (kq) {
-        var x = window.CatAnh.duLieu(kq, 400, 0.86);
+        var x = window.CatAnh.duLieu(kq);   // v1.365.0 lớn 800 px (trước 400)
         return goi('qlKtdv', { viec: 'datAnh', ma: h.ma, lon: x.lon, nho: x.nho, cat: x.cat, goc: x.goc || '', gocId: x.gocId || '' })
           .then(function (r) { xong(r && r.khoLoi ? 'Đã lưu ảnh (chưa cất được vào bộ sưu tập: ' + r.khoLoi + ').' : 'Đã lưu ảnh.'); },
             function (e) { throw new Error(chuLoi(e)); });

@@ -858,7 +858,16 @@
     khung.addEventListener('pointermove', function (e) { if (diem && Math.abs(e.clientX - diem.x) + Math.abs(e.clientY - diem.y) > 10) { huyGiu(); diem = null; } });
     ['pointerup', 'pointercancel'].forEach(function (ev) { khung.addEventListener(ev, function () { huyGiu(); diem = null; }); });
     khung.addEventListener('scroll', function () { huyGiu(); anTip(); if (POP.chon && DANG === ui) POP.chon.hidden = true; if (POP.menu && DANG === ui) POP.menu.hidden = true; });
-    khung.addEventListener('contextmenu', function (e) { if (e.target.closest('.cu-bong') && window.matchMedia('(hover:none)').matches) e.preventDefault(); });
+    // ⭐ v1.364.0 — máy tính: CHUỘT PHẢI bong bóng = đúng menu nhấn giữ của tin (cảm xúc, trả lời, sao chép, thu hồi…) thay menu trình duyệt.
+    //   Đang bôi đen chữ / chuột phải trên link ⇒ để menu chung (js/chuot-phai.js: Sao chép chữ đang chọn, link).
+    khung.addEventListener('contextmenu', function (e) {
+      var bong = e.target.closest('.cu-bong'); if (!bong) return;
+      if (window.matchMedia('(hover:none)').matches) { e.preventDefault(); return; }
+      if (e.target.closest('a[href]') || String(window.getSelection ? getSelection() : '').trim()) return;
+      var w2 = bong.closest('.cu-w'), t2 = w2 ? ui.ds[+w2.getAttribute('data-i')] : null;
+      if (!t2 || t2.thuHoi || t2.tam) return;
+      e.preventDefault(); moHd(t2, w2);
+    });
     khung.addEventListener('pointerover', function (e) {
       var lk = e.target.closest('[data-cu="lk"]'); if (!lk || e.pointerType === 'touch') return;
       clearTimeout(henRe); henRe = setTimeout(function () { var w = lk.closest('.cu-w'); if (w && lk.isConnected) moChon(ui.ds[+w.getAttribute('data-i')], lk); }, 380);
@@ -1197,6 +1206,8 @@
       .replace(/[^0-9A-Za-zÀ-ỹ]/g, '').toUpperCase().slice(0, 4) || '?';
     av.textContent = t;
     av.classList.toggle('dai', t.length > 3);
+    // ⭐ v1.364.0 — biểu tượng NHÓM LỚP bấm được ⇒ pop-up thành viên (js/chuot-phai.js tra lớp theo tên gốc / mã)
+    if (ma) { av.setAttribute('data-nhom-lop', String(ma)); av.title = 'Xem thành viên'; }
   }
 
   window.ChatUI = { tao: tao, datDau: datDau,

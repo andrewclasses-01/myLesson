@@ -1711,7 +1711,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=268"></script>
+<script src="config.js?v=269"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -1721,7 +1721,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
-<script src="js/chat-ui.js?v=24"></script>
+<script src="js/chat-ui.js?v=25"></script>
 <script src="js/the-td.js?v=9"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
 <script src="js/nhac-ban.js?v=3"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
@@ -4631,7 +4631,7 @@ var UI_CHAT = ChatUI.tao({
   get laThay(){ return MA_HS === 'GV'; },
   laCuaToi: function(t){ return !!(t.ma && MA_HS && t.ma === MA_HS); },
   av: function(t){
-    if (t.vaiTro === 'gv') return '<span class="av" style="background:#0E7C6E">GV<img class="av-anh" src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
+    if (t.vaiTro === 'gv') return '<span class="av" data-uid="quantri_thay" data-ten="Thầy Andrew" style="background:#0E7C6E">GV<img class="av-anh" src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
     return veAv(String(t.ten || '?'), soMauAv(t.ten));
   },
   nhan: function(t){ return t.vaiTro === 'gv' ? '<span class="cu-nhan">THẦY</span>' : ''; },
@@ -4789,9 +4789,10 @@ function baoToast(chu){
   henToast = setTimeout(function(){ t.classList.remove('hien'); }, 2600);
 }
 </script>
-<script src="js/tn-pop.js?v=12"></script>
-<script src="js/tn-pop-ds.js?v=8"></script>
-<script src="js/tn-khung.js?v=3"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
-<script src="js/nw-thanh.js?v=37"></script>
+<script src="js/tn-pop.js?v=13"></script>
+<script src="js/tn-pop-ds.js?v=9"></script>
+<script src="js/tn-khung.js?v=4"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
+<script src="js/nw-thanh.js?v=38"></script>
+<script src="js/chuot-phai.js?v=1"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 </body>
 </html>

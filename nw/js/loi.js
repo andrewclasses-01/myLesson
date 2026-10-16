@@ -71,7 +71,10 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
     var gv = nguoi.vaiTro === 'gv' ? ' gv' : '';
     // v0.5.0 (thầy 22/09): chấm xanh "đang online" góc dưới phải avatar như Facebook — thầy KHÔNG hiện dù trạng thái nào
     var on = NW.dangOnline(nguoi) ? ' co-on' : '';
-    return '<span class="av' + (lop ? ' ' + lop : '') + gv + on + '" style="background:' + itMau(ten) + '" title="' + chuAnToan(ten) + '">' +
+    // ⭐ v1.364.0 — avatar mang chủ (uid / mã HS) ⇒ bấm là mở trang cá nhân (js/chuot-phai.js). Thầy = hồ sơ quantri_thay.
+    var uid = gv ? 'quantri_thay' : /^[A-Za-z0-9_-]{1,80}$/.test(nguoi.uid || '') ? nguoi.uid : '';
+    var chu = uid ? ' data-uid="' + uid + '"' : nguoi.ma ? ' data-ma-hs="' + chuAnToan(nguoi.ma) + '"' : '';
+    return '<span class="av' + (lop ? ' ' + lop : '') + gv + on + '" style="background:' + itMau(ten) + '" title="' + chuAnToan(ten) + '"' + chu + '>' +
       chuAnToan(chuTat(ten)) +
       (nguoi.anh ? '<img src="' + chuAnToan(nguoi.anh) + '" alt="" loading="lazy" onerror="this.remove()">' : '') +
       (on ? '<i class="on" title="Đang hoạt động"></i>' : '') + '</span>';

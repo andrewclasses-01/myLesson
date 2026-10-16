@@ -312,6 +312,14 @@
       return b.commit();
     }).catch(function (e) { console.warn('[tn-pop] đánh dấu đã đọc', e); });
   };
+  // ⭐ v1.364.0 — đọc MỘT trận/lời mời `tranDau/{id}` (bấm thông báo thách đấu ⇒ kiểm còn hiệu lực). null = không đọc được / không có.
+  TP.docTran = function (id) {
+    if (laBanThu()) return Promise.resolve({ trangThai: 'moi', het: Date.now() + 30000 });
+    return nguoiDangNhap().then(function (me) {
+      if (!me) return null;
+      return me.f.fs.getDoc(me.f.fs.doc(me.f.db, 'tranDau', id)).then(function (s) { return s.exists() ? s.data() : null; });
+    }).catch(function () { return null; });
+  };
 
   // ---------- TIN MỚI: tự cuộn hộp chat lên ----------
   var daNghe = false, thay = {};   // thay[phongId] = mốc tin cuối đã xử lý

@@ -144,6 +144,13 @@
     ve();
     MOI[d.id] = { el: el, dem: setInterval(ve, 1000) };
   }
+  // ⭐ v1.364.0 — bấm thông báo thách đấu mà thẻ mời đang hiện ⇒ thẻ rung nhẹ để em/thầy thấy chỗ bấm Nhận (js/nw-thanh.js)
+  TK.coMoi = function (id) { return !!MOI[id]; };
+  TK.nhayMoi = function (id) {
+    var m = MOI[id]; if (!m || !m.el.animate) return;
+    m.el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }], { duration: 420, easing: 'ease-out' });
+    var n = m.el.querySelector('.n'); if (n) n.focus({ preventScroll: true });
+  };
 
   // ---------- hiện / ẩn ----------
   function datTren() {

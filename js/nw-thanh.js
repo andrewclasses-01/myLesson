@@ -132,6 +132,17 @@
     alert('Đang đăng nhập thay em — chờ dải đỏ trên cùng báo "Thầy đang ĐĂNG NHẬP THAY…" rồi bấm lại nhé.');
     return true;
   }
+  // ⭐ v1.364.0 — mở một trang nw/ từ hộp thông báo: dashboard (thầy) ⇒ TAB MỚI, không rời dashboard; học sinh ⇒ đi ngay
+  function moNw(link) {
+    var url = 'nw/' + link;
+    if (laThay && !/^tinnhan\.html/.test(link)) {
+      var w = null; try { w = window.open(url, '_blank'); } catch (e) { }
+      if (!w && window.ACMenu) ACMenu.bao('Trình duyệt chặn tab mới — <a href="' + url.replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; }) + '" target="_blank" rel="noopener">bấm vào đây</a>.', true);
+      else if (!w) location.href = url;
+      return;
+    }
+    location.href = url;
+  }
   // ⭐ 02/10/2026 thầy CHÍNH THỨC MỞ tab TIN NHẮN trên trang thật (nhóm lớp = chat lớp + Thầy Andrew). Các tab khác vẫn "sắp ra mắt".
   var TRANG_NW = window.AC_THU ? { khamPha: 'nw/khampha.html', tinNhan: 'nw/tinnhan.html', bangTin: 'nw/bangtin.html',
     chuong: 'nw/bangtin.html?tb=1', shop: 'nw/shop.html', timKiem: 'nw/timkiem.html', caNhan: 'nw/canhan.html' } : { khamPha: 'nw/khampha.html', tinNhan: 'nw/tinnhan.html', chuong: 'nw/tinnhan.html?tb=1', caNhan: 'nw/canhan.html' };   // v1.224.0 — thật: chuông = hộp thông báo ở trang Tin nhắn · v1.345.0 (15/10) mở TRANG CÁ NHÂN (bấm avatar) · v1.346.0 (15/10) mở KHÁM PHÁ (Giải đấu)
@@ -168,10 +179,26 @@
     // ⭐ 03/10/2026 — icon CHUÔNG mở HỘP THÔNG BÁO ngay tại trang (thầy: trước đây bấm chuông nhảy sang trang Tin nhắn rồi hiện cả 2 hộp)
     if (ma === 'chuong' && window.TnPop && TnPop.coTB && TnPop.coTB()) {
       if (choThayVao()) return;
-      TnPop.moTB(t, { laThay: laThay, dieu: function (link) {
+      TnPop.moTB(t, { laThay: laThay, dieu: function (link, tb) {
+        // ⭐ v1.364.0 — THÁCH ĐẤU: còn hiệu lực ⇒ trang Giải đấu (thẻ Nhận/Từ chối) · đang đấu ⇒ vào trận · hết ⇒ báo, đứng yên
+        var mTd = /^giaidau\.html\?moi=([A-Za-z0-9_-]+)/.exec(link);
+        if (tb && tb.loai === 'thachDau' && mTd && window.ACMenu && TnPop.docTran) {
+          var idTd = mTd[1];
+          TnPop.docTran(idTd).then(function (d) {
+            var kq = ACMenu.loiMoiDau(idTd, d);
+            if (kq.bao) return ACMenu.bao(kq.bao);
+            if (kq.conHieuLuc && KH && KH.coMoi && KH.coMoi(idTd)) { KH.nhayMoi(idTd); return; }   // thẻ mời đang hiện ở góc màn
+            moNw(kq.di);
+          });
+          return;
+        }
+        // ⭐ v1.364.0 — dashboard: bị nhắc trong NHÓM LỚP ⇒ chọn thẻ lớp đó (khung chat lớp của dashboard đổi theo), không mở Tin nhắn
+        var mLop = /^tinnhan\.html\?phong=lop%3A([A-Za-z0-9_-]+)/i.exec(link);
+        if (mLop && TnPop.chonLop && TnPop.chonLop(decodeURIComponent(mLop[1]))) return;
         if (/^tinnhan\.html/.test(link) && KH) { KH.mo(link.split('?')[1] || ''); return; }   // v1.280.0 — mở đúng phòng trong khung
-        if (window.AC_THU || /^tinnhan\.html/.test(link)) { location.href = 'nw/' + link; return; }
-        moSap('chuong');   // trang thật: các trang myNetwork khác chưa mở ⇒ hộp "sắp ra mắt"
+        // trang thật: chỉ các trang myNetwork ĐÃ MỞ (khớp NW.moDuoc ở nw/js/loi.js); còn lại hộp "sắp ra mắt"
+        if (window.AC_THU || /^(tinnhan|canhan|khampha|giaidau|tran)\.html/.test(link)) { moNw(link); return; }
+        moSap('chuong');
       } });
       return;
     }

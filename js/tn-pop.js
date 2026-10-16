@@ -26,10 +26,11 @@
   function khongDau(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase(); }
   function tat(s) { var w = String(s || '?').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 2)).toUpperCase(); }
 
-  function avHtml(ds) {
+  // ⭐ v1.364.0 — nhom = mã cuộc 'lop:XXX' ⇒ biểu tượng NHÓM LỚP bấm được (pop-up thành viên, js/chuot-phai.js)
+  function avHtml(ds, nhom) {
     ds = (ds && ds.length ? ds : [{ ten: '?' }]).slice(0, 4);
     var gom = ds.length > 1;
-    return '<span class="tp-av ' + (gom ? 'nhom' : 'mot') + '">' + ds.map(function (a, i) {
+    return '<span class="tp-av ' + (gom ? 'nhom' : 'mot') + '"' + (nhom && /^lop:/.test(nhom) ? ' data-nhom-lop="' + an(nhom.slice(4)) + '" title="Xem thành viên"' : '') + '>' + ds.map(function (a, i) {
       return '<i style="background:' + (a.mau || MAU[i % MAU.length]) + '">' + an(tat(a.ten)) + (a.url ? '<img src="' + an(a.url) + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '</i>';
     }).join('') + '</span>';
   }
@@ -51,6 +52,8 @@
 
   TP.nguon = null;
   TP.mau = mau;
+  // ⭐ v1.364.0 — dashboard (window.qlChonLopChat): cuộc NHÓM LỚP ⇒ chọn thẻ lớp thay vì mở hộp chat. true = trang đã lo.
+  TP.chonLop = function (ma) { return !!(window.qlChonLopChat && window.qlChonLopChat(ma)); };
   TP.lamMoi = function () { };
   TP.coThe = function () { return !!TP.nguon || /^(localhost|127\.0\.0\.1)$/.test(location.hostname); };
   // ⭐ 03/10: hộp đang mở mà bấm icon TAB KHÁC (vd chuông) ⇒ chuyển NGAY (đóng hộp này + mở hộp kia), không bắt bấm 2 lần.
@@ -123,7 +126,7 @@
     var phu = it.loai === 'lop' ? 'Nhóm lớp' : it.loai === 'thay' ? 'Thầy' : (it.lop || '');
     var v = document.createElement('div'); v.className = 'tp-dt';
     v.innerHTML = '<div class="tp-hop-dau"><button type="button" data-lui title="Về danh sách" aria-label="Về danh sách"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      avHtml(it.anh) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div></div>' +
+      avHtml(it.anh, it.loai === 'lop' && it.id) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div></div>' +
       '<div class="tp-hop-fr-khu"><iframe class="tp-hop-fr" title="' + an(it.ten) + '" allow="clipboard-write"></iframe><div class="tp-hop-cho">Đang mở…</div></div>';
     m.pop.appendChild(v); m.pop.classList.add('dang-chat'); m.chat = v;
     var fr = v.querySelector('iframe');
@@ -187,7 +190,7 @@
       });
       if (!ds.length) { khu.innerHTML = '<div class="tp-trong">' + (m.chu ? 'Không thấy cuộc trò chuyện nào.' : m.loc === 'chua' ? 'Không có tin chưa đọc.' : 'Chưa có cuộc trò chuyện nào.') + '</div>'; return; }
       khu.innerHTML = ds.map(function (c) {
-        return '<button type="button" class="tp-muc' + (c.chua ? ' chua' : '') + '" data-id="' + an(c.id) + '">' + avHtml(c.anh) +
+        return '<button type="button" class="tp-muc' + (c.chua ? ' chua' : '') + '" data-id="' + an(c.id) + '">' + avHtml(c.anh, c.loai === 'lop' && c.id) +
           '<span class="tp-tt"><span class="tp-ten"><span>' + an(c.ten) + '</span>' + (c.loai === 'lop' ? BIEU.lop : c.loai === 'thay' ? BIEU.thay : '') + '</span>' +
           '<span class="tp-cuoi">' + an(c.cuoi || 'Bắt đầu trò chuyện') + (c.gio ? ' · ' + an(c.gio) : '') + '</span></span>' +
           (c.chua ? '<span class="tp-cham" aria-label="Chưa đọc"></span>' : '') + '</button>';
@@ -204,6 +207,8 @@
       var b = e.target.closest('.tp-muc'); if (!b) return;
       var id = b.getAttribute('data-id');
       var it = m.cuoc.filter(function (c) { return c.id === id; })[0];
+      // ⭐ v1.364.0 — dashboard: cuộc chat NHÓM LỚP ⇒ chọn thẻ lớp đó (y như bấm thẻ lớp) — khung chat lớp của dashboard đổi theo
+      if (it && it.loai === 'lop' && TP.chonLop && TP.chonLop(String(it.id).slice(4))) { TP.dong(); return; }
       // ⭐ máy tính: mở HỘP CHAT NHỎ góc dưới, giữ nguyên trang đang xem · điện thoại (≤640px): sang trang Tin nhắn như Facebook
       if (it && window.innerWidth > 640) { TP.dong(); TP.moHop(it); return; }
       if (it && it.hop) { moChatTrongHop(m, it); return; }   // v1.254.0 — điện thoại: chat ngay trong hộp
@@ -224,7 +229,14 @@
   // o.dieu(link): trang quyết định mở link (trang thật chỉ mở được Tin nhắn; còn lại "sắp ra mắt").
   // ============================================================
   var CHU_LOAI = { camXuc: 'đã thả cảm xúc vào bài của em', binhLuan: 'đã bình luận vào bài của em', chiaSe: 'đã chia sẻ bài của em',
-                   ketBan: 'muốn kết bạn với em', dongY: 'đã đồng ý kết bạn', nhac: 'đã nhắc tới em', nhom: 'đã thêm em vào nhóm', chung: '' };
+                   ketBan: 'muốn kết bạn với em', dongY: 'đã đồng ý kết bạn', nhac: 'đã nhắc tới em', nhom: 'đã thêm em vào nhóm', chung: '',
+                   thachDau: 'thách đấu bạn' };   // ⭐ v1.364.0 — trước đây thiếu ⇒ hiện chữ thô "thachDau"
+  // chữ loại + dòng phụ của một thông báo (thầy: "đã nhắc tới thầy", "thách đấu thầy")
+  function chuTB(t, laThay) {
+    if (t.loai === 'thachDau' && window.ACMenu) return ACMenu.chuThachDau(t, laThay);
+    if (t.loai === 'thachDau') return { loai: laThay ? 'thách đấu thầy' : CHU_LOAI.thachDau, phu: t.chu || '' };
+    return { loai: t.loai === 'nhac' && laThay ? 'đã nhắc tới thầy' : (CHU_LOAI[t.loai] || t.loai || ''), phu: t.chu || '' };
+  }
   function gioTB(ms) {
     ms = Number(ms) || 0; if (!ms) return '';
     var kc = Date.now() - ms, p = Math.floor(kc / 60000);
@@ -258,9 +270,10 @@
       capNhatSo();
       if (!ds.length) { khu.innerHTML = '<div class="tp-trong">Chưa có thông báo nào.</div>'; return; }
       khu.innerHTML = ds.map(function (t, i) {
+        var c = chuTB(t, o.laThay);
         return '<button type="button" class="tp-muc tp-tbm' + (t.daDoc ? '' : ' chua') + '" data-i="' + i + '">' + avHtml([{ ten: t.tuTen || '?', url: t.tuAnh || '' }]) +
-          '<span class="tp-tt"><span class="tp-tbchu"><b>' + an(t.tuTen) + '</b> ' + an(t.loai === 'nhac' && o.laThay ? 'đã nhắc tới thầy' : (CHU_LOAI[t.loai] || t.loai || '')) + '</span>' +
-          (t.chu ? '<span class="tp-cuoi">' + an(t.chu) + '</span>' : '') + '<span class="tp-gio">' + an(gioTB(t.luc)) + '</span></span>' +
+          '<span class="tp-tt"><span class="tp-tbchu"><b>' + an(t.tuTen) + '</b> ' + an(c.loai) + '</span>' +
+          (c.phu ? '<span class="tp-cuoi">' + an(c.phu) + '</span>' : '') + '<span class="tp-gio">' + an(gioTB(t.luc)) + '</span></span>' +
           (t.daDoc ? '' : '<span class="tp-cham" aria-label="Chưa đọc"></span>') + '</button>';
       }).join('');
     }
@@ -269,7 +282,7 @@
       var t = ds[+b.getAttribute('data-i')]; if (!t) return;
       if (!t.daDoc) { t.daDoc = true; if (TP.docTB) TP.docTB([t.id]); }
       TP.dong();
-      if (t.link && o.dieu) o.dieu(t.link);
+      if (t.link && o.dieu) o.dieu(t.link, t);   // v1.364.0 — kèm thông báo (thách đấu: trang kiểm lời mời còn hiệu lực)
     });
     nutHet.onclick = function () {
       var ids = ds.filter(function (t) { return !t.daDoc; }).map(function (t) { return t.id; });
@@ -289,7 +302,7 @@
   function nap(xong) {
     if (window.ChatUI) { xong(); return; }
     if (!document.querySelector('link[href*="chat-ui.css"]')) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = GOC + 'css/chat-ui.css?v=19'; document.head.appendChild(l); }
-    var sc = document.createElement('script'); sc.src = GOC + 'js/chat-ui.js?v=20'; sc.onload = function () { xong(); }; sc.onerror = function () { xong(true); };
+    var sc = document.createElement('script'); sc.src = GOC + 'js/chat-ui.js?v=25'; sc.onload = function () { xong(); }; sc.onerror = function () { xong(true); };
     document.head.appendChild(sc);
   }
   function mauTin(it) {
@@ -360,7 +373,7 @@
     if (co) { if (co.min) moLai(co); else if (!o.imLang && co.ui) co.ui.focus(); return; }
     var el = document.createElement('div'); el.className = 'tp-hop';
     var phu = it.loai === 'lop' ? 'Nhóm lớp' : it.loai === 'thay' ? 'Thầy' : (it.lop || '');
-    el.innerHTML = '<div class="tp-hop-dau">' + avHtml(it.anh) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div>' +
+    el.innerHTML = '<div class="tp-hop-dau">' + avHtml(it.anh, it.loai === 'lop' && it.id) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div>' +
       '<button type="button" data-min title="Thu nhỏ" aria-label="Thu nhỏ"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>' +
       '<button type="button" data-dong title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       (it.hop ? '<div class="tp-hop-fr-khu"><iframe class="tp-hop-fr" title="' + an(it.ten) + '" allow="clipboard-write"></iframe><div class="tp-hop-cho">Đang mở…</div></div>' : '<div class="tp-hop-than"></div><div class="tp-hop-chan"></div>');

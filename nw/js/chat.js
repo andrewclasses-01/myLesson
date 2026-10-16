@@ -175,7 +175,7 @@
       moiMot: function () { return Chat.nguoiMoiMot(c.phong()); },
       lopGiai: NW.laBanThu() ? function () { return (c.phong() || {}).loai === 'nhom' ? 'A1C' : ''; } : null,   // v1.351.0 bàn thử: dải ghim mẫu
       laCuaToi: function (t) { return t.uid === toi.uid; },
-      av: function (t) { return NW.avHtml({ ten: t.ten, anh: t.anh, vaiTro: t.vaiTro }, 'nho'); },
+      av: function (t) { return NW.avHtml({ ten: t.ten, anh: t.anh, vaiTro: t.vaiTro, uid: t.uid }, 'nho'); },   // v1.364.0 uid ⇒ bấm avatar mở trang cá nhân
       nhan: function (t) { return t.vaiTro === 'gv' ? NW.tichHtml('nho') : ''; },
       dsNhac: function () { var tv = (c.phong() || {}).tv || {}; return Object.keys(tv).filter(function (u) { return u !== toi.uid; }).map(function (u) { return tv[u].ten; }).filter(Boolean); },
       gui: function (g) {
@@ -315,7 +315,8 @@
         ds.sort(function (a, b) { return ((tv[b] || {}).anh ? 1 : 0) - ((tv[a] || {}).anh ? 1 : 0); });
         // 02/10 thầy chốt: BỎ con số thành viên ⇒ bóng 4 là ảnh người thứ 4 (không còn bóng sĩ số)
         var bon = ds.slice(0, 4).map(function (u) { return NW.avHtml(Object.assign({}, tv[u] || { ten: '?' }, { online: false, hoatDongLuc: 0 })); }).join('');
-        return '<span class="av-4' + (lop ? ' ' + lop : '') + '">' + bon + '</span>';
+        // ⭐ v1.364.0 — nhóm LỚP: bấm biểu tượng ⇒ pop-up thành viên (js/chuot-phai.js)
+        return '<span class="av-4' + (lop ? ' ' + lop : '') + '"' + (laNhomLop(p) ? ' data-nhom-lop="' + an(p.lop) + '" title="Xem thành viên"' : '') + '>' + bon + '</span>';
       }
       return NW.avHtml(nguoiKia(p), lop);
     }
@@ -391,7 +392,8 @@
         row.addEventListener('pointercancel', function () { clearTimeout(giu); });
         row.addEventListener('pointerup', function () { clearTimeout(giu); });
         row.addEventListener('pointerleave', function () { clearTimeout(giu); });
-        row.addEventListener('contextmenu', function (e) { e.preventDefault(); });
+        // v1.364.0 — máy tính: CHUỘT PHẢI dòng = menu ⋯ của cuộc (thay menu trình duyệt) · cảm ứng: nhấn giữ như trên
+        row.addEventListener('contextmenu', function (e) { e.preventDefault(); if (e.pointerType !== 'touch' && !window.matchMedia('(hover:none)').matches && $('[data-menu]', row)) menuCuoc($('[data-menu]', row), id); });
       });
     }
     // dòng "Thầy Andrew" chưa có cuộc ⇒ bấm mới tạo phòng riêng với thầy
@@ -826,7 +828,7 @@
         toi: { get khoa() { return MA_TOI; }, get ten() { return tenToi; } },
         laThay: !!toi.laThay, hienTen: true,
         laCuaToi: function (t) { return !!(t.ma && MA_TOI && t.ma === MA_TOI); },
-        av: function (t) { return t.vaiTro === 'gv' ? NW.avHtml({ ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', vaiTro: 'gv' }, 'nho') : NW.avHtml({ ten: t.ten, anh: avUrl(p.tenGoc, t.ten) }, 'nho'); },
+        av: function (t) { return t.vaiTro === 'gv' ? NW.avHtml({ ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', vaiTro: 'gv' }, 'nho') : NW.avHtml({ ten: t.ten, anh: avUrl(p.tenGoc, t.ten), ma: t.ma }, 'nho'); },   // v1.364.0 mã HS ⇒ bấm avatar mở trang cá nhân
         nhan: function (t) { return t.vaiTro === 'gv' ? NW.tichHtml('nho') : ''; },
         dsNhac: function () { return (p.dsTen || []).concat(['Thầy Andrew']); },
         gui: function (g) {

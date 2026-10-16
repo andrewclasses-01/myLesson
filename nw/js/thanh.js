@@ -171,7 +171,25 @@
     return tha;
   }
   var CHU_LOAI = { camXuc: 'đã thả cảm xúc vào bài của em', binhLuan: 'đã bình luận vào bài của em', chiaSe: 'đã chia sẻ bài của em',
-                   ketBan: 'muốn kết bạn với em', dongY: 'đã đồng ý kết bạn', nhac: 'đã nhắc tới em', nhom: 'đã thêm em vào nhóm', chung: '' };
+                   ketBan: 'muốn kết bạn với em', dongY: 'đã đồng ý kết bạn', nhac: 'đã nhắc tới em', nhom: 'đã thêm em vào nhóm', chung: '',
+                   thachDau: 'thách đấu bạn' };   // ⭐ v1.364.0 — trước đây thiếu ⇒ hiện chữ thô "thachDau"
+  function chuTB(t) {   // { loai, phu } — thầy: "đã nhắc tới thầy", "thách đấu thầy" (js/chuot-phai.js gọn dòng phụ thách đấu)
+    var thay = !!(NW.toi && NW.toi.laThay);
+    if (t.loai === 'thachDau' && window.ACMenu) return ACMenu.chuThachDau(t, thay);
+    return { loai: t.loai === 'nhac' && thay ? 'đã nhắc tới thầy' : t.loai === 'thachDau' && thay ? 'thách đấu thầy' : (CHU_LOAI[t.loai] || t.loai), phu: t.chu || '' };
+  }
+  // ⭐ v1.364.0 — bấm thông báo THÁCH ĐẤU: còn hiệu lực ⇒ thẻ mời đang hiện thì rung, chưa hiện thì sang Giải đấu · đang đấu ⇒ vào trận · hết ⇒ báo
+  async function moThachDau(t) {
+    var m = /^giaidau\.html\?moi=([A-Za-z0-9_-]+)/.exec(t.link || ''); if (!m) return false;
+    var id = m[1], d = null;
+    if (NW.laBanThu()) d = { trangThai: 'moi', het: Date.now() + 30000 };
+    else { try { var f = await NW.fb(); var s = await f.fs.getDoc(f.fs.doc(f.db, 'tranDau', id)); d = s.exists() ? s.data() : null; } catch (e) { d = null; } }
+    var kq = ACMenu.loiMoiDau(id, d);
+    if (kq.bao) { NW.toast(kq.bao); return true; }
+    if (kq.conHieuLuc && NW.ThachDau && NW.ThachDau.nhay && NW.ThachDau.nhay(id)) return true;
+    if (NW.toi && NW.toi.laThay && /^tran\.html/.test(kq.di) && !NW.laNhung) { var w = null; try { w = window.open(NW.duong(kq.di), '_blank'); } catch (e) { } if (w) return true; }
+    NW.di(kq.di); return true;
+  }
   function moChuong(neo) {
     var ds = TB_DS;
     var html = '<div class="tha-head"><span>Thông báo</span>' +
@@ -180,8 +198,8 @@
         var laMoi = t.loai === 'ketBan' && !t.xuLy;   // v14: lời mời kết bạn xử lý ngay trong thông báo
         return '<div class="tha-muc' + (t.daDoc ? '' : ' chua') + (laMoi ? ' moi' : '') + '" data-id="' + an(t.id) + '" role="button" tabindex="0">' +
           NW.avHtml({ ten: t.tuTen, anh: t.tuAnh }, 'nho') +
-          '<span class="chu"><b>' + an(t.tuTen) + '</b> ' + an(t.loai === 'nhac' && NW.toi && NW.toi.laThay ? 'đã nhắc tới thầy' : (CHU_LOAI[t.loai] || t.loai)) +
-          (t.chu ? '<small>' + an(t.chu) + '</small>' : '') + '<small>' + an(NW.chuGio(t.luc)) + '</small>' +
+          '<span class="chu"><b>' + an(t.tuTen) + '</b> ' + an(chuTB(t).loai) +
+          (chuTB(t).phu ? '<small>' + an(chuTB(t).phu) + '</small>' : '') + '<small>' + an(NW.chuGio(t.luc)) + '</small>' +
           (laMoi ? '<span class="nut2"><button class="btn primary nho" type="button" data-kbok>Đồng ý</button><button class="btn soft nho" type="button" data-kbxoa>Xoá</button></span>' : '') +
           (t.loai === 'ketBan' && t.xuLy ? '<small class="da">' + (t.xuLy === 'ok' ? 'Đã là bạn bè' : 'Đã xoá lời mời') + '</small>' : '') +
           '</span></div>';
@@ -194,6 +212,7 @@
         dongTha();
         if (!t) return;
         if (!t.daDoc) danhDauDoc([t.id]);
+        if (t.loai === 'thachDau' && window.ACMenu && /^giaidau\.html\?moi=/.test(t.link || '')) { moThachDau(t); return; }
         if (t.link && NW.linkAnToan(t.link)) { if (NW.moDuoc(t.link)) NW.di(t.link); else NW.sapRaMat(); }   // (27/09/2026) chỉ link trong site — xem NW.linkAnToan
       };
       var ok = $('[data-kbok]', b), xoa = $('[data-kbxoa]', b);

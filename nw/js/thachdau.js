@@ -127,6 +127,13 @@
     THE[id] = { el: el, dem: setInterval(ve, 1000) };
     el.querySelectorAll('[data-k]').forEach(function (b) { b.onclick = function () { traLoi(id, b.getAttribute('data-k') === '1'); }; });
   }
+  // ⭐ v1.364.0 — bấm thông báo thách đấu khi thẻ mời đang hiện ⇒ thẻ rung nhẹ + con trỏ vào nút Nhận. false = thẻ chưa hiện ở trang này.
+  TD.nhay = function (id) {
+    var t = THE[id]; if (!t || !t.el) return false;
+    if (t.el.animate) t.el.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(6px)' }, { transform: 'translateX(-4px)' }, { transform: 'translateX(0)' }], { duration: 420, easing: 'ease-out' });
+    var n = t.el.querySelector('[data-k="1"]'); if (n) n.focus({ preventScroll: true });
+    return true;
+  };
   var _nghe = false;
   TD.nghe = async function () {
     if (_nghe || NW.laBanThu() || !NW.toi) return;   // ⭐ 16/10 — cả THẦY nghe (em mời thầy giao hữu)
@@ -143,6 +150,16 @@
       var d = e.data || {}; if (d.tk === 'dau' && d.id) traLoi(d.id, !!d.nhan, !!d.meMo);
     });
   };
+  // ⭐ v1.364.0 — giaidau.html?moi=<id> (mở từ thông báo thách đấu): thẻ mời do TD.nghe vẽ; lời mời đã hết trong lúc chuyển trang ⇒ báo,
+  // trận đã bắt đầu ⇒ vào trận.
+  if (!NW.laBanThu() && NW.thamSo('moi') && /^[A-Za-z0-9_-]{4,40}$/.test(NW.thamSo('moi'))) setTimeout(async function () {
+    var id = NW.thamSo('moi'); if (TD.nhay(id)) return;
+    var d = null; try { var f = await NW.fb(); var s = await f.fs.getDoc(f.fs.doc(f.db, 'tranDau', id)); d = s.exists() ? s.data() : null; } catch (e) { }
+    if (THE[id]) return void TD.nhay(id);
+    var kq = window.ACMenu ? ACMenu.loiMoiDau(id, d) : null;
+    if (!kq) return;
+    if (kq.bao) NW.toast(kq.bao); else if (/^tran\.html/.test(kq.di)) di(kq.di);
+  }, 2500);
   // ⭐ 16/10 — bàn thử: ?moiThu=thay (em nhận lời mời của thầy) · ?moiThu=hs (thầy nhận lời mời của Gia Bảo) ⇒ thẻ góc màn sau 2 giây
   if (NW.laBanThu() && NW.thamSo('moiThu')) setTimeout(function () {
     var me = NW.toi || { uid: 'toi', ten: 'BẠN THỬ' }, k = NW.thamSo('moiThu'), het = Date.now() + 60000;

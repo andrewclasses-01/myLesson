@@ -4392,7 +4392,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=272"></script>
+<script src="config.js?v=273"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -4400,7 +4400,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
-<script src="js/chat-ui.js?v=24"></script>
+<script src="js/chat-ui.js?v=25"></script>
 <script src="js/the-td.js?v=9"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
 <script src="js/nhac-ban.js?v=3"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
@@ -10995,7 +10995,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     thachDau: function () { return LOP_CHON || ''; },   // ⭐ v1.360.0 — THẦY GIAO HỮU: ⚔ chọn em đang online của lớp đang chọn (js/the-td.js)
     laCuaToi: function (t) { return t.vaiTro === 'gv'; },
     av: function (t) {
-      if (t.vaiTro === 'gv') return '<span class="av" style="background:var(--xanh)">GV<img src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
+      if (t.vaiTro === 'gv') return '<span class="av" data-uid="quantri_thay" data-ten="Thầy Andrew" style="background:var(--xanh)">GV<img src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
       var l = A.lopTheoMa(DL, LOP_CHON);
       return veAv(String(t.ten || '?'), avSlugLop((l && l.tenGoc) || LOP_CHON));
     },
@@ -12367,6 +12367,17 @@ tr.qm-hang-tam td{background:#fffbeb}
     VT_LOP.ma = maLop;
     vt.finished['finally'](function () { if (VT_LOP.vt === vt) VT_LOP.vt = null; });
   }
+  /* ⭐ v1.364.0 (16/10/2026, thầy) — bấm cuộc chat NHÓM LỚP ở hộp Tin nhắn / thông báo bị nhắc trong lớp ⇒ CHỌN THẺ LỚP ĐÓ
+     y như bấm thẻ lớp (khung chat lớp bên phải đổi sang lớp đó), không mở trang Tin nhắn. Gọi từ js/tn-pop.js + js/nw-thanh.js.
+     false ⇒ trang tự làm như cũ: lớp không có trên dashboard, hoặc khung chat lớp đang ẩn (điện thoại — chat ở tab Tin nhắn). */
+  window.qlChonLopChat = function (ma) {
+    var l = A.lopTheoMa(DL, ma), the = l && theLopDom(l.maLop), chat = document.querySelector('.cot-chat');
+    if (!l || !the || !chat || !chat.offsetParent) return false;
+    if (LOP_CHON !== l.maLop) chonLopMuot(l.maLop);
+    the.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    if (chat.animate) chat.animate([{ boxShadow: '0 0 0 3px rgba(14,124,110,.55)' }, { boxShadow: '0 0 0 0 rgba(14,124,110,0)' }], { duration: 900, easing: 'ease-out' });
+    return true;
+  };
   document.addEventListener('click', function (e) {
     if (e.target.closest('#khoNhoDong')) return void dongKhoNho();
     if (e.target.closest('#khoNhoChiTiet')) { var m = KHO_NHO_LOP; dongKhoNho(); return void moKhoLon(m); }
@@ -16653,10 +16664,10 @@ tr.qm-hang-tam td{background:#fffbeb}
 })();
 </script>
 <script src="js/ic-ql.js?v=3"></script>
-<script src="js/tn-pop.js?v=12"></script>
-<script src="js/tn-pop-ds.js?v=8"></script>
-<script src="js/tn-khung.js?v=3"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
-<script src="js/nw-thanh.js?v=37"></script>
+<script src="js/tn-pop.js?v=13"></script>
+<script src="js/tn-pop-ds.js?v=9"></script>
+<script src="js/tn-khung.js?v=4"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
+<script src="js/nw-thanh.js?v=38"></script>
 <script src="js/sao-dash.js?v=5"></script>
 <script src="js/duyet-anh.js?v=3"></script>   <!-- 15/10/2026 v1.343.0 hộp DUYỆT ẢNH học sinh (hàm nwAnh) -->
 <script src="js/sao-xh.js?v=2"></script>   <!-- v1.337.0 thưởng/phạt sao ngay trong tab XẾP HẠNG (giữ tên · ⭐ cả lớp) -->   <!-- 10/10/2026 hộp Sao học sinh (ví sao + cộng/trừ + lý do nhanh) -->
@@ -16664,5 +16675,6 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/cat-anh.js?v=2"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=22"></script>
 <script src="js/nhap-so.js?v=1"></script>   <!-- 07/10/2026 cuộn chuột không đổi số + Enter nhận ô -->   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
+<script src="js/chuot-phai.js?v=1"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 </body>
 </html>

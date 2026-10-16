@@ -286,7 +286,7 @@
   async function banOnline(f, lop, uid) {
     var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('cacLop', 'array-contains', lop), f.fs.limit(60)));
     var ds = [], bay = Date.now();
-    s.forEach(function (d) { var x = d.data(); if (d.id !== uid && x.vaiTro !== 'gv' && !x.nghiHoc && x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: x.ten || '?' }); });
+    s.forEach(function (d) { var x = d.data(); if (d.id !== uid && x.vaiTro !== 'gv' && x.vaiTro !== 'doi' && !x.nghiHoc && x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: x.ten || '?' }); });
     return ds.sort(function (a, b) { return String(a.ten).localeCompare(String(b.ten), 'vi'); });
   }
   function mauBan() { return [{ uid: 'hs_1', ten: 'Gia Bảo' }, { uid: 'hs_2', ten: 'Bảo Nam' }, { uid: 'hs_3', ten: 'Thảo Vy' }]; }

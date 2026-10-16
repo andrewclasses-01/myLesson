@@ -38,8 +38,8 @@
 <script src="config.js?v=16"></script>
 <script src="../js/thay-vao.js?v=3"></script>   <!-- 29/09: đăng nhập thay em — PHẢI trước loi.js -->
 <script src="../js/chat-ui.js?v=23"></script>
-<script src="../js/the-td.js?v=6"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
-<script src="js/loi.js?v=33"></script>
+<script src="../js/the-td.js?v=7"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->   <!-- ⭐ web v1.199.0 emoji/sticker/cảm xúc dùng chung -->
+<script src="js/loi.js?v=34"></script>
 <script src="../js/tn-pop.js?v=12"></script>
 <script src="../js/tn-pop-ds.js?v=8"></script>
 <script src="js/thanh.js?v=28"></script>
@@ -83,7 +83,7 @@
       var f = await NW.fb();
       var qr = f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('tenThuong', '>=', q), f.fs.where('tenThuong', '<=', q + ''), f.fs.limit(30));
       var snap = await f.fs.getDocs(qr); var ds = [];
-      snap.forEach(function (d) { var x = d.data(); if (d.id !== toi.uid && !x.khoa) ds.push({ uid: d.id, ten: x.ten, anh: x.anh, lop: x.lop, cacLop: x.cacLop, vaiTro: x.vaiTro }); });
+      snap.forEach(function (d) { var x = d.data(); if (d.id !== toi.uid && !x.khoa && x.vaiTro !== 'doi') ds.push({ uid: d.id, ten: x.ten, anh: x.anh, lop: x.lop, cacLop: x.cacLop, vaiTro: x.vaiTro }); });
       return ds;
     }
     function veNguoi(ds) {

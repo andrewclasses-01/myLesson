@@ -23,7 +23,7 @@
   var P = window.NWP;
   var DL = { lop: [], bai: {} };
   var $ = function (s) { return document.querySelector(s); };
-  var MK_TOI_THIEU = 8;           // ⛔ PHẢI khớp myNetwork/tools/tao-tai-khoan.mjs MK_TOI_THIEU
+  var MK_TOI_THIEU = 8;           // ⛔ = js/mat-khau.js TOI_THIEU (luật chung từ v1.356.0); chỉ dùng khi file đó chưa nạp
 
   function man(ten) { document.querySelectorAll('.man').forEach(function (m) { m.classList.toggle('hien', m.id === ten); }); }
   function loi(chu) { var p = $('#loiVao'); p.hidden = !chu; p.textContent = chu || ''; }
@@ -123,19 +123,28 @@
   }
 
   // ---------- màn ĐẶT MẬT KHẨU MỚI (lần đầu) ----------
-  var cho = null;          // { ds, ma, mkCu } — nơi em sẽ vào sau khi lưu mật khẩu; mkCu = mật khẩu vừa gõ để vào
+  var cho = null;          // { ds, ma, mkCu, ten } — nơi em sẽ vào sau khi lưu mật khẩu; mkCu = mật khẩu vừa gõ để vào
+  // ⭐ v1.356.0 (16/10/2026, thầy chốt mẫu v2): LUẬT MẬT KHẨU CHUNG js/mat-khau.js — 6 điều kiện tích ✓ dần khi gõ + mẹo
+  var DK = null;
   function moDoiMk(ds, ma, mkCu) {
-    cho = { ds: ds, ma: ma, mkCu: mkCu || '' };
     var ten = (ds[0] && ds[0].em && ds[0].em.ten) || '';
+    cho = { ds: ds, ma: ma, mkCu: mkCu || '', ten: ten };
     $('#doiMkTen').textContent = ten ? 'Chào ' + ten + ', đặt mật khẩu riêng' : 'Đặt mật khẩu riêng';
     $('#mkMoi').value = ''; $('#mkMoi2').value = ''; loiMk(''); anMk();
+    if (!DK && window.ACMatKhau) {
+      DK = window.ACMatKhau.gan({ mk: $('#mkMoi'), mk2: $('#mkMoi2'), ds: $('#mkDs'), khop: $('#mkKhop'),
+        ai: function () { return { ma: cho ? cho.ma : '', ten: cho ? cho.ten : '' }; } });
+      $('#mkMeo').innerHTML = window.ACMatKhau.MEO;
+    }
+    if (DK) DK.ve();
     man('manDoiMk');
     $('#mkMoi').focus();
   }
   function luuMk() {
     var m1 = $('#mkMoi').value, m2 = $('#mkMoi2').value;
     loiMk('');
-    if (m1.length < MK_TOI_THIEU) { loiMk('Mật khẩu cần ít nhất ' + MK_TOI_THIEU + ' ký tự.'); $('#mkMoi').focus(); return; }
+    var chua = DK ? DK.kiemLuu() : (m1.length < MK_TOI_THIEU || /\s/.test(m1) ? 'Mật khẩu cần ít nhất ' + MK_TOI_THIEU + ' ký tự, không có dấu cách.' : '');
+    if (chua) { loiMk(chua); $('#mkMoi').focus(); return; }
     if (A.chuanMa(m1) === A.chuanMa(cho.ma)) { loiMk('Mật khẩu mới phải khác ID của em.'); $('#mkMoi').focus(); return; }
     // Mật khẩu lớp cả lớp đều biết — giữ lại là bạn nào cũng vào được tài khoản của em.
     if (/andrewclasses/i.test(m1) || (cho.mkCu && m1.toLowerCase() === cho.mkCu.toLowerCase())) {

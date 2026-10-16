@@ -79,9 +79,12 @@
       <!-- v1.158.0: lần đầu vào bằng mật khẩu lớp (phaiDoiMk) — em tự đặt mật khẩu riêng -->
       <section class="man" id="manDoiMk">
         <div class="dn-chao"><h2 id="doiMkTen">Đặt mật khẩu riêng</h2></div>
-        <p class="dn-goiy">Mật khẩu thầy phát chỉ để vào lần đầu. Em đặt mật khẩu của riêng em (ít nhất 8 ký tự) và nhớ kỹ nhé.</p>
+        <p class="dn-goiy">Mật khẩu thầy phát chỉ để vào lần đầu. Em đặt mật khẩu của riêng em và nhớ kỹ nhé.</p>
         <label class="dn-o gon"><input id="mkMoi" type="password" autocomplete="new-password" placeholder="Mật khẩu mới" data-goi="Mật khẩu mới"></label>
+        <ul class="mk-ds" id="mkDs"></ul>   <!-- v1.356.0 danh sách điều kiện tích dần (js/mat-khau.js) -->
         <label class="dn-o gon"><input id="mkMoi2" type="password" autocomplete="new-password" placeholder="Nhập lại mật khẩu mới" data-goi="Nhập lại mật khẩu mới"></label>
+        <p class="mk-khop" id="mkKhop" hidden></p>
+        <div id="mkMeo"></div>
         <button class="btn primary wide" id="btnLuuMk">LƯU MẬT KHẨU</button>
         <p class="tiny warn" id="loiDoiMk" hidden></p>
         <div class="nut-thay"><button type="button" id="btnHuyMk">Không phải em? Đăng nhập ID khác</button></div>
@@ -93,13 +96,14 @@
   </div>
 </div>
 
-<script src="config.js?v=265"></script>
+<script src="config.js?v=269"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=92"></script>
 <script src="js/nw-phien.js?v=9"></script>
-<script src="js/nw-dangnhap.js?v=7"></script>
+<script src="js/mat-khau.js?v=1"></script>   <!-- v1.356.0 luật mật khẩu chung (6 điều kiện + tích ✓) -->
+<script src="js/nw-dangnhap.js?v=8"></script>
 <script src="js/nw-thanh.js?v=37"></script>
 </body>
 </html>

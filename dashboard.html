@@ -4126,7 +4126,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="toast" id="toast"></div>
 
 <script src="js/o-ngay.js?v=1"></script>
-<script src="config.js?v=268"></script>
+<script src="config.js?v=269"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -13226,6 +13226,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#qtLuuMk').onclick = function () {
       var nut = this, m1 = $('#qtMk1').value, m2 = $('#qtMk2').value;
       if (m1.length < 10 || !/[A-Za-z]/.test(m1) || !/\d/.test(m1)) { qtLoi('Mật khẩu ít nhất 10 ký tự, có cả chữ và số.'); return; }
+      if (/\s/.test(m1)) { qtLoi('Mật khẩu không được có dấu cách.'); return; }   // v1.356.0 (16/10/2026) thầy chốt
       // v1.176.1 — thầy chốt: chỉ NHẮC (hỏi lại), không chặn — thầy muốn dùng mật khẩu chung với tài khoản khác.
       if (/1994|ninh|pham|andrew|0902/i.test(m1) && !window.confirm('Mật khẩu có tên / ngày sinh nên dễ đoán hơn. Vẫn dùng mật khẩu này?')) return;
       if (m1 !== m2) { qtLoi('Hai lần gõ chưa giống nhau.'); return; }

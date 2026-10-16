@@ -231,19 +231,39 @@
   }
 
   // ---------- đổi mật khẩu (gọi từ sidebar) ----------
-  function moDoiMk() {
+  // ⭐ v1.356.0 (16/10/2026, thầy chốt mẫu v2): luật mật khẩu CHUNG ../js/mat-khau.js (6 điều kiện tích ✓ + mẹo) + NÚT MẮT ở cả 3 ô.
+  //   Trước: chỉ "ít nhất 6 ký tự" (lệch màn đặt lần đầu 8 ký tự). File luật nạp khi mở hộp lần đầu (không phải sửa 10 trang nw/).
+  function napLuatMk() {
+    if (window.ACMatKhau) return Promise.resolve();
+    return new Promise(function (ok, hong) {
+      var s = document.createElement('script'); s.src = '../js/mat-khau.js?v=1';
+      s.onload = function () { ok(); }; s.onerror = function () { hong(new Error('Không tải được luật mật khẩu')); };
+      document.head.appendChild(s);
+    });
+  }
+  async function moDoiMk() {
+    try { await napLuatMk(); } catch (e) { NW.toast('Chưa tải được trang đổi mật khẩu — thử lại sau.'); return; }
+    var LK = window.ACMatKhau;
     var p = NW.popMo({ tieuDe: 'Đổi mật khẩu', html:
-      '<label class="lbl">Mật khẩu hiện tại</label><input type="password" id="mkCu" autocomplete="current-password">' +
-      '<label class="lbl" style="margin-top:12px">Mật khẩu mới (ít nhất 6 ký tự)</label><input type="password" id="mkMoi" autocomplete="new-password">' +
-      '<label class="lbl" style="margin-top:12px">Gõ lại mật khẩu mới</label><input type="password" id="mkMoi2" autocomplete="new-password">' +
+      '<label class="lbl">Mật khẩu hiện tại</label><div class="mk-o"><input type="password" id="mkCu" autocomplete="current-password"></div>' +
+      '<label class="lbl">Mật khẩu mới</label><div class="mk-o"><input type="password" id="mkMoi" autocomplete="new-password"></div>' +
+      '<ul class="mk-ds" id="mkDs"></ul>' +
+      '<label class="lbl">Gõ lại mật khẩu mới</label><div class="mk-o"><input type="password" id="mkMoi2" autocomplete="new-password"></div>' +
+      '<p class="mk-khop" id="mkKhop" hidden></p>' + LK.MEO +
       '<p class="tiny" id="mkLoi" style="color:var(--do);margin:10px 0 0" hidden></p>',
       chan: '<button class="btn soft" data-dong>Thôi</button><button class="btn primary" id="mkOk">Đổi mật khẩu</button>' });
     $('[data-dong]', p).onclick = NW.popDong;
+    ['#mkCu', '#mkMoi', '#mkMoi2'].forEach(function (s) { LK.ganMat($(s, p)); });
+    // tên + ID của em để chặn mật khẩu chứa tên / ngày sinh / ID (ID lấy từ phiên đăng nhập — claim `ma`)
+    var ai = { ten: (NW.toi && NW.toi.ten) || '', ma: '' };
+    try { var u = NW.toi && NW.toi.user; if (u && u.getIdTokenResult) ai.ma = String(((await u.getIdTokenResult()).claims || {}).ma || ''); } catch (e) { }
+    var DK = LK.gan({ mk: $('#mkMoi', p), mk2: $('#mkMoi2', p), ds: $('#mkDs', p), khop: $('#mkKhop', p), ai: function () { return ai; } });
     $('#mkOk', p).onclick = async function () {
-      var cu = $('#mkCu', p).value, moi = $('#mkMoi', p).value, moi2 = $('#mkMoi2', p).value, loi = $('#mkLoi', p);
+      var cu = $('#mkCu', p).value, moi = $('#mkMoi', p).value, loi = $('#mkLoi', p);
       loi.hidden = true;
-      if (moi.length < 6) { loi.textContent = 'Mật khẩu mới phải có ít nhất 6 ký tự.'; loi.hidden = false; return; }
-      if (moi !== moi2) { loi.textContent = 'Hai lần gõ mật khẩu mới chưa giống nhau.'; loi.hidden = false; return; }
+      var chua = DK.kiemLuu();
+      if (chua) { loi.textContent = chua; loi.hidden = false; return; }
+      if (moi === cu) { loi.textContent = 'Mật khẩu mới phải khác mật khẩu hiện tại.'; loi.hidden = false; return; }
       this.disabled = true;
       try { await NW.doiMatKhau(cu, moi); NW.popDong(); NW.toast('Đã đổi mật khẩu.'); }
       catch (e) { loi.textContent = NW.chuLoiAuth(e); loi.hidden = false; this.disabled = false; }

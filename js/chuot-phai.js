@@ -64,8 +64,8 @@
     s.textContent =
       // iOS: tắt khung "xem trước link / lưu ảnh" của máy khi nhấn giữ (ô gõ vẫn như cũ)
       'body{-webkit-touch-callout:none}input,textarea,[contenteditable="true"]{-webkit-touch-callout:default}' +
-      '[data-uid],[data-av-em],[data-ma-hs],[data-nhom-lop]{-webkit-user-select:none;user-select:none}' +
-      '[data-uid],[data-av-em],[data-ma-hs],[data-nhom-lop]{cursor:pointer}' +
+      // v1.366.0 — CHỈ ô avatar (span/i), không phải nút/dòng/hộp chat cũng mang data-uid (trước đây chặn bôi đen cả hộp chat nổi)
+      'span[data-uid],i[data-uid],span[data-av-em],i[data-av-em],span[data-ma-hs],[data-nhom-lop]{-webkit-user-select:none;user-select:none;cursor:pointer}' +
       '.acm-nen{position:fixed;inset:0;z-index:10049;background:transparent}.acm-nen.toi{background:rgba(22,35,42,.28)}' +
       '.acm{position:fixed;z-index:10050;min-width:210px;max-width:290px;background:#fff;border:1px solid #E0EAE7;border-radius:14px;box-shadow:0 14px 40px rgba(22,35,42,.2);' +
       'padding:6px;font:600 14px/1.3 var(--sans,Montserrat,"Segoe UI",system-ui,sans-serif);color:#16232A;opacity:0;transform:scale(.97);transform-origin:top left;transition:opacity .12s,transform .12s}' +
@@ -160,7 +160,10 @@
       else if (em) {
         var k = chuan(lop), tenK = khongDau(em).replace(/\s+/g, ' ').trim();
         var gan = ds.filter(function (l) { return !lop || chuan(l.maLop) === k || chuan(l.tenGoc) === k; });
-        gan.some(function (l) { h = (l.hocSinh || []).filter(function (x) { return khongDau(x.ten).replace(/\s+/g, ' ').trim() === tenK; })[0] || null; return !!h; });
+        var trung = [];
+        gan.forEach(function (l) { (l.hocSinh || []).forEach(function (x) { if (khongDau(x.ten).replace(/\s+/g, ' ').trim() === tenK && trung.indexOf(x) < 0) trung.push(x); }); });
+        // v1.366.0 — không rõ lớp (trang speaking chỉ ghi tên) mà tên trùng nhiều em ⇒ KHÔNG đoán (tránh mở nhầm trang bạn khác)
+        h = lop ? (trung[0] || null) : (trung.length === 1 || trung.every(function (x) { return x.id === trung[0].id; }) ? trung[0] || null : null);
       }
       return h ? { uid: uidHs(h), ten: h.ten, thay: false } : null;
     });
@@ -255,10 +258,32 @@
   var GIU_RIENG = '.cu-bong, .cu-w, .cu-cong, .cu-cxn, .tn-muc, .lop-btn, .bxh-dong, .bd-dong, canvas, [data-giu-rieng], .wsg, .acm, .acm-tv';
   var KHONG_AV = '.nwb, header.top, .thanh-in, #nwbAv, #nutMenu, .td-cho, .td-moi, .tk-moi, .acm, .acm-tv, [data-khong-cn]';
   function laTrangTran() { return /\/tran\.html$/.test(location.pathname); }
+  // ⛔ v1.366.0 (thầy báo: chọn bạn ở nút ⚔ thách đấu lại vào trang cá nhân) — `data-uid` còn được code khác dùng làm NHÃN NGƯỜI
+  //   trên phần tử BẤM ĐƯỢC: nút chọn bạn (the-td.js), nút gắn thẻ (nw bai.js), ô tích thành viên (nw chat.js, quanly.html), CẢ HỘP
+  //   chat nổi (chatnoi.js), dòng bảng (giaidau.js, quanly.html). Chỉ coi là AVATAR khi: không phải nút/ô/dòng/link và nhỏ cỡ avatar.
+  var KHONG_PHAI_AV = 'button, a, input, label, select, textarea, option, tr, td, li, [role], [onclick], [contenteditable]';
+  function laAvThat(el) {
+    if (!el || el.matches(KHONG_PHAI_AV)) return false;
+    var r = el.getBoundingClientRect();
+    return r.width <= 180 && r.height <= 180;
+  }
   function avCua(t) {
     var av = t.closest && t.closest(AV_SEL);
-    if (!av || av.closest(KHONG_AV) || laTrangTran()) return null;
+    if (!av || !laAvThat(av) || av.closest(KHONG_AV) || laTrangTran()) return null;
     return av;
+  }
+  // Avatar nằm trong một thứ có VIỆC RIÊNG khi bấm (nút, dòng chọn người, dòng có con trỏ bàn tay…) ⇒ cú bấm là của việc đó.
+  // Chuột phải / nhấn giữ vẫn hiện "Xem trang cá nhân".
+  var CO_VIEC = 'button, a[href], label, select, [role="button"], [role="option"], [role="menuitem"], [onclick], [contenteditable="true"], [data-uid], [data-ma-hs], [data-av-em]';
+  function coViecRieng(av) {
+    for (var p = av.parentElement; p && p !== document.body; p = p.parentElement) {
+      // nhãn người trên KHỐI LỚN (cả hộp chat nổi chatnoi.js `.cn-hop[data-uid]`) không phải dòng chọn người ⇒ bỏ qua khối đó
+      if (p.matches('[data-uid], [data-ma-hs], [data-av-em]') && !p.matches('button, a, label, tr, [role]') && p.getBoundingClientRect().height > 120) continue;
+      // (dòng bảng `tr` trần không tính — chỉ tính khi mang nhãn người hoặc con trỏ bàn tay: quanly.html tr[data-uid])
+      if (p.matches(CO_VIEC)) return true;
+      try { if (getComputedStyle(p).cursor === 'pointer') return true; } catch (e) { }
+    }
+    return false;
   }
   function nhomCua(t) { var n = t.closest && t.closest('[data-nhom-lop]'); return n && !n.closest('.acm, .acm-tv') ? n : null; }
   function mucRieng(t) {   // mục theo CHỖ bấm (không gồm Quay lại / Tải lại)
@@ -362,9 +387,10 @@
     if (nhom) { e.preventDefault(); e.stopPropagation(); M.moThanhVien(nhom.getAttribute('data-nhom-lop'), nhom); return; }
     var av = avCua(t);
     if (!av) return;
-    var bao = av.parentElement && av.parentElement.closest('button, a[href], label, select, [role="button"], [role="menuitem"], [contenteditable="true"]');
-    if (bao && !av.contains(bao)) return;   // avatar trong dòng/nút có việc riêng (mở chat, chọn bạn…)
+    if (coViecRieng(av)) return;   // avatar trong nút/dòng có việc riêng (chọn bạn thách đấu, gắn thẻ, mở chat…) ⇒ để việc đó chạy
     if (av.getAttribute('data-uid') && av.getAttribute('data-uid') === uidToi() && TRONG_NW && /\/canhan\.html$/.test(location.pathname)) return;
+    // v1.366.0 — trang QUẢN LÝ myNetwork (nw/quanly.html: Nhóm chat, Bài đăng, Nổi bật, Báo cáo…) cũng là khu setup ⇒ chỉ chuột phải
+    if (TRONG_NW && /\/quanly\.html$/.test(location.pathname)) return;
     if (laDash()) {
       // ⭐ v1.365.0 (thầy chốt) — dashboard là KHU SETUP: các tính năng ở cột quản lý (Hoạt động, Xếp hạng lớp, Sao, Duyệt ảnh, Kho bài,
       //   Nhóm chat, Báo cáo…) và thẻ/hộp bài KHÔNG mở trang cá nhân bằng 1 cú bấm (cú bấm là việc của hộp) — chuột phải ⇒ "Xem trang cá

@@ -174,10 +174,19 @@
     var nut = $('#btnVao');
     var noi = A.moiNoiTheoMa(DL, go);
     if (noi.length) {
+      // v1.363.0 — KHOÁ ĐĂNG NHẬP RIÊNG có đếm ngược (js/khoa-dn.js): máy này nhớ ID đang khoá ⇒ vẽ đếm ngược, không gọi Firebase.
+      var KD = window.ACKhoaDn;
+      if (KD && KD.truocKhiVao(go)) return;
       if (!mk) { loi('Em nhập mật khẩu nhé.'); $('#inMk').focus(); return; }
       nut.disabled = true;
-      P.dangNhap(go, mk).then(function (u) { nut.disabled = false; return sauDangNhap(u, noi, go, mk); })
-        ['catch'](function (e) { nut.disabled = false; console.warn('[phien] đăng nhập lỗi', e); loi(P.chuLoi(e)); });
+      P.dangNhap(go, mk).then(function (u) { return (KD ? KD.xong(go) : Promise.resolve()).then(function () { nut.disabled = false; return sauDangNhap(u, noi, go, mk); }); })
+        ['catch'](function (e) {
+          nut.disabled = false; console.warn('[phien] đăng nhập lỗi', e); loi(P.chuLoi(e));
+          var c = (e && e.code) || '';
+          if (!KD) return;
+          if (c === 'auth/too-many-requests') KD.gg(go);
+          else if (c === 'auth/invalid-credential' || c === 'auth/wrong-password' || c === 'auth/invalid-login-credentials') KD.sai(go);
+        });
       return;
     }
     var db = A.emDacBietTheoMa(DL, go);
@@ -199,6 +208,7 @@
     $('#btnVao').disabled = false;
     man('manVao');
     if (maDienSan) $('#inMk').focus();
+    if (window.ACKhoaDn) { if (maDienSan) window.ACKhoaDn.truocKhiVao(maDienSan); else window.ACKhoaDn.an(); }   // v1.363.0 — đang khoá thì đếm tiếp
   }
   function doiNguoi() {
     A.thoat();
@@ -215,7 +225,10 @@
     o.addEventListener('blur', function () { if (!o.value) o.placeholder = o.getAttribute('data-goi'); });
   });
   var inMa = $('#inMa');
-  inMa.addEventListener('input', function () { this.value = this.value.toUpperCase(); });
+  inMa.addEventListener('input', function () {
+    this.value = this.value.toUpperCase();
+    if (window.ACKhoaDn) window.ACKhoaDn.truocKhiVao(this.value);   // v1.363.0 — máy chung lớp: đổi ID khác thì mở nút ngay
+  });
   // Enter ở ô ID: học sinh → sang ô mật khẩu; phụ huynh / mã quản lý (không có mật khẩu) → vào luôn
   inMa.onkeydown = function (e) {
     if (e.key !== 'Enter') return;

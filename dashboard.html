@@ -3439,6 +3439,16 @@ button.mk-em:hover{border-color:currentColor}
 .qm-dong svg{width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round}
 .qm-than{flex:1; overflow:auto; padding:16px 22px 22px; min-height:0}
 .qm-p{margin:0 0 12px; color:#555; font-size:13.5px; line-height:1.5}
+/* v1.363.0 (16/10) — ĐANG BỊ KHOÁ ĐĂNG NHẬP (hàm khoaDn, mẫu v1 thầy duyệt) — đầu mục Học sinh & lớp + Mật khẩu HS */
+.kd-hop{margin:0 0 14px; border-radius:14px; border:1.5px solid #f3c7c2; background:#fff; overflow:hidden}
+.kd-hop h5{margin:0; padding:9px 14px; font:800 13px var(--font); background:#fdecec; color:#a23a2e; display:flex; justify-content:space-between; align-items:center}
+.kd-hop h5 button{border:0; background:none; color:inherit; font:700 12px var(--font); cursor:pointer}
+.kd-hang{display:flex; align-items:center; gap:10px; padding:9px 14px; border-top:1px solid #f6e3e1}
+.kd-hang .t{flex:1; min-width:0; font-size:13.5px}
+.kd-hang .t small{display:block; color:#a23a2e; font-weight:700; font-size:12px}
+.kd-hang .t small.gg{color:#3b4a63}
+.kd-hang button{border:0; border-radius:9px; padding:7px 11px; font:800 12px var(--font); cursor:pointer; background:#0E7C6E; color:#fff; white-space:nowrap}
+.kd-hang button:disabled{opacity:.55; cursor:default}
 .qm-thanh{display:flex; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
 .qm-phan{display:inline-flex; background:var(--nen); border-radius:10px; padding:3px}
 .qm-phan button{border:0; background:none; border-radius:8px; padding:7px 14px; font:700 12.5px var(--font); color:var(--nhat); cursor:pointer}
@@ -14032,6 +14042,100 @@ tr.qm-hang-tam td{background:#fffbeb}
   window.qlMoMatKhau = moHopMatKhau;
 
   /* ============================================================
+     🔒 v1.363.0 (16/10/2026, mẫu v1 thầy duyệt) — ĐANG BỊ KHOÁ ĐĂNG NHẬP. Trang đăng nhập (js/khoa-dn.js) tự đếm lần sai qua
+     hàm máy chủ `khoaDn` (app may-chu/functions/khoa-dn.js): sai 5 ⇒ khoá 1 phút, 8 ⇒ 5 phút, rồi 15 phút. Khung này hiện ở ĐẦU
+     mục Học sinh & lớp + Mật khẩu HS khi có em đang khoá: giờ mở + đếm ngược + nút "Mở khoá ngay" (máy em biết trong ≤ 15 giây).
+     Em dính khoá của Google (too-many-requests, không biết giờ mở) ⇒ nút "Đặt lại mật khẩu" (hộp cũ — đặt lại = mở cả hai khoá).
+     Đọc lại mỗi 30 giây khi hộp đang mở ở hai mục đó. Kho khoaDn KHÔNG có luật — chỉ hàm đọc/ghi (hàm tự kiểm thầy).
+     ============================================================ */
+  var KD = { ds: null, luc: 0, dang: null, hen: null, lech: 0 }, _kdFn = null;
+  function hamKhoaDn() {
+    if (!_kdFn) {
+      _kdFn = AWChat.kho().then(async function () {
+        var appMod = await import(SP_SDK + '/firebase-app.js');
+        var fnMod = await import(SP_SDK + '/firebase-functions.js');
+        return fnMod.httpsCallable(fnMod.getFunctions(appMod.getApp(), 'asia-southeast1'), 'khoaDn');
+      });
+      _kdFn['catch'](function () { _kdFn = null; });
+    }
+    return _kdFn;
+  }
+  function kdTai() {
+    if (KD.dang || THAY_PHIEN === null) return KD.dang;
+    KD.dang = hamKhoaDn().then(function (fn) { return fn({ viec: 'ds' }); }).then(function (r) {
+      var d = (r && r.data) || {};
+      KD.ds = d.ds || []; KD.luc = Date.now(); KD.lech = d.now ? Date.now() - d.now : 0; KD.dang = null;
+      kdVe();
+    }, function (e) { KD.dang = null; KD.luc = Date.now(); console.warn('[khoaDn] chưa đọc được danh sách', e); });
+    return KD.dang;
+  }
+  function kdMmss(ms) { var s = Math.max(0, Math.ceil(ms / 1000)); return ('0' + Math.floor(s / 60)).slice(-2) + ':' + ('0' + (s % 60)).slice(-2); }
+  function kdHhmm(t) { var d = new Date(t); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function kdHtml() {
+    var now = Date.now() - KD.lech;
+    var ds = (KD.ds || []).filter(function (x) { return x.gg || x.khoaDen > now; });
+    if (!ds.length) return '';
+    return '<div class="kd-hop"><h5><span>🔒 Đang bị khoá đăng nhập · ' + ds.length + '</span><button type="button" data-kd-tai>↻ Làm mới</button></h5>' +
+      ds.map(function (x) {
+        var m = MK_THEO_UID[x.uid] || {}, ten = x.ten || m.ten || x.uid, lop = A.lopHien ? A.lopHien(x.lop) : x.lop;
+        var dong = x.khoaDen > now
+          ? '<small>Sai ' + x.sai + ' lần · khoá ' + x.phut + ' phút đến ' + kdHhmm(x.khoaDen + KD.lech) + ' (còn <span data-kd-con="' + x.khoaDen + '">' + kdMmss(x.khoaDen - now) + '</span>)</small>'
+          : '<small class="gg">Khoá của Google từ ' + kdHhmm(x.gg + KD.lech) + ' · không biết giờ mở — đặt lại mật khẩu để mở ngay</small>';
+        var nut = x.khoaDen > now
+          ? '<button type="button" data-kd-mo="' + qmE(x.uid) + '">Mở khoá ngay</button>'
+          : '<button type="button" data-mk-uid="' + qmE(x.uid) + '" data-mk-ten="' + qmE(ten) + '" data-mk-so="' + qmE(String(m.so || '')) + '">Đặt lại mật khẩu</button>';
+        return '<div class="kd-hang"><div class="t"><b>' + qmE(ten) + '</b>' + (lop ? ' · ' + qmE(lop) : '') + dong + '</div>' + nut + '</div>';
+      }).join('') + (QM.tab === 'hs' ? '<div class="mk-hoi" hidden></div>' : '') + '</div>';
+  }
+  // Vẽ vào ô #kdO (đầu mục) + chạy đồng hồ; hết giờ hết khoá thì tự ẩn dòng đó.
+  function kdVe() {
+    var o = document.getElementById('kdO');
+    if (!o) return;
+    if (o.querySelector('.mk-hoi:not([hidden])')) return;      // đang hỏi đặt lại mật khẩu ⇒ đừng vẽ đè
+    o.innerHTML = kdHtml();
+  }
+  function kdChay() {
+    if (KD.hen) return;
+    KD.hen = setInterval(function () {
+      if (!qmDangMo('hs') && !qmDangMo('mk')) { clearInterval(KD.hen); KD.hen = null; return; }
+      var now = Date.now() - KD.lech, het = false;
+      document.querySelectorAll('#kdO [data-kd-con]').forEach(function (s) {
+        var den = +s.getAttribute('data-kd-con');
+        if (den <= now) het = true; else s.textContent = kdMmss(den - now);
+      });
+      if (het) kdVe();
+      if (Date.now() - KD.luc > 30000) kdTai();
+    }, 1000);
+  }
+  function kdSauVe() {
+    if (!document.getElementById('kdO')) return;
+    kdVe(); kdChay();
+    if (Date.now() - KD.luc > 15000) kdTai();
+  }
+  function kdMo(nut) {
+    if (chuaThay(nut)) return;
+    var uid = nut.getAttribute('data-kd-mo');
+    nut.disabled = true; nut.textContent = 'Đang mở…';
+    hamKhoaDn().then(function (fn) { return fn({ viec: 'mo', uid: uid }); }).then(function () {
+      KD.ds = (KD.ds || []).filter(function (x) { return x.uid !== uid; });
+      kdVe(); baoToast('Đã mở khoá — máy em sẽ báo trong vài giây.');
+    }, function (e) {
+      nut.disabled = false; nut.textContent = 'Mở khoá ngay';
+      var ma = String((e && (e.code || e.message)) || '');
+      baoToast(ma.indexOf('permission-denied') >= 0 ? 'Phiên hiện tại không phải của thầy — đăng nhập lại rồi thử.' : 'Chưa mở được (' + ma + ').');
+    });
+  }
+  function ganNgheKd(hop) {
+    hop.addEventListener('click', function (e) {
+      var m = e.target.closest('[data-kd-mo]'); if (m) { kdMo(m); return; }
+      if (e.target.closest('[data-kd-tai]')) { KD.luc = 0; kdTai(); return; }
+      // đặt lại mật khẩu xong (hộp cũ) ⇒ máy chủ đã xoá khoá ⇒ đọc lại danh sách
+      if (e.target.closest('[data-mk-dat]')) setTimeout(function () { KD.luc = 0; kdTai(); }, 4000);
+      if (e.target.closest('#kdO [data-mk-huy]')) setTimeout(kdVe, 0);
+    });
+  }
+
+  /* ============================================================
      ⭐⭐ v1.166.0 (28/09/2026) — HỘP "QUẢN LÝ & BẢO MẬT" (mẫu v4 thầy chốt; kế hoạch myLesson-app
      "KE HOACH QUAN LY HOC SINH.md" ĐỢT A). Dòng cuối cột trái (js/nw-thanh.js → window.qlMoBaoMat) mở hộp 5 mục:
        Học sinh & lớp — thay "Quản lý mã" + "Thiết lập lớp" + "Xem như học sinh" của menu ☰ cũ + mục "Lớp" Network;
@@ -14159,6 +14263,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (pTv) hsoVaoThay(pTv);
     });
     ganNgheMk($('#qmThan'));
+    ganNgheKd($('#qmThan'));   // v1.363.0 — khung Đang bị khoá đăng nhập
     return nen;
   }
   function moHopBaoMat(tab) {
@@ -16193,7 +16298,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (QM.em && !p) QM.em = null;
       tieu = p ? 'Hồ sơ học sinh' : 'Học sinh & lớp';
       phu = p ? p.noi.map(function (n) { return n.ten; }).join(' · ') : dsNguoi().length + ' em · ' + tatCaLop().length + ' lớp/khóa';
-      than = p ? htmlHoSo(p) : htmlHocSinh();
+      than = p ? htmlHoSo(p) : '<div id="kdO"></div>' + htmlHocSinh();   // v1.363.0 — ô Đang bị khoá đăng nhập
       if (p && !SOHS) napSo().then(dienSoHs, function () { });   // v1.259.0 số học sinh điền sau
     } else if (QM.tab === 'dd') {
       tieu = 'Điểm danh'; phu = 'Sửa được ở CẢ HAI nơi: đây và myStudent (nháy đúp ô ngày) — sửa ở đây máy lớp nhận ≤ 5 phút; sửa ở myStudent bấm ↻ Làm mới là thấy';
@@ -16203,6 +16308,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (THAY_PHIEN === null) than = '<p class="qm-p">' + qmE(AWThay.CAN_DANG_NHAP) + '</p>';
       else if (MK_LOI) than = '<p class="qm-p">' + qmE(MK_LOI) + '</p>';
       else if (canMatKhau() && MK_KQ) than = htmlMatKhau(MK_KQ);
+      if (THAY_PHIEN) than = '<div id="kdO"></div>' + than;   // v1.363.0
       else than = '<p class="qm-p">Đang đọc…</p>';
     } else if (QM.tab === 'kc') {
       tieu = '🚨 Khẩn cấp'; phu = 'Khoá chat / khoá ghi điểm khi bị tấn công — mở lại là mọi thứ chạy như cũ';
@@ -16222,6 +16328,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     $('#qmThan').innerHTML = than;
     $('#qmSo_tb').textContent = TBQ.cai && Object.keys(TBQ.cai).length ? Object.keys(TBQ.cai).length + ' tắt' : '';   // v1.290.0
     if (QM.tab === 'tb') sauVeThongBao();
+    if (QM.tab === 'hs' || QM.tab === 'mk') kdSauVe();   // v1.363.0
     if (QM.tab === 'hs' && !QM.em && QM.xem === 'hs') veBangHs();
     if (QM.tab === 'hs' && p) napHoSo(p);       // v1.167.0 — ba khối số liệu nạp song song, tự vẽ ô của mình
   }

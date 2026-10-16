@@ -43,7 +43,7 @@
     if (window.NW && NW.dungThanh) {
       _toi = new Promise(function (res) {
         var n = 0;
-        (function cho() { if (NW.toi) return res({ uid: NW.toi.uid, ten: NW.toi.ten, laThay: !!NW.toi.laThay }); if (++n > 100) { _toi = null; return res({ uid: '', ten: '', laThay: false }); } setTimeout(cho, 200); })();
+        (function cho() { if (NW.toi) return res({ uid: NW.toi.uid, ten: NW.toi.ten, laThay: !!NW.toi.laThay, lop: NW.toi.lop || '' }); if (++n > 100) { _toi = null; return res({ uid: '', ten: '', laThay: false }); } setTimeout(cho, 200); })();
       });
       return _toi;
     }
@@ -68,9 +68,13 @@
     } catch (e) { }
     if (window.NW && NW.di) NW.di(href); else location.href = href;
   }
-  function moTran(id) { diToi((laNw ? '' : 'nw/') + 'tran.html?id=' + encodeURIComponent(id)); }
+  // ⭐ thầy giao hữu — THẦY vào trận / theo dõi ở TAB MỚI (thầy chốt 16/10: dashboard giữ nguyên chỗ đang làm)
+  function urlTran(id, xem) { var h = (laNw ? '' : 'nw/') + 'tran.html?id=' + encodeURIComponent(id) + (xem ? '&xem=1' : ''); return new URL(window.NW && NW.duong ? NW.duong(h) : h, location.href).href; }
+  function moTabTrong() { try { return window.open('about:blank', '_blank'); } catch (e) { return null; } }
+  function moTab(u) { var w = null; try { w = window.open(u, '_blank'); } catch (e) { } if (!w) diToi(u); }
+  function moTran(id) { if (TOI.laThay) return moTab(urlTran(id)); diToi((laNw ? '' : 'nw/') + 'tran.html?id=' + encodeURIComponent(id)); }
   // ⭐ v1.351.0 — XEM trực tiếp (bạn cùng lớp / thầy): trang trận ở chế độ xem, không bàn chữ, không ghi gì
-  function moXem(id) { diToi((laNw ? '' : 'nw/') + 'tran.html?id=' + encodeURIComponent(id) + '&xem=1' + (banThu() ? '&thu=1&che=free' : '')); }
+  function moXem(id) { if (TOI.laThay && !banThu()) return moTab(urlTran(id, true)); diToi((laNw ? '' : 'nw/') + 'tran.html?id=' + encodeURIComponent(id) + '&xem=1' + (banThu() ? '&thu=1&che=free' : '')); }
 
   // ---------- CSS (tự chèn — trang nw/ và trang chính khác bộ màu) ----------
   function napCss() {
@@ -143,7 +147,32 @@
       '.td-ghim .trong{font-size:12.5px;color:#9A7B3A;padding:2px 6px}' +
       '.td-ghim .luat{font-size:12px;color:#8A6A2A;margin-top:8px;line-height:1.4}' +
       '.td-ghim a.du{display:inline-block;margin-top:8px;font-weight:700;font-size:12.5px;color:#B7791F;text-decoration:none}' +
-      '.td-ghim.sap .dong{cursor:default}.td-ghim.sap .cup{background:#F3E8C8}';
+      '.td-ghim.sap .dong{cursor:default}.td-ghim.sap .cup{background:#F3E8C8}' +
+      // ⭐ thầy giao hữu (16/10/2026) — thẻ trận CỦA THẦY: đầu xanh dương, ảnh thầy, dòng cách đấu
+      '.cu-td.thay{width:min(400px,calc(100% - 16px));border:1.5px solid #A9C0F5;box-shadow:0 6px 20px rgba(62,107,224,.16)}' +
+      '.cu-td.thay .d{background:linear-gradient(100deg,#1D3C99,#3E6BE0 60%,#6F93F2);color:#fff;font-size:12.5px;padding:9px 12px}' +
+      '.cu-td.thay .d span{color:#DCE6FF}' +
+      '@media (max-width:420px){.cu-td.thay .d{letter-spacing:.04em;font-size:11.5px;white-space:nowrap}}' +
+      '.cu-td.thay .gt{padding:8px 12px 0;text-align:center;font-weight:700;font-size:13px;line-height:1.3;color:#2B4AA8}' +
+      '.cu-td.thay .ng i{width:48px;height:48px;font-size:15px}.cu-td.thay .ng b{font-size:26px}' +
+      '.cu-td .ng i.gv{background:#DCE6FF center/cover no-repeat;box-shadow:0 0 0 2px #3E6BE0}' +
+      '.cu-td.thay .n{background:#3E6BE0}.cu-td.thay .k{background:#E6EDFD;color:#2B4AA8}.cu-td.thay .va i{background:#3E6BE0}' +
+      '.cu-td.thay .moi{text-align:center;font-weight:700;font-size:13.5px;color:#16232A}' +
+      '.cu-td.thay .ret{text-align:center;font-weight:800;font-size:14px;color:#16232A}.cu-td.thay .ret.hs{color:#B7791F}' +
+      '.cu-td.thay .dang{color:#3E6BE0}.cu-td.thay .dang::before{background:#3E6BE0}' +
+      // hộp chọn của thầy: phần CÁCH ĐẤU (nhớ lần chọn trước) + danh sách em
+      '.td-chon.rong{width:min(360px,calc(100vw - 24px));max-height:min(560px,80vh)}' +
+      '.td-cai{display:flex;flex-direction:column;gap:7px;padding:8px 6px 10px;margin:0 0 6px;border-bottom:1px solid #E0EAE7}' +
+      '.td-cai .h{display:flex;align-items:center;gap:8px}.td-cai .h>em{font-style:normal;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#7C8C89;width:74px;flex:none}' +
+      '.td-cai .chips{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}' +
+      '.td-chon .td-cai button{width:auto;display:inline-flex;padding:6px 10px;border-radius:999px;border:1px solid #D5E1DE;background:#fff;font-size:12.5px;font-weight:600;color:#3B4F4B;gap:0}' +
+      '.td-chon .td-cai button:hover{background:#F3F7F6}.td-chon .td-cai button.on{background:#3E6BE0;border-color:#3E6BE0;color:#fff}' +
+      '.td-cai select{flex:1;min-width:0;height:32px;border:1px solid #D5E1DE;border-radius:10px;padding:0 8px;font:inherit;font-size:13px;color:#16232A;background:#fff}' +
+      '.td-chon .gvb{font-style:normal;font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 6px;border-radius:999px;background:#E6EDFD;color:#2B4AA8;margin-left:6px;vertical-align:1px}' +
+      '.td-chon i.anh{background:#DCE6FF center/cover no-repeat}' +
+      '.td-chon .tt2{display:flex;align-items:center;gap:6px;font-size:12.5px;color:#5F7370;padding:2px 6px 8px}.td-chon .tt2 .c{width:8px;height:8px;border-radius:50%;background:#1DA45C;flex:none}.td-chon .tt2 .c.tat{background:#B9C6C3}' +
+      '.td-chon button.moi-nut{height:40px;justify-content:center;border-radius:12px;background:#3E6BE0;color:#fff;font-weight:700;font-size:14px;margin-top:4px}' +
+      '.td-chon button.moi-nut:hover{background:#3560CF}';
     document.head.appendChild(s);
   }
 
@@ -170,6 +199,7 @@
     var t = TRAN[id];
     if (!t) return '<div class="d">' + IC + 'Thách đấu<span>A Show Speed</span></div><div class="c"><div class="tt">Đang tải…</div></div>';
     if (t._khongDoc) return '<div class="d">' + IC + 'Thách đấu<span>A Show Speed</span></div><div class="c"><div class="tt">' + an(t._chu || 'Trận đấu của lớp') + '</div></div>';
+    if (t.gv) return thayHtml(id);
     var xong = t.trangThai === 'xong', d = t.diem || {}, kqA = t.kq ? t.kq.a : '';
     var ng = function (ten, diem, thang) { return '<div class="ng' + (thang ? ' th' : '') + '"><i style="background:' + mau(ten) + '">' + an(tat(ten)) + '</i>' + an(ten) + (xong || t.trangThai === 'choi' ? '<b>' + (diem || 0) + '</b>' : '') + '</div>'; };
     var con = Math.max(0, Math.ceil(((t.het || 0) - Date.now()) / 1000));
@@ -194,6 +224,43 @@
       (g.ten ? '<div class="gt">' + an(g.ten) + (bo ? '<small>Bộ từ: ' + an(bo) + '</small>' : '') + '</div>' : '') +
       '<div class="g">' + ng(t.tenA, d.a, kqA === 'thang') + '<span class="vs">VS</span>' + ng(t.tenB, d.b, kqA === 'thua') + '</div><div class="c">' + duoi + '</div>';
   }
+  // ⭐ thầy giao hữu (16/10/2026) — thẻ trận có THẦY (t.gv = uid thầy; thầy mời em HOẶC em mời thầy). Thẻ to, đầu xanh dương.
+  var AV_THAY = 'assets/avatar-tron.jpg';   // trang chính + nw/ đều có tệp này cùng đường tương đối
+  var LV_TEN = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+  function cachDau(t) {   // "Free words · FRUITS / WORDS" | "Easy · 16 chữ ngẫu nhiên"
+    var c = t.cai || {}, che = t.che || c.che || '', bo = t.boTen || c.boTen || '';
+    return che ? (CHE_TEN[che] || '') + (bo ? ' · ' + bo : '') : (LV_TEN[t.lv] || 'Easy') + ' · 16 chữ ngẫu nhiên';
+  }
+  function thayHtml(id) {
+    var t = TRAN[id], gvA = t.gv === t.a, hsK = gvA ? 'b' : 'a', hsTen = gvA ? t.tenB : t.tenA;
+    var xong = t.trangThai === 'xong', d = t.diem || {}, kq = t.kq || {};
+    var ng = function (k) {
+      var laGv = (k === 'a') === gvA, ten = laGv ? 'Thầy Andrew' : (k === 'a' ? t.tenA : t.tenB);
+      var av = laGv ? '<i class="gv" style="background-image:url(' + AV_THAY + ')"></i>' : '<i style="background:' + mau(ten) + '">' + an(tat(ten)) + '</i>';
+      return '<div class="ng' + (xong && kq[k] === 'thang' ? ' th' : '') + '">' + av + an(ten) + (xong || t.trangThai === 'choi' ? '<b>' + (d[k] || 0) + '</b>' : '') + '</div>';
+    };
+    var con = Math.max(0, Math.ceil(((t.het || 0) - Date.now()) / 1000)), duoi;
+    if (t.trangThai === 'moi' && con > 0) {
+      var va = '<div class="va"><i style="width:' + (con / 60 * 100) + '%"></i></div>';
+      if (TOI.uid && TOI.uid === t.b) duoi = '<div class="moi">' + (gvA ? 'Thầy mời em giao hữu' : an(hsTen) + ' mời thầy giao hữu') + '</div>' + va +
+        '<div class="h2"><button type="button" class="k" data-tdx="khong">Từ chối</button><button type="button" class="n" data-tdx="nhan">Nhận · <span class="td-con">' + con + '</span>s</button></div>';
+      else if (TOI.uid && TOI.uid === t.a) duoi = va + '<div class="tt">Đang chờ <b>' + (gvA ? an(hsTen) : 'thầy') + '</b> nhận · <span class="td-con">' + con + '</span>s</div>' +
+        '<button type="button" class="k" data-tdx="huy" style="height:34px">Huỷ lời mời</button>';
+      else duoi = va + '<div class="tt">' + (gvA ? 'Thầy mời <b>' + an(hsTen) + '</b> giao hữu' : '<b>' + an(hsTen) + '</b> mời thầy giao hữu') + '</div>';
+    } else if (dangDau(t)) {
+      duoi = '<div class="dang">Đang đấu…</div>' + (trongTran(t) ? '<button type="button" class="n" data-tdx="vao">Vào trận</button>'
+        : '<button type="button" class="x" data-tdx="xem">' + IC_MAT + 'Theo dõi trực tiếp</button>');
+    } else if (xong) {
+      var r = kq[hsK];
+      duoi = r === 'thang' ? '<div class="ret hs">🎉 ' + an(hsTen) + ' thắng thầy!</div>' : r === 'thua' ? '<div class="ret">Thầy Andrew thắng</div>' : '<div class="ret">Hòa với thầy</div>';
+      if (/^(roi|mat)[AB]$/.test(t.ly || '')) duoi += '<div class="tt">' + (/^roi/.test(t.ly) ? 'Có người rời trận' : 'Có người mất kết nối') + '</div>';
+    } else {
+      duoi = '<div class="tt">' + ({ tuchoi: (gvA ? an(hsTen) : 'Thầy') + ' chưa muốn đấu lúc này', huy: 'Lời mời đã huỷ' }[t.trangThai] || 'Lời mời đã hết hạn') + '</div>';
+    }
+    return '<div class="d">' + IC + (TOI.laThay ? 'Thầy giao hữu' : 'Giao hữu với thầy') + '<span>A Show Speed · ' + (t.phut || 2) + ' phút</span></div>' +
+      '<div class="gt">' + an(cachDau(t)) + '</div>' +
+      '<div class="g">' + ng('a') + '<span class="vs">VS</span>' + ng('b') + '</div><div class="c">' + duoi + '</div>';
+  }
   // ⭐ v1.351.0 — thẻ GIAO HỮU: một dòng nhỏ
   function gonHtml(id) {
     var t = TRAN[id], A = an(t.tenA), B = an(t.tenB), nd, nut = '', dg = '';
@@ -213,12 +280,12 @@
     return '<span class="ic">' + IC + '</span><span class="nh">Giao hữu</span>' + dg + '<span class="nd">' + nd + '</span>' + nut;
   }
   function moMo(t) { return t && !t._khongDoc && (t.trangThai === 'tuchoi' || t.trangThai === 'huy' || t.trangThai === 'het' || (t.trangThai === 'moi' && (t.het || 0) < Date.now())); }
-  function laGon(t) { return !!(t && !t._khongDoc && !t.giai); }
+  function laGon(t) { return !!(t && !t._khongDoc && !t.giai && !t.gv); }
   function veId(id) {
     var t = TRAN[id], gon = laGon(t);
     document.querySelectorAll('.cu-td[data-td="' + id + '"]').forEach(function (el) {
       el.innerHTML = gon ? gonHtml(id) : cardHtml(id);
-      el.classList.toggle('mo', !!moMo(t)); el.classList.toggle('gon', gon); el.classList.toggle('giai', !!(t && t.giai));
+      el.classList.toggle('mo', !!moMo(t)); el.classList.toggle('gon', gon); el.classList.toggle('giai', !!(t && t.giai)); el.classList.toggle('thay', !!(t && t.gv));
     });
   }
   function veHet() { Object.keys(TRAN).forEach(veId); }
@@ -237,7 +304,7 @@
   async function bam(id, viec, nut) {
     if (viec === 'vao') return moTran(id);
     if (viec === 'xem') return moXem(id);
-    if (banThu()) { if (viec === 'nhan') moTran('mau'); return; }
+    if (banThu()) { if (THU_SIM[id]) return THU_SIM[id](viec); if (viec === 'nhan') moTran('mau'); return; }
     nut.disabled = true;
     try {
       var f = await kho();
@@ -290,45 +357,184 @@
     return ds.sort(function (a, b) { return String(a.ten).localeCompare(String(b.ten), 'vi'); });
   }
   function mauBan() { return [{ uid: 'hs_1', ten: 'Gia Bảo' }, { uid: 'hs_2', ten: 'Bảo Nam' }, { uid: 'hs_3', ten: 'Thảo Vy' }]; }
+  // ⭐ thầy giao hữu (16/10/2026) — học sinh thấy THẦY trong danh sách khi thầy đang online (đấu hai chiều)
+  async function thayOnline(f) {
+    if (banThu()) return [{ uid: 'gv', ten: 'Thầy Andrew', laThay: true }];
+    try {
+      var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'nwUsers'), f.fs.where('vaiTro', '==', 'gv'), f.fs.limit(3))), ds = [], bay = Date.now();
+      s.forEach(function (d) { var x = d.data(); if (x.hoatDongLuc && bay - x.hoatDongLuc < ONLINE_MS) ds.push({ uid: d.id, ten: 'Thầy Andrew', laThay: true }); });
+      return ds.slice(0, 1);
+    } catch (e) { return []; }
+  }
+  async function dangOnline(f, uid) {
+    if (banThu()) return uid !== 'hs_3';
+    try { var s = await f.fs.getDoc(f.fs.doc(f.db, 'nwUsers', uid)); var x = s.exists() ? s.data() : {}; return !!(x.hoatDongLuc && Date.now() - x.hoatDongLuc < ONLINE_MS); } catch (e) { return false; }
+  }
+
+  // ---------- CÁCH ĐẤU của thầy (nhớ lần chọn trước trên máy này) ----------
+  var CAI_KHOA = 'tdThayCai';
+  function caiDoc() {
+    var c = { che: '', lv: 'easy', phut: 2, bo: null };
+    try { Object.assign(c, JSON.parse(localStorage.getItem(CAI_KHOA) || '{}')); } catch (e) { }
+    return c;
+  }
+  function caiLuu(c) { try { localStorage.setItem(CAI_KHOA, JSON.stringify(c)); } catch (e) { } }
+  // bộ từ = act WORDS trong thư viện AWord của thầy (như hộp tạo giải). Bàn thử: bộ mẫu.
+  var _boDs = null;
+  async function dsBo(f) {
+    if (_boDs) return _boDs;
+    if (banThu()) return (_boDs = [{ id: 'a1', ten: 'FRUITS / WORDS', so: 12 }, { id: 'a2', ten: '7 JOB / WORDS', so: 12 }, { id: 'a3', ten: '1 BODY PARTS / WORDS', so: 10 }]);
+    try {
+      var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'users', AW_UID, 'items'), f.fs.where('kind', '==', 'act'))), ds = [];
+      s.forEach(function (d) { var a = d.data(), it = a.content && a.content.items; if (Array.isArray(it) && it.length && it.every(function (x) { return x && x.word; })) ds.push({ id: d.id, ten: a.title || '(không tên)', so: it.length }); });
+      return (_boDs = ds.sort(function (a, b) { return String(a.ten).localeCompare(String(b.ten), 'vi', { numeric: true }); }));
+    } catch (e) { return []; }
+  }
+  var AW_UID = 'tpD5VivTD6g4NVceix4Zf3Ibefp1';
+  function caiHtml(c, bo) {
+    var chip = function (k, v, chu) { return '<button type="button" data-cai="' + k + '" data-v="' + v + '"' + (String(c[k]) === String(v) ? ' class="on"' : '') + '>' + chu + '</button>'; };
+    var dong2 = !c.che
+      ? '<div class="h"><em>Độ khó</em><span class="chips">' + chip('lv', 'easy', 'Easy') + chip('lv', 'medium', 'Medium') + chip('lv', 'hard', 'Hard') + '</span></div>'
+      : '<div class="h"><em>Bộ từ</em><select data-cai-bo aria-label="Bộ từ">' + (bo.length ? bo.map(function (b) { return '<option value="' + an(b.id) + '"' + (c.bo && c.bo.id === b.id ? ' selected' : '') + '>' + an(b.ten) + ' (' + b.so + ' từ)</option>'; }).join('') : '<option value="">Chưa tải được bộ từ</option>') + '</select></div>';
+    return '<div class="td-cai"><div class="h"><em>Cách đấu</em><span class="chips">' + chip('che', '', '16 chữ') + chip('che', 'one', 'One word') + chip('che', 'list', 'Word list') + chip('che', 'free', 'Free words') + '</span></div>' +
+      dong2 + '<div class="h"><em>Thời gian</em><span class="chips">' + chip('phut', 2, '2 phút') + chip('phut', 3, '3 phút') + chip('phut', 5, '5 phút') + '</span></div></div>';
+  }
+  // gắn sự kiện phần cách đấu: đổi ⇒ lưu + vẽ lại đúng phần đó
+  function lapCai(el, c, bo) {
+    var ve = function () { var cu = el.querySelector('.td-cai'); cu.outerHTML = caiHtml(c, bo); lap(); };
+    var lap = function () {
+      el.querySelectorAll('[data-cai]').forEach(function (b) {
+        b.onclick = function () { var k = b.getAttribute('data-cai'), v = b.getAttribute('data-v'); c[k] = k === 'phut' ? +v : v; if (k === 'che' && v && !c.bo && bo[0]) c.bo = { id: bo[0].id, ten: bo[0].ten }; caiLuu(c); ve(); };
+      });
+      var s = el.querySelector('[data-cai-bo]');
+      if (s) { if (!c.bo && bo[0]) { c.bo = { id: bo[0].id, ten: bo[0].ten }; caiLuu(c); } s.onchange = function () { var b = bo.filter(function (x) { return x.id === s.value; })[0]; c.bo = b ? { id: b.id, ten: b.ten } : null; caiLuu(c); }; }
+    };
+    lap();
+  }
+  function moTa(c) { return c.che ? (CHE_TEN[c.che] || '') + (c.bo ? ' · ' + c.bo.ten : '') : (LV_TEN[c.lv] || 'Easy'); }
+
+  // ---------- TẠO TRẬN (mọi đường mời: nhóm lớp, phòng riêng, thầy ↔ em) ----------
+  // o = { me, ban, lop, giai, phut, lv, cai (thầy mời), gv (uid thầy nếu trận có thầy), gui, baoLoi }
+  var THU_SIM = {};   // bàn thử: id trận giả → hàm bấm (Nhận / Từ chối / Huỷ)
+  async function taoTran(o) {
+    var me = o.me, ban = o.ban, cai = o.cai || null;
+    var chu = '⚔ ' + (me.laThay ? 'Thầy Andrew' : me.ten) + (o.gv ? ' mời ' + (ban.laThay ? 'thầy' : ban.ten) + ' giao hữu' : ' thách đấu ' + ban.ten);
+    var data = { a: me.uid, b: ban.uid, nguoi: [me.uid, ban.uid], tenA: me.laThay ? 'Thầy Andrew' : me.ten, tenB: ban.laThay ? 'Thầy Andrew' : ban.ten,
+      lop: o.lop, giai: o.giai || '', phut: o.phut, lv: o.lv, trangThai: 'moi', taoLuc: Date.now(), het: Date.now() + 60000 };
+    if (o.gv) { data.gv = o.gv; if (cai) data.cai = { che: cai.che || '', boId: cai.bo ? cai.bo.id : '', boTen: cai.bo ? cai.bo.ten : '' }; }
+    if (banThu()) {
+      // bàn thử: trận giả chạy hết vòng trong vài giây (chờ nhận → đang đấu → kết quả) để xem thẻ đổi trạng thái
+      var id = 'thu' + Date.now();
+      TRAN[id] = data; NGHE[id] = 1;
+      var buoc = function (doi) { Object.assign(TRAN[id], doi); veId(id); };
+      THU_SIM[id] = function (viec) {
+        if (viec === 'huy') return buoc({ trangThai: 'huy' });
+        if (viec === 'khong') return buoc({ trangThai: 'tuchoi' });
+        if (viec === 'nhan') { buoc({ trangThai: 'choi', diem: { a: 0, b: 0 } }); setTimeout(function () { buoc({ diem: { a: 4, b: 6 } }); }, 3000); setTimeout(function () { buoc({ trangThai: 'xong', diem: { a: 9, b: 12 }, kq: { a: 'thua', b: 'thang' } }); }, 7000); }
+      };
+      await o.gui({ loai: 'td', id: id }, chu);
+      if (o.baoLoi) o.baoLoi('Bàn thử: 5 giây nữa ' + (ban.laThay ? 'thầy' : ban.ten) + ' bấm Nhận' + (me.laThay ? ' · trận thật mở ở TAB MỚI' : ''));
+      setTimeout(function () { if (TRAN[id].trangThai === 'moi') THU_SIM[id]('nhan'); }, 5000);
+      return;
+    }
+    // thầy: mở TAB MỚI ngay trong cú bấm, TRƯỚC mọi lượt chờ (trình duyệt chặn tab mở muộn) — trang trận tự chờ em nhận rồi vào trận
+    var tab = me.laThay ? moTabTrong() : null;
+    try {
+      var f = await kho();
+      // phòng riêng: chưa biết lớp của em ⇒ lấy lớp chính trong hồ sơ em (luật: em phải học lớp của trận)
+      if (!data.lop) {
+        var sHs = await f.fs.getDoc(f.fs.doc(f.db, 'nwUsers', me.laThay ? ban.uid : me.uid)), x = sHs.exists() ? sHs.data() : {};
+        data.lop = x.lop || (x.cacLop || [])[0] || '';
+        if (!data.lop) throw new Error('Chưa biết lớp của ' + (me.laThay ? ban.ten : 'em') + ' — thầy mời từ nhóm chat lớp nhé.');
+      }
+      var ref = f.fs.doc(f.fs.collection(f.db, 'tranDau'));
+      await f.fs.setDoc(ref, data);
+      if (tab) tab.location.href = urlTran(ref.id); else MOI_TAO[ref.id] = 1;
+      try { await o.gui({ loai: 'td', id: ref.id }, chu); }
+      catch (e2) { await f.fs.updateDoc(ref, { trangThai: 'huy' }).catch(function () { }); throw e2; }
+    } catch (e) {
+      if (tab) tab.close();
+      var ma = String((e && (e.code || e.message)) || '');
+      if (o.baoLoi) o.baoLoi(ma.indexOf('permission') >= 0 ? 'Chưa mời được: giải đã đóng, bạn không cùng lớp, hoặc đồng hồ máy em bị lệch.' : e);
+    }
+  }
+
+  // ---------- hộp chọn ở NHÓM LỚP (nút ⚔): em chọn bạn / thầy đang online · thầy chọn cách đấu + em đang online ----------
   async function TheTD_moChon(nut, lop, gui, baoLoi) {
     if (hop) return dongHop();
     napCss();
     hop = document.createElement('div'); hop.className = 'td-chon';
     hop.innerHTML = '<div class="t">Thách đấu</div><div class="p">Đang tìm bạn đang online…</div>';
     document.body.appendChild(hop); datViTri(hop, nut);
-    var el = hop, g = null, ds = [], me = await toi();
+    var el = hop, g = null, ds = [], me = await toi(), bo = [], f = null;
     try {
-      if (banThu()) ds = mauBan();
-      else { var f = await kho(); var r = await Promise.all([giaiDangMo(f, lop), banOnline(f, lop, me.uid)]); g = r[0]; ds = r[1]; }
+      if (!banThu()) f = await kho();
+      if (me.laThay) { var r0 = await Promise.all([banThu() ? mauBan() : banOnline(f, lop, me.uid), dsBo(f)]); ds = r0[0]; bo = r0[1]; }
+      else if (banThu()) ds = (await thayOnline(f)).concat(mauBan());
+      else { var r = await Promise.all([giaiDangMo(f, lop), banOnline(f, lop, me.uid), thayOnline(f)]); g = r[0]; ds = r[2].concat(r[1]); }
     } catch (e) { ds = []; }
     if (hop !== el) return;
-    el.innerHTML = '<div class="t">' + (g ? 'Thách đấu · ' + an(g.ten) : 'Giao hữu (không tính điểm)') + '</div><div class="p">A Show Speed · ' + (g ? g.phut : 2) + ' phút' +
-      (g && g.bo ? ' · ' + an(CHE_TEN[g.bo.che] || '') + ' · ' + an(g.bo.ten || '') : '') + ' · bạn đang online</div>' +
-      (ds.length ? ds.map(function (b) { return '<button type="button" data-uid="' + an(b.uid) + '"><i style="background:' + mau(b.ten) + '">' + an(tat(b.ten)) + '</i><div><b>' + an(b.ten) + '</b><small>Đang online</small></div></button>'; }).join('')
-        : '<div class="trong">Chưa có bạn nào cùng lớp đang online.</div>');
+    var c = me.laThay ? caiDoc() : null;
+    var dong = function (b) {
+      var av = b.laThay ? '<i class="anh" style="background-image:url(' + AV_THAY + ')"></i>' : '<i style="background:' + mau(b.ten) + '">' + an(tat(b.ten)) + '</i>';
+      return '<button type="button" data-uid="' + an(b.uid) + '">' + av + '<div><b>' + an(b.ten) + (b.laThay ? '<em class="gvb">THẦY</em>' : '') + '</b><small>' + (b.laThay ? 'Đang online · giao hữu 2 phút Easy' : 'Đang online') + '</small></div></button>';
+    };
+    if (me.laThay) {
+      el.classList.add('rong');
+      el.innerHTML = '<div class="t">Thầy giao hữu</div><div class="p">Chọn cách đấu rồi chọn em đang online</div>' + caiHtml(c, bo) +
+        (ds.length ? ds.map(dong).join('') : '<div class="trong">Chưa có em nào của lớp đang online.</div>');
+      lapCai(el, c, bo);
+    } else {
+      el.innerHTML = '<div class="t">' + (g ? 'Thách đấu · ' + an(g.ten) : 'Giao hữu (không tính điểm)') + '</div><div class="p">A Show Speed · ' + (g ? g.phut : 2) + ' phút' +
+        (g && g.bo ? ' · ' + an(CHE_TEN[g.bo.che] || '') + ' · ' + an(g.bo.ten || '') : '') + ' · bạn đang online</div>' +
+        (ds.length ? ds.map(dong).join('') : '<div class="trong">Chưa có bạn nào cùng lớp đang online.</div>');
+    }
     datViTri(el, nut);
     el.querySelectorAll('[data-uid]').forEach(function (b) {
-      b.onclick = async function () {
+      b.onclick = function () {
         var ban = ds.filter(function (x) { return x.uid === b.getAttribute('data-uid'); })[0]; dongHop();
+        if (!me.ten && !me.laThay) { if (baoLoi) baoLoi('Chưa nhận ra tài khoản của em — em tải lại trang nhé.'); return; }
+        // em ↔ thầy: giao hữu với thầy (không tính giải) · thầy: theo cách đấu thầy chọn
+        if (me.laThay) return taoTran({ me: me, ban: ban, lop: lop, phut: c.phut, lv: c.che ? 'easy' : c.lv, cai: c, gv: me.uid, gui: gui, baoLoi: baoLoi });
+        if (ban.laThay) return taoTran({ me: me, ban: ban, lop: lop, phut: 2, lv: 'easy', gv: ban.uid, gui: gui, baoLoi: baoLoi });
         if (banThu()) { MOI_TAO.mau = 1; if (baoLoi) baoLoi('Bàn thử: đã mời ' + ban.ten + ' — 3 giây nữa vào trận với máy.'); setTimeout(function () { location.href = (laNw ? '' : 'nw/') + 'tran.html?thu=1&ban=' + encodeURIComponent(ban.ten); }, 3000); return; }
-        try {
-          var f = await kho(), bay = Date.now();
-          if (!me.ten) throw new Error('Chưa nhận ra tài khoản của em — em tải lại trang nhé.');
-          var giai = g ? g.id : '', phut = g ? g.phut : 2, lv = g ? g.lv : 'easy';
-          var ref = await f.fs.addDoc(f.fs.collection(f.db, 'tranDau'), { a: me.uid, b: ban.uid, nguoi: [me.uid, ban.uid], tenA: me.ten, tenB: ban.ten,
-            lop: lop, giai: giai, phut: phut, lv: lv, trangThai: 'moi', taoLuc: bay, het: bay + 60000 });
-          MOI_TAO[ref.id] = 1;
-          try { await gui({ loai: 'td', id: ref.id }, '⚔ ' + me.ten + ' thách đấu ' + ban.ten); }
-          catch (e2) { await f.fs.updateDoc(ref, { trangThai: 'huy' }).catch(function () { }); throw e2; }
-        } catch (e) {
-          var ma = String((e && (e.code || e.message)) || '');
-          if (baoLoi) baoLoi(ma.indexOf('permission') >= 0 ? 'Chưa mời được: giải đã đóng, bạn không cùng lớp, hoặc đồng hồ máy em bị lệch.' : e);
-        }
+        taoTran({ me: me, ban: ban, lop: lop, giai: g ? g.id : '', phut: g ? g.phut : 2, lv: g ? g.lv : 'easy', gui: gui, baoLoi: baoLoi });
       };
     });
   }
+
+  // ---------- nút ⚔ ở PHÒNG CHAT RIÊNG thầy ↔ một em: mời thẳng người kia ----------
+  // ban = { uid, ten, laThay, lop }
+  async function TheTD_moMoi(nut, ban, gui, baoLoi) {
+    if (hop) return dongHop();
+    napCss();
+    hop = document.createElement('div'); hop.className = 'td-chon rong';
+    hop.innerHTML = '<div class="t">Giao hữu</div><div class="p">Đang xem ' + (ban.laThay ? 'thầy' : an(ban.ten)) + ' có online không…</div>';
+    document.body.appendChild(hop); datViTri(hop, nut);
+    var el = hop, me = await toi(), f = banThu() ? null : await kho().catch(function () { return null; });
+    var r = await Promise.all([dangOnline(f, ban.uid), me.laThay ? dsBo(f) : []]), on = r[0], bo = r[1];
+    if (hop !== el) return;
+    var c = me.laThay ? caiDoc() : null, ten = ban.laThay ? 'thầy' : ban.ten;
+    var trangThai = '<div class="tt2"><i class="c' + (on ? '' : ' tat') + '"></i>' + (on ? (ban.laThay ? 'Thầy' : an(ban.ten)) + ' đang online'
+      : (ban.laThay ? 'Thầy' : an(ban.ten)) + ' không online — vẫn nhận được thông báo, lời mời chờ 60 giây') + '</div>';
+    el.innerHTML = '<div class="t">' + (me.laThay ? 'Giao hữu với ' + an(ban.ten) : 'Mời thầy giao hữu') + '</div>' +
+      (me.laThay ? '' : '<div class="p">A Show Speed · 2 phút · Easy · không tính điểm</div>') + trangThai +
+      (me.laThay ? caiHtml(c, bo) : '') +
+      '<button type="button" class="moi-nut" data-moi>' + IC + '&nbsp;Mời ' + an(ten) + '</button>';
+    if (me.laThay) lapCai(el, c, bo);
+    datViTri(el, nut);
+    el.querySelector('[data-moi]').onclick = function () {
+      dongHop();
+      var lop = ban.lop || '';
+      if (me.laThay) taoTran({ me: me, ban: ban, lop: lop, phut: c.phut, lv: c.che ? 'easy' : c.lv, cai: c, gv: me.uid, gui: gui, baoLoi: baoLoi });
+      else taoTran({ me: me, ban: ban, lop: lop || (me.lop || ''), phut: 2, lv: 'easy', gv: ban.uid, gui: gui, baoLoi: baoLoi });
+    };
+  }
   function mauTran(id) {
     var b = Date.now();
+    // ⭐ 16/10 — trận với THẦY: thầy đang mời em (chờ nhận) · thầy đấu Minh Anh (đã xong, em thắng)
+    if (id === 'mau-thay-moi') return { a: 'gv', b: 'hs_0', gv: 'gv', tenA: 'Thầy Andrew', tenB: 'BẠN THỬ', giai: '', phut: 3, lv: 'easy', cai: { che: 'free', boTen: 'FRUITS / WORDS' }, trangThai: 'moi', het: b + 55000 };
+    if (id === 'mau-thay-xong') return { a: 'gv', b: 'hs_1', gv: 'gv', tenA: 'Thầy Andrew', tenB: 'MINH ANH', giai: '', phut: 2, lv: 'easy', trangThai: 'xong', diem: { a: 9, b: 12 }, kq: { a: 'thua', b: 'thang' } };
     if (id === 'mau-gh') return { a: 'hs_1', b: 'hs_2', tenA: 'Gia Bảo', tenB: 'Bảo Nam', giai: '', phut: 2, trangThai: 'choi', het: b, diem: { a: 4, b: 6 } };
     if (id === 'mau-dang') return { a: 'hs_2', b: 'hs_3', tenA: 'Bảo Nam', tenB: 'Thảo Vy', giai: 'm3', phut: 2, che: 'free', boTen: '7 JOB / WORDS', trangThai: 'choi', het: b, diem: { a: 8, b: 6 } };
     return { a: 'hs_1', b: 'hs_0', tenA: 'Gia Bảo', tenB: 'BẠN THỬ', giai: 'x', phut: 2, trangThai: id === 'mau-xong' ? 'xong' : 'moi', het: b + 45000, diem: { a: 12, b: 9 }, kq: { a: 'thang', b: 'thua' } };
@@ -440,10 +646,11 @@
     IC: IC,
     html: function (id) {
       napCss(); id = String(id || ''); var t = TRAN[id];
-      return '<div class="cu-td' + (moMo(t) ? ' mo' : '') + (laGon(t) ? ' gon' : '') + (t && t.giai ? ' giai' : '') + '" data-td="' + an(id) + '">' + (laGon(t) ? gonHtml(id) : cardHtml(id)) + '</div>';
+      return '<div class="cu-td' + (moMo(t) ? ' mo' : '') + (laGon(t) ? ' gon' : '') + (t && t.giai ? ' giai' : '') + (t && t.gv ? ' thay' : '') + '" data-td="' + an(id) + '">' + (laGon(t) ? gonHtml(id) : cardHtml(id)) + '</div>';
     },
     lap: function (khung) { docToi(); (khung || document).querySelectorAll('.cu-td[data-td]').forEach(function (el) { nghe(el.getAttribute('data-td')); }); },
     moChon: TheTD_moChon,
+    moMoi: TheTD_moMoi,
     ghim: TheTD_ghim,
     moXem: moXem
   };

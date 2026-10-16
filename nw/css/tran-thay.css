@@ -1,0 +1,29 @@
+/* ============================================================
+   css/thay.css — MÀN THẦY khi thầy giao hữu với học sinh (mẫu 16/10/2026).
+   Xanh dương nhạt (--gv) = từ CHƯA ai lấy, bấm là lấy · xám nhạt = từ sau (One word, chưa tới lượt).
+   Cố ý khác màu cyan của đối thủ (--ws-cyan) và xanh lá của mình (--ws-neon) để không nhầm.
+   ============================================================ */
+:root{--gv:#A9C4FF;--gv2:#7F9AD6;--gv-nen:rgba(120,160,255,.10);--gv-vien:rgba(140,175,255,.42);--gv-xam:#5B6B66;--gv-xam2:#46534F}
+
+/* cột của thầy: trên = danh sách còn lại (cuộn), dưới = từ thầy đã lấy */
+.on-col.gv h4{display:flex;align-items:baseline;gap:8px}
+.on-col.gv h4 small{font:700 10px/1 var(--ws-gf);letter-spacing:.14em;color:var(--gv2)}
+.on-col.gv .gv-goi{flex:1 1 0;min-height:0;scrollbar-color:rgba(140,175,255,.4) transparent}
+.gv-goi li{padding:2px 6px;margin:0 -2px;border-radius:6px;user-select:none;-webkit-user-select:none}
+.gv-goi li.lay{cursor:pointer}
+.gv-goi li.lay b{color:var(--gv)!important;font-style:normal;font-weight:700}
+.gv-goi li.lay span{color:var(--gv2)}
+.gv-goi li.lay:hover{background:var(--gv-nen);box-shadow:inset 0 0 0 1px var(--gv-vien)}
+.gv-goi li.lay:active{background:rgba(120,160,255,.24)}
+.gv-goi li.xam b{color:var(--gv-xam)!important;font-style:normal;font-weight:700}
+.gv-goi li.xam span{color:var(--gv-xam2)}
+/* One word: từ đang tới nổi lên một chút */
+.gv.mot .gv-goi li.lay{background:var(--gv-nen);box-shadow:inset 0 0 0 1px var(--gv-vien)}
+.on-col.gv .gv-da{flex:none;max-height:42%;min-height:0;border-top:1px dashed rgba(61,245,138,.35);margin-top:4px;padding-top:6px}
+
+/* bảng giữa (Word list / Free words): đáp án hiện sẵn cho thầy */
+.td-g.gvl{cursor:pointer;background:var(--gv-nen);border-color:var(--gv-vien);user-select:none;-webkit-user-select:none}
+.td-g.gvl:hover{background:rgba(120,160,255,.18)}
+.td-g.gvl:active{background:rgba(120,160,255,.28)}
+.td-g.gvl .m{color:#C9D8F5}
+.td-g .w b.gv{color:var(--gv);font-style:normal;font-weight:700}

@@ -607,6 +607,9 @@
       khung._cuDaVe = true;
       khung._cuDay = sat;
       if (window.TheTD) window.TheTD.lap(khung);   // ⭐ v1.348.0 — thẻ THÁCH ĐẤU trong tin (js/the-td.js): nghe trạng thái trận, vẽ lại tại chỗ
+      // ⭐ thầy giao hữu (16/10/2026) — một khuôn dùng cho nhiều phòng: phòng không mời được ai (2 em chat riêng…) thì ẩn ⚔
+      var nutTdS = o.chan && o.chan.querySelector('[data-cu-td]');
+      if (nutTdS) nutTdS.hidden = !((o.thachDau && o.thachDau()) || (o.moiMot && o.moiMot()));
       if (window.TheTD && window.TheTD.ghim && o.lopGiai) window.TheTD.ghim(khung, o.lopGiai());   // ⭐ v1.351.0 — dải ghim giải đấu (dính đầu khung)
       veXem(); henThuXem();   // v1.210.0
     };
@@ -918,7 +921,8 @@
       (o.guiAnh ? '<button type="button" class="ib" data-cu="guianh" title="Gửi ảnh" aria-label="Gửi ảnh">' + IC.anh + '</button><input type="file" accept="image/*" multiple hidden>' : '') +
       '<button type="button" class="ib" data-cu="khay" title="Emoji và sticker" aria-label="Mở emoji và sticker">' + IC.mat + '</button>' +
       // ⚔ v1.348.0 — o.thachDau() -> mã lớp (chỉ học sinh, nhóm lớp): nút mời bạn đang online đấu A Show Speed (js/the-td.js)
-      (o.thachDau && window.TheTD ? '<button type="button" class="ib cu-kiem" data-cu-td="1" title="Thách đấu bạn đang online" aria-label="Thách đấu bạn đang online">' + window.TheTD.IC + '</button>' : '') +
+      // ⭐ thầy giao hữu (16/10/2026) — o.moiMot() -> { uid, ten, laThay, lop } (phòng RIÊNG thầy ↔ một em): nút ⚔ mời thẳng người kia
+      ((o.thachDau || o.moiMot) && window.TheTD ? '<button type="button" class="ib cu-kiem" data-cu-td="1" title="Giao hữu A Show Speed" aria-label="Giao hữu A Show Speed">' + window.TheTD.IC + '</button>' : '') +
       '<div class="cu-o" id="' + esc(o.idNhap || 'cuNhap') + '" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Nhập tin nhắn" data-ph="Aa" spellcheck="false"></div>' +
       '<button type="button" class="ib gui" aria-label="Gửi"></button></div></div>';
     if (edSan) { var cho = $('.cu-o', chan); cho.parentNode.replaceChild(edSan, cho); edSan.setAttribute('contenteditable', 'true'); }
@@ -930,8 +934,12 @@
     var nutTd = $('[data-cu-td]', chan);
     if (nutTd) nutTd.onclick = function (e) {
       e.preventDefault();
-      var lop = o.thachDau && o.thachDau(); if (!lop || !window.TheTD) return;
-      window.TheTD.moChon(nutTd, lop, function (he, chu) { return o.gui({ chu: chu, he: he }); }, o.loi);
+      if (!window.TheTD) return;
+      var guiThe = function (he, chu) { return o.gui({ chu: chu, he: he }); };
+      var ban = o.moiMot && o.moiMot();
+      if (ban && window.TheTD.moMoi) return window.TheTD.moMoi(nutTd, ban, guiThe, o.loi);
+      var lop = o.thachDau && o.thachDau(); if (!lop) return;
+      window.TheTD.moChon(nutTd, lop, guiThe, o.loi);
     };
     function docEd(n) {
       var s = '';

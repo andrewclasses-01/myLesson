@@ -21,6 +21,15 @@
   var CO_LINK = /(https?:|:\/\/|www\.|discord|t\.me\/|\.(com|vn|net|org|io|me|app|gg|ly|xyz|top|site|online|tv|cc|info|edu)([\/?#:]|\s|$))/;
 
   Chat.maRieng = function (a, b) { return a < b ? a + '__' + b : b + '__' + a; };
+  // ⭐ thầy giao hữu (16/10/2026) — phòng RIÊNG có thầy: người được mời khi bấm ⚔ (thầy → em đó · em → thầy). Hai em chat riêng: null (ẩn ⚔).
+  Chat.nguoiMoiMot = function (p) {
+    var toi = NW.toi;
+    if (!p || p.loai !== 'rieng' || !toi) return null;
+    var u = (p.thanhVien || []).filter(function (x) { return x !== toi.uid; })[0], n = (p.tv || {})[u] || {};
+    if (!u) return null;
+    if (toi.laThay) return n.vaiTro === 'gv' ? null : { uid: u, ten: n.ten || '?', laThay: false, lop: n.lop || '' };
+    return n.vaiTro === 'gv' ? { uid: u, ten: 'Thầy Andrew', laThay: true, lop: toi.lop || '' } : null;
+  };
 
   // Người mà em được nhắn: cùng lớp (mọi lớp em học) + thầy + bạn bè (nếu bật).
   Chat.nguoiNhanDuoc = async function () {
@@ -99,6 +108,7 @@
     // ⭐ web v1.198.0 — khuôn chat Zalo: trước đây `traLoi` bị RƠI ở đây (tin trả lời mất phần trích); nay giữ + thêm sticker
     if (tin.traLoi) t.traLoi = tin.traLoi;
     if (tin.sticker) t.sticker = tin.sticker;
+    if (tin.he) t.he = tin.he;
     if (NW.laBanThu()) return t;
     try {
       var f = await NW.fb();
@@ -133,6 +143,7 @@
     return {
       id: t.id, uid: t.uid, ma: t.uid, ten: t.ten || n.ten || '?', anh: t.anh || n.anh || '', vaiTro: laGv ? 'gv' : 'hs',
       chu: chu, hinh: t.hinh || '', luc: t.luc || 0, cx: t.cx || {}, sticker: t.sticker || '', thuHoi: !!t.thuHoi,
+      he: t.he && t.he.loai === 'td' && /^[A-Za-z0-9_-]{1,40}$/.test(String(t.he.id || '')) ? { loai: 'td', id: String(t.he.id) } : null,   // ⭐ 16/10 thẻ trận giao hữu thầy ↔ em
       q: t.traLoi && t.traLoi.id ? { id: t.traLoi.id, ten: t.traLoi.uid === NW.toi.uid ? 'Em' : (t.traLoi.ten || ''), chu: String(t.traLoi.chu || '').slice(0, 120) || (t.traLoi.hinh ? '📷 Ảnh' : '') } : null
     };
   };
@@ -159,7 +170,9 @@
       laThay: !!toi.laThay,
       get hienTen() { return (c.phong() || {}).loai === 'nhom'; },   // chat 1-1: không in tên trên bong bóng
       // ⚔ v1.348.0 — bàn thử (?thu=1): nhóm lớp mẫu là phòng nwChats ⇒ bật nút thách đấu để xem giao diện (thật: taoKhuonLop)
-      thachDau: (NW.laBanThu() && !toi.laThay) ? function () { return (c.phong() || {}).loai === 'nhom' ? 'A1C' : ''; } : null,
+      thachDau: NW.laBanThu() ? function () { return (c.phong() || {}).loai === 'nhom' ? 'A1C' : ''; } : null,
+      // ⭐ thầy giao hữu (16/10/2026) — phòng RIÊNG thầy ↔ một em: ⚔ mời thẳng người kia (cả hai chiều)
+      moiMot: function () { return Chat.nguoiMoiMot(c.phong()); },
       lopGiai: NW.laBanThu() ? function () { return (c.phong() || {}).loai === 'nhom' ? 'A1C' : ''; } : null,   // v1.351.0 bàn thử: dải ghim mẫu
       laCuaToi: function (t) { return t.uid === toi.uid; },
       av: function (t) { return NW.avHtml({ ten: t.ten, anh: t.anh, vaiTro: t.vaiTro }, 'nho'); },
@@ -168,6 +181,7 @@
       gui: function (g) {
         var tin = { chu: g.chu || '', hinh: g.hinh || '' };
         if (g.sticker) tin.sticker = g.sticker;
+        if (g.he) tin.he = g.he;   // ⭐ 16/10 — thẻ trận giao hữu thầy ↔ em (js/the-td.js)
         // ⭐ 02/10/2026 (web v1.225.0, chống trích dẫn giả) luật kho đối chiếu trích dẫn với TIN GỐC THẬT (uid + tên + chữ + ảnh) ⇒ gửi ĐỦ chữ tin gốc
         if (g.q && g.q.id) { var goc = tinGoc(g.q.id) || {}; tin.traLoi = { id: g.q.id, uid: goc.uid || '', ten: goc.ten || g.q.ten || '', chu: goc.uid ? String(goc.chu || '') : String(g.q.chu || '').slice(0, 120), hinh: goc.hinh || '' }; }
         if (!NW.laBanThu() && !(c.phong() || {}).id) return Promise.reject('Đang mở phòng chat, em thử lại nhé.');
@@ -822,7 +836,7 @@
           return AWChat.gui(p.lop, Object.assign({ ten: tenToi, ma: MA_TOI, vaiTro: toi.laThay ? 'gv' : 'hs' }, g));
         },
         guiAnh: toi.laThay ? function (file) { return AWChat.guiAnh(p.lop, file); } : null,   // chỉ thầy gửi ảnh
-        thachDau: toi.laThay ? null : function () { return p.lop; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js)
+        thachDau: function () { return p.lop; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js) · ⭐ 16/10: cả THẦY (chọn em đang online)
         lopGiai: function () { return p.lop; },   // ⭐ v1.351.0 — dải ghim giải đấu đầu khung (js/the-td.js)
         datCx: function (t, v) { return AWChat.datCx(p.lop, t.id, MA_TOI, v); },
         ghiXem: function (luc) { return AWChat.ghiXem(p.lop, MA_TOI, tenToi, luc); },
@@ -916,6 +930,17 @@
     });
 
     // ---------- dữ liệu mẫu bàn thử ----------
+    // ⭐ 16/10 — bàn thử vai THẦY: phòng riêng với từng em (Gia Bảo + Bảo Nam online, Thảo Vy không) + nhóm lớp A1-C
+    function phongMauThay(t0) {
+      var T = toi.uid;
+      var rieng = function (u, ten, chu, truoc) {
+        var tv = {}; tv[u] = { uid: u, ten: ten, lop: 'A1C', vaiTro: 'hs' };
+        return { id: Chat.maRieng(T, u), loai: 'rieng', thanhVien: [T, u], tv: tv, capNhat: t0 - truoc, tinCuoi: { chu: chu, uid: u, luc: t0 - truoc }, docLuc: {} };
+      };
+      var nhom = PHONG.filter(function (p) { return p.id === 'n0'; })[0];
+      return [rieng('hs_1', 'Gia Bảo', 'Thầy đấu A Show Speed với em không ạ 😆', 120e3), nhom,
+        rieng('hs_2', 'Bảo Nam', 'Dạ em cảm ơn thầy', 3 * 3600e3), rieng('hs_3', 'Thảo Vy', 'Thầy ơi bài 5 khó quá', 26 * 3600e3)].filter(Boolean);
+    }
     function tinMau(p) {
       var t = Date.now(), H = 3600e3;
       // ⭐ web v1.198.0 — cảm xúc mẫu theo khuôn mới {uid: {ten, luc, n, l}}
@@ -940,7 +965,8 @@
       if (p.id === 'n0') return [
         { id: 'e1', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Chào cả lớp! Đây là nhóm chat của lớp A1C, thầy thông báo bài tập và lịch học ở đây nhé.', luc: t - 50 * H },
         { id: 'e2', uid: 'hs_1', ten: 'MINH ANH', chu: 'Dạ vâng ạ 🙌', luc: t - 49 * H, cx: cxMau({ gv: 'like' }) },
-        { id: 'e3', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Tuần sau kiểm tra WORDS 3 nhé cả lớp', luc: t - 30 * H, cx: cxMau({ hs_1: 'tim', hs_2: 'khoc', hs_5: 'ngac' }) }
+        { id: 'e3', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Tuần sau kiểm tra WORDS 3 nhé cả lớp', luc: t - 30 * H, cx: cxMau({ hs_1: 'tim', hs_2: 'khoc', hs_5: 'ngac' }) },
+        { id: 'e4', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: '⚔ Thầy Andrew mời MINH ANH giao hữu', he: { loai: 'td', id: 'mau-thay-xong' }, luc: t - 20 * H }   // ⭐ 16/10 thẻ trận với thầy (đã xong)
       ];
       if (p.id === 'n2') return [
         { id: 'f1', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Chào cả nhà K9! Đây là nhóm chính thức của khoá, thầy báo bài và lịch ở đây.', luc: t - 30 * H },
@@ -957,8 +983,15 @@
       if (p.id === 'hs_0__gv') return [
         { id: 'c1', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Em nhớ nộp Worksheet 3 trước tối mai nhé.', luc: t - 7 * H },
         { id: 'c2', uid: toi.uid, ten: toi.ten, chu: 'Dạ em nộp rồi ạ, thầy xem giúp em 🙏', luc: t - 6.9 * H },
-        { id: 'c3', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Thầy thấy rồi, tốt lắm 👍', luc: t - 6.8 * H, cx: cxMau({ hs_0: 'tim' }) }
+        { id: 'c3', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Thầy thấy rồi, tốt lắm 👍', luc: t - 6.8 * H, cx: cxMau({ hs_0: 'tim' }) },
+        { id: 'c4', uid: 'gv', ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: '⚔ Thầy Andrew mời em giao hữu', he: { loai: 'td', id: 'mau-thay-moi' }, luc: t - 20e3 }   // ⭐ 16/10 thầy đang mời em
       ];
+      if (toi.laThay && p.loai === 'rieng') {   // ⭐ 16/10 bàn thử vai thầy: phòng riêng thầy ↔ một em
+        var u = (p.thanhVien || []).filter(function (x) { return x !== toi.uid; })[0], tenU = ((p.tv || {})[u] || {}).ten || '?';
+        return [{ id: 'r1', uid: u, ten: tenU, chu: 'Thầy ơi em nộp WORDS 3 rồi ạ', luc: t - 3 * H },
+          { id: 'r2', uid: toi.uid, ten: 'Thầy Andrew', anh: 'assets/avatar-tron.jpg', chu: 'Thầy thấy rồi, giỏi lắm 👍', luc: t - 2.9 * H },
+          { id: 'r3', uid: u, ten: tenU, chu: 'Thầy đấu A Show Speed với em không ạ 😆', luc: t - 120e3 }];
+      }
       return [{ id: 'd1', uid: 'hs_5', ten: 'THẢO VY', chu: 'Bạn ơi cho mình mượn vở nha', luc: t - 30 * H }];
     }
     if (NW.laBanThu()) {
@@ -971,6 +1004,7 @@
         { id: 'hs_0__gv', loai: 'rieng', thanhVien: ['hs_0', 'gv'], tv: { gv: { uid: 'gv', ten: 'Thầy Andrew', vaiTro: 'gv', anh: 'assets/avatar-tron.jpg' } }, capNhat: t0 - 6.8 * 3600e3, tinCuoi: { chu: 'Thầy thấy rồi, tốt lắm 👍', uid: 'gv', luc: t0 - 6.8 * 3600e3 }, docLuc: { hs_0: t0, gv: t0 } },
         { id: 'hs_0__hs_5', loai: 'rieng', thanhVien: ['hs_0', 'hs_5'], tv: { hs_5: { uid: 'hs_5', ten: 'THẢO VY', lop: 'A1C', vaiTro: 'hs' } }, capNhat: t0 - 30 * 3600e3, tinCuoi: { chu: 'Bạn ơi cho mình mượn vở nha', uid: 'hs_5', luc: t0 - 30 * 3600e3 }, docLuc: {} }
       ];
+      if (toi.laThay) PHONG = phongMauThay(t0);   // ⭐ 16/10 — bàn thử vai thầy: phòng nhìn từ phía thầy (riêng với từng em + nhóm lớp)
       veDs();
       thuMoCho();   // v1.224.0 — bàn thử: link ?phong=&tin=
       if (window.innerWidth > 640 && /[?&]mo=1/.test(location.search)) moPhong(CHO_RIENG ? 'hs_0__hs_1' : 'n0');

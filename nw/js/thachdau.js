@@ -29,7 +29,10 @@
       '.td-moi .hai{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}.td-moi .hai .btn{height:38px}' +
       '.td-cho{text-align:center}.td-cho .vs{display:flex;align-items:center;justify-content:center;gap:16px;margin:4px 0 12px}' +
       '.td-cho .vs i{font:italic 900 20px/1 var(--sans);color:var(--muted)}.td-cho .so{font:900 30px/1 var(--sans);color:var(--accent);margin:6px 0}' +
-      '.td-cho p{margin:0;color:var(--muted);font-weight:600;font-size:13.5px}';
+      '.td-cho p{margin:0;color:var(--muted);font-weight:600;font-size:13.5px}' +
+      // ⭐ thầy giao hữu (16/10/2026) — thẻ mời có THẦY: ảnh thầy, màu xanh dương
+      '.td-moi .ic-o.anh{background:#DCE6FF center/cover no-repeat;box-shadow:0 0 0 2px #3E6BE0}' +
+      '.td-moi.thay{border-color:#A9C0F5}.td-moi.thay .vach i{background:#3E6BE0}.td-moi.thay .btn.primary{background:#3E6BE0;border-color:#3E6BE0}';
     document.head.appendChild(s);
   }
   function di(href) { NW.di(href); }
@@ -37,9 +40,10 @@
   // ---------- MỜI ----------
   TD.moi = async function (ban, o) {
     o = o || {};
-    var toi = NW.toi; if (!toi || toi.laThay) return;
+    var toi = NW.toi; if (!toi) return;
+    if (toi.laThay && !o.gv) return;   // ⭐ 16/10 — thầy chỉ mời qua trận có thầy (Đấu lại trong trận)
     napCss();
-    var giai = o.giai || '', phut = giai ? o.phut : 2, lv = giai ? o.lv : 'easy';
+    var giai = o.giai || '', coDat = !!(giai || o.gv), phut = coDat ? o.phut : 2, lv = coDat ? o.lv : 'easy';
     var conLai = 60, id = null, xong = false, bo = null, dem = null;
     var p = NW.popMo({ tieuDe: 'Đã gửi lời mời', html: '<div class="td-cho"><div class="vs">' + NW.avHtml(toi, 'to') + '<i>VS</i>' + NW.avHtml(ban, 'to') + '</div>' +
       '<div class="so" id="tdSo">60</div><p id="tdChu">Đang chờ <b>' + an(ban.ten) + '</b> nhận lời mời…</p>' +
@@ -68,8 +72,10 @@
     }
     try {
       var f = await NW.fb(), bay = Date.now();
-      var r = await f.fs.addDoc(f.fs.collection(f.db, 'tranDau'), { a: toi.uid, b: ban.uid, nguoi: [toi.uid, ban.uid], tenA: toi.ten, tenB: ban.ten || '',
-        lop: o.lop, giai: giai, phut: phut, lv: lv, trangThai: 'moi', taoLuc: bay, het: bay + 60000 });
+      var data = { a: toi.uid, b: ban.uid, nguoi: [toi.uid, ban.uid], tenA: toi.laThay ? 'Thầy Andrew' : toi.ten, tenB: ban.ten || '',
+        lop: o.lop, giai: giai, phut: phut, lv: lv, trangThai: 'moi', taoLuc: bay, het: bay + 60000 };
+      if (o.gv) { data.gv = o.gv; if (o.cai && toi.laThay) data.cai = { che: o.cai.che || '', boId: o.cai.boId || '', boTen: o.cai.boTen || '' }; }   // ⭐ 16/10 trận có thầy
+      var r = await f.fs.addDoc(f.fs.collection(f.db, 'tranDau'), data);
       id = r.id;
       if (xong) { await f.fs.updateDoc(r, { trangThai: 'huy' }).catch(function () { }); return; }
       bo = f.fs.onSnapshot(r, function (s) {
@@ -86,21 +92,34 @@
   // ---------- NHẬN ----------
   var THE = {};   // id → { el, dem }
   function boThe(id) { var t = THE[id]; if (!t) return; clearInterval(t.dem); if (t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); delete THE[id]; if (NW.laNhung) NW.baoMe('moiDauXoa', { id: id }); }
-  async function traLoi(id, nhan) {
+  // ⭐ thầy giao hữu — THẦY nhận: trận mở ở TAB MỚI (mở ngay trong cú bấm, trình duyệt mới cho). Khung nhúng (dashboard): trang mẹ đã mở tab.
+  var urlTran = function (id) { return new URL(NW.duong('tran.html?id=' + encodeURIComponent(id)), location.href).href; };
+  async function traLoi(id, nhan, meDaMo) {
     boThe(id);
+    var thay = !!(NW.toi && NW.toi.laThay);
+    if (NW.laBanThu()) { NW.toast(nhan ? 'Bàn thử: đã nhận — vào trận' + (thay ? ' ở TAB MỚI' : '') : 'Bàn thử: đã từ chối'); return; }
+    var tab = nhan && thay && !meDaMo ? window.open(urlTran(id), '_blank') : null;
     try {
       var f = await NW.fb();
       await f.fs.updateDoc(f.fs.doc(f.db, 'tranDau', id), { trangThai: nhan ? 'nhan' : 'tuchoi' });
-      if (nhan) di('tran.html?id=' + id);
-    } catch (e) { NW.toast(nhan ? 'Lời mời đã hết hạn hoặc bạn đã huỷ.' : NW.chuLoiKho(e), true); }
+      if (nhan && !thay) di('tran.html?id=' + id);
+      else if (nhan && thay && !tab && !meDaMo) di('tran.html?id=' + id);   // trình duyệt chặn tab mới ⇒ vào ngay tab này
+    } catch (e) { if (tab) tab.close(); NW.toast(nhan ? 'Lời mời đã hết hạn hoặc bạn đã huỷ.' : NW.chuLoiKho(e), true); }
   }
-  function moTa(t) { return (t.giai ? 'Giải đấu' : 'Giao hữu') + ' · A Show Speed ' + t.phut + ' phút'; }
+  var CHE = { one: 'One word', list: 'Word list', free: 'Free words' }, LV = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
+  function moTa(t) {
+    if (t.gv) { var c = t.cai || {}; return 'Giao hữu · A Show Speed ' + t.phut + ' phút · ' + (c.che ? CHE[c.che] + (c.boTen ? ' · ' + c.boTen : '') : (LV[t.lv] || 'Easy')); }
+    return (t.giai ? 'Giải đấu' : 'Giao hữu') + ' · A Show Speed ' + t.phut + ' phút';
+  }
+  // ⭐ thầy giao hữu — tiêu đề thẻ: thầy mời em · em mời thầy · bạn thách đấu em
+  function tieuDe(t) { return t.gv ? (t.a === t.gv ? 'Thầy Andrew mời em giao hữu' : (t.tenA || 'Bạn') + ' mời thầy giao hữu') : (t.tenA || 'Bạn') + ' thách đấu em'; }
   function veThe(id, t) {
     if (THE[id]) return;
-    if (NW.laNhung) { NW.baoMe('moiDau', { id: id, ten: t.tenA || 'Bạn', chu: moTa(t), het: t.het }); THE[id] = { el: null, dem: null }; return; }
+    if (NW.laNhung) { NW.baoMe('moiDau', { id: id, ten: t.tenA || 'Bạn', tieuDe: tieuDe(t), anh: t.gv && t.a === t.gv, chu: moTa(t), het: t.het, thay: !!(NW.toi && NW.toi.laThay), url: urlTran(id) }); THE[id] = { el: null, dem: null }; return; }
     napCss();
-    var el = document.createElement('div'); el.className = 'td-moi'; el.setAttribute('role', 'alert');
-    el.innerHTML = '<div class="tren"><span class="ic-o">' + IC_KIEM + '</span><div><b>' + an(t.tenA || 'Bạn') + ' thách đấu em</b><small>' + an(moTa(t)) + '</small></div></div>' +
+    var el = document.createElement('div'); el.className = 'td-moi' + (t.gv ? ' thay' : ''); el.setAttribute('role', 'alert');
+    var ic = t.gv && t.a === t.gv ? '<span class="ic-o anh" style="background-image:url(assets/avatar-tron.jpg)"></span>' : '<span class="ic-o">' + IC_KIEM + '</span>';
+    el.innerHTML = '<div class="tren">' + ic + '<div><b>' + an(tieuDe(t)) + '</b><small>' + an(moTa(t)) + '</small></div></div>' +
       '<div class="vach"><i style="width:100%"></i></div><div class="hai"><button type="button" class="btn soft" data-k="0">Từ chối</button><button type="button" class="btn primary" data-k="1">Nhận</button></div>';
     document.body.appendChild(el);
     var ve = function () { var con = Math.max(0, (t.het || 0) - Date.now()); var v = el.querySelector('.vach i'); if (v) v.style.width = (con / 600) + '%'; if (con <= 0) boThe(id); };
@@ -110,7 +129,7 @@
   }
   var _nghe = false;
   TD.nghe = async function () {
-    if (_nghe || NW.laBanThu() || !NW.toi || NW.toi.laThay) return;
+    if (_nghe || NW.laBanThu() || !NW.toi) return;   // ⭐ 16/10 — cả THẦY nghe (em mời thầy giao hữu)
     _nghe = true;
     var f = await NW.fb();
     f.fs.onSnapshot(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('b', '==', NW.toi.uid), f.fs.where('trangThai', '==', 'moi')), function (snap) {
@@ -121,7 +140,13 @@
     // trang mẹ (khung giữ sống) trả lời thay
     if (NW.laNhung) window.addEventListener('message', function (e) {
       if (e.origin !== location.origin || e.source !== window.parent) return;
-      var d = e.data || {}; if (d.tk === 'dau' && d.id) traLoi(d.id, !!d.nhan);
+      var d = e.data || {}; if (d.tk === 'dau' && d.id) traLoi(d.id, !!d.nhan, !!d.meMo);
     });
   };
+  // ⭐ 16/10 — bàn thử: ?moiThu=thay (em nhận lời mời của thầy) · ?moiThu=hs (thầy nhận lời mời của Gia Bảo) ⇒ thẻ góc màn sau 2 giây
+  if (NW.laBanThu() && NW.thamSo('moiThu')) setTimeout(function () {
+    var me = NW.toi || { uid: 'toi', ten: 'BẠN THỬ' }, k = NW.thamSo('moiThu'), het = Date.now() + 60000;
+    veThe('thu-moi', k === 'hs' ? { a: 'hs_1', b: me.uid, gv: me.uid, tenA: 'Gia Bảo', tenB: 'Thầy Andrew', phut: 2, lv: 'easy', het: het }
+      : { a: 'gv', b: me.uid, gv: 'gv', tenA: 'Thầy Andrew', tenB: me.ten, phut: 3, lv: 'easy', cai: { che: 'free', boTen: 'FRUITS / WORDS' }, het: het });
+  }, 2000);
 })();

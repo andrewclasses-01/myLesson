@@ -122,15 +122,22 @@
         '.tk-moi .tr{display:flex;gap:10px;align-items:center}.tk-moi .ic{width:40px;height:40px;border-radius:50%;background:#0F4029;color:#9BFFC4;display:grid;place-items:center;flex:none;font-size:18px}' +
         '.tk-moi .va{height:4px;border-radius:2px;background:#E0EAE7;overflow:hidden}.tk-moi .va i{display:block;height:100%;background:#0E7C6E;transition:width 1s linear}' +
         '.tk-moi .ha{display:grid;grid-template-columns:1fr 1.4fr;gap:8px}.tk-moi button{height:38px;border:0;border-radius:12px;font:700 14px "Segoe UI",sans-serif;cursor:pointer}' +
-        '.tk-moi .k{background:#E3F1EE;color:#0E7C6E}.tk-moi .n{background:#0E7C6E;color:#fff}';
+        '.tk-moi .k{background:#E3F1EE;color:#0E7C6E}.tk-moi .n{background:#0E7C6E;color:#fff}' +
+        // ⭐ thầy giao hữu (16/10/2026) — thẻ có THẦY: ảnh thầy, xanh dương
+        '.tk-moi .ic.anh{background:#DCE6FF center/cover no-repeat;box-shadow:0 0 0 2px #3E6BE0}.tk-moi.thay{border-color:#A9C0F5}.tk-moi.thay .va i{background:#3E6BE0}.tk-moi.thay .n{background:#3E6BE0}.tk-moi.thay .k{background:#E6EDFD;color:#2B4AA8}';
       document.head.appendChild(st);
     }
-    var el = document.createElement('div'); el.className = 'tk-moi'; el.setAttribute('role', 'alert');
+    var el = document.createElement('div'); el.className = 'tk-moi' + (d.thay || d.anh ? ' thay' : ''); el.setAttribute('role', 'alert');
     var an = function (s) { return String(s || '').replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
-    el.innerHTML = '<div class="tr"><span class="ic">⚔</span><div><b>' + an(d.ten) + ' thách đấu em</b><small>' + an(d.chu) + '</small></div></div>' +
+    el.innerHTML = '<div class="tr">' + (d.anh ? '<span class="ic anh" style="background-image:url(assets/avatar-tron.jpg)"></span>' : '<span class="ic">⚔</span>') + '<div><b>' + an(d.tieuDe || (d.ten + ' thách đấu em')) + '</b><small>' + an(d.chu) + '</small></div></div>' +
       '<div class="va"><i style="width:100%"></i></div><div class="ha"><button type="button" class="k">Từ chối</button><button type="button" class="n">Nhận</button></div>';
     document.body.appendChild(el);
-    var traLoi = function (nhan) { theMoiDau({ tk: 'moiDauXoa', id: d.id }); try { fr.contentWindow.postMessage({ tk: 'dau', id: d.id, nhan: nhan }, location.origin); } catch (e) { } };
+    // ⭐ 16/10 — THẦY nhận (đang ở dashboard): mở trận ở TAB MỚI ngay trong cú bấm (khung chỉ ghi "đã nhận", không chuyển trang)
+    var traLoi = function (nhan) {
+      var mo = false;
+      if (nhan && d.thay && /^https?:\/\//.test(d.url || '') && new URL(d.url).origin === location.origin) { try { mo = !!window.open(d.url, '_blank'); } catch (e) { } }
+      theMoiDau({ tk: 'moiDauXoa', id: d.id }); try { fr.contentWindow.postMessage({ tk: 'dau', id: d.id, nhan: nhan, meMo: mo }, location.origin); } catch (e) { }
+    };
     el.querySelector('.k').onclick = function () { traLoi(false); };
     el.querySelector('.n').onclick = function () { traLoi(true); };
     var ve = function () { var con = Math.max(0, (d.het || 0) - Date.now()); el.querySelector('.va i').style.width = (con / 600) + '%'; if (con <= 0) theMoiDau({ tk: 'moiDauXoa', id: d.id }); };

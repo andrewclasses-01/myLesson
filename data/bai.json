@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-17 09:30:13",
+  "capNhat": "2026-10-17 19:29:27",
   "bai": {
     "A1C": [
       {
@@ -1442,6 +1442,48 @@
       }
     ],
     "A2B": [
+      {
+        "id": "A2B_16.10_DICTS_LSB1-S1.T2.P2",
+        "tieuDe": "A2B_16.10_DICTS LSB1-S1.T2.P2",
+        "tenHien": "A2B_16.10_DICTS LSB1-S1.T2.P2",
+        "dang": "DICTS",
+        "ngay": "16.10",
+        "han": "2026-10-21T17:45",
+        "maLesson": "LSB1-S1.T2.P2",
+        "taoLuc": "2026-10-17",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSB1-S1.T2.P2",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA2B%2FA2B_16.10_DICTS_LSB1-S1.T2.P2%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "ENG2",
+            "yeuCau": "100% requirement",
+            "ma": "nbhmk2",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S1.T2.P2"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSB1-S1.T2.P2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "qjqwnd",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-17T19:29"
+      },
       {
         "id": "A2B_14.10_WORDS_LSB1-S1.T2.P2",
         "tieuDe": "A2B_14.10_WORDS LSB1-S1.T2.P2",
@@ -5168,7 +5210,7 @@
     "B2A": "2026-10-13 17:12:48",
     "A1B": "2026-10-14 11:23:54",
     "NNTNG4": "2026-10-14 14:27:50",
-    "A2B": "2026-10-14 19:27:08",
+    "A2B": "2026-10-17 19:29:27",
     "B1B": "2026-10-14 21:53:42",
     "NNTNGK9": "2026-10-15 09:51:56"
   }

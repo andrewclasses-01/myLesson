@@ -36,6 +36,9 @@ const XEM = q.get("xem") === "1";
 //   Đáp án bộ từ: tranDau/{id}/may/ke (luật: chỉ thầy đọc). Bàn thử: ?thu=1&vai=thay|hs (thầy đấu Gia Bảo) · &dong=1 (khung mẹ 2 màn) · &t0 · &seed
 const VAI = ["hs", "thay", "xem"].includes(q.get("vai")) ? q.get("vai") : "";
 const DONG = q.get("dong") === "1";
+// ⭐ v1.372.0 — LUYỆN TẬP với MÁY (hộp ⚔ trong chat lớp, mẫu mau-v9-chat-dau): ?luyen=1&may=1|2|3&phut=2|3|5&bo=n|g&giai=<id>&lop=<mã lớp>
+//   Chạy hoàn toàn ở máy em (cùng bộ máy với bàn thử: không tạo tranDau, không gọi máy chủ, không ghi điểm/lịch sử); bo=g lấy bộ từ của giải.
+const LUYEN = q.get("luyen") === "1";
 const guiMe = (m) => { if (DONG) parent.postMessage(Object.assign({ mauThay: 1, tu: VAI }, m), "*"); };
 const LV_TEN = { easy: "EASY", medium: "MEDIUM", hard: "HARD" };
 const CHE_TEN = { one: "ONE WORD", list: "WORD LIST", free: "FREE WORDS" };
@@ -126,7 +129,7 @@ function dsTu() {   // mọi từ hợp lệ, mới nhất trước (trận có 
 // ---------- vòng đời ----------
 async function batDau() {
   fit(); render();
-  banThu = NW.laBanThu();
+  banThu = NW.laBanThu() || LUYEN;
   try { dict = await loadDict(); } catch (e) { G.note = "Không tải được từ điển. Kiểm tra mạng rồi tải lại trang."; return render(); }
   if (banThu) return chayBanThu();
   toi = NW.toi;
@@ -454,7 +457,7 @@ const centred = (t, s) => `<span class="wt">${s === 0 ? arrow(0) : ""}${t}${s ==
 function meta() {
   const T = G.T || {};
   const t = (T.phut || 2) + " MIN · " + (T.che ? CHE_TEN[T.che] || "WORDS" : LV_TEN[T.lv] || "EASY");
-  return (T.giai ? "TOURNAMENT" : "FRIENDLY") + " · " + t;
+  return (T.giai ? "TOURNAMENT" : LUYEN ? "PRACTICE" : "FRIENDLY") + " · " + t;
 }
 // ⭐ v1.351.0 — bảng GỢI Ý của bàn đang chơi (trận có bộ từ): mỗi từ một dòng — gợi ý + ô trống (số chữ) / từ đã tìm (màu bên tìm)
 function goiHtml() {
@@ -512,9 +515,9 @@ function centreHtml() {
       <h2 ${port ? 'style="font-size:40px"' : ""}>${head}</h2>
       ${banBo ? `<div class="wsg-note">${esc(boTen)} ${/^roi/.test(ly) ? "left the match" : "lost connection"}.</div>` : ""}
       <div class="on-sc"><span class="a">${a}</span><i>–</i><span class="b">${b}</span></div>
-      <div class="on-pts">${G.xem ? `<span class="on-pill ${T.giai ? "" : "mute"}"><span>${T.giai ? "TOURNAMENT" : "FRIENDLY"}</span></span>` : T.giai ? `<span class="on-pill ${pts ? "gold" : "mute"}"><span>+${pts} ${pts === 1 ? "POINT" : "POINTS"}</span></span>` : `<span class="on-pill mute"><span>FRIENDLY · NO POINTS</span></span>`}</div>
+      <div class="on-pts">${G.xem ? `<span class="on-pill ${T.giai ? "" : "mute"}"><span>${T.giai ? "TOURNAMENT" : "FRIENDLY"}</span></span>` : T.giai ? `<span class="on-pill ${pts ? "gold" : "mute"}"><span>+${pts} ${pts === 1 ? "POINT" : "POINTS"}</span></span>` : `<span class="on-pill mute"><span>${LUYEN ? "PRACTICE · NO POINTS" : "FRIENDLY · NO POINTS"}</span></span>`}</div>
       ${missed.length ? `<div class="wsg-lab">MISSED</div><div class="wsg-miss" ${port ? 'style="grid-template-columns:1fr"' : ""}>${missed.map((x) => `<div><b>${esc(x.w.toUpperCase())}</b> <span>${esc(x.m)}</span></div>`).join("")}</div>` : ""}
-      <div class="on-btns"><button class="wsg-b ghost" data-do="back"><span>Back</span></button>${G.xem ? "" : `<button class="wsg-b ent" data-do="again"><span>Rematch</span></button>`}</div></div>`;
+      <div class="on-btns"><button class="wsg-b ghost" data-do="back"><span>${LUYEN ? "Exit" : "Back"}</span></button>${G.xem ? "" : `<button class="wsg-b ent" data-do="again"><span>${LUYEN ? "Play again" : "Rematch"}</span></button>`}</div></div>`;
   }
   // đang chơi: (bộ từ: bảng gợi ý) + từ mới nhất to giữa + 2 cột
   const ds = dsTu(), f0 = ds[0];
@@ -629,11 +632,13 @@ addEventListener("keydown", (e) => {
   if (k != null) { G.sel.push(k); sfx.tap(-.65); renderBoard(); }
 });
 function veGiai() {
+  if (LUYEN) { if (history.length > 1) return history.back(); return NW.di("khampha.html"); }   /* v1.372.0 luyện tập: thoát về chỗ vừa bấm */
   // xem: quay lại nơi vừa bấm "Theo dõi" (chat / trang giải)
   if (G.xem && history.length > 1 && document.referrer && new URL(document.referrer).origin === location.origin) return history.back();
   NW.di("giaidau.html");
 }
 async function roiTran() {
+  if (LUYEN) return veGiai();   /* v1.372.0 luyện tập: Leave = thoát luôn, không ghi gì */
   if (banThu) { G.T.trangThai = "xong"; G.T.kq = { a: "thua", b: "thang" }; G.T.ly = "roiA"; G.T.diem = { a: diemBen("a"), b: diemBen("b") }; clearTimeout(bot); G.phase = "over"; return vaoPha("play"); }
   G.roi = true; G.note = "";
   await nhip({ roi: true });   // máy chủ chốt ngay: em thua
@@ -641,6 +646,7 @@ async function roiTran() {
 async function dauLai() {
   const T = G.T || {};
   const ban = { uid: uidBen(khac()), ten: tenBen(khac()) };
+  if (LUYEN) return location.reload();   /* v1.372.0 luyện tập: chơi lại = nạp lại đúng tham số */
   if (banThu) return NW.ThachDau.moi(ban, { lop: "A1C", giai: "" });
   // ⭐ thầy giao hữu — đấu lại trận có thầy: thầy giữ cách đấu cũ · em mời thầy thì 2 phút Easy (luật)
   if (T.gv) return NW.ThachDau.moi(ban, laGv() ? { lop: T.lop, giai: "", phut: T.phut, lv: T.lv, gv: T.gv, cai: T.cai || null } : { lop: T.lop, giai: "", phut: 2, lv: "easy", gv: T.gv });
@@ -652,14 +658,14 @@ async function dauLai() {
 // ---------- bàn thử: đấu với MÁY (?che=one|list|free: bộ từ mẫu · ?xem=1: xem 2 máy đấu) ----------
 const BO_MAU = [["apple", "quả táo"], ["banana", "quả chuối"], ["orange", "quả cam"], ["grape", "quả nho"], ["lemon", "quả chanh"], ["mango", "quả xoài"],
   ["cherry", "quả anh đào"], ["melon", "quả dưa"], ["peach", "quả đào"], ["pear", "quả lê"], ["plum", "quả mận"], ["kiwi", "quả kiwi"]];
-let KE_THU = [];
+let KE_THU = [], BO_LUYEN = null;   /* BO_LUYEN: bộ từ của giải [[từ, nghĩa]] khi luyện tập bo=g */
 // mẫu: hai màn (thầy + học sinh) phải ra CÙNG bộ bàn ⇒ xáo theo hạt giống chung &seed
 let hat = (+q.get("seed") || 7) >>> 0;
 const rnd = () => { hat = (hat * 1664525 + 1013904223) >>> 0; return hat / 4294967296; };
 const xao = (a) => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = rnd() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
 function keThu(cheThu, o) {   // bản rút gọn ws-chu.js keBo (máy chủ) — chỉ cho bàn thử
   const shuffle = xao;
-  const ds = shuffle(BO_MAU.map(([w, m]) => ({ up: w.toUpperCase(), m }))), rl = () => "EEEAAIIOOTTNNSSRRLLDDHCMPUGBYWF"[rnd() * 31 | 0];
+  const ds = shuffle((BO_LUYEN || BO_MAU).map(([w, m]) => ({ up: w.toUpperCase(), m }))), rl = () => "EEEAAIIOOTTNNSSRRLLDDHCMPUGBYWF"[rnd() * 31 | 0];
   if (cheThu === "one") return ds.map((x) => { const n = Math.max(o, Math.ceil(x.up.length / 4) * 4), Lt = x.up.split(""); while (Lt.length < n) Lt.push(rl()); return { l: shuffle(Lt).join(""), w: [x.up], m: [x.m] }; });
   const per = cheThu === "list" ? 4 : 2, out = [];
   for (let i = 0; i < ds.length; i += per) {
@@ -715,7 +721,23 @@ let dangChot = false;
 // ⭐ MẪU THẦY GIAO HỮU — bàn thử: thầy (a, uid "thay") đấu Gia Bảo (b, uid "hs"). Màn này của VAI; bên kia là MÁY,
 //   hoặc (&dong=1) là màn thứ hai trong khung mẹ: từ lấy được ở màn nào cũng báo sang màn kia (khung mẹ chuyển tin).
 async function chayBanThu() {
-  const phut = +q.get("phut") || 2, lv = q.get("lv") || "easy", cheThu = ["one", "list", "free"].includes(q.get("che")) ? q.get("che") : "";
+  let phut = +q.get("phut") || 2, lv = q.get("lv") || "easy", cheThu = ["one", "list", "free"].includes(q.get("che")) ? q.get("che") : "";
+  // ⭐ v1.372.0 — luyện tập: bo=g ⇒ đọc giải (giaiDau/{giai}.bo) lấy bộ từ + cách chơi; không đọc được ⇒ 16 chữ ngẫu nhiên
+  let boGiai = null, tenMe = "EM";
+  if (LUYEN) {
+    phut = [2, 3, 5].includes(+q.get("phut")) ? +q.get("phut") : 2;
+    tenMe = NW.toi ? (NW.toi.laThay ? "Thầy Andrew" : NW.toi.ten || "EM") : "EM";
+    if (q.get("bo") === "g" && q.get("giai") && NW.laBanThu()) { BO_LUYEN = BO_MAU; boGiai = { che: "free", o: 12, chiBo: true, ten: "7 JOB / WORDS", goiY: true }; cheThu = "free"; }   /* bàn thử: giải mẫu m3 không có trong kho */
+    else if (q.get("bo") === "g" && q.get("giai")) {
+      try {
+        const gf = await NW.fb(), gs = await gf.fs.getDoc(gf.fs.doc(gf.db, "giaiDau", q.get("giai"))), gd = gs.exists() ? gs.data() : null;
+        if (gd && gd.bo && ["one", "list", "free"].includes(gd.bo.che)) {
+          BO_LUYEN = (gd.bo.tu || []).filter((x) => x && /^[A-Za-z]{2,16}$/.test(x.w || "")).map((x) => [x.w, x.m || ""]);
+          if (BO_LUYEN.length) { boGiai = gd.bo; cheThu = gd.bo.che; } else BO_LUYEN = null;
+        }
+      } catch (e) { BO_LUYEN = null; }
+    }
+  }
   const chu = "EAIDTFJRNULHGPEG".split("");
   const t0 = +q.get("t0") || Date.now() + 4000;
   if (VAI) {
@@ -727,16 +749,18 @@ async function chayBanThu() {
   } else {   // bàn thử học sinh như cũ: em (BẠN THỬ) đấu MÁY · &xem=1 xem 2 máy đấu nhau
     toi = { uid: G.xem ? "may2" : "toi" };
     G.ben = "a";
-    G.T = { a: G.xem ? "may2" : "toi", b: "may", tenA: G.xem ? "Gia Bảo" : "BẠN THỬ", tenB: q.get("ban") || (G.xem ? "Bảo Nam" : "Gia Bảo"), giai: q.get("giai") || cheThu ? "thu" : "", phut, lv, chu: chu.join(""),
+    G.T = { a: G.xem ? "may2" : "toi", b: "may", tenA: LUYEN ? tenMe : G.xem ? "Gia Bảo" : "BẠN THỬ", tenB: LUYEN ? "MÁY" : q.get("ban") || (G.xem ? "Bảo Nam" : "Gia Bảo"), giai: LUYEN ? "" : q.get("giai") || cheThu ? "thu" : "", phut, lv, chu: chu.join(""),
       trangThai: "choi", batDau: t0, ketThuc: t0 + phut * 60000, diem: { a: 0, b: 0 } };
   }
   if (cheThu) {
-    KE_THU = keThu(cheThu, +q.get("o") || 12);
-    Object.assign(G.T, { che: cheThu, chiBo: q.get("chiBo") !== "0", boTen: "FRUITS / WORDS", soVan: KE_THU.length, goiYBat: q.get("goi") !== "0" });
+    KE_THU = keThu(cheThu, boGiai ? boGiai.o || 12 : +q.get("o") || 12);
+    Object.assign(G.T, { che: cheThu, chiBo: boGiai ? boGiai.chiBo !== false : q.get("chiBo") !== "0", boTen: boGiai ? boGiai.ten || "" : "FRUITS / WORDS", soVan: KE_THU.length, goiYBat: boGiai ? boGiai.goiY !== false : q.get("goi") !== "0" });
     await datBanThu(0);
   }
   if (DONG && VAI === "hs") sfx.on = false;   // hai màn cùng kêu thì ồn — màn học sinh tắt tiếng (bấm loa để bật)
   doiBan();
+  /* v1.372.0 luyện tập: máy Chậm / Vừa / Nhanh = nhịp tìm một từ [nền, dao động] (ms); bàn thử cũ giữ 4–8 giây */
+  const TOC_MAY = LUYEN ? ({ 1: [9000, 6000], 2: [5500, 4500], 3: [3200, 2800] }[+q.get("may")] || [4000, 4000]) : [4000, 4000];
   const may = (uid) => {
     const laThayMay = uid === "thay";
     const nuoc = () => {
@@ -753,12 +777,12 @@ async function chayBanThu() {
           }
         }
         if (G.phase !== "over") nuoc();
-      }, (laThayMay ? 3000 : 4000) + Math.random() * 4000);
+      }, (laThayMay ? 3000 : TOC_MAY[0]) + Math.random() * (laThayMay ? 4000 : TOC_MAY[1]));
     };
     nuoc();
   };
   // &may=hs|thay|0 — MÁY chơi phía nào (mặc định: phía bên kia). Hai màn: màn thầy may=0, màn học sinh may=hs (máy chơi thay em)
-  const mayBen = q.get("may") || (VAI === "thay" ? "hs" : VAI === "hs" ? "thay" : VAI === "xem" ? "0" : "may");
+  const mayBen = LUYEN ? "may" : q.get("may") || (VAI === "thay" ? "hs" : VAI === "hs" ? "thay" : VAI === "xem" ? "0" : "may");
   if (mayBen !== "0") may(mayBen);
   if (!VAI && G.xem) may("may2");
   // tin từ màn bên kia (qua khung mẹ)
@@ -771,7 +795,7 @@ async function chayBanThu() {
     if (m.k === "goi" && G.phase === "play") thuGoi();
     if (["vao", "ra", "bl", "tim"].includes(m.k)) XM.nhan(m);   // ⭐ v1.361.0 — người xem (bàn thử nhiều màn)
   });
-  if (!DONG) moPhongXem();
+  if (!DONG && !LUYEN) moPhongXem();
   capNhatPha();
   setInterval(() => {
     if (G.phase === "lobby" || G.phase === "play") capNhatPha();

@@ -190,7 +190,62 @@
       '.td-chon button.moi-nut:hover{background:#3560CF}' +
       // ⭐ v1.361.0 — đang đấu: mờ, không bấm được, chữ cam
       '.td-chon button.ban,.td-chon button[disabled]{opacity:.6;cursor:not-allowed}.td-chon button.ban:hover{background:none}.td-chon button.ban small{color:#C2410C;font-weight:700}' +
-      '.td-chon .tt2.dd{color:#C2410C;font-weight:700}.td-chon .tt2 .c.dd{background:#F0821E}.td-chon button.moi-nut[disabled]:hover{background:#3E6BE0}';
+      '.td-chon .tt2.dd{color:#C2410C;font-weight:700}.td-chon .tt2 .c.dd{background:#F0821E}.td-chon button.moi-nut[disabled]:hover{background:#3E6BE0}' +
+      /* ⭐ v1.372.0 — HỘP ⚔ menu 2 bước (mẫu mau-v9-chat-dau, phương án A). Mọi lớp tiền tố td- ; .td-chon button (0,1,1) + :hover (0,2,1) ⇒ viết (0,3,1) để thắng */
+      '.td-chon.td-hop{width:min(360px,calc(100vw - 24px));padding:12px;display:flex;flex-direction:column;gap:10px;max-height:min(80vh,620px)}' +
+      '.td-hop svg.i{width:1em;height:1em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.14em;flex:none}' +
+      '.td-hop .td-ph{display:flex;align-items:center;gap:8px;padding:0}' +
+      '.td-hop .td-ph b{font-weight:800;font-size:14px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.td-hop .td-ph small{color:#5F7370;font-weight:600;font-size:11.5px;white-space:nowrap}' +
+      '.td-chon.td-hop button.td-lui{width:30px;height:30px;padding:0;border-radius:9px;border:1px solid #E0EAE7;background:#fff;color:#16232A;display:grid;place-items:center;flex:none}' +
+      '.td-chon.td-hop button.td-lui:hover{background:#F3F7F6}' +
+      '.td-chon.td-hop button.td-cd{display:block;width:100%;border:0;text-align:left;cursor:pointer;border-radius:14px;color:inherit;padding:0;font:inherit;gap:0}' +
+      '.td-chon.td-hop button.td-cd:focus-visible,.td-chon.td-hop button.td-moi:focus-visible,.td-chon.td-hop button.td-chip2:focus-visible,.td-chon.td-hop button.td-bd:focus-visible,.td-chon.td-hop button.td-lui:focus-visible{outline:2px solid #2F6FEB;outline-offset:2px}' +
+      '.td-chon.td-hop button.td-cd[aria-disabled="true"]{cursor:not-allowed}' +
+      '.td-chon.td-hop button.td-hero{overflow:hidden;color:#E6FFF1;padding:13px 14px;min-height:88px;display:flex;flex-direction:column;gap:6px;' +
+        'background:linear-gradient(rgba(61,245,138,.06) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(61,245,138,.06) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(110deg,#0B3A24,#05170F 70%);' +
+        'box-shadow:0 8px 22px rgba(5,23,15,.32),inset 0 0 0 1.5px rgba(155,255,196,.35)}' +
+      '.td-hero .td-r1{display:flex;align-items:center;gap:10px;width:100%}' +
+      '.td-hero .td-ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;background:linear-gradient(135deg,#1DE07A,#8CFFBF);color:#04200F;flex:none;font-size:20px}' +
+      '.td-hero .td-nd{flex:1;min-width:0}' +
+      '.td-hero .td-nm{font:italic 900 22px/1 \'Barlow Condensed\',\'Arial Narrow\',\'Roboto Condensed\',Arial,sans-serif;text-transform:uppercase;color:#9BFFC4;text-shadow:0 0 14px rgba(61,245,138,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+      '.td-hero .td-sub{font-size:11.5px;font-weight:600;color:#A9D8BF;line-height:1.3;margin-top:3px}' +
+      '.td-hero .td-dem{margin-left:auto;font:italic 800 21px/1 \'Barlow Condensed\',\'Arial Narrow\',\'Roboto Condensed\',Arial,sans-serif;letter-spacing:.05em;color:#fff;font-variant-numeric:tabular-nums;white-space:nowrap;flex:none}' +
+      '.td-hero .td-chip{font-weight:800;font-size:9.5px;line-height:1;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:rgba(155,255,196,.16);color:#9BFFC4;align-self:flex-start}' +
+      '.td-chon.td-hop button.td-hero[aria-disabled="true"]{filter:grayscale(.85);opacity:.5;box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.2)}' +
+      '.td-hero .td-khoa{margin-left:auto;font-size:18px;opacity:.9;flex:none}' +
+      '.td-chon.td-hop button.td-hero.sapm{filter:none;opacity:1;background:linear-gradient(rgba(200,215,240,.06) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(200,215,240,.06) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(110deg,#33445F,#141C2A 70%);box-shadow:inset 0 0 0 1.5px rgba(200,215,240,.3)}' +
+      '.td-hero.sapm .td-nm{color:#DCE8FA;text-shadow:none}' +
+      '.td-hop .td-note{font-size:11.5px;font-weight:600;color:#5F7370;background:#F3F7F6;border-radius:10px;padding:7px 10px;display:none}.td-hop .td-note:not(:empty){display:block}' +
+      '.td-hop .td-phu{display:grid;grid-template-columns:1fr 1fr;gap:8px}' +
+      '.td-chon.td-hop button.td-s{border:1.5px solid #E0EAE7;background:#fff;padding:10px 11px;display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:68px;border-radius:14px}' +
+      '.td-chon.td-hop button.td-s:hover{background:#F3F7F6}' +
+      '.td-s .td-t{display:flex;align-items:center;gap:7px;font-weight:800;font-size:13px}' +
+      '.td-s .td-ic{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:15px;flex:none}' +
+      '.td-s small{font-size:11px;color:#5F7370;font-weight:600;line-height:1.3}' +
+      '.td-gh .td-ic{background:#FBF0DC;color:#B9771A}.td-lt .td-ic{background:#E6EEFD;color:#2F6FEB}' +
+      '.td-hop .td-tip{font-size:11.5px;color:#5F7370;font-weight:600;background:#F3F7F6;border-radius:10px;padding:8px 10px;display:flex;gap:7px;align-items:center;line-height:1.35}' +
+      '.td-hop .td-tip.g{background:#0B2A1B;color:#BFF5D6}.td-hop .td-tip.b{background:#E6EEFD;color:#2F6FEB}' +
+      '.td-hop .td-ds{display:flex;flex-direction:column;gap:2px;overflow:auto;min-height:0}' +
+      '.td-hop .td-ban{display:flex;align-items:center;gap:10px;padding:7px 4px;border-radius:12px}' +
+      '.td-hop .td-ban i{width:36px;height:36px;font-size:11px}' +
+      '.td-hop .td-ban .td-nd{flex:1;min-width:0}' +
+      '.td-hop .td-ban .td-nd b{display:flex;align-items:center;gap:6px;font-size:13.5px}' +
+      '.td-hop .td-ban .td-nd small{display:block;color:#5F7370;font-size:11.5px;font-weight:600}' +
+      '.td-hop .td-ban.dd{opacity:.9}.td-hop .td-ban.dd small{color:#C2410C;font-weight:700}.td-hop .td-ban.dd i::after{background:#F59E0B}' +
+      '.td-chon.td-hop button.td-moi{width:auto;height:34px;padding:0 14px;border-radius:10px;border:0;font-weight:800;font-size:12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;flex:none;font-family:inherit}' +
+      '.td-chon.td-hop button.td-moi.dau{background:linear-gradient(110deg,#0B3A24,#05170F);color:#9BFFC4;box-shadow:inset 0 0 0 1.5px rgba(155,255,196,.4)}' +
+      '.td-chon.td-hop button.td-moi.gh{background:#FBF0DC;color:#B9771A}' +
+      '.td-chon.td-hop button.td-moi[disabled]{opacity:.4;cursor:not-allowed}' +
+      '.td-hop .td-rongtt{padding:14px;text-align:center;color:#5F7370;font-size:12.5px;font-weight:600}' +
+      '.td-hop .td-lts{display:flex;flex-direction:column;gap:9px}' +
+      '.td-hop .td-lts label{display:block;font-weight:800;font-size:9.5px;line-height:1;letter-spacing:.1em;text-transform:uppercase;color:#5F7370;margin-bottom:5px}' +
+      '.td-hop .td-row{display:flex;gap:6px;flex-wrap:wrap}' +
+      '.td-chon.td-hop button.td-chip2{width:auto;height:32px;padding:0 12px;border-radius:9px;border:1px solid #E0EAE7;background:#F3F7F6;color:#5F7370;font-weight:700;font-size:12px;cursor:pointer;font-family:inherit}' +
+      '.td-chon.td-hop button.td-chip2.on{background:#2F6FEB;border-color:#2F6FEB;color:#fff}' +
+      '.td-chon.td-hop button.td-chip2[disabled]{opacity:.4;cursor:not-allowed}' +
+      '.td-chon.td-hop button.td-bd{height:42px;border-radius:12px;border:0;background:#2F6FEB;color:#fff;font-weight:800;font-size:13px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}' +
+      '@media (prefers-reduced-motion:reduce){.td-hop *{transition:none!important;animation:none!important}}';
     document.head.appendChild(s);
   }
 
@@ -350,7 +405,11 @@
 
   // ---------- hộp chọn bạn đang online ----------
   var hop = null;
-  function dongHop() { if (hop && hop.parentNode) hop.parentNode.removeChild(hop); hop = null; }
+  function dongHop() {
+    if (hop && hop._iv) clearInterval(hop._iv);
+    if (hop && hop._phim) document.removeEventListener('keydown', hop._phim, true);
+    if (hop && hop.parentNode) hop.parentNode.removeChild(hop); hop = null;
+  }
   document.addEventListener('pointerdown', function (e) { if (hop && !hop.contains(e.target) && !(e.target.closest && e.target.closest('[data-cu-td]'))) dongHop(); }, true);
   function datViTri(el, nut) {
     var r = nut.getBoundingClientRect(), w = el.offsetWidth, h = el.offsetHeight;
@@ -486,51 +545,155 @@
     }
   }
 
-  // ---------- hộp chọn ở NHÓM LỚP (nút ⚔): em chọn bạn / thầy đang online · thầy chọn cách đấu + em đang online ----------
+  // ---------- ⭐ v1.372.0 — HỘP ⚔ ở NHÓM LỚP: menu 2 bước (mẫu thầy chốt: D:\OTHERS\CLAUDE\GIAI DAU THE - thiet ke\mau-v9-chat-dau, phương án A) ----------
+  // Bước 1 (menu): thẻ neon "Đấu giải" + hai thẻ nhỏ "Giao hữu" (amber) · "Luyện tập" (xanh dương).
+  //   HỌC SINH + lớp có giải ĐANG MỞ ⇒ Đấu giải sáng ⇒ bước 2 danh sách bạn (trận tính giải) · giải sắp mở / chưa có ⇒ thẻ MỜ + lý do · THẦY ⇒ MỜ "Thầy không tham gia giải đấu".
+  //   Giao hữu: học sinh ⇒ danh sách bạn + hàng Thầy (2 phút Easy, không điểm) · THẦY ⇒ cách đấu (caiHtml) + em đang online, mở trận ở TAB MỚI như cũ.
+  //   Luyện tập: chơi với MÁY, không điểm, không ghi gì ⇒ nw/tran.html?luyen=1&may=&phut=&bo=&giai=&lop= (chế độ LUYEN của nw/js/tran.js).
+  var LT_KHOA = 'tdLuyenCai';
+  function ltDoc() { var c = { may: 2, phut: 2, bo: 'n' }; try { Object.assign(c, JSON.parse(localStorage.getItem(LT_KHOA) || '{}')); } catch (e) { } return c; }
+  function ltLuu(c) { try { localStorage.setItem(LT_KHOA, JSON.stringify(c)); } catch (e) { } }
+  function tongGio(ms) { ms = Math.max(0, ms); return hai(Math.floor(ms / 36e5)) + ':' + hai(Math.floor(ms % 36e5 / 6e4)) + ':' + hai(Math.floor(ms % 6e4 / 1e3)); }
+  var HI = function (d) { return '<svg class="i" viewBox="0 0 24 24" aria-hidden="true">' + d + '</svg>'; };
+  var HIC = {
+    cup: HI('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>'),
+    kiem: HI('<path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/>'),
+    ban: HI('<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/>'),
+    muc: HI('<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>'),
+    khoa: HI('<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>'),
+    lui: HI('<path d="m15 18-6-6 6-6"/>'),
+    play: HI('<path d="M6 3l14 9-14 9z"/>')
+  };
+  function napFontHop() {
+    if (document.getElementById('tdFont') || document.getElementById('tgFont')) return;
+    var l = document.createElement('link'); l.id = 'tdFont'; l.rel = 'stylesheet';
+    l.href = 'https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@1,800;1,900&display=swap';
+    document.head.appendChild(l);
+  }
+  // giải của lớp: đang mở + giải SẮP mở gần nhất (thầy/em cùng một nguồn với dải ghim)
+  async function giaiHop(f, lop) {
+    var bay = Date.now();
+    if (banThu()) {
+      var tt = (new URLSearchParams(location.search).get('tt')) || 'dang';
+      if (tt === 'none') return { g: null, sap: null };
+      var G0 = { id: 'm3', ten: 'Speed Cup Mùa 1', lops: [lop], phut: 2, lv: 'easy', sao: [30, 20, 10], bo: { ten: '7 JOB / WORDS', che: 'free' } };
+      return tt === 'sap' ? { g: null, sap: Object.assign(G0, { tu: bay + 27 * 36e5, den: bay + 5 * 864e5 }) } : { g: Object.assign(G0, { tu: bay - 4 * 36e5, den: bay + 2 * 864e5 + 5 * 36e5 + 12 * 6e4 + 9e3 }), sap: null };
+    }
+    try {
+      var ds = await giaiCuaLop(f, lop).then(function (x) { return x.filter(function (y) { return !y.dong; }); });
+      return { g: ds.filter(function (x) { return x.tu <= bay && bay < x.den; })[0] || null,
+        sap: ds.filter(function (x) { return x.tu > bay; }).sort(function (a, b) { return a.tu - b.tu; })[0] || null };
+    } catch (e) { return { g: null, sap: null }; }
+  }
+  // hạng + điểm của em trong giải (cùng luật xếp hạng với dải ghim)
+  async function hangEm(f, g, lop, uid) {
+    if (banThu()) return { hang: 2, diem: 7 };
+    try {
+      var s = await f.fs.getDoc(f.fs.doc(f.db, 'giaiDau', g.id, 'bang', lop)), em = s.exists() ? (s.data().em || {}) : {};
+      var ds = Object.keys(em).map(function (u) { var r = em[u] || {}; return { uid: u, ten: r.ten || '', t: r.t || 0, h: r.h || 0, b: r.b || 0, d: (r.t || 0) * 2 + (r.h || 0) }; })
+        .filter(function (x) { return x.t + x.h + x.b > 0; })
+        .sort(function (a, b) { return b.d - a.d || b.t - a.t || (a.t + a.h + a.b) - (b.t + b.h + b.b) || String(a.ten).localeCompare(String(b.ten), 'vi'); });
+      var vt = -1; ds.forEach(function (x, i) { if (x.uid === uid) vt = i; });
+      return vt >= 0 ? { hang: vt + 1, diem: ds[vt].d } : { hang: 0, diem: 0 };
+    } catch (e) { return { hang: 0, diem: 0 }; }
+  }
   async function TheTD_moChon(nut, lop, gui, baoLoi) {
     if (hop) return dongHop();
-    napCss();
-    hop = document.createElement('div'); hop.className = 'td-chon';
-    hop.innerHTML = '<div class="t">Thách đấu</div><div class="p">Đang tìm bạn đang online…</div>';
+    napCss(); napFontHop();
+    hop = document.createElement('div'); hop.className = 'td-chon td-hop'; hop.setAttribute('role', 'dialog'); hop.setAttribute('aria-label', 'Đấu A Show Speed');
+    hop.innerHTML = '<div class="td-ph"><b>Đấu A Show Speed</b></div><div class="td-rongtt">Đang tải…</div>';
     document.body.appendChild(hop); datViTri(hop, nut);
-    var el = hop, g = null, ds = [], me = await toi(), bo = [], f = null;
+    var el = hop, me = await toi(), f = null;
+    var S = { me: me, lop: lop, step: 'menu', g: null, sap: null, ds: [], bo: [], c: me.laThay ? caiDoc() : null, lt: ltDoc(), hang: 0, diem: 0, ghi: '' };
+    el._phim = function (e) {
+      if (e.key === 'Escape') { dongHop(); try { nut.focus(); } catch (x) { } }
+    };
+    document.addEventListener('keydown', el._phim, true);
     try {
       if (!banThu()) f = await kho();
-      var dd = {};
-      if (me.laThay) { var r0 = await Promise.all([banThu() ? mauBan() : banOnline(f, lop, me.uid), dsBo(f), dsDangDau(f)]); ds = r0[0]; bo = r0[1]; dd = r0[2]; }
-      else if (banThu()) { ds = (await thayOnline(f)).concat(mauBan()); dd = await dsDangDau(f); }
-      else { var r = await Promise.all([giaiDangMo(f, lop), banOnline(f, lop, me.uid), thayOnline(f), dsDangDau(f)]); g = r[0]; ds = r[2].concat(r[1]); dd = r[3]; }
-      ds.forEach(function (x) { x.dangDau = !!dd[x.uid]; if (x.anh) ANH[x.uid] = x.anh; });
-    } catch (e) { ds = []; }
+      var r = await Promise.all([giaiHop(f, lop), me.laThay ? (banThu() ? mauBan() : banOnline(f, lop, me.uid)) : (banThu() ? Promise.resolve(mauBan()) : banOnline(f, lop, me.uid)),
+        me.laThay ? dsBo(f) : [], dsDangDau(f), me.laThay ? [] : thayOnline(f)]);
+      S.g = r[0].g; S.sap = r[0].sap; S.bo = r[2];
+      var dd = r[3];
+      S.ds = r[1]; S.thay = r[4];
+      S.ds.concat(S.thay).forEach(function (x) { x.dangDau = !!dd[x.uid]; if (x.anh) ANH[x.uid] = x.anh; });
+      if (S.g && !me.laThay) { var h = await hangEm(f, S.g, lop, me.uid); S.hang = h.hang; S.diem = h.diem; }
+    } catch (e) { S.ds = []; S.thay = []; }
     if (hop !== el) return;
-    var c = me.laThay ? caiDoc() : null;
-    var dong = function (b) {
-      var av = b.laThay ? '<i class="anh" style="background-image:url(' + an(anhUid(b.uid) || AV_THAY) + ')"></i>' : avI(b.uid, b.ten);
-      return '<button type="button" data-uid="' + an(b.uid) + '"' + (b.dangDau ? ' class="ban" disabled' : '') + '>' + av + '<div><b>' + an(b.ten) + (b.laThay ? '<em class="gvb">THẦY</em>' : '') + '</b><small>' +
-        (b.dangDau ? '⚔ Đang đấu — chờ ' + (b.laThay ? 'thầy' : 'bạn') + ' thoát trận' : b.laThay ? 'Đang online · giao hữu 2 phút Easy' : 'Đang online') + '</small></div></button>';
-    };
-    if (me.laThay) {
-      el.classList.add('rong');
-      el.innerHTML = '<div class="t">Thầy giao hữu</div><div class="p">Chọn cách đấu rồi chọn em đang online</div>' + caiHtml(c, bo) +
-        (ds.length ? ds.map(dong).join('') : '<div class="trong">Chưa có em nào của lớp đang online.</div>');
-      lapCai(el, c, bo);
-    } else {
-      el.innerHTML = '<div class="t">' + (g ? 'Thách đấu · ' + an(g.ten) : 'Giao hữu (không tính điểm)') + '</div><div class="p">A Show Speed · ' + (g ? g.phut : 2) + ' phút' +
-        (g && g.bo ? ' · ' + an(CHE_TEN[g.bo.che] || '') + ' · ' + an(g.bo.ten || '') : '') + ' · bạn đang online</div>' +
-        (ds.length ? ds.map(dong).join('') : '<div class="trong">Chưa có bạn nào cùng lớp đang online.</div>');
+    el._iv = setInterval(function () { el.querySelectorAll('.td-dem[data-t]').forEach(function (e) { e.textContent = tongGio(+e.getAttribute('data-t') - Date.now()); }); }, 1000);
+    var cd = function (cls, ic, t, sm, act, tat) { return '<button type="button" class="td-cd td-s ' + cls + '" ' + (tat ? 'aria-disabled="true"' : 'data-hop="' + act + '"') + '><span class="td-t"><span class="td-ic">' + ic + '</span>' + t + '</span><small>' + sm + '</small></button>'; };
+    var hd = function (t, sm, lui) { return '<div class="td-ph">' + (lui ? '<button type="button" class="td-lui" data-hop="menu" aria-label="Quay lại">' + HIC.lui + '</button>' : '') + '<b>' + t + '</b>' + (sm ? '<small>' + sm + '</small>' : '') + '</div>'; };
+    var soBan = function () { return S.ds.filter(function (x) { return !x.laThay; }).length; };
+    var lyDo = function () { return me.laThay ? 'Thầy không tham gia giải đấu' : S.g ? '' : S.sap ? 'Giải chưa tới giờ mở' : 'Lớp chưa có giải nào đang mở'; };
+    var dauOk = function () { return !me.laThay && !!S.g; };
+    function hero() {
+      var ok = dauOk(), sapm = !me.laThay && !S.g && !!S.sap;
+      var ten = S.g ? S.g.ten : (me.laThay && S.g ? S.g.ten : 'Đấu giải');
+      var sub = ok ? (S.hang ? 'Hạng của em #' + S.hang + ' · ' + S.diem + ' điểm' : 'Em chưa đấu trận nào') + ' · ' + soBan() + ' bạn đang online' : lyDo();
+      var vp = ok ? '<span class="td-dem" data-t="' + S.g.den + '">' + tongGio(S.g.den - Date.now()) + '</span>' : sapm ? '<span class="td-dem" data-t="' + S.sap.tu + '">' + tongGio(S.sap.tu - Date.now()) + '</span>' : '<span class="td-khoa">' + HIC.khoa + '</span>';
+      return '<button type="button" class="td-cd td-hero' + (sapm ? ' sapm' : '') + '" ' + (ok ? 'data-hop="ban-dau"' : 'aria-disabled="true"') + '><div class="td-r1"><span class="td-ic">' + HIC.cup + '</span><div class="td-nd"><div class="td-nm">' + an(ok || !sapm ? ten : S.sap.ten) + '</div><div class="td-sub">' + an(sub) + '</div></div>' + vp + '</div>' + (ok ? '<span class="td-chip">ĐANG DIỄN RA</span>' : '') + '</button>';
     }
-    datViTri(el, nut);
-    el.querySelectorAll('[data-uid]').forEach(function (b) {
-      b.onclick = function () {
-        var ban = ds.filter(function (x) { return x.uid === b.getAttribute('data-uid'); })[0]; dongHop();
-        if (!me.ten && !me.laThay) { if (baoLoi) baoLoi('Chưa nhận ra tài khoản của em — em tải lại trang nhé.'); return; }
-        // em ↔ thầy: giao hữu với thầy (không tính giải) · thầy: theo cách đấu thầy chọn
-        if (me.laThay) return taoTran({ me: me, ban: ban, lop: lop, phut: c.phut, lv: c.che ? 'easy' : c.lv, cai: c, gv: me.uid, gui: gui, baoLoi: baoLoi });
-        if (ban.laThay) return taoTran({ me: me, ban: ban, lop: lop, phut: 2, lv: 'easy', gv: ban.uid, gui: gui, baoLoi: baoLoi });
-        if (banThu()) { MOI_TAO.mau = 1; if (baoLoi) baoLoi('Bàn thử: đã mời ' + ban.ten + ' — 3 giây nữa vào trận với máy.'); setTimeout(function () { location.href = (laNw ? '' : 'nw/') + 'tran.html?thu=1&ban=' + encodeURIComponent(ban.ten); }, 3000); return; }
-        taoTran({ me: me, ban: ban, lop: lop, giai: g ? g.id : '', phut: g ? g.phut : 2, lv: g ? g.lv : 'easy', gui: gui, baoLoi: baoLoi });
-      };
+    function hang(b, mode) {
+      var av = b.laThay ? '<i class="anh" style="background-image:url(' + an(anhUid(b.uid) || AV_THAY) + ')"></i>' : avI(b.uid, b.ten);
+      var sm = b.dangDau ? '⚔ Đang đấu, chờ ' + (b.laThay ? 'thầy' : 'bạn') + ' thoát trận' : b.laThay ? 'Đang online · giao hữu 2 phút Easy' : 'Đang online';
+      return '<div class="td-ban' + (b.dangDau ? ' dd' : '') + '">' + av + '<div class="td-nd"><b>' + an(b.ten) + (b.laThay ? '<em class="gvb">THẦY</em>' : '') + '</b><small>' + sm + '</small></div>' +
+        '<button type="button" class="td-moi ' + (mode === 'dau' ? 'dau' : 'gh') + '" data-uid="' + an(b.uid) + '" data-mode="' + mode + '"' + (b.dangDau ? ' disabled' : '') + '>' + (mode === 'dau' ? HIC.cup + 'Đấu giải' : HIC.kiem + 'Mời') + '</button></div>';
+    }
+    function luyen() {
+      var c = S.lt, chip = function (k, v, t, off) { return '<button type="button" class="td-chip2' + (String(c[k]) === String(v) ? ' on' : '') + '" data-lt="' + k + '" data-v="' + v + '"' + (off ? ' disabled' : '') + '>' + t + '</button>'; };
+      if (c.bo === 'g' && !S.g) c.bo = 'n';
+      return '<div class="td-lts"><div class="td-tip b">' + HIC.muc + 'Chơi với máy, không tính điểm, không ai thấy kết quả.</div>' +
+        '<div><label>Máy chơi</label><div class="td-row">' + chip('may', 1, 'Chậm') + chip('may', 2, 'Vừa') + chip('may', 3, 'Nhanh') + '</div></div>' +
+        '<div><label>Mỗi trận</label><div class="td-row">' + chip('phut', 2, '2 phút') + chip('phut', 3, '3 phút') + chip('phut', 5, '5 phút') + '</div></div>' +
+        '<div><label>Bộ chữ</label><div class="td-row">' + chip('bo', 'n', '16 chữ ngẫu nhiên') + chip('bo', 'g', 'Bộ của giải', !S.g) + '</div></div>' +
+        '<button type="button" class="td-bd" data-hop="batdau">' + HIC.play + 'Bắt đầu luyện tập</button></div>';
+    }
+    function ve() {
+      var h;
+      if (S.step === 'menu') h = hd('Đấu A Show Speed', '') + hero() + '<div class="td-note" role="status"></div><div class="td-phu">' +
+        cd('td-gh', HIC.ban, 'Giao hữu', me.laThay ? 'Chọn cách đấu, mời em đang online' : 'Với bạn đang online, không tính điểm', 'ban-gh') + cd('td-lt', HIC.muc, 'Luyện tập', 'Chơi với máy để làm quen', 'luyen') + '</div>';
+      else if (S.step === 'ban-dau') h = hd('Đấu giải · ' + an(S.g ? S.g.ten : ''), soBan() + ' bạn online', true) + '<div class="td-tip g">' + HIC.cup + 'Thắng +2 · hòa +1 · thua 0. Tính vào bảng xếp hạng lớp.</div>' +
+        '<div class="td-ds">' + (S.ds.filter(function (x) { return !x.laThay; }).map(function (b) { return hang(b, 'dau'); }).join('') || '<div class="td-rongtt">Chưa có bạn nào cùng lớp đang online.</div>') + '</div>';
+      else if (S.step === 'ban-gh') {
+        var dsG = me.laThay ? S.ds : S.thay.concat(S.ds);
+        h = hd('Giao hữu', me.laThay ? 'mở trận ở tab mới' : 'không tính điểm', true) + (me.laThay ? caiHtml(S.c, S.bo) : '') +
+          '<div class="td-ds">' + (dsG.map(function (b) { return hang(b, 'gh'); }).join('') || '<div class="td-rongtt">' + (me.laThay ? 'Chưa có em nào của lớp đang online.' : 'Chưa có bạn nào cùng lớp đang online.') + '</div>') + '</div>';
+      } else h = hd('Luyện tập', 'A Show Speed', true) + luyen();
+      el.className = 'td-chon td-hop' + (S.step === 'ban-gh' && me.laThay ? ' rong' : '');
+      el.innerHTML = h; datViTri(el, nut);
+      if (S.step === 'ban-gh' && me.laThay) lapCai(el, S.c, S.bo);
+      var f1 = el.querySelector('.td-lui, [data-hop], .td-moi:not([disabled])'); if (f1) { try { f1.focus({ preventScroll: true }); } catch (x) { } }
+    }
+    el.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-hop]'), o = e.target.closest('.td-cd[aria-disabled="true"]'), cp = e.target.closest('[data-lt]'), m = e.target.closest('.td-moi');
+      if (cp && !cp.disabled) { S.lt[cp.getAttribute('data-lt')] = cp.getAttribute('data-lt') === 'bo' ? cp.getAttribute('data-v') : +cp.getAttribute('data-v'); ltLuu(S.lt); ve(); return; }
+      if (o) { var n = el.querySelector('.td-note'); if (n) n.textContent = lyDo() + '.'; return; }
+      if (m && !m.disabled) return moi(m.getAttribute('data-uid'), m.getAttribute('data-mode'));
+      if (!b) return;
+      var k = b.getAttribute('data-hop');
+      if (k === 'batdau') return batDauLuyen();
+      S.step = k; ve();
     });
+    function batDauLuyen() {
+      var c = S.lt, bo = c.bo === 'g' && S.g ? 'g' : 'n';
+      var u = (laNw ? '' : 'nw/') + 'tran.html?luyen=1&may=' + c.may + '&phut=' + c.phut + '&bo=' + bo + '&lop=' + encodeURIComponent(lop) + (bo === 'g' ? '&giai=' + encodeURIComponent(S.g.id) : '');
+      dongHop();
+      if (me.laThay && !banThu()) return moTab(new URL(window.NW && NW.duong ? NW.duong(u) : u, location.href).href);   // thầy: tab mới, dashboard giữ chỗ
+      diToi(u);
+    }
+    function moi(uid, mode) {
+      var all = S.ds.concat(S.thay || []), ban = all.filter(function (x) { return x.uid === uid; })[0]; if (!ban) return;
+      dongHop();
+      if (!me.ten && !me.laThay) { if (baoLoi) baoLoi('Chưa nhận ra tài khoản của em — em tải lại trang nhé.'); return; }
+      var c = S.c;
+      if (me.laThay) return taoTran({ me: me, ban: ban, lop: lop, phut: c.phut, lv: c.che ? 'easy' : c.lv, cai: c, gv: me.uid, gui: gui, baoLoi: baoLoi });
+      if (ban.laThay) return taoTran({ me: me, ban: ban, lop: lop, phut: 2, lv: 'easy', gv: ban.uid, gui: gui, baoLoi: baoLoi });
+      if (banThu()) { MOI_TAO.mau = 1; if (baoLoi) baoLoi('Bàn thử: đã mời ' + ban.ten + ' — 3 giây nữa vào trận với máy.'); setTimeout(function () { location.href = (laNw ? '' : 'nw/') + 'tran.html?thu=1&ban=' + encodeURIComponent(ban.ten); }, 3000); return; }
+      // đấu giải: trận tính vào giải đang mở · giao hữu: 2 phút Easy, KHÔNG tính điểm (luật cho phép giai '' bất cứ lúc nào)
+      if (mode === 'dau' && S.g) return taoTran({ me: me, ban: ban, lop: lop, giai: S.g.id, phut: S.g.phut, lv: S.g.lv, gui: gui, baoLoi: baoLoi });
+      taoTran({ me: me, ban: ban, lop: lop, giai: '', phut: 2, lv: 'easy', gui: gui, baoLoi: baoLoi });
+    }
+    ve();
   }
 
   // ---------- nút ⚔ ở PHÒNG CHAT RIÊNG thầy ↔ một em: mời thẳng người kia ----------

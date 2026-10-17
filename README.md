@@ -14,6 +14,15 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
+## ⭐ v1.372.0 (17/10/2026) — HỘP ⚔ CHAT LỚP 2 BƯỚC (Đấu giải · Giao hữu · Luyện tập) *(bản mới nhất)*
+
+Mẫu thầy chốt `D:\OTHERS\CLAUDE\GIAI DAU THE - thiet ke\mau-v9-chat-dau` phương án A.
+- `js/the-td.js` `TheTD_moChon` viết lại (lớp CSS tiền tố `td-`, `.td-hop`): menu = thẻ neon **Đấu giải** (tên giải · hạng em · bạn online · đếm lùi tổng giờ) + **Giao hữu** (amber) + **Luyện tập** (xanh dương).
+  Học sinh + giải đang mở ⇒ Đấu giải sáng ⇒ danh sách bạn (trận tính giải, không liệt kê thầy); giải sắp mở / chưa có ⇒ thẻ MỜ + lý do (bấm hiện chú nhỏ); THẦY ⇒ MỜ "Thầy không tham gia giải đấu".
+  Giao hữu học sinh = bạn online + hàng Thầy (2 phút Easy, `giai:''` không điểm — luật cho phép lúc nào cũng được); thầy = caiHtml + em online, tab mới như cũ. ESC / bấm ngoài đóng; focus bàn phím vào hộp.
+- **Luyện tập với máy**: `nw/tran.html?luyen=1&may=1|2|3&phut=2|3|5&bo=n|g&giai=&lop=` (`LUYEN` trong `nw/js/tran.js`, dùng bộ máy của bàn thử: không tạo tranDau, không gọi máy chủ, không ghi gì). `bo=g` đọc `giaiDau/{giai}.bo`. Máy Chậm/Vừa/Nhanh = nhịp tìm từ 9–15 / 5,5–10 / 3,2–6 giây. Cuối ván "PRACTICE · NO POINTS" + Exit / Play again.
+- Bàn thử: `nw/tinnhan.html?thu=1|thay&tt=dang|sap|none`. the-td.js?v=11 (mọi trang), tran.js?v=6, config.js 1.372.0.
+
 ## ⭐ v1.371.0 (17/10/2026) — THẺ GIẢI ĐẤU NEON + luật giải tạo từ myLesson *(Đợt 1 + Đợt 4 của "giải đấu tạo từ app")*
 
 Thầy duyệt `mau-v8-the-neon` + "ok build" (hồ sơ: `D:\OTHERS\CLAUDE\GIAI DAU THE - thiet ke\`: KE HOACH BUILD, HOP DONG DU LIEU - 3 kho).

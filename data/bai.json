@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-15 09:51:56",
+  "capNhat": "2026-10-17 09:30:13",
   "bai": {
     "A1C": [
       {
@@ -4929,6 +4929,103 @@
     ],
     "NNTNGK10": [
       {
+        "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L09",
+        "dang": "KHOA",
+        "kieu": "CHUONG",
+        "nhan": "PHẦN A: CHƯƠNG 2",
+        "tieuDe": "PHẦN A: CHƯƠNG 2 — TẠI SAO LẠI LÀ TIẾNG ANH?",
+        "tenBai": "PHẦN A: CHƯƠNG 2",
+        "maLesson": "PHẦN A: CHƯƠNG 2",
+        "noiDung": "TẠI SAO LẠI LÀ TIẾNG ANH?",
+        "huongDan": {
+          "doc": "slide/huong-dan/cach-lam-bai-chuong-4-buoc",
+          "tieuDe": "HƯỚNG DẪN CÁCH LÀM BÀI"
+        },
+        "han": "2026-10-20T23:59",
+        "taoLuc": "2026-10-17",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BƯỚC 2 · TỰ LUYỆN TẬP",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "uyausp"
+          },
+          {
+            "loai": "act",
+            "ten": "BƯỚC 3 · LUYỆN TẬP CÙNG BỐ MẸ",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "k33v99"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "",
+          "video": "",
+          "doan": []
+        },
+        "bt": [
+          {
+            "id": "btc02sach",
+            "loai": "sach",
+            "trang": "23 – 28",
+            "tieuDe": "BƯỚC 1 · ĐỌC SÁCH",
+            "actTen": "",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btc02tu",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BƯỚC 2 · TỰ LUYỆN TẬP",
+            "actTen": "CHUONG 2 - TAI SAO LAI LA TIENG ANH?",
+            "ma": "uyausp",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btc02bm",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BƯỚC 3 · LUYỆN TẬP CÙNG BỐ MẸ",
+            "actTen": "CHUONG 2 - TAI SAO LAI LA TIENG ANH?",
+            "ma": "k33v99",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btc02zalo",
+            "loai": "zalo",
+            "trang": "",
+            "tieuDe": "BƯỚC 4 · QUAY VIDEO TRẢ LỜI CÂU HỎI",
+            "actTen": "CHUONG 2 - TAI SAO LAI LA TIENG ANH?",
+            "ma": "f5fya8",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-17T09:30"
+      },
+      {
         "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L08",
         "dang": "KHOA",
         "kieu": "CHUONG",
@@ -5064,7 +5161,7 @@
     ]
   },
   "capNhatLop": {
-    "NNTNGK10": "2026-10-15 08:30:00",
+    "NNTNGK10": "2026-10-17 09:30:13",
     "A1A": "2026-10-12 22:18:14",
     "B2B": "2026-10-12 23:30:39",
     "A1C": "2026-10-13 06:46:33",

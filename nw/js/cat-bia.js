@@ -5,6 +5,7 @@
        (ảnh luôn phủ kín khung — không có viền trống)
      • đường nét đứt = phần còn thấy trên ĐIỆN THOẠI (bìa thấp hơn, hai bên bị cắt bớt)
      • nút "Chọn ảnh khác" ngay trong hộp
+     • ⭐ v1.367.0 (17/10/2026, thầy yêu cầu) — thanh ĐỘ SÁNG 50–160 % (xem trước CSS brightness, lúc xuất nhân thẳng điểm ảnh)
    CatBia.mo(file, { tieuDe, nutDung }) ⇒ Promise<Blob JPEG 1400×500 | null (bấm Hủy)>.
    ============================================================ */
 (function () {
@@ -12,6 +13,7 @@
   if (window.CatBia) return;
   var TI = 2.8, RA_W = 1400, RA_H = 500, Z_MAX = 4;
   var TI_DT = 2.15;   // bìa trên điện thoại ≈ 343 × 160
+  var B_MIN = 0.5, B_MAX = 1.6;
 
   function css() {
     if (document.getElementById('catBiaCss')) return;
@@ -30,6 +32,8 @@
       '.cb-ghi i{display:inline-block;width:16px;border-top:1.5px dashed var(--muted,#5F7370)}' +
       '.cb-thanh{display:flex;align-items:center;gap:10px;margin-top:12px}' +
       '.cb-thanh input[type=range]{flex:1;accent-color:var(--accent,#0E7C6E)}' +
+      '.cb-thanh .cb-nh{flex:none;width:74px;font:800 11px var(--sans,Montserrat,sans-serif);letter-spacing:.04em;color:var(--muted,#5F7370);text-transform:uppercase}' +
+      '.cb-thanh .cb-so{flex:none;width:46px;height:30px;border-radius:9px;border:1px solid var(--line,#E0EAE7);background:#fff;cursor:pointer;color:var(--muted,#5F7370);font:800 12px var(--sans,Montserrat,sans-serif);font-variant-numeric:tabular-nums}' +
       '.cb-thanh .cb-n{width:30px;height:30px;border-radius:9px;border:1px solid var(--line,#E0EAE7);background:#fff;display:grid;place-items:center;cursor:pointer;color:var(--muted,#5F7370);font:800 16px/1 sans-serif}' +
       '.cb-chan{display:flex;align-items:center;gap:8px;margin-top:14px}' +
       '.cb-chan .cb-khac{margin-right:auto;border:0;background:none;color:var(--accent,#0E7C6E);font:800 13px var(--sans,Montserrat,sans-serif);cursor:pointer;padding:6px 0}' +
@@ -60,12 +64,14 @@
     nen.innerHTML = '<div class="cb-hop" role="dialog" aria-label="Chỉnh ảnh bìa"><h4></h4>' +
       '<div class="cb-khung"><img alt=""><div class="cb-luoi"></div><div class="cb-dt"></div></div>' +
       '<div class="cb-ghi"><i></i>Phần trong nét đứt là phần thấy được trên điện thoại · kéo ảnh để đặt vị trí</div>' +
-      '<div class="cb-thanh"><button type="button" class="cb-n" data-z="-" aria-label="Thu nhỏ">−</button><input type="range" min="1" max="' + Z_MAX + '" step="0.01" value="1" aria-label="Phóng to"><button type="button" class="cb-n" data-z="+" aria-label="Phóng to">+</button></div>' +
+      '<div class="cb-thanh"><span class="cb-nh">Phóng to</span><button type="button" class="cb-n" data-z="-" aria-label="Thu nhỏ">−</button><input type="range" data-cb-z min="1" max="' + Z_MAX + '" step="0.01" value="1" aria-label="Phóng to"><button type="button" class="cb-n" data-z="+" aria-label="Phóng to">+</button></div>' +
+      '<div class="cb-thanh"><span class="cb-nh">Độ sáng</span><button type="button" class="cb-n" data-b="-" aria-label="Tối hơn">−</button><input type="range" data-cb-b min="' + B_MIN + '" max="' + B_MAX + '" step="0.01" value="1" aria-label="Độ sáng"><button type="button" class="cb-n" data-b="+" aria-label="Sáng hơn">+</button><button type="button" class="cb-so" data-b="0" title="Về 100%">100%</button></div>' +
       '<div class="cb-chan"><button type="button" class="cb-khac">Chọn ảnh khác</button><button type="button" class="b" data-thoi>Hủy bỏ</button><button type="button" class="b chinh" data-dung></button></div></div>';
     nen.querySelector('h4').textContent = tuy.tieuDe || 'Chỉnh ảnh bìa';
     nen.querySelector('[data-dung]').textContent = tuy.nutDung || 'Lưu';
     document.body.appendChild(nen);
-    var khung = nen.querySelector('.cb-khung'), img = khung.querySelector('img'), thanh = nen.querySelector('input[type=range]');
+    var khung = nen.querySelector('.cb-khung'), img = khung.querySelector('img'), thanh = nen.querySelector('[data-cb-z]');
+    var thanhB = nen.querySelector('[data-cb-b]'), soB = nen.querySelector('.cb-so'), b = 1;
     var W = Math.round(Math.min(640, nen.querySelector('.cb-hop').clientWidth - 36)), H = Math.round(W / TI);
     khung.style.width = W + 'px'; khung.style.height = H + 'px';
     var dt = nen.querySelector('.cb-dt'), wDt = Math.round(H * TI_DT); dt.style.left = Math.round((W - wDt) / 2) + 'px'; dt.style.width = wDt + 'px';
@@ -113,6 +119,12 @@
       datZ(z * (e.deltaY < 0 ? 1.08 : 1 / 1.08), e.clientX - r.left, e.clientY - r.top);
     }, { passive: false });
     thanh.addEventListener('input', function () { datZ(Number(thanh.value)); });
+    function datB(v) {
+      b = Math.max(B_MIN, Math.min(B_MAX, Math.round(v * 100) / 100));
+      img.style.filter = Math.abs(b - 1) < 0.005 ? '' : 'brightness(' + b + ')'; thanhB.value = b; soB.textContent = Math.round(b * 100) + '%';
+    }
+    thanhB.addEventListener('input', function () { datB(Number(thanhB.value)); });
+    nen.querySelectorAll('[data-b]').forEach(function (n) { n.onclick = function () { var k = n.getAttribute('data-b'); datB(k === '0' ? 1 : b + (k === '+' ? 0.1 : -0.1)); }; });
     nen.querySelectorAll('[data-z]').forEach(function (b) { b.onclick = function () { datZ(z * (b.getAttribute('data-z') === '+' ? 1.15 : 1 / 1.15)); }; });
 
     return new Promise(function (ok) {
@@ -129,6 +141,11 @@
         var g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, RA_W, RA_H);
         g.imageSmoothingQuality = 'high';
         g.drawImage(A.im, -x / s, -y / s, W / s, H / s, 0, 0, RA_W, RA_H);
+        if (Math.abs(b - 1) >= 0.005) {        // ảnh luôn phủ kín khung ⇒ nhân thẳng cả khung
+          var d = g.getImageData(0, 0, RA_W, RA_H), p = d.data;
+          for (var i = 0; i < p.length; i += 4) { p[i] *= b; p[i + 1] *= b; p[i + 2] *= b; }
+          g.putImageData(d, 0, 0);
+        }
         cv.toBlob(function (b) { nut.disabled = false; if (b) xong(b); }, 'image/jpeg', 0.86);
       };
       napTep(file).catch(function (e) { xong(null); if (window.NW && NW.toast) NW.toast(e.message, true); });

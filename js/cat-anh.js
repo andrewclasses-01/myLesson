@@ -5,6 +5,8 @@
    • Kéo ảnh để đặt vị trí · PHÓNG TO / THU NHỎ: thanh trượt (bấm 2 icon ảnh nhỏ/lớn ở 2 đầu), lăn chuột, chụm 2 ngón.
      Thu nhỏ được tới mức thấy TRỌN ảnh (phần thừa nền trắng) — ảnh chụp quá sát mặt vẫn căn được.
    • XOAY: thanh trượt ±45° (ảnh nghiêng) + nút xoay 90° (ảnh điện thoại nằm ngang); bấm số độ = về 0°.
+   • ⭐ v1.367.0 (17/10/2026, thầy yêu cầu) — ĐỘ SÁNG: thanh 50–160 % (bấm số % = về 100 %). Xem trước bằng CSS brightness,
+     lúc xuất nhân thẳng điểm ảnh (canvas `filter` Safari cũ không có) ⇒ y hệt nhau. Không lưu vào `cat` (máy chủ chỉ giữ fx/fy/fs/q/r).
    • LỚP PHỦ: ngoài vòng tròn tối mờ, viền tròn trắng mảnh; dáng ĐẦU-VAI một nét liền mảnh + lòng sáng rất nhẹ;
      lưới 3×3 chỉ hiện khi đang kéo/chụm/xoay. Nút "Khung đầu-vai" bật/tắt dáng (nhớ theo máy).
    • ⭐ v1.252.0 BỘ SƯU TẬP (thầy chốt): mở hộp là THẤY NGAY KHUNG SỬA ảnh đang dùng (căn lại từ ẢNH GỐC, đúng vị trí cũ);
@@ -37,8 +39,17 @@
     khung: SV + ' width="15" height="15"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01"/><path d="M15 9h.01"/></svg>',
     xoay90: SV + ' width="17" height="17"><path d="M12 5H6a2 2 0 0 0-2 2v3"/><path d="m9 8 3-3-3-3"/><path d="M4 14v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2"/></svg>',
     may: function (n) { return SV + ' width="' + n + '" height="' + n + '"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>'; },
-    x: SV + ' width="11" height="11" stroke-width="3"><path d="M18 6 6 18M6 6l12 12"/></svg>'
+    x: SV + ' width="11" height="11" stroke-width="3"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+    toi: SV + ' width="15" height="15"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2"/></svg>'
   };
+  var SANG_MIN = 0.5, SANG_MAX = 1.6;
+  // Độ sáng lúc XUẤT: nhân RGB với b (= CSS brightness). Gọi trên canvas TRONG SUỐT chỉ có ảnh ⇒ nền trắng không bị nhuộm.
+  function nhanSang(cv, b) {
+    if (!b || Math.abs(b - 1) < 0.005) return;
+    var g = cv.getContext('2d'), d = g.getImageData(0, 0, cv.width, cv.height), p = d.data;
+    for (var i = 0; i < p.length; i += 4) { p[i] *= b; p[i + 1] *= b; p[i + 2] *= b; }
+    g.putImageData(d, 0, 0);
+  }
   // Dáng đầu-vai (hệ 0–100 của khung vuông) — MỘT nét liền: vai trái ⇒ cổ ⇒ quanh đầu ⇒ cổ ⇒ vai phải.
   // Thầy chỉnh 05/10 (theo ảnh mẫu avatar vàng): đỉnh đầu sát trần 11 %, cằm ~60 %, đầu rộng 40 % — người to hơn để rõ mặt.
   var DANG = 'M2 100C3 85 13 75 28 71C36 69 40.5 67 41.5 63L41.5 58.5C34.5 54 30 45.5 30 35C30 21 39 11 50 11' +
@@ -76,7 +87,7 @@
       '.ca-cu{display:flex;align-items:center;gap:10px;width:100%;max-width:300px;color:var(--nhat,#6B7C79)}' +
       '.ca-cu button{flex:none;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:8px;background:none;color:inherit;cursor:pointer;font:inherit}' +
       '.ca-cu button:hover{color:var(--ca-xanh);background:rgba(15,118,110,.08)}' +
-      '.ca-cu .ca-do{width:40px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}' +
+      '.ca-cu .ca-do{width:44px;font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}' +
       '.ca-cu input[type=range]{flex:1;min-width:0;height:20px;margin:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}' +
       // rãnh tô màu từ --a tới --b (zoom: 0 ⇒ giá trị · xoay: giữa ⇒ giá trị)
       '.ca-cu input[type=range]::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:linear-gradient(to right,' + RANH + ' var(--a,0%),var(--ca-xanh) var(--a,0%),var(--ca-xanh) var(--b,0%),' + RANH + ' var(--b,0%))}' +
@@ -157,7 +168,7 @@
     return napAnh(nguon).then(function (A) {
       var phu = Math.min(A.w, A.h) / Math.max(A.w, A.h);   // z nhỏ nhất = thấy trọn ảnh
       var Z_MAX = 6;
-      var c = { z: 1, x: 0, y: 0, r: 0, q: 0 };              // q = số lần xoay 90°, r = góc tinh chỉnh (±45°)
+      var c = { z: 1, x: 0, y: 0, r: 0, q: 0, b: 1 };        // q = số lần xoay 90°, r = góc tinh chỉnh (±45°), b = độ sáng
       var coKhung = khungMo();
       khung.innerHTML =
         '<div class="ca-vung">' +
@@ -175,13 +186,19 @@
             '<input type="range" data-ca-r min="-' + XOAY_MAX + '" max="' + XOAY_MAX + '" step="0.5" value="0" aria-label="Xoay ảnh">' +
             '<button type="button" class="ca-do" data-ca="r0" title="Về 0°">0°</button>' +
           '</div>' +
+          '<div class="ca-cu">' +
+            '<button type="button" data-ca="toi" title="Tối hơn" aria-label="Tối hơn">' + IC.toi + '</button>' +
+            '<input type="range" data-ca-b min="' + SANG_MIN + '" max="' + SANG_MAX + '" step="0.01" value="1" aria-label="Độ sáng">' +
+            '<button type="button" class="ca-do" data-ca="b0" title="Độ sáng về 100%">100%</button>' +
+          '</div>' +
           '<div class="ca-phu-nut">' +
             '<button type="button" data-ca="khung" class="' + (coKhung ? 'bat' : '') + '" title="Hiện/ẩn dáng đầu và vai">' + IC.khung + 'Khung đầu-vai</button>' +
             '<button type="button" data-ca="giua" title="Đặt lại như lúc đầu">' + IC.giua + 'Đặt lại</button>' +
           '</div>' +
         '</div>';
       var vung = khung.querySelector('.ca-vung'), kh = vung.querySelector('.ca-khung'), im = kh.querySelector('img');
-      var trZ = vung.querySelector('[data-ca-z]'), trR = vung.querySelector('[data-ca-r]'), soDo = vung.querySelector('.ca-do');
+      var trZ = vung.querySelector('[data-ca-z]'), trR = vung.querySelector('[data-ca-r]'), soDo = vung.querySelector('[data-ca="r0"]');
+      var trB = vung.querySelector('[data-ca-b]'), soB = vung.querySelector('[data-ca="b0"]');
       im.src = A.url;
 
       function tiLe() { return O / Math.min(A.w, A.h) * c.z; }
@@ -205,7 +222,12 @@
         trR.value = c.r; var p = (c.r + XOAY_MAX) / (2 * XOAY_MAX) * 100; toMau(trR, Math.min(50, p), Math.max(50, p));
         var tong = ((c.q * 90 + c.r) % 360 + 540) % 360 - 180;
         soDo.textContent = (Math.round(tong * 2) / 2) + '°';
+        im.style.filter = Math.abs(c.b - 1) < 0.005 ? '' : 'brightness(' + c.b + ')';
+        trB.value = c.b; var pb = (c.b - SANG_MIN) / (SANG_MAX - SANG_MIN) * 100, p1 = (1 - SANG_MIN) / (SANG_MAX - SANG_MIN) * 100;
+        toMau(trB, Math.min(p1, pb), Math.max(p1, pb));
+        soB.textContent = Math.round(c.b * 100) + '%';
       }
+      function sang(b) { c.b = Math.max(SANG_MIN, Math.min(SANG_MAX, Math.round(b * 100) / 100)); ve(); }
       // phóng quanh điểm (px,py) của khung — mặc định tâm khung
       function phong(z, px, py) {
         if (px == null) { px = O / 2; py = O / 2; }
@@ -221,7 +243,7 @@
         kep(); ve();
       }
       function datLai() {
-        c.z = 1; c.r = 0; c.q = 0; var s = tiLe();
+        c.z = 1; c.r = 0; c.q = 0; c.b = 1; var s = tiLe();
         c.x = O / 2;
         c.y = A.h > A.w ? A.h * s / 2 : O / 2;   // ảnh dọc: đầu thường ở phía trên ⇒ bám mép trên
         kep(); ve();
@@ -247,6 +269,7 @@
       trZ.addEventListener('input', function () { phong(+trZ.value); });
       trR.addEventListener('input', function () { kh.classList.add('keo'); xoay(c.q, +trR.value); });
       trR.addEventListener('change', function () { kh.classList.remove('keo'); });
+      trB.addEventListener('input', function () { sang(+trB.value); });
       ['pointerup', 'pointercancel'].forEach(function (t) { trR.addEventListener(t, function () { kh.classList.remove('keo'); }); });
       vung.addEventListener('click', function (e) {     // gắn vào .ca-vung (mới mỗi lần) — gắn vào `khung` sẽ chồng listener khi gan lại
         var b = e.target.closest && e.target.closest('[data-ca]');
@@ -256,6 +279,8 @@
         else if (v === 'to') phong(c.z * 1.2);
         else if (v === 'xoay90') xoay(c.q + 1, c.r);
         else if (v === 'r0') xoay(c.q, 0);
+        else if (v === 'toi') sang(c.b - 0.1);
+        else if (v === 'b0') sang(1);
         else if (v === 'giua') datLai();
         else if (v === 'may') { if (tuy.may) tuy.may(); }
         else if (v === 'khung') {
@@ -317,11 +342,15 @@
       function veVao(n) {
         var s = tiLe(), cv = document.createElement('canvas');
         cv.width = cv.height = n;
-        var g = cv.getContext('2d'), k = n / O, w = A.w * s * k, h = A.h * s * k;
+        var k = n / O, w = A.w * s * k, h = A.h * s * k;
+        var lop = document.createElement('canvas'); lop.width = lop.height = n;   // ảnh vẽ lên lớp trong suốt ⇒ chỉnh sáng ⇒ đặt lên nền trắng
+        var gl = lop.getContext('2d'); gl.imageSmoothingQuality = 'high';
+        gl.translate(c.x * k, c.y * k); gl.rotate(goc());
+        gl.drawImage(A.el, -w / 2, -h / 2, w, h);
+        nhanSang(lop, c.b);
+        var g = cv.getContext('2d');
         g.fillStyle = '#fff'; g.fillRect(0, 0, n, n);
-        g.imageSmoothingQuality = 'high';
-        g.translate(c.x * k, c.y * k); g.rotate(goc());
-        g.drawImage(A.el, -w / 2, -h / 2, w, h);
+        g.drawImage(lop, 0, 0);
         return cv;
       }
       return {

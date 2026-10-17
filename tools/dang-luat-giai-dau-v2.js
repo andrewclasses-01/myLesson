@@ -171,12 +171,12 @@ async function kiem() {
       tu: I(bay - 60000), den: I(bay + 3600e3), sao: L([I(3), I(2), I(1)]), dong: B(false) });
     const moi = () => Object.assign(goc(), { hinhThuc: S('cap'), assignment: S('ABC123'), nguon: S('mylesson'), buoi: M({ lop: S(LOP), dayId: S('day_1') }) });
     const tao = (id, fields, tkn) => goi(`${FS_GOC}/giaiDau${k}&documentId=${id}`, { method: 'POST', headers: H2(tkn || tk[T]), json: { fields } });
-    const sua = (id, fields) => goi(`${FS_GOC}/giaiDau/${id}${k}`, { method: 'PATCH', headers: H2(tk[T]), json: { fields } });
+    const sua = (id, fields) => goi(`${FS_GOC}/giaiDau/${id}${k}` + Object.keys(fields).map((x) => '&updateMask.fieldPaths=' + x).join(''), { method: 'PATCH', headers: H2(tk[T]), json: { fields } });
     const id1 = 'ztest_giai_v2a_' + bay, id2 = 'ztest_giai_v2b_' + bay, id3 = 'ztest_giai_v2c_' + bay;
     ok('Thầy tạo giải CÓ 4 khoá mới = 200', (await tao(id1, moi())).status, 200); xoa.push('giaiDau/' + id1);
     ok('Thầy tạo giải KHÔNG khoá mới (như cũ) = 200', (await tao(id2, goc())).status, 200); xoa.push('giaiDau/' + id2);
-    ok('Web ghi lại giải có khoá mới (Đóng giải: dong=true) = 200', (await sua(id1, Object.assign(moi(), { dong: B(true) }))).status, 200);
-    ok('Web ghi lại giải có khoá mới (Thưởng sao: daThuong) = 200', (await sua(id1, Object.assign(moi(), { dong: B(true), daThuong: I(bay) }))).status, 200);
+    ok('Web ghi lại giải có khoá mới (Đóng giải: dong=true) = 200', (await sua(id1, { dong: B(true), capNhat: I(Date.now()) })).status, 200);
+    ok('Web ghi lại giải có khoá mới (Thưởng sao: daThuong) = 200', (await sua(id1, { daThuong: B(true), capNhat: I(Date.now()) })).status, 200);
     ok('assignment sai độ dài (5 ký tự) = 403', (await tao(id3, Object.assign(moi(), { assignment: S('ABC12') }))).status, 403);
     ok('assignment sai kiểu (số) = 403', (await tao(id3, Object.assign(moi(), { assignment: I(123456) }))).status, 403);
     ok('buoi sai kiểu (string) = 403', (await tao(id3, Object.assign(moi(), { buoi: S('x') }))).status, 403);

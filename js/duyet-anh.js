@@ -135,7 +135,9 @@
   // ── khung hộp ──
   function dungKhung() {
     if ($('#daNen')) return $('#daNen');
-    var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'css/duyet-anh.css?v=3'; document.head.appendChild(l);
+    // ⛔ v1.369.0 — CSS nay nạp bằng <link> trong dashboard.html CÙNG LÚC với trang. Nạp lười lúc mở hộp ⇒ một trang mở từ trước khi
+    // đẩy bản mới (webview app myLesson giữ trang cả ngày) chạy JS CŨ mà kéo về CSS MỚI ⇒ hộp vỡ (17/10/2026). Đây chỉ là lưới đỡ.
+    if (!$('link[href*="duyet-anh.css"]')) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = 'css/duyet-anh.css?v=3'; document.head.appendChild(l); }
     var n = document.createElement('div'); n.id = 'daNen'; n.className = 'da-nen'; n.hidden = true;
     n.innerHTML = '<div class="da-hop" role="dialog" aria-modal="true" aria-label="Duyệt ảnh học sinh">' +
       '<aside class="da-ben">' +

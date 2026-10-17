@@ -14,7 +14,24 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.118.0 (19/09/2026) — "CHỜ MỞ KHÓA" cho bài STAGE quá hạn còn em chưa xong *(bản mới nhất)*
+## ⭐ v1.371.0 (17/10/2026) — THẺ GIẢI ĐẤU NEON + luật giải tạo từ myLesson *(Đợt 1 + Đợt 4 của "giải đấu tạo từ app")*
+
+Thầy duyệt `mau-v8-the-neon` + "ok build" (hồ sơ: `D:\OTHERS\CLAUDE\GIAI DAU THE - thiet ke\`: KE HOACH BUILD, HOP DONG DU LIEU - 3 kho).
+
+- **Thẻ giải** (`js/the-giai.js` + `css/the-giai.css`, mọi lớp CSS tiền tố `tg-`, thẻ KHÔNG mang class `.the`): thẻ mũi tên neon, vạch thời gian
+  mép trên đầu mờ tia sáng, đường đua CẢ LỚP ba làn không chồng nhau (mọi em trong lớp có chấm, em 0 điểm vẫn có), đếm lùi TỔNG GIỜ `52:56:30`,
+  em thấy mình viền ngọc + nhãn EM, thầy 2 nút icon; 3 trạng thái sắp/đang/đã đóng (đã đóng chưa thưởng ⇒ nút sao vàng). Bảng `GAME = { aShowSpeed }`
+  chọn theo `giaiDau.game`. Gắn ô `#cumGiai` NGOÀI `#cotBai`: `lop.html`/`khoa.html` bọc `<div class="cot-trai">` (cumGiai + cotBai), `dashboard.html` trước `#theListDs`.
+  Giải đang · sắp (gần nhất) · đã đóng chưa thưởng · thưởng xong còn 3 ngày (tính từ `capNhat`) rồi ẩn; tối đa 3 thẻ; học sinh chỉ 1 thẻ "đã đóng".
+  Nguồn nghe giải dùng chung với dải ghim (`TheTD.giaiCuaLop/kho/toi` — chỉ XUẤT thêm, dải ghim không đổi). Đồng hồ nhích mỗi giây, đổi lớp (dashboard) tự nạp.
+- **Bấm thẻ** ⇒ `nw/giaidau.html?giai=<id>&lop=<mã lớp>[&lam=thuong|sua|mo]` (em: cùng tab; thầy: tab mới). Trang Giải đấu (`nw/js/giaidau.js` v14) đọc 3 tham số:
+  chọn đúng giải/lớp; thầy + `lam` ⇒ bấm sẵn nút (Thưởng sao ⇒ hộp popThuong; Mở ngay hỏi xác nhận).
+- **Giải `nguon:'mylesson'`** (tạo từ app): form Sửa của web khoá tên/lớp/bộ chữ/phút/độ khó + dòng chú "Giải này tạo từ myLesson, đổi thông số ở app"; chỉ ghi `tu/den/sao/capNhat`.
+- **Luật Firestore** `tools/dang-luat-giai-dau-v2.js` (thêm ĐÚNG 4 khoá `hinhThuc, assignment(6 ký tự), nguon, buoi{lop,dayId}` vào hasOnly của giaiDau): `--xem | --bien-dich | --dang | --kiem | --lui <ruleset>`.
+- Bàn thử (chỉ localhost): `?thu=1` (em) / `?thu=thay` (thầy) + `&tt=sap|dang|xong|thuong` ở bất kỳ trang nào nạp `the-giai.js`.
+- `config.js` 1.371.0 (`?v=272` lop/khoa, `?v=276` dashboard, `?v=18` nw/giaidau), `the-td.js?v=10`, `the-giai.js?v=1`, `the-giai.css?v=1`, `giaidau.js?v=14`.
+
+## ⭐ v1.118.0 (19/09/2026) — "CHỜ MỞ KHÓA" cho bài STAGE quá hạn còn em chưa xong
 
 Thầy duyệt mẫu 19/09 rồi build. Ca: chặng đang chạy đã HẾT HẠN, còn em chưa xong nên chặng kế chưa mở.
 

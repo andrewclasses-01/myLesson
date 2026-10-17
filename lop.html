@@ -1589,6 +1589,8 @@ body.mo-menu .side.trai{transform:none}
 }
 </style>
 <link rel="stylesheet" href="css/tn-pop.css?v=9">
+<link rel="stylesheet" href="css/the-giai.css?v=1"><!-- ⭐ v1.371.0 thẻ giải đấu neon -->
+
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
 <link rel="stylesheet" href="css/chat-ui.css?v=21">
@@ -1607,7 +1609,8 @@ body.mo-menu .side.trai{transform:none}
 </header>
 
 <div class="wrap main">
-  <section class="cot-bai" id="cotBai"></section>
+  <div class="cot-trai"><div id="cumGiai"></div><section class="cot-bai" id="cotBai"></section></div><!-- ⭐ v1.371.0: #cumGiai (thẻ giải đấu, js/the-giai.js) NẰM NGOÀI #cotBai — cotBai bị vẽ lại bằng innerHTML -->
+
 
   <!-- .chat-cot chỉ là CHỖ GIỮ Ô. Ở dạng máy tính, khung chat nằm TUYỆT ĐỐI
        bên trong nó nên không góp chiều cao vào lưới ⇒ hàng lưới cao đúng
@@ -1711,7 +1714,7 @@ body.mo-menu .side.trai{transform:none}
 
 <div class="toast" id="toast"></div>
 
-<script src="config.js?v=271"></script>
+<script src="config.js?v=272"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -1722,7 +1725,8 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=25"></script>
-<script src="js/the-td.js?v=9"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/the-td.js?v=10"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/the-giai.js?v=1"></script><script>TheGiai.gan(document.getElementById('cumGiai'), { lop: function () { return typeof LOP_DL === 'string' ? LOP_DL : ''; } });</script>   <!-- ⭐ v1.371.0 thẻ giải đấu neon đầu cột bài -->
 <script src="js/nhac-ban.js?v=4"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=6"></script>

@@ -64,7 +64,7 @@
         hs('hs_6', 'Hoàng Long', ['NTK9'], true), hs('hs_7', 'Ngọc Hân', ['NTK9'], false), hs('hs_8', 'An Nhiên', ['B2B'], true)],
       giai: [
         { id: 'm3', ten: 'Speed Cup tuần 3', lops: ['A1C', 'NTK9'], game: 'aShowSpeed', phut: 2, lv: 'easy', tu: dau.getTime() - 2 * D, den: dau.getTime() + 5 * D + 3 * 3600e3, sao: [30, 20, 10], dong: false },
-        { id: 'm4', ten: 'Speed Cup tuần 4', lops: ['A1C', 'NTK9', 'B2B'], game: 'aShowSpeed', phut: 3, lv: 'medium', tu: dau.getTime() + 6 * D, den: dau.getTime() + 12 * D + 3 * 3600e3, sao: [30, 20, 10], dong: false },
+        { id: 'm4', ten: 'Speed Cup tuần 4', lops: ['A1C', 'NTK9', 'B2B'], game: 'aShowSpeed', phut: 3, lv: 'medium', tu: dau.getTime() + 6 * D, den: dau.getTime() + 12 * D + 3 * 3600e3, sao: [30, 20, 10], dong: false, nguon: 'mylesson', hinhThuc: 'cap' },
         { id: 'm2', ten: 'Speed Cup tuần 2', lops: ['A1C'], game: 'aShowSpeed', phut: 2, lv: 'easy', tu: dau.getTime() - 9 * D, den: dau.getTime() - 3 * D, sao: [30, 20, 10], dong: false }
       ],
       bang: {
@@ -565,7 +565,7 @@
 
     // ===== hộp tạo / sửa giải =====
     async function popGiai(g) {
-      var moi = !g, dang = g && g._tt === 'dang';
+      var moi = !g, dang = g && g._tt === 'dang', tuApp = !!(g && g.nguon === 'mylesson');   /* v1.371.0: giải tạo từ app myLesson ⇒ web chỉ sửa giờ/sao */
       var lopDs = await GD.dsLop();
       var D = 86400e3, mai = new Date(Date.now() + D); mai.setHours(18, 0, 0, 0);
       var f0 = g ? g : { ten: '', lops: [], phut: 2, lv: 'easy', tu: mai.getTime(), den: mai.getTime() + 6 * D + 3 * 3600e3, sao: [30, 20, 10] };
@@ -710,6 +710,13 @@
       });
       $('#gdTen', p).onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); e.target.blur(); } };
       var docGio = function (n, gg) { var d = new Date($(n, p).value + 'T' + ($(gg, p).value || '00:00')); return isNaN(d) ? 0 : d.getTime(); };
+      /* ⭐ v1.371.0 — giải TẠO TỪ myLesson (nguon=='mylesson'): web chỉ cho đổi giờ mở/đóng + sao; tên, lớp, bộ chữ, phút, độ khó… khoá lại, đổi ở app */
+      if (tuApp) {
+        $$('#gdTen, #gdActMo, #gdGoiY, #gdGiong, #gdChiBo', p).forEach(function (el) { el.disabled = true; });
+        $$('.gd-chon button', p).forEach(function (b) { b.disabled = true; });
+        var chuApp = document.createElement('p'); chuApp.className = 'gd-chu-dang'; chuApp.textContent = 'Giải này tạo từ myLesson, đổi thông số ở app. Ở đây chỉ đổi được giờ mở/đóng và sao thưởng (và Đóng giải / Thưởng sao).';
+        var thanP = $('.pop-body', p); thanP.insertBefore(chuApp, thanP.firstChild);
+      }
       $('#gdOk', p).onclick = async function () {
         var loi = function (m) { $('#gdLoi', p).textContent = m; };
         var ten = $('#gdTen', p).value.trim().replace(/\s+/g, ' ');
@@ -736,6 +743,8 @@
         var du = { ten: ten, lops: lops, game: 'aShowSpeed', phut: +$('#gdPhut .on', p).getAttribute('data-v'), lv: $('#gdLv .on', p).getAttribute('data-v'), tu: tu, den: den, sao: sao, capNhat: Date.now() };
         // chỉ ghi khoá `bo` khi có bộ từ / cần xoá bộ cũ (giải 16 chữ ngẫu nhiên giữ đúng dạng cũ — lưu được cả khi luật mới chưa đăng)
         if (bo) du.bo = bo; else if (bo0) du.bo = null;
+        /* v1.371.0: giải từ app ⇒ chỉ ghi giờ + sao (không đụng tên/lớp/bộ chữ/phút/độ khó) */
+        if (tuApp) du = { tu: tu, den: den, sao: sao, capNhat: Date.now() };
         try {
           if (banThu) {
             if (moi) { du.id = 'm' + Date.now(); du.dong = false; mau().giai.push(du); } else Object.assign(mau().giai.filter(function (x) { return x.id === g.id; })[0], du);
@@ -761,7 +770,18 @@
       setTimeout(function () { var o = $('#gdTen', p); if (o && moi) o.focus(); }, 60);
     }
 
+    /* ⭐ v1.371.0 — THẺ GIẢI (js/the-giai.js) mở trang này kèm ?giai=<id>&lop=<mã lớp>&lam=thuong|sua|mo|dong: chọn đúng giải/lớp; THẦY + lam ⇒ bấm sẵn nút tương ứng (Thưởng sao → hộp popThuong) */
+    var qs = new URLSearchParams(location.search), qGiai = qs.get('giai') || '', qLop = qs.get('lop') || '', qLam = qs.get('lam') || '';
+    if (qGiai) xemGiai = qGiai; if (qLop) xemLop = qLop;
     await napLai();
+    if (la && qGiai && qLam) {
+      try { history.replaceState(null, '', location.pathname); } catch (e) { }
+      var nutLam = $('[data-tv="' + qLam + '"]', than);
+      if (nutLam && DS.some(function (x) { return x.id === qGiai; })) {
+        if (qLam === 'mo') { if (await NW.hoi('Mở giải ngay?', 'Giải sẽ mở cho học sinh ngay bây giờ và báo vào nhóm chat các lớp.', { ok: 'Mở ngay' })) nutLam.click(); }
+        else nutLam.click();
+      }
+    }
     // chấm online + bảng tươi: vẽ lại mỗi 60 giây khi trang đang xem và không mở hộp nào
     boDem = setInterval(function () { if (!document.hidden && !document.querySelector('#nwPop.mo')) napLai(); }, 60 * 1000);
   };

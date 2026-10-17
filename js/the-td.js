@@ -683,6 +683,10 @@
     moChon: TheTD_moChon,
     moMoi: TheTD_moMoi,
     ghim: TheTD_ghim,
-    moXem: moXem
+    moXem: moXem,
+    /* ⭐ v1.371.0 — nguồn nghe giải dùng chung cho THẺ GIẢI (js/the-giai.js): chỉ XUẤT HIỆN CÓ SẴN, dải ghim ở trên KHÔNG đổi hành vi */
+    kho: kho,
+    toi: toi,
+    giaiCuaLop: giaiCuaLop
   };
 })();

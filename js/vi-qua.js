@@ -45,6 +45,11 @@
   // Giữ ĐÚNG câu mà ba trang vẫn dùng, để học sinh nghe một giọng duy nhất.
   var CHUA_XONG = 'Thầy Andrew đang xây dựng tính năng này, em hãy chờ thêm nhé!';
   var CANH_BAO = 'Đây là dữ liệu mẫu — tính năng đang trong quá trình xây dựng.';
+  // ⭐ v1.370.0 (17/10/2026, thầy chốt): TẠM KHOÁ mọi thao tác SAO của học sinh (tặng/chuyển sao cho bạn, đăng ký đổi quà) —
+  // bấm là báo SAO_SOM, không mở form. Thầy sẽ thiết lập sau ⇒ mở lại: đặt SAO_KHOA_HS = false (và nw/shop.html cùng tên biến).
+  // Xem ví · lịch sử · bảng sao lớp · xem danh sách quà vẫn mở bình thường.
+  var SAO_KHOA_HS = true;
+  var SAO_SOM = 'Tính năng này sẽ sớm được mở!';
   var esc = function (s) { return A.chuAnToan(s); };
 
   // Chèn bảng màu/kiểu dáng của riêng khối này. Ba trang không phải khai gì —
@@ -442,7 +447,7 @@
       '</div>' +
       '<div class="vq-tab">' +
         '<button type="button" data-tab="ls" class="chon">Lịch sử ví</button>' +
-        '<button type="button" data-tab="tang">Tặng sao cho bạn</button>' +
+        '<button type="button" data-tab="tang">' + (SAO_KHOA_HS ? '🔒 ' : '') + 'Tặng sao cho bạn</button>' +
         '<button type="button" data-tab="lop">Bảng sao của ' + (ctx.khoa ? 'khóa' : 'lớp') + '</button>' +
       '</div>' +
       '<div class="vq-noi"></div>';
@@ -485,7 +490,7 @@
           '<p class="vq-trong" style="text-align:left;padding:10px 0 0">Sao tặng đi sẽ trừ vào ví của em ' +
             'và cộng thẳng cho bạn. Thầy vẫn xem được mọi lượt tặng.</p>' +
         '</div>';
-      noi.querySelector('.vq-nut').onclick = function () { ctx.baoToast(CHUA_XONG); };
+      noi.querySelector('.vq-nut').onclick = function () { ctx.baoToast(SAO_KHOA_HS ? SAO_SOM : CHUA_XONG); };
     }
 
     function veBangLop() {
@@ -504,6 +509,7 @@
     var nut = than.querySelectorAll('.vq-tab button');
     Array.prototype.forEach.call(nut, function (b) {
       b.onclick = function () {
+        if (SAO_KHOA_HS && b.getAttribute('data-tab') === 'tang') { ctx.baoToast(SAO_SOM); return; }   // v1.370.0 tạm khoá
         Array.prototype.forEach.call(nut, function (x) { x.classList.remove('chon'); });
         b.classList.add('chon');
         ve[b.getAttribute('data-tab')]();
@@ -559,7 +565,10 @@
         }).join('') : '<div class="vq-trong">Nhóm này thầy chưa xếp món nào.</div>';
 
         Array.prototype.forEach.call(luoi.querySelectorAll('button[data-mon]'), function (b) {
-          b.onclick = function () { hoiDoi(ctx, mon[Number(b.getAttribute('data-mon'))], thue); };
+          b.onclick = function () {
+            if (SAO_KHOA_HS) { ctx.baoToast(SAO_SOM); return; }   // v1.370.0 tạm khoá đổi quà
+            hoiDoi(ctx, mon[Number(b.getAttribute('data-mon'))], thue);
+          };
         });
       }
 
@@ -606,7 +615,7 @@
         '<button class="vq-nut" type="button" data-ok="1">Đăng ký đổi</button>' +
         '<button class="vq-nut phu" type="button" data-thoi="1">Để sau</button>' +
       '</div>';
-    nen.querySelector('[data-ok]').onclick = function () { dong(nen); ctx.baoToast(CHUA_XONG); };
+    nen.querySelector('[data-ok]').onclick = function () { dong(nen); ctx.baoToast(SAO_KHOA_HS ? SAO_SOM : CHUA_XONG); };
     nen.querySelector('[data-thoi]').onclick = function () { dong(nen); };
     mo(nen);
   }

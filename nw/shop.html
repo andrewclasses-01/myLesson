@@ -200,6 +200,7 @@
     { ten: 'Rubik 3x3', ngay: '20/09 · 95 sao', tt: 'xong' }
   ];
   var TT_CHU = { cho: 'Chờ thầy duyệt', duyet: 'Đã duyệt', xong: 'Đã nhận quà', huy: 'Từ chối' };
+  var SAO_KHOA_HS = true, SAO_SOM = 'Tính năng này sẽ sớm được mở!';   // v1.370.0 tạm khoá đổi quà của học sinh
 
   NW.dungThanh({ tab: 'shop' }).then(async function () {
     var toi = NW.toi || {};
@@ -310,6 +311,8 @@
       $$('#gioDs [data-them]').forEach(function (b) { b.onclick = function () { doiSo(b.getAttribute('data-them'), 1); }; });
       $$('#gioDs [data-bot]').forEach(function (b) { b.onclick = function () { doiSo(b.getAttribute('data-bot'), -1); }; });
       $('#nutYeuCau').onclick = async function () {
+        // v1.370.0 (17/10/2026, thầy chốt) — TẠM KHOÁ thao tác sao của học sinh; mở lại: SAO_KHOA_HS = false (cùng tên trong js/vi-qua.js).
+        if (SAO_KHOA_HS) { NW.toast(SAO_SOM); return; }
         var ok = await NW.hoi('Gửi yêu cầu đổi quà?', 'Em đổi ' + so + ' món, tổng ' + t.tong + ' sao (đã gồm phí ' + thue + '%). Thầy duyệt xong sẽ trao quà cho em.', { ok: 'Gửi yêu cầu' });
         if (ok) NW.toast('Phần gửi yêu cầu đang được hoàn thiện — thầy sẽ mở sớm nhé!');
       };

@@ -96,15 +96,20 @@
   // v0.5.0 — dùng chung cho trang tin nhắn + hộp chat nổi (chatnoi.js)
   Chat.danhDauDoc = async function (phongId) {
     if (NW.laBanThu()) return;
-    try { var f = await NW.fb(); var patch = {}; patch['docLuc.' + NW.toi.uid] = Date.now(); patch['chuaDoc.' + NW.toi.uid] = false; await f.fs.updateDoc(f.fs.doc(f.db, 'nwChats', phongId), patch); } catch (e) { }
+    try { var f = await NW.fb(); var patch = {}; patch['docLuc.' + NW.toi.uid] = Chat.bay(phongId); patch['chuaDoc.' + NW.toi.uid] = false; await f.fs.updateDoc(f.fs.doc(f.db, 'nwChats', phongId), patch); } catch (e) { }
   };
+  // ⭐ 17/10/2026 — THỨ TỰ TIN: `luc` là khoá xếp tin. Máy em lệch giờ dưới 2 phút thì gioChuan() không sửa (ngưỡng đo) ⇒ tin em gửi
+  //   sau lại có luc NHỎ hơn tin thầy vừa gửi ⇒ bị đẩy lên TRƯỚC. Chat.bay = giờ chuẩn nhưng luôn lớn hơn tin mới nhất máy này đã thấy trong phòng.
+  Chat._lucCuoi = {};
+  Chat.ghiLuc = function (phongId, ds) { for (var i = 0; i < (ds || []).length; i++) { var l = Number(ds[i].luc) || 0; if (l > (Chat._lucCuoi[phongId] || 0)) Chat._lucCuoi[phongId] = l; } };
+  Chat.bay = function (phongId) { return Math.max(window.gioChuan ? window.gioChuan() : Date.now(), (Chat._lucCuoi[phongId] || 0) + 1); };
   // Gửi một tin vào phòng: tin = {chu} | {hinh}. Trả tin đã dựng (bàn thử: không ghi, trả để hiện tại chỗ); null nếu bị chặn từ cấm.
   Chat.guiTin = async function (phongId, tin) {
     var toi = NW.toi;
     if (tin.chu) { var tu = await NW.kiemTuCam(tin.chu); if (tu) { NW.toast('Tin có từ không phù hợp ("' + tu + '").', true); return null; } }
     // ⭐ 02/10/2026 (web v1.225.0) học sinh KHÔNG gửi link trong Tin nhắn (y chat lớp; luật kho cũng chặn — báo trước cho dễ hiểu)
     if (!toi.laThay && tin.chu && CO_LINK.test(String(tin.chu).toLowerCase())) { NW.toast('Tin nhắn không được chứa đường link.', true); return null; }
-    var t = { uid: toi.uid, ten: toi.ten, anh: toi.anh || '', chu: String(tin.chu || '').slice(0, CFG.TOI_DA_CHU_TIN), hinh: tin.hinh || '', luc: Date.now() };
+    var t = { uid: toi.uid, ten: toi.ten, anh: toi.anh || '', chu: String(tin.chu || '').slice(0, CFG.TOI_DA_CHU_TIN), hinh: tin.hinh || '', luc: Chat.bay(phongId) };
     // ⭐ web v1.198.0 — khuôn chat Zalo: trước đây `traLoi` bị RƠI ở đây (tin trả lời mất phần trích); nay giữ + thêm sticker
     if (tin.traLoi) t.traLoi = tin.traLoi;
     if (tin.sticker) t.sticker = tin.sticker;
@@ -596,7 +601,7 @@
       dungNghe = f.fs.onSnapshot(q, function (snap) {
         if (chon !== id) return;
         var moi = []; snap.forEach(function (d) { moi.push(Object.assign({ id: d.id }, d.data())); });
-        moi.reverse();
+        moi.reverse(); Chat.ghiLuc(id, moi);
         var mocDau = moi.length ? moi[0].luc : Infinity;
         var cu = TIN.filter(function (t) { return t.luc < mocDau && t._cu; });
         TIN = cu.concat(moi);

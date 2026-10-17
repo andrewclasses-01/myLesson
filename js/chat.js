@@ -220,6 +220,7 @@
 
   var dungNghe = null;       // hàm gỡ listener của phòng đang nghe
   var phongDangNghe = '';
+  var lucCuoiLop = {};       // 17/10/2026 — { mã lớp: createdAt tin mới nhất máy này đã thấy } để tin mình gửi luôn xếp SAU
 
   // Nghe MỘT phòng. Gọi lại với lớp khác thì tự bỏ phòng cũ — dashboard đổi lớp
   // liên tục, không gỡ là mấy listener chồng nhau, tin của lớp này nhảy sang lớp kia.
@@ -252,6 +253,7 @@
           });
         });
         ds.reverse();                             // Firestore trả mới->cũ, ta hiện cũ->mới
+        if (ds.length) lucCuoiLop[maLop] = Math.max(lucCuoiLop[maLop] || 0, ds[ds.length - 1].luc || 0);   // 17/10/2026 — xem guiTin
         khiCo(ds);
       }, function (e) {
         if (khiLoi) khiLoi(e);
@@ -370,7 +372,9 @@
         code: String(tin.ma || '').slice(0, 40),
         role: tin.vaiTro === 'gv' ? 'gv' : 'hs',
         text: chu,
-        createdAt: (window.gioChuan ? window.gioChuan() : Date.now())   // v1.174.0 — giờ chuẩn (máy chủ), không theo đồng hồ máy em
+        // v1.174.0 — giờ chuẩn (máy chủ), không theo đồng hồ máy em. 17/10/2026: gioChuan() chỉ sửa lệch >= 2 phút ⇒ máy lệch 30–100s vẫn
+        // để tin mình chen TRƯỚC tin người kia vừa gửi (thầy trả lời mà hiện trước câu em hỏi) ⇒ ép luôn SAU tin mới nhất đã thấy trong phòng
+        createdAt: Math.max(window.gioChuan ? window.gioChuan() : Date.now(), (lucCuoiLop[maLop] || 0) + 1)
       };
       /* v1.186.0 (khuôn chat kiểu Zalo, js/chat-ui.js) — trả lời một tin (`q`) + sticker. Luật kho kiểm khuôn cả hai
          (tools/dang-luat-chat-zalo.js). q.chu là bản CHÉP tin gốc ⇒ luật chặn link trong q.chu y như text. */

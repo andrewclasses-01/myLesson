@@ -50,7 +50,7 @@
       var q = f.fs.query(f.fs.collection(f.db, 'nwChats', hop.phongId, 'tin'), f.fs.orderBy('luc', 'desc'), f.fs.limit(30));
       hop.dungNghe = f.fs.onSnapshot(q, function (snap) {
         var ds = []; snap.forEach(function (d) { ds.push(Object.assign({ id: d.id }, d.data())); });
-        ds.reverse(); hop.ds = ds; if (!hop.min) veTin(hop);
+        ds.reverse(); NW.Chat.ghiLuc(hop.phongId, ds); hop.ds = ds; if (!hop.min) veTin(hop);
         NW.Chat.danhDauDoc(hop.phongId);
       }, function (e) { NW.toast(NW.chuLoiKho(e), true); });
     } catch (e) { NW.toast(NW.chuLoiKho(e), true); }

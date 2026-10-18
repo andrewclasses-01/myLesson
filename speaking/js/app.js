@@ -685,6 +685,7 @@
     hen: null,        // timer thử lại
     luuLuc: 0,        // mốc lần lưu THÀNH CÔNG gần nhất (hiện "Auto saved HH:MM")
     nghe: null,       // hàm huỷ onSnapshot
+    nghePh: null,     // v1.373.0 — hàm huỷ bộ nghe phiếu phản biện ở MÀN CHẤM (`tlNghePhCham`)
     ngheSong: false,  // bộ nghe đang sống ⇒ bản đệm kho luôn tươi
     xoaNhapKhi: '',   // khoá localStorage cần xoá SAU KHI gom nháp cũ lên kho thành công
   };
@@ -720,6 +721,7 @@
     tl.bat = !!on;
     tl.che = che === 'phanbien' ? 'phanbien' : 'cham';
     $('appScreen').classList.toggle('tu-luu', tl.bat);
+    tlHuyNghePh();   // v1.373.0 — đổi màn / tắt thì bộ nghe phiếu của màn chấm cũng thôi
     if (!tl.bat) { tlHuyNghe(); clearTimeout(tl.hen); tl.hen = null; $('hdLuu').classList.add('hidden'); return; }
     tl.can = false; tl.dangGhi = false; tl.hong = false; tl.lanThu = 0; tl.luuLuc = 0; tl.xoaNhapKhi = '';
     clearTimeout(tl.hen); tl.hen = null;
@@ -853,14 +855,45 @@
     tl.nghe = null; tl.ngheSong = false;
   }
 
+  /* ⭐ myLesson v1.373.0 (món 2.2) — MÀN CHẤM nghe SỐNG phiếu phản biện gửi vào các câu CỦA EM
+     (`phanHoi where chuLoi == em`). Trước đây `startM2` chỉ đọc một lần ⇒ đội kia vừa DISAGREE mà
+     nút REQUIREMENT đứng yên tới khi tải lại trang. Bộ nghe RIÊNG (`tl.nghePh`), không đụng
+     `tl.nghe` của tài liệu tongLoi. Lần chụp đầu thay cho lượt đọc REST cũ ở `startM2`. */
+  async function tlNghePhCham() {
+    tlHuyNghePh();
+    if (!state.buoiId || !CFG.FIREBASE || !state.student) return;
+    try {
+      const { fsMod, db } = await laySdkKho();
+      if (!tl.bat || tl.che !== 'cham' || tl.nghePh) return;
+      const q = fsMod.query(fsMod.collection(db, 'spBuoi', state.buoiId, 'phanHoi'), fsMod.where('chuLoi', '==', state.student));
+      tl.nghePh = fsMod.onSnapshot(q, (snap) => {
+        if (snap.metadata && snap.metadata.fromCache) return;
+        const ds = [];
+        snap.forEach((d) => { const o = d.data() || {}; o._id = d.id; ds.push(o); });
+        const truoc = JSON.stringify(m2.phanHoi || []), sau = JSON.stringify(ds);
+        m2.phanHoi = ds;
+        if (truoc !== sau && tl.che === 'cham') renderErrors();   // renderErrors tự cập nhật nút REQUIREMENT
+      }, () => { tl.nghePh = null; });
+    } catch (e) { /* không nối được thì giữ bản đọc lúc mở — như trước đây */ }
+  }
+  function tlHuyNghePh() {
+    if (tl.nghePh) { try { tl.nghePh(); } catch (e) {} }
+    tl.nghePh = null;
+  }
+
   // Quay lại app: đọc kho một phát (không tin bộ nhớ đệm), nối lại bộ nghe nếu đã chết, ghi nốt phần chờ
   async function tlDocLai() {
     if (!tl.bat || !state.buoiId) return;
-    if (!tl.nghe) { if (tl.che === 'phanbien') tlNoiKhoPb(); else tlNoiKho(); }
     if (tl.che === 'phanbien') {
-      try { tlNhanPhieuKho(await fsQuery(state.buoiId, 'phanHoi', '', '', 3000)); }
+      // v1.373.0 (món 5.2): bộ nghe còn sống thì SDK tự bắt kịp phần đổi khi mạng về — KHÔNG đọc
+      // lại cả trăm phiếu mỗi lần em chuyển app trên iPhone. Chỉ đọc lại khi bộ nghe đã chết.
+      if (tl.nghe && tl.ngheSong) { if (tl.can && !tl.dangGhi) tlChay(); return; }
+      if (!tl.nghe) tlNoiKhoPb();
+      try { tlNhanPhieuKho(await fsQuery(state.buoiId, 'phanHoi', 'voterTeam', state.myTeam, 3000)); }
       catch (e) { /* mạng chưa về — lượt ghi kế tiếp sẽ báo đỏ, không nuốt */ }
     } else {
+      if (!tl.nghe) tlNoiKho();
+      if (!tl.nghePh) tlNghePhCham();
       try { tlNhanKho(await tongLoiLay(state.buoiId, slugHs(state.student))); }
       catch (e) { /* mạng chưa về — lượt ghi kế tiếp sẽ báo đỏ, không nuốt */ }
     }
@@ -953,15 +986,16 @@
     }
   }
 
-  // Nghe CẢ collection `phanHoi` của buổi (thầy chốt ④). `startPb` vốn đã đọc hết một lượt nên
-  // lần đầu không tốn thêm lượt đọc; sau đó chỉ tính lượt cho tài liệu thật sự đổi.
+  // Nghe phiếu `phanHoi` của buổi (thầy chốt ④). Sau lần chụp đầu chỉ tính lượt cho tài liệu thật sự đổi.
+  // ⭐ v1.373.0 (món 5.2): CHỈ phiếu do ĐỘI EM bỏ (`voterTeam == state.myTeam`, cùng dạng 'TEAM n' với
+  // sp-bang.js) — màn phản biện chỉ cần phiếu của đội mình, trước đây nghe cả buổi (tới 3000 phiếu).
   async function tlNoiKhoPb() {
-    tlHuyNghe();
+    tlHuyNghe(); tlHuyNghePh();
     if (!state.buoiId || !CFG.FIREBASE) return;
     try {
       const { fsMod, db } = await laySdkKho();
       if (!tl.bat || tl.nghe) return;   // rời màn / đã nối trong lúc chờ nạp SDK
-      const goc = fsMod.collection(db, 'spBuoi', state.buoiId, 'phanHoi');
+      const goc = fsMod.query(fsMod.collection(db, 'spBuoi', state.buoiId, 'phanHoi'), fsMod.where('voterTeam', '==', state.myTeam));
       tl.nghe = fsMod.onSnapshot(goc, (snap) => {
         if (snap.metadata && snap.metadata.fromCache) return;   // chỉ tin bản từ MÁY CHỦ
         tl.ngheSong = true;
@@ -974,7 +1008,7 @@
 
   // Chuẩn hoá một lỗi mô hình 2 (bản cũ trong kho có thể thiếu trường mới)
   function chuanLoi(er) {
-    return {
+    const o = {
       id: String(er.id || taoErrId()),
       trangThai: er.trangThai === 'an' || er.trangThai === 'go' ? er.trangThai : 'song',
       ketLuan: er.ketLuan === 'keep' || er.ketLuan === 'agree' ? er.ketLuan : '',
@@ -983,6 +1017,11 @@
       sentence: String(er.sentence || ''), detail: String(er.detail || ''), explain: String(er.explain || ''),
       suaLuc: +er.suaLuc || 0,   // ⭐ 05/09/2026 — mốc sửa gần nhất (ms), `gopLoi` lấy bản mới hơn; bản cũ = 0
     };
+    // ⛔ myLesson v1.373.0 — GIỮ phán quyết của thầy (sp-chitiet `quyetThay`: thay 'bo'|'giu'|'gop').
+    // Trước đây hàm này vứt mất 3 trường đó ⇒ em lưu bài một lần là dấu "thầy đã quyết" biến mất,
+    // câu quay lại khối "Cần thầy quyết". Chỉ thêm khi CÓ, để dấu vân tay bản cũ không đổi.
+    if (er.thay) { o.thay = String(er.thay); o.thayLuc = +er.thayLuc || 0; o.thayNguon = String(er.thayNguon || ''); }
+    return o;
   }
   // Dấu vân tay MỘT lỗi — chuẩn hoá trước khi so, vì object trong `state.errors` (do form dựng) và
   // object đọc từ kho (qua `chuanLoi`) có THỨ TỰ KHOÁ khác nhau dù nội dung y hệt.
@@ -1125,14 +1164,24 @@
   }
 
   // ─── Toast ───
-  function toast(msg, kind) {
+  // `nut` (tuỳ chọn, v1.373.0): { chu, lam } — thêm một nút bấm trong thông báo (vd "Undo"),
+  // thông báo khi đó ở lâu hơn (6 giây) cho em kịp bấm.
+  function toast(msg, kind, nut) {
     const t = $('toast'), inner = $('toastInner');
     inner.className = 'rounded-2xl px-5 py-3 shadow-2xl text-white font-bold text-sm flex items-center gap-2 slidein ' +
       (kind === 'err' ? 'bg-rose-600' : kind === 'info' ? 'bg-indigo-600' : 'bg-emerald-600');
     inner.textContent = msg;
+    if (nut && nut.chu) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = nut.chu;
+      b.style.cssText = 'margin-left:10px;padding:4px 12px;border-radius:999px;background:#fff;color:#3730a3;font-weight:800;';
+      b.addEventListener('click', () => { t.classList.add('hidden'); clearTimeout(toast._h); nut.lam(); });
+      inner.appendChild(b);
+    }
     t.classList.remove('hidden');
     clearTimeout(toast._h);
-    toast._h = setTimeout(() => t.classList.add('hidden'), 2600);
+    toast._h = setTimeout(() => t.classList.add('hidden'), nut ? 6000 : 2600);
   }
 
   // ═══════════════ VIDEO ═══════════════
@@ -1210,7 +1259,11 @@
     return 0;
   }
   // Video ĐANG PHÁT tới đâu → ô MIN/SEC chạy theo tới đó; PAUSE thì dừng để HS chỉnh tay
-  function syncTimeFields(cur) {
+  // ⛔ (myLesson v1.373.0) Đang SỬA một lỗi có sẵn (bút chì) thì ô giờ ĐỨNG YÊN theo mốc cũ của
+  // lỗi đó — trước đây video vẫn phát là ô giờ chạy tiếp, bấm Save là lỗi mang mốc mới sai chỗ.
+  // Chỉ khi em CHỦ Ý kéo thanh tua (`epBuoc`) thì mới đổi mốc của lỗi đang sửa.
+  function syncTimeFields(cur, epBuoc) {
+    if (editingIndex >= 0 && !epBuoc) return;
     const s = Math.max(0, Math.floor(cur || 0));
     $('fMin').value = Math.floor(s / 60);
     $('fSec').value = s % 60;
@@ -1594,14 +1647,25 @@
   function xoaLoiDangSua() {
     const i = editingIndex;
     if (i < 0 || i >= state.errors.length) return;
-    if (state.moHinh === 2) { state.errors[i].trangThai = 'an'; state.errors[i].suaLuc = Date.now(); }
+    const e = state.errors[i];
+    const cu = e && e.trangThai;
+    if (state.moHinh === 2) { e.trangThai = 'an'; e.suaLuc = Date.now(); }
     else state.errors.splice(i, 1);
     clearErrForm();
     renderErrors();
     if (state.moHinh === 2) capNhatNutSubmit();
     autosave();
     luuNgay();   // ⭐ 05/09/2026 — sự kiện "Delete this mistake" = lưu lên kho ngay
-    toast('Mistake deleted', 'info');
+    // ⭐ myLesson v1.373.0 (món 2.4) — xoá là xoá MỀM nên lấy lại được: nút Undo trong 6 giây.
+    // Lấy lại = trả trạng thái cũ + mốc sửa MỚI (để `gopLoi` ở máy khác cũng nhận bản lấy lại).
+    if (state.moHinh === 2) {
+      toast('Mistake deleted', 'info', { chu: 'Undo', lam: () => {
+        if (e.trangThai !== 'an') return;
+        e.trangThai = cu === 'go' ? 'go' : 'song'; e.suaLuc = Date.now();
+        renderErrors(); capNhatNutSubmit(); autosave(); luuNgay();
+        toast('Mistake restored ✓');
+      } });
+    } else toast('Mistake deleted', 'info');
   }
 
   // (Đợt lưu nháp form CHẤM) đừng để HS gõ dở SENTENCE/MISTAKE/EXPLANATION mà lỡ thoát/tải lại
@@ -1682,6 +1746,7 @@
       err.id = cu.id || taoErrId();
       err.trangThai = cu.trangThai === 'go' ? 'go' : 'song';
       err.ketLuan = cu.ketLuan || '';
+      if (cu.thay) { err.thay = cu.thay; err.thayLuc = cu.thayLuc || 0; err.thayNguon = cu.thayNguon || ''; }   // v1.373.0 giữ phán quyết thầy
     } else {
       err.id = taoErrId();
       err.trangThai = 'song';
@@ -2477,6 +2542,7 @@
       try { localStorage.removeItem(saveKey); } catch (e) {}
     }
     tlNoiKho();   // từ đây kho đổi là bảng đổi theo (kể cả từ máy khác)
+    tlNghePhCham();   // v1.373.0 — đội kia vừa phản biện là nút REQUIREMENT nhảy số ngay
   }
 
   // ═══════════════ (Đợt B) MÀN PHẢN BIỆN — xem lỗi ĐỘI MÌNH bị chấm + tích từng câu ═══════════════
@@ -2516,7 +2582,7 @@
       m2.dsCham.sort((a, b) => tSec(a.err) - tSec(b.err));
     } catch (e) { m2.dsCham = []; }
     try {
-      m2.phanHoi = await fsQuery(state.buoiId, 'phanHoi', '', '', 3000);
+      m2.phanHoi = await fsQuery(state.buoiId, 'phanHoi', 'voterTeam', state.myTeam, 3000);   // v1.373.0: chỉ phiếu đội em
     } catch (e) { m2.phanHoi = []; }
 
     // Phiếu CỦA CHÍNH EM đổ vào bảng đang sửa
@@ -3465,7 +3531,7 @@
       const t = (e.target.value / 1000) * vcDuration();
       if (video.mode === 'html5' && video.el) video.el.currentTime = t;
       else if (video.mode === 'youtube' && video.yt && video.ready) { try { video.yt.seekTo(t, true); } catch (e2) {} }
-      syncTimeFields(t);   // kéo thanh tua (KỂ CẢ khi video đang DỪNG) → MIN/SEC nhảy theo ngay
+      syncTimeFields(t, true);   // kéo thanh tua (KỂ CẢ khi video đang DỪNG, kể cả đang sửa lỗi cũ) → MIN/SEC nhảy theo ngay
     });
 
     // Chỉnh tay MIN/SEC: Enter hoặc click ra ngoài → video nhảy theo (2 chiều với syncTimeFields)

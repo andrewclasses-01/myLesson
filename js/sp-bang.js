@@ -133,17 +133,23 @@
     return veThay().then(function (h) { return fetch(fsGoc() + duong + fsKey(), { cache: 'no-store', headers: h }); }).then(function (r) {
       if (r.status === 404) return null;
       if (!r.ok) throw new Error('FS_' + r.status);
-      return r.json().then(fsGiaiDoc);
+      // `_ut` = mốc kho của bản vừa đọc (v1.373.0) — làm điều kiện "chưa ai đổi" cho `fsPatch`
+      return r.json().then(function (j) { var o = fsGiaiDoc(j); o._ut = j.updateTime || ''; return o; });
     });
   }
-  function fsPatch(duong, data, mask) {
+  // `ut` (tuỳ chọn): kho từ chối nếu có lượt ghi chen sau mốc `ut` ⇒ lỗi ném ra có `.chen = true`.
+  function fsPatch(duong, data, mask, ut) {
     var fields = {}; Object.keys(data).forEach(function (k) { fields[k] = fsMa(data[k]); });
     var q = fsKey(); (mask || []).forEach(function (f) { q += '&updateMask.fieldPaths=' + encodeURIComponent(f); });
+    if (ut) q += '&currentDocument.updateTime=' + encodeURIComponent(ut);
     return veThay().then(function (h) { return fetch(fsGoc() + duong + q, { method: 'PATCH', headers: Object.assign({ 'Content-Type': 'application/json' }, h), body: JSON.stringify({ fields: fields }) }); })
       .then(function (r) {
         if (r.ok) return true;
-        return r.json().then(function (j) { throw new Error((j.error && j.error.message) || ('FS_' + r.status)); },
-          function () { throw new Error('FS_' + r.status); });
+        return r.json().then(function (j) {
+          var e = new Error((j.error && j.error.message) || ('FS_' + r.status));
+          if (j.error && j.error.status === 'FAILED_PRECONDITION') e.chen = true;
+          throw e;
+        }, function () { throw new Error('FS_' + r.status); });
       });
   }
 
@@ -549,16 +555,21 @@
   function ghiKetLuan(c, x, hanhDong) {
     var e = x.err;
     e.ketLuan = hanhDong; e.trangThai = hanhDong === 'agree' ? 'go' : 'song'; e.suaLuc = luc();
-    return ghi(function () {
+    // v1.373.0: ghi kèm điều kiện mốc — em đang tự lưu chen vào thì đọc lại, làm lại (tối đa 4 lượt)
+    function lam(lan) {
       return fsGet(duongBuoi('tongLoi', x.slug)).then(function (doc) {
         if (!doc) throw new Error('không thấy bản chấm của ' + x.chuLoi);
         var errors = (doc.errors || []).map(function (er) {
           if (er.id !== e.id) return er;
           return Object.assign({}, er, { ketLuan: e.ketLuan, trangThai: e.trangThai, suaLuc: e.suaLuc });
         });
-        return fsPatch(duongBuoi('tongLoi', x.slug), { errors: errors, capNhatLuc: luc() }, ['errors', 'capNhatLuc']);
+        return fsPatch(duongBuoi('tongLoi', x.slug), { errors: errors, capNhatLuc: luc() }, ['errors', 'capNhatLuc'], doc._ut);
+      })['catch'](function (err) {
+        if (err && err.chen && lan < 4) return lam(lan + 1);
+        throw err;
       });
-    });
+    }
+    return ghi(function () { return lam(1); });
   }
   function ghiCum(c, cu) {
     var d = { doiBiCham: cu.doiBiCham, ids: (cu.ids || []).slice(), ten: cu.ten || '', ai: (cu.ai || []).slice(), daGui: true, luc: cu.luc || luc() };

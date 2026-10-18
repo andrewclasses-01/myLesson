@@ -599,7 +599,7 @@ button.gio:active{transform:scale(.94)}
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=92"></script>
 <script src="js/trung.js?v=1"></script>
-<script src="js/sp-bang.js?v=9"></script>
+<script src="js/sp-bang.js?v=10"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -1505,13 +1505,17 @@ button.gio:active{transform:scale(.94)}
     return fetch(spFsGoc() + duong + spKhoa(), { cache: 'no-store' }).then(function(r){
       if (r.status === 404) return null;
       if (!r.ok) throw new Error('FS_' + r.status);
-      return r.json().then(spFsGiaiDoc);
+      // `_ut` = mốc kho của đúng bản vừa đọc — `fsGhiMot` dùng làm điều kiện "chưa ai đổi" (v1.373.0)
+      return r.json().then(function(j){ var o = spFsGiaiDoc(j); o._ut = j.updateTime || ''; return o; });
     });
   }
-  function fsGhiMot(duong, data, mask){
+  // `ut` (tuỳ chọn): CHỈ ghi khi bản kho vẫn đúng mốc `ut` — có ai ghi chen giữa lượt đọc và lượt
+  // ghi thì kho từ chối (FAILED_PRECONDITION) và lỗi ném ra có `.chen = true` để đọc lại, gộp lại.
+  function fsGhiMot(duong, data, mask, ut){
     var fields = {}; Object.keys(data).forEach(function(k){ fields[k] = fsMa(data[k]); });
     var q = spKhoa();
     (mask || []).forEach(function(f){ q += '&updateMask.fieldPaths=' + encodeURIComponent(f); });
+    if (ut) q += '&currentDocument.updateTime=' + encodeURIComponent(ut);
     /* 02/10/2026 GĐ4 — ghi kho buổi bằng VÉ THẦY (js/ve-doc.js __veDocLay); không vé ⇒ gửi như cũ (kho từ chối). */
     var lay = window.__veDocLay ? window.__veDocLay()['catch'](function(){ return ''; }) : Promise.resolve('');
     return lay.then(function(t){
@@ -1520,8 +1524,24 @@ button.gio:active{transform:scale(.94)}
       });
     }).then(function(r){
       if (r.ok) return true;
-      return r.json().then(function(j){ throw new Error((j.error && j.error.message) || ('FS_' + r.status)); },
-        function(){ throw new Error('FS_' + r.status); });
+      return r.json().then(function(j){
+        var e = new Error((j.error && j.error.message) || ('FS_' + r.status));
+        if (j.error && j.error.status === 'FAILED_PRECONDITION') e.chen = true;
+        throw e;
+      }, function(){ throw new Error('FS_' + r.status); });
+    });
+  }
+  /* Đọc bản kho MỚI NHẤT → `sua(errors)` → ghi kèm điều kiện mốc. Bị ghi chen (em đang tự lưu đúng
+     lúc đó) thì đọc lại và làm lại, tối đa 4 lượt — chỗ em vừa sửa không bao giờ bị lượt này đè. */
+  function ghiTongLoiAnToan(slug, sua, lan){
+    lan = lan || 1;
+    return fsDocMot(duongTongLoi(slug)).then(function(doc){
+      if (!doc) throw new Error('không thấy bản chấm "' + slug + '"');
+      var errors = sua(doc.errors || []);
+      return fsGhiMot(duongTongLoi(slug), { errors: errors, capNhatLuc: Date.now() }, ['errors', 'capNhatLuc'], doc._ut);
+    })['catch'](function(e){
+      if (e && e.chen && lan < 4) return ghiTongLoiAnToan(slug, sua, lan + 1);
+      throw e;
     });
   }
   // Cụm lỗi trùng chứa câu này (chỉ tính cụm có từ 2 câu trở lên)
@@ -1579,23 +1599,24 @@ button.gio:active{transform:scale(.94)}
       (dd.errors || []).forEach(function(er){
         var v = m[er.id];
         if (!v) return;
-        lui.push({ er: er, trangThai: er.trangThai, thay: er.thay, thayLuc: er.thayLuc, thayNguon: er.thayNguon });
-        er.trangThai = v.trangThai; er.thay = v.thay; er.thayLuc = nay; er.thayNguon = 'bang';
+        lui.push({ er: er, trangThai: er.trangThai, thay: er.thay, thayLuc: er.thayLuc, thayNguon: er.thayNguon, suaLuc: er.suaLuc });
+        er.trangThai = v.trangThai; er.thay = v.thay; er.thayLuc = nay; er.thayNguon = 'bang'; er.suaLuc = nay;
       });
     });
     DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa();
     CQ_LUU.dang++; CQ_LUU.loi = ''; veCqLuu();
 
+    /* ⛔ v1.373.0: PHẢI đóng `suaLuc = nay` (như `sp-bang.js ghiKetLuan`). `gopLoi` trên trang em
+       giữ bản có `suaLuc` mới hơn, hoà thì bản trong máy em thắng ⇒ thiếu mốc là lượt tự lưu kế
+       tiếp của em ghi trả lại trạng thái cũ, quyết định của thầy mất lặng lẽ. */
     Promise.all(slugs.map(function(slug){
-      return fsDocMot(duongTongLoi(slug)).then(function(doc){
-        if (!doc) throw new Error('không thấy bản chấm "' + slug + '"');
-        var m = theoSlug[slug];
-        var errors = (doc.errors || []).map(function(er){
+      var m = theoSlug[slug];
+      return ghiTongLoiAnToan(slug, function(ds){
+        return ds.map(function(er){
           var v = m[er.id];
           if (!v) return er;
-          return Object.assign({}, er, { trangThai: v.trangThai, thay: v.thay, thayLuc: nay, thayNguon: 'bang' });
+          return Object.assign({}, er, { trangThai: v.trangThai, thay: v.thay, thayLuc: nay, thayNguon: 'bang', suaLuc: nay });
         });
-        return fsGhiMot(duongTongLoi(slug), { errors: errors, capNhatLuc: nay }, ['errors', 'capNhatLuc']);
       });
     })).then(function(){
       CQ_LUU.dang--; CQ_LUU.luc = Date.now(); veCqLuu();
@@ -1606,7 +1627,7 @@ button.gio:active{transform:scale(.94)}
       // Lùi lại đúng như trước khi bấm — thà thầy thấy câu quay về khối "Cần thầy quyết" còn
       // hơn thấy "đã quyết" mà kho vẫn số cũ. Bản nghe sống sẽ chỉnh lại nếu ghi được một phần.
       lui.forEach(function(o){
-        o.er.trangThai = o.trangThai; o.er.thay = o.thay; o.er.thayLuc = o.thayLuc; o.er.thayNguon = o.thayNguon;
+        o.er.trangThai = o.trangThai; o.er.thay = o.thay; o.er.thayLuc = o.thayLuc; o.er.thayNguon = o.thayNguon; o.er.suaLuc = o.suaLuc;
       });
       DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa();
       baoToast('Chưa lưu được — ' + CQ_LUU.loi);

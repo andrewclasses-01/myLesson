@@ -2635,22 +2635,13 @@
   // ⛔ ĐỔI LUẬT Ở ĐÂY LÀ PHẢI ĐỔI CẢ `myLesson/web/sp-chitiet.html` (hàm `chinhChuDaNhan`/
   // `tranhChap` bên đó là bản sao của bộ này). Tab "Kết quả" app mySpeaking CỐ Ý chưa theo —
   // thầy sẽ dựng lại tab đó sau, số của nó lệch là BIẾT TRƯỚC, không phải lỗi.
-  function tenBang(a, b) {
-    return !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
-  }
+  function tenBang(a, b) { return SPLuat.tenBang(a, b); }   // v1.374.0 — luật chung ../js/sp-luat.js
   // Chính chủ (người bị ghi tên trong e.who) đã tự nhận lỗi?
-  function chinhChuDaNhan(e) {
-    return !!e.who && phieuCuaLoi(e.id).some((p) => p.y === 'dongY' && tenBang(p.voter, e.who));
-  }
+  function chinhChuDaNhan(e) { return SPLuat.chinhChuDaNhan(e, phieuCuaLoi(e.id)); }
   // Còn tranh chấp THẬT: có người phản đối VÀ chính chủ chưa tự nhận.
-  function tranhChapThat(e) {
-    return phieuCuaLoi(e.id).some((p) => p.y === 'phanDoi') && !chinhChuDaNhan(e);
-  }
+  function tranhChapThat(e) { return SPLuat.tranhChapThat(e, phieuCuaLoi(e.id)); }
   // Bất đồng TRONG ĐỘI: chính chủ đã nhận nhưng đồng đội vẫn cãi hộ (rất hiếm).
-  function batDongTrongDoi(e) {
-    return chinhChuDaNhan(e) &&
-      phieuCuaLoi(e.id).some((p) => p.y === 'phanDoi' && !tenBang(p.voter, e.who));
-  }
+  function batDongTrongDoi(e) { return SPLuat.batDongTrongDoi(e, phieuCuaLoi(e.id)); }
 
   // Hoạt cảnh chữ "bay" từ ô nhập lên đầu danh sách phản biện (cùng khuôn Web Animations API
   // với flyLight() — bong bóng rời rạc, tự xoá sau khi chạy, không đụng DOM thật của danh sách).
@@ -3986,8 +3977,8 @@
     $('identifyScreen').classList.add('hidden');
     $('appScreen').classList.add('hidden');
     $('trungScreen').classList.remove('hidden');
-    $('trTitle').textContent = kt ? 'KIỂM TRA TRÙNG · lỗi của ' + tr.doi
-      : 'XÁC NHẬN TRÙNG · ' + tr.doi + ' đề nghị';
+    $('trTitle').textContent = kt ? 'CHECK DUPLICATES · mistakes of ' + tr.doi
+      : 'CONFIRM DUPLICATES · requested by ' + tr.doi;
     /* ⛔ 03/09 (thầy chốt) — DÒNG PHỤ CHỈ GHI TÊN BÀI. Mọi câu giảng giải kiểu "gộp những lỗi
        các đội khác bắt trùng nhau" đã BỎ: màn càng sạch càng tốt, để các em tự khám phá. */
     $('trSub').textContent = state.topic || state.lesson || '';
@@ -4037,10 +4028,10 @@
     $('ktWrap').classList.add('hidden');
     $('xnWrap').innerHTML = '<div class="bg-white rounded-3xl border border-slate-200 p-6 text-center">' +
       '<div class="font-extrabold text-slate-900 mb-1">' +
-      (khoaChua ? 'Phần này chưa mở' : 'Chưa đọc được dữ liệu') + '</div>' +
+      (khoaChua ? 'Not open yet' : 'Could not load the data') + '</div>' +
       '<div class="text-sm text-slate-600">' + (khoaChua
-        ? 'Em báo thầy Andrew mở khoá phần gộp lỗi trùng giúp nhé.'
-        : 'Em thử tải lại trang; nếu vẫn vậy thì báo thầy Andrew (' + escapeHtml(chu) + ').') +
+        ? 'Please ask Mr Andrew to open this part.'
+        : 'Reload the page. If it still fails, tell Mr Andrew (' + escapeHtml(chu) + ').') +
       '</div></div>';
   }
 
@@ -4053,11 +4044,19 @@
     const docs = await fsQuery(state.buoiId, 'tongLoi', 'checkedTeam', tr.doi, 200);
     const ds = [];
     docs.forEach((d) => {
+      /* ⭐ myLesson v1.374.0 (món 2.5) — SỐ HIỆN TRÊN DÒNG = đúng số câu đó ở MÀN CHẤM của người
+         chấm (cùng cách đánh `sttChuan` trong `renderErrors`: bỏ 'an', xếp theo mốc giờ, hoà thì
+         giữ thứ tự gốc). Trước đây màn trùng đánh lại 1..N cho cả đội ⇒ em chấm thấy "câu 5" của
+         mình thành "câu 23". Tên người chấm đứng cùng dòng nên hai em trùng số vẫn phân biệt được. */
+      const sttCham = {};
+      (d.errors || []).map((er, i) => ({ er, i })).filter((x) => x.er.trangThai !== 'an')
+        .sort((a, b) => tSec(a.er) - tSec(b.er) || a.i - b.i)
+        .forEach((x, k) => { if (x.er.id) sttCham[x.er.id] = k + 1; });
       (d.errors || []).map(chuanLoi).forEach((er) => {
         if (er.trangThai === 'an' || er.trangThai === 'go') return;
         ds.push({
           id: er.id, cham: String(d.student || d._id || ''), who: er.who, type: er.type,
-          t: tSec(er), cau: er.sentence, loi: er.detail, gt: er.explain,
+          t: tSec(er), cau: er.sentence, loi: er.detail, gt: er.explain, sttCham: sttCham[er.id] || '',
         });
       });
     });
@@ -4180,20 +4179,20 @@
       const nhom = goiy ? (tr.nhomGoiY[x.id] || null) : null;
       const canNgan = nhom != null && nhomTruoc != null && nhom !== nhomTruoc;
       nhomTruoc = nhom;
-      return (canNgan ? '<div class="tr-ngan"><span>nhóm khác</span></div>' : '') +
+      return (canNgan ? '<div class="tr-ngan"><span>other group</span></div>' : '') +
         '<div class="tr-o ' + (goiy ? 'goiy' : 'mo') + (tich ? ' tich' : '') + '" data-trloi="' + escapeHtml(x.id) + '">' +
         '<div class="flex items-center gap-2 flex-wrap">' +
           '<span class="tr-tick">' + TR_IC_TICK + '</span>' +
-          '<span class="tr-stt">' + x.stt + '</span>' +
+          '<span class="tr-stt">' + (x.sttCham || x.stt) + '</span>' +
           '<button data-trseek="' + x.t + '" class="font-mono text-xs font-bold bg-slate-900 hover:bg-indigo-700 transition text-white rounded-md px-1.5 py-0.5">' + fmtClock(x.t) + '</button>' +
           trNhanLoai(x.type) +
-          (goiy ? '<span class="text-[10px] font-extrabold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">THẦY ANDREW GỢI Ý</span>' : '') +
+          (goiy ? '<span class="text-[10px] font-extrabold text-blue-700 bg-blue-100 rounded-full px-2 py-0.5">SUGGESTED BY MR ANDREW</span>' : '') +
           '<span class="ml-auto text-[10.5px] font-bold text-slate-400">' + escapeHtml(x.cham) + '</span>' +
         '</div>' + trChi(x) + '</div>';
-    }).join('') || '<div class="text-sm text-slate-400 px-2 py-6 text-center">Mọi lỗi đều đã được xếp vào cụm.</div>';
+    }).join('') || '<div class="text-sm text-slate-400 px-2 py-6 text-center">Every mistake is already in a group.</div>';
 
     $('ktCum').innerHTML = tr.cum.map((c) => trKhungCum(c, false)).join('') ||
-      '<div class="text-sm text-slate-400 px-2 py-6 text-center">Chưa có cụm lỗi gộp nào.</div>';
+      '<div class="text-sm text-slate-400 px-2 py-6 text-center">No groups yet.</div>';
 
     const nTich = Object.keys(tr.tich).length;
     $('ktViec').classList.toggle('hidden', nTich === 0);
@@ -4225,10 +4224,10 @@
     if (voteMode) {
       const ok = trPhieuCua(c._id, 'gop'), no = trPhieuCua(c._id, 'khong');
       vo = ok.length > no.length ? 'chot' : no.length > ok.length ? 'khong' : (ok.length ? 'hoa' : '');
-      dau = vo === 'chot' ? 'SỐ ĐÔNG GỘP' : vo === 'khong' ? 'SỐ ĐÔNG KHÔNG GỘP'
-        : vo === 'hoa' ? 'HOÀ PHIẾU · ĐANG TREO' : escapeHtml(tr.doi) + ' xin gộp · ' + ids.length + ' dòng';
+      dau = vo === 'chot' ? 'MAJORITY: MERGE' : vo === 'khong' ? "MAJORITY: DON'T MERGE"
+        : vo === 'hoa' ? 'TIED · NEEDS A VOTE' : escapeHtml(tr.doi) + ' asks to merge · ' + ids.length + ' lines';
     } else {
-      dau = ids.length + ' dòng = 1 lỗi';
+      dau = ids.length + ' lines = 1 mistake';
     }
     return '<div class="tr-cum ' + vo + '">' +
       '<div class="tr-cum-dau"><span class="trai">' + dau + '</span>' +
@@ -4238,14 +4237,14 @@
         const x = trLoi(id);
         if (!x) return '';
         return '<div class="tr-cum-o">' +
-          '<span class="tr-stt mt-0.5">' + x.stt + '</span>' +
+          '<span class="tr-stt mt-0.5">' + (x.sttCham || x.stt) + '</span>' +
           '<button data-trseek="' + x.t + '" class="font-mono text-[11px] font-bold bg-slate-900 hover:bg-indigo-700 transition text-white rounded-md px-1.5 py-0.5 mt-0.5 flex-none">' + fmtClock(x.t) + '</button>' +
           '<div class="min-w-0"><div class="text-[10.5px] text-slate-500 leading-none">' + trNhanLoai(x.type) +
-            ' <span class="font-bold">' + escapeHtml(x.cham) + '</span> chấm' +
-            (x.cham === state.student ? ' <span class="text-amber-600 font-extrabold">· của em</span>' : '') + '</div>' +
+            ' <span class="font-bold">' + escapeHtml(x.cham) + '</span> checked' +
+            (x.cham === state.student ? ' <span class="text-amber-600 font-extrabold">· yours</span>' : '') + '</div>' +
             trChi(x) + '</div>' +
           /* ⭐ `?v=61` — nút ✕ LUÔN hiện ở màn KIỂM TRA TRÙNG (cụm không còn bị khoá). */
-          (voteMode ? '' : '<button class="bo" data-trbo="' + escapeHtml(c._id) + '|' + escapeHtml(id) + '" title="Bỏ khỏi cụm">' +
+          (voteMode ? '' : '<button class="bo" data-trbo="' + escapeHtml(c._id) + '|' + escapeHtml(id) + '" title="Remove from group">' +
             '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" class="w-3 h-3"><path d="M6 6l12 12M18 6L6 18"/></svg></button>') +
         '</div>';
       }).join('') +
@@ -4275,7 +4274,7 @@
         '<span class="ruot"><span class="nhan">' + nhan + '</span>' +
         '<span class="avs">' + ai.map(trAv).join('') + '</span></span></button>';
     return '<div class="tr-phieu">' +
-      mot('ok', 'ĐỒNG Ý GỘP', ok) + mot('no', 'KHÔNG GỘP', no) + '</div>';
+      mot('ok', 'MERGE', ok) + mot('no', "DON'T MERGE", no) + '</div>';
   }
   /* Tên class trên nút (`ok`/`no`) ↔ giá trị phiếu ghi vào kho (`gop`/`khong`). Hai bộ tên này
      đã lệch nhau từ 03/09; giữ nguyên để khỏi phải đụng dữ liệu cũ trên kho. */
@@ -4288,9 +4287,8 @@
      ⛔ Thầy chốt: **chỉ cần MỘT phiếu lệch là xong một ô**, không cần cả đội bỏ phiếu.
         Vì thế mọi thành viên trong đội thấy CÙNG một con số, và em vừa bỏ phiếu đầu tiên
         (1–0) là cụm đó rớt khỏi danh sách CẦN BỎ PHIẾU ngay — thầy đã duyệt cách này. */
-  function trKetQuaCum(c) {
-    const ok = trPhieuCua(c._id, 'gop').length, no = trPhieuCua(c._id, 'khong').length;
-    return ok > no ? 'gop' : no > ok ? 'khong' : 'hoa';
+  function trKetQuaCum(c) {   // v1.374.0 — luật cụm ở ../js/sp-luat.js
+    return SPLuat.ketQuaCum({ gop: trPhieuCua(c._id, 'gop').length, khong: trPhieuCua(c._id, 'khong').length });
   }
 
   /* Đổi giữa hai nút lọc của màn XÁC NHẬN TRÙNG. Cùng khuôn `trDatCot()` của màn kia. */
@@ -4317,8 +4315,8 @@
     /* Danh sách xếp theo THỜI GIAN TẠO CỤM — `trNoiKho()` đã sort theo `luc` sẵn rồi. */
     const hien = tr.locXn === 'can' ? can : ds;
     const trong = tr.locXn === 'can'
-      ? 'Không còn cụm nào chờ phiếu — cả đội xong rồi ✓'
-      : 'Chưa có cụm nào chờ em.';
+      ? 'No group needs a vote. Your team is done ✓'
+      : 'No groups for you yet.';
     $('xnWrap').innerHTML =
       '<div class="space-y-3">' + (hien.map((c) => trKhungCum(c, true)).join('') ||
         '<div class="tr-khung text-center text-sm text-slate-400 py-6">' + trong + '</div>') +
@@ -4395,7 +4393,7 @@
     return true;
   }
   function trBaoBoQua(soBo) {
-    if (soBo > 0) toast(soBo + ' lỗi đã nằm trong cụm khác — bỏ qua, không gộp lại', 'info');
+    if (soBo > 0) toast(soBo + ' mistake' + (soBo > 1 ? 's are' : ' is') + ' already in another group — skipped', 'info');
   }
 
   function trTaoCum() {
@@ -4410,7 +4408,7 @@
     /* ⛔ Ghi KHÔNG còn `await`: hàng đợi `trXepGhi` lo phần lên kho và báo Saving/Saved.
        Hỏng thì dòng trạng thái đỏ + tự thử lại, KHÔNG nuốt lặng. */
     trGhiCum(c);
-    toast('Đã gộp ' + ids.length + ' lỗi thành 1 cụm ✓', 'ok');
+    toast('Merged ' + ids.length + ' mistakes into 1 group ✓', 'ok');
   }
 
   function trThemVaoCum(cumId) {
@@ -4463,8 +4461,8 @@
 
   function trChuLoi(e) {
     const s = String((e && e.message) || e || '');
-    return /40[13]/.test(s) ? 'Phần này chưa được mở khoá — em báo thầy Andrew nhé.'
-      : 'Chưa gửi được, em thử lại (' + s + ')';
+    return /40[13]/.test(s) ? 'This part is not open yet. Please tell Mr Andrew.'
+      : 'Not sent. Please try again (' + s + ')';
   }
 
   /* Pop-up chọn cụm. ⭐ `?v=61` — liệt kê MỌI cụm (trước chỉ liệt kê cụm chưa gửi): bước
@@ -4474,17 +4472,17 @@
     $('tpcSo').textContent = Object.keys(tr.tich).length;
     $('tpcDs').innerHTML = ds.length ? ds.map((c) => {
       const ids = (c.ids || []).slice().sort((a, b) => ((trLoi(a) || {}).stt || 0) - ((trLoi(b) || {}).stt || 0));
-      return '<div class="tpc-o"><div class="tpc-dau"><span>' + ids.length + ' dòng</span>' +
-        '<button class="tpc-them" data-trthem="' + escapeHtml(c._id) + '">THÊM VÀO ĐÂY</button>' +
+      return '<div class="tpc-o"><div class="tpc-dau"><span>' + ids.length + ' lines</span>' +
+        '<button class="tpc-them" data-trthem="' + escapeHtml(c._id) + '">ADD HERE</button>' +
         '<span class="ten">' + escapeHtml(c.ten || '') + '</span></div>' +
         ids.map((id) => {
           const x = trLoi(id);
           if (!x) return '';
-          return '<div class="tpc-dong"><span class="tr-stt">' + x.stt + '</span>' +
+          return '<div class="tpc-dong"><span class="tr-stt">' + (x.sttCham || x.stt) + '</span>' +
             '<span class="font-mono text-[11px] font-bold bg-slate-900 text-white rounded-md px-1.5 py-0.5 mt-0.5 flex-none">' + fmtClock(x.t) + '</span>' +
             '<div class="min-w-0">' + trChi(x, true) + '</div></div>';
         }).join('') + '</div>';
-    }).join('') : '<div class="text-sm text-slate-400 text-center py-6">Chưa có cụm nào đang soạn. Tích 2 lỗi rồi bấm NEW GROUP.</div>';
+    }).join('') : '<div class="text-sm text-slate-400 text-center py-6">No groups yet. Tick 2 mistakes, then tap NEW GROUP.</div>';
     $('trPopCum').classList.remove('hidden'); $('trPopCum').classList.add('flex');
   }
 

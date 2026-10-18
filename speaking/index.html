@@ -1117,13 +1117,13 @@
       </div>
       <!-- XÁC NHẬN TRÙNG: lọc danh sách cụm -->
       <div id="xnTab" class="hidden">
-        <button data-xnloc="all" class="bg-slate-900 text-white">YÊU CẦU XEM XÉT:&nbsp;<span id="xnSoAll">0</span></button>
-        <button data-xnloc="can" class="bg-white text-slate-500">CẦN BỎ PHIẾU:&nbsp;<span id="xnSoCan">0</span></button>
+        <button data-xnloc="all" class="bg-slate-900 text-white">ALL GROUPS:&nbsp;<span id="xnSoAll">0</span></button>
+        <button data-xnloc="can" class="bg-white text-slate-500">NEED YOUR VOTE:&nbsp;<span id="xnSoCan">0</span></button>
       </div>
       <!-- XÁC NHẬN TRÙNG: kết quả phiếu của CẢ ĐỘI — chỉ để nhìn, không bấm được -->
       <div id="xnKq" class="hidden">
-        <span id="xnKqGop">ĐỒNG Ý GỘP:&nbsp;<span id="xnSoGop">0</span></span>
-        <span id="xnKqKhong">KHÔNG GỘP:&nbsp;<span id="xnSoKhong">0</span></span>
+        <span id="xnKqGop">MERGE:&nbsp;<span id="xnSoGop">0</span></span>
+        <span id="xnKqKhong">DON'T MERGE:&nbsp;<span id="xnSoKhong">0</span></span>
       </div>
     </div>
 
@@ -1161,7 +1161,7 @@
           <div id="ktLoad" class="hidden absolute inset-0 z-[15] items-center justify-center rounded-3xl bg-slate-50/90">
             <div class="text-center px-6">
               <div class="w-11 h-11 mx-auto mb-3 rounded-full border-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
-              <div class="font-extrabold text-indigo-700 text-sm tracking-wide">THẦY ANDREW ĐANG TÌM CÁC LỖI TRÙNG</div>
+              <div class="font-extrabold text-indigo-700 text-sm tracking-wide">MR ANDREW IS LOOKING FOR DUPLICATES</div>
             </div>
           </div>
           <div id="ktDs" class="space-y-2"></div>
@@ -1190,8 +1190,8 @@
   <div class="bg-white rounded-[22px] w-full max-w-[560px] max-h-[80vh] flex flex-col overflow-hidden shadow-2xl">
     <div class="flex items-start gap-2.5 px-4 py-3 border-b border-slate-200">
       <div>
-        <div class="text-sm font-extrabold text-slate-900">Thêm vào cụm nào?</div>
-        <div class="text-[11.5px] font-semibold text-slate-500"><b id="tpcSo">0</b> lỗi đang chọn</div>
+        <div class="text-sm font-extrabold text-slate-900">Add to which group?</div>
+        <div class="text-[11.5px] font-semibold text-slate-500"><b id="tpcSo">0</b> selected</div>
       </div>
       <button id="tpcDong" class="ml-auto w-7 h-7 rounded-full bg-slate-100 text-slate-500 font-extrabold shrink-0">✕</button>
     </div>
@@ -1202,11 +1202,11 @@
 <!-- pop-up XÁC NHẬN BỎ MỘT DÒNG KHỎI CỤM -->
 <div id="trPopXoa" class="fixed inset-0 z-[85] bg-slate-900/55 hidden items-center justify-center p-4">
   <div class="bg-white rounded-3xl p-5 w-full max-w-sm shadow-2xl">
-    <div class="font-extrabold text-slate-900 mb-1">Bỏ lỗi này khỏi cụm?</div>
-    <p class="text-sm text-slate-600 mb-4">Lỗi sẽ trở lại danh sách như chưa gộp. Cụm còn một lỗi thì tự giải tán.</p>
+    <div class="font-extrabold text-slate-900 mb-1">Remove this mistake from the group?</div>
+    <p class="text-sm text-slate-600 mb-4">It goes back to the list as not merged. A group with only one mistake left is removed.</p>
     <div class="flex gap-2 justify-end">
-      <button id="tpxKhong" class="rounded-xl px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100">Giữ lại</button>
-      <button id="tpxCo" class="rounded-xl px-4 py-2 text-sm font-bold text-white bg-red-600">Bỏ khỏi cụm</button>
+      <button id="tpxKhong" class="rounded-xl px-4 py-2 text-sm font-bold text-slate-600 bg-slate-100">Keep it</button>
+      <button id="tpxCo" class="rounded-xl px-4 py-2 text-sm font-bold text-white bg-red-600">Remove</button>
     </div>
   </div>
 </div>
@@ -1222,7 +1222,8 @@
 <script src="../js/ve-doc.js?v=2"></script>
 <script src="../js/nw-phien.js?v=9"></script>
 <script src="js/trung.js?v=8"></script>
-<script src="js/app.js?v=68"></script>
+<script src="../js/sp-luat.js?v=1"></script>
+<script src="js/app.js?v=69"></script>
 <script src="../js/chuot-phai.js?v=3"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 </body>
 </html>

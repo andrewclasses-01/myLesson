@@ -1338,6 +1338,38 @@ body.mo-menu .side.trai{transform:none}
 .sp-hop.xong .sp-nut button.nho.la{background:#E4F5EA; color:#0E7A3F}
 .sp-hop.xong .sp-nut button.nho.duong{background:#E4ECFE; color:#2456C4}
 .sp-nut .nho .hang{display:flex; align-items:center; gap:5px}
+/* ═══ ⭐ v1.374.0 (SP CHECK món 2.3) — NÚT + MÀN RESULTS (mẫu mau-web/sp-check-dot-d/mau-v1.html) ═══ */
+.sp-hop.xong .sp-nut.hai-cot > button.kq{grid-column:1 / -1}
+.sp-hop.xong .sp-nut button.kq{background:#16232A; color:#fff; padding:13px 10px; font-size:13px; letter-spacing:.06em}
+.kq-nen{position:fixed; inset:0; z-index:95; background:rgba(15,23,42,.55); display:none; align-items:center; justify-content:center;
+  padding:max(12px,env(safe-area-inset-top,0px)) 12px max(12px,env(safe-area-inset-bottom,0px))}
+.kq-nen.mo{display:flex}
+.kq-hop{width:min(440px,100%); max-height:100%; display:flex; flex-direction:column; background:#F1F5F9; border-radius:24px;
+  overflow:hidden; box-shadow:0 18px 40px rgba(15,23,42,.25); font-family:var(--sans); color:#1E293B}
+.kq-dau{flex:none; display:flex; align-items:center; gap:10px; background:#0F172A; color:#fff; padding:12px 14px}
+.kq-dau small{display:block; font-size:10px; font-weight:700; letter-spacing:.08em; color:#94A3B8; text-transform:uppercase}
+.kq-dau b{font-size:14px; font-weight:800}
+.kq-dau .day{flex:1}
+.kq-dau button{flex:none; border:0; border-radius:99px; padding:6px 11px; font:800 11px/1 var(--sans); background:#1E293B; color:#CBD5E1}
+.kq-than{flex:1; min-height:0; overflow-y:auto; padding:12px; display:flex; flex-direction:column; gap:10px; overscroll-behavior:contain}
+.kq-the{background:#fff; border:1px solid #E2E8F0; border-radius:18px; padding:12px 14px}
+.kq-nh{font-size:10.5px; font-weight:800; letter-spacing:.1em; color:#64748B; text-transform:uppercase}
+.kq-so{font-size:32px; font-weight:800; line-height:1.15; font-variant-numeric:tabular-nums}
+.kq-so small{font-size:13.5px; color:#64748B; font-weight:700}
+.kq-hang{display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin-top:8px}
+.kq-hang div{background:#F8FAFC; border-radius:12px; padding:7px 4px; text-align:center}
+.kq-hang b{display:block; font-size:18px; font-weight:800; font-variant-numeric:tabular-nums}
+.kq-hang span{font-size:9.5px; font-weight:800; letter-spacing:.05em; color:#64748B; text-transform:uppercase}
+.kq-cau{border-top:1px solid #F1F5F9; padding:9px 0; font-size:12.5px; line-height:1.45; overflow-wrap:anywhere}
+.kq-cau:first-of-type{border-top:0}
+.kq-cau .t{display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:3px}
+.kq-gio{font:800 10.5px/1 var(--mono); background:#0F172A; color:#fff; border-radius:6px; padding:3px 6px}
+.kq-bd{font-size:9.5px; font-weight:800; letter-spacing:.05em; padding:3px 8px; border-radius:99px}
+.kq-bd.giu{background:#DCFCE7; color:#15803D} .kq-bd.bo{background:#FEE2E2; color:#B91C1C} .kq-bd.cho{background:#FEF3C7; color:#B45309}
+.kq-bd.loai{background:#EEF2FF; color:#4338CA}
+.kq-cau i{color:#334155} .kq-loi{color:#DC2626; font-weight:700} .kq-giai{color:#15803D; font-weight:600} .kq-phu{color:#64748B}
+.kq-them{border:0; background:none; padding:4px 0 0; font:700 11.5px/1.3 var(--sans); color:#2563EB; cursor:pointer}
+.kq-trong{font-size:12.5px; color:#94A3B8; padding:6px 0}
 /* Chú thích: nhỏ, nghiêng, nhẹ hơn tên nút, MỘT DÒNG. Chữ nào dài quá thì SỬA CHỮ cho
    ngắn lại, đừng cho nó xuống hàng. */
 .sp-nut .to .chu{font-size:9.5px; line-height:1.3; font-style:italic; font-weight:500;
@@ -1669,6 +1701,14 @@ body.mo-menu .side.trai{transform:none}
 
 <!-- ===== POP-UP BẢNG CẢ LỚP ===== -->
 <!-- ⭐ SP CHECK — pop-up "đang mở phòng chấm" (bản thật giữ nguyên khối này) -->
+<!-- ⭐ v1.374.0 (SP CHECK món 2.3) — màn RESULTS của học sinh. Ruột do `spVeKetQua()` vẽ. -->
+<div class="kq-nen" id="kqNen">
+  <div class="kq-hop" role="dialog" aria-modal="true" aria-label="Results">
+    <div class="kq-dau"><div><small id="kqPhu">RESULTS</small><b id="kqTen"></b></div><div class="day"></div>
+      <button type="button" id="kqLai">Refresh</button><button type="button" id="kqDong">✕</button></div>
+    <div class="kq-than" id="kqThan"></div>
+  </div>
+</div>
 <div class="sp-nen" id="spNen">
   <div class="sp-hop" id="spHop">
     <button class="sp-x" id="spX" title="Đóng" aria-label="Đóng">
@@ -1715,6 +1755,7 @@ body.mo-menu .side.trai{transform:none}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=273"></script>
+<script src="js/sp-luat.js?v=1"></script>
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
@@ -3797,6 +3838,93 @@ $('#popThanh').onclick = function(e){
 /* ⭐ Pop-up SP CHECK: nút X ở góc = Huỷ (chờ) hoặc Đóng (đã xong/lỗi) — spThoi()
    lo cả hai vì chỉ set cờ huỷ rồi đóng, vô hại khi gọi lúc buổi đã xong. */
 $('#spX').onclick = spThoi;
+/* ═══ ⭐ v1.374.0 (SP CHECK món 2.3) — MÀN RESULTS CHO HỌC SINH ═══════════════════════════════════
+   Mở bằng nút RESULTS trong pop-up SP CHECK (chỉ buổi mô hình 2). Dữ liệu = đúng mảng tongLoi thẻ
+   đã tải cho thanh đội (`BAI_SP.spDocs`) ⇒ mở KHÔNG tốn thêm lượt đọc; nút Refresh mới đọc lại một
+   lượt (`spDoiSpFs`, cỡ số em của buổi). Luật tính ở js/sp-luat.js (`thongKeEm`, `choThay`, `biGo`)
+   — thầy chốt 18/10: chỉ Accept Appeal / thầy BỎ mới là chấm sai, gộp trùng không tính.
+   Chữ trên màn này tiếng Anh (thầy chốt: màn học sinh dùng tiếng Anh hết). */
+var KQ = { em: null, lop: null, cap: null, docs: null, moRong: false };
+function spMoKetQua(em, lop, cap){
+  KQ.em = em; KQ.lop = lop; KQ.cap = cap; KQ.moRong = false;
+  KQ.docs = (BAI_SP && BAI_SP.spBuoiId === lop._id && BAI_SP.spDocs) ? BAI_SP.spDocs : null;
+  $('#kqNen').classList.add('mo');
+  if (KQ.docs) spVeKetQua(); else spTaiKetQua();
+}
+function spTaiKetQua(){
+  $('#kqThan').innerHTML = '<div class="kq-the kq-trong">Loading…</div>';
+  spDoiSpFs(KQ.lop._id).then(function(docs){
+    KQ.docs = docs;
+    if (BAI_SP) { BAI_SP.spDocs = docs; BAI_SP.spBuoiId = KQ.lop._id; }
+    spVeKetQua();
+  })['catch'](function(){
+    $('#kqThan').innerHTML = '<div class="kq-the kq-trong">Could not load the results. Please try Refresh in a moment.</div>';
+  });
+}
+function spDongKetQua(){ $('#kqNen').classList.remove('mo'); }
+function kqGio(e){ return String(+e.min || 0).padStart(2, '0') + ':' + String(+e.sec || 0).padStart(2, '0'); }
+function kqLoai(t){ return t ? '<span class="kq-bd loai">' + chuAnToan(String(t).toUpperCase()) + '</span>' : ''; }
+function spVeKetQua(){
+  var em = KQ.em, lop = KQ.lop, docs = KQ.docs || [];
+  var khoa = A.khoaTen, toi = khoa(em.ten);
+  var doiToi = 'TEAM ' + em.team, doiKia = 'TEAM ' + KQ.cap.checked;
+  var tk = SPLuat.thongKeEm(lop.teams, docs, khoa);
+  var my = tk[toi] || { con: 0, cho: 0, go: 0, gop: 0, chinhXac: null };
+  var banDoi = Object.keys(tk).map(function(k){ return tk[k]; }).filter(function(x){ return x.doi === doiToi; })
+    .sort(function(a, b){ return b.con - a.con; });
+  var tongDoi = banDoi.reduce(function(n, x){ return n + x.con; }, 0);
+  var hang = 0; banDoi.forEach(function(x, i){ if (khoa(x.ten) === toi) hang = i + 1; });
+  var thu = function(n){ return n + (n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th'); };
+  // Câu của em mà thầy đã quyết / đang chờ thầy
+  var cuaToi = [];
+  docs.forEach(function(d){ if (khoa(d.student) === toi) cuaToi = cuaToi.concat(d.errors || []); });
+  var quyet = cuaToi.filter(function(e){ return e.thay === 'bo' || e.thay === 'giu' || SPLuat.choThay(e); })
+    .sort(function(a, b){ return ((+a.min || 0) * 60 + (+a.sec || 0)) - ((+b.min || 0) * 60 + (+b.sec || 0)); });
+  // Lỗi bạn khác bắt được trong bài nói của em (còn tính)
+  var biBat = [];
+  docs.forEach(function(d){ (d.errors || []).forEach(function(e){ if (SPLuat.laSong(e) && e.who && khoa(e.who) === toi) biBat.push(e); }); });
+  biBat.sort(function(a, b){ return ((+a.min || 0) * 60 + (+a.sec || 0)) - ((+b.min || 0) * 60 + (+b.sec || 0)); });
+  var hienBi = KQ.moRong ? biBat : biBat.slice(0, 5);
+
+  $('#kqPhu').textContent = 'RESULTS · ' + (lop.lesson || '');
+  $('#kqTen').textContent = em.ten + ' · ' + doiToi;
+  var cx = my.chinhXac;
+  $('#kqThan').innerHTML =
+    '<div class="kq-the"><div class="kq-nh">Your team found</div>' +
+      '<div class="kq-so" style="color:#2563EB">' + tongDoi + ' <small>mistakes in ' + chuAnToan(doiKia) + '</small></div>' +
+      '<div class="kq-hang"><div><b>' + my.con + '</b><span>You</span></div>' +
+        '<div><b style="color:' + (cx == null ? '#94A3B8' : cx >= 90 ? '#16A34A' : cx >= 80 ? '#2563EB' : '#EA580C') + '">' + (cx == null ? '—' : cx + '%') + '</b><span>Accuracy</span></div>' +
+        '<div><b>' + (hang ? thu(hang) : '—') + '</b><span>In team</span></div></div></div>' +
+    '<div class="kq-the"><div class="kq-nh">Your mistakes</div>' +
+      '<div class="kq-hang"><div><b style="color:#16A34A">' + my.con + '</b><span>Counted</span></div>' +
+        '<div><b style="color:#DC2626">' + my.go + '</b><span>Removed</span></div>' +
+        '<div><b style="color:#B45309">' + my.cho + '</b><span>Teacher</span></div></div></div>' +
+    '<div class="kq-the"><div class="kq-nh">Teacher\'s decisions</div>' +
+      (quyet.length ? quyet.map(function(e){
+        var bd = e.thay === 'giu' ? '<span class="kq-bd giu">KEPT</span>' : e.thay === 'bo' ? '<span class="kq-bd bo">REMOVED</span>' : '<span class="kq-bd cho">WAITING</span>';
+        var chu = e.thay === 'bo' ? '<span class="kq-phu">Not counted. Your teacher removed it.</span>'
+          : e.thay === 'giu' ? '<span class="kq-loi">' + chuAnToan(e.detail || '') + '</span>'
+          : '<span class="kq-phu">Your teacher will decide in class.</span>';
+        return '<div class="kq-cau"><div class="t"><span class="kq-gio">' + kqGio(e) + '</span>' + bd + kqLoai(e.type) + '</div>' +
+          (e.sentence ? '<i>“' + chuAnToan(e.sentence) + '”</i><br>' : '') + chu + '</div>';
+      }).join('') : '<div class="kq-trong">No decisions yet.</div>') + '</div>' +
+    '<div class="kq-the"><div class="kq-nh">Found in your talk</div>' +
+      '<div class="kq-so" style="color:#EA580C">' + biBat.length + ' <small>mistake' + (biBat.length === 1 ? '' : 's') + '</small></div>' +
+      (hienBi.length ? hienBi.map(function(e){
+        return '<div class="kq-cau"><div class="t"><span class="kq-gio">' + kqGio(e) + '</span>' + kqLoai(e.type) + '</div>' +
+          (e.sentence ? '<i>“' + chuAnToan(e.sentence) + '”</i><br>' : '') +
+          '<span class="kq-loi">' + chuAnToan(e.detail || '') + '</span>' +
+          (e.explain ? '<br><span class="kq-giai">' + chuAnToan(e.explain) + '</span>' : '') + '</div>';
+      }).join('') : '<div class="kq-trong">Nobody found a mistake in your talk.</div>') +
+      (biBat.length > hienBi.length ? '<button type="button" class="kq-them" id="kqThem">See all ' + biBat.length + ' ›</button>' : '') +
+    '</div>';
+}
+$('#kqDong').onclick = spDongKetQua;
+$('#kqLai').onclick = spTaiKetQua;
+$('#kqNen').addEventListener('click', function(ev){
+  if (ev.target === this) spDongKetQua();
+  if (ev.target.closest && ev.target.closest('#kqThem')) { KQ.moRong = true; spVeKetQua(); }
+});
 
 /* Tiêu đề "SPEAKING CHECK" cố định — giãn chữ "in Andrew Classes" bên dưới cho
    vừa đúng bề ngang tiêu đề (đo lúc font đã nạp, kẻo Montserrat về muộn ra số lệch). */
@@ -4010,69 +4138,15 @@ function spDoiSpFs(buoiId){
 }
 /* Một tài liệu tongLoi có bao nhiêu lỗi CÒN SỐNG (bỏ câu đã "go"/"an" qua
    phản biện — cùng luật `song` mySpeaking đang dùng ở mọi nơi khác). */
-function soLoiSong(errors){
-  return (errors || []).filter(function(er){ return !er.trangThai || er.trangThai === 'song'; }).length;
-}
+function soLoiSong(errors){ return SPLuat.soLoiSong(errors); }   /* v1.374.0 — luật nằm ở js/sp-luat.js (một bản duy nhất), đây chỉ còn lớp vỏ */
 /* Ngưỡng CỐ ĐỊNH theo TB lỗi/người — thầy chốt: ≥30 luôn xanh lá, ≥25 luôn xanh
    dương, ≥20 luôn cam; dưới 20 mới xét theo HẠNG (tinhDoiSp lo tiếp). */
 var DOI_MAU_CO_DINH = [ { min:30, m:'m-la' }, { min:25, m:'m-duong' }, { min:20, m:'m-cam' } ];
-function mauCoDinhDoi(tb){
-  for (var i = 0; i < DOI_MAU_CO_DINH.length; i++)
-    if (tb >= DOI_MAU_CO_DINH[i].min) return DOI_MAU_CO_DINH[i].m;
-  return null;
-}
+function mauCoDinhDoi(tb){ return SPLuat.mauCoDinhDoi(tb); }
 /* Gộp `docs` (tongLoi thô) + `teams` (roster của buổi) thành mảng hiển thị cho
    thẻ + pop-up. Bạn nào chưa nộp vẫn hiện, tính 0 lỗi (không bỏ sót — thầy
    chốt "thể hiện rõ ràng mỗi bạn đã bắt được bao nhiêu lỗi"). */
-function tinhDoiSp(teams, docs){
-  var theoTen = {}, lucTen = {};
-  /* ⛔ v1.373.0: ghép em theo `A.khoaTen` (mã số em, cả tên cũ) — ĐÚNG như dashboard.html /
-     sp-chitiet.html. Trước đây ghép bằng `khongDau` nên em đổi tên / tên buổi ghi khác bảng em
-     thì trang lớp ra số khác trang thầy. */
-  (docs || []).forEach(function(d){
-    var ten = A.khoaTen(d.student);
-    if (!ten) return;
-    theoTen[ten] = (theoTen[ten] || 0) + soLoiSong(d.errors);
-    /* ⭐ 02/09 — mốc nộp, để phân trên/dưới khi HAI EM TRÙNG ĐIỂM (xem `avThanhHtml`) */
-    var l = +d.capNhatLuc || 0;
-    if (l && (!lucTen[ten] || l < lucTen[ten])) lucTen[ten] = l;
-  });
-  var doi = (teams || []).map(function(t){
-    var hs = (t.members || []).map(function(m){
-      var k = A.khoaTen(m);
-      return { ten: m, so: theoTen[k] || 0, luc: lucTen[k] || 0 };
-    }).sort(function(a, b){ return b.so - a.so; });
-    var tong = hs.reduce(function(s, e){ return s + e.so; }, 0);
-    return { team: t.team, ten: 'TEAM ' + t.team, tong: tong,
-      tb: hs.length ? tong / hs.length : 0, hs: hs };
-  });
-
-  /* ⛔ (02/09 đợt 3) Đoạn tính `maxLop` (thước chung cả lớp) ĐÃ GỠ: thầy chốt avatar phải nằm
-     gọn trong PHẦN MÀU của chính đội mình, em giỏi nhất chạm mép phải vệt màu ⇒ mỗi đội một
-     thước, không còn thước chung nữa. Chỗ xếp nay do `xepAvatarThanh()` tính từ bề ngang thật
-     của thanh — xem chú thích ở hàm đó, kèm hệ quả phải biết. */
-
-  /* Đội đã có màu cố định (TB ≥20) đứng ngoài; đội còn lại xếp HẠNG theo tổng
-     lỗi: hạng 1 xanh lá, 2 xanh dương, 3 cam, 4-5 đỏ — thầy chốt riêng: nhóm
-     dưới 4 đội thì đội BÉT luôn đỏ (bỏ qua màu đúng thứ tự của hạng đó). */
-  var chuaCoMau = doi.filter(function(d){ return !mauCoDinhDoi(d.tb); })
-    .sort(function(a, b){ return b.tong - a.tong; });
-  var mauHang = ['m-la', 'm-duong', 'm-cam', 'm-do', 'm-do'];
-  chuaCoMau.forEach(function(d, i){
-    d.mau = (chuaCoMau.length < 4 && i === chuaCoMau.length - 1) ? 'm-do' : (mauHang[i] || 'm-do');
-  });
-  doi.forEach(function(d){ if (!d.mau) d.mau = mauCoDinhDoi(d.tb); });
-
-  /* ⭐ 28/08 tối — thầy chốt: thanh có DUNG TÍCH CỐ ĐỊNH 200 lỗi (không co giãn
-     theo đội cao điểm nhất nữa) — dưới 200 thì chia đều trong thanh, đủ 200 là
-     đầy thanh, số vẫn tăng tiếp còn thanh đứng yên. */
-  var TRAN_DOI = 200;
-  doi.forEach(function(d){ d.pt = Math.min(100, Math.round(d.tong / TRAN_DOI * 100)); });
-  /* Đội nhiều điểm nhất luôn lên trên — vẽ theo đúng thứ tự mảng này (veDoiSpKhoi
-     chỉ .map() theo thứ tự), tự sắp lại mỗi lần dữ liệu mới về. */
-  doi.sort(function(a, b){ return b.tong - a.tong; });
-  return doi;
-}
+function tinhDoiSp(teams, docs){ return SPLuat.tinhDoiSp(teams, docs, A.khoaTen); }   /* v1.374.0 — luật nằm ở js/sp-luat.js (một bản duy nhất), đây chỉ còn lớp vỏ */
 /* Mã bài của thẻ có khớp buổi không — so "chịu lệch": bằng nhau, hoặc cái này nằm trong
    cái kia sau khi bỏ dấu (thẻ ghi "DS-S4.I2.W3 GERMS", buổi ghi "GERMS"). */
 function spKhopBai(maThe, tenBuoi){
@@ -4126,6 +4200,7 @@ function spHien(tieu, phu, kieu, nut, doi){
     var b = document.createElement('button');
     var lop = [];
     if (n.chinh) lop.push('chinh');
+    if (n.kq) lop.push('kq');   // v1.374.0 — nút RESULTS
     if (n.cot != null) lop.push(n.to ? 'to' : 'nho', n.cot === 0 ? 'la' : 'duong');
     if (lop.length) b.className = lop.join(' ');
     if (n.viec) b.dataset.viec = n.viec;
@@ -4274,9 +4349,7 @@ function spTruyCon(buoiId, ngan, truong, gtri){
 /* So tên kiểu mySpeaking: bỏ khoảng trắng thừa + không phân biệt hoa thường.
    ⛔ Cố ý KHÔNG dùng `khongDau()` như `timEmTrongBuoi`: bên mySpeaking ghi phiếu
    bằng phép so NÀY, nới lỏng hơn ở đây là số ngoài nút lệch số trong màn. */
-function spTenBang(a, b){
-  return !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
-}
+function spTenBang(a, b){ return SPLuat.tenBang(a, b); }
 
 /* Đếm hai con số. `doiEm` là chuỗi kiểu "TEAM 2" — đúng khuôn kho ghi trong
    tongLoi.checkedTeam (đã xem dữ liệu thật, không phải đoán). */
@@ -4291,13 +4364,9 @@ function spDemViec(buoiId, tenEm, doiEm){
 
     /* (1) REQUIREMENT — câu em chấm CÒN TRANH CHẤP THẬT: có người phản đối mà
        chính chủ (err.who) chưa tự nhận, và em chưa chốt Keep/Agree (`ketLuan`). */
+    var chiMuc = SPLuat.theoLoi(phieuTrenBanEm);   /* v1.374.0 — luật chung js/sp-luat.js */
     var soCham = (banEm.errors || []).filter(function(e){
-      if (e.trangThai !== 'song' || e.ketLuan) return false;
-      var ph = phieuTrenBanEm.filter(function(p){ return p.errId === e.id; });
-      var coPhanDoi = ph.some(function(p){ return p.y === 'phanDoi'; });
-      var chinhChuDaNhan = !!e.who && ph.some(function(p){
-        return p.y === 'dongY' && spTenBang(p.voter, e.who); });
-      return coPhanDoi && !chinhChuDaNhan;
+      return !e.ketLuan && SPLuat.tranhChap(e, chiMuc[e.id]);
     }).length;
 
     /* (2) UNCONFIRMED của RIÊNG EM — câu ghi tên em mà em chưa tích gì.
@@ -4346,20 +4415,13 @@ function spDemTrung(buoiId, tenEm, doiEm, doiEmCham){
           `voterTeam == đội em` là vừa đủ tập cần, cỡ (số cụm × 4-5 em). */
     spTruyCon(buoiId, 'cumPhieu', 'voterTeam', doiEm)
   ]).then(function(kq){
-    var song = function(c){ return (c.ids || []).length > 1; };   /* ids rỗng = cụm đã giải tán */
-    var cuaEm = kq[0].filter(song), doiKia = kq[1].filter(song), phieu = kq[2];
-    var dem = {};
-    phieu.forEach(function(p){
-      if (!p.y) return;                                    /* `y` rỗng = đã rút phiếu */
-      var d = dem[p.cumId] || (dem[p.cumId] = { gop: 0, khong: 0 });
-      if (p.y === 'gop') d.gop++; else if (p.y === 'khong') d.khong++;
-    });
+    var cuaEm = kq[0].filter(SPLuat.cumSong), doiKia = kq[1].filter(SPLuat.cumSong);
+    var dem = SPLuat.demPhieuCum(kq[2]);   /* v1.374.0 — luật cụm ở js/sp-luat.js */
     return {
       kt: cuaEm.length,
       xn: doiKia.filter(function(c){
         if (!c.daGui) return false;
-        var d = dem[c._id] || { gop: 0, khong: 0 };
-        return d.gop === d.khong;      /* hoà phiếu (kể cả 0–0) = CHƯA PHÂN ĐỊNH */
+        return SPLuat.ketQuaCum(dem[c._id]) === 'hoa';   /* hoà (kể cả 0–0) = CHƯA PHÂN ĐỊNH */
       }).length
     };
   });
@@ -4484,15 +4546,17 @@ function spVaoBuoi(b, lop, kho){
      Chú thích nằm TRONG nút, một dòng, nghiêng. ⛔ Đừng tách ra thành dòng chữ rời
      bên dưới nút — thầy đã bảo bỏ. */
   var nut = [
-    { cot:0, to:1, chu:'CHẤM BÀI CÁ NHÂN', phu:'Bài chấm của cá nhân em',
+    { cot:0, to:1, chu:'CHECK MISTAKES', phu:'Your own checking',
       ic:IC_SP_CHAM, viec:'cham', lam:function(){ window.open(spDuong, '_blank'); spDong(); } }
   ];
-  if (duongXn) nut.push({ cot:0, to:0, chu:'XÁC NHẬN TRÙNG', phu:'Cả đội quyết các lỗi chấm trùng',
+  if (duongXn) nut.push({ cot:0, to:0, chu:'CONFIRM DUPLICATES', phu:'Your team votes on duplicates',
     ic:IC_SP_XN, viec:'xn', lam:function(){ window.open(duongXn, '_blank'); spDong(); } });
-  if (duongPb) nut.push({ cot:1, to:1, chu:'PHẢN BIỆN CÁ NHÂN', phu:'Phản biện của cá nhân em',
+  if (duongPb) nut.push({ cot:1, to:1, chu:'REVIEW APPEALS', phu:'Agree or disagree with your mistakes',
     ic:IC_SP_PB, viec:'pb', lam:function(){ window.open(duongPb, '_blank'); spDong(); } });
-  if (duongKt) nut.push({ cot:1, to:0, chu:'KIỂM TRA TRÙNG', phu:'Gộp lỗi bị bắt trùng của đội em',
+  if (duongKt) nut.push({ cot:1, to:0, chu:'CHECK DUPLICATES', phu:'Group the same mistakes on your team',
     ic:IC_SP_KT, viec:'kt', lam:function(){ window.open(duongKt, '_blank'); spDong(); } });
+  /* ⭐ v1.374.0 (món 2.3) — nút RESULTS trải ngang dưới hai cột (CSS `.kq`), chỉ buổi mô hình 2 trong Firestore */
+  if (mh === 2 && lop._id) nut.push({ chu:'🏁 RESULTS', kq:true, lam:function(){ spDong(); spMoKetQua(em, lop, cap); } });
   /* ⭐ 02/09/2026 — đội em chấm nay là khối riêng `.sp-doi` (tham số thứ 5), câu
      phụ để RỖNG. Xem chú thích khối CSS `.sp-doi` vì sao không nhét vào `.sp-phu`. */
   spHien('Đã lấy xong dữ liệu', '', 'xong', nut, cap.checked);
@@ -4590,6 +4654,7 @@ function capNhatTheSpeaking(){
         return spDoiSpFs(buoi._id).then(function(docs){
           var doi = tinhDoiSp(buoi.teams, docs);
           if (doi.length) BAI_SP.doiSp = doi;
+          BAI_SP.spDocs = docs; BAI_SP.spBuoiId = buoi._id;   // v1.374.0 — màn RESULTS dùng lại, khỏi đọc thêm
           spDoDaNop(docs.map(function(d){ return { ten: d.student }; }));
         });
       }

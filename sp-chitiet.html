@@ -444,6 +444,68 @@ button.gio:active{transform:scale(.94)}
   transition:opacity .22s ease, transform .22s ease; z-index:60}
 .toast.hien{opacity:1; transform:translate(-50%,0)}
 
+/* ═════════════ ⭐⭐ v1.374.0 — ĐỢT D (mẫu `mau-web/sp-check-dot-d/mau-v1.html`, thầy duyệt 18/10) ═════════════ */
+/* 3.1 THANH HÀNG CHỜ — ghim cùng thanh đầu trang (nằm trong <header class="top">) */
+.hc-hang{border-top:1px solid var(--vien); background:#FFF8EC}
+.hc{display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:9px 18px}
+.hc-so{font:800 12.5px/1.2 var(--font); color:#B5720C; white-space:nowrap}
+.hc-so b{font-size:19px; color:var(--chu); font-variant-numeric:tabular-nums}
+.hc-hang.xong{background:var(--la-nhat)}
+.hc-hang.xong .hc-so{color:var(--m-la)}
+.hc-thanh{flex:1 1 160px; height:9px; border-radius:99px; background:#F3E3C6; overflow:hidden}
+.hc-hang.xong .hc-thanh{background:#CDEBD9}
+.hc-thanh i{display:block; height:100%; background:var(--m-la); border-radius:99px; transition:width .4s var(--em)}
+.hc-doi{display:flex; gap:6px; flex-wrap:wrap}
+.chip-d{display:inline-flex; align-items:center; gap:5px; padding:4px 10px; border-radius:99px; font:800 11px/1.3 var(--font);
+  border:1px solid var(--vien-dam); background:#fff; color:var(--mo); cursor:pointer}
+.chip-d.con{border-color:#F2C27A; background:#FDF3E3; color:#B5720C}
+.chip-d.xong{border-color:#BDE7CF; background:var(--la-nhat); color:var(--m-la)}
+.chip-d.chon{background:var(--xanh); border-color:var(--xanh); color:#fff}
+/* 3.1 QUYẾT LẦN LƯỢT */
+.ql{display:grid; grid-template-columns:minmax(0,1fr) 230px; gap:16px}
+.ql-ben{display:flex; flex-direction:column; gap:6px; font-size:12px; max-height:min(60vh,520px); overflow-y:auto}
+.ql-dong{display:flex; justify-content:space-between; gap:8px; padding:6px 10px; border-radius:10px; background:var(--nen);
+  border:0; text-align:left; font:700 12px/1.3 var(--font); color:var(--chu); cursor:pointer}
+.ql-dong.nay{background:var(--xanh-nhat); outline:2px solid var(--xanh)}
+.ql-dong.qua{color:var(--nhat)}
+.ql-dong span:last-child{color:var(--nhat)}
+.phim{font:800 10px/1 var(--mono); border:1px solid currentColor; border-bottom-width:2px; border-radius:5px; padding:2px 5px; opacity:.7}
+.ql-xong{padding:28px 18px; text-align:center; font:800 14px/1.5 var(--font); color:var(--m-la)}
+/* 3.4 thẻ đội trong "Ai còn việc" bấm được để chọn đội */
+.acv-doi[data-doi]{cursor:pointer}
+.acv-doi[data-doi]:hover{border-color:var(--xanh)}
+.acv-doi.chon{border-color:var(--xanh); box-shadow:inset 0 0 0 2px var(--xanh)}
+.acv-doi.chon .acv-ten{color:var(--xanh)}
+.acv-so2{font:700 10.5px/1.3 var(--font); color:var(--nhat); white-space:nowrap}
+.acv-so2 b{color:var(--m-duong)} .acv-so2 b.bi{color:var(--m-cam)}
+/* 3.3 bảng chất lượng */
+.cl-cuon{overflow-x:auto}
+.cl{width:100%; border-collapse:collapse; font-size:12.5px; min-width:760px}
+.cl th{font:800 10px/1.3 var(--font); letter-spacing:.06em; text-transform:uppercase; color:var(--mo); text-align:right;
+  padding:8px 10px; border-bottom:2px solid var(--vien); white-space:nowrap; cursor:pointer; user-select:none}
+.cl th:first-child,.cl td:first-child,.cl th:nth-child(2),.cl td:nth-child(2){text-align:left}
+.cl th.sap::after{content:" ▼"; color:var(--xanh)}
+.cl th.sap.len::after{content:" ▲"}
+.cl td{padding:7px 10px; border-bottom:1px solid var(--vien); text-align:right; font-variant-numeric:tabular-nums}
+.cl tr:hover td{background:#F7FAF9}
+.cx{display:inline-flex; align-items:center; gap:7px; justify-content:flex-end}
+.cx i{display:block; width:56px; height:6px; border-radius:99px; background:#E7EDEB; position:relative; overflow:hidden}
+.cx i::after{content:""; position:absolute; inset:0 auto 0 0; width:var(--w); background:var(--c); border-radius:99px}
+.gpi{font:700 11px/1 var(--mono); color:var(--mo)}
+.cl-chu{margin:0 18px 14px; font:600 11.5px/1.5 var(--font); color:var(--nhat)}
+/* 3.2 thanh lọc chi tiết từng câu */
+.loc{display:flex; align-items:center; gap:8px 10px; flex-wrap:wrap; padding:10px 18px; border-bottom:1px solid var(--vien); background:#FAFCFB}
+.loc .nhom{display:flex; gap:4px; flex-wrap:wrap}
+.loc .nh{font:800 9.5px/1 var(--font); letter-spacing:.07em; text-transform:uppercase; color:var(--nhat)}
+.loc input[type=search]{min-width:170px; flex:1 1 170px; max-width:260px}
+.loc label.hg{display:inline-flex; align-items:center; gap:5px; font:700 11.5px/1 var(--font); color:var(--mo); cursor:pointer}
+details.db{margin-top:6px}
+details.db > summary{cursor:pointer; list-style:none; font:700 11px/1.4 var(--font); color:var(--xanh)}
+details.db > summary::-webkit-details-marker{display:none}
+details.db > summary::before{content:"▸ "}
+details.db[open] > summary::before{content:"▾ "}
+details.db .cau-tt{margin-top:4px}
+
 /* ══════════ MÀN HẸP: hai nửa thành HAI TAB bấm qua lại (thầy chốt 02/09) ══════════
    Mặc định mở tab "ĐƯỢC BẮT". Vạch dọc giữa hai nửa biến mất, mỗi nửa chiếm cả bề ngang. */
 @media (max-width:900px){
@@ -455,6 +517,11 @@ button.gio:active{transform:scale(.94)}
      rất khó chịu trên điện thoại. Muốn xem dài hơn thì bấm nút phóng to. */
   .nua-than{max-height:78vh}
   .nua-tab{display:flex}
+  .ql{grid-template-columns:1fr}
+  .ql-ben{max-height:220px}
+  /* v1.374.0 — thanh hàng chờ nằm trong phần GHIM đầu trang: màn hẹp chỉ giữ một dòng (số + nút) */
+  .hc{gap:8px 10px; padding:7px 14px}
+  .hc-thanh,.hc-doi{display:none}
 }
 </style>
 <!-- ⭐ v1.66.0 (05/09/2026) — khung AI CÒN VIỆC + bảng chốt toàn màn hình: css/sp-bang.css + js/sp-bang.js -->
@@ -484,6 +551,9 @@ button.gio:active{transform:scale(.94)}
       <span class="pl-chu" id="plChu">Bấm ô giờ ở một câu bất kỳ để nghe đúng đoạn đó.</span>
     </div>
   </div>
+  <!-- ⭐ v1.374.0 (món 3.1) — THANH HÀNG CHỜ: còn bao nhiêu câu chờ thầy cho CẢ BUỔI, theo từng đội.
+       Ẩn khi buổi chưa từng có câu tranh chấp nào. Ruột do `veHangCho()` vẽ. -->
+  <div class="hc-hang" id="hcHang" hidden><div class="wrap hc" id="hcVe"></div></div>
 </header>
 <!-- ⛔⛔ Khung YouTube 1px — CỐ Ý đứng ngoài mọi khối và KHÔNG BAO GIỜ bị dời chỗ: dời một cây
      DOM có <iframe> là trình duyệt nạp lại iframe, mất chỗ đang phát. -->
@@ -507,9 +577,11 @@ button.gio:active{transform:scale(.94)}
     <!-- ⭐⭐ v1.66.0 (05/09/2026) — KHUNG AI CÒN VIỆC: mọi đội, từng em hai số chính chưa phản
          biện / chưa phản hồi + hai số phụ đã bắt / bị bắt; nút XỬ LÝ mở pop-up chọn đội rồi
          BẢNG CHỐT toàn màn hình. Ruột do js/sp-bang.js vẽ (một hàm đếm chung `SPBang.dem()`). -->
+    <!-- ⭐ v1.374.0 (món 3.4) — khối "Chọn đội để xem chi tiết" (4 số/đội, trùng với khối này) ĐÃ GỠ:
+         nay BẤM THẲNG vào thẻ đội ở đây để lọc "Cần thầy quyết" + "Chi tiết từng câu". -->
     <section class="khoi" id="khoiAcv">
       <div class="khoi-dau">
-        <h2>Ai còn việc</h2>
+        <h2>Ai còn việc</h2><span class="phu">bấm một đội để xem chi tiết bên dưới</span>
         <div class="day"></div>
         <div class="acv-tong" id="acvTong"></div>
         <button class="nut chinh" id="btnXuLy"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16M15 4v16"/></svg> XỬ LÝ</button>
@@ -517,11 +589,19 @@ button.gio:active{transform:scale(.94)}
       <div class="khoi-than"><div class="acv-luoi" id="acvLuoi"></div></div>
     </section>
 
-    <!-- ⭐ 02/09/2026 — HÀNG NÚT ĐỘI. Bấm một đội = lọc CẢ "Cần thầy quyết" LẪN khối hai
-         nửa bên dưới (thầy chốt). Mở trang thì chọn sẵn ĐỘI ĐẦU TIÊN theo số thứ tự. -->
-    <section class="khoi">
-      <div class="khoi-dau"><h2>Chọn đội để xem chi tiết</h2></div>
-      <div class="khoi-than"><div class="doi-grid" id="doiNut"></div></div>
+    <!-- ⭐ v1.374.0 (món 3.3) — CHẤT LƯỢNG CHẤM TỪNG EM. Luật tính ở js/sp-luat.js `thongKeEm`. -->
+    <section class="khoi" id="khoiCl">
+      <div class="khoi-dau"><h2>Chất lượng chấm từng em</h2><span class="phu">bấm tên cột để xếp · Xuất Excel có thêm sheet HOC SINH</span></div>
+      <div class="khoi-than cl-cuon" id="clVe"></div>
+      <p class="cl-chu">Còn tính = lỗi còn hiệu lực. Bị gỡ = đội bị chấm thắng phản biện (Accept Appeal) hoặc thầy BỎ. Lỗi bị gộp trùng không tính là sai. Chờ thầy = bị Keep mà thầy chưa quyết, chưa đưa vào %. Chính xác = (Còn tính − Chờ thầy) ÷ (Còn tính − Chờ thầy + Bị gỡ).</p>
+    </section>
+
+    <!-- ⭐ v1.374.0 (món 3.1) — QUYẾT LẦN LƯỢT: từng câu chờ thầy của CẢ BUỔI, quyết xong tự sang câu kế.
+         Bàn phím: B = bỏ · G = giữ · → = để sau. Mở bằng nút trên thanh hàng chờ. -->
+    <section class="khoi" id="khoiQl" hidden>
+      <div class="khoi-dau"><h2>Quyết lần lượt</h2><span class="phu" id="qlPhu"></span><div class="day"></div>
+        <button class="nut nho" id="qlDong" type="button">✕ Thu lại</button></div>
+      <div class="khoi-than" id="qlVe"></div>
     </section>
 
     <section class="khoi" id="khoiCanQuyet" hidden>
@@ -549,6 +629,8 @@ button.gio:active{transform:scale(.94)}
         <button data-nua="bi" class="chon bi">ĐƯỢC BẮT</button>
         <button data-nua="bat" class="bat">ĐÃ BẮT</button>
       </div>
+      <!-- ⭐ v1.374.0 (món 3.2) — BỘ LỌC áp cho cả hai nửa. Ruột do `veLoc()` vẽ. -->
+      <div class="loc" id="locBar"></div>
       <div class="hai-nua">
         <div class="nua bi hien" id="nuaBi">
           <div class="nua-dau">
@@ -595,11 +677,12 @@ button.gio:active{transform:scale(.94)}
 <div class="toast" id="toast"></div>
 
 <script src="config.js?v=268"></script>
+<script src="js/sp-luat.js?v=1"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=92"></script>
 <script src="js/trung.js?v=1"></script>
-<script src="js/sp-bang.js?v=10"></script>
+<script src="js/sp-bang.js?v=11"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 <script>
 (function(){
@@ -698,50 +781,12 @@ button.gio:active{transform:scale(.94)}
   function spCumFs(buoiId){ return docNganCon(buoiId, 'cum', 500)['catch'](function(){ return []; }); }
   function spCumPhieuFs(buoiId){ return docNganCon(buoiId, 'cumPhieu', 3000)['catch'](function(){ return []; }); }
 
-  function soLoiSong(errors){
-    return (errors || []).filter(function(er){ return !er.trangThai || er.trangThai === 'song'; }).length;
-  }
+  function soLoiSong(errors){ return SPLuat.soLoiSong(errors); }   /* v1.374.0 — luật nằm ở js/sp-luat.js (một bản duy nhất), đây chỉ còn lớp vỏ */
   var DOI_MAU_CO_DINH = [{ min:30, m:'m-la' }, { min:25, m:'m-duong' }, { min:20, m:'m-cam' }];
-  function mauCoDinhDoi(tb){
-    for (var i = 0; i < DOI_MAU_CO_DINH.length; i++) if (tb >= DOI_MAU_CO_DINH[i].min) return DOI_MAU_CO_DINH[i].m;
-    return null;
-  }
+  function mauCoDinhDoi(tb){ return SPLuat.mauCoDinhDoi(tb); }
   // ⭐ 28/08 tối — thanh 200 điểm cố định + xếp đội nhiều điểm nhất lên trên
   // (đồng bộ với lop.html/dashboard.html, xem GHI CHU DU AN.md mục mới nhất).
-  function tinhDoiSp(teams, docs){
-    var theoTen = {}, lucTen = {};
-    (docs || []).forEach(function(d){
-      var ten = A.khoaTen(d.student);
-      if (!ten) return;
-      theoTen[ten] = (theoTen[ten] || 0) + soLoiSong(d.errors);
-      // ⭐ 02/09 — mốc nộp, để phân thứ khi HAI EM TRÙNG ĐIỂM (xem `avThanhHtml`).
-      // Lấy mốc SỚM NHẤT của em: một em có thể có nhiều bản ghi, và `capNhatLuc` là lần
-      // sửa gần nhất chứ không phải lần nộp đầu — sớm nhất là thứ gần "nộp trước" nhất.
-      var l = +d.capNhatLuc || 0;
-      if (l && (!lucTen[ten] || l < lucTen[ten])) lucTen[ten] = l;
-    });
-    var doi = (teams || []).map(function(t){
-      var hs = (t.members || []).map(function(m){
-        return { ten: m, so: theoTen[A.khoaTen(m)] || 0, luc: lucTen[A.khoaTen(m)] || 0 };
-      }).sort(function(a, b){ return b.so - a.so; });
-      var tong = hs.reduce(function(s, e){ return s + e.so; }, 0);
-      return { team: t.team, ten: 'TEAM ' + t.team, tong: tong, tb: hs.length ? tong / hs.length : 0, hs: hs };
-    });
-    /* ⛔ (02/09 đợt 3) Đoạn tính `maxLop` (thước chung cả lớp) ĐÃ GỠ: thầy chốt avatar phải
-       nằm gọn trong PHẦN MÀU của chính đội mình, em giỏi nhất chạm mép phải vệt màu ⇒ mỗi
-       đội một thước, không còn thước chung nữa. Chỗ xếp nay do `xepAvatarThanh()` tính từ
-       bề ngang thật của thanh — xem chú thích ở hàm đó, kèm hệ quả phải biết. */
-    var chuaCoMau = doi.filter(function(d){ return !mauCoDinhDoi(d.tb); }).sort(function(a, b){ return b.tong - a.tong; });
-    var mauHang = ['m-la', 'm-duong', 'm-cam', 'm-do', 'm-do'];
-    chuaCoMau.forEach(function(d, i){
-      d.mau = (chuaCoMau.length < 4 && i === chuaCoMau.length - 1) ? 'm-do' : (mauHang[i] || 'm-do');
-    });
-    doi.forEach(function(d){ if (!d.mau) d.mau = mauCoDinhDoi(d.tb); });
-    var TRAN_DOI = 200;
-    doi.forEach(function(d){ d.pt = Math.min(100, Math.round(d.tong / TRAN_DOI * 100)); });
-    doi.sort(function(a, b){ return b.tong - a.tong; });
-    return doi;
-  }
+  function tinhDoiSp(teams, docs){ return SPLuat.tinhDoiSp(teams, docs, A.khoaTen); }   /* v1.374.0 — luật nằm ở js/sp-luat.js (một bản duy nhất), đây chỉ còn lớp vỏ */
 
   // ---------- Nhãn/màu loại lỗi (khớp mySpeaking TYPE_STYLE) ----------
   var TYPE_MAU = { Grammar: 'g', Pronunciation: 'p', Information: 'i' };
@@ -796,6 +841,8 @@ button.gio:active{transform:scale(.94)}
           tenLop: lChiTiet.tenGoc || MA_LOP, tenBai: BAI ? A.tenBai(BAI) : (BUOI.lesson || ''),
           lopGoc: lChiTiet.tenGoc || MA_LOP, dsEm: lChiTiet.hocSinh || [], avtChu: avtChu, toast: baoToast,
           luat: { tenBang: tenBang, chinhChuDaNhan: chinhChuDaNhan, tranhChap: tranhChap, choNguoiChamTraLoi: choNguoiChamTraLoi },
+          // v1.374.0 (món 3.4) — thẻ đội ở "Ai còn việc" kiêm nút chọn đội + mang 2 số đã bắt / được bắt
+          doiChon: function(){ return DOI_CHON; }, soDoi: soCuaDoi,
           bang: SO_BANG,
           /* ⛔ v1.72.0 — trang đã nghe kho sống rồi thì bảng ĐỪNG nghe nữa (gấp đôi lượt đọc).
              Chỉ khi trang phải lùi về đọc REST một lượt thì mới để bảng tự nghe. */
@@ -854,44 +901,206 @@ button.gio:active{transform:scale(.94)}
   //
   // ⛔ So tên bằng trim+HOA vì kho có bản ghi tên lệch (buổi A2B đang có một dòng `who` hỏng
   // font). So thẳng bằng === là câu đó tự nhiên rơi ra khỏi mọi phép đếm mà không ai biết.
-  function tenBang(a, b){
-    return !!a && !!b && String(a).trim().toUpperCase() === String(b).trim().toUpperCase();
+  /* ⭐ v1.374.0 (món 3.5) — CHỈ MỤC phiếu theo mã lỗi, dựng lại khi danh sách đổi. Trước đây mỗi
+     câu lọc lại cả PHANHOI (tới 3000 phiếu) 4–5 lần mỗi lượt vẽ. Dấu nhận biết "đã đổi" = chính
+     mảng + độ dài + phần tử cuối (`sp-bang.js themPhieu` cắt rồi đẩy phiếu mới vào CUỐI). */
+  var PH_IDX = {}, PH_DAU = null;
+  function phCua(errId){
+    var cuoi = PHANHOI.length ? PHANHOI[PHANHOI.length - 1] : null;
+    if (!PH_DAU || PH_DAU.ds !== PHANHOI || PH_DAU.n !== PHANHOI.length || PH_DAU.cuoi !== cuoi) {
+      PH_IDX = SPLuat.theoLoi(PHANHOI); PH_DAU = { ds: PHANHOI, n: PHANHOI.length, cuoi: cuoi };
+    }
+    return PH_IDX[errId] || [];
   }
-  function chinhChuDaNhan(e){
-    return !!e.who && PHANHOI.some(function(p){
-      return p.errId === e.id && p.y === 'dongY' && tenBang(p.voter, e.who);
-    });
-  }
-  function tranhChap(x){
-    if (x.err.trangThai !== 'song') return false;
-    if (chinhChuDaNhan(x.err)) return false;
-    return PHANHOI.some(function(p){ return p.errId === x.err.id && p.y === 'phanDoi'; });
-  }
+  function tenBang(a, b){ return SPLuat.tenBang(a, b); }
+  function chinhChuDaNhan(e){ return SPLuat.chinhChuDaNhan(e, phCua(e.id)); }
+  function tranhChap(x){ return SPLuat.tranhChap(x.err, phCua(x.err.id)); }
   // Chính chủ đã nhận nhưng đồng đội vẫn cãi hộ — chỉ để ĐÁNH DẤU cho thầy biết, không phải
   // việc phải xử (bên web học sinh có nút lọc riêng "TEAM CONFLICT" cho đúng nhóm này).
-  function batDongTrongDoi(x){
-    return chinhChuDaNhan(x.err) && PHANHOI.some(function(p){
-      return p.errId === x.err.id && p.y === 'phanDoi' && !tenBang(p.voter, x.err.who);
-    });
-  }
+  function batDongTrongDoi(x){ return SPLuat.batDongTrongDoi(x.err, phCua(x.err.id)); }
 
   // ⭐ 02/09/2026 — chính chủ ĐÃ CÓ Ý KIẾN chưa (dongY hay phanDoi đều tính là đã trả lời).
   // Khác `chinhChuDaNhan` ở chỗ: hàm kia chỉ hỏi "đã ĐỒNG Ý chưa".
-  function chinhChuDaTraLoi(e){
-    return !!e.who && PHANHOI.some(function(p){ return p.errId === e.id && tenBang(p.voter, e.who); });
-  }
+  function chinhChuDaTraLoi(e){ return SPLuat.chinhChuDaTraLoi(e, phCua(e.id)); }
   // Câu này còn CHỜ NGƯỜI CHẤM trả lời Keep/Accept (đội đi bắt còn việc)
   function choNguoiChamTraLoi(x){ return tranhChap(x) && !x.err.ketLuan; }
 
   var DOI_CHON = '';   // 'TEAM n' đang chọn ở hàng nút đội
   var NUA_CHON = 'bi'; // màn hẹp: đang mở tab nào ('bi' | 'bat')
 
+  /* ⭐ v1.374.0 (món 3.5) — kho đổi là vẽ lại, nhưng GIỮ NGUYÊN chỗ thầy đang đọc: nhớ vị trí
+     cuộn của mọi khung cuộn riêng (+ cả trang) trước khi thay ruột, vẽ xong trả lại. Trước đây
+     học sinh bấm một cái là khung đang đọc nhảy về đầu. */
+  var KHUNG_CUON = ['cqVe', 'veBi', 'veBat', 'qlBen'];
+  function giuCuon(lam){
+    var nho = {}, y = window.scrollY;
+    KHUNG_CUON.forEach(function(id){ var n = document.getElementById(id); if (n) nho[id] = n.scrollTop; });
+    lam();
+    KHUNG_CUON.forEach(function(id){ var n = document.getElementById(id); if (n && nho[id]) n.scrollTop = nho[id]; });
+    if (Math.abs(window.scrollY - y) > 1) window.scrollTo(0, y);
+  }
   function veTatCa(){
-    veDoiVe();
-    if (window.SPBang) SPBang.veAcv();   // ⭐ v1.66.0 — khung AI CÒN VIỆC (js/sp-bang.js)
-    veNutDoi();
-    veCanQuyet();
-    veHaiNua();
+    giuCuon(function(){
+      veDoiVe();
+      if (window.SPBang) SPBang.veAcv();   // ⭐ v1.66.0 — khung AI CÒN VIỆC (js/sp-bang.js) · v1.374.0 kiêm chọn đội
+      veHangCho();
+      veCl();
+      veQl();
+      veCanQuyet();
+      veLoc();
+      veHaiNua();
+    });
+  }
+
+  // ═══ ⭐ v1.374.0 (món 3.1) — HÀNG CHỜ THẦY CHO CẢ BUỔI ═══════════════════════════════════════
+  /* "Chờ thầy" = đúng tập của khối Cần thầy quyết, nhưng cho MỌI đội: câu còn tranh chấp thật mà
+     thầy chưa quyết. "Đã quyết" = câu mang `thay` 'bo'/'giu' (dòng 'gop' là dòng phụ của cụm, không
+     đếm kẻo một lần bấm thành nhiều câu). Thứ tự: theo đội (TEAM 1 → n) rồi theo mốc giờ. */
+  function dsChoThay(){
+    return CHAM.filter(tranhChap).filter(function(x){ return !x.err.thay; }).sort(function(a, b){
+      var da = parseInt(String(a.doiBiCham).replace(/\D+/g, ''), 10) || 0, db = parseInt(String(b.doiBiCham).replace(/\D+/g, ''), 10) || 0;
+      return da - db || mocGio(a, b);
+    });
+  }
+  function soDaQuyet(){ return CHAM.filter(function(x){ return x.err.thay === 'bo' || x.err.thay === 'giu'; }).length; }
+  function veHangCho(){
+    var cho = dsChoThay(), xong = soDaQuyet(), tong = cho.length + xong, hang = $('#hcHang');
+    if (!tong) { hang.hidden = true; return; }
+    hang.hidden = false;
+    hang.classList.toggle('xong', !cho.length);
+    var theoDoi = {};
+    cho.forEach(function(x){ theoDoi[x.doiBiCham] = (theoDoi[x.doiBiCham] || 0) + 1; });
+    var doiXep = DOI.slice().sort(function(a, b){ return a.team - b.team; });
+    $('#hcVe').innerHTML =
+      '<span class="hc-so">' + (cho.length ? '⚖ CÒN <b>' + cho.length + '</b> / ' + tong + ' CÂU CHỜ THẦY' : '✓ ĐÃ QUYẾT HẾT ' + tong + ' CÂU') + '</span>' +
+      '<span class="hc-thanh"><i style="width:' + Math.round(xong / tong * 100) + '%"></i></span>' +
+      '<span class="hc-doi">' + doiXep.map(function(d){
+        var n = theoDoi[d.ten] || 0;
+        return '<span class="chip-d ' + (d.ten === DOI_CHON ? 'chon' : (n ? 'con' : 'xong')) + '" data-chondoi="' + A.chuAnToan(d.ten) + '">' +
+          A.chuAnToan(d.ten) + ' · ' + (n || '0 ✓') + '</span>';
+      }).join('') + '</span>' +
+      (cho.length ? '<button class="nut chinh nho" type="button" id="qlMo">' + (QL.mo ? 'Đang quyết lần lượt' : 'Quyết lần lượt ▸') + '</button>' : '');
+  }
+
+  // ═══ ⭐ v1.374.0 (món 3.1) — QUYẾT LẦN LƯỢT ═══════════════════════════════════════════════
+  // QL.nay = mã câu đang xem · QL.qua = các câu thầy bấm "để sau" (vòng hết thì xoá, quay lại đầu)
+  var QL = { mo: false, nay: '', qua: {} };
+  function qlCauNay(cho){
+    if (!cho.length) return null;
+    var hien = cho.filter(function(x){ return x.err.id === QL.nay; })[0];
+    if (hien) return hien;
+    var con = cho.filter(function(x){ return !QL.qua[x.err.id]; });
+    if (!con.length) { QL.qua = {}; con = cho; }
+    QL.nay = con[0].err.id;
+    return con[0];
+  }
+  function veQl(){
+    var khoi = $('#khoiQl');
+    if (!QL.mo) { khoi.hidden = true; return; }
+    khoi.hidden = false;
+    var cho = dsChoThay(), tong = cho.length + soDaQuyet();
+    if (!cho.length) {
+      $('#qlPhu').textContent = '';
+      $('#qlVe').innerHTML = '<div class="ql-xong">✓ Đã quyết hết ' + tong + ' câu của buổi này.</div>';
+      return;
+    }
+    var x = qlCauNay(cho), viTri = cho.indexOf(x) + 1;
+    $('#qlPhu').textContent = 'Câu ' + viTri + ' / ' + cho.length + ' còn chờ · mọi đội · bấm BỎ/GIỮ là tự sang câu kế';
+    $('#qlVe').innerHTML = '<div class="ql"><div>' + cauHtml(x, 'bi', 'quyet', true) + '</div>' +
+      '<div class="ql-ben" id="qlBen">' + cho.map(function(c){
+        return '<button type="button" class="ql-dong' + (c === x ? ' nay' : (QL.qua[c.err.id] ? ' qua' : '')) + '" data-qlden="' + A.chuAnToan(c.err.id) + '">' +
+          '<span>' + fmtGio(c.err) + ' · ' + A.chuAnToan(c.doiBiCham) + '</span><span>' + (c === x ? 'đang xem' : (QL.qua[c.err.id] ? 'để sau' : 'chờ')) + '</span></button>';
+      }).join('') + '</div></div>';
+  }
+  function qlBoQua(){
+    if (!QL.mo || !QL.nay) return;
+    QL.qua[QL.nay] = true;
+    var cho = dsChoThay(), i = -1;
+    cho.forEach(function(x, k){ if (x.err.id === QL.nay) i = k; });
+    var sau = cho.slice(i + 1).concat(cho.slice(0, i)).filter(function(x){ return !QL.qua[x.err.id]; })[0];
+    QL.nay = sau ? sau.err.id : '';
+    giuCuon(veQl);
+  }
+  function qlMoTat(mo){
+    QL.mo = mo; QL.qua = {}; QL.nay = '';
+    giuCuon(function(){ veHangCho(); veQl(); });
+    if (mo) {
+      // ⛔ Không dùng scrollIntoView: thanh đầu trang GHIM (thanh tiếng + hàng chờ) che mất đầu khối — trừ chiều cao của nó.
+      var dau = document.querySelector('header.top'), k = $('#khoiQl');
+      window.scrollTo({ top: k.getBoundingClientRect().top + window.scrollY - (dau ? dau.offsetHeight : 0) - 10, behavior: 'smooth' });
+    }
+  }
+
+  // ═══ ⭐ v1.374.0 (món 3.3) — CHẤT LƯỢNG CHẤM TỪNG EM ════════════════════════════════════════
+  var CL_SAP = { k: 'con', len: false };
+  var CL_COT = [
+    { k: 'ten', t: 'Học sinh' }, { k: 'doi', t: 'Đội' }, { k: 'con', t: 'Còn tính' }, { k: 'go', t: 'Bị gỡ' },
+    { k: 'cho', t: 'Chờ thầy' }, { k: 'chinhXac', t: 'Chính xác' }, { k: 'gpi', t: 'G / P / I' }, { k: 'biBat', t: 'Bị bắt' }
+  ];
+  function dsChatLuong(){
+    var kq = SPLuat.thongKeEm(BUOI.teams, TONGLOI, A.khoaTen);
+    return Object.keys(kq).map(function(k){ return kq[k]; });
+  }
+  function veCl(){
+    var ds = dsChatLuong(), k = CL_SAP.k;
+    if (!ds.length) { $('#clVe').innerHTML = '<div class="trong">Chưa có bài chấm nào.</div>'; return; }
+    ds.sort(function(a, b){
+      var va = k === 'gpi' ? a.g + a.p + a.i : a[k], vb = k === 'gpi' ? b.g + b.p + b.i : b[k];
+      if (va == null) va = -1; if (vb == null) vb = -1;
+      var r = (typeof va === 'string') ? String(va).localeCompare(String(vb), 'vi') : va - vb;
+      return (CL_SAP.len ? r : -r) || String(a.ten).localeCompare(String(b.ten), 'vi');
+    });
+    $('#clVe').innerHTML = '<table class="cl"><tr>' + CL_COT.map(function(c){
+      return '<th data-clsap="' + c.k + '" class="' + (c.k === k ? 'sap' + (CL_SAP.len ? ' len' : '') : '') + '">' + c.t + '</th>';
+    }).join('') + '</tr>' + ds.map(function(e){
+      var cx = e.chinhXac, mau = cx == null ? '' : cx >= 90 ? 'var(--m-la)' : cx >= 80 ? 'var(--m-duong)' : 'var(--m-cam)';
+      return '<tr><td>' + A.chuAnToan(e.ten) + '</td><td>' + A.chuAnToan(e.doi || '') + '</td>' +
+        '<td>' + e.con + '</td><td>' + e.go + '</td><td>' + e.cho + '</td>' +
+        '<td>' + (cx == null ? '<span class="tt-nh">—</span>' : '<span class="cx">' + cx + '% <i style="--w:' + cx + '%;--c:' + mau + '"></i></span>') + '</td>' +
+        '<td class="gpi">' + e.g + ' / ' + e.p + ' / ' + e.i + '</td><td>' + e.biBat + '</td></tr>';
+    }).join('') + '</table>';
+  }
+
+  // ═══ ⭐ v1.374.0 (món 3.2) — BỘ LỌC CHI TIẾT TỪNG CÂU ═════════════════════════════════════════
+  // tt: 'all' | 'tc' (tranh chấp chưa quyết) | 'giu' (thầy giữ) | 'go' (đã gỡ) · loai: '' | Grammar… ·
+  // em: tên (khớp người bị bắt HOẶC người chấm) · q: chữ tìm · hienGo: hiện câu đã gỡ ở chế độ 'all'
+  var LOC = { tt: 'all', loai: '', em: '', q: '', hienGo: false };
+  var MO_DB = {};   // thẻ câu thầy đã mở phần "Diễn biến" — vẽ lại vẫn giữ mở
+  function hopLoc(x){
+    var e = x.err;
+    if (LOC.tt === 'tc' && !(tranhChap(x) && !e.thay)) return false;
+    if (LOC.tt === 'giu' && e.thay !== 'giu') return false;
+    if (LOC.tt === 'go' && e.trangThai !== 'go') return false;
+    if (LOC.tt === 'all' && !LOC.hienGo && e.trangThai === 'go') return false;
+    if (LOC.loai && e.type !== LOC.loai) return false;
+    if (LOC.em && !tenBang(e.who, LOC.em) && !tenBang(x.chuLoi, LOC.em)) return false;
+    if (LOC.q) {
+      var chu = [e.sentence, e.detail, e.explain, e.who, x.chuLoi].join(' ').toLowerCase();
+      if (chu.indexOf(LOC.q.toLowerCase()) < 0) return false;
+    }
+    return true;
+  }
+  function veLoc(){
+    var bar = $('#locBar');
+    var cua = CHAM.filter(function(x){ return x.doiBiCham === DOI_CHON || x.doiCham === DOI_CHON; });
+    var dem = function(f){ return cua.filter(f).length; };
+    var nTc = dem(function(x){ return tranhChap(x) && !x.err.thay; }), nGiu = dem(function(x){ return x.err.thay === 'giu'; }),
+      nGo = dem(function(x){ return x.err.trangThai === 'go'; });
+    var em = {};
+    cua.forEach(function(x){ if (x.err.who) em[x.err.who] = 1; if (x.chuLoi) em[x.chuLoi] = 1; });
+    var chip = function(ten, gt, chu){ return '<span class="chip-d' + (LOC[ten] === gt ? ' chon' : '') + '" data-loc="' + ten + '" data-gt="' + A.chuAnToan(gt) + '">' + chu + '</span>'; };
+    /* ⛔ Ô tìm đang gõ thì KHÔNG vẽ lại cả thanh (mất con trỏ giữa chừng) — chỉ vẽ khi ô không có focus. */
+    if (document.activeElement && document.activeElement.id === 'locQ') return;
+    bar.innerHTML =
+      '<span class="nh">Trạng thái</span><span class="nhom">' + chip('tt', 'all', 'Tất cả') + chip('tt', 'tc', 'Tranh chấp ' + nTc) +
+        chip('tt', 'giu', 'Thầy giữ ' + nGiu) + chip('tt', 'go', 'Đã gỡ ' + nGo) + '</span>' +
+      '<span class="nh">Loại</span><span class="nhom">' + chip('loai', '', 'Mọi') + chip('loai', 'Grammar', 'G') +
+        chip('loai', 'Pronunciation', 'P') + chip('loai', 'Information', 'I') + '</span>' +
+      '<select id="locEm"><option value="">Mọi em</option>' + Object.keys(em).sort(function(a, b){ return a.localeCompare(b, 'vi'); }).map(function(t){
+        return '<option' + (tenBang(t, LOC.em) ? ' selected' : '') + ' value="' + A.chuAnToan(t) + '">' + A.chuAnToan(t) + '</option>';
+      }).join('') + '</select>' +
+      '<input type="search" id="locQ" placeholder="Tìm chữ trong câu…" value="' + A.chuAnToan(LOC.q) + '">' +
+      (LOC.tt === 'all' ? '<label class="hg"><input type="checkbox" id="locGo"' + (LOC.hienGo ? ' checked' : '') + '> Hiện câu đã gỡ</label>' : '');
   }
 
   // ═══ HÀNG NÚT ĐỘI (02/09/2026) ═══════════════════════════════════════════════════════
@@ -921,6 +1130,8 @@ button.gio:active{transform:scale(.94)}
     // ⛔ Chỉ hàng nút này thôi — thanh TỔNG QUAN ĐỘI phía trên vẫn giữ luật cũ "đội nhiều
     // điểm nhất lên trên" (thầy chốt 28/08), nên phải chép mảng ra sắp riêng, KHÔNG sắp
     // thẳng trên `DOI` kẻo đổi luôn thứ tự thanh bên trên.
+    // ⛔ v1.374.0 (món 3.4) — khối #doiNut đã gỡ khỏi trang; hàm GIỮ LẠI làm lịch sử, không còn ai gọi.
+    if (!document.getElementById('doiNut')) return;
     var xep = DOI.slice().sort(function(a, b){ return a.team - b.team; });
     $('#doiNut').innerHTML = xep.map(function(d){
       var s = soCuaDoi(d.ten);
@@ -954,8 +1165,12 @@ button.gio:active{transform:scale(.94)}
   function chonDoi(ten){
     if (!ten || ten === DOI_CHON) return;
     DOI_CHON = ten;
-    veNutDoi();
+    LOC.em = '';   // tên em của đội cũ không còn trong danh sách đội mới
+    // v1.374.0 — hàng nút đội cũ (#doiNut) đã gỡ: thẻ đội ở "Ai còn việc" + chip trên thanh hàng chờ kiêm chọn đội
+    if (window.SPBang) SPBang.veAcv();
+    veHangCho();
     veCanQuyet();
+    veLoc();
     veHaiNua();
   }
 
@@ -1178,17 +1393,20 @@ button.gio:active{transform:scale(.94)}
     var bat = CHAM.filter(function(x){ return x.doiCham === DOI_CHON; });
     // Xếp theo mốc giờ trong video để thầy dò theo bài nói cho dễ
     bi.sort(mocGio); bat.sort(mocGio);
-    $('#hnPhu').textContent = DOI_CHON ? ('đang xem ' + DOI_CHON) : '';
+    // ⭐ v1.374.0 (món 3.2) — số trên tiêu đề nửa vẫn là số THẬT của đội; danh sách bên dưới mới qua bộ lọc
+    var hienBi = bi.filter(hopLoc), hienBat = bat.filter(hopLoc);
+    var dangLoc = LOC.tt !== 'all' || LOC.loai || LOC.em || LOC.q || LOC.hienGo;
+    $('#hnPhu').textContent = DOI_CHON ? ('đang xem ' + DOI_CHON + (dangLoc ? ' · đang lọc: ' + (hienBi.length + hienBat.length) + ' / ' + (bi.length + bat.length) + ' câu' : '')) : '';
     // "LỖI ĐƯỢC BẮT • 77 CÂU" — số đứng ngay cạnh tên (thầy chốt 02/09 đợt 2)
     // ⭐ v1.67.0 — số CÂU = lỗi còn hiệu lực (khớp thẻ đội + thanh tổng quan); câu đã gỡ vẫn nằm
     // trong danh sách (gạch mờ) nên ghi thêm "· m đã gỡ" để khỏi đếm hụt tưởng thiếu câu.
     var goBi = bi.length - bi.filter(conSong).length, goBat = bat.length - bat.filter(conSong).length;
     $('#soBi').textContent = '• ' + bi.filter(conSong).length + ' CÂU' + (goBi ? ' · ' + goBi + ' đã gỡ' : '');
     $('#soBat').textContent = '• ' + bat.filter(conSong).length + ' CÂU' + (goBat ? ' · ' + goBat + ' đã gỡ' : '');
-    $('#veBi').innerHTML = bi.length ? bi.map(function(x){ return cauHtml(x, 'bi'); }).join('')
-      : '<div class="trong">Chưa đội nào bắt lỗi ' + A.chuAnToan(DOI_CHON) + '.</div>';
-    $('#veBat').innerHTML = bat.length ? bat.map(function(x){ return cauHtml(x, 'bat'); }).join('')
-      : '<div class="trong">' + A.chuAnToan(DOI_CHON) + ' chưa bắt lỗi đội nào.</div>';
+    $('#veBi').innerHTML = hienBi.length ? hienBi.map(function(x){ return cauHtml(x, 'bi'); }).join('')
+      : '<div class="trong">' + (bi.length ? 'Không có câu nào khớp bộ lọc.' : 'Chưa đội nào bắt lỗi ' + A.chuAnToan(DOI_CHON) + '.') + '</div>';
+    $('#veBat').innerHTML = hienBat.length ? hienBat.map(function(x){ return cauHtml(x, 'bat'); }).join('')
+      : '<div class="trong">' + (bat.length ? 'Không có câu nào khớp bộ lọc.' : A.chuAnToan(DOI_CHON) + ' chưa bắt lỗi đội nào.') + '</div>';
   }
   function mocGio(a, b){
     return ((+a.err.min || 0) * 60 + (+a.err.sec || 0)) - ((+b.err.min || 0) * 60 + (+b.err.sec || 0));
@@ -1202,9 +1420,9 @@ button.gio:active{transform:scale(.94)}
   //   1. Ai — mốc giờ · loại lỗi · em bị bắt · người chấm (kèm đội, tuỳ bên đang xem)
   //   2. Nội dung — câu gốc · lỗi · giải thích
   //   3. Diễn biến — chính chủ trả lời gì · đồng đội nói gì · người chấm kết luận gì
-  function cauHtml(x, ben, cheDo){
+  function cauHtml(x, ben, cheDo, laQl){
     var e = x.err;
-    var phieu = PHANHOI.filter(function(p){ return p.errId === e.id; });
+    var phieu = phCua(e.id);   // v1.374.0 (món 3.5) — tra chỉ mục, không lọc lại cả PHANHOI cho từng câu
     var cc = phieu.filter(function(p){ return tenBang(p.voter, e.who); })[0] || null;
     var khac = phieu.filter(function(p){ return !tenBang(p.voter, e.who); });
     var laTc = tranhChap(x), daGo = e.trangThai === 'go';
@@ -1277,13 +1495,24 @@ button.gio:active{transform:scale(.94)}
       (e.sentence ? '<div class="cau-goc">“' + A.chuAnToan(e.sentence) + '”</div>' : '') +
       '<div class="cau-loi">' + A.chuAnToan(e.detail || '') + '</div>' +
       (e.explain ? '<div class="cau-giai">' + A.chuAnToan(e.explain) + '</div>' : '') +
-      '<div class="cau-tt">' + dong.join('') + '</div>' + hangNut +
+      /* ⭐ v1.374.0 (món 3.2) — ở khối hai nửa, phần DIỄN BIẾN thu gọn thành một dòng (bấm mới mở),
+         thẻ ngắn lại còn chừng một nửa. Khối Cần thầy quyết + Quyết lần lượt thì luôn mở hẳn. */
+      (cheDo === 'quyet'
+        ? '<div class="cau-tt">' + dong.join('') + '</div>'
+        : '<details class="db" data-dberr="' + A.chuAnToan(e.id) + '"' + (MO_DB[e.id] ? ' open' : '') + '><summary>Diễn biến (' + dong.length + ' dòng)' +
+            (laTc && !e.thay ? ' · đang tranh chấp' : '') + '</summary><div class="cau-tt">' + dong.join('') + '</div></details>') +
+      hangNut + (laQl ? qlNutHtml() : '') +
     '</div>';
   }
 
   /* ⭐⭐ v1.72.0 — HÀNG NÚT PHÁN QUYẾT CỦA THẦY (thầy chốt: bấm ngay trên dashboard).
      Câu nằm trong CỤM lỗi trùng thì báo rõ trước khi bấm — thầy đã chốt "áp cho CẢ CỤM, giống
      app": BỎ = gỡ trọn cụm · GIỮ = câu đang bấm tính lỗi, các câu trùng còn lại đánh dấu đã gộp. */
+  // v1.374.0 (món 3.1) — hàng phụ dưới thẻ đang xem ở khối Quyết lần lượt: bỏ qua + nhắc phím tắt
+  function qlNutHtml(){
+    return '<div class="cq-nut"><span class="cq-cum">Phím tắt: <span class="phim">B</span> bỏ · <span class="phim">G</span> giữ · ' +
+      '<span class="phim">→</span> để sau</span><button type="button" class="nut nho" id="qlQua">Để sau →</button></div>';
+  }
   function nutQuyetHtml(x){
     var e = x.err, c = cumCua(e.id);
     var chu = c ? 'Câu này nằm trong cụm ' + ((c.ids || []).length) +
@@ -1327,8 +1556,10 @@ button.gio:active{transform:scale(.94)}
         'Kết luận': x.err.ketLuan || ''
       };
     });
+    var chamTheoId = {};   // v1.374.0 — tra một lần, không lọc lại cả CHAM cho từng phiếu
+    CHAM.forEach(function(c){ if (c.err.id && !chamTheoId[c.err.id]) chamTheoId[c.err.id] = c; });
     var shPb = PHANHOI.map(function(p){
-      var x = CHAM.filter(function(c){ return c.err.id === p.errId; })[0];
+      var x = chamTheoId[p.errId];
       return {
         'Người phản hồi': p.voter, 'Đội': p.voterTeam || '',
         'Ý kiến': p.y === 'dongY' ? 'Đồng ý' : 'Phản đối', 'Lý do': p.lyDo || '',
@@ -1339,10 +1570,17 @@ button.gio:active{transform:scale(.94)}
     var shDoi = DOI.map(function(d){
       return { 'Đội': d.ten, 'Tổng lỗi bắt được': d.tong, 'TB lỗi/người': Math.round(d.tb * 10) / 10 };
     });
+    // ⭐ v1.374.0 (món 3.3) — sheet theo HỌC SINH, đúng các cột của bảng "Chất lượng chấm từng em"
+    var shHs = dsChatLuong().sort(function(a, b){ return b.con - a.con; }).map(function(e){
+      return { 'Học sinh': e.ten, 'Đội': e.doi || '', 'Còn tính': e.con, 'Bị gỡ': e.go, 'Chờ thầy': e.cho,
+        'Bị gộp trùng': e.gop, 'Chính xác (%)': e.chinhXac == null ? '' : e.chinhXac,
+        'Grammar': e.g, 'Pronunciation': e.p, 'Information': e.i, 'Bị bắt': e.biBat };
+    });
     var wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shCham), 'CAU CHAM');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shPb), 'PHAN BIEN');
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shDoi), 'TONG HOP DOI');
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(shHs), 'HOC SINH');
     var tenBai = (BAI ? A.tenBai(BAI) : (BUOI ? BUOI.lesson : 'sp-check')).replace(/[^\w\-]+/g, '_');
     XLSX.writeFile(wb, 'SP_CHECK_' + MA_LOP + '_' + tenBai + '.xlsx');
   }
@@ -1744,9 +1982,55 @@ button.gio:active{transform:scale(.94)}
 
   // Bấm một nút đội → lọc lại cả trang. Bắt trên khối cha (nút vẽ lại sau mỗi lần chọn nên
   // gắn tay bắt vào từng nút là mất ngay ở lần vẽ thứ hai).
-  $('#doiNut').addEventListener('click', function(ev){
-    var b = ev.target.closest('[data-doi]');
-    if (b) chonDoi(b.dataset.doi);
+  // ⭐ v1.374.0 (món 3.4) — #doiNut đã gỡ: chọn đội bằng thẻ đội ở "Ai còn việc" (`.acv-doi[data-doi]`,
+  // sp-bang.js vẽ) hoặc chip đội trên thanh hàng chờ (`[data-chondoi]`).
+  document.addEventListener('click', function(ev){
+    var t = ev.target, b;
+    if ((b = t.closest('[data-chondoi]'))) { chonDoi(b.dataset.chondoi); return; }
+    if ((b = t.closest('#acvLuoi .acv-doi[data-doi]'))) { chonDoi(b.dataset.doi); return; }
+    // ── 3.1 quyết lần lượt ──
+    if (t.closest('#qlMo')) { qlMoTat(true); return; }
+    if (t.closest('#qlDong')) { qlMoTat(false); return; }
+    if (t.closest('#qlQua')) { qlBoQua(); return; }
+    if ((b = t.closest('[data-qlden]'))) { QL.nay = b.dataset.qlden; delete QL.qua[QL.nay]; giuCuon(veQl); return; }
+    // ── 3.3 xếp bảng chất lượng ──
+    if ((b = t.closest('[data-clsap]'))) {
+      var k = b.dataset.clsap;
+      if (CL_SAP.k === k) CL_SAP.len = !CL_SAP.len; else { CL_SAP.k = k; CL_SAP.len = (k === 'ten' || k === 'doi'); }
+      veCl(); return;
+    }
+    // ── 3.2 bộ lọc ──
+    if ((b = t.closest('[data-loc]'))) {
+      LOC[b.dataset.loc] = b.dataset.gt;
+      giuCuon(function(){ veLoc(); veHaiNua(); }); return;
+    }
+  });
+  document.addEventListener('change', function(ev){
+    var id = ev.target && ev.target.id;
+    if (id === 'locEm') { LOC.em = ev.target.value; giuCuon(function(){ veLoc(); veHaiNua(); }); }
+    else if (id === 'locGo') { LOC.hienGo = ev.target.checked; giuCuon(function(){ veLoc(); veHaiNua(); }); }
+  });
+  var henTim = null;
+  document.addEventListener('input', function(ev){
+    if (!ev.target || ev.target.id !== 'locQ') return;
+    var v = ev.target.value;
+    clearTimeout(henTim);
+    henTim = setTimeout(function(){ LOC.q = v.trim(); giuCuon(veHaiNua); }, 200);
+  });
+  // Nhớ thẻ nào thầy đã mở "Diễn biến" — kho đổi vẽ lại vẫn mở nguyên
+  document.addEventListener('toggle', function(ev){
+    var d = ev.target;
+    if (d && d.matches && d.matches('details.db')) { if (d.open) MO_DB[d.dataset.dberr] = 1; else delete MO_DB[d.dataset.dberr]; }
+  }, true);
+  // Phím tắt khối Quyết lần lượt: B = bỏ · G = giữ · → = để sau (không bắt khi đang gõ chữ / bảng chốt mở)
+  document.addEventListener('keydown', function(ev){
+    if (!QL.mo || !QL.nay || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    var ae = document.activeElement;
+    if (ae && (/^(INPUT|TEXTAREA|SELECT)$/.test(ae.tagName) || ae.isContentEditable)) return;
+    if (window.SPBang && SPBang.dangMo && SPBang.dangMo()) return;
+    var phim = ev.key.toLowerCase();
+    if (phim === 'b' || phim === 'g') { ev.preventDefault(); quyetThay(QL.nay, phim === 'b' ? 'bo' : 'giu'); }
+    else if (ev.key === 'ArrowRight') { ev.preventDefault(); qlBoQua(); }
   });
   // Màn hẹp: hai nút tab đổi nửa đang hiện (màn rộng CSS cho cả hai nửa hiện, tab bị ẩn)
   $('#nuaTab').addEventListener('click', function(ev){

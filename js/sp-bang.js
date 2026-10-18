@@ -196,7 +196,7 @@
   // ⛔ BẢN CHÉP LIÊN KHO của `mySpeaking app.js trKetQuaCum` + `lop.html spDemTrung`: hoà (kể cả 0–0) = CẦN BỎ PHIẾU
   function ketQuaCum(c, pc) {
     var d = (pc || phieuCum())[c._id] || { gop: [], khong: [] };
-    return d.gop.length > d.khong.length ? 'gop' : d.khong.length > d.gop.length ? 'khong' : 'hoa';
+    return SPLuat.ketQuaCum({ gop: d.gop.length, khong: d.khong.length });   // v1.374.0 — luật cụm ở js/sp-luat.js
   }
   function cumSong(c) { return !!c.daGui && (c.ids || []).length > 1; }
   function cumCua(tenDoiBiCham) {
@@ -248,9 +248,16 @@
       '<span class="chip ' + (D.tong.ph ? 'do' : 'la') + '">PHẢN HỒI <b>' + D.tong.ph + '</b></span>' +
       '<span class="chip ' + (D.tong.cum ? 'cam' : 'la') + '">CỤM HOÀ <b>' + D.tong.cum + '</b></span>' +
       '<span class="chip ' + (D.sanSang === D.doi.length && D.doi.length ? 'la' : '') + '">SẴN SÀNG <b>' + D.sanSang + '/' + D.doi.length + '</b></span>';
+    /* ⭐ v1.374.0 (món 3.4) — thẻ đội KIÊM NÚT CHỌN ĐỘI (khối "Chọn đội để xem chi tiết" bên
+       sp-chitiet đã gỡ). `ctx.doiChon()` = đội đang chọn · `ctx.soDoi(ten)` = {bat, bi} lỗi còn hiệu
+       lực đội đã bắt / được bắt (hai số lớn cũ của nút đội). Trang khác không truyền thì như cũ. */
+    var chon = ctx.doiChon ? ctx.doiChon() : '';
     luoi.innerHTML = D.doi.map(function (d) {
-      return '<div class="acv-doi' + (d.xong ? ' xong' : '') + '">' +
-        '<div class="acv-dau"><span class="acv-cham"></span><span class="acv-ten">' + esc(d.ten) + '</span><div class="day"></div><span class="acv-sn">' + IC_TICK + ' Sẵn sàng</span></div>' +
+      var s2 = ctx.soDoi ? ctx.soDoi(d.ten) : null;
+      return '<div class="acv-doi' + (d.xong ? ' xong' : '') + (d.ten === chon ? ' chon' : '') + '"' + (ctx.doiChon ? ' data-doi="' + esc(d.ten) + '"' : '') + '>' +
+        '<div class="acv-dau"><span class="acv-cham"></span><span class="acv-ten">' + esc(d.ten) + '</span><div class="day"></div>' +
+          (s2 ? '<span class="acv-so2">bắt <b>' + s2.bat + '</b> · được bắt <b class="bi">' + s2.bi + '</b></span>' : '') +
+          '<span class="acv-sn">' + IC_TICK + ' Sẵn sàng</span></div>' +
         '<div class="acv-3so"><div><div class="nh">Chưa phản biện</div><div class="so ' + soCls(d.pb) + '">' + d.pb + '</div></div>' +
           '<div><div class="nh">Chưa phản hồi</div><div class="so ' + soCls(d.ph) + '">' + d.ph + '</div></div>' +
           '<div><div class="nh">Cụm hoà phiếu</div><div class="so ' + soCls(d.cum) + '">' + d.cum + '</div></div></div>' +

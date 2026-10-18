@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-16 01:59:24",
+  "capNhat": "2026-10-18 07:57:57",
   "nguon": "dashboard",
   "lop": [
     {
@@ -414,17 +414,6 @@
           "sinhNhat": "",
           "bs": 1,
           "vao": "2026-10-01"
-        },
-        {
-          "id": 100182,
-          "ten": "Minh Thúy",
-          "ma": "TRANTHIMINHTHUY12032013",
-          "sinhNhat": "03-12",
-          "vao": "2026-10-11",
-          "tenCu": [
-            "Trần Thị Minh Thúy"
-          ],
-          "thu": 1
         },
         {
           "id": 100061,

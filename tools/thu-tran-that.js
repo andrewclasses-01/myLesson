@@ -126,7 +126,7 @@ async function ghiAdmin(p, fields) {
 
 
 // ───────── THỬ MỘT TRẬN THẬT (hàm máy chủ đã đưa lên) — tài khoản ZTEST, dọn sạch ─────────
-const CHU = require('E:/LAP TRINH APP/myLesson/app/may-chu/functions/ws-chu.js');
+const CHU = require(['E:/LAP TRINH APP/myLesson/may-chu/functions/ws-chu.js', 'E:/LAP TRINH APP/myLesson/app/may-chu/functions/ws-chu.js', 'D:/APP AND DATA/myLesson/may-chu/functions/ws-chu.js'].find((x) => fs.existsSync(x)));
 const ngu = (ms) => new Promise((r) => setTimeout(r, ms));
 async function thuTran() {
   const k = '?key=' + encodeURIComponent(API_KEY);
@@ -151,7 +151,7 @@ async function thuTran() {
     const r = await goi(`${FS_GOC}/tranDau${k}`, { method: 'POST', headers: H2(tA), json: { fields: { a: S(A), b: S(Bb), nguoi: L([S(A), S(Bb)]), tenA: S('ZTEST AN'), tenB: S('ZTEST BINH'),
       lop: S(LOP), giai: S(GIAI), phut: I(2), lv: S('easy'), trangThai: S('moi'), taoLuc: I(t0), het: I(t0 + 60000) } } });
     ok('A mời B', r.status === 200, r.status);
-    ID = r.json.name.split('/').pop(); xoa.unshift('tranDau/' + ID);
+    ID = r.json.name.split('/').pop(); xoa.unshift('tranDau/' + ID, 'tranDau/' + ID + '/may/bd');
     const tran = async () => docv((await goi(`${FS_GOC}/tranDau/${ID}`, { headers: await H() })).json);
     // tdTao: thông báo cho B
     let tb = null;
@@ -161,13 +161,16 @@ async function thuTran() {
     const n = await goi(`${FS_GOC}/tranDau/${ID}${k}&updateMask.fieldPaths=trangThai`, { method: 'PATCH', headers: H2(tB), json: { fields: { trangThai: S('nhan') } } });
     ok('B nhận', n.status === 200, n.status);
     let t = null;
-    for (let i = 0; i < 25; i++) { await ngu(1000); t = await tran(); if (t.trangThai === 'choi') break; }
-    ok('máy chủ xếp chữ + giờ (tdDoi)', t && t.trangThai === 'choi' && /^[A-Z]{16}$/.test(t.chu || ''), t ? t.trangThai + ' ' + t.chu + ' batDau-mocMay=' + (t.batDau - t.mocMay) + 'ms' : '');
-    if (!t || t.trangThai !== 'choi') return;
+    for (let i = 0; i < 50; i++) { await ngu(200); t = await tran(); if (t.trangThai === 'choi') break; }
+    if (!t || t.trangThai !== 'choi') return ok('máy chủ xếp trận (tdDoi)', false, t ? t.trangThai : '');
+    const gui = (tk, uid, w) => goi(`${FS_GOC}/tranDau/${ID}/tu${k}&documentId=${w}`, { method: 'POST', headers: H2(tk), json: { fields: { uid: S(uid) } } });
+    // ⛔ 19/10/2026 v1.376.0 — chữ chỉ lộ lúc batDau − 150 ms (trước đó không gửi từ được, không biết chữ)
+    ok('v1.376: chữ CHƯA lộ lúc đếm ngược', !t.chu && Date.now() < t.batDau - 1000, JSON.stringify({ chu: t.chu || '' }));
+    ok('A gửi trước giờ bắt đầu bị chặn', (await gui(tA, A, 'cat')).status === 403);
+    await ngu(Math.max(0, t.batDau - Date.now() + 300)); t = await tran();
+    ok('máy chủ xếp chữ + giờ (tdDoi), chữ lộ đúng giờ', t && t.trangThai === 'choi' && /^[A-Z]{16}$/.test(t.chu || ''), t ? t.trangThai + ' ' + t.chu + ' batDau-mocMay=' + (t.batDau - t.mocMay) + 'ms' : '');
     const ws = CHU.wordsOn(t.chu.split(''), 2).sort((x, y) => y.length - x.length);
     const w1 = ws[0], w2 = ws[1], w3 = ws[2];
-    const gui = (tk, uid, w) => goi(`${FS_GOC}/tranDau/${ID}/tu${k}&documentId=${w}`, { method: 'POST', headers: H2(tk), json: { fields: { uid: S(uid) } } });
-    ok('A gửi trước giờ bắt đầu bị chặn', (await gui(tA, A, ws[3])).status === 403);
     await ngu(Math.max(0, t.batDau - Date.now() + 300));
     ok('A gửi "' + w1 + '"', (await gui(tA, A, w1)).status === 200);
     ok('A gửi "' + w2 + '"', (await gui(tA, A, w2)).status === 200);

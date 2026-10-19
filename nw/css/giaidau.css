@@ -202,3 +202,10 @@
 .gd-chu-bo{margin:8px 0 0; color:var(--muted)}
 /* ⭐ v1.362.0 — bạn ĐANG ĐẤU (còn mở tab trận): chữ cam, nút khoá */
 .gd-ban.dd .gd-noi small{color:#C2410C;font-weight:700}
+
+/* v1.375.0 — GIỚI HẠN CHƠI: khối 'hôm nay còn N trận' (em) + nút / hộp Giới hạn chơi (thầy). Kiểu .gh-nhac nạp từ js/the-td.js */
+.gd-gh{display:grid; gap:8px; margin:0 0 14px}
+.gd-dau .gd-tao + .gd-tao{margin-left:8px}
+.gd-gh-thong{margin-top:10px}
+.gd-sao.gd-gh-mot{grid-template-columns:1fr}
+.gd-gh-mot .gd-o input{max-width:70px; margin-left:auto}

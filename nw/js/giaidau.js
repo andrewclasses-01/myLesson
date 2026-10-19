@@ -33,8 +33,9 @@
   GD.cachDau = function (g) { return g.bo ? (CHE[g.bo.che] || 'Bộ từ') + ' · ' + (g.bo.ten || '') : (LV[g.lv] || g.lv); };
   var TT = { dang: ['dang', 'Đang diễn ra'], sap: ['sap', 'Sắp diễn ra'], xong: ['xong', 'Đã xong'] };
   var THU_TT = { dang: 0, sap: 1, xong: 2 };
+  var IC_DH = '<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>';   // v1.375.0 nút Giới hạn chơi
   var IC = {
-    cup: '<svg class="ic" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/></svg>',
+    cup:'<svg class="ic" viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/></svg>',
     kiem: '<svg class="ic" viewBox="0 0 24 24"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/></svg>',
     cong: '<svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg>',
     but: '<svg class="ic" viewBox="0 0 24 24"><path d="M21.2 6.8a2.8 2.8 0 0 0-4-4L3.8 16.2a2 2 0 0 0-.5.8L2 21.4a.5.5 0 0 0 .6.6l4.4-1.3a2 2 0 0 0 .8-.5z"/></svg>',
@@ -151,7 +152,8 @@
     return ds.slice(0, 8).map(function (m) {
       var k = KQ[m.kq] || KQ.hoa, d = { thang: 2, hoa: 1, thua: 0 }[m.kq] || 0;
       return '<div class="gd-tran"><span class="kq ' + k[0] + '">' + k[0] + '</span><div class="gd-noi">Gặp <b>' + an(m.vsTen || '?') + '</b><small>' + an(NW.chuGio(m.luc)) + ' · ' + (m.giai ? 'Giải đấu' : 'Giao hữu') +
-        (m.ly ? ' · ' + an(/^roi/.test(m.ly) ? 'có bạn rời trận' : 'có bạn mất kết nối') : '') + '</small></div><span class="ty-so">' + (m.toi || 0) + '–' + (m.ban || 0) + '</span><span class="cong">' + (m.giai ? '+' + d : '—') + '</span></div>';
+        (m.ly ? ' · ' + an(/^roi/.test(m.ly) ? 'có bạn rời trận' : 'có bạn mất kết nối') : '') + (m.kt ? ' · không tính điểm (đã đủ trận hôm nay)' : '') +
+        '</small></div><span class="ty-so">' + (m.toi || 0) + '–' + (m.ban || 0) + '</span><span class="cong">' + (m.giai && !m.kt ? '+' + d : '—') + '</span></div>';
     }).join('');
   };
   async function nguoiLop(lop) {
@@ -183,10 +185,70 @@
     var tenLop = function (ma) { return TEN_LOP[ma] || ma; };
     khung.innerHTML = '<div class="kp-loai-dau gd-dau" style="--m1:#E0575B;--m2:#FF9A9C"><button type="button" class="lui" id="gdLui" aria-label="Về Khám phá">' + NW.IC.lui + '</button>' +
       '<span class="hinh">' + IC.cup + '</span><div><h1>Giải đấu</h1><p>' + (la ? 'Tạo giải cho từng lớp, theo dõi bảng xếp hạng' : 'Thách đấu bạn cùng lớp · thắng +2 · hòa +1 · thua 0') + '</p></div>' +
-      (la ? '<button type="button" class="gd-tao" id="gdTao">' + IC.cong + '<span>Tạo giải</span></button>' : '') + '</div><div id="gdThan"><div class="card trong">Đang tải…</div></div>';
+      (la ? '<button type="button" class="gd-tao" id="gdGh" title="Giới hạn giờ chơi và số trận">' + IC_DH + '<span>Giới hạn chơi</span></button>' +
+        '<button type="button" class="gd-tao" id="gdTao">' + IC.cong + '<span>Tạo giải</span></button>' : '') + '</div><div id="gdThan"><div class="card trong">Đang tải…</div></div>';
     $('#gdLui').onclick = function () { NW.di('khampha.html'); };
-    if (la) $('#gdTao').onclick = function () { popGiai(null); };
+    if (la) { $('#gdTao').onclick = function () { popGiai(null); }; $('#gdGh').onclick = popGioiHan; }
     var than = $('#gdThan');
+
+    // ⭐ v1.375.0 (19/10/2026) — GIỚI HẠN CHƠI (js/the-td.js GioiHan · luật tools/dang-luat-gioi-han-choi.js · hàm tdDoi)
+    //   Học sinh: khối đầu trang "hôm nay còn N trận" + nhắc 22:45 / giờ nghỉ đêm. Thầy: hộp sửa caiDat/choiGame + ai chơi nhiều nhất hôm nay.
+    async function ghKhoi(gid) {
+      var GH = window.GioiHan; if (!GH || la) return '';
+      await GH.napCai(); GH.css();
+      if (GH.dem()) return '<div class="gd-gh"><div class="gh-nhac">🌙 <span>Giờ nghỉ đêm (<b>' + GH.gioChu(GH.cai.nghiTu) + ' – ' + GH.gioChu(GH.cai.nghiDen) + '</b>) — giải đấu, giao hữu và luyện tập mở lại lúc <b>' + GH.gioChu(GH.cai.nghiDen) + '</b> sáng. Đi ngủ thôi!</span></div></div>';
+      if (!GH.cai.bat) return '';
+      var ph = await GH.phieu(toi.uid), con = GH.conTran(ph), cg = gid ? GH.conGiai(ph, gid) : -1;
+      return '<div class="gd-gh">' + GH.nhacHtml() + '<div class="gh-nhac xam">🎮 <span>' + (con ? 'Hôm nay em còn <b>' + con + '/' + GH.cai.tranNgay + '</b> trận' : 'Hôm nay em đã chơi đủ <b>' + GH.cai.tranNgay + '</b> trận — mai đấu tiếp nhé!') +
+        (cg >= 0 && con ? (cg ? ' · giải còn <b>' + cg + '/' + GH.cai.giaiNgay + '</b> trận tính điểm (cùng một bạn tối đa ' + GH.cai.capNgay + ')' : ' · đã đủ <b>' + GH.cai.giaiNgay + '</b> trận tính điểm hôm nay, đấu thêm không cộng bảng') : '') +
+        ' · nghỉ đêm ' + GH.gioChu(GH.cai.nghiTu) + ' – ' + GH.gioChu(GH.cai.nghiDen) + '</span></div></div>';
+    }
+    async function popGioiHan() {
+      var GH = window.GioiHan; if (!GH) return NW.toast('Chưa tải được phần giới hạn chơi — tải lại trang.', true);
+      var c = Object.assign({}, await GH.napCai(true));
+      var o = function (id, ten, gt, goi) { return '<label class="gd-o gd-gh-o"><span>' + ten + '</span><input type="text" inputmode="numeric" id="' + id + '" value="' + gt + '" aria-label="' + an(ten) + '"><span>' + goi + '</span></label>'; };
+      var p = NW.popMo({ tieuDe: 'Giới hạn chơi', lop: 'gd-pop', html:
+        '<p class="tiny">Áp cho trận học sinh với học sinh (giải + giao hữu). Trận có thầy tự do. Luyện tập với máy chỉ nghỉ đêm. Máy chủ chặn thật — đồng hồ máy em lệch cũng không lách được.</p>' +
+        '<label class="gd-tich"><input type="checkbox" id="ghBat"' + (c.bat ? ' checked' : '') + '> Bật giới hạn</label>' +
+        '<span class="lbl gd-lbl">Nghỉ đêm (giờ Việt Nam) · nhắc trước 15 phút</span><div class="gd-sao">' + o('ghTu', 'Từ', c.nghiTu, 'giờ') + o('ghDen', 'Đến', c.nghiDen, 'giờ sáng') + '</div>' +
+        '<span class="lbl gd-lbl">Mỗi em mỗi ngày</span><div class="gd-sao gd-gh-mot">' + o('ghTran', 'Chơi tối đa (giải + giao hữu)', c.tranNgay, 'trận') + o('ghGiai', 'Giải chỉ tính điểm', c.giaiNgay, 'trận đầu') +
+          o('ghCap', 'Cùng một bạn tính điểm tối đa', c.capNgay, 'trận') + '</div>' +
+        '<div class="gd-gh-thong" id="ghThong"><p class="tiny">Đang xem hôm nay ai chơi nhiều…</p></div>' +
+        '<p class="gd-loi" id="ghLoi" role="alert"></p>',
+        chan: '<button type="button" class="btn soft" data-dong>Thôi</button><button type="button" class="btn primary" id="ghOk">Lưu</button>' });
+      // Enter = nhận ô (lưu) · cuộn chuột không đổi số (ô chữ thường)
+      $$('input[inputmode="numeric"]', p).forEach(function (x) { x.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('#ghOk', p).click(); } }); });
+      // hôm nay: bao nhiêu em đã đấu + ai nhiều trận nhất (phiếu tdHan của hôm nay)
+      (async function () {
+        var el = $('#ghThong', p); if (!el) return;
+        if (banThu) { el.innerHTML = '<p class="tiny">Bàn thử: hôm nay 12 em đã đấu · nhiều nhất: Gia Bảo 18 trận, Bảo Nam 15 trận.</p>'; return; }
+        try {
+          var f = await NW.fb(), s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tdHan'), f.fs.where('ngay', '==', GH.ngay()), f.fs.limit(300))), ds = [];
+          s.forEach(function (d) { ds.push({ uid: d.id, so: d.data().so || 0 }); });
+          ds.sort(function (a, b) { return b.so - a.so; });
+          var top = ds.slice(0, 5), ten = {};
+          await Promise.all(top.map(function (x) { return f.fs.getDoc(f.fs.doc(f.db, 'nwUsers', x.uid)).then(function (u) { ten[x.uid] = (u.exists() && u.data().ten) || x.uid; })['catch'](function () { ten[x.uid] = x.uid; }); }));
+          el.innerHTML = '<p class="tiny">Hôm nay: <b>' + ds.length + '</b> em đã đấu' + (top.length ? ' · nhiều nhất: ' + top.map(function (x) { return an(ten[x.uid]) + ' ' + x.so + ' trận'; }).join(', ') : '') + '.</p>';
+        } catch (e) { el.innerHTML = '<p class="tiny">Chưa đọc được số trận hôm nay.</p>'; }
+      })();
+      $('#ghOk', p).onclick = async function () {
+        var so = function (id) { var v = String($('#' + id, p).value).trim(); return /^\d{1,3}$/.test(v) ? +v : NaN; };
+        var m = { bat: $('#ghBat', p).checked, nghiTu: so('ghTu'), nghiDen: so('ghDen'), tranNgay: so('ghTran'), giaiNgay: so('ghGiai'), capNgay: so('ghCap') };
+        var loi = !(m.nghiTu >= 0 && m.nghiTu <= 23 && m.nghiDen >= 0 && m.nghiDen <= 23) ? 'Giờ nghỉ phải từ 0 đến 23.'
+          : !(m.tranNgay >= 1 && m.tranNgay <= 200) ? 'Số trận mỗi ngày từ 1 đến 200.'
+          : !(m.giaiNgay >= 1 && m.giaiNgay <= 200) ? 'Số trận tính điểm từ 1 đến 200.'
+          : !(m.capNgay >= 1 && m.capNgay <= 50) ? 'Số trận cùng một bạn từ 1 đến 50.' : '';
+        if (loi) { $('#ghLoi', p).textContent = loi; return; }
+        if (banThu) { GH.cai = Object.assign({}, GH.MAC, m); NW.popDong(); return NW.toast('Bàn thử: đã lưu (không ghi kho).'); }
+        var nut = this; nut.disabled = true;
+        try {
+          var f = await NW.fb();
+          await f.fs.setDoc(f.fs.doc(f.db, 'caiDat', 'choiGame'), Object.assign({}, m, { capNhat: Date.now() }));
+          await GH.napCai(true);
+          NW.popDong(); NW.toast('Đã lưu giới hạn chơi — áp ngay cho lời mời mới.');
+        } catch (e) { nut.disabled = false; $('#ghLoi', p).textContent = NW.chuLoiKho(e); }
+      };
+    }
 
     async function napLai() {
       (await GD.dsLop()).forEach(function (l) { TEN_LOP[l.ma] = l.ten || l.ma; });
@@ -297,7 +359,8 @@
         if (m.huy) return '<div class="gd-tran gd-da-huy"><div class="gd-noi">' + an(m.tenA) + ' – ' + an(m.tenB) + '<small>' + an(NW.chuGio(m.luc)) + ' · ' + kq + '</small></div>' +
           '<span class="ty-so">' + (m.da || 0) + '–' + (m.db || 0) + '</span><span class="gd-huy-nhan">Đã huỷ</span></div>';
         return '<div class="gd-tran"><div class="gd-noi">' + an(m.tenA) + ' – ' + an(m.tenB) + '<small>' + an(NW.chuGio(m.luc)) + ' · ' + kq +
-          (m.ly ? ' · ' + (/^roi/.test(m.ly) ? 'có bạn rời trận' : 'có bạn mất kết nối') : '') + '</small></div><span class="ty-so">' + (m.da || 0) + '–' + (m.db || 0) + '</span>' +
+          (m.ly ? ' · ' + (/^roi/.test(m.ly) ? 'có bạn rời trận' : 'có bạn mất kết nối') : '') +
+          (m.ka && m.kb ? ' · không tính điểm' : m.ka || m.kb ? ' · không tính điểm cho ' + an(m.ka ? m.tenA : m.tenB) : '') + '</small></div><span class="ty-so">' + (m.da || 0) + '–' + (m.db || 0) + '</span>' +
           (duocHuy && m.id ? '<button type="button" class="gd-huy" data-huytran="' + an(m.id) + '" data-lop="' + an(lop) + '">Huỷ kết quả</button>' : '') + '</div>';
       }).join('');
     }
@@ -325,7 +388,8 @@
     // trừ một trận khỏi bảng em { uid: {t,h,b} }: kq của A (thang|hoa|thua) ⇒ A trừ ô đó, B trừ ô ngược lại; không xuống dưới 0
     function truTran(em, m) {
       var K = { thang: 't', hoa: 'h', thua: 'b' }, nguoc = { thang: 'thua', hoa: 'hoa', thua: 'thang' };
-      [[m.a, m.kq], [m.b, nguoc[m.kq]]].forEach(function (x) { var r = em[x[0]]; if (r && K[x[1]]) r[K[x[1]]] = Math.max(0, (r[K[x[1]]] || 0) - 1); });
+      // v1.375.0 — bên "không tính điểm" (ka/kb: đã đủ trận hôm nay) chưa từng được cộng ⇒ không trừ
+      [[m.a, m.kq, m.ka], [m.b, nguoc[m.kq], m.kb]].forEach(function (x) { var r = em[x[0]]; if (!x[2] && r && K[x[1]]) r[K[x[1]]] = Math.max(0, (r[K[x[1]]] || 0) - 1); });
     }
 
     // ===== HỌC SINH =====
@@ -341,7 +405,8 @@
         var vt = 0; ds.forEach(function (x, i) { if (x.n.uid === toi.uid) vt = i; });
         var cua = (ds[vt] || {}).r, coTran = soTran(cua) > 0;
         ctx = { lop: xemLop, giai: g.id, phut: g.phut, lv: g.lv, tenGiai: g.ten }; dsTd = ds;
-        than.innerHTML =
+        var gh1 = await ghKhoi(g.id);
+        than.innerHTML = gh1 +
           '<div class="card gd-hero">' + biaHtml(g) + '<div class="gd-noi">' +
             '<div class="meta"><span class="gd-pill dang">Đang diễn ra</span>' + ngay(g.tu) + ' → ' + ngay(g.den) + ' · ' + g.lops.map(tenLop).map(an).join(', ') + '</div>' +
             '<h2>' + an(g.ten) + '</h2>' +
@@ -363,7 +428,8 @@
         var cu = DS.filter(function (x) { return x._tt === 'xong' && x.lops.indexOf(xemLop) >= 0; })[0];
         var top = cu ? (await hangLop(cu, xemLop)).filter(function (x) { return soTran(x.r) > 0; }).slice(0, 3) : [];
         var sap = DS.filter(function (x) { return x._tt === 'sap' && x.lops.some(function (l) { return lopEm.indexOf(l) >= 0; }); })[0];
-        than.innerHTML =
+        var gh2 = await ghKhoi('');
+        than.innerHTML = gh2 +
           '<div class="card gd-chua"><span class="ic-o">' + IC.cup + '</span><div><b>Chưa có giải nào đang mở</b><p>' +
             (sap ? an(sap.ten) + ' bắt đầu lúc ' + gio(sap.tu) + ' ngày ' + ngay(sap.tu) + '. ' : '') + 'Em vẫn đấu giao hữu được với bạn đang online. Giao hữu không cộng điểm xếp hạng.</p></div></div>' +
           chipLop(lopEm, xemLop, 'data-lop') +

@@ -130,6 +130,11 @@ function dsTu() {   // mọi từ hợp lệ, mới nhất trước (trận có 
 async function batDau() {
   fit(); render();
   banThu = NW.laBanThu() || LUYEN;
+  /* v1.375.0 giới hạn chơi: luyện tập không đếm ván, chỉ nghỉ đêm (học sinh) */
+  if (LUYEN && !NW.laBanThu() && window.GioiHan && !(NW.toi && NW.toi.laThay)) {
+    await GioiHan.napCai();
+    if (GioiHan.dem()) { G.phase = "loi"; G.note = "Giờ nghỉ đêm (" + GioiHan.gioChu(GioiHan.cai.nghiTu) + " – " + GioiHan.gioChu(GioiHan.cai.nghiDen) + ") — luyện tập mở lại lúc " + GioiHan.gioChu(GioiHan.cai.nghiDen) + " sáng."; render(); return GioiHan.hopNgu(); }
+  }
   try { dict = await loadDict(); } catch (e) { G.note = "Không tải được từ điển. Kiểm tra mạng rồi tải lại trang."; return render(); }
   if (banThu) return chayBanThu();
   toi = NW.toi;
@@ -264,7 +269,7 @@ function capNhatPha() {
   if (T.trangThai === "moi" || T.trangThai === "nhan") G.phase = "cho";
   else if (T.trangThai === "choi") G.phase = now() < T.batDau ? "lobby" : now() < T.ketThuc ? "play" : "count";
   else if (T.trangThai === "xong") G.phase = "over";
-  else { G.phase = "loi"; G.note = { tuchoi: "Bạn đã từ chối lời mời.", huy: "Lời mời đã huỷ.", het: "Lời mời đã hết hạn." }[T.trangThai] || "Trận không còn."; }
+  else { G.phase = "loi"; G.note = { tuchoi: "Bạn đã từ chối lời mời.", huy: "Lời mời đã huỷ.", het: "Lời mời đã hết hạn." }[T.trangThai] || (T.trangThai === "han" && window.GioiHan ? GioiHan.chuHan(T) : "Trận không còn."); }
   if (G.phase !== cu) vaoPha(cu);
   else if (G.phase === "over") render();
   else if (G.phase === "play" && che()) renderCentre();   // gợi ý lật / bàn đổi
@@ -515,7 +520,7 @@ function centreHtml() {
       <h2 ${port ? 'style="font-size:40px"' : ""}>${head}</h2>
       ${banBo ? `<div class="wsg-note">${esc(boTen)} ${/^roi/.test(ly) ? "left the match" : "lost connection"}.</div>` : ""}
       <div class="on-sc"><span class="a">${a}</span><i>–</i><span class="b">${b}</span></div>
-      <div class="on-pts">${G.xem ? `<span class="on-pill ${T.giai ? "" : "mute"}"><span>${T.giai ? "TOURNAMENT" : "FRIENDLY"}</span></span>` : T.giai ? `<span class="on-pill ${pts ? "gold" : "mute"}"><span>+${pts} ${pts === 1 ? "POINT" : "POINTS"}</span></span>` : `<span class="on-pill mute"><span>${LUYEN ? "PRACTICE · NO POINTS" : "FRIENDLY · NO POINTS"}</span></span>`}</div>
+      <div class="on-pts">${G.xem ? `<span class="on-pill ${T.giai ? "" : "mute"}"><span>${T.giai ? "TOURNAMENT" : "FRIENDLY"}</span></span>` : T.giai && T.khongTinh && T.khongTinh[G.ben] ? `<span class="on-pill mute"><span>NOT COUNTED · DAILY LIMIT</span></span>` : T.giai ? `<span class="on-pill ${pts ? "gold" : "mute"}"><span>+${pts} ${pts === 1 ? "POINT" : "POINTS"}</span></span>` : `<span class="on-pill mute"><span>${LUYEN ? "PRACTICE · NO POINTS" : "FRIENDLY · NO POINTS"}</span></span>`}</div>
       ${missed.length ? `<div class="wsg-lab">MISSED</div><div class="wsg-miss" ${port ? 'style="grid-template-columns:1fr"' : ""}>${missed.map((x) => `<div><b>${esc(x.w.toUpperCase())}</b> <span>${esc(x.m)}</span></div>`).join("")}</div>` : ""}
       <div class="on-btns"><button class="wsg-b ghost" data-do="back"><span>${LUYEN ? "Exit" : "Back"}</span></button>${G.xem ? "" : `<button class="wsg-b ent" data-do="again"><span>${LUYEN ? "Play again" : "Rematch"}</span></button>`}</div></div>`;
   }

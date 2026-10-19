@@ -42,6 +42,12 @@
     o = o || {};
     var toi = NW.toi; if (!toi) return;
     if (toi.laThay && !o.gv) return;   // ⭐ 16/10 — thầy chỉ mời qua trận có thầy (Đấu lại trong trận)
+    // ⭐ v1.375.0 — giới hạn chơi (trận em–em, js/the-td.js GioiHan): nghỉ đêm ⇒ hộp đi ngủ · em / bạn đủ trận hôm nay ⇒ báo
+    if (!o.gv && window.GioiHan && !NW.laBanThu()) {
+      var ch = await GioiHan.chanMoi(toi.uid, ban);
+      if (ch === 'dem') return GioiHan.hopNgu();
+      if (ch) return NW.toast(ch, true);
+    }
     napCss();
     var giai = o.giai || '', coDat = !!(giai || o.gv), phut = coDat ? o.phut : 2, lv = coDat ? o.lv : 'easy';
     var conLai = 60, id = null, xong = false, bo = null, dem = null;
@@ -82,10 +88,11 @@
         var t = s.data() || {};
         if (t.trangThai === 'nhan' || t.trangThai === 'choi') { ketThuc('<b>' + an(ban.ten) + '</b> đã nhận! Vào trận…', true); setTimeout(function () { di('tran.html?id=' + id); }, 700); }
         else if (t.trangThai === 'tuchoi') ketThuc('<b>' + an(ban.ten) + '</b> chưa muốn đấu lúc này.', true);
+        else if (t.trangThai === 'han') ketThuc(an(window.GioiHan ? GioiHan.chuHan(t) : 'Trận không bắt đầu được.'), true);   // v1.375.0 giới hạn chơi
         else if (t.trangThai === 'het') ketThuc('<b>' + an(ban.ten) + '</b> chưa nhận lời mời. Em thử mời bạn khác nhé.', true);
       }, function () { });
     } catch (e) {
-      ketThuc(String(e && e.code).indexOf('permission') >= 0 ? 'Chưa mời được: giải đã đóng, bạn không cùng lớp, hoặc đồng hồ máy em bị lệch.' : NW.chuLoiKho(e), true);
+      ketThuc(String(e && e.code).indexOf('permission') >= 0 ? 'Chưa mời được: giải đã đóng, bạn không cùng lớp, đã hết lượt chơi hôm nay, hoặc đồng hồ máy em bị lệch.' : NW.chuLoiKho(e), true);
     }
   };
 
@@ -95,8 +102,14 @@
   // ⭐ thầy giao hữu — THẦY nhận: trận mở ở TAB MỚI (mở ngay trong cú bấm, trình duyệt mới cho). Khung nhúng (dashboard): trang mẹ đã mở tab.
   var urlTran = function (id) { return new URL(NW.duong('tran.html?id=' + encodeURIComponent(id)), location.href).href; };
   async function traLoi(id, nhan, meDaMo) {
-    boThe(id);
+    var tt = (THE[id] && THE[id].t) || null;
     var thay = !!(NW.toi && NW.toi.laThay);
+    // ⭐ v1.375.0 — giới hạn chơi: em bấm Nhận trận em–em lúc nghỉ đêm / đã đủ trận ⇒ báo, thẻ mời giữ nguyên (còn bấm Từ chối)
+    if (nhan && !thay && tt && !tt.gv && window.GioiHan && !NW.laBanThu()) {
+      var ch = await GioiHan.chanNhan(NW.toi.uid);
+      if (ch) { if (ch === 'dem') GioiHan.hopNgu(); else NW.toast(ch, true); return; }
+    }
+    boThe(id);
     if (NW.laBanThu()) { NW.toast(nhan ? 'Bàn thử: đã nhận — vào trận' + (thay ? ' ở TAB MỚI' : '') : 'Bàn thử: đã từ chối'); return; }
     var tab = nhan && thay && !meDaMo ? window.open(urlTran(id), '_blank') : null;
     try {
@@ -115,7 +128,7 @@
   function tieuDe(t) { return t.gv ? (t.a === t.gv ? 'Thầy Andrew mời em giao hữu' : (t.tenA || 'Bạn') + ' mời thầy giao hữu') : (t.tenA || 'Bạn') + ' thách đấu em'; }
   function veThe(id, t) {
     if (THE[id]) return;
-    if (NW.laNhung) { NW.baoMe('moiDau', { id: id, ten: t.tenA || 'Bạn', tieuDe: tieuDe(t), anh: t.gv && t.a === t.gv, chu: moTa(t), het: t.het, thay: !!(NW.toi && NW.toi.laThay), url: urlTran(id) }); THE[id] = { el: null, dem: null }; return; }
+    if (NW.laNhung) { NW.baoMe('moiDau', { id: id, ten: t.tenA || 'Bạn', tieuDe: tieuDe(t), anh: t.gv && t.a === t.gv, gv: !!t.gv, chu: moTa(t), het: t.het, thay: !!(NW.toi && NW.toi.laThay), url: urlTran(id) }); THE[id] = { el: null, dem: null, t: t }; return; }
     napCss();
     var el = document.createElement('div'); el.className = 'td-moi' + (t.gv ? ' thay' : ''); el.setAttribute('role', 'alert');
     var ic = t.gv && t.a === t.gv ? '<span class="ic-o anh" style="background-image:url(assets/avatar-tron.jpg)"></span>' : '<span class="ic-o">' + IC_KIEM + '</span>';
@@ -124,7 +137,7 @@
     document.body.appendChild(el);
     var ve = function () { var con = Math.max(0, (t.het || 0) - Date.now()); var v = el.querySelector('.vach i'); if (v) v.style.width = (con / 600) + '%'; if (con <= 0) boThe(id); };
     ve();
-    THE[id] = { el: el, dem: setInterval(ve, 1000) };
+    THE[id] = { el: el, dem: setInterval(ve, 1000), t: t };
     el.querySelectorAll('[data-k]').forEach(function (b) { b.onclick = function () { traLoi(id, b.getAttribute('data-k') === '1'); }; });
   }
   // ⭐ v1.364.0 — bấm thông báo thách đấu khi thẻ mời đang hiện ⇒ thẻ rung nhẹ + con trỏ vào nút Nhận. false = thẻ chưa hiện ở trang này.

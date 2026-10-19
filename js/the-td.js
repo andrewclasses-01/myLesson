@@ -288,7 +288,11 @@
         : '<button type="button" class="x" data-tdx="xem">' + IC_MAT + 'Theo dõi trực tiếp</button>');
     } else if (xong) {
       var ly = /^(roi|mat)[AB]$/.test(t.ly || '') ? (/^roi/.test(t.ly) ? ' · có bạn rời trận' : ' · có bạn mất kết nối') : '';
-      duoi = '<div class="tt">' + (kqA === 'hoa' ? '<b>Hòa</b>' + (t.giai ? ' · +1 mỗi bạn' : '') : '<b>' + an(kqA === 'thang' ? t.tenA : t.tenB) + '</b> thắng' + (t.giai ? ' · +2 điểm' : '')) + an(ly) + '</div>';
+      // ⭐ v1.375.0 — bên đã đủ trận tính điểm hôm nay: trận vẫn ghi, không cộng bảng
+      var kt = t.khongTinh || {}, ktChu = kt.a && kt.b ? ' · không tính điểm (cả hai đã đủ trận hôm nay)' : kt.a || kt.b ? ' · không tính điểm cho ' + (kt.a ? t.tenA : t.tenB) + ' (đã đủ trận hôm nay)' : '';
+      duoi = '<div class="tt">' + (kqA === 'hoa' ? '<b>Hòa</b>' + (t.giai && !ktChu ? ' · +1 mỗi bạn' : '') : '<b>' + an(kqA === 'thang' ? t.tenA : t.tenB) + '</b> thắng' + (t.giai && !ktChu ? ' · +2 điểm' : '')) + an(ly) + an(ktChu) + '</div>';
+    } else if (t.trangThai === 'han') {
+      duoi = '<div class="tt">' + an(GH.chuHan(t)) + '</div>';
     } else {
       duoi = '<div class="tt">' + ({ tuchoi: an(t.tenB) + ' chưa muốn đấu lúc này', huy: 'Lời mời đã huỷ' }[t.trangThai] || 'Lời mời đã hết hạn') + '</div>';
     }
@@ -349,10 +353,10 @@
     } else if (t.trangThai === 'xong') {
       var d = t.diem || {}, kq = t.kq ? t.kq.a : '';
       nd = '<b>' + A + '</b> <em>' + (d.a || 0) + '–' + (d.b || 0) + '</em> <b>' + B + '</b>' + (kq === 'hoa' ? ' · hòa' : ' · ' + (kq === 'thang' ? A : B) + ' thắng');
-    } else nd = A + ' – ' + B + ' · ' + ({ tuchoi: 'chưa đấu', huy: 'đã huỷ' }[t.trangThai] || 'lời mời hết hạn');
+    } else nd = A + ' – ' + B + ' · ' + ({ tuchoi: 'chưa đấu', huy: 'đã huỷ', han: t.ly === 'dem' ? 'giờ nghỉ đêm' : 'đã đủ trận hôm nay' }[t.trangThai] || 'lời mời hết hạn');
     return '<span class="ic">' + IC + '</span><span class="nh">Giao hữu</span>' + dg + '<span class="nd">' + nd + '</span>' + nut;
   }
-  function moMo(t) { return t && !t._khongDoc && (t.trangThai === 'tuchoi' || t.trangThai === 'huy' || t.trangThai === 'het' || (t.trangThai === 'moi' && (t.het || 0) < Date.now())); }
+  function moMo(t) { return t && !t._khongDoc && (t.trangThai === 'tuchoi' || t.trangThai === 'huy' || t.trangThai === 'het' || t.trangThai === 'han' || (t.trangThai === 'moi' && (t.het || 0) < Date.now())); }
   function laGon(t) { return !!(t && !t._khongDoc && !t.giai && !t.gv); }
   function veId(id) {
     var t = TRAN[id], gon = laGon(t);
@@ -379,6 +383,11 @@
     if (viec === 'xem') return moXem(id);
     if (banThu()) { if (THU_SIM[id]) return THU_SIM[id](viec); if (viec === 'nhan') moTran('mau'); return; }
     nut.disabled = true;
+    // ⭐ v1.375.0 — giới hạn chơi: trận em–em lúc nghỉ đêm / em đã đủ trận ⇒ báo, không bấm Nhận (trận có thầy tự do)
+    if (viec === 'nhan' && TRAN[id] && !TRAN[id].gv && !TOI.laThay) {
+      var ch = await GH.chanNhan(TOI.uid);
+      if (ch) { nut.disabled = false; if (ch === 'dem') GH.hopNgu(); else alert(ch); return; }
+    }
     try {
       var f = await kho();
       await f.fs.updateDoc(f.fs.doc(f.db, 'tranDau', id), { trangThai: viec === 'nhan' ? 'nhan' : viec === 'huy' ? 'huy' : 'tuchoi' });
@@ -402,6 +411,134 @@
     var el = b.closest('.cu-td'); if (el) return bam(el.getAttribute('data-td'), b.getAttribute('data-tdx'), b);
     var x = b.getAttribute('data-tdx') === 'xem' && b.getAttribute('data-id'); if (x) moXem(x);   // nút Theo dõi trên dải ghim
   });
+
+  // ============================================================
+  // ⭐ v1.375.0 (19/10/2026, thầy) — GIỚI HẠN CHƠI: window.GioiHan (dùng chung: hộp ⚔, nw/js/thachdau.js, nw/js/giaidau.js, nw/js/tran.js)
+  //   Thầy chốt: nghỉ đêm 23:00→6:00 giờ VN (nhắc 22:45) · 20 trận/ngày (giải + giao hữu em–em) · giải chỉ TÍNH ĐIỂM 10 trận đầu/ngày
+  //   + 3 trận/cặp/ngày · trận có thầy tự do · Luyện tập với máy không đếm, chỉ nghỉ đêm. Cài đặt `caiDat/choiGame` (thầy sửa ở trang Giải đấu).
+  //   Chặn THẬT ở luật Firestore + hàm tdDoi (trangThai 'han'); ở đây chỉ BÁO TRƯỚC cho em (đồng hồ máy em lệch thì máy chủ vẫn chặn).
+  // ============================================================
+  var GH = window.GioiHan = {};
+  GH.MAC = { bat: true, nghiTu: 23, nghiDen: 6, tranNgay: 20, giaiNgay: 10, capNgay: 3 };
+  GH.cai = Object.assign({}, GH.MAC);
+  var _ghCai = null;
+  GH.napCai = function (moi) {
+    if (_ghCai && !moi) return _ghCai;
+    if (banThu()) return (_ghCai = Promise.resolve(GH.cai));
+    _ghCai = kho().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'caiDat', 'choiGame')); })
+      .then(function (s) { GH.cai = Object.assign({}, GH.MAC, s.exists() ? s.data() : {}); return GH.cai; })['catch'](function () { return GH.cai; });
+    return _ghCai;
+  };
+  var VN_MS = 7 * 36e5;
+  GH.ngay = function (ms) { return Math.floor(((ms || Date.now()) + VN_MS) / 864e5); };
+  GH.dem = function (ms) {
+    var c = GH.cai; if (!c.bat) return false;
+    var h = new Date((ms || Date.now()) + VN_MS).getUTCHours();
+    return c.nghiTu > c.nghiDen ? (h >= c.nghiTu || h < c.nghiDen) : (h >= c.nghiTu && h < c.nghiDen);
+  };
+  // mốc h:00 giờ VN SẮP TỚI (ms)
+  function mocGio(h) { var bay = Date.now(), d = Math.floor((bay + VN_MS) / 864e5) * 864e5 - VN_MS + h * 36e5; while (d <= bay) d += 864e5; return d; }
+  GH.moLuc = function () { return mocGio(GH.cai.nghiDen); };   // lúc mở lại (6:00 sắp tới)
+  // còn bao nhiêu PHÚT tới giờ nghỉ (chỉ khi ≤ 15 phút và chưa nghỉ) — 0 = không nhắc
+  GH.sapNghi = function () {
+    if (!GH.cai.bat || GH.dem()) return 0;
+    var con = mocGio(GH.cai.nghiTu) - Date.now();
+    return con > 0 && con <= 15 * 6e4 ? Math.ceil(con / 6e4) : 0;
+  };
+  GH.gioChu = function (h) { return hai(h) + ':00'; };
+  // phiếu đếm HÔM NAY của một em (tdHan/{uid}, máy chủ ghi) ⇒ { so, giai{id:n}, cap{uid:n} }
+  GH.phieu = function (uid) {
+    var rong = { so: 0, giai: {}, cap: {} };
+    if (!uid || banThu()) return Promise.resolve(rong);
+    return kho().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'tdHan', uid)); })
+      .then(function (s) { var x = s.exists() ? s.data() : {}; return x.ngay === GH.ngay() ? { so: x.so || 0, giai: x.giai || {}, cap: x.cap || {} } : rong; })['catch'](function () { return rong; });
+  };
+  GH.conTran = function (p) { return Math.max(0, GH.cai.tranNgay - ((p && p.so) || 0)); };
+  GH.conGiai = function (p, giai) { return Math.max(0, GH.cai.giaiNgay - (((p && p.giai) || {})[giai] || 0)); };
+  GH.capDu = function (p, uid) { return (((p && p.cap) || {})[uid] || 0) >= GH.cai.capNgay; };
+  // vì sao không mời được: '' = mời được · 'dem' = giờ nghỉ đêm (gọi GH.hopNgu) · còn lại = câu báo. ban = { uid, ten }
+  GH.chanMoi = async function (meUid, ban) {
+    await GH.napCai();
+    if (GH.dem()) return 'dem';
+    var r = await Promise.all([GH.phieu(meUid), GH.phieu(ban && ban.uid)]);
+    if (!GH.conTran(r[0])) return 'Hôm nay em đã chơi đủ ' + GH.cai.tranNgay + ' trận rồi. Nghỉ ngơi, mai đấu tiếp nhé!';
+    if (!GH.conTran(r[1])) return ((ban && ban.ten) || 'Bạn') + ' hôm nay đã chơi đủ ' + GH.cai.tranNgay + ' trận rồi — em mời bạn khác nhé.';
+    return '';
+  };
+  // em bấm Nhận trận em–em: '' = được · 'dem' · câu báo
+  GH.chanNhan = async function (meUid) {
+    await GH.napCai();
+    if (GH.dem()) return 'dem';
+    return GH.conTran(await GH.phieu(meUid)) ? '' : 'Hôm nay em đã chơi đủ ' + GH.cai.tranNgay + ' trận rồi. Nghỉ ngơi, mai đấu tiếp nhé!';
+  };
+  GH.chanNhanToi = async function () { var me = await toi(); return !me.uid || me.laThay ? '' : GH.chanNhan(me.uid); };
+  // trận bị máy chủ chặn (trangThai 'han')
+  GH.chuHan = function (t) {
+    var ly = (t && t.ly) || '';
+    if (ly === 'dem') return 'Đã tới giờ nghỉ đêm (' + GH.gioChu(GH.cai.nghiTu) + ' – ' + GH.gioChu(GH.cai.nghiDen) + ') — trận không bắt đầu. Đi ngủ thôi!';
+    if (ly === 'hetA' || ly === 'hetB') return (ly === 'hetA' ? t.tenA : t.tenB) + ' hôm nay đã chơi đủ ' + GH.cai.tranNgay + ' trận — trận không bắt đầu.';
+    return 'Trận không bắt đầu được (giới hạn chơi).';
+  };
+  function ghCss() {
+    if (document.getElementById('ghCss')) return;
+    var s = document.createElement('style'); s.id = 'ghCss';
+    s.textContent =
+      '.gh-nen{position:fixed;inset:0;z-index:10050;background:rgba(8,14,30,.62);display:grid;place-items:center;padding:16px;animation:gh-mo .25s ease}' +
+      '@keyframes gh-mo{from{opacity:0}}' +
+      '.gh-hop{width:min(380px,100%);border-radius:22px;padding:26px 22px 20px;text-align:center;color:#E8EEFF;font-family:var(--sans,"Segoe UI",system-ui,sans-serif);' +
+      'background:radial-gradient(120% 90% at 50% 0%,#2B3A78 0%,#151C3D 55%,#0C1128 100%);box-shadow:0 24px 60px rgba(0,0,0,.45);border:1px solid rgba(160,180,255,.18)}' +
+      '.gh-trang{font-size:52px;line-height:1;margin-bottom:10px;filter:drop-shadow(0 0 18px rgba(255,236,160,.45))}' +
+      '.gh-hop h3{margin:0 0 8px;font-size:21px;font-weight:800;color:#fff}.gh-hop p{margin:0 0 6px;font-size:14px;line-height:1.5;color:#C3CCF0}.gh-hop p b{color:#fff}' +
+      '.gh-dem{margin:14px 0 18px;font:800 30px/1 var(--sans,"Segoe UI",system-ui,sans-serif);letter-spacing:1px;color:#FFE7A0;font-variant-numeric:tabular-nums}' +
+      '.gh-dem small{display:block;font-size:12px;font-weight:600;letter-spacing:0;color:#9AA6D6;margin-bottom:6px}' +
+      '.gh-hop button{width:100%;height:44px;border:0;border-radius:14px;background:#FFE7A0;color:#1B2350;font-weight:800;font-size:15px;cursor:pointer}' +
+      '.gh-nhac{display:flex;gap:8px;align-items:center;padding:9px 12px;border-radius:12px;background:#FFF4D6;color:#7A4B00;font-size:13px;font-weight:600;line-height:1.35;text-align:left}' +
+      '.gh-nhac b{color:#5A3500}.gh-nhac.xam{background:#EEF2F1;color:#3F5150}.gh-nhac.xam b{color:#16232A}' +
+      // trong hộp ⚔ (.td-hop b/span có kiểu riêng) ⇒ giữ chữ đậm trên cùng dòng
+      '.gh-nhac>span{display:block!important;flex:1;min-width:0;margin:0!important}.gh-nhac>span b{display:inline!important;font-size:inherit!important;margin:0!important;font-weight:800}' +
+      '.td-hop .gh-nhac{margin:8px 0 0;font-size:12.5px;padding:8px 11px}';
+    document.head.appendChild(s);
+  }
+  GH.css = ghCss;
+  // HỘP ĐI NGỦ: đếm ngược tới giờ mở lại
+  var _ghHop = null;
+  GH.hopNgu = function () {
+    ghCss();
+    if (_ghHop) return;
+    var h = new Date(Date.now() + VN_MS).getUTCHours();
+    var nen = document.createElement('div'); nen.className = 'gh-nen'; nen.setAttribute('role', 'dialog'); nen.setAttribute('aria-label', 'Giờ nghỉ đêm');
+    nen.innerHTML = '<div class="gh-hop"><div class="gh-trang">🌙</div><h3>' + (h >= 12 ? 'Đã ' + h + ' giờ rồi — đi ngủ thôi!' : 'Còn sớm quá — ngủ thêm đi em!') + '</h3>' +
+      '<p>Giải đấu, giao hữu và luyện tập nghỉ từ <b>' + GH.gioChu(GH.cai.nghiTu) + '</b> đến <b>' + GH.gioChu(GH.cai.nghiDen) + '</b> sáng để các em ngủ đủ giấc.</p>' +
+      '<div class="gh-dem"><small>Mở lại sau</small><span data-gh-dem>' + tongGio(GH.moLuc() - Date.now()) + '</span></div><button type="button">Em đi ngủ đây 😴</button></div>';
+    document.body.appendChild(nen); _ghHop = nen;
+    var dong = function () { clearInterval(iv); if (nen.parentNode) nen.parentNode.removeChild(nen); _ghHop = null; };
+    var iv = setInterval(function () { var e = nen.querySelector('[data-gh-dem]'); if (e) e.textContent = tongGio(GH.moLuc() - Date.now()); if (!GH.dem()) dong(); }, 1000);
+    nen.querySelector('button').onclick = dong;
+    nen.addEventListener('click', function (e) { if (e.target === nen) dong(); });
+    try { nen.querySelector('button').focus(); } catch (e) { }
+  };
+  // dòng nhắc vàng "còn N phút nữa nghỉ đêm" ('' khi chưa tới 22:45)
+  GH.nhacHtml = function () {
+    var p = GH.sapNghi();
+    return p ? '<div class="gh-nhac">⏰ <span>Còn <b>' + p + ' phút</b> nữa là ' + GH.gioChu(GH.cai.nghiTu) + ' — giải đấu nghỉ đêm. Đấu nốt rồi đi ngủ nhé!</span></div>' : '';
+  };
+  // một lời nhắc nổi mỗi ngày lúc 22:45 cho em ĐÃ ĐẤU hôm nay (mọi trang có tệp này; khung nhúng ?nhung=1 / ?hop=1 không hiện)
+  (function nhacNoi() {
+    if (window.parent !== window) return;
+    var KHOA = 'ghNhac', da = function () { try { return localStorage.getItem(KHOA) === String(GH.ngay()); } catch (e) { return false; } };
+    setInterval(async function () {
+      if (document.hidden || banThu() || !GH.sapNghi() || da()) return;
+      var me = await toi(); if (!me.uid || me.laThay) return;
+      await GH.napCai(); var p = await GH.phieu(me.uid); if (!p.so || !GH.sapNghi() || da()) return;
+      try { localStorage.setItem(KHOA, String(GH.ngay())); } catch (e) { }
+      ghCss();
+      var el = document.createElement('div'); el.className = 'gh-nhac'; el.setAttribute('role', 'status');
+      el.style.cssText = 'position:fixed;z-index:10040;left:50%;top:16px;transform:translateX(-50%);width:max-content;max-width:calc(100% - 32px);box-shadow:0 10px 30px rgba(0,0,0,.18)';
+      el.innerHTML = GH.nhacHtml().replace(/^<div class="gh-nhac">|<\/div>$/g, '');
+      document.body.appendChild(el);
+      setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 12000);
+    }, 30000);
+  })();
 
   // ---------- hộp chọn bạn đang online ----------
   var hop = null;
@@ -523,6 +660,12 @@
       setTimeout(function () { if (TRAN[id].trangThai === 'moi') THU_SIM[id]('nhan'); }, 5000);
       return;
     }
+    // ⭐ v1.375.0 — giới hạn chơi (trận em–em): nghỉ đêm ⇒ hộp đi ngủ · em / bạn đã đủ trận hôm nay ⇒ báo
+    if (!o.gv && !me.laThay) {
+      var ch = await GH.chanMoi(me.uid, ban);
+      if (ch === 'dem') return GH.hopNgu();
+      if (ch) { if (o.baoLoi) o.baoLoi(ch); return; }
+    }
     // thầy: mở TAB MỚI ngay trong cú bấm, TRƯỚC mọi lượt chờ (trình duyệt chặn tab mở muộn) — trang trận tự chờ em nhận rồi vào trận
     var tab = me.laThay ? moTabTrong() : null;
     try {
@@ -541,7 +684,7 @@
     } catch (e) {
       if (tab) tab.close();
       var ma = String((e && (e.code || e.message)) || '');
-      if (o.baoLoi) o.baoLoi(ma.indexOf('permission') >= 0 ? 'Chưa mời được: giải đã đóng, bạn không cùng lớp, hoặc đồng hồ máy em bị lệch.' : e);
+      if (o.baoLoi) o.baoLoi(ma.indexOf('permission') >= 0 ? 'Chưa mời được: giải đã đóng, bạn không cùng lớp, đã hết lượt chơi hôm nay, hoặc đồng hồ máy em bị lệch.' : e);
     }
   }
 
@@ -604,7 +747,9 @@
     hop.innerHTML = '<div class="td-ph"><b>Đấu A Show Speed</b></div><div class="td-rongtt">Đang tải…</div>';
     document.body.appendChild(hop); datViTri(hop, nut);
     var el = hop, me = await toi(), f = null;
-    var S = { me: me, lop: lop, step: 'menu', g: null, sap: null, ds: [], bo: [], c: me.laThay ? caiDoc() : null, lt: ltDoc(), hang: 0, diem: 0, ghi: '' };
+    // ⭐ v1.375.0 — giờ nghỉ đêm: học sinh mở ⚔ ⇒ hộp đi ngủ (thầy tự do)
+    if (!me.laThay) { await GH.napCai(); if (GH.dem()) { if (hop === el) dongHop(); return GH.hopNgu(); } }
+    var S = { me: me, lop: lop, step: 'menu', g: null, sap: null, ds: [], bo: [], c: me.laThay ? caiDoc() : null, lt: ltDoc(), hang: 0, diem: 0, ghi: '', ph: null };
     el._phim = function (e) {
       if (e.key === 'Escape') { dongHop(); try { nut.focus(); } catch (x) { } }
     };
@@ -618,6 +763,11 @@
       S.ds = r[1]; S.thay = r[4];
       S.ds.concat(S.thay).forEach(function (x) { x.dangDau = !!dd[x.uid]; if (x.anh) ANH[x.uid] = x.anh; });
       if (S.g && !me.laThay) { var h = await hangEm(f, S.g, lop, me.uid); S.hang = h.hang; S.diem = h.diem; }
+      // ⭐ v1.375.0 — phiếu đếm hôm nay của em + từng bạn đang online (bạn đủ trận ⇒ nút Mời tắt)
+      if (!me.laThay) {
+        var phs = await Promise.all([GH.phieu(me.uid)].concat(S.ds.map(function (x) { return GH.phieu(x.uid); })));
+        S.ph = phs[0]; S.ds.forEach(function (x, i) { x.ph = phs[i + 1]; });
+      }
     } catch (e) { S.ds = []; S.thay = []; }
     if (hop !== el) return;
     el._iv = setInterval(function () { el.querySelectorAll('.td-dem[data-t]').forEach(function (e) { e.textContent = tongGio(+e.getAttribute('data-t') - Date.now()); }); }, 1000);
@@ -635,9 +785,20 @@
     }
     function hang(b, mode) {
       var av = b.laThay ? '<i class="anh" style="background-image:url(' + an(anhUid(b.uid) || AV_THAY) + ')"></i>' : avI(b.uid, b.ten);
-      var sm = b.dangDau ? '⚔ Đang đấu, chờ ' + (b.laThay ? 'thầy' : 'bạn') + ' thoát trận' : b.laThay ? 'Đang online · giao hữu 2 phút Easy' : 'Đang online';
+      // ⭐ v1.375.0 — giới hạn chơi: em/bạn đủ trận hôm nay ⇒ tắt nút (trừ hàng Thầy) · đủ trận tính điểm với bạn này ⇒ nhắc
+      var het = !me.laThay && !b.laThay && (!GH.conTran(S.ph) || !GH.conTran(b.ph));
+      var sm = b.dangDau ? '⚔ Đang đấu, chờ ' + (b.laThay ? 'thầy' : 'bạn') + ' thoát trận' : b.laThay ? 'Đang online · giao hữu 2 phút Easy'
+        : !GH.conTran(b.ph) && !me.laThay ? 'Hôm nay bạn đã chơi đủ ' + GH.cai.tranNgay + ' trận'
+        : mode === 'dau' && S.g && !me.laThay && (GH.capDu(S.ph, b.uid) || !GH.conGiai(S.ph, S.g.id)) ? 'Đang online · trận này KHÔNG tính điểm (đã đủ hôm nay)' : 'Đang online';
       return '<div class="td-ban' + (b.dangDau ? ' dd' : '') + '">' + av + '<div class="td-nd"><b>' + an(b.ten) + (b.laThay ? '<em class="gvb">THẦY</em>' : '') + '</b><small>' + sm + '</small></div>' +
-        '<button type="button" class="td-moi ' + (mode === 'dau' ? 'dau' : 'gh') + '" data-uid="' + an(b.uid) + '" data-mode="' + mode + '"' + (b.dangDau ? ' disabled' : '') + '>' + (mode === 'dau' ? HIC.cup + 'Đấu giải' : HIC.kiem + 'Mời') + '</button></div>';
+        '<button type="button" class="td-moi ' + (mode === 'dau' ? 'dau' : 'gh') + '" data-uid="' + an(b.uid) + '" data-mode="' + mode + '"' + (b.dangDau || het ? ' disabled' : '') + '>' + (mode === 'dau' ? HIC.cup + 'Đấu giải' : HIC.kiem + 'Mời') + '</button></div>';
+    }
+    // dòng "hôm nay còn N trận" (học sinh) + nhắc 22:45
+    function luotHtml(giai) {
+      if (me.laThay) return GH.nhacHtml();
+      var con = GH.conTran(S.ph), cg = giai && S.g ? GH.conGiai(S.ph, S.g.id) : -1;
+      return GH.nhacHtml() + '<div class="gh-nhac xam">🎮 <span>' + (con ? 'Hôm nay em còn <b>' + con + '/' + GH.cai.tranNgay + '</b> trận' : 'Hôm nay em đã chơi đủ <b>' + GH.cai.tranNgay + '</b> trận — mai đấu tiếp nhé!') +
+        (cg >= 0 && con ? (cg ? ' · giải còn <b>' + cg + '/' + GH.cai.giaiNgay + '</b> trận tính điểm' : ' · đã đủ <b>' + GH.cai.giaiNgay + '</b> trận tính điểm, đấu thêm không cộng bảng') : '') + '</span></div>';
     }
     function luyen() {
       var c = S.lt, chip = function (k, v, t, off) { return '<button type="button" class="td-chip2' + (String(c[k]) === String(v) ? ' on' : '') + '" data-lt="' + k + '" data-v="' + v + '"' + (off ? ' disabled' : '') + '>' + t + '</button>'; };
@@ -650,13 +811,14 @@
     }
     function ve() {
       var h;
-      if (S.step === 'menu') h = hd('Đấu A Show Speed', '') + hero() + '<div class="td-note" role="status"></div><div class="td-phu">' +
+      ghCss();
+      if (S.step === 'menu') h = hd('Đấu A Show Speed', '') + hero() + luotHtml(true) + '<div class="td-note" role="status"></div><div class="td-phu">' +
         cd('td-gh', HIC.ban, 'Giao hữu', me.laThay ? 'Chọn cách đấu, mời em đang online' : 'Với bạn đang online, không tính điểm', 'ban-gh') + cd('td-lt', HIC.muc, 'Luyện tập', 'Chơi với máy để làm quen', 'luyen') + '</div>';
-      else if (S.step === 'ban-dau') h = hd('Đấu giải · ' + an(S.g ? S.g.ten : ''), soBan() + ' bạn online', true) + '<div class="td-tip g">' + HIC.cup + 'Thắng +2 · hòa +1 · thua 0. Tính vào bảng xếp hạng lớp.</div>' +
+      else if (S.step === 'ban-dau') h = hd('Đấu giải · ' + an(S.g ? S.g.ten : ''), soBan() + ' bạn online', true) + '<div class="td-tip g">' + HIC.cup + 'Thắng +2 · hòa +1 · thua 0. Tính vào bảng xếp hạng lớp.</div>' + luotHtml(true) +
         '<div class="td-ds">' + (S.ds.filter(function (x) { return !x.laThay; }).map(function (b) { return hang(b, 'dau'); }).join('') || '<div class="td-rongtt">Chưa có bạn nào cùng lớp đang online.</div>') + '</div>';
       else if (S.step === 'ban-gh') {
         var dsG = me.laThay ? S.ds : S.thay.concat(S.ds);
-        h = hd('Giao hữu', me.laThay ? 'mở trận ở tab mới' : 'không tính điểm', true) + (me.laThay ? caiHtml(S.c, S.bo) : '') +
+        h = hd('Giao hữu', me.laThay ? 'mở trận ở tab mới' : 'không tính điểm', true) + (me.laThay ? caiHtml(S.c, S.bo) : luotHtml(false)) +
           '<div class="td-ds">' + (dsG.map(function (b) { return hang(b, 'gh'); }).join('') || '<div class="td-rongtt">' + (me.laThay ? 'Chưa có em nào của lớp đang online.' : 'Chưa có bạn nào cùng lớp đang online.') + '</div>') + '</div>';
       } else h = hd('Luyện tập', 'A Show Speed', true) + luyen();
       el.className = 'td-chon td-hop' + (S.step === 'ban-gh' && me.laThay ? ' rong' : '');
@@ -675,6 +837,7 @@
       S.step = k; ve();
     });
     function batDauLuyen() {
+      if (!me.laThay && GH.dem()) { dongHop(); return GH.hopNgu(); }   /* v1.375.0 luyện tập: không đếm ván, chỉ nghỉ đêm */
       var c = S.lt, bo = c.bo === 'g' && S.g ? 'g' : 'n';
       var u = (laNw ? '' : 'nw/') + 'tran.html?luyen=1&may=' + c.may + '&phut=' + c.phut + '&bo=' + bo + '&lop=' + encodeURIComponent(lop) + (bo === 'g' ? '&giai=' + encodeURIComponent(S.g.id) : '');
       dongHop();

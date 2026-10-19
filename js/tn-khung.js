@@ -133,8 +133,13 @@
       '<div class="va"><i style="width:100%"></i></div><div class="ha"><button type="button" class="k">Từ chối</button><button type="button" class="n">Nhận</button></div>';
     document.body.appendChild(el);
     // ⭐ 16/10 — THẦY nhận (đang ở dashboard): mở trận ở TAB MỚI ngay trong cú bấm (khung chỉ ghi "đã nhận", không chuyển trang)
-    var traLoi = function (nhan) {
+    var traLoi = async function (nhan) {
       var mo = false;
+      // ⭐ v1.375.0 — giới hạn chơi (js/the-td.js GioiHan): em bấm Nhận trận em–em lúc nghỉ đêm / đã đủ trận ⇒ báo, thẻ giữ nguyên
+      if (nhan && !d.thay && !d.gv && window.GioiHan) {
+        var ch = await GioiHan.chanNhanToi();
+        if (ch) { if (ch === 'dem') GioiHan.hopNgu(); else alert(ch); return; }
+      }
       if (nhan && d.thay && /^https?:\/\//.test(d.url || '') && new URL(d.url).origin === location.origin) { try { mo = !!window.open(d.url, '_blank'); } catch (e) { } }
       theMoiDau({ tk: 'moiDauXoa', id: d.id }); try { fr.contentWindow.postMessage({ tk: 'dau', id: d.id, nhan: nhan, meMo: mo }, location.origin); } catch (e) { }
     };

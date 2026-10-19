@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-19 10:58:39",
+  "capNhat": "2026-10-19 15:24:51",
   "bai": {
     "A1C": [
       {
@@ -1927,6 +1927,62 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_17.10_STAGE_9_PLACE",
+        "tieuDe": "NNTNG4_17.10_STAGE 9 PLACE",
+        "tenHien": "NNTNG4_17.10_STAGE 9 PLACE",
+        "dang": "STAGE",
+        "ngay": "17.10",
+        "han": "2026-10-24T08:00",
+        "maLesson": "9 PLACE",
+        "taoLuc": "2026-10-19",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "WORDS – LOGIC QUEST",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FNNTNG4%2FNNTNG4_17.10_STAGE_9_PLACE%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "j9vs3y",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-10-21T12:00"
+          },
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "9 PLACE / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "je7u5p",
+            "mau": "TRUE OR FALSE",
+            "han": "2026-10-23T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "9 PLACE / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "9puhz4",
+            "mau": "FIND THE MATCH",
+            "han": "2026-10-23T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "9 PLACE / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "8x8b3n",
+            "mau": "OPEN THE BOX",
+            "han": "2026-10-24T08:00"
+          }
+        ],
+        "giaoLuc": "2026-10-19T15:24"
+      },
       {
         "id": "NNTNG4_10.10_STAGE_8_FAMILY_AND_ROOM",
         "tieuDe": "NNTNG4_10.10_STAGE 8 FAMILY AND ROOM",
@@ -5734,7 +5790,7 @@
     "A1C": "2026-10-18 11:37:25",
     "B2A": "2026-10-13 17:12:48",
     "A1B": "2026-10-14 11:23:54",
-    "NNTNG4": "2026-10-14 14:27:50",
+    "NNTNG4": "2026-10-19 15:24:51",
     "A2B": "2026-10-17 19:29:27",
     "B1B": "2026-10-17 21:48:43",
     "NNTNGK9": "2026-10-19 10:58:39"

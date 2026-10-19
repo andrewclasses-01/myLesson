@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-18 07:57:57",
+  "capNhat": "2026-10-19 15:20:08",
   "nguon": "dashboard",
   "lop": [
     {
@@ -972,13 +972,6 @@
           "sinhNhat": ""
         },
         {
-          "id": 100138,
-          "ten": "Phương Minh",
-          "ma": "VUPHUONGMINH13042012",
-          "sinhNhat": "",
-          "vao": "2026-09-27"
-        },
-        {
           "id": 100139,
           "ten": "Phương Nhi",
           "ma": "DANGPHUONGNHI15032012",
@@ -1001,12 +994,6 @@
           "id": 100141,
           "ten": "Rosie",
           "ma": "TRANBAONGOC30112012",
-          "sinhNhat": ""
-        },
-        {
-          "id": 100142,
-          "ten": "Song Ngọc",
-          "ma": "DAOSONGNGOC12032012",
           "sinhNhat": ""
         },
         {

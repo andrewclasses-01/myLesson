@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-18 11:37:25",
+  "capNhat": "2026-10-19 10:58:39",
   "bai": {
     "A1C": [
       {
@@ -2622,6 +2622,426 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L13",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 25: BÀI GIẢNG 25: GIỚI TỪ",
+        "tenBai": "LESSON 25",
+        "maLesson": "LESSON 25",
+        "noiDung": "GIỚI TỪ",
+        "han": "2026-10-22T23:59",
+        "taoLuc": "2026-10-19",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. TÌM GIỚI TỪ CHỈ VỊ TRÍ",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "2sqp9w"
+          },
+          {
+            "loai": "act",
+            "ten": "BÀI TẬP 2: TÌM GIỚI TỪ CHỈ THỜI GIAN VÀ SỰ ĐỒNG HÀNH",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "q5jwff"
+          },
+          {
+            "loai": "act",
+            "ten": "BÀI TẬP 3: TẠO CÂU SỬ DỤNG GIỚI TỪ",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "hd5wc5"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 25",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "6n72uj"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 25: GIỚI TỪ",
+          "video": "https://www.youtube.com/watch?v=oCUQsWolp7M",
+          "doan": [
+            {
+              "id": "dmvepko1q6bvk",
+              "ten": "Mở đầu buổi học",
+              "tu": "00:00:00",
+              "den": "00:00:58",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qyj7y"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qyj7y",
+              "ten": "Giới thiệu về từ chỉ vị trí và thời gian",
+              "tu": "00:00:58",
+              "den": "00:03:52",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qniwa"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qniwa",
+              "ten": "Review phân định thì",
+              "tu": "00:03:52",
+              "den": "00:08:02",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qercq"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qercq",
+              "ten": "Review sâu vào hiện tại đơn",
+              "tu": "00:08:02",
+              "den": "00:10:07",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qsnmp"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qsnmp",
+              "ten": "Tại sao Thầy hay nhắc lại kiến thức?",
+              "tu": "00:10:07",
+              "den": "00:12:18",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qn6gd"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qn6gd",
+              "ten": "Review trạng từ tần suất",
+              "tu": "00:12:18",
+              "den": "00:13:27",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qffob"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qffob",
+              "ten": "Đặt mục tiêu buổi học hôm nay",
+              "tu": "00:13:27",
+              "den": "00:15:21",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q4y87"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q4y87",
+              "ten": "Giới thiệu và giải thích cái tên giới từ (theo cách đơn giản hóa)",
+              "tu": "00:15:21",
+              "den": "00:20:59",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qk8x5"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qk8x5",
+              "ten": "Chia sẻ về sự cố gắng",
+              "tu": "00:20:59",
+              "den": "00:22:07",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q6g9u"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q6g9u",
+              "ten": "Ví dụ về giới từ ở câu có động từ thường",
+              "tu": "00:22:07",
+              "den": "00:28:01",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qjtxk"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qjtxk",
+              "ten": "Ví dụ về giới từ ở câu có động từ mượn (be)",
+              "tu": "00:28:01",
+              "den": "00:29:18",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qvcwe"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qvcwe",
+              "ten": "Giới từ chỉ vị trí: ở dưới, ở trong, ở cạnh, ở giữa",
+              "tu": "00:29:18",
+              "den": "00:31:54",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q5oh9"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q5oh9",
+              "ten": "Lưu ý quan trọng với giới từ ở giữa",
+              "tu": "00:31:54",
+              "den": "00:33:38",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q1ulm"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q1ulm",
+              "ten": "Giới từ chỉ vị trí: ở chỗ",
+              "tu": "00:33:38",
+              "den": "00:36:14",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qrt6i"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qrt6i",
+              "ten": "Chốt danh sách các giới từ chỉ vị trí",
+              "tu": "00:36:14",
+              "den": "00:36:42",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qvnr3"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qvnr3",
+              "ten": "Lưu ý về vị trí",
+              "tu": "00:36:42",
+              "den": "00:38:56",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qi10c"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qi10c",
+              "ten": "HD BT1 - Tìm giới từ chỉ vị trí",
+              "tu": "00:38:56",
+              "den": "00:39:37",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmveq1sz99qi"
+              ]
+            },
+            {
+              "id": "dmvepko1qfm1z",
+              "ten": "Giới thiệu về giới từ chỉ thời gian",
+              "tu": "00:39:44",
+              "den": "00:41:21",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1quvrh"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1quvrh",
+              "ten": "Giới từ chỉ thời gian: vào năm, vào tháng, vào ngày, vào lúc",
+              "tu": "00:41:21",
+              "den": "00:43:57",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qax44"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qax44",
+              "ten": "Hướng dẫn cách đọc các năm",
+              "tu": "00:43:57",
+              "den": "00:45:00",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q3gb6"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q3gb6",
+              "ten": "Tiếp tục với các giới từ: vào năm, vào tháng, vào ngày, vào lúc",
+              "tu": "00:45:00",
+              "den": "00:46:49",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q1hnw"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q1hnw",
+              "ten": "Hướng dẫn cách đọc các giờ trong ngày",
+              "tu": "00:46:49",
+              "den": "00:48:15",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q5hoe"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1q5hoe",
+              "ten": "Ví dụ với giới từ chỉ thời gian",
+              "tu": "00:48:15",
+              "den": "00:50:13",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qjixm"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qjixm",
+              "ten": "Thêm giới từ chỉ thời gian: trước - sau",
+              "tu": "00:50:13",
+              "den": "00:54:16",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qcnhu"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qcnhu",
+              "ten": "Giới từ chỉ sự đồng hành: cùng với",
+              "tu": "00:54:16",
+              "den": "00:56:11",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qjng0"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvepko1qjng0",
+              "ten": "HD BT2 - Tìm giới từ chỉ thời gian và vấn đề phát sinh",
+              "tu": "00:56:11",
+              "den": "00:59:31",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmveq1tkceak"
+              ]
+            },
+            {
+              "id": "dmvepko1q8xgk",
+              "ten": "HD BT3 - Tạo câu sử dụng giới từ",
+              "tu": "00:59:37",
+              "den": "01:01:42",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmveq1u1hkea"
+              ]
+            },
+            {
+              "id": "dmvepko1qo870",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "01:01:48",
+              "den": "01:02:58",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmveq1uvvf3b"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmveq1sz99qi",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. TÌM GIỚI TỪ CHỈ VỊ TRÍ",
+            "actTen": "BT1. TIM GIOI TU CHI VI TRI",
+            "ma": "2sqp9w",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qfm1z"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmveq1tkceak",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BÀI TẬP 2: TÌM GIỚI TỪ CHỈ THỜI GIAN VÀ SỰ ĐỒNG HÀNH",
+            "actTen": "BT2. TIM GIOI TU CHI THOI GIAN VA SU DONG HANH",
+            "ma": "q5jwff",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1q8xgk"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmveq1u1hkea",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BÀI TẬP 3: TẠO CÂU SỬ DỤNG GIỚI TỪ",
+            "actTen": "BT3. TAO CAU SU DUNG GIOI TU",
+            "ma": "hd5wc5",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvepko1qo870"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmveq1uvvf3b",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 25",
+            "actTen": "TRAC NGHIEM BAI GIANG 25 - GIOI TU",
+            "ma": "6n72uj",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-19T10:58"
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L12",
         "dang": "KHOA",
@@ -5317,6 +5737,6 @@
     "NNTNG4": "2026-10-14 14:27:50",
     "A2B": "2026-10-17 19:29:27",
     "B1B": "2026-10-17 21:48:43",
-    "NNTNGK9": "2026-10-15 09:51:56"
+    "NNTNGK9": "2026-10-19 10:58:39"
   }
 }

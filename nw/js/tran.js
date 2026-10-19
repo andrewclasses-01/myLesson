@@ -11,10 +11,10 @@
 // Bàn thử ?thu=1: đấu với MÁY (5–10 giây tìm một từ) — không ghi gì.
 //
 // ⭐ v1.351.0 (15/10/2026 tối, thầy) — hai việc mới:
-//   1. GIẢI CÓ BỘ TỪ (thầy chọn act AWord WORDS + tuỳ chọn như Fight): máy chủ gửi bàn ĐANG CHƠI (chu · goi[{m, n}] · bam ·
+//   1. GIẢI CÓ BỘ TỪ (thầy chọn act AWord WORDS + tuỳ chọn như Fight): máy chủ gửi bàn ĐANG CHƠI (chu · goi[{m, n}] ·
 //      tim · van/soVan · che one|list|free · chiBo). Ô giữa hiện GỢI Ý các từ của bàn (lật ra khi có người tìm); tìm hết ⇒
-//      máy chủ đổi bàn (chữ xáo lại, rung). Từ gửi lên = `tu/{từ}_{van}`. Máy em so BĂM (sha256(id:TỪ)) để báo đúng/sai
-//      ngay — giống máy chủ (tran-dau.js `bam`). One/List: +1 mỗi từ · Free: điểm×2; Free tắt "Word list only" ⇒ từ điển.
+//      máy chủ đổi bàn (chữ xáo lại, rung). Từ gửi lên = `tu/{từ}_{van}`. Máy chủ chấm (v1.376.0 bỏ băm — xem CHO),
+//      máy em hiện kết quả khi tài liệu từ có `ok`. One/List: +1 mỗi từ · Free: điểm×2; Free tắt "Word list only" ⇒ từ điển.
 //      Word list = ô như PHÍM (bấm lại được). One word: 8/12/16 ô.
 //   2. THEO DÕI (?xem=1, hoặc mở trận không phải của mình): bạn cùng lớp / thầy xem trực tiếp — không bàn chữ, ô giữa
 //      trải rộng (cột tên A | cột tên B), điểm 2 bên, không ghi gì. Luật: tools/dang-luat-giai-dau-bo.js (bạn cùng lớp đọc tu).
@@ -105,12 +105,10 @@ function dsGv() {   // mọi từ ghép được từ 16 chữ, DỄ → KHÓ (c
 const tenTu = (w) => (che() ? w + "_" + vanNay() : w);
 function tachTen(id) { const m = /^([a-z]+)(?:_(\d+))?$/.exec(id) || []; return { w: m[1] || id, v: m[2] != null ? +m[2] : -1 }; }
 const diemBai = (up) => (che() === "free" ? points(Math.min(7, Math.max(3, up.length))) * 2 : 1);
-// băm như máy chủ (tran-dau.js `bam`): sha256(id + ':' + TỪ) → 16 ký tự hex đầu
-async function bamTu(up) {
-  const id = banThu ? "thu" : ID;
-  const b = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(id + ":" + up));
-  return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, "0")).join("").slice(0, 16);
-}
+// ⛔ v1.376.0 (19/10/2026, CHỐNG GIAN LẬN Đợt A) — trận KHÔNG còn mang `bam` (băm đáp án dò ngược được). Trận có bộ từ: máy em gửi mọi từ,
+//   CHO giữ các từ của em đang đợi máy chủ chấm ⇒ có `ok` thì kêu + bóng (+điểm / ? / Taken). Bàn chưa có `chu` (máy chủ ghi đúng giờ
+//   bắt đầu) ⇒ ô "?" khoá. Giới hạn 12 từ / 10 giây ở máy chủ (`ly:'nhanh'`).
+const CHO = new Map();      // tên tài liệu từ → giờ gửi
 
 // ---------- điểm ----------
 function diemBen(k) {
@@ -203,34 +201,52 @@ function ngheDsTu() {
       }
     });
     TU = moi;
+    // ⛔ v1.376.0 — máy chủ đã chấm từ em đang đợi
+    CHO.forEach((luc, id) => {
+      const x = moi.get(id); if (!x || x.ok == null) return;
+      CHO.delete(id);
+      if (x.ok === true) { sfx.ok(-.65, x.d || 1); bubble("ok", "+" + (x.d || 1)); nayDiem(0); }
+      else { sfx.bad(-.65); bubble("bad", "?"); }
+    });
     if (G.phase === "play" || G.phase === "count" || G.phase === "over") { veO(); veDiem(); }
   }, () => { G.loiTu = true; if (G.phase === "play") renderCentre(); });
 }
 async function batNhip() {
-  // nhịp đầu: đo lệch đồng hồ với máy chủ
-  await nhip({});
+  await doLech();
   nhipIv = setInterval(() => { if (G.phase === "play" || G.phase === "lobby") nhip({}); }, 10000);
+}
+// ⛔ v1.376.0 — đo lệch đồng hồ 3 lần, lấy lần khứ hồi NGẮN NHẤT. Trước đây đo MỘT lần (lượt ghi đầu chậm vì mở kết nối, t1 còn tính cả
+//   lượt đọc) ⇒ máy em tưởng giờ máy chủ sớm hơn tới ~1 giây ⇒ bàn hiện trước giờ ⇒ từ đầu gửi lúc −1…−0,5 giây bị chấm sai OAN (55 lượt thật).
+async function doLech() {
+  if (banThu || !tranRef || G.xem) return;
+  const r = f.fs.doc(tranRef, "nhip", toi.uid);
+  let tot = null;
+  for (let k = 0; k < 3; k++) {
+    try {
+      const t0 = Date.now();
+      await f.fs.setDoc(r, { luc: Date.now(), sv: f.fs.serverTimestamp() }, { merge: true });
+      const t1 = Date.now(), s = await f.fs.getDocFromServer(r), sv = s.data().sv;
+      if (sv && sv.toMillis && (!tot || t1 - t0 < tot.rtt)) tot = { rtt: t1 - t0, lech: sv.toMillis() - (t0 + t1) / 2 };
+    } catch (e) { console.warn("[trận] đo giờ", e); }
+  }
+  if (tot) LECH = tot.lech;
 }
 async function nhip(them) {
   if (banThu || !tranRef || G.xem) return;
-  const r = f.fs.doc(tranRef, "nhip", toi.uid), t0 = Date.now();
-  try {
-    await f.fs.setDoc(r, Object.assign({ luc: Date.now(), sv: f.fs.serverTimestamp() }, them), { merge: true });
-    if (!LECH) {
-      const s = await f.fs.getDocFromServer(r), t1 = Date.now(), sv = s.data().sv;
-      if (sv && sv.toMillis) LECH = sv.toMillis() - (t0 + t1) / 2;
-    }
-  } catch (e) { console.warn("[trận] nhịp", e); }
+  const r = f.fs.doc(tranRef, "nhip", toi.uid);
+  try { await f.fs.setDoc(r, Object.assign({ luc: Date.now(), sv: f.fs.serverTimestamp() }, them), { merge: true }); }
+  catch (e) { console.warn("[trận] nhịp", e); }
 }
 // ⭐ v1.351.0 — bàn mới (chữ khác / số ô khác) ⇒ xáo vị trí riêng của em, bỏ chữ đang chọn, rung bàn
 function doiBan() {
-  const n = letters().length || 16, v = vanNay();
-  if (v === G.van && n === G.n) return;
-  const dau = G.van < 0;
-  G.van = v; G.n = n; G.order = shuffle([...Array(n).keys()]); G.sel = [];
+  const n = letters().length || 16, v = vanNay(), coChu = letters().length > 0;
+  // ⛔ v1.376.0 — máy chủ ghi chữ đúng giờ bắt đầu ⇒ lúc chữ tới cũng là "bàn mới" (rung + hiện chữ)
+  if (v === G.van && n === G.n && coChu === !!G.coChu) return;
+  const dau = G.van < 0, doiVan = v !== G.van;
+  G.van = v; G.n = n; G.coChu = coChu; G.order = shuffle([...Array(n).keys()]); G.sel = [];
   if (!dau && G.phase === "play") { render(); shake(); sfx.shake(); }
   // One word + giọng đọc: tự đọc gợi ý của bàn mới (lần đầu đợi màn đếm ngược xong — xem vaoPha)
-  if (!dau && G.T.giong && G.T.che === "one") docGiong(((G.T.goi || [])[0] || {}).v);
+  if (!dau && doiVan && G.T.giong && G.T.che === "one") docGiong(((G.T.goi || [])[0] || {}).v);
 }
 // ⭐ v1.352.0 — GIỌNG ĐỌC: clip ở voiceClips/{id} (audio = data URL, ai cũng đọc được); đệm theo id
 const CLIP = new Map();
@@ -278,7 +294,7 @@ function vaoPha(cu) {
   clearInterval(cdIv); clearInterval(clockIv);
   if (G.phase === "lobby") { render(); cdIv = setInterval(() => { if (now() >= G.T.batDau) { capNhatPha(); } else renderCentre(); }, 200); return; }
   if (G.phase === "play") {
-    render(); if (cu === "lobby" || cu === "cho" || cu === "tai") shake(); clockIv = setInterval(tick, 250);
+    render(); if ((cu === "lobby" || cu === "cho" || cu === "tai") && letters().length) shake(); clockIv = setInterval(tick, 250);
     if (G.T.giong && G.T.che === "one" && cu !== "play") docGiong(((G.T.goi || [])[0] || {}).v);
     return;
   }
@@ -348,25 +364,30 @@ async function submit() {
   }
 }
 // ⭐ v1.351.0 — gửi một từ ở trận có bộ từ
+// ⛔ v1.376.0 — máy em KHÔNG biết đáp án: gửi mọi từ lên, đợi máy chủ chấm (CHO + ngheDsTu báo kết quả)
 async function submitBo(w) {
-  const T = G.T, up = w.toUpperCase(), v = vanNay();
-  const i = (T.bam || []).indexOf(await bamTu(up));
-  const tim = T.tim || {};
-  let p;
-  if (i >= 0) {
-    if (tim[i]) { sfx.dup(-.65); return bubble("dup", tim[i] === myUid() ? "Found" : "Taken"); }
-    p = diemBai(up);
-  } else if (che() === "free" && !T.chiBo) {
-    if (w.length < 3 || !lookup(dict, w)) { sfx.bad(-.65); return bubble("bad", "?"); }
-    if (TU.has(tenTu(w))) { sfx.dup(-.65); return bubble("dup", TU.get(tenTu(w)).uid === myUid() ? "Found" : "Taken"); }
-    p = points(w.length);
-  } else { sfx.bad(-.65); return bubble("bad", "?"); }
-  sfx.ok(-.65, p); bubble("ok", "+" + p);
-  if (banThu) return apTu(w, myUid(), true);
-  try {
-    await f.fs.setDoc(f.fs.doc(tranRef, "tu", tenTu(w)), { uid: toi.uid, luc: f.fs.serverTimestamp() });
-    nayDiem(0);
-  } catch (e) { bubble("dup", now() > (T.ketThuc || 0) ? "Time" : "Taken"); }
+  const T = G.T, up = w.toUpperCase(), id = tenTu(w);
+  const trung = (x) => { sfx.dup(-.65); bubble("dup", x.uid === myUid() ? "Found" : "Taken"); };
+  if (banThu) {   // bàn thử / luyện tập: bộ bàn ở ngay máy em ⇒ chấm tại chỗ như máy chủ
+    const b = KE_THU[vanNay()], i = b ? b.w.indexOf(up) : -1, tim = T.tim || {};
+    let p;
+    if (i >= 0) { if (tim[i]) return trung({ uid: tim[i] }); p = diemBai(up); }
+    else if (che() === "free" && !T.chiBo && w.length >= 3 && lookup(dict, w)) { if (TU.has(id)) return trung(TU.get(id)); p = points(w.length); }
+    else { sfx.bad(-.65); return bubble("bad", "?"); }
+    sfx.ok(-.65, p); bubble("ok", "+" + p);
+    return apTu(w, myUid(), true);
+  }
+  const cu = TU.get(id);
+  if (cu) {
+    if (cu.ok === false) { sfx.bad(-.65); return bubble("bad", "?"); }
+    if (cu.ok === true || cu.uid !== myUid()) return trung(cu);
+    return;   // từ của em, máy chủ đang chấm
+  }
+  if (CHO.has(id)) return;
+  if (w.length < 2) { sfx.bad(-.65); return bubble("bad", "?"); }
+  CHO.set(id, Date.now());
+  try { await f.fs.setDoc(f.fs.doc(tranRef, "tu", id), { uid: toi.uid, luc: f.fs.serverTimestamp() }); }
+  catch (e) { CHO.delete(id); sfx.dup(-.65); bubble("dup", now() > (T.ketThuc || 0) ? "Time" : "Taken"); }
 }
 const myUid = () => (banThu ? (G.xem ? "may2" : (toi && toi.uid) || "toi") : G.xem ? (G.T && G.T.a) : toi.uid);
 
@@ -377,7 +398,7 @@ async function layTu(w) {
   w = String(w || "").toLowerCase();
   let p;
   if (che()) {
-    const up = w.toUpperCase(), i = (G.T.bam || []).indexOf(await bamTu(up));
+    const up = w.toUpperCase(), i = ((keGv()[vanNay()] || {}).w || []).indexOf(up);   /* v1.376.0: thầy so với kế hoạch bàn (may/ke) */
     if (i < 0 || (G.T.tim || {})[i]) { sfx.dup(-.65); return bubble("dup", "Taken"); }
     p = diemBai(up);
   } else {
@@ -444,7 +465,7 @@ function chips(y) {
 }
 const stageHtml = (g, inner, side) => `<div class="wsg-stage" ${side != null ? `data-side="${side}"` : ""} style="left:${g.x}px;top:${g.y}px;width:${g.w}px;height:${g.h}px">${inner}</div>`;
 function boardHtml() {
-  const live = G.phase === "play" && !G.ask, show = live || G.phase === "count" || G.phase === "over";
+  const live = G.phase === "play" && !G.ask && letters().length > 0, show = live || G.phase === "count" || G.phase === "over";
   const chu = letters(), n = chu.length || 16, T = L.T, gap = L.gap, gw = T * 4 + gap * 3, fs = Math.round(T * 0.5);
   const tiles = [...Array(n).keys()].map((k) =>
     `<button class="wsg-t ${G.sel.includes(k) ? "on" : ""} ${show && chu.length ? "" : "idle"}" data-do="t" data-k="${k}" style="width:${T}px;height:${T}px;font-size:${fs}px" ${live ? "" : "disabled"}>${show && chu.length ? chu[G.order[k]] : "?"}</button>`).join("");
@@ -683,7 +704,7 @@ function keThu(cheThu, o) {   // bản rút gọn ws-chu.js keBo (máy chủ) �
 }
 async function datBanThu(v) {
   const b = KE_THU[v];
-  Object.assign(G.T, { van: v, chu: b.l, goi: b.w.map((w, i) => ({ m: b.m[i], n: w.length })), bam: await Promise.all(b.w.map(bamTu)), tim: {}, hien: {}, goiY: null, soGoi: 0, moc: Math.max(Date.now(), G.T.batDau || 0) });
+  Object.assign(G.T, { van: v, chu: b.l, goi: b.w.map((w, i) => ({ m: b.m[i], n: w.length })), tim: {}, hien: {}, goiY: null, soGoi: 0, moc: Math.max(Date.now(), G.T.batDau || 0) });
 }
 // bàn thử: một bước gợi ý như máy chủ (tran-dau.js tdTuBo nhánh zg)
 async function thuGoi() {

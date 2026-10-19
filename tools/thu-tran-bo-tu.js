@@ -126,7 +126,6 @@ async function ghiAdmin(p, fields) {
 
 // ───────── THỬ MỘT TRẬN THẬT CÓ BỘ TỪ (hàm máy chủ đã đưa lên) — tài khoản ZTEST, dọn sạch ─────────
 const ngu = (ms) => new Promise((r) => setTimeout(r, ms));
-const bam = (id, up) => crypto.createHash('sha256').update(id + ':' + up).digest('hex').slice(0, 16);
 async function thuTran() {
   const k = '?key=' + encodeURIComponent(API_KEY);
   let hong = false;
@@ -161,15 +160,22 @@ async function thuTran() {
     (q.json.documents || []).forEach((d) => xoa.push(d.name.split('/documents/')[1]));
     ok('B nhận', (await goi(`${FS_GOC}/tranDau/${ID}${k}&updateMask.fieldPaths=trangThai`, { method: 'PATCH', headers: H2(tk[Bb]), json: { fields: { trangThai: S('nhan') } } })).status === 200);
     let t = null;
-    for (let i = 0; i < 25; i++) { await ngu(1000); t = await tran(); if (t.trangThai === 'choi') break; }
-    ok('tdDoi dựng bàn theo bộ từ: che one, 2 bàn, 12 ô, gợi ý 3 chữ', t && t.trangThai === 'choi' && t.che === 'one' && t.soVan === 2 && t.van === 0 && (t.chu || '').length === 12 && t.goi && t.goi[0].n === 3 && t.bam && t.bam.length === 1,
+    for (let i = 0; i < 50; i++) { await ngu(200); t = await tran(); if (t.trangThai === 'choi') break; }
+    // ⛔ 19/10/2026 v1.376.0 (chống gian lận Đợt A): trận KHÔNG mang băm đáp án · chữ chỉ lộ lúc batDau − 150 ms
+    ok('v1.376: trận không mang `bam`', t && !('bam' in t));
+    ok('v1.376: chữ CHƯA lộ trong lúc đếm ngược (còn ' + (t ? t.batDau - Date.now() : '?') + ' ms)', t && !t.chu && Date.now() < t.batDau - 1000, t ? JSON.stringify({ chu: t.chu }) : '');
+    await ngu(Math.max(0, t.batDau - Date.now() + 1200)); t = await tran();
+    ok('tdDoi dựng bàn theo bộ từ: che one, 2 bàn, 12 ô, gợi ý 3 chữ (chữ đã lộ sau giờ bắt đầu)', t && t.trangThai === 'choi' && t.che === 'one' && t.soVan === 2 && t.van === 0 && (t.chu || '').length === 12 && t.goi && t.goi[0].n === 3,
       t ? JSON.stringify({ che: t.che, soVan: t.soVan, chu: t.chu, goi: t.goi }) : '');
     if (!t || t.trangThai !== 'choi') return;
     ok('tài liệu trận KHÔNG lộ từ', !/CAT|DOG/.test(JSON.stringify(t.goi)) && t.boTen === 'ZTEST / WORDS');
     ok('v1.352: gợi ý bật + giọng đọc mang mã clip', t.goiYBat === true && t.giong === true && /^ztestclip_/.test(t.goi[0].v || '') && t.moc === t.batDau, JSON.stringify({ goiYBat: t.goiYBat, giong: t.giong, v: t.goi[0].v }));
-    const tuBan = (tt) => TU.map(([w]) => w.toUpperCase()).find((w) => bam(ID, w) === tt.bam[0]);
+    const keAdmin = docv((await goi(`${FS_GOC}/tranDau/${ID}/may/ke`, { headers: await H() })).json);
+    const tuBan = (tt) => ((((keAdmin && keAdmin.ds) || [])[tt.van] || {}).w || [])[0];
     const w0 = tuBan(t);
-    ok('băm khớp một từ của bộ (' + w0 + ')', !!w0);
+    ok('kế hoạch bàn (đọc bằng khoá quản trị) có từ của bộ (' + w0 + ')', !!w0 && TU.some(([w]) => w.toUpperCase() === w0));
+    xoa.unshift('tranDau/' + ID + '/may/bd');
+    ok('A đọc chữ cất may/bd = 403', (await goi(`${FS_GOC}/tranDau/${ID}/may/bd${k}`, { headers: H2(tk[A]) })).status === 403);
     ok('A đọc kế hoạch bàn may/ke = 403', (await goi(`${FS_GOC}/tranDau/${ID}/may/ke${k}`, { headers: H2(tk[A]) })).status === 403);
     const gui = (uid, id) => goi(`${FS_GOC}/tranDau/${ID}/tu${k}&documentId=${id}`, { method: 'POST', headers: H2(tk[uid]), json: { fields: { uid: S(uid) } } });
     await ngu(Math.max(0, t.batDau - Date.now() + 300));
@@ -180,6 +186,16 @@ async function thuTran() {
     const zz = docv((await goi(`${FS_GOC}/tranDau/${ID}/tu/zzz_0`, { headers: await H() })).json);
     ok('"zzz" chấm ok=false', zz && zz.ok === false);
     ok('C (cùng lớp, ngoài trận) xem được từ của trận', (await goi(`${FS_GOC}/tranDau/${ID}/tu${k}`, { headers: H2(tk[C]) })).status === 200);
+    // ⛔ v1.376: GIỚI HẠN TỐC ĐỘ — B bắn 14 từ sai liền (B đã gửi 1 từ ở bàn 1 trong 10 giây qua) ⇒ từ thứ 13 trở đi bị chặn 'nhanh'
+    const sung = 'abcdefghijklmn'.split('').map((c) => 'zq' + c + '_1');
+    for (const id of sung) { await gui(Bb, id); xoa.unshift('tranDau/' + ID + '/tu/' + id); }
+    await ngu(6000);
+    const kqSung = [];
+    for (const id of sung) kqSung.push(docv((await goi(`${FS_GOC}/tranDau/${ID}/tu/${id}`, { headers: await H() })).json) || {});
+    const soNhanh = kqSung.filter((x) => x.ly === 'nhanh').length;
+    ok('v1.376: bắn 14 từ / vài giây ⇒ bị chặn "nhanh" ' + soNhanh + ' từ (cần ≥ 2), mọi từ đều ok=false', soNhanh >= 2 && kqSung.every((x) => x.ok === false), JSON.stringify(kqSung.map((x) => x.ly || x.ok)));
+    t = await tran();
+    ok('v1.376: trận ghi nghi.b ≥ 2', t.nghi && t.nghi.b >= 2, JSON.stringify(t.nghi));
     const w1 = tuBan(t);
     // ⭐ v1.352.0 — GỢI Ý LẬT CHỮ trên bàn 2
     const coTu = async (id) => (await goi(`${FS_GOC}/tranDau/${ID}/tu/${id}`, { headers: await H() })).status === 200;

@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-19 15:24:51",
+  "capNhat": "2026-10-19 22:09:08",
   "bai": {
     "A1C": [
       {
@@ -2339,6 +2339,40 @@
       }
     ],
     "A1A": [
+      {
+        "id": "A1A_19.10_DICTS_LSB1-S1.T2.P2",
+        "tieuDe": "A1A_19.10_DICTS LSB1-S1.T2.P2",
+        "tenHien": "A1A_19.10_DICTS LSB1-S1.T2.P2",
+        "dang": "DICTS",
+        "ngay": "19.10",
+        "han": "2026-10-22T17:45",
+        "maLesson": "LSB1-S1.T2.P2",
+        "taoLuc": "2026-10-19",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "LSB1-S1.T2.P2",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1A%2FA1A_19.10_DICTS_LSB1-S1.T2.P2%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "nghe",
+            "ten": "LISTENING DICTATION",
+            "yeuCau": "100% requirement",
+            "maNghe": "LSB1-S1.T2.P2"
+          },
+          {
+            "loai": "act",
+            "ten": "QUIZ",
+            "act": "LSB1-S1.T2.P2 / QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "amhaxf",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-19T22:09"
+      },
       {
         "id": "A1A_12.10_DICTS_LSB1-S1.T2.P1",
         "tieuDe": "A1A_12.10_DICTS LSB1-S1.T2.P1",
@@ -5785,7 +5819,7 @@
   },
   "capNhatLop": {
     "NNTNGK10": "2026-10-17 09:30:13",
-    "A1A": "2026-10-12 22:18:14",
+    "A1A": "2026-10-19 22:09:08",
     "B2B": "2026-10-12 23:30:39",
     "A1C": "2026-10-18 11:37:25",
     "B2A": "2026-10-13 17:12:48",

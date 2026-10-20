@@ -356,7 +356,7 @@
     var el = GV.el, bay = Date.now(), lops = Object.keys(THEO_LOP);
     var TT = { dang: 0, cho: 1, sap: 2 };
     lops.sort(function (a, b) { var ga = THEO_LOP[a], gb = THEO_LOP[b]; return TT[trangThai(ga)] - TT[trangThai(gb)] || a.localeCompare(b); });
-    if (!lops.length) { if (el._h !== '') { el._h = ''; el.innerHTML = ''; } el.hidden = true; return; }
+    if (!lops.length) { if (el._h !== '') { el._h = ''; el.innerHTML = ''; } el.hidden = true; caoGv(); return; }
     var ten = function (l) { try { return (GV.opt.tenLop && GV.opt.tenLop(l)) || l; } catch (e) { return l; } };
     var h = '<div class="thg nhieu dang"><span class="thg-nhan">' + IC.cup + '<span>GIẢI ĐẤU</span></span><div class="thg-chips">' + lops.map(function (l) {
       var g = THEO_LOP[l], tt = trangThai(g, bay), c = GV.bang[g.id + '/' + l];
@@ -368,7 +368,10 @@
     }).join('') + '</div></div>';
     if (el._h !== h) { el._h = h; el.innerHTML = h; }
     el.hidden = false;
+    caoGv();
   }
+  // v1.382.0 — dashboard: `--cao-dai` = chiều cao thanh (cột menu trái trừ đi để cả trang vừa khít màn, không cuộn)
+  function caoGv() { document.documentElement.style.setProperty('--cao-dai', (GV && !GV.el.hidden ? GV.el.offsetHeight : 0) + 'px'); }
   function giaiLop(lop) {
     if (GV) return THEO_LOP[lop] || null;
     if (HS && HS.lop === lop) return HS.g || null;

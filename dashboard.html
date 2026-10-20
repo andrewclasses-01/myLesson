@@ -3398,11 +3398,21 @@ button.mk-em:hover{border-color:currentColor}
    Nay: cột cao ĐÚNG màn (không trần — cửa sổ cao hơn/thấp hơn đều tự theo), KHÔNG CUỘN; dòng `flex:1 1 0` co được tới 30px
    (padding dọc 0, chữ không xuống dòng), giãn tối đa 56px. Màn 1080: mỗi dòng ≈ 41px, đủ cả "Quản lý & bảo mật". */
 @media (min-width:901px){
-  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:calc(100dvh - 62px - 14px - 18px); max-height:none; overflow:hidden; padding-bottom:0}
+  /* ⭐ v1.382.0 — trừ thêm THANH GIẢI ĐẤU (`--cao-dai`, js/thanh-giai.js đặt; 0 khi không có giải) ⇒ cột menu vẫn vừa khít màn,
+     các dòng menu tự co/giãn khoảng cách (flex 30–56px) */
+  .nwb-ql > .nwb-ql-cot{display:flex; flex-direction:column; height:calc(100dvh - 62px - var(--cao-dai, 0px) - 14px - 18px); top:calc(62px + var(--cao-dai, 0px)); max-height:none; overflow:hidden; padding-bottom:0}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-muc{flex:1 1 0; min-height:30px; max-height:56px; padding-top:0; padding-bottom:0; white-space:nowrap}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-vach{flex:none; margin:6px 10px}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-vach:last-of-type{margin-top:auto}
   .nwb-ql > .nwb-ql-cot > .nwb-ql-muc:has(+ .nwb-ql-vach:last-of-type){margin-bottom:8px}
+  /* ⭐ v1.382.0 — hàng 2 cột VỪA KHÍT phần màn còn lại (`hdKeoDai` đặt height + class .vua): cho các cột co dưới chiều cao nội dung,
+     ô Đang hoạt động / Bài tập gần đây và khung chat co giãn + cuộn bên trong. Không đụng overflow của .khoi-than/.the-list (bẫy v1.32.1). */
+  .hai-cot.vua{grid-template-rows:minmax(0,1fr)}
+  .hai-cot.vua > .cot-the, .hai-cot.vua > .cot-chat{min-height:0}
+  .hai-cot.vua .hd-zone{min-height:150px}
+  /* lớp có nhiều thẻ bài còn hạn mà màn không đủ chỗ: ô Đang hoạt động co tới sàn 150px rồi DANH SÁCH THẺ tự cuộn bên trong
+     (lề 8/12px bù bằng margin âm để quầng sáng .the.gap không bị cắt sát mép — bẫy v1.32.1) */
+  .hai-cot.vua #theListDs{flex:0 1 auto; min-height:0; overflow-y:auto; padding:8px 12px; margin:-8px -12px; scrollbar-width:thin}
 }
 
 /* ⭐⭐ v1.166.0 — HỘP "QUẢN LÝ & BẢO MẬT" */
@@ -4417,7 +4427,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=25"></script>
 <script src="js/the-td.js?v=13"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/thanh-giai.js?v=1"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js) -->
+<script src="js/thanh-giai.js?v=2"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js) -->
 <script src="js/giai-ghi.js?v=1"></script>   <!-- ⭐ v1.380.0 đường ghi giải dùng chung (trang Giải đấu + pop-up) -->
 <script src="js/giai-pop.js?v=2"></script>   <!-- ⭐ v1.380.0 POP-UP CHI TIẾT GIẢI + hàng TOURNAMENT trong Kho bài -->
 <script src="js/nhac-ban.js?v=4"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
@@ -7723,18 +7733,34 @@ tr.qm-hang-tam td{background:#fffbeb}
   function hdKeoDai() {
     // ⭐ v1.281.0 — đo ĐÁY CỘT MENU (= đáy màn − 18px, cột không cuộn nữa) thay vì đáy nút baoMat: cột từng tràn + cuộn
     //   ⇒ nút baoMat nằm khuất dưới đáy màn ⇒ khung giữa bị kéo dài quá màn, cả trang cuộn thêm 70px (màn 1080).
+    // ⭐⭐ v1.382.0 (20/10/2026, thầy: "màn 1080 không bao giờ phải cuộn dashboard") — hàng 2 cột cao ĐÚNG phần màn còn lại
+    //   (height cố định, không còn min-height "nội dung nhiều thì dài ra"): đáy = đáy màn − 18px (= đáy cột menu). Trong hàng:
+    //   ô ĐANG HOẠT ĐỘNG / BÀI TẬP GẦN ĐÂY (.hd-zone) và khung chat tự co giãn + cuộn bên trong. Thanh giải đấu (--cao-dai),
+    //   số hàng ô lớp, số thẻ bài thay đổi ⇒ đo lại (ResizeObserver bên dưới). Màn quá thấp (< sàn 360px) mới chịu cuộn.
     var hai = document.querySelector('.hai-cot'), nut = document.getElementById('nwbQlCot');
     if (!hai) return;
-    if (!nut || window.innerWidth <= 900) { hai.style.minHeight = ''; return; }
-    if (window.scrollY > 2 || !nut.getBoundingClientRect().height) return;   // cột trái sticky: chỉ đo khi trang ở đầu + đã hiện
+    if (!nut || window.innerWidth <= 900) { hai.style.minHeight = ''; hai.style.height = ''; hai.classList.remove('vua'); return; }
+    if (!nut.getBoundingClientRect().height) return;
     hai.style.minHeight = '';
-    // v1.211.1 — thầy báo còn hụt ~20px: đo MÉP DƯỚI THẬT của khung chat (không phải đáy hàng 2 cột — còn lề/khoảng đệm)
-    //   so với mép dưới nút, thêm đúng phần hụt vào chiều cao hàng.
+    hai.classList.add('vua');
+    var day = window.innerHeight - 18;                                         // đáy cột menu (cột cao 100dvh − đầu − 18px)
+    var dinh = hai.getBoundingClientRect().top + window.scrollY;               // đỉnh hàng 2 cột trên trang (không phụ thuộc đang cuộn)
+    var h = Math.max(360, Math.floor(day - dinh));
+    hai.style.height = h + 'px';
+    // bù phần lề dưới thật của khung chat (đo, không đoán CSS)
     var chat = document.querySelector('.cot-chat') || hai;
-    var hut = nut.getBoundingClientRect().bottom - chat.getBoundingClientRect().bottom;
-    if (hut > 0) hai.style.minHeight = Math.round(hai.getBoundingClientRect().height + hut) + 'px';
+    var lech = Math.round(day - (chat.getBoundingClientRect().bottom + window.scrollY));
+    if (lech && Math.abs(lech) < 60 && h + lech >= 360) hai.style.height = (h + lech) + 'px';
   }
   window.addEventListener('resize', function () { clearTimeout(HD.henKeo); HD.henKeo = setTimeout(hdKeoDai, 120); });
+  // v1.382.0 — đỉnh hàng 2 cột dời khi: thanh giải đấu hiện/ẩn, ô lớp xuống hàng, khung báo khẩn cấp ⇒ đo lại
+  if (window.ResizeObserver) {
+    try {
+      var roKeo = new ResizeObserver(function () { clearTimeout(HD.henKeo); HD.henKeo = setTimeout(hdKeoDai, 60); });
+      ['thanhGiaiGv', 'khanCapDai', 'nwbQlCot'].forEach(function (id) { var e = document.getElementById(id); if (e) roKeo.observe(e); });
+      var lh = document.querySelector('.lop-hang'); if (lh) roKeo.observe(lh);
+    } catch (e) {}
+  }
   // ================================================================
   // ⭐⭐ v1.214.0 (01/10/2026, thầy duyệt mẫu `D:\OTHERS\CLAUDE\myLesson - thiet ke hoat dong\mau-v2-phong-to.html`) — 2 POP-UP PHÓNG TO
   //   nút ⤢ trên ô ĐANG HOẠT ĐỘNG ⇒ pop-up 1: dòng thời gian online TỪNG EM mọi lớp (Hôm nay / Hôm qua / 7 ngày), chi tiết em

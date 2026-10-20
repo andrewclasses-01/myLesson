@@ -313,7 +313,7 @@
       var moc = x ? (x.luc || 0) : (Date.now() - 3 * 864e5);   // máy mới: chỉ coi 3 ngày gần nhất là "mới"
       var maxLuc = ds.reduce(function (a, m) { return Math.max(a, m.luc || 0); }, moc);
       // v1.377.0 — quà 20-10 (phiếu qua2010_*) đã có màn sao bay riêng lúc em bấm THANK YOU ⇒ không chúc mừng lần hai.
-      var moi = ds.filter(function (m) { return (m.luc || 0) > moc && Number(m.so) > 0 && String(m.id || '').indexOf('qua2010_') !== 0; });
+      var moi = ds.filter(function (m) { return (m.luc || 0) > moc && Number(m.so) > 0 && String(m.id || '').indexOf('qua2010_') !== 0 && String(m.id || '').indexOf('tb_') !== 0; });   // v1.379.0 thông báo trang chủ cũng có màn sao bay riêng
       if (!moi.length) { ghiXem(VI.so, maxLuc, VI.s); return; }
       moSaoMoi(ctx, moi, function () { ghiXem(VI.so, maxLuc, VI.s); });
     });

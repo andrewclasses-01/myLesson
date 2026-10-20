@@ -1,0 +1,126 @@
+/* ⭐ v1.379.0 (20/10/2026) — POP-UP THÔNG BÁO trang chủ (hộp "Thông báo" dashboard, mẫu D:\OTHERS\CLAUDE\THONG BAO - thiet ke\v1).
+   Dựng từ pop-up quà 20-10 (css/qua-2010.css, lớp q20-* → tbp-*). 3 kiểu thẻ: k-le (hồng, 2 bóng bay thầy + em — y hệt 20-10),
+   k-thuong (gọn, xanh dashboard), k-anh (ảnh lớn trên đầu). Dùng CHUNG: trang em (js/thong-bao.js) + xem trước dashboard (js/tb-ql.js).
+   `.tbp-trong` = vẽ trong khung (không phủ màn) · `.tbp-tinh` = ảnh tĩnh (tắt chuyển động — thumbnail).
+   Lớp riêng `tbp-*` (⛔ không dùng tên ngắn chung kiểu .the/.nut/.loi — đụng CSS trang). */
+@font-face{font-family:'TBP Dancing';font-style:normal;font-weight:700;font-display:swap;src:url(../assets/fonts/dancing-vi.woff2) format('woff2');unicode-range:U+0102-0103,U+0110-0111,U+0128-0129,U+0168-0169,U+01A0-01A1,U+01AF-01B0,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+1EA0-1EF9,U+20AB}
+@font-face{font-family:'TBP Dancing';font-style:normal;font-weight:700;font-display:swap;src:url(../assets/fonts/dancing-latin.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+.tbp-phu{--tbp-chu:#5a2340;--tbp-chu2:#8a4a6a;position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;padding:16px;
+  background:radial-gradient(120% 80% at 50% 30%,rgba(255,92,138,.35),rgba(20,8,20,.82));-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
+  transition:opacity .5s;font-family:Montserrat,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.tbp-phu *{box-sizing:border-box;margin:0;padding:0}
+.tbp-phu.tbp-tat{opacity:0;pointer-events:none}
+.tbp-roi{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.tbp-canh{position:absolute;top:-30px;width:14px;height:12px;background:radial-gradient(circle at 30% 30%,#ffe3ec,#ff8fb1);border-radius:12px 0 12px 0;opacity:.9;animation:tbp-roi linear infinite}
+@keyframes tbp-roi{to{transform:translate(var(--x),110vh) rotate(var(--r))}}
+
+.tbp-the{position:relative;width:100%;max-width:380px;max-height:calc(100vh - 32px);max-height:calc(100dvh - 32px);border-radius:28px;display:flex;flex-direction:column;
+  background:linear-gradient(170deg,#fffafc 0%,#ffeef4 55%,#ffe2ec 100%);color:var(--tbp-chu);overflow:hidden;
+  box-shadow:0 30px 80px -20px rgba(255,60,120,.55),0 0 0 1px rgba(255,255,255,.7) inset;animation:tbp-vao .9s cubic-bezier(.22,.9,.3,1) both}
+@keyframes tbp-vao{from{opacity:0;transform:translateY(40px) scale(.86)}}
+.tbp-the.tbp-di{animation:tbp-di .55s cubic-bezier(.6,0,.4,1) forwards}
+@keyframes tbp-di{to{opacity:0;transform:scale(.6) translateY(10px)}}
+
+.tbp-troi{position:relative;flex:none;height:215px;overflow:hidden;background:
+  radial-gradient(60% 50% at 20% 20%,rgba(255,255,255,.9),transparent 70%),
+  radial-gradient(80% 70% at 85% 10%,rgba(255,180,210,.8),transparent 70%),
+  linear-gradient(180deg,#ffc2d6 0%,#ffdbe7 60%,#fff2f6 100%)}
+.tbp-so{position:absolute;left:0;right:0;top:14px;text-align:center;font-weight:800;font-size:17px;letter-spacing:6px;color:#fff;text-shadow:0 2px 10px rgba(255,60,120,.5)}
+.tbp-so span{display:inline-block;background:rgba(255,92,138,.85);padding:4px 12px 4px 18px;border-radius:999px}
+.tbp-bong{position:absolute;top:56px;display:flex;flex-direction:column;align-items:center}
+.tbp-bong.tbp-thay{left:50%;margin-left:-118px;animation:tbp-lo 4.2s ease-in-out infinite}
+.tbp-bong.tbp-em{left:50%;margin-left:22px;animation:tbp-lo 4.2s ease-in-out -2.1s infinite}
+@keyframes tbp-lo{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-12px) rotate(3deg)}}
+.tbp-qua{position:relative;width:96px;height:96px;border-radius:50%;padding:4px;background:conic-gradient(from 200deg,#ff5c8a,#ffb3cb,#ff8fb1,#ff5c8a);box-shadow:0 12px 26px -8px rgba(255,60,120,.6)}
+.tbp-em .tbp-qua{width:90px;height:90px;background:conic-gradient(from 200deg,#b14cff,#ff8fb1,#ffc2e0,#b14cff)}
+.tbp-anh{position:relative;width:100%;height:100%;border-radius:50%;overflow:hidden;border:3px solid #fff;display:grid;place-items:center;
+  background:linear-gradient(135deg,#ff9ebd,#c77dff);color:#fff;font-weight:800;font-size:26px;letter-spacing:.5px}
+.tbp-anh img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.tbp-qua::after{content:"";position:absolute;left:18%;top:12%;width:26%;height:16%;border-radius:50%;background:rgba(255,255,255,.75);filter:blur(1px);transform:rotate(-30deg)}
+.tbp-nut-bong{width:12px;height:9px;clip-path:polygon(50% 100%,0 0,100% 0);margin-top:-2px;background:#ff5c8a}
+.tbp-em .tbp-nut-bong{background:#b14cff}
+.tbp-day{display:block;width:20px;height:60px;margin-top:-1px;transform-origin:50% 0;animation:tbp-dua 2.1s ease-in-out infinite alternate}
+.tbp-em .tbp-day{animation-delay:-1s}
+.tbp-day path{fill:none;stroke:#e88aa8;stroke-width:1.6;stroke-linecap:round}
+@keyframes tbp-dua{from{transform:rotate(-7deg)}to{transform:rotate(7deg)}}
+.tbp-ten{position:absolute;bottom:-4px;left:50%;transform:translateX(-50%);background:#fff;color:var(--tbp-chu);font-weight:800;font-size:10px;padding:3px 9px;border-radius:999px;box-shadow:0 3px 8px rgba(0,0,0,.12);white-space:nowrap;z-index:2}
+.tbp-lap{position:absolute;font-size:14px;animation:tbp-lap 2.4s ease-in-out infinite;opacity:0}
+@keyframes tbp-lap{0%,100%{opacity:0;transform:scale(.5)}50%{opacity:1;transform:scale(1)}}
+/* tim nhỏ bay nhẹ từ bóng THẦY sang bóng EM */
+.tbp-tim{position:absolute;left:50%;top:var(--y);margin:-8px 0 0 -8px;font-size:var(--c);line-height:1;opacity:0;animation:tbp-tim 4s ease-in-out infinite;pointer-events:none}
+@keyframes tbp-tim{0%{opacity:0;transform:translate(-46px,0) scale(.35) rotate(-12deg)}15%{opacity:.95}50%{transform:translate(0,var(--h)) scale(1) rotate(0deg)}82%{opacity:.95}100%{opacity:0;transform:translate(44px,0) scale(.45) rotate(12deg)}}
+
+.tbp-noi{padding:16px 22px 20px;text-align:center;overflow:auto;-webkit-overflow-scrolling:touch;flex:1 1 auto;min-height:0}
+.tbp-chao{font-family:'TBP Dancing',cursive;font-size:30px;font-weight:700;line-height:1.1;background:linear-gradient(90deg,#ff3d7f,#b14cff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.tbp-phude{font-size:10.5px;letter-spacing:2.5px;font-weight:700;color:#d05a86;margin:6px 0 12px;text-transform:uppercase}
+.tbp-loi{font-size:13.5px;line-height:1.62;color:var(--tbp-chu2);font-weight:500;text-wrap:balance}
+.tbp-loi p{text-wrap:balance}
+.tbp-loi p+p{margin-top:8px}
+.tbp-nb{white-space:nowrap}
+.tbp-ket{white-space:nowrap;font-family:'TBP Dancing',cursive;font-size:21.5px;font-weight:700;color:#e0306e;margin-top:12px;line-height:1.2}
+.tbp-ky{font-family:'TBP Dancing',cursive;font-size:17px;color:#c0567f;font-weight:700;margin-top:12px;text-align:right;padding-right:14px}
+.tbp-sao{display:flex;align-items:center;justify-content:center;gap:8px;margin:14px auto 0;padding:9px 14px;border-radius:14px;background:linear-gradient(90deg,#fff3d1,#ffe7a6);color:#8a5a00;font-weight:700;font-size:15px;width:-webkit-fit-content;width:fit-content;box-shadow:0 4px 14px -6px rgba(200,140,0,.5)}
+.tbp-sao i{font-style:normal;font-size:18px;animation:tbp-xoay 3s linear infinite;display:inline-block}
+@keyframes tbp-xoay{to{transform:rotate(360deg)}}
+.tbp-nut{display:block;margin-top:16px;width:100%;border:0;border-radius:18px;padding:16px;font:800 17px Montserrat,system-ui,sans-serif;letter-spacing:1px;color:#fff;cursor:pointer;
+  background:linear-gradient(90deg,#ff3d7f,#ff6fa0,#c25bff,#ff3d7f);background-size:300% 100%;animation:tbp-chay 4s linear infinite,tbp-mo 2s ease-in-out infinite;
+  box-shadow:0 12px 26px -10px rgba(255,61,127,.8);position:relative;overflow:hidden;-webkit-appearance:none;appearance:none}
+.tbp-nut:active{transform:scale(.97)}
+.tbp-nut[disabled]{cursor:default;filter:saturate(.8)}
+@keyframes tbp-chay{to{background-position:300% 0}}
+@keyframes tbp-mo{50%{box-shadow:0 12px 34px -6px rgba(255,61,127,.95)}}
+.tbp-nut::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.55),transparent);animation:tbp-loe 2.6s ease-in-out infinite}
+@keyframes tbp-loe{60%,100%{left:130%}}
+.tbp-bao{margin-top:10px;font-size:12.5px;font-weight:600;color:#c0264f;min-height:1em}
+.tbp-hien{opacity:0;transform:translateY(8px);animation:tbp-hien .7s cubic-bezier(.22,.9,.3,1) forwards}
+@keyframes tbp-hien{to{opacity:1;transform:none}}
+
+.tbp-bay{position:fixed;left:0;top:0;width:26px;height:26px;margin:-13px 0 0 -13px;z-index:2147483001;pointer-events:none;filter:drop-shadow(0 0 6px rgba(255,201,77,.9))}
+.tbp-bay svg{display:block;width:26px;height:26px}
+.tbp-sang{animation:tbp-sang .5s ease-out}
+@keyframes tbp-sang{40%{box-shadow:0 0 0 6px rgba(255,201,77,.55),0 0 28px 8px rgba(255,201,77,.6)}}
+.tbp-nay{animation:tbp-nay .35s cubic-bezier(.22,.9,.3,1)}
+@keyframes tbp-nay{40%{transform:translateX(-50%) scale(1.3)}}
+.tbp-cam{position:fixed;left:16px;right:16px;bottom:24px;z-index:2147483001;text-align:center;pointer-events:none;opacity:0;transition:opacity .5s}
+.tbp-cam span{display:inline-block;background:rgba(20,8,20,.82);color:#ffd38a;font:700 13.5px Montserrat,system-ui,sans-serif;padding:10px 16px;border-radius:999px}
+.tbp-cam.tbp-co{opacity:1}
+
+@media (max-width:370px){.tbp-noi{padding-left:14px;padding-right:14px}.tbp-loi{font-size:12.8px}}
+@media (prefers-reduced-motion:reduce){.tbp-phu *,.tbp-bay{animation-duration:.01ms !important;animation-iteration-count:1 !important}}
+
+/* ===== chữ chung (mọi kiểu) ===== */
+.tbp-nhan{display:inline-block;background:rgba(255,92,138,.85);color:#fff;font-weight:800;font-size:17px;letter-spacing:6px;padding:4px 12px 4px 18px;border-radius:999px;text-shadow:0 2px 10px rgba(255,60,120,.5)}
+.tbp-loi p{white-space:normal}
+
+/* ===== KIỂU THƯỜNG (k-thuong) — gọn, màu xanh dashboard ===== */
+.tbp-phu.k-thuong,.tbp-phu.k-anh{background:radial-gradient(120% 80% at 50% 30%,rgba(14,124,110,.28),rgba(10,22,24,.82))}
+.k-thuong .tbp-the,.k-anh .tbp-the{background:#fff;color:#16232A;box-shadow:0 30px 80px -20px rgba(10,40,36,.55)}
+.tbp-dau-t{position:relative;flex:none;padding:26px 22px 6px;text-align:center;background:radial-gradient(90% 100% at 50% 0%,#E7F2F0,#fff 75%)}
+.tbp-chuong{width:64px;height:64px;margin:0 auto 10px;border-radius:20px;display:grid;place-items:center;background:linear-gradient(160deg,#14917F,#0E7C6E);box-shadow:0 12px 24px -10px rgba(14,124,110,.8);animation:tbp-rung 3.2s ease-in-out infinite}
+.tbp-chuong svg{width:34px;height:34px;fill:#fff}
+@keyframes tbp-rung{0%,70%,100%{transform:rotate(0)}74%{transform:rotate(-12deg)}78%{transform:rotate(10deg)}82%{transform:rotate(-7deg)}86%{transform:rotate(4deg)}}
+.k-thuong .tbp-nhan,.k-anh .tbp-nhan{background:#E7F2F0;color:#0E7C6E;text-shadow:none;font-size:12px;letter-spacing:3px;padding:4px 10px 4px 13px;margin-bottom:8px}
+.k-thuong .tbp-chao,.k-anh .tbp-chao{font-family:Montserrat,system-ui,sans-serif;font-weight:800;font-size:22px;line-height:1.25;color:#16232A;background:none;-webkit-background-clip:border-box;background-clip:border-box;text-wrap:balance}
+.k-thuong .tbp-phude,.k-anh .tbp-phude{color:#0E7C6E}
+.k-thuong .tbp-loi,.k-anh .tbp-loi{color:#3D5350}
+.k-thuong .tbp-ket,.k-anh .tbp-ket{font-family:Montserrat,system-ui,sans-serif;font-size:15px;color:#0E7C6E;white-space:normal;text-wrap:balance}
+.k-thuong .tbp-ky,.k-anh .tbp-ky{color:#5F7370}
+.k-thuong .tbp-nut,.k-anh .tbp-nut{background:linear-gradient(90deg,#0E7C6E,#14a08c,#0E7C6E);background-size:300% 100%;box-shadow:0 12px 26px -10px rgba(14,124,110,.8)}
+.k-thuong .tbp-bao,.k-anh .tbp-bao{color:#C0392B}
+.tbp-thay-nho{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:12px}
+.tbp-thay-nho img{width:28px;height:28px;border-radius:50%;object-fit:cover}
+
+/* ===== KIỂU ẢNH (k-anh) ===== */
+.tbp-anh-lon{position:relative;flex:none;background:#E7F2F0;max-height:46vh;overflow:hidden}
+.tbp-anh-lon img{display:block;width:100%;height:auto;max-height:46vh;object-fit:cover}
+.k-anh .tbp-dau-t{padding-top:16px;background:#fff}
+
+/* ===== vẽ TRONG KHUNG (xem trước dashboard) + TĨNH (thumbnail) ===== */
+.tbp-phu.tbp-trong{position:absolute;z-index:auto}
+.tbp-trong .tbp-the{max-height:calc(100% - 32px)}
+.tbp-trong .tbp-anh-lon,.tbp-trong .tbp-anh-lon img{max-height:330px}
+.tbp-tinh *,.tbp-tinh{animation:none !important;transition:none !important}
+.tbp-tinh .tbp-hien{opacity:1;transform:none}
+.tbp-tinh .tbp-canh,.tbp-tinh .tbp-tim,.tbp-tinh .tbp-lap{display:none}
+.k-thuong .tbp-chao,.k-anh .tbp-chao{margin-bottom:8px}

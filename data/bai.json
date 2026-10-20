@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-20 15:57:19",
+  "capNhat": "2026-10-20 21:43:02",
   "bai": {
     "A1C": [
       {
@@ -1030,6 +1030,26 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_20.10_WORKSHEET_CAU_BI_DONG",
+        "tieuDe": "A1B_20.10_WORKSHEET CAU BI DONG",
+        "tenHien": "A1B_20.10_WORKSHEET CAU BI DONG",
+        "dang": "WORKSHEET",
+        "ngay": "20.10",
+        "han": "2026-10-22T19:45",
+        "maLesson": "CAU BI DONG",
+        "taoLuc": "2026-10-20",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "1. CAU BI DONG 1 (page 1-2)",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1B%2FA1B_20.10_WORKSHEET_CAU_BI_DONG%2F40.pdf?alt=media",
+            "soTrang": 2
+          }
+        ],
+        "giaoLuc": "2026-10-20T21:43"
+      },
       {
         "id": "A1B_13.10_WORDS_CAU_BI_DONG",
         "tieuDe": "A1B_13.10_WORDS CAU BI DONG",
@@ -5841,7 +5861,7 @@
     "B2B": "2026-10-20 15:57:19",
     "A1C": "2026-10-18 11:37:25",
     "B2A": "2026-10-13 17:12:48",
-    "A1B": "2026-10-14 11:23:54",
+    "A1B": "2026-10-20 21:43:02",
     "NNTNG4": "2026-10-19 15:24:51",
     "A2B": "2026-10-17 19:29:27",
     "B1B": "2026-10-17 21:48:43",

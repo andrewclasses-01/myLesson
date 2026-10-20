@@ -13,8 +13,8 @@
   if (window.__q20) return;
   window.__q20 = 1;
   var THU = /[?&]q20thu=1\b/.test(location.search);
-  var HET_MAC_DINH = Date.UTC(2026, 9, 22, 17, 0, 0);   // 00:00 23/10/2026 giờ VN — sau mốc này thôi tìm phiếu
-  if (!THU && (Date.now() > HET_MAC_DINH || window.__thayVao)) return;
+  // ⭐ v1.378.0 thầy bỏ HẠN: em đăng nhập lúc nào cũng nhận được; nhận rồi (nhan:true) thì không hiện nữa.
+  if (!THU && window.__thayVao) return;
 
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
   function tenGoi(t) { return String(t || '').replace(/\s+\d+$/, '').trim().split(/\s+/).slice(-2).join(' '); }
@@ -51,7 +51,7 @@
           var ra = null;
           s.forEach(function (d) {
             var x = d.data() || {};
-            if (d.id.indexOf('2010_') === 0 && x.nhan === false && (!x.het || x.het > Date.now()) && !ra) ra = { id: d.id, so: String(x.so || d.id.slice(5)), t: x.t || '', lop: x.lop || '', f: f };
+            if (d.id.indexOf('2010_') === 0 && x.nhan === false && !ra) ra = { id: d.id, so: String(x.so || d.id.slice(5)), t: x.t || '', lop: x.lop || '', f: f };
           });
           return ra;
         });
@@ -132,6 +132,12 @@
     nut.onclick = function () {
       nut.disabled = true; bao.textContent = '';
       nhan(p).then(function () { bay(nen, nut); }, function (e) {
+        // Bị từ chối mà phiếu ĐÃ nhận (bấm ở máy/tab khác) ⇒ sao đã vào ví: đóng thẻ, không hiện lại nữa.
+        if (/permission/i.test((e && e.code) || '') && p.f) {
+          p.f.fs.getDoc(p.f.fs.doc(p.f.db, 'quaDip', p.id)).then(function (d) {
+            if (d.exists() && d.data().nhan === true) { nen.classList.add('q20-tat'); setTimeout(function () { nen.remove(); }, 600); }
+          }, function () { });
+        }
         nut.disabled = false;
         var ma = (e && e.code) || '';
         bao.textContent = /permission/i.test(ma) ? 'Quà đã được nhận rồi hoặc chưa mở được — em tải lại trang thử nhé.' : 'Chưa gửi được (mạng yếu?) — em bấm lại nhé.';

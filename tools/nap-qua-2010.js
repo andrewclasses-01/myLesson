@@ -1,5 +1,5 @@
 // ⭐ 20/10/2026 — NẠP PHIẾU QUÀ 20-10 cho mọi bạn NỮ (giới tính 'f' trong lopThem/chung, đánh dấu ở dashboard).
-//   Mỗi em một tài liệu quaDip/2010_<số HS> { dip, so, m, t, lop, sao:10, nhan:false, het, tao } — ĐÃ CÓ thì để nguyên (không lật lại nhan).
+//   Mỗi em một tài liệu quaDip/2010_<số HS> { dip, so, m, t, lop, sao:10, nhan:false, tao } (v1.378.0 bỏ hạn) — ĐÃ CÓ thì để nguyên (không lật lại nhan).
 //   Trang em (js/qua-2010.js) tìm phiếu theo m == ID đăng nhập ⇒ hiện pop-up; luật: tools/dang-luat-qua-2010.js.
 //   node tools/nap-qua-2010.js --xem | --nap
 'use strict';
@@ -14,7 +14,6 @@ const KHOA = [path.join(process.env.LOCALAPPDATA || '', 'AndrewClasses', 'fireba
 admin.initializeApp({ credential: admin.credential.cert(JSON.parse(fs.readFileSync(KHOA, 'utf8').replace(/^\uFEFF/, ''))) });
 const db = admin.firestore();
 const chuanMa = (s) => String(s || '').replace(/\s+/g, '').toUpperCase();
-const HET = Date.UTC(2026, 9, 22, 17, 0, 0);   // 00:00 23/10/2026 giờ VN
 
 (async () => {
   const nap = process.argv.includes('--nap');
@@ -45,7 +44,7 @@ const HET = Date.UTC(2026, 9, 22, 17, 0, 0);   // 00:00 23/10/2026 giờ VN
   const luc = Date.now();
   for (let i = 0; i < moi.length; i += 400) {
     const b = db.batch();
-    moi.slice(i, i + 400).forEach((v) => b.create(db.doc('quaDip/2010_' + v.so), { dip: '2010', so: v.so, m: v.m, t: v.t, lop: v.lop, sao: 10, nhan: false, het: HET, tao: luc }));
+    moi.slice(i, i + 400).forEach((v) => b.create(db.doc('quaDip/2010_' + v.so), { dip: '2010', so: v.so, m: v.m, t: v.t, lop: v.lop, sao: 10, nhan: false, tao: luc }));
     await b.commit();
   }
   console.log('✓ đã tạo', moi.length, 'phiếu quà');

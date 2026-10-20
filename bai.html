@@ -6526,6 +6526,13 @@ function congKhucVidBtKhoa(x, a, b){
   v.khuc = gop;
 }
 var VID_BT_PLAYER = {};
+// v1.383.0 (21/10/2026, thầy chốt) — CÂU HƯỚNG DẪN RIÊNG của dòng VIDEO (`moTa`, ô mới ở ⚙ THIẾT LẬP LESSON app v2.178.0).
+// Trống ⇒ câu mặc định "video bài làm mẫu" như cũ (Chương 1 không đổi). `**chữ**` = in đậm; còn lại thoát HTML.
+function chuMoTaVidKhoa(x){
+  var m = String((x && x.moTa) || '').trim();
+  if (!m) return 'Phụ huynh và con xem <b>hết video bài làm mẫu</b> của thầy để biết bài thu hoạch cần quay thế nào. Phải xem <b>đủ 100%</b> mới mở bước sau — xem lại bao nhiêu lần cũng được.';
+  return chuAnToan(m).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+}
 function veTheVideoBtKhoa(x, so){
   var sec = document.createElement('section');
   sec.className = 'card';
@@ -6533,7 +6540,7 @@ function veTheVideoBtKhoa(x, so){
   var hostId = 'ytBt_' + String(x.id).replace(/[^A-Za-z0-9_-]/g, '');
   sec.innerHTML = dauTheBuocKhoa(x, so, 'video', '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></svg>') +
     '<div class="buoc-than">' +
-      '<div class="buoc-chu">Phụ huynh và con xem <b>hết video bài làm mẫu</b> của thầy để biết bài thu hoạch cần quay thế nào. Phải xem <b>đủ 100%</b> mới mở bước sau — xem lại bao nhiêu lần cũng được.</div>' +
+      '<div class="buoc-chu">' + chuMoTaVidKhoa(x) + '</div>' +
       '<div class="vid-bt"><div id="' + hostId + '"></div></div>' +
       '<div class="hd-xem" data-vidxem><span>Đã xem</span><span class="hd-bar"><i></i></span><b>0%</b></div>' +
     '</div>';

@@ -3963,7 +3963,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 }
 </style>
 <link rel="stylesheet" href="css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/the-giai.css?v=1"><!-- ⭐ v1.371.0 thẻ giải đấu neon -->
+<link rel="stylesheet" href="css/thanh-giai.css?v=1"><!-- ⭐ v1.381.0 THANH GIẢI ĐẤU mọi lớp + ô lớp "có giải" + thẻ đặc biệt (thay thẻ neon) -->
 <link rel="stylesheet" href="css/giai-pop.css?v=1"><!-- ⭐ v1.380.0 pop-up chi tiết giải đấu (js/giai-pop.js) -->
 
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
@@ -4031,6 +4031,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   </div>
 </header>
 <div id="khanCapDai" hidden></div>
+<div id="thanhGiaiGv" hidden></div><!-- ⭐ v1.381.0 thanh giải đấu: chip mọi lớp có giải (js/thanh-giai.js), bấm = pop-up giải -->
 
 <div class="nwb-ql">
 <aside class="nwb-ql-cot" id="nwbQlCot"></aside>
@@ -4415,10 +4416,10 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=25"></script>
-<script src="js/the-td.js?v=12"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/the-giai.js?v=2"></script>   <!-- ⭐ v1.371.0 thẻ giải đấu neon (gắn ở khối UI_CHAT) · v1.380.0 bấm thẻ = pop-up -->
+<script src="js/the-td.js?v=13"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/thanh-giai.js?v=1"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js) -->
 <script src="js/giai-ghi.js?v=1"></script>   <!-- ⭐ v1.380.0 đường ghi giải dùng chung (trang Giải đấu + pop-up) -->
-<script src="js/giai-pop.js?v=1"></script>   <!-- ⭐ v1.380.0 POP-UP CHI TIẾT GIẢI + hàng TOURNAMENT trong Kho bài -->
+<script src="js/giai-pop.js?v=2"></script>   <!-- ⭐ v1.380.0 POP-UP CHI TIẾT GIẢI + hàng TOURNAMENT trong Kho bài -->
 <script src="js/nhac-ban.js?v=4"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=6"></script>
@@ -4780,6 +4781,10 @@ tr.qm-hang-tam td{background:#fffbeb}
     var luc = kieu ? chuLucThe(kieu, x.moc) : (tt === 'giao' ? 'chưa đặt hạn' : '');
     var maBai = b ? (A.maLesson(b) || (b.tenBai ? b.tenBai : '') || A.tenBai(b)) : '';
     if (l.rong) return theLopRongHtml(l, mL);
+    // ⭐ v1.381.0 (thầy chốt 20/10) — ô lớp 3 trạng thái: không bài + không giải = CAM "Chờ" · có bài = như cũ (+ cúp nhỏ nếu có giải) ·
+    //   KHÔNG BÀI + CÓ GIẢI = ô tối neon "TOURNAMENT" (data-tt="giai"). `trangThaiBai()` KHÔNG đổi (app myLesson đọc bảng trạng thái đó).
+    var gdl = window.ThanhGiai ? ThanhGiai.giaiLop(l.maLop) : null;
+    if (gdl && tt === 'cho') return theLopGiaiHtml(l, mL, gdl);
     // ⭐⭐ v1.203.0 (01/10/2026, mẫu "nút lớp B" thầy chốt) — THẺ 2 DÒNG + VẠCH MÀU TRẠNG THÁI bên trái
     // (xanh lá = đã giao · vàng = chờ · xám = không giao bài, `data-tt`). BỎ nút sĩ số (Thiết lập lớp) + nút kho:
     // kho bài nay mở bằng BẤM ĐÚP thẻ (`moKhoNho`, tự đo 2 cú bấm — chonLop vẽ lại thẻ giữa 2 cú).
@@ -4796,6 +4801,21 @@ tr.qm-hang-tam td{background:#fffbeb}
       '<div class="lb-h3">' + (b ? '<span class="lb-dang">' + A.chuAnToan(dangNgan(b.dang)) + '</span>' +
         '<span class="lb-ma" title="' + A.chuAnToan(A.tenBai(b) + (maBai ? ' · ' + maBai : '')) + '">' + A.chuAnToan(maBai) + '</span>'
         : '<span class="lb-ma trong">Chưa có bài</span>') +
+        (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') +
+        (gdl ? '<span class="lb-cup" title="Lớp đang có giải đấu: ' + A.chuAnToan(gdl.ten) + '"><svg viewBox="0 0 24 24"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/></svg></span>' : '') + '</div>' +
+    '</div>';
+  }
+  // ⭐ v1.381.0 — ô lớp KHÔNG BÀI nhưng CÓ GIẢI ĐẤU: nền tối neon, dòng 1 "giải còn …", dòng 2 chip TOURNAMENT + tên giải
+  function theLopGiaiHtml(l, mL, g) {
+    var tt = ThanhGiai.trangThai(g), bay = Date.now(), con = g.den - bay;
+    var luc = tt === 'dang' ? 'giải còn ' + (con >= 864e5 ? Math.floor(con / 864e5) + ' ngày' : Math.max(1, Math.floor(con / 36e5)) + ' giờ')
+      : tt === 'sap' ? 'giải mở ' + new Date(g.tu).getDate() + '/' + (new Date(g.tu).getMonth() + 1) : 'chờ thưởng sao';
+    return '<div class="lop-btn lb3 lbB giai' + (l.maLop === LOP_CHON ? ' chon' : '') + (l.maLop === KHO_NHO_LOP ? ' mo-kho' : '') + (A.coBuoiHomNay(DL, l.maLop) ? ' hom-nay' : '') + '" data-malop="' + mL + '" data-tt="giai" data-gtt="' + tt + '"' +
+        ' title="Chưa có bài mới · đang có giải đấu ' + A.chuAnToan(g.ten) + ' — bấm đúp để mở kho bài">' +
+      '<button class="lb-main" data-lop="' + mL + '" aria-label="Chọn ' + A.chuAnToan(l.tenGoc || l.maLop) + '"></button>' +
+      (CHAM_DO[l.maLop] ? '<span class="lb-cham" title="Có tin nhắn mới"></span>' : '') +
+      '<div class="lb-h1"><span class="lb-ten">' + tenTheLop(l.tenGoc || l.maLop) + '</span><span class="lb-luc">' + A.chuAnToan(luc) + '</span></div>' +
+      '<div class="lb-h3"><span class="lb-dang">TOURNAMENT</span><span class="lb-ma" title="' + A.chuAnToan(g.ten) + '">' + A.chuAnToan(g.ten) + '</span>' +
         (l.loai === 'khoa' ? '<span class="lb-khoa">KHÓA</span>' : '') + '</div>' +
     '</div>';
   }
@@ -7304,7 +7324,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     // ra TRƯỚC khi lấy `[0]`, không thì bài mới nhất mà đang ẩn lại lòi ngược lên
     // đúng chỗ vừa dọn xong.
     var conHan = ds.length > 0;
-    if (!conHan && tatCa.length) {
+    // ⭐ v1.381.0 — lớp đang có GIẢI ĐẤU thì KHÔNG kéo thẻ bài gần nhất (đã hết hạn) lên nữa: chỗ đó là THẺ ĐẶC BIỆT "chưa có bài · có giải"
+    var giaiLop = !conHan && window.ThanhGiai ? ThanhGiai.giaiLop(LOP_CHON) : null;
+    if (!conHan && tatCa.length && !giaiLop) {
       var gan = tatCa.filter(function (b) { return A.trangThaiThe(b) !== 'an'; });
       ds = gan.length ? [gan[0]] : [];
     }
@@ -7334,7 +7356,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         /* ⭐ v1.81.0 — nói rõ thẻ nghỉ nào học sinh CÒN thấy, thẻ nào hết. */
         : (coNghi ? (nghiDaTan ? ' · thẻ không giao bài đã hết tác dụng'
                                : ' · đã giao: không có bài tập')
-                  : (ds.length ? ' · bài gần nhất (đã hết hạn)' : '')));
+                  : (giaiLop ? ' · chưa có bài mới · đang có giải đấu' : (ds.length ? ' · bài gần nhất (đã hết hạn)' : ''))));
     // ⭐ v1.49.0 — thẻ nghỉ ở dashboard có thêm nút ⚙ (đổi hạn / xoá thẻ). Trang
     // học sinh KHÔNG có nút này — đó là lý do `theNghiHtml` nhận `themHtml` rời.
     $('#theListDs').innerHTML = coNghi
@@ -7354,7 +7376,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           var het = !A.conHan(b) && !A.theDangHoc(DL, LOP_CHON, A.mocHan(b));
           return veTheCard(b, het);
         }).join('')
-                   : '<div class="trong">Đang chờ bài tập.</div>');
+                   : '<div data-thg-db="' + A.chuAnToan(LOP_CHON) + '"><div class="trong">Đang chờ bài tập.</div></div>');   // v1.381.0 thẻ đặc biệt
     // ⭐ v1.81.0 — đeo nhãn cho thẻ nghỉ mà HỌC SINH ĐÃ HẾT THẤY (buổi đã tan).
     // ⛔ Gắn class SAU khi dựng HTML thay vì thêm tham số cho `theNghiHtml()`:
     // hàm đó dùng CHUNG với trang học sinh, mà bên đó thẻ này không bao giờ hiện
@@ -7363,6 +7385,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       var theNghiEl = $('#theListDs').querySelector('.the.nghi');
       if (theNghiEl) theNghiEl.classList.add('da-tan');
     }
+    if (window.ThanhGiai) ThanhGiai.dien($('#theListDs'));   // ⭐ v1.381.0
     nhipDongHo();
     canhNhanO();
     napNopBai();   // ⭐ v1.120.0 — số em đã nộp ảnh trên hàng SHEET
@@ -10969,12 +10992,15 @@ tr.qm-hang-tam td{background:#fffbeb}
   /* ⭐⭐ v1.186.0 (thầy chốt mẫu "bản 12", 30/09/2026) — KHUÔN CHAT KIỂU ZALO DÙNG CHUNG với lop.html/khoa.html
      (js/chat-ui.js + css/chat-ui.css). GV chỉ khác: thu hồi + XOÁ HẲN được mọi tin, và cảm xúc ghi khoá 'GV'.
      Bản vẽ tay cũ (veTinDb, cụm cảm xúc, cụm xoá 2 bước) đã bỏ. */
-  if (window.TheGiai) TheGiai.gan(document.getElementById('cumGiai'), { lop: function () { return LOP_CHON || ''; } });   // ⭐ v1.371.0 — thẻ giải đấu neon của lớp đang chọn (js/the-giai.js)
+  // ⭐ v1.381.0 — THANH GIẢI ĐẤU (thay thẻ neon v1.371.0): chip mọi lớp; giải đổi ⇒ vẽ lại ô lớp (trạng thái "có giải") + cột Bài còn hạn
+  if (window.ThanhGiai) ThanhGiai.ganThay(document.getElementById('thanhGiaiGv'), {
+    tenLop: function (ma) { var l = A.lopTheoMa(DL, ma); return (l && (l.tenGoc || l.maLop)) || ma; },
+    khiDoi: function () { if (!DL.lop.length) return; if (!DANG_SAP_XEP) veLopGrid(); veKhuThe(); }
+  });
   if (window.GiaiPop) GiaiPop.tenLop = function (ma) { var l = A.lopTheoMa(DL, ma); return (l && l.tenGoc) || ma; };   // ⭐ v1.380.0 — tên lớp đẹp trong pop-up giải
   var UI_CHAT = ChatUI.tao({
     khung: $('#chatBody'), chan: document.querySelector('.cot-chat .chat-foot'), idNhap: 'chatO',
     toi: { khoa: 'GV', ten: 'Thầy Andrew' }, laThay: true,
-    lopGiai: function () { return LOP_CHON || ''; },   // ⭐ v1.351.0 — dải ghim giải đấu của lớp đang chọn (js/the-td.js)
     thachDau: function () { return LOP_CHON || ''; },   // ⭐ v1.360.0 — THẦY GIAO HỮU: ⚔ chọn em đang online của lớp đang chọn (js/the-td.js)
     laCuaToi: function (t) { return t.vaiTro === 'gv'; },
     av: function (t) {

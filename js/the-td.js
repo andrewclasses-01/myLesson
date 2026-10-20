@@ -999,8 +999,20 @@
   // giải mở/đóng theo giờ ⇒ tải lại mỗi 5 phút; "còn … " nhích mỗi phút
   setInterval(function () { GHIM.forEach(function (G) { if (!G.khung.isConnected) return; if (Date.now() - (G._nap || 0) > 5 * 60e3) { G._nap = Date.now(); napGhim(G); } else veGhim(G); }); }, 60 * 1000);
 
+  /* ⭐ v1.381.0 — MỜI THẲNG MỘT BẠN đấu giải (nút "Thách đấu" cạnh tên bạn trong pop-up thanh giải, js/thanh-giai.js).
+     Cùng đường với bước 2 của hộp ⚔ (taoTran, trận tính giải): nghỉ đêm ⇒ hộp đi ngủ; giới hạn chơi do taoTran/GH.chanMoi lo. */
+  async function TheTD_moiGiai(ban, lop, g, gui, baoLoi) {
+    var me = await toi();
+    if (!me.laThay) { await GH.napCai(); if (GH.dem()) return GH.hopNgu(); }
+    if (!me.ten && !me.laThay) { if (baoLoi) baoLoi('Chưa nhận ra tài khoản của em — em tải lại trang nhé.'); return; }
+    var bay = Date.now();
+    if (!g || g.dong || bay < g.tu || bay >= g.den) { if (baoLoi) baoLoi('Giải chưa mở hoặc đã đóng — chưa thách đấu được.'); return; }
+    return taoTran({ me: me, ban: ban, lop: lop, giai: g.id, phut: g.phut, lv: g.lv, gui: gui, baoLoi: baoLoi });
+  }
+
   window.TheTD = {
     IC: IC,
+    moiGiai: TheTD_moiGiai,
     html: function (id) {
       napCss(); id = String(id || ''); var t = TRAN[id];
       return '<div class="cu-td' + (moMo(t) ? ' mo' : '') + (laGon(t) ? ' gon' : '') + (t && t.giai ? ' giai' : '') + (t && t.gv ? ' thay' : '') + '" data-td="' + an(id) + '">' + (laGon(t) ? gonHtml(id) : cardHtml(id)) + '</div>';

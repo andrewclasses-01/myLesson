@@ -765,7 +765,7 @@ body.mo-menu .side.trai{transform:none}
 }
 </style>
 <link rel="stylesheet" href="css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/the-giai.css?v=1"><!-- ⭐ v1.371.0 thẻ giải đấu neon -->
+<link rel="stylesheet" href="css/thanh-giai.css?v=1"><!-- ⭐ v1.381.0 THANH GIẢI ĐẤU dưới thanh menu (thay thẻ neon v1.371.0) -->
 
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
@@ -785,6 +785,7 @@ body.mo-menu .side.trai{transform:none}
     <div class="nwb-phai"><button class="nwb-menu" id="nwbMenu" title="Menu" aria-label="Menu"></button></div>
   </div>
 </header>
+<div id="thanhGiai" hidden></div><!-- ⭐ v1.381.0 thanh giải đấu (js/thanh-giai.js) — dính ngay dưới thanh menu -->
 
 <div class="wrap main">
   <div class="cot-trai"><div id="cumGiai"></div><section class="cot-bai" id="cotBai"></section></div><!-- ⭐ v1.371.0: #cumGiai (thẻ giải đấu, js/the-giai.js) NẰM NGOÀI #cotBai — cotBai bị vẽ lại bằng innerHTML -->
@@ -873,8 +874,8 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=25"></script>
-<script src="js/the-td.js?v=12"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/the-giai.js?v=2"></script><script>TheGiai.gan(document.getElementById('cumGiai'), { lop: function () { return typeof LOP_DL === 'string' ? LOP_DL : ''; } });</script>   <!-- ⭐ v1.371.0 thẻ giải đấu neon đầu cột bài -->
+<script src="js/the-td.js?v=13"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/giai-ghi.js?v=1"></script><script src="js/thanh-giai.js?v=1"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js); gắn ngay sau UI_CHAT -->
 <script src="js/vi-qua.js?v=13"></script>
 <script src="js/qua-2010.js?v=2"></script>   <!-- 20/10/2026 v1.377.0 pop-up quà 20-10 cho bạn nữ (+10 sao) -->
 <script src="js/tb-pop.js?v=1"></script>
@@ -1699,15 +1700,17 @@ function dungCot(){
     cu = BAI_CU.slice(0, 1);
     dsThe = [BAI_MOI].concat(cu);
   } else {
-    tren = BAI_CU.length
+    /* ⭐ v1.381.0 — lớp đang có GIẢI ĐẤU ⇒ THẺ ĐẶC BIỆT "chưa có bài · có giải" (js/thanh-giai.js) thay dòng nhắn */
+    tren = '<div data-thg-db="' + A.chuAnToan(LOP_DL) + '">' + (BAI_CU.length
       ? '<div class="chua-co">' + IC_GIO + 'Bài tập mới sẽ sớm được cập nhật</div>'
-      : '<div class="chua-co cho-nv"><span>KHÓA HỌC ĐANG ĐƯỢC CHUẨN BỊ,<br>THẦY SẼ SỚM GIAO NHIỆM VỤ ĐẦU TIÊN!</span></div>';   // v1.288.1 hai dòng, căn giữa
+      : '<div class="chua-co cho-nv"><span>KHÓA HỌC ĐANG ĐƯỢC CHUẨN BỊ,<br>THẦY SẼ SỚM GIAO NHIỆM VỤ ĐẦU TIÊN!</span></div>') + '</div>';   // v1.288.1 hai dòng, căn giữa
     cu = BAI_CU.slice(0, 2);
     dsThe = cu.slice();
   }
   // ⭐ v1.340.0 — thẻ GIỚI THIỆU (bài `kieu:'GIOITHIEU'`) đứng đúng chỗ của nó trong danh sách như mọi bài, vẽ bằng thẻ vàng đồng
   // riêng (`.gtk-the`, không có class `.the`) ⇒ bỏ khỏi `dsThe` để chỉ số `.the` ↔ bài bên dưới vẫn khớp.
   $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + cu.map(function(b){ return laTheGt(b) ? veTheGt(b) : veTheCu(b); }).join('');
+  if (window.ThanhGiai) ThanhGiai.dien($('#cotBai'));   // v1.381.0
   dsThe = dsThe.filter(function(b){ return !laTheGt(b); });
   var nutGt = $('#gtkThe');
   if (nutGt) {
@@ -2022,7 +2025,7 @@ var UI_CHAT = ChatUI.tao({
     /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay là tin hiện HAI LẦN. */
   },
   thachDau: function(){ return MA_HS && MA_HS !== 'GV' ? LOP_DL : ''; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js)
-  lopGiai: function(){ return LOP_DL || ''; },   // ⭐ v1.351.0 — dải ghim giải đấu đầu khung chat (js/the-td.js)
+  /* v1.381.0 — BỎ dải ghim giải trong chat (lopGiai): đã có THANH GIẢI ĐẤU dưới thanh menu (js/thanh-giai.js) */
   datCx: function(t, v){ if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' })); return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
   ghiXem: function(luc){ return AWChat.ghiXem(LOP_DL, MA_HS, TOI, luc); },   // v1.210.0 — "đã xem" tin cuối
   thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },
@@ -2031,6 +2034,12 @@ var UI_CHAT = ChatUI.tao({
   trong: 'Khóa mình chưa ai nhắn gì.<br>Em mở lời trước nhé!',
   khiGo: function(){ if (typeof doSanChat === 'function') doSanChat(); },
   veLaiTuKho: function(){ veChat(); }
+});
+/* ⭐ v1.381.0 — THANH GIẢI ĐẤU dưới thanh menu: nút ⚔ / mời bạn gửi thẻ thách đấu vào chat lớp qua đúng đường gửi của khung chat */
+if (window.ThanhGiai) ThanhGiai.gan(document.getElementById('thanhGiai'), {
+  lop: function(){ return typeof LOP_DL === 'string' ? LOP_DL : ''; },
+  gui: function(he, chu){ return UI_CHAT.o.gui({ chu: chu, he: he }); },
+  loi: function(e){ UI_CHAT.o.loi(e); }
 });
 /* Thầy đăng nhập thay em / xem như em (js/thay-vao.js): chat CHỈ ĐỌC (tin sẽ mang tên em + dấu máy của thầy). */
 if (window.__thayVao) UI_CHAT.datChiXem(true, 'Đang mở thay em — chat chỉ để đọc.');

@@ -1621,7 +1621,7 @@ body.mo-menu .side.trai{transform:none}
 }
 </style>
 <link rel="stylesheet" href="css/tn-pop.css?v=9">
-<link rel="stylesheet" href="css/the-giai.css?v=1"><!-- ⭐ v1.371.0 thẻ giải đấu neon -->
+<link rel="stylesheet" href="css/thanh-giai.css?v=1"><!-- ⭐ v1.381.0 THANH GIẢI ĐẤU dưới thanh menu (thay thẻ neon v1.371.0) -->
 
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
@@ -1639,6 +1639,7 @@ body.mo-menu .side.trai{transform:none}
     <div class="nwb-phai"><button class="nwb-menu" id="nwbMenu" title="Menu" aria-label="Menu"></button></div>
   </div>
 </header>
+<div id="thanhGiai" hidden></div><!-- ⭐ v1.381.0 thanh giải đấu (js/thanh-giai.js) — dính ngay dưới thanh menu -->
 
 <div class="wrap main">
   <div class="cot-trai"><div id="cumGiai"></div><section class="cot-bai" id="cotBai"></section></div><!-- ⭐ v1.371.0: #cumGiai (thẻ giải đấu, js/the-giai.js) NẰM NGOÀI #cotBai — cotBai bị vẽ lại bằng innerHTML -->
@@ -1766,8 +1767,8 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=2"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=25"></script>
-<script src="js/the-td.js?v=12"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/the-giai.js?v=2"></script><script>TheGiai.gan(document.getElementById('cumGiai'), { lop: function () { return typeof LOP_DL === 'string' ? LOP_DL : ''; } });</script>   <!-- ⭐ v1.371.0 thẻ giải đấu neon đầu cột bài -->
+<script src="js/the-td.js?v=13"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/giai-ghi.js?v=1"></script><script src="js/thanh-giai.js?v=1"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js); gắn ngay sau UI_CHAT -->
 <script src="js/nhac-ban.js?v=4"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth) cho đường `?gv=1` từ dashboard; nạp SAU chat.js -->
 <script src="js/thay.js?v=6"></script>
@@ -3349,14 +3350,16 @@ function dungCot(){
   } else {
     /* Không có bài nào còn hạn: trên vạch là dòng nhắn, mọi bài xuống dưới.
        v1.215.0 — có thẻ nghỉ đã tan (nằm dưới vạch) thì nó chiếm 1 chỗ trong tổng số thẻ. */
-    tren = BAI_CU.length
+    /* ⭐ v1.381.0 — lớp đang có GIẢI ĐẤU ⇒ ô `data-thg-db` thành THẺ ĐẶC BIỆT "chưa có bài · có giải" (js/thanh-giai.js), không thì giữ dòng nhắn */
+    tren = '<div data-thg-db="' + A.chuAnToan(LOP_DL) + '">' + (BAI_CU.length
       ? '<div class="chua-co">' + IC_GIO + 'Bài tập mới sẽ sớm được cập nhật</div>'
-      : '<div class="chua-co vui">🎈 No homework, No fun!</div>';
+      : '<div class="chua-co vui">🎈 No homework, No fun!</div>') + '</div>';
     cu = BAI_CU.slice(0, nghiHetHan ? tong - 1 : tong);
     dsThe = cu.slice();
   }
   $('#cotBai').innerHTML = tren + '<div class="vach"></div>' +
     (nghiHetHan ? A.theNghiHtml(mocNghi) : '') + cu.map(veTheCu).join('');
+  if (window.ThanhGiai) ThanhGiai.dien($('#cotBai'));   // v1.381.0
 
   /* ⛔ `:not(.nghi)` BẮT BUỘC: vòng dưới tra `dsThe[i]` THEO CHỈ SỐ, mà thẻ nghỉ
      cũng mang class `.the`. Thiếu bộ lọc là mọi thẻ bị gán nhầm bài của thẻ khác
@@ -4719,7 +4722,7 @@ var UI_CHAT = ChatUI.tao({
     /* KHÔNG tự chèn tin vào khung: `onSnapshot` bắn về ngay sau đó, chèn tay là tin hiện HAI LẦN. */
   },
   thachDau: function(){ return MA_HS && MA_HS !== 'GV' ? LOP_DL : ''; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js)
-  lopGiai: function(){ return LOP_DL || ''; },   // ⭐ v1.351.0 — dải ghim giải đấu đầu khung chat (js/the-td.js)
+  /* v1.381.0 — BỎ dải ghim giải trong chat (lopGiai): đã có THANH GIẢI ĐẤU dưới thanh menu (js/thanh-giai.js) */
   datCx: function(t, v){ if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' })); return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
   ghiXem: function(luc){ return AWChat.ghiXem(LOP_DL, MA_HS, TOI, luc); },   // v1.210.0 — "đã xem" tin cuối
   thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },
@@ -4728,6 +4731,12 @@ var UI_CHAT = ChatUI.tao({
   trong: 'Lớp mình chưa ai nhắn gì.<br>Em mở lời trước nhé!',
   khiGo: function(){ if (typeof doSanChat === 'function') doSanChat(); },
   veLaiTuKho: function(){ veChat(); }
+});
+/* ⭐ v1.381.0 — THANH GIẢI ĐẤU dưới thanh menu: nút ⚔ / mời bạn gửi thẻ thách đấu vào chat lớp qua đúng đường gửi của khung chat */
+if (window.ThanhGiai) ThanhGiai.gan(document.getElementById('thanhGiai'), {
+  lop: function(){ return typeof LOP_DL === 'string' ? LOP_DL : ''; },
+  gui: function(he, chu){ return UI_CHAT.o.gui({ chu: chu, he: he }); },
+  loi: function(e){ UI_CHAT.o.loi(e); }
 });
 /* Thầy đăng nhập thay em / xem như em (js/thay-vao.js): chat CHỈ ĐỌC (tin sẽ mang tên em + dấu máy của thầy). */
 if (window.__thayVao) UI_CHAT.datChiXem(true, 'Đang mở thay em — chat lớp chỉ để đọc.');

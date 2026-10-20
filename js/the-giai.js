@@ -8,7 +8,7 @@
 
    Dữ liệu (cùng nguồn với DẢI GHIM vàng trong chat — js/the-td.js, số liệu hai nơi khớp, dải ghim KHÔNG đổi hành vi):
      · giaiDau where lops array-contains <lớp>  (TheTD.giaiCuaLop): đang · sắp (gần nhất) · đã đóng chưa thưởng sao ·
-       thưởng sao xong thì còn 3 ngày (tính từ capNhat) rồi ẩn
+       đã thưởng sao thì ẨN NGAY (v1.380.0 — trước đây còn 3 ngày)
      · giaiDau/{id}/bang/{lớp}.em[uid web] = {ten?, t, h, b} — điểm = thắng×2 + hòa (game aShowSpeed, hàm GAME.diem)
      · nwUsers where cacLop array-contains <lớp> — mọi em trong lớp có chấm trên đường đua, kể cả em 0 điểm
      · tranDau where lop==<lớp> && trangThai=='choi' — số trận đang đấu (như dải ghim)
@@ -88,7 +88,8 @@
     ds.forEach(function (g) { g._tt = trangThai(g, bay); });
     var dang = ds.filter(function (g) { return g._tt === 'dang'; }).sort(function (a, b) { return a.den - b.den; });
     var sap = ds.filter(function (g) { return g._tt === 'sap'; }).sort(function (a, b) { return a.tu - b.tu; }).slice(0, 1);
-    var xong = ds.filter(function (g) { return g._tt === 'xong' && (!g.daThuong || bay - (g.capNhat || g.den || 0) <= 3 * D); }).sort(function (a, b) { return (b.den || 0) - (a.den || 0); });
+    /* v1.380.0 (thầy chốt 20/10) — đã thưởng sao là ẨN NGAY (bỏ "còn 3 ngày"); giải vào Kho bài trên dashboard */
+    var xong = ds.filter(function (g) { return g._tt === 'xong' && !g.daThuong; }).sort(function (a, b) { return (b.den || 0) - (a.den || 0); });
     if (!thay) xong = xong.slice(0, 1);
     return dang.concat(sap, xong).slice(0, 3);
   }
@@ -105,7 +106,7 @@
     Object.keys(em).forEach(function (uid) { if (!co[uid]) rows.push({ uid: uid, ten: em[uid].ten || '?', anh: '', r: em[uid] }); });
     rows.forEach(function (x) { x.d = G.diem(x.r); x.tr = G.tran(x.r); });
     rows.sort(function (a, b) {
-      return b.d - a.d || ((b.r && b.r.t) || 0) - ((a.r && a.r.t) || 0) || a.tr - b.tr || String(a.ten).localeCompare(String(b.ten), 'vi');
+      return (b.tr > 0) - (a.tr > 0) || b.d - a.d || ((b.r && b.r.t) || 0) - ((a.r && a.r.t) || 0) || a.tr - b.tr || String(a.ten).localeCompare(String(b.ten), 'vi');
     });
     var daDau = rows.filter(function (x) { return x.tr > 0; }), tong = 0;
     rows.forEach(function (x) { tong += x.tr; });
@@ -223,6 +224,7 @@
       var it = Hh.items[+the.getAttribute('data-i')]; if (!it) return;
       var nut = e.target.closest('[data-tg]');
       var lam = nut ? nut.getAttribute('data-tg') : '';
+      if (Hh.toi.laThay && window.GiaiPop) return GiaiPop.mo(it.g.id, Hh.lop, lam);   // v1.380.0 dashboard: bấm thẻ = POP-UP chi tiết (js/giai-pop.js)
       di(urlTran(it, Hh, lam), !!Hh.toi.laThay);
     });
     khung.addEventListener('keydown', function (e) {

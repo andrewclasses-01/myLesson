@@ -3964,6 +3964,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 </style>
 <link rel="stylesheet" href="css/tn-pop.css?v=9">
 <link rel="stylesheet" href="css/the-giai.css?v=1"><!-- ⭐ v1.371.0 thẻ giải đấu neon -->
+<link rel="stylesheet" href="css/giai-pop.css?v=1"><!-- ⭐ v1.380.0 pop-up chi tiết giải đấu (js/giai-pop.js) -->
 
 <link rel="stylesheet" href="css/nw-thanh.css?v=13">
 <!-- ⭐ v1.186.0 — khuôn chat kiểu Zalo dùng chung -->
@@ -4415,7 +4416,9 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/chat-ui.js?v=25"></script>
 <script src="js/the-td.js?v=12"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/the-giai.js?v=1"></script>   <!-- ⭐ v1.371.0 thẻ giải đấu neon (gắn ở khối UI_CHAT) -->
+<script src="js/the-giai.js?v=2"></script>   <!-- ⭐ v1.371.0 thẻ giải đấu neon (gắn ở khối UI_CHAT) · v1.380.0 bấm thẻ = pop-up -->
+<script src="js/giai-ghi.js?v=1"></script>   <!-- ⭐ v1.380.0 đường ghi giải dùng chung (trang Giải đấu + pop-up) -->
+<script src="js/giai-pop.js?v=1"></script>   <!-- ⭐ v1.380.0 POP-UP CHI TIẾT GIẢI + hàng TOURNAMENT trong Kho bài -->
 <script src="js/nhac-ban.js?v=4"></script>   <!-- v1.333.0 nút REMIND thẻ STAGE · v1.334.0 mọi dạng bài -->
 <!-- ⭐ v1.52.0 — phiên thầy (Firebase Auth); PHẢI nạp sau chat.js (dùng chung app Firebase) -->
 <script src="js/thay.js?v=6"></script>
@@ -10967,6 +10970,7 @@ tr.qm-hang-tam td{background:#fffbeb}
      (js/chat-ui.js + css/chat-ui.css). GV chỉ khác: thu hồi + XOÁ HẲN được mọi tin, và cảm xúc ghi khoá 'GV'.
      Bản vẽ tay cũ (veTinDb, cụm cảm xúc, cụm xoá 2 bước) đã bỏ. */
   if (window.TheGiai) TheGiai.gan(document.getElementById('cumGiai'), { lop: function () { return LOP_CHON || ''; } });   // ⭐ v1.371.0 — thẻ giải đấu neon của lớp đang chọn (js/the-giai.js)
+  if (window.GiaiPop) GiaiPop.tenLop = function (ma) { var l = A.lopTheoMa(DL, ma); return (l && l.tenGoc) || ma; };   // ⭐ v1.380.0 — tên lớp đẹp trong pop-up giải
   var UI_CHAT = ChatUI.tao({
     khung: $('#chatBody'), chan: document.querySelector('.cot-chat .chat-foot'), idNhap: 'chatO',
     toi: { khoa: 'GV', ten: 'Thầy Andrew' }, laThay: true,
@@ -12211,9 +12215,11 @@ tr.qm-hang-tam td{background:#fffbeb}
     var hien = (KHO_LOC === 'tatca') ? ds
       : ds.filter(function (b) { return khoNhom(b) === KHO_LOC; });
 
-    if (!ds.length) { hop.innerHTML = '<div class="trong">Lớp này chưa có bài nào.</div>'; return; }
+    // ⭐ v1.380.0 — GIẢI ĐẤU của lớp (TOURNAMENT) đứng đầu kho ở nhóm "Tất cả": ô `data-gpz-kho` do js/giai-pop.js điền (đọc giaiDau), bấm = pop-up giải
+    var oGiai = (KHO_LOC === 'tatca' && window.GiaiPop) ? '<div data-gpz-kho="' + A.chuAnToan(LOP_CHON) + '"></div>' : '';
+    if (!ds.length) { hop.innerHTML = oGiai + '<div class="trong">Lớp này chưa có bài nào.</div>'; if (oGiai) GiaiPop.dien(hop); return; }
 
-    hop.innerHTML = hien.map(function (b) {
+    hop.innerHTML = oGiai + hien.map(function (b) {
       var nhom = khoNhom(b);
       var nhan = KHO_NHAN[nhom];
       var chuHan = A.chuHan(b);
@@ -12245,6 +12251,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       (dem.xoa ? ('<div class="kho-het"><button class="nut nho do" id="khoXoaHet">' +
         'Xoá vĩnh viễn tất cả (' + dem.xoa + ' bài đã xoá)</button></div>') : '') +
       (hien.length ? '' : '<div class="trong">Không có bài nào ở nhóm này.</div>');
+    if (oGiai) GiaiPop.dien(hop);
   }
   /* ==============================================================
      ⭐⭐ v1.203.0 (01/10/2026) — KHO BÀI MỚI (thầy chốt mẫu `myLesson - thiet ke nut lop/mau-v2.html`)
@@ -12635,6 +12642,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         return '<button type="button" data-kl-loc="' + k[0] + '"' + (KL.loc === k[0] ? ' class="chon"' : '') + '>' + k[1] + '<i>' + dem[k[0]] + '</i></button>';
       }).join('') + '</div>' +
       '<div class="kl-kb-tieu"><span>Dạng</span><span>Bài</span><span class="kl-an-hep">Giao → hạn</span><span>Hoàn thành</span><span class="kl-an-hep" style="text-align:right">Làm bài TB</span><span></span></div>' +
+      (KL.loc === 'tatca' && window.GiaiPop ? '<div data-gpz-kho="' + klE(maLop) + '"></div>' : '') +   // ⭐ v1.380.0 — giải đấu của lớp (js/giai-pop.js điền)
       hien.map(function (b) {
         var nhom = khoNhom(b), nhan = KHO_NHAN[nhom], id = klE(b.id), sb = klSoBai(b, maLop), g = klGiao(b), hn = A.mocHan(b);
         return '<div class="kl-kb-hang kho-hang' + (nhom === 'xoa' ? ' la-xoa' : '') + '" data-kho-mo="' + id + '" role="button" tabindex="0">' +
@@ -12670,6 +12678,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     var l = KL.lop ? A.lopTheoMa(DL, KL.lop) : null;
     $('#klPhu').textContent = l ? (l.tenGoc || KL.lop) : 'Tất cả lớp';
     than.innerHTML = KL.lop ? klVeMotLop(KL.lop) : klVeTatCa();
+    if (window.GiaiPop) GiaiPop.dien(than);   // ⭐ v1.380.0 — hàng TOURNAMENT trong danh sách bài của lớp
     than.scrollTop = giuCuon ? cuon : 0;
   }
   function moKhoLon(maLop) {

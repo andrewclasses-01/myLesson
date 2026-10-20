@@ -1,0 +1,269 @@
+/* ============================================================
+   css/giai-pop.css — POP-UP CHI TIẾT GIẢI ĐẤU trên dashboard (web v1.380.0, 20/10/2026)
+   Mẫu thầy duyệt: D:\OTHERS\CLAUDE\GIAI DAU THE - thiet ke\mau-v10-popup-giai\index.html
+   Khung theo "hộp quản lý bài" (#bmHop.hq — dashboard.html): đầu hộp lưới 3 cột, dải tab, thân trắng.
+   ⛔ MỌI lớp CSS tiền tố `gpz-` (dashboard đã có .hq-tab .bxh .tran .hop … — đừng đụng).
+   Màu lấy biến của dashboard (--nen --the --vien --chu --mo --nhat --xanh …), có giá trị dự phòng.
+   ============================================================ */
+.gpz-nen{position:fixed;inset:0;background:rgba(16,35,42,.5);z-index:88;opacity:0;pointer-events:none;transition:opacity .2s ease}
+.gpz-nen.mo{opacity:1;pointer-events:auto}
+.gpz-hop{--n:var(--nen,#F1F5F4);--t:var(--the,#fff);--v:var(--vien,#E1EAE8);--vd:var(--vien-dam,#CFDCD9);--c:var(--chu,#16232A);--m:var(--mo,#5F7370);--nh:var(--nhat,#8AA09C);--x:#0E7C6E;--xn:#E3F3F0;
+  --disp:'Barlow Condensed','Arial Narrow','Roboto Condensed',Arial,sans-serif;
+  position:fixed;z-index:89;left:50%;top:50%;width:min(98vw,1760px);height:96vh;transform:translate(-50%,-46%) scale(.97);opacity:0;pointer-events:none;
+  transition:opacity .2s ease,transform .2s cubic-bezier(.22,.9,.3,1);background:var(--n);border-radius:18px;box-shadow:0 24px 70px rgba(16,40,36,.35);
+  display:flex;flex-direction:column;overflow:hidden;color:var(--c)}
+.gpz-hop.mo{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1)}
+.gpz-hop *,.gpz-hop *::before,.gpz-hop *::after{box-sizing:border-box}
+.gpz-hop svg{stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.gpz-hop button{font-family:inherit}
+
+/* đầu hộp */
+.gpz-dau{padding:12px 18px;gap:12px;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;flex:none}
+.gpz-trai{display:flex;align-items:center;gap:11px;min-width:0}
+.gpz-trai img{width:38px;height:38px;border-radius:50%;object-fit:cover;flex:none}
+.gpz-trai b{display:block;font-weight:800;font-size:13.5px;line-height:1.2}
+.gpz-trai small{font-size:11.5px;color:var(--m)}
+.gpz-giua{display:flex;align-items:center;justify-self:center;min-width:0}
+.gpz-han{--hc:#0E7C6E;--hn:#7CC6B9;display:flex;align-items:center;gap:12px;padding:6px 14px;border-radius:11px;background:#fff;border:1px solid var(--v);white-space:nowrap}
+.gpz-han.ket{--hc:#B07A00;--hn:#F3D27C}
+.gpz-moc{display:flex;flex-direction:column;gap:3px}
+.gpz-moc small{font-weight:800;font-size:9.5px;line-height:1;letter-spacing:.1em;color:var(--nh)}
+.gpz-moc b{font-weight:800;font-size:12.5px;line-height:1;font-variant-numeric:tabular-nums;color:#0B6357}
+.gpz-moc.phai{text-align:right} .gpz-moc.phai b{color:#8a5b0e}
+.gpz-tg{position:relative;width:170px;height:6px;border-radius:99px;background:#EDF2F1}
+.gpz-tg i{position:absolute;inset:0 auto 0 0;border-radius:99px;background:linear-gradient(90deg,var(--hn),var(--hc))}
+.gpz-dem{padding-left:12px;border-left:1px solid var(--v);font:italic 800 20px/1 var(--disp);letter-spacing:.04em;font-variant-numeric:tabular-nums;color:var(--hc)}
+.gpz-dem small{display:block;font-weight:800;font-size:9px;line-height:1;font-style:normal;letter-spacing:.1em;color:var(--nh);margin-bottom:3px;font-family:inherit}
+@media (max-width:1200px){.gpz-tg{width:90px}.gpz-han{gap:9px;padding:6px 11px}}
+.gpz-phai{display:flex;align-items:center;justify-content:flex-end;gap:10px;min-width:0}
+.gpz-tag{display:flex;align-items:center;gap:9px;min-width:0;padding:5px 12px 5px 6px;border-radius:12px;background:#0B1F17;color:#9BFFC4}
+.gpz-tag.sap{background:#1B2536;color:#DCE8FA} .gpz-tag.cho,.gpz-tag.xong{background:#2A1E00;color:#F7D56B}
+.gpz-cup{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;background:linear-gradient(135deg,#1DE07A,#8CFFBF);color:#04200F;flex:none}
+.gpz-tag.sap .gpz-cup{background:linear-gradient(135deg,#8CA3C7,#C7D4EA)} .gpz-tag.cho .gpz-cup,.gpz-tag.xong .gpz-cup{background:linear-gradient(135deg,#E8A90F,#F7D56B);color:#3D2A00}
+.gpz-cup svg{width:17px;height:17px}
+.gpz-tag-t{min-width:0}
+.gpz-tag-t b{display:block;font:italic 900 18px/1 var(--disp);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpz-tag-t small{font-weight:800;font-size:9px;line-height:1;letter-spacing:.08em;opacity:.85;white-space:nowrap}
+.gpz-x{width:34px;height:34px;border-radius:10px;border:0;background:transparent;color:var(--m);display:grid;place-items:center;cursor:pointer;flex:none;padding:0}
+.gpz-x:hover{background:#E6EEEC;color:var(--c)} .gpz-x svg{width:20px;height:20px}
+.gpz-x.cd-dt{display:none}
+.gpz-nutp{display:flex;gap:2px;flex:none}
+
+/* dải tab */
+.gpz-tabs{display:flex;gap:6px;padding:12px 18px 0;align-items:flex-end;flex:none}
+.gpz-tab{border:1px solid transparent;border-bottom:0;background:transparent;color:var(--m);font-weight:800;font-size:11.5px;line-height:1;letter-spacing:.07em;text-transform:uppercase;padding:11px 16px 12px;border-radius:12px 12px 0 0;cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.gpz-tab svg{width:15px;height:15px;display:none}
+.gpz-tab:hover{color:var(--x)}
+.gpz-tab.mo{background:var(--t);color:var(--x);border-color:var(--v)}
+.gpz-tab .so{font-weight:800;font-size:10px;line-height:1;padding:4px 7px;border-radius:99px;background:#EDF2F1;color:var(--m)}
+.gpz-tab.mo .so{background:var(--xn);color:var(--x)}
+.gpz-chip{display:flex;gap:4px;margin-left:12px;align-self:center;padding-bottom:6px}
+.gpz-chip button{border:1px solid var(--v);background:#fff;border-radius:99px;padding:5px 11px;font-weight:800;font-size:11px;color:var(--m);cursor:pointer}
+.gpz-chip button.on{background:var(--x);border-color:var(--x);color:#fff}
+.gpz-tphai{margin-left:auto;display:flex;gap:6px;align-items:center;padding-bottom:6px}
+.gpz-web{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--vd);background:#fff;color:var(--x);font-weight:800;font-size:11px;letter-spacing:.04em;padding:7px 11px;border-radius:10px;cursor:pointer}
+.gpz-web svg{width:14px;height:14px}
+.gpz-cd{width:32px;height:32px;border-radius:10px;border:0;background:transparent;color:var(--m);display:grid;place-items:center;cursor:pointer;transition:transform .25s ease,color .15s;padding:0}
+.gpz-cd:hover{color:var(--x);transform:rotate(30deg)} .gpz-cd svg{width:18px;height:18px}
+.gpz-than{flex:1;min-height:0;background:var(--t);border-top:1px solid var(--v);overflow:auto;padding:16px 18px;position:relative}
+.gpz-than.vua{overflow:hidden;display:flex;flex-direction:column}
+.gpz-trong{padding:18px;text-align:center;color:var(--nh);font-size:12.5px;border:1px dashed var(--vd);border-radius:12px}
+
+/* menu ⚙ */
+.gpz-menu{position:absolute;z-index:6;background:#fff;border:1px solid var(--v);border-radius:12px;box-shadow:0 14px 40px rgba(16,40,36,.18);padding:6px;min-width:250px;display:none}
+.gpz-menu.mo{display:block}
+.gpz-menu button{display:flex;gap:10px;align-items:center;width:100%;border:0;background:none;padding:9px 10px;border-radius:8px;font-weight:700;font-size:13px;color:var(--c);cursor:pointer;text-align:left}
+.gpz-menu button:hover{background:var(--n)} .gpz-menu button svg{width:16px;height:16px;color:var(--m);flex:none}
+.gpz-menu button.vang svg{color:#C48A00} .gpz-menu button.do{color:#B03A3E} .gpz-menu button.do svg{color:#B03A3E}
+.gpz-menu hr{border:0;border-top:1px solid var(--v);margin:4px 0}
+.gpz-menu small{display:block;font-weight:600;color:var(--nh);font-size:11px}
+
+/* ô số liệu */
+.gpz-so{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.gpz-so>div{border:1px solid var(--v);border-radius:13px;padding:10px 12px;background:#FAFCFC;min-width:0}
+.gpz-so small{display:block;font-weight:800;font-size:9.5px;line-height:1;letter-spacing:.09em;color:var(--nh);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpz-so b{display:block;margin-top:6px;font:italic 800 26px/1 var(--disp);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpz-so b.chu{font-family:inherit;font-weight:800;font-size:14px;line-height:1.25;font-style:normal;margin-top:7px}
+.gpz-so b .xa{font-size:15px;color:var(--nh)}
+.gpz-so .sao b{color:#B07A00}
+
+/* XẾP HẠNG: cột số liệu dọc + bảng tự co hàng cho VỪA một màn */
+.gpz-xh{display:grid;grid-template-columns:200px minmax(0,1fr);gap:16px;flex:1;min-height:0}
+.gpz-xh .gpz-so{grid-template-columns:1fr;margin:0;align-content:start;gap:8px}
+.gpz-xh .gpz-so>div{padding:9px 12px}
+.gpz-bangk{min-height:0;overflow:hidden;display:grid;gap:18px;align-content:start}
+.gpz-bangk.hai{grid-template-columns:1fr 1fr}
+.gpz-bxh{width:100%;border-collapse:separate;border-spacing:0}
+.gpz-bxh th{background:var(--t);text-align:left;font-weight:800;font-size:10px;line-height:1;letter-spacing:.08em;color:var(--nh);text-transform:uppercase;padding:10px;border-bottom:1px solid var(--v);height:32px;white-space:nowrap}
+.gpz-bxh td{padding:0 10px;height:var(--hang,44px);border-bottom:1px solid #EEF3F2;vertical-align:middle;font-variant-numeric:tabular-nums;font-size:13px}
+.gpz-bxh tr.dong{cursor:pointer} .gpz-bxh tr.dong:hover td{background:#F6FAF9}
+.gpz-bxh tr.chua td{color:var(--nh)}
+.gpz-hg{width:min(28px,calc(var(--hang,44px) - 14px));height:min(28px,calc(var(--hang,44px) - 14px));border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:11.5px;background:#EDF2F1;color:var(--m)}
+.gpz-hg.h1{background:linear-gradient(135deg,#F7C948,#FFE89A);color:#5A3D00;box-shadow:0 0 0 2px rgba(247,201,72,.35)}
+.gpz-hg.h2{background:linear-gradient(135deg,#C9D2DE,#EEF2F7);color:#3F4B5C}
+.gpz-hg.h3{background:linear-gradient(135deg,#E3A877,#F7D6BA);color:#5C3313}
+.gpz-em{display:flex;align-items:center;gap:10px;min-width:0}
+.gpz-em b{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpz-av{width:min(32px,calc(var(--hang,44px) - 12px));height:min(32px,calc(var(--hang,44px) - 12px));border-radius:50%;flex:none;display:grid;place-items:center;font-weight:800;font-size:10px;color:#fff;background-size:cover;background-position:center}
+.gpz-on{display:inline-block;width:8px;height:8px;border-radius:50%;background:#18A957;box-shadow:0 0 0 3px rgba(24,169,87,.18);flex:none}
+.gpz-thb{display:flex;height:8px;width:120px;border-radius:99px;overflow:hidden;background:#EEF3F2}
+.gpz-thb i{display:block;height:100%} .gpz-thb .t{background:#18A957} .gpz-thb .h{background:#F0B429} .gpz-thb .b{background:#E5787B}
+.gpz-thbs{font-size:11.5px;color:var(--m);margin-top:3px;font-weight:700}
+.gpz-diem{font:italic 900 min(22px,calc(var(--hang,44px) - 14px))/1 var(--disp);color:var(--x)}
+.gpz-sao{font-weight:800;font-size:12.5px;color:#B07A00;white-space:nowrap}
+.gpz-nho{color:var(--nh);font-size:12px;white-space:nowrap}
+.gpz-chan{font-size:11.5px;color:var(--nh);margin:8px 2px 0;flex:none}
+
+/* hộp con (khung xếp nhiều khối) */
+.gpz-2c{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;align-items:start}
+.gpz-khoi{border:1px solid var(--v);border-radius:14px;padding:12px 14px;background:#fff}
+.gpz-khoi+.gpz-khoi{margin-top:12px}
+.gpz-khoi h3{margin:0 0 10px;display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;line-height:1;letter-spacing:.07em;text-transform:uppercase}
+.gpz-khoi h3 small{margin-left:auto;font-weight:700;font-size:11px;letter-spacing:0;text-transform:none;color:var(--nh)}
+.gpz-nhay{width:9px;height:9px;border-radius:50%;background:#E5484D;animation:gpz-nh 1.2s infinite}
+@keyframes gpz-nh{50%{opacity:.25}}
+.gpz-tran{display:grid;grid-template-columns:62px minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid #EEF3F2}
+.gpz-tran:last-child{border-bottom:0}
+.gpz-tran .gio{font-weight:700;font-size:11.5px;line-height:1.25;color:var(--nh)}
+.gpz-tran .cap{min-width:0;font-weight:700;display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px}
+.gpz-tran .cap .th{color:#1F7A4D;font-weight:800}
+.gpz-tran .cap .vs{color:var(--nh);font-size:11px}
+.gpz-tran .cap small{flex-basis:100%;font-size:11px;color:#B07A00;font-weight:700}
+.gpz-ty{font:italic 900 20px/1 var(--disp);font-variant-numeric:tabular-nums;min-width:66px;text-align:right}
+.gpz-bn{border:1px solid var(--vd);background:#fff;border-radius:9px;padding:6px 10px;font-weight:800;font-size:11px;color:var(--m);cursor:pointer;white-space:nowrap}
+.gpz-bn:hover{color:#B03A3E;border-color:#F3C9CA}
+.gpz-bn.xem{color:var(--x)} .gpz-bn.xem:hover{border-color:var(--x)}
+.gpz-tran.huy{opacity:.5} .gpz-tran.huy .cap{text-decoration:line-through}
+.gpz-huy-nhan{font-weight:800;font-size:10px;color:var(--nh)}
+.gpz-loc{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.gpz-loc button{border:1px solid var(--v);background:#fff;border-radius:99px;padding:5px 11px;font-weight:700;font-size:11.5px;color:var(--m);cursor:pointer}
+.gpz-loc button.on{background:var(--x);border-color:var(--x);color:#fff}
+.gpz-cap{display:flex;flex-direction:column;gap:7px}
+.gpz-cap div{display:flex;align-items:center;gap:10px;font-weight:700;font-size:12.5px}
+.gpz-cap div span{min-width:150px}
+.gpz-cap div i{height:8px;border-radius:99px;background:#7CC6B9}
+.gpz-cap div small{margin-left:auto;color:var(--nh);font-weight:700}
+
+/* HOẠT ĐỘNG */
+.gpz-cot{display:flex;align-items:flex-end;gap:10px;height:170px;padding:10px 4px 0;border-bottom:1px solid var(--v)}
+.gpz-cot>div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:4px;min-width:0}
+.gpz-cot i{display:block;width:100%;max-width:46px;border-radius:7px 7px 2px 2px;background:linear-gradient(#58B8A8,#0E7C6E)}
+.gpz-cot b{font-weight:800;font-size:12px;color:var(--x)}
+.gpz-cotn{display:flex;gap:10px;padding:6px 4px 0}
+.gpz-cotn span{flex:1;text-align:center;font-weight:700;font-size:11px;color:var(--nh);min-width:0;white-space:nowrap;overflow:hidden}
+.gpz-gio{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;margin-top:8px}
+.gpz-gio i{display:block;height:26px;border-radius:4px;background:#EEF3F2}
+.gpz-gion{display:grid;grid-template-columns:repeat(24,1fr);gap:3px;font-weight:700;font-size:9.5px;color:var(--nh);text-align:center;margin-top:3px}
+.gpz-chips{display:flex;flex-wrap:wrap;gap:8px}
+.gpz-chips span{display:inline-flex;align-items:center;gap:7px;padding:4px 10px 4px 4px;border-radius:99px;border:1px solid var(--v);font-weight:700;font-size:12px;background:#fff}
+.gpz-chips .gpz-av{width:24px;height:24px;font-size:9px}
+
+/* THÔNG SỐ */
+.gpz-ts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.gpz-ts>div{border:1px solid var(--v);border-radius:13px;padding:10px 13px;background:#FAFCFC;position:relative;min-width:0}
+.gpz-ts small{display:block;font-weight:800;font-size:9.5px;line-height:1;letter-spacing:.09em;color:var(--nh);text-transform:uppercase}
+.gpz-ts b{display:block;margin-top:6px;font-weight:800;font-size:14px;line-height:1.3}
+.gpz-ts b em{font-style:normal;color:var(--nh);font-weight:600;font-size:12px}
+.gpz-ts .khoa::after{content:'chỉ đổi từ app myLesson';position:absolute;top:9px;right:10px;font-weight:700;font-size:9.5px;color:var(--nh)}
+.gpz-tu{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px}
+.gpz-tu div{display:flex;gap:8px;align-items:baseline;padding:6px 10px;border-radius:9px;background:#F6FAF9;border:1px solid #EAF1EF;min-width:0}
+.gpz-tu b{font-weight:800;font-size:12.5px;white-space:nowrap}
+.gpz-tu span{font-size:11.5px;color:var(--m);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* lớp phủ trong hộp: pop-up một em + các hộp ⚙ */
+.gpz-phu{position:absolute;inset:0;z-index:20;background:rgba(16,35,42,.35);display:none;place-items:center}
+.gpz-phu.mo{display:grid}
+.gpz-hn{width:min(480px,92%);max-height:88%;overflow:auto;background:#fff;border-radius:16px;box-shadow:0 20px 60px rgba(16,40,36,.3);padding:16px 18px}
+.gpz-hn.rong{width:min(720px,94%)}
+.gpz-hn h4{margin:0 0 4px;font-weight:800;font-size:15px;display:flex;align-items:center;gap:10px}
+.gpz-hn h4 .gpz-av{width:38px;height:38px;font-size:13px}
+.gpz-hn h4>svg{width:20px;height:20px;flex:none;color:var(--x)}
+.gpz-hn p{margin:4px 0 12px;font-size:12.5px;color:var(--m)}
+.gpz-hn .loi{color:#B03A3E;font-weight:700;min-height:1em;margin:6px 0 0}
+.gpz-nhap{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.gpz-nhap.ba{grid-template-columns:1fr 1fr 1fr}
+.gpz-nhap label{display:flex;flex-direction:column;gap:5px;font-weight:800;font-size:10px;letter-spacing:.08em;color:var(--nh);text-transform:uppercase}
+.gpz-nhap .hai{display:flex;gap:6px}
+.gpz-hn input[type=text],.gpz-hn input[type=date],.gpz-hn input[type=time]{font:inherit;font-weight:700;font-size:14px;padding:8px 10px;border:1px solid var(--vd);border-radius:10px;color:var(--c);min-width:0;width:100%;background:#fff}
+.gpz-hn input:disabled{background:#F3F6F5;color:var(--nh)}
+.gpz-hn .chan{display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px}
+.gpz-hn .chan .tong{margin-right:auto;font-weight:800;font-size:12.5px;color:#B07A00}
+.gpz-nut{border:1px solid var(--vd);background:#fff;border-radius:10px;padding:9px 14px;font-weight:800;font-size:12.5px;color:var(--m);cursor:pointer}
+.gpz-nut.chinh{background:var(--x);border-color:var(--x);color:#fff}
+.gpz-nut.vang{background:#F7C948;border-color:#F7C948;color:#3D2A00}
+.gpz-nut.do{background:#D93B40;border-color:#D93B40;color:#fff}
+.gpz-nut:disabled{opacity:.55;cursor:default}
+.gpz-tich{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;margin:8px 0}
+.gpz-th-lop{margin:6px 0 10px}
+.gpz-th-lop>b{display:block;font-size:12px;letter-spacing:.06em;color:var(--m);margin-bottom:6px}
+.gpz-th{display:flex;align-items:center;gap:10px;padding:6px 8px;border:1px solid var(--v);border-radius:11px;margin-bottom:6px}
+.gpz-th .ten{flex:1;min-width:0}
+.gpz-th .ten b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpz-th .ten small{font-size:11px;color:var(--nh)}
+.gpz-th .o{display:flex;align-items:center;gap:4px;width:84px}
+.gpz-th .o input{text-align:right}
+.gpz-th .gpz-av,.gpz-th .gpz-hg{width:28px;height:28px}
+.gpz-emso{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+.gpz-emso div{border:1px solid var(--v);border-radius:11px;padding:8px 10px;background:#FAFCFC}
+.gpz-emso small{display:block;font-weight:800;font-size:9px;letter-spacing:.08em;color:var(--nh)}
+.gpz-emso b{font:italic 900 22px/1.1 var(--disp)}
+.gpz-hn .gpz-tran{grid-template-columns:70px minmax(0,1fr) auto}
+.gpz-kq{font-weight:800;font-size:10px;letter-spacing:.06em;padding:3px 7px;border-radius:6px}
+.gpz-kq.t{background:#E4F6EA;color:#1F7A4D} .gpz-kq.h{background:#FFF4D6;color:#8a5b0e} .gpz-kq.b{background:#FDECEC;color:#B03A3E}
+.gpz-toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);background:#16232A;color:#fff;padding:10px 16px;border-radius:10px;font-weight:700;font-size:13px;z-index:95;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90vw}
+.gpz-toast.mo{opacity:1} .gpz-toast.loi{background:#B03A3E}
+
+/* hàng TOURNAMENT trong Kho bài (kho nhỏ + kho lớn) */
+.gpz-kho-nhom{margin:2px 0 6px}
+.gpz-kho-hang{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;border:1px solid transparent}
+.gpz-kho-hang:hover{background:#F6FAF9;border-color:var(--vien,#E1EAE8)}
+.gpz-kho-hang .d{font-weight:800;font-size:9.5px;letter-spacing:.06em;color:#fff;padding:4px 7px;border-radius:7px;background:linear-gradient(135deg,#0F4029,#18A957);flex:none}
+.gpz-kho-hang .kt{flex:1;min-width:0}
+.gpz-kho-hang .kt b{font-weight:800;font-size:13px}
+.gpz-kho-hang .kt>span:not(.gpz-kho-nhan){display:block;font-size:11.5px;color:var(--nhat,#8AA09C);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gpz-kho-nhan{font-weight:800;font-size:9.5px;padding:2px 7px;border-radius:6px;margin-left:6px;background:#EDF2F1;color:var(--mo,#5F7370);white-space:nowrap}
+.gpz-kho-nhan.vang{background:#FFF4D6;color:#8a5b0e} .gpz-kho-nhan.xanh{background:#E4F6EA;color:#1F7A4D}
+
+/* ĐIỆN THOẠI — như hộp quản lý bài v1.357–1.359 */
+@media (max-width:640px){
+  .gpz-hop{width:calc(100vw - 12px);height:calc(100dvh - 12px)}
+  .gpz-dau{grid-template-columns:minmax(0,1fr);grid-template-areas:"phai" "giua";padding:10px 12px;gap:8px}
+  .gpz-trai{display:none}
+  .gpz-phai{grid-area:phai;justify-content:space-between}
+  .gpz-giua{grid-area:giua;justify-self:stretch}
+  .gpz-han{width:100%;justify-content:space-between;padding:6px 10px}
+  .gpz-han .gpz-moc:first-child,.gpz-tg{display:none}
+  .gpz-x.cd-dt{display:grid}
+  .gpz-tabs{padding:8px 10px 0;gap:4px}
+  .gpz-tab{padding:10px 12px 11px;flex:1;justify-content:center}
+  .gpz-tab .chu{display:none}
+  .gpz-tab svg{display:block}
+  .gpz-tphai{display:none}
+  .gpz-chip{margin-left:4px}
+  .gpz-than,.gpz-than.vua{padding:12px;overflow:auto;display:block}
+  .gpz-so,.gpz-xh .gpz-so{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+  .gpz-so b{font-size:22px}
+  .gpz-xh{display:block}
+  .gpz-bangk,.gpz-bangk.hai{overflow:visible;display:block;margin-top:10px}
+  .gpz-bxh td{height:42px;padding:0 5px}
+  .gpz-bxh th{padding:7px 5px}
+  .gpz-bxh .an-dt{display:none}
+  .gpz-thb{width:100%}
+  .gpz-bxh{table-layout:fixed}
+  .gpz-bxh th:nth-child(1){width:34px}
+  .gpz-bxh th:nth-child(4){width:76px}
+  .gpz-bxh th:nth-child(6){width:42px}
+  .gpz-bxh th:nth-child(7){width:50px}
+  .gpz-bxh th{font-size:9px;letter-spacing:.04em}
+  .gpz-em{gap:7px}
+  .gpz-em b{min-width:0}
+  .gpz-sao{font-size:11px}
+  .gpz-2c{grid-template-columns:1fr}
+  .gpz-ts{grid-template-columns:1fr 1fr}
+  .gpz-tran{grid-template-columns:44px minmax(0,1fr) auto}
+  .gpz-tran .gpz-bn{grid-column:2/4;justify-self:end}
+  .gpz-gio,.gpz-gion{gap:1px}
+  .gpz-emso{grid-template-columns:1fr 1fr}
+  .gpz-nhap.ba{grid-template-columns:1fr 1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){.gpz-hop,.gpz-nen{transition:none}.gpz-nhay{animation:none}}

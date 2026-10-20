@@ -266,10 +266,7 @@
       var r = await Promise.all([GD.bang(g.id, lop), nguoiLop(lop).catch(function () { return []; })]);
       var em = r[0], ds = r[1].map(function (n) { return { n: n, r: em[n.uid] || null }; });
       Object.keys(em).forEach(function (uid) { if (!ds.some(function (x) { return x.n.uid === uid; })) ds.push({ n: { uid: uid, ten: em[uid].ten || '?' }, r: em[uid] }); });
-      ds.sort(function (a, b) {
-        return GD.diem(b.r) - GD.diem(a.r) || ((b.r || {}).t || 0) - ((a.r || {}).t || 0) || soTran(a.r) - soTran(b.r) || NW.khongDau(a.n.ten).localeCompare(NW.khongDau(b.n.ten));
-      });
-      return ds;
+      return GiaiGhi.sapXep(ds);   // v1.380.0 — luật xếp chung (js/giai-ghi.js): em đã đấu trước, em 0 trận xuống cuối
     }
     function bangHtml(g, ds, coSao) {
       if (!ds.length) return '<div class="trong">Lớp chưa có học sinh nào trên mạng.</div>';
@@ -371,26 +368,11 @@
         NW.toast('Đã huỷ kết quả trận, điểm 2 bạn đã trừ lại.'); return napLai();
       }
       try {
-        var f = await NW.fb(), ref = f.fs.doc(f.db, 'giaiDau', g.id, 'bang', lop);
-        await f.fs.runTransaction(f.db, async function (tx) {
-          var s = await tx.get(ref); if (!s.exists()) throw new Error('Không thấy bảng của lớp.');
-          var d = s.data(), tran = (d.tran || []).slice(), em = Object.assign({}, d.em || {});
-          var i = -1; tran.forEach(function (x, k) { if (x.id === id) i = k; });
-          if (i < 0 || tran[i].huy) return;
-          tran[i] = Object.assign({}, tran[i], { huy: true, huyLuc: Date.now() });
-          em[tran[i].a] = Object.assign({}, em[tran[i].a]); em[tran[i].b] = Object.assign({}, em[tran[i].b]);
-          truTran(em, tran[i]);
-          tx.set(ref, { em: em, tran: tran, capNhat: Date.now() });
-        });
+        await GiaiGhi.huyTran(await NW.fb(), g.id, lop, id);   // v1.380.0 — đường ghi chung js/giai-ghi.js (pop-up dashboard dùng cùng)
         NW.toast('Đã huỷ kết quả trận, điểm 2 bạn đã trừ lại.'); napLai();
       } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
     }
-    // trừ một trận khỏi bảng em { uid: {t,h,b} }: kq của A (thang|hoa|thua) ⇒ A trừ ô đó, B trừ ô ngược lại; không xuống dưới 0
-    function truTran(em, m) {
-      var K = { thang: 't', hoa: 'h', thua: 'b' }, nguoc = { thang: 'thua', hoa: 'hoa', thua: 'thang' };
-      // v1.375.0 — bên "không tính điểm" (ka/kb: đã đủ trận hôm nay) chưa từng được cộng ⇒ không trừ
-      [[m.a, m.kq, m.ka], [m.b, nguoc[m.kq], m.kb]].forEach(function (x) { var r = em[x[0]]; if (!x[2] && r && K[x[1]]) r[K[x[1]]] = Math.max(0, (r[K[x[1]]] || 0) - 1); });
-    }
+    function truTran(em, m) { GiaiGhi.truTran(em, m); }
 
     // ===== HỌC SINH =====
     async function veHs() {
@@ -514,31 +496,12 @@
     // Mỗi lớp: các em ĐÃ ĐẤU theo thứ hạng (điểm ↓ · thắng ↓ · số trận ↑; cả ba bằng nhau = CÙNG HẠNG, cùng sao — thầy chốt).
     // Điền sẵn sao top 3 của giải, thầy sửa từng em (cả em ngoài top 3) ⇒ MỘT phiếu sao `saoDot` mỗi lớp (nguon 'dashboard', bai 'giai:<id>')
     // ⇒ hàm apDotSao cộng vào ví + đẩy "+N⭐". Số học sinh 6 chữ số lấy từ hsSo/soCai (nguoi[số].w chứa số web hs_<n>).
-    function hangCung(ds) {
-      var r = 0;
-      return ds.map(function (x, i) {
-        var tr = ds[i - 1];
-        if (!tr || GD.diem(tr.r) !== GD.diem(x.r) || (tr.r || {}).t !== (x.r || {}).t || soTran(tr.r) !== soTran(x.r)) r = i + 1;
-        return Object.assign({ hang: r }, x);
-      });
-    }
-    function ngayVN() { return new Date(Date.now() + 7 * 3600e3).toISOString().slice(0, 10); }
+    // v1.380.0 — hangCung / soCuaUid / ghi phiếu sao / báo kết quả chuyển sang js/giai-ghi.js (pop-up giải trên dashboard dùng cùng)
+    function hangCung(ds) { return GiaiGhi.hangCung(ds); }
     async function soCuaUid() {
       if (banThu) return function (uid) { return '1' + String(100000 + (+String(uid).replace(/\D/g, '') || 0)).slice(1); };
-      var f = await NW.fb(), s = await f.fs.getDoc(f.fs.doc(f.db, 'hsSo', 'soCai')), nguoi = s.exists() ? (s.data().nguoi || {}) : {}, theoMa = {}, idMa = {};
-      var chuan = function (x) { return String(x || '').replace(/\s+/g, '').toUpperCase(); };
-      Object.keys(nguoi).forEach(function (so) {
-        var P = nguoi[so] || {};
-        if (P.ma) theoMa[chuan(P.ma)] = so;
-        (P.maCu || []).forEach(function (x) { if (!theoMa[chuan(x)]) theoMa[chuan(x)] = so; });
-      });
       // đường phụ (đo 15/10: w nối 161/187 em, thêm lop.json id→mã ⇒ 186/187): uid hs_<id myStudent> ⇒ mã đăng nhập ⇒ số
-      try {
-        var dl = await fetch((NW.CFG.GOC_DL || '../') + 'data/lop.json', { cache: 'no-cache' }).then(function (r) { return r.json(); });
-        (dl.lop || []).concat(dl.khoa || []).forEach(function (L) { ((L && L.hocSinh) || []).forEach(function (h) { if (h && h.id != null && h.ma) idMa[String(h.id)] = chuan(h.ma); }); });
-      } catch (e) { console.warn('[giải đấu] lop.json', e); }
-      // 16/10: ACHsUid.soTuUid (js/hs-uid.js) = bảng nối `uid` rồi số web `w`; đường phụ lop.json id → mã giữ cho em chưa có trong sổ
-      return function (uid) { var id = window.ACHsUid.idTuUid(uid); return id == null ? '' : (window.ACHsUid.soTuUid(nguoi, String(uid)) || theoMa[idMa[String(id)]] || ''); };
+      return GiaiGhi.soCuaUid(await NW.fb(), NW.CFG.GOC_DL || '../');
     }
     async function popThuong(g) {
       var p = NW.popMo({ tieuDe: 'Thưởng sao · ' + g.ten, lop: 'gd-pop', html: '<div class="trong">Đang tải bảng xếp hạng…</div>' });
@@ -596,14 +559,8 @@
           (theoLop[lop] = theoLop[lop] || []).push({ so: so, n: v, viec: (h <= 3 ? 'Hạng ' + h + ' ' : 'Thưởng ') + g.ten + ' · ' + tenLop(lop), app: 'Giải đấu', _ten: $('.ten b', d).textContent, _hang: h });
         });
         try {
-          if (!banThu) {
-            var f = await NW.fb(), luc = Date.now();
-            for (var lop in theoLop) {
-              await f.fs.addDoc(f.fs.collection(f.db, 'saoDot'), { nguon: 'dashboard', lop: lop, ngay: ngayVN(), bai: 'giai:' + g.id, maBai: '',
-                nhom: 'Giải đấu: ' + g.ten, ai: 'Thầy Andrew', dong: theoLop[lop].map(function (x) { return { so: x.so, n: x.n, viec: x.viec, app: x.app }; }), tao: luc });
-            }
-            await f.fs.updateDoc(f.fs.doc(f.db, 'giaiDau', g.id), { daThuong: true, capNhat: Date.now() });
-          } else Object.assign(mau().giai.filter(function (x) { return x.id === g.id; })[0], { daThuong: true });
+          if (!banThu) await GiaiGhi.thuong(await NW.fb(), g, theoLop);   // v1.380.0 — đường ghi chung js/giai-ghi.js
+          else Object.assign(mau().giai.filter(function (x) { return x.id === g.id; })[0], { daThuong: true });
           if ($('#gdThBao', p) && $('#gdThBao', p).checked) baoKetQua(g, theoLop);
           NW.popDong();
           NW.toast('Đã thưởng ' + t.n + ' ⭐ cho ' + t.em + ' em — sao vào ví các em ngay.');
@@ -614,13 +571,7 @@
     // tin chúc mừng vào nhóm chat từng lớp (tin của thầy)
     async function baoKetQua(g, theoLop) {
       if (banThu) return;
-      var f = await NW.fb(), HC = ['🥇', '🥈', '🥉'];
-      for (var lop in theoLop) {
-        var ds = theoLop[lop].slice().sort(function (a, b) { return a._hang - b._hang; });
-        var chu = '🏆 Kết quả "' + g.ten + '": ' + ds.map(function (x) { return (x._hang <= 3 ? HC[x._hang - 1] + ' ' : '') + x._ten + ' +' + x.n + '⭐'; }).join(' · ') + '. Chúc mừng các em! 👏';
-        try { await f.fs.addDoc(f.fs.collection(f.db, 'classChat', lop, 'messages'), { name: 'Thầy Andrew', code: 'GV', role: 'gv', text: chu.slice(0, 300), createdAt: Date.now(), may: 'gd' + Math.random().toString(36).slice(2, 10) }); }
-        catch (e) { console.warn('[giải đấu] báo kết quả', lop, e); }
-      }
+      return GiaiGhi.baoKetQua(await NW.fb(), g, theoLop);
     }
     async function ghi(g, doi, bao) {
       doi.capNhat = Date.now();

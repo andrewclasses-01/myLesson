@@ -2038,7 +2038,8 @@ function theTuBai(b){
    (v1.47.0 — bỏ phần dựng bảng hạng cho pop-up, xem `xepCaLop()`.)
    ⭐ v1.14.0 — đọc kèm CHUẨN ĐỦ ĐIỂM của từng act (`A.chuanDiem`). Nó tốn thêm
    một lượt đọc Firestore cho mỗi act ở LẦN ĐẦU của mỗi máy, sau đó nằm hẳn
-   trong localStorage (tuỳ chọn bài giao là bản chụp đóng băng, không đổi). */
+   trong localStorage; v1.395.0 so vân tay tuỳ chọn qua lượt đọc sổ nộp ⇒ thầy sửa
+   tuỳ chọn act đã giao thì máy tự đọc lại (xem chuanDiem trong js/chung.js). */
 function donDiem(cacThe){
   var mangMa = [];
   cacThe.forEach(function(t){

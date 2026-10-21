@@ -8217,7 +8217,18 @@ tr.qm-hang-tam td{background:#fffbeb}
     var tron = !cu || !cu.moc || Date.now() - cu.tron > 12 * 3600000;
     return spDb().then(function (f) {
       var col = f.fs.collection(f.db, 'practiceLog', String(code), 'entries');
-      return f.fs.getDocs(tron ? col : f.fs.query(col, f.fs.where('updatedAt', '>', cu.moc - 36 * 3600000)));
+      if (tron) return f.fs.getDocs(col);
+      // ⭐ v1.388.0 (21/10/2026) — ĐỌC PHẦN MỚI không thấy lượt BỊ XOÁ (thầy xoá Bước 3 K10 của Diên/Duy trên máy chủ mà hộp vẫn
+      // hiện 362/188 tới 12 giờ). Đếm trên máy chủ (1 lượt đọc / 1000 tài liệu): số lượt máy chủ ≠ số lượt đang nhớ ⇒ đọc TRỌN lại.
+      var dem = f.fs.getCountFromServer ? f.fs.getCountFromServer(col).then(function (c) { return c.data().count; }, function () { return -1; }) : Promise.resolve(-1);
+      return Promise.all([f.fs.getDocs(f.fs.query(col, f.fs.where('updatedAt', '>', cu.moc - 36 * 3600000))), dem]).then(function (kq) {
+        var snap = kq[0], ids = {};
+        cu.ds.forEach(function (x) { ids[x._id] = 1; });
+        snap.forEach(function (d) { ids[d.id] = 1; });
+        if (kq[1] < 0 || kq[1] === Object.keys(ids).length) return snap;
+        tron = true;
+        return f.fs.getDocs(col);
+      });
     }).then(function (snap) {
       var theoId = {};
       if (!tron) cu.ds.forEach(function (x) { theoId[x._id] = x; });

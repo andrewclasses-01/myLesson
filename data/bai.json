@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-20 21:43:02",
+  "capNhat": "2026-10-21 08:09:07",
   "bai": {
     "A1C": [
       {
@@ -5624,6 +5624,120 @@
     ],
     "NNTNGK10": [
       {
+        "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L14",
+        "dang": "KHOA",
+        "kieu": "CHUONG",
+        "nhan": "BÀI CHUẨN BỊ",
+        "tieuDe": "BÀI CHUẨN BỊ — BẢNG CHỮ CÁI",
+        "tenBai": "BÀI CHUẨN BỊ",
+        "maLesson": "BÀI CHUẨN BỊ",
+        "noiDung": "BẢNG CHỮ CÁI",
+        "han": "2026-10-25T23:59",
+        "taoLuc": "2026-10-21",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BƯỚC 2 · BT1: PHÂN BIỆT NGUYÊN ÂM – PHỤ ÂM",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "3qj6qr"
+          },
+          {
+            "loai": "act",
+            "ten": "BƯỚC 3 · BT2: ĐÁNH VẦN TỪ VỰNG CÙNG BỐ MẸ",
+            "act": "",
+            "mau": "ANAGRAM",
+            "ma": "fgakf3"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "",
+          "video": "",
+          "doan": []
+        },
+        "bt": [
+          {
+            "id": "btcb0vid",
+            "loai": "video",
+            "video": "https://youtu.be/27aNyjAWmik",
+            "moTa": "Con xem **hết video hướng dẫn** của thầy, **đọc theo** từng chữ cái và **ghi nhớ** đâu là nguyên âm, đâu là phụ âm.",
+            "trang": "",
+            "tieuDe": "BƯỚC 1 · XEM VIDEO BẢNG CHỮ CÁI",
+            "actTen": "",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btcb0bt1",
+            "loai": "acts",
+            "bia": "BÀI PHÂN BIỆT NGUYÊN ÂM – PHỤ ÂM",
+            "trang": "",
+            "tieuDe": "BƯỚC 2 · BT1: PHÂN BIỆT NGUYÊN ÂM – PHỤ ÂM",
+            "actTen": "BT1. NGUYEN AM - PHU AM",
+            "ma": "3qj6qr",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btcb0bt2",
+            "loai": "acts",
+            "bia": "BÀI ĐÁNH VẦN TỪ VỰNG",
+            "trang": "",
+            "tieuDe": "BƯỚC 3 · BT2: ĐÁNH VẦN TỪ VỰNG CÙNG BỐ MẸ",
+            "actTen": "BT2. DANH VAN TU VUNG",
+            "ma": "fgakf3",
+            "mau": "ANAGRAM",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btcb0hd",
+            "loai": "video",
+            "video": "https://youtu.be/y_b43SWRVmk",
+            "moTa": "Phụ huynh và con **xem hết** video bài làm mẫu của thầy để biết bài thu hoạch cần quay thế nào. Bài nộp giống góc quay của **video kết quả** trong hướng dẫn.",
+            "trang": "",
+            "tieuDe": "BƯỚC 4 · XEM HƯỚNG DẪN QUAY VIDEO SUY LUẬN",
+            "actTen": "",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          },
+          {
+            "id": "btcb0zalo",
+            "loai": "zalo",
+            "bia": "BÀI ĐÁNH VẦN TỪ VỰNG",
+            "trang": "",
+            "tieuDe": "BƯỚC 5 · QUAY VIDEO SUY LUẬN – ĐÁNH VẦN",
+            "actTen": "BT2. DANH VAN TU VUNG",
+            "ma": "dtfrr3",
+            "mau": "ANAGRAM",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-21T08:09"
+      },
+      {
         "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L09",
         "dang": "KHOA",
         "kieu": "CHUONG",
@@ -5856,7 +5970,7 @@
     ]
   },
   "capNhatLop": {
-    "NNTNGK10": "2026-10-17 09:30:13",
+    "NNTNGK10": "2026-10-21 08:09:07",
     "A1A": "2026-10-19 22:09:08",
     "B2B": "2026-10-20 15:57:19",
     "A1C": "2026-10-18 11:37:25",

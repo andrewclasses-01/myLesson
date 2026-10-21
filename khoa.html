@@ -1272,6 +1272,7 @@ function xnTuFsC(j){
 function xongBuocTayC(c, x){
   if (!c) return false;
   if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan)
+  if (x.loai === 'sach' && x.nopAnh) return !!((c.sach || {})[x.id]);   // v1.387.0 — NỘP BÀI SÁCH: máy chủ tính (lessonSach.xong)
   if (x.loai === 'sach') return (c.tay[x.id] || 0) > 0;
   if (x.loai !== 'video') return false;
   var v = c.vid[x.id]; if (!v || !(v.tong > 0)) return false;
@@ -1299,8 +1300,13 @@ function docChuongFs(g){
     var duoi = encodeURIComponent(h.ma + '__' + g.id) + '?key=' + encodeURIComponent(db.apiKey);
     var doc = function(u){ return fetch(u, { cache: 'no-store' }).then(function(r){ return r.ok ? r.json() : null; })['catch'](function(){ return null; }); };
     // 12/10/2026 — đọc kèm dấu THẦY xác nhận bước zalo (`lessonXacNhan`, chỉ thầy ghi) ⇒ `xn`
-    return Promise.all([doc(goc + 'lessonVideoTienDo/' + duoi), doc(goc + 'lessonXacNhan/' + duoi)])
-      .then(function(kq){ var c = chuongTuFsC(((kq[0] && kq[0].fields) || {}).chuong); c.xn = xnTuFsC(kq[1]); ra[h.ten] = c; })
+    // v1.387.0 — dòng SÁCH nộp ảnh: đọc `lessonSach/<LỚP>__<bài>__<bước>__<mã>` (chỉ máy chủ ghi) ⇒ `sach[idBước] = xong`
+    var dsSach = (g.bt || []).filter(function(x){ return x && x.loai === 'sach' && x.nopAnh; });
+    var uSach = function(x){ return goc + 'lessonSach/' + encodeURIComponent([String(LOP_DL || '').replace(/\s+/g, '').toUpperCase(), g.id, x.id, h.ma].join('__')) + '?key=' + encodeURIComponent(db.apiKey); };
+    return Promise.all([doc(goc + 'lessonVideoTienDo/' + duoi), doc(goc + 'lessonXacNhan/' + duoi)].concat(dsSach.map(function(x){ return doc(uSach(x)); })))
+      .then(function(kq){ var c = chuongTuFsC(((kq[0] && kq[0].fields) || {}).chuong); c.xn = xnTuFsC(kq[1]);
+        c.sach = {}; dsSach.forEach(function(x, j){ var f = (kq[2 + j] && kq[2 + j].fields) || {}; if (f.xong && f.xong.booleanValue) c.sach[x.id] = true; });
+        ra[h.ten] = c; })
       .then(ke);
   }
   var chay = [];

@@ -2037,6 +2037,64 @@ body.mo-menu .side.trai{transform:none}
 .sach-info svg{width:20px; height:20px; flex:none; stroke:currentColor; stroke-width:2.2; fill:none;
   stroke-linecap:round; stroke-linejoin:round}
 
+/* ---------- ⭐ v1.387.0 (21/10/2026, thầy duyệt mẫu `myLesson - thiet ke nop sach\mau-v3.html`) — NỘP BÀI SÁCH (dòng SÁCH `nopAnh`) ----------
+   Thẻ to, là trọng tâm khi mở: máy tính 3 ô/hàng, điện thoại 2 ô/hàng; ô KHÔNG hiện trang sách gốc. Xem js/nop-sach.js. */
+.ns-the{border:2px solid var(--accent); border-radius:22px; overflow:hidden; padding:0; box-shadow:0 14px 40px rgba(14,124,110,.14)}
+.ns-dau{display:flex; align-items:center; gap:14px; padding:18px 22px; background:linear-gradient(135deg,#0E7C6E,#13998A); color:#fff}
+.ns-dau .ns-so{width:38px; height:38px; border-radius:11px; background:rgba(255,255,255,.18); display:grid; place-items:center; font-weight:900; font-size:16px; flex:none}
+.ns-dau h2{margin:0; font-size:18px; font-weight:900; letter-spacing:.02em; color:#fff}
+.ns-dau small{display:block; font-size:11px; font-weight:600; opacity:.85; margin-top:3px; letter-spacing:.04em}
+.ns-dem{margin-left:auto; text-align:right; flex:none}
+.ns-dem b{font-size:26px; font-weight:900}
+.ns-dem span{display:block; font-size:10px; font-weight:700; letter-spacing:.08em; opacity:.85}
+.ns-than{padding:22px}
+.ns-luoi{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+.ns-o{position:relative; aspect-ratio:3/4; border-radius:16px; overflow:hidden; background:#fff; cursor:pointer; -webkit-tap-highlight-color:transparent}
+.ns-o.chi-xem{cursor:default}
+.ns-o .ns-nhan{position:absolute; left:10px; top:10px; z-index:4; background:#fff; border-radius:999px; padding:5px 11px; font-size:11px; font-weight:900; letter-spacing:.05em; box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.ns-o.trong{border:2.5px dashed #B7C9C5; background:repeating-linear-gradient(135deg,#FAFCFB 0 14px,#F3F8F6 14px 28px)}
+.ns-o.trong:hover{border-color:var(--accent)}
+.ns-o .ns-giua{position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; text-align:center; padding:10px}
+.ns-o .ns-cam{width:64px; height:64px; border-radius:50%; background:var(--accent); display:grid; place-items:center; box-shadow:0 8px 20px rgba(14,124,110,.3)}
+.ns-o .ns-cam svg{width:30px; height:30px; stroke:#fff; fill:none; stroke-width:2}
+.ns-o .ns-giua b{font-size:14px; font-weight:900; letter-spacing:.04em; color:var(--accent)}
+.ns-o .ns-giua span{font-size:11px; color:var(--muted); font-weight:600}
+.ns-o img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block}
+.ns-o.cho{border:2.5px solid #F2A93B}.ns-o.da{border:2.5px solid #16A34A}.ns-o.loi,.ns-o.tra{border:3px solid #DC2626}.ns-o.thayxem{border:2.5px solid #F2A93B}
+.ns-o .ns-tt{position:absolute; left:8px; right:8px; bottom:8px; z-index:4; border-radius:12px; padding:8px 10px; font-size:11px; font-weight:800; line-height:1.35; display:flex; gap:8px; align-items:center}
+.ns-o .ns-tt i{font-style:normal; font-size:15px}
+.ns-o .ns-tt small{display:block; font-weight:600; font-size:10px; opacity:.92}
+.ns-o.cho .ns-tt,.ns-o.thayxem .ns-tt{background:rgba(255,255,255,.95); color:#B45309}
+.ns-o.da .ns-tt{background:#16A34A; color:#fff}
+.ns-o.loi .ns-tt,.ns-o.tra .ns-tt{background:#DC2626; color:#fff}
+.ns-o .ns-goc{position:absolute; right:10px; top:10px; z-index:4; background:rgba(22,35,42,.78); color:#fff; border-radius:999px; padding:5px 10px; font-size:10.5px; font-weight:800}
+.ns-chan{display:flex; align-items:center; gap:14px; margin-top:18px; flex-wrap:wrap}
+.ns-tb{font-size:13px; font-weight:700; color:#DC2626; flex:1; min-width:220px; line-height:1.45}
+.ns-tb.ok{color:#16A34A}
+.ns-nop{border:0; border-radius:14px; background:var(--accent); color:#fff; font:900 15px Montserrat,Segoe UI,sans-serif; letter-spacing:.06em; padding:15px 34px; cursor:pointer; box-shadow:0 10px 24px rgba(14,124,110,.28)}
+.ns-nop:disabled{background:#B7C9C5; box-shadow:none; cursor:not-allowed}
+.ns-nop.xong{background:#16A34A}
+.ns-pop{position:fixed; inset:0; z-index:2147482500; background:rgba(15,23,42,.55); display:grid; place-items:center; padding:16px}
+.ns-hop{width:min(460px,100%); background:#fff; border-radius:22px; padding:26px 24px 22px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.3)}
+.ns-hop .ns-vong{width:58px; height:58px; margin:0 auto 14px; border-radius:50%; border:5px solid #E3F1EE; border-top-color:var(--accent); animation:nsXoay 1s linear infinite}
+.ns-hop.xong .ns-vong{animation:none; border-color:#16A34A}
+@keyframes nsXoay{to{transform:rotate(360deg)}}
+.ns-hop h3{margin:0 0 6px; font-size:17px; font-weight:900; color:var(--ink)}
+.ns-hop p{margin:0 0 16px; font-size:12.5px; color:var(--muted); line-height:1.5}
+.ns-ds{display:flex; flex-direction:column; gap:8px; text-align:left}
+.ns-ds div{display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:12px; background:#F4F8F7; font-size:12px; font-weight:800; color:var(--ink)}
+.ns-ds div span{margin-left:auto; font-size:10.5px; font-weight:800; color:var(--muted)}
+.ns-ds .dat span{color:#16A34A}.ns-ds .loi span{color:#DC2626}.ns-ds .dang span{color:var(--accent)}
+@media (max-width:700px){
+  .ns-luoi{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+  .ns-dau{padding:14px}.ns-dau h2{font-size:14px}.ns-dau small{font-size:9.5px}.ns-than{padding:12px}
+  .ns-o .ns-cam{width:46px; height:46px}.ns-o .ns-cam svg{width:22px; height:22px}
+  .ns-o .ns-giua b{font-size:11px}.ns-o .ns-giua span{display:none}
+  .ns-o .ns-tt{font-size:9.5px; padding:6px 7px; gap:5px; border-radius:9px}.ns-o .ns-tt small{display:none}
+  .ns-o .ns-nhan{font-size:9.5px; padding:4px 8px}.ns-o .ns-goc{font-size:9px; padding:4px 7px}
+  .ns-nop{width:100%}
+}
+
 /* ---------- BT chưa có bài giao (đường đi đã mở nhưng thầy chưa SET ACT) ---------- */
 .cho-giao{display:flex; align-items:center; gap:10px; padding:14px 16px; border-radius:12px;
   background:var(--ground); border:1px dashed var(--line); color:var(--muted); font-weight:700; font-size:13px}
@@ -2290,6 +2348,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=93"></script>
+<script src="js/nop-sach.js?v=1"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -2421,6 +2480,8 @@ var BT_TAY = {};
    luật chỉ thầy ghi, em chỉ đọc của mình — tools/dang-luat-xac-nhan-zalo.js). `{[id bước]: mốc ms}`. Em KHÔNG tự tích nữa
    (em Nhật Quang tự tích khi chưa nộp) ⇒ dấu cũ của em trong BT_TAY không còn được tính cho bước zalo. */
 var XN_KHOA = {};
+var SACH_KQ = {};    // v1.387.0 — kết quả bài sách (lessonSach, máy chủ ghi) theo id dòng SÁCH
+var SACH_CHO = {};   // v1.387.0 — ảnh em đã chọn, CHƯA nộp: { idBt: { trang: {lon, nho, url, toi} } }
 // ⭐⭐ 12/09/2026 (vá bug thật thầy báo) — `LA_KHOA` chỉ biết khi ĐÃ có `BAI`
 // (đọc được từ `?id=`). Nút "Về trang chính của lớp" (`#nutVe`) và mọi đường lùi
 // `veTrangLop()` còn chạy TRƯỚC/KHÔNG CÓ `BAI` (vd `id` sai, bài đang tạm khoá,
@@ -5156,6 +5217,7 @@ function chuoiGioDoanKhoa(giay){
 // mà `boot` đã đọc cho mọi act trong `KHOI` (không đọc thêm gì).
 function btXongKhoa(x){
   if (x && x.loai === 'zalo') return (+XN_KHOA[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan)
+  if (x && x.loai === 'sach' && x.nopAnh) return !!(SACH_KQ[x.id] && SACH_KQ[x.id].xong);   // v1.387.0 — máy chủ tính (lessonSach)
   if (x && x.loai === 'sach') return !!BT_TAY[x.id];   // 11/10/2026 — tự đánh dấu xong
   if (x && x.loai === 'video') return daXongVidBtKhoa(x);                       // 11/10/2026 — xem đủ 100%
   if (!x || !x.ma) return false;
@@ -6326,6 +6388,7 @@ function veTheXongKhoa(x, so){
 function moRongTheXongKhoa(x){ chonKhoa(x.id); }
 
 function veTheSachKhoa(x, so){
+  if (laSachNopAnh(x)) return veTheNopSachKhoa(x, so);   // v1.387.0 — nộp ảnh bài sách
   if (A.laBaiBuoc(BAI)) return veTheDocSachKhoa(x, so);   // 11/10/2026 · v1.341.0 tự nhận dạng
   var sec = document.createElement('section');
   sec.className = 'card';
@@ -6374,6 +6437,148 @@ function veTheDocSachKhoa(x, so){
     '</div>';
   sec.querySelector('[data-xong]').onclick = function(){ danhDauBtTayKhoa(x); };
   return sec;
+}
+/* ⭐⭐ v1.387.0 (21/10/2026, thầy "ok build" — mẫu `myLesson - thiet ke nop sach\mau-v3.html`) — NỘP BÀI SÁCH (dòng SÁCH có `nopAnh`,
+   app myLesson v2.180.0 công tắc "NỘP ẢNH TRÊN WEB"). Chọn ảnh KHÔNG kiểm (chỉ đo độ sáng: quá tối ⇒ nhắc chụp lại ngay); bấm NỘP BÀI ⇒
+   pop-up "Đang nhận bài" ⇒ từng trang: nén → tải lên → máy chủ kiemSach (Claude) ⇒ ✓ ĐÃ NỘP / ✕ lý do + CHỤP LẠI. Ảnh lỗi máy chủ vẫn
+   lưu cho thầy. Xong bước = `lessonSach.xong` (máy chủ tính: mọi trang ĐẠT + không trang nào thầy TRẢ LẠI). Thầy xem như em ⇒ chỉ xem. */
+var IC_CAM_SACH = '<svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>';
+function laSachNopAnh(x){ return !!(x && x.loai === 'sach' && x.nopAnh); }
+function sachChiXem(){ return !!(EM && EM.xemNhu) || !MA_HS || !window.NopSach; }
+function napSachFs(){
+  if (!window.NopSach || !BAI || !MA_HS) return Promise.resolve(false);
+  var ds = (BAI.bt || []).filter(laSachNopAnh);
+  return Promise.all(ds.map(function(x){
+    return NopSach.doc(LOP_DL, BAI.id, x.id, MA_HS).then(function(d){ if (d) SACH_KQ[x.id] = d; });
+  })).then(function(){ return true; });
+}
+function ttTrangSach(x, p){
+  var cho = (SACH_CHO[x.id] || {})[p], kq = ((SACH_KQ[x.id] || {}).trang || {})[String(p)];
+  if (cho) return { loai: cho.toi ? 'loi' : 'cho', cho: cho, kq: kq };
+  if (!kq) return { loai: 'trong' };
+  if (kq.duyet && kq.duyet.tt === 'tra') return { loai: 'tra', kq: kq };
+  if (kq.dat) return { loai: 'da', kq: kq };
+  if (kq.quaLuot || (kq.may && kq.may.tuChoi)) return { loai: 'thayxem', kq: kq };
+  return { loai: 'loi', kq: kq };
+}
+function oTrangSach(x, p){
+  var t = ttTrangSach(x, p), chiXem = sachChiXem();
+  var nhan = '<span class="ns-nhan">TRANG ' + p + '</span>';
+  var anh = function(u){ return u ? '<img alt="" src="' + chuAnToan(u) + '">' : ''; };
+  var lop = 'ns-o ' + t.loai + (chiXem ? ' chi-xem' : '');
+  if (t.loai === 'trong') return '<div class="' + lop + '" data-trang="' + p + '">' + nhan + '<div class="ns-giua"><div class="ns-cam">' + IC_CAM_SACH + '</div>' +
+    '<b>CHỤP TRANG ' + p + '</b><span>' + (chiXem ? 'Em chưa nộp trang này' : 'Bấm để chụp hoặc chọn ảnh') + '</span></div></div>';
+  if (t.loai === 'cho') return '<div class="' + lop + '" data-trang="' + p + '">' + anh(t.cho.url) + nhan + '<span class="ns-goc">ĐỔI ẢNH</span>' +
+    '<div class="ns-tt"><i>●</i><div>CHƯA NỘP</div></div></div>';
+  if (t.loai === 'loi' && t.cho) return '<div class="' + lop + '" data-trang="' + p + '">' + anh(t.cho.url) + nhan + '<span class="ns-goc">CHỤP LẠI</span>' +
+    '<div class="ns-tt"><i>⚠</i><div>ẢNH QUÁ TỐI — CHỤP LẠI<small>Ra chỗ sáng hơn, đừng để bóng tay che trang.</small></div></div></div>';
+  var k = t.kq, u = k.nho || k.url;
+  if (t.loai === 'da') return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan + (chiXem ? '' : '<span class="ns-goc">ĐỔI ẢNH</span>') +
+    '<div class="ns-tt"><i>✓</i><div>ĐÃ NỘP</div></div></div>';
+  if (t.loai === 'thayxem') return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan +
+    '<div class="ns-tt"><i>⏳</i><div>THẦY ĐÃ NHẬN — ĐANG CHỜ THẦY XEM<small>' + chuAnToan(k.lyDo || '') + '</small></div></div></div>';
+  if (t.loai === 'tra') return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan + (chiXem ? '' : '<span class="ns-goc">CHỤP LẠI</span>') +
+    '<div class="ns-tt"><i>↺</i><div>THẦY YÊU CẦU CHỤP LẠI<small>' + chuAnToan((k.duyet && k.duyet.nhan) || '') + '</small></div></div></div>';
+  return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan + (chiXem ? '' : '<span class="ns-goc">CHỤP LẠI</span>') +
+    '<div class="ns-tt"><i>⚠</i><div>' + chuAnToan(k.lyDo || 'ẢNH CHƯA ĐẠT — CHỤP LẠI') + '</div></div></div>';
+}
+function chanTheSach(x, trangs){
+  var tt = trangs.map(function(p){ return ttTrangSach(x, p); });
+  var kq = SACH_KQ[x.id] || {}, daNop = Object.keys(kq.trang || {}).length > 0;
+  if (kq.xong && !tt.some(function(t){ return t.loai === 'cho'; }))
+    return { chu: '✓ Em đã nộp đủ ' + trangs.length + ' trang — bước này đã xong.', ok: true, nut: '✓ ĐÃ NỘP BÀI', bat: false, xong: true };
+  var thieu = [], hong = [];
+  tt.forEach(function(t, i){
+    if (t.loai === 'trong') thieu.push(trangs[i]);
+    else if (t.loai === 'loi' || t.loai === 'tra') hong.push(trangs[i]);
+  });
+  var coCho = tt.some(function(t){ return t.loai === 'cho'; });
+  var nut = daNop ? 'NỘP LẠI' : 'NỘP BÀI';
+  if (hong.length) return { chu: 'Trang ' + hong.join(', ') + ' chưa đạt — chụp lại rồi bấm ' + nut + ' nhé.', nut: nut, bat: false };
+  if (thieu.length) return { chu: (thieu.length === trangs.length ? 'Chụp đủ ' + trangs.length + ' trang ' + trangs.join(', ') : 'Còn thiếu TRANG ' + thieu.join(', ')) + ' rồi bấm ' + nut + '.', nut: nut, bat: false };
+  if (coCho) return { chu: 'Em đã chọn đủ, kiểm tra lại rồi bấm ' + nut + ' nhé.', ok: true, nut: nut, bat: true };
+  return { chu: 'Thầy đang xem bài của em.', ok: true, nut: nut, bat: false };
+}
+function veTheNopSachKhoa(x, so){
+  var trangs = NopSach ? NopSach.cacTrang(x.trang) : [];
+  var sec = document.createElement('section');
+  sec.className = 'card ns-the';
+  sec.setAttribute('data-btid', x.id);
+  sec.setAttribute('data-so', so);
+  var c = chanTheSach(x, trangs), kq = SACH_KQ[x.id] || {};
+  var soNop = trangs.filter(function(p){ var t = ttTrangSach(x, p); return t.loai === 'da'; }).length;
+  sec.innerHTML =
+    '<div class="ns-dau"><div class="ns-so">' + so + '</div><div><h2>' + chuAnToan(x.tieuDe || ('BÀI TẬP SÁCH · TRANG ' + trangs.join(' – '))) + '</h2>' +
+      '<small>LÀM VÀO SÁCH · CHỤP TỪNG TRANG · NỘP TẠI ĐÂY</small></div>' +
+      '<div class="ns-dem"><b>' + soNop + '/' + trangs.length + '</b><span>TRANG ĐÃ NỘP</span></div></div>' +
+    '<div class="ns-than"><div class="ns-luoi">' + trangs.map(function(p){ return oTrangSach(x, p); }).join('') + '</div>' +
+      (sachChiXem() ? '<div class="ns-chan"><div class="ns-tb ok">Thầy đang xem như em — chỉ xem, không nộp thay em.</div></div>'
+        : '<div class="ns-chan"><div class="ns-tb' + (c.ok ? ' ok' : '') + '">' + chuAnToan(c.chu) + '</div>' +
+          '<button type="button" class="ns-nop' + (c.xong ? ' xong' : '') + '"' + (c.bat ? '' : ' disabled') + '>' + chuAnToan(c.nut) + '</button></div>') +
+    '</div>' +
+    '<input type="file" accept="image/*" hidden>';
+  if (sachChiXem()) return sec;
+  var inp = sec.querySelector('input[type=file]'), dangTrang = 0;
+  sec.querySelectorAll('.ns-o').forEach(function(o){
+    o.onclick = function(){ var t = ttTrangSach(x, +o.dataset.trang); if (t.loai === 'thayxem') return; dangTrang = +o.dataset.trang; inp.value = ''; inp.click(); };
+  });
+  inp.onchange = function(){
+    var f = inp.files && inp.files[0];
+    if (!f || !dangTrang) return;
+    var p = dangTrang;
+    NopSach.nen(f).then(function(b){
+      return NopSach.doSang(b.lon).then(function(s){
+        var cu = (SACH_CHO[x.id] || {})[p];
+        if (cu && cu.url) try { URL.revokeObjectURL(cu.url); } catch (e) {}
+        (SACH_CHO[x.id] = SACH_CHO[x.id] || {})[p] = { lon: b.lon, nho: b.nho, url: URL.createObjectURL(b.lon), toi: s.toi };
+        veLaiTheSach(x);
+      });
+    })['catch'](function(){ baoToast('Ảnh này không mở được, em chọn ảnh khác nhé.'); });
+  };
+  var nut = sec.querySelector('.ns-nop');
+  if (nut) nut.onclick = function(){ if (!nut.disabled) nopBaiSach(x, trangs); };
+  return sec;
+}
+function veLaiTheSach(x){
+  var cu = document.querySelector('.card[data-btid="' + String(x.id).replace(/[^A-Za-z0-9_-]/g, '') + '"]');
+  if (!cu || !cu.classList.contains('ns-the')) return;
+  cu.replaceWith(veTheNopSachKhoa(x, cu.getAttribute('data-so') || ''));
+}
+function nopBaiSach(x, trangs){
+  var gui = trangs.filter(function(p){ var t = ttTrangSach(x, p); return t.loai === 'cho'; });
+  if (!gui.length) return;
+  var pop = document.createElement('div');
+  pop.className = 'ns-pop';
+  pop.innerHTML = '<div class="ns-hop"><div class="ns-vong"></div><h3>Đang nhận bài, em chờ một chút nhé…</h3>' +
+    '<p>Thầy đang nhận từng trang và kiểm xem ảnh có rõ, đủ sáng, đủ nội dung và đúng trang sách không. Đừng tắt trang này.</p>' +
+    '<div class="ns-ds">' + gui.map(function(p){ return '<div data-p="' + p + '">📄 TRANG ' + p + '<span>CHỜ TẢI LÊN</span></div>'; }).join('') + '</div></div>';
+  document.body.appendChild(pop);
+  var dong = function(p, chu, lop){ var d = pop.querySelector('[data-p="' + p + '"]'); if (d) { d.className = lop || ''; d.querySelector('span').textContent = chu; } };
+  var moc = Date.now(), coLoiMang = false;
+  Promise.all(gui.map(function(p){
+    var c = SACH_CHO[x.id][p];
+    var tl = NopSach.tenTep(LOP_DL, BAI.id, x.id, MA_HS, p, moc, false), tn = NopSach.tenTep(LOP_DL, BAI.id, x.id, MA_HS, p, moc, true);
+    dong(p, 'ĐANG TẢI LÊN…', 'dang');
+    return Promise.all([NopSach.tai(tl, c.lon), NopSach.tai(tn, c.nho)]).then(function(u){
+      if (!u[0]) throw { loi: 'Chưa tải được ảnh trang ' + p + ' lên, em bấm NỘP LẠI nhé.' };
+      dong(p, 'ĐANG KIỂM…', 'dang');
+      return NopSach.kiem({ lop: LOP_DL, bai: BAI.id, bt: x.id, trang: p, duong: tl, duongNho: u[1] ? tn : '', ten: TOI });
+    }).then(function(r){
+      delete SACH_CHO[x.id][p];
+      dong(p, r.dat ? '✓ ĐẠT' : (r.cho ? '⏳ THẦY SẼ XEM' : '✕ CHƯA ĐẠT'), r.dat ? 'dat' : 'loi');
+    }, function(e){
+      coLoiMang = true;
+      dong(p, '✕ CHƯA GỬI ĐƯỢC', 'loi');
+      baoToast((e && e.loi) || 'Chưa gửi được trang ' + p + ', em bấm NỘP LẠI nhé.');
+    });
+  })).then(function(){
+    return NopSach.doc(LOP_DL, BAI.id, x.id, MA_HS).then(function(d){ if (d) SACH_KQ[x.id] = d; });
+  }).then(function(){
+    var hop = pop.querySelector('.ns-hop'), kq = SACH_KQ[x.id] || {};
+    hop.classList.add('xong');
+    hop.querySelector('h3').textContent = kq.xong ? '✓ Thầy đã nhận đủ bài của em!' : (coLoiMang ? 'Còn trang chưa gửi được' : 'Thầy đã nhận bài — còn trang cần chụp lại');
+    setTimeout(function(){ pop.remove(); veLaiTheSach(x); capNhatSauKhiDoiKhoa(); }, kq.xong ? 1400 : 1800);
+  });
 }
 /* ⭐⭐ v1.328.0 (14/10/2026, thầy chốt mẫu v4 `MAU BUOC QUAY VIDEO v4 14-10-2026.html`) — BƯỚC QUAY VIDEO có BÀI GIAO RIÊNG
    (dòng ZALO được gán mã trong app myLesson): làm ngay trong thẻ này, không phải kéo lên Bước 3 nữa. Act mở ở CHẾ ĐỘ QUAY VIDEO
@@ -8115,7 +8320,7 @@ A.napDuLieu().then(function(dl){
   /* ⭐ v1.96.0 — bài KHÓA: đọc luôn bản tiến độ CHUNG trên Firestore (1 lượt), đi
      song song với điểm act; gộp vào `DOAN_XONG` xong mới vẽ để % và khoá dây
      chuyền đúng ngay từ khung hình đầu, không nhảy số. */
-  var choTienDoKhoa = LA_KHOA ? Promise.all([napTienDoFs(), napXacNhanFs()]).then(function(k){ return k[0]; }) : Promise.resolve(false);
+  var choTienDoKhoa = LA_KHOA ? Promise.all([napTienDoFs(), napXacNhanFs(), napSachFs()]).then(function(k){ return k[0]; }) : Promise.resolve(false);
   // ⭐ v1.116.0 — bài có khối NGHE (DICTS) thì đọc luôn tiến độ nghe, SONG SONG
   // với điểm act/tiến độ video — 1 lượt lúc mở bài, đúng luật 8️⃣.
   var coNghe = KHOI.some(function(k){ return k.loai === 'audio'; });

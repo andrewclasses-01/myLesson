@@ -1356,6 +1356,7 @@ body.hdp-dang-mo{overflow:hidden}
 @media (prefers-reduced-motion:reduce){
   .ws-nhac{animation:none; -webkit-text-fill-color:currentColor; background:none; color:var(--xanh-la)}
 }
+.cs-hang-bam{cursor:pointer;border-radius:8px}.cs-hang-bam:hover{background:#E3F1EE}   /* v1.387.0 hàng NỘP BÀI SÁCH bấm mở pop-up chấm */
 .td-dong{display:grid;
   grid-template-columns:minmax(0,var(--cot-ten,112px)) minmax(56px,1fr) 44px 11px;
   align-items:center; gap:8px}
@@ -6078,6 +6079,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   function xongBuocTayKh(c, x) {
     if (!c) return false;
     if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan, `tichZaloDb`)
+    if (x.loai === 'sach' && x.nopAnh) return !!(((c.sach || {})[x.id] || {}).xong);   // v1.387.0 NỘP BÀI SÁCH — máy chủ tính (lessonSach.xong)
     if (x.loai === 'sach') return (c.tay[x.id] || 0) > 0;
     var v = c.vid[x.id]; if (!v || !(v.tong > 0)) return false;
     var g = [], phu = 0;   // gộp khúc chồng nhau rồi cộng phần nằm trong [0, tong]
@@ -6099,8 +6101,12 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (!u) return ke();
       var doc = function (x) { return fetch(x, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; })['catch'](function () { return null; }); };
       // 12/10/2026 — đọc kèm dấu THẦY xác nhận bước zalo (`lessonXacNhan`, cùng id `<mã>__<bài>`) ⇒ `xn`
-      return Promise.all([doc(u), doc(u.replace('/lessonVideoTienDo/', '/lessonXacNhan/'))])
-        .then(function (kq) { var c = chuongTuFsKh(((kq[0] && kq[0].fields) || {}).chuong); c.xn = xnTuFsKh(kq[1]); ra[h.ten] = c; })
+      // v1.387.0 — dòng SÁCH nộp ảnh: đọc kèm `lessonSach/<LỚP>__<bài>__<bước>__<mã>` (chỉ máy chủ ghi) ⇒ `sach[idBước]` = cả tài liệu
+      var dsSach = window.NopSach ? (b.bt || []).filter(function (x) { return x && x.loai === 'sach' && x.nopAnh; }) : [];
+      return Promise.all([doc(u), doc(u.replace('/lessonVideoTienDo/', '/lessonXacNhan/'))].concat(dsSach.map(function (x) { return NopSach.doc(maLop || LOP_CHON, b.id, x.id, h.ma); })))
+        .then(function (kq) { var c = chuongTuFsKh(((kq[0] && kq[0].fields) || {}).chuong); c.xn = xnTuFsKh(kq[1]);
+          c.sach = {}; dsSach.forEach(function (x, j) { if (kq[2 + j]) c.sach[x.id] = kq[2 + j]; });
+          c.ma = h.ma; ra[h.ten] = c; })
         .then(ke);
     }
     var chay = [];
@@ -6113,6 +6119,27 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (HQ.b && HQ.b.id === b.id && HQ.tab === 'xh') hqVeLai();   // K10 8 — tab XẾP HẠNG đang mở bài này
     });
   }
+  /* v1.387.0 (21/10/2026) — NỘP BÀI SÁCH: bấm hàng bước 📷 ⇒ ChamSach.mo (danh sách em cả lớp + kết quả lessonSach đã đọc ở docChuongCuaBai).
+     Bắt ở pha CAPTURE (hàng nằm trong thẻ có click/dblclick riêng). */
+  var CS_HANG = {};
+  document.addEventListener('click', function (e) {
+    var n = e.target.closest && e.target.closest('[data-cham-sach]'); if (!n) return;
+    e.stopPropagation(); e.preventDefault();
+    var h = CS_HANG[n.getAttribute('data-cham-sach')], td = h && CHUONG_TD[h.b.id];
+    if (!h || !window.ChamSach || !td || td === 'dang') return;
+    var lop = A.lopTheoMa(DL, LOP_CHON) || {}, maLop = LOP_CHON;
+    var em = A.caLopCuaBai(lop, h.b).map(function (ten) {
+      var hs = (lop.hocSinh || []).find(function (q) { return q.ten === ten; }) || {}, c = td[ten] || {};
+      return { ten: ten, ma: String(hs.ma || c.ma || '').trim(), doc: (c.sach || {})[h.x.id] || {} };
+    }).filter(function (q) { return q.ma; });
+    ChamSach.mo({
+      tieuDe: String(h.b.ten || h.b.tieuDe || h.b.id).toUpperCase(), lop: String(maLop).replace(/\s+/g, '').toUpperCase(), bai: h.b.id, bt: h.x.id,
+      trangs: NopSach.cacTrang(h.x.trang), sach: h.x.sach || 'NTTA', em: em,
+      docLai: function (q) { return NopSach.doc(maLop, h.b.id, h.x.id, q.ma).then(function (d) { var c = td[q.ten]; if (d && c) { c.sach = c.sach || {}; c.sach[h.x.id] = d; } return d; }); },
+      onDoi: function () { veTat(); }
+    });
+  }, true);
+  document.addEventListener('dblclick', function (e) { if (e.target.closest && e.target.closest('[data-cham-sach]')) { e.stopPropagation(); e.preventDefault(); } }, true);
   function hangBuocChuongKh(b, x, i, t) {
     var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
     var nhan = 'BƯỚC ' + (m ? m[1] : (i + 1));
@@ -6129,6 +6156,14 @@ tr.qm-hang-tam td{background:#fffbeb}
     var xong = caLop.filter(function (ten) { return xongBuocTayKh(td[ten], x); }).length;
     var pt = siSo ? Math.min(100, Math.round(xong / siSo * 100)) : 0;
     var du = siSo > 0 && xong >= siSo;
+    if (x.loai === 'sach' && x.nopAnh) {   // v1.387.0 — hàng NỘP BÀI SÁCH bấm được ⇒ pop-up chấm (js/cham-sach.js)
+      CS_HANG[b.id + '|' + x.id] = { b: b, x: x };
+      return '<span class="td-dong cs-hang-bam" data-cham-sach="' + A.chuAnToan(b.id + '|' + x.id) + '" title="Bấm để chấm bài sách">' +
+        '<span class="td-ten" title="' + tieu + '">📷 ' + nhan + '</span>' +
+        '<span class="td-bar"><i class="' + mauTheoPhanTramKh(pt, du) + '" style="width:' + pt + '%"></i></span>' +
+        '<span class="td-so' + (du ? ' m-la' : '') + '">' + xong + '/' + siSo + '</span>' +
+        '<span class="td-tich">' + (du ? '✓' : '›') + '</span></span>';
+    }
     return '<span class="td-dong">' +
       '<span class="td-ten" title="' + tieu + '">' + nhan + '</span>' +
       '<span class="td-bar"><i class="' + mauTheoPhanTramKh(pt, du) + '" style="width:' + pt + '%"></i></span>' +
@@ -16717,6 +16752,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/cat-anh.js?v=4"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=23"></script>
 <script src="js/nhap-so.js?v=1"></script>   <!-- 07/10/2026 cuộn chuột không đổi số + Enter nhận ô -->   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
-<script src="js/chuot-phai.js?v=3"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
+<script src="js/chuot-phai.js?v=3"></script>
+<script src="js/nop-sach.js?v=1"></script>   <!-- v1.387.0 NỘP BÀI SÁCH: đọc lessonSach -->
+<script src="js/cham-sach.js?v=1"></script>   <!-- v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) -->   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 </body>
 </html>

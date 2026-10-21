@@ -14,7 +14,13 @@
 
 /* ---------- 1. HAI MỤC VÍ TRONG SIDEBAR (trượt sang trang con) ---------- */
 /* Khung trượt: hai "trang" nằm cạnh nhau, trượt ngang khi bấm ô sao. */
-.vq-truot{overflow:hidden}
+/* ⭐ v1.392.0 (21/10/2026) — `.vq-truot` gắn THẲNG lên `.side-ds` (vốn overflow-y:auto); trước đây
+   `overflow:hidden` ở đây (file nạp sau ⇒ thắng) giết luôn cuộn dọc ⇒ điện thoại màn thấp không kéo
+   xuống tới "Đăng xuất". Chỉ chặn chiều NGANG (trang con ví nằm bên phải), chiều dọc phải cuộn được. */
+.vq-truot{overflow-x:hidden; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch}
+.side-ds.vq-truot{min-height:0}
+.side > .vi-to{flex:none}
+.side-foot{padding-bottom:max(16px, env(safe-area-inset-bottom))}
 .vq-doi{display:flex; width:200%; transition:transform .3s cubic-bezier(.32,.72,0,1)}
 .vq-truot.vq-o-vi .vq-doi{transform:translateX(-50%)}
 .vq-trang{width:50%; flex:none; padding:0 2px}

@@ -59,7 +59,7 @@
     var l = document.createElement('link');
     l.id = 'vq-css';
     l.rel = 'stylesheet';
-    l.href = 'css/vi-qua.css?v=2';
+    l.href = 'css/vi-qua.css?v=3';
     document.head.appendChild(l);
   })();
 

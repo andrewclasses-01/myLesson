@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.35.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -380,13 +380,14 @@
       var tatCaNgay = {};
       Object.keys(bangThang).forEach(function (t) { Object.assign(tatCaNgay, bangThang[t].ngay); });
       var idHoc = ND.hocIdTuBang(tatCaNgay);
+      var gidTheoSo = ND.gidTheoSoHs(r[4]);   // v0.35.0 — dòng sổ có so_hs ⇒ nối thẳng
       // ngày nào CHƯA nối hoặc sổ đã đổi từ lần nối trước ⇒ đọc AttRows đúng ngày đó (~50 lượt) rồi nối lại
       var canNoi = soDocs.filter(function (d) { var t = ND.thangCuaNgayHt(d.ngay_hien_thi); var b = bangThang[t] && bangThang[t].ngay[d.ngay_hien_thi]; return !b || b.luc !== (d.cap_nhat_luc || ''); });
       return canNoi.reduce(function (p, d) {
         return p.then(function () {
           var iso = ND.isoTuNgayHt(d.ngay_hien_thi);
           return docTatCa(K.fs.query(K.fs.collection(K.db, 'mystudentAttRows'), K.fs.where('date', '==', iso))).then(function (rows) {
-            var kq = ND.noiMotNgay(JSON.parse(d.cac_lop || '[]'), rows, rosterTheoGid, idHoc);
+            var kq = ND.noiMotNgay(JSON.parse(d.cac_lop || '[]'), rows, rosterTheoGid, idHoc, gidTheoSo);   // v0.35.0 — số HS trước
             var t = ND.thangCuaNgayHt(d.ngay_hien_thi);
             (bangThang[t] = bangThang[t] || { ngay: {} }).ngay[d.ngay_hien_thi] = { luc: d.cap_nhat_luc || '', ids: kq.ids };
             thangDoi.add(t);
@@ -406,7 +407,9 @@
           return tx.get(ref).then(function (s) {
             var b = s.exists() ? { so: Object.assign({}, s.data().so || {}), tiep: s.data().tiep || ND.SO_DAU } : { so: {}, tiep: ND.SO_DAU };
             ND.capSo(b, thieu.slice().sort(), soHsTheoGid);   // gid có trong sổ hộ tịch ⇒ SỐ HỌC SINH; còn lại 5000xx
-            tx.set(ref, { so: b.so, tiep: b.tiep, luc: K.fs.serverTimestamp() });
+            // ⛔ v0.35.0 — GHI GỘP: trước đây ghi đè cả tài liệu ⇒ mất `cu` (bảng số 5000xx cũ) + `daDoiSoHs` (chốt chặn chạy lại
+            //   tools/doi-khoa-so-hs.js) do công cụ đó ghi 06/10 — đo 21/10: chỉ còn so/tiep/luc. Không dùng {merge:true}: bàn thử bỏ qua.
+            tx.set(ref, Object.assign({}, s.exists() ? s.data() : {}, { so: b.so, tiep: b.tiep, luc: K.fs.serverTimestamp() }));
             return b;
           });
         }).then(function (b) { bangSo = b; });

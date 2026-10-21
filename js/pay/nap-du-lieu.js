@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.28.0 (097b03b) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.35.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — DỰNG "FILE" myPay TỪ DỮ LIỆU FIRESTORE (nap-du-lieu.js) · Đợt 1 (03/10/2026)
 
@@ -51,17 +51,22 @@
   // ───────── nối danh tính MỘT ngày ─────────
   // cacLop: mảng `cac_lop` của sổ ngày · rows: các dòng mystudentAttRows CÙNG ngày (kể cả deleted — chỉ để tra tên)
   // rosterTheoGid: Map gid → doc roster (MỌI em, kể cả đã nghỉ) · idHoc: Map 'id sổ' → gid (đã học, nhất quán)
-  // Trả { ids: { 'LỚP|id': khoá }, dem: {ten, idHoc, conLai, so} }
-  function noiMotNgay(cacLop, rows, rosterTheoGid, idHoc) {
+  // Trả { ids: { 'LỚP|id': khoá }, dem: {soHs, ten, idHoc, conLai, so} }
+  // ⭐ v0.35.0 (21/10/2026) — gidTheoSo (tuỳ chọn): Map SỐ HS → [gid…] (từ `gidTheoSoHs(hsSo/soCai)`). Dòng sổ có `so_hs`
+  //   (myStudent v2.99.0+) ⇒ BƯỚC 0: nối thẳng theo số (không cần tên/id cục bộ — id lệch giữa 3 máy). Khoá vẫn là GID ⇒
+  //   payMaHs/so, boGid, h.gid không đổi. Dòng không có `so_hs` (sổ cũ, lớp đã gộp) ⇒ bước 1–4 như cũ.
+  function noiMotNgay(cacLop, rows, rosterTheoGid, idHoc, gidTheoSo) {
     var theoLop = {};
     rows.forEach(function (r) { (theoLop[r.class_code] = theoLop[r.class_code] || []).push(r); });
-    var ids = {}; var dem = { ten: 0, idHoc: 0, conLai: 0, so: 0 };
+    var ids = {}; var dem = { soHs: 0, ten: 0, idHoc: 0, conLai: 0, so: 0 };
     cacLop.forEach(function (L) {
       var ds = (L.hoc_sinh || []).map(function (h) { return { h: h, khoa: null }; });
       if (LOP_THU[L.lop]) {
         // Lớp THỬ không có dòng AttRows. Vẫn PHẢI nhận ra EM THẬT (phi.js bỏ em còn học khỏi lớp thử; em lạ
         // thì coi như "đã nghỉ" và THU TIỀN — lỗi đo được 03/10: R|ZT-A|AN 150.000đ). Tra: id đã học → tên duy nhất.
         ds.forEach(function (x) {
+          var g0 = gidCuaSo(gidTheoSo, x.h.so_hs, rosterTheoGid, null, null, true);   // v0.35.0 — em thật trong lớp thử: số HS trước
+          if (g0) { ids[L.lop + '|' + x.h.id] = g0; dem.soHs++; return; }
           var g = idHoc && idHoc.get(String(x.h.id));
           if (!g) { var c = timTheoTen(rosterTheoGid, x.h.ten); if (c) g = c; }
           ids[L.lop + '|' + x.h.id] = g || ('so:' + L.lop + '|' + tenHoa(x.h.ten));
@@ -72,8 +77,14 @@
       var ung = (theoLop[L.lop] || []).map(function (r) { return { gid: r.student_gid, h: rosterTheoGid.get(r.student_gid) }; })
         .filter(function (u) { return u.h; });
       var dung = {};
+      // 0) v0.35.0 — SỐ HỌC SINH (`so_hs` myStudent v2.99.0): gid của số đó — ưu tiên dòng AttRows cùng lớp hôm đó, rồi dòng roster cùng lớp
+      ds.forEach(function (x) {
+        var g = gidCuaSo(gidTheoSo, x.h.so_hs, rosterTheoGid, ung, L.lop, false, dung);
+        if (g) { x.khoa = g; dung[g] = 1; dem.soHs++; }
+      });
       // 1) tên (bỏ dấu) — phải DUY NHẤT trong lớp hôm đó
       ds.forEach(function (x) {
+        if (x.khoa) return;   // v0.35.0 — đã nối theo số HS
         var t = boDau(x.h.ten);
         var c = ung.filter(function (u) { return !dung[u.gid] && boDau(u.h.name) === t; });
         if (c.length === 1) { x.khoa = c[0].gid; dung[x.khoa] = 1; dem.ten++; }
@@ -95,6 +106,26 @@
       });
     });
     return { ids: ids, dem: dem };
+  }
+
+  // v0.35.0 — số HS ⇒ gid để nối một dòng sổ. Một em có NHIỀU gid (lớp/khóa/bổ sung) ⇒ chọn đúng dòng của lớp sổ đang ghi:
+  //   1) gid có dòng AttRows cùng lớp hôm đó (`ung`)  2) gid roster có class_code = lớp  3) (lớp thử) gid roster đang học bất kỳ.
+  //   Không chắc ⇒ null (để bước cũ lo) — thà dò tên còn hơn gán nhầm dòng.
+  function gidCuaSo(gidTheoSo, so, rosterTheoGid, ung, lop, lopThu, dung) {
+    var n = Number(so);
+    if (!gidTheoSo || !Number.isInteger(n) || n < 100001) return null;
+    var gs = (gidTheoSo.get(n) || []).filter(function (g) { return !(dung && dung[g]); });
+    if (!gs.length) return null;
+    if (ung) { var u = gs.filter(function (g) { return ung.some(function (x) { return x.gid === g; }); }); if (u.length === 1) return u[0]; }
+    if (lop) { var c = gs.filter(function (g) { var h = rosterTheoGid.get(g); return h && h.class_code === lop; }); if (c.length === 1) return c[0]; }
+    if (lopThu) { var a = gs.filter(function (g) { var h = rosterTheoGid.get(g); return h && Number(h.active) === 1 && !h.deleted; }); if (a.length) return a[0]; }
+    return null;
+  }
+  // hsSo/soCai ⇒ Map SỐ HS → [gid…] (g trước, gx sau)
+  function gidTheoSoHs(soCai) {
+    var m = new Map(); var ng = (soCai && soCai.nguoi) || {};
+    Object.keys(ng).forEach(function (n) { var ds = (ng[n].g || []).concat(ng[n].gx || []); if (ds.length) m.set(+n, ds); });
+    return m;
   }
 
   // Học bảng 'id sổ' → gid từ các ngày đã nối (CHỈ giữ id luôn trỏ đúng MỘT gid — 3 id đo được trỏ 2 em vì khác máy xuất).
@@ -132,7 +163,9 @@
   function bangSoHs(soCai) {
     var m = new Map();
     var ng = (soCai && soCai.nguoi) || {};
-    Object.keys(ng).forEach(function (n) { (ng[n].g || []).concat(ng[n].gx || []).forEach(function (g) { m.set(g, +n); }); });
+    // v0.35.0 — `g` THẮNG `gx` (gid đã xoá của người A trùng gid đang dùng của người B ⇒ B) — cùng luật myStudent so_hs.py dung_bang
+    Object.keys(ng).forEach(function (n) { (ng[n].gx || []).forEach(function (g) { m.set(g, +n); }); });
+    Object.keys(ng).forEach(function (n) { (ng[n].g || []).forEach(function (g) { m.set(g, +n); }); });
     return m;
   }
 
@@ -174,7 +207,7 @@
 
   var NapDuLieu = {
     SO_DAU: SO_DAU, LOP_THU: LOP_THU, boDau: boDau, tenHoa: tenHoa, isoTuNgayHt: isoTuNgayHt, thangCuaNgayHt: thangCuaNgayHt,
-    locLop: locLop, locHocSinh: locHocSinh, noiMotNgay: noiMotNgay, hocIdTuBang: hocIdTuBang, capSo: capSo, bangSoHs: bangSoHs,
+    locLop: locLop, locHocSinh: locHocSinh, noiMotNgay: noiMotNgay, gidCuaSo: gidCuaSo, gidTheoSoHs: gidTheoSoHs, hocIdTuBang: hocIdTuBang, capSo: capSo, bangSoHs: bangSoHs,
     dungHocSinhJson: dungHocSinhJson, dungLopJson: dungLopJson, dungSoNgay: dungSoNgay
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = NapDuLieu; else goc.NapDuLieu = NapDuLieu;

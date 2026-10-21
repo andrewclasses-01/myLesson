@@ -2074,6 +2074,16 @@ body.mo-menu .side.trai{transform:none}
 .ns-nop{border:0; border-radius:14px; background:var(--accent); color:#fff; font:900 15px Montserrat,Segoe UI,sans-serif; letter-spacing:.06em; padding:15px 34px; cursor:pointer; box-shadow:0 10px 24px rgba(14,124,110,.28)}
 .ns-nop:disabled{background:#B7C9C5; box-shadow:none; cursor:not-allowed}
 .ns-nop.xong{background:#16A34A}
+/* v1.390.0 — trang thầy TRẢ LẠI: nút XEM LỖI + màn xem ảnh thầy đã chấm */
+.ns-o .ns-xem{display:inline-block; margin-top:6px; border:0; border-radius:9px; background:#fff; color:#DC2626; font:900 11px/1 inherit; letter-spacing:.04em; padding:8px 11px; cursor:pointer; box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.ns-xl{position:fixed; inset:0; z-index:2147482600; background:rgba(10,18,22,.92); display:flex; flex-direction:column; color:#fff}
+.ns-xl-dau{display:flex; align-items:center; gap:10px; padding:12px 14px; background:#DC2626}
+.ns-xl-dau b{font-size:14px; font-weight:900; letter-spacing:.04em}.ns-xl-dau button{margin-left:auto; border:0; background:rgba(255,255,255,.2); color:#fff; width:36px; height:36px; border-radius:10px; font-size:16px; font-weight:900; cursor:pointer}
+.ns-xl-nhan{padding:12px 16px; background:#fff; color:#16232A; font-size:13.5px; font-weight:700; line-height:1.5}
+.ns-xl-anh{flex:1; min-height:0; overflow:auto; -webkit-overflow-scrolling:touch; padding:10px; text-align:center}
+.ns-xl-anh img{width:100%; max-width:1100px; border-radius:10px; cursor:zoom-in}.ns-xl-anh.to img{width:200%; max-width:none; cursor:zoom-out}
+.ns-xl-day{display:flex; gap:10px; padding:12px 14px; background:#16232A}.ns-xl-day span{flex:1; font-size:11.5px; font-weight:600; opacity:.85; align-self:center}
+.ns-xl-day button{border:0; border-radius:12px; padding:13px 18px; font:900 12.5px/1 inherit; letter-spacing:.04em; cursor:pointer; background:var(--accent,#0E7C6E); color:#fff}
 .ns-pop{position:fixed; inset:0; z-index:2147482500; background:rgba(15,23,42,.55); display:grid; place-items:center; padding:16px}
 .ns-hop{width:min(460px,100%); background:#fff; border-radius:22px; padding:26px 24px 22px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.3)}
 .ns-hop .ns-vong{width:58px; height:58px; margin:0 auto 14px; border-radius:50%; border:5px solid #E3F1EE; border-top-color:var(--accent); animation:nsXoay 1s linear infinite}
@@ -6477,10 +6487,29 @@ function oTrangSach(x, p){
     '<div class="ns-tt"><i>✓</i><div>ĐÃ NỘP</div></div></div>';
   if (t.loai === 'thayxem') return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan +
     '<div class="ns-tt"><i>⏳</i><div>THẦY ĐÃ NHẬN — ĐANG CHỜ THẦY XEM<small>' + chuAnToan(k.lyDo || '') + '</small></div></div></div>';
+  // v1.390.0 — thầy TRẢ LẠI: "đã nhận nhưng bài còn lỗi" + XEM LỖI (ảnh thầy đã chấm `duyet.anh` + lời nhắn) ⇒ em sửa trong vở, chụp lại
   if (t.loai === 'tra') return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan + (chiXem ? '' : '<span class="ns-goc">CHỤP LẠI</span>') +
-    '<div class="ns-tt"><i>↺</i><div>THẦY YÊU CẦU CHỤP LẠI<small>' + chuAnToan((k.duyet && k.duyet.nhan) || '') + '</small></div></div></div>';
+    '<div class="ns-tt"><i>✕</i><div>THẦY ĐÃ NHẬN — BÀI CÒN LỖI<small>Em xem lỗi, sửa trong vở rồi chụp lại trang này.</small>' +
+    '<button type="button" class="ns-xem" data-xem="' + p + '">🔍 XEM LỖI</button></div></div></div>';
   return '<div class="' + lop + '" data-trang="' + p + '">' + anh(u) + nhan + (chiXem ? '' : '<span class="ns-goc">CHỤP LẠI</span>') +
     '<div class="ns-tt"><i>⚠</i><div>' + chuAnToan(k.lyDo || 'ẢNH CHƯA ĐẠT — CHỤP LẠI') + '</div></div></div>';
+}
+// v1.390.0 — màn XEM LỖI: ảnh trang thầy đã chấm (dấu ✓/✕/? + nét vẽ) + lời nhắn; bấm ảnh = phóng to; CHỤP LẠI TRANG ngay tại đây
+function xemLoiSach(x, p, chupTrang){
+  var k = ((SACH_KQ[x.id] || {}).trang || {})[String(p)] || {}, dy = k.duyet || {}, url = dy.anh || k.url || '';
+  var o = document.createElement('div');
+  o.className = 'ns-xl';
+  o.innerHTML = '<div class="ns-xl-dau"><b>TRANG ' + p + ' · THẦY ĐÃ CHẤM</b><button type="button" data-dong title="Đóng">✕</button></div>' +
+    '<div class="ns-xl-nhan">' + chuAnToan(dy.nhan || 'Em xem chỗ thầy đánh dấu ✕ đỏ, sửa trong vở rồi chụp lại trang này nhé.') + '</div>' +
+    '<div class="ns-xl-anh">' + (url ? '<img alt="Trang ' + p + ' thầy đã chấm" src="' + chuAnToan(url) + '">' : '<p>Thầy chưa gửi ảnh chấm.</p>') + '</div>' +
+    '<div class="ns-xl-day"><span>Bấm vào ảnh để phóng to.</span>' + (chupTrang ? '<button type="button" data-chup>📷 CHỤP LẠI TRANG ' + p + '</button>' : '') + '</div>';
+  document.body.appendChild(o);
+  var dong = function(){ o.remove(); };
+  o.querySelector('[data-dong]').onclick = dong;
+  var vung = o.querySelector('.ns-xl-anh'), img = vung.querySelector('img');
+  if (img) img.onclick = function(){ vung.classList.toggle('to'); };
+  var c = o.querySelector('[data-chup]');
+  if (c) c.onclick = function(){ dong(); chupTrang(p); };
 }
 function chanTheSach(x, trangs){
   var tt = trangs.map(function(p){ return ttTrangSach(x, p); });
@@ -6517,10 +6546,15 @@ function veTheNopSachKhoa(x, so){
           '<button type="button" class="ns-nop' + (c.xong ? ' xong' : '') + '"' + (c.bat ? '' : ' disabled') + '>' + chuAnToan(c.nut) + '</button></div>') +
     '</div>' +
     '<input type="file" accept="image/*" hidden>';
+  var chupTrang = null;
+  sec.querySelectorAll('[data-xem]').forEach(function(b){
+    b.onclick = function(ev){ ev.stopPropagation(); xemLoiSach(x, +b.dataset.xem, chupTrang); };
+  });
   if (sachChiXem()) return sec;
   var inp = sec.querySelector('input[type=file]'), dangTrang = 0;
+  chupTrang = function(p){ dangTrang = p; inp.value = ''; inp.click(); };
   sec.querySelectorAll('.ns-o').forEach(function(o){
-    o.onclick = function(){ var t = ttTrangSach(x, +o.dataset.trang); if (t.loai === 'thayxem') return; dangTrang = +o.dataset.trang; inp.value = ''; inp.click(); };
+    o.onclick = function(){ var t = ttTrangSach(x, +o.dataset.trang); if (t.loai === 'thayxem') return; chupTrang(+o.dataset.trang); };
   });
   inp.onchange = function(){
     var f = inp.files && inp.files[0];

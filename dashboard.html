@@ -4422,7 +4422,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=93"></script>
+<script src="js/chung.js?v=94"></script>
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
@@ -4629,9 +4629,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     function ke() {
       if (i >= ma.length) return Promise.resolve();
       var m = ma[i++];
-      // Đọc kèm chuẩn đủ điểm. `chuanDiem` nhớ vĩnh viễn trong localStorage
-      // (tuỳ chọn bài giao là bản chụp đóng băng) nên chỉ tốn thêm lượt đọc ở
-      // LẦN ĐẦU của mỗi máy — hạn mức Firebase vẫn an toàn.
+      // Đọc kèm chuẩn đủ điểm. `chuanDiem` nhớ trong localStorage, chỉ so vân
+      // tay tuỳ chọn qua lượt đọc sổ nộp dùng chung với diemCuaAct (v1.395.0)
+      // ⇒ chỉ đọc lại bài giao khi thầy vừa sửa tuỳ chọn — hạn mức vẫn an toàn.
       return Promise.all([
         A.diemCuaAct(m, !!epMoi)['catch'](function () { return []; }),
         A.chuanDiem(m)

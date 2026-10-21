@@ -2357,7 +2357,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=93"></script>
+<script src="js/chung.js?v=94"></script>
 <script src="js/nop-sach.js?v=1"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
@@ -8361,8 +8361,8 @@ A.napDuLieu().then(function(dl){
   var choTienDoNghe = coNghe ? napTienDoNgheFs() : Promise.resolve(false);
   return Promise.all([choTienDoKhoa, choTienDoNghe].concat(maAct.map(function(ma){
     /* ⭐ v1.14.0 — đọc SONG SONG điểm + chuẩn đủ điểm. Chuẩn nằm hẳn trong
-       localStorage sau lần đầu nên không thêm lượt đọc Firestore nào ở các
-       lần sau (tuỳ chọn bài giao là bản chụp đóng băng). */
+       localStorage, chỉ so vân tay tuỳ chọn qua lượt đọc sổ nộp đi chung với
+       diemCuaAct (v1.395.0 — thầy sửa tuỳ chọn act đã giao thì máy em tự đọc lại). */
     return Promise.all([
       A.diemCuaAct(ma)['catch'](function(){ return []; }),
       A.chuanDiem(ma)

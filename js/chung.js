@@ -1309,17 +1309,27 @@
     var db = CFG.AWORD_DB || {};
     return 'https://firestore.googleapis.com/v1/projects/' + db.projectId +
       '/databases/(default)/documents/assignments/' + encodeURIComponent(ma) +
-      '?key=' + db.apiKey + '&mask.fieldPaths=submitCount&mask.fieldPaths=lastSubmitAt';
+      '?key=' + db.apiKey + '&mask.fieldPaths=submitCount&mask.fieldPaths=lastSubmitAt' +
+      '&mask.fieldPaths=activityType&mask.fieldPaths=activity.options';   // v1.395.0 — vân tay chuẩn (kyChuanTuDoc)
   }
   // v1.200.0 — trả { so: submitCount|null, luc: lastSubmitAt|0 } (cùng 1 lượt đọc như trước).
-  function docSoNop(ma) {
-    return fetch(urlSoNop(ma), { cache: 'no-store' })
+  // ⭐ v1.395.0 — thêm `ky` = vân tay tuỳ chọn chấm điểm (null = không biết) để `chuanDiem` biết bản nhớ đã cũ.
+  //   `dungLai` ⇒ lượt đọc < 4 s trước của cùng act được dùng chung (diemCuaAct + chuanDiem chạy song song
+  //   lúc mở trang ⇒ vẫn MỘT lượt đọc). Đọc lại THẬT (sau AWORD:NOP / nút làm mới) thì không truyền.
+  var soNopGan = {};
+  function docSoNop(ma, dungLai) {
+    var g = soNopGan[ma];
+    if (dungLai && g && Date.now() - g.luc < 4000) return g.p;
+    var p = fetch(urlSoNop(ma), { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
       .then(function (d) {
         var f = (d && d.fields) || {};
-        return { so: f.submitCount ? soF(f.submitCount) : null, luc: f.lastSubmitAt ? soF(f.lastSubmitAt) : 0 };
+        return { so: f.submitCount ? soF(f.submitCount) : null, luc: f.lastSubmitAt ? soF(f.lastSubmitAt) : 0,
+                 ky: f.activityType ? kyChuanTuDoc(f) : null };
       })
-      ['catch'](function () { return { so: null, luc: 0 }; });
+      ['catch'](function () { return { so: null, luc: 0, ky: null }; });
+    soNopGan[ma] = { p: p, luc: Date.now() };
+    return p;
   }
 
   // ⭐⭐ v1.200.0 (30/09/2026, GIẢM LƯỢT ĐỌC — Firestore đọc 1–1,5 TRIỆU lượt/ngày, đo Cloud Monitoring) —
@@ -1434,13 +1444,13 @@
     if (!nho) {
       // Chưa có bản nhớ (hoặc bấm làm mới): hỏi sổ nộp TRƯỚC (v1.200.0 — cần `lastSubmitAt` để biết gói
       // máy chủ đã có lượt nộp cuối chưa), rồi đọc gói / liệt kê, nhớ lại.
-      nhoDiem[ma] = docSoNop(ma).then(function (sn) {
+      nhoDiem[ma] = docSoNop(ma, !epDocLai).then(function (sn) {
         return lietKeScores(ma, sn.luc).then(function (ds) { ghiNhoDiem(ma, ds, sn.so); return ds; });
       });
     } else {
       // Có bản nhớ: hỏi sổ nộp (1 lượt nhỏ). Sổ không đổi (hoặc không biết) và bản
       // nhớ chưa quá 10 phút ⇒ dùng lại; còn lại đọc gói / liệt kê.
-      nhoDiem[ma] = docSoNop(ma).then(function (sn) {
+      nhoDiem[ma] = docSoNop(ma, true).then(function (sn) {
         var so = sn.so;
         var conTuoi = (Date.now() - (nho.luc || 0)) < TUOI_TOI_DA_MS;
         if (conTuoi && (so === null || nho.soNop === so)) return nho.ds;
@@ -1561,9 +1571,14 @@
   // một mốc trên con số vô nghĩa còn tệ hơn không bắt.
   //
   // Đọc `assignments/{mã}` qua REST công khai, CHỈ 2 trường (mask) nên gói tin
-  // vài trăm byte. ⚠️ Vẫn tốn 1 LƯỢT ĐỌC Firestore cho mỗi act, nên nhớ VĨNH
-  // VIỄN trong localStorage: tuỳ chọn của bài giao là bản chụp ĐÓNG BĂNG lúc
-  // tạo, không bao giờ đổi ⇒ mỗi máy chỉ đọc đúng một lần cho mỗi act.
+  // vài trăm byte. ⚠️ Vẫn tốn 1 LƯỢT ĐỌC Firestore cho mỗi act, nên nhớ trong
+  // localStorage.
+  // ⛔⛔ v1.395.0 (21/10/2026) — KHÔNG còn nhớ VĨNH VIỄN. Giả định cũ "tuỳ chọn bài giao ĐÓNG BĂNG" SAI: AWord
+  // Edit assignment ghi lại `activity.options`. Ca thật K10 BÀI CHUẨN BỊ Bước 3 (`fgakf3`): anagram đổi
+  // bonus (mốc 200%) → submit (100%) ⇒ máy Khánh Duy/Khánh Diên đã nhớ mốc 200% ⇒ 25/25 mãi "chưa đủ",
+  // Bước 4–5 không mở, tải lại trang không hết. Nay bản nhớ mang `ky` (vân tay `kyChuanTuDoc`), mỗi lần
+  // dùng thì so với `ky` trong lượt đọc sổ nộp (`docSoNop`, vốn đã đọc cùng lúc ⇒ KHÔNG thêm lượt đọc khi
+  // đi chung `diemCuaAct`); lệch (hoặc bản nhớ cũ chưa có `ky`) ⇒ đọc lại bài giao.
 
   // ⭐ v1.114.0 (16/09/2026) — khoá đệm đổi `awc_chuan_` → `awc_chuan2_`: bản ghi nay
   // mang thêm `soCau` (xem `soCauTuDoc`), bản cũ trong localStorage không có ⇒ mỗi máy
@@ -1661,7 +1676,15 @@
     try { soCau = soCauTuDoc(loai, ruotMap(f.activity), opt); } catch (e) { soCau = 0; }
     var soMuc = 0;   // v1.385.0 — số câu thật (xem soMucTuDoc)
     try { soMuc = soMucTuDoc(loai, ruotMap(f.activity)); } catch (e) { soMuc = 0; }
-    return { tru: tru, dinh: dinh, soCau: soCau, soMuc: soMuc };
+    return { tru: tru, dinh: dinh, soCau: soCau, soMuc: soMuc, ky: kyChuanTuDoc(f) };
+  }
+  // ⭐ v1.395.0 — VÂN TAY của đúng những tuỳ chọn `chuanTuDoc` dùng để chấm (loại · chế độ anagram · hệ số ·
+  // có trừ điểm). Dựng bằng tay theo thứ tự cố định — ⛔ KHÔNG JSON.stringify cả map options: Firestore trả
+  // thứ tự khoá map ngẫu nhiên mỗi lần đọc ⇒ vân tay lệch oan. Thêm luật chấm mới vào chuanTuDoc ⇒ thêm vào đây.
+  function kyChuanTuDoc(f) {
+    var opt = ruotMap(ruotMap(f.activity).options);
+    var tru = TRU_KHOA.map(function (k) { return soF(opt[k]) > 0 ? 1 : 0; }).join('');
+    return [chuF(f.activityType), chuF(opt.anagramMode) || 'bonus', Math.round(soF(opt.bonusMult)), tru].join('|');
   }
 
   // Trả về { tru, dinh } của một act. Không bao giờ reject.
@@ -1672,12 +1695,25 @@
     try {
       var cu = JSON.parse(localStorage.getItem(KHOA_CHUAN + ma) || 'null');
       if (cu && typeof cu.dinh === 'number' && typeof cu.soCau === 'number' && typeof cu.soMuc === 'number') {   // v1.385.0 — đệm cũ thiếu soMuc ⇒ đọc lại
-        nhoChuan[ma] = Promise.resolve(cu);
+        // v1.395.0 — so vân tay với sổ nộp (lượt đọc dùng chung với diemCuaAct). Không biết (mất mạng) ⇒ tin bản nhớ;
+        //   lệch / bản nhớ trước v1.395.0 chưa có `ky` ⇒ đọc lại bài giao (đọc hỏng ⇒ vẫn trả bản nhớ, lần sau thử lại).
+        nhoChuan[ma] = docSoNop(ma, true).then(function (sn) {
+          if (sn.ky == null || sn.ky === cu.ky) return cu;
+          return docChuanMoi(ma)['catch'](function () { delete nhoChuan[ma]; return cu; });
+        });
         return nhoChuan[ma];
       }
     } catch (e) {}
 
-    nhoChuan[ma] = fetch(urlBaiGiao(ma))
+    nhoChuan[ma] = docChuanMoi(ma)
+      .catch(function () {
+        delete nhoChuan[ma];            // quên đi để lần mở trang sau còn thử lại
+        return CHUAN_LUI;
+      });
+    return nhoChuan[ma];
+  }
+  function docChuanMoi(ma) {
+    return fetch(urlBaiGiao(ma))
       .then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
@@ -1686,12 +1722,7 @@
         var c = chuanTuDoc(d.fields || {});
         try { localStorage.setItem(KHOA_CHUAN + ma, JSON.stringify(c)); } catch (e) {}
         return c;
-      })
-      .catch(function () {
-        delete nhoChuan[ma];            // quên đi để lần mở trang sau còn thử lại
-        return CHUAN_LUI;
       });
-    return nhoChuan[ma];
   }
 
   // Em tên `ten` đã XONG act đó chưa (dsDiem là kết quả `diemCuaAct`, mỗi em
@@ -3488,7 +3519,7 @@
        · chỉ xét thẻ CÒN HẠN, tối đa 3 thẻ mới nhất mỗi nơi và 12 act tất cả;
        · đi qua `diemCuaAct` — hàm đó hỏi `submitCount` (1 tài liệu) và dùng lại bản
          nhớ trong máy 10 phút, KHÔNG liệt kê cả kho `scores`;
-       · `chuanDiem` nhớ VĨNH VIỄN trong máy.
+       · `chuanDiem` nhớ trong máy, chỉ so vân tay qua chính lượt đọc sổ nộp ở trên (v1.395.0).
      ⛔ Kho lỗi/mất mạng thì coi như KHÔNG có bài mới — thà thiếu một chấm đỏ còn hơn
      doạ em bằng chấm đỏ oan (cùng tinh thần "đừng lùi mù" của luật 8). */
   function coBaiChuaXong(dl, maLop, tenEm) {

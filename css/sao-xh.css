@@ -171,3 +171,42 @@
 .sx-av-nuot{animation:sx-av-nuot .7s cubic-bezier(.2,1.5,.4,1)}
 @keyframes sx-av-nuot{0%{transform:scale(1)}30%{transform:scale(1.28) rotate(-6deg); box-shadow:0 0 0 3px #FFD45C, 0 0 18px 6px rgba(255,200,40,.75)}60%{transform:scale(.92) rotate(3deg)}100%{transform:scale(1)}}
 .sx-toast.la{background:#0E7C5A}
+
+/* ── v1.394.0 (21/10/2026) — SAO TẠM đậu CẠNH TÊN ở đúng bảng được thưởng + SỐ TO giữa avatar + bay vào VÍ khi chốt ── */
+.sx-ts{display:inline-flex; align-items:center; gap:.06em; margin-left:.32em; vertical-align:-.12em; font-style:normal; line-height:1}
+.sx-ts + .sx-ts{margin-left:.2em}
+.sx-ts svg{width:1.02em; height:1.02em; fill:url(#sxVang); filter:drop-shadow(0 0 3px rgba(255,190,30,.75)); animation:sx-ts-lap 2.4s ease-in-out infinite}
+.sx-ts svg:nth-child(2){animation-delay:.4s} .sx-ts svg:nth-child(3){animation-delay:.8s}
+.sx-ts.phat svg{fill:url(#sxDo); filter:drop-shadow(0 0 3px rgba(239,68,68,.6))}
+.sx-ts b{font:900 .78em/1 var(--font); color:#C27C00; margin-left:.08em}
+.sx-ts.phat b{color:#DC2626}
+@keyframes sx-ts-lap{0%,100%{transform:scale(1) rotate(0deg); filter:drop-shadow(0 0 3px rgba(255,190,30,.75))}50%{transform:scale(1.12) rotate(8deg); filter:drop-shadow(0 0 7px rgba(255,200,40,1))}}
+.sx-ts.cho, .sx-av-so.cho{opacity:0}
+.sx-ts.moi{animation:sx-ts-vao .6s cubic-bezier(.2,1.7,.4,1)}
+@keyframes sx-ts-vao{0%{transform:scale(0) rotate(-90deg)}100%{transform:scale(1) rotate(0)}}
+/* số to giữa avatar (cột TỔNG): vàng = đang được thưởng, đỏ = đang bị phạt (tổng sao tạm) */
+.sx-av-so{position:absolute; inset:0; z-index:3; display:grid; place-items:center; border-radius:50%; font-style:normal; pointer-events:none;
+  background:radial-gradient(circle, rgba(22,30,34,.38), rgba(22,30,34,.62)); color:#FFD43B;
+  font:900 calc(var(--em-d,40px)*.56)/1 var(--font); letter-spacing:-.04em; font-variant-numeric:tabular-nums;
+  text-shadow:0 1px 0 #8A5300, 0 0 8px rgba(255,190,30,.85), 0 2px 6px rgba(0,0,0,.45); box-shadow:inset 0 0 0 2px #FFD43B}
+.sx-av-so.phat{color:#FF7A7A; box-shadow:inset 0 0 0 2px #F87171; text-shadow:0 1px 0 #7F1D1D, 0 0 8px rgba(248,80,80,.8), 0 2px 6px rgba(0,0,0,.45)}
+.sx-av-so.moi{animation:sx-so-vao .7s cubic-bezier(.2,1.6,.4,1)}
+@keyframes sx-so-vao{0%{transform:scale(2.2); opacity:0}55%{transform:scale(.88); opacity:1}100%{transform:scale(1)}}
+/* chốt ví: bản sao bay theo đường cong vào nút VÍ + vệt lấp lánh */
+.sx-bayvi{position:fixed; z-index:160; display:inline-flex; align-items:center; justify-content:center; gap:.06em; pointer-events:none; will-change:transform, opacity; line-height:1}
+.sx-bayvi svg{width:1.02em; height:1.02em; fill:url(#sxVang); filter:drop-shadow(0 0 6px rgba(255,200,40,1)) drop-shadow(0 0 14px rgba(255,170,0,.7))}
+.sx-bayvi.phat svg{fill:url(#sxDo); filter:drop-shadow(0 0 6px rgba(248,80,80,.95))}
+.sx-bayvi b{font:900 .78em/1 var(--font); color:#FFD43B}
+.sx-bayvi.so{font-family:var(--font); font-weight:900; font-size:calc(var(--em-d,40px)*.56); color:#FFD43B; letter-spacing:-.04em;
+  text-shadow:0 1px 0 #8A5300, 0 0 10px rgba(255,190,30,1), 0 0 22px rgba(255,170,0,.8)}
+.sx-bayvi.so.phat{color:#FF7A7A; text-shadow:0 1px 0 #7F1D1D, 0 0 10px rgba(248,80,80,1)}
+.sx-vet{position:fixed; z-index:159; width:6px; height:6px; margin:-3px 0 0 -3px; border-radius:50%; pointer-events:none;
+  background:radial-gradient(circle,#FFFBE0 0,#FFD43B 45%,rgba(255,180,0,0) 70%); box-shadow:0 0 6px #FFC93C}
+.sx-vet.phat{background:radial-gradient(circle,#FFE4E4 0,#F87171 45%,rgba(239,68,68,0) 70%); box-shadow:0 0 6px #EF4444}
+.hq-vi-sao.sx-vi-nhan, .hq-vi-sao.sx-vi-nhan:disabled{background:linear-gradient(180deg,#FFF3C4,#FFD45C); box-shadow:inset 0 0 0 1px #F5B71E, 0 0 14px rgba(255,190,30,.55)}
+.hq-vi-sao.sx-vi-nhan svg{stroke:#9A5B00}
+.hq-vi-sao.sx-vi-an{animation:sx-vi-an .42s cubic-bezier(.2,1.7,.4,1)}
+@keyframes sx-vi-an{0%{transform:scale(1)}35%{transform:scale(1.32) rotate(-8deg); box-shadow:0 0 0 3px #FFD45C, 0 0 20px 6px rgba(255,200,40,.85)}100%{transform:scale(1)}}
+.hq-vi-sao.sx-vi-xong{animation:sx-vi-xong 1.1s ease-out}
+@keyframes sx-vi-xong{0%{box-shadow:0 0 0 0 rgba(255,200,40,.9)}60%{box-shadow:0 0 0 14px rgba(255,200,40,0)}100%{box-shadow:0 0 0 0 rgba(255,200,40,0)}}
+@media (prefers-reduced-motion: reduce){ .sx-ts svg{animation:none} }

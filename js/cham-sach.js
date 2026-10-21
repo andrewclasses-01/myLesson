@@ -106,6 +106,7 @@
         '<button class="cs-cc" data-cu="ten" title="Mũi tên">↗</button><button class="cs-cc" data-cu="dung" title="Dấu đúng">✓</button>' +
         '<button class="cs-cc" data-cu="sai" title="Dấu sai">✕</button><button class="cs-cc" data-cu="chu" title="Gõ chữ">T</button>' +
         MAU.map(function (m, i) { return '<span class="cs-mau' + (i ? '' : ' on') + '" data-mau="' + m + '" style="background:' + m + '"></span>'; }).join('') +
+        '<button class="cs-cc" id="csDauLai" title="Hiện lại dấu ✓/✕ của máy (bấm vào một dấu trên ảnh để đổi ✓↔✕ hoặc ẩn)">↺✓</button>' +
         '<button class="cs-cc" id="csLui" title="Hoàn tác (Ctrl+Z)">↶</button><button class="cs-cc" id="csXoa" title="Xoá hết nét vẽ">🗑</button></div>' +
         '<div class="cs-vung"><canvas id="csCv"></canvas><span class="cs-canh" id="csCanh" hidden></span><div class="cs-trong" id="csTrong" hidden>Em chưa nộp trang này.</div></div>' +
         '<div class="cs-cu" id="csCu"></div>' +
@@ -127,6 +128,7 @@
     n.querySelectorAll('[data-mau]').forEach(function (b) { b.onclick = function () { S.mau = b.dataset.mau; n.querySelectorAll('[data-mau]').forEach(function (x) { x.classList.toggle('on', x === b); }); }; });
     $('#csLui').onclick = function () { S.net.pop(); veCv(); };
     $('#csXoa').onclick = function () { S.net = []; veCv(); };
+    $('#csDauLai').onclick = function () { delete S.dauSua[khoaDau()]; veCv(); };
     $('#csChup').onclick = function () { chep(true, false); };
     $('#csChepNhan').onclick = function () { chep(false, true); };
     $('#csChepCa').onclick = function () { chep(true, true); };
@@ -142,6 +144,7 @@
     cv.onpointerdown = function (e) {
       if (!S || !S.anh) return;
       var p = toaDo(cv, e), co = Math.max(cv.width, cv.height) / 1000;
+      if (bamDau(p)) return;   // bấm trúng dấu ✓/✕ của máy ⇒ ✓ → ✕ → ẩn
       if (S.cu === 'dung' || S.cu === 'sai') { S.net.push({ cu: S.cu, mau: S.mau, d: [p], co: co }); veCv(); return; }
       if (S.cu === 'chu') { var t = prompt('Gõ chữ ghi lên ảnh:', 'Sửa lại câu này'); if (t) { S.net.push({ cu: 'chu', mau: S.mau, d: [p], chu: t, co: co }); veCv(); } return; }
       tam = { cu: S.cu, mau: S.mau, d: [p, p], co: co }; S.tam = tam; cv.setPointerCapture(e.pointerId);
@@ -164,7 +167,50 @@
     if (!S.anh) return;
     var xoay = S.xoay || 0, w = S.anh.naturalWidth, h = S.anh.naturalHeight;
     g.save(); g.translate(cv.width / 2, cv.height / 2); g.rotate(xoay * Math.PI / 180); g.drawImage(S.anh, -w / 2, -h / 2); g.restore();
+    veDauMay(g);
     S.net.concat(S.tam ? [S.tam] : []).forEach(function (n) { veNet(g, n); });
+  }
+  /* ⭐ 21/10/2026 (thầy "ok build") — DẤU ✓/✕ CỦA MÁY: Claude đọc em khoanh gì, Google Vision định vị chữ (máy chủ dau-sach.js ⇒
+     `may.cau[i].dau` = {x,y,ux,uy,h} tỉ lệ theo ảnh GỐC chưa xoay). Dấu nhỏ ngay bên trái chữ cái em khoanh: ✓ xanh đúng đáp án, ✕ đỏ sai.
+     Thầy bấm vào dấu ⇒ đổi ✓ → ✕ → ẩn (nút ↺✓ hiện lại). Sửa chỉ giữ khi pop-up đang mở (đủ để CHỤP GỬI ZALO). */
+  function khoaDau() { return S.i + '|' + S.p + '|' + S.cuChon; }
+  function dsDau() {
+    var h = S.hien, da = S.dapAn[S.p] || {}, sua = S.dauSua[khoaDau()] || {};
+    if (!h || !S.anh || !h.may || !h.may.cau) return [];
+    var w = S.anh.naturalWidth, hh = S.anh.naturalHeight;
+    return h.may.cau.filter(function (c) { return c.dau && /^[ABCD]$/.test(c.chon || ''); }).map(function (c) {
+      var d = c.dau, dung = da[String(c.so)], loai = sua[c.so] || (dung ? (c.chon === dung ? 'dung' : 'sai') : '');
+      var hp = Math.max(8, d.h * hh), s = hp * 0.55, ux = d.ux == null ? 1 : d.ux, uy = d.uy == null ? 0 : d.uy;
+      var mx = d.x * w - ux * hp * 1.9, my = d.y * hh - uy * hp * 1.9;
+      mx = Math.min(w - s * 1.3, Math.max(s * 1.3, mx)); my = Math.min(hh - s * 1.3, Math.max(s * 1.3, my));   // sát mép ảnh ⇒ kéo vào trong
+      return { so: c.so, loai: loai, x: mx, y: my, s: s, ux: ux, uy: uy, w: Math.max(3, w / 300) };
+    }).filter(function (m) { return m.loai && m.loai !== 'an'; });
+  }
+  function veDauMay(g) {
+    var ds = dsDau(); if (!ds.length) return;
+    var cv = $('#csCv'), w = S.anh.naturalWidth, h = S.anh.naturalHeight;
+    g.save(); g.translate(cv.width / 2, cv.height / 2); g.rotate((S.xoay || 0) * Math.PI / 180); g.translate(-w / 2, -h / 2);
+    g.lineCap = g.lineJoin = 'round';
+    ds.forEach(function (m) {
+      var nx = -m.uy, ny = m.ux, P = function (a, b) { return [m.x + m.ux * a * m.s + nx * b * m.s, m.y + m.uy * a * m.s + ny * b * m.s]; };
+      g.lineWidth = m.w; g.beginPath();
+      if (m.loai === 'sai') { g.strokeStyle = '#DC2626'; var a = P(-1, -1), b = P(1, 1), c = P(-1, 1), d = P(1, -1); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.moveTo(c[0], c[1]); g.lineTo(d[0], d[1]); }
+      else { g.strokeStyle = '#16A34A'; var e = P(-1, 0), f = P(-0.3, 0.8), k = P(1.1, -1); g.moveTo(e[0], e[1]); g.lineTo(f[0], f[1]); g.lineTo(k[0], k[1]); }
+      g.stroke();
+    });
+    g.restore();
+  }
+  function bamDau(p) {
+    var ds = dsDau(); if (!ds.length) return false;
+    var cv = $('#csCv'), w = S.anh.naturalWidth, h = S.anh.naturalHeight, r = -(S.xoay || 0) * Math.PI / 180;
+    var dx = p[0] - cv.width / 2, dy = p[1] - cv.height / 2;
+    var ix = dx * Math.cos(r) - dy * Math.sin(r) + w / 2, iy = dx * Math.sin(r) + dy * Math.cos(r) + h / 2;   // điểm bấm ⇒ toạ độ ảnh gốc
+    var m = ds.filter(function (q) { return Math.hypot(q.x - ix, q.y - iy) < q.s * 1.8; })
+      .sort(function (a, b) { return Math.hypot(a.x - ix, a.y - iy) - Math.hypot(b.x - ix, b.y - iy); })[0];
+    if (!m) return false;
+    var k = khoaDau(); S.dauSua[k] = S.dauSua[k] || {};
+    S.dauSua[k][m.so] = m.loai === 'dung' ? 'sai' : (m.loai === 'sai' ? 'an' : 'dung');
+    veCv(); return true;
   }
   function napAnh(url, xoay) {
     S.anh = null; S.net = []; S.xoay = xoay || 0; S.ban = false;
@@ -200,6 +246,7 @@
     $('#csTab').querySelectorAll('[data-p]').forEach(function (b) { b.onclick = function () { S.p = +b.dataset.p; S.cuChon = -1; veGiua(); veAi(); }; });
     var t = trangHien(), hien = t, laCu = false;
     if (t && S.cuChon >= 0 && t.cu && t.cu[S.cuChon]) { hien = t.cu[S.cuChon]; laCu = true; }
+    S.hien = hien;
     napAnh(hien && hien.url, hien && hien.may && hien.may.xoay);
     var canh = $('#csCanh');
     canh.hidden = !(hien && !hien.dat);
@@ -233,7 +280,8 @@
       if (kq === 'dung') dung++;
       return '<div class="cs-cau ' + kq + (khongChac ? ' hoi' : '') + '"><span class="so">' + n + '</span><span class="em-k">' + chu(c.chon || '—') + '</span>' +
         '<span class="dung-k">' + chu(dd || '?') + '</span><span class="kq">' + (khongChac ? '?' : kq === 'dung' ? '✓' : kq === 'sai' ? '✕' : kq === 'trong' ? '–' : '') + '</span>' +
-        (khongChac ? '<span class="hoi-chu">AI không chắc em khoanh gì — thầy xem tay</span>' : '') + '</div>';
+        (khongChac ? '<span class="hoi-chu">AI không chắc em khoanh gì — thầy xem tay</span>' :
+          (/^[ABCD]$/.test(c.chon || '') && emChon[n] && !c.dau ? '<span class="hoi-chu">máy chưa đặt được dấu trên ảnh — thầy đánh tay</span>' : '')) + '</div>';
     }).join('') + '<div class="cs-chu-thich">Cột 2 = em khoanh · cột 3 = đáp án đúng.</div>';
     $('#csTong').textContent = t && so.length ? dung + '/' + so.length : '';
     $('#csNhan').value = loiNhan();
@@ -292,7 +340,7 @@
   /* cfg = { tieuDe, lop, bai, bt, trangs:[32,33,34], sach:'NTTA', em:[{ten, ma, doc}], docLai(em) ⇒ Promise<doc>, onDoi(), onDong() } */
   function mo(cfg) {
     if (!$('#csNen')) dungKhung();
-    S = Object.assign({ i: 0, p: cfg.trangs[0], cu: 'but', mau: MAU[0], net: [], dapAn: {}, cuChon: -1 }, cfg);
+    S = Object.assign({ i: 0, p: cfg.trangs[0], cu: 'but', mau: MAU[0], net: [], dapAn: {}, cuChon: -1, dauSua: {}, hien: null }, cfg);
     var dau = S.em.findIndex(function (e) { var t = ttEm(e); return t.lop === 'cho'; });
     S.i = dau >= 0 ? dau : 0;
     $('#csTieu').textContent = 'CHẤM BÀI SÁCH · ' + S.tieuDe;
@@ -300,7 +348,7 @@
     $('#csNen').hidden = false;
     document.documentElement.classList.add('cs-mo');
     veTat();
-    docDapAn(S.sach || 'NTTA', S.trangs).then(function (d) { if (!S) return; S.dapAn = d; veDs(); veAi(); });
+    docDapAn(S.sach || 'NTTA', S.trangs).then(function (d) { if (!S) return; S.dapAn = d; veDs(); veAi(); if (S.anh) veCv(); });
   }
   window.ChamSach = { mo: mo, dong: dong };
 })();

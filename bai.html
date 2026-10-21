@@ -2058,6 +2058,8 @@ body.mo-menu .side.trai{transform:none}
 .buoc-than{display:grid; gap:12px}
 .buoc-chu{font-size:14px; line-height:1.55; color:var(--ink)}
 .buoc-chu b{color:var(--accent)}
+/* v1.384.0 — dải báo XEM THỬ MỞ HẾT KHOÁ (chỉ khi &mo=1 + xem như em) */
+.mo-het-dai{position:fixed; left:50%; bottom:12px; transform:translateX(-50%); z-index:2147482000; background:#0E7C6E; color:#fff; font:800 11px/1 Montserrat,Segoe UI,sans-serif; letter-spacing:.06em; padding:8px 14px; border-radius:999px; box-shadow:0 6px 18px rgba(0,0,0,.2); pointer-events:none}
 .nut-buoc{display:inline-flex; align-items:center; justify-content:center; gap:8px; border:0; border-radius:12px; padding:11px 18px;
   font:800 14px var(--sans); cursor:pointer; background:var(--accent); color:#fff; text-decoration:none}
 .nut-buoc.phu{background:#fff; color:var(--accent); border:1.5px solid var(--accent)}
@@ -2333,6 +2335,11 @@ var LA_DAC_BIET = false;
    bài tạm khoá vẫn vào được · STAGE: mọi chặng hiện đầy đủ, bấm được mọi khúc, không bìa "chờ mở khóa" · KHÓA HỌC: mọi
    đoạn bài giảng + mọi bài tập mở. Trạng thái thật (COMPLETED/IN PROGRESS…) vẫn tính như học sinh để thầy nhìn tiến độ. */
 var LA_GV = false;
+/* v1.384.0 (21/10/2026, thầy chốt) — XEM THỬ MỞ HẾT KHOÁ: app myLesson (nút 🔓 MỞ CÁC KHÓA trên thanh bản nháp) mở trang
+   "xem như em" kèm `&mo=1` ⇒ mọi bước/đoạn/chặng mở như thầy (?gv=1). CHỈ khi xem như em / thầy vào thay (không ghi kho),
+   học sinh tự gõ `mo=1` không có tác dụng. Mọi chỗ khoá hỏi `moHetKhoa()` thay vì `LA_GV`. */
+var MO_HET_XEM = false;
+function moHetKhoa(){ return LA_GV || MO_HET_XEM; }
 var BAI = null;          /* chính bài đang mở, đọc từ data/bai.json */
 
 var A = window.AWC;
@@ -2868,8 +2875,11 @@ function ghepKhongLap(list){
   return ra;
 }
 
+// v1.384.0 (21/10/2026, thầy chốt) — `k.bia` = TÊN TRÊN BÌA riêng của dòng bước (ô mới ⚙ THIẾT LẬP LESSON app v2.179.0):
+//   có thì bìa READY = "<tên đó> • <template>" (vd BÀI ĐÁNH VẦN TỪ VỰNG • ANAGRAM) thay cho tên lesson; trống = như cũ.
 function chuBia(k){
-  var o = ghepKhongLap([A.maLesson(BAI), k.act, k.mau]);
+  var bia = String((k && k.bia) || '').trim();
+  var o = ghepKhongLap([bia || A.maLesson(BAI), k.act, k.mau]);
   return o.length ? o.join(' • ') : (k.ten || '');
 }
 
@@ -2897,7 +2907,7 @@ function veBia(k){
    em chưa xong (`A.changCuConThieu`): act của chặng đó cũng lên bìa "Đang chờ mở
    khóa bởi…" (đã quá hạn) để em thấy ai còn thiếu, dù chặng kế đã mở. */
 function changChoMoCuaAct(k){
-  if (LA_GV || !LA_STAGE || !CHANG || !CHANG.length || !k || k.loai !== 'act') return null;
+  if (moHetKhoa() || !LA_STAGE || !CHANG || !CHANG.length || !k || k.loai !== 'act') return null;
   var ds = A.changCuConThieu(CHANG).concat([A.changChoMo(CHANG)]);
   for (var i = 0; i < ds.length; i++) {
     var c = ds[i];
@@ -5231,7 +5241,7 @@ function tinhDuongDiKhoa(){
       }
     });
   }
-  if (LA_GV) {   // thiết kế KNT 12 — thầy: mở hết (xong/chưa xong vẫn tính thật)
+  if (moHetKhoa()) {   // thiết kế KNT 12 — thầy: mở hết (xong/chưa xong vẫn tính thật) · v1.384.0 xem thử &mo=1
     doan.forEach(function(d){ moD[d.id] = true; });
     bt.forEach(function(x){ moB[x.id] = true; });
   }
@@ -6379,7 +6389,7 @@ function soCauQuayKhoa(x){
 function laBuocQuayKhoa(x){ return !!(x && x.loai === 'zalo' && x.ma && A.laBaiBuoc(BAI)); }
 function veTheQuayKhoa(x, so){
   var soCau = soCauQuayKhoa(x);
-  var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma, quayCau: soCau }, so);
+  var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma, quayCau: soCau, bia: x.bia }, so);
   sec.classList.add('buoc-quay');
   sec.classList.remove('con-thieu');
   sec.removeAttribute('data-ma');          // không leaderboard ⇒ đừng để các đường làm mới bảng tìm tới thẻ này
@@ -6531,7 +6541,8 @@ var VID_BT_PLAYER = {};
 function chuMoTaVidKhoa(x){
   var m = String((x && x.moTa) || '').trim();
   if (!m) return 'Phụ huynh và con xem <b>hết video bài làm mẫu</b> của thầy để biết bài thu hoạch cần quay thế nào. Phải xem <b>đủ 100%</b> mới mở bước sau — xem lại bao nhiêu lần cũng được.';
-  return chuAnToan(m).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  // v1.384.0 — Shift+Enter ở ô soạn app = xuống dòng thật ⇒ <br>
+  return chuAnToan(m).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/\r?\n/g, '<br>');
 }
 function veTheVideoBtKhoa(x, so){
   var sec = document.createElement('section');
@@ -6671,7 +6682,7 @@ var IC_MO_GON_KHOA = '<svg viewBox="0 0 24 24"><path d="M8 5.5v13l10-6.5z"/></sv
 // "làm lại cho vui" cần đúng khung này kể cả khi bài đã xong (`dungTheBtKhoa`
 // lúc đó trả thẻ xanh, mà thẻ xanh bấm vào lại mở pop-up ⇒ vòng lặp).
 function dungTheActKhoa(x, so){
-  var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma }, so);
+  var sec = veKhoi({ loai: 'act', ten: x.tieuDe || x.actTen, act: '', mau: x.mau, ma: x.ma, bia: x.bia }, so);
   sec.setAttribute('data-btid', x.id);
   // ⭐ 13/09/2026 — nhãn ngắn ("BÀI TẬP N") lên tiêu đề chính, tên thật (bỏ
   // "BTx.") xuống dòng phụ — thay cho "LESSON 17 • <mẫu>" mặc định của `veKhoi`.
@@ -6976,7 +6987,7 @@ function veThanhBtKhoa(){
 var HOP_KHOA = null, KHOA_CHON = null, KHOA_CAN;
 function coHdKhoa(){ return !!(BAI && BAI.huongDan && BAI.huongDan.doc); }
 function coBgKhoa(){ var bg = (BAI && BAI.baiGiang) || {}; return !!(bg.video || (bg.doan || []).length); }
-function moBgKhoa(){ return LA_GV || daXongHdKhoa(); }
+function moBgKhoa(){ return moHetKhoa() || daXongHdKhoa(); }
 function daXongBgKhoa(){
   var d = ((BAI && BAI.baiGiang) || {}).doan || [];
   return !!TT_KHOA && d.length > 0 && d.every(function(x){ return TT_KHOA.xongD[x.id]; });
@@ -7348,7 +7359,7 @@ function veThanhChang(){
     var k = e.target.closest('.st-khuc');
     if (!k) return;
     var i = +k.getAttribute('data-i');
-    if (!CHANG[i] || (!CHANG[i].mo && !LA_GV)) {
+    if (!CHANG[i] || (!CHANG[i].mo && !moHetKhoa())) {
       baoToast(CHANG[i] && CHANG[i].tt === 'cho'
         ? 'Chặng này sắp mở, chờ tới giờ nhé.'
         : 'Chặng này chưa tới lượt — làm xong chặng trước đã.');
@@ -7535,7 +7546,7 @@ function emXongChang(ci){
   KHOI.forEach(function(k, i){ if (cua[i] !== ci || k.loai !== 'act') return; co = true; if (!emXongActStage(k.ma)) het = false; });
   return co ? het : !!(CHANG[ci] && CHANG[ci].tt === 'xong');
 }
-function moChang(ci){ return !!CHANG[ci] && (!!CHANG[ci].mo || LA_GV); }
+function moChang(ci){ return !!CHANG[ci] && (!!CHANG[ci].mo || moHetKhoa()); }
 function changCanLam(){
   for (var i = 0; i < CHANG.length; i++) if (moChang(i) && !emXongChang(i)) return i;
   return null;
@@ -7980,6 +7991,8 @@ A.napDuLieu().then(function(dl){
   LA_DAC_BIET = !!EM.dacBiet;
   qsNghe();   // ⭐ v1.294.0 — thầy quan sát trực tiếp (AWord Đợt 496)
   LA_GV = EM.vaiTro === 'gv';
+  MO_HET_XEM = !!(EM.xemNhu || EM.thayVao) && new URLSearchParams(location.search).get('mo') === '1';
+  if (MO_HET_XEM) document.body.insertAdjacentHTML('beforeend', '<div class="mo-het-dai">🔓 ĐÃ MỞ HẾT KHÓA ĐỂ XEM — học sinh vẫn thấy khoá như thường</div>');
   var l = A.lopTheoMa(dl, LOP_DL);
   EM_LA_KHOA = !!(l && A.laKhoa(l));   /* ⭐ 12/09/2026 — xem chú thích ở khai báo đầu file */
   LOP = (l && l.tenGoc) || EM.lop;
@@ -8006,7 +8019,7 @@ A.napDuLieu().then(function(dl){
   /* ⭐ v1.35.0 — bài đang TẠM KHOÁ (dashboard): không cho mở dù gõ thẳng địa chỉ,
      về trang lớp kèm cờ `khoa=1` để bên đó báo một câu. (Bài ẩn/xoá thì
      `A.baiCuaLop` cửa học sinh đã bỏ sẵn → rơi vào `!BAI` ở trên.) */
-  if (A.trangThaiThe(BAI) === 'khoa' && !LA_GV) { veTrangLop('khoa=1'); return; }
+  if (A.trangThaiThe(BAI) === 'khoa' && !moHetKhoa()) { veTrangLop('khoa=1'); return; }
   // ⭐ v1.309.0 — học sinh học thử mở thẳng địa chỉ thẻ giao TRƯỚC ngày em vào ⇒ về trang lớp (thẻ đó không hiện cho em).
   if (EM.thu && !LA_GV && !A.theChoHocThu(BAI, EM.vao)) { veTrangLop(); return; }
 

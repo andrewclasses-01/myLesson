@@ -2289,7 +2289,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=92"></script>
+<script src="js/chung.js?v=93"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -6380,10 +6380,12 @@ function veTheDocSachKhoa(x, so){
    của AWord (Đợt 512, `&quay=1`): câu 1 → N lần lượt, không đồng hồ, nút BẮT ĐẦU LẠI, không lưu điểm (chỉ giờ luyện), tải lại = từ đầu.
    Xong bước vẫn do THẦY xác nhận (xem video trong nhóm Zalo). Dòng ZALO không mã ⇒ thẻ cũ bên dưới (bài soạn trước 14/10). */
 var IC_QUAY_KHOA = '<svg viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>';
+// v1.385.0 — số câu PHẢI QUAY = số câu THẬT (`soMuc`), không phải `soCau` (mẫu số chấm: Anagram bonus = tổng chữ cái ⇒ "1 → 188").
+function soMucChuan(ma){ var c = ma && CHUAN[ma]; return (c && +c.soMuc > 0) ? +c.soMuc : 0; }
 function soCauQuayKhoa(x){
-  if (x.ma && CHUAN[x.ma] && +CHUAN[x.ma].soCau > 0) return +CHUAN[x.ma].soCau;
+  if (soMucChuan(x.ma)) return soMucChuan(x.ma);
   var n = 0;   // 12/10/2026 — số câu của bước act ĐỨNG TRƯỚC (cùng act), đọc từ chuẩn act
-  (BAI.bt || []).some(function(y){ if (y === x) return true; if (y.ma && CHUAN[y.ma] && +CHUAN[y.ma].soCau > 0) n = +CHUAN[y.ma].soCau; return false; });
+  (BAI.bt || []).some(function(y){ if (y === x) return true; if (soMucChuan(y.ma)) n = soMucChuan(y.ma); return false; });
   return n;
 }
 function laBuocQuayKhoa(x){ return !!(x && x.loai === 'zalo' && x.ma && A.laBaiBuoc(BAI)); }
@@ -6430,7 +6432,7 @@ function veTheZaloKhoa(x, so){
   var tenLop = LOP || 'lớp';
   // 12/10/2026 (thầy) — số câu phải quay = số câu của bước act ĐỨNG TRƯỚC ("giống Bước 3"), đọc từ chuẩn act; không đọc được thì chữ chung.
   var soCauQuay = 0;
-  (BAI.bt || []).some(function(y){ if (y === x) return true; if (y.ma && CHUAN[y.ma] && +CHUAN[y.ma].soCau > 0) soCauQuay = +CHUAN[y.ma].soCau; return false; });
+  (BAI.bt || []).some(function(y){ if (y === x) return true; if (soMucChuan(y.ma)) soCauQuay = soMucChuan(y.ma); return false; });   // v1.385.0 số câu thật
   sec.innerHTML = dauTheBuocKhoa(x, so, 'video', '<svg viewBox="0 0 24 24"><path d="M15 10l5-3v10l-5-3z"/><rect x="3" y="6" width="12" height="12" rx="2"/></svg>') +
     '<div class="buoc-than">' +
       '<div class="buoc-chu">Làm <b>giống Bước 3</b>, nhưng lần này phụ huynh dùng một điện thoại khác <b>quay video</b> lại lúc con trả lời các câu hỏi — theo đúng video bài làm mẫu ở trên. Quay xong, phụ huynh <b>gửi video lên nhóm Zalo ' + chuAnToan(tenLop) + '</b>.</div>' +

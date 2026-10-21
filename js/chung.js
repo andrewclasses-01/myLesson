@@ -1601,6 +1601,21 @@
   var KHOA_MANG_CAU = { quiz: 'questions', gameshow: 'questions', maze_chase: 'questions',
     true_false: 'statements', find_the_match: 'pairs', crossword: 'words' };
   var MANG_CAU_DU_PHONG = ['items', 'questions', 'cards', 'words', 'statements', 'pairs'];
+  // v1.385.0 (21/10/2026) — SỐ CÂU THẬT (số phần tử của mảng câu), KHÁC `soCau` (= MẪU SỐ chấm điểm: Anagram bonus = tổng
+  // số CHỮ CÁI, Unjumble = 2×câu). Thẻ QUAY VIDEO ghi "CÂU 1 → N" phải dùng số này — trước đó BT2 bảng chữ cái K10
+  // (25 từ) hiện "câu 1 → 188" (188 chữ cái). ⛔ Đừng đổi nghĩa `soCau`: dashboard/khoa.html chấm điểm theo nó.
+  function soMucTuDoc(loai, act) {
+    var content = ruotMap(act.content);
+    var k = KHOA_MANG_CAU[loai] || 'items';
+    if (!(content[k] && content[k].arrayValue)) {
+      k = null;
+      for (var i = 0; i < MANG_CAU_DU_PHONG.length; i++) {
+        if (content[MANG_CAU_DU_PHONG[i]] && content[MANG_CAU_DU_PHONG[i]].arrayValue) { k = MANG_CAU_DU_PHONG[i]; break; }
+      }
+    }
+    return k ? mangF(content[k]).length : 0;
+  }
+
   function soCauTuDoc(loai, act, opt) {
     var content = ruotMap(act.content);
     var k = KHOA_MANG_CAU[loai] || 'items';
@@ -1644,7 +1659,9 @@
     }
     var soCau = 0;
     try { soCau = soCauTuDoc(loai, ruotMap(f.activity), opt); } catch (e) { soCau = 0; }
-    return { tru: tru, dinh: dinh, soCau: soCau };
+    var soMuc = 0;   // v1.385.0 — số câu thật (xem soMucTuDoc)
+    try { soMuc = soMucTuDoc(loai, ruotMap(f.activity)); } catch (e) { soMuc = 0; }
+    return { tru: tru, dinh: dinh, soCau: soCau, soMuc: soMuc };
   }
 
   // Trả về { tru, dinh } của một act. Không bao giờ reject.
@@ -1654,7 +1671,7 @@
     if (nhoChuan[ma]) return nhoChuan[ma];
     try {
       var cu = JSON.parse(localStorage.getItem(KHOA_CHUAN + ma) || 'null');
-      if (cu && typeof cu.dinh === 'number' && typeof cu.soCau === 'number') {
+      if (cu && typeof cu.dinh === 'number' && typeof cu.soCau === 'number' && typeof cu.soMuc === 'number') {   // v1.385.0 — đệm cũ thiếu soMuc ⇒ đọc lại
         nhoChuan[ma] = Promise.resolve(cu);
         return nhoChuan[ma];
       }

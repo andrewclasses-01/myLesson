@@ -1678,13 +1678,25 @@
     try { soMuc = soMucTuDoc(loai, ruotMap(f.activity)); } catch (e) { soMuc = 0; }
     return { tru: tru, dinh: dinh, soCau: soCau, soMuc: soMuc, ky: kyChuanTuDoc(f) };
   }
-  // ⭐ v1.395.0 — VÂN TAY của đúng những tuỳ chọn `chuanTuDoc` dùng để chấm (loại · chế độ anagram · hệ số ·
-  // có trừ điểm). Dựng bằng tay theo thứ tự cố định — ⛔ KHÔNG JSON.stringify cả map options: Firestore trả
-  // thứ tự khoá map ngẫu nhiên mỗi lần đọc ⇒ vân tay lệch oan. Thêm luật chấm mới vào chuanTuDoc ⇒ thêm vào đây.
+  // ⭐ v1.395.0 — VÂN TAY tuỳ chọn bài giao. v1.396.0: lấy TOÀN BỘ `activity.options` (trước chỉ 4 khoá ⇒ sót
+  // `unjumbleMode` đổi `soCau`) — AWord Edit assignment chỉ ghi lại đúng `activity.options` (content là bản chụp
+  // đóng băng thật), nên vân tay này đổi ⇔ có thứ có thể đổi chuẩn. Đổi tuỳ chọn KHÔNG ảnh hưởng chấm cũng đọc
+  // lại 1 lượt — rẻ, và khỏi phải nhớ thêm khoá mỗi khi thêm luật chấm. ⛔ Sắp khoá trước khi nối: Firestore trả
+  // thứ tự khoá map NGẪU NHIÊN mỗi lần đọc. Bàn thử: tools/thu-van-tay-chuan.js.
+  function chuanGiaTriFs(v) {
+    if (!v || typeof v !== 'object') return '';
+    if (v.mapValue) {
+      var m = v.mapValue.fields || {};
+      return '{' + Object.keys(m).sort().map(function (k) { return k + ':' + chuanGiaTriFs(m[k]); }).join(',') + '}';
+    }
+    if (v.arrayValue) return '[' + (v.arrayValue.values || []).map(chuanGiaTriFs).join(',') + ']';
+    if (v.integerValue != null || v.doubleValue != null) return 'n' + soF(v);   // 2 (integer) ≡ 2.0 (double)
+    if (v.stringValue != null) return 's' + JSON.stringify(v.stringValue);
+    if (v.booleanValue != null) return 'b' + (v.booleanValue ? 1 : 0);
+    return 'x';
+  }
   function kyChuanTuDoc(f) {
-    var opt = ruotMap(ruotMap(f.activity).options);
-    var tru = TRU_KHOA.map(function (k) { return soF(opt[k]) > 0 ? 1 : 0; }).join('');
-    return [chuF(f.activityType), chuF(opt.anagramMode) || 'bonus', Math.round(soF(opt.bonusMult)), tru].join('|');
+    return chuF(f.activityType) + '|' + chuanGiaTriFs((ruotMap(f.activity).options) || { mapValue: {} });
   }
 
   // Trả về { tru, dinh } của một act. Không bao giờ reject.
@@ -3794,6 +3806,7 @@
     bam: bam, laMaQuanLy: laMaQuanLy,
     laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
+    kyChuanTuDoc: kyChuanTuDoc,   // v1.396.0 — cho tools/thu-van-tay-chuan.js
     actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, ngheCuaBai: ngheCuaBai, maLesson: maLesson, tenBai: tenBai,
     tenWorksheet: tenWorksheet,   // ⭐ v1.103.0 — tiêu đề các worksheet (thẻ WORKSHEET)
     wsHienCuaThe: wsHienCuaThe,   // ⭐ v1.130.0 — worksheet hiện trên thẻ: theo chặng đang mở

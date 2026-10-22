@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-22 22:17:15",
+  "capNhat": "2026-10-22 22:44:42",
   "bai": {
     "A1C": [
       {
@@ -1048,6 +1048,34 @@
       }
     ],
     "A1B": [
+      {
+        "id": "A1B_22.10_GRAMMAR_CAU_BI_DONG",
+        "tieuDe": "A1B_22.10_GRAMMAR CAU BI DONG",
+        "tenHien": "A1B_22.10_GRAMMAR CAU BI DONG",
+        "dang": "GRAMMAR",
+        "ngay": "22.10",
+        "han": "2026-10-27T19:45",
+        "maLesson": "CAU BI DONG",
+        "taoLuc": "2026-10-22",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "1. CAU BI DONG 1 (page 3-6)",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FA1B%2FA1B_22.10_GRAMMAR_CAU_BI_DONG%2F40.pdf?alt=media",
+            "soTrang": 4
+          },
+          {
+            "loai": "act",
+            "ten": "TYPE THE ANSWER",
+            "act": "CAU BI DONG 1 - DICH CAU VIET - ANH",
+            "yeuCau": "100% requirement",
+            "ma": "ue5ncm",
+            "mau": "TYPE THE ANSWER"
+          }
+        ],
+        "giaoLuc": "2026-10-22T22:44"
+      },
       {
         "id": "A1B_20.10_WORKSHEET_CAU_BI_DONG",
         "tieuDe": "A1B_20.10_WORKSHEET CAU BI DONG",
@@ -6101,7 +6129,7 @@
     "B2B": "2026-10-22 13:28:01",
     "A1C": "2026-10-18 11:37:25",
     "B2A": "2026-10-22 13:25:02",
-    "A1B": "2026-10-20 21:43:02",
+    "A1B": "2026-10-22 22:44:42",
     "NNTNG4": "2026-10-19 15:24:51",
     "A2B": "2026-10-21 22:53:41",
     "B1B": "2026-10-21 22:50:49",

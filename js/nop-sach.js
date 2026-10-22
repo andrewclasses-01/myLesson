@@ -57,7 +57,7 @@
     if (!_ham) {
       _ham = window.NWP.fb().then(function () {
         return Promise.all([import(SDK + '/firebase-app.js'), import(SDK + '/firebase-functions.js')]).then(function (m) {
-          return m[1].httpsCallable(m[1].getFunctions(m[0].getApp(), 'asia-southeast1'), 'kiemSach', { timeout: 120000 });
+          return m[1].httpsCallable(m[1].getFunctions(m[0].getApp(), 'asia-southeast1'), 'kiemSach', { timeout: 180000 });   // 22/10: trang bảng AI chấm tới ~70 s
         });
       });
       _ham['catch'](function () { _ham = null; });

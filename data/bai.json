@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-21 22:53:41",
+  "capNhat": "2026-10-22 13:25:02",
   "bai": {
     "A1C": [
       {
@@ -429,6 +429,24 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_18.10_SP_CHECK_DS-S5.I1.W1_BONES_AND_MUSCLES",
+        "tieuDe": "B2A_18.10_SP CHECK DS-S5.I1.W1 BONES AND MUSCLES",
+        "tenHien": "B2A_18.10_SP CHECK DS-S5.I1.W1 BONES AND MUSCLES",
+        "dang": "SP CHECK",
+        "ngay": "18.10",
+        "han": "2026-10-25T14:00",
+        "maLesson": "DS-S5.I1.W1 BONES AND MUSCLES",
+        "taoLuc": "2026-10-22",
+        "khoi": [
+          {
+            "loai": "spcheck",
+            "ten": "SPEAKING CHECK",
+            "xong": 0
+          }
+        ],
+        "giaoLuc": "2026-10-22T13:25"
+      },
       {
         "id": "B2A_11.10_SP_SLIDE_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2A_11.10_SP SLIDE DS-S5.I1.W1 BONES AND MUSCLES",
@@ -6045,7 +6063,7 @@
     "A1A": "2026-10-19 22:09:08",
     "B2B": "2026-10-20 15:57:19",
     "A1C": "2026-10-18 11:37:25",
-    "B2A": "2026-10-13 17:12:48",
+    "B2A": "2026-10-22 13:25:02",
     "A1B": "2026-10-20 21:43:02",
     "NNTNG4": "2026-10-19 15:24:51",
     "A2B": "2026-10-21 22:53:41",

@@ -113,7 +113,15 @@
       '.cu-td .x{background:#FFF1E6;color:#C2410C;display:flex;align-items:center;justify-content:center;gap:6px}' +
       '.cu-td .dang{display:flex;align-items:center;justify-content:center;gap:8px;font-weight:700;font-size:13px;color:#0E7C6E}' +
       '.cu-td .dang::before{content:"";width:8px;height:8px;border-radius:50%;background:#1DA45C;animation:cutd 1s infinite}@keyframes cutd{50%{opacity:.25}}' +
-      '.cu-td.mo{opacity:.6}' +
+      '.cu-td.mo{opacity:.6}.cu-td[hidden]{display:none!important}' +
+      // ⭐ v1.402.0 — THẺ CHỜ của người mời (góc màn, không nằm trong chat)
+      '.td-cho-moi{position:fixed;z-index:9000;top:calc(var(--cao-thanh,62px) + 12px);right:16px;width:min(320px,calc(100% - 32px));background:#fff;border-radius:16px;border:1px solid #E0EAE7;' +
+      'box-shadow:0 14px 40px rgba(22,35,42,.22);padding:12px;display:flex;flex-direction:column;gap:9px;color:#16232A;font-family:inherit;animation:tdcho .35s cubic-bezier(.22,.9,.3,1)}@keyframes tdcho{from{transform:translateX(30px);opacity:0}}' +
+      '.td-cho-moi .tr{display:flex;align-items:center;gap:10px}.td-cho-moi .ic{width:36px;height:36px;border-radius:50%;background:#0F4029;color:#9BFFC4;display:grid;place-items:center;flex:none}.td-cho-moi .ic svg{width:18px;height:18px}' +
+      '.td-cho-moi b{display:block;font-size:14px;line-height:1.25}.td-cho-moi small{display:block;color:#5F7370;font-size:12px;font-weight:600;margin-top:2px}' +
+      '.td-cho-moi .va{height:3px;border-radius:2px;background:#E0EAE7;overflow:hidden}.td-cho-moi .va i{display:block;height:100%;background:#0E7C6E;transition:width 1s linear}' +
+      '.td-cho-moi button{height:34px;border:0;border-radius:12px;font-weight:700;font-size:13.5px;cursor:pointer;font-family:inherit;background:#E3F1EE;color:#0E7C6E}' +
+      '.td-cho-moi .kq{font-size:13.5px;font-weight:600;color:#3B4F4B;text-align:center;padding:2px 0}' +
       // ⭐ v1.351.0 — thẻ GIẢI: to, đầu vàng có tên giải
       '.cu-td.giai{width:min(400px,calc(100% - 16px));border:1.5px solid #F2C14E;box-shadow:0 6px 20px rgba(242,166,30,.18)}' +
       '.cu-td.giai .d{background:linear-gradient(100deg,#B7791F,#F2A61E 55%,#F7C948);color:#2B1700;font-size:12.5px;padding:9px 12px}' +
@@ -261,7 +269,7 @@
   function veHetCua(gid) { Object.keys(TRAN).forEach(function (id) { if (TRAN[id] && TRAN[id].giai === gid) veId(id); }); }
 
   // ---------- thẻ ----------
-  var TRAN = {}, NGHE = {}, MOI_TAO = {};   // id → dữ liệu trận · id → đã nghe · id trận em vừa mời (tự vào trận khi bạn nhận)
+  var TRAN = {}, NGHE = {}, MOI_TAO = {};   // id → dữ liệu trận · id → đã nghe · (bàn thử) — v1.402.0: "em vừa mời ⇒ tự vào trận" nay ở CHO
   var TOI = { uid: '' };
   // đọc tài khoản LƯỜI: tệp này có thể nạp trước loi.js (trang nw/) — lần đầu cần vẽ thẻ / mở hộp chọn mới đọc
   var _daDocToi = false;
@@ -358,9 +366,18 @@
   }
   function moMo(t) { return t && !t._khongDoc && (t.trangThai === 'tuchoi' || t.trangThai === 'huy' || t.trangThai === 'het' || t.trangThai === 'han' || (t.trangThai === 'moi' && (t.het || 0) < Date.now())); }
   function laGon(t) { return !!(t && !t._khongDoc && !t.giai && !t.gv); }
+  /* ⭐ v1.402.0 (22/10/2026, thầy) — CHAT CHỈ GIỮ TRẬN CÓ ĐẤU: lời mời không thành (từ chối · huỷ · hết hạn · bị giới hạn) không hiện cho ai;
+     đang chờ nhận thì chỉ HAI người trong trận thấy (tin cũ trong lịch sử chat). Lời mời mới không vào chat nữa — xem THẺ CHỜ (moCho) dưới. */
+  function anThe(t) {
+    if (!t) return true;   // chưa tải xong: chưa hiện (khỏi nháy thẻ rồi mới ẩn)
+    if (t._khongDoc) return false;
+    if (moMo(t)) return true;
+    return t.trangThai === 'moi' && !trongTran(t);
+  }
   function veId(id) {
     var t = TRAN[id], gon = laGon(t);
     document.querySelectorAll('.cu-td[data-td="' + id + '"]').forEach(function (el) {
+      el.hidden = anThe(t);
       el.innerHTML = gon ? gonHtml(id) : cardHtml(id);
       el.classList.toggle('mo', !!moMo(t)); el.classList.toggle('gon', gon); el.classList.toggle('giai', !!(t && t.giai)); el.classList.toggle('thay', !!(t && t.gv));
     });
@@ -372,9 +389,9 @@
     kho().then(function (f) {
       f.fs.onSnapshot(f.fs.doc(f.db, 'tranDau', id), function (s) {
         var t = s.exists() ? s.data() : { _khongDoc: true };
-        var cu = TRAN[id]; TRAN[id] = t; if (t.giai) docGiai(t.giai); veId(id);
-        // em vừa mời từ chat: bạn nhận ⇒ vào trận luôn
-        if (MOI_TAO[id] && (t.trangThai === 'nhan' || t.trangThai === 'choi') && (!cu || cu.trangThai === 'moi')) { delete MOI_TAO[id]; setTimeout(function () { moTran(id); }, 500); }
+        TRAN[id] = t; if (t.giai) docGiai(t.giai); veId(id);
+        // ⭐ v1.402.0 — người mời đang chờ: trận rời trạng thái 'moi' ⇒ nhận thì gửi thẻ vào chat + vào trận; không thành thì chỉ báo ở thẻ chờ
+        if (CHO[id] && t.trangThai && t.trangThai !== 'moi') xongCho(id, t);
       }, function () { TRAN[id] = { _khongDoc: true }; veId(id); });
     });
   }
@@ -394,11 +411,49 @@
       if (viec === 'nhan') moTran(id);
     } catch (e) { nut.disabled = false; alert(viec === 'nhan' ? 'Lời mời đã hết hạn hoặc bạn đã huỷ.' : 'Chưa làm được — em thử lại nhé.'); }
   }
+  // ---------- ⭐ v1.402.0 (22/10/2026, thầy) — THẺ CHỜ của người mời: góc màn, KHÔNG gửi gì vào chat ----------
+  // Bạn được mời đã có thẻ góc Nhận/Từ chối (nw/js/thachdau.js · js/tn-khung.js) ⇒ lúc chờ chỉ hai người biết.
+  // Bạn NHẬN ⇒ lúc đó mới gửi thẻ trận vào chat (đang đấu → kết quả) rồi vào trận. Từ chối / huỷ / hết hạn ⇒ chỉ báo ở thẻ chờ rồi tắt.
+  var CHO = {};   // id trận → { gui, chu, ten, vao, el, xong }
+  function moCho(id, o, chu, vao) {
+    napCss();
+    var ten = o.ban.laThay ? 'thầy' : o.ban.ten;
+    var el = document.createElement('div'); el.className = 'td-cho-moi'; el.setAttribute('role', 'status');
+    el.innerHTML = '<div class="tr"><span class="ic">' + IC + '</span><div><b>Đang chờ ' + an(ten) + ' nhận</b><small>Chỉ hai người thấy lời mời · <span class="td-con">60</span>s</small></div></div>' +
+      '<div class="va"><i style="width:100%"></i></div><button type="button" data-cho-huy>Huỷ lời mời</button>';
+    document.body.appendChild(el);
+    CHO[id] = { gui: o.gui, chu: chu, ten: ten, vao: vao, el: el };
+    el.querySelector('[data-cho-huy]').onclick = async function () {
+      this.disabled = true;
+      if (banThu()) return THU_SIM[id] && THU_SIM[id]('huy');
+      try { var f = await kho(); await f.fs.updateDoc(f.fs.doc(f.db, 'tranDau', id), { trangThai: 'huy' }); }
+      catch (e) { this.disabled = false; }
+    };
+  }
+  function xongCho(id, t) {
+    var c = CHO[id]; if (!c || c.xong) return; c.xong = 1;
+    var tt = t.trangThai, nhan = tt === 'nhan' || tt === 'choi' || tt === 'xong', ten = '<b>' + an(c.ten) + '</b>';
+    var kq = nhan ? ten + ' đã nhận! Vào trận…' : tt === 'tuchoi' ? ten + ' chưa muốn đấu lúc này.' : tt === 'huy' ? 'Đã huỷ lời mời.'
+      : tt === 'han' ? an(GH.chuHan(t)) : ten + ' chưa nhận lời mời. Em thử mời bạn khác nhé.';
+    c.el.innerHTML = '<div class="kq">' + kq + '</div>';
+    setTimeout(function () { if (c.el.parentNode) c.el.parentNode.removeChild(c.el); delete CHO[id]; }, nhan ? 1500 : 3000);
+    if (!nhan) return;
+    // gửi thẻ trận vào chat TRƯỚC khi rời trang (chờ tối đa 4 giây — mạng chậm thì vẫn vào trận)
+    var guiXong = Promise.resolve().then(function () { return c.gui({ loai: 'td', id: id }, c.chu); })['catch'](function (e) { console.warn('[thách đấu] chưa gửi được thẻ vào chat', e); });
+    Promise.race([guiXong, new Promise(function (r) { setTimeout(r, 4000); })]).then(function () { if (c.vao) moTran(id); });
+  }
+
   // một nhịp mỗi giây: số giây còn lại + vạch của thẻ đang chờ (sửa tại chỗ — vẽ lại giữa cú bấm sẽ nuốt cú bấm)
   setInterval(function () {
     Object.keys(TRAN).forEach(function (id) {
       var t = TRAN[id]; if (!t || t.trangThai !== 'moi') return;
       var con = Math.max(0, Math.ceil(((t.het || 0) - Date.now()) / 1000));
+      var c = CHO[id];
+      if (c && !c.xong) {
+        c.el.querySelectorAll('.td-con').forEach(function (s) { s.textContent = con; });
+        var vc = c.el.querySelector('.va i'); if (vc) vc.style.width = (con / 60 * 100) + '%';
+        if (Date.now() - (t.het || 0) > 3000) xongCho(id, { trangThai: 'het' });   // hết hạn (chờ thêm 3 giây phòng bạn bấm Nhận đúng giây cuối)
+      }
       if (con <= 0) { if (!t._daVeHet) { t._daVeHet = 1; veId(id); } return; }
       document.querySelectorAll('.cu-td[data-td="' + id + '"]').forEach(function (el) {
         el.querySelectorAll('.td-con').forEach(function (s) { s.textContent = con; });
@@ -649,13 +704,13 @@
       // bàn thử: trận giả chạy hết vòng trong vài giây (chờ nhận → đang đấu → kết quả) để xem thẻ đổi trạng thái
       var id = 'thu' + Date.now();
       TRAN[id] = data; NGHE[id] = 1;
-      var buoc = function (doi) { Object.assign(TRAN[id], doi); veId(id); };
+      var buoc = function (doi) { Object.assign(TRAN[id], doi); veId(id); if (TRAN[id].trangThai !== 'moi') xongCho(id, TRAN[id]); };
       THU_SIM[id] = function (viec) {
         if (viec === 'huy') return buoc({ trangThai: 'huy' });
         if (viec === 'khong') return buoc({ trangThai: 'tuchoi' });
         if (viec === 'nhan') { buoc({ trangThai: 'choi', diem: { a: 0, b: 0 } }); setTimeout(function () { buoc({ diem: { a: 4, b: 6 } }); }, 3000); setTimeout(function () { buoc({ trangThai: 'xong', diem: { a: 9, b: 12 }, kq: { a: 'thua', b: 'thang' } }); }, 7000); }
       };
-      await o.gui({ loai: 'td', id: id }, chu);
+      moCho(id, o, chu, false);
       if (o.baoLoi) o.baoLoi('Bàn thử: 5 giây nữa ' + (ban.laThay ? 'thầy' : ban.ten) + ' bấm Nhận' + (me.laThay ? ' · trận thật mở ở TAB MỚI' : ''));
       setTimeout(function () { if (TRAN[id].trangThai === 'moi') THU_SIM[id]('nhan'); }, 5000);
       return;
@@ -678,9 +733,9 @@
       }
       var ref = f.fs.doc(f.fs.collection(f.db, 'tranDau'));
       await f.fs.setDoc(ref, data);
-      if (tab) tab.location.href = urlTran(ref.id); else MOI_TAO[ref.id] = 1;
-      try { await o.gui({ loai: 'td', id: ref.id }, chu); }
-      catch (e2) { await f.fs.updateDoc(ref, { trangThai: 'huy' }).catch(function () { }); throw e2; }
+      if (tab) tab.location.href = urlTran(ref.id);
+      // ⭐ v1.402.0 — KHÔNG gửi thẻ vào chat lúc mời: thẻ chờ ở góc màn, bạn nhận mới gửi (xongCho). Thầy đã có tab trận ⇒ không tự vào.
+      moCho(ref.id, o, chu, !tab); nghe(ref.id);
     } catch (e) {
       if (tab) tab.close();
       var ma = String((e && (e.code || e.message)) || '');
@@ -1015,7 +1070,7 @@
     moiGiai: TheTD_moiGiai,
     html: function (id) {
       napCss(); id = String(id || ''); var t = TRAN[id];
-      return '<div class="cu-td' + (moMo(t) ? ' mo' : '') + (laGon(t) ? ' gon' : '') + (t && t.giai ? ' giai' : '') + (t && t.gv ? ' thay' : '') + '" data-td="' + an(id) + '">' + (laGon(t) ? gonHtml(id) : cardHtml(id)) + '</div>';
+      return '<div class="cu-td' + (moMo(t) ? ' mo' : '') + (laGon(t) ? ' gon' : '') + (t && t.giai ? ' giai' : '') + (t && t.gv ? ' thay' : '') + '" data-td="' + an(id) + '"' + (anThe(t) ? ' hidden' : '') + '>' + (laGon(t) ? gonHtml(id) : cardHtml(id)) + '</div>';
     },
     lap: function (khung) { docToi(); (khung || document).querySelectorAll('.cu-td[data-td]').forEach(function (el) { nghe(el.getAttribute('data-td')); }); },
     moChon: TheTD_moChon,

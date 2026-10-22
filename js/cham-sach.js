@@ -22,6 +22,7 @@
    ⭐ v1.399.0 (22/10, thầy) — NÚT ⚙ CÀI ĐẶT DẤU (cuối thanh công cụ): cỡ + nét (mảnh/vừa/đậm) mặc định cho ✓ ✕ ?; ÁP DỤNG ⇒ lưu trên máy
      + vẽ lại ngay bài đang sửa. CỠ tính theo CHỮ IN của từng ảnh (Vision đo cao chữ ⇒ `dau.h`), không theo độ phân giải: "×1,0" = dấu cao
      bằng chữ in. Dấu tay cũng lấy cao chữ của trang (trung vị dấu máy trên trang) thay vì theo khung ảnh.
+   ⭐ v1.400.0 (22/10, thầy) — mọi nút trong pop-up dùng ICON PHẲNG 2D kiểu Lucide (SVG nét, `ico()`), bỏ emoji/ký tự.
    Mở: ChamSach.mo({...}). */
 (function () {
   'use strict';
@@ -366,6 +367,8 @@
     '.cs-cau.sai{border-left-color:#DC2626}.cs-cau.sai .em-k{background:#FEE2E2;color:#DC2626}.cs-cau.dung .kq{color:#16A34A}.cs-cau.sai .kq{color:#DC2626}.cs-cau .kq{text-align:center;font-weight:900}' +
     '.cs-cau.hoi{border-left-color:#F59E0B}.cs-cau.hoi .em-k{background:#FEF3C7;color:#B45309}.cs-cau.hoi .kq{color:#F59E0B}.cs-cau .ghi{font-size:9px;color:#B45309;grid-column:2/-1;font-weight:700}' +
     '.cs-chu-thich{font-size:9.5px;color:#94A3B8;font-weight:600;padding:8px}' +
+    '.cs-ico{display:block;flex:none}.cs-cc{display:inline-grid;place-items:center}.cs-dong{display:inline-grid;place-items:center}' +
+    '.cs-nut,.cs-hang button,.cs-cu .ve{display:inline-flex;align-items:center;justify-content:center;gap:7px}.cs-menu i{display:inline-grid;place-items:center}' +
     '.cs-cau.viet{grid-template-columns:38px 1fr 1fr 24px}.cs-cau.viet .em-k,.cs-cau.viet .dung-k{text-align:left;padding:3px 6px;font-weight:800;overflow-wrap:anywhere}' +
     '.cs-lech{margin:2px 0 4px;padding:6px 10px;border-radius:9px;background:#FEF3C7;color:#92400E;font-size:10.5px;font-weight:800}' +
     '.cs-nhan{padding:11px 13px;border-top:1px solid #E0EAE7}.cs-nhan label{font-size:10.5px;font-weight:900;letter-spacing:.06em;color:#5F7370}' +
@@ -399,28 +402,55 @@
     '#csToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16232A;color:#fff;padding:12px 18px;border-radius:12px;font-size:12.5px;font-weight:800;opacity:0;transition:.25s;pointer-events:none;z-index:9400}' +
     '#csToast.hien{opacity:1}' +
     '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:1fr}.cs-dat-luoi{grid-template-columns:1fr}}';
-  var CU_NUT = [['but', '✎'], ['tron', '◯'], ['ten', '↗'], ['ke', '╱'], ['dung', '✓'], ['sai', '✕'], ['hoi', '?'], ['chu', 'T']];
+  // ⭐ v1.400.0 icon phẳng 2D (nét Lucide, màu theo chữ của nút)
+  var ICO = {
+    but: '<path d="M21.17 6.81a1 1 0 0 0-3.98-3.98L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/>',
+    tron: '<circle cx="12" cy="12" r="8.5"/>',
+    ten: '<path d="M7 7h10v10"/><path d="M7 17 17 7"/>',
+    ke: '<path d="M6.5 17.5l11-11"/><circle cx="5" cy="19" r="1.6" fill="currentColor"/><circle cx="19" cy="5" r="1.6" fill="currentColor"/>',
+    dung: '<path d="M20 6 9 17l-5-5"/>',
+    sai: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    hoi: '<path d="M8.6 8.6a3.5 3.5 0 0 1 6.8 1.2c0 2.3-3.4 3.2-3.4 3.2"/><path d="M12 18h.01"/>',
+    chu: '<path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2"/><path d="M12 4v16"/><path d="M9 20h6"/>',
+    lui: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
+    rac: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M10 11v6"/><path d="M14 11v6"/>',
+    dong: '<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+    chup: '<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3z"/><circle cx="12" cy="13" r="3"/>',
+    dat: '<circle cx="12" cy="12" r="10"/><path d="m8.5 12 2.5 2.5 4.5-5"/>',
+    chep: '<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2"/>',
+    dao: '<path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/>',
+    tay: '<path d="m7 21-4.3-4.3a2.4 2.4 0 0 1 0-3.4l9.6-9.6a2.4 2.4 0 0 1 3.4 0l5.6 5.6a2.4 2.4 0 0 1 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/>',
+    xoaHet: '<circle cx="12" cy="12" r="10"/><path d="m15 9-6 6"/><path d="m9 9 6 6"/>',
+    khoi: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/>',
+    tra: '<path d="M9 17 4 12l5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>',
+    ve: '<path d="M9 14 4 9l5-5"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>'
+  };
+  function ico(ten, co, net) {
+    return '<svg class="cs-ico" viewBox="0 0 24 24" width="' + (co || 17) + '" height="' + (co || 17) + '" fill="none" stroke="currentColor" stroke-width="' + (net || 2) +
+      '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (ICO[ten] || '') + '</svg>';
+  }
+  var CU_NUT = [['but', ico('but')], ['tron', ico('tron')], ['ten', ico('ten')], ['ke', ico('ke')], ['dung', ico('dung', 19, 3)], ['sai', ico('sai', 18, 3)], ['hoi', ico('hoi', 19, 3)], ['chu', ico('chu')]];
   function dungKhung() {
     var st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     var n = document.createElement('div');
     n.id = 'csNen';
     n.innerHTML =
-      '<div class="cs-hop"><div class="cs-dau"><b id="csTieu"></b><span id="csPhu"></span><button type="button" class="cs-dong" title="Đóng (Esc)">✕</button></div>' +
+      '<div class="cs-hop"><div class="cs-dau"><b id="csTieu"></b><span id="csPhu"></span><button type="button" class="cs-dong" title="Đóng (Esc)">' + ico('dong', 18, 2.4) + '</button></div>' +
       '<div class="cs-khung"><div class="cs-cot cs-ds" id="csDs"></div>' +
       '<div class="cs-cot cs-giua"><div class="cs-thanh"><div class="cs-tab" id="csTab"></div>' +
         CU_NUT.map(function (c) { return '<button class="cs-cc' + (c[0] === 'but' ? ' on' : '') + '" data-cu="' + c[0] + '" title="' + TEN_CU[c[0]] + ' — chuột phải: chọn cỡ">' + c[1] + '</button>'; }).join('') +
         '<span class="cs-vach"></span>' +
         MAU.map(function (m, i) { return '<span class="cs-mau' + (i ? '' : ' on') + '" data-mau="' + m + '" style="background:' + m + '" title="Màu nét vẽ"></span>'; }).join('') +
-        '<span class="cs-vach"></span><button class="cs-cc" id="csLui" title="Hoàn tác (Ctrl+Z)">↶</button><button class="cs-cc" id="csXoa" title="Xoá hết nét vẽ trang này">🗑</button>' +
-        '<button class="cs-cc" id="csCaiDat" title="Cài đặt dấu ✓ ✕ ? (cỡ, nét)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button></div>' +
+        '<span class="cs-vach"></span><button class="cs-cc" id="csLui" title="Hoàn tác (Ctrl+Z)">' + ico('lui') + '</button><button class="cs-cc" id="csXoa" title="Xoá hết nét vẽ trang này">' + ico('rac') + '</button>' +
+        '<button class="cs-cc" id="csCaiDat" title="Cài đặt dấu ✓ ✕ ? (cỡ, nét)"><svg class="cs-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button></div>' +
         '<div class="cs-vung" id="csVung"><span class="cs-canh" id="csCanh" hidden></span><div class="cs-ve" id="csVe"><canvas id="csCv"></canvas><canvas id="csCvTren"></canvas></div>' +
           '<div class="cs-trong" id="csTrong" hidden>Em chưa nộp trang này.</div></div>' +
         '<div class="cs-cu" id="csCu"></div>' +
-        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">📋 CHỤP LỖI</button><button class="cs-nut dat" id="csDat">✓ ĐẠT</button></div></div>' +
+        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 16, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat" id="csDat">' + ico('dat', 16, 2.2) + 'ĐẠT</button></div></div>' +
       '<div class="cs-cot cs-ai"><h3>CHẤM THAM KHẢO (AI)<small>Chỉ thầy thấy. Bấm một dòng ⇒ ảnh cuộn tới dấu câu đó.</small></h3>' +
         '<div class="cs-ai-dau"><span id="csAiTrang"></span><b id="csTong"></b></div><div class="cs-bang" id="csBang"></div>' +
         '<div class="cs-nhan"><label>LỜI NHẮN GỬI EM (SOẠN SẴN — SỬA ĐƯỢC)</label><textarea id="csNhan"></textarea>' +
-        '<div class="cs-hang"><button id="csChepNhan">📋 Chép lời nhắn</button></div></div></div>' +
+        '<div class="cs-hang"><button id="csChepNhan">' + ico('chep', 15) + 'Chép lời nhắn</button></div></div></div>' +
       '</div></div><div id="csPop" hidden></div><div id="csToast"></div>';
     document.body.appendChild(n);
     n.addEventListener('click', function (e) { if (e.target === n || e.target.closest('.cs-dong')) dong(); });
@@ -525,12 +555,12 @@
     var o = suaHien(), el = document.createElement('div');
     el.className = 'cs-menu';
     el.innerHTML =
-      (m && m.loai === 'hoi' ? '<button data-l="thanhDung"><i style="color:#16A34A">✓</i>Đánh ✓ đúng</button><button data-l="thanhSai"><i style="color:#DC2626">✕</i>Đánh ✕ sai</button>'
-        : '<button data-l="dao"' + (m ? '' : ' disabled') + '><i>⇄</i>Đảo đánh dấu' + (m ? ' (' + (m.loai === 'dung' ? '✓ → ✕' : '✕ → ✓') + ')' : '') + '</button>') +
-      '<button data-l="xoa"' + (m ? '' : ' disabled') + '><i>⌫</i>Xoá đánh dấu</button><hr>' +
-      '<button data-l="xoaDau"' + (o.dau.length ? '' : ' disabled') + '><i>✕</i>Xoá tất cả dấu</button>' +
-      '<button data-l="xoaNet"' + (o.net.length ? '' : ' disabled') + '><i>🗑</i>Xoá hết nét vẽ</button><hr>' +
-      '<button data-l="khoi"><i>↺</i>Khôi phục bài chấm AI</button>';
+      (m && m.loai === 'hoi' ? '<button data-l="thanhDung"><i style="color:#16A34A">' + ico('dung', 16, 3) + '</i>Đánh ✓ đúng</button><button data-l="thanhSai"><i style="color:#DC2626">' + ico('sai', 16, 3) + '</i>Đánh ✕ sai</button>'
+        : '<button data-l="dao"' + (m ? '' : ' disabled') + '><i>' + ico('dao', 16) + '</i>Đảo đánh dấu' + (m ? ' (' + (m.loai === 'dung' ? '✓ → ✕' : '✕ → ✓') + ')' : '') + '</button>') +
+      '<button data-l="xoa"' + (m ? '' : ' disabled') + '><i>' + ico('tay', 16) + '</i>Xoá đánh dấu</button><hr>' +
+      '<button data-l="xoaDau"' + (o.dau.length ? '' : ' disabled') + '><i>' + ico('xoaHet', 16) + '</i>Xoá tất cả dấu</button>' +
+      '<button data-l="xoaNet"' + (o.net.length ? '' : ' disabled') + '><i>' + ico('rac', 16) + '</i>Xoá hết nét vẽ</button><hr>' +
+      '<button data-l="khoi"><i>' + ico('khoi', 16) + '</i>Khôi phục bài chấm AI</button>';
     el.querySelectorAll('button').forEach(function (b) {
       b.onclick = function () {
         var l = b.dataset.l; dongNoi();
@@ -756,7 +786,7 @@
     var cu = (t && t.cu) || [];
     $('#csCu').innerHTML = cu.length ? '<span>LẦN NỘP TRƯỚC:</span>' + cu.map(function (c, i) {
       return '<button class="' + (i === S.cuChon ? 'on' : '') + '" data-c="' + i + '"><img alt="" src="' + chu(c.nho || c.url) + '">' + (c.dat ? '' : '<b>⚠</b>') + '</button>';
-    }).join('') + (S.cuChon >= 0 ? '<button class="ve" data-c="-1">↩ ẢNH ĐANG DÙNG</button>' : '') : '';
+    }).join('') + (S.cuChon >= 0 ? '<button class="ve" data-c="-1">' + ico('ve', 14) + 'ẢNH ĐANG DÙNG</button>' : '') : '';
     $('#csCu').querySelectorAll('[data-c]').forEach(function (b) { b.onclick = function () { S.cuChon = +b.dataset.c; veGiua(); }; });
     var lich = '';
     if (t) {
@@ -841,7 +871,7 @@
     var e = emHien(), pop = $('#csPop');
     var ds = S.trangs.filter(function (p) { return trangCua(e, p); });
     pop.innerHTML = '<div class="cs-pop-hop"><div class="cs-pop-dau loi"><b>📋 CHỤP LỖI · ' + chu(String(e.ten).toUpperCase()) + '</b><span>' + chu(S.tieuDe) +
-      ' — mỗi trang một ảnh to để gửi Zalo; TRẢ LẠI ⇒ em thấy ảnh đã chấm + lời nhắn trên web và chụp lại trang đó.</span><button class="cs-dong" data-dong>✕</button></div>' +
+      ' — mỗi trang một ảnh to để gửi Zalo; TRẢ LẠI ⇒ em thấy ảnh đã chấm + lời nhắn trên web và chụp lại trang đó.</span><button class="cs-dong" data-dong>' + ico('dong', 18, 2.4) + '</button></div>' +
       '<div class="cs-pop-than">' + S.trangs.map(function (p) {
         var t = trangCua(e, p);
         if (!t) return '<div class="cs-loi-dong"><div class="cs-trong" style="color:#94A3B8">Em chưa nộp trang ' + p + '.</div><div></div></div>';
@@ -850,7 +880,7 @@
           '<p>' + (tt.tt === 'chan' ? '⚠ Máy chặn ảnh này' : (tt.sai ? 'Sai ' + tt.sai + ' câu' : 'Không có câu sai') + (tt.hoi ? ' · ' + tt.hoi + ' câu chưa chắc' : '')) + '</p>' +
           (daTra ? '<div class="cs-loi-tt tra">↺ ĐÃ TRẢ LẠI — em đang sửa</div>' : '') +
           '<textarea data-nhan>' + chu(daTra && t.duyet.nhan ? t.duyet.nhan : loiNhanTrang(e, p)) + '</textarea>' +
-          '<button class="cs-nut chup" data-chup>📋 CHỤP TRANG ' + p + '</button><button class="cs-nut tra" data-tra>↺ TRẢ LẠI TRANG ' + p + '</button></div></div>';
+          '<button class="cs-nut chup" data-chup>' + ico('chup', 16, 2.2) + 'CHỤP TRANG ' + p + '</button><button class="cs-nut tra" data-tra>' + ico('tra', 16, 2.2) + 'TRẢ LẠI TRANG ' + p + '</button></div></div>';
       }).join('') + '</div>' +
       '<div class="cs-pop-day"><span>' + ds.length + '/' + S.trangs.length + ' trang đã nộp. Ảnh chụp có dải tên em ở trên — dán thẳng vào Zalo (Ctrl+V).</span><button class="cs-nut phu" data-dong>ĐÓNG</button></div></div>';
     pop.hidden = false;
@@ -870,10 +900,10 @@
           return hamDuyet().then(function (f) { return f({ id: [S.lop, S.bai, S.bt, e.ma].join('__'), trang: p, tt: 'tra', nhan: nhan, anh: anh }); });
         }).then(function () { return S.docLai(e); }).then(function (d) {
           if (d) e.doc = d;
-          nut.textContent = '✓ ĐÃ TRẢ LẠI TRANG ' + p;
+          nut.innerHTML = ico('dat', 16, 2.2) + 'ĐÃ TRẢ LẠI TRANG ' + p;
           toast('↺ Đã trả lại trang ' + p + ' — em sẽ thấy ảnh thầy chấm + lời nhắn trên web');
           veTat(); if (S.onDoi) S.onDoi();
-        })['catch'](function (er) { nut.disabled = false; nut.textContent = '↺ TRẢ LẠI TRANG ' + p; toast('Chưa trả lại được: ' + ((er && er.message) || er)); });
+        })['catch'](function (er) { nut.disabled = false; nut.innerHTML = ico('tra', 16, 2.2) + 'TRẢ LẠI TRANG ' + p; toast('Chưa trả lại được: ' + ((er && er.message) || er)); });
       };
     });
   }
@@ -907,13 +937,13 @@
     var e = emHien(), pop = $('#csPop');
     var thieu = S.trangs.filter(function (p) { var t = ttTrang(e, p).tt; return t === 'thieu' || t === 'chan'; });
     var sai = S.trangs.reduce(function (s, p) { return s + saiCua(e, p).length; }, 0);
-    pop.innerHTML = '<div class="cs-pop-hop"><div class="cs-pop-dau dat"><b>✓ ĐẠT · ' + chu(String(e.ten).toUpperCase()) + '</b><span>' + chu(S.tieuDe) + '</span><button class="cs-dong" data-dong>✕</button></div>' +
+    pop.innerHTML = '<div class="cs-pop-hop"><div class="cs-pop-dau dat"><b>✓ ĐẠT · ' + chu(String(e.ten).toUpperCase()) + '</b><span>' + chu(S.tieuDe) + '</span><button class="cs-dong" data-dong>' + ico('dong', 18, 2.4) + '</button></div>' +
       '<div class="cs-pop-than"><div class="cs-dat-luoi">' + S.trangs.map(function (p) {
         return '<div class="cs-dat-o" data-p="' + p + '"><b>TRANG ' + p + '</b>' + (trangCua(e, p) ? '<img alt="" data-anh>' : '<div class="rong">Em chưa nộp trang ' + p + '</div>') + '</div>';
       }).join('') + '</div></div>' +
       '<div class="cs-pop-day"><span>' + (thieu.length ? '⚠ Còn thiếu / máy chặn trang ' + thieu.join(', ') + ' — ĐẠT vẫn ghi cho các trang đã nộp. ' : '') +
         (sai ? '⚠ Còn ' + sai + ' dấu ✕ sai trên ảnh. ' : '') + 'Bấm CHỤP ẢNH ĐẠT ⇒ 1 ảnh ghép mọi trang vào clipboard VÀ ghi bài em là ĐẠT.</span>' +
-        '<button class="cs-nut phu" data-dong>ĐÓNG</button><button class="cs-nut dat" id="csChupDat">📋 CHỤP ẢNH ĐẠT</button></div></div>';
+        '<button class="cs-nut phu" data-dong>ĐÓNG</button><button class="cs-nut dat" id="csChupDat">' + ico('chup', 16, 2.2) + 'CHỤP ẢNH ĐẠT</button></div></div>';
     pop.hidden = false;
     pop.querySelectorAll('[data-dong]').forEach(function (b) { b.onclick = dongPop; });
     pop.querySelectorAll('.cs-dat-o[data-p]').forEach(function (o) {
@@ -929,7 +959,7 @@
         toast((kq[0] ? '✓ Ảnh ĐẠT đã vào clipboard (Ctrl+V vào Zalo)' : '⚠ Chưa chép được ảnh') + ' · ✓ Đã ghi ĐẠT cho ' + e.ten);
         dongPop(); veTat(); if (S.onDoi) S.onDoi();
       }, function (er) {
-        nut.disabled = false; nut.textContent = '📋 CHỤP ẢNH ĐẠT';
+        nut.disabled = false; nut.innerHTML = ico('chup', 16, 2.2) + 'CHỤP ẢNH ĐẠT';
         chep.then(function (ok) { toast((ok ? 'Ảnh đã vào clipboard nhưng ' : '') + 'chưa ghi ĐẠT được: ' + ((er && er.message) || er)); });
       });
     };

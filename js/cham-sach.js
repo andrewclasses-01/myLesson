@@ -23,10 +23,14 @@
      + vẽ lại ngay bài đang sửa. CỠ tính theo CHỮ IN của từng ảnh (Vision đo cao chữ ⇒ `dau.h`), không theo độ phân giải: "×1,0" = dấu cao
      bằng chữ in. Dấu tay cũng lấy cao chữ của trang (trung vị dấu máy trên trang) thay vì theo khung ảnh.
    ⭐ v1.400.0 (22/10, thầy) — mọi nút trong pop-up dùng ICON PHẲNG 2D kiểu Lucide (SVG nét, `ico()`), bỏ emoji/ký tự.
+   ⭐ v1.401.0 (22/10, thầy) — ⚙ thêm CHỮ GÕ (cỡ theo cao chữ in của ảnh + nét mảnh/vừa/đậm; chữ đã gõ đổi theo khi ÁP DỤNG — nét chữ mới
+     lưu `tl:true`, cỡ tính lúc vẽ) · MỘT FONT CHUNG (`FONT` = font của dashboard) cho mọi chữ: CSS pop-up, menu/cài đặt (gắn ngoài #csNen
+     nên trước đây rơi về font mặc định của trình duyệt), ô gõ, chữ vẽ trên ảnh + ảnh ghép; mở pop-up là nạp sẵn font rồi vẽ lại.
    Mở: ChamSach.mo({...}). */
 (function () {
   'use strict';
-  var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';   // ⛔ trùng SP_SDK dashboard.html
+  var SDK = 'https://www.gstatic.com/firebasejs/12.9.0';
+  var FONT = "Montserrat, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";   // ⭐ v1.401.0 MỘT font chung (= --font dashboard)   // ⛔ trùng SP_SDK dashboard.html
   var MAU = ['#DC2626', '#16A34A', '#2F6FED'];
   var MAU_DAU = { dung: '#16A34A', sai: '#DC2626', hoi: '#F59E0B' };
   // Cỡ công cụ: nét (but/tron/ten/ke) = phần nghìn cạnh dài ảnh; dấu (dung/sai/hoi) + chữ = hệ số (1 = cỡ máy tự đặt)
@@ -36,7 +40,8 @@
   var CO = (function () { try { return Object.assign({}, CO_MD, JSON.parse(localStorage.getItem('csCo') || '{}')); } catch (e) { return Object.assign({}, CO_MD); } })();
   function luuCo() { try { localStorage.setItem('csCo', JSON.stringify(CO)); } catch (e) { /* bộ nhớ trình duyệt khoá — cỡ chỉ giữ trong phiên */ } }
   // ⭐ v1.399.0 nét dấu: mảnh / vừa / đậm (nét ✓ ✕ = phần của cỡ dấu · ? = độ đậm chữ)
-  var NET_MD = { dung: 'vua', sai: 'vua', hoi: 'dam' }, NET_DAY = { manh: 0.2, vua: 0.36, dam: 0.52 }, NET_CHU = { manh: 500, vua: 700, dam: 900 };
+  var NET_MD = { dung: 'vua', sai: 'vua', hoi: 'dam', chu: 'dam' }, NET_DAY = { manh: 0.2, vua: 0.36, dam: 0.52 }, NET_CHU = { manh: 500, vua: 600, dam: 800 };   // chỉ dùng độ đậm CÓ trong assets/fonts.css (500–600 + 800) ⇒ không bị đậm giả
+  var NET_GO = { manh: 500, vua: 600, dam: 800 }, HE_GO = 1.45;   // chữ gõ: cỡ chữ = 1,45 · cao chữ in (Vision) · CO.chu ⇒ ×1,0 ≈ bằng chữ in sách
   var NET = (function () { try { return Object.assign({}, NET_MD, JSON.parse(localStorage.getItem('csNet') || '{}')); } catch (e) { return Object.assign({}, NET_MD); } })();
   function luuNet() { try { localStorage.setItem('csNet', JSON.stringify(NET)); } catch (e) { /* chỉ giữ trong phiên */ } }
   var HE_CO = 1.1;   // cỡ dấu (s = 0,55 · cao chữ · CO) ⇒ dấu cao ≈ 1,1 · cao chữ · CO — hiện cho thầy theo × cao chữ in
@@ -159,7 +164,7 @@
         var q = { cu: n.cu, mau: n.mau, d: [] };
         n.d.forEach(function (pt) { q.d.push(r1(pt[0]), r1(pt[1])); });
         if (n.w != null) q.w = r1(n.w);
-        if (n.chu != null) { q.chu = String(n.chu).slice(0, 200); q.co = r1(n.co); }
+        if (n.chu != null) { q.chu = String(n.chu).slice(0, 200); q.co = r1(n.co); if (n.tl) q.tl = true; }
         return q;
       });
     }
@@ -261,7 +266,7 @@
     g.lineCap = g.lineJoin = 'round'; g.lineWidth = Math.max(1.5, q.s * (NET_DAY[NET[m.loai]] || 0.36)); g.strokeStyle = g.fillStyle = MAU_DAU[m.loai] || '#DC2626';
     if (m.loai === 'hoi') {
       g.save(); g.translate(q.cx, q.cy); g.rotate(Math.atan2(q.uy, q.ux));
-      g.font = (NET_CHU[NET.hoi] || 900) + ' ' + Math.round(q.s * 2.6) + 'px Montserrat, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = (NET_CHU[NET.hoi] || 800) + ' ' + Math.round(q.s * 2.6) + 'px ' + FONT; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.lineWidth = Math.max(2, q.s * 0.25); g.strokeStyle = '#fff'; g.strokeText('?', 0, 0); g.fillText('?', 0, 0); g.restore();
       return;
     }
@@ -283,11 +288,22 @@
     if (n.cu === 'ke') { g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); }
     if (n.cu === 'tron') { g.beginPath(); g.ellipse((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, Math.abs(b[0] - a[0]) / 2 + 1, Math.abs(b[1] - a[1]) / 2 + 1, 0, 0, Math.PI * 2); g.stroke(); }
     if (n.cu === 'ten') { var t = Math.atan2(b[1] - a[1], b[0] - a[0]), L = n.w * 4.5; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.lineTo(b[0] - L * Math.cos(t - 0.45), b[1] - L * Math.sin(t - 0.45)); g.moveTo(b[0], b[1]); g.lineTo(b[0] - L * Math.cos(t + 0.45), b[1] - L * Math.sin(t + 0.45)); g.stroke(); }
-    if (n.cu === 'chu') { g.font = '800 ' + Math.round(n.co) + 'px Montserrat, Arial, sans-serif'; g.textBaseline = 'middle'; g.fillText(n.chu, a[0], a[1]); }
+    if (n.cu === 'chu') {
+      var px = n.tl && CHU_PX ? CHU_PX * CO.chu : n.co;
+      g.font = (NET_GO[NET.chu] || 800) + ' ' + Math.round(px) + 'px ' + FONT; g.textBaseline = 'middle'; g.fillText(n.chu, a[0], a[1]);
+    }
   }
   // Vẽ trọn một trang (ảnh xoay + dấu + nét) lên g (kích thước cw×ch)
+  // Cao chữ in (px CANVAS) của một trang = trung vị `h` dấu máy × cao ảnh × tỉ lệ canvas; × HE_GO = cỡ chữ gõ ×1,0
+  var CHU_PX = null;
+  function chuPxCua(o, im, cw, ch) {
+    var hs = (o.dau || []).filter(function (m) { return m.may && m.h > 0; }).map(function (m) { return m.h; }).sort(function (a, b) { return a - b; });
+    if (!hs.length) return null;
+    return hs[Math.floor(hs.length / 2)] * im.naturalHeight * Math.max(cw, ch) / Math.max(im.naturalWidth, im.naturalHeight) * HE_GO;
+  }
   function veTrang(g, im, xoay, o, cw, ch) {
     g.clearRect(0, 0, cw, ch);
+    CHU_PX = chuPxCua(o, im, cw, ch);
     var w = im.naturalWidth, h = im.naturalHeight;
     g.save(); g.translate(cw / 2, ch / 2); g.rotate(xoay * Math.PI / 180); g.drawImage(im, -w / 2, -h / 2); g.restore();
     veDsDau(g, o.dau, im, xoay, cw, ch);
@@ -308,7 +324,7 @@
       var g = c.getContext('2d');
       if (dai) {
         g.fillStyle = '#0E7C6E'; g.fillRect(0, 0, W, dai);
-        g.fillStyle = '#fff'; g.font = '900 ' + Math.round(dai * 0.42) + 'px Montserrat, Arial, sans-serif'; g.textBaseline = 'middle';
+        g.fillStyle = '#fff'; g.font = '900 ' + Math.round(dai * 0.42) + 'px ' + FONT; g.textBaseline = 'middle';
         g.fillText((String(e.ten).toUpperCase() + ' · ' + S.tieuDe + ' · TRANG ' + p).slice(0, 90), Math.round(dai * 0.35), dai / 2);
       }
       g.drawImage(pc, 0, dai, W, H);
@@ -325,7 +341,7 @@
 
   // ───────── khung ─────────
   var CSS =
-    '#csNen{position:fixed;inset:0;z-index:9000;background:rgba(14,24,28,.62);display:grid;place-items:center;padding:14px;font-family:Montserrat,"Segoe UI",system-ui,sans-serif;color:#16232A}' +
+    '#csNen{position:fixed;inset:0;z-index:9000;background:rgba(14,24,28,.62);display:grid;place-items:center;padding:14px;font-family:' + FONT + ';color:#16232A}' +
     '#csNen[hidden]{display:none}html.cs-mo{overflow:hidden}#csNen button{font-family:inherit;cursor:pointer}' +
     '.cs-hop{width:min(1560px,100%);height:min(960px,100%);background:#EEF3F2;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}' +
     '.cs-dau{display:flex;align-items:center;gap:12px;padding:11px 16px;background:#0E7C6E;color:#fff}.cs-dau b{font-size:14px;font-weight:900;letter-spacing:.04em}' +
@@ -347,7 +363,7 @@
     '.cs-vung{flex:1;min-height:0;overflow:auto;padding:10px;position:relative}.cs-ve{position:relative;width:100%}' +
     '#csCv{display:block;width:100%;height:auto;border-radius:8px;background:#fff;touch-action:none;cursor:none}#csCvTren{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}' +
     '.cs-canh{position:sticky;top:0;z-index:2;display:inline-block;background:#DC2626;color:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:900;margin-bottom:8px;max-width:90%}' +
-    '.cs-canh[hidden]{display:none}.cs-o-chu{position:absolute;z-index:3;min-width:180px;border:2px solid #2F6FED;border-radius:8px;padding:4px 8px;font:800 15px Montserrat,Arial,sans-serif;background:rgba(255,255,255,.95);outline:none}' +
+    '.cs-canh[hidden]{display:none}.cs-o-chu{position:absolute;z-index:3;min-width:180px;border:2px solid #2F6FED;border-radius:8px;padding:4px 8px;font:800 15px ' + FONT + ';background:rgba(255,255,255,.95);outline:none}' +
     '.cs-trong{color:#A9BDB9;font-weight:800;font-size:14px;padding:60px 0;text-align:center}' +
     '.cs-cu{display:flex;gap:6px;align-items:center;padding:0 11px;background:#26363C;flex-wrap:wrap}.cs-cu:not(:empty){padding:7px 11px}.cs-cu span{color:#A9BDB9;font-size:10px;font-weight:800}' +
     '.cs-cu button{position:relative;border:2px solid transparent;border-radius:7px;padding:0;background:#34474D;height:44px;overflow:hidden}.cs-cu button.on{border-color:#fff}' +
@@ -372,16 +388,17 @@
     '.cs-cau.viet{grid-template-columns:38px 1fr 1fr 24px}.cs-cau.viet .em-k,.cs-cau.viet .dung-k{text-align:left;padding:3px 6px;font-weight:800;overflow-wrap:anywhere}' +
     '.cs-lech{margin:2px 0 4px;padding:6px 10px;border-radius:9px;background:#FEF3C7;color:#92400E;font-size:10.5px;font-weight:800}' +
     '.cs-nhan{padding:11px 13px;border-top:1px solid #E0EAE7}.cs-nhan label{font-size:10.5px;font-weight:900;letter-spacing:.06em;color:#5F7370}' +
-    '.cs-nhan textarea{width:100%;box-sizing:border-box;margin-top:6px;border:1.5px solid #E0EAE7;border-radius:10px;padding:9px 10px;font:600 12px/1.5 Montserrat,sans-serif;resize:vertical;min-height:64px}' +
+    '.cs-nhan textarea{width:100%;box-sizing:border-box;margin-top:6px;border:1.5px solid #E0EAE7;border-radius:10px;padding:9px 10px;font:600 12px/1.5 ' + FONT + ';resize:vertical;min-height:64px}' +
     '.cs-hang{display:flex;gap:8px;margin-top:8px}.cs-hang button{flex:1;border:1.5px solid #E0EAE7;background:#fff;border-radius:10px;padding:9px;font-size:11px;font-weight:900}' +
     '.cs-menu{position:fixed;z-index:9300;background:#fff;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.35);padding:6px;min-width:220px}' +
     '.cs-menu button{display:flex;gap:9px;align-items:center;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-radius:8px;font-size:12.5px;font-weight:700;color:#16232A}' +
     '.cs-menu button:hover{background:#EEF6F4}.cs-menu button:disabled{opacity:.35;cursor:default;background:none}.cs-menu hr{border:0;border-top:1px solid #E0EAE7;margin:5px 4px}' +
     '.cs-menu i{font-style:normal;width:18px;text-align:center;font-weight:900}' +
+    '.cs-co,.cs-menu,.cs-co button,.cs-menu button,.cs-co input{font-family:' + FONT + '}' +
     '.cs-co{position:fixed;z-index:9300;background:#16232A;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.4);width:230px;font-size:11.5px;font-weight:800}' +
     '.cs-co input{width:100%;margin:10px 0 4px;accent-color:#2DD4BF}.cs-co .gt{float:right;color:#9FE3D6}.cs-co small{display:block;color:#A9BDB9;font-weight:600}' +
     '.cs-caidat{width:290px;padding:14px 16px}.cs-caidat .cd-tieu{display:block;font-size:12.5px;letter-spacing:.06em;margin-bottom:4px}.cs-caidat small{line-height:1.45}' +
-    '.cd-dong{margin-top:12px;padding-top:10px;border-top:1px solid #2E4249}.cd-ten i{font-style:normal;font-weight:900;font-size:15px;width:20px;display:inline-block}' +
+    '.cd-dong{margin-top:12px;padding-top:10px;border-top:1px solid #2E4249}.cd-ten{display:flex;align-items:center;gap:6px}.cd-ten .gt{margin-left:auto}.cd-ten i{font-style:normal;display:inline-grid;place-items:center;width:20px}' +
     '.cs-caidat input{margin:8px 0 6px}.cd-net{display:flex;gap:5px}.cd-net button,.cd-day button{flex:1;border:0;border-radius:8px;padding:7px 0;background:#34474D;color:#fff;font-size:11px;font-weight:800}' +
     '.cd-net button.on{background:#2DD4BF;color:#06302B}.cd-day{display:flex;gap:6px;margin-top:14px}.cd-day .cd-ap{flex:1.4;background:#16A34A}' +
     '#csPop{position:fixed;inset:0;z-index:9100;background:rgba(10,18,22,.66);display:grid;place-items:center;padding:16px}#csPop[hidden]{display:none}' +
@@ -392,7 +409,7 @@
     '.cs-loi-dong{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;padding:16px;border-bottom:1px solid #D7E3E0}' +
     '.cs-loi-dong img,.cs-dat-o img{width:100%;display:block;border-radius:10px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.12)}' +
     '.cs-loi-ben{display:flex;flex-direction:column;gap:10px;position:sticky;top:12px;align-self:start}.cs-loi-ben h4{margin:0;font-size:15px;font-weight:900}.cs-loi-ben p{margin:0;font-size:12px;font-weight:700;color:#5F7370}' +
-    '.cs-loi-ben textarea{border:1.5px solid #D7E3E0;border-radius:10px;padding:9px 10px;font:600 12px/1.5 Montserrat,sans-serif;resize:vertical;min-height:96px}' +
+    '.cs-loi-ben textarea{border:1.5px solid #D7E3E0;border-radius:10px;padding:9px 10px;font:600 12px/1.5 ' + FONT + ';resize:vertical;min-height:96px}' +
     '.cs-loi-ben .cs-nut{width:100%;padding:14px}.cs-nut.tra{background:#fff;color:#DC2626;box-shadow:inset 0 0 0 2px #DC2626}.cs-nut.chup{background:#F2A93B;color:#3B2A07}' +
     '.cs-loi-tt{font-size:11.5px;font-weight:900;padding:7px 10px;border-radius:9px}.cs-loi-tt.tra{background:#FEE2E2;color:#B91C1C}.cs-loi-tt.ok{background:#DCFCE7;color:#15803D}' +
     '.cs-dat-luoi{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:16px}.cs-dat-o b{display:block;font-size:12px;font-weight:900;margin-bottom:6px}' +
@@ -515,11 +532,12 @@
   // ⭐ v1.399.0 — pop-up ⚙ CÀI ĐẶT DẤU: cỡ (× cao chữ in của ảnh) + nét cho ✓ ✕ ?; ÁP DỤNG = lưu máy + vẽ lại bài đang sửa
   function moCaiDat(nut) {
     dongNoi();
-    var tam = { co: { dung: CO.dung, sai: CO.sai, hoi: CO.hoi }, net: { dung: NET.dung, sai: NET.sai, hoi: NET.hoi } };
-    var LOAI = [['dung', '✓', 'Dấu đúng', '#16A34A'], ['sai', '✕', 'Dấu sai', '#DC2626'], ['hoi', '?', 'Dấu hỏi', '#F59E0B']];
+    var DS = ['dung', 'sai', 'hoi', 'chu'], tam = { co: {}, net: {} };
+    DS.forEach(function (l) { tam.co[l] = CO[l]; tam.net[l] = NET[l]; });
+    var LOAI = [['dung', ico('dung', 16, 3), 'Dấu đúng', '#4ADE80'], ['sai', ico('sai', 16, 3), 'Dấu sai', '#F87171'], ['hoi', ico('hoi', 16, 3), 'Dấu hỏi', '#F59E0B'], ['chu', ico('chu', 16, 2.4), 'Chữ gõ', '#9FE3D6']];
     var el = document.createElement('div');
     el.className = 'cs-co cs-caidat';
-    el.innerHTML = '<b class="cd-tieu">CÀI ĐẶT DẤU</b><small>Cỡ tính theo CHỮ IN trong từng ảnh — ×1,0 = dấu cao bằng chữ in, ảnh nào cũng vậy dù độ phân giải khác nhau.</small>' +
+    el.innerHTML = '<b class="cd-tieu">CÀI ĐẶT DẤU + CHỮ GÕ</b><small>Cỡ tính theo CHỮ IN trong từng ảnh — ×1,0 = bằng chữ in, ảnh nào cũng vậy dù độ phân giải khác nhau.</small>' +
       LOAI.map(function (l) {
         var gh = CO_GH[l[0]];
         return '<div class="cd-dong" data-l="' + l[0] + '"><div class="cd-ten"><i style="color:' + l[3] + '">' + l[1] + '</i>' + l[2] + '<span class="gt"></span></div>' +
@@ -530,7 +548,7 @@
     var hien = function () {
       el.querySelectorAll('.cd-dong').forEach(function (d) {
         var l = d.dataset.l, o = d.querySelector('input');
-        o.value = tam.co[l]; d.querySelector('.gt').textContent = '× ' + (tam.co[l] * HE_CO).toFixed(1).replace('.', ',') + ' cao chữ';
+        o.value = tam.co[l]; d.querySelector('.gt').textContent = '× ' + (tam.co[l] * (l === 'chu' ? 1 : HE_CO)).toFixed(1).replace('.', ',') + (l === 'chu' ? ' cỡ chữ in' : ' cao chữ');
         d.querySelectorAll('[data-n]').forEach(function (b) { b.classList.toggle('on', b.dataset.n === tam.net[l]); });
       });
     };
@@ -539,11 +557,11 @@
       d.querySelector('input').oninput = function () { tam.co[l] = +this.value; hien(); };
       d.querySelectorAll('[data-n]').forEach(function (b) { b.onclick = function () { tam.net[l] = b.dataset.n; hien(); }; });
     });
-    el.querySelector('.cd-md').onclick = function () { ['dung', 'sai', 'hoi'].forEach(function (l) { tam.co[l] = CO_MD[l]; tam.net[l] = NET_MD[l]; }); hien(); };
+    el.querySelector('.cd-md').onclick = function () { DS.forEach(function (l) { tam.co[l] = CO_MD[l]; tam.net[l] = NET_MD[l]; }); hien(); };
     el.querySelector('.cd-huy').onclick = dongNoi;
     el.querySelector('.cd-ap').onclick = function () {
-      ['dung', 'sai', 'hoi'].forEach(function (l) { CO[l] = tam.co[l]; NET[l] = tam.net[l]; });
-      luuCo(); luuNet(); dongNoi(); if (S && S.anh) veCv(); toast('✓ Đã áp dụng cỡ + nét dấu');
+      DS.forEach(function (l) { CO[l] = tam.co[l]; NET[l] = tam.net[l]; });
+      luuCo(); luuNet(); dongNoi(); if (S && S.anh) veCv(); toast('✓ Đã áp dụng cỡ + nét dấu và chữ gõ');
     };
     hien();
     var r = nut.getBoundingClientRect();
@@ -589,6 +607,8 @@
     var k = kichCo(), a = cvSangAnh(p[0], p[1], k.w, k.h, k.cw, k.ch, S.xoay || 0), r = (S.xoay || 0) * Math.PI / 180;
     return { so: null, loai: loai, x: a[0] / k.w, y: a[1] / k.h, ux: Math.cos(r), uy: -Math.sin(r), h: caoChuTrang(k), may: false };
   }
+  // Cỡ chữ gõ (px canvas) trên trang đang xem: theo cao chữ in · CO.chu; trang chưa có dấu máy ⇒ theo khung ảnh như cũ
+  function coGo(k) { var c = chuPxCua(suaHien(), S.anh, k.cw, k.ch); return c ? c * CO.chu : 26 * CO.chu * k.don; }
   // Cao chữ in của trang đang xem (tỉ lệ theo cao ảnh): trung vị `h` các dấu máy (Vision đo); chưa có dấu máy ⇒ ước theo khung ảnh như cũ
   function caoChuTrang(k) {
     var hs = [];
@@ -678,12 +698,13 @@
     var cu = $('.cs-o-chu'); if (cu) cu.remove();
     var r = cv.getBoundingClientRect(), ve = $('#csVe'), k = kichCo(), o = document.createElement('input');
     o.className = 'cs-o-chu'; o.placeholder = 'Gõ chữ rồi Enter'; o.style.color = S.mau;
+    o.style.fontSize = Math.max(12, coGo(k) * r.width / cv.width) + 'px'; o.style.fontWeight = NET_GO[NET.chu] || 800;
     o.style.left = (e.clientX - r.left) + 'px'; o.style.top = (e.clientY - r.top - 16) + 'px';
     ve.appendChild(o); setTimeout(function () { o.focus(); }, 0);
     var xong = function (ghi) {
       if (!o.parentNode) return;
       var t = o.value.trim(); o.remove();
-      if (ghi && t) { var sua = suaHien(); ghiLich(sua); sua.net.push({ cu: 'chu', mau: S.mau, d: [p], chu: t, co: 26 * CO.chu * k.don }); veCv(); }
+      if (ghi && t) { var sua = suaHien(); ghiLich(sua); sua.net.push({ cu: 'chu', mau: S.mau, d: [p], chu: t, co: coGo(k), tl: true }); veCv(); }
     };
     o.onkeydown = function (ev) { ev.stopPropagation(); if (ev.key === 'Enter') { ev.preventDefault(); xong(true); } if (ev.key === 'Escape') { ev.preventDefault(); xong(false); } };
     o.onblur = function () { xong(true); };
@@ -711,7 +732,7 @@
         var m = dauTay(S.cu, p);
         veDsDau(g, [m], S.anh, S.xoay || 0, k.cw, k.ch);
       } else if (S.cu === 'chu') {
-        g.fillStyle = S.mau; g.font = '800 ' + Math.round(26 * CO.chu * k.don) + 'px Montserrat, Arial, sans-serif'; g.textBaseline = 'middle'; g.fillText('Aa', p[0], p[1]);
+        g.fillStyle = S.mau; g.font = (NET_GO[NET.chu] || 800) + ' ' + Math.round(coGo(k)) + 'px ' + FONT; g.textBaseline = 'middle'; g.fillText('Aa', p[0], p[1]);
       } else {
         var r = Math.max(1.5, CO[S.cu] * k.don / 2);
         g.globalAlpha = 0.85; g.fillStyle = S.mau; g.beginPath(); g.arc(p[0], p[1], r, 0, Math.PI * 2); g.fill();
@@ -919,13 +940,13 @@
       var g = c.getContext('2d');
       g.fillStyle = '#F4F8F7'; g.fillRect(0, 0, c.width, c.height);
       g.fillStyle = '#15803D'; g.fillRect(0, 0, c.width, DAI);
-      g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.font = '900 40px Montserrat, Arial, sans-serif';
+      g.fillStyle = '#fff'; g.textBaseline = 'middle'; g.font = '900 40px ' + FONT;
       g.fillText('✓ ĐẠT · ' + String(e.ten).toUpperCase() + ' · ' + S.tieuDe, PAD, DAI / 2);
       var y = DAI + PAD;
       hang.forEach(function (h, r) {
         h.forEach(function (cv, j) {
           var x = PAD + j * (W + GAP), p = dsP[r * COT + j];
-          g.fillStyle = '#16232A'; g.font = '900 26px Montserrat, Arial, sans-serif'; g.fillText('TRANG ' + p, x, y + NHAN / 2 - 4);
+          g.fillStyle = '#16232A'; g.font = '900 26px ' + FONT; g.fillText('TRANG ' + p, x, y + NHAN / 2 - 4);
           g.drawImage(cv, x, y + NHAN);
         });
         y += cao[r] + GAP;
@@ -975,6 +996,9 @@
     $('#csPhu').textContent = 'Trang ' + S.trangs.join(', ');
     $('#csNen').hidden = false;
     document.documentElement.classList.add('cs-mo');
+    // nạp sẵn font chung (chữ vẽ trên canvas không tự chờ font) rồi vẽ lại ảnh
+    if (document.fonts && document.fonts.load) Promise.all(['500', '600', '800'].map(function (w) { return document.fonts.load(w + ' 20px Montserrat', 'Aạ'); }))
+      .then(function () { if (S && S.anh) veCv(); }, function () { /* không tải được font ⇒ dùng font dự phòng trong FONT */ });
     chonCu('but');
     veTat();
     docDapAn(S.sach || 'NTTA', S.trangs).then(function (d) { if (!S) return; S.dapAn = d; S.dapAnXong = true; veDs(); veTab(); veAi(); if (S.anh) veCv(); });

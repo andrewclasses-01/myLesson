@@ -17,6 +17,8 @@
    ⭐ v1.397.0 (22/10/2026, thầy "ok build") — CÁC DẠNG BÀI VIẾT (bảng điền cột · điền từ · dịch cụm · chủ/tân ngữ): đáp án ở
      `sachGoc.viet` (JSON), máy chủ AI chấm từng Ô ⇒ `may.cau[i].o[k] = {cot, doc, kq, sua, ly, dau}`. Mỗi ô là một "câu" trong bảng chấm:
      câu 1 ô ⇒ mã = số câu; câu nhiều ô (bảng) ⇒ mã = "số.thứ tự ô" (4.1 = câu 4 cột 1) — hiện "4·1". Dòng bảng: chữ em viết · đáp án.
+   ⭐ v1.398.0 (22/10, thầy) — GIỮ CTRL = chế độ KÉO DẤU: con trỏ thành bàn tay, bấm vào dấu ✓/✕/? (máy hay tay) rồi kéo đi; thả = tự lưu,
+     Ctrl+Z hoàn tác. Ctrl + bấm chỗ trống không vẽ gì.
    Mở: ChamSach.mo({...}). */
 (function () {
   'use strict';
@@ -412,7 +414,15 @@
     // ⛔ tắt menu chuột phải của trình duyệt trong pop-up (trừ ô gõ chữ — vẫn cần dán/chép)
     n.addEventListener('contextmenu', function (e) { if (!/TEXTAREA|INPUT/.test(e.target.tagName)) e.preventDefault(); });
     document.addEventListener('pointerdown', function (e) { if (!e.target.closest('.cs-menu,.cs-co')) dongNoi(); }, true);
+    var doiCtrl = function (e) {
+      if (!S || !S.anh || !$('#csCv')) return;
+      var c = e.ctrlKey || e.metaKey; if (c === !!S.ctrl) return;
+      S.ctrl = c; conTro($('#csCv')); veTren();
+    };
+    document.addEventListener('keyup', doiCtrl);
+    window.addEventListener('blur', function () { if (S) { S.ctrl = false; if ($('#csCv')) conTro($('#csCv')); } });
     document.addEventListener('keydown', function (e) {
+      doiCtrl(e);
       if (!S || !$('#csNen') || $('#csNen').hidden) return;
       var go = /TEXTAREA|INPUT/.test(document.activeElement && document.activeElement.tagName);
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !go) { e.preventDefault(); hoanTac(); }
@@ -531,6 +541,12 @@
       if (!S || !S.anh || e.button !== 0) return;
       dongNoi();
       var p = toaDo(cv, e), o = suaHien(), k = kichCo();
+      if (e.ctrlKey || e.metaKey) {   // KÉO DẤU
+        e.preventDefault();
+        var mk = dauTai(p); if (!mk) return;
+        S.keo = { m: mk, a0: cvSangAnh(p[0], p[1], k.w, k.h, k.cw, k.ch, S.xoay || 0), x0: mk.x, y0: mk.y, daGhi: false };
+        cv.setPointerCapture(e.pointerId); conTro(cv, e); return;
+      }
       if (/^(dung|sai|hoi)$/.test(S.cu)) { var md = dauTay(S.cu, p); md.so = soChoDauTay(md); ghiLich(o); o.dau.push(md); veCv(); veAi(); veTab(); veDs(); return; }
       if (S.cu === 'chu') { e.preventDefault(); oGoChu(cv, e, p); return; }
       if (S.cu === 'ke') {
@@ -542,12 +558,27 @@
     cv.onpointermove = function (e) {
       if (!S || !S.anh) return;
       S.chuot = toaDo(cv, e);
+      S.ctrl = e.ctrlKey || e.metaKey;
+      if (S.keo) {
+        var k = kichCo(), a = cvSangAnh(S.chuot[0], S.chuot[1], k.w, k.h, k.cw, k.ch, S.xoay || 0);
+        if (!S.keo.daGhi) { ghiLich(suaHien()); S.keo.daGhi = true; }   // ghi lịch TRƯỚC khi dời ⇒ Ctrl+Z về chỗ cũ
+        S.keo.m.x = S.keo.x0 + (a[0] - S.keo.a0[0]) / k.w; S.keo.m.y = S.keo.y0 + (a[1] - S.keo.a0[1]) / k.h;
+        veCv(); return;
+      }
+      conTro(cv, e);
       if (S.tam) { if (S.tam.cu === 'but') S.tam.d.push(S.chuot); else S.tam.d[1] = S.chuot; }
       veTren();
     };
-    cv.onpointerup = function () { if (S && S.tam) { var o = suaHien(); ghiLich(o); o.net.push(S.tam); S.tam = null; veCv(); } };
+    cv.onpointerup = function (e) {
+      if (S && S.keo) { var keo = S.keo; S.keo = null; if (keo.daGhi) henLuu(emHien(), S.p, S.cuChon); conTro(cv, e); veCv(); return; }
+      if (S && S.tam) { var o = suaHien(); ghiLich(o); o.net.push(S.tam); S.tam = null; veCv(); } };
     cv.onpointerleave = function () { if (S && !S.tam) { S.chuot = null; veTren(); } };
     cv.oncontextmenu = function (e) { e.preventDefault(); if (!S || !S.anh) return; S.keDau = null; veTren(); moMenu(e.clientX, e.clientY, dauTai(toaDo(cv, e))); };
+  }
+  // Con trỏ: giữ Ctrl ⇒ bàn tay (đang kéo = nắm, trên dấu = mở, chỗ trống = mũi tên) · thường ⇒ ẩn (vẽ công cụ đúng cỡ ở lớp trên)
+  function conTro(cv, e) {
+    var ctrl = !!(S && (S.keo || S.ctrl || (e && (e.ctrlKey || e.metaKey))));
+    cv.style.cursor = !ctrl ? 'none' : (S.keo ? 'grabbing' : (S.chuot && dauTai(S.chuot) ? 'grab' : 'default'));
   }
   // Ô gõ chữ ngay trên ảnh (⛔ không dùng prompt(): trình duyệt trong app chặn). Enter / bấm ra ngoài = ghi lên ảnh · Esc = bỏ
   function oGoChu(cv, e, p) {
@@ -581,7 +612,7 @@
       g.fillStyle = S.mau; g.beginPath(); g.arc(S.keDau[0], S.keDau[1], Math.max(3, CO.ke * k.don * 0.9), 0, Math.PI * 2); g.fill();
       if (p) veNet(g, { cu: 'ke', mau: S.mau, d: [S.keDau, p], w: CO.ke * k.don });
     }
-    if (p && !S.tam) {
+    if (p && !S.tam && !S.ctrl && !S.keo) {
       g.save(); g.globalAlpha = 0.6;
       if (/^(dung|sai|hoi)$/.test(S.cu)) {
         var m = dauTay(S.cu, p);

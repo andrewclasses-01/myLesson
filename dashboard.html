@@ -1030,6 +1030,12 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .hd-lam{display:inline-flex; align-items:center; gap:5px; font:700 10.5px var(--font); color:#2563EB; white-space:nowrap}
 .hd-lam i{width:6px; height:6px; border-radius:50%; background:#2563EB; animation:hdNhap 1.2s infinite}
 @keyframes hdNhap{50%{opacity:.25}}
+/* ⭐ v1.403.0 — em ĐANG TRONG VÁN thật: nhãn đỏ "Xem trực tiếp" (bấm ⇒ khung xem, cùng khung nút XEM hộp chi tiết em) */
+.hd-lam.xem{gap:6px; padding:5px 10px 5px 8px; border:1px solid #FFC9CD; border-radius:99px; background:#FFF1F2; color:#E11D48; font:800 10.5px/1 var(--font); cursor:pointer}
+.hd-lam.xem i{width:7px; height:7px; background:#E11D48; box-shadow:0 0 0 0 rgba(225,29,72,.5); animation:hdSong 1.4s infinite}
+button.hd-lam.xem:hover{background:#FFE1E5; border-color:#FF8A95}
+.hd-lam.xem.tat{cursor:default; opacity:.75}
+@keyframes hdSong{0%{box-shadow:0 0 0 0 rgba(225,29,72,.5)} 70%{box-shadow:0 0 0 6px rgba(225,29,72,0)} 100%{box-shadow:0 0 0 0 rgba(225,29,72,0)}}
 .hd-trong{padding:18px 4px; text-align:center; color:var(--nhat); font:600 12px/1.5 var(--font)}
 @media (max-width:900px){ .hd-zone{grid-template-columns:1fr; min-height:0} .hd-than{max-height:320px} }
 /* ⭐⭐ v1.214.0 — NÚT PHÓNG TO + 2 POP-UP (mẫu v2 thầy duyệt) */
@@ -7610,6 +7616,9 @@ tr.qm-hang-tam td{background:#fffbeb}
       avSlugLop(l.tenGoc || maLop) + '/' + avSlugTen(tenDay) + '.jpg" alt="" onerror="this.remove()"></span>';
   }
   function hdLuc(v) { return v && v.toMillis ? v.toMillis() : (Number(v) || 0); }
+  // v1.403.0 — trang 'lam:<mã act>' (js/online.js) = em đang TRONG VÁN thật; 'bai' = chỉ mở trang bài
+  function hdLaLam(x) { return String(x.trang || '').indexOf('lam') === 0; }
+  function hdMaActLam(x) { var m = /^lam:(.+)$/.exec(String(x.trang || '')); return m ? m[1] : ''; }
   function hdChuTruoc(ms) { var p = Math.floor(Math.max(0, Date.now() - ms) / 60000); return p < 1 ? 'vừa xong' : chuCachDay(ms); }
 
   // ---------- nguồn 1: ai đang online (kho lessonOnline, chỉ thầy đọc) ----------
@@ -7698,7 +7707,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     trai.innerHTML = hdLopDs().map(function (l) {
       var d = theoLop[l.maLop] || [], on = d.filter(function (x) { return x.on; }).length, TD = 10;
       var avs = d.slice(0, TD).map(function (x) {
-        var noi = x.on ? (x.trang === 'bai' ? 'đang làm ' + x.bai : x.trang === 'sp' ? 'đang ở trang Speaking' : 'đang ở trang lớp') : hdChuTruoc(x.luc);
+        var noi = x.on ? (hdLaLam(x) ? 'đang làm ' + x.bai : x.trang === 'bai' ? 'đang mở ' + (x.bai || 'trang bài') : x.trang === 'sp' ? 'đang ở trang Speaking' : 'đang ở trang lớp') : hdChuTruoc(x.luc);
         return '<span class="hd-o' + (x.on ? ' on' : '') + '" data-hd-em="' + A.chuAnToan(l.maLop + '|' + x.ten) + '" title="' + A.chuAnToan(x.ten + ' · ' + noi) + '">' + hdAv(x.ten, l.maLop, 26) + (x.on ? '<i></i>' : '') + '</span>';
       }).join('') + (d.length > TD ? '<span class="hd-them">+' + (d.length - TD) + '</span>' : '');
       return '<div class="hd-hl' + (d.length ? '' : ' im') + (l.maLop === LOP_CHON ? ' chon' : '') + '">' +
@@ -7706,12 +7715,20 @@ tr.qm-hang-tam td{background:#fffbeb}
         '<span class="hd-chong">' + (avs || '<span class="hd-mo">— chưa ai vào —</span>') + '</span>' +
         '<span class="hd-so">' + (on ? '<em>' + on + ' online</em>' : '') + '</span></div>';   // v1.213.0 — chỉ "x online"
     }).join('');
-    var dangLam = em.filter(function (x) { return x.on && x.trang === 'bai'; });
+    // ⭐ v1.403.0 (thầy 22/10/2026) — CHỈ em ĐANG TRONG VÁN thật (trang 'lam…', bai.html nghe AWORD:VAN) lên đầu, nhãn đỏ
+    //   "Xem trực tiếp" bấm được (mở khung xem như nút XEM của hộp chi tiết em). Em chỉ mở trang bài / làm việc khác ⇒ KHÔNG có dòng
+    //   trên đầu nữa — em đó chỉ hiện khi có lượt nộp mới (đúng chỗ theo giờ trong danh sách lượt bên dưới).
+    var dangLam = em.filter(function (x) { return x.on && hdLaLam(x); });
     var luot = hdLuotBai();
     var chip = function (t, phu) { return '<span class="hd-chip' + (phu ? ' phu' : '') + '">' + A.chuAnToan(t) + '</span>'; };
     var h = dangLam.map(function (x) {
-      return '<div class="hd-dong' + (hdLaChon('lam|' + x.lop + '|' + x.ten) ? ' hd-chon' : '') + '" data-hd-dong="' + A.chuAnToan('lam|' + x.lop + '|' + x.ten) + '" data-hd-em="' + A.chuAnToan(x.lop + '|' + x.ten) + '">' + hdAv(x.ten, x.lop, 32) + '<div class="hd-g"><div class="hd-ten">' + A.chuAnToan(x.ten) + ' ' + chip(hdTenLop(x.lop)) + '</div>' +
-        '<div class="hd-bai">' + A.chuAnToan(x.bai || 'đang mở trang bài') + '</div></div><span class="hd-lam"><i></i>đang làm</span></div>';
+      var code = hdMaActLam(x);
+      var nut = code
+        ? '<button type="button" class="hd-lam xem" data-qsxem="' + A.chuAnToan(code) + '" data-qsma="' + A.chuAnToan(x.ma) + '" data-qsmuc="' + A.chuAnToan(x.bai || '') +
+          '" data-qsten="' + A.chuAnToan(hdTenDay(x.lop, x.ten)) + '" data-qslop="' + A.chuAnToan(x.lop) + '" title="Xem trực tiếp em đang làm — em sẽ thấy “Thầy Andrew đang quan sát trực tiếp”"><i></i>Xem trực tiếp</button>'
+        : '<span class="hd-lam xem tat" title="Em đang làm bài (trang bài bản cũ chưa gửi mã act — chưa xem trực tiếp được)"><i></i>Đang làm</span>';
+      return '<div class="hd-dong hd-dang' + (hdLaChon('lam|' + x.lop + '|' + x.ten) ? ' hd-chon' : '') + '" data-hd-dong="' + A.chuAnToan('lam|' + x.lop + '|' + x.ten) + '" data-hd-em="' + A.chuAnToan(x.lop + '|' + x.ten) + '">' + hdAv(x.ten, x.lop, 32) + '<div class="hd-g"><div class="hd-ten">' + A.chuAnToan(x.ten) + ' ' + chip(hdTenLop(x.lop)) + '</div>' +
+        '<div class="hd-bai">' + A.chuAnToan(x.bai || 'đang làm bài') + '</div></div>' + nut + '</div>';
     }).join('') + luot.map(function (x) {
       var tl = x.o ? x.s / x.o : 0, mau = tl >= .9 ? 'tot' : tl >= .6 ? 'vua' : 'kem';
       var kd = 'luot|' + x.lop + '|' + x.ten + '|' + x.bId + '|' + x.luc;
@@ -7747,6 +7764,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   document.addEventListener('click', function (e) {
     var el = e.target.closest('[data-hd-em]'); if (!el) return;
+    if (e.target.closest('[data-qsxem]')) return;   // v1.403.0 — nút "Xem trực tiếp" trên dòng: không chọn / không tính bấm đúp
     var p = el.getAttribute('data-hd-em').split('|'), lop = p[0], ten = p[1], bId = p[2] || '';
     var khoa = el.getAttribute('data-hd-dong') || ('o|' + lop + '|' + hdKhoaTen(ten)), nay = Date.now();
     var dup = HD.bam.k === khoa && nay - HD.bam.luc < 450;
@@ -7975,7 +7993,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       h += '<div class="hdp-nhom"><h4>' + hdpChipLop(gr.l.maLop) + (on ? '<em>● ' + on + ' online</em>' : '') + '<small>' + v + '/' + gr.em.length + ' em vào ' + chuNgay + '</small></h4>';
       gr.em.forEach(function (x) {
         var tt;
-        if (x.on) tt = '<small class="on">● online · ' + A.chuAnToan(x.ol.trang === 'bai' ? 'đang làm ' + (x.ol.bai || 'bài') : x.ol.trang === 'sp' ? 'đang ở Speaking' : 'ở trang lớp') + '</small>';
+        if (x.on) tt = '<small class="on">● online · ' + A.chuAnToan(hdLaLam(x.ol) ? 'đang làm ' + (x.ol.bai || 'bài') : x.ol.trang === 'bai' ? 'đang mở ' + (x.ol.bai || 'trang bài') : x.ol.trang === 'sp' ? 'đang ở Speaking' : 'ở trang lớp') + '</small>';
         else if (lui === 0 && x.cuoi) tt = '<small>offline ' + hdpPhut(Math.max(0, nay - x.cuoi)) + ' trước</small>';
         else if (lui === 0 && x.ol && x.ol.luc) tt = '<small>vào lần cuối ' + chuCachDay(x.ol.luc) + '</small>';
         else tt = '<small>' + (x.phut ? 'học ' + hdpPhut(x.phut) : 'chưa vào ' + chuNgay) + '</small>';
@@ -8017,7 +8035,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         return '<div class="hdp-phien"><span class="moc">' + hdpGio(p.bd) + ' – ' + (dang ? 'bây giờ' : hdpGio(p.kt)) + '</span><span class="lam"><span class="hd-chip" style="background:' + L.mau + ';color:#fff">' + L.ten + '</span>' + (p.bai ? '<span class="hd-chip phu">' + A.chuAnToan(p.bai) + '</span>' : '') + '</span><span class="moc">' + hdpPhut(p.kt - p.bd) + '</span></div>'; }).join('');
       var kTen = hdKhoaTen(e.ten), dau = Date.now() - 864e5;
       var luot = hdpLuot(24).filter(function (x) { return x.lop === e.lop && hdKhoaTen(x.ten) === kTen && x.luc >= dau; });
-      var trang = o && o.on ? '<span style="color:#16A34A">● đang online' + (o.trang === 'bai' ? ' · đang làm ' + A.chuAnToan(o.bai || 'bài') : '') + '</span>' : (o && o.luc ? 'vào lần cuối ' + chuCachDay(o.luc) : 'chưa có dấu vết online');
+      var trang = o && o.on ? '<span style="color:#16A34A">● đang online' + (hdLaLam(o) ? ' · đang làm ' + A.chuAnToan(o.bai || 'bài') : o.trang === 'bai' ? ' · đang mở ' + A.chuAnToan(o.bai || 'trang bài') : '') + '</span>' : (o && o.luc ? 'vào lần cuối ' + chuCachDay(o.luc) : 'chưa có dấu vết online');
       ct.innerHTML = '<div class="hdp-the-em">' + hdAv(e.ten, e.lop, 46) + '<div><b>' + A.chuAnToan(e.ten) + '</b><small>' + hdpChipLop(e.lop) + ' ' + trang + '</small></div></div>' +
         '<h5>THỜI GIAN HỌC 7 NGÀY</h5>' + cot +
         '<h5>GIỜ HAY HỌC (7 NGÀY × 24 GIỜ)</h5><div class="hdp-nhiet">' + nhiet + '</div>' +
@@ -10476,11 +10494,12 @@ tr.qm-hang-tam td{background:#fffbeb}
       qsxVeTrangThai();
     });
   }
-  function moQuanSat(code, ma, muc) {
+  // v1.403.0 — `ten` + `maLop` (tuỳ chọn): mở từ ô BÀI TẬP GẦN ĐÂY (không có hộp chi tiết em đang mở để lấy hqCtDuLieu)
+  function moQuanSat(code, ma, muc, ten, maLop) {
     if (chuaThay()) return;
     if (QSX.ma) dongQuanSat();
-    var dl = hqCtDuLieu(); if (!dl) return;
-    var lopGoc = hqLopGoc(dl.t), slug = avSlugLop(lopGoc);
+    var dl = ten ? { ten: ten } : hqCtDuLieu(); if (!dl) return;
+    var lopGoc = ten ? hdTenLop(maLop) : hqLopGoc(dl.t), slug = avSlugLop(lopGoc);
     QSX = { ma: ma, code: code, nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '', rv: null, moi: {} };
     var src = A.CFG.AWORD + '/play.html?g=' + encodeURIComponent(code) + '&xem=1&nhung=1&n=' + encodeURIComponent(dl.ten) + '&lop=' + encodeURIComponent(lopGoc || '');
     $('#qsHop').innerHTML = '<div class="qs-dau">' + veEmAvDb(dl.ten, slug, lopGoc) + '<div><div class="t1">' + A.chuAnToan(dl.ten) + ' · XEM TRỰC TIẾP</div>' +
@@ -13220,7 +13239,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (e.target.closest('#hqCtNhapTay') && HQ.ct) { ntMo(); return; }
       var ntX = e.target.closest('[data-ntxoa]'); if (ntX) { e.stopPropagation(); ntXoa(ntX.dataset.ntcode, ntX.dataset.ntxoa, ntX); return; }
       /* ⭐ v1.294.0 — XEM TRỰC TIẾP em đang làm (dòng ĐANG LÀM) · đóng khung xem */
-      var qsN = e.target.closest('[data-qsxem]'); if (qsN) { e.stopPropagation(); moQuanSat(qsN.dataset.qsxem, qsN.dataset.qsma, qsN.dataset.qsmuc); return; }
+      var qsN = e.target.closest('[data-qsxem]'); if (qsN) { e.stopPropagation(); moQuanSat(qsN.dataset.qsxem, qsN.dataset.qsma, qsN.dataset.qsmuc, qsN.dataset.qsten, qsN.dataset.qslop); return; }
       if (e.target.closest('#qsDong') || e.target.id === 'qsNen') { dongQuanSat(); return; }
       /* ⭐ v1.150.0 — nhãn "25/9 ✕" ⇒ bỏ lọc ngày. */
       if (e.target.closest('#hqCtNgayBo') && HQ.ct) { HQ.ct.ngay = null; hqCtCapNhatMuc(true); return; }

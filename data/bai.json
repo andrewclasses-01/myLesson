@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-22 13:28:01",
+  "capNhat": "2026-10-22 22:17:15",
   "bai": {
     "A1C": [
       {
@@ -2432,6 +2432,43 @@
       }
     ],
     "A1A": [
+      {
+        "id": "A1A_22.10_WORDS_LSB1-S1.T2.P3-4",
+        "tieuDe": "A1A_22.10_WORDS LSB1-S1.T2.P3-4",
+        "tenHien": "A1A_22.10_WORDS LSB1-S1.T2.P3-4",
+        "dang": "WORDS",
+        "ngay": "22.10",
+        "han": "2026-10-26T19:45",
+        "maLesson": "LSB1-S1.T2.P3-4",
+        "taoLuc": "2026-10-22",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "r2xxpv",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "e6dwhu",
+            "mau": "ANAGRAM"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 3",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "vhkav3",
+            "mau": "OPEN THE BOX"
+          }
+        ],
+        "giaoLuc": "2026-10-22T22:17"
+      },
       {
         "id": "A1A_19.10_DICTS_LSB1-S1.T2.P2",
         "tieuDe": "A1A_19.10_DICTS LSB1-S1.T2.P2",
@@ -6060,7 +6097,7 @@
   },
   "capNhatLop": {
     "NNTNGK10": "2026-10-21 08:09:07",
-    "A1A": "2026-10-19 22:09:08",
+    "A1A": "2026-10-22 22:17:15",
     "B2B": "2026-10-22 13:28:01",
     "A1C": "2026-10-18 11:37:25",
     "B2A": "2026-10-22 13:25:02",

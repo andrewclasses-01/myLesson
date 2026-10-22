@@ -3284,11 +3284,62 @@ function qsNghe() {
         if (d && d.code && tuoi < QS_SONG_MS) { QS.code = String(d.code); QS.nhan = Date.now() - tuoi; }
         else QS.code = '';
         qsBaoHet();
+        qtNghe(f);
       }, function (er) { console.warn('[quanSat] không nghe được', er && er.code); });
+      setInterval(function () { qtNghe(f); }, 5000);
     });
   })['catch'](function () { });
   setInterval(qsBaoHet, 5000);   // nhịp thầy ngừng (đóng tab đột ngột) ⇒ tự tắt sau 60 s
 }
+
+/* ⭐⭐ v1.404.0 (thầy chốt mẫu v6 22/10/2026) — THẢ TIM + CHAT NHANH khi thầy xem trực tiếp (AWord Đợt 573 quan-sat.js `taoTin`).
+   ① Cờ còn sống ⇒ nghe `quanSat/{mã em}/tin` (5 tin mới nhất) — tin MỚI (sau lần nghe đầu; lần đầu chỉ nhận tin < 20 s) chuyển
+     ĐÍCH DANH vào khung AWord đang mở đúng act: {type:'AWORD:QS_TIN', code, tin:{id, loai, chu, n}}. Cờ tắt ⇒ thôi nghe (đỡ lượt đọc).
+   ② Khung AWord báo em thả tim / trả lời {type:'AWORD:QS_TRA', code, loai, n, chu, ve} ⇒ ghi `quanSat/{mã em}/tra` (luật: chỉ khi cờ
+     quan sát còn sống < 90 s ĐÚNG act đó; chữ ≤ 80, không link). Luật: myLesson tools/dang-luat-quan-sat-tin.js. */
+var QT = { bo: null, code: '', thay: {}, dau: true };
+function qtNghe(f) {
+  var can = QS.code && Date.now() - QS.nhan < QS_SONG_MS ? QS.code : '';
+  if (can === QT.code) return;
+  if (QT.bo) { try { QT.bo(); } catch (e) { } QT.bo = null; }
+  QT.code = can;
+  if (!can) return;
+  QT.dau = true;
+  var q = f.fs.query(f.fs.collection(f.db, 'quanSat', MA_HS, 'tin'), f.fs.orderBy('luc', 'desc'), f.fs.limit(5));
+  QT.bo = f.fs.onSnapshot(q, function (snap) {
+    var moi = [];
+    snap.forEach(function (d) {
+      if (QT.thay[d.id]) return;
+      QT.thay[d.id] = 1;
+      var x = d.data() || {}, luc = x.luc && x.luc.toMillis ? x.luc.toMillis() : 0;
+      if (QT.dau && (!luc || A.gioNay() - luc > 20000)) return;   // lần nghe đầu: tin cũ thì thôi
+      moi.push({ id: d.id, loai: x.loai, chu: String(x.chu || '').slice(0, 120), n: +x.n || 1, code: String(x.code || ''), luc: luc || A.gioNay() });
+    });
+    QT.dau = false;
+    moi.sort(function (a, b) { return a.luc - b.luc; }).forEach(qtChuyen);
+  }, function (er) { console.warn('[quanSat/tin] không nghe được', er && er.code); });
+}
+function qtChuyen(t) {
+  var gs = document.querySelectorAll('.game iframe');
+  for (var i = 0; i < gs.length; i++) {
+    if (qsMaBai(gs[i]) !== t.code || !gs[i].contentWindow) continue;
+    try { gs[i].contentWindow.postMessage({ type: 'AWORD:QS_TIN', code: t.code, tin: { id: t.id, loai: t.loai, chu: t.chu, n: t.n } }, AWORD); } catch (e) { }
+  }
+}
+window.addEventListener('message', function (e) {
+  if (e.origin !== AWORD || !e.data || e.data.type !== 'AWORD:QS_TRA') return;
+  var d = e.data, code = String(d.code || '');
+  var gs = document.querySelectorAll('.game iframe'), dung = false;
+  for (var i = 0; i < gs.length; i++) if (gs[i].contentWindow === e.source && qsMaBai(gs[i]) === code) dung = true;
+  if (!dung || !qsDang(code) || window.__thayVao || LA_DAC_BIET || !MA_HS || !window.NWP) return;
+  var o = { loai: d.loai === 'tim' ? 'tim' : 'chu', code: code, ve: String(d.ve || '').slice(0, 40) };
+  if (o.loai === 'tim') o.n = Math.max(1, Math.min(50, Math.round(+d.n) || 1));
+  else { o.chu = String(d.chu || '').replace(/\s+/g, ' ').trim().slice(0, 80); if (!o.chu) return; }
+  NWP.fb().then(function (f) {
+    o.luc = f.fs.serverTimestamp();
+    return f.fs.addDoc(f.fs.collection(f.db, 'quanSat', MA_HS, 'tra'), o);
+  })['catch'](function (er) { console.warn('[quanSat/tra] không gửi được', er && (er.code || er.message)); });
+});
 
 function moAct(khung){
   var bia = khung.querySelector('.game-cover');

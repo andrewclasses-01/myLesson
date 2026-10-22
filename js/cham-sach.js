@@ -19,6 +19,9 @@
      câu 1 ô ⇒ mã = số câu; câu nhiều ô (bảng) ⇒ mã = "số.thứ tự ô" (4.1 = câu 4 cột 1) — hiện "4·1". Dòng bảng: chữ em viết · đáp án.
    ⭐ v1.398.0 (22/10, thầy) — GIỮ CTRL = chế độ KÉO DẤU: con trỏ thành bàn tay, bấm vào dấu ✓/✕/? (máy hay tay) rồi kéo đi; thả = tự lưu,
      Ctrl+Z hoàn tác. Ctrl + bấm chỗ trống không vẽ gì.
+   ⭐ v1.399.0 (22/10, thầy) — NÚT ⚙ CÀI ĐẶT DẤU (cuối thanh công cụ): cỡ + nét (mảnh/vừa/đậm) mặc định cho ✓ ✕ ?; ÁP DỤNG ⇒ lưu trên máy
+     + vẽ lại ngay bài đang sửa. CỠ tính theo CHỮ IN của từng ảnh (Vision đo cao chữ ⇒ `dau.h`), không theo độ phân giải: "×1,0" = dấu cao
+     bằng chữ in. Dấu tay cũng lấy cao chữ của trang (trung vị dấu máy trên trang) thay vì theo khung ảnh.
    Mở: ChamSach.mo({...}). */
 (function () {
   'use strict';
@@ -31,6 +34,11 @@
   var TEN_CU = { but: 'Bút', tron: 'Khoanh tròn', ten: 'Mũi tên', ke: 'Kẻ đường thẳng', dung: 'Dấu đúng', sai: 'Dấu sai', hoi: 'Dấu hỏi', chu: 'Gõ chữ' };
   var CO = (function () { try { return Object.assign({}, CO_MD, JSON.parse(localStorage.getItem('csCo') || '{}')); } catch (e) { return Object.assign({}, CO_MD); } })();
   function luuCo() { try { localStorage.setItem('csCo', JSON.stringify(CO)); } catch (e) { /* bộ nhớ trình duyệt khoá — cỡ chỉ giữ trong phiên */ } }
+  // ⭐ v1.399.0 nét dấu: mảnh / vừa / đậm (nét ✓ ✕ = phần của cỡ dấu · ? = độ đậm chữ)
+  var NET_MD = { dung: 'vua', sai: 'vua', hoi: 'dam' }, NET_DAY = { manh: 0.2, vua: 0.36, dam: 0.52 }, NET_CHU = { manh: 500, vua: 700, dam: 900 };
+  var NET = (function () { try { return Object.assign({}, NET_MD, JSON.parse(localStorage.getItem('csNet') || '{}')); } catch (e) { return Object.assign({}, NET_MD); } })();
+  function luuNet() { try { localStorage.setItem('csNet', JSON.stringify(NET)); } catch (e) { /* chỉ giữ trong phiên */ } }
+  var HE_CO = 1.1;   // cỡ dấu (s = 0,55 · cao chữ · CO) ⇒ dấu cao ≈ 1,1 · cao chữ · CO — hiện cho thầy theo × cao chữ in
   var SUA = {};           // khoá lop|bai|bt|ma|trang|cu ⇒ { dau:[…], net:[…], lich:[…] }
   var ANH = {};           // url ⇒ Promise<{ im, ban }>
   var S = null;
@@ -249,10 +257,10 @@
   function veMotDau(g, m, w, h) {
     var q = hinhDau(m, w, h), nx = -q.uy, ny = q.ux;
     var P = function (a, b) { return [q.cx + q.ux * a * q.s + nx * b * q.s, q.cy + q.uy * a * q.s + ny * b * q.s]; };
-    g.lineCap = g.lineJoin = 'round'; g.lineWidth = Math.max(2, q.s * 0.36); g.strokeStyle = g.fillStyle = MAU_DAU[m.loai] || '#DC2626';
+    g.lineCap = g.lineJoin = 'round'; g.lineWidth = Math.max(1.5, q.s * (NET_DAY[NET[m.loai]] || 0.36)); g.strokeStyle = g.fillStyle = MAU_DAU[m.loai] || '#DC2626';
     if (m.loai === 'hoi') {
       g.save(); g.translate(q.cx, q.cy); g.rotate(Math.atan2(q.uy, q.ux));
-      g.font = '900 ' + Math.round(q.s * 2.6) + 'px Montserrat, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.font = (NET_CHU[NET.hoi] || 900) + ' ' + Math.round(q.s * 2.6) + 'px Montserrat, Arial, sans-serif'; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.lineWidth = Math.max(2, q.s * 0.25); g.strokeStyle = '#fff'; g.strokeText('?', 0, 0); g.fillText('?', 0, 0); g.restore();
       return;
     }
@@ -369,6 +377,10 @@
     '.cs-menu i{font-style:normal;width:18px;text-align:center;font-weight:900}' +
     '.cs-co{position:fixed;z-index:9300;background:#16232A;color:#fff;padding:12px 14px;border-radius:12px;box-shadow:0 14px 40px rgba(0,0,0,.4);width:230px;font-size:11.5px;font-weight:800}' +
     '.cs-co input{width:100%;margin:10px 0 4px;accent-color:#2DD4BF}.cs-co .gt{float:right;color:#9FE3D6}.cs-co small{display:block;color:#A9BDB9;font-weight:600}' +
+    '.cs-caidat{width:290px;padding:14px 16px}.cs-caidat .cd-tieu{display:block;font-size:12.5px;letter-spacing:.06em;margin-bottom:4px}.cs-caidat small{line-height:1.45}' +
+    '.cd-dong{margin-top:12px;padding-top:10px;border-top:1px solid #2E4249}.cd-ten i{font-style:normal;font-weight:900;font-size:15px;width:20px;display:inline-block}' +
+    '.cs-caidat input{margin:8px 0 6px}.cd-net{display:flex;gap:5px}.cd-net button,.cd-day button{flex:1;border:0;border-radius:8px;padding:7px 0;background:#34474D;color:#fff;font-size:11px;font-weight:800}' +
+    '.cd-net button.on{background:#2DD4BF;color:#06302B}.cd-day{display:flex;gap:6px;margin-top:14px}.cd-day .cd-ap{flex:1.4;background:#16A34A}' +
     '#csPop{position:fixed;inset:0;z-index:9100;background:rgba(10,18,22,.66);display:grid;place-items:center;padding:16px}#csPop[hidden]{display:none}' +
     '.cs-pop-hop{width:min(1360px,100%);height:min(940px,100%);background:#fff;border-radius:18px;display:flex;flex-direction:column;overflow:hidden}' +
     '.cs-pop-dau{display:flex;align-items:center;gap:12px;padding:12px 16px;color:#fff}.cs-pop-dau b{font-size:14px;font-weight:900;letter-spacing:.04em}.cs-pop-dau span{font-size:11.5px;font-weight:700;opacity:.9}' +
@@ -399,7 +411,8 @@
         CU_NUT.map(function (c) { return '<button class="cs-cc' + (c[0] === 'but' ? ' on' : '') + '" data-cu="' + c[0] + '" title="' + TEN_CU[c[0]] + ' — chuột phải: chọn cỡ">' + c[1] + '</button>'; }).join('') +
         '<span class="cs-vach"></span>' +
         MAU.map(function (m, i) { return '<span class="cs-mau' + (i ? '' : ' on') + '" data-mau="' + m + '" style="background:' + m + '" title="Màu nét vẽ"></span>'; }).join('') +
-        '<span class="cs-vach"></span><button class="cs-cc" id="csLui" title="Hoàn tác (Ctrl+Z)">↶</button><button class="cs-cc" id="csXoa" title="Xoá hết nét vẽ trang này">🗑</button></div>' +
+        '<span class="cs-vach"></span><button class="cs-cc" id="csLui" title="Hoàn tác (Ctrl+Z)">↶</button><button class="cs-cc" id="csXoa" title="Xoá hết nét vẽ trang này">🗑</button>' +
+        '<button class="cs-cc" id="csCaiDat" title="Cài đặt dấu ✓ ✕ ? (cỡ, nét)"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button></div>' +
         '<div class="cs-vung" id="csVung"><span class="cs-canh" id="csCanh" hidden></span><div class="cs-ve" id="csVe"><canvas id="csCv"></canvas><canvas id="csCvTren"></canvas></div>' +
           '<div class="cs-trong" id="csTrong" hidden>Em chưa nộp trang này.</div></div>' +
         '<div class="cs-cu" id="csCu"></div>' +
@@ -413,7 +426,7 @@
     n.addEventListener('click', function (e) { if (e.target === n || e.target.closest('.cs-dong')) dong(); });
     // ⛔ tắt menu chuột phải của trình duyệt trong pop-up (trừ ô gõ chữ — vẫn cần dán/chép)
     n.addEventListener('contextmenu', function (e) { if (!/TEXTAREA|INPUT/.test(e.target.tagName)) e.preventDefault(); });
-    document.addEventListener('pointerdown', function (e) { if (!e.target.closest('.cs-menu,.cs-co')) dongNoi(); }, true);
+    document.addEventListener('pointerdown', function (e) { if (!e.target.closest('.cs-menu,.cs-co,#csCaiDat')) dongNoi(); }, true);   // nút ⚙ tự bật/tắt pop-up của nó
     var doiCtrl = function (e) {
       if (!S || !S.anh || !$('#csCv')) return;
       var c = e.ctrlKey || e.metaKey; if (c === !!S.ctrl) return;
@@ -439,6 +452,7 @@
     });
     n.querySelectorAll('[data-mau]').forEach(function (b) { b.onclick = function () { S.mau = b.dataset.mau; n.querySelectorAll('[data-mau]').forEach(function (x) { x.classList.toggle('on', x === b); }); veTren(); }; });
     $('#csLui').onclick = hoanTac;
+    $('#csCaiDat').onclick = function (e) { e.stopPropagation(); if ($('.cs-caidat')) { dongNoi(); return; } moCaiDat($('#csCaiDat')); };
     $('#csXoa').onclick = function () { var o = suaHien(); if (!o.net.length) return; ghiLich(o); o.net = []; veCv(); };
     $('#csChupLoi').onclick = moChupLoi;
     $('#csDat').onclick = moDat;
@@ -467,6 +481,43 @@
     o.oninput = function () { CO[cu] = +o.value; luuCo(); hien(); if (/dung|sai|hoi/.test(cu)) veCv(); else veTren(); };
     var r = nut.getBoundingClientRect();
     datViTri(el, r.left, r.bottom + 6);
+  }
+  // ⭐ v1.399.0 — pop-up ⚙ CÀI ĐẶT DẤU: cỡ (× cao chữ in của ảnh) + nét cho ✓ ✕ ?; ÁP DỤNG = lưu máy + vẽ lại bài đang sửa
+  function moCaiDat(nut) {
+    dongNoi();
+    var tam = { co: { dung: CO.dung, sai: CO.sai, hoi: CO.hoi }, net: { dung: NET.dung, sai: NET.sai, hoi: NET.hoi } };
+    var LOAI = [['dung', '✓', 'Dấu đúng', '#16A34A'], ['sai', '✕', 'Dấu sai', '#DC2626'], ['hoi', '?', 'Dấu hỏi', '#F59E0B']];
+    var el = document.createElement('div');
+    el.className = 'cs-co cs-caidat';
+    el.innerHTML = '<b class="cd-tieu">CÀI ĐẶT DẤU</b><small>Cỡ tính theo CHỮ IN trong từng ảnh — ×1,0 = dấu cao bằng chữ in, ảnh nào cũng vậy dù độ phân giải khác nhau.</small>' +
+      LOAI.map(function (l) {
+        var gh = CO_GH[l[0]];
+        return '<div class="cd-dong" data-l="' + l[0] + '"><div class="cd-ten"><i style="color:' + l[3] + '">' + l[1] + '</i>' + l[2] + '<span class="gt"></span></div>' +
+          '<input type="range" min="' + gh[0] + '" max="' + gh[1] + '" step="' + gh[2] + '">' +
+          '<div class="cd-net">' + [['manh', 'Mảnh'], ['vua', 'Vừa'], ['dam', 'Đậm']].map(function (n) { return '<button type="button" data-n="' + n[0] + '">' + n[1] + '</button>'; }).join('') + '</div></div>';
+      }).join('') +
+      '<div class="cd-day"><button type="button" class="cd-md">Mặc định</button><button type="button" class="cd-huy">Huỷ</button><button type="button" class="cd-ap">ÁP DỤNG</button></div>';
+    var hien = function () {
+      el.querySelectorAll('.cd-dong').forEach(function (d) {
+        var l = d.dataset.l, o = d.querySelector('input');
+        o.value = tam.co[l]; d.querySelector('.gt').textContent = '× ' + (tam.co[l] * HE_CO).toFixed(1).replace('.', ',') + ' cao chữ';
+        d.querySelectorAll('[data-n]').forEach(function (b) { b.classList.toggle('on', b.dataset.n === tam.net[l]); });
+      });
+    };
+    el.querySelectorAll('.cd-dong').forEach(function (d) {
+      var l = d.dataset.l;
+      d.querySelector('input').oninput = function () { tam.co[l] = +this.value; hien(); };
+      d.querySelectorAll('[data-n]').forEach(function (b) { b.onclick = function () { tam.net[l] = b.dataset.n; hien(); }; });
+    });
+    el.querySelector('.cd-md').onclick = function () { ['dung', 'sai', 'hoi'].forEach(function (l) { tam.co[l] = CO_MD[l]; tam.net[l] = NET_MD[l]; }); hien(); };
+    el.querySelector('.cd-huy').onclick = dongNoi;
+    el.querySelector('.cd-ap').onclick = function () {
+      ['dung', 'sai', 'hoi'].forEach(function (l) { CO[l] = tam.co[l]; NET[l] = tam.net[l]; });
+      luuCo(); luuNet(); dongNoi(); if (S && S.anh) veCv(); toast('✓ Đã áp dụng cỡ + nét dấu');
+    };
+    hien();
+    var r = nut.getBoundingClientRect();
+    datViTri(el, r.right - 290, r.bottom + 6);
   }
   // Chuột phải trên ảnh ⇒ menu bài
   function moMenu(x, y, m) {
@@ -506,7 +557,19 @@
   // Dấu tay đặt tại điểm p (toạ độ canvas): lưu theo ảnh gốc, hướng đứng thẳng như thầy đang nhìn
   function dauTay(loai, p) {
     var k = kichCo(), a = cvSangAnh(p[0], p[1], k.w, k.h, k.cw, k.ch, S.xoay || 0), r = (S.xoay || 0) * Math.PI / 180;
-    return { so: null, loai: loai, x: a[0] / k.w, y: a[1] / k.h, ux: Math.cos(r), uy: -Math.sin(r), h: 0.016 * Math.max(k.cw, k.ch) / k.h, may: false };
+    return { so: null, loai: loai, x: a[0] / k.w, y: a[1] / k.h, ux: Math.cos(r), uy: -Math.sin(r), h: caoChuTrang(k), may: false };
+  }
+  // Cao chữ in của trang đang xem (tỉ lệ theo cao ảnh): trung vị `h` các dấu máy (Vision đo); chưa có dấu máy ⇒ ước theo khung ảnh như cũ
+  function caoChuTrang(k) {
+    var hs = [];
+    suaHien().dau.forEach(function (m) { if (m.may && m.h > 0) hs.push(m.h); });
+    ((S.hien && S.hien.may && S.hien.may.cau) || []).forEach(function (c) {
+      if (c.dau && c.dau.h > 0) hs.push(c.dau.h);
+      (c.o || []).forEach(function (o) { if (o.dau && o.dau.h > 0) hs.push(o.dau.h); });
+    });
+    if (!hs.length) return 0.016 * Math.max(k.cw, k.ch) / k.h;
+    hs.sort(function (a, b) { return a - b; });
+    return hs[Math.floor(hs.length / 2)];
   }
   // Dấu tay gắn vào CÂU nào: câu đang chọn trong bảng (nếu chưa có dấu) · không thì câu chưa có dấu có vị trí ước lượng gần nhất
   //   (nội suy theo vị trí dấu các câu khác trên trang). Không còn câu thiếu dấu ⇒ dấu tự do (không gắn câu).

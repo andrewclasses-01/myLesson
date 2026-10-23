@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-23 10:29:06",
+  "capNhat": "2026-10-23 10:29:58",
   "bai": {
     "A1C": [
       {
@@ -2870,6 +2870,316 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L30",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 26: BÀI GIẢNG 26: NGUYÊN LIỆU CHO THÌ HIỆN TẠI TIẾP DIỄN",
+        "tenBai": "LESSON 26",
+        "maLesson": "LESSON 26",
+        "noiDung": "NGUYÊN LIỆU CHO THÌ HIỆN TẠI TIẾP DIỄN",
+        "han": "2026-10-27T23:59",
+        "taoLuc": "2026-10-23",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. PHÂN LOẠI CÁC DẠNG ĐỘNG TỪ TIẾP DIỄN",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "pdq259"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. TẠO ĐỘNG TỪ DẠNG TIẾP DIỄN",
+            "act": "",
+            "mau": "ANAGRAM",
+            "ma": "ck6cz4"
+          },
+          {
+            "loai": "act",
+            "ten": "BT3. TÌM ĐỘNG TỪ DẠNG TIẾP DIỄN TRONG CÂU",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "79evzr"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 26",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "25rh4q"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 26: NGUYÊN LIỆU CHO THÌ HIỆN TẠI TIẾP DIỄN",
+          "video": "https://www.youtube.com/watch?v=RktGUCcOEio",
+          "doan": [
+            {
+              "id": "dmvjsrzbx6orrz",
+              "ten": "Đặt mục tiêu buổi học",
+              "tu": "00:00",
+              "den": "00:01:51",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6pc5u"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6pc5u",
+              "ten": "Review những kiến thức chuẩn bị quan trọng",
+              "tu": "00:01:51",
+              "den": "05:38",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6q7tt"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6q7tt",
+              "ten": "Giới thiệu các nguyên liệu cơ bản",
+              "tu": "05:38",
+              "den": "06:56",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6rlcf"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6rlcf",
+              "ten": "Nguyên liệu cơ bản 1: âm câm",
+              "tu": "06:56",
+              "den": "00:14:39",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6sibq"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6sibq",
+              "ten": "Nguyên liệu cơ bản 2: nguyên âm - phụ âm",
+              "tu": "00:14:39",
+              "den": "16:10",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6tp1v"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6tp1v",
+              "ten": "Nguyên liệu cơ bản 3: bộ 3",
+              "tu": "16:10",
+              "den": "17:06",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6u2mi"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6u2mi",
+              "ten": "Giới thiệu nguyên liệu chính quan trọng nhất",
+              "tu": "17:06",
+              "den": "00:21:43",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6v64k"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6v64k",
+              "ten": "Thống nhất sử dụng ký hiệu",
+              "tu": "00:21:43",
+              "den": "22:58",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6wax4"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6wax4",
+              "ten": "Khởi động hành trình chuyển từ động từ thường thành động từ tiếp diễn (V-ing)",
+              "tu": "22:58",
+              "den": "00:23:25",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6x9fg"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6x9fg",
+              "ten": "Trường hợp 1: dạng có đuôi e câm",
+              "tu": "00:23:25",
+              "den": "00:29:25",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6ya1a"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6ya1a",
+              "ten": "Trường hợp 2: dạng có đuôi phụ-nguyên-phụ",
+              "tu": "00:29:25",
+              "den": "35:12",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx6zn2f"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx6zn2f",
+              "ten": "Trường hợp 3: dạng đặc biệt của phụ-nguyên-phụ",
+              "tu": "35:12",
+              "den": "37:12",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx70e4y"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx70e4y",
+              "ten": "Trường hợp 4: dạng bình thường",
+              "tu": "37:12",
+              "den": "00:37:43",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx71xfz"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx71xfz",
+              "ten": "Kết luận: 4 dạng thêm ing",
+              "tu": "00:37:43",
+              "den": "40:02",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx72ffq"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzbx72ffq",
+              "ten": "HD BT1 - Phân loại các dạng động từ tiếp diễn",
+              "tu": "40:02",
+              "den": "00:40:44",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzbx769um"
+              ]
+            },
+            {
+              "id": "dmvjsrzbx7389g",
+              "ten": "HD BT2 - Tạo động từ dạng tiếp diễn (V-ing)",
+              "tu": "00:40:50",
+              "den": "00:42:09",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzbx77yy5"
+              ]
+            },
+            {
+              "id": "dmvjsrzbx74pzq",
+              "ten": "HD BT3 - Tìm động từ dạng tiếp diễn trong câu",
+              "tu": "00:42:14",
+              "den": "00:44:48",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzbx781k3"
+              ]
+            },
+            {
+              "id": "dmvjsrzbx75ax9",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "00:44:54",
+              "den": "45:42",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzbx794x1"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmvjsrzbx769um",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. PHÂN LOẠI CÁC DẠNG ĐỘNG TỪ TIẾP DIỄN",
+            "actTen": "BT1. PHAN LOAI DANG DONG TU TIEP DIEN",
+            "ma": "pdq259",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx7389g"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsrzbx77yy5",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. TẠO ĐỘNG TỪ DẠNG TIẾP DIỄN",
+            "actTen": "BT2. TAO DONG TU TIEP DIEN",
+            "ma": "ck6cz4",
+            "mau": "ANAGRAM",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx74pzq"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsrzbx781k3",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT3. TÌM ĐỘNG TỪ DẠNG TIẾP DIỄN TRONG CÂU",
+            "actTen": "BT3. TIM DONG TU DANG TIEP DIEN TRONG CAU",
+            "ma": "79evzr",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzbx75ax9"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsrzbx794x1",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 26",
+            "actTen": "TRAC NGHIEM BAI GIANG 26 - NGUYEN LIEU CHO HIEN TAI TIEP DIEN",
+            "ma": "25rh4q",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-23T10:29"
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L13",
         "dang": "KHOA",
@@ -6133,6 +6443,6 @@
     "NNTNG4": "2026-10-19 15:24:51",
     "A2B": "2026-10-21 22:53:41",
     "B1B": "2026-10-21 22:50:49",
-    "NNTNGK9": "2026-10-23 10:29:06"
+    "NNTNGK9": "2026-10-23 10:29:58"
   }
 }

@@ -109,7 +109,7 @@
     nen.innerHTML = '<div class="sd-hop" role="dialog" aria-modal="true">' +
       '<div class="sd-dau">' +
         '<div class="sd-dau1"><h2><span class="sd-sao-an" title="">' + SAO_SVG + '</span>Sao học sinh</h2><span class="sd-gian"></span>' +
-          '<label class="sd-tim-boc">' + KINH_SVG + '<input class="sd-tim" placeholder="Tìm tên / số HS…"></label>' +
+          '<label class="sd-tim-boc">' + KINH_SVG + '<input class="sd-tim" placeholder="Tìm mọi lớp: tên / số HS…"></label>' +
           '<button class="sd-x" type="button" title="Đóng">' + X_SVG + '</button></div>' +
         '<div class="sd-tab-boc"><div class="sd-tabs"></div></div>' +
       '</div>' +
@@ -211,14 +211,12 @@
     veTabs();
     var L = lopChon() || { em: [], ten: '' };
     var that = L.em.filter(function (e) { return !e.thu; });
-    var tongLop = 0, tuanLop = 0, coSao = 0;
-    that.forEach(function (e) { if (e.so) { var v = saoCua(e.so); tongLop += v; tuanLop += S.tuan[e.so] || 0; if (v > 0) coSao++; } });
+    var tongLop = 0, tuanLop = 0;
+    that.forEach(function (e) { if (e.so) { tongLop += saoCua(e.so); tuanLop += S.tuan[e.so] || 0; } });
     var tenL = (L.khoa ? 'khóa ' : 'lớp ') + esc(L.ten);
     $('.sd-so-tom', nen).innerHTML =
       '<div class="sd-o a"><span class="quang"></span><div class="nh">Sao đang có</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + that.length + ' học sinh · ' + tenL + '</div></div>' +
-      '<div class="sd-o b"><span class="quang"></span><div class="nh">Cộng 7 ngày</div><div class="gt">+' + tuanLop + '</div><div class="phu">' + tenL + '</div></div>' +
-      '<div class="sd-o c"><span class="quang"></span><div class="nh">Em có sao</div><div class="gt">' + coSao + '<small>/ ' + that.length + '</small></div>' +
-        '<div class="vach"><i style="width:' + (that.length ? Math.round(coSao / that.length * 100) : 0) + '%"></i></div></div>';
+      '<div class="sd-o b"><span class="quang"></span><div class="nh">Cộng 7 ngày</div><div class="gt">+' + tuanLop + '</div><div class="phu">' + tenL + '</div></div>';   // v1.408.0 bỏ ô Em có sao
     veBang(loeSo);
     vePhai();
   }
@@ -243,17 +241,32 @@
   function veBang(loeSo) {
     var nen = $('#sdNen'); if (!nen) return;
     var ds = $('.sd-ds', nen);
-    var L = lopChon() || { em: [], ten: '' };
-    var k = String(S.tim || '').trim().toLowerCase();
-    var tat = xepHang(L);
+    var L0 = lopChon() || { em: [], ten: '' };
+    var k = khongDau(S.tim).replace(/\s+/g, ' ').trim();
+    // ⭐ v1.408.0 (thầy chốt) — gõ tìm là tìm CHUNG mọi lớp/khóa (không chỉ thẻ đang chọn), KHÔNG DẤU: so tên ngắn, họ tên
+    //   đầy đủ (sổ hsSo), ID đăng nhập (đã không dấu, liền) và số HS. Em học 2 nơi chỉ hiện một dòng (cùng một ví).
+    var tat = [];
+    if (!k) tat = xepHang(L0).map(function (x) { x.L = L0; return x; });
+    else {
+      var daCo = {};
+      [L0].concat(S.lop.filter(function (l) { return l !== L0; })).forEach(function (L) {
+        xepHang(L).forEach(function (x) {
+          if (!khopTim(x.e, k)) return;
+          var key = x.e.so || (L.ma + '#' + x.e.ten);
+          if (daCo[key]) return;
+          daCo[key] = 1; x.L = L; tat.push(x);
+        });
+      });
+      tat.sort(function (a, b) { return (b.v == null ? -1 : b.v) - (a.v == null ? -1 : a.v) || String(a.e.ten).localeCompare(String(b.e.ten), 'vi'); });
+    }
     var maxV = Math.max.apply(null, tat.map(function (x) { return x.v || 0; }).concat([1]));
-    var hien = tat.filter(function (x) { return !k || String(x.e.ten).toLowerCase().indexOf(k) >= 0 || String(x.e.so || '').indexOf(k) >= 0; });
+    var hien = tat;
     // FLIP: nhớ vị trí cũ của từng dòng ⇒ em vừa được cộng/trừ TRƯỢT tới chỗ mới thay vì nhảy cóc
     var cu = {};
     Array.prototype.forEach.call(ds.querySelectorAll('.sd-hang[data-so]'), function (r) { cu[r.getAttribute('data-so')] = r.getBoundingClientRect().top; });
     ds.innerHTML = '<div class="sd-dh"><span>Hạng · Học sinh</span><span>Số HS</span><span>Sao đang có</span><span>7 ngày</span><span class="phai">Thao tác</span></div>' +
       (hien.length ? hien.map(function (x) {
-        var e = x.e, so = e.so, tuan = so ? (S.tuan[so] || 0) : 0;
+        var e = x.e, so = e.so, tuan = so ? (S.tuan[so] || 0) : 0, L = x.L;
         var top = x.hang && x.v > 0 && x.hang <= 3 ? ' t' + x.hang : '';
         return '<div class="sd-hang' + top + (e.thu ? ' thu' : '') + '"' + (so ? ' data-so="' + esc(so) + '"' : '') + '>' +
           '<div class="sd-ai">' + huyHieu(x) + avHtml(L, e.ten, L.em.indexOf(e)) +
@@ -267,7 +280,7 @@
           '<div class="sd-tt">' + (so ? '<button type="button" class="sd-ib sao" data-ct="' + esc(so) + '" title="Cộng / trừ sao">' + SAO_SVG + '<span class="pm">±</span></button>' +
             '<button type="button" class="sd-ib ls" data-ls="' + esc(so) + '" title="Lịch sử ví">' + DONGHO_SVG + '<span>Lịch sử</span></button>' : '') + '</div>' +
           '</div>';
-      }).join('') : '<div class="sd-trong">Không có học sinh khớp.</div>');
+      }).join('') : '<div class="sd-trong">' + (k ? 'Không có học sinh nào khớp "' + esc(S.tim.trim()) + '".' : 'Không có học sinh.') + '</div>');
     Array.prototype.forEach.call(ds.querySelectorAll('[data-ct]'), function (b) {
       b.onclick = function () { moCongTru(b.getAttribute('data-ct')); };
     });
@@ -289,6 +302,15 @@
       var r = ds.querySelector('.sd-hang[data-so="' + loeSo + '"]');
       if (r) { r.classList.add('loe'); setTimeout(function () { r.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }, 620); }
     }
+  }
+  function khongDau(t) {
+    return String(t == null ? '' : t).normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase();
+  }
+  function khopTim(e, k) {
+    var P = (e.so && S.so[e.so]) || {}, lien = k.replace(/ /g, '');
+    return [e.ten, P.t, P.ht].some(function (t) { return t && khongDau(t).replace(/\s+/g, ' ').indexOf(k) >= 0; }) ||
+      [e.ma, P.ma, P.kt].some(function (t) { return t && khongDau(t).indexOf(lien) >= 0; }) ||
+      (!!e.so && String(e.so).indexOf(lien) >= 0);
   }
   function avHtml(L, ten, i) {
     var chu = String(ten || '?').trim().split(/\s+/).slice(-2).map(function (t) { return t.charAt(0); }).join('').toUpperCase();
@@ -342,6 +364,9 @@
   }
 
   var NHANH = [-5, -2, -1, 1, 2, 3, 5, 10];
+  // ⭐ v1.408.0 (23/10/2026, thầy) — ô số CHỈ còn số + ngôi sao (bỏ nút dấu; cộng = số/sao VÀNG, trừ = ĐỎ, đi qua 0 bằng −/+
+  //   hoặc chọn nhanh); cụm −  [số ★]  + gọn, chính giữa; gợi ý lý do chỉ là CHỮ (không mang số, không đổi số sao);
+  //   bỏ câu cảnh báo "Trừ sao chỉ làm được ở dashboard".
   // ⭐ v1.407.0 — khối ± (số + chọn nhanh + gợi ý + lý do + nút) tách ra DÙNG CHUNG: hộp ± của bảng Sao (moCongTru) và
   //   pop-up VÍ SAO một em mở từ chuột phải (moVi). `nutHuy` = chữ nút trái (Huỷ / Đóng).
   function htmlCT(nutHuy) {
@@ -349,7 +374,7 @@
     return '<div class="sd-ct-dk">' +
         '<div class="sd-ct-buoc">' +
           '<button type="button" class="sd-ct-b tru" data-buoc="-1" title="Bớt 1 (↓)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>' +
-          '<div class="sd-ct-so"><button type="button" class="sd-ct-dau-so" title="Đổi cộng ↔ trừ">+</button>' +
+          '<div class="sd-ct-so">' +
             '<input class="sd-ct-o" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="' + String(S.cai.tranTay || TRAN_TAY_GOC).length + '" aria-label="Số sao">' +
             '<span class="u">' + SAO_SVG + '</span></div>' +
           '<button type="button" class="sd-ct-b cong" data-buoc="1" title="Thêm 1 (↑)"><svg viewBox="0 0 24 24"><path d="M5 12h14M12 5v14"/></svg></button>' +
@@ -361,13 +386,12 @@
       '</div>' +
       '<div class="sd-ct-muc"><div class="sd-ct-tieu">Gợi ý lý do<button type="button" data-sua><svg viewBox="0 0 24 24"><path d="M4 20h4L18.5 9.5a2.1 2.1 0 0 0-3-3L5 17v3z"/></svg>Sửa gợi ý</button></div>' +
         '<div class="sd-ct-goiy">' +
-          (ly.cong || []).map(function (x, j) { return '<button type="button" class="sd-gy up" data-k="cong" data-j="' + j + '">' + esc(x.t) + '<i>+' + x.n + '</i></button>'; }).join('') +
+          (ly.cong || []).map(function (x, j) { return '<button type="button" class="sd-gy up" data-k="cong" data-j="' + j + '">' + esc(x.t) + '</button>'; }).join('') +
           '<span class="ngat"></span>' +
-          (ly.tru || []).map(function (x, j) { return '<button type="button" class="sd-gy dn" data-k="tru" data-j="' + j + '">' + esc(x.t) + '<i>−' + x.n + '</i></button>'; }).join('') +
+          (ly.tru || []).map(function (x, j) { return '<button type="button" class="sd-gy dn" data-k="tru" data-j="' + j + '">' + esc(x.t) + '</button>'; }).join('') +
         '</div></div>' +
       '<div class="sd-ct-muc"><div class="sd-ct-tieu">Lý do<small>em sẽ thấy dòng này trong ví</small></div>' +
         '<textarea class="sd-lydo" maxlength="120" placeholder="VD: Phát biểu tốt bài Family and Room"></textarea></div>' +
-      '<div class="sd-ct-canh">⚠️ Trừ sao chỉ làm được ở dashboard — các app trên lớp không bao giờ trừ.</div>' +
       '<div class="sd-tin"></div>' +
       '<div class="sd-ct-cuoi"><button class="sd-ct-nut huy" type="button" data-x>' + nutHuy + '</button><button class="sd-ct-nut ok" type="button" data-ok></button></div>';
   }
@@ -382,7 +406,6 @@
     function ve(giuO) {
       var loai = v > 0 ? 'up' : v < 0 ? 'dn' : 'zr';
       dk.className = 'sd-ct-dk ' + loai;
-      $('.sd-ct-dau-so', el).textContent = v < 0 ? '−' : '+';
       if (!giuO) ob.value = Math.abs(v);
       ob.style.setProperty('--n', Math.max(2, String(ob.value || Math.abs(v)).length));   // v1.393.0 ô dãn theo số chữ số
       $('.sd-ct-goi', el).innerHTML = v === 0
@@ -392,7 +415,6 @@
         var n = Number(q.getAttribute('data-n')); q.classList.toggle('on', n === v); q.disabled = n < -co;
       });
       $('[data-buoc="-1"]', el).disabled = v <= 0 && v <= -co;
-      $('.sd-ct-canh', el).classList.toggle('on', v < 0);
       ok.className = 'sd-ct-nut ok ' + loai; ok.disabled = v === 0;
       ok.innerHTML = v === 0 ? 'Chọn số sao' : SAO_SVG + (v > 0 ? 'Cộng ' : 'Trừ ') + Math.abs(v) + ' sao';
       Array.prototype.forEach.call(el.querySelectorAll('.sd-gy'), function (g) { g.classList.toggle('on', g === chonGy); });
@@ -401,7 +423,6 @@
     Array.prototype.forEach.call(el.querySelectorAll('[data-buoc]'), function (b) {
       b.onclick = function () { dat(v + Number(b.getAttribute('data-buoc'))); };
     });
-    $('.sd-ct-dau-so', el).onclick = function () { dat(-v || (co > 0 ? -1 : 1)); };
     Array.prototype.forEach.call(el.querySelectorAll('.sd-q'), function (q) {
       q.onclick = function () { if (!q.disabled) dat(Number(q.getAttribute('data-n'))); };
     });
@@ -409,7 +430,7 @@
       g.onclick = function () {
         var k = g.getAttribute('data-k'), x = ly[k][Number(g.getAttribute('data-j'))];
         chonGy = g; ta.value = x.t; ta.classList.remove('loi');
-        dat(k === 'cong' ? x.n : -x.n);
+        ve(true);   // v1.408.0 (thầy chốt) — lý do và số sao chọn RIÊNG, không kéo theo nhau
       };
     });
     // ô số: chặn chữ — chỉ nhận chữ số; ↑/↓ đổi nấc; gõ "-"/"+" là lật dấu

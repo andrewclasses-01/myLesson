@@ -374,3 +374,24 @@
   .sd-pop-hop.vi .vs-phai-dau{padding:16px 14px 4px}
   .sd-pop-hop.vi .vs-ls{padding:0 14px 18px}
 }
+
+/* ── ⭐ v1.408.0 (23/10/2026, thầy) — khối ± GỌN: cụm  −  [số ★]  +  chính giữa, ô chỉ có số + sao;
+   cộng = số + sao VÀNG, trừ = ĐỎ, 0 = xám. Ô thống kê bảng Sao còn 2 (bỏ "Em có sao"). ── */
+.sd-so-tom{grid-template-columns:repeat(2,1fr)}
+.sd-ct-dk{padding:14px 16px}
+.sd-ct-dk.up{--c-nen:#FFF8E6; --c:#D98A00} .sd-ct-dk.dn{--c-nen:#FDEEEE; --c:var(--do)} .sd-ct-dk.zr{--c-nen:#F6F8F7; --c:#9aa7a4}
+.sd-ct-buoc{gap:12px}
+.sd-ct-b{width:48px; height:48px; border-radius:15px}
+.sd-ct-b svg{width:22px; height:22px}
+.sd-ct-so{min-width:0; width:auto; height:60px; padding:0 16px 0 14px; gap:6px; border-radius:16px}
+.sd-ct-so input{font-size:38px; width:calc(var(--n,2) * .62em + 4px); text-align:right}
+.sd-ct-so .u svg{width:28px; height:28px; fill:var(--c,#F5A524); transition:fill .2s}
+.sd-ct-dk.up .sd-ct-so .u svg{fill:#F5A524}
+.sd-ct-goi{margin-top:8px}
+.sd-ct-nhanh{margin-top:10px}
+.sd-gy{padding:0 12px}
+@media (max-width:720px){
+  .sd-ct-dk{padding:12px}
+  .sd-ct-so{flex:none; height:56px}
+  .sd-ct-so input{font-size:34px; width:calc(var(--n,2) * .62em + 4px)}
+}

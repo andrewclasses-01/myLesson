@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-22 10:34:14",
+  "capNhat": "2026-10-23 11:09:40",
   "nguon": "dashboard",
   "lop": [
     {
@@ -1619,13 +1619,6 @@
           "id": 100151,
           "ten": "Đức Minh",
           "ma": "VUDUCMINH04072014",
-          "sinhNhat": "",
-          "vao": "2026-09-15"
-        },
-        {
-          "id": 100057,
-          "ten": "Hà Anh",
-          "ma": "NGUYENHAANH12092015",
           "sinhNhat": "",
           "vao": "2026-09-15"
         },

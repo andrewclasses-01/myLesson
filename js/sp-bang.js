@@ -821,13 +821,13 @@
       var v = k.caps && !k.num ? ch.toUpperCase() : ch;
       return '<button class="k l" data-k="' + esc(v) + '">' + esc(v.toUpperCase()) + '</button>';
     };
-    $('kbd' + c.n).innerHTML =
+    $('kbd' + c.n).innerHTML = '<div class="kbd-k">' +   /* v1.409.0: khung tối cỡ cố định giữa dải trắng */
       '<div class="kr">' + ph("'") + r1.map(ph).join('') + '<button class="k back" data-k="⌫">⌫</button></div>' +
       '<div class="kr"><button class="k fn caps' + (k.caps && !k.num ? ' on' : '') + '" data-k="caps"' + (k.num ? ' disabled' : '') + '>caps<i></i></button>' + r2.map(ph).join('') + ph('?') + '</div>' +
       '<div class="kr"><button class="k fn num' + (k.num ? ' on' : '') + '" data-k="num">numbers<i></i></button>' + r3.map(ph).join('') + ph('.') + ph(',') + '</div>' +
       /* v1.71.0: nút ENG|VI báo trạng thái bằng ĐÈN CHẤM (class `on`) y hệt caps/numbers — bỏ nền
          xanh lá, đúng mẫu AWord (nút chức năng bật thì nền GIỮ NGUYÊN, chỉ sáng chấm). */
-      '<div class="kr"><button class="k fn lang' + (k.vi ? ' on' : '') + '" data-k="lang">' + (k.vi ? 'VI' : 'ENG') + '<i></i></button><button class="k space" data-k=" ">Space</button><button class="k enter" data-k="⏎">⏎</button></div>';
+      '<div class="kr"><button class="k fn lang' + (k.vi ? ' on' : '') + '" data-k="lang">' + (k.vi ? 'VI' : 'ENG') + '<i></i></button><button class="k space" data-k=" ">Space</button><button class="k enter" data-k="⏎">⏎</button></div></div>';
   }
   function bamPhim(e) {
     var kb = e.target.closest('.kbd'), b = e.target.closest('[data-k]'); if (!kb || !b) return;
@@ -965,6 +965,8 @@
 
   window.SPBang = { init: function (c) {
       ctx = c; A = c.A; gan();
+      /* v1.409.0 — cỡ bàn phím cố định = cỡ chế độ 5 bảng của myActivity (xem `.kbd` trong css/sp-bang.css) */
+      try { document.documentElement.style.setProperty('--u-codinh', (screen.width * 0.00272).toFixed(3) + 'px'); } catch (e) {}
       if (c.bang) setTimeout(function () { moMotCot(c.bang); }, 0);
     }, veAcv: veAcv, dem: dem, dangMo: function () { return ST.mo; }, veBang: henVe,
     _soi: function () { return { L: L(), ST: ST }; } };   // chỉ để bàn thử soi trạng thái, không dùng trong trang

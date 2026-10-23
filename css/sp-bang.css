@@ -263,9 +263,15 @@ button.gio:hover{background:var(--xanh)}
    ⛔ Thiếu vế này thì cột lùn (chia 4-5 đội trên màn thấp) bị BÀN PHÍM CẮT CỤT: đo thật lúc chưa
    kẹp — cột cao 405px mà tổng nội dung 469px, hai hàng phím dưới bị `overflow:hidden` của cột xén
    mất, đúng cảnh thầy chụp ảnh báo. `clamp` giữ phím không nhỏ quá 4px/u để còn bấm được. */
-.kbd{flex:none; --u:clamp(4px, min(calc(97cqw / 66.92), calc((100cqh - 260px) / 22)), 19px); background:#2b2b2e; padding:calc(1 * var(--u)); display:flex; flex-direction:column; gap:calc(.55 * var(--u)); font-family:system-ui,'Segoe UI',Roboto,Arial,sans-serif; line-height:1.15; user-select:none; -webkit-user-select:none}
+/* ⭐⭐ v1.409.0 (thầy chốt 23/10) — CỠ CỐ ĐỊNH = cỡ ở chế độ 5 BẢNG của myActivity, KHÔNG bám bề ngang
+   cột nữa (1 bảng hay 5 bảng y một cỡ), TỶ LỆ đúng bàn phím AWord (66.92u × ~20u). `--u-codinh` do
+   js/sp-bang.js đặt = screen.width × 0.00272 (⛔ hằng dùng CHUNG với myActivity keyboard.js). Vẫn kẹp
+   theo bề ngang/chiều cao cột để không bao giờ tràn/bị cắt. Cột rộng hơn bàn phím ⇒ hai bên TRẮNG
+   (`.kbd` nền trắng, khung tối `.kbd-k` ở giữa). */
+.kbd{flex:none; --u:clamp(4px, min(var(--u-codinh, 5.22px), calc(97cqw / 66.92), calc((100cqh - 260px) / 22)), 19px); background:#fff; padding:calc(.6 * var(--u)) 0 calc(.8 * var(--u)); display:flex; justify-content:center; font-family:system-ui,'Segoe UI',Roboto,Arial,sans-serif; line-height:1.15; user-select:none; -webkit-user-select:none}
+.kbd-k{width:calc(66.92 * var(--u)); background:#2b2b2e; border-radius:calc(1.2 * var(--u)); box-shadow:0 calc(.5 * var(--u)) calc(1.4 * var(--u)) rgba(0,0,0,.25); padding:calc(1 * var(--u)); display:flex; flex-direction:column; gap:calc(.55 * var(--u))}
 .kr{display:flex; gap:calc(.5 * var(--u))}
-.k{flex:1; min-width:0; font-family:inherit; font-weight:600; font-size:calc(1.35 * var(--u)); color:#f4f4f5; background:#48484b; border:0; border-radius:calc(.6 * var(--u)); box-shadow:0 calc(.24 * var(--u)) 0 #202022; padding:calc(.95 * var(--u)) 0; margin:0; touch-action:manipulation; transition:filter .08s; cursor:pointer}
+.k{flex:1; min-width:0; font-family:inherit; font-weight:600; font-size:calc(1.35 * var(--u)); line-height:calc(2.176 * var(--u)) /* v1.409.0: = line-height Baloo 2 của AWord ⇒ phím cao 4.08u, hết dẹt */; color:#f4f4f5; background:#48484b; border:0; border-radius:calc(.6 * var(--u)); box-shadow:0 calc(.24 * var(--u)) 0 #202022; padding:calc(.95 * var(--u)) 0; margin:0; touch-action:manipulation; transition:filter .08s; cursor:pointer}
 .k:hover{filter:brightness(1.14)}
 .k:active{transform:translateY(calc(.2 * var(--u))); box-shadow:0 calc(.06 * var(--u)) 0 #202022}
 .k.l{flex:0 0 calc(5 * var(--u))}

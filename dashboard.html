@@ -6114,7 +6114,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (!c) return false;
     if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0 || !!(x.emTich && (c.tay[x.id] || 0) > 0);   // 12/10/2026 — THẦY xác nhận (`tichZaloDb`); v1.405.0 `emTich` ⇒ em tự tích cũng tính
     if (x.loai === 'sach' && x.nopAnh) return !!(((c.sach || {})[x.id] || {}).xong);   // v1.387.0 NỘP BÀI SÁCH — máy chủ tính (lessonSach.xong)
-    if (x.loai === 'sach') return (c.tay[x.id] || 0) > 0;
+    if (x.loai === 'sach' || x.loai === 'hdchup') return (c.tay[x.id] || 0) > 0;   // v1.406.0 hdchup = em hiểu đủ 5 slide
     var v = c.vid[x.id]; if (!v || !(v.tong > 0)) return false;
     var g = [], phu = 0;   // gộp khúc chồng nhau rồi cộng phần nằm trong [0, tong]
     v.khuc.filter(function (r) { return isFinite(r[0]) && isFinite(r[1]) && r[1] > r[0]; })

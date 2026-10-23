@@ -2098,6 +2098,7 @@ body.mo-menu .side.trai{transform:none}
 @media (max-width:700px){
   .ns-luoi{grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
   .ns-dau{padding:14px}.ns-dau h2{font-size:14px}.ns-dau small{font-size:9.5px}.ns-than{padding:12px}
+  .ns-dau{flex-wrap:wrap}.ns-dau .hdc-nut{order:9; margin-left:52px}
   .ns-o .ns-cam{width:46px; height:46px}.ns-o .ns-cam svg{width:22px; height:22px}
   .ns-o .ns-giua b{font-size:11px}.ns-o .ns-giua span{display:none}
   .ns-o .ns-tt{font-size:9.5px; padding:6px 7px; gap:5px; border-radius:9px}.ns-o .ns-tt small{display:none}
@@ -2378,6 +2379,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
 <script src="js/chung.js?v=95"></script>
 <script src="js/nop-sach.js?v=2"></script>
+<script src="js/hd-chup.js?v=1"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <!-- ⭐ v1.37.0 — cần `AWChat.tinMoiNhat` cho chấm đỏ tin nhắn mới.
      File này nạp SDK Firebase KIỂU LƯỜI: không hỏi kho thì không tải gì. -->
@@ -5313,6 +5315,7 @@ function btXongKhoa(x){
   if (x && x.loai === 'zalo') return (+XN_KHOA[x.id] || 0) > 0 || !!(x.emTich && BT_TAY[x.id]);   // 12/10/2026 — THẦY xác nhận (kho lessonXacNhan); v1.405.0 `emTich` ⇒ em tự tích cũng tính
   if (x && x.loai === 'sach' && x.nopAnh) return !!(SACH_KQ[x.id] && SACH_KQ[x.id].xong);   // v1.387.0 — máy chủ tính (lessonSach)
   if (x && x.loai === 'sach') return !!BT_TAY[x.id];   // 11/10/2026 — tự đánh dấu xong
+  if (x && x.loai === 'hdchup') return !!BT_TAY[x.id];   // v1.406.0 — HƯỚNG DẪN CHỤP: bấm EM ĐÃ HIỂU đủ 5 slide
   if (x && x.loai === 'video') return daXongVidBtKhoa(x);                       // 11/10/2026 — xem đủ 100%
   if (!x || !x.ma) return false;
   return A.xongAct(DIEM[x.ma] || [], TOI, CHUAN[x.ma]);
@@ -6667,6 +6670,7 @@ function veTheNopSachKhoa(x, so){
           '<button type="button" class="ns-nop' + (c.xong ? ' xong' : '') + '"' + (c.bat ? '' : ' disabled') + '>' + chuAnToan(c.nut) + '</button></div>') +
     '</div>' +
     '<input type="file" accept="image/*" hidden>';
+  if (window.HdChup) HdChup.ganNut(sec, sec.querySelector('.ns-dau'));   // v1.406.0 — nút HƯỚNG DẪN CHỤP ẢNH, luôn gập (js/hd-chup.js)
   var chupTrang = null;
   sec.querySelectorAll('[data-xem]').forEach(function(b){
     b.onclick = function(ev){ ev.stopPropagation(); xemLoiSach(x, +b.dataset.xem, chupTrang); };
@@ -7017,7 +7021,19 @@ function luonMoBtKhoa(x){
   return false;
 }
 // Khung làm thật của một bước theo loại (dùng khi đã bấm mở rộng thẻ xanh).
+// v1.406.0 (23/10/2026, thầy "ok build" mẫu hd-chup v3) — dòng `hdchup`: 5 slide HƯỚNG DẪN CHỤP ẢNH, bấm EM ĐÃ HIỂU từng slide,
+//   đủ 5/5 ⇒ xong bước (BT_TAY) ⇒ mở bước sau. Nội dung + ảnh cố định ở js/hd-chup.js.
+function veTheHdChupKhoa(x, so){
+  if (!window.HdChup) return veTheChoGiaoKhoa(x, so);
+  return HdChup.theBuoc(x, so, {
+    daXong: !!BT_TAY[x.id],
+    khoaNho: 'awc_hdchup_' + (BAI ? BAI.id : '') + '_' + (MA_HS || '') + '_' + x.id,
+    nhan: x.tieuDe || 'HƯỚNG DẪN CHỤP ẢNH BÀI TRONG SÁCH',
+    khiXong: function(){ if (!BT_TAY[x.id]) danhDauBtTayKhoa(x); }
+  });
+}
 function theMoBtKhoa(x, so){
+  if (x.loai === 'hdchup') return veTheHdChupKhoa(x, so);
   if (x.loai === 'video') return veTheVideoBtKhoa(x, so);
   if (x.loai === 'sach') return veTheSachKhoa(x, so);
   if (x.loai === 'zalo') return veTheZaloKhoa(x, so);
@@ -7222,6 +7238,7 @@ function loaiNhanBtKhoa(x){
   var mb = /^\s*BUOC\s*(\d{1,2})\b/.exec(t);          // 11/10/2026 — lesson CHƯƠNG: "BƯỚC n · …"
   if (mb) return { k: 'buoc', so: +mb[1] };
   if (x.loai === 'sach') return { k: 'sach' };
+  if (x.loai === 'hdchup') return { k: 'hdchup' };   // v1.406.0
   var m = /^\s*BT\s*(\d{1,3})\b/.exec(t);
   if (m) return { k: 'bt', so: +m[1] };
   if (/TRAC\s+NGHIEM/.test(t)) return { k: 'tn' };
@@ -7231,6 +7248,7 @@ function nhanBtKhoa(x, demBt){
   var l = loaiNhanBtKhoa(x);
   if (l.k === 'buoc') return 'BƯỚC ' + l.so;
   if (l.k === 'sach') return 'BT SÁCH' + (x.trang ? ' ' + x.trang : '');
+  if (l.k === 'hdchup') return 'HD CHỤP ẢNH';
   if (l.k === 'tn') return 'TN BÀI GIẢNG';
   return 'BÀI TẬP ' + (l.k === 'bt' ? l.so : demBt);
 }

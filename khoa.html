@@ -1271,7 +1271,7 @@ function xnTuFsC(j){
 }
 function xongBuocTayC(c, x){
   if (!c) return false;
-  if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan)
+  if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0 || !!(x.emTich && (c.tay[x.id] || 0) > 0);   // 12/10/2026 — THẦY xác nhận; v1.405.0 `emTich` ⇒ em tự tích cũng tính
   if (x.loai === 'sach' && x.nopAnh) return !!((c.sach || {})[x.id]);   // v1.387.0 — NỘP BÀI SÁCH: máy chủ tính (lessonSach.xong)
   if (x.loai === 'sach') return (c.tay[x.id] || 0) > 0;
   if (x.loai !== 'video') return false;
@@ -1351,7 +1351,7 @@ function veDiemChuong(b){
   (g.bt || []).forEach(function(x, i){
     var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
     var nhan = 'B' + (m ? m[1] : (i + 1));
-    var xong = (x.loai !== 'zalo' && !!bx[x.id]) || (!laBuocAct(x) && !!fs && xongBuocTayC(fs[TOI], x));   // K10 3 — máy chủ (đổi máy vẫn đúng); zalo chỉ tin dấu thầy
+    var xong = ((x.loai !== 'zalo' || x.emTich) && !!bx[x.id]) || (!laBuocAct(x) && !!fs && xongBuocTayC(fs[TOI], x));   // K10 3 — máy chủ (đổi máy vẫn đúng); zalo chỉ tin dấu thầy
     if (!xong && x.ma && (x.loai === 'acts' || x.loai === 'act')) {
       var ds = DIEM[x.ma] || [], chuan = CHUAN[x.ma];
       xong = A.xongAct(ds, TOI, chuan);
@@ -1592,7 +1592,7 @@ function fsChuongPop(){
 }
 function xongTayPop(ten, k, fs){
   if (fs && xongBuocTayC(fs[ten], k.buoc)) return true;
-  if (k.buoc.loai === 'zalo') return false;   // 12/10/2026 — zalo chỉ tin dấu thầy (đã xét qua fs ở trên)
+  if (k.buoc.loai === 'zalo' && !k.buoc.emTich) return false;   // v1.405.0 `emTich` ⇒ em tự tích cũng tính · 12/10/2026 — zalo chỉ tin dấu thầy (đã xét qua fs ở trên)
   if (A.khoaTen(ten) !== A.khoaTen(TOI)) return false;
   try { var tt = JSON.parse(((window.__thayVao || (EM && EM.xemNhu)) ? sessionStorage : localStorage).getItem('awc_khoa_buoc_' + POP.b.goc.id + '_' + MA_HS) || '{}') || {}; return !!(tt.bt || {})[k.buoc.id]; } catch (e) { return false; }
 }

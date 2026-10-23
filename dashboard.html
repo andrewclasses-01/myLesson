@@ -6112,7 +6112,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }, true);
   function xongBuocTayKh(c, x) {
     if (!c) return false;
-    if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan, `tichZaloDb`)
+    if (x.loai === 'zalo') return ((c.xn || {})[x.id] || 0) > 0 || !!(x.emTich && (c.tay[x.id] || 0) > 0);   // 12/10/2026 — THẦY xác nhận (`tichZaloDb`); v1.405.0 `emTich` ⇒ em tự tích cũng tính
     if (x.loai === 'sach' && x.nopAnh) return !!(((c.sach || {})[x.id] || {}).xong);   // v1.387.0 NỘP BÀI SÁCH — máy chủ tính (lessonSach.xong)
     if (x.loai === 'sach') return (c.tay[x.id] || 0) > 0;
     var v = c.vid[x.id]; if (!v || !(v.tong > 0)) return false;

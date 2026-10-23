@@ -2132,6 +2132,25 @@ body.mo-menu .side.trai{transform:none}
   font:800 14px var(--sans); cursor:pointer; background:var(--accent); color:#fff; text-decoration:none}
 .nut-buoc.phu{background:#fff; color:var(--accent); border:1.5px solid var(--accent)}
 .nut-buoc.zalo{background:#0068FF}
+/* v1.405.0 (thầy duyệt mẫu LESSON 3 v3) — nút TỰ TÍCH giữa thẻ: viền xanh ngọc; đã tích = nền xanh + ✓ tròn bên phải */
+.nut-tich-hang{display:flex; justify-content:center; margin:4px 0 2px}
+.nut-tich{display:inline-flex; align-items:center; gap:10px; border:2px solid var(--accent); background:#fff; color:var(--accent);
+  border-radius:12px; padding:12px 24px; font:800 14px var(--sans); cursor:pointer; transition:background .2s, color .2s}
+.nut-tich .v{display:none; width:20px; height:20px; border-radius:50%; background:#fff; color:var(--accent); font-size:13px; line-height:20px; text-align:center}
+.nut-tich.da{background:var(--accent); color:#fff}
+.nut-tich.da .v{display:inline-block}
+.buoc-chu u.cam{color:#E8590C; font-weight:800; text-decoration-thickness:2px; text-underline-offset:3px}
+.ch-phu b{color:#E8590C}
+.buoc-quay .qv-mota{margin:0 16px 10px}
+.buoc-quay > .nut-tich-hang{margin:14px 0 6px}
+.xn-zalo{position:fixed; inset:0; z-index:2147483000; background:rgba(15,29,36,.42); display:grid; place-items:center; padding:16px}
+.xn-zalo .xn-hop{width:min(400px,100%); background:#fff; border-radius:18px; box-shadow:0 20px 50px rgba(0,0,0,.25); padding:20px 20px 16px}
+.xn-zalo .xn-cau{display:flex; gap:12px; align-items:flex-start; font:700 15px/1.5 var(--sans); color:var(--ink)}
+.xn-zalo .xn-cau img{width:44px; height:44px; border-radius:50%; flex:none}
+.xn-zalo .xn-nut{display:flex; gap:10px; justify-content:center; margin-top:16px}
+.xn-zalo .xn-nut button{font:800 14px var(--sans); border-radius:11px; padding:10px 26px; cursor:pointer}
+.xn-zalo .co{border:0; background:var(--accent); color:#fff}
+.xn-zalo .khong{border:1px solid #CFD8D5; background:#fff; color:#33454E}
 .quay-du{margin:12px 0 10px; padding:12px 14px; border-radius:12px; background:#FEF2F2; border:2px solid #DC2626; color:#B91C1C; font-size:19px; font-weight:900; line-height:1.25; letter-spacing:.02em; text-align:center}
 .quay-du small{display:block; margin-top:5px; font-size:13.5px; font-weight:700; letter-spacing:0; color:#991B1B}
 .luu-y.zl{font-size:13.5px; padding:10px 14px}
@@ -5291,7 +5310,7 @@ function chuoiGioDoanKhoa(giay){
 // Em này đã đạt điểm tối đa của act `x.ma` chưa — dùng LẠI đúng `DIEM`/`CHUAN`
 // mà `boot` đã đọc cho mọi act trong `KHOI` (không đọc thêm gì).
 function btXongKhoa(x){
-  if (x && x.loai === 'zalo') return (+XN_KHOA[x.id] || 0) > 0;   // 12/10/2026 — chỉ THẦY xác nhận (kho lessonXacNhan)
+  if (x && x.loai === 'zalo') return (+XN_KHOA[x.id] || 0) > 0 || !!(x.emTich && BT_TAY[x.id]);   // 12/10/2026 — THẦY xác nhận (kho lessonXacNhan); v1.405.0 `emTich` ⇒ em tự tích cũng tính
   if (x && x.loai === 'sach' && x.nopAnh) return !!(SACH_KQ[x.id] && SACH_KQ[x.id].xong);   // v1.387.0 — máy chủ tính (lessonSach)
   if (x && x.loai === 'sach') return !!BT_TAY[x.id];   // 11/10/2026 — tự đánh dấu xong
   if (x && x.loai === 'video') return daXongVidBtKhoa(x);                       // 11/10/2026 — xem đủ 100%
@@ -5409,7 +5428,7 @@ function lyDoChuaMoDoanKhoa(id, TT){
 // lên nhãn ngắn phía trên rồi, khỏi lặp lại trong tên).
 function tenThatBtKhoa(x){
   var t = String(x.tieuDe || x.actTen || '').trim();
-  var mb = /^B[UƯ]ỚC\s*\d{1,2}\s*[·:.\-–]\s*(.+)$/i.exec(t);   // 11/10/2026 — "BƯỚC 2 · TỰ LUYỆN TẬP" ⇒ "TỰ LUYỆN TẬP"
+  var mb = /^B[UƯ]ỚC\s*\d{1,2}\s*[·•:.\-–]\s*(.+)$/i.exec(t);   // 11/10/2026 — "BƯỚC 2 · TỰ LUYỆN TẬP" ⇒ "TỰ LUYỆN TẬP"
   if (mb) return mb[1];
   var m = /^BT\d+\.\s*(.+)$/i.exec(t);
   if (m) return m[1];
@@ -6495,23 +6514,59 @@ function danhDauBtTayKhoa(x){
   if (moi) { moi.scrollIntoView({ behavior: 'smooth', block: 'center' }); nhayTheKhoa(moi); }
 }
 var IC_SACH_KHOA = '<svg viewBox="0 0 24 24"><path d="M4 4.5h6a3 3 0 0 1 3 3v12a2.5 2.5 0 0 0-2.5-2.5H4zM20 4.5h-6a3 3 0 0 0-3 3v12a2.5 2.5 0 0 1 2.5-2.5H20z"/></svg>';
+// v1.405.0 (23/10/2026, thầy duyệt mẫu LESSON 3 v3) — chữ soạn ở app cho thẻ bước SÁCH/ZALO: `**đậm**` (xanh ngọc), `__gạch chân__`
+//   (cam nổi bật), xuống dòng. `phuDe`: `**chữ**` = tô cam. Còn lại thoát HTML.
+function chuSoanKhoa(m){
+  return chuAnToan(String(m || '').trim()).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>').replace(/__([^_]+)__/g, '<u class="cam">$1</u>').replace(/\r?\n/g, '<br>');
+}
 function dauTheBuocKhoa(x, so, lopStep, ic){
+  if (x && String(x.phuDe || '').trim()) {
+    return '<div class="card-head"><span class="step ' + lopStep + '">' + (ic || so) + '</span>' +
+      '<div class="ch-chu"><h2>' + chuAnToan(x.tieuDe || NHAN_BT_KHOA[x.id] || ('BƯỚC ' + so)) + '</h2>' +
+      '<div class="ch-ma ch-phu">' + chuAnToan(String(x.phuDe).trim()).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>') + '</div></div></div>';
+  }
   return '<div class="card-head"><span class="step ' + lopStep + '">' + (ic || so) + '</span>' +
     '<div class="ch-chu"><h2>' + chuAnToan(NHAN_BT_KHOA[x.id] || ('BƯỚC ' + so)) + '</h2>' +
     '<div class="ch-ma">' + chuAnToan(tenThatBtKhoa(x)) + '</div></div></div>';
+}
+// v1.405.0 (thầy duyệt mẫu LESSON 3 v3) — NÚT TỰ TÍCH: không ô vuông, đặt giữa thẻ; đã tích ⇒ nền xanh + ✓ bên phải.
+function nutTichKhoa(x, macDinh){
+  var da = !!BT_TAY[x.id];
+  return '<div class="nut-tich-hang"><button type="button" class="nut-tich' + (da ? ' da' : '') + '" data-xong>' +
+    chuAnToan(String(x.nutTich || '').trim() || macDinh) + '<span class="v">✓</span></button></div>';
 }
 function veTheDocSachKhoa(x, so){
   var sec = document.createElement('section');
   sec.className = 'card';
   sec.setAttribute('data-btid', x.id);
+  var coMoTa = !!String(x.moTa || '').trim();   // v1.405.0 — câu hướng dẫn riêng soạn ở app (vd TỰ HỌC bộ từ LESSON 3.x)
   sec.innerHTML = dauTheBuocKhoa(x, so, 'sach') +
     '<div class="buoc-than">' +
-      '<div class="sach-info">' + IC_SACH_KHOA + 'Đọc kỹ sách NỀN TẢNG TIẾNG ANH' + (x.trang ? (' từ trang ' + chuAnToan(x.trang)) : '') + '</div>' +
-      '<div class="buoc-chu">Em đọc chậm, đọc kỹ nhé — bước sau thầy hỏi <b>đúng những gì có trong mấy trang này</b> đấy. Đọc xong thì bấm nút bên dưới.</div>' +
-      '<div class="nut-hang"><button type="button" class="nut-buoc" data-xong>✓ Con đã đọc xong</button></div>' +
+      (coMoTa ? '<div class="buoc-chu">' + chuSoanKhoa(x.moTa) + '</div>'
+        : '<div class="sach-info">' + IC_SACH_KHOA + 'Đọc kỹ sách NỀN TẢNG TIẾNG ANH' + (x.trang ? (' từ trang ' + chuAnToan(x.trang)) : '') + '</div>' +
+          '<div class="buoc-chu">Em đọc chậm, đọc kỹ nhé — bước sau thầy hỏi <b>đúng những gì có trong mấy trang này</b> đấy. Đọc xong thì bấm nút bên dưới.</div>') +
+      nutTichKhoa(x, 'Con đã đọc xong') +
     '</div>';
   sec.querySelector('[data-xong]').onclick = function(){ danhDauBtTayKhoa(x); };
   return sec;
+}
+// v1.405.0 — dòng ZALO `emTich` (bộ từ LESSON 3.x): EM tự tích "đã nộp video trên nhóm Zalo" ⇒ hỏi lại 1 lần (ảnh thầy) ⇒ mở bước sau.
+function xacNhanNopZaloKhoa(x){
+  if (BT_TAY[x.id]) { danhDauBtTayKhoa(x); return; }
+  var cu = document.getElementById('xnZaloKhoa'); if (cu) cu.remove();
+  var nen = document.createElement('div');
+  nen.id = 'xnZaloKhoa';
+  nen.className = 'xn-zalo';
+  nen.innerHTML = '<div class="xn-hop" role="dialog" aria-modal="true"><div class="xn-cau"><img src="assets/avatar-tron.jpg" alt="">' +
+    '<div>Em chắc chắn đã nộp video trên nhóm Zalo và đã gửi lên thành công rồi chứ?</div></div>' +
+    '<div class="xn-nut"><button type="button" class="co">Vâng</button><button type="button" class="khong">Không</button></div></div>';
+  document.body.appendChild(nen);
+  var dong = function(){ nen.remove(); document.removeEventListener('keydown', phim, true); };
+  var phim = function(e){ if (e.key === 'Escape') { e.stopPropagation(); dong(); } };
+  document.addEventListener('keydown', phim, true);
+  nen.onmousedown = function(e){ if (e.target === nen) dong(); };
+  nen.querySelector('.khong').onclick = dong;
+  nen.querySelector('.co').onclick = function(){ dong(); danhDauBtTayKhoa(x); };
 }
 /* ⭐⭐ v1.387.0 (21/10/2026, thầy "ok build" — mẫu `myLesson - thiet ke nop sach\mau-v3.html`) — NỘP BÀI SÁCH (dòng SÁCH có `nopAnh`,
    app myLesson v2.180.0 công tắc "NỘP ẢNH TRÊN WEB"). Chọn ảnh KHÔNG kiểm (chỉ đo độ sáng: quá tối ⇒ nhắc chụp lại ngay); bấm NỘP BÀI ⇒
@@ -6603,7 +6658,8 @@ function veTheNopSachKhoa(x, so){
   var soNop = trangs.filter(function(p){ var t = ttTrangSach(x, p); return t.loai === 'da'; }).length;
   sec.innerHTML =
     '<div class="ns-dau"><div class="ns-so">' + so + '</div><div><h2>' + chuAnToan(x.tieuDe || ('BÀI TẬP SÁCH · TRANG ' + trangs.join(' – '))) + '</h2>' +
-      '<small>LÀM VÀO SÁCH · CHỤP TỪNG TRANG · NỘP TẠI ĐÂY</small></div>' +
+      // v1.405.0 — dòng phụ soạn ở app (`phuDe`, `**chữ**` = cam); trống = câu mặc định
+      '<small class="ch-phu">' + (String(x.phuDe || '').trim() ? chuAnToan(String(x.phuDe).trim()).replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>') : 'LÀM VÀO SÁCH · CHỤP TỪNG TRANG · NỘP TẠI ĐÂY') + '</small></div>' +
       '<div class="ns-dem"><b>' + soNop + '/' + trangs.length + '</b><span>TRANG ĐÃ NỘP</span></div></div>' +
     '<div class="ns-than"><div class="ns-luoi">' + trangs.map(function(p){ return oTrangSach(x, p); }).join('') + '</div>' +
       (sachChiXem() ? '<div class="ns-chan"><div class="ns-tb ok">Thầy đang xem như em — chỉ xem, không nộp thay em.</div></div>'
@@ -6726,6 +6782,12 @@ function veTheQuayKhoa(x, so){
     '<small>từ câu 1 đến câu cuối cùng — quay thiếu câu thầy không tính là đã nộp.</small></div>');
   var nut = dau.querySelector('.qv-nut'), gap = sec.querySelector('.qv-gap');
   nut.onclick = function(e){ e.stopPropagation(); var mo = gap.classList.toggle('mo'); nut.setAttribute('aria-expanded', mo ? 'true' : 'false'); };
+  if (x.emTich) {   // v1.405.0 (thầy duyệt mẫu LESSON 3 v3) — em đã quen cách quay ⇒ bỏ hướng dẫn, chỉ còn khung bài + nút tự tích
+    [nut, gap, sec.querySelector('.qv-vach'), sec.querySelector('.quay-du')].forEach(function(el){ if (el) el.remove(); });
+    if (String(x.moTa || '').trim()) dau.insertAdjacentHTML('afterend', '<div class="buoc-chu qv-mota">' + chuSoanKhoa(x.moTa) + '</div>');
+    sec.insertAdjacentHTML('beforeend', nutTichKhoa(x, 'EM ĐÃ NỘP VIDEO TRÊN NHÓM ZALO'));
+    sec.querySelector('[data-xong]').onclick = function(e){ e.stopPropagation(); xacNhanNopZaloKhoa(x); };
+  }
   return sec;
 }
 function veTheZaloKhoa(x, so){
@@ -6748,7 +6810,9 @@ function veTheZaloKhoa(x, so){
         '<li>Video dài có thể <b>cắt thành nhiều đoạn</b> bằng tính năng cắt có sẵn khi chọn gửi ảnh trên Zalo.</li>' +
       '</ul></div>' +
       (BAI.zalo ? '<div class="nut-hang"><a class="nut-buoc zalo" href="' + chuAnToan(BAI.zalo) + '" target="_blank" rel="noopener">Mở nhóm Zalo của lớp</a></div>' : '') +
+      (x.emTich ? nutTichKhoa(x, 'EM ĐÃ NỘP VIDEO TRÊN NHÓM ZALO') : '') +   // v1.405.0 — em tự tích (hỏi lại 1 lần)
     '</div>';
+  if (x.emTich) sec.querySelector('[data-xong]').onclick = function(){ xacNhanNopZaloKhoa(x); };
   return sec;
 }
 
@@ -8206,7 +8270,7 @@ function veDauTrang(){
 
   /* Góc phải: tên thẻ bên trang lớp + mã lesson. */
   var dbTen = document.querySelector('.dau-bai .db-ten');
-  if (dbTen) dbTen.textContent = A.tenBai(BAI);
+  if (dbTen) dbTen.textContent = A.tenBai(BAI) + (BAI.nhanPhu ? ' • ' + BAI.nhanPhu : '');   // v1.405.0 — LESSON CON (app v2.185.0)
   var dbMa = document.querySelector('.dau-bai .db-ma');
   // ⭐ 13/09/2026 — bài KHOA: `A.maLesson(BAI)` trả về TRÙNG với `tenBai` (cả
   // hai đều "LESSON 17", app xuất vậy) — dòng dưới đổi thành TÊN CHỦ ĐỀ, lấy

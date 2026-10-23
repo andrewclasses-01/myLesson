@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-23 09:43:58",
+  "capNhat": "2026-10-23 09:45:26",
   "bai": {
     "A1C": [
       {
@@ -5778,193 +5778,6 @@
     ],
     "NNTNGK10": [
       {
-        "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L15",
-        "dang": "KHOA",
-        "kieu": "CHUONG",
-        "nhan": "LESSON 1",
-        "tieuDe": "LESSON 1 — KHAI GIẢNG",
-        "tenBai": "LESSON 1",
-        "maLesson": "LESSON 1",
-        "noiDung": "KHAI GIẢNG",
-        "taoLuc": "2026-10-23",
-        "khoaTen": "NEN TANG TIENG ANH",
-        "khoi": [
-          {
-            "loai": "act",
-            "ten": "TRẮC NGHIỆM BÀI GIẢNG 1",
-            "act": "",
-            "mau": "QUIZ",
-            "ma": "scvk59"
-          }
-        ],
-        "baiGiang": {
-          "tieuDe": "BÀI GIẢNG 1: KHAI GIẢNG",
-          "video": "https://www.youtube.com/watch?v=YMx0XbAIt5E",
-          "doan": [
-            {
-              "id": "dmvjsry6r1lkb",
-              "ten": "Giới thiệu - Flexing",
-              "tu": "00:00",
-              "den": "00:01:48",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r2ug9"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r2ug9",
-              "ten": "\"Học\" có quan trọng không?",
-              "tu": "00:01:48",
-              "den": "04:50",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r3mc4"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r3mc4",
-              "ten": "Cái giá của sự đánh đổi",
-              "tu": "04:50",
-              "den": "08:06",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r40ct"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r40ct",
-              "ten": "Học có thể giúp em làm được gì?",
-              "tu": "08:06",
-              "den": "13:42",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r54st"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r54st",
-              "ten": "Vấn đề tự học và thái độ",
-              "tu": "13:42",
-              "den": "18:18",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r6naj"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r6naj",
-              "ten": "Tại sao lại là ngoại ngữ?",
-              "tu": "18:18",
-              "den": "20:04",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r7m11"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r7m11",
-              "ten": "Tại sao lại là tiếng Anh?",
-              "tu": "20:04",
-              "den": "24:56",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r81fn"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r81fn",
-              "ten": "Tiếng Anh có khó không?",
-              "tu": "24:56",
-              "den": "31:00",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6r95r2"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6r95r2",
-              "ten": "Quy trình học ngôn ngữ",
-              "tu": "31:00",
-              "den": "00:41:29",
-              "lam": "moNhay",
-              "doanMo": [
-                "dmvjsry6ra3ua"
-              ],
-              "bt": []
-            },
-            {
-              "id": "dmvjsry6ra3ua",
-              "ten": "Lời kết bài giảng số 1",
-              "tu": "00:41:29",
-              "den": "44:18",
-              "lam": "moNhay",
-              "doanMo": [],
-              "bt": [
-                "btmvkcuoiohd"
-              ]
-            }
-          ]
-        },
-        "bt": [
-          {
-            "id": "btmvkcuoiohd",
-            "loai": "hdchup",
-            "trang": "",
-            "tieuDe": "HƯỚNG DẪN CHỤP ẢNH BÀI TRONG SÁCH",
-            "actTen": "",
-            "ma": "",
-            "mau": "",
-            "xong": {
-              "lam": "moNhay",
-              "doanMo": [],
-              "bt": [
-                "btmvjsry6rb1ae"
-              ]
-            }
-          },
-          {
-            "id": "btmvjsry6rb1ae",
-            "loai": "sach",
-            "trang": "32, 33, 34",
-            "nopAnh": true,
-            "tieuDe": "BT1. BÀI TẬP TRẮC NGHIỆM TRONG SÁCH",
-            "actTen": "",
-            "ma": "",
-            "mau": "",
-            "xong": {
-              "lam": "moNhay",
-              "doanMo": [],
-              "bt": [
-                "btmvjsry6rc6vo"
-              ]
-            }
-          },
-          {
-            "id": "btmvjsry6rc6vo",
-            "loai": "acts",
-            "trang": "",
-            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 1",
-            "actTen": "TRAC NGHIEM BAI GIANG 1 - KHAI GIANG",
-            "ma": "scvk59",
-            "mau": "QUIZ",
-            "xong": {
-              "lam": "het",
-              "doanMo": [],
-              "bt": []
-            }
-          }
-        ],
-        "giaoLuc": "2026-10-23T09:43"
-      },
-      {
         "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L14",
         "dang": "KHOA",
         "kieu": "CHUONG",
@@ -6311,7 +6124,7 @@
     ]
   },
   "capNhatLop": {
-    "NNTNGK10": "2026-10-23 09:43:58",
+    "NNTNGK10": "2026-10-23 09:45:26",
     "A1A": "2026-10-22 22:17:15",
     "B2B": "2026-10-22 13:28:01",
     "A1C": "2026-10-18 11:37:25",

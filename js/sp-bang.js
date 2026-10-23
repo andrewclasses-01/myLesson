@@ -821,10 +821,13 @@
       var v = k.caps && !k.num ? ch.toUpperCase() : ch;
       return '<button class="k l" data-k="' + esc(v) + '">' + esc(v.toUpperCase()) + '</button>';
     };
+    /* v1.410.0 (thầy chốt 23/10): phím dấu ' ? . , GIÃN NGANG lấp phần còn lại của hàng như AWord (class `k`
+       flex:1 — AWord chỉ cố định bề ngang phím CHỮ); trước đây dùng `k l` cỡ phím chữ ⇒ cuối hàng 2-3 bị khuyết. */
+    var pg = function (ch) { return '<button class="k" data-k="' + esc(ch) + '">' + esc(ch) + '</button>'; };
     $('kbd' + c.n).innerHTML = '<div class="kbd-k">' +   /* v1.409.0: khung tối cỡ cố định giữa dải trắng */
-      '<div class="kr">' + ph("'") + r1.map(ph).join('') + '<button class="k back" data-k="⌫">⌫</button></div>' +
-      '<div class="kr"><button class="k fn caps' + (k.caps && !k.num ? ' on' : '') + '" data-k="caps"' + (k.num ? ' disabled' : '') + '>caps<i></i></button>' + r2.map(ph).join('') + ph('?') + '</div>' +
-      '<div class="kr"><button class="k fn num' + (k.num ? ' on' : '') + '" data-k="num">numbers<i></i></button>' + r3.map(ph).join('') + ph('.') + ph(',') + '</div>' +
+      '<div class="kr">' + pg("'") + r1.map(ph).join('') + '<button class="k back" data-k="⌫">⌫</button></div>' +
+      '<div class="kr"><button class="k fn caps' + (k.caps && !k.num ? ' on' : '') + '" data-k="caps"' + (k.num ? ' disabled' : '') + '>caps<i></i></button>' + r2.map(ph).join('') + pg('?') + '</div>' +
+      '<div class="kr"><button class="k fn num' + (k.num ? ' on' : '') + '" data-k="num">numbers<i></i></button>' + r3.map(ph).join('') + pg('.') + pg(',') + '</div>' +
       /* v1.71.0: nút ENG|VI báo trạng thái bằng ĐÈN CHẤM (class `on`) y hệt caps/numbers — bỏ nền
          xanh lá, đúng mẫu AWord (nút chức năng bật thì nền GIỮ NGUYÊN, chỉ sáng chấm). */
       '<div class="kr"><button class="k fn lang' + (k.vi ? ' on' : '') + '" data-k="lang">' + (k.vi ? 'VI' : 'ENG') + '<i></i></button><button class="k space" data-k=" ">Space</button><button class="k enter" data-k="⏎">⏎</button></div></div>';

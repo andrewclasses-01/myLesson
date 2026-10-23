@@ -4018,7 +4018,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <link rel="stylesheet" href="css/duyet-anh.css?v=3">
 <link rel="stylesheet" href="css/tb-pop.css?v=1">   <!-- 20/10/2026 v1.379.0 pop-up thông báo (xem trước) -->
 <link rel="stylesheet" href="css/tb-ql.css?v=1">   <!-- 20/10/2026 v1.379.0 hộp THÔNG BÁO -->
-<link rel="stylesheet" href="css/sao-dash2.css?v=2">
+<link rel="stylesheet" href="css/sao-dash2.css?v=3">
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 <script src="js/day.js?v=6"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
 </head>
@@ -14555,6 +14555,15 @@ tr.qm-hang-tam td{background:#fffbeb}
     veQmPhien();
     batAnhHopQm();                             // v1.176.2 — ảnh đại diện trong hộp
   }
+  // ⭐ v1.407.0 (23/10/2026, thầy "ok build") — chuột phải avatar học sinh ⇒ "Hồ sơ học sinh" (js/chuot-phai.js):
+  //   mở hộp Quản lý & bảo mật, nhảy THẲNG vào hồ sơ em (nút "‹ Danh sách học sinh" vẫn về danh sách như cũ).
+  window.__moHoSoHs = function (ma, ten) {
+    var k = A.chuanMa(ma || '');
+    moHopBaoMat('hs');
+    if (!k || !dsNguoi().some(function (x) { return x.khoa === k; })) { baoToast('Chưa tìm thấy hồ sơ của ' + (ten || 'em này') + ' trong danh sách lớp.'); return; }
+    QM.em = k;
+    veBaoMat();
+  };
   function dongHopBaoMat() {
     var nen = $('#qmNen');
     if (nen) nen.hidden = true;
@@ -16931,7 +16940,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/tn-pop-ds.js?v=9"></script>
 <script src="js/tn-khung.js?v=5"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=39"></script>
-<script src="js/sao-dash.js?v=7"></script>
+<script src="js/sao-dash.js?v=8"></script>
 <script src="js/duyet-anh.js?v=5"></script>
 <script src="js/tb-pop.js?v=1"></script>   <!-- 20/10/2026 v1.379.0 vẽ pop-up thông báo -->
 <script src="js/tb-ql.js?v=1"></script>   <!-- 20/10/2026 v1.379.0 hộp THÔNG BÁO (thongBao + tbNhan) -->   <!-- 15/10/2026 v1.343.0 hộp DUYỆT ẢNH học sinh (hàm nwAnh) -->
@@ -16940,7 +16949,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/cat-anh.js?v=4"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=23"></script>
 <script src="js/nhap-so.js?v=1"></script>   <!-- 07/10/2026 cuộn chuột không đổi số + Enter nhận ô -->   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
-<script src="js/chuot-phai.js?v=3"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
+<script src="js/chuot-phai.js?v=4"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 <script src="js/nop-sach.js?v=2"></script>   <!-- v1.387.0 NỘP BÀI SÁCH: đọc lessonSach · v1.397.0 chờ máy kiểm 180 s -->
 <script src="js/cham-sach.js?v=9"></script>   <!-- v1.401.0 chữ gõ trong ⚙ + một font chung · v1.400.0 icon phẳng 2D · v1.399.0 nút ⚙ cài đặt dấu · v1.398.0 giữ Ctrl kéo dấu · v1.397.0 các dạng bài VIẾT (chấm từng ô) · v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) · v1.389.0 dấu ✓/✕ máy tự đặt (Vision) · v1.390.0 menu chuột phải, KẺ, ?, cỡ công cụ, CHỤP LỖI / ĐẠT · v1.391.0 lưu lâu dài + khoá nút -->
 </body>

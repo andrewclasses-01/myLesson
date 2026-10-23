@@ -201,6 +201,9 @@
 .sd-ct-b{width:56px; height:56px; border-radius:18px; background:#fff; border:0; cursor:pointer; box-shadow:var(--bong); display:grid; place-items:center; transition:.12s; flex:none}
 .sd-ct-b svg{width:24px; height:24px; stroke-width:3; fill:none; stroke-linecap:round}
 .sd-ct-b.tru svg{stroke:var(--do)} .sd-ct-b.cong svg{stroke:var(--la)}
+/* v1.407.0 — nút + mang lớp `cong` dính luật .cong của KHUNG ĐĂNG NHẬP dashboard (margin 14vh auto, viền, padding) ⇒ nút bị đẩy lệch,
+   khối ± cao ~400px. Gỡ hết các thuộc tính đó ở đây (cùng bẫy v1.335.0 — class ngắn trùng CSS chung). */
+.sd-pop .sd-ct-b.cong{max-width:none; margin:0; border:0; border-radius:18px; padding:0; text-align:initial}
 .sd-ct-b:hover{transform:translateY(-1px); box-shadow:0 4px 14px rgba(16,40,36,.12)}
 .sd-ct-b:active{transform:scale(.93)}
 .sd-ct-b:disabled{opacity:.4; cursor:default; transform:none}
@@ -327,3 +330,47 @@
   .sd-ct-cuoi{padding:14px 14px 18px}
 }
 @media (prefers-reduced-motion:reduce){ .sd-nen, .sd-hop, .sd-pop-hop.ct, .sd-pill{transition:none} }
+
+/* ── ⭐ v1.407.0 — VÍ SAO MỘT EM (chuột phải avatar ⇒ "Ví sao"; mẫu VÍ SAO NHANH v1 phương án A — hai cột) ──
+   Nổi TRÊN hộp Quản lý & bảo mật (9000) / pop-up thẻ bài ⇒ z-index riêng; thông báo nhỏ sd-toast nổi trên nữa. */
+.sd-pop.vi{z-index:9800}
+.sd-toast{z-index:9850}
+.sd-pop-hop.ct.vi{width:min(920px,100%); display:grid; grid-template-columns:480px minmax(0,1fr); overflow:hidden}
+.sd-pop-hop.vi .vs-trai{overflow:auto; scrollbar-width:thin; min-height:0}
+.sd-pop-hop.vi .vs-trai > .sd-trong{padding:40px 20px}
+.sd-pop-hop.vi .vs-phai{border-left:1px solid #EDF2F1; background:#FBFCFC; display:flex; flex-direction:column; min-height:0}
+.sd-pop-hop.vi .vs-phai-dau{padding:20px 20px 6px}
+.sd-pop-hop.vi .vs-ls{overflow:auto; padding:0 20px 20px; scrollbar-width:thin}
+.vs-so{display:grid; grid-template-columns:repeat(4,1fr); gap:8px; padding:14px 20px 0}
+.vs-o{background:var(--nen); border-radius:14px; padding:10px 8px 9px; text-align:center}
+.vs-o .n{font-size:10px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--nhat)}
+.vs-o .g{font-size:21px; font-weight:900; margin-top:2px; display:flex; align-items:center; justify-content:center; gap:4px; font-variant-numeric:tabular-nums}
+.vs-o .g svg{width:18px; height:18px; fill:#F5A524}
+.vs-o .g small{font-size:12px; color:var(--nhat); font-weight:800}
+.vs-o.la .g{color:var(--la)} .vs-o.do .g{color:var(--do)}
+.vs-o.vang{background:var(--vang-nhat)}
+.vs-tieu{display:flex; align-items:center; gap:8px; font-size:11px; font-weight:800; letter-spacing:.07em; text-transform:uppercase; color:var(--nhat)}
+.vs-tieu small{margin-left:auto; text-transform:none; letter-spacing:0; font-size:12px}
+.vs-ngay{display:flex; align-items:center; gap:8px; margin:14px 0 4px; font-size:11px; font-weight:800; letter-spacing:.06em; color:var(--nhat); text-transform:uppercase}
+.vs-ngay::after{content:''; flex:1; height:1px; background:#EEF3F2}
+.vs-ngay em{font-style:normal; letter-spacing:0; font-size:12px; order:3}
+.vs-ngay em.la{color:var(--la)} .vs-ngay em.do{color:var(--do)}
+.vs-d{display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid #F3F6F5; font-size:13px}
+.vs-d b{display:block; font-weight:700; line-height:1.35; overflow-wrap:anywhere}
+.vs-d small{color:var(--nhat); font-weight:600; font-size:11.5px}
+.vs-d .sv{font-weight:900; font-size:15px; min-width:44px; text-align:right}
+.vs-d .sv.la{color:var(--la)} .vs-d .sv.do{color:var(--do)}
+.vs-d.moi{animation:vs-loe 1.8s var(--em)}
+@keyframes vs-loe{0%{background:#FFF4D6}100%{background:transparent}}
+@media (max-width:860px){
+  .sd-pop-hop.ct.vi{grid-template-columns:1fr; overflow:auto}
+  .sd-pop-hop.vi .vs-trai{overflow:visible}
+  .sd-pop-hop.vi .vs-phai{border-left:0; border-top:1px dashed var(--vien-dam); background:#fff}
+  .sd-pop-hop.vi .vs-ls{overflow:visible}
+}
+@media (max-width:720px){
+  .sd-pop-hop.ct.vi{width:100%}
+  .vs-so{grid-template-columns:repeat(2,1fr); padding:12px 14px 0}
+  .sd-pop-hop.vi .vs-phai-dau{padding:16px 14px 4px}
+  .sd-pop-hop.vi .vs-ls{padding:0 14px 18px}
+}

@@ -16,6 +16,7 @@
    3. BẤM BIỂU TƯỢNG NHÓM LỚP ([data-nhom-lop="<mã lớp | tên gốc | lop:MÃ>"]) ⇒ pop-up bên cạnh: danh sách thành viên
       (Thầy Andrew + các em, không gồm em học thử). Bấm avatar/tên ⇒ trang cá nhân; nút tin nhắn cuối dòng ⇒ "Tính năng tin nhắn
       riêng sẽ sớm được ra mắt!" (dòng Thầy Andrew của học sinh ⇒ mở chat với thầy, tính năng đã có).
+   4. ⭐ v1.407.0 — DASHBOARD: chuột phải avatar học sinh có thêm "Ví sao" (SaoDash.moVi) + "Hồ sơ học sinh" (window.__moHoSoHs).
    API: ACMenu.them(fn(ctx) → [mục]) · ACMenu.mo(muc, x, y) · ACMenu.moCaNhan(uid) · ACMenu.moThanhVien(lop, neo) ·
         ACMenu.bao(chu) · ACMenu.timLop(key) · ACMenu.loiMoiDau(id, t) (lời mời thách đấu bấm từ hộp thông báo).
    mục = { chu, ic?, lam(), nguy? } hoặc '-' (vạch ngăn) hoặc { dau: html } (đầu menu).
@@ -54,7 +55,9 @@
     chonHet: P('<rect x="4" y="4" width="16" height="16" rx="2.5" stroke-dasharray="3 2.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.9"/>'),
     link: P('<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3.2-3.2a4.5 4.5 0 0 0-6.4-6.4L12 5.6"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3.2 3.2a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>'),
     tab: P('<path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/>'),
-    dong: P('<path d="M6 6l12 12M18 6L6 18"/>')
+    dong: P('<path d="M6 6l12 12M18 6L6 18"/>'),
+    sao: P('<path style="stroke:#E0A019" d="M12 3.5l2.3 5.1 5.5.5-4.2 3.7 1.3 5.4L12 15.4l-4.9 2.8 1.3-5.4-4.2-3.7 5.5-.5z"/>'),   // v1.407.0
+    hoSo: P('<rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="10" r="3"/><path d="M7.5 17.5c.8-2 2.5-3 4.5-3s3.7 1 4.5 3"/>')
   };
 
   // ---------- CSS (tự chèn — một file cho mọi trang) ----------
@@ -153,19 +156,36 @@
     if (/avatar-tron\.jpg/.test(src)) return Promise.resolve({ uid: THAY_UID, ten: 'Thầy Andrew', thay: true });
     var mAnh = RE_ANH.exec(src);
     return napDl().then(function (dl) {
-      var ds = tatCaLop(dl), h = null;
+      var ds = tatCaLop(dl), h = null, lH = null;
       var slugL = function (s) { return khongDau(s).replace(/[^a-z0-9]/g, ''); }, slugT = function (s) { return khongDau(s).replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); };
-      if (mAnh) ds.some(function (l) { if (slugL(l.tenGoc || l.maLop) !== mAnh[1]) return false; h = (l.hocSinh || []).filter(function (x) { return slugT(x.ten) === mAnh[2]; })[0] || null; return !!h; });
-      else if (ma) ds.some(function (l) { h = (l.hocSinh || []).filter(function (x) { return chuan(x.ma) === ma; })[0] || null; return !!h; });
+      if (mAnh) ds.some(function (l) { if (slugL(l.tenGoc || l.maLop) !== mAnh[1]) return false; h = (l.hocSinh || []).filter(function (x) { return slugT(x.ten) === mAnh[2]; })[0] || null; lH = l; return !!h; });
+      else if (ma) ds.some(function (l) { h = (l.hocSinh || []).filter(function (x) { return chuan(x.ma) === ma; })[0] || null; lH = l; return !!h; });
       else if (em) {
         var k = chuan(lop), tenK = khongDau(em).replace(/\s+/g, ' ').trim();
         var gan = ds.filter(function (l) { return !lop || chuan(l.maLop) === k || chuan(l.tenGoc) === k; });
-        var trung = [];
-        gan.forEach(function (l) { (l.hocSinh || []).forEach(function (x) { if (khongDau(x.ten).replace(/\s+/g, ' ').trim() === tenK && trung.indexOf(x) < 0) trung.push(x); }); });
+        var trung = [], lopCua = [];
+        gan.forEach(function (l) { (l.hocSinh || []).forEach(function (x) { if (khongDau(x.ten).replace(/\s+/g, ' ').trim() === tenK && trung.indexOf(x) < 0) { trung.push(x); lopCua.push(l); } }); });
         // v1.366.0 — không rõ lớp (trang speaking chỉ ghi tên) mà tên trùng nhiều em ⇒ KHÔNG đoán (tránh mở nhầm trang bạn khác)
         h = lop ? (trung[0] || null) : (trung.length === 1 || trung.every(function (x) { return x.id === trung[0].id; }) ? trung[0] || null : null);
+        lH = h ? lopCua[0] : null;
       }
-      return h ? { uid: uidHs(h), ten: h.ten, thay: false } : null;
+      // v1.407.0 — thêm `ma` (ID đăng nhập) + `lop` (mã lớp nơi thấy em) cho Ví sao / Hồ sơ học sinh ở dashboard
+      return h ? { uid: uidHs(h), ten: h.ten, thay: false, ma: h.ma || '', lop: lH ? lH.maLop || lH.tenGoc || '' : '' } : null;
+    });
+  }
+  // v1.407.0 — như nguoiCua nhưng avatar chỉ mang data-uid HỌC SINH cũng tra danh sách lớp để có `ma` + `lop`
+  //   (nguoiCua giữ đường tắt data-uid không chờ mạng — cú mở trang cá nhân cần chạy ngay trong cú bấm).
+  function hsCua(el) {
+    var uid = el.getAttribute('data-uid');
+    if (!uid || uid === THAY_UID) return nguoiCua(el);
+    return napDl().then(function (dl) {
+      var kq = null;
+      tatCaLop(dl).some(function (l) {
+        var x = (l.hocSinh || []).filter(function (h) { return uidHs(h) === uid; })[0];
+        if (x) kq = { uid: uid, ten: x.ten, thay: false, ma: x.ma || '', lop: l.maLop || l.tenGoc || '' };
+        return !!kq;
+      });
+      return kq || { uid: uid, ten: tenCua(el), thay: false };
     });
   }
 
@@ -298,6 +318,13 @@
       if (ten) muc.push({ dau: '<span class="acm-av" style="background:' + mau(ten) + '">' + an(tat(ten)) + (anh && anh.getAttribute('src') ? '<img src="' + an(anh.getAttribute('src')) + '" alt="" onerror="this.remove()">' : '') + '</span><div><b>' + an(ten) + '</b><small>' + (uid0 === THAY_UID ? 'Giáo viên' : 'Học sinh') + '</small></div>' });
       muc.push({ chu: 'Xem trang cá nhân', ic: IC.nguoi, lam: function () { moNguoiCua(av); } });
       if (uid0 !== uidToi() || !uid0) muc.push({ chu: 'Nhắn tin riêng', ic: IC.tin, lam: function () { nguoiCua(av).then(function (ng) { M.nhanTin(ng); }, function () { M.sapRaMat(); }); } });
+      // ⭐ v1.407.0 (23/10/2026, thầy "ok build") — DASHBOARD: avatar học sinh có thêm Ví sao (pop-up cộng/trừ + lịch sử, js/sao-dash.js)
+      //   và Hồ sơ học sinh (hộp Quản lý & bảo mật mở thẳng hồ sơ em — dashboard `window.__moHoSoHs`).
+      if (laDash() && uid0 !== THAY_UID && ten !== 'Thầy Andrew') {
+        muc.push('-',
+          { chu: 'Ví sao', ic: IC.sao, lam: function () { moQuanLy(av, 'vi'); } },
+          { chu: 'Hồ sơ học sinh', ic: IC.hoSo, lam: function () { moQuanLy(av, 'hs'); } });
+      }
       muc.push('-');
     }
     var a = t.closest && t.closest('a[href]');
@@ -310,6 +337,15 @@
       }
     }
     return muc;
+  }
+  function moQuanLy(av, loai) {
+    hsCua(av).then(function (ng) {
+      var ten = (ng && ng.ten) || tenCua(av) || 'em này';
+      if (!ng || ng.thay || !ng.ma) return M.bao('Chưa tìm thấy ' + (loai === 'vi' ? 'ví sao' : 'hồ sơ') + ' của ' + ten + '.');
+      if (loai === 'vi') { if (window.SaoDash && SaoDash.moVi) SaoDash.moVi({ ma: ng.ma, ten: ng.ten, lop: ng.lop }); else M.bao('Hộp sao chưa tải xong — thử lại nhé.'); }
+      else if (window.__moHoSoHs) window.__moHoSoHs(ng.ma, ng.ten);
+      else M.bao('Hộp quản lý chưa tải xong — thử lại nhé.');
+    }, function () { M.bao('Chưa tải được danh sách lớp. Thử lại nhé.'); });
   }
   function chep(chu, bao) {
     function cu() { var o = document.createElement('textarea'); o.value = chu; o.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(o); o.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) { } o.remove(); return ok; }

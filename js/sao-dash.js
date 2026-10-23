@@ -17,6 +17,8 @@
    ⭐ v1.370.0 (17/10/2026, thầy chốt mẫu D:\OTHERS\CLAUDE\MAU SAO DASHBOARD v1): tab lớp segmented (nhóm Lớp · Khóa) ·
      bảng XẾP HẠNG sao (đồng sao đồng hạng, huy chương vàng/bạc/đồng) · MỘT nút ± mở pop-up cộng/trừ (số có dấu, ô chỉ nhận số,
      chọn nhanh, gợi ý lý do) · điện thoại: thẻ dòng + pop-up trượt từ đáy. CSS chuyển sang css/sao-dash2.css.
+   ⭐ v1.407.0 (23/10/2026, thầy chốt mẫu D:\OTHERS\CLAUDE\MAU VI SAO NHANH v1 phương án A): SaoDash.moVi({ma, ten, lop}) — pop-up VÍ SAO
+     một em (chuột phải avatar ở bất cứ đâu trên dashboard): thông số + khối ± (htmlCT/ganCT dùng chung với moCongTru) + lịch sử ví.
    ============================================================ */
 (function () {
   'use strict';
@@ -339,24 +341,12 @@
     return { el: nen, dong: function () { document.removeEventListener('keydown', phim, true); dongPop(); } };
   }
 
-  // ── CỘNG / TRỪ (v1.370.0: MỘT nút ± ⇒ một pop-up, số CÓ DẤU) ────────────────────────────────
-  // Nút −/+ đổi số từng nấc (đi qua 0 là đổi chiều) · nút dấu trước ô số lật cộng ↔ trừ · ô số CHỈ nhận chữ số
-  // (điện thoại bật bàn phím số — bàn phím số iPhone không có dấu trừ nên dấu do nút quyết định) · chọn nhanh −5…+10 ·
-  // gợi ý lý do (S.cai.lyDo) bấm là điền lý do + số sao. Trừ không quá số sao em đang có. Lý do vẫn BẮT BUỘC.
-  // ⛔ Ô số là ô chữ (inputmode numeric) ⇒ cuộn chuột không đổi số; Enter = nhận ô, nhảy xuống ô lý do (luật 07/10).
   var NHANH = [-5, -2, -1, 1, 2, 3, 5, 10];
-  function moCongTru(so) {
-    var ten = tenTheoSo(so), co = saoCua(so), L = lopChon() || { em: [], slug: '' };
+  // ⭐ v1.407.0 — khối ± (số + chọn nhanh + gợi ý + lý do + nút) tách ra DÙNG CHUNG: hộp ± của bảng Sao (moCongTru) và
+  //   pop-up VÍ SAO một em mở từ chuột phải (moVi). `nutHuy` = chữ nút trái (Huỷ / Đóng).
+  function htmlCT(nutHuy) {
     var ly = S.cai.lyDo || LYDO_GOC;
-    var x0 = null; xepHang(L).forEach(function (x) { if (x.e.so === so) x0 = x; });
-    var thuTu = 0; L.em.forEach(function (e, i) { if (e.so === so) thuTu = i; });
-    var v = 1, chonGy = null;
-    var h = hopNoi('<div class="sd-ct"><div class="sd-ct-keo"></div>' +
-      '<div class="sd-ct-dau">' + avHtml(L, ten, thuTu) +
-        '<div class="sd-tenbox"><b>' + esc(ten) + '</b><span><i>Số HS ' + esc(so) + '</i><i>· đang có ' + SAO_SVG + '<b>' + co + '</b></i>' +
-          (x0 && x0.hang ? '<i>· hạng ' + x0.hang + '</i>' : '') + '</span></div>' +
-        '<span class="sd-gian"></span><button class="sd-x" type="button" data-x title="Đóng (Esc)">' + X_SVG + '</button></div>' +
-      '<div class="sd-ct-dk">' +
+    return '<div class="sd-ct-dk">' +
         '<div class="sd-ct-buoc">' +
           '<button type="button" class="sd-ct-b tru" data-buoc="-1" title="Bớt 1 (↓)"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>' +
           '<div class="sd-ct-so"><button type="button" class="sd-ct-dau-so" title="Đổi cộng ↔ trừ">+</button>' +
@@ -379,23 +369,25 @@
         '<textarea class="sd-lydo" maxlength="120" placeholder="VD: Phát biểu tốt bài Family and Room"></textarea></div>' +
       '<div class="sd-ct-canh">⚠️ Trừ sao chỉ làm được ở dashboard — các app trên lớp không bao giờ trừ.</div>' +
       '<div class="sd-tin"></div>' +
-      '<div class="sd-ct-cuoi"><button class="sd-ct-nut huy" type="button" data-x>Huỷ</button><button class="sd-ct-nut ok" type="button" data-ok></button></div>' +
-      '</div>', false, 'ct');
-    var el = h.el, o = $('.sd-ct-o', el), ta = $('.sd-lydo', el), ok = $('[data-ok]', el), dk = $('.sd-ct-dk', el);
-    requestAnimationFrame(function () { el.classList.add('vao'); });
-    if (window.avKhoDe) { try { window.avKhoDe($('.sd-ct-dau', el)); } catch (e) { /* giữ chữ tắt */ } }
+      '<div class="sd-ct-cuoi"><button class="sd-ct-nut huy" type="button" data-x>' + nutHuy + '</button><button class="sd-ct-nut ok" type="button" data-ok></button></div>';
+  }
+  // Gắn bộ nghe cho khối ± trong hộp `h`. o = { so, ten, co, lop, sauGhi(xong, dau, n, lamMoi) }.
+  // lamMoi(coMoi) = đặt lại khối (số 1, xoá lý do) với số sao mới — pop-up Ví sao dùng để cộng tiếp không phải đóng.
+  function ganCT(h, o) {
+    var el = h.el, so = o.so, co = o.co, ly = S.cai.lyDo || LYDO_GOC;
+    var ob = $('.sd-ct-o', el), ta = $('.sd-lydo', el), ok = $('[data-ok]', el), dk = $('.sd-ct-dk', el);
     var TT = S.cai.tranTay || TRAN_TAY_GOC;
+    var v = 1, chonGy = null;
     var gioiHan = function (n) { n = Math.max(-TT, Math.min(TT, n)); return n < -co ? -co : n; };
-    var sao15 = SAO_SVG;
     function ve(giuO) {
       var loai = v > 0 ? 'up' : v < 0 ? 'dn' : 'zr';
       dk.className = 'sd-ct-dk ' + loai;
       $('.sd-ct-dau-so', el).textContent = v < 0 ? '−' : '+';
-      if (!giuO) o.value = Math.abs(v);
-      o.style.setProperty('--n', Math.max(2, String(o.value || Math.abs(v)).length));   // v1.393.0 ô dãn theo số chữ số
+      if (!giuO) ob.value = Math.abs(v);
+      ob.style.setProperty('--n', Math.max(2, String(ob.value || Math.abs(v)).length));   // v1.393.0 ô dãn theo số chữ số
       $('.sd-ct-goi', el).innerHTML = v === 0
         ? '<span>' + (co ? 'Chọn số sao muốn cộng hoặc trừ' : 'Em chưa có sao — chỉ cộng được') + '</span>'
-        : '<b>' + co + '</b>' + sao15 + '<span>→</span><b class="sau">' + (co + v) + '</b>' + sao15 + (v < 0 && -v === co ? '<span class="canh">· trừ hết</span>' : '');
+        : '<b>' + co + '</b>' + SAO_SVG + '<span>→</span><b class="sau">' + (co + v) + '</b>' + SAO_SVG + (v < 0 && -v === co ? '<span class="canh">· trừ hết</span>' : '');
       Array.prototype.forEach.call(el.querySelectorAll('.sd-q'), function (q) {
         var n = Number(q.getAttribute('data-n')); q.classList.toggle('on', n === v); q.disabled = n < -co;
       });
@@ -421,7 +413,7 @@
       };
     });
     // ô số: chặn chữ — chỉ nhận chữ số; ↑/↓ đổi nấc; gõ "-"/"+" là lật dấu
-    o.addEventListener('keydown', function (e) {
+    ob.addEventListener('keydown', function (e) {
       if (e.key === 'ArrowUp') { e.preventDefault(); dat(v + 1); return; }
       if (e.key === 'ArrowDown') { e.preventDefault(); dat(v - 1); return; }
       if (e.key === '-' || e.key === 'Subtract') { e.preventDefault(); dat(-Math.abs(v || 1)); return; }
@@ -429,14 +421,14 @@
       if (e.key === 'Enter') { e.preventDefault(); ta.focus(); return; }
       if (e.key.length === 1 && !/[0-9]/.test(e.key) && !e.ctrlKey && !e.metaKey) e.preventDefault();
     });
-    o.addEventListener('input', function () {
-      var s = o.value.replace(/\D/g, '').slice(0, String(TT).length); if (o.value !== s) o.value = s;
+    ob.addEventListener('input', function () {
+      var s = ob.value.replace(/\D/g, '').slice(0, String(TT).length); if (ob.value !== s) ob.value = s;
       var n = Number(s || 0);
       v = gioiHan((v < 0 ? -1 : 1) * n); ve(true);
-      if (s !== '' && Math.abs(v) !== n) o.value = Math.abs(v);
+      if (s !== '' && Math.abs(v) !== n) ob.value = Math.abs(v);
     });
-    o.addEventListener('focus', function () { setTimeout(function () { o.select(); }, 0); });
-    o.addEventListener('blur', function () { o.value = Math.abs(v); });
+    ob.addEventListener('focus', function () { setTimeout(function () { ob.select(); }, 0); });
+    ob.addEventListener('blur', function () { ob.value = Math.abs(v); });
     ta.addEventListener('input', function () {
       ta.classList.remove('loi');
       if (chonGy) { var x = ly[chonGy.getAttribute('data-k')][Number(chonGy.getAttribute('data-j'))]; if (ta.value !== x.t) { chonGy = null; ve(true); } }
@@ -445,7 +437,11 @@
     $('[data-sua]', el).onclick = function () { h.dong(); moLyDo(); };
     Array.prototype.forEach.call(el.querySelectorAll('[data-x]'), function (b) { b.onclick = h.dong; });
     ve();
-    if (!('ontouchstart' in window)) setTimeout(function () { o.focus(); }, 60);
+    if (!('ontouchstart' in window)) setTimeout(function () { ob.focus(); }, 60);
+    function lamMoi(coMoi) {
+      co = coMoi; v = 1; chonGy = null; ta.value = ''; ok.disabled = false;
+      $('.sd-tin', el).textContent = ''; ve();
+    }
     ok.onclick = function () {
       if (ok.disabled) return;
       var lyDo = ta.value.trim();
@@ -453,23 +449,121 @@
       var dau = v > 0 ? 1 : -1, n = Math.abs(v);
       ok.disabled = true;
       $('.sd-tin', el).textContent = 'Đang ghi…';
-      var Lc = lopChon();
       // v1.335.0 — lớp của phiếu = thẻ lớp/khóa thầy ĐANG mở (trước lấy lớp cũ trong ví ⇒ em học 2 nơi bị ghi sai chỗ)
-      var phieu = { nguon: 'dashboard', lop: (Lc && Lc.ma) || (S.vi[so] || {}).l || '', ngay: ngayVN(),
+      var phieu = { nguon: 'dashboard', lop: o.lop || (S.vi[so] || {}).l || '', ngay: ngayVN(),
         nhom: dau > 0 ? 'Thầy Andrew thưởng' : 'Thầy Andrew điều chỉnh', ai: 'Thầy Andrew',
         dong: [{ so: so, n: dau * n, viec: lyDo, app: 'dashboard' }], tao: Date.now() };
       kho().then(function (f) {
         return f.fs.addDoc(f.fs.collection(f.db, 'saoDot'), phieu).then(function (r) { return choXong(f, r.id); });
       }).then(function (xong) {
-        h.dong();
-        baoNho(xong ? (dau > 0 ? 'Đã cộng ' : 'Đã trừ ') + n + ' sao cho ' + ten + '.' : 'Đã gửi phiếu — máy chủ sẽ ' + (dau > 0 ? 'cộng' : 'trừ') + ' vào ví trong ít phút.');
-        return napHet().then(function () { veHet(so); });
+        baoNho(xong ? (dau > 0 ? 'Đã cộng ' : 'Đã trừ ') + n + ' sao cho ' + o.ten + '.' : 'Đã gửi phiếu — máy chủ sẽ ' + (dau > 0 ? 'cộng' : 'trừ') + ' vào ví trong ít phút.');
+        return o.sauGhi(xong, dau, n, lamMoi);
       })['catch'](function (e) {
         ok.disabled = false;
         var m = String((e && (e.code || e.message)) || e);
         $('.sd-tin', el).textContent = m.indexOf('permission') >= 0 ? 'Bị chặn — kiểm luật kho sao / đăng nhập thầy.' : 'Chưa ghi được: ' + m.slice(0, 80);
       });
     };
+  }
+
+  // ── CỘNG / TRỪ (v1.370.0: MỘT nút ± ⇒ một pop-up, số CÓ DẤU) ────────────────────────────────
+  // Nút −/+ đổi số từng nấc (đi qua 0 là đổi chiều) · nút dấu trước ô số lật cộng ↔ trừ · ô số CHỈ nhận chữ số
+  // (điện thoại bật bàn phím số — bàn phím số iPhone không có dấu trừ nên dấu do nút quyết định) · chọn nhanh −5…+10 ·
+  // gợi ý lý do (S.cai.lyDo) bấm là điền lý do + số sao. Trừ không quá số sao em đang có. Lý do vẫn BẮT BUỘC.
+  // ⛔ Ô số là ô chữ (inputmode numeric) ⇒ cuộn chuột không đổi số; Enter = nhận ô, nhảy xuống ô lý do (luật 07/10).
+  function moCongTru(so) {
+    var ten = tenTheoSo(so), co = saoCua(so), L = lopChon() || { em: [], slug: '' };
+    var x0 = null; xepHang(L).forEach(function (x) { if (x.e.so === so) x0 = x; });
+    var thuTu = 0; L.em.forEach(function (e, i) { if (e.so === so) thuTu = i; });
+    var h = hopNoi('<div class="sd-ct"><div class="sd-ct-keo"></div>' +
+      '<div class="sd-ct-dau">' + avHtml(L, ten, thuTu) +
+        '<div class="sd-tenbox"><b>' + esc(ten) + '</b><span><i>Số HS ' + esc(so) + '</i><i>· đang có ' + SAO_SVG + '<b>' + co + '</b></i>' +
+          (x0 && x0.hang ? '<i>· hạng ' + x0.hang + '</i>' : '') + '</span></div>' +
+        '<span class="sd-gian"></span><button class="sd-x" type="button" data-x title="Đóng (Esc)">' + X_SVG + '</button></div>' +
+      htmlCT('Huỷ') + '</div>', false, 'ct');
+    requestAnimationFrame(function () { h.el.classList.add('vao'); });
+    if (window.avKhoDe) { try { window.avKhoDe($('.sd-ct-dau', h.el)); } catch (e) { /* giữ chữ tắt */ } }
+    var Lc = lopChon();
+    ganCT(h, { so: so, ten: ten, co: co, lop: Lc && Lc.ma, sauGhi: function () {
+      h.dong();
+      return napHet().then(function () { veHet(so); });
+    } });
+  }
+
+  // ── ⭐ v1.407.0 (23/10/2026, thầy "ok build" mẫu VÍ SAO NHANH v1 phương án A) — VÍ SAO MỘT EM ──────────────
+  // Mở từ chuột phải avatar học sinh ở BẤT CỨ đâu trên dashboard (js/chuot-phai.js ⇒ SaoDash.moVi({ma, ten, lop})).
+  // Hai cột: trái = thông số (đang có · hạng lớp · 7 ngày · đã trừ) + khối ±; phải = lịch sử ví gom theo NGÀY.
+  // Ghi xong pop-up KHÔNG đóng: đọc lại ví + lịch sử, dòng mới loé vàng — cộng/trừ tiếp được ngay.
+  // Hộp Sao đang mở phía sau ⇒ vẽ lại bảng theo số mới.
+  function ngayNgan(s) { s = String(s || ''); return s.slice(8, 10) + '/' + s.slice(5, 7); }
+  function htmlLsNgay(moc, moiNhat) {
+    if (!moc.length) return '<div class="sd-trong">Em chưa có sao nào.</div>';
+    var nhom = [], theo = {};
+    moc.forEach(function (x) { var k = String(x.ngay || ''); if (!theo[k]) { theo[k] = { ngay: k, ds: [] }; nhom.push(theo[k]); } theo[k].ds.push(x); });
+    return nhom.map(function (g) {
+      var t = g.ds.reduce(function (a, x) { return a + (Number(x.so) || 0); }, 0);
+      return '<div class="vs-ngay">' + esc(ngayNgan(g.ngay)) + '<em class="' + (t >= 0 ? 'la' : 'do') + '">' + (t > 0 ? '+' : t < 0 ? '−' : '') + Math.abs(t) + '</em></div>' +
+        g.ds.map(function (x) {
+          var n = Number(x.so) || 0;
+          return '<div class="vs-d' + (moiNhat && x === moc[0] ? ' moi' : '') + '"><span><b>' + esc(x.viec) + '</b><small>' + esc([x.nhom, x.app].filter(Boolean).join(' · ')) + '</small></span>' +
+            '<span class="sv ' + (n >= 0 ? 'la' : 'do') + '">' + (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + '</span></div>';
+        }).join('');
+    }).join('');
+  }
+  function moVi(x) {
+    x = x || {};
+    var ma = chuanMa(x.ma), kLop = maLop(x.lop);
+    var h = hopNoi('<div class="sd-ct vs-trai"><div class="sd-ct-keo"></div><div class="sd-trong">Đang đọc ví sao…</div></div><div class="vs-phai"></div>', false, 'ct vi');
+    requestAnimationFrame(function () { h.el.classList.add('vao'); });
+    var bao = function (chu) { $('.vs-trai', h.el).innerHTML = '<div class="sd-ct-dau"><span class="sd-gian"></span><button class="sd-x" type="button" data-x title="Đóng (Esc)">' + X_SVG + '</button></div><div class="sd-trong">' + chu + '</div>'; $('[data-x]', h.el).onclick = h.dong; };
+    napHet().then(function () {
+      var so = S.maSo[ma];
+      if (!so) return bao(esc(x.ten || 'Em này') + ' chưa có số học sinh — chưa có ví sao.');
+      // lớp của em: ưu tiên lớp nơi bấm chuột phải, không thì lớp/khóa đầu tiên có em
+      var L = null;
+      S.lop.forEach(function (l) { if (!L && l.ma === kLop && l.em.some(function (e) { return e.so === so; })) L = l; });
+      S.lop.forEach(function (l) { if (!L && l.em.some(function (e) { return e.so === so && !e.thu; })) L = l; });
+      S.lop.forEach(function (l) { if (!L && l.em.some(function (e) { return e.so === so; })) L = l; });
+      L = L || { em: [], slug: '', ten: '', ma: '' };
+      var ten = tenTheoSo(so) || x.ten, thuTu = 0;
+      L.em.forEach(function (e, i) { if (e.so === so) thuTu = i; });
+      $('.vs-trai', h.el).innerHTML = '<div class="sd-ct-keo"></div>' +
+        '<div class="sd-ct-dau">' + avHtml(L, ten, thuTu) +
+          '<div class="sd-tenbox"><b>' + esc(ten) + '</b><span><i>' + esc(L.ten) + '</i><i>· Số HS ' + esc(so) + '</i></span></div>' +
+          '<span class="sd-gian"></span><button class="sd-x" type="button" data-x title="Đóng (Esc)">' + X_SVG + '</button></div>' +
+        '<div class="vs-so"></div>' + htmlCT('Đóng');
+      $('.vs-phai', h.el).innerHTML = '<div class="vs-phai-dau vs-tieu">Lịch sử ví<small></small></div><div class="vs-ls"><div class="sd-trong">Đang đọc…</div></div>';
+      if (window.avKhoDe) { try { window.avKhoDe($('.sd-ct-dau', h.el)); } catch (e) { /* giữ chữ tắt */ } }
+      function veSo(daTru) {
+        var x0 = null, si = 0; xepHang(L).forEach(function (r) { if (!r.e.thu && r.v != null) si++; if (r.e.so === so) x0 = r; });
+        var tuan = S.tuan[so] || 0;
+        $('.vs-so', h.el).innerHTML =
+          '<div class="vs-o vang"><div class="n">Đang có</div><div class="g">' + SAO_SVG + saoCua(so) + '</div></div>' +
+          '<div class="vs-o"><div class="n">Hạng ' + (L.khoa ? 'khóa' : 'lớp') + '</div><div class="g">' + (x0 && x0.hang && !x0.e.thu ? x0.hang + '<small>/' + si + '</small>' : '—') + '</div></div>' +
+          '<div class="vs-o la"><div class="n">7 ngày</div><div class="g">' + (tuan ? '+' + tuan : '0') + '</div></div>' +
+          '<div class="vs-o do"><div class="n">Đã trừ</div><div class="g">' + (daTru == null ? '…' : daTru ? '−' + daTru : '0') + '</div></div>';
+      }
+      function docLs(moiNhat) {
+        return kho().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'saoLichSu', so)); }).then(function (d) {
+          var moc = (d.exists() && d.data().moc) || [];   // máy chủ ghi MỚI NHẤT TRƯỚC
+          var daTru = moc.reduce(function (a, m) { return a + (Number(m.so) < 0 ? -Number(m.so) : 0); }, 0);
+          veSo(daTru);
+          $('.vs-phai-dau small', h.el).textContent = moc.length ? moc.length + ' dòng' : '';
+          $('.vs-ls', h.el).innerHTML = htmlLsNgay(moc, moiNhat);
+        })['catch'](function () { veSo(null); $('.vs-ls', h.el).innerHTML = '<div class="sd-trong">Chưa đọc được lịch sử.</div>'; });
+      }
+      veSo(null); docLs(false);
+      ganCT(h, { so: so, ten: ten, co: saoCua(so), lop: L.ma, sauGhi: function (xong, dau, n, lamMoi) {
+        return napHet().then(function () {
+          lamMoi(saoCua(so));
+          veSo(null); docLs(true);
+          var nen = $('#sdNen'); if (nen && nen.classList.contains('mo')) veHet(so);
+        });
+      } });
+    })['catch'](function (e) {
+      var m = String((e && (e.code || e.message)) || e);
+      bao(m.indexOf('permission') >= 0 ? 'Kho sao chưa mở khoá — đăng nhập lại tài khoản thầy.' : 'Chưa đọc được kho sao (' + esc(m.slice(0, 80)) + ').');
+    });
   }
   // Chờ hàm máy chủ áp phiếu (≤ 15 giây).
   function choXong(f, id) {
@@ -571,5 +665,5 @@
     };
   }
 
-  window.SaoDash = { mo: mo };
+  window.SaoDash = { mo: mo, moVi: moVi };
 })();

@@ -57,7 +57,8 @@
     tab: P('<path d="M14 4h6v6M20 4l-8.5 8.5"/><path d="M19 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h4"/>'),
     dong: P('<path d="M6 6l12 12M18 6L6 18"/>'),
     sao: P('<path style="stroke:#E0A019" d="M12 3.5l2.3 5.1 5.5.5-4.2 3.7 1.3 5.4L12 15.4l-4.9 2.8 1.3-5.4-4.2-3.7 5.5-.5z"/>'),   // v1.407.0
-    hoSo: P('<rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="10" r="3"/><path d="M7.5 17.5c.8-2 2.5-3 4.5-3s3.7 1 4.5 3"/>')
+    hoSo: P('<rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="10" r="3"/><path d="M7.5 17.5c.8-2 2.5-3 4.5-3s3.7 1 4.5 3"/>'),
+    xemNhu: P('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>')   // v1.416.0 Xem như em
   };
 
   // ---------- CSS (tự chèn — một file cho mọi trang) ----------
@@ -315,17 +316,9 @@
     if (!nhom && !av) { var im0 = anhCua(t); if (im0 && !im0.closest(KHONG_AV) && !laTrangTran()) av = im0; }   // v1.365.0 ảnh không mang dấu
     if (av) {
       var ten = tenCua(av), anh = av.tagName === 'IMG' ? av : av.querySelector('img'), uid0 = av.getAttribute('data-uid') || (ten === 'Thầy Andrew' && av.tagName === 'IMG' ? THAY_UID : '');
-      if (ten) muc.push({ dau: '<span class="acm-av" style="background:' + mau(ten) + '">' + an(tat(ten)) + (anh && anh.getAttribute('src') ? '<img src="' + an(anh.getAttribute('src')) + '" alt="" onerror="this.remove()">' : '') + '</span><div><b>' + an(ten) + '</b><small>' + (uid0 === THAY_UID ? 'Giáo viên' : 'Học sinh') + '</small></div>' });
-      muc.push({ chu: 'Xem trang cá nhân', ic: IC.nguoi, lam: function () { moNguoiCua(av); } });
-      if (uid0 !== uidToi() || !uid0) muc.push({ chu: 'Nhắn tin riêng', ic: IC.tin, lam: function () { nguoiCua(av).then(function (ng) { M.nhanTin(ng); }, function () { M.sapRaMat(); }); } });
-      // ⭐ v1.407.0 (23/10/2026, thầy "ok build") — DASHBOARD: avatar học sinh có thêm Ví sao (pop-up cộng/trừ + lịch sử, js/sao-dash.js)
-      //   và Hồ sơ học sinh (hộp Quản lý & bảo mật mở thẳng hồ sơ em — dashboard `window.__moHoSoHs`).
-      if (laDash() && uid0 !== THAY_UID && ten !== 'Thầy Andrew') {
-        muc.push('-',
-          { chu: 'Ví sao', ic: IC.sao, lam: function () { moQuanLy(av, 'vi'); } },
-          { chu: 'Hồ sơ học sinh', ic: IC.hoSo, lam: function () { moQuanLy(av, 'hs'); } });
-      }
-      muc.push('-');
+      // v1.407.0 Ví sao + Hồ sơ học sinh (dashboard) · v1.416.0 gom vào mucNguoi + Xem như em + mọi trang của thầy
+      muc = muc.concat(mucNguoi({ ten: ten, anh: anh && anh.getAttribute('src'), uid: uid0, thay: uid0 === THAY_UID || ten === 'Thầy Andrew',
+        caNhan: function () { moNguoiCua(av); }, lay: function () { return hsCua(av); }, nhan: function () { return nguoiCua(av); } }));
     }
     var a = t.closest && t.closest('a[href]');
     if (a && !av && !nhom) {
@@ -338,15 +331,71 @@
     }
     return muc;
   }
-  function moQuanLy(av, loai) {
-    hsCua(av).then(function (ng) {
-      var ten = (ng && ng.ten) || tenCua(av) || 'em này';
+  // ⭐ v1.416.0 (24/10/2026, thầy) — MỤC NGƯỜI dùng chung: avatar ở mọi nơi + TÊN / AVATAR trong khung chat (js/chat-ui.js ⇒ M.moNguoi).
+  //   x = { ten, anh, uid, thay, caNhan(), lay() → Promise<{uid, ma, ten, lop}>, nhan() → Promise<người cho Nhắn tin riêng> }
+  //   THẦY (dashboard HOẶC trang nw/ — khung Tin nhắn, pop-up tin nhắn nhỏ là khung nhúng trong dashboard) bấm HỌC SINH có thêm
+  //   Ví sao · Hồ sơ học sinh · Xem như em (trước v1.416.0 chỉ dashboard có Ví sao + Hồ sơ).
+  function mucNguoi(x) {
+    var muc = [];
+    if (x.ten) muc.push({ dau: '<span class="acm-av" style="background:' + mau(x.ten) + '">' + an(tat(x.ten)) + (x.anh ? '<img src="' + an(x.anh) + '" alt="" onerror="this.remove()">' : '') + '</span><div><b>' + an(x.ten) + '</b><small>' + (x.thay ? 'Giáo viên' : 'Học sinh') + '</small></div>' });
+    muc.push({ chu: 'Xem trang cá nhân', ic: IC.nguoi, lam: x.caNhan });
+    if (x.uid !== uidToi() || !x.uid) muc.push({ chu: 'Nhắn tin riêng', ic: IC.tin, lam: function () { x.nhan().then(function (ng) { M.nhanTin(ng); }, function () { M.sapRaMat(); }); } });
+    if (toiLaThay() && !x.thay) {
+      muc.push('-',
+        { chu: 'Ví sao', ic: IC.sao, lam: function () { moQuanLy(x.lay, 'vi', x.ten); } },
+        { chu: 'Hồ sơ học sinh', ic: IC.hoSo, lam: function () { moQuanLy(x.lay, 'hs', x.ten); } },
+        { chu: 'Xem như em', ic: IC.xemNhu, lam: function () { moQuanLy(x.lay, 'xem', x.ten); } });
+    }
+    muc.push('-');
+    return muc;
+  }
+  // dashboard đang chứa trang này (chính nó, hoặc trang mẹ khi trang nw/ chạy trong khung nhúng: khung Tin nhắn, pop-up tin nhắn nhỏ)
+  function dashCua() {
+    var w = window;
+    for (var i = 0; i < 4; i++) {
+      try { if (w.SaoDash && w.__moHoSoHs && w.qlXemNhuEm) return w; } catch (e) { return null; }
+      if (w.parent === w) break;
+      w = w.parent;
+    }
+    return null;
+  }
+  function moQuanLy(lay, loai, ten0) {
+    lay().then(function (ng) {
+      var ten = (ng && ng.ten) || ten0 || 'em này';
       if (!ng || ng.thay || !ng.ma) return M.bao('Chưa tìm thấy ' + (loai === 'vi' ? 'ví sao' : 'hồ sơ') + ' của ' + ten + '.');
-      if (loai === 'vi') { if (window.SaoDash && SaoDash.moVi) SaoDash.moVi({ ma: ng.ma, ten: ng.ten, lop: ng.lop }); else M.bao('Hộp sao chưa tải xong — thử lại nhé.'); }
-      else if (window.__moHoSoHs) window.__moHoSoHs(ng.ma, ng.ten);
-      else M.bao('Hộp quản lý chưa tải xong — thử lại nhé.');
+      var D = dashCua();
+      if (!D) {   // trang nw/ mở riêng một tab (không nằm trong dashboard) ⇒ mở dashboard ở tab mới, dashboard tự làm việc này (?acm=)
+        var u = GOC + 'dashboard.html?acm=' + loai + '&ma=' + encodeURIComponent(ng.ma) + '&ten=' + encodeURIComponent(ng.ten || '') + '&lop=' + encodeURIComponent(ng.lop || '');
+        var w = null; try { w = window.open(u, '_blank'); } catch (e) { }
+        if (!w) M.bao('Trình duyệt chặn tab mới — <a href="' + an(u) + '" target="_blank" rel="noopener">bấm vào đây</a>.', true);
+        return;
+      }
+      if (D !== window) { try { if (D.TnPop && D.TnPop.dong) D.TnPop.dong(); } catch (e) { } }   // hộp Tin nhắn thả xuống che mất hộp quản lý
+      if (loai === 'vi') D.SaoDash.moVi({ ma: ng.ma, ten: ng.ten, lop: ng.lop });
+      else if (loai === 'hs') D.__moHoSoHs(ng.ma, ng.ten);
+      else D.qlXemNhuEm(ng.ma);   // tab mới "xem như em" (vé chỉ xem) — y nút trong Quản lý & bảo mật
     }, function () { M.bao('Chưa tải được danh sách lớp. Thử lại nhé.'); });
   }
+  // tra một em theo uid / mã (tin chat mang `uid` (phòng riêng) hoặc `ma` (chat lớp)) ⇒ { uid, ma, ten, lop } (không thấy ⇒ dữ liệu đưa vào)
+  function hsTheo(x) {
+    return napDl().then(function (dl) {
+      var kq = null, ma = chuan(x.ma || '');
+      tatCaLop(dl).some(function (l) {
+        var h = (l.hocSinh || []).filter(function (y) { return (x.uid && uidHs(y) === x.uid) || (ma && chuan(y.ma) === ma); })[0];
+        if (h) kq = { uid: uidHs(h), ten: h.ten, thay: false, ma: h.ma || '', lop: l.maLop || l.tenGoc || '' };
+        return !!kq;
+      });
+      return kq || { uid: x.uid || '', ten: x.ten || '', thay: !!x.thay, ma: x.ma || '' };
+    });
+  }
+  // ⭐ v1.416.0 — mở menu NGƯỜI tại (x, y) từ dữ liệu một tin chat: o = { uid, ma, ten, anh, thay }
+  M.moNguoi = function (o, x, y, day) {
+    o = o || {};
+    var thay = !!(o.thay || o.uid === THAY_UID);
+    var lay = function () { return thay ? Promise.resolve({ uid: THAY_UID, ten: 'Thầy Andrew', thay: true }) : hsTheo(o); };
+    M.mo(mucNguoi({ ten: thay ? 'Thầy Andrew' : o.ten, anh: o.anh, uid: thay ? THAY_UID : o.uid, thay: thay, lay: lay, nhan: lay,
+      caNhan: function () { lay().then(function (ng) { if (ng && ng.uid) M.moCaNhan(ng.uid); else M.bao('Chưa mở được trang cá nhân của ' + (o.ten || 'em này') + '.'); }); } }), x, y, day);
+  };
   function chep(chu, bao) {
     function cu() { var o = document.createElement('textarea'); o.value = chu; o.style.cssText = 'position:fixed;left:-9999px;top:0'; document.body.appendChild(o); o.select(); var ok = false; try { ok = document.execCommand('copy'); } catch (e) { } o.remove(); return ok; }
     var p = navigator.clipboard && navigator.clipboard.writeText ? navigator.clipboard.writeText(chu) : Promise.reject();

@@ -27,10 +27,12 @@
   function tat(s) { var w = String(s || '?').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 2)).toUpperCase(); }
 
   // ⭐ v1.364.0 — nhom = mã cuộc 'lop:XXX' ⇒ biểu tượng NHÓM LỚP bấm được (pop-up thành viên, js/chuot-phai.js)
-  function avHtml(ds, nhom) {
+  function avHtml(ds, nhom, uid) {
     ds = (ds && ds.length ? ds : [{ ten: '?' }]).slice(0, 4);
     var gom = ds.length > 1;
-    return '<span class="tp-av ' + (gom ? 'nhom' : 'mot') + '"' + (nhom && /^lop:/.test(nhom) ? ' data-nhom-lop="' + an(nhom.slice(4)) + '" title="Xem thành viên"' : '') + '>' + ds.map(function (a, i) {
+    // v1.416.0 — `uid` (chỉ dòng đầu hộp chat riêng) ⇒ data-uid + data-ten: chuột phải avatar ra menu người (js/chuot-phai.js)
+    return '<span class="tp-av ' + (gom ? 'nhom' : 'mot') + '"' + (nhom && /^lop:/.test(nhom) ? ' data-nhom-lop="' + an(nhom.slice(4)) + '" title="Xem thành viên"' : '') +
+      (uid && !gom ? ' data-uid="' + an(uid) + '" data-ten="' + an(ds[0].ten || '') + '"' : '') + '>' + ds.map(function (a, i) {
       return '<i style="background:' + (a.mau || MAU[i % MAU.length]) + '">' + an(tat(a.ten)) + (a.url ? '<img src="' + an(a.url) + '" alt="" loading="lazy" onerror="this.remove()">' : '') + '</i>';
     }).join('') + '</span>';
   }
@@ -126,7 +128,7 @@
     var phu = it.loai === 'lop' ? 'Nhóm lớp' : it.loai === 'thay' ? 'Thầy' : (it.lop || '');
     var v = document.createElement('div'); v.className = 'tp-dt';
     v.innerHTML = '<div class="tp-hop-dau"><button type="button" data-lui title="Về danh sách" aria-label="Về danh sách"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></svg></button>' +
-      avHtml(it.anh, it.loai === 'lop' && it.id) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div></div>' +
+      avHtml(it.anh, it.loai === 'lop' && it.id, it.uid) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div></div>' +
       '<div class="tp-hop-fr-khu"><iframe class="tp-hop-fr" title="' + an(it.ten) + '" allow="clipboard-write"></iframe><div class="tp-hop-cho">Đang mở…</div></div>';
     m.pop.appendChild(v); m.pop.classList.add('dang-chat'); m.chat = v;
     var fr = v.querySelector('iframe');
@@ -373,7 +375,7 @@
     if (co) { if (co.min) moLai(co); else if (!o.imLang && co.ui) co.ui.focus(); return; }
     var el = document.createElement('div'); el.className = 'tp-hop';
     var phu = it.loai === 'lop' ? 'Nhóm lớp' : it.loai === 'thay' ? 'Thầy' : (it.lop || '');
-    el.innerHTML = '<div class="tp-hop-dau">' + avHtml(it.anh, it.loai === 'lop' && it.id) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div>' +
+    el.innerHTML = '<div class="tp-hop-dau">' + avHtml(it.anh, it.loai === 'lop' && it.id, it.uid) + '<div class="ai"><b><span>' + an(it.ten) + '</span>' + (it.loai === 'lop' ? BIEU.lop : it.loai === 'thay' ? BIEU.thay : '') + '</b><small>' + an(phu) + '</small></div>' +
       '<button type="button" data-min title="Thu nhỏ" aria-label="Thu nhỏ"><svg viewBox="0 0 24 24"><path d="M5 12h14"/></svg></button>' +
       '<button type="button" data-dong title="Đóng" aria-label="Đóng"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>' +
       (it.hop ? '<div class="tp-hop-fr-khu"><iframe class="tp-hop-fr" title="' + an(it.ten) + '" allow="clipboard-write"></iframe><div class="tp-hop-cho">Đang mở…</div></div>' : '<div class="tp-hop-than"></div><div class="tp-hop-chan"></div>');

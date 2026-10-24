@@ -861,6 +861,18 @@
     // ⭐ v1.364.0 — máy tính: CHUỘT PHẢI bong bóng = đúng menu nhấn giữ của tin (cảm xúc, trả lời, sao chép, thu hồi…) thay menu trình duyệt.
     //   Đang bôi đen chữ / chuột phải trên link ⇒ để menu chung (js/chuot-phai.js: Sao chép chữ đang chọn, link).
     khung.addEventListener('contextmenu', function (e) {
+      // ⭐ v1.416.0 (24/10/2026, thầy) — chuột phải TÊN hoặc AVATAR người gửi ⇒ menu NGƯỜI (js/chuot-phai.js ACMenu.moNguoi: trang cá nhân,
+      //   nhắn tin riêng; thầy thêm Ví sao · Hồ sơ học sinh · Xem như em) — trước đây tên nằm trong bong bóng nên ra menu của tin.
+      var ng = e.target.closest('.cu-ten, .cu-hang > .cu-av');
+      if (ng && window.ACMenu && ACMenu.moNguoi && !window.matchMedia('(hover:none)').matches) {
+        var hg = ng.closest('.cu-hang'), wg = hg && hg.querySelector('.cu-w'), tg = wg ? ui.ds[+wg.getAttribute('data-i')] : null;
+        if (tg && !(o.laCuaToi && o.laCuaToi(tg))) {
+          var im = hg.querySelector('.cu-av img');
+          e.preventDefault();
+          ACMenu.moNguoi({ uid: tg.uid || '', ma: tg.vaiTro === 'gv' ? '' : (tg.ma || ''), ten: tg.ten || '', anh: tg.anh || (im && im.getAttribute('src')) || '', thay: tg.vaiTro === 'gv' }, e.clientX, e.clientY);
+          return;
+        }
+      }
       var bong = e.target.closest('.cu-bong'); if (!bong) return;
       if (window.matchMedia('(hover:none)').matches) { e.preventDefault(); return; }
       if (e.target.closest('a[href]') || String(window.getSelection ? getSelection() : '').trim()) return;

@@ -1,0 +1,70 @@
+/* css/sao-khoe.css — THẺ KHOE SAO (24/10/2026, web v1.416.0, js/sao-khoe.js). Tiền tố `skh-`.
+   Thẻ dọc ~ 400×600 vừa một lần chụp màn hình (máy tính lẫn điện thoại). Màu theo chủ đề: --c1/--c2 (dải đầu), --nhat (nền), --dam (chữ nhấn). */
+.skh-nen{position:fixed; inset:0; z-index:10040; display:grid; place-items:center; padding:16px; background:rgba(12,20,24,.62);
+  -webkit-backdrop-filter:blur(6px); backdrop-filter:blur(6px); opacity:0; transition:opacity .18s; font-family:var(--font,'Montserrat',system-ui,sans-serif)}
+.skh-nen.mo{opacity:1}
+.skh-khung{display:flex; flex-direction:column; align-items:center; gap:14px; transform:translateY(14px) scale(.96); transition:transform .32s cubic-bezier(.22,.9,.3,1.15)}
+.skh-nen.mo .skh-khung{transform:none}
+
+.skh-the{position:relative; width:min(400px,calc(100vw - 32px)); background:#fff; border-radius:28px; overflow:hidden; text-align:center;
+  box-shadow:0 30px 80px rgba(0,0,0,.35), 0 0 0 1px rgba(255,255,255,.4)}
+.skh-dau{position:relative; height:170px; overflow:hidden; background:linear-gradient(135deg,var(--c1),var(--c2)); color:#fff}
+.skh-dau::after{content:''; position:absolute; inset:0; background:radial-gradient(120% 90% at 50% -10%,rgba(255,255,255,.45),transparent 60%)}
+.skh-nen.tru .skh-dau::after{background:repeating-linear-gradient(135deg,rgba(255,255,255,.08) 0 14px,transparent 14px 28px)}
+.skh-ic-nen{position:absolute; right:-14px; bottom:-30px; font-size:150px; line-height:1; opacity:.18; transform:rotate(-12deg); filter:saturate(.6)}
+.skh-brand{position:relative; z-index:1; margin-top:22px; font-weight:900; font-size:12.5px; letter-spacing:.32em; opacity:.92; text-shadow:0 1px 2px rgba(0,0,0,.15)}
+.skh-nhan{position:relative; z-index:1; display:inline-flex; align-items:center; gap:8px; margin-top:14px; padding:9px 20px; border-radius:999px;
+  background:rgba(255,255,255,.95); color:var(--dam); font-weight:900; font-size:15px; letter-spacing:.06em; box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.skh-nhan span{font-size:19px; line-height:1}
+/* pháo giấy (thưởng) */
+.skh-pg{position:absolute; width:8px; height:13px; border-radius:2px; opacity:.9; animation:skh-roi 2.6s ease-in-out infinite alternate}
+.skh-pg.tron{width:8px; height:8px; border-radius:50%}
+@keyframes skh-roi{from{translate:0 -3px}to{translate:0 5px}}
+/* vòng mờ (nhắc nhở) */
+.skh-vong{position:absolute; border-radius:50%; border:2px solid rgba(255,255,255,.22)}
+.skh-vong.v1{width:220px; height:220px; left:-80px; top:-90px}
+.skh-vong.v2{width:150px; height:150px; right:30px; top:70px}
+
+.skh-giua{position:relative; padding:0 26px 6px; background:linear-gradient(var(--nhat),#fff 70%)}
+.skh-av-khung{position:relative; width:128px; height:128px; margin:-64px auto 0}
+.skh-av-vong{width:128px; height:128px; border-radius:50%; padding:5px; background:conic-gradient(from 210deg,var(--c1),var(--c2),var(--c1)); box-shadow:0 12px 30px rgba(0,0,0,.18)}
+.skh-av-vong > *{display:grid !important; place-items:center; width:100% !important; height:100% !important; border-radius:50% !important; border:4px solid #fff; box-sizing:border-box;
+  overflow:hidden; position:relative; color:#fff; font-weight:900; font-size:38px !important; margin:0 !important}
+.skh-av-vong img{position:absolute; inset:0; width:100%; height:100%; object-fit:cover}
+.skh-so{position:absolute; right:-26px; bottom:2px; display:flex; align-items:center; gap:4px; padding:7px 13px 7px 10px; border-radius:999px; background:#fff;
+  box-shadow:0 8px 22px rgba(0,0,0,.18); border:2px solid var(--c1)}
+.skh-so svg{width:22px; height:22px; fill:#FCC419; stroke:#E8A400; stroke-width:1}
+.skh-so b{font-size:24px; font-weight:900; line-height:1; color:var(--dam); font-variant-numeric:tabular-nums}
+.skh-nen.vui .skh-so{animation:skh-nay .9s cubic-bezier(.3,1.6,.5,1) .25s both}
+@keyframes skh-nay{from{transform:scale(.3); opacity:0}}
+.skh-lap{position:absolute; color:var(--c1); font-style:normal; text-shadow:0 0 10px rgba(255,255,255,.9); animation:skh-lap 1.8s ease-in-out infinite}
+.skh-lap.l1{left:-22px; top:8px; font-size:22px}
+.skh-lap.l2{right:-10px; top:-6px; font-size:16px; animation-delay:.5s}
+.skh-lap.l3{left:-8px; bottom:-4px; font-size:15px; animation-delay:1s}
+@keyframes skh-lap{50%{opacity:.35; transform:scale(.7) rotate(20deg)}}
+
+.skh-ten{margin:16px 0 4px; font-size:24px; font-weight:900; color:#16232A; letter-spacing:-.01em; line-height:1.2}
+.skh-lop{display:inline-block; padding:4px 12px; border-radius:999px; background:#fff; border:1px solid rgba(0,0,0,.08); font-size:12.5px; font-weight:800; color:var(--dam)}
+.skh-ly{position:relative; margin:18px 0 0; padding:16px 18px 15px; border-radius:18px; background:#fff; border:1.5px solid var(--c1);
+  font-size:18px; font-weight:800; line-height:1.38; color:#16232A; box-shadow:0 6px 18px rgba(0,0,0,.05)}
+.skh-ly small{display:block; margin-bottom:5px; font-size:11.5px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--dam)}
+.skh-ly::before,.skh-ly::after{position:absolute; font-size:44px; line-height:1; font-family:Georgia,serif; color:var(--c1); opacity:.55}
+.skh-ly::before{content:'“'; left:10px; top:2px}
+.skh-ly::after{content:'”'; right:12px; bottom:-18px}
+.skh-loi{margin:14px 6px 0; font-size:13.5px; font-weight:600; line-height:1.55; color:#4A5A58}
+.skh-chan{display:flex; justify-content:center; flex-wrap:wrap; gap:8px 16px; margin:14px 22px 0; padding:12px 0 0; border-top:1px dashed rgba(0,0,0,.12);
+  font-size:12.5px; font-weight:700; color:#5F7370}
+.skh-chan span{display:inline-flex; align-items:center; gap:5px}
+.skh-chan svg{width:14px; height:14px; fill:#FCC419; stroke:#E8A400; stroke-width:1}
+.skh-chan b{color:#16232A}
+.skh-ky{padding:10px 0 18px; font-family:'Brush Script MT','Segoe Script',cursive; font-size:22px; color:var(--dam); opacity:.85}
+
+.skh-nut{display:flex; gap:10px}
+.skh-nut button{height:42px; padding:0 18px; border:0; border-radius:12px; background:rgba(255,255,255,.95); color:#16232A; font:800 14px var(--font,'Montserrat',sans-serif);
+  cursor:pointer; box-shadow:0 6px 18px rgba(0,0,0,.2); transition:transform .12s}
+.skh-nut button:hover{transform:translateY(-1px)}
+.skh-nut button[data-dong]{background:rgba(255,255,255,.18); color:#fff; box-shadow:inset 0 0 0 1px rgba(255,255,255,.35)}
+
+/* dòng lịch sử bấm đúp được */
+.vs-d[data-k],.sd-ls-dong[data-k]{cursor:zoom-in}
+@media (max-height:720px){ .skh-dau{height:140px} .skh-ten{margin-top:12px; font-size:21px} .skh-ly{margin-top:12px; font-size:16px} }

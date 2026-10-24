@@ -526,10 +526,28 @@
       return '<div class="vs-ngay">' + esc(ngayNgan(g.ngay)) + '<em class="' + (t >= 0 ? 'la' : 'do') + '">' + (t > 0 ? '+' : t < 0 ? '−' : '') + Math.abs(t) + '</em></div>' +
         g.ds.map(function (x) {
           var n = Number(x.so) || 0;
-          return '<div class="vs-d' + (moiNhat && x === moc[0] ? ' moi' : '') + '"><span><b>' + esc(x.viec) + '</b><small>' + esc([x.nhom, x.app].filter(Boolean).join(' · ')) + '</small></span>' +
+          return '<div class="vs-d' + (moiNhat && x === moc[0] ? ' moi' : '') + '" data-k="' + moc.indexOf(x) + '" title="Bấm đúp: thẻ khoe phụ huynh"><span><b>' + esc(x.viec) + '</b><small>' + esc([x.nhom, x.app].filter(Boolean).join(' · ')) + '</small></span>' +
             '<span class="sv ' + (n >= 0 ? 'la' : 'do') + '">' + (n > 0 ? '+' : n < 0 ? '−' : '') + Math.abs(n) + '</span></div>';
         }).join('');
     }).join('');
+  }
+  // ⭐ v1.416.0 (24/10/2026, thầy) — BẤM ĐÚP một dòng lịch sử ⇒ THẺ KHOE SAO (js/sao-khoe.js) để chụp gửi phụ huynh.
+  //   gan(el, layMoc, so, L) — el = khung danh sách (dòng mang data-k = vị trí trong moc).
+  function ganKhoe(el, layMoc, so, L) {
+    el.addEventListener('dblclick', function (e) {
+      var d = e.target.closest('[data-k]'); if (!d || !window.SaoKhoe) return;
+      var m = (layMoc() || [])[+d.getAttribute('data-k')]; if (!m) return;
+      try { getSelection().removeAllRanges(); } catch (z) { }
+      var ten = tenTheoSo(so), i = 0;
+      (L.em || []).forEach(function (e2, k) { if (e2.so === so) i = k; });
+      SaoKhoe.mo({ ten: ten, lop: L.ten || '', av: avHtml(L, ten, i), n: Number(m.so) || 0, viec: m.viec, ngay: m.ngay, nhom: m.nhom, conLai: saoCua(so) });
+    });
+  }
+  function lopCuaSo(so) {
+    var L = null;
+    S.lop.forEach(function (l) { if (!L && l.em.some(function (e) { return e.so === so && !e.thu; })) L = l; });
+    S.lop.forEach(function (l) { if (!L && l.em.some(function (e) { return e.so === so; })) L = l; });
+    return L || { em: [], slug: '', ten: '', ma: '' };
   }
   function moVi(x) {
     x = x || {};
@@ -554,6 +572,8 @@
           '<span class="sd-gian"></span><button class="sd-x" type="button" data-x title="Đóng (Esc)">' + X_SVG + '</button></div>' +
         '<div class="vs-so"></div>' + htmlCT('Đóng');
       $('.vs-phai', h.el).innerHTML = '<div class="vs-phai-dau vs-tieu">Lịch sử ví<small></small></div><div class="vs-ls"><div class="sd-trong">Đang đọc…</div></div>';
+      var mocHt = [];   // v1.416.0 — lịch sử đang vẽ (bấm đúp ⇒ thẻ khoe)
+      ganKhoe($('.vs-ls', h.el), function () { return mocHt; }, so, L);
       if (window.avKhoDe) { try { window.avKhoDe($('.sd-ct-dau', h.el)); } catch (e) { /* giữ chữ tắt */ } }
       function veSo(daTru) {
         var x0 = null, si = 0; xepHang(L).forEach(function (r) { if (!r.e.thu && r.v != null) si++; if (r.e.so === so) x0 = r; });
@@ -567,6 +587,7 @@
       function docLs(moiNhat) {
         return kho().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'saoLichSu', so)); }).then(function (d) {
           var moc = (d.exists() && d.data().moc) || [];   // máy chủ ghi MỚI NHẤT TRƯỚC
+          mocHt = moc;
           var daTru = moc.reduce(function (a, m) { return a + (Number(m.so) < 0 ? -Number(m.so) : 0); }, 0);
           veSo(daTru);
           $('.vs-phai-dau small', h.el).textContent = moc.length ? moc.length + ' dòng' : '';
@@ -611,10 +632,12 @@
     var h = hopNoi('<h3>Lịch sử ví · ' + esc(tenTheoSo(so)) + '</h3><div class="sd-mo">Số HS ' + esc(so) + ' · đang có ⭐ ' + (Number((S.vi[so] || {}).s) || 0) + '</div><div class="sd-ls"><div class="sd-trong">Đang đọc…</div></div>' +
       '<div class="sd-cuoi"><button class="sd-nut xam" type="button" data-x>Đóng</button></div>', true);
     $('[data-x]', h.el).onclick = h.dong;
+    var mocHt = [];
+    ganKhoe($('.sd-ls', h.el), function () { return mocHt; }, so, lopCuaSo(so));   // v1.416.0 bấm đúp ⇒ thẻ khoe
     kho().then(function (f) { return f.fs.getDoc(f.fs.doc(f.db, 'saoLichSu', so)); }).then(function (d) {
-      var moc = (d.exists() && d.data().moc) || [];
-      $('.sd-ls', h.el).innerHTML = moc.length ? moc.map(function (x) {
-        return '<div class="sd-ls-dong"><span class="ng">' + esc(String(x.ngay || '').slice(8, 10) + '/' + String(x.ngay || '').slice(5, 7)) + '</span>' +
+      var moc = mocHt = (d.exists() && d.data().moc) || [];
+      $('.sd-ls', h.el).innerHTML = moc.length ? moc.map(function (x, k) {
+        return '<div class="sd-ls-dong" data-k="' + k + '" title="Bấm đúp: thẻ khoe phụ huynh"><span class="ng">' + esc(String(x.ngay || '').slice(8, 10) + '/' + String(x.ngay || '').slice(5, 7)) + '</span>' +
           '<span class="vc"><b>' + esc(x.viec) + '</b><small>' + esc([x.nhom, x.app].filter(Boolean).join(' · ')) + '</small></span>' +
           '<span class="sv ' + (x.so >= 0 ? 'la' : 'do') + '">' + (x.so > 0 ? '+' : '') + x.so + '</span></div>';
       }).join('') : '<div class="sd-trong">Em chưa có sao nào.</div>';

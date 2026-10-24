@@ -218,7 +218,8 @@
     var cuoi = '';
     if (tc.luc) cuoi = (tc.uid === me.uid ? (me.laThay ? 'Thầy: ' : 'Em: ') : (nhom ? String(tc.ten || '').split(' ').pop() + ': ' : '')) + chuGon(tc.chu || (tc.hinh ? '📷 Ảnh' : ''));
     var it = { id: p.id, ten: nhom ? (p.ten || 'Nhóm') : (k.ten || '?'), loai: thay ? 'thay' : nhom ? 'nhom' : 'rieng', anh: anh, cuoi: cuoi, gio: gioNgan(tc.luc || p.capNhat), chua: chuaDocP(me, p),
-              luc: tc.luc || p.capNhat || 0, lop: k && k.lop ? 'Lớp ' + k.lop : '', tat: !!((p.tat || {})[me.uid]), nhomThay: nhom };
+              luc: tc.luc || p.capNhat || 0, lop: k && k.lop ? 'Lớp ' + k.lop : '', tat: !!((p.tat || {})[me.uid]), nhomThay: nhom,
+              uid: k ? k.uid : '' };   // v1.416.0 — avatar dòng đầu hộp chat riêng mang uid người kia (chuột phải ⇒ menu người)
     it.q = nhom ? 'phong=' + encodeURIComponent(p.id) : 'voi=' + encodeURIComponent(k.uid);
     it.hop = 'nw/tinnhan.html?hop=1&' + it.q;
     return it;

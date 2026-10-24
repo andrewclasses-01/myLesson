@@ -97,7 +97,7 @@
   var hai = function (n) { return (n < 10 ? '0' : '') + n; };
   function chuTat(ten) { var t = String(ten || '?').trim().split(/\s+/); return (t.length > 1 ? t[t.length - 2][0] + t[t.length - 1][0] : t[0].slice(0, 2)).toUpperCase(); }
   function mauTen(ten) { var h = 0; String(ten || '').split('').forEach(function (c) { h = (h * 31 + c.charCodeAt(0)) >>> 0; }); return MAU[h % MAU.length]; }
-  function av(x) { return x.anh ? '<img class="tq-av" src="' + E(x.anh) + '" alt="">' : '<span class="tq-av" style="background:' + mauTen(x.ten) + '">' + E(chuTat(x.ten)) + '</span>'; }
+  function av(x) { return x.anh ? '<img class="tdq-av" src="' + E(x.anh) + '" alt="">' : '<span class="tdq-av" style="background:' + mauTen(x.ten) + '">' + E(chuTat(x.ten)) + '</span>'; }
   function tenLop(ma) { var l = S.lops.filter(function (x) { return x.ma === ma; })[0]; return l ? (l.ten || l.ma) : ma; }
   function chuLuc(ms) { return TQ().ngayGio(ms); }
   // giá trị ô datetime-local ⇄ ms (giờ máy thầy = giờ VN)
@@ -105,7 +105,7 @@
   function tuOGio(v) { if (!v) return 0; var t = new Date(v).getTime(); return isNaN(t) ? 0 : t; }
   var toastT;
   function toast(chu, loi) {
-    var t = $('#tqToast'); if (!t) { t = document.createElement('div'); t.id = 'tqToast'; t.className = 'tq-toast'; document.body.appendChild(t); }
+    var t = $('#tdqToast'); if (!t) { t = document.createElement('div'); t.id = 'tdqToast'; t.className = 'tdq-toast'; document.body.appendChild(t); }
     t.textContent = chu; t.classList.toggle('loi', !!loi); t.classList.add('mo');
     clearTimeout(toastT); toastT = setTimeout(function () { t.classList.remove('mo'); }, 3500);
   }
@@ -124,70 +124,70 @@
 
   // ── khung hộp ──
   function dungKhung() {
-    if ($('#tqNen')) return $('#tqNen');
-    var n = document.createElement('div'); n.id = 'tqNen'; n.className = 'tq-nen'; n.hidden = true;
-    n.innerHTML = '<div class="tq-hop" role="dialog" aria-modal="true" aria-label="Quản lý thách đấu">' +
-      '<aside class="tq-ben"><div class="tq-dau"><span class="tq-ic">' + I.kiem + '</span><h3>Quản lý thách đấu<span>Trò chơi của học sinh</span></h3></div>' +
-        '<nav class="tq-nav" id="tqNav"></nav></aside>' +
-      '<section class="tq-chinh"><header class="tq-tren"><h2 id="tqTieuDe"></h2><button class="tq-dong" type="button" aria-label="Đóng">' + I.x + '</button></header>' +
-        '<div class="tq-than" id="tqThan"></div><footer class="tq-chan-luu" id="tqLuu"></footer></section></div>';
+    if ($('#tdqNen')) return $('#tdqNen');
+    var n = document.createElement('div'); n.id = 'tdqNen'; n.className = 'tdq-nen'; n.hidden = true;
+    n.innerHTML = '<div class="tdq-hop" role="dialog" aria-modal="true" aria-label="Quản lý thách đấu">' +
+      '<aside class="tdq-ben"><div class="tdq-dau"><span class="tdq-ic">' + I.kiem + '</span><h3>Quản lý thách đấu<span>Trò chơi của học sinh</span></h3></div>' +
+        '<nav class="tdq-nav" id="tdqNav"></nav></aside>' +
+      '<section class="tdq-chinh"><header class="tdq-tren"><h2 id="tdqTieuDe"></h2><button class="tdq-dong" type="button" aria-label="Đóng">' + I.x + '</button></header>' +
+        '<div class="tdq-than" id="tdqThan"></div><footer class="tdq-chan-luu" id="tdqLuu"></footer></section></div>';
     document.body.appendChild(n);
-    $('.tq-dong', n).onclick = dong;
+    $('.tdq-dong', n).onclick = dong;
     n.addEventListener('mousedown', function (e) { if (e.target === n) dong(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !n.hidden) dong(); });
     return n;
   }
   function dong() {
     if (chuaLuu() && !confirm('Còn thay đổi CHƯA LƯU ở phần chế độ chơi. Đóng và bỏ các thay đổi đó?')) return;
-    $('#tqNen').hidden = true;
+    $('#tdqNen').hidden = true;
   }
   async function mo() {
     if (!TQ()) return alert('Chưa nạp được js/the-td.js — thầy tải lại trang nhé.');
     var n = dungKhung(); n.hidden = false;
-    $('#tqThan').innerHTML = '<div class="tq-rong">Đang tải…</div>'; $('#tqNav').innerHTML = ''; $('#tqLuu').innerHTML = '';
+    $('#tdqThan').innerHTML = '<div class="tdq-rong">Đang tải…</div>'; $('#tdqNav').innerHTML = ''; $('#tdqLuu').innerHTML = '';
     try {
       var r = await Promise.all([TQ().nap(true), napLop()]);
       S.c = JSON.parse(JSON.stringify(r[0])); S.c.chan = S.c.chan || {};
       S.lops = r[1]; S.goc = JSON.stringify(sach(S.c)); S.chonHs = null;
       if (!S.chonLop && S.lops[0]) S.chonLop = S.lops[0].ma;
-    } catch (e) { $('#tqThan').innerHTML = '<div class="tq-rong">Chưa tải được cài đặt: ' + E(chuLoi(e)) + '</div>'; return; }
+    } catch (e) { $('#tdqThan').innerHTML = '<div class="tdq-rong">Chưa tải được cài đặt: ' + E(chuLoi(e)) + '</div>'; return; }
     ve();
   }
 
   // ── vẽ ──
   function ve() { veNav(); if (S.xem === 'chan') veChan(); else veTro(); veLuu(); }
   function veNav() {
-    var h = '<div class="tq-nhom">Trò chơi</div>' + TQ().TRO.map(function (t) {
+    var h = '<div class="tdq-nhom">Trò chơi</div>' + TQ().TRO.map(function (t) {
       var on = t.che.filter(function (ch) { return TQ().trangThai((S.c.tro[t.ma] || {})[ch.ma]).mo; }).length;
-      return '<button type="button" class="tq-muc' + (S.xem === t.ma ? ' chon' : '') + '" data-xem="' + t.ma + '">' + I.game +
+      return '<button type="button" class="tdq-muc' + (S.xem === t.ma ? ' chon' : '') + '" data-xem="' + t.ma + '">' + I.game +
         '<span class="ch">' + E(t.ten) + '<small>' + on + '/' + t.che.length + ' chế độ đang mở</small></span></button>';
     }).join('') +
-      '<div class="tq-muc tat" title="Trò chơi mới sẽ tự hiện ở đây khi được thêm vào hệ thống">' + I.cong + '<span class="ch">Trò chơi khác<small>Sắp có</small></span></div>' +
-      '<i class="tq-cach"></i>' +
-      '<button type="button" class="tq-muc' + (S.xem === 'chan' ? ' chon' : '') + '" data-xem="chan">' + I.chan + '<span class="ch">Học sinh bị chặn<small>Khoá riêng từng em</small></span>' +
+      '<div class="tdq-muc tat" title="Trò chơi mới sẽ tự hiện ở đây khi được thêm vào hệ thống">' + I.cong + '<span class="ch">Trò chơi khác<small>Sắp có</small></span></div>' +
+      '<i class="tdq-cach"></i>' +
+      '<button type="button" class="tdq-muc' + (S.xem === 'chan' ? ' chon' : '') + '" data-xem="chan">' + I.chan + '<span class="ch">Học sinh bị chặn<small>Khoá riêng từng em</small></span>' +
       (soChan() ? '<span class="dem">' + soChan() + '</span>' : '') + '</button>';
-    var nav = $('#tqNav'); nav.innerHTML = h;
+    var nav = $('#tdqNav'); nav.innerHTML = h;
     $$('[data-xem]', nav).forEach(function (b) { b.onclick = function () { S.xem = b.getAttribute('data-xem'); ve(); }; });
   }
   function veTro() {
     var t = TQ().TRO.filter(function (x) { return x.ma === S.xem; })[0] || TQ().TRO[0]; S.xem = t.ma;
-    $('#tqTieuDe').innerHTML = E(t.ten) + '<small>Bật, tắt, hẹn giờ và chọn lớp cho từng chế độ</small>';
+    $('#tdqTieuDe').innerHTML = E(t.ten) + '<small>Bật, tắt, hẹn giờ và chọn lớp cho từng chế độ</small>';
     S.c.tro[t.ma] = S.c.tro[t.ma] || {};
-    $('#tqThan').innerHTML = '<div class="tq-luoi">' + t.che.map(function (ch) {
+    $('#tdqThan').innerHTML = '<div class="tdq-luoi">' + t.che.map(function (ch) {
       var m = S.c.tro[t.ma][ch.ma] = S.c.tro[t.ma][ch.ma] || { che: 'bat' }, p = pill(m), tatCa = !(m.lops && m.lops.length);
       var seg = function (v, chu) { return '<button type="button" data-che-v="' + v + '"' + ((m.che || 'bat') === v ? ' class="chon"' : '') + '>' + chu + '</button>'; };
-      return '<div class="tq-the" data-che="' + ch.ma + '">' +
-        '<div class="tq-the-dau"><div><b>' + E(ch.ten) + '</b><small>' + E(ch.mo) + '</small></div><span class="tq-pill ' + p.cls + '">' + E(p.chu) + '</span></div>' +
-        '<div class="tq-seg">' + seg('bat', 'Bật') + seg('tat', 'Tắt') + seg('hen', I.gio + 'Hẹn giờ') + '</div>' +
-        (m.che === 'hen' ? '<div class="tq-hen"><label>Mở từ<input type="datetime-local" data-gio="tu" value="' + oGio(m.tu) + '"></label>' +
+      return '<div class="tdq-the" data-che="' + ch.ma + '">' +
+        '<div class="tdq-the-dau"><div><b>' + E(ch.ten) + '</b><small>' + E(ch.mo) + '</small></div><span class="tdq-pill ' + p.cls + '">' + E(p.chu) + '</span></div>' +
+        '<div class="tdq-seg">' + seg('bat', 'Bật') + seg('tat', 'Tắt') + seg('hen', I.gio + 'Hẹn giờ') + '</div>' +
+        (m.che === 'hen' ? '<div class="tdq-hen"><label>Mở từ<input type="datetime-local" data-gio="tu" value="' + oGio(m.tu) + '"></label>' +
           '<label>Đóng lúc<input type="datetime-local" data-gio="den" value="' + oGio(m.den) + '"></label>' +
-          '<p class="tq-goi">Bỏ trống “Mở từ” = mở ngay · bỏ trống “Đóng lúc” = mở mãi. Ngoài khoảng này học sinh thấy lời nhắn bên dưới.</p></div>' : '') +
-        '<div class="tq-dong2"><span class="tq-nhan">Mở cho lớp</span><div class="tq-chips"><button type="button" data-lop=""' + (tatCa ? ' class="chon"' : '') + '>Tất cả lớp</button>' +
+          '<p class="tdq-goi">Bỏ trống “Mở từ” = mở ngay · bỏ trống “Đóng lúc” = mở mãi. Ngoài khoảng này học sinh thấy lời nhắn bên dưới.</p></div>' : '') +
+        '<div class="tdq-dong2"><span class="tdq-nhan">Mở cho lớp</span><div class="tdq-chips"><button type="button" data-lop=""' + (tatCa ? ' class="chon"' : '') + '>Tất cả lớp</button>' +
           S.lops.map(function (l) { return '<button type="button" data-lop="' + E(l.ma) + '"' + (!tatCa && m.lops.indexOf(l.ma) >= 0 ? ' class="chon"' : '') + '>' + E(l.ten || l.ma) + '</button>'; }).join('') + '</div></div>' +
-        '<div class="tq-dong2"><span class="tq-nhan">Lời nhắn khi đóng</span><textarea rows="2" maxlength="300" data-nhan placeholder="' + E(TQ().CHU_DONG[ch.ma] || '') + '">' + E(m.nhan || '') + '</textarea></div>' +
+        '<div class="tdq-dong2"><span class="tdq-nhan">Lời nhắn khi đóng</span><textarea rows="2" maxlength="300" data-nhan placeholder="' + E(TQ().CHU_DONG[ch.ma] || '') + '">' + E(m.nhan || '') + '</textarea></div>' +
         '</div>';
     }).join('') + '</div>';
-    $$('.tq-the', $('#tqThan')).forEach(function (el) {
+    $$('.tdq-the', $('#tdqThan')).forEach(function (el) {
       var m = S.c.tro[t.ma][el.getAttribute('data-che')];
       $$('[data-che-v]', el).forEach(function (b) { b.onclick = function () {
         m.che = b.getAttribute('data-che-v');
@@ -204,12 +204,12 @@
     });
   }
   function veLuu() {
-    var o = $('#tqLuu');
-    if (S.xem === 'chan') { o.innerHTML = '<span class="tq-goi">Chặn / mở khoá được lưu ngay khi bấm.</span>'; return; }
+    var o = $('#tdqLuu');
+    if (S.xem === 'chan') { o.innerHTML = '<span class="tdq-goi">Chặn / mở khoá được lưu ngay khi bấm.</span>'; return; }
     var doi = chuaLuu();
-    o.innerHTML = '<span class="tq-goi' + (doi ? ' doi' : '') + '">' + (doi ? '● Có thay đổi chưa lưu' : S.c.capNhat ? 'Đã lưu lúc ' + chuLuc(S.c.capNhat) : 'Chưa lưu lần nào — đang dùng mặc định (Giao hữu tắt, Đấu giải + Luyện tập bật)') + '</span>' +
-      (doi ? '<button type="button" class="tq-nut phu" data-huy>Huỷ thay đổi</button>' : '') +
-      '<button type="button" class="tq-nut" data-luu' + (doi ? '' : ' disabled') + '>Lưu thay đổi</button>';
+    o.innerHTML = '<span class="tdq-goi' + (doi ? ' doi' : '') + '">' + (doi ? '● Có thay đổi chưa lưu' : S.c.capNhat ? 'Đã lưu lúc ' + chuLuc(S.c.capNhat) : 'Chưa lưu lần nào — đang dùng mặc định (Giao hữu tắt, Đấu giải + Luyện tập bật)') + '</span>' +
+      (doi ? '<button type="button" class="tdq-nut phu" data-huy>Huỷ thay đổi</button>' : '') +
+      '<button type="button" class="tdq-nut" data-luu' + (doi ? '' : ' disabled') + '>Lưu thay đổi</button>';
     var h = $('[data-huy]', o); if (h) h.onclick = function () { var g = JSON.parse(S.goc); Object.keys(g).forEach(function (k) { S.c.tro[k] = g[k]; }); ve(); };
     $('[data-luu]', o).onclick = async function () {
       var b = this; b.disabled = true; b.textContent = 'Đang lưu…';
@@ -222,8 +222,8 @@
   function cacCheDo() { var ds = []; TQ().TRO.forEach(function (t) { t.che.forEach(function (ch) { ds.push({ tro: t.ma, che: ch.ma, chu: (TQ().TRO.length > 1 ? t.ten + ' · ' : '') + ch.ten }); }); }); return ds; }
   function chuCheDo(x) { var ra = []; cacCheDo().forEach(function (c) { if (((x.tro || {})[c.tro] || []).indexOf(c.che) >= 0) ra.push(c.chu); }); return ra; }
   async function veChan() {
-    $('#tqTieuDe').innerHTML = 'Học sinh bị chặn<small>Em bị chặn bấm vào chế độ đó sẽ thấy “Thầy Andrew đang tạm khoá…”</small>';
-    var than = $('#tqThan'), bay = Date.now();
+    $('#tdqTieuDe').innerHTML = 'Học sinh bị chặn<small>Em bị chặn bấm vào chế độ đó sẽ thấy “Thầy Andrew đang tạm khoá…”</small>';
+    var than = $('#tdqThan'), bay = Date.now();
     var dsChan = Object.keys(S.c.chan).map(function (u) { return Object.assign({ uid: u }, S.c.chan[u]); })
       .sort(function (a, b) { return (b.luc || 0) - (a.luc || 0); });
     var hs = S.chonLop ? await napHs(S.chonLop).catch(function () { return []; }) : [];
@@ -232,31 +232,31 @@
     var form = '';
     if (c) {
       var chon = cu ? chuCheDo(cu) : null, han = c.han != null ? c.han : (cu ? -1 : 0);
-      form = '<div class="tq-form"><div class="tq-form-dau">' + av(c) + '<div><b>' + E(c.ten) + '</b><small>' + E(tenLop(c.lop)) + (cu ? ' · đang bị chặn' : '') + '</small></div>' +
-          '<button type="button" class="tq-x" data-bo-chon aria-label="Bỏ chọn">' + I.x + '</button></div>' +
-        '<span class="tq-nhan">Chặn chế độ</span><div class="tq-chips">' + cacCheDo().map(function (k) {
-          return '<label class="tq-hop-chon"><input type="checkbox" data-k="' + k.tro + ':' + k.che + '"' + (!chon || chon.indexOf(k.chu) >= 0 ? ' checked' : '') + '>' + E(k.chu) + '</label>'; }).join('') + '</div>' +
-        '<span class="tq-nhan">Thời hạn</span><div class="tq-chips">' + HAN.map(function (h) { return '<button type="button" data-han="' + h[0] + '"' + (han === h[0] ? ' class="chon"' : '') + '>' + h[1] + '</button>'; }).join('') +
+      form = '<div class="tdq-form"><div class="tdq-form-dau">' + av(c) + '<div><b>' + E(c.ten) + '</b><small>' + E(tenLop(c.lop)) + (cu ? ' · đang bị chặn' : '') + '</small></div>' +
+          '<button type="button" class="tdq-x" data-bo-chon aria-label="Bỏ chọn">' + I.x + '</button></div>' +
+        '<span class="tdq-nhan">Chặn chế độ</span><div class="tdq-chips">' + cacCheDo().map(function (k) {
+          return '<label class="tdq-hop-chon"><input type="checkbox" data-k="' + k.tro + ':' + k.che + '"' + (!chon || chon.indexOf(k.chu) >= 0 ? ' checked' : '') + '>' + E(k.chu) + '</label>'; }).join('') + '</div>' +
+        '<span class="tdq-nhan">Thời hạn</span><div class="tdq-chips">' + HAN.map(function (h) { return '<button type="button" data-han="' + h[0] + '"' + (han === h[0] ? ' class="chon"' : '') + '>' + h[1] + '</button>'; }).join('') +
           (cu && cu.den && han === -1 ? '<button type="button" class="chon" data-han="-1">Giữ: tới ' + E(chuLuc(cu.den)) + '</button>' : '') + '</div>' +
-        '<span class="tq-nhan">Lý do (em thấy)</span><input type="text" class="tq-o" maxlength="120" data-ly placeholder="Ví dụ: chơi quá nhiều giờ học" value="' + E(cu ? cu.ly || '' : '') + '">' +
-        '<div class="tq-form-nut">' + (cu ? '<button type="button" class="tq-nut phu" data-mo="' + E(c.uid) + '">' + I.mo + 'Mở khoá</button>' : '') +
-          '<button type="button" class="tq-nut do" data-chan>' + I.khoa + (cu ? 'Lưu chặn' : 'Chặn em này') + '</button></div></div>';
+        '<span class="tdq-nhan">Lý do (em thấy)</span><input type="text" class="tdq-o" maxlength="120" data-ly placeholder="Ví dụ: chơi quá nhiều giờ học" value="' + E(cu ? cu.ly || '' : '') + '">' +
+        '<div class="tdq-form-nut">' + (cu ? '<button type="button" class="tdq-nut phu" data-mo="' + E(c.uid) + '">' + I.mo + 'Mở khoá</button>' : '') +
+          '<button type="button" class="tdq-nut do" data-chan>' + I.khoa + (cu ? 'Lưu chặn' : 'Chặn em này') + '</button></div></div>';
     }
-    than.innerHTML = '<div class="tq-chan">' +
-      '<div class="tq-the"><div class="tq-the-dau"><div><b>Chặn một em</b><small>Chọn lớp, bấm tên em</small></div></div>' +
-        '<div class="tq-hang"><select class="tq-o" data-chon-lop>' + S.lops.map(function (l) { return '<option value="' + E(l.ma) + '"' + (l.ma === S.chonLop ? ' selected' : '') + '>' + E(l.ten || l.ma) + '</option>'; }).join('') + '</select>' +
-          '<label class="tq-tim">' + I.tim + '<input type="search" class="tq-o" data-tim placeholder="Tìm tên" value="' + E(S.tim) + '"></label></div>' +
-        '<div class="tq-ds-hs">' + (hsLoc.length ? hsLoc.map(function (x) {
+    than.innerHTML = '<div class="tdq-chan">' +
+      '<div class="tdq-the"><div class="tdq-the-dau"><div><b>Chặn một em</b><small>Chọn lớp, bấm tên em</small></div></div>' +
+        '<div class="tdq-hang"><select class="tdq-o" data-chon-lop>' + S.lops.map(function (l) { return '<option value="' + E(l.ma) + '"' + (l.ma === S.chonLop ? ' selected' : '') + '>' + E(l.ten || l.ma) + '</option>'; }).join('') + '</select>' +
+          '<label class="tdq-tim">' + I.tim + '<input type="search" class="tdq-o" data-tim placeholder="Tìm tên" value="' + E(S.tim) + '"></label></div>' +
+        '<div class="tdq-ds-hs">' + (hsLoc.length ? hsLoc.map(function (x) {
           var bi = S.c.chan[x.uid] && (!S.c.chan[x.uid].den || S.c.chan[x.uid].den > bay);
-          return '<button type="button" class="tq-hs' + (c && c.uid === x.uid ? ' chon' : '') + '" data-hs="' + E(x.uid) + '">' + av(x) + '<span>' + E(x.ten) + '</span>' + (bi ? '<em>' + I.khoa + '</em>' : '') + '</button>';
-        }).join('') : '<div class="tq-rong nho">' + (S.lops.length ? 'Không có em nào.' : 'Chưa có danh sách lớp (nwCauHinh/lop).') + '</div>') + '</div>' + form + '</div>' +
-      '<div class="tq-the"><div class="tq-the-dau"><div><b>Đang bị chặn</b><small>' + dsChan.length + ' em</small></div></div>' +
-        (dsChan.length ? '<div class="tq-ds-chan">' + dsChan.map(function (x) {
+          return '<button type="button" class="tdq-hs' + (c && c.uid === x.uid ? ' chon' : '') + '" data-hs="' + E(x.uid) + '">' + av(x) + '<span>' + E(x.ten) + '</span>' + (bi ? '<em>' + I.khoa + '</em>' : '') + '</button>';
+        }).join('') : '<div class="tdq-rong nho">' + (S.lops.length ? 'Không có em nào.' : 'Chưa có danh sách lớp (nwCauHinh/lop).') + '</div>') + '</div>' + form + '</div>' +
+      '<div class="tdq-the"><div class="tdq-the-dau"><div><b>Đang bị chặn</b><small>' + dsChan.length + ' em</small></div></div>' +
+        (dsChan.length ? '<div class="tdq-ds-chan">' + dsChan.map(function (x) {
           var het = x.den && x.den <= bay;
-          return '<div class="tq-dong-chan' + (het ? ' het' : '') + '">' + av(x) + '<div class="tq-noi"><b>' + E(x.ten || x.uid) + '<span class="tq-lop">' + E(tenLop(x.lop)) + '</span></b>' +
+          return '<div class="tdq-dong-chan' + (het ? ' het' : '') + '">' + av(x) + '<div class="tdq-noi"><b>' + E(x.ten || x.uid) + '<span class="tdq-lop">' + E(tenLop(x.lop)) + '</span></b>' +
             '<small>' + E(chuCheDo(x).join(' · ') || '—') + '</small><small>' + (het ? 'Đã hết hạn ' + E(chuLuc(x.den)) : x.den ? 'Tới ' + E(chuLuc(x.den)) : 'Tới khi thầy mở') + (x.ly ? ' · ' + E(x.ly) : '') + '</small></div>' +
-            '<button type="button" class="tq-nut phu nho" data-sua="' + E(x.uid) + '">Sửa</button><button type="button" class="tq-nut phu nho" data-mo="' + E(x.uid) + '">' + (het ? 'Xoá' : 'Mở khoá') + '</button></div>';
-        }).join('') + '</div>' : '<div class="tq-rong nho">Chưa chặn em nào.</div>') + '</div></div>';
+            '<button type="button" class="tdq-nut phu nho" data-sua="' + E(x.uid) + '">Sửa</button><button type="button" class="tdq-nut phu nho" data-mo="' + E(x.uid) + '">' + (het ? 'Xoá' : 'Mở khoá') + '</button></div>';
+        }).join('') + '</div>' : '<div class="tdq-rong nho">Chưa chặn em nào.</div>') + '</div></div>';
 
     $('[data-chon-lop]', than).onchange = function () { S.chonLop = this.value; S.chonHs = null; veChan(); };
     var o = $('[data-tim]', than); o.oninput = function () { S.tim = o.value; var vt = o.selectionStart; veChan().then(function () { var n = $('[data-tim]'); if (n) { n.focus(); try { n.setSelectionRange(vt, vt); } catch (e) { } } }); };

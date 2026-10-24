@@ -268,3 +268,5 @@
   .ds-chan .nut.xam{display:none}
   .ds-chan .nut{flex:1; padding:11px 10px}
 }
+/* v1.420.0 — nút Chấp nhận ảnh trên thẻ Máy lọc chặn */
+.da-nen .chan-o .nut.chan-ok{margin-top:9px; padding:7px 12px; font-size:12.5px; width:max-content}

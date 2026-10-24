@@ -304,8 +304,24 @@
     $('#daThan').innerHTML = '<div class="chan-luoi">' + ds.map(function (c) {
       return '<div class="chan-o">' + khung(c.url, true) + '<div class="t"><div class="ten">' + E(c.ten) + ' <span class="lop">' + E(c.lop) + '</span></div>' +
         '<div class="phu">' + (c.loai === 'av' ? 'Ảnh đại diện' : 'Ảnh bìa') + ' · ' + luc(c.luc) + '</div>' +
-        '<span class="chip do">' + I.canh + E(chiTietLoc(c.loc) || 'Bị chặn') + '</span></div></div>'; }).join('') + '</div>';
+        '<span class="chip do">' + I.canh + E(chiTietLoc(c.loc) || 'Bị chặn') + '</span>' +
+        '<button type="button" class="nut duyet chan-ok" data-chan-ok="' + E(c.id) + '">' + I.ok + 'Chấp nhận ảnh</button></div></div>'; }).join('') + '</div>';
     ganKhung();
+    // ⭐ v1.420.0 — máy lọc chặn OAN ⇒ thầy chấp nhận: mở khung chỉnh (ảnh chặn không có ảnh nhỏ — khung xuất lớn + nhỏ) ⇒ "Chấp nhận & duyệt"
+    $$('[data-chan-ok]').forEach(function (b) {
+      b.onclick = function () { var x = S.chan.filter(function (y) { return y.id === b.getAttribute('data-chan-ok'); })[0]; if (x) moSua(x, { chan: true }); };
+    });
+  }
+  function duyetChan(x) {
+    var sua = S.sua[x.id];
+    toast('Đang duyệt ảnh của ' + x.ten + '…');
+    goi({ viec: 'duyetChan', id: x.id, sua: sua ? sua.du : null }).then(function (r) {
+      lamMoiAnh(r); delete S.sua[x.id];
+      S.chan = S.chan.filter(function (y) { return y.id !== x.id; });
+      datSo(S.soCho);
+      if (S.tab === 'chan') veChan();
+      toast('Đã chấp nhận ' + (x.loai === 'av' ? 'ảnh đại diện' : 'ảnh bìa') + ' của ' + x.ten + (x.loai === 'av' ? ' — đổi trên cả hệ. Lần vi phạm oan đã được xoá.' : '.'));
+    }, function (e) { toast('Chưa duyệt được ảnh của ' + x.ten + ': ' + chuLoi(e)); });
   }
 
   // ── ĐÃ DUYỆT / ĐÃ TỪ CHỐI ──
@@ -388,7 +404,9 @@
       '<input type="range" data-k="' + k + '" min="' + min + '" max="' + max + '" step="' + buoc + '" aria-label="' + ten + '">' +
       '<button type="button" class="ds-n" data-cong="' + k + '" aria-label="Tăng">+</button></div></div>';
   }
-  function moSua(x) {
+  // tuy.chan = ảnh máy lọc đã chặn (v1.420.0): bỏ "Lưu chỉnh sửa", nút cuối = "Chấp nhận & duyệt" ⇒ duyetChan
+  function moSua(x, tuy) {
+    tuy = tuy || {};
     var hop = $('#daNen .da-hop'), laAv = x.loai === 'av';
     var el = document.createElement('div'); el.className = 'da-sua' + (laAv ? ' av' : ' bia');
     el.innerHTML =
@@ -408,8 +426,8 @@
         '</aside>' +
       '</div>' +
       '<footer class="ds-chan"><button type="button" class="nut xam" data-thoi>Huỷ</button>' +
-        '<button type="button" class="nut sua" data-luu disabled>' + I.sua + 'Lưu chỉnh sửa</button>' +
-        '<button type="button" class="nut duyet" data-duyet disabled>' + I.ok + 'Duyệt ảnh đã chỉnh</button></footer>';
+        (tuy.chan ? '' : '<button type="button" class="nut sua" data-luu disabled>' + I.sua + 'Lưu chỉnh sửa</button>') +
+        '<button type="button" class="nut duyet" data-duyet disabled>' + I.ok + (tuy.chan ? 'Chấp nhận & duyệt' : 'Duyệt ảnh đã chỉnh') + '</button></footer>';
     hop.appendChild(el);
     requestAnimationFrame(function () { el.classList.add('mo'); });
 
@@ -568,8 +586,8 @@
       return true;
     }
     $$('[data-thoi]', el).forEach(function (b) { b.onclick = dongSua; });
-    $('[data-luu]', el).onclick = function () { if (luu()) { dongSua(); veCho(); toast('Đã lưu chỉnh sửa — bấm Duyệt để dùng ảnh này.'); } };
-    $('[data-duyet]', el).onclick = function () { if (luu()) { dongSua(); veCho(); lenhDuyet(x); } };
+    if (!tuy.chan) $('[data-luu]', el).onclick = function () { if (luu()) { dongSua(); veCho(); toast('Đã lưu chỉnh sửa — bấm Duyệt để dùng ảnh này.'); } };
+    $('[data-duyet]', el).onclick = tuy.chan ? function () { if (luu()) { dongSua(); duyetChan(x); } } : function () { if (luu()) { dongSua(); veCho(); lenhDuyet(x); } };
 
     // ── nạp ảnh (CORS — kho Storage trả Access-Control-Allow-Origin *) ──
     var anh = new Image();

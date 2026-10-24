@@ -29,6 +29,7 @@
         'position:fixed;inset:0;z-index:2147483000;display:grid;place-items:center;overflow:hidden;background:radial-gradient(120% 80% at 50% 30%,rgba(61,245,138,.22),rgba(2,10,6,.86));' +
         '-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);transition:opacity .5s;font-family:var(--f);-webkit-tap-highlight-color:transparent}' +
       '.ghk-phu *{box-sizing:border-box;margin:0;padding:0}.ghk-phu.tbp-tat{opacity:0;pointer-events:none}' +
+      '.ghk-phu.ghk-trong{position:absolute;z-index:auto;-webkit-backdrop-filter:none;backdrop-filter:none;pointer-events:none}.ghk-trong .tbp-the.ghk{animation:none}' +
       '.ghk-co{width:380px;height:660px;flex:none;transform-origin:50% 50%}' +
       '.ghk-phu .tbp-the.ghk{position:relative;width:380px;max-width:none;height:660px;max-height:none;border-radius:28px;overflow:hidden;color:var(--c);display:flex;flex-direction:column;' +
         'background:radial-gradient(130% 55% at 50% 0%,rgba(61,245,138,.26),transparent 62%),radial-gradient(120% 90% at 50% 30%,#0A2418 0%,#04110B 60%,#020A06 100%);' +
@@ -123,12 +124,18 @@
     var laToi = function (e) { return String(e.so) === SO; };
     var trong = function (loai) { return DS[loai].filter(laToi)[0]; };
 
-    var nen = document.createElement('div'); nen.className = 'ghk-phu';
+    // o.trong = phần tử chứa ⇒ vẽ TĨNH bên trong (xem trước ở hộp Thông báo dashboard, js/tb-ql.js): không phủ màn, không bấm, o.man = màn cần xem
+    var nen = document.createElement('div'); nen.className = 'ghk-phu' + (o.trong ? ' ghk-trong' : '');
     nen.innerHTML = '<div class="ghk-co"><div class="tbp-the ghk" role="dialog" aria-modal="true" aria-label="Tổng kết giao hữu A Show Speed mùa 1"></div></div>';
-    document.body.appendChild(nen);
+    (o.trong || document.body).appendChild(nen);
     var co = nen.querySelector('.ghk-co'), the = nen.querySelector('.ghk');
-    function vua() { var s = Math.min(1.25, (window.innerWidth - 20) / W, (window.innerHeight - 20) / H); co.style.transform = 'scale(' + s.toFixed(4) + ')'; }
-    window.addEventListener('resize', vua); vua();
+    function vua() {
+      var w = o.trong ? (o.trongW || 375) : window.innerWidth, h = o.trong ? (o.trongH || 812) : window.innerHeight;
+      var s = Math.min(1.25, (w - 20) / W, (h - 20) / H); co.style.transform = 'scale(' + s.toFixed(4) + ')';
+    }
+    if (!o.trong) window.addEventListener('resize', vua);
+    vua();
+    if (o.man) MAN = o.man;
 
     function dau(t, pill) {
       return '<div class="ghk-dau"><div class="ghk-brand">' + KIEM + 'A SHOW SPEED · GIAO HỮU MÙA 1<span class="ghk-cham"><i class="on"></i><i class="' + (MAN > 1 ? 'on' : '') + '"></i><i class="' + (MAN > 2 ? 'on' : '') + '"></i></span></div>' +

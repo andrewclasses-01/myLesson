@@ -189,7 +189,7 @@ body{margin:0; background:var(--ground); color:var(--ink); font:500 15px/1.6 var
   font:800 clamp(22px,6.2vw,29px)/1.15 var(--sans); color:var(--accent); letter-spacing:-.02em}
 
 /* ⭐ v1.111.0 (15/09/2026, thầy chốt phương án A) — ĐẦU THẺ Ở MÀN CHỌN LỚP LÀ EM:
-   avatar em + TÊN EM thay avatar thầy + "Andrew Classes" (dangnhap.js `doiBrandSangEm`).
+   avatar em + TÊN EM thay avatar thầy + "Andrew Classes" (js/dangnhap.js cũ `doiBrandSangEm` — file đã xoá v1.411.0).
    Cùng khối .brand, cùng cỡ ⇒ thẻ không đổi chiều cao; sparkle giữ nguyên.
    `.doi` = đang mờ đi để đổi ruột (ảnh + chữ), tránh ảnh "nhảy" giữa chừng. */
 .brand-ava,.brand-txt{transition:opacity .22s ease}

@@ -286,8 +286,8 @@
          lop.html (thẻ khoá), bai.html + bai-sp.html (chặn mở bài khoá),
          sp-chitiet.html (cửa 'ql').
 
-     Vào bằng MÃ QUẢN LÝ ở màn đăng nhập, hoặc bấm tab CLASSES trong app myLesson.
-     Máy nào đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng.
+     Vào bằng ID quản trị ở màn đăng nhập (chỉ đường sang đây), hoặc bấm tab CLASSES trong app myLesson.
+     Mở khoá CHỈ bằng phiên thầy (js/thay.js) — v1.411.0 đã bỏ cờ nhớ máy cũ.
 
      ⛔ CỬA VÀO KHÔNG PHẢI BẢO MẬT THẬT: trang tĩnh thì mọi thứ chạy trên máy
      người xem, và `lop.json`/`bai.json` vốn công khai. Nó chỉ chặn người tình cờ
@@ -4456,7 +4456,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=95"></script>
+<script src="js/chung.js?v=96"></script>
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
@@ -13722,7 +13722,6 @@ tr.qm-hang-tam td{background:#fffbeb}
       QT_DA_MO = false;                                   // v1.176.0 — tự chuyển trang, đừng để theoDoi chuyển lần nữa
       // v1.256.0 — gỡ thông báo đẩy của máy này TRƯỚC khi thoát phiên (cần phiên để xoá tài liệu máy; tối đa 2,5 giây)
       (window.ACDay ? ACDay.goKhiThoat() : Promise.resolve()).then(function () {
-        A.thoatAdmin();
         return AWThay.thoat()['catch'](function () {});
       }).then(function () { location.href = 'index.html?vao=1'; });
     });
@@ -13804,7 +13803,6 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ---------- cửa vào (v1.176.0) ----------
   // Dashboard CHỈ mở khi có PHIÊN THẦY thật (AWThay.theoDoi): tài khoản quản trị ID + mật khẩu + mã 6 số
   // Google Authenticator · Google namdaptrai01 (dự phòng) · token app myLesson tiêm vào (tab CLASSES).
-  // Cờ `mylesson_ql` nay chỉ là "máy này từng vào dashboard" để index.html chỉ đường — KHÔNG mở khoá gì.
   // QT_BUOC: 'cho' (đang kiểm phiên) · 'dang' (đang gọi máy chủ) · b1..b5 — theoDoi(null) chỉ đổi màn khi 'cho'.
   var QT_BUOC = 'cho', QT_DA_MO = false, QT_MA = null, QT_CAI = null;
   function qtBuoc(b) {
@@ -13819,7 +13817,6 @@ tr.qm-hang-tam td{background:#fffbeb}
   function qtMoKhoa() {
     if (QT_DA_MO) return;
     QT_DA_MO = true;
-    A.datAdmin();
     $('#congQt').hidden = true;
     $('#trang').hidden = false;
     batDau();
@@ -13920,8 +13917,8 @@ tr.qm-hang-tam td{background:#fffbeb}
         setTimeout(function () {
           AWThay.phien().then(function (v) {
             if (v || !QT_DA_MO) return;
-            A.thoatAdmin(); location.replace('index.html?vao=1');
-          }, function () { A.thoatAdmin(); location.replace('index.html?vao=1'); });
+            location.replace('index.html?vao=1');
+          }, function () { location.replace('index.html?vao=1'); });
         }, 2500);
         return;
       }
@@ -13930,7 +13927,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
 
   // ---------- ⭐ v1.52.0 (gói bảo mật C) — PHIÊN THẦY ----------
-  // Cờ `mylesson_ql` (mã quản lý) chỉ MỞ GIAO DIỆN. Quyền GHI kho nay do Firebase
+  // Giao diện mở bằng phiên thầy (v1.176.0). Quyền GHI kho do Firebase
   // Auth quyết: luật Firestore đòi `laThay()` (email của thầy, hoặc claim `thay`
   // từ token app ký). THAY_PHIEN: undefined = chưa biết (mới mở trang, cứ để kho
   // quyết) · null = chắc chắn CHƯA có phiên (chặn sớm, báo rõ) · object = có phiên.

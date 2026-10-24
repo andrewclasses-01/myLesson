@@ -1111,7 +1111,7 @@
     if (!moiNoi.length) return null;
     var thay = noiKhop(moiNoi, cu.lop);
     // ⭐ v1.111.0 (15/09/2026, thầy chốt) — gõ mã + SIGN IN là ĐÃ ĐĂNG NHẬP kể cả khi
-    // em còn ở nhiều nơi (`dangnhap.js` lưu `lop:''` rồi mới mở màn chọn). Em NHIỀU
+    // em còn ở nhiều nơi (`nw-dangnhap.js` lưu `lop:''` rồi mới mở màn chọn). Em NHIỀU
     // nơi mà CHƯA CHỌN (hoặc nơi đã chọn không còn) thì ở đây trả `null` để lop/khoa
     // đá về `index.html` — nơi đó đọc `docNho()` và bày màn chọn. ⛔ Không được lùi
     // về `moiNoi[0]` như bản cũ: mở thẳng `khoa.html` sẽ vẽ lớp thường như một khóa.
@@ -1201,21 +1201,8 @@
     });
   }
 
-  // Nhớ "máy này đã gõ đúng mã quản lý" — để lần sau vào thẳng dashboard, và để
-  // tab CLASSES bên app myLesson mở ra là dùng được ngay.
-  // ⛔ CHỈ nhớ một CỜ, KHÔNG nhớ mã: mã không bao giờ được nằm lại trong máy.
-  var KHOA_QL = 'mylesson_ql';
-
-  function laAdmin() {
-    try { return localStorage.getItem(KHOA_QL) === '1'; } catch (e) { return false; }
-  }
-  function datAdmin() {
-    try { localStorage.setItem(KHOA_QL, '1'); } catch (e) {}
-  }
-  function thoatAdmin() {
-    try { localStorage.removeItem(KHOA_QL); } catch (e) {}
-  }
-
+  // v1.411.0 — đã bỏ cờ nhớ máy quản lý (laAdmin/datAdmin/thoatAdmin): vào dashboard chỉ bằng phiên thầy (js/thay.js).
+  // laMaQuanLy chỉ nhận ra ID quản trị để chỉ đường sang dashboard.
   function laMaQuanLy(maGo) {
     var dich = String(CFG.QUAN_LY_BAM || '').toLowerCase();
     if (!dich) return Promise.resolve(false);
@@ -3804,7 +3791,6 @@
     danhDauDaChon: danhDauDaChon, daChonTabNay: daChonTabNay,
     giuXemNhuQuery: giuXemNhuQuery,
     bam: bam, laMaQuanLy: laMaQuanLy,
-    laAdmin: laAdmin, datAdmin: datAdmin, thoatAdmin: thoatAdmin,
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     kyChuanTuDoc: kyChuanTuDoc,   // v1.396.0 — cho tools/thu-van-tay-chuan.js
     actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, ngheCuaBai: ngheCuaBai, maLesson: maLesson, tenBai: tenBai,

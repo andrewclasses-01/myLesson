@@ -1,12 +1,12 @@
 /* ============================================================
    nw-dangnhap.js — MÀN ĐĂNG NHẬP giao diện myNetwork (mẫu v29, 24/09/2026)
 
-   Thầy chốt 24/09: hình myNetwork, nhưng CÁCH VÀO giữ y myLesson (js/dangnhap.js):
+   Thầy chốt 24/09: hình myNetwork, nhưng CÁCH VÀO giữ y myLesson (js/dangnhap.js cũ — đã xoá v1.411.0):
      · gõ Andrew Classes ID (= mã My ID cũ)
      · mã học sinh một nơi → vào thẳng TRANG BÀI TẬP (lop.html / khoa.html)
      · mã ở 2 nơi → màn chọn (hỏi lại mỗi lần mở trang, như v1.78.0/v1.111.0)
      · học sinh đặc biệt (phụ huynh) → lop.html · mã quản lý → dashboard.html
-   Logic chép từ js/dangnhap.js — ⛔ sửa luật vào lớp thì sửa CẢ HAI nơi cho tới khi bỏ file cũ.
+   Logic chép từ js/dangnhap.js (file cũ đã xoá v1.411.0 — nay đây là bản DUY NHẤT).
 
    ⭐⭐ v1.158.0 (27/09/2026, sau tấn công Tr0ngX — thầy chốt) — MỞ Ô MẬT KHẨU (Firebase Auth, js/nw-phien.js).
    Chép từ chặng 1 của trang thử `andrewclasses-thu` (24/09), thêm luật thầy chốt 27/09:
@@ -247,7 +247,7 @@
     DL = dl;
     if (window.__thayVao) { await vaoCheDoThay(dl); return; }     // v1.201.0 — thầy xem như em / đăng nhập thay
     var epGo = new URLSearchParams(location.search).get('vao') === '1';
-    if (epGo) { A.thoat(); A.thoatAdmin(); await P.thoat()['catch'](function () { }); }
+    if (epGo) { A.thoat(); await P.thoat()['catch'](function () { }); }
     // Máy đã nhớ em → thầy chốt: mở andrewclasses.com LUÔN vào thẳng TRANG BÀI TẬP.
     var nho = epGo ? null : A.docNho();
     if (nho && nho.ma && nho.dacBiet) {
@@ -272,7 +272,6 @@
         return;
       }
     }
-    if (!epGo && A.laAdmin()) { location.replace('dashboard.html'); return; }
     P.thoat()['catch'](function () { });     // máy không nhớ em nào ⇒ bỏ phiên học sinh cũ (nếu có)
     veManVao('');
     if (!DL.lop.length) loi('Danh sách lớp chưa sẵn sàng. Em báo thầy Andrew nhé.');

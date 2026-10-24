@@ -130,15 +130,16 @@ thầy chốt ở `mau-web` đã thành trang thật, mỗi màn một trang:
 | `bai-sp.html` | Bài SPEAKING SLIDE (Canva + danh sách tự báo nộp video) |
 | `dashboard.html` | **Trang quản lý của thầy** (v1.10.0) — xem mục ngay dưới |
 | `js/chung.js` | Dùng chung: đọc dữ liệu · danh tính em · điểm AWord · hạn nộp |
-| `js/dangnhap.js` | Riêng màn đăng nhập (thay `js/app.js` cũ — file đó đã bỏ, còn trong git) |
+| `js/nw-dangnhap.js` | Riêng màn đăng nhập (`js/dangnhap.js` cũ đã xoá v1.411.0, còn trong git) |
 
 ⭐ `bai.html?id=<mã bài>` là đường vào một bài. Thêm `&nhu=<mã đăng nhập>` để **xem như một
 em** — app myLesson dùng đường này cho nút xem nhanh, KHÔNG ghi gì vào máy.
 
 ## ⭐ v1.10.0 (23/08/2026) — TRANG QUẢN LÝ (`dashboard.html`)
 
-Vào bằng **mã quản lý** ở màn đăng nhập, hoặc bấm tab **CLASSES** trong app myLesson. Máy nào
-đã gõ đúng mã một lần thì nhớ luôn (cờ `mylesson_ql`), lần sau vào thẳng; nút **Thoát** quên đi.
+⭐ **Từ v1.176.0** vào dashboard CHỈ bằng phiên thầy (ID quản trị + mật khẩu + mã 6 số, `js/thay.js`); gõ ID ở màn
+đăng nhập chỉ chỉ đường sang đây. **v1.411.0** đã bỏ hẳn cờ nhớ máy `mylesson_ql` (đoạn dưới là lịch sử).
+(Lịch sử v1.10.0: vào bằng **mã quản lý**, máy gõ đúng một lần thì nhớ bằng cờ `mylesson_ql`.)
 ⭐ **Từ app myLesson v1.20.0**, tab CLASSES chạy trang này **ngay trong app** (webview) và **tự
 đặt cờ `mylesson_ql`** nên không hỏi mã. ⛔ Vì thế **đừng đổi id `#cong` / `#trang`** và đừng đổi
 tên khoá cờ — app dò đúng hai thứ đó để biết cửa hỏi mã còn hiện hay không.
@@ -187,7 +188,7 @@ Mọi file còn lại (`index.html`, `css/`, `js/`, `assets/`) là khung trang, 
 | `index.html` | Màn đăng nhập (MỘT ô mã) + ngăn thông tin |
 | `lop.html` · `bai.html` · `bai-sp.html` · `dashboard.html` | Xem bảng ở mục v1.9.0 bên trên |
 | `css/main.css` | Design thầy duyệt 08/07/2026: light-only, teal `#0E7C6E`, thẻ bo 18px |
-| `js/chung.js` · `js/dangnhap.js` | Toàn bộ logic — không framework, không thư viện ngoài |
+| `js/chung.js` · `js/nw-dangnhap.js` | Toàn bộ logic — không framework, không thư viện ngoài |
 | `config.js` | Tên site + số phiên bản + địa chỉ AWord + kho điểm Firebase (khóa công khai) |
 | `assets/fonts.css` | Montserrat (Việt hoá) nhúng base64 — trang chạy cả khi mất mạng |
 | `assets/avatar-tron.jpg` | Ảnh Teacher Andrew (kiêm favicon + icon bấm mở menu ở màn đăng nhập, v1.8.0) |
@@ -212,6 +213,6 @@ rồi mở http://localhost:8130
 ## ⚠ Sửa css/js/config là PHẢI tăng `?v=` trong index.html
 
 GitHub Pages + trình duyệt học sinh giữ cache khoảng 10 phút. Số `?v=` sau
-`main.css` / `config.js` / `chung.js` / `dangnhap.js` là số chống cache —
+`main.css` / `config.js` / `chung.js` / `nw-dangnhap.js` là số chống cache —
 quên tăng là máy học sinh chạy bản cũ (bài học bên mySpeaking, chặng 36).
 ⛔ Từ v1.9.0 số này nằm trong **5 trang**, sửa là phải sửa cả năm.

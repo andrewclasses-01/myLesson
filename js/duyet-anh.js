@@ -610,9 +610,9 @@
   //   Không bật mãi khi thầy cố ý để lại ảnh: chỉ tự mở lại khi SỐ ảnh chờ khác lần tự mở trước, hoặc đã quá 3 giờ (localStorage 'daTuMo').
   //   Đang có hộp khác mở (Quản lý & bảo mật, Thông báo…) ⇒ chờ nó đóng (tối đa 2 phút) rồi mới mở.
   var TU_MO = 'daTuMo';
-  function tuMo(n) {
+  function tuMo(n, moi) {   // moi = có ảnh MỚI tới khi đang ngồi dashboard ⇒ bỏ qua luật "cùng số / 3 giờ"
     var cu = null; try { cu = JSON.parse(localStorage.getItem(TU_MO) || 'null'); } catch (e) { }
-    if (cu && cu.n === n && Date.now() - cu.luc < 3 * 36e5) return;
+    if (!moi && cu && cu.n === n && Date.now() - cu.luc < 3 * 36e5) return;
     var lan = 0;
     (function cho() {
       var nen = $('#daNen');
@@ -627,8 +627,30 @@
     if (!(window.AWChat && AWChat.kho && $('.nwb-ql-muc[data-muc="duyetAnh"]'))) return;
     dem().then(function (r) {
       if (!r) { if (lan < 24) setTimeout(function () { demKhiVao(lan + 1); }, 5000); return; }
+      truoc = r.n || 0;
       if (r.n > 0) tuMo(r.n);
+      theoDoi();
     });
+  }
+  // ⭐ v1.422.0 (24/10/2026, thầy: "khi đang ở dashboard mà có ảnh mới cần duyệt thì cũng tự bật hộp") — đang ngồi dashboard: 45 giây hỏi số ảnh
+  //   chờ một lần (chỉ khi tab đang hiện; quay lại tab ⇒ hỏi ngay). Số TĂNG so với lần trước ⇒ có ảnh mới: hộp đóng ⇒ tự bật; hộp đang mở ở
+  //   Chờ duyệt ⇒ nạp lại danh sách + báo. Số giảm (thầy vừa duyệt) ⇒ chỉ cập nhật số.
+  var truoc = 0, henTd = null;
+  function hoiMoi() {
+    if (document.hidden) return;
+    dem().then(function (r) {
+      if (!r) return;
+      var n = r.n || 0, tang = n > truoc; truoc = n;
+      if (!tang) return;
+      var nen = $('#daNen');
+      if (nen && !nen.hidden) { if (S.tab === 'cho' && !Object.keys(S.cho).length && !$('.da-sua', nen)) { taiTab(); toast('Có ảnh mới cần duyệt.'); } return; }
+      tuMo(n, true);
+    });
+  }
+  function theoDoi() {
+    if (henTd) return;
+    henTd = setInterval(hoiMoi, 45000);
+    document.addEventListener('visibilitychange', function () { if (!document.hidden) hoiMoi(); });
   }
   setTimeout(function () { demKhiVao(0); }, 4000);
 })();

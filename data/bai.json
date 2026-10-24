@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-24 11:34:29",
+  "capNhat": "2026-10-24 21:41:08",
   "bai": {
     "A1C": [
       {
@@ -5697,6 +5697,27 @@
     ],
     "B1B": [
       {
+        "id": "B1B_24.10_WORDS_LSB1-S3.T4.P3-4",
+        "tieuDe": "B1B_24.10_WORDS LSB1-S3.T4.P3-4",
+        "tenHien": "B1B_24.10_WORDS LSB1-S3.T4.P3-4",
+        "dang": "WORDS",
+        "ngay": "24.10",
+        "han": "2026-10-28T19:45",
+        "maLesson": "LSB1-S3.T4.P3-4",
+        "taoLuc": "2026-10-24",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "ENG1",
+            "yeuCau": "100% requirement",
+            "ma": "385azb",
+            "mau": "TYPE THE ANSWER"
+          }
+        ],
+        "giaoLuc": "2026-10-24T21:41"
+      },
+      {
         "id": "B1B_21.10_WORDS_LSB1-S3.T4.P2",
         "tieuDe": "B1B_21.10_WORDS LSB1-S3.T4.P2",
         "tenHien": "B1B_21.10_WORDS LSB1-S3.T4.P2",
@@ -6540,7 +6561,7 @@
     "A1B": "2026-10-22 22:44:42",
     "NNTNG4": "2026-10-24 11:34:29",
     "A2B": "2026-10-23 21:46:50",
-    "B1B": "2026-10-21 22:50:49",
+    "B1B": "2026-10-24 21:41:08",
     "NNTNGK9": "2026-10-23 10:29:58"
   }
 }

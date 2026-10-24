@@ -527,6 +527,23 @@
     return GH.conTran(await GH.phieu(meUid)) ? '' : 'Hôm nay em đã chơi đủ ' + GH.cai.tranNgay + ' trận rồi. Nghỉ ngơi, mai đấu tiếp nhé!';
   };
   GH.chanNhanToi = async function () { var me = await toi(); return !me.uid || me.laThay ? '' : GH.chanNhan(me.uid); };
+  // ⭐ v1.414.0 (24/10/2026, thầy) — TẠM ĐÓNG GIAO HỮU phía học sinh: em KHÔNG mời bạn, KHÔNG mời thầy (hộp ⚔, phòng riêng, trang Giải đấu,
+  //   Đấu lại sau trận giao hữu). Vẫn mở: Đấu giải · Luyện tập với máy · THẦY mời em (em vẫn Nhận được). Mở lại mùa sau ⇒ đặt false.
+  GH.ghDong = true;
+  GH.chuGhDong = 'Thời gian mở giao hữu đã hết, em hãy đợi thầy Andrew mở trong mùa sau nhé!';
+  var _ghDongHop = null;
+  GH.hopGhDong = function () {
+    ghCss();
+    if (_ghDongHop) return;
+    var nen = document.createElement('div'); nen.className = 'gh-nen'; nen.setAttribute('role', 'dialog'); nen.setAttribute('aria-label', 'Giao hữu tạm đóng');
+    nen.innerHTML = '<div class="gh-hop"><div class="gh-trang">🔒</div><h3>Giao hữu đã đóng</h3><p>' + an(GH.chuGhDong) + '</p>' +
+      '<p style="margin-top:10px">Em vẫn <b>Luyện tập</b> với máy được trong hộp ⚔ nhé.</p><button type="button" style="margin-top:14px">Em hiểu rồi</button></div>';
+    document.body.appendChild(nen); _ghDongHop = nen;
+    var dong = function () { if (nen.parentNode) nen.parentNode.removeChild(nen); _ghDongHop = null; };
+    nen.querySelector('button').onclick = dong;
+    nen.addEventListener('click', function (e) { if (e.target === nen) dong(); });
+    try { nen.querySelector('button').focus(); } catch (e) { }
+  };
   // trận bị máy chủ chặn (trangThai 'han')
   GH.chuHan = function (t) {
     var ly = (t && t.ly) || '';
@@ -696,7 +713,8 @@
   var THU_SIM = {};   // bàn thử: id trận giả → hàm bấm (Nhận / Từ chối / Huỷ)
   async function taoTran(o) {
     var me = o.me, ban = o.ban, cai = o.cai || null;
-    var chu = '⚔ ' + (me.laThay ? 'Thầy Andrew' : me.ten) + (o.gv ? ' mời ' + (ban.laThay ? 'thầy' : ban.ten) + ' giao hữu' : ' thách đấu ' + ban.ten);
+    if (!me.laThay && !o.giai && GH.ghDong) return GH.hopGhDong();   // v1.414.0 giao hữu tạm đóng (lưới cuối cho mọi đường mời của em)
+    var chu ='⚔ ' + (me.laThay ? 'Thầy Andrew' : me.ten) + (o.gv ? ' mời ' + (ban.laThay ? 'thầy' : ban.ten) + ' giao hữu' : ' thách đấu ' + ban.ten);
     var data = { a: me.uid, b: ban.uid, nguoi: [me.uid, ban.uid], tenA: me.laThay ? 'Thầy Andrew' : me.ten, tenB: ban.laThay ? 'Thầy Andrew' : ban.ten,
       lop: o.lop, giai: o.giai || '', phut: o.phut, lv: o.lv, trangThai: 'moi', taoLuc: Date.now(), het: Date.now() + 60000 };
     if (o.gv) { data.gv = o.gv; if (cai) data.cai = { che: cai.che || '', boId: cai.bo ? cai.bo.id : '', boTen: cai.bo ? cai.bo.ten : '' }; }
@@ -868,7 +886,7 @@
       var h;
       ghCss();
       if (S.step === 'menu') h = hd('Đấu A Show Speed', '') + hero() + luotHtml(true) + '<div class="td-note" role="status"></div><div class="td-phu">' +
-        cd('td-gh', HIC.ban, 'Giao hữu', me.laThay ? 'Chọn cách đấu, mời em đang online' : 'Với bạn đang online, không tính điểm', 'ban-gh') + cd('td-lt', HIC.muc, 'Luyện tập', 'Chơi với máy để làm quen', 'luyen') + '</div>';
+        cd('td-gh', HIC.ban, 'Giao hữu', me.laThay ? 'Chọn cách đấu, mời em đang online' : GH.ghDong ? '🔒 Tạm đóng · mở lại mùa sau' : 'Với bạn đang online, không tính điểm', !me.laThay && GH.ghDong ? 'gh-dong' : 'ban-gh') + cd('td-lt', HIC.muc, 'Luyện tập', 'Chơi với máy để làm quen', 'luyen') + '</div>';
       else if (S.step === 'ban-dau') h = hd('Đấu giải · ' + an(S.g ? S.g.ten : ''), soBan() + ' bạn online', true) + '<div class="td-tip g">' + HIC.cup + 'Thắng +2 · hòa +1 · thua 0. Tính vào bảng xếp hạng lớp.</div>' + luotHtml(true) +
         '<div class="td-ds">' + (S.ds.filter(function (x) { return !x.laThay; }).map(function (b) { return hang(b, 'dau'); }).join('') || '<div class="td-rongtt">Chưa có bạn nào cùng lớp đang online.</div>') + '</div>';
       else if (S.step === 'ban-gh') {
@@ -889,6 +907,7 @@
       if (!b) return;
       var k = b.getAttribute('data-hop');
       if (k === 'batdau') return batDauLuyen();
+      if (k === 'gh-dong' || (k === 'ban-gh' && !me.laThay && GH.ghDong)) { dongHop(); return GH.hopGhDong(); }   // v1.414.0 giao hữu tạm đóng
       S.step = k; ve();
     });
     function batDauLuyen() {
@@ -922,7 +941,9 @@
     hop = document.createElement('div'); hop.className = 'td-chon rong';
     hop.innerHTML = '<div class="t">Giao hữu</div><div class="p">Đang xem ' + (ban.laThay ? 'thầy' : an(ban.ten)) + ' có online không…</div>';
     document.body.appendChild(hop); datViTri(hop, nut);
-    var el = hop, me = await toi(), f = banThu() ? null : await kho().catch(function () { return null; });
+    var el = hop, me = await toi();
+    if (!me.laThay && GH.ghDong) { if (hop === el) dongHop(); return GH.hopGhDong(); }   // v1.414.0 giao hữu tạm đóng: em không mời thầy
+    var f = banThu() ? null : await kho().catch(function () { return null; });
     var r = await Promise.all([dangOnline(f, ban.uid), me.laThay ? dsBo(f) : [], dsDangDau(f)]), on = r[0], bo = r[1], ban2 = !!r[2][ban.uid];
     if (hop !== el) return;
     var c = me.laThay ? caiDoc() : null, ten = ban.laThay ? 'thầy' : ban.ten;

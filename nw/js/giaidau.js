@@ -413,7 +413,8 @@
         var gh2 = await ghKhoi('');
         than.innerHTML = gh2 +
           '<div class="card gd-chua"><span class="ic-o">' + IC.cup + '</span><div><b>Chưa có giải nào đang mở</b><p>' +
-            (sap ? an(sap.ten) + ' bắt đầu lúc ' + gio(sap.tu) + ' ngày ' + ngay(sap.tu) + '. ' : '') + 'Em vẫn đấu giao hữu được với bạn đang online. Giao hữu không cộng điểm xếp hạng.</p></div></div>' +
+            (sap ? an(sap.ten) + ' bắt đầu lúc ' + gio(sap.tu) + ' ngày ' + ngay(sap.tu) + '. ' : '') + (window.GioiHan && GioiHan.ghDong ? '🔒 Giao hữu đang tạm đóng — thầy Andrew sẽ mở lại trong mùa sau. Em vẫn luyện tập với máy được ở nút ⚔ trong nhóm chat lớp.'   // v1.414.0
+              : 'Em vẫn đấu giao hữu được với bạn đang online. Giao hữu không cộng điểm xếp hạng.') + '</p></div></div>' +
           chipLop(lopEm, xemLop, 'data-lop') +
           '<div class="gd-luoi">' + (cu ? '<div class="card gd-the"><h3>' + IC.cup + 'Giải vừa xong</h3><div class="gd-cu"><b>' + an(cu.ten) + '</b> <span class="gd-pill xong">Đã xong</span>' +
             (top.length ? '<div class="top3">' + top.map(function (x, i) { return '<span>' + ['🥇', '🥈', '🥉'][i] + ' ' + an(x.n.ten) + ' · ' + GD.diem(x.r) + 'đ</span>'; }).join('') + '</div>' : '<p class="tiny">Giải chưa có trận nào.</p>') + '</div></div>' : '') +

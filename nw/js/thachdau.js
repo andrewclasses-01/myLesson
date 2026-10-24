@@ -42,6 +42,8 @@
     o = o || {};
     var toi = NW.toi; if (!toi) return;
     if (toi.laThay && !o.gv) return;   // ⭐ 16/10 — thầy chỉ mời qua trận có thầy (Đấu lại trong trận)
+    // ⭐ v1.414.0 — giao hữu TẠM ĐÓNG phía em (js/the-td.js GioiHan.ghDong): nút Giao hữu trang Giải đấu + Đấu lại sau trận giao hữu / trận với thầy
+    if (!toi.laThay && !o.giai && window.GioiHan && GioiHan.ghDong) return GioiHan.hopGhDong();
     // ⭐ v1.375.0 — giới hạn chơi (trận em–em, js/the-td.js GioiHan): nghỉ đêm ⇒ hộp đi ngủ · em / bạn đủ trận hôm nay ⇒ báo
     if (!o.gv && window.GioiHan && !NW.laBanThu()) {
       var ch = await GioiHan.chanMoi(toi.uid, ban);

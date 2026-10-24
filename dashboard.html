@@ -2224,6 +2224,50 @@ table.hq-tl.deu td, table.hq-tl.deu th{overflow:hidden}
 .qs-nut:hover{background:#FFE1E5; border-color:#FF8A95}
 .qs-nen{position:fixed; inset:0; background:rgba(16,35,42,.6); display:none; place-items:center; z-index:97}
 .qs-nen.mo{display:grid; animation:hq-mo0 .18s ease both}
+/* ⭐ v1.417.0 (24/10/2026, thầy) — XEM TẤT CẢ EM ĐANG LÀM: pop-up lớn, mỗi em một ô (khung xem AWord thu nhỏ + tiến độ + đúng/sai). Tiền tố qsl- */
+.qsl-nen{position:fixed; inset:0; background:rgba(16,35,42,.66); display:none; place-items:center; z-index:96}
+.qsl-nen.mo{display:grid; animation:hq-mo0 .18s ease both}
+.qsl-hop{width:calc(100vw - 28px); height:calc(100dvh - 28px); background:#EEF3F2; border-radius:18px; box-shadow:0 24px 70px rgba(0,0,0,.4); display:flex; flex-direction:column; overflow:hidden}
+.qsl-dau{flex:none; display:flex; align-items:center; gap:14px; padding:12px 18px; background:#fff; border-bottom:1px solid var(--vien)}
+.qsl-dau .t1{font:800 18px/1.2 var(--font); color:var(--chu)} .qsl-dau .t2{font:600 12.5px/1.4 var(--font); color:var(--mo); margin-top:2px}
+.qsl-song{margin-left:4px}
+.qsl-bao{margin-left:auto; display:flex; align-items:center; gap:8px; font:700 12.5px/1.2 var(--font); color:var(--mo); cursor:pointer; user-select:none}
+.qsl-bao input{width:18px; height:18px; accent-color:#E11D48; margin:0}
+.qsl-luoi{flex:1; min-height:0; overflow:auto; padding:12px; display:grid; gap:12px; grid-template-columns:repeat(var(--cot,3),minmax(0,1fr)); grid-auto-rows:minmax(240px,1fr)}
+.qsl-luoi.cuon{grid-auto-rows:minmax(300px,calc((100dvh - 150px) / 3))}
+.qsl-o{position:relative; display:flex; flex-direction:column; min-height:0; background:#fff; border-radius:14px; border:1.5px solid var(--vien); overflow:hidden; box-shadow:0 2px 8px rgba(16,40,36,.06)}
+.qsl-o.moi{animation:qsMoiThe .5s ease both; border-color:#FF8A95}
+.qsl-o.roi{opacity:.55; filter:grayscale(.6)}
+.qsl-o-dau{flex:none; display:flex; align-items:center; gap:9px; padding:7px 10px; border-bottom:1px solid #EEF2F1}
+.qsl-o-dau .bm-em-av{--em-d:30px; width:30px; height:30px; font-size:11px; flex:none}
+.qsl-o-t{flex:1; min-width:0}
+.qsl-o-t b{display:block; font:800 13.5px/1.2 var(--font); color:var(--chu); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.qsl-o-t small{display:block; font:600 11px/1.3 var(--font); color:var(--mo); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.qsl-tien{flex:none; font:800 12px/1 var(--font); color:var(--chu); background:#F1F5F4; border-radius:99px; padding:5px 9px; font-variant-numeric:tabular-nums}
+.qsl-to{flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--vien); background:#fff; color:var(--mo); cursor:pointer; display:grid; place-items:center; padding:0}
+.qsl-to:hover{border-color:#C81E3A; color:#C81E3A}
+.qsl-to svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round}
+.qsl-khung{position:relative; flex:1; min-height:0; background:#E9F1F8; overflow:hidden}
+.qsl-khung iframe{position:absolute; left:0; top:0; width:1024px; height:768px; border:0; background:#fff; transform-origin:0 0}
+.qsl-phu{position:absolute; inset:0; cursor:zoom-in}
+.qsl-cho{position:absolute; inset:0; display:grid; place-items:center; text-align:center; padding:12px; font:700 12.5px/1.5 var(--font); color:var(--mo); background:rgba(233,241,248,.92); pointer-events:none}
+.qsl-cho[hidden]{display:none}
+.qsl-o-chan{flex:none; display:flex; align-items:center; gap:8px; padding:6px 10px; border-top:1px solid #EEF2F1; font:700 11.5px/1.2 var(--font); color:var(--mo)}
+.qsl-o-chan .d{color:#15803D} .qsl-o-chan .s{color:#D23B30}
+.qsl-o-chan .l{margin-left:auto; font-weight:600; color:var(--nhat)}
+.qsl-cham{display:flex; gap:2px; flex-wrap:wrap; max-width:60%}
+.qsl-cham i{width:7px; height:7px; border-radius:2px; background:#C9D3D1}
+.qsl-cham i.dung{background:#22A55A} .qsl-cham i.sai{background:#E0564A}
+.qsl-roi-nhan{position:absolute; top:8px; left:50%; transform:translateX(-50%); z-index:2; font:800 11px/1 var(--font); letter-spacing:.06em; color:#fff; background:#5F7370; border-radius:99px; padding:6px 10px}
+.qsl-trong{grid-column:1/-1; align-self:center; justify-self:center; text-align:center; font:700 14px/1.6 var(--font); color:var(--mo)}
+.qsl-chan{flex:none; padding:8px 18px; font:600 11.5px/1.4 var(--font); color:var(--nhat); background:#fff; border-top:1px solid var(--vien)}
+.hd-xemhet{flex:none; margin-left:auto; display:inline-flex; align-items:center; gap:6px; height:24px; padding:0 10px; border:0; border-radius:99px; background:#FFF1F2; color:#C81E3A;
+  font:800 10.5px/1 var(--font); letter-spacing:.04em; cursor:pointer}
+.hd-xemhet i{width:7px; height:7px; border-radius:50%; background:#FF4D57; animation:hqDangLam 1.2s ease-in-out infinite}
+.hd-xemhet:hover{background:#FFE1E5}
+.hd-xemhet[hidden]{display:none}
+.hd-xemhet + .hd-phong{margin-left:4px}
+@media (max-width:820px){ .qsl-hop{width:100vw; height:100dvh; border-radius:0} .qsl-luoi{grid-template-columns:1fr !important; grid-auto-rows:minmax(320px,auto)} .qsl-bao span{display:none} }
 .qs-hop{width:min(96vw,1400px); height:92vh; background:#fff; border-radius:18px; box-shadow:0 24px 70px rgba(0,0,0,.4); display:flex; flex-direction:column; overflow:hidden}
 .qs-dau{flex:none; display:flex; align-items:center; gap:14px; padding:12px 18px; border-bottom:1px solid var(--vien)}
 .qs-dau .bm-em-av{--em-d:42px; width:42px; height:42px; font-size:14px; flex:none}
@@ -4128,7 +4172,7 @@ tr.qm-hang-tam td{background:#fffbeb}
             <div class="hd-than" id="hdOnline"></div>
           </div>
           <div class="hd-nua">
-            <div class="hd-dau">BÀI TẬP GẦN ĐÂY<span class="hd-so-dau"></span><button type="button" class="hd-phong" data-hd-phong="bai" title="Phóng to — xem chi tiết" aria-label="Phóng to"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button></div>
+            <div class="hd-dau">BÀI TẬP GẦN ĐÂY<span class="hd-so-dau"></span><button type="button" class="hd-xemhet" id="hdXemHet" hidden title="Xem cùng lúc mọi em đang làm bài (mỗi em một ô)"><i></i>XEM TẤT CẢ · <b>0</b></button><button type="button" class="hd-phong" data-hd-phong="bai" title="Phóng to — xem chi tiết" aria-label="Phóng to"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button></div>
             <div class="hd-than" id="hdBai"></div>
           </div>
         </div>
@@ -4282,6 +4326,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <div class="bl-nen" id="blNen"><div class="bl-hop" id="blHop"></div></div>
 <!-- ⭐ v1.294.0 — XEM TRỰC TIẾP em đang làm (nút XEM ở dòng ĐANG LÀM), xem `moQuanSat` -->
 <div class="qs-nen" id="qsNen"><div class="qs-hop" id="qsHop"></div></div>
+<div class="qsl-nen" id="qslNen"><div class="qsl-hop" id="qslHop"></div></div>   <!-- ⭐ v1.417.0 XEM TẤT CẢ EM ĐANG LÀM -->
 <div class="nt-nen" id="ntNen"><div class="nt-hop" id="ntHop"></div></div>
 <!-- ⭐ v1.138.0 — chụp ảnh cả hộp (đúp "Thầy Andrew"), xem `hqChupHop` -->
 <div class="chup-nhay" id="chupNhay"></div><div class="chup-xem" id="chupXem"></div><div class="chup-bao" id="chupBao"></div>
@@ -7750,6 +7795,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     //   "Xem trực tiếp" bấm được (mở khung xem như nút XEM của hộp chi tiết em). Em chỉ mở trang bài / làm việc khác ⇒ KHÔNG có dòng
     //   trên đầu nữa — em đó chỉ hiện khi có lượt nộp mới (đúng chỗ theo giờ trong danh sách lượt bên dưới).
     var dangLam = em.filter(function (x) { return x.on && hdLaLam(x); });
+    var nutXH = $('#hdXemHet');   // ⭐ v1.417.0 — nút XEM TẤT CẢ (số em đang trong ván xem được)
+    if (nutXH) { var soXH = dangLam.filter(function (x) { return hdMaActLam(x) && x.ma; }).length; nutXH.hidden = !soXH && !qslThu(); nutXH.querySelector('b').textContent = qslThu() ? qslDs().length : soXH; }
+    if (QSL && QSL.mo) qslDongBo();   // QSL khai sau trong file (var nâng lên = undefined lúc đầu)
     var luot = hdLuotBai();
     var chip = function (t, phu) { return '<span class="hd-chip' + (phu ? ' phu' : '') + '">' + A.chuAnToan(t) + '</span>'; };
     var h = dangLam.map(function (x) {
@@ -10578,6 +10626,174 @@ tr.qm-hang-tam td{background:#fffbeb}
     QSX = { ma: '', code: '', nhip: null, bo: null, tt: null, san: false, luc: 0, coLoi: '', rv: null, moi: {} };
     if (ma) spDb().then(function (f) { return f.fs.deleteDoc(f.fs.doc(f.db, 'quanSat', ma)); })['catch'](function () { });
   }
+
+  /* ⭐⭐ v1.417.0 (24/10/2026, thầy: "trong BÀI TẬP GẦN ĐÂY, xem cùng lúc tất cả các em đang làm bài — một pop-up lớn nhiều ô") —
+     XEM TẤT CẢ: nút đỏ "XEM TẤT CẢ · N" ở đầu ô BÀI TẬP GẦN ĐÂY (chỉ hiện khi có em ĐANG TRONG VÁN, cùng điều kiện nút "Xem trực tiếp")
+     ⇒ pop-up lớn, MỖI EM MỘT Ô = khung xem AWord `play.html?xem=1` (y khung xem 1 em, thu nhỏ bằng transform) + tiến độ + chấm đúng/sai
+     từng câu (AWORD:XEM_BL). Lưới TỰ CẬP NHẬT theo ô online: em mới vào ván ⇒ thêm ô; em nộp/thoát ⇒ ô mờ "ĐÃ RỜI VÁN" rồi tự gỡ sau 90 giây.
+     Ô ⤢ / bấm đúp ô ⇒ khung xem 1 em (có cột bài làm + TRAO ĐỔI) mở ĐÈ lên lưới; đóng là về lưới.
+     Cờ `quanSat/{ma}` (em thấy "Thầy Andrew đang quan sát", AWord gửi ván ngay sau mỗi câu): BẬT mặc định như xem 1 em — ô tích
+     "Báo cho em biết thầy đang xem" tắt được (tắt ⇒ xoá cờ, ván cập nhật chậm hơn ~15 s). Đóng lưới ⇒ xoá cờ (trừ em đang mở khung xem 1 em).
+     Tối đa QSL_MAX ô (mỗi ô là một trang game). Bàn thử localhost `?qslthu=1`: em mẫu (không ghi cờ). */
+  var QSL_MAX = 12, QSL_ROI_MS = 90000;
+  var QSL = { mo: false, o: {}, thuTu: [], baoEm: true, hen: null, nhip: null };
+  function qslThu() { return /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]qslthu=1/.test(location.search); }
+  function qslDs() {
+    if (qslThu()) return [['Gia Bảo', 'A1C'], ['Bảo Nam', 'A1C'], ['Thảo Vy', 'A1C'], ['Minh Anh', 'B2B'], ['Khánh Linh', 'B2B']].map(function (x, i) {
+      return { k: 'thu' + i + '|act' + i, ma: 'THU' + i, code: 'thu-act-' + i, ten: x[0], lop: x[1], bai: 'Bài mẫu ' + (i + 1) + ' · WORDS' };
+    });
+    return hdEmOnline().filter(function (x) { return x.on && hdLaLam(x) && hdMaActLam(x) && x.ma; }).map(function (x) {
+      var code = hdMaActLam(x);
+      return { k: x.ma + '|' + code, ma: x.ma, code: code, ten: hdTenDay(x.lop, x.ten), lop: x.lop, bai: x.bai || '' };
+    });
+  }
+  function qslCo(T, bat) {   // cờ quanSat của một em (bỏ qua bàn thử; không xoá cờ của em đang mở khung xem 1 em)
+    if (qslThu() || !T.ma) return;
+    if (!bat && QSX.ma === T.ma) return;
+    spDb().then(function (f) {
+      var d = f.fs.doc(f.db, 'quanSat', T.ma);
+      return bat ? f.fs.setDoc(d, { code: T.code, luc: f.fs.serverTimestamp() }) : f.fs.deleteDoc(d);
+    })['catch'](function () { });
+  }
+  function qslMo() {
+    if (!qslThu() && chuaThay()) return;
+    QSL.mo = true; QSL.o = {}; QSL.thuTu = [];
+    $('#qslHop').innerHTML = '<div class="qsl-dau"><div><div class="t1">Tất cả em đang làm bài</div><div class="t2" id="qslSo"></div></div><span class="qs-song qsl-song"><i></i>ĐANG QUAN SÁT</span>' +
+      '<label class="qsl-bao" title="Bật: em thấy “Thầy Andrew đang quan sát trực tiếp”, ván cập nhật ngay sau mỗi câu. Tắt: em không biết, ván cập nhật chậm hơn (~15 giây)."><input type="checkbox" id="qslBao"' + (QSL.baoEm ? ' checked' : '') + '><span>Báo cho em biết thầy đang xem</span></label>' +
+      '<button type="button" class="qs-dong" id="qslDong" title="Đóng (Esc)">✕</button></div>' +
+      '<div class="qsl-luoi" id="qslLuoi"></div>' +
+      '<div class="qsl-chan">Chỉ XEM: không bấm được vào ván, không phát tiếng. Mỗi ô dựng lại ván sau mỗi câu em trả lời. Bấm đúp một ô (hoặc ⤢) ⇒ xem lớn + bài làm từng câu + nhắn / thả tim cho em. Tối đa ' + QSL_MAX + ' ô.</div>';
+    $('#qslNen').classList.add('mo');
+    $('#qslDong').onclick = qslDong;
+    $('#qslNen').onclick = function (e) { if (e.target.id === 'qslNen') qslDong(); };
+    $('#qslBao').onchange = function () {
+      QSL.baoEm = this.checked;
+      QSL.thuTu.forEach(function (k) { var T = QSL.o[k]; if (T && !T.roi) qslCo(T, QSL.baoEm); });
+    };
+    qslDongBo();
+    QSL.hen = setInterval(qslDongBo, 5000);   // ô online đổi ⇒ hdVe cũng gọi; nhịp này lo phần gỡ ô đã rời + co giãn
+    QSL.nhip = setInterval(function () { if (QSL.baoEm) QSL.thuTu.forEach(function (k) { var T = QSL.o[k]; if (T && !T.roi) qslCo(T, true); }); }, QS_NHIP_MS);
+    window.addEventListener('resize', qslCoGian);
+  }
+  function qslDong() {
+    if (!QSL.mo) return;
+    QSL.mo = false;
+    clearInterval(QSL.hen); clearInterval(QSL.nhip);
+    window.removeEventListener('resize', qslCoGian);
+    QSL.thuTu.forEach(function (k) { qslGo(k, true); });
+    QSL.o = {}; QSL.thuTu = [];
+    $('#qslNen').classList.remove('mo');
+    $('#qslHop').innerHTML = '';
+  }
+  function qslGo(k, khongVe) {   // gỡ một ô: huỷ nghe, xoá cờ, dừng khung game
+    var T = QSL.o[k]; if (!T) return;
+    if (typeof T.bo === 'function') { try { T.bo(); } catch (e) { } }
+    if (!T.roi) qslCo(T, false);
+    if (T.ifr) T.ifr.src = 'about:blank';
+    if (T.el && T.el.parentNode) T.el.parentNode.removeChild(T.el);
+    delete QSL.o[k];
+    if (!khongVe) QSL.thuTu = QSL.thuTu.filter(function (x) { return x !== k; });
+  }
+  function qslDongBo() {
+    if (!QSL.mo) return;
+    var luoi = $('#qslLuoi'); if (!luoi) return;
+    var ds = qslDs(), co = {}, nay = Date.now(), them = 0, du = 0;
+    ds.forEach(function (x) {
+      co[x.k] = 1;
+      var T = QSL.o[x.k];
+      if (T) { if (T.roi) { T.roi = 0; T.el.classList.remove('roi'); var n0 = T.el.querySelector('.qsl-roi-nhan'); if (n0) n0.remove(); qslCo(T, QSL.baoEm); } return; }
+      if (QSL.thuTu.filter(function (k) { return !QSL.o[k].roi; }).length >= QSL_MAX) { du++; return; }
+      qslTao(x); them++;
+    });
+    QSL.thuTu.slice().forEach(function (k) {
+      var T = QSL.o[k]; if (!T || co[k]) return;
+      if (!T.roi) {   // em nộp bài / thoát ván ⇒ ô mờ, xoá cờ, giữ 90 s cho thầy kịp thấy kết quả câu cuối
+        T.roi = nay; qslCo(T, false); T.el.classList.add('roi');
+        var n = document.createElement('span'); n.className = 'qsl-roi-nhan'; n.textContent = 'ĐÃ RỜI VÁN'; T.el.querySelector('.qsl-khung').appendChild(n);
+      } else if (nay - T.roi > QSL_ROI_MS) qslGo(k);
+    });
+    var song = QSL.thuTu.filter(function (k) { return !QSL.o[k].roi; }).length;
+    $('#qslSo').textContent = song ? song + ' em đang trong ván' + (du ? ' · còn ' + du + ' em chưa có ô (tối đa ' + QSL_MAX + ')' : '') : 'Không còn em nào đang trong ván.';
+    var tong = QSL.thuTu.length;
+    var tr = luoi.querySelector('.qsl-trong');
+    if (!tong && !tr) luoi.innerHTML = '<div class="qsl-trong">Chưa có em nào đang làm bài.<br>Ô của em tự hiện khi em mở một bài và bắt đầu làm.</div>';
+    else if (tong && tr) tr.remove();
+    var cot = tong <= 1 ? 1 : tong <= 4 ? 2 : tong <= 9 ? 3 : 4;
+    luoi.style.setProperty('--cot', cot);
+    luoi.classList.toggle('cuon', tong > 9);
+    if (them) setTimeout(qslCoGian, 30);
+  }
+  function qslTao(x) {
+    var lopGoc = hdTenLop(x.lop), slug = avSlugLop(lopGoc);
+    var src = A.CFG.AWORD + '/play.html?g=' + encodeURIComponent(x.code) + '&xem=1&nhung=1&n=' + encodeURIComponent(x.ten) + '&lop=' + encodeURIComponent(lopGoc || '');
+    var el = document.createElement('div'); el.className = 'qsl-o moi'; el.setAttribute('data-qsl', x.k);
+    el.innerHTML = '<div class="qsl-o-dau">' + veEmAvDb(x.ten, slug, lopGoc) + '<div class="qsl-o-t"><b>' + A.chuAnToan(x.ten) + '</b><small>' + A.chuAnToan(hdTenLop(x.lop) + ' · ' + (x.bai || 'đang làm bài')) + '</small></div>' +
+      '<span class="qsl-tien" hidden></span><button type="button" class="qsl-to" title="Xem lớn + nhắn em"><svg viewBox="0 0 24 24"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg></button></div>' +
+      '<div class="qsl-khung"><iframe allow="fullscreen" tabindex="-1" src="' + A.chuAnToan(src) + '"></iframe><div class="qsl-cho">Đang chờ ván của em…</div><div class="qsl-phu" title="Bấm đúp: xem lớn"></div></div>' +
+      '<div class="qsl-o-chan"><span class="qsl-cham"></span><span class="qsl-dem"></span><span class="l"></span></div>';
+    $('#qslLuoi').appendChild(el);
+    var T = QSL.o[x.k] = { k: x.k, ma: x.ma, code: x.code, ten: x.ten, lop: x.lop, bai: x.bai, el: el, ifr: el.querySelector('iframe'), san: false, tt: null, luc: 0, rv: null, roi: 0, bo: null };
+    QSL.thuTu.push(x.k);
+    setTimeout(function () { el.classList.remove('moi'); }, 900);
+    var xemLon = function () { moQuanSat(T.code, T.ma, T.bai, T.ten, T.lop); };
+    el.querySelector('.qsl-to').onclick = xemLon;
+    el.querySelector('.qsl-phu').ondblclick = xemLon;
+    if (window.avKhoDe) try { window.avKhoDe(el); } catch (e) { }
+    if (qslThu()) return;
+    if (QSL.baoEm) qslCo(T, true);
+    spDb().then(function (f) {
+      if (QSL.o[x.k] !== T) return;
+      T.bo = f.fs.onSnapshot(f.fs.doc(f.db, 'lamTiep', T.ma, 'bai', T.code), function (s) {
+        var d = s.exists() ? s.data() : null;
+        T.tt = d && d.tplJ ? { tplJ: d.tplJ, timeCost: d.timeCost || 0, gioMs: d.gioMs, activeMs: d.activeMs || 0 } : null;
+        T.luc = d ? (+d.luc || Date.now()) : 0;
+        qslVeO(T); qslGuiKhung(T);
+      }, function () { T.el.querySelector('.qsl-cho').textContent = 'Chưa đọc được ván của em (cần phiên thầy 🔐).'; });
+    });
+  }
+  function qslGuiKhung(T) {
+    if (!T.san || !T.ifr || !T.ifr.contentWindow) return;
+    try { T.ifr.contentWindow.postMessage({ type: 'AWORD:XEM_TT', code: T.code, tt: T.tt }, A.CFG.AWORD); } catch (e) { }
+  }
+  function qslVeO(T) {
+    var t = null; try { t = T.tt && T.tt.tplJ ? JSON.parse(T.tt.tplJ) : null; } catch (e) { t = null; }
+    var cho = T.el.querySelector('.qsl-cho');
+    cho.hidden = !!T.tt;
+    if (!T.tt) cho.textContent = T.luc ? 'Bài này chưa xem trực tiếp được (dạng game chưa lưu ván).' : 'Đang chờ ván của em…';
+    var tien = T.el.querySelector('.qsl-tien');
+    if (t && t.tong) { tien.hidden = false; tien.textContent = (t.daLam | 0) + '/' + (t.tong | 0); } else tien.hidden = true;
+    T.el.querySelector('.qsl-o-chan .l').textContent = T.luc ? 'cập nhật ' + new Date(T.luc).toLocaleTimeString('vi-VN', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+    if (Array.isArray(T.rv)) {
+      var dung = 0, sai = 0;
+      T.el.querySelector('.qsl-cham').innerHTML = T.rv.slice(0, 60).map(function (q) {
+        if (q && q.a) { if (q.ok) dung++; else sai++; }
+        return '<i class="' + (q && q.a ? (q.ok ? 'dung' : 'sai') : '') + '"></i>';
+      }).join('');
+      T.el.querySelector('.qsl-dem').innerHTML = '<span class="d">✓ ' + dung + '</span> · <span class="s">✗ ' + sai + '</span>';
+    }
+  }
+  // khung game vẽ ở 1024×768 rồi thu nhỏ vừa ô (game trông y như khung xem lớn, không bị bố cục điện thoại)
+  function qslCoGian() {
+    QSL.thuTu.forEach(function (k) {
+      var T = QSL.o[k]; if (!T || !T.ifr) return;
+      var kh = T.ifr.parentNode, w = kh.clientWidth, h = kh.clientHeight; if (!w || !h) return;
+      var tl = Math.min(w / 1024, h / 768);
+      T.ifr.style.transform = 'translate(' + Math.round((w - 1024 * tl) / 2) + 'px,' + Math.round((h - 768 * tl) / 2) + 'px) scale(' + tl.toFixed(4) + ')';
+    });
+  }
+  window.addEventListener('message', function (e) {
+    if (!QSL.mo || e.origin !== A.CFG.AWORD || !e.data) return;
+    var T = null;
+    QSL.thuTu.some(function (k) { var o = QSL.o[k]; if (o && o.ifr && e.source === o.ifr.contentWindow) { T = o; return true; } return false; });
+    if (!T || e.data.code !== T.code) return;
+    if (e.data.type === 'AWORD:XEM_SAN') { T.san = true; qslGuiKhung(T); return; }
+    if (e.data.type === 'AWORD:XEM_BL') { T.rv = Array.isArray(e.data.rv) ? e.data.rv.slice(0, 300) : null; qslVeO(T); }
+  });
+  document.addEventListener('click', function (e) { if (e.target.closest('#hdXemHet')) { e.stopPropagation(); qslMo(); } }, true);
+  document.addEventListener('keydown', function (e) {   // Esc: chỉ khi khung xem 1 em KHÔNG mở bên trên (mỗi Esc đóng một lớp)
+    if (e.key === 'Escape' && QSL.mo && !$('#qsNen').classList.contains('mo') && !document.querySelector('.acm, .sd-pop')) { e.stopImmediatePropagation(); qslDong(); }
+  }, true);
+  window.addEventListener('pagehide', function () { if (QSL.mo) QSL.thuTu.forEach(function (k) { var T = QSL.o[k]; if (T && !T.roi) qslCo(T, false); }); });
   // ⭐⭐ v1.404.0 (thầy chốt mẫu v6 22/10/2026, `D:\OTHERS\CLAUDE\myLesson - thiet ke tim chat quan sat\`) — TRAO ĐỔI khi xem trực tiếp.
   //   Thầy: ❤ (bấm nhiều lần, dồn 1,5 s ⇒ 1 tin {loai:'tim', n}) + ô gõ ≤ 120 chữ ⇒ `quanSat/{ma}/tin`. Em (AWord Đợt 573, qua bai.html)
   //   thả tim / trả lời ⇒ `quanSat/{ma}/tra`. Cột hiện CẢ lịch sử của act này với em này (giữ lại — thầy chốt; hộp CHI TIẾT EM cũng đọc lại).
@@ -13652,6 +13868,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         [function () { return mo('#rcMenu'); }, dongRcMenu],
         [function () { return mo('#khoMenu'); }, dongKhoMenu],
         [function () { return mo('#qsNen'); }, dongQuanSat],   // v1.294.0 — khung XEM TRỰC TIẾP nằm TRÊN pop-up em
+        [function () { return mo('#qslNen'); }, qslDong],   // v1.417.0 — lưới XEM TẤT CẢ (dưới khung xem 1 em)
         [function () { return mo('#ntNen'); }, ntDong],   // v1.180.0 — form nhập điểm tay nằm TRÊN pop-up em
         [function () { return mo('#blNen'); }, dongBaiLam],   // v1.148.0 — pop-up bài làm nằm TRÊN pop-up em
         [function () { return mo('#hqCtNen'); }, dongHqChiTiet],

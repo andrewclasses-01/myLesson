@@ -133,6 +133,11 @@ async function batDau() {
     await GioiHan.napCai();
     if (GioiHan.dem()) { G.phase = "loi"; G.note = "Giờ nghỉ đêm (" + GioiHan.gioChu(GioiHan.cai.nghiTu) + " – " + GioiHan.gioChu(GioiHan.cai.nghiDen) + ") — luyện tập mở lại lúc " + GioiHan.gioChu(GioiHan.cai.nghiDen) + " sáng."; render(); return GioiHan.hopNgu(); }
   }
+  /* v1.415.0 Quản lý thách đấu (js/the-td.js TdQuan): thầy đóng luyện tập / không mở cho lớp / em bị chặn ⇒ không vào được bằng đường link */
+  if (LUYEN && window.TdQuan && !(NW.toi && NW.toi.laThay)) {
+    const cam = await TdQuan.kiem("luyen", { uid: NW.toi && NW.toi.uid, lop: q.get("lop") || "" });
+    if (cam) { G.phase = "loi"; G.note = cam; render(); return TdQuan.hop(cam, "luyen"); }
+  }
   try { dict = await loadDict(); } catch (e) { G.note = "Không tải được từ điển. Kiểm tra mạng rồi tải lại trang."; return render(); }
   if (banThu) return chayBanThu();
   toi = NW.toi;

@@ -42,8 +42,8 @@
     o = o || {};
     var toi = NW.toi; if (!toi) return;
     if (toi.laThay && !o.gv) return;   // ⭐ 16/10 — thầy chỉ mời qua trận có thầy (Đấu lại trong trận)
-    // ⭐ v1.414.0 — giao hữu TẠM ĐÓNG phía em (js/the-td.js GioiHan.ghDong): nút Giao hữu trang Giải đấu + Đấu lại sau trận giao hữu / trận với thầy
-    if (!toi.laThay && !o.giai && window.GioiHan && GioiHan.ghDong) return GioiHan.hopGhDong();
+    // ⭐ v1.415.0 — Quản lý thách đấu (js/the-td.js TdQuan): nút Thách đấu / Giao hữu trang Giải đấu + Đấu lại sau trận (kể cả trận với thầy)
+    if (!toi.laThay && window.TdQuan && !(await TdQuan.cho(o.giai ? 'giai' : 'gh', { uid: toi.uid, lop: o.lop, ban: o.gv ? null : ban }))) return;
     // ⭐ v1.375.0 — giới hạn chơi (trận em–em, js/the-td.js GioiHan): nghỉ đêm ⇒ hộp đi ngủ · em / bạn đủ trận hôm nay ⇒ báo
     if (!o.gv && window.GioiHan && !NW.laBanThu()) {
       var ch = await GioiHan.chanMoi(toi.uid, ban);
@@ -107,6 +107,8 @@
     var tt = (THE[id] && THE[id].t) || null;
     var thay = !!(NW.toi && NW.toi.laThay);
     // ⭐ v1.375.0 — giới hạn chơi: em bấm Nhận trận em–em lúc nghỉ đêm / đã đủ trận ⇒ báo, thẻ mời giữ nguyên (còn bấm Từ chối)
+    // ⭐ v1.415.0 — Quản lý thách đấu: em Nhận lời mời của BẠN khi chế độ đã đóng / em bị chặn ⇒ báo (thầy mời em thì luôn Nhận được)
+    if (nhan && !thay && tt && !tt.gv && window.TdQuan && !(await TdQuan.cho(tt.giai ? 'giai' : 'gh', { uid: NW.toi.uid, lop: tt.lop }))) return;
     if (nhan && !thay && tt && !tt.gv && window.GioiHan && !NW.laBanThu()) {
       var ch = await GioiHan.chanNhan(NW.toi.uid);
       if (ch) { if (ch === 'dem') GioiHan.hopNgu(); else NW.toast(ch, true); return; }

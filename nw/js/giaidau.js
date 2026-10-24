@@ -411,9 +411,10 @@
         var top = cu ? (await hangLop(cu, xemLop)).filter(function (x) { return soTran(x.r) > 0; }).slice(0, 3) : [];
         var sap = DS.filter(function (x) { return x._tt === 'sap' && x.lops.some(function (l) { return lopEm.indexOf(l) >= 0; }); })[0];
         var gh2 = await ghKhoi('');
+        var ghDong = window.TdQuan ? await TdQuan.kiem('gh', { uid: toi.uid, lop: xemLop, laThay: toi.laThay }) : '';
         than.innerHTML = gh2 +
           '<div class="card gd-chua"><span class="ic-o">' + IC.cup + '</span><div><b>Chưa có giải nào đang mở</b><p>' +
-            (sap ? an(sap.ten) + ' bắt đầu lúc ' + gio(sap.tu) + ' ngày ' + ngay(sap.tu) + '. ' : '') + (window.GioiHan && GioiHan.ghDong ? '🔒 Giao hữu đang tạm đóng — thầy Andrew sẽ mở lại trong mùa sau. Em vẫn luyện tập với máy được ở nút ⚔ trong nhóm chat lớp.'   // v1.414.0
+            (sap ? an(sap.ten) + ' bắt đầu lúc ' + gio(sap.tu) + ' ngày ' + ngay(sap.tu) + '. ' : '') + (ghDong ? '🔒 ' + ghDong   // v1.415.0 Quản lý thách đấu (TdQuan)
               : 'Em vẫn đấu giao hữu được với bạn đang online. Giao hữu không cộng điểm xếp hạng.') + '</p></div></div>' +
           chipLop(lopEm, xemLop, 'data-lop') +
           '<div class="gd-luoi">' + (cu ? '<div class="card gd-the"><h3>' + IC.cup + 'Giải vừa xong</h3><div class="gd-cu"><b>' + an(cu.ten) + '</b> <span class="gd-pill xong">Đã xong</span>' +

@@ -1201,6 +1201,34 @@
     });
   }
 
+  // ⭐ v1.412.0 (24/10/2026, thầy chốt) — WORKSHEET PDF trên Storage (`worksheet/…`) CHỈ học sinh đã đăng nhập (claim hs)
+  // + thầy đọc được ⇒ mọi lượt tải PHẢI kèm vé `Authorization: Firebase <ID token>` (vé của js/ve-doc.js — em, hoặc thầy
+  // ở dashboard / xem như em). ⛔ Đừng quay lại `<a href="<link kho>">`: trình duyệt mở link trần không kèm vé ⇒ 403.
+  function taiWs(url) {
+    return (window.__veDocLay ? window.__veDocLay() : Promise.resolve('')).then(function (t) {
+      return fetch(url, t ? { headers: { Authorization: 'Firebase ' + t } } : {});
+    }).then(function (r) {
+      if (!r.ok) { var e = new Error('HTTP ' + r.status); e.status = r.status; throw e; }
+      return r.arrayBuffer();
+    });
+  }
+  // Tải về máy (nút TẢI BÀI TẬP XUỐNG / Tải PDF): dựng blob rồi bấm hộ một <a download>.
+  function luuWs(url, ten) {
+    return taiWs(url).then(function (buf) {
+      var u = URL.createObjectURL(new Blob([buf], { type: 'application/pdf' }));
+      var a = document.createElement('a');
+      a.href = u;
+      a.download = (String(ten || 'worksheet').replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'worksheet') + '.pdf';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(function () { URL.revokeObjectURL(u); }, 60000);
+    });
+  }
+  function chuLoiWs(e) {
+    return (e && (e.status === 401 || e.status === 403))
+      ? 'Phiên đăng nhập đã hết — em tải lại trang (đăng nhập lại) rồi bấm tải bài nhé.'
+      : 'Chưa tải được bài tập — em kiểm tra mạng rồi thử lại nhé.';
+  }
+
   // v1.411.0 — đã bỏ cờ nhớ máy quản lý (laAdmin/datAdmin/thoatAdmin): vào dashboard chỉ bằng phiên thầy (js/thay.js).
   // laMaQuanLy chỉ nhận ra ID quản trị để chỉ đường sang dashboard.
   function laMaQuanLy(maGo) {
@@ -3791,6 +3819,7 @@
     danhDauDaChon: danhDauDaChon, daChonTabNay: daChonTabNay,
     giuXemNhuQuery: giuXemNhuQuery,
     bam: bam, laMaQuanLy: laMaQuanLy,
+    taiWs: taiWs, luuWs: luuWs, chuLoiWs: chuLoiWs,   // v1.412.0 — worksheet kèm vé
     diemCuaAct: diemCuaAct, chuanDiem: chuanDiem, xongAct: xongAct,
     kyChuanTuDoc: kyChuanTuDoc,   // v1.396.0 — cho tools/thu-van-tay-chuan.js
     actCuaBai: actCuaBai, wsCuaBai: wsCuaBai, ngheCuaBai: ngheCuaBai, maLesson: maLesson, tenBai: tenBai,

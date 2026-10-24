@@ -4456,7 +4456,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=96"></script>
+<script src="js/chung.js?v=97"></script>
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
@@ -9903,7 +9903,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (!ws.length) return '<div class="bm-em-trong">' + ((t.stage && t.chang && typeof HQ.chang === 'number') ? 'Chặng này không có worksheet.' : 'Bài này không có worksheet.') + '</div>';
     if (!(HQ.nopSheet < ws.length)) HQ.nopSheet = 0;
     var w = ws[HQ.nopSheet], n = w.soTrang, ds = HQ.nop[w.o];
-    var tai = w.k.tep ? '<a class="nut nho" href="' + A.chuAnToan(w.k.tep) + '" target="_blank" rel="noopener">Tải PDF</a>' : '';
+    var tai = w.k.tep ? '<a class="nut nho" href="#" data-hqtaiws>Tải PDF</a>' : '';   // v1.412.0 — tải kèm vé (A.luuWs)
     var nutSheet = ws.length > 1 ? '<span class="np-sheet">' + ws.map(function (x, i) {
       return '<button type="button" data-hqsheet="' + i + '"' + (i === HQ.nopSheet ? ' class="mo"' : '') + ' title="' + A.chuAnToan(x.ten) + '">Sheet ' + (i + 1) + '</button>';
     }).join('') + '</span>' : '';
@@ -13389,6 +13389,13 @@ tr.qm-hang-tam td{background:#fffbeb}
       /* ⭐ v1.137.0 — tab BÀI NỘP: đổi sheet. */
       var hqSh = e.target.closest('[data-hqsheet]');
       if (hqSh) { HQ.nopSheet = +hqSh.dataset.hqsheet; hqVeLai(); return; }
+      /* v1.412.0 — Tải PDF worksheet kèm vé thầy (kho worksheet không còn mở cho người lạ). */
+      if (e.target.closest('[data-hqtaiws]')) {
+        e.preventDefault();
+        var wTai = hqPhamVi().ws[HQ.nopSheet];
+        if (wTai && wTai.k.tep) A.luuWs(wTai.k.tep, wTai.ten)['catch'](function (err) { alert(A.chuLoiWs(err)); });
+        return;
+      }
       /* ⭐ v1.141.0 — pop-up chi tiết em: TỔNG QUAN ↔ CHI TIẾT · bật/tắt chip mục (act / VIDEO / NGHE). */
       if (e.target.closest('#hqCtZoom') && HQ.ct) { HQ.ct.zoom = !HQ.ct.zoom; HQ.ct.ngay = null; hqVeChiTiet('doi'); return; }
       /* ⭐ v1.180.0 — NHẬP ĐIỂM TAY + xoá lượt nhập tay. */

@@ -2377,7 +2377,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=96"></script>
+<script src="js/chung.js?v=97"></script>
 <script src="js/nop-sach.js?v=2"></script>
 <script src="js/hd-chup.js?v=1"></script>
 <script src="js/nw-phien.js?v=9"></script>
@@ -4149,7 +4149,7 @@ function veKhoiWs(k, so){
         '<div class="ch-ma">' + tenLesson + ' • ' + n + ' TRANG' + (k.tep ? '' : ' • NHẬN BÀI TRÊN LỚP') + '</div></div>' +
       '<div class="card-nut">' +
         (k.tep
-          ? '<a class="ws-tai" target="_blank" rel="noopener" href="' + chuAnToan(k.tep) + '" title="Mở / tải bài tập">' + IC_TAI_WS + '<span>TẢI BÀI TẬP XUỐNG</span></a>'
+          ? '<a class="ws-tai" href="#" data-ws-tai title="Tải bài tập">' + IC_TAI_WS + '<span>TẢI BÀI TẬP XUỐNG</span></a>'
           : '<span class="ws-khong">Thầy chưa gắn file</span>') +
       '</div>' +
     '</div>' +
@@ -4274,6 +4274,15 @@ function wsDungBang(ds){
       };
       sec.insertBefore(xt, than);
     }
+    /* v1.412.0 — tải PDF kèm vé đăng nhập (kho worksheet không còn mở cho người lạ) */
+    var nutTai = sec.querySelector('[data-ws-tai]');
+    if (nutTai) nutTai.onclick = function(e){
+      e.preventDefault();
+      if (nutTai.classList.contains('dang')) return;
+      nutTai.classList.add('dang');
+      A.luuWs(k.tep, k.ten)['catch'](function(err){ alert(A.chuLoiWs(err)); })
+        .then(function(){ nutTai.classList.remove('dang'); });
+    };
     var ly = document.createElement('div');
     ly.className = 'wsp-luu-y';
     ly.innerHTML = IC_LUU_Y_WS + '<span>CHỈ NỘP BÀI ONLINE KHI EM KHÔNG THAM GIA ĐƯỢC BUỔI HỌC!</span>';
@@ -4331,7 +4340,7 @@ function wsDatViTriBang(){
 function wsVeTrangPdf(url){
   if (WS_XT[url]) return WS_XT[url];
   WS_XT[url] = wsNapPdfjs().then(function(pdfjs){
-    return fetch(url).then(function(r){ if (!r.ok) throw new Error('HTTP ' + r.status); return r.arrayBuffer(); })
+    return A.taiWs(url)   /* v1.412.0 — kèm vé đăng nhập */
       .then(function(buf){ return pdfjs.getDocument({ data: new Uint8Array(buf), isEvalSupported: false }).promise; });
   }).then(function(doc){
     var ra = [], chuoi = Promise.resolve();

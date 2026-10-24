@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-23 21:46:50",
+  "capNhat": "2026-10-24 11:34:29",
   "bai": {
     "A1C": [
       {
@@ -2090,6 +2090,62 @@
       }
     ],
     "NNTNG4": [
+      {
+        "id": "NNTNG4_24.10_STAGE_10_VEHICLE",
+        "tieuDe": "NNTNG4_24.10_STAGE 10 VEHICLE",
+        "tenHien": "NNTNG4_24.10_STAGE 10 VEHICLE",
+        "dang": "STAGE",
+        "ngay": "24.10",
+        "han": "2026-10-31T08:00",
+        "maLesson": "10 VEHICLE",
+        "taoLuc": "2026-10-24",
+        "khoi": [
+          {
+            "loai": "ws",
+            "ten": "WORDS – LOGIC QUEST",
+            "o": 40,
+            "tep": "https://firebasestorage.googleapis.com/v0/b/aword-70dae.firebasestorage.app/o/worksheet%2FNNTNG4%2FNNTNG4_24.10_STAGE_10_VEHICLE%2F40.pdf?alt=media",
+            "soTrang": 2
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "bj7a3f",
+            "mau": "TYPE THE ANSWER",
+            "han": "2026-10-26T12:00"
+          },
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "10 VEHICLE / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "v3w72z",
+            "mau": "TRUE OR FALSE",
+            "han": "2026-10-28T00:00"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "10 VEHICLE / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "zbjxc5",
+            "mau": "FIND THE MATCH",
+            "han": "2026-10-29T12:00"
+          },
+          {
+            "loai": "act",
+            "ten": "READING QUIZ",
+            "act": "10 VEHICLE / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "fs2u34",
+            "mau": "OPEN THE BOX",
+            "han": "2026-10-31T08:00"
+          }
+        ],
+        "giaoLuc": "2026-10-24T11:34"
+      },
       {
         "id": "NNTNG4_17.10_STAGE_9_PLACE",
         "tieuDe": "NNTNG4_17.10_STAGE 9 PLACE",
@@ -6482,7 +6538,7 @@
     "A1C": "2026-10-18 11:37:25",
     "B2A": "2026-10-22 13:25:02",
     "A1B": "2026-10-22 22:44:42",
-    "NNTNG4": "2026-10-19 15:24:51",
+    "NNTNG4": "2026-10-24 11:34:29",
     "A2B": "2026-10-23 21:46:50",
     "B1B": "2026-10-21 22:50:49",
     "NNTNGK9": "2026-10-23 10:29:58"

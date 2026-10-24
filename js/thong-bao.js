@@ -39,7 +39,7 @@
         var q = f.fs.query(f.fs.collection(f.db, 'tbNhan'), f.fs.where('m', '==', String(c.ma)));
         return f.fs.getDocs(q).then(function (s) {
           var cho = [];
-          s.forEach(function (d) { var x = d.data() || {}; if (x.nhan === false && x.tb) cho.push({ id: d.id, tb: String(x.tb), so: String(x.so || ''), t: x.t || '', lop: x.lop || '', sao: Number(x.sao) || 0 }); });
+          s.forEach(function (d) { var x = d.data() || {}; if (x.nhan === false && x.tb) cho.push({ id: d.id, tb: String(x.tb), so: String(x.so || ''), t: x.t || '', lop: x.lop || '', sao: Number(x.sao) || 0, gh: x.gh || null }); });   // v1.418.0 gh: thành tích riêng (thẻ gh1)
           if (!cho.length) return { f: f, ds: [] };
           return Promise.all(cho.map(function (p) {
             return f.fs.getDoc(f.fs.doc(f.db, 'thongBao', p.tb)).then(function (d) { p.tbd = d.exists() ? d.data() : null; return p; }, function () { p.tbd = null; return p; });
@@ -66,7 +66,7 @@
   // Chờ pop-up quà 20-10 (nếu đang mở) đóng hẳn.
   function choTrong() {
     return new Promise(function (xong) {
-      (function xem() { if (document.querySelector('.q20-phu, .tbp-phu')) setTimeout(xem, 700); else xong(); })();
+      (function xem() { if (document.querySelector('.q20-phu, .tbp-phu, .ghk-phu')) setTimeout(xem, 700); else xong(); })();
     });
   }
 
@@ -77,15 +77,39 @@
       b.set(f.fs.doc(f.db, 'saoDot', 'tb_' + p.id), {
         nguon: 'thongBao', lop: String(p.lop || ''), ngay: new Date(luc + 7 * 3600e3).toISOString().slice(0, 10),
         nhom: String(p.tbd.ten || 'Thông báo').slice(0, 80), ai: 'Thầy Andrew',
-        dong: [{ so: p.so, n: p.sao, viec: String(p.tbd.ten || 'Thông báo của thầy').slice(0, 110), app: 'Thầy Andrew' }], tao: luc
+        dong: [{ so: p.so, n: p.sao, viec: String(p.viec || p.tbd.ten || 'Thông báo của thầy').slice(0, 110), app: 'Thầy Andrew' }], tao: luc
       });
     }
     return b.commit();
   }
 
+  // ⭐ v1.418.0 — thông báo kiểu `gh1` (tổng kết giao hữu A Show Speed mùa 1, js/tb-gh.js): thẻ 3 màn, NHẬN THƯỞNG = cùng lượt ghi `ghi`.
+  //   Lỗi quyền mà phiếu đã nhận (máy/tab khác) / thầy đã dừng ⇒ đóng thẻ, không hiện lại.
+  function hienGh(f, p, tiep) {
+    var g = p.gh || {}, img = document.querySelector('#nutMenu img');
+    p.viec = 'Giao hữu A Show Speed mùa 1: ' + (g.n || 0) + ' trận' + (g.sTran ? ' (+' + g.sTran + ')' : '') + (g.sThang ? ' · top 10 thắng nhiều (+' + g.sThang + ')' : '');
+    ACTbGh.mo({ tb: p.tbd, p: p, anh: img && img.getAttribute('src'), xong: tiep, ghi: function () {
+      return ghi(f, p)['catch'](function (e) {
+        if (!/permission/i.test((e && e.code) || '')) throw { chu: 'Chưa gửi được (mạng yếu?) — em bấm lại nhé.' };
+        return f.fs.getDoc(f.fs.doc(f.db, 'tbNhan', p.id)).then(function (d) {
+          if ((d.exists() ? d.data() : {}).nhan === true) throw { daXong: true };
+          return f.fs.getDoc(f.fs.doc(f.db, 'thongBao', p.tb)).then(function (t) {
+            if (!t.exists() || t.data().tt !== 'dang') throw { daXong: true };
+            throw { chu: 'Chưa gửi được — em tải lại trang thử nhé.' };
+          });
+        });
+      });
+    } });
+  }
+
   function hienLanLuot(f, ds, i) {
     if (i >= ds.length) return;
     var p = ds[i];
+    if (p.tbd && p.tbd.kieu === 'gh1') {
+      if (!window.ACTbGh) return hienLanLuot(f, ds, i + 1);
+      choTrong().then(napCss).then(function () { hienGh(f, p, function () { setTimeout(function () { hienLanLuot(f, ds, i + 1); }, 900); }); });
+      return;
+    }
     choTrong().then(napCss).then(function () {
       var img = document.querySelector('#nutMenu img');
       var tb = Object.assign({}, p.tbd, { sao: p.sao });

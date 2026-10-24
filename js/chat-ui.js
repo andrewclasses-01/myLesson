@@ -525,7 +525,9 @@
           (o.laThay && o.xoa ? '<button type="button" class="xo" data-cu="xoahe" title="Xoá dòng này" aria-label="Xoá dòng này">×</button>' : '') +
           '</div>' + (o.sauTin ? (o.sauTin(t, i, ds) || '') : '');
       }
-      var ten = (!toi && !cungNhom && o.hienTen !== false) ? '<div class="cu-ten">' + esc(t.ten) + (o.nhan ? o.nhan(t) : '') + '</div>' : '';
+      var ten = (!toi && !cungNhom && o.hienTen !== false) ? '<div class="cu-ten">' + esc(t.ten) +
+        (window.ACHuyHieu && t.vaiTro !== 'gv' ? ACHuyHieu.sau({ uid: t.uid, ma: t.ma }, 12) : '') +   // v1.418.0 huy hiệu Chiến binh (js/huy-hieu.js)
+        (o.nhan ? o.nhan(t) : '') + '</div>' : '';
       var than;
       if (t.thuHoi) than = '<div class="cu-bong thuhoi">' + ten + 'Tin nhắn đã bị thu hồi' + veThuHoiGoc(t) + '<span class="cu-gio">' + gio(t.luc) + '</span></div>';
       else if (t.sticker && timStk(t.sticker)) {

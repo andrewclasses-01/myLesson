@@ -605,6 +605,30 @@
   }
 
   window.DuyetAnh = { mo: mo, dem: dem };
-  // số ảnh chờ cạnh mục cột trái — đọc 1 lần khi dashboard đã đăng nhập (đợi cửa kho)
-  setTimeout(function () { if (window.AWChat && AWChat.kho && $('.nwb-ql-muc[data-muc="duyetAnh"]')) dem(); }, 4000);
+  // số ảnh chờ cạnh mục cột trái — đọc khi dashboard đã đăng nhập (đợi cửa kho; phiên thầy chưa sẵn ⇒ thử lại 5 giây/lần, tối đa 2 phút)
+  // ⭐ v1.421.0 (24/10/2026, thầy: "mỗi khi có ảnh mới cần duyệt, khi tôi đăng nhập là tự hiện pop-up duyệt ảnh") — có ảnh chờ ⇒ TỰ MỞ hộp.
+  //   Không bật mãi khi thầy cố ý để lại ảnh: chỉ tự mở lại khi SỐ ảnh chờ khác lần tự mở trước, hoặc đã quá 3 giờ (localStorage 'daTuMo').
+  //   Đang có hộp khác mở (Quản lý & bảo mật, Thông báo…) ⇒ chờ nó đóng (tối đa 2 phút) rồi mới mở.
+  var TU_MO = 'daTuMo';
+  function tuMo(n) {
+    var cu = null; try { cu = JSON.parse(localStorage.getItem(TU_MO) || 'null'); } catch (e) { }
+    if (cu && cu.n === n && Date.now() - cu.luc < 3 * 36e5) return;
+    var lan = 0;
+    (function cho() {
+      var nen = $('#daNen');
+      if (nen && !nen.hidden) return;
+      var banhKhac = document.querySelector('.qm-nen:not([hidden]), .tq-nen.mo, .tdq-nen:not([hidden]), .sd-pop, .qs-nen.mo, .qsl-nen.mo, .skh-nen');
+      if (banhKhac && ++lan < 24) return setTimeout(cho, 5000);
+      try { localStorage.setItem(TU_MO, JSON.stringify({ n: n, luc: Date.now() })); } catch (e) { }
+      mo();
+    })();
+  }
+  function demKhiVao(lan) {
+    if (!(window.AWChat && AWChat.kho && $('.nwb-ql-muc[data-muc="duyetAnh"]'))) return;
+    dem().then(function (r) {
+      if (!r) { if (lan < 24) setTimeout(function () { demKhiVao(lan + 1); }, 5000); return; }
+      if (r.n > 0) tuMo(r.n);
+    });
+  }
+  setTimeout(function () { demKhiVao(0); }, 4000);
 })();

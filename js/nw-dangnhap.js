@@ -25,6 +25,14 @@
   var $ = function (s) { return document.querySelector(s); };
   var MK_TOI_THIEU = 8;           // ⛔ = js/mat-khau.js TOI_THIEU (luật chung từ v1.356.0); chỉ dùng khi file đó chưa nạp
 
+  // v1.423.0 — phiên thầy trên máy này? (khớp js/thay.js: tài khoản quản trị · Google của thầy · token app cũ uid 'thay')
+  function laPhienThay(u) {
+    if (!u) return false;
+    var em = String(u.email || '').toLowerCase();
+    return u.uid === 'thay' || em.slice(-'@quantri.andrewclasses.com'.length) === '@quantri.andrewclasses.com' ||
+      (em === 'namdaptrai01@gmail.com' && !!u.emailVerified);
+  }
+
   function man(ten) { document.querySelectorAll('.man').forEach(function (m) { m.classList.toggle('hien', m.id === ten); }); }
   function loi(chu) { var p = $('#loiVao'); p.hidden = !chu; p.textContent = chu || ''; }
   function loiMk(chu) { var p = $('#loiDoiMk'); p.hidden = !chu; p.textContent = chu || ''; }
@@ -248,6 +256,17 @@
     if (window.__thayVao) { await vaoCheDoThay(dl); return; }     // v1.201.0 — thầy xem như em / đăng nhập thay
     var epGo = new URLSearchParams(location.search).get('vao') === '1';
     if (epGo) { A.thoat(); await P.thoat()['catch'](function () { }); }
+    // ⭐ v1.423.0 (25/10/2026, thầy báo "ngày nào cũng phải gõ lại ID + mật khẩu"): phiên thầy KHÔNG mất (nhớ 30 ngày,
+    // vào lại không hỏi mã 6 số) — chỉ là trang chủ không nhìn phiên thầy nên lần nào cũng hiện ô ID. Máy còn phiên
+    // THẦY ⇒ vào thẳng dashboard (dashboard tự kiểm claim + luật 30 ngày). `?vao=1` (vừa đăng xuất / bị đá) thì không.
+    // Chờ tối đa 2,5 s để mạng chậm không treo màn học sinh.
+    if (!epGo) {
+      var uDau = await Promise.race([
+        P.userHienTai()['catch'](function () { return null; }),
+        new Promise(function (res) { setTimeout(function () { res(null); }, 2500); })
+      ]);
+      if (laPhienThay(uDau)) { location.replace('dashboard.html'); return; }
+    }
     // Máy đã nhớ em → thầy chốt: mở andrewclasses.com LUÔN vào thẳng TRANG BÀI TẬP.
     var nho = epGo ? null : A.docNho();
     if (nho && nho.ma && nho.dacBiet) {

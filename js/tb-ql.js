@@ -21,7 +21,7 @@
   var chuanMa = function (s) { return String(s || '').replace(/\s+/g, '').toUpperCase(); };
   var MAU = ['#0E7C6E', '#3E7BFA', '#E0575B', '#F0821E', '#18A957', '#8b5cf6', '#0891b2', '#db2777', '#65a30d', '#ca8a04'];
   var CHUONG = '<svg viewBox="0 0 24 24"><path d="M12 2a6 6 0 0 0-6 6c0 7-3 9-3 9h18s-3-2-3-9a6 6 0 0 0-6-6zm-1.9 19a2 2 0 0 0 3.8 0z"/></svg>';
-  var KIEU = { le: 'Lễ (hồng, bóng bay)', thuong: 'Thường', anh: 'Có ảnh', gh1: 'Tổng kết giao hữu (thẻ xanh A Show Speed)' };
+  var KIEU = { le: 'Lễ (hồng, bóng bay)', thuong: 'Thường', anh: 'Có ảnh', gh1: 'Tổng kết giao hữu (thẻ xanh A Show Speed)', anhLop: 'Ảnh gửi chat nhóm lớp (mẫu lưu tham khảo)' };
   function kho() { return window.AWChat && AWChat.kho ? AWChat.kho() : Promise.reject(new Error('khong-co-kho')); }
   // Tên lớp GỌN (thầy chốt): NỀN TẢNG 4 → NT4, NỀN TẢNG K10 → NTK10
   function ngan(t) {
@@ -38,7 +38,7 @@
     noi: 'Cảm ơn em vì đã luôn nỗ lực và chăm chỉ.\nThầy rất vui khi nhìn thấy em lớn lên\nvà tiến bộ từng ngày.\n\nMong em luôn tự tin, rạng rỡ như một bông hoa\n— và luôn được yêu thương thật nhiều.',
     ket: 'Thầy chúc em ngày 20-10 vui vẻ ❤️', nut: 'THANK YOU ❤️', sao: 10, gui: { gt: 'f', lops: [] }, dangLuc: Date.UTC(2026, 9, 20, 0, 5) };
 
-  var S = { nap: null, lop: [], so: {}, maSo: {}, gt: {}, tb: [], nhan: {}, chon: '', tab: 'da', locLop: '', locTt: '', tim: '', loi: '' };
+  var S = { nap: null, lop: [], so: {}, maSo: {}, gt: {}, tb: [], nhan: {}, chon: '', tab: 'da', locLop: '', locTt: '', tim: '', loi: '', al: 0 };
 
   // ── nạp dữ liệu ──
   function napHet() {
@@ -80,7 +80,7 @@
   function napNhan(f, t) {
     var fs = f.fs, db = f.db, q;
     if (t.cu) q = fs.query(fs.collection(db, 'quaDip'), fs.where('dip', '==', '2010'));
-    else if (t.tt === 'nhap') { S.nhan[t.id] = []; return Promise.resolve(); }
+    else if (t.tt === 'nhap' || t.kieu === 'anhLop') { S.nhan[t.id] = []; return Promise.resolve(); }
     else q = fs.query(fs.collection(db, 'tbNhan'), fs.where('tb', '==', t.id));
     return fs.getDocs(q).then(function (s) {
       var ds = [];
@@ -112,6 +112,8 @@
   function ttHtml(tt) { return '<span class="tq-tt ' + tt + '">' + ({ dang: 'Đang hiện', nhap: 'Nháp', xong: 'Đã dừng' }[tt] || tt) + '</span>'; }
   function khungPop(t, tinh) {
     var k = document.createElement('div'); k.className = 'tq-khung';
+    // 🏆 25/10/2026 — kiểu anhLop (MẪU LƯU: ảnh đã gửi vào chat nhóm từng lớp, tools/gui-anh-vinh-danh-gh1.js --luu-mau): ô nhỏ = ảnh lớp đầu
+    if (t.kieu === 'anhLop') { var a0 = (t.anh || [])[0]; if (a0) k.innerHTML = '<img class="tq-al-tn" src="' + E(a0.url) + '" alt="">'; return k; }
     // ⭐ v1.419.0 — kiểu gh1 (tổng kết giao hữu, js/tb-gh.js): xem trước ĐÚNG thẻ xanh học sinh thấy, màn 1, như bạn hạng 1 bảng chăm đang xem
     if (t.kieu === 'gh1') {
       if (window.ACTbGh && t.gh && (t.gh.cham || []).length) {
@@ -203,9 +205,10 @@
       var r = S.nhan[t.id] || [], n = r.length, x = r.filter(function (h) { return h.nhan; }).length, pt = n ? Math.round(x * 100 / n) : 0;
       var o = document.createElement('div');
       o.className = 'tq-o' + (t.id === S.chon ? ' chon' : ''); o.setAttribute('data-id', t.id);
-      o.innerHTML = '<div class="tq-tn"></div><div><div class="l1"><h4>' + E(t.ten || '(chưa đặt tên)') + '</h4>' + ttHtml(t.tt) + '</div>' +
-        '<div class="tq-nhan">' + nhanHtml(t.gui) + '</div>' +
-        (t.tt === 'nhap' ? '<div class="so"><span>Nháp · chưa gửi cho ai</span></div>' :
+      o.innerHTML = '<div class="tq-tn"></div><div><div class="l1"><h4>' + E(t.ten || '(chưa đặt tên)') + '</h4>' + (t.kieu === 'anhLop' ? '<span class="tq-tt mau">Mẫu</span>' : ttHtml(t.tt)) + '</div>' +
+        '<div class="tq-nhan">' + (t.kieu === 'anhLop' ? '<span class="tq-the">Chat nhóm lớp</span>' : nhanHtml(t.gui)) + '</div>' +
+        (t.kieu === 'anhLop' ? '<div class="so"><span>Mẫu lưu · đã gửi chat ' + (t.anh || []).length + ' lớp</span></div>' :
+        t.tt === 'nhap' ? '<div class="so"><span>Nháp · chưa gửi cho ai</span></div>' :
           '<div class="tq-thanh"><i style="width:' + pt + '%"></i></div><div class="so"><span>' + x + '/' + n + ' đã xác nhận</span><span>' + pt + '%</span></div>') + '</div>';
       $('.tq-tn', o).appendChild(khungPop(t, true));
       box.appendChild(o);
@@ -215,6 +218,7 @@
     var ct = $('#tqCt');
     var t = S.tb.filter(function (x) { return x.id === S.chon; })[0];
     if (!t) { ct.innerHTML = ''; return; }
+    if (t.kieu === 'anhLop') return veCtAnh(t, ct);
     var r = S.nhan[t.id] || [], n = r.length, da = r.filter(function (h) { return h.nhan; }), chua = r.filter(function (h) { return !h.nhan; });
     var lops = []; r.forEach(function (h) { if (h.lop && lops.indexOf(h.lop) < 0) lops.push(h.lop); });
     lops.sort(function (a, b) { return a.localeCompare(b, 'vi'); });
@@ -261,11 +265,27 @@
     if (t.kieu === 'gh1') veHuyHieu();
   }
 
+  // 🏆 25/10/2026 — chi tiết MẪU LƯU kiểu anhLop: xem từng ảnh lớp đã gửi + ghi chú cách làm lại (thầy: "lưu mẫu để tham khảo cho các lần sau")
+  function veCtAnh(t, ct) {
+    var ds = t.anh || [], i = Math.min(S.al, Math.max(0, ds.length - 1)), a = ds[i] || {};
+    ct.innerHTML =
+      '<div class="tq-ct-trai"><a class="tq-al-to" href="' + E(a.url || '#') + '" target="_blank" rel="noopener" title="Mở ảnh gốc (tab mới)"><img src="' + E(a.url || '') + '" alt=""></a>' +
+        '<div class="tq-nho">' + E(a.lop || '') + ' · bấm ảnh để mở cỡ thật</div>' +
+        '<div><div class="tq-tth"><span>Kiểu</span><b>' + E(KIEU.anhLop) + '</b></div>' +
+        '<div class="tq-tth"><span>Gửi lúc</span><b>' + ngayGio(t.dangLuc) + '</b></div>' +
+        '<div class="tq-tth"><span>Số lớp</span><b>' + ds.length + ' lớp</b></div></div></div>' +
+      '<div class="tq-ct-phai"><div class="tq-ct-dau"><h3>' + E(t.ten || '') + '</h3>' +
+        '<div class="ds-nhan"><span class="lb">Đã gửi vào chat:</span>' + ds.map(function (x, k) {
+          return '<button type="button" class="tq-chip' + (k === i ? ' on' : '') + '" data-al="' + k + '">' + E(x.lop) + '</button>'; }).join('') + '</div>' +
+        '<div class="noi tq-al-noi">' + E(t.ghiChu || '') + '</div></div></div>';
+  }
+
   // ── bấm trong hộp ──
   function bam(e) {
     var b;
     if (e.target === $('#tqNen')) { dong(); return; }
-    if ((b = e.target.closest('.tq-o'))) { S.chon = b.getAttribute('data-id'); S.tab = 'da'; S.locLop = ''; veDs(); veCt(); return; }
+    if ((b = e.target.closest('.tq-o'))) { S.chon = b.getAttribute('data-id'); S.tab = 'da'; S.locLop = ''; S.al = 0; veDs(); veCt(); return; }
+    if ((b = e.target.closest('[data-al]'))) { S.al = Number(b.getAttribute('data-al')) || 0; veCt(); return; }
     if ((b = e.target.closest('[data-tab]'))) { S.tab = b.getAttribute('data-tab'); veCt(); return; }
     if ((b = e.target.closest('[data-lop]'))) { S.locLop = b.getAttribute('data-lop'); veCt(); return; }
     if ((b = e.target.closest('[data-tt]'))) { S.locTt = b.getAttribute('data-tt'); veLocTt(); veDs(); return; }

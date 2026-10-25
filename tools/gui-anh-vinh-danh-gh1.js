@@ -3,6 +3,8 @@
 //
 //   node tools/gui-anh-vinh-danh-gh1.js --xem <thư mục PNG>   (ghép tên lớp → mã lớp + in tin thầy mẫu, KHÔNG ghi gì)
 //   node tools/gui-anh-vinh-danh-gh1.js --gui <thư mục PNG>   (tải ảnh lên Storage classChat/<mã lớp>/… + ghi tin vào classChat/<mã lớp>/messages)
+//   node tools/gui-anh-vinh-danh-gh1.js --luu-mau <thư mục PNG> (lưu MẪU vào hộp Thông báo dashboard: thongBao/anhLopGh1mua1 kiểu 'anhLop',
+//        tt 'xong' ⇒ học sinh không đọc được; ảnh = URL các tin đã gửi ở bước --gui. Hộp vẽ ở js/tb-ql.js veCtAnh)
 //
 // Tin đi đúng khuôn tin ảnh của thầy (js/chat.js guiAnh/gui, v1.206.0): role 'gv', text = '[Hình ảnh]' (chuTin ẩn chữ này khi có hinh),
 // hinh = URL tải về firebasestorage có token. File PNG đặt tên <tên lớp>.png (đúng tenGoc trong lessonWeb/lop).
@@ -36,6 +38,7 @@ function thanhGT(x) {
   if (x === null || x === undefined) return { nullValue: null };
   if (typeof x === 'number') return Number.isInteger(x) ? { integerValue: String(x) } : { doubleValue: x };
   if (typeof x === 'string') return { stringValue: x };
+  if (Array.isArray(x)) return { arrayValue: { values: x.map(thanhGT) } };
   const f = {}; Object.keys(x).forEach((k) => { f[k] = thanhGT(x[k]); }); return { mapValue: { fields: f } };
 }
 async function doc1(duong) {
@@ -65,7 +68,7 @@ function taiLen(duong, buf, token) {   // GCS multipart, gắn firebaseStorageDo
 
 (async () => {
   const che = process.argv[2], thuMuc = process.argv[3];
-  if (!/^--(xem|gui)$/.test(che || '') || !thuMuc) { console.log('Dùng: --xem|--gui <thư mục PNG>'); process.exit(1); }
+  if (!/^--(xem|gui|luu-mau)$/.test(che || '') || !thuMuc) { console.log('Dùng: --xem|--gui <thư mục PNG>'); process.exit(1); }
   const lw = await doc1('lessonWeb/lop'), x = JSON.parse((lw && lw.json) || '{}');
   const lop = {}; (x.lop || []).concat(x.khoa || []).forEach((l) => { const t = String(l.tenGoc || l.maLop); if (!lop[t]) lop[t] = String(l.maLop || ''); });
   const tep = fs.readdirSync(thuMuc).filter((f) => /\.png$/i.test(f));
@@ -76,6 +79,28 @@ function taiLen(duong, buf, token) {   // GCS multipart, gắn firebaseStorageDo
   console.log('Tin thầy mẫu:', JSON.stringify(mau && { name: mau.name, code: mau.code, role: mau.role, may: mau.may }));
   if (!mau) throw new Error('Không thấy tin thầy mẫu để chép name/code/may.');
   if (che === '--xem') return;
+  if (che === '--luu-mau') {
+    const tk0 = await tokenQuanTri(), anh = [];
+    let luc = 0;
+    for (const v of viec) {
+      const q = await goi(FS_GOC + '/classChat/' + encodeURIComponent(v.ma) + ':runQuery', { method: 'POST', headers: { Authorization: 'Bearer ' + tk0 }, json: { structuredQuery: {
+        from: [{ collectionId: 'messages' }], orderBy: [{ field: { fieldPath: 'createdAt' }, direction: 'DESCENDING' }], limit: 300 } } });
+      const d = (q.json || []).map((x) => x.document && giaTri({ mapValue: { fields: x.document.fields } })).find((x) => x && /vinhdanh-gh1-/.test(x.hinh || ''));
+      if (!d) throw new Error(v.ten + ': không thấy tin ảnh vinh danh đã gửi');
+      anh.push({ lop: v.ten, ma: v.ma, url: d.hinh }); luc = Math.max(luc, d.createdAt || 0);
+    }
+    const mau = { ten: 'Vinh danh giao hữu A Show Speed · Mùa 1 (ảnh chat lớp)', kieu: 'anhLop', tt: 'xong', tao: Date.now(), dangLuc: luc, anh,
+      ghiChu: 'Mỗi lớp một ảnh vinh danh các em ≥ 10 trận giao hữu, gửi vào chat nhóm lớp (25/10/2026). Học sinh đã nhận thưởng ở thông báo tổng kết — ảnh chỉ để chúc mừng.\n\n' +
+        '• Bố cục: dải vàng "CHÚC MỪNG CHIẾN BINH A SHOW SPEED - MÙA 1" ở dòng trên cùng → tên lớp to + cúp → thẻ lớn cho em có huy hiệu (top 10 chăm) / đĩa tia chớp (top 10 thắng) → lưới 4 cột các em còn lại → chú thích icon.\n' +
+        '• Số SAO là viên vàng to (nổi bật nhất); số trận 🔥 và số thắng ⚡ nhỏ, mờ. Không hiện tổng số trận / tổng số người. Không nhắc em chưa đủ 10 trận.\n' +
+        '• Ảnh 1080px, nền xanh A Show Speed, chữ ANDREW CLASSES cuối ảnh.\n\n' +
+        'File thiết kế: D:\\OTHERS\\CLAUDE\\THONG BAO GIAO HUU MUA 1 - thiet ke\\anh-lop-v1 (index.html + du-lieu.js; ảnh đã xuất ở thư mục xuat).\n' +
+        'Cách gửi: Claude xuất PNG bằng Chrome rồi chạy myLesson Web/tools/gui-anh-vinh-danh-gh1.js.' };
+    const r0 = await goi(FS_GOC + '/thongBao/anhLopGh1mua1', { method: 'PATCH', headers: { Authorization: 'Bearer ' + tk0 }, json: { fields: thanhGT(mau).mapValue.fields } });
+    if (r0.status !== 200) throw new Error('lưu mẫu HTTP ' + r0.status + ' ' + JSON.stringify(r0.json).slice(0, 200));
+    console.log('  💾 đã lưu mẫu thongBao/anhLopGh1mua1 —', anh.length, 'ảnh');
+    return;
+  }
   const tk = await tokenQuanTri();
   for (const v of viec) {
     const maS = v.ma.replace(/[^0-9A-Za-z_-]/g, '_').slice(0, 40);

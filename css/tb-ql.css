@@ -136,3 +136,11 @@ textarea.tq-o{min-height:110px;resize:vertical;line-height:1.5}
   .tq-tao-nen{padding:0}.tq-tao{grid-template-columns:1fr;max-height:100dvh;height:100dvh;border-radius:0}.tq-tao-phai{display:none}
   .tq-ba,.tq-hai{grid-template-columns:1fr 1fr}
 }
+/* 🏆 25/10/2026 — mẫu lưu kiểu anhLop (ảnh gửi chat nhóm lớp) */
+.tq-al-tn{width:100%;height:100%;object-fit:cover;object-position:top}
+.tq-tn .tq-khung:has(.tq-al-tn){transform:none;width:100%;height:100%}
+.tq-tt.mau{background:#FFF4D6;color:#B7791F}
+.tq-al-to{display:block;width:100%;max-width:300px;margin:0 auto;border-radius:14px;overflow:hidden;box-shadow:0 10px 30px -12px rgba(22,35,42,.45);background:#0B2A1A}
+.tq-al-to img{display:block;width:100%;height:auto}
+.tq-ct-dau .ds-nhan .tq-chip{margin:2px}
+.tq-ct-dau .noi.tq-al-noi{max-height:none;flex:1;overflow:auto}

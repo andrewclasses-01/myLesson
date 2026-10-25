@@ -25,7 +25,8 @@
     gio: SV('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
     khoa: SV('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>'),
     mo: SV('<rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 7.5-2"/>'),
-    tim: SV('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>')
+    tim: SV('<circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/>'),
+    cup: SV('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>')
   };
   var MAU = ['#0E7C6E', '#3E7BFA', '#E0575B', '#F0821E', '#18A957', '#8b5cf6', '#0891b2', '#db2777'];
   var HAN = [[0, 'Tới khi thầy mở'], [1, '1 ngày'], [3, '3 ngày'], [7, '7 ngày'], [30, '30 ngày']];
@@ -155,7 +156,13 @@
   }
 
   // ── vẽ ──
-  function ve() { veNav(); if (S.xem === 'chan') veChan(); else veTro(); veLuu(); }
+  // ⭐ 25/10/2026 — mục "Mùa xếp hạng" (js/xh-ql.js tự vẽ thân + chân hộp)
+  function ve() {
+    veNav();
+    if (S.xem === 'mua') return window.XhQl ? XhQl.ve({ than: $('#tdqThan'), tieuDe: $('#tdqTieuDe'), luu: $('#tdqLuu'), kho: kho, toast: toast, laThu: laThu() })
+      : ($('#tdqThan').innerHTML = '<div class="tdq-rong">Chưa nạp js/xh-ql.js — thầy tải lại trang nhé.</div>');
+    if (S.xem === 'chan') veChan(); else veTro(); veLuu();
+  }
   function veNav() {
     var h = '<div class="tdq-nhom">Trò chơi</div>' + TQ().TRO.map(function (t) {
       var on = t.che.filter(function (ch) { return TQ().trangThai((S.c.tro[t.ma] || {})[ch.ma]).mo; }).length;
@@ -164,6 +171,7 @@
     }).join('') +
       '<div class="tdq-muc tat" title="Trò chơi mới sẽ tự hiện ở đây khi được thêm vào hệ thống">' + I.cong + '<span class="ch">Trò chơi khác<small>Sắp có</small></span></div>' +
       '<i class="tdq-cach"></i>' +
+      '<button type="button" class="tdq-muc' + (S.xem === 'mua' ? ' chon' : '') + '" data-xem="mua">' + I.cup + '<span class="ch">Mùa xếp hạng<small>Tạo mùa · chốt &amp; phát sao</small></span></button>' +
       '<button type="button" class="tdq-muc' + (S.xem === 'chan' ? ' chon' : '') + '" data-xem="chan">' + I.chan + '<span class="ch">Học sinh bị chặn<small>Khoá riêng từng em</small></span>' +
       (soChan() ? '<span class="dem">' + soChan() + '</span>' : '') + '</button>';
     var nav = $('#tdqNav'); nav.innerHTML = h;

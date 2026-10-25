@@ -1,0 +1,389 @@
+/* ============================================================
+   js/xephang.js — SẢNH XẾP HẠNG THEO MÙA (nw/xephang.html) · 25/10/2026 Đợt 1 (thầy "ok build" mẫu v5).
+   Mẫu: D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\mau-v5 · kế hoạch + hợp đồng dữ liệu: KE HOACH BUILD DOT 1 - 25-10-2026.md
+
+   Thẻ: Sảnh (mùa · giờ vàng · hạng của em / 5 trận xếp hạng · phong độ · đang đấu · top 3 + hạng em) · Đang đấu · BXH (CHỈ top 20
+   + dòng của em — không lộ sĩ số) · Thưởng · Hạng & luật. Trong Sảnh: màn TÌM TRẬN (radar, phạm vi nới dần) và ĐÃ TÌM THẤY (10 giây
+   bấm Sẵn sàng) ⇒ trận chuyển 'nhan' ⇒ sang xhtran.html?id=…
+   Hàng chờ: xhHang/{uid} { mua, vao, nhip } — nhịp 5 giây (giờ máy chủ); máy chủ xhGhep ghi m / tran / loi.
+   Bàn thử: ?thu=1 (dữ liệu giả, ghép với máy sau ~8 giây, không ghi gì).
+   ============================================================ */
+(function () {
+  'use strict';
+  var $ = function (s, r) { return (r || document).querySelector(s); };
+  var esc = XH.esc, q = new URLSearchParams(location.search);
+  var S = { tab: 'sanh', man: 'sanh', f: null, toi: null, mua: '', M: null, em: null, top: [], live: [], hang: null, tran: null, tranId: '',
+    timLuc: 0, nhipIv: 0, tickIv: 0, ngheTran: null, ngheHang: null, daSS: false, bao: '', thu: false };
+  var app = document.getElementById('xhApp');
+  var BOOT = Date.now();
+
+  // ---------- dựng khung ----------
+  var TABS = [['sanh', 'Sảnh'], ['live', 'Đang đấu'], ['bxh', 'BXH'], ['thuong', 'Thưởng'], ['luat', 'Hạng & luật']];
+  app.innerHTML =
+    '<div class="xh-dau"><a class="xh-ve" href="khampha.html" aria-label="Về Khám phá">‹</a><h1>Xếp hạng <em>A Show Speed</em></h1></div>' +
+    '<div class="xh-tabs" role="tablist" id="xhTabs">' + TABS.map(function (t) { return '<button role="tab" data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="xh-canh" id="xhCanh">' +
+    ['sanh', 'tim', 'ss', 'live', 'bxh', 'thuong', 'luat'].map(function (m) { return '<section class="xh-man" id="xhm-' + m + '"></section>'; }).join('') +
+    '</div>';
+  $('#xhTabs').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) moTab(b.dataset.t); });
+
+  function moTab(t) {
+    if (S.man === 'tim' || S.man === 'ss') { if (t !== 'sanh') return; }
+    S.tab = t; S.man = t;
+    [].forEach.call($('#xhTabs').children, function (b) { b.setAttribute('aria-selected', b.dataset.t === t); });
+    hienMan(t);
+  }
+  function hienMan(m) {
+    S.man = m;
+    [].forEach.call(document.querySelectorAll('.xh-man'), function (x) { x.classList.toggle('mo', x.id === 'xhm-' + m); });
+    $('#xhTabs').hidden = m === 'tim' || m === 'ss';
+    ve();
+  }
+
+  // ---------- tiện ích ----------
+  var bay = function () { return Date.now(); };
+  function hangEm() {
+    var em = S.em || {};
+    if ((em.xl || 0) < 5) return null;
+    return XH.hangTu(em.diem || 0, !!em.ht);
+  }
+  function camTim() {   // '' = được tìm trận · còn lại = câu báo
+    if (!S.M) return 'Mùa xếp hạng chưa mở.';
+    var tt = XH.ttMua(S.M, bay());
+    if (tt === 'sap') return 'Mùa giải chưa bắt đầu.';
+    if (tt === 'dung') return 'Thầy Andrew đang tạm dừng mùa giải.';
+    if (tt === 'het' || tt === 'chot') return 'Mùa giải đã kết thúc.';
+    if (S.toi && S.toi.laThay) return 'Thầy xem được mọi trận ở thẻ Đang đấu.';
+    if (!S.thu && window.GioiHan && GioiHan.cai && GioiHan.dem && GioiHan.dem()) return 'Giờ nghỉ đêm (' + GioiHan.gioChu(GioiHan.cai.nghiTu) + ' – ' + GioiHan.gioChu(GioiHan.cai.nghiDen) + ').';
+    if (S.em && (S.em.khoaDen || 0) > bay()) return 'Em đang bị khoá tìm trận thêm ' + XH.dongHo(S.em.khoaDen - bay()) + '.';
+    return '';
+  }
+  function lopToi() { var t = S.toi || {}; return t.lop || (t.cacLop || [])[0] || ''; }
+
+  // ---------- VẼ ----------
+  function ve() {
+    var m = S.man;
+    if (m === 'sanh') veSanh();
+    else if (m === 'tim') veTim();
+    else if (m === 'ss') veSS();
+    else if (m === 'live') veLive();
+    else if (m === 'bxh') veBxh();
+    else if (m === 'thuong') veThuong();
+    else if (m === 'luat') veLuat();
+    XH.veHH(app);
+  }
+  function dauMua() {
+    var M = S.M, tt = XH.ttMua(M, bay());
+    if (!M) return '<div class="xh-mua"><div><b>XẾP HẠNG</b><small>Chưa có mùa giải</small></div></div>';
+    var con = tt === 'sap' ? XH.conLai(M.tu - bay()) + '<small>tới lúc mở</small>'
+      : tt === 'mo' || tt === 'dung' ? XH.conLai(M.den - bay()) + '<small>còn lại</small>' : '<small>đã kết thúc</small>';
+    return '<div class="xh-mua"><div><b>' + esc(String(M.ten || 'MÙA').toUpperCase()) + '</b><small>' + XH.ngayGio(M.tu).slice(0, 5) + ' – ' + XH.ngayGio(M.den).slice(0, 5) + '</small></div>' +
+      '<div class="xh-con xh-so">' + con + '</div></div>';
+  }
+  function gioVang() {
+    var g = S.M && S.M.gioVang; if (!g || !(g.nhan > 1)) return '';
+    var dang = XH.gioVangNay(S.M, bay()), d = new Date(), p = d.getHours() * 60 + d.getMinutes();
+    var phai = dang ? 'ĐANG DIỄN RA' : (p < g.tu ? 'sau ' + Math.floor((g.tu - p) / 60) + 'g' + ('0' + (g.tu - p) % 60).slice(-2) : XH.phutChu(g.tu) + ' mai');
+    return '<div class="xh-gv' + (dang ? ' dang' : '') + '">⚡ <b>GIỜ VÀNG</b> ' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + ' · điểm ×' + String(g.nhan).replace('.', ',') + '<span class="xh-so">' + phai + '</span></div>';
+  }
+  function theHang() {
+    var em = S.em || {}, h = hangEm();
+    if (!h) {
+      var xl = em.xl || 0, ds = (em.ds || []).slice(0, xl).reverse(), o = '';
+      for (var i = 0; i < 5; i++) {
+        var r = ds[i];
+        o += r ? '<span class="' + (r.kq === 'thang' ? 't' : r.kq === 'thua' ? 'b' : 'h') + '">' + (r.kq === 'thang' ? 'T' : r.kq === 'thua' ? 'B' : 'H') + '</span>'
+          : '<span' + (i === xl ? ' class="nay"' : '') + '>' + (i + 1) + '</span>';
+      }
+      return '<div class="xh-the"><div class="xh-toi">' + XH.hhTag('an', '', 84) + '<div class="xh-tt"><h2>XẾP HẠNG<span>' + Math.min(5, xl + 1) + '/5</span></h2>' +
+        '<p>Chơi đủ <b>5 trận</b> để máy xếp em vào hạng hợp với sức mình.</p></div></div>' +
+        '<div class="xh-nam" style="margin-top:12px">' + o + '</div></div>';
+    }
+    var trong = h.trongBac, bar = h.ma === 'ct' || h.ma === 'ht' ? 100 : trong;
+    var tiep = h.ma === 'ct' || h.ma === 'ht' ? (em.hang ? 'Hạng <b>#' + em.hang + '</b> toàn trường' : 'Cao thủ') :
+      '<b>' + trong + '</b>/100 · còn <b>' + (100 - trong) + '</b> điểm lên ' + esc(XH.hangTu(h.len).ten);
+    return '<div class="xh-the"><div class="xh-toi">' + XH.hhTag(h.ma, h.bac, 84) + '<div class="xh-tt"><h2>' + esc(XH.HANG[h.ma].ten.toUpperCase()) + (h.bac ? '<span>' + h.bac + '</span>' : '') + '</h2>' +
+      '<div class="xh-thanh"><u style="width:' + bar + '%"></u></div><p class="xh-so">' + tiep + (em.baoVe ? ' · 🛡' + em.baoVe : '') + '</p></div></div>' +
+      '<div class="xh-so3 xh-so"><div><b>' + (em.tran || 0) + '</b><small>trận mùa này</small></div>' +
+      '<div><b>' + (em.tran ? Math.round(100 * (em.thang || 0) / em.tran) : 0) + '%</b><small>thắng</small></div>' +
+      '<div><b style="color:#FFB3BA">' + (em.chuoi >= 2 ? '🔥' : '') + (em.chuoi || 0) + '</b><small>chuỗi thắng</small></div></div></div>';
+  }
+  function phongDo() {
+    var ds = (S.em && S.em.ds) || []; if (!ds.length) return '';
+    return '<div class="xh-the"><h3>PHONG ĐỘ <span style="letter-spacing:0;font:600 12px/1 var(--xh-v);color:var(--xh-mo)">' + Math.min(7, ds.length) + ' trận gần nhất</span></h3><div class="xh-phong">' +
+      ds.slice(0, 7).map(function (r) { var k = r.kq === 'thang' ? 't' : r.kq === 'thua' ? 'b' : 'h'; return '<span class="xh-kq ' + k + '" title="' + esc((r.vs || '') + ' ' + (r.toi || 0) + '–' + (r.ban || 0)) + '">' + k.toUpperCase().replace('B', 'B') + '</span>'; }).join('') +
+      '</div></div>';
+  }
+  function lvHtml(t, i) {
+    var a = XH.hien(t.hA), b = XH.hien(t.hB), d = t.diem || {};
+    var con = t.ketThuc ? Math.max(0, t.ketThuc - bay()) : 0;
+    return '<button class="xh-lv' + (i === 0 ? ' noi' : '') + '" data-xem="' + esc(t.id) + '"><div class="xh-h1">' +
+      '<span class="xh-p">' + XH.av(t.tenA, t.anhA) + '<span>' + esc(t.tenA) + '</span>' + XH.hhTag(a.ma, a.bac, 20) + '</span>' +
+      '<span class="xh-ts xh-so"><b>' + (d.a || 0) + '</b> – <u>' + (d.b || 0) + '</u></span>' +
+      '<span class="xh-p r">' + XH.av(t.tenB, t.anhB) + '<span>' + esc(t.tenB) + '</span>' + XH.hhTag(b.ma, b.bac, 20) + '</span></div>' +
+      '<div class="xh-h2 xh-so"><span>BÀN ' + ((t.van || 0) + 1) + ' · ' + XH.dongHo(con) + '</span>' + (t.xem ? '<span>👁 ' + t.xem + '</span>' : '') +
+      '<span class="xh-tmx">♥ ' + (t.tim || 0) + '</span><span class="xh-vao">XEM ›</span></div></button>';
+  }
+  function topNho() {
+    var ds = S.top.slice(0, 3), em = S.em, toi = S.toi && S.toi.uid;
+    var o = ds.map(function (x, i) { var h = XH.hangTu(x.diem, x.ht); return '<div class="xh-tp"><span class="xh-x">' + (i + 1) + '</span>' + XH.hhTag(h.ma, h.bac, 22) + '<span class="xh-ten">' + esc(x.ten) + '</span><b class="xh-so">' + x.diem + '</b></div>'; }).join('');
+    if (em && em.hang && !ds.some(function (x) { return x.uid === toi; })) {
+      var h = hangEm(); o += '<div class="xh-tp em"><span class="xh-x">' + em.hang + '</span>' + XH.hhTag(h.ma, h.bac, 22) + '<span class="xh-ten">Em · ' + esc(S.toi.ten || '') + '</span><b class="xh-so">' + em.diem + '</b></div>';
+    }
+    return o || '<p class="xh-ghi">Chưa có ai xếp hạng — vào trận đầu tiên nào!</p>';
+  }
+  function veSanh() {
+    var cam = camTim(), tt = XH.ttMua(S.M, bay());
+    var bao = S.bao ? '<div class="xh-bao do">' + esc(S.bao) + '</div>' : '';
+    if (!S.M) {
+      $('#xhm-sanh').innerHTML = dauMua() + '<div class="xh-rong">Thầy Andrew chưa mở mùa xếp hạng.<br>Em quay lại sau nhé!</div>';
+      return;
+    }
+    var thongBao = tt === 'sap' ? '<div class="xh-bao">Mùa giải mở lúc <b>' + XH.ngayGio(S.M.tu) + '</b>. Đọc trước luật ở thẻ <b>Hạng & luật</b> nhé!</div>'
+      : tt === 'dung' ? '<div class="xh-bao">Thầy Andrew đang tạm dừng mùa giải.</div>'
+      : tt === 'het' || tt === 'chot' ? '<div class="xh-bao">Mùa giải đã kết thúc. Phần thưởng gửi vào hộp thông báo khi thầy chốt mùa.</div>' : '';
+    $('#xhm-sanh').innerHTML =
+      '<div class="xh-sanh"><div class="xh-c1">' + dauMua() + gioVang() + thongBao + bao + theHang() +
+      '<div class="xh-chedo"><button class="xh-cd chon">1–1<small>Đấu đơn</small></button><button class="xh-cd khoa" disabled>2–2<small>Sắp mở 🔒</small></button><button class="xh-cd khoa" disabled>3–3<small>Sắp mở 🔒</small></button></div>' +
+      '</div><div class="xh-c2">' + phongDo() +
+      (S.live.length ? '<div class="xh-the"><h3>ĐANG ĐẤU <button data-t="live">Xem tất cả ›</button></h3><div class="xh-live">' + S.live.slice(0, 2).map(lvHtml).join('') + '</div></div>' : '') +
+      '<div class="xh-the"><h3>TOP TOÀN TRƯỜNG <button data-t="bxh">Xem top 20 ›</button></h3>' + topNho() + '</div>' +
+      '</div></div>' +
+      '<div class="xh-day"><button class="xh-nut" id="xhTim"' + (cam ? ' disabled' : '') + '>TÌM TRẬN<small>' + (S.M.phut || 2) + ' phút · mỗi bàn 3 từ</small></button>' +
+      '<p class="xh-ghi">' + esc(cam || 'Máy tìm bạn cùng hạng, chờ lâu sẽ mở rộng dần.') + '</p></div>';
+  }
+  var PHAM = [[0, 'Bạn cùng hạng'], [15, 'Mở rộng sang bậc gần kề'], [30, 'Mở rộng sang hạng gần kề'], [60, 'Mở rộng mọi hạng · thắng bạn mạnh hơn được thêm điểm']];
+  function veTim() {
+    var h = hangEm(), s = Math.floor((bay() - S.timLuc) / 1000), k = 0;
+    PHAM.forEach(function (p, i) { if (s >= p[0]) k = i; });
+    var o = $('#xhm-tim');
+    if (!o.dataset.dung) {
+      o.dataset.dung = 1;
+      o.innerHTML = '<div class="xh-giua"><div class="xh-radar"><div class="xh-vong"></div><div class="xh-vong"></div><div class="xh-vong"></div><div class="xh-quet"></div>' +
+        '<span class="xh-cham" style="left:22%;top:30%"></span><span class="xh-cham" style="left:70%;top:24%;animation-delay:.6s"></span><span class="xh-cham" style="left:62%;top:72%;animation-delay:1.2s"></span>' +
+        '<div class="xh-tam">' + (h ? XH.hhTag(h.ma, h.bac, 62) : XH.hhTag('an', '', 62)) + '</div></div>' +
+        '<h2 class="xh-tieu">ĐANG TÌM ĐỐI THỦ</h2><div class="xh-gio xh-so" id="xhGio">0:00</div><p class="xh-ghi" id="xhPham"></p></div>' +
+        '<div class="xh-day"><button class="xh-nut phu" id="xhHuy">Huỷ tìm</button></div>';
+    }
+    $('#xhGio').textContent = Math.floor(s / 60) + ':' + ('0' + s % 60).slice(-2);
+    $('#xhPham').textContent = PHAM[k][1];
+  }
+  function veSS() {
+    var t = S.tran || {}, ben = t.a === (S.toi && S.toi.uid) ? 'a' : 'b', khac = ben === 'a' ? 'b' : 'a';
+    var con = Math.max(0, Math.ceil(((t.hetSS || 0) - 2000 - bay()) / 1000)), da = !!(t.ss && t.ss[ben]), ban = !!(t.ss && t.ss[khac]);
+    var o = $('#xhm-ss');
+    if (!o.dataset.dung) {
+      o.dataset.dung = 1;
+      o.innerHTML = '<div class="xh-giua"><div class="xh-thay">ĐÃ TÌM THẤY!</div><div class="xh-vongdem"><svg viewBox="0 0 140 140" width="140" height="140"><circle cx="70" cy="70" r="62" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="8"/>' +
+        '<circle id="xhVong" cx="70" cy="70" r="62" fill="none" stroke="#3DF58A" stroke-width="8" stroke-linecap="round" stroke-dasharray="389.6" stroke-dashoffset="0" style="filter:drop-shadow(0 0 6px #3DF58A);transition:stroke-dashoffset 1s linear"/></svg>' +
+        '<b class="xh-so" id="xhDem">10</b></div><div class="xh-ss"><span id="xhSs1"></span>Em<span id="xhSs2"></span>Đối thủ</div>' +
+        '<p class="xh-ghi">Không bấm trong 10 giây ⇒ khoá tìm trận <b>1 phút</b></p></div>' +
+        '<div class="xh-day"><button class="xh-nut" id="xhSS">SẴN SÀNG</button></div>';
+    }
+    $('#xhDem').textContent = con; $('#xhVong').style.strokeDashoffset = 389.6 * (1 - con / 10);
+    $('#xhSs1').classList.toggle('ok', da); $('#xhSs2').classList.toggle('ok', ban);
+    var b = $('#xhSS'); b.classList.toggle('da', da); b.textContent = da ? 'ĐÃ SẴN SÀNG ✓' : 'SẴN SÀNG'; b.disabled = da;
+  }
+  function veLive() {
+    $('#xhm-live').innerHTML = '<div class="xh-bxh-dau"><b>ĐANG ĐẤU</b><small>Hạng cao lên trước</small></div>' +
+      (S.live.length ? '<div class="xh-live">' + S.live.map(lvHtml).join('') + '</div>' : '<div class="xh-rong">Chưa có trận nào đang diễn ra.</div>');
+  }
+  function dongBxh(x, i, em) {
+    var h = XH.hangTu(x.diem, x.ht);
+    return '<div class="xh-hd' + (em ? ' em' : '') + '"><span class="xh-x xh-so">' + i + '</span><span class="xh-ng">' + XH.av(x.ten, x.anh) +
+      '<span>' + esc(x.ten) + '<small>' + esc(x.lop || '') + '</small></span></span>' + XH.hhTag(h.ma, h.bac, 24) + '<span class="xh-d xh-so">' + x.diem + '</span></div>';
+  }
+  function veBxh() {
+    var ds = S.top, toi = S.toi && S.toi.uid, em = S.em;
+    var pod = ds.length ? '<div class="xh-podium">' + [1, 0, 2].map(function (k) {
+      var x = ds[k]; if (!x) return '<div></div>';
+      var h = XH.hangTu(x.diem, x.ht);
+      return '<div class="xh-pd n' + (k + 1) + '"><span class="xh-x">#' + (k + 1) + '</span>' + XH.av(x.ten, x.anh) + XH.hhTag(h.ma, h.bac, k === 0 ? 46 : 36) + '<b>' + esc(x.ten) + '</b><small class="xh-so">' + x.diem + '</small></div>';
+    }).join('') + '</div>' : '';
+    var trong = ds.some(function (x) { return x.uid === toi; });
+    var emDong = em && em.diem != null && em.hang && !trong ? '<div class="xh-em-day">' + dongBxh({ ten: 'Em · ' + (S.toi.ten || ''), lop: lopToi(), anh: S.toi.anh, diem: em.diem, ht: em.ht }, em.hang, true) + '</div>' : '';
+    $('#xhm-bxh').innerHTML = '<div class="xh-bxh-dau"><b>TOP 20 TOÀN TRƯỜNG</b><small>' + esc((S.M && S.M.ten) || '') + '</small></div>' + pod +
+      (ds.length > 3 ? '<div class="xh-bang">' + ds.slice(3).map(function (x, i) { return dongBxh(x, i + 4, x.uid === toi); }).join('') + '</div>' : '') +
+      (!ds.length ? '<div class="xh-rong">Chưa có ai xong 5 trận xếp hạng.</div>' : '') + emDong;
+  }
+  var TH_TEN = [['dong', 'Đồng'], ['bac', 'Bạc'], ['vang', 'Vàng'], ['bk', 'Bạch kim'], ['kc', 'Kim cương'], ['ct', 'Cao thủ'], ['ht', 'Huyền thoại · top 10']];
+  function veThuong() {
+    var sao = (S.M && S.M.sao) || {}, em = S.em || {}, cao = em.cao != null && (em.xl || 0) >= 5 ? XH.hangTu(em.cao, em.ht).ma : '';
+    $('#xhm-thuong').innerHTML = '<div class="xh-mua"><div><b>THƯỞNG CUỐI ' + esc(String((S.M && S.M.ten) || 'MÙA').toUpperCase()) + '</b><small>Theo hạng CAO NHẤT em đạt trong mùa</small></div></div>' +
+      '<div class="xh-thuong">' + TH_TEN.map(function (x) {
+        return '<div class="xh-tg' + (x[0] === cao ? ' dat' : '') + '">' + XH.hhTag(x[0], '', 50) + '<b>' + x[1] + '</b><span class="xh-sao">+' + (sao[x[0]] || 0) + ' ⭐</span>' + (x[0] === cao ? '<small>EM ĐANG Ở ĐÂY</small>' : '') + '</div>';
+      }).join('') + '</div>' +
+      '<div class="xh-the"><ul class="xh-luat"><li><span>⭐</span><span>Sao vào <b>ví sao</b> khi thầy chốt mùa.</span></li>' +
+      '<li><span>🏁</span><span>Mùa kết thúc lúc <b>' + (S.M ? XH.ngayGio(S.M.den) : '—') + '</b>.</span></li>' +
+      '<li><span>↘</span><span>Mùa mới: chơi lại <b>5 trận xếp hạng</b>.</span></li></ul></div>';
+  }
+  var HB = [['ht', 'Top 10', 'B2–C1', '10 bạn điểm cao nhất trong Cao thủ'], ['ct', '1500+', 'B2', 'Không chia bậc · thua mất nhiều nhất'], ['kc', '1200', 'B1–B2', 'III · II · I · mốc an toàn'],
+    ['bk', '900', 'B1', 'III · II · I'], ['vang', '600', 'A2', 'III · II · I · mốc an toàn'], ['bac', '300', 'A1–A2', 'III · II · I · thua mất ít'], ['dong', '0', 'A1', 'III · II · I · thua không mất điểm']];
+  function veLuat() {
+    var g = S.M && S.M.gioVang;
+    $('#xhm-luat').innerHTML = '<div class="xh-hang-luoi"><div class="xh-hb">' + HB.map(function (x) {
+      return '<div class="xh-hbd">' + XH.hhTag(x[0], '', 36) + '<h4 style="color:' + XH.HANG[x[0]].a + '">' + XH.HANG[x[0]].ten + '</h4><span class="xh-moc xh-so">' + x[1] + '<span class="xh-cefr">' + x[2] + '</span></span><p>' + x[3] + '</p></div>';
+    }).join('') + '</div><div class="xh-c2"><div class="xh-diem4 xh-so"><div><b style="color:var(--xh-neon)">+20…30</b><small>Thắng</small></div><div><b>+5</b><small>Hòa</small></div>' +
+      '<div><b style="color:var(--xh-do)">0…−20</b><small>Thua</small></div><div><b style="color:var(--xh-do)">−25</b><small>Bỏ trận</small></div></div>' +
+      '<div class="xh-the"><ul class="xh-luat"><li><span>💪</span><span>Thắng bạn <b>hạng cao hơn</b> được nhiều điểm hơn.</span></li>' +
+      '<li><span>🔥</span><span>Chuỗi <b>3 trận thắng</b> trở lên: +5 mỗi trận.</span></li>' +
+      (g && g.nhan > 1 ? '<li><span>⚡</span><span>Giờ vàng <b>' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '.</span></li>' : '') +
+      '<li><span>🛡</span><span>Vừa lên hạng: <b>3 trận</b> thua không rớt.</span></li>' +
+      '<li><span>📌</span><span>Đã lên <b>Vàng</b> hoặc <b>Kim cương</b> thì không rớt xuống dưới trong mùa.</span></li>' +
+      '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới.</span></li>' +
+      '<li><span>🚪</span><span>Thoát giữa trận = thua, khoá tìm trận 2 phút.</span></li>' +
+      '<li><span>🌙</span><span>Nghỉ đêm 23:00–6:00 không tìm trận.</span></li></ul></div></div></div>';
+  }
+  app.addEventListener('click', function (e) {
+    var t = e.target.closest('[data-t]'); if (t && !t.closest('#xhTabs')) return moTab(t.dataset.t);
+    var x = e.target.closest('[data-xem]'); if (x) { location.href = NW.duong ? NW.duong('xhtran.html?id=' + encodeURIComponent(x.dataset.xem)) : 'xhtran.html?id=' + encodeURIComponent(x.dataset.xem); return; }
+    if (e.target.closest('#xhTim')) return batDauTim();
+    if (e.target.closest('#xhHuy')) return huyTim();
+    if (e.target.closest('#xhSS')) return sanSang();
+  });
+
+  // ---------- TÌM TRẬN ----------
+  async function batDauTim() {
+    S.bao = '';
+    var cam = camTim(); if (cam) { S.bao = cam; return ve(); }
+    if (window.TdQuan && !S.thu) { var ok = await TdQuan.cho('xh', { uid: S.toi.uid, lop: lopToi() }); if (!ok) return; }
+    S.timLuc = bay(); S.daSS = false; S.tranId = ''; S.tran = null;
+    $('#xhm-tim').dataset.dung = ''; $('#xhm-ss').dataset.dung = '';
+    hienMan('tim');
+    if (S.thu) { S.thuHen = setTimeout(function () { thuThay(); }, 8000); return; }
+    var f = S.f, ref = f.fs.doc(f.db, 'xhHang', S.toi.uid);
+    try {
+      try { await f.fs.deleteDoc(ref); } catch (e) { /* chưa có phiếu */ }
+      await f.fs.setDoc(ref, { mua: S.mua, vao: f.fs.serverTimestamp(), nhip: f.fs.serverTimestamp() });
+    } catch (e) { console.warn('[xh] vào hàng chờ', e); S.bao = 'Chưa vào được hàng chờ — kiểm tra mạng rồi thử lại.'; return moTab('sanh'); }
+    clearInterval(S.nhipIv);
+    S.nhipIv = setInterval(function () {
+      if (S.man !== 'tim') return;
+      f.fs.updateDoc(ref, { nhip: f.fs.serverTimestamp() }).catch(function () { });
+    }, 5000);
+    ngheHang();
+  }
+  function ngheHang() {
+    var f = S.f; if (S.ngheHang) S.ngheHang();
+    S.ngheHang = f.fs.onSnapshot(f.fs.doc(f.db, 'xhHang', S.toi.uid), function (s) {
+      if (S.man !== 'tim' && S.man !== 'ss') return;
+      if (!s.exists()) {   // máy chủ xoá phiếu: em bỏ lỡ Sẵn sàng (bị khoá) — hoặc trận đã vào
+        if (S.man === 'ss' && S.tran && ['nhan', 'choi'].indexOf(S.tran.trangThai) >= 0) return;
+        if (S.man === 'ss' && !S.daSS) { dungTim(); S.bao = 'Em chưa bấm Sẵn sàng nên bị khoá tìm trận 1 phút.'; napEm(); return moTab('sanh'); }
+        return;
+      }
+      var x = s.data();
+      if (x.loi) {
+        dungTim();
+        S.bao = x.loi === 'dem' ? 'Đang giờ nghỉ đêm — mai đấu tiếp nhé!' : x.loi === 'khoa' ? 'Em đang bị khoá tìm trận một lúc.' : 'Mùa giải đang đóng.';
+        f.fs.deleteDoc(s.ref).catch(function () { });
+        napEm(); return moTab('sanh');
+      }
+      if (x.tran && x.tran !== S.tranId) ngheTran(x.tran);
+      if (!x.tran && S.man === 'ss') { S.tranId = ''; S.tran = null; $('#xhm-tim').dataset.dung = ''; hienMan('tim'); }   // đối thủ không sẵn sàng ⇒ tìm tiếp
+    });
+  }
+  function ngheTran(id) {
+    var f = S.f; S.tranId = id; S.daSS = false; if (S.ngheTran) S.ngheTran();
+    S.ngheTran = f.fs.onSnapshot(f.fs.doc(f.db, 'tranDau', id), function (s) {
+      if (!s.exists() || S.tranId !== id) return;
+      var t = s.data(); S.tran = t;
+      if (t.trangThai === 'cho') {
+        if (S.man !== 'ss') { $('#xhm-ss').dataset.dung = ''; hienMan('ss'); try { navigator.vibrate && navigator.vibrate([120, 60, 120]); } catch (e) { } }
+        else veSS();
+      } else if (t.trangThai === 'nhan' || t.trangThai === 'choi') {
+        dungTim(true);
+        location.href = 'xhtran.html?id=' + encodeURIComponent(id);
+      } else if (t.trangThai === 'han') {
+        dungTim(); S.bao = 'Đã tới giờ nghỉ đêm — trận không bắt đầu.'; moTab('sanh');
+      }
+    });
+  }
+  async function sanSang() {
+    if (S.thu) { S.tran.ss.a = true; S.daSS = true; veSS(); setTimeout(function () { S.tran.ss.b = true; veSS(); setTimeout(function () { location.href = 'xhtran.html?thu=1'; }, 700); }, 1000); return; }
+    var t = S.tran; if (!t || S.daSS) return;
+    var ben = t.a === S.toi.uid ? 'a' : 'b', o = {}; o['ss.' + ben] = true;
+    S.daSS = true; veSS();
+    try { await S.f.fs.updateDoc(S.f.fs.doc(S.f.db, 'tranDau', S.tranId), o); }
+    catch (e) { console.warn('[xh] sẵn sàng', e); S.daSS = false; veSS(); }
+  }
+  function dungTim(giuPhieu) {
+    clearInterval(S.nhipIv); clearTimeout(S.thuHen);
+    if (S.ngheHang) { S.ngheHang(); S.ngheHang = null; }
+    if (S.ngheTran) { S.ngheTran(); S.ngheTran = null; }
+    if (!giuPhieu && S.f && S.toi && !S.thu) S.f.fs.deleteDoc(S.f.fs.doc(S.f.db, 'xhHang', S.toi.uid)).catch(function () { });
+  }
+  function huyTim() { dungTim(); moTab('sanh'); }
+  addEventListener('pagehide', function () { if (S.man === 'tim') dungTim(); });
+
+  // ---------- dữ liệu ----------
+  function napEm() {
+    var f = S.f; if (!f || !S.mua || !S.toi || S.thu) return;
+    f.fs.getDoc(f.fs.doc(f.db, 'xhMua', S.mua, 'em', S.toi.uid)).then(function (s) { S.em = s.exists() ? s.data() : null; ve(); }).catch(function () { });
+  }
+  async function batDau() {
+    S.thu = NW.laBanThu();
+    S.toi = NW.toi;
+    if (S.thu) return banThu();
+    S.f = await NW.fb();
+    var f = S.f;
+    if (window.GioiHan && GioiHan.napCai) { try { await GioiHan.napCai(); } catch (e) { } }
+    try { var m = await XH.muaHienTai(f); S.mua = m.mua; S.M = m.M; }
+    catch (e) { console.warn('[xh] đọc mùa', e); }
+    moTab('sanh');
+    if (!S.M) return;
+    f.fs.onSnapshot(f.fs.doc(f.db, 'xhMua', S.mua), function (s) { if (s.exists()) { S.M = s.data(); ve(); } });
+    if (!S.toi.laThay) f.fs.onSnapshot(f.fs.doc(f.db, 'xhMua', S.mua, 'em', S.toi.uid), function (s) { S.em = s.exists() ? s.data() : null; ve(); }, function () { });
+    f.fs.onSnapshot(f.fs.doc(f.db, 'xhMua', S.mua, 'bang', 'top'), function (s) { S.top = (s.exists() && s.data().ds) || []; ve(); }, function () { });
+    // Đang đấu: mọi trận xếp hạng đang chơi của mùa — hạng cao lên trước (theo tổng điểm hạng hiển thị không có ⇒ theo thứ tự hạng hA/hB)
+    f.fs.onSnapshot(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('xh', '==', S.mua), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(30)), function (s) {
+      var ds = [];
+      s.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > bay() - 5000) { t.id = d.id; ds.push(t); } });
+      var bac = function (h) { var p = XH.hien(h), i = XH.THU_TU.indexOf(p.ma); return (i < 0 ? -1 : i) * 3 + ({ III: 0, II: 1, I: 2 }[p.bac] || 0); };
+      ds.sort(function (x, y) { return Math.max(bac(y.hA), bac(y.hB)) - Math.max(bac(x.hA), bac(x.hB)); });
+      S.live = ds; napTimLive(); ve();
+    }, function (e) { console.warn('[xh] đang đấu', e); });
+    if (q.get('tim') === '1' && !camTim()) batDauTim();
+    // phiếu hàng chờ còn sót (tải lại trang giữa lúc tìm) ⇒ dọn
+    else if (!S.toi.laThay) f.fs.deleteDoc(f.fs.doc(f.db, 'xhHang', S.toi.uid)).catch(function () { });
+  }
+  // số tim + người xem của các trận đang đấu (đọc một lần mỗi 20 giây — đủ cho danh sách)
+  var _timLuc = 0;
+  function napTimLive() {
+    if (bay() - _timLuc < 20000 || !S.live.length) return; _timLuc = bay();
+    var f = S.f;
+    S.live.slice(0, 10).forEach(function (t) {
+      Promise.all([f.fs.getDoc(f.fs.doc(f.db, 'tranDau', t.id, 'tim', 'a')), f.fs.getDoc(f.fs.doc(f.db, 'tranDau', t.id, 'tim', 'b')), f.fs.getDocs(f.fs.collection(f.db, 'tranDau', t.id, 'xem'))])
+        .then(function (r) {
+          t.tim = (r[0].exists() ? r[0].data().n || 0 : 0) + (r[1].exists() ? r[1].data().n || 0 : 0);
+          var n = 0; r[2].forEach(function (d) { if ((d.data().luc || 0) > bay() - 45000) n++; }); t.xem = n; ve();
+        }).catch(function () { });
+    });
+  }
+  setInterval(function () {
+    if (S.man === 'tim') veTim();
+    else if (S.man === 'ss') { veSS(); if (S.thu && S.tran && !S.daSS && bay() > S.tran.hetSS) { S.bao = 'Em chưa bấm Sẵn sàng nên bị khoá tìm trận 1 phút.'; moTab('sanh'); } }
+    else if (S.man === 'sanh' && bay() - BOOT > 1000) { var c = $('.xh-con'); if (c && S.M) { var tt = XH.ttMua(S.M, bay()); if (tt === 'sap') c.innerHTML = XH.conLai(S.M.tu - bay()) + '<small>tới lúc mở</small>'; else if (tt === 'mo' || tt === 'dung') c.innerHTML = XH.conLai(S.M.den - bay()) + '<small>còn lại</small>'; } }
+  }, 500);
+
+  // ---------- BÀN THỬ (?thu=1 trên máy) ----------
+  function banThu() {
+    var t0 = bay();
+    S.toi = S.toi || { uid: 'hs_100046', ten: 'Bảo Nam', lop: 'A2B' };
+    S.mua = 'thu'; S.M = { ten: 'Mùa 1 · Khởi động', tu: t0 - 5 * 864e5, den: t0 + 12 * 864e5 + 7 * 36e5, tt: 'mo', phut: 2, gioVang: { tu: 1170, den: 1260, nhan: 1.5 }, sao: { dong: 1, bac: 2, vang: 5, bk: 10, kc: 15, ct: 20, ht: 30 } };
+    var kq = q.get('xl') ? +q.get('xl') : 5;
+    S.em = kq < 5 ? { xl: kq, xlThang: 2, ds: [{ kq: 'thang' }, { kq: 'thua' }, { kq: 'thang' }].slice(0, kq) }
+      : { xl: 5, diem: 764, cao: 764, tran: 24, thang: 15, hoa: 1, thua: 8, chuoi: 3, hang: 47, baoVe: 0, ds: ['thang', 'thang', 'thang', 'thua', 'hoa', 'thang', 'thua'].map(function (k) { return { kq: k, vs: 'Bạn', toi: 30, ban: 20 }; }) };
+    var TEN = ['Thiên Phúc', 'Khôi Nguyên', 'Phương Vy', 'Hải Đăng', 'Minh Châu', 'Gia Huy', 'Ngọc Hà', 'Tuấn Kiệt', 'An Nhiên', 'Quốc Bảo', 'Thảo My', 'Đức Minh', 'Bảo Châu', 'Nhật Huy', 'Khánh Vy', 'Hoài An', 'Trung Kiên', 'Mai Chi', 'Phúc Lâm', 'Yến Nhi'];
+    S.top = TEN.map(function (t, i) { return { uid: 'u' + i, ten: t, lop: ['B2-A', 'B1-B', 'A2-B', 'B1-A', 'A1-B'][i % 5], diem: 1742 - i * 33, ht: i < 2, tran: 40 + i }; });
+    S.live = [['Thiên Phúc', 'ct:', 'Khôi Nguyên', 'ct:', 41, 38], ['Hải Đăng', 'kc:I', 'Minh Châu', 'kc:II', 22, 30], ['Gia Huy', 'bk:II', 'Ngọc Hà', 'bk:III', 15, 9]]
+      .map(function (x, i) { return { id: 'thu' + i, tenA: x[0], hA: x[1], tenB: x[2], hB: x[3], diem: { a: x[4], b: x[5] }, van: 2 - i, ketThuc: t0 + 70000 - i * 15000, tim: 52 - i * 15, xem: 14 - i * 4 }; });
+    moTab(q.get('tab') || 'sanh');
+  }
+  function thuThay() {
+    S.tran = { a: S.toi.uid, b: 'u9', ss: { a: false, b: false }, hetSS: bay() + 12000, trangThai: 'cho' };
+    $('#xhm-ss').dataset.dung = ''; hienMan('ss');
+  }
+
+  NW.dungThanh({ tab: 'khamPha', hop: true }).then(batDau);
+})();

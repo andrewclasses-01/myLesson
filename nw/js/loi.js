@@ -23,7 +23,7 @@
 // Bàn thử dữ liệu giả `?thu=1` / `?thu=thay` trên máy (NW.laBanThu) vẫn mở.
 if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port === '8825' ||
       (/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=(1|thay)(&|$)/.test(location.search)) ||
-      /\/nw\/(tinnhan|canhan|khampha|giaidau|tran|quanly)\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 mở TIN NHẮN · 15/10/2026 (v1.345.0) mở TRANG CÁ NHÂN · (v1.346.0) mở KHÁM PHÁ + GIẢI ĐẤU trên trang thật · (v1.347.2) mở QUẢN LÝ (chỉ thầy — học sinh bị đẩy ra) cho mục Báo cáo
+      /\/nw\/(tinnhan|canhan|khampha|giaidau|tran|quanly|xephang|xhtran)\.html$/.test(location.pathname))) {   // ⭐ 02/10/2026 mở TIN NHẮN · 15/10/2026 (v1.345.0) mở TRANG CÁ NHÂN · (v1.346.0) mở KHÁM PHÁ + GIẢI ĐẤU trên trang thật · (v1.347.2) mở QUẢN LÝ (chỉ thầy — học sinh bị đẩy ra) cho mục Báo cáo
   location.replace('../index.html');
   throw new Error('myNetwork chưa mở ở trang này');
 }
@@ -529,7 +529,7 @@ if (!(/^andrewclasses-01\.github\.io$/.test(location.hostname) || location.port 
   // ⭐ 02/10/2026 — trang THẬT chỉ mở Tin nhắn: link sang trang nw/ khác ⇒ hộp "sắp ra mắt" thay vì bị cổng đá về trang chủ.
   // 15/10/2026 (v1.345.0, thầy chốt) — mở thêm TRANG CÁ NHÂN (canhan.html) trên trang thật.
   // 15/10/2026 (v1.346.0, thầy chốt) — mở thêm KHÁM PHÁ + GIẢI ĐẤU (khampha.html, giaidau.html).
-  NW.moDuoc = function (href) { return !!(CFG.LA_THU || NW.laBanThu() || /^(\.\/)?(tinnhan|canhan|khampha|giaidau|tran)\.html/.test(String(href || ''))); };
+  NW.moDuoc = function (href) { return !!(CFG.LA_THU || NW.laBanThu() || /^(\.\/)?(tinnhan|canhan|khampha|giaidau|tran|xephang|xhtran)\.html/.test(String(href || ''))); };
   NW.sapRaMat = function (ten) {
     var p = NW.popMo({ tieuDe: ten || 'Sắp ra mắt', html: '<p style="margin:0;font-weight:600;line-height:1.55">Tính năng này sẽ sớm được ra mắt.<br><span class="tiny">00:00 · Chủ Nhật, 01/11/2026</span></p>',
       chan: '<button class="btn primary" data-dong>EM SẼ CHỜ!</button>' });

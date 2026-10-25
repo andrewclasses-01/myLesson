@@ -545,15 +545,18 @@
     { ma: 'ass', ten: 'A Show Speed', che: [
       { ma: 'gh', ten: 'Giao hữu', mo: 'Em mời bạn / mời thầy đấu, không tính điểm' },
       { ma: 'giai', ten: 'Đấu giải', mo: 'Trận tính điểm trong giải đang mở của lớp' },
-      { ma: 'luyen', ten: 'Luyện tập', mo: 'Chơi với máy, không tính điểm' }] }
+      { ma: 'luyen', ten: 'Luyện tập', mo: 'Chơi với máy, không tính điểm' },
+      // ⭐ 25/10/2026 — XẾP HẠNG THEO MÙA (nw/xephang.html): giờ mở/đóng chính là ngày mùa thầy đặt; ở đây chỉ để TẠM ĐÓNG cho lớp / chặn từng em
+      { ma: 'xh', ten: 'Xếp hạng', mo: 'Đấu xếp hạng theo mùa với các bạn mọi lớp' }] }
   ];
   TQ.CHU_DONG = {
     gh: 'Thời gian mở giao hữu đã hết, em hãy đợi thầy Andrew mở trong mùa sau nhé!',
     giai: 'Đấu giải đang tạm đóng, em hãy đợi thầy Andrew mở nhé!',
-    luyen: 'Luyện tập đang tạm đóng, em hãy đợi thầy Andrew mở nhé!'
+    luyen: 'Luyện tập đang tạm đóng, em hãy đợi thầy Andrew mở nhé!',
+    xh: 'Xếp hạng đang tạm đóng, em hãy đợi thầy Andrew mở nhé!'
   };
-  // mặc định khi thầy chưa lưu lần nào = đúng trạng thái v1.414.0 (giao hữu đóng, giải + luyện tập mở)
-  TQ.MAC = function () { return { tro: { ass: { gh: { che: 'tat' }, giai: { che: 'bat' }, luyen: { che: 'bat' } } }, chan: {} }; };
+  // mặc định khi thầy chưa lưu lần nào = đúng trạng thái v1.414.0 (giao hữu đóng, giải + luyện tập mở) + xếp hạng mở (ngày mùa tự quyết)
+  TQ.MAC = function () { return { tro: { ass: { gh: { che: 'tat' }, giai: { che: 'bat' }, luyen: { che: 'bat' }, xh: { che: 'bat' } } }, chan: {} }; };
   TQ.KHOA_THU = 'tdQuanThu';   // bàn thử: cài đặt nằm ở localStorage (dashboard bàn thử + trang ?thu=1 cùng đọc)
   var _tq = null, _tqLuc = 0;
   TQ.nap = function (moi) {

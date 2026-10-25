@@ -12,6 +12,8 @@
   // ⭐ 15/10/2026 (thầy chốt, đấu game online Đợt 1) — thứ tự 4 ô: GIẢI ĐẤU · KHOÁ HỌC / TRÒ CHƠI · CHƯƠNG TRÌNH; tên ngắn
   //   ("Giải đấu", "Trò chơi", "Chương trình"). Giải đấu nay là trang riêng giaidau.html (kho giaiDau), không còn mục nwKhamPha.
   var LOAI = {
+    // ⭐ 25/10/2026 — XẾP HẠNG THEO MÙA (xephang.html): ô đầu, trải ngang cả hàng (nw.css .kp-o-muc[data-loai=xepHang])
+    xepHang:    { ten: 'Xếp hạng', mo: 'Đấu với các bạn mọi lớp cùng hạng · thưởng theo mùa', nut: 'VÀO ĐẤU', mau: ['#0E9F5A', '#37D7FF'], ic: '<path d="M12 3l7 3v5c0 5-3 8-7 10-4-2-7-5-7-10V6z"/><path d="M12 8l1.5 3 3 .4-2.2 2.1.6 3L12 15l-2.9 1.5.6-3-2.2-2.1 3-.4z"/>', trang: 'xephang.html' },
     giaiDau:    { ten: 'Giải đấu', mo: 'Thách đấu bạn cùng lớp, có bảng xếp hạng', nut: 'THAM GIA', mau: ['#E0575B', '#FF9A9C'], ic: '<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>', trang: 'giaidau.html' },
     khoaHoc:    { ten: 'Khoá học', mo: 'Các khóa học chất lượng cao được thầy Andrew xây dựng', nut: 'VÀO HỌC', mau: ['#3E7BFA', '#8BB4FF'], ic: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7M9 11h5"/>' },
     troChoi:    { ten: 'Trò chơi', mo: 'Chơi game luyện từ, nghe, đọc trên AWord', nut: 'CHƠI', mau: ['#0E7C6E', '#5CC9B6'], ic: '<path d="M6 12h4M8 10v4M15 13h.01M18 11h.01"/><rect x="2" y="6" width="20" height="12" rx="3"/>' },

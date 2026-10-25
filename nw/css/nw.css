@@ -1198,6 +1198,7 @@ body.mo-menu .side{transform:none; visibility:visible; transition:transform .3s 
 .nhan-noibat .ic{width:10px; height:10px; stroke-width:2.5}
 /* 4 ô to */
 .kp-o{display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px}
+.kp-o-muc[data-loai="xepHang"]{grid-column:1/-1}   /* 25/10/2026 xếp hạng theo mùa: ô đầu trải cả hàng */
 .kp-o-muc{position:relative; display:flex; align-items:center; gap:14px; padding:18px 16px; border-radius:20px; text-align:left; color:#fff; overflow:hidden;
   background:linear-gradient(135deg, var(--m1), var(--m2)); box-shadow:var(--shadow); transition:transform .16s var(--em), box-shadow .16s}
 .kp-o-muc:hover{transform:translateY(-3px); box-shadow:0 14px 34px rgba(22,35,42,.18)}

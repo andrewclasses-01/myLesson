@@ -228,8 +228,14 @@ const K_MOI = K_CU +
   "      }\n" +
   "    }\n";
 
+// 26/10 luật SUẤT: luật đang chạy đã có khối xếp hạng ⇒ chỉ vá khung xhMua cho phép trường `suat` (list ≤ 4)
+const SUAT_CU = ["'chotLuc', 'daThuong', 'thuong', 'boi'])\n", "&& d.gioVang is map && d.sao is map;\n"];
+const SUAT_MOI = ["'chotLuc', 'daThuong', 'thuong', 'boi', 'suat'])\n", "&& d.gioVang is map && d.sao is map && (!('suat' in d) || (d.suat is list && d.suat.size() <= 4));\n"];
 function ghepFirestore(cu) {
-  if (cu.includes(DAU_HIEU)) throw new Error('CHOT DUNG: luật ĐÃ có xếp hạng mùa — không đăng lại');
+  if (cu.includes(DAU_HIEU)) {
+    if (cu.includes(SUAT_MOI[0])) throw new Error('CHOT DUNG: luật ĐÃ có xếp hạng mùa + trường suat — không đăng lại');
+    return thayMot(thayMot(cu, SUAT_CU[0], SUAT_MOI[0], 'xhMua: suat (khoá)'), SUAT_CU[1], SUAT_MOI[1], 'xhMua: suat (kiểu)');
+  }
   let s = thayMot(cu, R_CU, R_MOI, 'tranDau: đọc');
   s = thayMot(s, S_CU, S_MOI, 'tranDau: sẵn sàng');
   s = thayMot(s, F_CU, F_MOI, 'tranDau: tdXh');

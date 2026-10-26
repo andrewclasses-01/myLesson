@@ -13,7 +13,8 @@ body.xh{
   color:var(--xh-chu);font:500 15px/1.5 var(--xh-v);color-scheme:dark}
 body.xh *{box-sizing:border-box}
 body.xh [hidden]{display:none!important}
-body.xh button,body.xh input{font:inherit;color:inherit}
+/* v1.429.0: :where ⇒ độ ưu tiên 0 — trước đây (0,1,2) đè mọi `.xh-… button` (0,1,1) nên chữ 16 ô bàn chỉ ~15px, nút tim/chat/tab mất cỡ + màu thiết kế */
+:where(body.xh) :where(button,input){font:inherit;color:inherit}
 body.xh button{cursor:pointer;-webkit-tap-highlight-color:transparent}
 body.xh button:focus-visible,body.xh input:focus-visible{outline:2px solid var(--xh-cyan);outline-offset:2px}
 .xh-so{font-variant-numeric:tabular-nums}
@@ -361,3 +362,136 @@ body.xh.xh-tran-trang{height:100%;overflow:hidden}
 .xh-hop>div{max-width:340px;width:100%;background:#06180F;border:1px solid var(--xh-vien);border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px;text-align:center}
 .xh-hop h4{margin:0;font:italic 800 20px/1.2 var(--xh-g)}
 .xh-hop p{margin:0;color:var(--xh-mo);font-size:14px}
+
+/* ============================================================
+   v1.429.0 (26/10/2026) — MẪU v6 "SÁNG & TO" thầy duyệt (D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\mau-v6-sang).
+   Thầy chê màn người xem: tối, chữ nhỏ, khó nhìn. 1) nền sáng một bậc, thẻ nền trắng mờ thay đen mờ · 2) chữ phụ sáng gần trắng ·
+   3) màn rộng (≥ 760px, máy tính / iPad ngang / TV lớp): chữ trận to ~1,3–1,6 lần, bàn 16 chữ tới 560px, chat 340px ·
+   4) điện thoại chỉ nhích 1–2px (trận phải VỪA MỘT MÀN) · 5) tab sảnh = icon, chỉ tab đang mở hiện chữ.
+   Đặt CUỐI file để đè luật gốc phía trên — sửa cỡ chữ/màu thì sửa ở đây.
+   ============================================================ */
+body.xh{
+  --xh-nen:#0A2619; --xh-nen2:#174A33; --xh-the:rgba(255,255,255,.07); --xh-vien:rgba(61,245,138,.40); --xh-vien2:rgba(230,255,241,.20);
+  --xh-chu:#FFFFFF; --xh-mo:#C9EBD8; --xh-mo2:#9CCBB2;
+  font-size:16px;
+  background:radial-gradient(120% 80% at 50% 0%,var(--xh-nen2) 0%,var(--xh-nen) 65%) fixed;background-color:var(--xh-nen)}
+
+/* ---------- SẢNH ---------- */
+.xh-dau h1{font-size:26px}
+.xh-tabs button{font-size:15px;padding:9px 16px;color:var(--xh-chu)}
+.xh-ghi{font-size:14px}
+.xh-the{background:rgba(255,255,255,.06)}
+.xh-the h3{font-size:13px;color:var(--xh-mo)}
+.xh-the h3 button{font-size:14px}
+.xh-mua b{font-size:20px}
+.xh-gv{font-size:15px}
+.xh-gv b{font-size:16px}
+.xh-gv span{font-size:13px}
+.xh-so3 b{font-size:24px}
+.xh-kq{width:30px;height:30px;font-size:14px}
+.xh-tp b{font-size:16px}
+.xh-pd b{font-size:16px}
+.xh-pd small{font-size:13px}
+.xh-hd .xh-d{font-size:16px}
+.xh-hd .xh-ng small{font-size:12px}
+.xh-hbd h4{font-size:18px}
+.xh-hbd .xh-moc{font-size:14px}
+.xh-tg small{font-size:12px}
+.xh-tg b{font-size:17px}
+
+/* ---------- TRẬN: điện thoại (giữ một màn) ---------- */
+.xh-g{background:rgba(255,255,255,.07)}
+.xh-g .xh-y{font-size:15px;color:#F2FFF8}
+.xh-g .xh-o i{background:rgba(255,255,255,.14);font-size:14px}
+.xh-g.lo{opacity:.6}
+.xh-goi.en .xh-y{font-size:14px;color:#FFFFFF}
+.xh-soban{color:var(--xh-mo);font-size:13px}
+.xh-soban b{font-size:18px}
+.xh-truc{font-size:12px;color:#FFB0BC;border-color:rgba(255,95,109,.7)}
+.xh-oan button{background:linear-gradient(180deg,#1C6A47,#0E3B27);border-color:rgba(91,255,160,.7);color:#FFFFFF;text-shadow:0 1px 2px rgba(0,0,0,.5)}
+.xh-oan.xem button{opacity:1}
+.xh-phim button{color:var(--xh-chu)}
+.xh-tim2 button{font-size:16px;background:rgba(255,255,255,.06)}
+.xh-nguoixem{font-size:13.5px;color:var(--xh-mo)}
+.xh-chat li{font-size:15px;background:rgba(55,215,255,.2)}
+.xh-chat li.toi{background:rgba(61,245,138,.22)}
+.xh-chat li.xem{background:rgba(255,201,74,.16)}
+.xh-chat li .xh-ai{font-size:12.5px}
+.xh-chat li.he{font-size:13px;color:var(--xh-mo)}
+.xh-chat header{font-size:13px;color:var(--xh-mo)}
+.xh-nhanh button{font-size:14px}
+.xh-chat-thanh{font-size:14px}
+
+/* kết quả + VS */
+.xh-ct{font-size:15px;max-width:400px}
+.xh-ct b{font-size:16px}
+.xh-lenhang{max-width:400px}
+.xh-lenhang small{font-size:13.5px}
+.xh-lo span{font-size:14px;color:var(--xh-chu)}
+.xh-lo span small{font-size:13px;color:var(--xh-mo)}
+.xh-ben .xh-dong{font-size:14px}
+.xh-ben .xh-hang{font-size:13px;color:var(--xh-chu)}
+.xh-xx small{font-size:13px}
+
+/* ---------- TRẬN: màn rộng (máy tính, iPad ngang, TV) ---------- */
+@container (min-width:760px){
+  .xh-dh{gap:14px}
+  .xh-db .xh-av{width:46px;height:46px;font-size:15px}
+  .xh-db b{font-size:44px}
+  .xh-db .xh-tm{font-size:16px}
+  .xh-dongho{font-size:32px;padding:9px 16px}
+  .xh-soban{font-size:15px}
+  .xh-soban b{font-size:24px}
+  .xh-truc{font-size:14px;padding:7px 12px}
+  .xh-mat{font-size:15px}
+  .xh-dem20{transform:scale(1.25);transform-origin:right center}
+  .xh-thoat{width:44px;height:44px}
+  .xh-goi{gap:8px}
+  .xh-g{padding:10px 14px;border-radius:12px;gap:14px}
+  .xh-g .xh-y{font-size:21px;font-weight:600}
+  .xh-g .xh-o{gap:4px}
+  .xh-g .xh-o i{width:30px;height:36px;border-radius:6px;font-size:20px}
+  .xh-goi.en .xh-y{font-size:18px;line-height:1.4}
+  .xh-goi.en .xh-o{margin:2px 0 4px 12px}
+  .xh-oan{--c:min(100cqw,100cqh,560px);gap:10px}
+  .xh-oan button{border-radius:16px}
+  .xh-danggo span{font-size:36px}
+  .xh-phim{max-width:560px}
+  .xh-phim button{font-size:22px;padding:17px 0}
+  .xh-tim2 button{font-size:20px;padding:15px 8px}
+  .xh-tim2 button i{font-size:24px}
+  .xh-nguoixem{font-size:15px}
+  .xh-nguoixem .xh-av{width:30px;height:30px;font-size:11px}
+  .xh-chat{width:340px}
+  .xh-chat header{font-size:15px;padding:12px 16px}
+  .xh-chat li{font-size:17px;padding:8px 13px}
+  .xh-chat li .xh-ai{font-size:13.5px}
+  .xh-chat li.he{font-size:14px}
+  .xh-nhanh{flex-wrap:wrap}
+  .xh-nhanh button{font-size:15px;padding:8px 13px}
+  .xh-ochat{font-size:16px;padding:11px 15px}
+  .xh-guichat{width:44px;height:44px;font-size:18px}
+  /* kết quả */
+  .xh-tiso{font-size:52px}
+  .xh-ct{font-size:17px;max-width:460px}
+  .xh-ct b{font-size:18px}
+  .xh-lenhang{max-width:460px}
+  .xh-lenhang b{font-size:22px}
+  .xh-lo span{font-size:16px}
+  /* VS */
+  .xh-ben h3{font-size:30px}
+  .xh-ben .xh-dong{font-size:17px}
+  .xh-ben .xh-hang{font-size:16px;max-width:120px}
+  .xh-xx small{font-size:15px}
+}
+
+/* ---------- TAB SẢNH = ICON (thầy chốt 26/10): chỉ tab ĐANG MỞ hiện chữ cạnh icon; chữ vẫn nằm trong nút (đọc màn hình / title) ---------- */
+.xh-tabs{gap:8px}
+body.xh .xh-tabs button{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:46px;height:42px;padding:0 12px;font-size:0;line-height:1;transition:background .2s,padding .2s}
+.xh-tabs button::before{content:"";width:22px;height:22px;flex:none;background:currentColor;-webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+body.xh .xh-tabs button[aria-selected="true"]{font-size:15px;font-weight:700;padding:0 16px 0 13px}
+.xh-tabs button[data-t="sanh"]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 11 12 3l9 8'/%3E%3Cpath d='M5 10v10h14V10'/%3E%3Cpath d='M10 20v-6h4v6'/%3E%3C/svg%3E")}
+.xh-tabs button[data-t="live"]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='2'/%3E%3Cpath d='M16.2 7.8a6 6 0 0 1 0 8.4M7.8 16.2a6 6 0 0 1 0-8.4M19.1 4.9a10 10 0 0 1 0 14.2M4.9 19.1a10 10 0 0 1 0-14.2'/%3E%3C/svg%3E")}
+.xh-tabs button[data-t="bxh"]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M8 21V11H3v10M16 21v-7h5v7M8 21V5h8v16M2 21h20'/%3E%3C/svg%3E")}
+.xh-tabs button[data-t="thuong"]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='8' width='18' height='4' rx='1'/%3E%3Cpath d='M5 12v9h14v-9M12 8v13M12 8C10.5 4 7 3.5 7 6s3 2 5 2zM12 8c1.5-4 5-4.5 5-2s-3 2-5 2z'/%3E%3C/svg%3E")}
+.xh-tabs button[data-t="luat"]{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 5h7a3 3 0 0 1 3 3v13a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v13a2 2 0 0 1 2-2h8z'/%3E%3C/svg%3E")}

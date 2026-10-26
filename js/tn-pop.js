@@ -26,6 +26,15 @@
   function khongDau(s) { return String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase(); }
   function tat(s) { var w = String(s || '?').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 2)).toUpperCase(); }
 
+  // ⭐ v1.430.0 — hàng bong bóng ĐANG ĐẤU (js/dang-dau.js): trang chưa nạp thì tự nạp một lần (mọi trang có hộp tin nhắn đều có hàng)
+  var _ddnNap = null;
+  function ganDangDau(el) {
+    if (!el) return;
+    if (window.DangDau) return DangDau.hang(el);
+    if (!_ddnNap) _ddnNap = new Promise(function (ok) { var s = document.createElement('script'); s.src = GOC + 'js/dang-dau.js?v=1'; s.onload = ok; s.onerror = ok; document.head.appendChild(s); });
+    _ddnNap.then(function () { if (window.DangDau && el.isConnected) DangDau.hang(el); });
+  }
+
   // ⭐ v1.364.0 — nhom = mã cuộc 'lop:XXX' ⇒ biểu tượng NHÓM LỚP bấm được (pop-up thành viên, js/chuot-phai.js)
   function avHtml(ds, nhom, uid) {
     ds = (ds && ds.length ? ds : [{ ten: '?' }]).slice(0, 4);
@@ -155,6 +164,7 @@
       '<div class="tp-dau"><h3>Tin nhắn</h3></div>' +
       '<div class="tp-tim"><label>' + BIEU.tim + '<input type="search" placeholder="Tìm trong tin nhắn" aria-label="Tìm trong tin nhắn"></label></div>' +
       '<div class="tp-loc"><button type="button" class="chon" data-loc="tat">Tất cả</button><button type="button" data-loc="chua">Chưa đọc</button></div>' +
+      '<div class="tp-ddn" hidden></div>' +   // v1.430.0 hàng bong bóng ĐANG ĐẤU xếp hạng (js/dang-dau.js) — không có trận thì trống
       '<div class="tp-ds"><div class="tp-trong">Đang tải…</div></div>' +
       '<a class="tp-chan" href="' + an(trang) + '">Xem tất cả trong Tin nhắn</a>';
     document.body.appendChild(nen); document.body.appendChild(pop);
@@ -166,6 +176,7 @@
     }
     var m = mo = { pop: pop, nen: nen, neo: neo, cuoc: [], loc: 'tat', chu: '' };
     sangIcon(m);
+    ganDangDau(pop.querySelector('.tp-ddn'));
     // v1.254.0 — chỉ đóng khi BỀ NGANG đổi (xoay máy / kéo cửa sổ): bàn phím điện thoại bật lên chỉ đổi bề cao — trước đây là đóng mất hộp
     m.w = window.innerWidth;
     m.dongNgay = function () { if (Math.abs(window.innerWidth - m.w) > 40) TP.dong(); };

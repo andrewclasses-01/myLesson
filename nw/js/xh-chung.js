@@ -49,7 +49,7 @@
   // chuỗi hạng trên trận ('vang:II' · 'ct:' · 'xl:3')
   function hien(s) {
     var p = String(s || '').split(':');
-    if (p[0] === 'xl') return { ma: 'an', bac: '', ten: 'Xếp hạng ' + (p[1] || '1') + '/5' };
+    if (p[0] === 'xl') return { ma: 'an', bac: '', ten: 'Phân hạng ' + (p[1] || '1') + '/5' };
     var h = HANG[p[0]] || HANG.an;
     return { ma: HANG[p[0]] ? p[0] : 'an', bac: p[1] || '', ten: h.ten + (p[1] ? ' ' + p[1] : '') };
   }

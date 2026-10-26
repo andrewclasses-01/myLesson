@@ -272,7 +272,7 @@
     return f.fs.setDoc(f.fs.doc(tRef, 'nhip', G.toi.uid), Object.assign({ luc: Date.now(), sv: f.fs.serverTimestamp() }, them || {}), { merge: true }).catch(function (e) { console.warn('[xh] nhịp', e); });
   }
   // ---------- KẾT QUẢ ----------
-  var CT_TEN = { thang: 'Thắng', chuoi: '🔥 Chuỗi thắng', gioVang: '⚡ Giờ vàng', hoa: 'Hòa', thua: 'Thua', boTran: 'Bỏ trận', xepLop: 'Xong 5 trận xếp hạng' };
+  var CT_TEN = { thang: 'Thắng', chuoi: '🔥 Chuỗi thắng', gioVang: '⚡ Giờ vàng', hoa: 'Hòa', thua: 'Thua', boTran: 'Bỏ trận', xepLop: 'Xong 5 trận phân hạng' };
   function veKetQua() {
     if (G.ketQua) return; G.ketQua = true; G.dungChoi = false; G.dungVS = false;
     var t = G.T, d = t.diem || {}, L = trai(), R = phai();
@@ -295,9 +295,9 @@
       var s = XH.hien(x.sau), tr = XH.hien(x.truoc);
       if (String(x.sau).indexOf('xl:') === 0) {
         var n = (x.xl || 0);
-        hang = '<div class="xh-lenhang">' + XH.hhTag('an', '', 56) + '<div class="xh-tt"><b>TRẬN XẾP HẠNG ' + n + '/5</b><small>Thắng ' + (x.xlThang || 0) + ' trận · còn ' + (5 - n) + ' trận nữa là có hạng</small></div></div>';
+        hang = '<div class="xh-lenhang">' + XH.hhTag('an', '', 56) + '<div class="xh-tt"><b>PHÂN HẠNG ' + n + '/5</b><small>Thắng ' + (x.xlThang || 0) + ' trận · còn ' + (5 - n) + ' trận nữa là có hạng</small></div></div>';
       } else if ((x.ct || []).some(function (c) { return c[0] === 'xepLop'; })) {
-        hang = '<div class="xh-lenhang">' + XH.hhTag(s.ma, s.bac, 72, 'no') + '<div class="xh-tt"><b>EM VÀO HẠNG ' + esc(s.ten.toUpperCase()) + '</b><small>Thắng ' + (x.xlThang || 0) + '/5 trận xếp hạng · từ giờ mỗi trận đều tính điểm hạng</small></div></div>';
+        hang = '<div class="xh-lenhang">' + XH.hhTag(s.ma, s.bac, 72, 'no') + '<div class="xh-tt"><b>EM VÀO HẠNG ' + esc(s.ten.toUpperCase()) + '</b><small>Thắng ' + (x.xlThang || 0) + '/5 trận phân hạng · từ giờ mỗi trận đều tính điểm hạng</small></div></div>';
       } else {
         var h = XH.hangTu(x.diem), trong = h.trongBac == null ? 100 : h.trongBac;
         var len = x.sau !== x.truoc && XH.THU_TU.indexOf(s.ma) * 3 + ({ III: 0, II: 1, I: 2 }[s.bac] || 0) > XH.THU_TU.indexOf(tr.ma) * 3 + ({ III: 0, II: 1, I: 2 }[tr.bac] || 0);

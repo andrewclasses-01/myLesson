@@ -66,7 +66,7 @@
   // Chờ pop-up quà 20-10 (nếu đang mở) đóng hẳn.
   function choTrong() {
     return new Promise(function (xong) {
-      (function xem() { if (document.querySelector('.q20-phu, .tbp-phu, .ghk-phu')) setTimeout(xem, 700); else xong(); })();
+      (function xem() { if (document.querySelector('.q20-phu, .tbp-phu, .ghk-phu, .xh2-phu')) setTimeout(xem, 700); else xong(); })();
     });
   }
 
@@ -102,9 +102,25 @@
     } });
   }
 
+  // ⭐ 26/10/2026 — thông báo kiểu `xh2` (khởi động Mùa 2 · Xếp hạng thế giới, js/tb-xh2.js): thẻ 4 màn, đóng (X ở màn cuối) hoặc
+  //   PHÂN HẠNG NGAY = cùng lượt ghi `ghi` (đánh dấu đã xem, không có sao) rồi mới đóng / sang sảnh xếp hạng.
+  function hienXh2(f, p, tiep) {
+    ACTbXh2.mo({ tb: p.tbd, xong: tiep, ghi: function () {
+      return ghi(f, p)['catch'](function (e) {
+        if (!/permission/i.test((e && e.code) || '')) throw { chu: 'Chưa gửi được (mạng yếu?) — em bấm lại nhé.' };
+        throw { daXong: true };   // đã đánh dấu ở máy/tab khác hoặc thầy đã dừng ⇒ cứ đóng
+      });
+    } });
+  }
+
   function hienLanLuot(f, ds, i) {
     if (i >= ds.length) return;
     var p = ds[i];
+    if (p.tbd && p.tbd.kieu === 'xh2') {
+      if (!window.ACTbXh2) return hienLanLuot(f, ds, i + 1);
+      choTrong().then(function () { hienXh2(f, p, function () { setTimeout(function () { hienLanLuot(f, ds, i + 1); }, 900); }); });
+      return;
+    }
     if (p.tbd && p.tbd.kieu === 'gh1') {
       if (!window.ACTbGh) return hienLanLuot(f, ds, i + 1);
       choTrong().then(napCss).then(function () { hienGh(f, p, function () { setTimeout(function () { hienLanLuot(f, ds, i + 1); }, 900); }); });

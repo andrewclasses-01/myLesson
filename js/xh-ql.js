@@ -111,7 +111,7 @@
       (T.ma === 'mo' || T.ma === 'dung' ? ' Tạm dừng chỉ dùng khi khẩn cấp: học sinh không tìm được trận mới, điểm giữ nguyên.' : '') + '</span></div>';
     var top = S.top.length ? '<div class="xhq-cuon"><table class="xhq-bang"><thead><tr><th>#</th><th>Học sinh</th><th>Lớp</th><th>Hạng</th><th class="so">Điểm</th><th class="so">Trận</th></tr></thead><tbody>' +
       S.top.map(function (x, i) { return '<tr><td>' + (i + 1) + '</td><td>' + E(x.ten) + '</td><td>' + E(x.lop) + '</td><td>' + chip(x.ht ? HANG[6] : hangTu(x.diem)) + '</td><td class="so">' + x.diem + '</td><td class="so">' + (x.tran || 0) + '</td></tr>'; }).join('') +
-      '</tbody></table></div>' : '<div class="tdq-rong nho">Chưa có em nào xong 5 trận xếp hạng.</div>';
+      '</tbody></table></div>' : '<div class="tdq-rong nho">Chưa có em nào xong 5 trận phân hạng.</div>';
     var chot = T.ma === 'het' ? '<div class="tdq-the"><div class="tdq-the-dau"><div><b>Chốt mùa &amp; phát thưởng</b><small>Xem trước sao của từng em rồi phát một lần.</small></div>' +
       '<button type="button" class="tdq-nut" data-xemchot>Xem trước &amp; chốt</button></div><div id="xhqChot"></div></div>' : '';
     return '<div class="tdq-the"><div class="tdq-the-dau"><div><b>' + E(M.ten) + '</b><small>Học sinh vào: Khám phá → Xếp hạng</small></div><span class="tdq-pill ' + T.cls + '">' + E(T.chu) + '</span></div>' +
@@ -234,10 +234,10 @@
     S.chot = ds;
     var tong = function () { var n = 0, c = 0; ds.forEach(function (r) { if (r.n > 0 && r.so) { n += r.n; c++; } }); return { n: n, c: c }; };
     var t = tong();
-    o.innerHTML = '<p class="tdq-goi">Hạng thưởng = hạng CAO NHẤT em đạt trong mùa · Huyền thoại = top 10 cuối mùa có ≥ 1500 điểm · em chưa xong 5 trận xếp hạng: 0 sao. Thầy sửa số sao từng em được.</p>' +
+    o.innerHTML = '<p class="tdq-goi">Hạng thưởng = hạng CAO NHẤT em đạt trong mùa · Huyền thoại = top 10 cuối mùa có ≥ 1500 điểm · em chưa xong 5 trận phân hạng: 0 sao. Thầy sửa số sao từng em được.</p>' +
       '<div class="xhq-cuon"><table class="xhq-bang"><thead><tr><th>Học sinh</th><th>Lớp</th><th>Hạng thưởng</th><th class="so">Điểm cuối</th><th class="so">Trận</th><th class="so">Sao</th></tr></thead><tbody>' +
       ds.map(function (r, i) {
-        return '<tr><td>' + E(r.x.ten) + (r.so ? '' : ' <small style="color:#c0392b">⚠ chưa có số HS</small>') + '</td><td>' + E(r.x.lop || '') + '</td><td>' + chip(r.h) + (r.x.diem == null ? ' <small>' + (r.x.xl || 0) + '/5 trận xếp hạng</small>' : '') +
+        return '<tr><td>' + E(r.x.ten) + (r.so ? '' : ' <small style="color:#c0392b">⚠ chưa có số HS</small>') + '</td><td>' + E(r.x.lop || '') + '</td><td>' + chip(r.h) + (r.x.diem == null ? ' <small>' + (r.x.xl || 0) + '/5 trận phân hạng</small>' : '') +
           '</td><td class="so">' + (r.x.diem == null ? '—' : r.x.diem) + '</td><td class="so">' + (r.x.tran || 0) + '</td><td class="so"><input class="tdq-o" inputmode="numeric" data-i="' + i + '" value="' + r.n + '"' + (r.so ? '' : ' disabled') + '></td></tr>';
       }).join('') + '</tbody></table></div>' +
       '<label class="tdq-hop-chon" style="margin-top:8px"><input type="checkbox" id="xhqBao" checked> Gửi lời chúc mừng vào nhóm chat các lớp</label>' +

@@ -224,6 +224,25 @@
       '.td-hero .td-khoa{margin-left:auto;font-size:18px;opacity:.9;flex:none}' +
       '.td-chon.td-hop button.td-hero.sapm{filter:none;opacity:1;background:linear-gradient(rgba(200,215,240,.06) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(90deg,rgba(200,215,240,.06) 1px,transparent 1px) 0 0/24px 24px,linear-gradient(110deg,#33445F,#141C2A 70%);box-shadow:inset 0 0 0 1.5px rgba(200,215,240,.3)}' +
       '.td-hero.sapm .td-nm{color:#DCE8FA;text-shadow:none}' +
+      // ⭐ 26/10/2026 — thẻ XẾP HẠNG THẾ GIỚI (mẫu thong-bao-mua2-v3): dòng đầu tên game + nhãn mùa (không đè tiêu đề) · hạng em · nút
+      '.td-chon.td-hop button.td-xh{position:relative;overflow:hidden;color:#E6FFF1;padding:12px 12px 12px;display:flex;flex-direction:column;align-items:stretch;text-align:left;gap:0;' +
+        'background:radial-gradient(120% 120% at 100% 0%,rgba(55,215,255,.22),transparent 55%),linear-gradient(135deg,#0E3A25,#04140B 70%);' +
+        'box-shadow:inset 0 0 0 1.5px rgba(61,245,138,.65),0 6px 18px rgba(4,32,15,.35)}' +
+      '.td-xh .td-x0{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:9px}' +
+      '.td-xh .td-game{font:800 10.5px/1 \'Barlow Condensed\',Arial,sans-serif;letter-spacing:.22em;color:#3DF58A}' +
+      '.td-xh .td-mua{font-weight:800;font-size:9.5px;line-height:1;letter-spacing:.1em;color:#03150C;background:#FFC94A;border-radius:5px;padding:4px 6px;white-space:nowrap}' +
+      '.td-xh .td-x1{display:flex;gap:10px;align-items:flex-start;min-width:0}.td-xh .td-nd{flex:1;min-width:0}.td-xh .td-toi>div{min-width:0}' +
+      '.td-xh .td-ic{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;background:linear-gradient(135deg,#1DE07A,#8CFFBF);color:#04200F;flex:none}' +
+      '.td-xh .td-nm{font:italic 900 22px/1 \'Barlow Condensed\',\'Arial Narrow\',Arial,sans-serif;text-transform:uppercase;color:#9BFFC4;text-shadow:0 0 14px rgba(61,245,138,.45)}' +
+      '.td-xh .td-sub{font-size:11.5px;font-weight:600;color:#A9D8BF;line-height:1.35;margin-top:4px}' +
+      '.td-xh .td-x2{display:flex;align-items:center;gap:8px;margin-top:11px}' +
+      '.td-xh .td-toi{display:flex;align-items:center;gap:8px;flex:1;min-width:0;padding:6px 8px;border-radius:10px;background:rgba(0,0,0,.28)}' +
+      '.td-xh .td-toi b{display:block;font:italic 800 15px/1.1 \'Barlow Condensed\',Arial,sans-serif;letter-spacing:.02em}' +
+      '.td-xh .td-toi small{display:block;font-size:10.5px;color:#8DB9A2;line-height:1.3}' +
+      '.td-xh .td-hh{width:28px;height:31px;flex:none;display:block}' +
+      '.td-xh .td-vao{flex:none;border-radius:10px;padding:10px 12px;background:linear-gradient(180deg,#5BFFA0,#22C46C);color:#03150C;font:italic 900 15px/1 \'Barlow Condensed\',Arial,sans-serif;letter-spacing:.06em}' +
+      '.td-xh.mo-sap .td-vao{background:rgba(230,255,241,.12);color:#E6FFF1}' +
+      '.td-hop .td-gio{font-size:12px;color:#5F7370;padding:0 2px}' +
       '.td-hop .td-note{font-size:11.5px;font-weight:600;color:#5F7370;background:#F3F7F6;border-radius:10px;padding:7px 10px;display:none}.td-hop .td-note:not(:empty){display:block}' +
       '.td-hop .td-phu{display:grid;grid-template-columns:1fr 1fr;gap:8px}' +
       '.td-chon.td-hop button.td-s{border:1.5px solid #E0EAE7;background:#fff;padding:10px 11px;display:flex;flex-direction:column;align-items:stretch;gap:3px;min-height:68px;border-radius:14px}' +
@@ -889,6 +908,42 @@
         sap: ds.filter(function (x) { return x.tu > bay; }).sort(function (a, b) { return a.tu - b.tu; })[0] || null };
     } catch (e) { return { g: null, sap: null }; }
   }
+  // ⭐ 26/10/2026 — XẾP HẠNG THẾ GIỚI: mùa hiện tại + điểm hạng của em (caiDat/xepHang · xhMua/{mua} · xhMua/{mua}/em/{uid}; luật tools/dang-luat-xep-hang.js)
+  async function xhCuaEm(f, uid) {
+    var bay = Date.now();
+    if (banThu()) {
+      var k = new URLSearchParams(location.search).get('xh') || 'xl';
+      var M0 = { ten: 'Mùa 2', tu: k === 'sap' ? bay + 9 * 36e5 : bay - 864e5, den: bay + 28 * 864e5, tt: 'mo', gioVang: { tu: 1170, den: 1260, nhan: 1.5 } };
+      return { mua: 'thu', M: M0, em: k === 'hang' ? { xl: 5, diem: 764, hang: 47 } : { xl: 2 } };
+    }
+    try {
+      var c = await f.fs.getDoc(f.fs.doc(f.db, 'caiDat', 'xepHang')), mua = c.exists() ? String(c.data().mua || '') : '';
+      if (!mua) return null;
+      var m = await f.fs.getDoc(f.fs.doc(f.db, 'xhMua', mua)); if (!m.exists()) return null;
+      var em = null;
+      if (uid) { try { var e = await f.fs.getDoc(f.fs.doc(f.db, 'xhMua', mua, 'em', uid)); em = e.exists() ? e.data() : null; } catch (x) { em = null; } }
+      return { mua: mua, M: m.data(), em: em };
+    } catch (e) { return null; }
+  }
+  // huy hiệu hạng nhỏ (khiên) — cùng hình với nw/js/xh-chung.js
+  var XH_MAU = { an: ['#5E8574', '#2B4A3C', '#13261D'], dong: ['#E7A16B', '#8A4B22', '#5B2E12'], bac: ['#EEF3F7', '#9AA7B4', '#56616E'], vang: ['#FFE08A', '#F0A91E', '#8F5A00'],
+    bk: ['#B7FFF0', '#2CC9B0', '#0B6B63'], kc: ['#C8E6FF', '#4DA3FF', '#1E3FA8'], ct: ['#E5C9FF', '#A35CFF', '#4B1C8F'], ht: ['#FFD3D8', '#FF4D6A', '#7A0C22'] };
+  var XH_TEN = { dong: 'Đồng', bac: 'Bạc', vang: 'Vàng', bk: 'Bạch kim', kc: 'Kim cương', ct: 'Cao thủ', ht: 'Huyền thoại' };
+  var _xhId = 0;
+  function xhHh(ma) {
+    var h = XH_MAU[ma] || XH_MAU.an, id = 'tdxh' + (++_xhId);
+    return '<svg class="td-hh" viewBox="0 0 100 110" aria-hidden="true"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + h[0] + '"/><stop offset=".55" stop-color="' + h[1] + '"/><stop offset="1" stop-color="' + h[2] + '"/></linearGradient></defs>' +
+      '<path d="M50 8 88 24v34c0 24-17 40-38 46C29 98 12 82 12 58V24Z" fill="url(#' + id + ')" stroke="' + h[2] + '" stroke-width="3"/>' +
+      '<path d="M50 20 76 31v26c0 17-12 29-26 34-14-5-26-17-26-34V31Z" fill="none" stroke="rgba(255,255,255,.55)" stroke-width="2"/>' +
+      (ma === 'an' ? '<text x="50" y="68" text-anchor="middle" font-family="Arial" font-weight="800" font-size="40" fill="rgba(255,255,255,.85)">?</text>' : '<path d="M50 36l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1Z" fill="rgba(255,255,255,.9)"/>') + '</svg>';
+  }
+  function xhHang(d, ht) {
+    if (ht) return { ma: 'ht', ten: 'Huyền thoại' };
+    var ds = [['dong', 0], ['bac', 300], ['vang', 600], ['bk', 900], ['kc', 1200], ['ct', 1500]], ma = 'dong', goc = 0;
+    ds.forEach(function (x) { if (d >= x[1]) { ma = x[0]; goc = x[1]; } });
+    var bac = ma === 'ct' ? '' : ['III', 'II', 'I'][Math.min(2, Math.floor((d - goc) / 100))];
+    return { ma: ma, ten: XH_TEN[ma] + (bac ? ' ' + bac : ''), trong: ma === 'ct' ? null : d - Math.floor(d / 100) * 100 };
+  }
   // hạng + điểm của em trong giải (cùng luật xếp hạng với dải ghim)
   async function hangEm(f, g, lop, uid) {
     if (banThu()) return { hang: 2, diem: 7 };
@@ -924,13 +979,14 @@
       S.ds = r[1]; S.thay = r[4];
       S.ds.concat(S.thay).forEach(function (x) { x.dangDau = !!dd[x.uid]; if (x.anh) ANH[x.uid] = x.anh; });
       if (S.g && !me.laThay) { var h = await hangEm(f, S.g, lop, me.uid); S.hang = h.hang; S.diem = h.diem; }
+      S.xh = await xhCuaEm(f, me.laThay ? '' : me.uid);   // ⭐ 26/10 xếp hạng thế giới
       // ⭐ v1.375.0 — phiếu đếm hôm nay của em + từng bạn đang online (bạn đủ trận ⇒ nút Mời tắt)
       if (!me.laThay) {
         var phs = await Promise.all([GH.phieu(me.uid)].concat(S.ds.map(function (x) { return GH.phieu(x.uid); })));
         S.ph = phs[0]; S.ds.forEach(function (x, i) { x.ph = phs[i + 1]; });
         // ⭐ v1.415.0 — Quản lý thách đấu (TdQuan): chế độ nào thầy đóng / hẹn giờ / không mở cho lớp / em bị chặn ⇒ thẻ khoá + câu báo
-        var kq = await Promise.all(['gh', 'giai', 'luyen'].map(function (c) { return TQ.kiem(c, { uid: me.uid, lop: lop }); }));
-        S.kq = { gh: kq[0], giai: kq[1], luyen: kq[2] };
+        var kq = await Promise.all(['gh', 'giai', 'luyen', 'xh'].map(function (c) { return TQ.kiem(c, { uid: me.uid, lop: lop }); }));
+        S.kq = { gh: kq[0], giai: kq[1], luyen: kq[2], xh: kq[3] };
       }
     } catch (e) { S.ds = []; S.thay = []; }
     if (hop !== el) return;
@@ -946,6 +1002,27 @@
       var sub = ok ? (S.hang ? 'Hạng của em #' + S.hang + ' · ' + S.diem + ' điểm' : 'Em chưa đấu trận nào') + ' · ' + soBan() + ' bạn đang online' : lyDo();
       var vp = ok ? '<span class="td-dem" data-t="' + S.g.den + '">' + tongGio(S.g.den - Date.now()) + '</span>' : sapm ? '<span class="td-dem" data-t="' + S.sap.tu + '">' + tongGio(S.sap.tu - Date.now()) + '</span>' : '<span class="td-khoa">' + HIC.khoa + '</span>';
       return '<button type="button" class="td-cd td-hero' + (sapm ? ' sapm' : '') + '" ' + (ok ? 'data-hop="ban-dau"' : S.g && S.kq.giai ? 'data-hop="dong-giai"' : 'aria-disabled="true"') + '><div class="td-r1"><span class="td-ic">' + HIC.cup + '</span><div class="td-nd"><div class="td-nm">' + an(ok || !sapm ? ten : S.sap.ten) + '</div><div class="td-sub">' + an(sub) + '</div></div>' + vp + '</div>' + (ok ? '<span class="td-chip">ĐANG DIỄN RA</span>' : '') + '</button>';
+    }
+    // ⭐ 26/10/2026 — thẻ đầu hộp: XẾP HẠNG THẾ GIỚI (thay ô Đấu giải của lớp — giải riêng của lớp TẠM ẨN, thầy chốt)
+    var IC_DIA = HI('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>');
+    function xhThe() {
+      var X = S.xh, M = X && X.M, bay = Date.now(), em = (X && X.em) || {};
+      var tt = !M ? 'khong' : M.tt === 'chot' || bay >= M.den ? 'het' : bay < M.tu ? 'sap' : 'mo';
+      var ngay = M ? Math.max(0, Math.ceil((M.den - bay) / 864e5)) : 0;
+      var chip = tt === 'sap' ? 'SẮP MỞ' : tt === 'mo' ? an(String(M.ten || 'MÙA').toUpperCase()) + ' · ' + ngay + ' NGÀY' : tt === 'het' ? 'ĐÃ KẾT THÚC' : 'CHƯA MỞ';
+      var toi, nut;
+      if (tt === 'khong') { toi = xhHh('an') + '<div><b>Chưa có mùa giải</b><small>Thầy Andrew sắp mở</small></div>'; nut = 'XEM'; }
+      else if (tt === 'sap') { toi = xhHh('an') + '<div><b>' + an(M.ten || 'Mùa mới') + ' mở sau</b><small class="td-dem" data-t="' + M.tu + '">' + tongGio(M.tu - bay) + '</small></div>'; nut = 'XEM'; }
+      else if (me.laThay) { toi = xhHh('kc') + '<div><b>Xem các trận đang đấu</b><small>Bảng xếp hạng toàn trường</small></div>'; nut = 'XEM'; }
+      else if ((em.xl || 0) < 5) { var k = Math.min(5, (em.xl || 0) + 1); toi = xhHh('an') + '<div><b>Phân hạng ' + k + '/5</b><small>Còn ' + (5 - (em.xl || 0)) + ' trận nữa là có hạng</small></div>'; nut = tt === 'mo' ? 'PHÂN HẠNG' : 'XEM'; }
+      else { var h = xhHang(em.diem || 0, em.ht); toi = xhHh(h.ma) + '<div><b>' + an(h.ten) + (h.trong != null ? ' · ' + h.trong + '/100' : ' · ' + (em.diem || 0) + 'đ') + '</b><small>' + (em.hang ? 'Hạng #' + em.hang + ' toàn trường' : 'Điểm hạng ' + (em.diem || 0)) + '</small></div>'; nut = tt === 'mo' ? 'VÀO ĐẤU' : 'XEM'; }
+      return '<button type="button" class="td-cd td-xh' + (tt === 'mo' ? '' : ' mo-sap') + '" data-hop="xh"><div class="td-x0"><span class="td-game">A SHOW SPEED</span><span class="td-mua">' + chip + '</span></div>' +
+        '<div class="td-x1"><span class="td-ic">' + IC_DIA + '</span><div class="td-nd"><div class="td-nm">Xếp hạng thế giới</div><div class="td-sub">Thi đấu xếp hạng với các đối thủ từ nhiều lớp khác</div></div></div>' +
+        '<div class="td-x2"><div class="td-toi">' + toi + '</div><span class="td-vao">' + nut + '</span></div></button>';
+    }
+    function dongGio() {
+      var g = S.xh && S.xh.M && S.xh.M.gioVang, p = function (m) { return hai(Math.floor(m / 60)) + ':' + hai(m % 60); };
+      return '<div class="td-gio">' + (g && g.nhan > 1 ? '⚡ Giờ vàng ' + p(g.tu) + '–' + p(g.den) + ' · ' : '') + '🌙 nghỉ ' + GH.gioChu(GH.cai.nghiTu) + '–' + GH.gioChu(GH.cai.nghiDen) + '</div>';
     }
     function hang(b, mode) {
       var av = b.laThay ? '<i class="anh" style="background-image:url(' + an(anhUid(b.uid) || AV_THAY) + ')"></i>' : avI(b.uid, b.ten);
@@ -976,7 +1053,7 @@
     function ve() {
       var h;
       ghCss();
-      if (S.step === 'menu') h = hd('Đấu A Show Speed', '') + hero() + luotHtml(true) + '<div class="td-note" role="status"></div><div class="td-phu">' +
+      if (S.step === 'menu') h = hd('Đấu A Show Speed', '') + xhThe() + dongGio() + '<div class="td-note" role="status"></div><div class="td-phu">' +
         cd('td-gh', HIC.ban, 'Giao hữu', me.laThay ? 'Chọn cách đấu, mời em đang online' : S.kq.gh ? (/tạm khoá/.test(S.kq.gh) ? '🔒 Em đang bị tạm khoá' : '🔒 Tạm đóng') : 'Với bạn đang online, không tính điểm', S.kq.gh ? 'dong-gh' : 'ban-gh') +
         cd('td-lt', HIC.muc, 'Luyện tập', S.kq.luyen ? (/tạm khoá/.test(S.kq.luyen) ? '🔒 Em đang bị tạm khoá' : '🔒 Tạm đóng') : 'Chơi với máy để làm quen', S.kq.luyen ? 'dong-luyen' : 'luyen') + '</div>';
       else if (S.step === 'ban-dau') h = hd('Đấu giải · ' + an(S.g ? S.g.ten : ''), soBan() + ' bạn online', true) + '<div class="td-tip g">' + HIC.cup + 'Thắng +2 · hòa +1 · thua 0. Tính vào bảng xếp hạng lớp.</div>' + luotHtml(true) +
@@ -999,6 +1076,13 @@
       if (!b) return;
       var k = b.getAttribute('data-hop');
       if (k === 'batdau') return batDauLuyen();
+      if (k === 'xh') {   // ⭐ 26/10 — mở sảnh Xếp hạng (thầy: tab mới, dashboard giữ chỗ)
+        if (!me.laThay && S.kq.xh) { dongHop(); return TQ.hop(S.kq.xh, 'xh'); }
+        var ux = (laNw ? '' : 'nw/') + 'xephang.html';
+        dongHop();
+        if (me.laThay && !banThu()) return moTab(new URL(window.NW && NW.duong ? NW.duong(ux) : ux, location.href).href);
+        return diToi(ux);
+      }
       if (/^dong-/.test(k)) { var cheD = k.slice(5); dongHop(); return TQ.hop(S.kq[cheD], cheD); }   // v1.415.0 chế độ thầy đóng (TdQuan)
       S.step = k; ve();
     });

@@ -21,7 +21,7 @@
   var chuanMa = function (s) { return String(s || '').replace(/\s+/g, '').toUpperCase(); };
   var MAU = ['#0E7C6E', '#3E7BFA', '#E0575B', '#F0821E', '#18A957', '#8b5cf6', '#0891b2', '#db2777', '#65a30d', '#ca8a04'];
   var CHUONG = '<svg viewBox="0 0 24 24"><path d="M12 2a6 6 0 0 0-6 6c0 7-3 9-3 9h18s-3-2-3-9a6 6 0 0 0-6-6zm-1.9 19a2 2 0 0 0 3.8 0z"/></svg>';
-  var KIEU = { le: 'Lễ (hồng, bóng bay)', thuong: 'Thường', anh: 'Có ảnh', gh1: 'Tổng kết giao hữu (thẻ xanh A Show Speed)', anhLop: 'Ảnh gửi chat nhóm lớp (mẫu lưu tham khảo)' };
+  var KIEU = { le: 'Lễ (hồng, bóng bay)', thuong: 'Thường', anh: 'Có ảnh', gh1: 'Tổng kết giao hữu (thẻ xanh A Show Speed)', xh2: 'Khởi động mùa xếp hạng (thẻ 4 màn)', anhLop: 'Ảnh gửi chat nhóm lớp (mẫu lưu tham khảo)' };
   function kho() { return window.AWChat && AWChat.kho ? AWChat.kho() : Promise.reject(new Error('khong-co-kho')); }
   // Tên lớp GỌN (thầy chốt): NỀN TẢNG 4 → NT4, NỀN TẢNG K10 → NTK10
   function ngan(t) {
@@ -114,6 +114,8 @@
     var k = document.createElement('div'); k.className = 'tq-khung';
     // 🏆 25/10/2026 — kiểu anhLop (MẪU LƯU: ảnh đã gửi vào chat nhóm từng lớp, tools/gui-anh-vinh-danh-gh1.js --luu-mau): ô nhỏ = ảnh lớp đầu
     if (t.kieu === 'anhLop') { var a0 = (t.anh || [])[0]; if (a0) k.innerHTML = '<img class="tq-al-tn" src="' + E(a0.url) + '" alt="">'; return k; }
+    // ⭐ 26/10/2026 — kiểu xh2 (khởi động mùa xếp hạng, js/tb-xh2.js): xem trước màn 1
+    if (t.kieu === 'xh2') { if (window.ACTbXh2) ACTbXh2.mo({ tb: t, trong: k }); return k; }
     // ⭐ v1.419.0 — kiểu gh1 (tổng kết giao hữu, js/tb-gh.js): xem trước ĐÚNG thẻ xanh học sinh thấy, màn 1, như bạn hạng 1 bảng chăm đang xem
     if (t.kieu === 'gh1') {
       if (window.ACTbGh && t.gh && (t.gh.cham || []).length) {
@@ -236,7 +238,7 @@
       (t.tt === 'dang' ? '<button type="button" class="tq-nut vien" data-tq="dung">Dừng hiện</button>' : '') +
       (t.tt === 'xong' ? '<button type="button" class="tq-nut vien" data-tq="hienLai">Hiện lại</button>' : '') +
       (t.tt === 'nhap' ? '<button type="button" class="tq-nut chinh" data-tq="dangNhap">Đăng</button>' : '') +
-      (t.kieu === 'gh1' ? '' : '<button type="button" class="tq-nut vien" data-tq="sua">Sửa</button><button type="button" class="tq-nut vien" data-tq="nhanBan">Nhân bản</button>') +
+      (t.kieu === 'gh1' || t.kieu === 'xh2' ? '' : '<button type="button" class="tq-nut vien" data-tq="sua">Sửa</button><button type="button" class="tq-nut vien" data-tq="nhanBan">Nhân bản</button>') +
       (t.tt === 'nhap' ? '<button type="button" class="tq-nut do" data-tq="xoa">Xoá</button>' : '') + '</div></div>';
     ct.innerHTML =
       '<div class="tq-ct-trai"><div class="tq-xem" id="tqXemCt"></div><div class="tq-nho">Pop-up học sinh thấy khi mở trang</div>' +

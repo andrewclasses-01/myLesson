@@ -252,6 +252,7 @@
       '<li><span>🛡</span><span>Vừa lên bậc: <b>3 trận</b> thua không rớt bậc.</span></li>' +
       '<li><span>📌</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +
       '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới.</span></li>' +
+      '<li><span>🔤</span><span>Từ <b>1100 điểm</b>: gợi ý bằng <b>tiếng Anh</b>, càng lên cao câu càng dài, càng phải suy luận.</span></li>' +
       '<li><span>🚪</span><span>Thoát giữa trận = thua, khoá tìm trận 2 phút.</span></li>' +
       '<li><span>🌙</span><span>Nghỉ đêm 23:00–6:00 không tìm trận.</span></li></ul></div></div></div>';
   }

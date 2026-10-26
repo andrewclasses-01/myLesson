@@ -279,7 +279,7 @@
   function veKetQua() {
     if (G.ketQua) return; G.ketQua = true; G.dungChoi = false; G.dungVS = false;
     var t = G.T, d = t.diem || {}, L = trai(), R = phai();
-    var lo = (t.lo || []).length ? '<p class="xh-ghi">Từ bỏ lỡ ở bàn cuối</p><div class="xh-lo">' + t.lo.map(function (x) { return '<span>' + esc(x.w) + '<small>' + esc(x.m || '') + '</small></span>'; }).join('') + '</div>' : '';
+    var lo = (t.lo || []).length ? '<p class="xh-ghi">Từ bỏ lỡ ở bàn cuối</p><div class="xh-lo">' + t.lo.map(function (x) { return '<span>' + esc(x.w) + (t.goiEn ? '' : '<small>' + esc(x.m || '') + '</small>') + '</span>'; }).join('') + '</div>' : '';
     var tiso = '<div class="xh-tiso xh-so"><span style="color:var(--xh-neon2);font-size:36px">' + (d[L] || 0) + '</span><span>–</span><span style="color:var(--xh-cyan2);font-size:36px">' + (d[R] || 0) + '</span></div>';
     if (G.xem) {
       var kqA = (t.kq || {}).a, thang = kqA === 'thang' ? t.tenA : kqA === 'thua' ? t.tenB : '';

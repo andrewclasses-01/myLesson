@@ -86,7 +86,7 @@ async function nguoiNhan() {
     const luc = Date.now();
     const tb = { ten: 'Khởi động ' + (Mua.ten || 'mùa mới') + ' · Xếp hạng thế giới', kieu: 'xh2', nut: 'PHÂN HẠNG NGAY', noi: 'Giới thiệu xếp hạng thế giới A Show Speed', tt: 'dang',
       dangLuc: luc, sua: luc, tao: luc, sao: 0, soNhan: k.ds.length, gui: { gt: 'all', lops: [] },
-      mua, tenMua: Mua.ten || '', tu: Mua.tu, den: Mua.den, saoHang: Mua.sao || {}, gioVang: Mua.gioVang || {} };
+      mua, tenMua: Mua.ten || '', tu: Mua.tu, den: Mua.den, saoHang: Mua.sao || {}, gioVang: Mua.gioVang || {}, suat: Mua.suat || null };
     if (a.includes('--xem')) { console.log('mã thông báo', MA_TB, '(chưa ghi kho)'); return; }
     if (!a.includes('--gui')) { console.log('Dùng: --xem | --gui | --dung'); return; }
     if (await doc1('thongBao/' + MA_TB)) throw new Error('thongBao/' + MA_TB + ' ĐÃ CÓ — không gửi lại (dùng --dung để thôi hiện)');

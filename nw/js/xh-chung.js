@@ -11,13 +11,13 @@
     an: { ten: '?', a: '#5E8574', b: '#2B4A3C', c: '#13261D' },
     dong: { ten: 'Đồng', a: '#E7A16B', b: '#8A4B22', c: '#5B2E12', tu: 0 },
     bac: { ten: 'Bạc', a: '#EEF3F7', b: '#9AA7B4', c: '#56616E', tu: 300 },
-    vang: { ten: 'Vàng', a: '#FFE08A', b: '#F0A91E', c: '#8F5A00', tu: 600 },
-    bk: { ten: 'Bạch kim', a: '#B7FFF0', b: '#2CC9B0', c: '#0B6B63', tu: 900 },
-    kc: { ten: 'Kim cương', a: '#C8E6FF', b: '#4DA3FF', c: '#1E3FA8', tu: 1200 },
-    ct: { ten: 'Cao thủ', a: '#E5C9FF', b: '#A35CFF', c: '#4B1C8F', tu: 1500 },
+    vang: { ten: 'Vàng', a: '#FFE08A', b: '#F0A91E', c: '#8F5A00', tu: 800 },
+    bk: { ten: 'Bạch kim', a: '#B7FFF0', b: '#2CC9B0', c: '#0B6B63' },
+    kc: { ten: 'Kim cương', a: '#C8E6FF', b: '#4DA3FF', c: '#1E3FA8' },
+    ct: { ten: 'Cao thủ', a: '#E5C9FF', b: '#A35CFF', c: '#4B1C8F' },
     ht: { ten: 'Huyền thoại', a: '#FFD3D8', b: '#FF4D6A', c: '#7A0C22' }
   };
-  var THU_TU = ['dong', 'bac', 'vang', 'bk', 'kc', 'ct'];
+  var THU_TU = ['dong', 'bac', 'vang'];
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var dem = 0;
   function hh(ma, bac, co) {
@@ -37,16 +37,26 @@
     });
   }
   function hhTag(ma, bac, co, lop) { return '<span class="xh-hh' + (lop ? ' ' + lop : '') + '" data-hh="' + esc(ma) + '" data-bac="' + esc(bac || '') + '" data-co="' + (co || 40) + '"></span>'; }
-  // điểm → hạng (Huyền thoại do bảng top quyết, cờ ht)
-  function hangTu(d, ht) {
-    if (d == null) return { ma: 'an', bac: '', ten: 'Chưa xếp hạng' };
-    var ma = 'dong'; THU_TU.forEach(function (k) { if (d >= HANG[k].tu) ma = k; });
-    var bac = ma === 'ct' ? '' : ['III', 'II', 'I'][Math.min(2, Math.floor((d - HANG[ma].tu) / 100))];
-    if (ht) return { ma: 'ht', bac: '', ten: 'Huyền thoại', goc: ma };
-    var san = ma === 'ct' ? 1500 : Math.floor(d / 100) * 100;
-    return { ma: ma, bac: bac, ten: HANG[ma].ten + (bac ? ' ' + bac : ''), trongBac: ma === 'ct' ? null : d - san, len: ma === 'ct' ? null : san + 100 };
+  // 26/10 SUẤT: Đồng/Bạc/Vàng theo điểm (Vàng từ 800) · Bạch kim → Huyền thoại theo SUẤT (thứ hạng toàn trường + điểm sàn), cờ s do máy chủ ghi.
+  var SUAT_MAC = [{ t: 'ht', n: 1, san: 1800 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
+  function suatCua(M) { return (M && Array.isArray(M.suat) && M.suat.length) ? M.suat : SUAT_MAC; }
+  function laSuat(s) { return s === 'ht' || s === 'ct' || s === 'kc' || s === 'bk'; }
+  // { ht:'1', ct:'2–3', kc:'4–6', bk:'7–12' } + tổng suất
+  function viTriSuat(M) {
+    var o = {}, i = 0; suatCua(M).forEach(function (x) { o[x.t] = x.n > 1 ? (i + 1) + '–' + (i + x.n) : String(i + 1); o[x.t + 'San'] = x.san; i += x.n; }); o.tong = i; return o;
   }
-  // chuỗi hạng trên trận ('vang:II' · 'ct:' · 'xl:3')
+  // điểm (+ suất s đang giữ) → hạng hiện. s: 'ht'|'ct'|'kc'|'bk' (true = ht, dữ liệu cũ)
+  function hangTu(d, s) {
+    if (d == null) return { ma: 'an', bac: '', ten: 'Chưa xếp hạng' };
+    if (s === true) s = 'ht';
+    if (laSuat(s)) return { ma: s, bac: '', ten: HANG[s].ten, suat: true };
+    var ma = 'dong'; THU_TU.forEach(function (k) { if (d >= HANG[k].tu) ma = k; });
+    var bac = ['III', 'II', 'I'][Math.min(2, Math.floor((d - HANG[ma].tu) / 100))];
+    var san = ma === 'vang' && d >= 1000 ? 1000 : Math.floor(d / 100) * 100;
+    var len = ma === 'vang' && d >= 1000 ? null : san + 100;   // Vàng I: lên tiếp phải giành SUẤT
+    return { ma: ma, bac: bac, ten: HANG[ma].ten + ' ' + bac, trongBac: len ? d - san : null, len: len };
+  }
+  // chuỗi hạng trên trận ('vang:II' · 'kc:' · 'xl:3')
   function hien(s) {
     var p = String(s || '').split(':');
     if (p[0] === 'xl') return { ma: 'an', bac: '', ten: 'Phân hạng ' + (p[1] || '1') + '/5' };
@@ -168,7 +178,7 @@
     };
   }
 
-  window.XH = { HANG: HANG, THU_TU: THU_TU, hh: hh, veHH: veHH, hhTag: hhTag, hangTu: hangTu, hien: hien, av: av, esc: esc, chuTat: chuTat,
+  window.XH = { HANG: HANG, THU_TU: THU_TU, hh: hh, veHH: veHH, hhTag: hhTag, hangTu: hangTu, SUAT_MAC: SUAT_MAC, suatCua: suatCua, laSuat: laSuat, viTriSuat: viTriSuat, hien: hien, av: av, esc: esc, chuTat: chuTat,
     dongHo: dongHo, conLai: conLai, ngayGio: ngayGio, phutChu: phutChu, muaHienTai: muaHienTai, ttMua: ttMua, gioVangNay: gioVangNay,
     telexTu: telexTu, BanPhim: BanPhim };
 })();

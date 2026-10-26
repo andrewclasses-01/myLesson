@@ -4,7 +4,8 @@
    MÙA ĐÃ BẮT ĐẦU thì KHOÁ thông số (luật tools/dang-luat-xep-hang.js cũng khoá) — tránh ảnh hưởng học sinh đang đấu.
    Kho: caiDat/xepHang { mua } · xhMua/{mua} { ten tu den gioVang{tu,den,nhan} sao{dong…ht} phut tt nhap|mo|dung|chot daThuong thuong }
         xhMua/{mua}/em/{uid} (máy chủ ghi; thầy đọc để chốt) · xhMua/{mua}/bang/top.
-   Thưởng: theo hạng CAO NHẤT trong mùa (em.cao) · Huyền thoại = top 10 cuối mùa có ≥ 1500 điểm · em chưa xong 5 trận xếp hạng: 0 sao.
+   Thưởng (26/10 SUẤT): Bạch kim → Huyền thoại = SUẤT theo thứ hạng cuối mùa + điểm sàn (xhMua.suat [{t,n,san}], mặc định 1/2/3/6 ·
+   1800/1600/1400/1100) · còn lại theo điểm CAO NHẤT (em.cao), tối đa Vàng (từ 800) · đã đấu ≥1 trận (chưa xong phân hạng) = Đồng.
    Phát sao = phiếu saoDot (nguon 'dashboard', mỗi lớp một phiếu ≤ 300 dòng) ⇒ hàm apDotSao cộng ví + đẩy "+N⭐" (y Thưởng sao giải đấu).
    window.XhQl.ve({ than, tieuDe, luu, kho() → Promise f, toast(chu, loi), laThu })
    ============================================================ */
@@ -13,9 +14,22 @@
   var $ = function (s, r) { return (r || document).querySelector(s); };
   var $$ = function (s, r) { return [].slice.call((r || document).querySelectorAll(s)); };
   var E = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
-  var HANG = [['dong', 'Đồng', 0, '#C27C4A'], ['bac', 'Bạc', 300, '#8A97A6'], ['vang', 'Vàng', 600, '#E0A11B'], ['bk', 'Bạch kim', 900, '#1FAE98'],
-    ['kc', 'Kim cương', 1200, '#3B82F6'], ['ct', 'Cao thủ', 1500, '#8B5CF6'], ['ht', 'Huyền thoại', null, '#E5385A']];
+  // 26/10 SUẤT (NGHIEN CUU SIET HANG CAO - 26-10-2026.md): Đồng/Bạc/Vàng theo điểm (Vàng từ 800) · 4 hạng trên = SUẤT (thứ hạng cuối mùa + điểm sàn)
+  var HANG = [['dong', 'Đồng', 0, '#C27C4A'], ['bac', 'Bạc', 300, '#8A97A6'], ['vang', 'Vàng', 800, '#E0A11B'], ['bk', 'Bạch kim', null, '#1FAE98'],
+    ['kc', 'Kim cương', null, '#3B82F6'], ['ct', 'Cao thủ', null, '#8B5CF6'], ['ht', 'Huyền thoại', null, '#E5385A']];
   var SAO_MAC = { dong: 1, bac: 2, vang: 5, bk: 10, kc: 15, ct: 20, ht: 30 };
+  var SUAT_MAC = [{ t: 'ht', n: 1, san: 1800 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
+  function suatCua(M) { return M && Array.isArray(M.suat) && M.suat.length ? M.suat : SUAT_MAC; }
+  function hangMa(ma) { return HANG.filter(function (h) { return h[0] === ma; })[0] || null; }
+  // chia suất cho danh sách đã xếp điểm giảm dần ⇒ { uid: 'ht'|'ct'|'kc'|'bk' } (cùng luật máy chủ xep-hang.js chiaSuat)
+  function chiaSuat(xep, suat) {
+    var o = {}, i = 0;
+    suat.forEach(function (s) { for (var k = 0; k < s.n && i < xep.length && xep[i].diem >= s.san; k++) o[xep[i++].uid] = s.t; });
+    return o;
+  }
+  function chuSuat(M) {
+    var i = 0; return suatCua(M).map(function (s) { var vt = s.n > 1 ? (i + 1) + '–' + (i + s.n) : String(i + 1); i += s.n; return chip(hangMa(s.t)) + ' top ' + vt + ' · ≥' + s.san; }).join(' &nbsp; ');
+  }
   var O = null, S = { M: null, mua: '', ds: [], top: [], em: null, sua: null, xn: '' };
   var hai = function (n) { return (n < 10 ? '0' : '') + n; };
   function ngayGio(ms) { var d = new Date(ms); return hai(d.getHours()) + ':' + hai(d.getMinutes()) + ' ' + hai(d.getDate()) + '/' + hai(d.getMonth() + 1) + '/' + d.getFullYear(); }
@@ -40,7 +54,7 @@
     s.textContent = '.xhq-luoi{display:grid;gap:12px}.xhq-o2{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}' +
       '.xhq-o2 label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:#5b6b75}.xhq-o2 input{font:inherit}' +
       '.xhq-sao{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px}.xhq-sao label{display:flex;align-items:center;gap:6px;font-size:13px}' +
-      '.xhq-sao input{width:58px}.xhq-h{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:var(--m)}.xhq-h.xam{background:#9aa5ad}' +
+      '.xhq-sao input{width:58px}.xhq-suat{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}.xhq-suat label{display:flex;align-items:center;gap:6px;font-size:13px}.xhq-suat input{width:52px}.xhq-h{display:inline-block;padding:2px 8px;border-radius:999px;font-size:12px;font-weight:700;color:#fff;background:var(--m)}.xhq-h.xam{background:#9aa5ad}' +
       '.xhq-tom{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}.xhq-tom div{background:#f4f7f8;border-radius:10px;padding:10px}.xhq-tom b{display:block;font-size:20px}' +
       '.xhq-tom small{color:#5b6b75;font-size:12px}.xhq-bang{width:100%;border-collapse:collapse;font-size:13px}.xhq-bang th{text-align:left;color:#5b6b75;font-weight:600;padding:6px;border-bottom:1px solid #e3e8eb}' +
       '.xhq-bang td{padding:6px;border-bottom:1px solid #f0f3f4}.xhq-bang td.so,.xhq-bang th.so{text-align:right;font-variant-numeric:tabular-nums}.xhq-bang input{width:56px;text-align:right}' +
@@ -102,7 +116,8 @@
     var g = M.gioVang || {}, sao = M.sao || {};
     var thongSo = '<div class="xhq-tom"><div><small>Bắt đầu</small><b style="font-size:15px">' + E(ngayGio(M.tu)) + '</b></div><div><small>Kết thúc</small><b style="font-size:15px">' + E(ngayGio(M.den)) + '</b></div>' +
       '<div><small>Thời gian trận</small><b>' + (M.phut || 2) + ' phút</b></div><div><small>Giờ vàng</small><b style="font-size:15px">' + (g.nhan > 1 ? phut(g.tu) + '–' + phut(g.den) + ' · ×' + String(g.nhan).replace('.', ',') : 'Tắt') + '</b></div></div>' +
-      '<div class="xhq-sao" style="margin-top:8px">' + HANG.map(function (x) { return '<span>' + chip(x) + ' ' + (sao[x[0]] || 0) + ' ⭐</span>'; }).join('') + '</div>';
+      '<div class="xhq-sao" style="margin-top:8px">' + HANG.map(function (x) { return '<span>' + chip(x) + ' ' + (sao[x[0]] || 0) + ' ⭐</span>'; }).join('') + '</div>' +
+      '<p class="tdq-goi" style="margin-top:8px">Suất: ' + chuSuat(M) + ' · Vàng từ 800 · ai đấu ≥1 trận được Đồng</p>';
     var nut = '';
     if (T.ma === 'sap') nut = '<button type="button" class="tdq-nut phu" data-xoa>Xoá mùa</button><button type="button" class="tdq-nut" data-sua>Sửa thông số</button>';
     else if (T.ma === 'mo') nut = '<button type="button" class="tdq-nut do" data-dung>' + (S.xn === 'dung' ? 'Bấm lần nữa: TẠM DỪNG' : 'Tạm dừng khẩn cấp') + '</button>';
@@ -110,7 +125,7 @@
     var khoa = T.ma === 'sap' ? '' : '<div class="xhq-khoa">🔒<span>Mùa đã bắt đầu nên ngày, giờ vàng và sao thưởng <b>đã khoá</b> để công bằng với học sinh đang đấu.' +
       (T.ma === 'mo' || T.ma === 'dung' ? ' Tạm dừng chỉ dùng khi khẩn cấp: học sinh không tìm được trận mới, điểm giữ nguyên.' : '') + '</span></div>';
     var top = S.top.length ? '<div class="xhq-cuon"><table class="xhq-bang"><thead><tr><th>#</th><th>Học sinh</th><th>Lớp</th><th>Hạng</th><th class="so">Điểm</th><th class="so">Trận</th></tr></thead><tbody>' +
-      S.top.map(function (x, i) { return '<tr><td>' + (i + 1) + '</td><td>' + E(x.ten) + '</td><td>' + E(x.lop) + '</td><td>' + chip(x.ht ? HANG[6] : hangTu(x.diem)) + '</td><td class="so">' + x.diem + '</td><td class="so">' + (x.tran || 0) + '</td></tr>'; }).join('') +
+      S.top.map(function (x, i) { return '<tr><td>' + (i + 1) + '</td><td>' + E(x.ten) + '</td><td>' + E(x.lop) + '</td><td>' + chip(x.s ? hangMa(x.s) : x.ht ? HANG[6] : hangTu(x.diem)) + '</td><td class="so">' + x.diem + '</td><td class="so">' + (x.tran || 0) + '</td></tr>'; }).join('') +
       '</tbody></table></div>' : '<div class="tdq-rong nho">Chưa có em nào xong 5 trận phân hạng.</div>';
     var chot = T.ma === 'het' ? '<div class="tdq-the"><div class="tdq-the-dau"><div><b>Chốt mùa &amp; phát thưởng</b><small>Xem trước sao của từng em rồi phát một lần.</small></div>' +
       '<button type="button" class="tdq-nut" data-xemchot>Xem trước &amp; chốt</button></div><div id="xhqChot"></div></div>' : '';
@@ -129,8 +144,10 @@
       '<span class="tdq-nhan">Giờ vàng (điểm cộng nhân lên)</span><div class="tdq-seg"><button type="button" data-vang="1"' + (vang ? ' class="chon"' : '') + '>Bật</button><button type="button" data-vang="0"' + (vang ? '' : ' class="chon"') + '>Tắt</button></div>' +
       (vang ? '<div class="xhq-o2"><label>Từ<input class="tdq-o" type="time" data-f="gvTu" value="' + phut(g.tu) + '"></label><label>Đến<input class="tdq-o" type="time" data-f="gvDen" value="' + phut(g.den) + '"></label>' +
         '<label>Hệ số<select class="tdq-o" data-f="gvNhan">' + [1.5, 2].map(function (n) { return '<option value="' + n + '"' + (g.nhan === n ? ' selected' : '') + '>×' + String(n).replace('.', ',') + '</option>'; }).join('') + '</select></label></div>' : '') +
-      '<span class="tdq-nhan">Sao thưởng cuối mùa (theo hạng cao nhất em đạt)</span><div class="xhq-sao">' +
+      '<span class="tdq-nhan">Sao thưởng cuối mùa</span><div class="xhq-sao">' +
       HANG.map(function (h) { return '<label>' + chip(h) + '<input class="tdq-o" inputmode="numeric" data-sao="' + h[0] + '" value="' + ((x.sao || {})[h[0]] || 0) + '"></label>'; }).join('') + '</div>' +
+      '<span class="tdq-nhan">Suất hạng cao (theo thứ hạng lúc hết mùa · số suất + điểm sàn) — Đồng/Bạc/Vàng theo điểm cao nhất, Vàng từ 800</span><div class="xhq-suat">' +
+      suatCua(x).map(function (s) { return '<label>' + chip(hangMa(s.t)) + '<input class="tdq-o" inputmode="numeric" data-sn="' + s.t + '" value="' + s.n + '" title="Số suất"> suất · ≥<input class="tdq-o" inputmode="numeric" data-ss="' + s.t + '" value="' + s.san + '" title="Điểm sàn"></label>'; }).join('') + '</div>' +
       '<p class="tdq-goi" id="xhqLoi" role="alert"></p>' +
       '<div class="xhq-nut"><button type="button" class="tdq-nut phu" data-thoi>Thôi</button><button type="button" class="tdq-nut" data-luu>' + (x.id ? 'Lưu thay đổi' : 'Tạo mùa') + '</button></div></div>';
   }
@@ -170,6 +187,10 @@
     if (v('den') != null) x.den = tuOGio(v('den'));
     if (v('gvTu') != null) x.gioVang = { tu: tuPhut(v('gvTu')), den: tuPhut(v('gvDen')), nhan: +v('gvNhan') || 1.5 };
     x.sao = x.sao || {}; $$('[data-sao]', th).forEach(function (i) { x.sao[i.dataset.sao] = Math.max(0, Math.min(500, parseInt(i.value, 10) || 0)); });
+    if ($('[data-sn]', th)) x.suat = SUAT_MAC.map(function (s) {
+      var n = $('[data-sn="' + s.t + '"]', th), sn = $('[data-ss="' + s.t + '"]', th);
+      return { t: s.t, n: Math.max(0, Math.min(20, parseInt(n && n.value, 10) || 0)), san: Math.max(800, Math.min(5000, parseInt(sn && sn.value, 10) || s.san)) };
+    });
   }
   async function luuMua() {
     docForm();
@@ -181,7 +202,7 @@
     else if (g.nhan > 1 && (g.tu == null || g.den == null || g.tu === g.den)) loi = 'Giờ vàng chưa đúng.';
     if (loi) { $('#xhqLoi').textContent = loi; return; }
     var doc = { ten: x.ten.slice(0, 60), tu: x.tu, den: x.den, phut: x.phut || 2, gioVang: { tu: g.tu || 0, den: g.den || 0, nhan: g.nhan > 1 ? g.nhan : 1 },
-      sao: {}, tt: 'mo', capNhat: b };
+      sao: {}, suat: suatCua(x).map(function (s) { return { t: s.t, n: s.n, san: s.san }; }), tt: 'mo', capNhat: b };
     HANG.forEach(function (h) { doc.sao[h[0]] = (x.sao || {})[h[0]] || 0; });
     try {
       if (O.laThu) { S.M = Object.assign({}, doc); S.mua = 'thu'; }
@@ -226,15 +247,16 @@
     } catch (e) { o.innerHTML = '<div class="tdq-rong nho">Chưa tính được: ' + E(e.message || e) + '</div>'; return; }
     var sao = S.M.sao || {};
     var xep = em.filter(function (x) { return x.diem != null; }).sort(function (a, b) { return b.diem - a.diem; });
-    var ht = {}; xep.slice(0, 10).forEach(function (x) { if (x.diem >= 1500) ht[x.uid] = 1; });
+    var suat = chiaSuat(xep, suatCua(S.M));
     var ds = em.map(function (x) {
-      var h = x.diem == null ? null : ht[x.uid] ? HANG[6] : hangTu(x.cao != null ? x.cao : x.diem);
+      // suất (BK→HT) theo thứ hạng cuối mùa · ngoài suất: hạng theo điểm cao nhất (trần Vàng) · chưa xong phân hạng nhưng đã đấu ≥1 trận: Đồng
+      var h = suat[x.uid] ? hangMa(suat[x.uid]) : x.diem != null ? hangTu(x.cao != null ? x.cao : x.diem) : (x.tran || x.xl) ? HANG[0] : null;
       return { x: x, h: h, so: timSo(x.uid), n: h ? sao[h[0]] || 0 : 0 };
     }).sort(function (a, b) { return (b.x.diem == null ? -1 : b.x.diem) - (a.x.diem == null ? -1 : a.x.diem); });
     S.chot = ds;
     var tong = function () { var n = 0, c = 0; ds.forEach(function (r) { if (r.n > 0 && r.so) { n += r.n; c++; } }); return { n: n, c: c }; };
     var t = tong();
-    o.innerHTML = '<p class="tdq-goi">Hạng thưởng = hạng CAO NHẤT em đạt trong mùa · Huyền thoại = top 10 cuối mùa có ≥ 1500 điểm · em chưa xong 5 trận phân hạng: 0 sao. Thầy sửa số sao từng em được.</p>' +
+    o.innerHTML = '<p class="tdq-goi">Suất: ' + chuSuat(S.M) + ' (thứ hạng cuối mùa, suất không ai đủ điểm sàn thì bỏ trống) · còn lại theo điểm CAO NHẤT, tối đa Vàng (từ 800) · đã đấu ≥1 trận: ít nhất Đồng. Thầy sửa số sao từng em được.</p>' +
       '<div class="xhq-cuon"><table class="xhq-bang"><thead><tr><th>Học sinh</th><th>Lớp</th><th>Hạng thưởng</th><th class="so">Điểm cuối</th><th class="so">Trận</th><th class="so">Sao</th></tr></thead><tbody>' +
       ds.map(function (r, i) {
         return '<tr><td>' + E(r.x.ten) + (r.so ? '' : ' <small style="color:#c0392b">⚠ chưa có số HS</small>') + '</td><td>' + E(r.x.lop || '') + '</td><td>' + chip(r.h) + (r.x.diem == null ? ' <small>' + (r.x.xl || 0) + '/5 trận phân hạng</small>' : '') +

@@ -207,11 +207,11 @@ const K_MOI = K_CU +
   "    // chot + phat thuong (chot chi khi da het mua). em/{uid} + bang/top: CHI MAY CHU ghi; em chi doc diem cua minh; bang top 20 ai cung doc.\n" +
   "    match /xhMua/{mua} {\n" +
   "      function xhKhung(d) {\n" +
-  "        return d.keys().hasOnly(['ten', 'tu', 'den', 'gioVang', 'sao', 'phut', 'tt', 'taoLuc', 'capNhat', 'chotLuc', 'daThuong', 'thuong', 'boi'])\n" +
+  "        return d.keys().hasOnly(['ten', 'tu', 'den', 'gioVang', 'sao', 'phut', 'tt', 'taoLuc', 'capNhat', 'chotLuc', 'daThuong', 'thuong', 'boi', 'suat'])\n" +
   "          && d.ten is string && d.ten.size() > 0 && d.ten.size() <= 60\n" +
   "          && d.tu is int && d.den is int && d.den > d.tu\n" +
   "          && d.phut in [2, 3] && d.tt in ['nhap', 'mo', 'dung', 'chot']\n" +
-  "          && d.gioVang is map && d.sao is map;\n" +
+  "          && d.gioVang is map && d.sao is map && (!('suat' in d) || (d.suat is list && d.suat.size() <= 4));\n" +
   "      }\n" +
   "      allow read: if nwVao();\n" +
   "      allow create: if laThay() && xhKhung(request.resource.data) && request.resource.data.tt != 'chot';\n" +

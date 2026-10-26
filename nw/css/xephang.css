@@ -177,6 +177,7 @@ body.xh button:focus-visible,body.xh input:focus-visible{outline:2px solid var(-
 .xh-tg b{font:800 15px/1 var(--xh-g)}
 .xh-tg .xh-sao{font:800 18px/1 var(--xh-g);color:var(--xh-vang)}
 .xh-tg small{font:700 10px/1.2 var(--xh-g);letter-spacing:.12em;color:var(--xh-neon)}
+.xh-tg small.xh-dk{font:600 11px/1.25 var(--xh-v);letter-spacing:0;color:var(--xh-mo)}
 .xh-luat{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:13.5px;color:var(--xh-mo)}
 .xh-luat li{display:grid;grid-template-columns:24px minmax(0,1fr);gap:8px}
 .xh-luat b{color:var(--xh-chu)}

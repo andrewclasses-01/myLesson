@@ -1,7 +1,36 @@
 {
-  "capNhat": "2026-10-24 21:41:08",
+  "capNhat": "2026-10-26 08:23:05",
   "bai": {
     "A1C": [
+      {
+        "id": "A1C_25.10_WORDS_DS-S2.I1.W1",
+        "tieuDe": "A1C_25.10_WORDS DS-S2.I1.W1",
+        "tenHien": "A1C_25.10_WORDS DS-S2.I1.W1",
+        "dang": "WORDS",
+        "ngay": "25.10",
+        "han": "2026-11-01T08:00",
+        "maLesson": "DS-S2.I1.W1",
+        "taoLuc": "2026-10-26",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 1",
+            "act": "VI2",
+            "yeuCau": "100% requirement",
+            "ma": "m2a44y",
+            "mau": "QUIZ"
+          },
+          {
+            "loai": "act",
+            "ten": "WORD PRACTICE 2",
+            "act": "VI1",
+            "yeuCau": "100% requirement",
+            "ma": "2c3xmr",
+            "mau": "ANAGRAM"
+          }
+        ],
+        "giaoLuc": "2026-10-26T08:23"
+      },
       {
         "id": "A1C_18.10_STAGE_LSA2-S3.T1.P3-4-5",
         "tieuDe": "A1C_18.10_STAGE LSA2-S3.T1.P3-4-5",
@@ -6556,7 +6585,7 @@
     "NNTNGK10": "2026-10-23 09:45:26",
     "A1A": "2026-10-22 22:17:15",
     "B2B": "2026-10-22 13:28:01",
-    "A1C": "2026-10-18 11:37:25",
+    "A1C": "2026-10-26 08:23:05",
     "B2A": "2026-10-22 13:25:02",
     "A1B": "2026-10-22 22:44:42",
     "NNTNG4": "2026-10-24 11:34:29",

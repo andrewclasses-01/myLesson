@@ -41,7 +41,7 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
 
 (async () => {
   const A = 'hs_9999961', Bb = 'hs_9999962', LA = 'ZTESTXA', LB = 'ZTESTXB', MUA = 'ztestmua' + Date.now();
-  const bay = Date.now(), GIO = new Date(bay + 7 * 3600e3).getUTCHours();
+  const bay = Date.now(), GIO = new Date(bay + 7 * 3600e3).getUTCHours(), GIOP = GIO + new Date(bay).getUTCMinutes() / 60;   // GIOP: có phút (nghỉ 22:30 = 22.5)
   const EN = process.argv.includes('--en');
   const xoa = ['nwUsers/' + A, 'nwUsers/' + Bb, 'xhHang/' + A, 'xhHang/' + Bb, 'xhMua/' + MUA, 'xhMua/' + MUA + '/em/' + A, 'xhMua/' + MUA + '/em/' + Bb,
     'xhMua/' + MUA + '/bang/top', 'tdLichSu/' + A, 'tdLichSu/' + Bb, 'tdDangDau/' + A, 'tdDangDau/' + Bb];
@@ -59,7 +59,7 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     // --en (26/10): hai em đã phân hạng, 1200 điểm ⇒ bàn bậc bk = gợi ý TIẾNG ANH
     if (EN) for (const u of [A, Bb]) await ghiAdmin('xhMua/' + MUA + '/em/' + u, { xl: I(5), xlThang: I(3), diem: I(1200), cao: I(1200), mmr: I(1000), tran: I(5), thang: I(3), hoa: I(0), thua: I(2), chuoi: I(0), baoVe: I(0) });
     await ghiAdmin('caiDat/xepHang', { mua: S(MUA), capNhat: I(Date.now()) });
-    if (caiGoc && (caiGoc.bat !== false) && (GIO >= (caiGoc.nghiTu ?? 23) || GIO < (caiGoc.nghiDen ?? 6))) {
+    if (caiGoc && (caiGoc.bat !== false) && (GIOP >= (caiGoc.nghiTu ?? 23) || GIOP < (caiGoc.nghiDen ?? 6))) {
       doiCai = true;
       await ghiAdmin('caiDat/choiGame', { bat: B(true), nghiTu: I((GIO + 2) % 24), nghiDen: I((GIO + 3) % 24), tranNgay: I(20), giaiNgay: I(10), capNgay: I(3), capNhat: I(Date.now()) });
       console.log('  (dời tạm khung nghỉ đêm để thử)');

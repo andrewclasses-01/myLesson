@@ -2,7 +2,7 @@
 //    D:\OTHERS\CLAUDE\THONG BAO GIAO HUU MUA 1 - thiet ke\anh-lop-v1). Mỗi lớp 1 ảnh PNG (chỉ các em ≥ 10 trận của lớp đó).
 //
 //   node tools/gui-anh-vinh-danh-gh1.js --xem <thư mục PNG>   (ghép tên lớp → mã lớp + in tin thầy mẫu, KHÔNG ghi gì)
-//   node tools/gui-anh-vinh-danh-gh1.js --gui <thư mục PNG>   (tải ảnh lên Storage classChat/<mã lớp>/… + ghi tin vào classChat/<mã lớp>/messages)
+//   node tools/gui-anh-vinh-danh-gh1.js --gui <thư mục PNG> [tiền tố tên ảnh, mặc định vinhdanh-gh1]   (tải ảnh lên Storage classChat/<mã lớp>/… + ghi tin vào classChat/<mã lớp>/messages)
 //   node tools/gui-anh-vinh-danh-gh1.js --luu-mau <thư mục PNG> (lưu MẪU vào hộp Thông báo dashboard: thongBao/anhLopGh1mua1 kiểu 'anhLop',
 //        tt 'xong' ⇒ học sinh không đọc được; ảnh = URL các tin đã gửi ở bước --gui. Hộp vẽ ở js/tb-ql.js veCtAnh)
 //
@@ -104,7 +104,7 @@ function taiLen(duong, buf, token) {   // GCS multipart, gắn firebaseStorageDo
   const tk = await tokenQuanTri();
   for (const v of viec) {
     const maS = v.ma.replace(/[^0-9A-Za-z_-]/g, '_').slice(0, 40);
-    const duong = 'classChat/' + maS + '/vinhdanh-gh1-' + Date.now().toString(36) + '.png', token = crypto.randomUUID();
+    const duong = 'classChat/' + maS + '/' + (process.argv[4] || 'vinhdanh-gh1') + '-' + Date.now().toString(36) + '.png', token = crypto.randomUUID();
     await taiLen(duong, fs.readFileSync(path.join(thuMuc, v.f)), token);
     const hinh = 'https://firebasestorage.googleapis.com/v0/b/' + BUCKET + '/o/' + encodeURIComponent(duong) + '?alt=media&token=' + token;
     const tin = { may: mau.may || '', name: mau.name, code: mau.code, role: 'gv', text: CHU_ANH, createdAt: Date.now(), hinh };

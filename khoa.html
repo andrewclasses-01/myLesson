@@ -701,8 +701,8 @@ body.mo-menu .side.trai{transform:none}
 @media (max-width:1040px){
   .main{grid-template-columns:minmax(0,1fr); grid-template-rows:auto minmax(var(--san-chat),1fr);
     gap:14px; padding:14px 20px 16px;
-    height:calc(100vh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px));
-    height:calc(100dvh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px))}
+    height:calc(100vh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px) - var(--cao-ddn, 0px));
+    height:calc(100dvh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px) - var(--cao-ddn, 0px))}
   .chat{height:100%}
   .go-chat .cot-bai,.go-chat .vach{display:none}
   .go-chat .main{grid-template-rows:1fr}
@@ -713,8 +713,8 @@ body.mo-menu .side.trai{transform:none}
   :root{--cao-the:186px}   /* thiết kế ĐT 2 — 226 ⇒ 186: chat còn 104px thay 72px, ô gõ không chui dưới thanh tab */
   .wrap{padding:0 18px}
   .main{gap:12px; padding:12px 18px 14px; grid-template-rows:auto minmax(190px,1fr);
-    height:calc(100vh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px));
-    height:calc(100dvh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px))}
+    height:calc(100vh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px) - var(--cao-ddn, 0px));
+    height:calc(100dvh - var(--cao-dau) - var(--banphim) - var(--cao-dai, 0px) - var(--cao-ddn, 0px))}
   .cot-bai{gap:12px}
   .vach{margin:0}
 
@@ -787,6 +787,7 @@ body.mo-menu .side.trai{transform:none}
   </div>
 </header>
 <div id="thanhGiai" hidden></div><!-- ⭐ v1.381.0 thanh giải đấu (js/thanh-giai.js) — dính ngay dưới thanh menu -->
+<div id="dangDau" hidden></div><!-- v1.430.0 thanh ĐANG ĐẤU xếp hạng (js/dang-dau.js) — không có trận thì ẩn -->
 
 <div class="wrap main">
   <div class="cot-trai"><div id="cumGiai"></div><section class="cot-bai" id="cotBai"></section></div><!-- ⭐ v1.371.0: #cumGiai (thẻ giải đấu, js/the-giai.js) NẰM NGOÀI #cotBai — cotBai bị vẽ lại bằng innerHTML -->
@@ -876,7 +877,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/online.js?v=3"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
 <script src="js/chat-ui.js?v=27"></script>
 <script src="js/the-td.js?v=19"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/giai-ghi.js?v=1"></script><script src="js/thanh-giai.js?v=2"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js); gắn ngay sau UI_CHAT -->
+<script src="js/giai-ghi.js?v=1"></script><script src="js/thanh-giai.js?v=2"></script><script src="js/dang-dau.js?v=1"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js); gắn ngay sau UI_CHAT -->
 <script src="js/vi-qua.js?v=14"></script>
 <script src="js/qua-2010.js?v=2"></script>   <!-- 20/10/2026 v1.377.0 pop-up quà 20-10 cho bạn nữ (+10 sao) -->
 <script src="js/tb-pop.js?v=1"></script>
@@ -2045,6 +2046,7 @@ var UI_CHAT = ChatUI.tao({
   veLaiTuKho: function(){ veChat(); }
 });
 /* ⭐ v1.381.0 — THANH GIẢI ĐẤU dưới thanh menu: nút ⚔ / mời bạn gửi thẻ thách đấu vào chat lớp qua đúng đường gửi của khung chat */
+if (window.DangDau) DangDau.thanh(document.getElementById('dangDau'));   /* v1.430.0 thanh ĐANG ĐẤU xếp hạng dưới thanh giải (js/dang-dau.js) */
 if (window.ThanhGiai) ThanhGiai.gan(document.getElementById('thanhGiai'), {
   lop: function(){ return typeof LOP_DL === 'string' ? LOP_DL : ''; },
   gui: function(he, chu){ return UI_CHAT.o.gui({ chu: chu, he: he }); },
@@ -2183,7 +2185,7 @@ function baoToast(chu){
 
 setInterval(nhipDongHo, 1000);
 </script>
-<script src="js/tn-pop.js?v=14"></script>
+<script src="js/tn-pop.js?v=15"></script>
 <script src="js/tn-pop-ds.js?v=10"></script>
 <script src="js/tn-khung.js?v=5"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=40"></script>

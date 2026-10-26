@@ -77,7 +77,7 @@
       '.ddn-bong.dn .ddn-vong{background:none;border:2px dashed #7CCFC0}' +
       '.ddn-bong.dn .ddn-vong>span{display:grid;place-items:center;background:linear-gradient(180deg,#16B79E,#0F7A6C);color:#fff}.ddn-bong.dn svg{width:24px;height:24px;fill:currentColor}' +
       '.ddn-bong .ddn-chu{font-weight:800;font-size:12px;line-height:1;color:#0F7A6C;margin-top:2px;white-space:nowrap}' +
-      '.tp-ddn .ddn-h{padding:2px 12px 10px;margin:0 0 4px}';
+      '.tp-ddn .ddn-h{padding:2px 12px 10px;margin:0 0 4px}.tn-ddn .ddn-h{padding:4px 8px 12px}';
     document.head.appendChild(s);
   }
   var SET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>';
@@ -186,15 +186,17 @@
     });
     S.ds = ds;
   }
-  function coChoHien() { return S.cho.some(function (c) { return c.el.isConnected; }); }
+  // chỗ vẽ "đang hiện" = còn gắn trên trang và KHUNG CHỨA nó có hình (khung Tin nhắn giữ sống nw/tinnhan.html?nhung=1 nằm trong iframe ẩn ⇒ không có)
+  function coChoHien() { return S.cho.some(function (c) { var p = c.el.parentElement; return c.el.isConnected && !!p && p.getClientRects().length > 0; }); }
   async function vong() {
     clearTimeout(S.hen); S.hen = 0;
-    if (document.hidden || !coChoHien() || S.dang) return;
+    if (document.hidden || S.dang) return;
+    if (!coChoHien()) { if (S.cho.some(function (c) { return c.el.isConnected; })) S.hen = setTimeout(vong, 5000); return; }   // đang ẩn: chỉ ngó lại, không đọc kho
     S.dang = true;
     try { await nap(); } catch (e) { console.warn('[dang-dau]', e && e.message || e); }
     S.dang = false;
     veHet();
-    if (coChoHien() && !document.hidden) S.hen = setTimeout(vong, NHIP);
+    if (S.cho.length && !document.hidden) S.hen = setTimeout(vong, NHIP);
   }
   document.addEventListener('visibilitychange', function () { if (!document.hidden) vong(); else { clearTimeout(S.hen); S.hen = 0; } });
   window.addEventListener('resize', function () { caoThanh(); });

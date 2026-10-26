@@ -304,11 +304,13 @@
         (toi.laThay ? '<button class="nut-tron" id="tnNhom" title="Tạo nhóm chat" aria-label="Tạo nhóm chat">' + IC.nhom + '</button>' : '') +   // v16: HS không tạo nhóm
         (CHO_RIENG ? '<button class="nut-tron dam" id="tnMoi" title="Nhắn tin mới" aria-label="Nhắn tin mới">' + IC.sua + '</button>' : '') + '</div>' +
         '<div class="tn-tim"><span class="tim-o">' + IC.timKiem + '<input type="search" id="tnTim" placeholder="Tìm trong tin nhắn"></span></div>' +
+        '<div class="tn-ddn" id="tnDdn" hidden></div>' +   // v1.430.0 hàng bong bóng ĐANG ĐẤU xếp hạng (../js/dang-dau.js)
         '<div class="tn-ds-cuon" id="tnDs"><div class="tn-trong">Đang tải…</div></div></div>' +
       '<div class="tn-phong" id="tnPhong">' + TRONG_PHONG + '</div>' +
       '<aside class="tn-info" id="tnInfo" hidden></aside>';
     var khuDs = $('#tnDs', hop), khuPhong = $('#tnPhong', hop), khuInfo = $('#tnInfo', hop);
     $('#tnTim', hop).addEventListener('input', function () { timChu = NW.khongDau(this.value.trim().toLowerCase()); veDs(); });
+    if (window.DangDau && !document.body.classList.contains('trang-hop')) DangDau.hang($('#tnDdn', hop));   // v1.430.0 (khung hộp chat nhỏ ?hop=1 thì thôi)
 
     function nguoiKia(p) { var k = (p.thanhVien || []).filter(function (u) { return u !== toi.uid; })[0] || toi.uid; return Object.assign({ uid: k }, (p.tv || {})[k] || { ten: '?' }); }
     function tenPhong(p) { return p.loai === 'nhom' ? (p.ten || 'Nhóm') : nguoiKia(p).ten || '?'; }

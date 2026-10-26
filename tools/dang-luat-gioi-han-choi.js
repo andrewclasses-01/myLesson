@@ -213,6 +213,8 @@ async function kiem() {
   console.log('luật đang chạy:', (await docRelease('cloud.firestore')).rulesetName, '· giờ VN', GIO);
   if (GIO >= 23 || GIO < 6) throw new Error('Đang giờ nghỉ đêm — chạy --kiem ban ngày (các phép "mời được" sẽ trượt).');
   let tk = {};
+  // 27/10: giữ cài đặt GỐC của thầy (trước đây trả về mặc định 23–6/20 trận ⇒ mất cài đặt thật)
+  const caiGoc = ((await goi(`${FS_GOC}/caiDat/choiGame`, { headers: await H() })).json || {}).fields || null;
   try {
     await datCai();
     const hs = (uid, ten) => ghiAdmin('nwUsers/' + uid, { uid: S(uid), ten: S(ten), vaiTro: S('hs'), lop: S(LOP), cacLop: L([S(LOP)]), anh: S(''), capNhat: I(bay) });
@@ -279,7 +281,8 @@ async function kiem() {
     } catch (_) { }
     console.log('  dọn', await xoaTaiLieu(xoa), 'tài liệu thử');
     for (const u of [A, Bb, T]) await xoaTkThu(u);
-    console.log('  xoá 3 tài khoản thử · caiDat/choiGame = mặc định');
+    if (caiGoc) await ghiAdmin('caiDat/choiGame', caiGoc);
+    console.log('  xoá 3 tài khoản thử · caiDat/choiGame ' + (caiGoc ? 'trả lại cài đặt gốc của thầy' : '= mặc định'));
   }
   if (hong) { console.log('\n⚠ Có phép thử trượt. Luật mới cần ~1–10 phút lan hết máy chủ — đợi rồi chạy lại --kiem.'); process.exitCode = 1; }
 }

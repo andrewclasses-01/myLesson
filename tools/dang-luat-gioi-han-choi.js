@@ -141,7 +141,7 @@ const H_MOI =
   "      function tdCai() {\n" +
   "        return exists(/databases/$(database)/documents/caiDat/choiGame) ? get(/databases/$(database)/documents/caiDat/choiGame).data : {};\n" +
   "      }\n" +
-  "      function tdGio() { return (request.time.hours() + 7) % 24; }\n" +
+  "      function tdGio() { return (request.time.hours() + 7) % 24 + request.time.minutes() / 60.0; }\n" +
   "      function tdDem() {\n" +
   "        let c = tdCai();\n" +
   "        let tu = c.get('nghiTu', 23);\n" +
@@ -176,15 +176,21 @@ const L_MOI = L_CU +
   "        && request.resource.data.keys().hasOnly(['bat', 'nghiTu', 'nghiDen', 'tranNgay', 'giaiNgay', 'capNgay', 'capNhat'])\n" +
   "        && request.resource.data.keys().hasAll(['bat', 'nghiTu', 'nghiDen', 'tranNgay', 'giaiNgay', 'capNgay'])\n" +
   "        && request.resource.data.bat is bool\n" +
-  "        && request.resource.data.nghiTu is int && request.resource.data.nghiTu >= 0 && request.resource.data.nghiTu <= 23\n" +
-  "        && request.resource.data.nghiDen is int && request.resource.data.nghiDen >= 0 && request.resource.data.nghiDen <= 23\n" +
+  "        && (request.resource.data.nghiTu is int || request.resource.data.nghiTu is float) && request.resource.data.nghiTu >= 0 && request.resource.data.nghiTu < 24\n" +
+  "        && (request.resource.data.nghiDen is int || request.resource.data.nghiDen is float) && request.resource.data.nghiDen >= 0 && request.resource.data.nghiDen < 24\n" +
   "        && request.resource.data.tranNgay is int && request.resource.data.tranNgay >= 1 && request.resource.data.tranNgay <= 200\n" +
   "        && request.resource.data.giaiNgay is int && request.resource.data.giaiNgay >= 1 && request.resource.data.giaiNgay <= 200\n" +
   "        && request.resource.data.capNgay is int && request.resource.data.capNgay >= 1 && request.resource.data.capNgay <= 50;\n" +
   "    }\n";
 
+// 27/10/2026: luật đang chạy đã có khối giới hạn ⇒ chỉ vá giờ nghỉ cho có PHÚT (22:30 = 22.5)
+const PHUT_CU = ['      function tdGio() { return (request.time.hours() + 7) % 24; }', '        && request.resource.data.nghiTu is int && request.resource.data.nghiTu >= 0 && request.resource.data.nghiTu <= 23', '        && request.resource.data.nghiDen is int && request.resource.data.nghiDen >= 0 && request.resource.data.nghiDen <= 23'];
+const PHUT_MOI = ['      function tdGio() { return (request.time.hours() + 7) % 24 + request.time.minutes() / 60.0; }', '        && (request.resource.data.nghiTu is int || request.resource.data.nghiTu is float) && request.resource.data.nghiTu >= 0 && request.resource.data.nghiTu < 24', '        && (request.resource.data.nghiDen is int || request.resource.data.nghiDen is float) && request.resource.data.nghiDen >= 0 && request.resource.data.nghiDen < 24'];
 function ghepFirestore(cu) {
-  if (cu.includes(DAU_HIEU)) throw new Error('CHOT DUNG: luật ĐÃ có giới hạn chơi — không đăng lại');
+  if (cu.includes(DAU_HIEU)) {
+    if (cu.includes(PHUT_MOI[0])) throw new Error('CHOT DUNG: luật ĐÃ có giờ nghỉ theo phút — không đăng lại');
+    return PHUT_CU.reduce((s, x, i) => thayMot(s, x, PHUT_MOI[i], 'giờ nghỉ có phút ' + (i + 1)), cu);
+  }
   let s = thayMot(cu, H_CU, H_MOI, 'tranDau: hàm giới hạn');
   s = thayMot(s, T_CU, T_MOI, 'tranDau: em mời em');
   s = thayMot(s, N_CU, N_MOI, 'tranDau: em nhận');

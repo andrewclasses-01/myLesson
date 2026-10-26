@@ -305,7 +305,7 @@
       '<div class="gpz-khoi"><h3>Mới đấu 1–2 trận<small>' + it.length + ' em</small></h3>' + (it.length ? '<div class="gpz-chips">' + it.map(function (x) { return '<span>' + av(x) + an(x.ten) + ' · ' + x.tr + '</span>'; }).join('') + '</div>' : '<div class="gpz-trong">Không có.</div>') + '</div>' +
       (GH ? '<div class="gpz-khoi"><h3>Giới hạn chơi<small>' + (GH.bat ? 'đang bật' : 'đang tắt') + '</small></h3><div class="gpz-cap">' +
         '<div>Mỗi em tối đa<small>' + GH.tranNgay + ' trận / ngày</small></div><div>Giải tính điểm<small>' + GH.giaiNgay + ' trận đầu / ngày</small></div><div>Cùng một bạn<small>' + GH.capNgay + ' trận / ngày</small></div>' +
-        '<div>Nghỉ đêm<small>' + GH.nghiTu + 'h – ' + GH.nghiDen + 'h</small></div></div></div>' : '') +
+        '<div>Nghỉ đêm<small>' + (window.GioiHan ? GioiHan.gioChu(GH.nghiTu) + ' – ' + GioiHan.gioChu(GH.nghiDen) : GH.nghiTu + 'h – ' + GH.nghiDen + 'h') + '</small></div></div></div>' : '') +
       '</div></div>';
   }
 

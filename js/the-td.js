@@ -512,7 +512,7 @@
   GH.ngay = function (ms) { return Math.floor(((ms || Date.now()) + VN_MS) / 864e5); };
   GH.dem = function (ms) {
     var c = GH.cai; if (!c.bat) return false;
-    var h = new Date((ms || Date.now()) + VN_MS).getUTCHours();
+    var d = new Date((ms || Date.now()) + VN_MS), h = d.getUTCHours() + d.getUTCMinutes() / 60;   // 27/10: giờ nghỉ có phút (22.5 = 22:30)
     return c.nghiTu > c.nghiDen ? (h >= c.nghiTu || h < c.nghiDen) : (h >= c.nghiTu && h < c.nghiDen);
   };
   // mốc h:00 giờ VN SẮP TỚI (ms)
@@ -524,7 +524,7 @@
     var con = mocGio(GH.cai.nghiTu) - Date.now();
     return con > 0 && con <= 15 * 6e4 ? Math.ceil(con / 6e4) : 0;
   };
-  GH.gioChu = function (h) { return hai(h) + ':00'; };
+  GH.gioChu = function (h) { var p = Math.round((+h || 0) * 60); return hai(Math.floor(p / 60) % 24) + ':' + hai(p % 60); };
   // phiếu đếm HÔM NAY của một em (tdHan/{uid}, máy chủ ghi) ⇒ { so, giai{id:n}, cap{uid:n} }
   GH.phieu = function (uid) {
     var rong = { so: 0, giai: {}, cap: {} };

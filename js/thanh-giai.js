@@ -272,7 +272,7 @@
     var GH = window.GioiHan && GioiHan.cai, b = g.bo;
     return '<ul class="thg-luat"><li>Mỗi trận A Show Speed ' + g.phut + ' phút' + (b ? ', ' + (CHE[b.che] || '') + (b.che === 'free' && b.chiBo !== false ? ' — chỉ tính từ trong bộ' : '') : ', độ khó ' + (LV[g.lv] || g.lv)) + '.</li>' +
       '<li>Thắng +2 · Hòa +1 · Thua 0. Bằng điểm thì ai thắng nhiều hơn, rồi ai ít trận hơn đứng trên.</li>' +
-      (GH && GH.bat ? '<li>Mỗi ngày tối đa ' + GH.tranNgay + ' trận; giải chỉ tính ' + GH.giaiNgay + ' trận đầu; cùng một bạn tối đa ' + GH.capNgay + ' trận tính điểm. Nghỉ đêm ' + GH.nghiTu + 'h – ' + GH.nghiDen + 'h.</li>' : '') +
+      (GH && GH.bat ? '<li>Mỗi ngày tối đa ' + GH.tranNgay + ' trận; giải chỉ tính ' + GH.giaiNgay + ' trận đầu; cùng một bạn tối đa ' + GH.capNgay + ' trận tính điểm. Nghỉ đêm ' + (window.GioiHan ? GioiHan.gioChu(GH.nghiTu) + ' – ' + GioiHan.gioChu(GH.nghiDen) : GH.nghiTu + 'h – ' + GH.nghiDen + 'h') + '.</li>' : '') +
       ((g.sao || []).some(function (x) { return x > 0; }) ? '<li>Đóng giải xong, thầy thưởng top 3: ' + an((g.sao || []).join(' · ')) + ' ⭐.</li>' : '') + '</ul>' +
       (b && (b.tu || []).length ? '<h4 style="margin:0 0 8px">Bộ từ · ' + an(b.ten || '') + '</h4><div class="thg-tu">' + b.tu.map(function (x) { return '<div title="' + an(x.m) + '"><b>' + an(x.w) + '</b>' + (b.giong ? '' : an(x.m)) + '</div>'; }).join('') + '</div>' : '');
   }

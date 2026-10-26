@@ -210,7 +210,7 @@
       var p = NW.popMo({ tieuDe: 'Giới hạn chơi', lop: 'gd-pop', html:
         '<p class="tiny">Áp cho trận học sinh với học sinh (giải + giao hữu). Trận có thầy tự do. Luyện tập với máy chỉ nghỉ đêm. Máy chủ chặn thật — đồng hồ máy em lệch cũng không lách được.</p>' +
         '<label class="gd-tich"><input type="checkbox" id="ghBat"' + (c.bat ? ' checked' : '') + '> Bật giới hạn</label>' +
-        '<span class="lbl gd-lbl">Nghỉ đêm (giờ Việt Nam) · nhắc trước 15 phút</span><div class="gd-sao">' + o('ghTu', 'Từ', c.nghiTu, 'giờ') + o('ghDen', 'Đến', c.nghiDen, 'giờ sáng') + '</div>' +
+        '<span class="lbl gd-lbl">Nghỉ đêm (giờ Việt Nam) · nhắc trước 15 phút</span><div class="gd-sao">' + o('ghTu', 'Từ', GH.gioChu(c.nghiTu), '') + o('ghDen', 'Đến', GH.gioChu(c.nghiDen), 'sáng') + '</div>' +
         '<span class="lbl gd-lbl">Mỗi em mỗi ngày</span><div class="gd-sao gd-gh-mot">' + o('ghTran', 'Chơi tối đa (giải + giao hữu)', c.tranNgay, 'trận') + o('ghGiai', 'Giải chỉ tính điểm', c.giaiNgay, 'trận đầu') +
           o('ghCap', 'Cùng một bạn tính điểm tối đa', c.capNgay, 'trận') + '</div>' +
         '<div class="gd-gh-thong" id="ghThong"><p class="tiny">Đang xem hôm nay ai chơi nhiều…</p></div>' +
@@ -233,8 +233,10 @@
       })();
       $('#ghOk', p).onclick = async function () {
         var so = function (id) { var v = String($('#' + id, p).value).trim(); return /^\d{1,3}$/.test(v) ? +v : NaN; };
-        var m = { bat: $('#ghBat', p).checked, nghiTu: so('ghTu'), nghiDen: so('ghDen'), tranNgay: so('ghTran'), giaiNgay: so('ghGiai'), capNgay: so('ghCap') };
-        var loi = !(m.nghiTu >= 0 && m.nghiTu <= 23 && m.nghiDen >= 0 && m.nghiDen <= 23) ? 'Giờ nghỉ phải từ 0 đến 23.'
+        // giờ nghỉ: "22:30" / "22h30" / "22" ⇒ 22.5 (27/10: có phút)
+        var gio = function (id) { var v = String($('#' + id, p).value).trim().replace(/[h.,]/i, ':'), k = /^(\d{1,2})(?::(\d{1,2}))?:?$/.exec(v); if (!k || +k[1] > 23 || +(k[2] || 0) > 59) return NaN; return +k[1] + (+(k[2] || 0)) / 60; };
+        var m = { bat: $('#ghBat', p).checked, nghiTu: gio('ghTu'), nghiDen: gio('ghDen'), tranNgay: so('ghTran'), giaiNgay: so('ghGiai'), capNgay: so('ghCap') };
+        var loi = !(m.nghiTu >= 0 && m.nghiTu < 24 && m.nghiDen >= 0 && m.nghiDen < 24) ? 'Giờ nghỉ viết dạng 22:30 (từ 00:00 đến 23:59).'
           : !(m.tranNgay >= 1 && m.tranNgay <= 200) ? 'Số trận mỗi ngày từ 1 đến 200.'
           : !(m.giaiNgay >= 1 && m.giaiNgay <= 200) ? 'Số trận tính điểm từ 1 đến 200.'
           : !(m.capNgay >= 1 && m.capNgay <= 50) ? 'Số trận cùng một bạn từ 1 đến 50.' : '';

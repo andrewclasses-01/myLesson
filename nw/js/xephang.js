@@ -21,7 +21,7 @@
   var TABS = [['sanh', 'Sảnh'], ['live', 'Đang đấu'], ['bxh', 'BXH'], ['thuong', 'Thưởng'], ['luat', 'Hạng & luật']];
   app.innerHTML =
     '<div class="xh-dau"><a class="xh-ve" href="khampha.html" aria-label="Về Khám phá">‹</a><h1>Xếp hạng <em>A Show Speed</em></h1></div>' +
-    '<div class="xh-tabs" role="tablist" id="xhTabs">' + TABS.map(function (t) { return '<button role="tab" data-t="' + t[0] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
+    '<div class="xh-tabs" role="tablist" id="xhTabs">' + TABS.map(function (t) { return '<button role="tab" data-t="' + t[0] + '" title="' + t[1] + '">' + t[1] + '</button>'; }).join('') + '</div>' +
     '<div class="xh-canh" id="xhCanh">' +
     ['sanh', 'tim', 'ss', 'live', 'bxh', 'thuong', 'luat'].map(function (m) { return '<section class="xh-man" id="xhm-' + m + '"></section>'; }).join('') +
     '</div>';

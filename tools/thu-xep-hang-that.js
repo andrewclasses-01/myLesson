@@ -42,6 +42,7 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
 (async () => {
   const A = 'hs_9999961', Bb = 'hs_9999962', LA = 'ZTESTXA', LB = 'ZTESTXB', MUA = 'ztestmua' + Date.now();
   const bay = Date.now(), GIO = new Date(bay + 7 * 3600e3).getUTCHours();
+  const EN = process.argv.includes('--en');
   const xoa = ['nwUsers/' + A, 'nwUsers/' + Bb, 'xhHang/' + A, 'xhHang/' + Bb, 'xhMua/' + MUA, 'xhMua/' + MUA + '/em/' + A, 'xhMua/' + MUA + '/em/' + Bb,
     'xhMua/' + MUA + '/bang/top', 'tdLichSu/' + A, 'tdLichSu/' + Bb, 'tdDangDau/' + A, 'tdDangDau/' + Bb];
   const caiGoc = await docAdmin('caiDat/choiGame'), caiGocR = (await goi(`${FS_GOC}/caiDat/choiGame`, { headers: await H() })).json;
@@ -55,6 +56,8 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     tk[Bb] = await taoTkThu(Bb, 'ZTEST9999962', { hs: true, ma: 'ZTEST9999962', lop: LB, lops: LB, msId: 0 });
     await ghiAdmin('xhMua/' + MUA, { ten: S('ZTEST mùa'), tu: I(bay - 3600e3), den: I(bay + 3600e3), gioVang: MP({ tu: I(0), den: I(0), nhan: I(1) }),
       sao: MP({ dong: I(1) }), phut: I(2), tt: S('mo'), taoLuc: I(bay) });
+    // --en (26/10): hai em đã phân hạng, 1200 điểm ⇒ bàn bậc bk = gợi ý TIẾNG ANH
+    if (EN) for (const u of [A, Bb]) await ghiAdmin('xhMua/' + MUA + '/em/' + u, { xl: I(5), xlThang: I(3), diem: I(1200), cao: I(1200), mmr: I(1000), tran: I(5), thang: I(3), hoa: I(0), thua: I(2), chuoi: I(0), baoVe: I(0) });
     await ghiAdmin('caiDat/xepHang', { mua: S(MUA), capNhat: I(Date.now()) });
     if (caiGoc && (caiGoc.bat !== false) && (GIO >= (caiGoc.nghiTu ?? 23) || GIO < (caiGoc.nghiDen ?? 6))) {
       doiCai = true;
@@ -79,6 +82,7 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     ok('B bấm Sẵn sàng', await sua(tk[Bb], 'tranDau/' + TID, { ss: MP({ a: B(true), b: B(true) }) }) === 200);
     T = await cho('trận bắt đầu', async () => { const x = await docAdmin('tranDau/' + TID); return x && x.trangThai === 'choi' && x.chu ? x : null; }, 30000);
     ok('Trận chạy: có chữ + gợi ý + giờ', T.chu && (T.goi || []).length > 0 && T.ketThuc > T.batDau, `bàn 1: ${T.chu} · ${(T.goi || []).length} từ · che ${T.che}`);
+    if (EN) ok('Bậc 1200 điểm: gợi ý TIẾNG ANH (goiEn, tier bk)', T.goiEn === true && T.tier === 'bk' && /^[\x20-\x7e]{40,}$/.test((T.goi[0] || {}).m || ''), (T.goi[0] || {}).m);
     ok('Hai phiếu hàng chờ đã xoá', !(await docAdmin('xhHang/' + A)) && !(await docAdmin('xhHang/' + Bb)));
     const ke = (await docAdmin('tranDau/' + TID + '/may/ke')).ds;
     const w0 = ke[0].w[0].toLowerCase();
@@ -120,8 +124,9 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     ok('Trận chốt: A thua (rời), B thắng', T.kq[ben[A]] === 'thua' && T.kq[ben[Bb]] === 'thang', 'ly ' + T.ly);
     ok('Trận mang kết quả hạng (xhKq) cho 2 bên', T.xhKq && T.xhKq.a && T.xhKq.b, JSON.stringify(T.xhKq && T.xhKq[ben[Bb]]));
     const eA = await docAdmin('xhMua/' + MUA + '/em/' + A), eB = await docAdmin('xhMua/' + MUA + '/em/' + Bb);
-    ok('Điểm hạng A: trận xếp lớp 1/5, bị khoá 2 phút', eA && eA.xl === 1 && eA.khoaDen > Date.now(), eA && `xl ${eA.xl} · khoá còn ${Math.round((eA.khoaDen - Date.now()) / 1000)}s`);
-    ok('Điểm hạng B: trận xếp lớp 1/5, thắng 1', eB && eB.xl === 1 && eB.xlThang === 1, eB && `mmr ${eB.mmr}`);
+    if (EN) { ok('Điểm hạng A: bỏ trận −25, bị khoá', eA && eA.diem === 1175 && eA.khoaDen > Date.now(), eA && eA.diem); ok('Điểm hạng B: thắng ⇒ tăng', eB && eB.diem > 1200, eB && eB.diem); }
+    else ok('Điểm hạng A: trận xếp lớp 1/5, bị khoá 2 phút', eA && eA.xl === 1 && eA.khoaDen > Date.now(), eA && `xl ${eA.xl} · khoá còn ${Math.round((eA.khoaDen - Date.now()) / 1000)}s`);
+    if (!EN) ok('Điểm hạng B: trận xếp lớp 1/5, thắng 1', eB && eB.xl === 1 && eB.xlThang === 1, eB && `mmr ${eB.mmr}`);
     ok('A đọc điểm hạng của mình', (await goi(`${FS_GOC}/xhMua/${MUA}/em/${A}${k}`, { headers: H2(tk[A]) })).status === 200);
     ok('Bảng top 20 đã ghi', !!(await docAdmin('xhMua/' + MUA + '/bang/top')));
     ok('A đang khoá ⇒ vào hàng chờ bị máy chủ báo lỗi', await (async () => {

@@ -102,10 +102,13 @@
     // chữ của từ đã tìm: đọc từ tài liệu từ (máy chủ chấm ok + i của bàn này)
     var chuTim = {};
     G.tu.forEach(function (x) { if (x.ok === true && x.v === (t.van || 0) && x.i >= 0) chuTim[x.i] = x.w.toUpperCase(); });
+    // gợi ý TIẾNG ANH (bậc từ 1100 điểm, t.goiEn): câu dài nhiều dòng, ô chữ xuống dòng dưới
+    $('#xhGoi').classList.toggle('en', !!t.goiEn);
     $('#xhGoi').innerHTML = goi.map(function (g, i) {
       var ai = tim[i], lop = !ai ? '' : ai === '-' ? 'lo' : ai === uidBen(trai()) ? 'ta' : 'ban';
       var w = ai === '-' ? (hien[i] || '') : (chuTim[i] || '');
       var o = ''; for (var k = 0; k < (g.n || 0); k++) o += '<i>' + esc(w[k] || '') + '</i>';
+      if (t.goiEn) return '<div class="xh-g ' + lop + '"><span class="xh-o">' + o + '</span><span class="xh-y">' + esc(g.m || '') + '</span></div>';   // ô chữ góc phải trên, câu chạy vòng
       return '<div class="xh-g ' + lop + '"><span class="xh-y">' + esc(g.m || '') + '</span><span class="xh-o">' + o + '</span></div>';
     }).join('');
   }
@@ -407,13 +410,18 @@
       { l: 'MUSEUMTRAVLCHPON', w: ['TRAVEL', 'CHEAP', 'MUSEUM'], m: ['đi du lịch', 'rẻ', 'bảo tàng'] },
       { l: 'SPORTWINEFDBAKGL', w: ['SPORT', 'WINTER', 'FRIEND'], m: ['thể thao', 'mùa đông', 'bạn bè'] },
       { l: 'KITCHENBRAWLODWY', w: ['KITCHEN', 'BREAD', 'WINDOW'], m: ['nhà bếp', 'bánh mì', 'cửa sổ'] }];
+    // ?thu=1&en=1 — MẪU gợi ý tiếng Anh bậc cao (thầy duyệt 26/10)
+    if (q.get('en')) BAN = [
+      { l: 'UPHOLDVIVIENERST', w: ['UPHOLD', 'VIVID', 'VENUE'], m: ['Judges do this to the law, and fair players do it to the rules: they support it and keep it strong.', 'Describes colours, dreams or memories so bright and clear that they feel almost real.', 'The place where an event happens: a stadium for a final, or a hall for a concert.'] },
+      { l: 'FRAGILENITQUZSOM', w: ['FRAGILE', 'FINITE', 'QUARTZ'], m: ['Written on boxes of glasses and plates, so delivery workers carry them with great care.', 'The opposite of endless. Oil, time and even patience are all this, because one day they run out.', 'A hard, often clear mineral found in sand; tiny pieces of it help many watches keep time.'] },
+      { l: 'CANYONPTTERISLDB', w: ['CANYON', 'POTTERY', 'INSPECT'], m: ['Over millions of years a river cut down through the rock and left this deep valley with steep walls.', 'Shape wet clay on a spinning wheel, bake it in a very hot oven, and you have made this.', 'What an officer does to your bag at the airport: look closely at every detail for problems.'] }];
     var hen = 0, chatHen = 0, timHen = 0, soChat = 0;
     function ban(i) { var b = BAN[i % BAN.length]; return { chu: b.l, goi: b.w.map(function (w, k) { return { m: b.m[k], n: w.length }; }) }; }
     function bat() {
       var t0 = Date.now();
       G.xem = q.get('xem') === '1'; G.ben = 'a'; G.toi = G.toi || { uid: 'hs_100046', ten: 'Bảo Nam' };
       G.T = Object.assign({ a: G.xem ? 'u1' : G.toi.uid, b: 'u2', tenA: G.xem ? 'Thiên Phúc' : 'Bảo Nam', tenB: G.xem ? 'Khôi Nguyên' : 'Khánh Linh', lopA: 'A2-B', lopB: 'B1-A', hA: 'vang:II', hB: 'vang:I',
-        xh: 'thu', trangThai: 'choi', batDau: t0 + 3500, ketThuc: t0 + 3500 + (q.get('ngan') ? 15000 : 120000), doiLuc: t0 + 3500, van: 0, tim: {}, hien: {}, diem: { a: 0, b: 0 } }, ban(0));
+        xh: 'thu', goiEn: !!q.get('en'), trangThai: 'choi', batDau: t0 + 3500, ketThuc: t0 + 3500 + (q.get('ngan') ? 15000 : 120000), doiLuc: t0 + 3500, van: 0, tim: {}, hien: {}, diem: { a: 0, b: 0 } }, ban(0));
       G.chat = [{ uid: 'u2', ten: G.T.tenB, vai: 'b', chu: 'Hi! Chơi đẹp nha 😄', luc: t0 - 3000 }];
       capPha();
       hen = setTimeout(may, 9000);

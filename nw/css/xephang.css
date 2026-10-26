@@ -231,6 +231,13 @@ body.xh.xh-tran-trang{height:100%;overflow:hidden}
 .xh-g.ta{border-color:var(--xh-neon);background:rgba(61,245,138,.1)} .xh-g.ta .xh-o i{background:rgba(61,245,138,.2);color:var(--xh-neon2)} .xh-g.ta .xh-y{color:var(--xh-neon2)}
 .xh-g.ban{border-color:var(--xh-cyan);background:rgba(55,215,255,.08)} .xh-g.ban .xh-o i{background:rgba(55,215,255,.18);color:var(--xh-cyan2)} .xh-g.ban .xh-y{color:var(--xh-cyan2)}
 .xh-g.lo{opacity:.45} .xh-g.lo .xh-o i{color:var(--xh-mo)}
+/* gợi ý TIẾNG ANH (bậc từ 1100): câu nhiều dòng, ô chữ xuống dòng dưới bên phải */
+.xh-goi.en{gap:6px}
+.xh-goi.en .xh-g{display:block;padding:7px 10px 8px}
+.xh-goi.en .xh-o{float:right;margin:1px 0 2px 8px}
+.xh-goi.en .xh-y{white-space:normal;overflow:visible;display:block;font-size:13px;line-height:1.36;color:#D6EFE1}
+.xh-goi.en .xh-g::after{content:'';display:table;clear:both}
+@media (max-height:720px){.xh-goi.en{gap:4px}.xh-goi.en .xh-g{padding:5px 9px 6px}.xh-goi.en .xh-y{font-size:12px;line-height:1.3}.xh-goi.en .xh-o i{height:19px}}
 .xh-danggo{height:40px;flex:none;display:flex;align-items:center;justify-content:center;gap:3px;border-bottom:1px solid var(--xh-vien2)}
 .xh-danggo span{font:italic 800 28px/1 var(--xh-g);color:var(--xh-chu);letter-spacing:.05em}
 .xh-danggo.sai span{color:var(--xh-do);animation:xh-rung .3s}

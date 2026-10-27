@@ -118,11 +118,11 @@
       [['ht', 'Người số 1 toàn trường', 'Top ' + v.ht, '≥' + v.htSan + ' điểm'], ['ct', '', 'Top ' + v.ct, '≥' + v.ctSan + ' điểm'], ['kc', '', 'Top ' + v.kc, '≥' + v.kcSan + ' điểm'], ['bk', '', 'Top ' + v.bk, '≥' + v.bkSan + ' điểm'],
         ['vang', 'Mốc an toàn', '800', 'A2'], ['bac', '', '300', 'A1–A2'], ['dong', 'Thua không mất điểm', '0', 'A1']].map(function (x) {
         return '<div>' + hh(x[0], '', 30) + '<div><b style="color:' + HANG[x[0]][1] + '">' + HANG[x[0]][0] + '</b>' + (x[1] ? '<small>' + x[1] + '</small>' : '') + '</div><span class="xh2-d">' + x[2] + '<u>' + x[3] + '</u></span></div>';
-      }).join('') + '</div><div class="xh2-diem"><div><b style="color:var(--n)">+20…30</b><small>Thắng</small></div><div><b>+5</b><small>Hòa</small></div><div><b style="color:var(--do)">0…−30</b><small>Thua</small></div></div>';
+      }).join('') + '</div><div class="xh2-diem"><div><b style="color:var(--n)">▲</b><small>Thắng</small></div><div><b>＝</b><small>Hòa</small></div><div><b style="color:var(--do)">▼</b><small>Thua</small></div></div>';   // 27/10 thầy: không ghi số điểm từng trận
     if (i === 2) return '<h3>PHẦN THƯỞNG<small>Bạch kim trở lên: theo <b style="color:var(--c)">thứ hạng lúc hết mùa</b>. Đồng · Bạc · Vàng: theo điểm cao nhất. Đấu 1 trận là có quà.</small></h3><div class="xh2-thuong">' +
       ['ht', 'ct', 'kc', 'bk', 'vang', 'bac', 'dong'].map(function (k) { return '<div' + (k === 'ht' ? ' class="ht"' : '') + '>' + hh(k, '', k === 'ht' ? 40 : 32) + '<b>' + HANG[k][0] + '</b><em>+' + (sao[k] || 0) + ' ⭐</em></div>'; }).join('') + '</div>' +
       '<div class="xh2-chuy">' + (g.nhan > 1 ? '<span>⚡</span><span><b>Giờ vàng ' + phut(g.tu) + '–' + phut(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '</span>' : '') +
-      '<span>🔥</span><span><b>3 trận thắng liền</b>: +5 mỗi trận</span><span>🚪</span><span>Bỏ trận giữa chừng: <b>−25</b> và khoá 2 phút</span></div>';
+      '<span>🔥</span><span><b>3 trận thắng liền</b>: được thêm điểm</span><span>🚪</span><span>Bỏ trận giữa chừng: <b>thua</b> và khoá 2 phút</span></div>';
     return '<h3>CÁCH THAM GIA<small>Vào đấu ngay trong ô tin nhắn của lớp.</small></h3><div class="xh2-buoc">' +
       '<div class="xh2-b1"><i>1</i><div><p>Bấm nút <b>⚔</b> cạnh ô tin nhắn</p><div class="xh2-go"><span></span><b class="k">' + IC_KIEM + '</b><b class="s"></b></div></div></div>' +
       '<div class="xh2-b1"><i>2</i><div><p>Chọn <b>Xếp hạng thế giới</b></p><div class="xh2-mthe"><span class="ic">' + IC_DIA + '</span><div><b>XẾP HẠNG THẾ GIỚI</b><small>Thi đấu với đối thủ từ nhiều lớp khác</small></div></div></div></div>' +

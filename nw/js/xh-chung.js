@@ -38,7 +38,7 @@
   }
   function hhTag(ma, bac, co, lop) { return '<span class="xh-hh' + (lop ? ' ' + lop : '') + '" data-hh="' + esc(ma) + '" data-bac="' + esc(bac || '') + '" data-co="' + (co || 40) + '"></span>'; }
   // 26/10 SUẤT: Đồng/Bạc/Vàng theo điểm (Vàng từ 800) · Bạch kim → Huyền thoại theo SUẤT (thứ hạng toàn trường + điểm sàn), cờ s do máy chủ ghi.
-  var SUAT_MAC = [{ t: 'ht', n: 1, san: 1800 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
+  var SUAT_MAC = [{ t: 'ht', n: 1, san: 2000 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
   function suatCua(M) { return (M && Array.isArray(M.suat) && M.suat.length) ? M.suat : SUAT_MAC; }
   function laSuat(s) { return s === 'ht' || s === 'ct' || s === 'kc' || s === 'bk'; }
   // { ht:'1', ct:'2–3', kc:'4–6', bk:'7–12' } + tổng suất

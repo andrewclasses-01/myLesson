@@ -419,7 +419,7 @@
       var tong = 0;
       // 27/10 máy chủ lưu chi tiết dạng [{k, d}] (Firestore không nhận mảng lồng mảng) — trận cũ còn [['thang', 25]]
       x.ct = (x.ct || []).map(function (c) { return Array.isArray(c) ? c : [c.k, c.d]; });
-      ct = '<div class="xh-ct xh-so">' + (x.ct || []).map(function (c) { tong += c[1]; return '<span>' + esc(CT_TEN[c[0]] || c[0]) + '</span><b>' + (c[0] === 'xepLop' ? '' : (c[1] > 0 ? '+' : '') + c[1]) + '</b>'; }).join('') +
+      ct = '<div class="xh-ct xh-so">' + (x.ct || []).map(function (c) { tong += c[1]; return '<span>' + esc(CT_TEN[c[0]] || c[0]) + '</span><b>' + (c[0] === 'xepLop' ? '' : (c[1] > 0 ? '+' : '') + String(c[1]).replace('.', ',')) + '</b>'; }).join('') +   // từ 2000 điểm máy chủ ghi lẻ (+0,8)
         (x.diem != null && !(x.ct || []).some(function (c) { return c[0] === 'xepLop'; }) ? '<span class="xh-tong">Điểm hạng</span><b style="color:' + (x.doi >= 0 ? 'var(--xh-neon)' : 'var(--xh-do)') + '">' + (x.doi > 0 ? '+' : '') + x.doi + '</b>' : '') + '</div>';
       var s = XH.hien(x.sau), tr = XH.hien(x.truoc);
       if (String(x.sau).indexOf('xl:') === 0) {

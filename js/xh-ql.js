@@ -5,7 +5,7 @@
    Kho: caiDat/xepHang { mua } · xhMua/{mua} { ten tu den gioVang{tu,den,nhan} sao{dong…ht} phut tt nhap|mo|dung|chot daThuong thuong }
         xhMua/{mua}/em/{uid} (máy chủ ghi; thầy đọc để chốt) · xhMua/{mua}/bang/top.
    Thưởng (26/10 SUẤT): Bạch kim → Huyền thoại = SUẤT theo thứ hạng cuối mùa + điểm sàn (xhMua.suat [{t,n,san}], mặc định 1/2/3/6 ·
-   1800/1600/1400/1100) · còn lại theo điểm CAO NHẤT (em.cao), tối đa Vàng (từ 800) · đã đấu ≥1 trận (chưa xong phân hạng) = Đồng.
+   2000/1600/1400/1100 — HT 1800 tới 27/10) · còn lại theo điểm CAO NHẤT (em.cao), tối đa Vàng (từ 800) · đã đấu ≥1 trận (chưa xong phân hạng) = Đồng.
    Phát sao = phiếu saoDot (nguon 'dashboard', mỗi lớp một phiếu ≤ 300 dòng) ⇒ hàm apDotSao cộng ví + đẩy "+N⭐" (y Thưởng sao giải đấu).
    window.XhQl.ve({ than, tieuDe, luu, kho() → Promise f, toast(chu, loi), laThu })
    ============================================================ */
@@ -18,7 +18,7 @@
   var HANG = [['dong', 'Đồng', 0, '#C27C4A'], ['bac', 'Bạc', 300, '#8A97A6'], ['vang', 'Vàng', 800, '#E0A11B'], ['bk', 'Bạch kim', null, '#1FAE98'],
     ['kc', 'Kim cương', null, '#3B82F6'], ['ct', 'Cao thủ', null, '#8B5CF6'], ['ht', 'Huyền thoại', null, '#E5385A']];
   var SAO_MAC = { dong: 1, bac: 2, vang: 5, bk: 10, kc: 15, ct: 20, ht: 30 };
-  var SUAT_MAC = [{ t: 'ht', n: 1, san: 1800 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
+  var SUAT_MAC = [{ t: 'ht', n: 1, san: 2000 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
   function suatCua(M) { return M && Array.isArray(M.suat) && M.suat.length ? M.suat : SUAT_MAC; }
   function hangMa(ma) { return HANG.filter(function (h) { return h[0] === ma; })[0] || null; }
   // chia suất cho danh sách đã xếp điểm giảm dần ⇒ { uid: 'ht'|'ct'|'kc'|'bk' } (cùng luật máy chủ xep-hang.js chiaSuat)
@@ -258,7 +258,10 @@
     } catch (e) { o.innerHTML = '<div class="tdq-rong nho">Chưa tính được: ' + E(e.message || e) + '</div>'; return; }
     var sao = S.M.sao || {};
     var xep = em.filter(function (x) { return x.diem != null; }).sort(function (a, b) { return b.diem - a.diem; });
-    var suat = chiaSuat(xep, suatCua(S.M));
+    // 27/10 tối: xhMua.giuHT = em giữ Huyền thoại khi sàn lên 2000 (còn số 1 mà chưa đủ sàn) — cùng luật máy chủ capBang
+    var su = suatCua(S.M), htSan = (su.filter(function (s) { return s.t === 'ht'; })[0] || { san: 2000 }).san, giu = S.M.giuHT || '';
+    var suat = chiaSuat(xep, su);
+    if (giu && xep[0] && xep[0].uid === giu && xep[0].diem < htSan) { suat = chiaSuat(xep.slice(1), su.filter(function (s) { return s.t !== 'ht'; })); suat[giu] = 'ht'; }
     var dd = ddMua(S.M);
     var ds = em.map(function (x) {
       // suất (BK→HT) theo thứ hạng cuối mùa · ngoài suất: hạng theo điểm cao nhất (trần Vàng) · chưa xong phân hạng nhưng đã đấu ≥1 trận: Đồng

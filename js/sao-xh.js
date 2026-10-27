@@ -325,7 +325,7 @@
       var so = soCua(ten), vi = so ? (Number((K.vi[so] || {}).s) || 0) : null, da = ((so && K.dot[c.baiId] && K.dot[c.baiId][so]) || []).concat(((so && K.tam[c.baiId] && K.tam[c.baiId][so]) || []).map(function (x) { return { n: x.n, ly: x.ly, tam: 1 }; }));
       o.el.className = 'sx-tp em' + (st.kieu === 'phat' ? ' phat' : '');
       o.el.innerHTML =
-        '<div class="sx-dau">' + avHtml(ten) + '<div class="t"><b>' + esc(ten) + '</b><small>' + (so ? 'Ví đang có <i>⭐ ' + vi + '</i> · ' : (K.maSo ? '<span style="color:#DC2626">chưa có số HS</span> · ' : '')) + esc(c.lopGoc || '') + '</small></div><button class="sx-x" type="button" title="Đóng">✕</button></div>' +
+        '<div class="sx-dau">' + avHtml(ten) + '<div class="t"><b>' + esc(ten) + '</b><small>' + (so ? 'Ví đang có <i>⭐ ' + (vi < 0 ? '<span style="color:#DC2626">−' + (-vi) + '</span>' : vi) + '</i> · ' : (K.maSo ? '<span style="color:#DC2626">chưa có số HS</span> · ' : '')) + esc(c.lopGoc || '') + '</small></div><button class="sx-x" type="button" title="Đóng">✕</button></div>' +
         '<div class="sx-tab"><span class="nen"></span><button type="button" data-k="thuong">AWARD</button><button type="button" data-k="phat">PUNISHMENT</button></div>' +
         phanChung(st) +
         (da.length ? '<div class="sx-da' + (da.some(function (x) { return x.ly === st.lyHien; }) ? ' do' : '') + '">Ở bài này đã ' + da.map(function (x) { return (x.n > 0 ? 'thưởng +' : 'phạt ') + x.n + ' (' + esc(String(x.ly).split(' / ')[0]) + ')' + (x.tam ? ' — tạm' : ''); }).join(', ') + '</div>' : '') +
@@ -461,7 +461,7 @@
     });
     var tm = tamCua(c.baiId), m = K.dot[c.baiId] = K.dot[c.baiId] || {}, moi = {};
     ds.forEach(function (x) {
-      x.ds.forEach(function (d) { (m[x.so] = m[x.so] || []).push({ n: d.n, ly: d.ly, tao: Date.now() }); var v = K.vi[x.so] = K.vi[x.so] || { s: 0 }; v.s = Math.max(0, (Number(v.s) || 0) + d.n); });
+      x.ds.forEach(function (d) { (m[x.so] = m[x.so] || []).push({ n: d.n, ly: d.ly, tao: Date.now() }); var v = K.vi[x.so] = K.vi[x.so] || { s: 0 }; v.s = (Number(v.s) || 0) + d.n; });
       delete tm[x.so]; moi[x.so] = 'vi';
     });
     var vb = vi && vi.getBoundingClientRect(), co = vb && vb.width, cho = 0, dem = 0;

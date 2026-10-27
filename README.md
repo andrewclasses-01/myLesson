@@ -14,7 +14,13 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.432.0 (27/10/2026) — XẾP HẠNG theo GIỜ LÀM THẬT + cắt giờ CHỒNG tab *(bản mới nhất)*
+## ⭐ v1.433.0 (27/10/2026) — VÍ SAO ĐƯỢC ÂM *(bản mới nhất)*
+
+Thầy: trừ được nhiều hơn số sao đang có ⇒ số âm đỏ, dấu − trước.
+- `js/sao-dash.js`: `ganCT.gioiHan` chỉ kẹp ±tranTay (bỏ kẹp ≥ −số đang có, bỏ khoá nút −N); hàm `soSao(n)` tô đỏ số âm (`.sd-am` ở `css/sao-dash2.css`) — ô tổng lớp, cột sao, pop-up ±, Ví sao một em, Lịch sử ví. `js/sao-xh.js` bỏ `Math.max(0,…)` ví tạm.
+- ⛔ Đi kèm hàm máy chủ `apDotSao` (kho app `may-chu/functions/sao.js`) bỏ kẹp ví về 0 — PHẢI deploy hàm thì ví mới âm thật. Chi tiết: `myLesson/GHI CHU DU AN.md` chặng 27/10.
+
+## ⭐ v1.432.0 (27/10/2026) — XẾP HẠNG theo GIỜ LÀM THẬT + cắt giờ CHỒNG tab
 
 Ca Minh Anh A1-B (CÂU BỊ ĐỘNG): bảng act 81:30 cho 6/30 mà TỔNG luyện tập 58 phút — bảng act lấy đồng hồ game (gồm lúc treo tab), tổng lấy giờ hoạt động.
 - `dashboard.html` `hqBxhAct`: cột giờ + hoà điểm = `l.giayTho` (giờ HOẠT ĐỘNG của lượt, trước khi cắt chồng) — đảo v1.144.0 (thầy chốt 27/10).

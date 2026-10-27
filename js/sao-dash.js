@@ -42,6 +42,8 @@
   // ⭐ v1.393.0 (21/10/2026, thầy) — TRẦN CỘNG/TRỪ TAY chỉnh được (`saoCaiDat/chung.tranTay`, mặc định 50 — trước cứng ±50);
   //   trần buổi mở tới 9999 (trước kẹp 200). Hàm máy chủ apDotSao nhận dòng tới max(200, tran, tranTay).
   var TRAN_TAY_GOC = 50, TRAN_MAX = 9999;
+  // ⭐ v1.433.0 (27/10/2026, thầy) — ví ĐƯỢC ÂM (trừ quá số đang có) ⇒ số âm tô ĐỎ, dấu − đứng trước.
+  var soSao = function (n) { n = Number(n) || 0; return n < 0 ? '<span class="sd-am">−' + Math.abs(n).toLocaleString('vi') + '</span>' : n.toLocaleString('vi'); };
   var chuanTran = function (x, goc) { return Math.max(1, Math.min(TRAN_MAX, Math.round(Number(x) || goc))); };
   var S = { lop: [], so: {}, maSo: {}, vi: {}, tuan: {}, gan: [], cai: { tran: 30, tranTay: TRAN_TAY_GOC, baoHs: true, lyDo: null }, chon: '', tim: '', nap: null };
   function kho() { return window.AWChat && AWChat.kho ? AWChat.kho() : Promise.reject(new Error('khong-co-kho')); }
@@ -215,7 +217,7 @@
     that.forEach(function (e) { if (e.so) { tongLop += saoCua(e.so); tuanLop += S.tuan[e.so] || 0; } });
     var tenL = (L.khoa ? 'khóa ' : 'lớp ') + esc(L.ten);
     $('.sd-so-tom', nen).innerHTML =
-      '<div class="sd-o a"><span class="quang"></span><div class="nh">Sao đang có</div><div class="gt">' + tongLop.toLocaleString('vi') + '</div><div class="phu">' + that.length + ' học sinh · ' + tenL + '</div></div>' +
+      '<div class="sd-o a"><span class="quang"></span><div class="nh">Sao đang có</div><div class="gt">' + soSao(tongLop) + '</div><div class="phu">' + that.length + ' học sinh · ' + tenL + '</div></div>' +
       '<div class="sd-o b"><span class="quang"></span><div class="nh">Cộng 7 ngày</div><div class="gt">+' + tuanLop + '</div><div class="phu">' + tenL + '</div></div>';   // v1.408.0 bỏ ô Em có sao
     veBang(loeSo);
     vePhai();
@@ -275,7 +277,7 @@
               '<span class="dt">' + (so ? esc(so) : 'chưa có số') + (e.thu ? ' · học thử' : '') + (tuan ? ' · <em>+' + tuan + '</em>' : '') + '</span></div></div>' +
           '<div class="sd-soHS">' + (so ? esc(so) : '<span class="cam">chưa có số</span>') + '</div>' +
           '<div class="sd-saocot">' + (x.v == null ? '<span class="sd-sao-chip">—</span>'
-            : '<span class="sd-sao-chip">' + SAO_SVG + x.v + '</span><span class="sd-thanh"><i style="width:' + Math.round(x.v / maxV * 100) + '%"></i></span>') + '</div>' +
+            : '<span class="sd-sao-chip">' + SAO_SVG + soSao(x.v) + '</span><span class="sd-thanh"><i style="width:' + Math.max(0, Math.round(x.v / maxV * 100)) + '%"></i></span>') + '</div>' +
           '<div class="sd-7">' + (tuan ? '<span class="p">+' + tuan + '</span>' : '<span class="z">—</span>') + '</div>' +
           '<div class="sd-tt">' + (so ? '<button type="button" class="sd-ib sao" data-ct="' + esc(so) + '" title="Cộng / trừ sao">' + SAO_SVG + '<span class="pm">±</span></button>' +
             '<button type="button" class="sd-ib ls" data-ls="' + esc(so) + '" title="Lịch sử ví">' + DONGHO_SVG + '<span>Lịch sử</span></button>' : '') + '</div>' +
@@ -402,19 +404,19 @@
     var ob = $('.sd-ct-o', el), ta = $('.sd-lydo', el), ok = $('[data-ok]', el), dk = $('.sd-ct-dk', el);
     var TT = S.cai.tranTay || TRAN_TAY_GOC;
     var v = 1, chonGy = null;
-    var gioiHan = function (n) { n = Math.max(-TT, Math.min(TT, n)); return n < -co ? -co : n; };
+    var gioiHan = function (n) { return Math.max(-TT, Math.min(TT, n)); };   // v1.433.0 trừ quá số đang có được (ví âm)
     function ve(giuO) {
       var loai = v > 0 ? 'up' : v < 0 ? 'dn' : 'zr';
       dk.className = 'sd-ct-dk ' + loai;
       if (!giuO) ob.value = Math.abs(v);
       ob.style.setProperty('--n', Math.max(2, String(ob.value || Math.abs(v)).length));   // v1.393.0 ô dãn theo số chữ số
       $('.sd-ct-goi', el).innerHTML = v === 0
-        ? '<span>' + (co ? 'Chọn số sao muốn cộng hoặc trừ' : 'Em chưa có sao — chỉ cộng được') + '</span>'
-        : '<b>' + co + '</b>' + SAO_SVG + '<span>→</span><b class="sau">' + (co + v) + '</b>' + SAO_SVG + (v < 0 && -v === co ? '<span class="canh">· trừ hết</span>' : '');
+        ? '<span>Chọn số sao muốn cộng hoặc trừ</span>'
+        : '<b>' + soSao(co) + '</b>' + SAO_SVG + '<span>→</span><b class="sau">' + soSao(co + v) + '</b>' + SAO_SVG + (v < 0 && co + v === 0 ? '<span class="canh">· trừ hết</span>' : v < 0 && co + v < 0 ? '<span class="canh">· ví âm</span>' : '');
       Array.prototype.forEach.call(el.querySelectorAll('.sd-q'), function (q) {
-        var n = Number(q.getAttribute('data-n')); q.classList.toggle('on', n === v); q.disabled = n < -co;
+        var n = Number(q.getAttribute('data-n')); q.classList.toggle('on', n === v);
       });
-      $('[data-buoc="-1"]', el).disabled = v <= 0 && v <= -co;
+      $('[data-buoc="-1"]', el).disabled = v <= -TT;
       ok.className = 'sd-ct-nut ok ' + loai; ok.disabled = v === 0;
       ok.innerHTML = v === 0 ? 'Chọn số sao' : SAO_SVG + (v > 0 ? 'Cộng ' : 'Trừ ') + Math.abs(v) + ' sao';
       Array.prototype.forEach.call(el.querySelectorAll('.sd-gy'), function (g) { g.classList.toggle('on', g === chonGy); });
@@ -490,7 +492,7 @@
   // ── CỘNG / TRỪ (v1.370.0: MỘT nút ± ⇒ một pop-up, số CÓ DẤU) ────────────────────────────────
   // Nút −/+ đổi số từng nấc (đi qua 0 là đổi chiều) · nút dấu trước ô số lật cộng ↔ trừ · ô số CHỈ nhận chữ số
   // (điện thoại bật bàn phím số — bàn phím số iPhone không có dấu trừ nên dấu do nút quyết định) · chọn nhanh −5…+10 ·
-  // gợi ý lý do (S.cai.lyDo) bấm là điền lý do + số sao. Trừ không quá số sao em đang có. Lý do vẫn BẮT BUỘC.
+  // gợi ý lý do (S.cai.lyDo) bấm là điền lý do + số sao. Trừ quá số đang có được ⇒ ví âm (v1.433.0). Lý do vẫn BẮT BUỘC.
   // ⛔ Ô số là ô chữ (inputmode numeric) ⇒ cuộn chuột không đổi số; Enter = nhận ô, nhảy xuống ô lý do (luật 07/10).
   function moCongTru(so) {
     var ten = tenTheoSo(so), co = saoCua(so), L = lopChon() || { em: [], slug: '' };
@@ -498,7 +500,7 @@
     var thuTu = 0; L.em.forEach(function (e, i) { if (e.so === so) thuTu = i; });
     var h = hopNoi('<div class="sd-ct"><div class="sd-ct-keo"></div>' +
       '<div class="sd-ct-dau">' + avHtml(L, ten, thuTu) +
-        '<div class="sd-tenbox"><b>' + esc(ten) + '</b><span><i>Số HS ' + esc(so) + '</i><i>· đang có ' + SAO_SVG + '<b>' + co + '</b></i>' +
+        '<div class="sd-tenbox"><b>' + esc(ten) + '</b><span><i>Số HS ' + esc(so) + '</i><i>· đang có ' + SAO_SVG + '<b>' + soSao(co) + '</b></i>' +
           (x0 && x0.hang ? '<i>· hạng ' + x0.hang + '</i>' : '') + '</span></div>' +
         '<span class="sd-gian"></span><button class="sd-x" type="button" data-x title="Đóng (Esc)">' + X_SVG + '</button></div>' +
       htmlCT('Huỷ') + '</div>', false, 'ct');
@@ -579,7 +581,7 @@
         var x0 = null, si = 0; xepHang(L).forEach(function (r) { if (!r.e.thu && r.v != null) si++; if (r.e.so === so) x0 = r; });
         var tuan = S.tuan[so] || 0;
         $('.vs-so', h.el).innerHTML =
-          '<div class="vs-o vang"><div class="n">Đang có</div><div class="g">' + SAO_SVG + saoCua(so) + '</div></div>' +
+          '<div class="vs-o vang"><div class="n">Đang có</div><div class="g">' + SAO_SVG + soSao(saoCua(so)) + '</div></div>' +
           '<div class="vs-o"><div class="n">Hạng ' + (L.khoa ? 'khóa' : 'lớp') + '</div><div class="g">' + (x0 && x0.hang && !x0.e.thu ? x0.hang + '<small>/' + si + '</small>' : '—') + '</div></div>' +
           '<div class="vs-o la"><div class="n">7 ngày</div><div class="g">' + (tuan ? '+' + tuan : '0') + '</div></div>' +
           '<div class="vs-o do"><div class="n">Đã trừ</div><div class="g">' + (daTru == null ? '…' : daTru ? '−' + daTru : '0') + '</div></div>';
@@ -629,7 +631,7 @@
 
   // ── lịch sử một em ──────────────────────────────────────────────────────────────────────
   function moLichSu(so) {
-    var h = hopNoi('<h3>Lịch sử ví · ' + esc(tenTheoSo(so)) + '</h3><div class="sd-mo">Số HS ' + esc(so) + ' · đang có ⭐ ' + (Number((S.vi[so] || {}).s) || 0) + '</div><div class="sd-ls"><div class="sd-trong">Đang đọc…</div></div>' +
+    var h = hopNoi('<h3>Lịch sử ví · ' + esc(tenTheoSo(so)) + '</h3><div class="sd-mo">Số HS ' + esc(so) + ' · đang có ⭐ ' + soSao((S.vi[so] || {}).s) + '</div><div class="sd-ls"><div class="sd-trong">Đang đọc…</div></div>' +
       '<div class="sd-cuoi"><button class="sd-nut xam" type="button" data-x>Đóng</button></div>', true);
     $('[data-x]', h.el).onclick = h.dong;
     var mocHt = [];

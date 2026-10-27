@@ -220,6 +220,8 @@
 .sd-ct-goi b{font-size:15px; font-weight:900; color:var(--chu)}
 .sd-ct-goi b.sau{color:var(--c)}
 .sd-ct-goi .canh{color:var(--do); font-size:12px}
+/* v1.433.0 ví âm: số sao âm tô đỏ (dấu − đứng trước, do soSao() trong sao-dash.js) */
+.sd-am{color:#DC2626 !important; font-weight:900}
 .sd-ct-nhanh{display:flex; gap:6px; justify-content:center; flex-wrap:wrap; margin-top:12px}
 .sd-q{height:32px; min-width:42px; padding:0 10px; border-radius:10px; background:#fff; border:0; cursor:pointer; font-size:13px; font-weight:800; box-shadow:0 0 0 1.5px var(--vien); transition:.12s}
 .sd-q.p{color:var(--la)} .sd-q.m{color:var(--do)}

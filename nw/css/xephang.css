@@ -518,7 +518,8 @@ body.xh .xh-tabs button[aria-selected="true"]{font-size:15px;font-weight:700;pad
 /* ô chữ bấm: cỡ chữ do JS đặt (--fs) ⇒ vẽ lại ô không mất cỡ */
 .xh7 .xh-oan-o{flex:1;min-height:0;container-type:normal;display:grid;place-items:center}
 .xh7 .xh-oan{--c:auto}
-.xh7 .xh-oan button{font-size:var(--fs,24px);border-radius:14%;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+/* ⛔ --c:auto làm calc() ở luật `font` gốc hỏng ⇒ cả luật bị bỏ, chữ rơi về Be Vietnam 500 ⇒ đặt lại phông như ô chữ AWord A Show Speed (.wsg-t: Saira 800) */
+.xh7 .xh-oan button{font-family:var(--xh-g);font-weight:800;line-height:1;font-size:var(--fs,24px);border-radius:14%;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 .xh7 .xh-phim{max-width:none;width:100%}
 .xh7 .xh-phim button{user-select:none;-webkit-user-select:none}
 /* gợi ý: hai bạn cùng tìm (≤ 400 ms) */

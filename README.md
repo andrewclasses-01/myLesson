@@ -14,7 +14,15 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.372.0 (17/10/2026) — HỘP ⚔ CHAT LỚP 2 BƯỚC (Đấu giải · Giao hữu · Luyện tập) *(bản mới nhất)*
+## ⭐ v1.432.0 (27/10/2026) — XẾP HẠNG theo GIỜ LÀM THẬT + cắt giờ CHỒNG tab *(bản mới nhất)*
+
+Ca Minh Anh A1-B (CÂU BỊ ĐỘNG): bảng act 81:30 cho 6/30 mà TỔNG luyện tập 58 phút — bảng act lấy đồng hồ game (gồm lúc treo tab), tổng lấy giờ hoạt động.
+- `dashboard.html` `hqBxhAct`: cột giờ + hoà điểm = `l.giayTho` (giờ HOẠT ĐỘNG của lượt, trước khi cắt chồng) — đảo v1.144.0 (thầy chốt 27/10).
+- `hqGioAct` = bọc `hqGioActTho` + `hqHeSoChong(ten)`: gom lượt mọi act của bài (`HQ.act`) theo khoảng `[bd, kt]` (vào ván → nhịp ghi cuối); cụm chồng nhau có tổng giờ > độ dài cụm ⇒ chia tỉ lệ cho vừa. Cờ `l.chong` + tooltip "đã trừ phần làm CÙNG LÚC". Nhớ trong một lượt vẽ (`HQ_CHONG`, xoá bằng setTimeout 0).
+- Đi kèm AWord Đợt 588 (phím đè giữ không tính, chạm chờ 30 s).
+- ⚠️ Pop-up 🏆 / `lop.html` / `bai.html` / `khoa.html` (`A.xepHangAct`, kho scores) VẪN đồng hồ game. Video/nghe không vào phép cắt chồng.
+
+## ⭐  v1.372.0 (17/10/2026) — HỘP ⚔ CHAT LỚP 2 BƯỚC (Đấu giải · Giao hữu · Luyện tập)
 
 Mẫu thầy chốt `D:\OTHERS\CLAUDE\GIAI DAU THE - thiet ke\mau-v9-chat-dau` phương án A.
 - `js/the-td.js` `TheTD_moChon` viết lại (lớp CSS tiền tố `td-`, `.td-hop`): menu = thẻ neon **Đấu giải** (tên giải · hạng em · bạn online · đếm lùi tổng giờ) + **Giao hữu** (amber) + **Luyện tập** (xanh dương).

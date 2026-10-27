@@ -95,8 +95,21 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     ok('B gửi từ sai', await tu(tk[Bb], Bb, 'zzqx_0') === 200);
     const tB = await cho('chấm từ sai', async () => { const x = await docAdmin('tranDau/' + TID + '/tu/zzqx_0'); return x && x.ok != null ? x : null; });
     ok('Máy chủ chấm SAI', tB.ok === false);
+    // ── 27/10 CÙNG LÚC: hai em gửi cùng đáp án (tài liệu riêng _a|_b) gần như đồng thời ⇒ cả hai được điểm ──
+    {
+      const benA = T.a === A ? 'a' : 'b', benB = benA === 'a' ? 'b' : 'a', w1c = ke[0].w[1].toLowerCase();
+      ok('Luật: B ghi đuôi bên KIA bị chặn', await tu(tk[Bb], Bb, w1c + '_0_' + benA) !== 200);
+      const [ra, rb] = await Promise.all([tu(tk[A], A, w1c + '_0_' + benA), tu(tk[Bb], Bb, w1c + '_0_' + benB)]);
+      ok('Hai em cùng gửi một đáp án (đuôi _a/_b)', ra === 200 && rb === 200, ra + '/' + rb);
+      const xa = await cho('chấm A', async () => { const x = await docAdmin('tranDau/' + TID + '/tu/' + w1c + '_0_' + benA); return x && x.ok != null ? x : null; });
+      const xb = await cho('chấm B', async () => { const x = await docAdmin('tranDau/' + TID + '/tu/' + w1c + '_0_' + benB); return x && x.ok != null ? x : null; });
+      ok('CÙNG LÚC ≤ 400 ms: cả hai được điểm', xa.ok === true && xb.ok === true && (xa.cung || xb.cung), 'A ' + xa.ok + ' · B ' + xb.ok + (xa.cung || xb.cung ? ' · cung' : ''));
+      const T2 = await docAdmin('tranDau/' + TID);
+      const t2 = Object.assign({}, T2.tim2 || {}, (T2.timCu && T2.timCu.tim2) || {});   // từ cuối bàn ⇒ trận đã sang bàn mới, ghi ở timCu
+      ok('Trận ghi tim2 (ô gợi ý hai màu)', Object.keys(t2).length === 1, JSON.stringify(t2));
+    }
     // ── chat ──
-    const w1 = (ke[0].w[1] || ke[0].w[0]);
+    const Tc = await docAdmin('tranDau/' + TID), bc = ke[Tc.van || 0], w1 = (bc.w.find((w, i) => !(Tc.tim || {})[i]) || bc.w[0]);   // từ của BÀN ĐANG CHƠI
     const c1 = 'c1' + Date.now(), c2 = 'c2' + Date.now();
     xoa.push('tranDau/' + TID + '/chatGui/' + c1, 'tranDau/' + TID + '/chatGui/' + c2, 'tranDau/' + TID + '/chat/' + c2);
     ok('B gửi chat có ĐÁP ÁN (viết cách chữ)', await ghiGioMay(tk[Bb], 'tranDau/' + TID + '/chatGui/' + c1, { uid: S(Bb), chu: S('đáp án là ' + w1.split('').join(' ')) }, ['luc'], true) === 200);

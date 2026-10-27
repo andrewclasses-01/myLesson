@@ -8745,7 +8745,9 @@ tr.qm-hang-tam td{background:#fffbeb}
   // lượt kế + trần số câu × 60 s vẫn để BẢO NAM K9 L19 BT2 72 lượt dở ≈ 4 giờ 21), không quá giờ mở tab. "Số câu làm
   // được" = `score` của lượt (chỉ có từ AWord Đợt 379 khi em START AGAIN; lượt dở cũ khác = 0 ⇒ 0 phút), không quá số câu
   // của act. Lượt nộp / luyện xong GIỮ NGUYÊN.
-  // `giayGame` = giờ trên đồng hồ game em thấy (XẾP HẠNG dùng, không đổi).
+  // `giayGame` = giờ trên đồng hồ game em thấy. ⭐ v1.432.0 (thầy chốt 27/10) — XẾP HẠNG KHÔNG dùng nữa: cột giờ + hoà điểm
+  // theo `giayTho` (giờ HOẠT ĐỘNG của lượt, trước khi cắt chồng — xem `hqGioAct`). Ca MINH ANH A1-B (CÂU BỊ ĐỘNG 25/10):
+  // đồng hồ game 81:30 cho 6/30, làm thật 52:24 — bảng act hiện 81:30 trong khi TỔNG luyện tập chỉ 58 phút.
   var HQ_GIAY_MOI_CAU_DO = 15;
   // ⭐⭐ v1.147.0 (25/09/2026, GỘP PRACTICE + SUBMIT — AWord Đợt 383) — bài giao chỉ còn MỘT chế độ, lượt nào có điểm cũng nộp.
   // Năm loại lượt (`loai`):
@@ -8886,7 +8888,49 @@ tr.qm-hang-tam td{background:#fffbeb}
     (DIEM[ma] || []).forEach(function (e) { (e.luot || []).forEach(function (l) { if (!l.dd && l.tong > 0 && (!m || l.tong < m)) m = l.tong; }); });
     return m || ((CHUAN[ma] && +CHUAN[ma].soCau > 0) ? +CHUAN[ma].soCau : 0);
   }
+  /* ⭐⭐ v1.432.0 (thầy chốt 27/10) — CẮT GIỜ CHỒNG: em mở 2 tab / 2 máy CÙNG LÚC (hai cửa sổ cạnh nhau đều "đang hiện")
+     thì AWord đo giờ hoạt động ở MỖI tab ⇒ trước đây cộng HAI lần. Nay gom mọi lượt của em ở MỌI act của bài (kể cả act
+     ngoài phạm vi đang xem — giờ thật không đổi theo cách xem) thành các CỤM khoảng [bắt đầu, nhịp cuối] chồng nhau; cụm nào
+     tổng giờ hoạt động > độ dài cụm (không ai làm thật lâu hơn thời gian trôi qua) ⇒ chia đều theo tỉ lệ cho vừa độ dài cụm.
+     Lượt làm một mình / nối tiếp nhau KHÔNG đổi. ⛔ Lượt làm tiếp (CONTINUE) trải nhiều ngày nên cụm dài ⇒ ít khi bị cắt —
+     chấp nhận (thà sót còn hơn cắt oan). Video / bài nghe không vào phép cắt. `giayTho` = giờ trước khi cắt. */
+  var HQ_CHONG = { tick: 0, em: {} };
+  function hqHeSoChong(ten) {
+    var k = A.khoaTen(ten);
+    if (!HQ_CHONG.tick) { HQ_CHONG.tick = 1; setTimeout(function () { HQ_CHONG.tick = 0; HQ_CHONG.em = {}; }, 0); }   // nhớ trong MỘT lượt vẽ
+    if (HQ_CHONG.em[k]) return HQ_CHONG.em[k];
+    var ds = [], he = {};
+    Object.keys(HQ.act || {}).forEach(function (ma) {
+      hqGioActTho(ma, ten).luot.forEach(function (l) {
+        if (l.giay > 0 && l.bd > 0 && l.kt > l.bd) ds.push({ k: hqKhoaLuot(ma, l), bd: l.bd, kt: l.kt, giay: l.giay });
+      });
+    });
+    ds.sort(function (x, y) { return x.bd - y.bd; });
+    var cum = [];
+    ds.forEach(function (x) {
+      var c = cum[cum.length - 1];
+      if (c && x.bd < c.kt) { c.ds.push(x); c.kt = Math.max(c.kt, x.kt); c.giay += x.giay; }
+      else cum.push({ bd: x.bd, kt: x.kt, giay: x.giay, ds: [x] });
+    });
+    cum.forEach(function (c) {
+      var dai = (c.kt - c.bd) / 1000;
+      if (c.ds.length > 1 && c.giay > dai + 1) c.ds.forEach(function (x) { he[x.k] = dai / c.giay; });
+    });
+    return (HQ_CHONG.em[k] = he);
+  }
+  function hqKhoaLuot(ma, l) { return ma + '|' + (l.pl || l.rid || '') + '|' + (l.bd || 0); }
   function hqGioAct(ma, ten) {
+    var ra = hqGioActTho(ma, ten), he = hqHeSoChong(ten);
+    ra.giay = 0;
+    ra.luot.forEach(function (l) {
+      l.giayTho = l.giay;
+      var f = he[hqKhoaLuot(ma, l)];
+      if (f != null) { l.giay = Math.round(l.giay * f); l.chong = true; }
+      ra.giay += l.giay;
+    });
+    return ra;
+  }
+  function hqGioActTho(ma, ten) {
     var k = A.khoaTen(ten), luot = [], daCo = {};
     var soCau = (CHUAN[ma] && +CHUAN[ma].soCau > 0) ? +CHUAN[ma].soCau : 0;
     var em = (DIEM[ma] || []).filter(function (e) { return A.khoaEm(e) === k; })[0];
@@ -8959,7 +9003,9 @@ tr.qm-hang-tam td{background:#fffbeb}
       else if (chuaXong && (+d.createdAt || 0) >= HQ_MOC_GIU && A.gioNay() - (+d.updatedAt || +d.createdAt || 0) < HQ_GIU_MS) loai = 'chuaxong';
       else loai = 'do';
       if (laQuay) loai = 'quay';   // v1.329.0 — mọi lượt của bài giao quay video (xong hay dừng giữa chừng) = QUAY VIDEO
-      luot.push({ luc: lucPl(d), capNhat: +d.updatedAt || +d.createdAt || 0, lt: String(d.lt || ''), giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
+      // v1.432.0 — khoảng [bd, kt] của ván cho phép cắt giờ chồng (`hqHeSoChong`): từ lúc vào ván tới nhịp ghi cuối.
+      var bdV = lucPl(d), ktV = bdV ? bdV + Math.max(+d.timeMs || 0, (+d.updatedAt || 0) - (+d.createdAt || 0)) : 0;
+      luot.push({ bd: bdV, kt: ktV, luc: lucPl(d), capNhat: +d.updatedAt || +d.createdAt || 0, lt: String(d.lt || ''), giay: giay, moTab: moTab, giayGame: moTab, uoc: uoc, loai: loai,
                   diem: diem, tong: +d.total || 0, again: !!d.again, mistakes: !!d.mistakes,
                   // v1.148.0 — nối BÀI LÀM: lượt đã nộp (NỘP / NỘP DỞ) ⇒ results/{attemptId}; lượt khác ⇒ practiceLog/{mã}/entries/{id}
                   code: ma, pl: d._id || '', rid: d.mode === 'submit' && d.attemptId ? String(d.attemptId) : '', coBl: !!d.coReview });
@@ -8974,7 +9020,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         var cau = Math.max(0, +l.diem || 0); if (soCau) cau = Math.min(cau, soCau);
         gi = Math.min(g, cau * HQ_GIAY_MOI_CAU_DO); uoc = gi < g;
       }
-      luot.push({ luc: +l.luc || 0, giay: gi, moTab: g, giayGame: g, uoc: uoc, loai: l.dd ? 'dodang' : 'nop', diem: +l.diem || 0, tong: +l.tong || 0, code: ma, pl: '', rid: String(l.id || ''), tay: !!l.tay });
+      luot.push({ bd: +l.luc ? +l.luc - g * 1000 : 0, kt: +l.luc || 0, luc: +l.luc || 0, giay: gi, moTab: g, giayGame: g, uoc: uoc, loai: l.dd ? 'dodang' : 'nop', diem: +l.diem || 0, tong: +l.tong || 0, code: ma, pl: '', rid: String(l.id || ''), tay: !!l.tay });
     });
     // ⭐⭐ v1.260.0 (thầy chốt 06/10) — LƯỢT ĐẠT 100% ĐẦU TIÊN (`dau100`, tô cả dòng) + ĐUA TOP: sau lượt đó, mọi lượt
     // bỏ giữa chừng (BỎ DỞ · CHƯA XONG) của act này là em CÀY để lên hạng (AWord Đợt 468 mở ☰ Start again cho em đã 100%),
@@ -9392,7 +9438,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         // v1.147.0 — lượt NỘP DỞ cũng là lượt đã nộp (điểm tính trên mẫu chuẩn của act).
         if ((l.loai !== 'nop' && l.loai !== 'dodang') || l.mistakes) return;
         var mau = l.loai === 'dodang' ? hqMauAct(a.ma) : (+l.tong || soCau), r = mau ? (+l.diem || 0) / mau : 0;
-        var gG = l.giayGame != null ? l.giayGame : l.giay; if (l.tay && !gG) gG = 1e9;   // v1.181.0 — lượt nhập tay cũ (không giờ) không thắng hoà điểm. v1.144.0 — giờ đồng hồ game em thấy, không phải giờ hoạt động
+        var gG = l.giayTho != null ? l.giayTho : l.giay; if (l.tay && !gG) gG = 1e9;   // v1.181.0 — lượt nhập tay cũ (không giờ) không thắng hoà điểm. ⭐ v1.432.0 (thầy chốt 27/10) — giờ HOẠT ĐỘNG của lượt (trước đây v1.144.0: đồng hồ game)
         if (!tot || r > tot.r || (r === tot.r && gG < tot.giay)) tot = { r: r, diem: +l.diem || 0, mau: mau, giay: gG };
       });
       return { h: h, tot: tot, full: coTrongDiem(DIEM[a.ma] || [], h.ten, a.ma) };
@@ -10273,7 +10319,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (!mc.co(x.k)) return;
       x.luot.forEach(function (l) {
         var lh = l.duaTop ? 'duatop' : l.loai;
-        dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: lh, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[lh], tay: !!l.tay, dau100: l.dau100, lt: l.lt || '', code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc,
+        dong.push({ id: l.id, luc: l.luc, muc: x.nhan, mau: x.mau, loai: lh, nhan: l.tay ? 'NHẬP TAY' : nhanLoai[lh], tay: !!l.tay, dau100: l.dau100, lt: l.lt || '', code: l.code, sid: l.rid, giay: l.giay, moTab: l.moTab || 0, uoc: !!l.uoc, chong: !!l.chong,
                     maEm: (dl.h && dl.h.ma) || '',   // ⭐ v1.294.0 — nút XEM trực tiếp (quanSat/{ma} · lamTiep/{ma}/bai/{code})
                     xy: l.mauSo ? l.dung + '/' + l.mauSo : (l.loai === 'do' ? (l.dung ? l.dung + ' câu' : '—') : '—'),
                     pt: l.mistakes ? '—' : (l.pt != null ? l.pt + '%' : ''), mo: l.mistakes || (l.loai === 'do' && !l.dung), full: !l.mistakes && l.pt >= 100 });
@@ -10331,7 +10377,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         return '<tr' + (l.id ? ' data-id="' + l.id + '"' : '') + (lopTr ? ' class="' + lopTr + '"' : '') + (l.dau100 ? ' title="Lần đầu đạt 100% ' + A.chuAnToan(l.muc) + ' — em xong nhiệm vụ ở lượt này"' : '') + '><td' + (l.caNgay ? ' title="Xem trước 24/09/2026 — kho chỉ ghi tổng trong ngày, không có giờ"' : '') + '>' + (l.caNgay ? dLuc.getDate() + '/' + (dLuc.getMonth() + 1) : hqChuLuc(l.luc)) + '</td><td><i class="m" style="background:' + l.mau + '"></i>' + A.chuAnToan(l.muc) + '</td><td><span class="hq-loai ' + l.loai + (l.tay ? ' tay' : '') + '"' + (l.lt ? ' title="' + A.chuAnToan(hqChuLt(l.lt)) + '"' : '') + '>' + l.nhan + '</span>' + (l.dau100 ? '<span class="sao100">★</span>' : '') +
           (l.loai === 'danglam' && l.maEm && l.code ? '<button type="button" class="qs-nut" data-qsxem="' + A.chuAnToan(l.code) + '" data-qsma="' + A.chuAnToan(l.maEm) + '" data-qsmuc="' + A.chuAnToan(l.muc) + '" title="Xem trực tiếp em đang làm — em sẽ thấy “Thầy Andrew đang quan sát trực tiếp”"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>XEM</button>' : '') +   // ⭐ v1.294.0
           (l.tay ? '<button type="button" class="nt-xoa" data-ntxoa="' + A.chuAnToan(l.sid) + '" data-ntcode="' + A.chuAnToan(l.code) + '" title="Xoá lượt nhập tay">✕</button>' : '') + '</td>' +
-          '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '"' + (l.tPt ? ' title="' + A.chuAnToan(l.tPt) + '"' : '') + '>' + l.pt + '</td></tr>';
+          '<td class="r"' + (l.moTab - l.giay >= 60 ? ' title="Mở tab ' + hqChuPhut(l.moTab) + ' · làm thật ' + hqChuPhut(l.giay) + (l.uoc ? ' (ước lượng lượt bỏ dở trước 24/09: số câu làm được × 15 giây)' : '') + (l.chong ? ' (đã trừ phần làm CÙNG LÚC ở tab/máy khác)' : '') + '"' : '') + '>' + (l.uoc ? '≈' : '') + (l.giay < 60 ? '<1' : hqPhut(l.giay)) + '</td><td class="r xy' + (l.mo ? ' mo' : '') + '">' + l.xy + '</td><td class="r pt' + (l.mo ? ' mo' : '') + (l.full ? ' full' : '') + '"' + (l.tPt ? ' title="' + A.chuAnToan(l.tPt) + '"' : '') + '>' + l.pt + '</td></tr>';
       }).join('') + '</table>';
   }
   // ⭐ v1.359.0 (thầy chốt mẫu v3) — ô TẤT CẢ đứng đầu + mỗi ô ghi số lượt của mục (theo ngày đang lọc nếu có).

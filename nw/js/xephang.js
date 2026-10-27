@@ -254,7 +254,13 @@
       '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới.</span></li>' +
       '<li><span>🔤</span><span>Từ <b>1100 điểm</b>: gợi ý bằng <b>tiếng Anh</b>, càng lên cao câu càng dài, càng phải suy luận.</span></li>' +
       '<li><span>🚪</span><span>Thoát giữa trận = thua, khoá tìm trận 2 phút.</span></li>' +
-      '<li><span>🌙</span><span>Nghỉ đêm 23:00–6:00 không tìm trận.</span></li></ul></div></div></div>';
+      dongDem() + '</ul></div></div></div>';
+  }
+  // giờ nghỉ đêm đọc cài đặt thật (caiDat/choiGame qua GioiHan) — thầy đổi ở trang Giải đấu thì dòng này tự theo
+  function dongDem() {
+    var G = window.GioiHan, c = G && G.cai;
+    if (!c || !c.bat) return '';
+    return '<li><span>🌙</span><span>Nghỉ đêm ' + G.gioChu(c.nghiTu) + '–' + G.gioChu(c.nghiDen) + ' không tìm trận.</span></li>';
   }
   app.addEventListener('click', function (e) {
     var t = e.target.closest('[data-t]'); if (t && !t.closest('#xhTabs')) return moTab(t.dataset.t);

@@ -236,6 +236,17 @@
       veThan();
     } catch (e) { O.toast('Chưa đổi được: ' + (e.code || e.message), true); }
   }
+  // ⭐ 27/10 ĐIỂM DANH (thầy chốt): ngày đấu xong ≥ 1 trận (máy chủ ghi em.dd) · lấy MỐC CAO NHẤT:
+  //   đủ mọi ngày của mùa 10⭐ · chuỗi ≥ 20 ngày 5⭐ · chuỗi ≥ 10 ngày 2⭐ (xhMua.ddSao {du, d20, d10} đè được)
+  function ddMua(M) {
+    var soN = function (ms) { return Math.floor((ms + 7 * 3600e3) / 864e5); }, dau = soN(M.tu), cuoi = soN(M.den), tong = cuoi - dau + 1, s = M.ddSao || {};
+    return function (x) {
+      var set = {}, dat = 0, max = 0, c = 0; (x.dd || []).forEach(function (n) { set[n] = 1; });
+      for (var k = dau; k <= cuoi; k++) { if (set[k]) { dat++; c++; max = Math.max(max, c); } else c = 0; }
+      var n = dat >= tong ? (s.du != null ? s.du : 10) : max >= 20 ? (s.d20 != null ? s.d20 : 5) : max >= 10 ? (s.d10 != null ? s.d10 : 2) : 0;
+      return { dat: dat, max: max, tong: tong, n: n, moc: dat >= tong ? 'cả mùa' : max >= 20 ? '20 ngày' : max >= 10 ? '10 ngày' : '' };
+    };
+  }
   // ── chốt + phát thưởng ──
   async function xemChot() {
     var o = $('#xhqChot'); o.innerHTML = '<div class="tdq-rong nho">Đang tính…</div>';
@@ -248,25 +259,33 @@
     var sao = S.M.sao || {};
     var xep = em.filter(function (x) { return x.diem != null; }).sort(function (a, b) { return b.diem - a.diem; });
     var suat = chiaSuat(xep, suatCua(S.M));
+    var dd = ddMua(S.M);
     var ds = em.map(function (x) {
       // suất (BK→HT) theo thứ hạng cuối mùa · ngoài suất: hạng theo điểm cao nhất (trần Vàng) · chưa xong phân hạng nhưng đã đấu ≥1 trận: Đồng
       var h = suat[x.uid] ? hangMa(suat[x.uid]) : x.diem != null ? hangTu(x.cao != null ? x.cao : x.diem) : (x.tran || x.xl) ? HANG[0] : null;
-      return { x: x, h: h, so: timSo(x.uid), n: h ? sao[h[0]] || 0 : 0 };
+      var d = dd(x);
+      return { x: x, h: h, so: timSo(x.uid), n: h ? sao[h[0]] || 0 : 0, d: d, nd: d.n };
     }).sort(function (a, b) { return (b.x.diem == null ? -1 : b.x.diem) - (a.x.diem == null ? -1 : a.x.diem); });
     S.chot = ds;
-    var tong = function () { var n = 0, c = 0; ds.forEach(function (r) { if (r.n > 0 && r.so) { n += r.n; c++; } }); return { n: n, c: c }; };
+    var tong = function () { var n = 0, c = 0; ds.forEach(function (r) { if ((r.n > 0 || r.nd > 0) && r.so) { n += r.n + r.nd; c++; } }); return { n: n, c: c }; };
     var t = tong();
-    o.innerHTML = '<p class="tdq-goi">Suất: ' + chuSuat(S.M) + ' (thứ hạng cuối mùa, suất không ai đủ điểm sàn thì bỏ trống) · còn lại theo điểm CAO NHẤT, tối đa Vàng (từ 800) · đã đấu ≥1 trận: ít nhất Đồng. Thầy sửa số sao từng em được.</p>' +
-      '<div class="xhq-cuon"><table class="xhq-bang"><thead><tr><th>Học sinh</th><th>Lớp</th><th>Hạng thưởng</th><th class="so">Điểm cuối</th><th class="so">Trận</th><th class="so">Sao</th></tr></thead><tbody>' +
+    o.innerHTML = '<p class="tdq-goi">Suất: ' + chuSuat(S.M) + ' (thứ hạng cuối mùa, suất không ai đủ điểm sàn thì bỏ trống) · còn lại theo điểm CAO NHẤT, tối đa Vàng (từ 800) · đã đấu ≥1 trận: ít nhất Đồng. ' +
+      'Điểm danh: mốc cao nhất — cả mùa / 20 ngày / 10 ngày liên tiếp. Thầy sửa số sao từng em được.</p>' +
+      '<div class="xhq-cuon"><table class="xhq-bang"><thead><tr><th>Học sinh</th><th>Lớp</th><th>Hạng thưởng</th><th class="so">Điểm cuối</th><th class="so">Trận</th><th class="so">Sao hạng</th><th class="so">Điểm danh</th><th class="so">Sao ĐD</th></tr></thead><tbody>' +
       ds.map(function (r, i) {
         return '<tr><td>' + E(r.x.ten) + (r.so ? '' : ' <small style="color:#c0392b">⚠ chưa có số HS</small>') + '</td><td>' + E(r.x.lop || '') + '</td><td>' + chip(r.h) + (r.x.diem == null ? ' <small>' + (r.x.xl || 0) + '/5 trận phân hạng</small>' : '') +
-          '</td><td class="so">' + (r.x.diem == null ? '—' : r.x.diem) + '</td><td class="so">' + (r.x.tran || 0) + '</td><td class="so"><input class="tdq-o" inputmode="numeric" data-i="' + i + '" value="' + r.n + '"' + (r.so ? '' : ' disabled') + '></td></tr>';
+          '</td><td class="so">' + (r.x.diem == null ? '—' : r.x.diem) + '</td><td class="so">' + (r.x.tran || 0) + '</td><td class="so"><input class="tdq-o" inputmode="numeric" data-i="' + i + '" value="' + r.n + '"' + (r.so ? '' : ' disabled') + '></td>' +
+          '<td class="so"><small>' + r.d.dat + '/' + r.d.tong + ' ngày · 🔥' + r.d.max + '</small></td><td class="so"><input class="tdq-o" inputmode="numeric" data-dd="' + i + '" value="' + r.nd + '"' + (r.so ? '' : ' disabled') + '></td></tr>';
       }).join('') + '</tbody></table></div>' +
       '<label class="tdq-hop-chon" style="margin-top:8px"><input type="checkbox" id="xhqBao" checked> Gửi lời chúc mừng vào nhóm chat các lớp</label>' +
       '<p class="tdq-goi" id="xhqChotLoi" role="alert"></p>' +
       '<div class="xhq-nut"><span class="tdq-goi" id="xhqTong">' + t.n + ' ⭐ cho ' + t.c + ' em</span><button type="button" class="tdq-nut" id="xhqPhat">Chốt mùa &amp; phát thưởng</button></div>';
-    $$('[data-i]', o).forEach(function (i) {
-      i.oninput = function () { i.value = i.value.replace(/\D/g, '').slice(0, 3); ds[+i.dataset.i].n = +i.value || 0; var t2 = tong(); $('#xhqTong').textContent = t2.n + ' ⭐ cho ' + t2.c + ' em'; $('#xhqPhat').removeAttribute('data-xn'); $('#xhqPhat').innerHTML = 'Chốt mùa &amp; phát thưởng'; };
+    $$('[data-i], [data-dd]', o).forEach(function (i) {
+      i.oninput = function () {
+        i.value = i.value.replace(/\D/g, '').slice(0, 3);
+        if (i.dataset.dd != null) ds[+i.dataset.dd].nd = +i.value || 0; else ds[+i.dataset.i].n = +i.value || 0;
+        var t2 = tong(); $('#xhqTong').textContent = t2.n + ' ⭐ cho ' + t2.c + ' em'; $('#xhqPhat').removeAttribute('data-xn'); $('#xhqPhat').innerHTML = 'Chốt mùa &amp; phát thưởng';
+      };
     });
     $('#xhqPhat').onclick = async function () {
       var t2 = tong(), nut = this;
@@ -281,9 +300,16 @@
   }
   async function phat(ds, bao) {
     var M = S.M, b = Date.now(), theoLop = {};
-    ds.forEach(function (r) { if (r.n > 0 && r.so) (theoLop[r.x.lopMa || 'XH'] = theoLop[r.x.lopMa || 'XH'] || []).push({ so: r.so, n: r.n, viec: 'Hạng ' + r.h[1] + ' · ' + M.ten + ' (Xếp hạng)', app: 'Xếp hạng', _ten: r.x.ten, _h: r.h[1] }); });
+    ds.forEach(function (r) {
+      if (!r.so) return;
+      var l = r.x.lopMa || 'XH';
+      if (r.n > 0) (theoLop[l] = theoLop[l] || []).push({ so: r.so, n: r.n, viec: 'Hạng ' + r.h[1] + ' · ' + M.ten + ' (Xếp hạng)', app: 'Xếp hạng', _ten: r.x.ten, _h: r.h[1] });
+      // 27/10 điểm danh = dòng riêng trên phiếu sao (em thấy rõ +N⭐ điểm danh)
+      if (r.nd > 0) (theoLop[l] = theoLop[l] || []).push({ so: r.so, n: r.nd, viec: 'Điểm danh ' + M.ten + ' · ' + (r.d.moc || 'chuỗi ' + r.d.max + ' ngày') + ' (Xếp hạng)', app: 'Xếp hạng', _ten: r.x.ten, _h: 'điểm danh', _dd: true });
+    });
     var tong = { em: 0, sao: 0 };
-    Object.keys(theoLop).forEach(function (l) { theoLop[l].forEach(function (x) { tong.em++; tong.sao += x.n; }); });
+    var daDem = {};
+    Object.keys(theoLop).forEach(function (l) { theoLop[l].forEach(function (x) { if (!daDem[x.so]) { daDem[x.so] = 1; tong.em++; } tong.sao += x.n; }); });
     if (O.laThu) { M.tt = 'chot'; M.daThuong = true; M.thuong = tong; return; }
     var f = await O.kho(), ngay = new Date(b + 7 * 3600e3).toISOString().slice(0, 10);
     for (var l in theoLop) {
@@ -296,7 +322,7 @@
     if (bao && window.GiaiGhi) {
       for (var lop in theoLop) {
         if (lop === 'XH') continue;
-        var chu = '🏆 ' + M.ten + ' xếp hạng đã kết thúc! ' + theoLop[lop].slice(0, 12).map(function (x) { return x._ten + ' (' + x._h + ') +' + x.n + '⭐'; }).join(' · ') + '. Chúc mừng các em! 👏';
+        var chu = '🏆 ' + M.ten + ' xếp hạng đã kết thúc! ' + theoLop[lop].filter(function (x) { return !x._dd; }).slice(0, 12).map(function (x) { return x._ten + ' (' + x._h + ') +' + x.n + '⭐'; }).join(' · ') + '. Chúc mừng các em! 👏';
         try { await GiaiGhi.guiNhom(f, lop, chu); } catch (e) { console.warn('[xếp hạng] báo nhóm', lop, e); }
       }
     }

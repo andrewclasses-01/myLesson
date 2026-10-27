@@ -22,7 +22,7 @@
   if (window.DangDau) return;
   var SRC = (document.currentScript && document.currentScript.src) || '';
   var GOC = SRC.replace(/js\/dang-dau\.js.*$/, '');   // thư mục gốc web (chứa nw/)
-  var NHIP = 30000, MUA_HAN = 10 * 60000;
+  var NHIP = 10000, MUA_HAN = 10 * 60000;   // 27/10 thầy: người xem gần thời gian thực (trước 30 giây)
   var an = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var MAU = ['#E0A11B', '#E5587A', '#12A58F', '#1C7FD6', '#8B5CF6', '#E07B2C', '#2BAE66', '#3B82F6', '#C2410C', '#0891B2'];
   var laThu = function () { return /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=/.test(location.search); };

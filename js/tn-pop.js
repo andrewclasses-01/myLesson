@@ -31,7 +31,7 @@
   function ganDangDau(el) {
     if (!el) return;
     if (window.DangDau) return DangDau.hang(el);
-    if (!_ddnNap) _ddnNap = new Promise(function (ok) { var s = document.createElement('script'); s.src = GOC + 'js/dang-dau.js?v=1'; s.onload = ok; s.onerror = ok; document.head.appendChild(s); });
+    if (!_ddnNap) _ddnNap = new Promise(function (ok) { var s = document.createElement('script'); s.src = GOC + 'js/dang-dau.js?v=2'; s.onload = ok; s.onerror = ok; document.head.appendChild(s); });
     _ddnNap.then(function () { if (window.DangDau && el.isConnected) DangDau.hang(el); });
   }
 

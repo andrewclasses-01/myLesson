@@ -302,12 +302,13 @@
       ['bk', dk.bk, 'B1', 'Suất · không chia bậc'], ['vang', '800', 'A2', 'III · II · I · mốc an toàn'], ['bac', '300', 'A1–A2', 'III · II · I · thua mất ít'], ['dong', '0', 'A1', 'III · II · I · thua không mất điểm']];
     $('#xhm-luat').innerHTML = '<div class="xh-hang-luoi"><div class="xh-hb">' + HB.map(function (x) {
       return '<div class="xh-hbd">' + XH.hhTag(x[0], '', 36) + '<h4 style="color:' + XH.HANG[x[0]].a + '">' + XH.HANG[x[0]].ten + '</h4><span class="xh-moc xh-so">' + x[1] + '<span class="xh-cefr">' + x[2] + '</span></span><p>' + x[3] + '</p></div>';
-    }).join('') + '</div><div class="xh-c2"><div class="xh-diem4 xh-so"><div><b style="color:var(--xh-neon)">+20…30</b><small>Thắng</small></div><div><b>+5</b><small>Hòa</small></div>' +
-      '<div><b style="color:var(--xh-do)">0…−30</b><small>Thua</small></div><div><b style="color:var(--xh-do)">−25</b><small>Bỏ trận</small></div></div>' +
-      '<div class="xh-the"><ul class="xh-luat"><li><span>💪</span><span>Thắng bạn <b>hạng cao hơn</b> được nhiều điểm hơn.</span></li>' +
-      '<li><span>🔥</span><span>Chuỗi <b>3 trận thắng</b> trở lên: +5 mỗi trận.</span></li>' +
+    // 27/10 thầy: chữ chung chung, KHÔNG ghi số điểm từng trận (công thức điểm đổi ngầm — máy chủ xep-hang.js kTheoDiem)
+    }).join('') + '</div><div class="xh-c2"><div class="xh-diem4 xh-so"><div><b style="color:var(--xh-neon)">▲</b><small>Thắng</small></div><div><b>＝</b><small>Hòa</small></div>' +
+      '<div><b style="color:var(--xh-do)">▼</b><small>Thua</small></div><div><b style="color:var(--xh-do)">✕</b><small>Bỏ trận</small></div></div>' +
+      '<div class="xh-the"><ul class="xh-luat"><li><span>💪</span><span>Thắng bạn <b>mạnh hơn</b> được nhiều điểm hơn · thắng bạn yếu hơn được ít.</span></li>' +
+      '<li><span>🔥</span><span>Chuỗi <b>3 trận thắng</b> trở lên: được thêm điểm.</span></li>' +
       (g && g.nhan > 1 ? '<li><span>⚡</span><span>Giờ vàng <b>' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '.</span></li>' : '') +
-      '<li><span>📉</span><span>Điểm càng cao, thua càng mất nhiều: Vàng −15 · trên 1100 −20 · trên 1400 −25 · trên 1600 −30.</span></li>' +
+      '<li><span>📉</span><span>Điểm càng cao, thắng được càng ít · thua bạn yếu hơn mất nhiều điểm.</span></li>' +
       '<li><span>🛡</span><span>Vừa lên bậc: <b>3 trận</b> thua không rớt bậc.</span></li>' +
       '<li><span>📌</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +
       '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới.</span></li>' +

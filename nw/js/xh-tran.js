@@ -130,7 +130,18 @@
         .catch(function () { /* bạn đã xin trước */ })
         .finally(function () { setTimeout(function () { if (G.T && G.T.van === t.van) delete G.xinDoi[t.van]; }, 3000); });
     }
-    if (!G.xem && con <= 0 && !G.daXong) { G.daXong = true; nhip({ xong: true }); }
+    if (!G.xem && con <= 0 && !G.daXong) { G.daXong = true; G.xongGui = bay(); nhip({ xong: true }); }
+    // ⭐ 27/10 — hết giờ mà máy chủ chưa chốt: báo đang chốt, 5 giây gửi lại "hết giờ" một lần (máy chủ đợi đủ hạn rồi chốt);
+    //   quá 25 giây ⇒ hiện nút về sảnh (thoát lúc này KHÔNG bị xử thua — máy chủ chốt theo điểm)
+    if (!G.thu && con <= 0 && t.trangThai === 'choi') {
+      g.textContent = 'CHỐT…';
+      if (!G.xem && bay() - (G.xongGui || 0) > 5000) { G.xongGui = bay(); nhip({ xong: true }); }
+      if (con < -25000 && !$('#xhCho')) {
+        var c = document.createElement('div'); c.id = 'xhCho'; c.className = 'xh-hop';
+        c.innerHTML = '<div><h4>Đang chốt kết quả…</h4><p>Điểm trận này vẫn được tính. Em có thể về sảnh, kết quả sẽ hiện trong phong độ.</p><div class="xh-hainut"><button class="xh-nut" style="font-size:17px" data-di="xephang.html">VỀ SẢNH</button></div></div>';
+        app.appendChild(c);
+      }
+    }
   }
   // ---------- gửi từ ----------
   function guiTu() {
@@ -183,7 +194,8 @@
     var k = G.chu.findIndex(function (x, i) { return x === ch && G.sel.indexOf(i) < 0; }); if (k >= 0) { G.sel.push(k); veGo(); }
   });
   function thoat() {
-    if (G.xem || !G.T || G.T.trangThai !== 'choi') { location.href = G.xem ? 'xephang.html?tab=live' : 'xephang.html'; return; }
+    // hết giờ rồi (đang chờ chốt) ⇒ về sảnh, không ghi "rời trận" (không bị xử thua)
+    if (G.xem || !G.T || G.T.trangThai !== 'choi' || bay() >= (G.T.ketThuc || 0)) { location.href = G.xem ? 'xephang.html?tab=live' : 'xephang.html'; return; }
     var h = document.createElement('div'); h.className = 'xh-hop';
     h.innerHTML = '<div><h4>Rời trận?</h4><p>Rời giữa trận là <b>THUA</b>, trừ 25 điểm hạng và khoá tìm trận 2 phút.</p>' +
       '<div class="xh-hainut"><button class="xh-nut phu" data-k="o">Ở lại</button><button class="xh-nut" style="font-size:17px;background:var(--xh-do);box-shadow:none" data-k="r">RỜI TRẬN</button></div></div>';
@@ -293,6 +305,8 @@
     var ct = '', hang = '';
     if (x) {
       var tong = 0;
+      // 27/10 máy chủ lưu chi tiết dạng [{k, d}] (Firestore không nhận mảng lồng mảng) — trận cũ còn [['thang', 25]]
+      x.ct = (x.ct || []).map(function (c) { return Array.isArray(c) ? c : [c.k, c.d]; });
       ct = '<div class="xh-ct xh-so">' + (x.ct || []).map(function (c) { tong += c[1]; return '<span>' + esc(CT_TEN[c[0]] || c[0]) + '</span><b>' + (c[0] === 'xepLop' ? '' : (c[1] > 0 ? '+' : '') + c[1]) + '</b>'; }).join('') +
         (x.diem != null && !(x.ct || []).some(function (c) { return c[0] === 'xepLop'; }) ? '<span class="xh-tong">Điểm hạng</span><b style="color:' + (x.doi >= 0 ? 'var(--xh-neon)' : 'var(--xh-do)') + '">' + (x.doi > 0 ? '+' : '') + x.doi + '</b>' : '') + '</div>';
       var s = XH.hien(x.sau), tr = XH.hien(x.truoc);

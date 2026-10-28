@@ -14,7 +14,15 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.437.1 (28/10/2026) — CHÉP NHANH: "thiếu bài" chỉ tính các bảng tab XẾP HẠNG *(bản mới nhất)*
+## ⭐ v1.438.0 (28/10/2026) — DẢI A SHOW SPEED đầu khung chat nhóm lớp *(bản mới nhất)*
+
+Mẫu thầy chốt: `D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\dang-dau-chat-v1\index.html`.
+- `js/dang-dau.js` kiểu C `DangDau.chat(el, {dau})`: dải dưới tên lớp, đứng yên khi cuộn tin. Khung hẹp = avatar + "N trận" (bấm xổ / điện thoại tấm trượt); khung ≥ 560px (container query) = các cặp chạy ngang + ﹀. KHÔNG có trận vẫn hiện A SHOW SPEED + ⚡ ĐẤU NGAY. Dashboard (thầy): không nút Đấu, bấm trận mở tab mới.
+- `js/chat-ui.js` tuỳ chọn `dangDau()` + `doiCao()`: chèn dải một lần ngay trên khung tin, phòng không phải nhóm lớp thì ẩn.
+- Gắn ở: lop.html, khoa.html (cộng chiều cao dải vào `--san-chat`), dashboard.html (nạp dang-dau.js), nw/js/chat.js `taoKhuonLop` (trang Tin nhắn + hộp tin nhắn nổi). Dùng chung một vòng hỏi 10 giây với thanh A + bong bóng B.
+- ?v=: chat-ui 28 · dang-dau 3 · tn-pop 17 · nw/js/chat.js 41.
+
+## ⭐ v1.437.1 (28/10/2026) — CHÉP NHANH: "thiếu bài" chỉ tính các bảng tab XẾP HẠNG
 
 Ca A2B LISTENING SKILL (2 act + worksheet 2 trang + nghe): cả 18 em bị kê vì worksheet, thầy chỉ muốn Kim Ngân + Phúc Hưng (26/30).
 - `hqDsThieuBai`: chỉ act (điểm cao nhất ÷ tối đa) + bước không điểm của lesson CHƯƠNG — y các bảng XẾP HẠNG. Bỏ worksheet (BÀI NỘP) và bài nghe.

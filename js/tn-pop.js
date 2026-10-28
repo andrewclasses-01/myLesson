@@ -31,7 +31,7 @@
   function ganDangDau(el) {
     if (!el) return;
     if (window.DangDau) return DangDau.hang(el);
-    if (!_ddnNap) _ddnNap = new Promise(function (ok) { var s = document.createElement('script'); s.src = GOC + 'js/dang-dau.js?v=2'; s.onload = ok; s.onerror = ok; document.head.appendChild(s); });
+    if (!_ddnNap) _ddnNap = new Promise(function (ok) { var s = document.createElement('script'); s.src = GOC + 'js/dang-dau.js?v=3'; s.onload = ok; s.onerror = ok; document.head.appendChild(s); });
     _ddnNap.then(function () { if (window.DangDau && el.isConnected) DangDau.hang(el); });
   }
 
@@ -315,7 +315,7 @@
   function nap(xong) {
     if (window.ChatUI) { xong(); return; }
     if (!document.querySelector('link[href*="chat-ui.css"]')) { var l = document.createElement('link'); l.rel = 'stylesheet'; l.href = GOC + 'css/chat-ui.css?v=19'; document.head.appendChild(l); }
-    var sc = document.createElement('script'); sc.src = GOC + 'js/chat-ui.js?v=25'; sc.onload = function () { xong(); }; sc.onerror = function () { xong(true); };
+    var sc = document.createElement('script'); sc.src = GOC + 'js/chat-ui.js?v=28'; sc.onload = function () { xong(); }; sc.onerror = function () { xong(true); };
     document.head.appendChild(sc);
   }
   function mauTin(it) {

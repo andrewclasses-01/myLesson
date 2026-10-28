@@ -179,6 +179,7 @@
       // ⭐ thầy giao hữu (16/10/2026) — phòng RIÊNG thầy ↔ một em: ⚔ mời thẳng người kia (cả hai chiều)
       moiMot: function () { return Chat.nguoiMoiMot(c.phong()); },
       lopGiai: NW.laBanThu() ? function () { return (c.phong() || {}).loai === 'nhom' ? 'A1C' : ''; } : null,   // v1.351.0 bàn thử: dải ghim mẫu
+      dangDau: NW.laBanThu() ? function () { return (c.phong() || {}).loai === 'nhom'; } : null,   // v1.438.0 bàn thử: nhóm mẫu có dải A Show Speed (thật: taoKhuonLop)
       laCuaToi: function (t) { return t.uid === toi.uid; },
       av: function (t) { return NW.avHtml({ ten: t.ten, anh: t.anh, vaiTro: t.vaiTro, uid: t.uid }, 'nho'); },   // v1.364.0 uid ⇒ bấm avatar mở trang cá nhân
       nhan: function (t) { return t.vaiTro === 'gv' ? NW.tichHtml('nho') : ''; },
@@ -847,6 +848,7 @@
         guiAnh: toi.laThay ? function (file) { return AWChat.guiAnh(p.lop, file); } : null,   // chỉ thầy gửi ảnh
         thachDau: function () { return p.lop; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js) · ⭐ 16/10: cả THẦY (chọn em đang online)
         lopGiai: function () { return p.lop; },   // ⭐ v1.351.0 — dải ghim giải đấu đầu khung (js/the-td.js)
+        dangDau: function () { return true; },   // ⭐ v1.438.0 — dải A SHOW SPEED đầu khung chat lớp (../js/dang-dau.js)
         datCx: function (t, v) { return AWChat.datCx(p.lop, t.id, MA_TOI, v); },
         ghiXem: function (luc) { return AWChat.ghiXem(p.lop, MA_TOI, tenToi, luc); },
         thuHoi: function (t) { return AWChat.thuHoi(p.lop, t.id, !!toi.laThay); },

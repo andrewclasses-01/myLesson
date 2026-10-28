@@ -875,9 +875,9 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/chat.js?v=38"></script>
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
 <script src="js/online.js?v=3"></script>   <!-- v1.211.0 — báo "em đang online" cho dashboard -->
-<script src="js/chat-ui.js?v=27"></script>
+<script src="js/chat-ui.js?v=28"></script>
 <script src="js/the-td.js?v=20"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
-<script src="js/giai-ghi.js?v=1"></script><script src="js/thanh-giai.js?v=3"></script><script src="js/dang-dau.js?v=2"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js); gắn ngay sau UI_CHAT -->
+<script src="js/giai-ghi.js?v=1"></script><script src="js/thanh-giai.js?v=3"></script><script src="js/dang-dau.js?v=3"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js); gắn ngay sau UI_CHAT -->
 <script src="js/vi-qua.js?v=14"></script>
 <script src="js/qua-2010.js?v=2"></script>   <!-- 20/10/2026 v1.377.0 pop-up quà 20-10 cho bạn nữ (+10 sao) -->
 <script src="js/tb-pop.js?v=1"></script>
@@ -1834,10 +1834,12 @@ function doCaoDau(){
   var t = document.querySelector('.top');
   if (t) document.documentElement.style.setProperty('--cao-dau', t.offsetHeight + 'px');
 }
+/* ⭐ v1.438.0 — dải A Show Speed (js/dang-dau.js) nằm giữa tiêu đề và khung tin ⇒ cộng vào sàn khung chat */
+function caoDdnChat(){ var g = document.querySelector('.chat .ddn-cg'); return g && !g.hidden ? g.offsetHeight : 0; }
 function doSanChat(){
   var d = document.querySelector('.chat-head'), c = document.querySelector('.chat-foot');
   if (!d || !c) return;
-  document.documentElement.style.setProperty('--san-chat', (d.offsetHeight + c.offsetHeight + 2) + 'px');
+  document.documentElement.style.setProperty('--san-chat', (d.offsetHeight + c.offsetHeight + caoDdnChat() + 2) + 'px');
 }
 var manNhin = window.visualViewport;
 function doBanPhim(){
@@ -2036,6 +2038,8 @@ var UI_CHAT = ChatUI.tao({
   },
   thachDau: function(){ return MA_HS && MA_HS !== 'GV' ? LOP_DL : ''; },   // ⚔ v1.348.0 — nút thách đấu bạn đang online (js/the-td.js)
   /* v1.381.0 — BỎ dải ghim giải trong chat (lopGiai): đã có THANH GIẢI ĐẤU dưới thanh menu (js/thanh-giai.js) */
+  dangDau: function(){ return true; },   /* ⭐ v1.438.0 — dải A SHOW SPEED đầu khung chat (js/dang-dau.js): trận đang đấu + ĐẤU NGAY */
+  doiCao: function(){ doSanChat(); },
   datCx: function(t, v){ if (camChatCon()) return Promise.reject(Object.assign(new Error('cam'), { code: 'awc/bi-cam' })); return AWChat.datCx(LOP_DL, t.id, MA_HS, v); },
   ghiXem: function(luc){ return AWChat.ghiXem(LOP_DL, MA_HS, TOI, luc); },   // v1.210.0 — "đã xem" tin cuối
   thuHoi: function(t){ return AWChat.thuHoi(LOP_DL, t.id, MA_HS === 'GV'); },
@@ -2185,7 +2189,7 @@ function baoToast(chu){
 
 setInterval(nhipDongHo, 1000);
 </script>
-<script src="js/tn-pop.js?v=16"></script>
+<script src="js/tn-pop.js?v=17"></script>
 <script src="js/tn-pop-ds.js?v=10"></script>
 <script src="js/tn-khung.js?v=5"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=40"></script>

@@ -25,6 +25,8 @@
    ⭐ v1.206.0: guiAnh nay XEM TRƯỚC (nút ảnh trước nút emoji · Ctrl+V · kéo thả) rồi bấm gửi; chat lớp chỉ dashboard có guiAnh.
      docThuHoi(t) -> Promise<{chu,q,sticker,hinh}|null>   // có ⇒ hiện nội dung tin đã thu hồi (dashboard thầy)
    ⭐ v1.351.0: lopGiai() -> mã lớp   // có ⇒ DẢI GHIM GIẢI ĐẤU đầu khung (js/the-td.js TheTD.ghim; mọi chat nhóm lớp, cả thầy)
+   ⭐ v1.438.0: dangDau() -> true/false   // true ⇒ DẢI A SHOW SPEED ngay trên khung tin (js/dang-dau.js DangDau.chat; thầy: không nút Đấu)
+     doiCao()                  // gọi lại khi dải chèn/ẩn (lop/khoa đo lại sàn khung chat)
 
    Dữ liệu tin (thêm từ v1.186.0, trường cũ giữ nguyên):
      chu      chữ; emoji bộ riêng ghi dạng mã `:1f60a:` (xem EMOJI), nhắc tên dạng `@Tên`
@@ -588,6 +590,19 @@
       return '<div class="cu-cx">' + (d.tong ? '<button type="button" class="cs" data-cu="cs" aria-label="Xem ai đã thả cảm xúc">' + dau.map(function (k) { return imgCx(k).replace(/ title="[^"]*"/, ''); }).join('') + '<em>' + d.tong + '</em></button>' : '') +
         '<button type="button" class="lk" data-cu="lk" aria-label="Thả cảm xúc" title="Chạm: thả thêm · giữ: chọn cảm xúc">' + (toi ? imgCx(toi.l) : IC.timVien) + '</button></div>';
     }
+    // ⭐ v1.438.0 — DẢI A SHOW SPEED (js/dang-dau.js): chèn MỘT lần ngay trên khung tin (đứng yên khi cuộn); phòng không phải nhóm lớp thì ẩn
+    var ddnEl = null;
+    function ganDangDau() {
+      if (!o.dangDau) return;
+      var co = !!o.dangDau();
+      if (co && !ddnEl && window.DangDau && DangDau.chat && khung.parentNode) {
+        ddnEl = document.createElement('div'); ddnEl.className = 'ddn-cg';
+        khung.parentNode.insertBefore(ddnEl, khung);
+        DangDau.chat(ddnEl, { dau: !o.laThay });
+        if (o.doiCao) o.doiCao();
+      }
+      if (ddnEl && ddnEl.hidden === co) { ddnEl.hidden = !co; if (o.doiCao) o.doiCao(); }
+    }
     ui.ve = function (ds, dau) {
       ui.ds = (ds || []).map(function (t) {
         if (t && t.id && CHO[t.id] !== undefined) { var x = Object.assign({}, t); x.cx = Object.assign({}, t.cx || {}); if (CHO[t.id]) x.cx[toiK()] = CHO[t.id]; else delete x.cx[toiK()]; return x; }
@@ -613,6 +628,7 @@
       var nutTdS = o.chan && o.chan.querySelector('[data-cu-td]');
       if (nutTdS) nutTdS.hidden = !((o.thachDau && o.thachDau()) || (o.moiMot && o.moiMot()));
       if (window.TheTD && window.TheTD.ghim && o.lopGiai) window.TheTD.ghim(khung, o.lopGiai());   // ⭐ v1.351.0 — dải ghim giải đấu (dính đầu khung)
+      ganDangDau();
       veXem(); henThuXem();   // v1.210.0
     };
     // ⭐ v1.198.0 — ảnh trong tin tải XONG sau lúc vẽ làm khung cao lên ⇒ đang ở đáy thì bám đáy tiếp (khỏi hụt tin cuối)

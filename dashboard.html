@@ -4528,8 +4528,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
-<script src="js/chat-ui.js?v=27"></script>
-<script src="js/the-td.js?v=20"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
+<script src="js/chat-ui.js?v=28"></script>
+<script src="js/the-td.js?v=20"></script><script src="js/dang-dau.js?v=3"></script>   <!-- v1.348.0 thẻ thách đấu trong chat lớp -->
 <script src="js/thanh-giai.js?v=3"></script>   <!-- ⭐ v1.381.0 thanh giải đấu (thay thẻ neon js/the-giai.js) -->
 <script src="js/giai-ghi.js?v=1"></script>   <!-- ⭐ v1.380.0 đường ghi giải dùng chung (trang Giải đấu + pop-up) -->
 <script src="js/giai-pop.js?v=3"></script>   <!-- ⭐ v1.380.0 POP-UP CHI TIẾT GIẢI + hàng TOURNAMENT trong Kho bài -->
@@ -11665,7 +11665,8 @@ tr.qm-hang-tam td{background:#fffbeb}
   var UI_CHAT = ChatUI.tao({
     khung: $('#chatBody'), chan: document.querySelector('.cot-chat .chat-foot'), idNhap: 'chatO',
     toi: { khoa: 'GV', ten: 'Thầy Andrew' }, laThay: true,
-    thachDau: function () { return LOP_CHON || ''; },   // ⭐ v1.360.0 — THẦY GIAO HỮU: ⚔ chọn em đang online của lớp đang chọn (js/the-td.js)
+    thachDau: function () { return LOP_CHON || ''; },
+    dangDau: function () { return !!LOP_CHON; },   // ⭐ v1.438.0 — dải A SHOW SPEED đầu khung chat (js/dang-dau.js): thầy chỉ xem trận, không nút Đấu   // ⭐ v1.360.0 — THẦY GIAO HỮU: ⚔ chọn em đang online của lớp đang chọn (js/the-td.js)
     laCuaToi: function (t) { return t.vaiTro === 'gv'; },
     av: function (t) {
       if (t.vaiTro === 'gv') return '<span class="av" data-uid="quantri_thay" data-ten="Thầy Andrew" style="background:var(--xanh)">GV<img src="assets/avatar-tron.jpg" alt="" onerror="this.remove()"></span>';
@@ -17382,7 +17383,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 })();
 </script>
 <script src="js/ic-ql.js?v=3"></script>
-<script src="js/tn-pop.js?v=16"></script>
+<script src="js/tn-pop.js?v=17"></script>
 <script src="js/tn-pop-ds.js?v=10"></script>
 <script src="js/tn-khung.js?v=5"></script>   <!-- v1.280.0 khung Tin nhắn giữ sống (nạp sẵn khi trang rảnh) -->
 <script src="js/nw-thanh.js?v=40"></script>

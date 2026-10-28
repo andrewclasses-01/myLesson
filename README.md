@@ -14,7 +14,12 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.434.0 (28/10/2026) — tab BÀI TRONG SÁCH (trang chấm bài sách nằm trong hộp chi tiết) *(bản mới nhất)*
+## ⭐ v1.435.0 (28/10/2026) — BÀI TRONG SÁCH: nút ĐẠT ✓ + danh sách em có ảnh, xếp nhóm *(bản mới nhất)*
+
+- `js/cham-sach.js` (?v=11) `capNut`: chưa chấm ĐẠT ⇒ nút chỉ chữ "ĐẠT" (bỏ icon); thầy đã bấm ĐẠT (mọi trang `duyet.tt==='dat'`) ⇒ "ĐẠT ✓" (dấu bên phải), CHỤP LỖI mờ, dòng khoá "✓ Thầy đã chấm ĐẠT"; bấm ĐẠT lại vẫn mở chụp ảnh ĐẠT.
+- `veDs`: ảnh em (`em[].av`, dashboard truyền `A.avUrl(lớp gốc, tên)`; thiếu ảnh ⇒ chữ tắt) · xếp nhóm CHỜ CHẤM → ĐÃ TRẢ LẠI → CHƯA NỘP → ĐÃ ĐẠT (tên xanh lá), trong nhóm giữ thứ tự sĩ số (`THU_NHOM`).
+
+## ⭐ v1.434.0 (28/10/2026) — tab BÀI TRONG SÁCH (trang chấm bài sách nằm trong hộp chi tiết)
 
 Thầy chốt: trang chấm bài sách không còn là pop-up riêng mà là một tab của hộp chi tiết bài, ngay sau BÀI TẬP.
 - `dashboard.html`: tab `sach` "Bài trong sách" (icon sách mở) — chỉ hiện ở bài có bước `loai:'sach'` + `nopAnh`; nhiều bước ⇒ chip chọn bước (`HQ.sachBt`). `hqTabSach` vẽ khung, `hqSauVeSach` gắn trang chấm; `hqVeLai` KHÔNG vẽ lại ruột tab khi trang chấm đã gắn đúng bài/bước (`hqSachConNguyen`) ⇒ dữ liệu tab khác về dần không xoá nét đang vẽ. Rời tab / đóng hộp / đổi bài ⇒ `ChamSach.dong()` (lưu hết).

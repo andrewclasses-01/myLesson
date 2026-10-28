@@ -4734,7 +4734,29 @@ function veKhoiVideoDoc(k, so){
     bong.textContent = xong ? '✓ 100%' : pct + '%';
   }
   veTien();
-  var f = null, tTruoc = -1, lucTruoc = 0, daGuiPhat = false;
+  var f = null, tTruoc = -1, lucTruoc = 0, daGuiPhat = false, khoaDaGui;
+  /* ⭐ v1.442.0 (thầy chốt 28/10/2026) — KHOÁ TUA: chưa xem hết thì KHÔNG cho tua tới đoạn chưa xem — kéo lên thì chấm đang phát
+     nhảy về MỐC XEM LIỀN XA NHẤT (cuối khúc đã xem liền từ giây 0). Xem hết ⇒ tua tuỳ ý. Trình phát myDocument (myStudio v0.12.3)
+     tự chặn khi nhận {lenh:'khoaTua', t}; trình phát cũ không hiểu lệnh ⇒ lưới an toàn: thấy t nhảy quá mốc thì gửi `seek` về mốc. */
+  function mocLienVideoDoc(){
+    var ds = DOAN_XONG[khoa] || [];
+    return (ds.length && ds[0][0] <= 1.5) ? ds[0][1] : 0;
+  }
+  function guiKhoaTua(){
+    if (!f) return;
+    var t = daXongVideoDoc(k) ? null : Math.round(mocLienVideoDoc() * 10) / 10;
+    if (t === khoaDaGui) return;
+    khoaDaGui = t;
+    try { f.contentWindow.postMessage({ lenh: 'khoaTua', t: t }, '*'); } catch (e) {}
+  }
+  function keoVeMoc(t){   // lưới an toàn cho trình phát cũ
+    if (daXongVideoDoc(k)) return false;
+    var moc = mocLienVideoDoc();
+    if (t <= moc + 2.5) return false;
+    try { f.contentWindow.postMessage({ lenh: 'seek', t: moc }, '*'); } catch (e) {}
+    tTruoc = moc; lucTruoc = Date.now();
+    return true;
+  }
   function nhan(e){
     if (!f || e.source !== f.contentWindow) return;
     var m = e.data; if (!m || m.nguon !== 'myDocument') return;
@@ -4742,17 +4764,21 @@ function veKhoiVideoDoc(k, so){
     if (m.tong > 0) VIDEO_DOC_TONG[khoa] = +m.tong;
     // trình phát báo SẴN SÀNG ⇒ bảo nó PHÁT (em vừa bấm READY = cú bấm thật, trình duyệt cho phát tiếng). Gửi lúc `load`
     // thì sớm quá: trang phim còn đang nạp hình, lệnh play bị bỏ (đo 28/10).
+    if (m.su_kien === 'ready') { khoaDaGui = undefined; guiKhoaTua(); }   // v1.442.0 — khoá tua trước khi phát
     if (m.su_kien === 'ready' && !daGuiPhat) { daGuiPhat = true; try { f.contentWindow.postMessage({ lenh: 'play' }, '*'); } catch (e2) {} return; }
+    if (m.su_kien === 'play' && isFinite(+m.t)) { keoVeMoc(+m.t); return; }   // dừng ⇒ kéo ⇒ phát (trình phát cũ)
     if (m.su_kien === 'progress' && isFinite(+m.t)) {
       var t = +m.t, dt = t - tTruoc, dthat = (bay - lucTruoc) / 1000;
+      if (keoVeMoc(t)) return;
       if (tTruoc >= 0 && dt > 0 && dt <= 2.5 && dthat >= dt * 0.6) {
         congKhucXemKhoa(khoa, tTruoc, t); luuDoanXongKhoa(); TIEN_DO_FS_BAN = true; veTien();
       }
       tTruoc = t; lucTruoc = bay;
+      guiKhoaTua();   // mốc lớn dần theo phần xem liền
     } else if (m.su_kien === 'ended') {
       var tg = tongVideoDoc(k);
       if (tTruoc >= 0 && tg > tTruoc && tg - tTruoc <= 2.5) { congKhucXemKhoa(khoa, tTruoc, tg); luuDoanXongKhoa(); TIEN_DO_FS_BAN = true; }
-      tTruoc = -1; veTien(); dayTienDoFs();
+      tTruoc = -1; veTien(); guiKhoaTua(); dayTienDoFs();
     } else if (m.su_kien === 'pause') {   // giữ mốc dừng ⇒ phát tiếp không hụt khúc; dừng rồi tua thì khúc kế > 2,5 giây ⇒ không tính
       tTruoc = isFinite(+m.t) ? +m.t : -1; lucTruoc = bay; dayTienDoFs();
     }

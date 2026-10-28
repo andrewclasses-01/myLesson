@@ -14,7 +14,17 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.441.0 (28/10/2026) — Ô VIDEO: bìa chỉ còn nút phát + thanh đã xem không chữ *(bản mới nhất)*
+## ⭐ v1.442.0 (28/10/2026) — Ô VIDEO: KHOÁ TUA tới đoạn chưa xem *(bản mới nhất)*
+
+Thầy chốt: chưa xem hết thì không cho tua tới đoạn chưa xem — kéo lên thì chấm đang phát nhảy về vị trí xem liền xa nhất; xem hết mới tua tuỳ ý.
+- `bai.html veKhoiVideoDoc`: `mocLienVideoDoc` = cuối khúc đã xem liền từ giây 0 (`DOAN_XONG['vo<o>'][0]`, tính cả tiến độ trên máy chủ ⇒
+  mở lại bài vẫn tua được tới chỗ đã xem). `guiKhoaTua` gửi `{lenh:'khoaTua', t}` lúc trình phát `ready` + mỗi nhịp `progress`; xem hết ⇒
+  `t:null`. Trình phát myDocument (myStudio v0.12.3, kho `33f19ba`) tự chặn ngay khi kéo. Lưới an toàn cho trình phát cũ (`keoVeMoc`):
+  `progress`/`play` có t quá mốc + 2,5 s ⇒ gửi `seek` về mốc.
+- Test (bàn thử xem trước, phim live): xem tới 0:30 ⇒ bấm thanh phim 70 % ⇒ đứng 0:31; lùi về 0:10 được, khúc vẫn liền [0,37]; giả xem hết ⇒
+  bấm 70 % ⇒ 2:02.
+
+## ⭐ v1.441.0 (28/10/2026) — Ô VIDEO: bìa chỉ còn nút phát + thanh đã xem không chữ
 
 Thầy chốt mẫu v1 kiểu A (`D:\OTHERS\CLAUDE\myLesson - thiet ke o video\mau-v1.html`):
 - Bìa video (`bai.html veKhoiVideoDoc`): bỏ READY, tên phim, tên em, lớp ⇒ một nút phát tròn teal 68px giữa ảnh bìa (ảnh tối nhẹ .28).

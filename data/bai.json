@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-27 22:06:14",
+  "capNhat": "2026-10-28 09:31:59",
   "bai": {
     "A1C": [
       {
@@ -3052,6 +3052,283 @@
       }
     ],
     "NNTNGK9": [
+      {
+        "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L31",
+        "dang": "KHOA",
+        "tieuDe": "LESSON 27: BÀI GIẢNG 27: TOÀN BỘ THÌ HIỆN TẠI TIẾP DIỄN",
+        "tenBai": "LESSON 27",
+        "maLesson": "LESSON 27",
+        "noiDung": "TOÀN BỘ THÌ HIỆN TẠI TIẾP DIỄN",
+        "han": "2026-11-01T23:59",
+        "taoLuc": "2026-10-28",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "BT1. ÔN TẬP TẠO ĐỘNG TỪ DẠNG TIẾP DIỄN",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "r4uqyx"
+          },
+          {
+            "loai": "act",
+            "ten": "BT2. SẮP XẾP CÂU HIỆN TẠI TIẾP DIỄN",
+            "act": "",
+            "mau": "UNJUMBLE",
+            "ma": "8pqj4b"
+          },
+          {
+            "loai": "act",
+            "ten": "BT3. TẠO CÂU THÌ HIỆN TẠI TIẾP DIỄN",
+            "act": "",
+            "mau": "TYPE THE ANSWER",
+            "ma": "72f2zu"
+          },
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 27",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "n2j32r"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 27: TOÀN BỘ THÌ HIỆN TẠI TIẾP DIỄN",
+          "video": "https://www.youtube.com/watch?v=bfc-tG0jbQI",
+          "doan": [
+            {
+              "id": "dmvjsrzen7a6g5",
+              "ten": "Đặt mục tiêu buổi học",
+              "tu": "00:00",
+              "den": "00:31",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7bugf"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7bugf",
+              "ten": "Review phân định thì hiện tại tiếp diễn",
+              "tu": "00:31",
+              "den": "02:42",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7cmr9"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7cmr9",
+              "ten": "Review nguyên liệu quan trọng của thì hiện tại tiếp diễn",
+              "tu": "02:42",
+              "den": "12:58",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7du2g"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7du2g",
+              "ten": "HD BT1 - Ôn tập tạo động từ dạng tiếp diễn",
+              "tu": "12:58",
+              "den": "00:13:34",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzen7pzvl"
+              ]
+            },
+            {
+              "id": "dmvjsrzen7e12d",
+              "ten": "Bước chuẩn bị cuối cùng: trái tim của thì hiện tại tiếp diễn",
+              "tu": "00:13:39",
+              "den": "00:15:46",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7f0la"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7f0la",
+              "ten": "Lưu ý về trái tim của thì hiện tại tiếp diễn",
+              "tu": "00:15:46",
+              "den": "17:48",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7ge0f"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7ge0f",
+              "ten": "Tạo câu nói có ở thì hiện tại tiếp diễn",
+              "tu": "17:48",
+              "den": "21:16",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7h0kn"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7h0kn",
+              "ten": "Tạo câu nói không ở thì hiện tại tiếp diễn",
+              "tu": "21:16",
+              "den": "24:17",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7i2sz"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7i2sz",
+              "ten": "Tạo câu hỏi xác nhận và cách trả lời ở thì hiện tại tiếp diễn",
+              "tu": "24:17",
+              "den": "28:32",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7joz5"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7joz5",
+              "ten": "Tạo câu hỏi xin thông tin ở thì hiện tại tiếp diễn",
+              "tu": "28:32",
+              "den": "30:56",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7kj5d"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7kj5d",
+              "ten": "Kết luận các dạng câu của thì hiện tại tiếp diễn",
+              "tu": "30:56",
+              "den": "33:18",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7lfj5"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7lfj5",
+              "ten": "Từ và cụm từ quan trọng thường dùng trong thì hiện tại tiếp diễn",
+              "tu": "33:18",
+              "den": "36:20",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7msi3"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsrzen7msi3",
+              "ten": "HD BT2 - Sắp xếp câu ở thì hiện tại tiếp diễn",
+              "tu": "36:20",
+              "den": "00:37:48",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzen7qs9a"
+              ]
+            },
+            {
+              "id": "dmvjsrzen7nyfs",
+              "ten": "HD BT3 - Tạo câu ở thì hiện tại tiếp diễn",
+              "tu": "00:37:53",
+              "den": "39:35",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzen7ri9o"
+              ]
+            },
+            {
+              "id": "dmvjsrzen7o3yj",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "00:39:41",
+              "den": "40:35",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsrzen7shxy"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmvjsrzen7pzvl",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT1. ÔN TẬP TẠO ĐỘNG TỪ DẠNG TIẾP DIỄN",
+            "actTen": "BT1. ON TAP TAO DONG TU TIEP DIEN - V.ING",
+            "ma": "r4uqyx",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7e12d"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsrzen7qs9a",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT2. SẮP XẾP CÂU HIỆN TẠI TIẾP DIỄN",
+            "actTen": "BT2. SAP XEP CAU HIEN TAI TIEP DIEN",
+            "ma": "8pqj4b",
+            "mau": "UNJUMBLE",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7nyfs"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsrzen7ri9o",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT3. TẠO CÂU THÌ HIỆN TẠI TIẾP DIỄN",
+            "actTen": "BT3. TAO CAU HIEN TAI TIEP DIEN",
+            "ma": "72f2zu",
+            "mau": "TYPE THE ANSWER",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsrzen7o3yj"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsrzen7shxy",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 27",
+            "actTen": "TRAC NGHIEM BAI GIANG 27 - TOAN BO THI HIEN TAI TIEP DIEN",
+            "ma": "n2j32r",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-28T09:31"
+      },
       {
         "id": "NNTNGK9_KHOA_NENTANGTIENGANH_L30",
         "dang": "KHOA",
@@ -6834,6 +7111,6 @@
     "NNTNG4": "2026-10-24 11:34:29",
     "A2B": "2026-10-23 21:46:50",
     "B1B": "2026-10-24 21:41:08",
-    "NNTNGK9": "2026-10-23 10:29:58"
+    "NNTNGK9": "2026-10-28 09:31:59"
   }
 }

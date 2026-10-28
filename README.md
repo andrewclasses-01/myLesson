@@ -14,7 +14,19 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.443.0 (28/10/2026) — Ô VIDEO: vòng xoay nạp + "Yêu cầu xem" khoá thẻ bên dưới *(bản mới nhất)*
+## ⭐ v1.444.0 (28/10/2026) — A SHOW SPEED: BẮT BUỘC HOÀN THÀNH TRẬN *(bản mới nhất)*
+
+Thầy chốt (nghiên cứu `D:\OTHERS\CLAUDE\DAU GAME ONLINE - thiet ke\NGHIEN CUU CHAN BO TRAN 28-10-2026.md`), đi cặp máy chủ myLesson (tdDoi/tdTu/tdNhip/tdQuet đã deploy):
+- Máy chủ: trận vào `choi` ⇒ đọc công tắc `nwCauHinh/thachDau.tro.ass.<gh|giai|xh>.buoc` (thiếu = BẬT) ⇒ ghi KHOÁ TRẬN `nwUsers/{uid}.tranDang {id, ketThuc, xh}`
+  cho em (không khoá thầy) + trận mang `buoc`, `khoa`. `chot` gỡ khoá. Em không tự xoá được (luật nwUsers sẵn có — đo 403).
+- `js/giu-tran.js` (nạp ở lop · khoa · bai · bai-sp · sp-chitiet · index · nw/*): em mở trang / tab hiện lại / Back ⇒ thấy khoá + trận còn `choi` ⇒ `location.replace`
+  về `nw/tran.html` hoặc `nw/xhtran.html`. Quyết theo trangThai trận, không tin đồng hồ máy em. Khung nhúng không tự chuyển.
+- `nw/js/tran.js` + `nw/js/xh-tran.js`: trận `buoc` chưa chốt ⇒ không nút Rời trận / nút nhà (xếp hạng: ✕ giấu giữ chỗ), giữ Back (pushState), máy tính hỏi khi
+  đóng tab. Luyện tập không đổi. Bàn thử: `?thu=1&buoc=1`.
+- Dashboard "Quản lý thách đấu" (`js/td-ql.js`): Giao hữu · Đấu giải · Xếp hạng có hàng **Bắt buộc hoàn thành trận** Bật/Tắt.
+- Thử: `node tools/thu-tran-that.js` 22/22 (thêm 4 phép khoá trận) · bàn thử 2 trang trận + dashboard · trận thật trên kho: mở nw/khampha.html giữa trận ⇒ về trận.
+
+## ⭐ v1.443.0 (28/10/2026) — Ô VIDEO: vòng xoay nạp + "Yêu cầu xem" khoá thẻ bên dưới
 
 Thầy chốt (đi cặp app myLesson v2.193.0 + myStudio v0.12.4):
 - Bấm phát: khung phim GIẤU (`.game.dang-nap`, opacity 0) + vòng xoay teal `.vd-nap` tới khi trình phát báo `play` ⇒ hình và tiếng ra cùng lúc.

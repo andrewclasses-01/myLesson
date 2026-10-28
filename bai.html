@@ -879,16 +879,28 @@ button{font:inherit; color:inherit; background:none; border:none; cursor:pointer
 .sl-hoi button[data-xn="1"]{background:#16a34a; border-color:#16a34a; color:#fff}
 .video-khung{position:relative; border-radius:14px; overflow:hidden; background:#000; padding-top:56.25%}
 .video-khung iframe{position:absolute; inset:0; width:100%; height:100%; border:0}
-/* ⭐ v1.440.0 — khối VIDEO myDocument (phim vẽ bằng code): bìa = ảnh poster mờ + READY; thanh đã xem dưới khung */
-.the-vdoc .game-cover{background:#0b1220 center/cover no-repeat}
-.the-vdoc .game-cover::before{content:''; position:absolute; inset:0; background:rgba(11,18,32,.55)}
-.the-vdoc .game-cover > *{position:relative}
-.the-vdoc .bia-ten, .the-vdoc .bia-em{color:#fff}
-.vd-tien{display:flex; align-items:center; gap:10px; margin-top:-6px; font-size:12px; font-weight:700; color:var(--muted)}
-.vd-tien .vd-thanh{flex:1; height:6px; border-radius:999px; background:var(--line); overflow:hidden}
-.vd-tien .vd-thanh i{display:block; height:100%; width:0; background:#e11d48; border-radius:999px; transition:width .4s}
-.vd-tien.xong{color:var(--m-la, #16a34a)}
-.vd-tien.xong .vd-thanh i{background:var(--m-la, #16a34a)}
+/* ⭐ v1.440.0 — khối VIDEO myDocument (phim vẽ bằng code). ⭐ v1.441.0 (thầy chốt mẫu v1 kiểu A, 28/10/2026 —
+   `D:\OTHERS\CLAUDE\myLesson - thiet ke o video\mau-v1.html`): bìa = ảnh poster tối nhẹ + MỘT nút phát teal ở giữa;
+   dưới khung = thanh đã xem không chữ (chép khuôn `.vk-timeline` thanh đoạn bài giảng), xem hết ⇒ xanh lá. */
+.the-vdoc .game-cover{background:#0b1220 center/cover no-repeat; justify-content:center}
+.the-vdoc .game-cover::before{content:''; position:absolute; inset:0; background:rgba(11,18,32,.28); transition:background .15s}
+.the-vdoc .game-cover:hover::before{background:rgba(11,18,32,.18)}
+.vd-phat{position:relative; width:68px; height:68px; border-radius:50%; border:0; padding:0; cursor:pointer; display:grid; place-items:center;
+  background:var(--accent); box-shadow:0 6px 20px rgba(14,124,110,.45); transition:transform .12s ease, filter .15s ease}
+.vd-phat svg{width:26px; height:26px; margin-left:4px; fill:#fff}
+.the-vdoc .game-cover:hover .vd-phat{transform:scale(1.07); filter:brightness(1.08)}
+.the-vdoc .game-cover:active .vd-phat{transform:scale(.96)}
+.vd-xem{position:relative; height:34px; margin:-8px 8px 0}
+.vd-ray{position:absolute; left:0; right:0; top:62%; transform:translateY(-50%); height:8px; border-radius:4px; background:#E5EAE8; overflow:hidden}
+.vd-ray b{position:absolute; left:0; top:0; bottom:0; width:0; background:var(--accent); border-radius:4px; transition:width .4s}
+.vd-tro{position:absolute; top:62%; left:0; width:15px; height:15px; border-radius:50%; background:var(--accent); border:3px solid #fff;
+  transform:translate(-50%,-50%); box-shadow:0 0 0 2px var(--accent), 0 2px 6px rgba(22,35,42,.4); transition:left .4s}
+.vd-bong{position:absolute; bottom:calc(38% + 10px); left:0; transform:translateX(-50%); font-size:9.5px; line-height:1.2; font-weight:800; color:#fff;
+  background:var(--accent); padding:1px 5px; border-radius:5px; white-space:nowrap; font-variant-numeric:tabular-nums; transition:left .4s}
+.vd-bong::after{content:''; position:absolute; left:50%; top:100%; transform:translateX(-50%); border:3px solid transparent; border-top-color:var(--accent)}
+.vd-xem.xong .vd-ray b, .vd-xem.xong .vd-tro, .vd-xem.xong .vd-bong{background:var(--m-la, #16a34a)}
+.vd-xem.xong .vd-tro{box-shadow:0 0 0 2px var(--m-la, #16a34a), 0 2px 6px rgba(22,35,42,.4)}
+.vd-xem.xong .vd-bong::after{border-top-color:var(--m-la, #16a34a)}
 /* Khối loại chưa biết — không biến mất câm */
 .card.khoi-la .than{color:var(--muted); font-weight:600; font-size:13px}
 @media (max-width:640px){
@@ -4700,21 +4712,26 @@ function veKhoiVideoDoc(k, so){
       '</div></div>' +
     '<div class="than mot">' +
       '<div class="game la-slide">' +
-        '<div class="game-cover"><div class="bia-th">ANDREW CLASSES</div><div class="bia-giua">' +
-          '<div class="bia-ten">' + chuAnToan(k.ten || 'VIDEO') + '</div>' +
-          '<div class="bia-o-nut"><button class="bia-ready" type="button">READY</button></div>' +
-          '<div class="bia-em">' + chuAnToan(TOI) + ' • ' + chuAnToan(LOP_HIEN) + '</div></div></div>' +
+        // v1.441.0 (thầy chốt mẫu v1 kiểu A, 28/10) — bìa chỉ còn NÚT PHÁT teal giữa ảnh bìa (bỏ READY, tên phim, tên em, lớp)
+        '<div class="game-cover"><button type="button" class="vd-phat" aria-label="Phát video">' +
+          '<svg viewBox="0 0 24 24"><path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z"/></svg></button></div>' +
       '</div>' +
-      '<div class="vd-tien"><span class="vd-chu"></span><span class="vd-thanh"><i></i></span></div>' +
+      // v1.441.0 — thanh đã xem KHÔNG chữ: khuôn thanh đoạn bài giảng (ray + chấm tròn + bong bóng %), xem hết ⇒ xanh lá ✓ 100%
+      '<div class="vd-xem" title="Phần em đã xem thật (tua không tính) — xem hết video để hoàn thành"><div class="vd-ray"><b></b></div>' +
+        '<span class="vd-tro"></span><span class="vd-bong">0%</span></div>' +
     '</div>';
   if (k.poster && /^https:\/\//i.test(k.poster)) sec.querySelector('.game-cover').style.backgroundImage = 'url("' + String(k.poster).replace(/"/g, '') + '")';
   var khung = sec.querySelector('.game');
-  var tien = sec.querySelector('.vd-tien');
+  var tien = sec.querySelector('.vd-xem');
   function veTien(){
-    var d = daXemVideoDoc(k), pct = d.tong ? Math.min(100, Math.round(d.xem / d.tong * 100)) : 0, xong = daXongVideoDoc(k);
+    var d = daXemVideoDoc(k), xong = daXongVideoDoc(k);
+    var pct = xong ? 100 : (d.tong ? Math.min(99, Math.round(d.xem / d.tong * 100)) : 0);   // chưa xong thì không hiện 100%
     tien.classList.toggle('xong', xong);
-    tien.querySelector('.vd-chu').textContent = xong ? '✓ ĐÃ XEM HẾT' : ('ĐÃ XEM ' + pct + '% · xem hết video để hoàn thành');
-    tien.querySelector('.vd-thanh i').style.width = (xong ? 100 : pct) + '%';
+    tien.querySelector('.vd-ray b').style.width = pct + '%';
+    tien.querySelector('.vd-tro').style.left = pct + '%';
+    var bong = tien.querySelector('.vd-bong');
+    bong.style.left = pct + '%';
+    bong.textContent = xong ? '✓ 100%' : pct + '%';
   }
   veTien();
   var f = null, tTruoc = -1, lucTruoc = 0, daGuiPhat = false;

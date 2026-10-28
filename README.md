@@ -14,7 +14,15 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.440.0 (28/10/2026) — Khối VIDEO myDocument trên trang bài + dòng VIDEO ở dashboard *(bản mới nhất)*
+## ⭐ v1.441.0 (28/10/2026) — Ô VIDEO: bìa chỉ còn nút phát + thanh đã xem không chữ *(bản mới nhất)*
+
+Thầy chốt mẫu v1 kiểu A (`D:\OTHERS\CLAUDE\myLesson - thiet ke o video\mau-v1.html`):
+- Bìa video (`bai.html veKhoiVideoDoc`): bỏ READY, tên phim, tên em, lớp ⇒ một nút phát tròn teal 68px giữa ảnh bìa (ảnh tối nhẹ .28).
+- Dòng "ĐÃ XEM x% · …" ⇒ thanh `.vd-xem` KHÔNG chữ, chép khuôn thanh đoạn bài giảng (ray 8px + chấm tròn teal viền trắng + bong bóng %).
+  Chưa xong tối đa 99%; xem hết ⇒ cả thanh xanh lá, bong bóng "✓ 100%". Rê chuột = lời nhắc "tua không tính".
+- Test: bàn thử xem trước (B2B): bìa đúng mẫu, bấm phát ⇒ phim chạy + 5 %, giả xem hết ⇒ xanh lá ✓ 100%.
+
+## ⭐ v1.440.0 (28/10/2026) — Khối VIDEO myDocument trên trang bài + dòng VIDEO ở dashboard
 
 Thầy chốt (đi cặp app myLesson v2.192.0 ô VIDEO + myStudio v0.12.2): video bài nói mẫu (phim vẽ bằng code trên
 document.andrewclasses.com) gắn vào ô bài tập; em phải XEM HẾT mới xong.

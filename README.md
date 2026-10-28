@@ -14,7 +14,22 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.439.0 (28/10/2026) — Trận ĐANG ĐẤU: trận bắt đầu trước ở trên *(bản mới nhất)*
+## ⭐ v1.440.0 (28/10/2026) — Khối VIDEO myDocument trên trang bài + dòng VIDEO ở dashboard *(bản mới nhất)*
+
+Thầy chốt (đi cặp app myLesson v2.192.0 ô VIDEO + myStudio v0.12.2): video bài nói mẫu (phim vẽ bằng code trên
+document.andrewclasses.com) gắn vào ô bài tập; em phải XEM HẾT mới xong.
+- `bai.html`: khối `{loai:'video', src, doc, giay, poster, o}` ⇒ `veKhoiVideoDoc` (bìa poster + READY ⇒ khung 16:9 nhúng
+  `?nhung=1`, chờ trình phát báo `ready` rồi gửi `play`). Đếm giờ xem THẬT từ tin `progress` của khung phim: chỉ cộng khúc khi t
+  tăng đều (0 < Δ ≤ 2,5 s và đồng hồ thật trôi ≥ 0,6·Δ) ⇒ tua không tính; dừng giữ mốc. Khúc vào `DOAN_XONG['vo<o>']` ⇒ đi chung
+  `lessonVideoTienDo/<mã em>__<bài>` trường `khuc` (luật SẴN CÓ — không kho mới, không luật mới). XONG = phủ ≥ tổng − 2 s.
+  Khối video Drive cũ `{driveId}` giữ nguyên.
+- `dashboard.html` tab BÀI TẬP: dòng VIDEO "x/N đã xem hết" (`docVideoDocCuaBai` đọc 1 lượt / em, 6 luồng; rê chuột = tên em
+  chưa xem hết; ngưỡng tổng − 2,5 s vì danh mục làm tròn giây).
+- Chưa làm: trang lớp `lop.html` chưa đếm video vào x/N của thẻ; chưa có "bỏ qua em ở riêng dòng video".
+- Test: bàn thử xem trước (đăng nhập giả em thử, B2B) — bấm READY tự phát, 9 s ⇒ 5 %, tua tới 165 s ⇒ phần tua không tính (13 %),
+  hết phim cộng tới cuối; `daXongVideoDoc` đúng 3 ca; bộ đọc dashboard thử bằng Node với kho giả (xem hết ⇒ xong, xem 50 s ⇒ chưa).
+
+## ⭐ v1.439.0 (28/10/2026) — Trận ĐANG ĐẤU: trận bắt đầu trước ở trên
 
 Thầy chốt: mọi nơi xem trận đang đấu, trận diễn ra TRƯỚC xếp trên, trận mới hiện ở dưới (khoá `batDau`, thiếu thì `ketThuc`).
 - `js/dang-dau.js` (thanh A, bong bóng B, dải chat C): bỏ "cặp của em đứng đầu + nhiều điểm trước".

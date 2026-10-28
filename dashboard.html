@@ -5296,6 +5296,35 @@ tr.qm-hang-tam td{background:#fffbeb}
     });
     return tong;
   }
+  /* ⭐⭐ v1.440.0 (thầy chốt 28/10/2026) — VIDEO myDocument (ô VIDEO app v2.192.0): bai.html cộng khúc xem THẬT vào
+     `lessonVideoTienDo/<mã em>__<bài>` trường `khuc`, khoá `vo<o>` (o = vị trí ô). Đây đọc lại 1 lượt / em khi mở hộp bài. */
+  function vdocO(k) { return (k.o != null && +k.o >= 0) ? +k.o : 0; }
+  function vdocCuaBai(b) { return (b.khoi || []).filter(function (k) { return k.loai === 'video' && k.src; }); }
+  function docVideoDocCuaBai(b, hocSinh) {
+    var khoa = {}; vdocCuaBai(b).forEach(function (k) { khoa['vo' + vdocO(k)] = +k.giay || 0; });
+    var ds = hocSinh.filter(function (h) { return String(h.ma || '').trim(); }), ra = {}, i = 0;
+    function ke() {
+      if (i >= ds.length) return Promise.resolve();
+      var h = ds[i++], u = urlTienDoVideoDb(A.chuanMa(h.ma), b.id);
+      if (!u) return ke();
+      return fetch(u, { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+        var m = j && j.fields && j.fields.khuc && j.fields.khuc.mapValue && j.fields.khuc.mapValue.fields, em = {};
+        if (m) Object.keys(khoa).forEach(function (kh) {
+          var v = (m[kh] && m[kh].arrayValue && m[kh].arrayValue.values) || [], tg = khoa[kh], g = 0;
+          for (var x = 0; x + 1 < v.length; x += 2) {
+            var a = Number(v[x].doubleValue != null ? v[x].doubleValue : v[x].integerValue);
+            var b2 = Number(v[x + 1].doubleValue != null ? v[x + 1].doubleValue : v[x + 1].integerValue);
+            if (tg) b2 = Math.min(b2, tg);
+            if (isFinite(a) && isFinite(b2) && b2 > a) g += b2 - Math.max(0, a);
+          }
+          em[kh] = g;
+        });
+        ra[h.ten] = em;
+      })['catch'](function () {}).then(ke);
+    }
+    var chay = []; for (var k = 0; k < Math.min(6, ds.length); k++) chay.push(ke());
+    return Promise.all(chay).then(function () { return ra; });
+  }
   function urlTienDoVideoDb(maChuan, baiId) {
     var db = (A.CFG && A.CFG.AWORD_DB) || {};
     if (!db.projectId || !db.apiKey || !maChuan || !baiId) return '';
@@ -8342,7 +8371,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   //   🔐 của thầy, luật `laThay`) · lessonNop. ✅ v1.133.0 (thầy chốt) — HỘP CŨ (`veRuotBai`,
   //   `veKhoiChangDb`, cột `veVideoColDb/veNgheColDb`, `napXxxChoModal`, `napNopHop`, `moPopNop`) ĐÃ XOÁ.
   // ================================================================
-  var HQ = { id: null, tab: 'bt', b: null, t: null, video: null, nghe: null, act: {}, actLoi: '', nop: {}, nopLoi: '', chang: null, ct: null, nopSheet: 0, sx: { cot: 'tong', giam: true } };
+  var HQ = { id: null, tab: 'bt', b: null, t: null, video: null, nghe: null, vdoc: null, act: {}, actLoi: '', nop: {}, nopLoi: '', chang: null, ct: null, nopSheet: 0, sx: { cot: 'tong', giam: true } };
   var HQ_KT = null;   // v1.137.0 — đệm "em không tính" theo chặng cho MỘT lượt vẽ (`hqKt`), xoá ở mỗi lượt vẽ lại
   var MAU_TT = ['#3E7BFA', '#7C3AED', '#E0A400', '#C2410C', '#0E96A8', '#DB2777', '#64748B'];   // v1.132.0 — mỗi act một màu; v1.141.0 bỏ xanh lá (dành cho "đạt 100%")
   var LUYEN_KHO = {};   // code -> { luc, ds }  (practiceLog, nhớ 60 giây)
@@ -8449,7 +8478,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (HQ.id && HQ.id !== id && window.ChamSach && ChamSach.nhung()) ChamSach.dong();   // v1.434.0 — đổi bài khi trang chấm còn nhúng ⇒ lưu + gỡ
     BM_ID = id;
     HQ = { id: id, tab: giuTab, b: b, t: t,
-           video: giuNap ? HQ.video : null, nghe: giuNap ? HQ.nghe : null,
+           video: giuNap ? HQ.video : null, nghe: giuNap ? HQ.nghe : null, vdoc: giuNap ? HQ.vdoc : null,   // v1.440.0 vdoc
            act: giuNap ? HQ.act : {}, actLoi: '', nop: giuNap ? HQ.nop : {}, nopLoi: '',
            chang: giuNap ? HQ.chang : null, ct: null, nopSheet: giuNap ? (HQ.nopSheet || 0) : 0,
            mucBq: giuNap ? (HQ.mucBq || null) : null,   // v1.202.0 — dòng BÀI TẬP đang xem riêng ({khoa, ten, loai, ma, o, so})
@@ -8542,6 +8571,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (coBaiGiangKh(b) && !HQ.video) docTienDoVideoCuaBai(b.id, hs).then(function (map) { if (BM_ID !== b.id) return; HQ.video = map; chinhGioMay(); hqVeLai(); });
     // 3. nghe
     if (coBaiNgheKh(b) && !HQ.nghe) docTienDoNgheCuaBai(b.id, hs).then(function (kq) { if (BM_ID !== b.id) return; HQ.nghe = kq; chinhGioMay(); hqVeLai(); });
+    // 3b. ⭐ v1.440.0 — video myDocument (ô VIDEO): khúc đã xem của từng em
+    if (vdocCuaBai(b).length && !HQ.vdoc) docVideoDocCuaBai(b, hs).then(function (map) { if (BM_ID !== b.id) return; HQ.vdoc = map; hqVeLai(); });
     // 4. lượt luyện từng act (phiên thầy) — v1.329.0: + bài giao QUAY VIDEO của lesson CHƯƠNG (chỉ hiện ở chi tiết em, cộng vào tổng)
     t.acts.concat(hqQuayCua(b)).forEach(function (a) {
       if (HQ.act[a.ma]) return;
@@ -8748,6 +8779,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   // Mục (dòng BÀI TẬP) từ khối gốc `k` của bài: {khoa, ten, loai, ma, o, soTrang, so}.
   function hqMucTuKhoi(k, so) {
+    if (k.loai === 'video') return null;   // v1.440.0 — video myDocument: chưa có "bỏ qua theo mục"
     if (k.loai === 'act') return { khoa: A.khoaMucBq('act', k.ma), ten: k.ten, loai: 'act', ma: k.ma, so: so };
     if (k.loai === 'ws') {
       var ws = A.wsHienCuaThe(HQ.b, null).filter(function (w) { return w.k === k; })[0];
@@ -9276,6 +9308,17 @@ tr.qm-hang-tam td{background:#fffbeb}
         '<span class="thanh"><i class="' + (ptW >= 100 ? 'm-la' : 'm-cam') + '" style="width:' + ptW + '%"></i></span>' +
         '<span class="kq ws">' + (ds ? du + ' NỘP' + (mot ? '<small>' + mot + ' một phần</small>' : '') : '…') + '</span></div>';
     }
+    // ⭐ v1.440.0 — VIDEO myDocument: x/N em đã XEM HẾT (khúc xem thật phủ ≥ tổng − 2 giây, như bai.html `daXongVideoDoc`)
+    if (k.loai === 'video') {
+      var kh = 'vo' + vdocO(k), tg = +k.giay || 0, xongV = 0, chuaV = [];
+      tinh.forEach(function (h) { var g = ((HQ.vdoc || {})[h.ten] || {})[kh] || 0; if (tg && g >= tg - 2.5) xongV++; else chuaV.push(h.ten); });
+      var ptV = (HQ.vdoc && siSoO) ? Math.min(100, Math.round(xongV / siSoO * 100)) : 0;
+      var phut = tg ? Math.floor(tg / 60) + ':' + ('0' + Math.round(tg % 60)).slice(-2) : '';
+      return '<div class="hq-muc" title="' + A.chuAnToan(chuaV.length ? 'Chưa xem hết: ' + chuaV.join(', ') : 'Cả lớp đã xem hết') + '"><span class="so"></span><span><div class="ten">' + A.chuAnToan(k.ten || 'VIDEO') + '</div>' +
+        '<div class="mau">VIDEO · ' + A.chuAnToan(String(k.doc || '').split('/').pop() + (phut ? ' · ' + phut : '')) + '</div></span>' +
+        '<span class="thanh"><i class="' + (ptV >= 100 ? 'm-la' : ptV > 0 ? 'm-cam' : 'm-do') + '" style="width:' + ptV + '%"></i></span>' +
+        '<span class="kq ' + (HQ.vdoc && chuaV.length ? 'thieu' : 'du') + '">' + (HQ.vdoc ? xongV + '/' + siSoO + (chuaV.length ? '<small>chưa xem hết ' + chuaV.length + '</small>' : '<small>đủ</small>') : '…') + '</span></div>';
+    }
     // nghe / audio
     var daNghe = 0, ktN = hqKtMuc(A.khoaMucBq('nghe'));   // v1.202.0
     tinh = tinh.filter(function (h) { return !ktN[A.khoaTen(h.ten)]; }); siSoO = tinh.length;
@@ -9289,7 +9332,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   function hqKhoiChang() {
     var b = HQ.b, t = HQ.t, khoi = b.khoi || [];
     HQ_MB = {};
-    var laMuc = function (k) { return (k.loai === 'act' && k.ma) || (k.loai === 'ws' && k.ten) || k.loai === 'nghe' || k.loai === 'audio'; };
+    var laMuc = function (k) { return (k.loai === 'act' && k.ma) || (k.loai === 'ws' && k.ten) || k.loai === 'nghe' || k.loai === 'audio' || (k.loai === 'video' && !!k.src); };   // v1.440.0 +video
     var stt = 0, danhSo = function (k) { return k.loai === 'act' ? (++stt) : ''; };
     if (!(t.stage && t.chang)) {
       var ds = khoi.filter(laMuc);

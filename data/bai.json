@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-28 15:01:30",
+  "capNhat": "2026-10-28 15:05:51",
   "bai": {
     "A1C": [
       {
@@ -458,6 +458,54 @@
       }
     ],
     "B2A": [
+      {
+        "id": "B2A_25.10_READING_DW-S2.W2._MOLE_RAT",
+        "tieuDe": "B2A_25.10_READING DW-S2.W2. MOLE RAT",
+        "tenHien": "B2A_25.10_READING DW-S2.W2. MOLE RAT",
+        "dang": "READING",
+        "ngay": "25.10",
+        "han": "2026-11-01T14:00",
+        "maLesson": "DW-S2.W2. MOLE RAT",
+        "taoLuc": "2026-10-28",
+        "trang": "bai",
+        "khoi": [
+          {
+            "loai": "video",
+            "ten": "VIDEO - MOLE RAT",
+            "doc": "video/doc-hieu/dw-s2-w2-mole-rat",
+            "src": "https://document.andrewclasses.com/video/doc-hieu/dw-s2-w2-mole-rat/?nhung=1",
+            "giay": 173,
+            "o": 0,
+            "poster": "https://document.andrewclasses.com/video/doc-hieu/dw-s2-w2-mole-rat/poster.jpg",
+            "yc": 1
+          },
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "DW-S2.W2 / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "e3vrz6",
+            "mau": "TRUE OR FALSE"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "DW-S2.W2 / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "jd2c9z",
+            "mau": "FIND THE MATCH"
+          },
+          {
+            "loai": "act",
+            "ten": "READING QUIZ",
+            "act": "DW-S2.W2 / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "mxazym",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-28T15:05"
+      },
       {
         "id": "B2A_18.10_SP_CHECK_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2A_18.10_SP CHECK DS-S5.I1.W1 BONES AND MUSCLES",
@@ -7154,7 +7202,7 @@
     "A1A": "2026-10-26 21:37:29",
     "B2B": "2026-10-28 15:01:30",
     "A1C": "2026-10-26 08:23:05",
-    "B2A": "2026-10-22 13:25:02",
+    "B2A": "2026-10-28 15:05:51",
     "A1B": "2026-10-27 22:06:14",
     "NNTNG4": "2026-10-24 11:34:29",
     "A2B": "2026-10-23 21:46:50",

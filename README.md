@@ -14,7 +14,16 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.438.0 (28/10/2026) — DẢI A SHOW SPEED đầu khung chat nhóm lớp *(bản mới nhất)*
+## ⭐ v1.439.0 (28/10/2026) — Trận ĐANG ĐẤU: trận bắt đầu trước ở trên *(bản mới nhất)*
+
+Thầy chốt: mọi nơi xem trận đang đấu, trận diễn ra TRƯỚC xếp trên, trận mới hiện ở dưới (khoá `batDau`, thiếu thì `ketThuc`).
+- `js/dang-dau.js` (thanh A, bong bóng B, dải chat C): bỏ "cặp của em đứng đầu + nhiều điểm trước".
+- `nw/js/xephang.js` tab/thẻ Đang đấu sảnh xếp hạng: bỏ "hạng cao trước".
+- `js/the-td.js` dải ghim giải trong chat: bỏ "trận của giải trước + mới nhất trước".
+- `js/thanh-giai.js`, `js/giai-pop.js`, `nw/js/giaidau.js`: trước đây không xếp (theo thứ tự kho) ⇒ nay xếp theo giờ bắt đầu.
+- ?v=: dang-dau 4 · thanh-giai 4 · the-td 21 · xephang 10 · giai-pop 4 · giaidau 20.
+
+## ⭐ v1.438.0 (28/10/2026) — DẢI A SHOW SPEED đầu khung chat nhóm lớp
 
 Mẫu thầy chốt: `D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\dang-dau-chat-v1\index.html`.
 - `js/dang-dau.js` kiểu C `DangDau.chat(el, {dau})`: dải dưới tên lớp, đứng yên khi cuộn tin. Khung hẹp = avatar + "N trận" (bấm xổ / điện thoại tấm trượt); khung ≥ 560px (container query) = các cặp chạy ngang + ﹀. KHÔNG có trận vẫn hiện A SHOW SPEED + ⚡ ĐẤU NGAY. Dashboard (thầy): không nút Đấu, bấm trận mở tab mới.

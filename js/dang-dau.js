@@ -213,11 +213,8 @@
     var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('xh', '==', S.mua), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(30)));
     var bay = Date.now(), ds = [];
     s.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > bay - 5000) { t.id = d.id; ds.push(t); } });
-    // cặp của chính em đứng đầu · rồi cặp nhiều điểm (gay cấn) trước
-    ds.sort(function (x, y) {
-      var mx = x.a === S.toi || x.b === S.toi ? 1 : 0, my = y.a === S.toi || y.b === S.toi ? 1 : 0;
-      return my - mx || (((y.diem || {}).a || 0) + ((y.diem || {}).b || 0)) - (((x.diem || {}).a || 0) + ((x.diem || {}).b || 0));
-    });
+    // v1.439.0 (28/10 thầy: mọi nơi xem trận đang đấu — trận bắt đầu TRƯỚC ở trên, trận mới xuống dưới)
+    ds.sort(function (x, y) { return ((x.batDau || x.ketThuc || 0) - (y.batDau || y.ketThuc || 0)) || (x.id < y.id ? -1 : 1); });
     S.ds = ds;
   }
   // chỗ vẽ "đang hiện" = còn gắn trên trang và KHUNG CHỨA nó có hình (khung Tin nhắn giữ sống nw/tinnhan.html?nhung=1 nằm trong iframe ẩn ⇒ không có)

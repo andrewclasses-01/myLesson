@@ -1228,7 +1228,7 @@
       G.huy.push(f.fs.onSnapshot(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('lop', '==', lop), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(20)), function (s) {
         var ds2 = [], b2 = Date.now();
         s.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > b2 - 15000) ds2.push(Object.assign({ _id: d.id }, t)); });
-        G.dang = ds2.sort(function (a, b) { return (b.giai === G.g.id) - (a.giai === G.g.id) || (b.batDau || 0) - (a.batDau || 0); }); veGhim(G);
+        G.dang = ds2.sort(function (a, b) { return (a.batDau || a.ketThuc || 0) - (b.batDau || b.ketThuc || 0); }); veGhim(G);   // v1.439.0 (28/10 thầy: mọi nơi xem trận đang đấu — trận bắt đầu TRƯỚC ở trên, trận mới xuống dưới)
       }, function (e) { console.warn('[ghim giải] trận đang đấu', e); }));
     } catch (e) { console.warn('[ghim giải]', e); }
   }

@@ -334,6 +334,7 @@
         var snap = await f.fs.getDocs(f.fs.query.apply(null, [f.fs.collection(f.db, 'tranDau')].concat(w, [f.fs.limit(30)])));
         snap.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > Date.now() - 15000) ds.push(Object.assign({ id: d.id }, t)); });
       } catch (e) { console.warn('[giải đấu] đang đấu', e); }
+      ds.sort(function (x, y) { return (x.batDau || x.ketThuc || 0) - (y.batDau || y.ketThuc || 0); });   // v1.439.0 (28/10 thầy: mọi nơi xem trận đang đấu — trận bắt đầu TRƯỚC ở trên, trận mới xuống dưới)
       if (!toi.laThay && !ds.length) return '';
       return '<div class="card gd-the"><h3><span class="gd-nhay"></span>Đang đấu<small>' + ds.length + ' trận</small></h3>' +
         (ds.length ? ds.map(function (t) {

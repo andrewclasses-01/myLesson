@@ -96,7 +96,7 @@
       if (trangThai(g) !== 'sap') o.huy.push(f.fs.onSnapshot(f.fs.doc(f.db, 'giaiDau', g.id, 'bang', lop), function (s) { o.bang = s.exists() ? s.data() : { em: {}, tran: [] }; veHs(); }, function (e) { console.warn('[thanh giải] bảng', e); }));
       if (trangThai(g) === 'dang') o.huy.push(f.fs.onSnapshot(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('lop', '==', lop), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(20)), function (q) {
         var ds2 = [], b = Date.now(); q.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > b - 15000) ds2.push(Object.assign({ id: d.id }, t)); });
-        o.dang = ds2; veHs();
+        o.dang = ds2.sort(function (x, y) { return (x.batDau || x.ketThuc || 0) - (y.batDau || y.ketThuc || 0); }); veHs();   // v1.439.0 (28/10 thầy: mọi nơi xem trận đang đấu — trận bắt đầu TRƯỚC ở trên, trận mới xuống dưới)
       }, function (e) { console.warn('[thanh giải] đang đấu', e); }));
       napRoster();
       if (!o.toi.laThay && window.GioiHan) { GioiHan.napCai().then(function () { return GioiHan.phieu(o.toi.uid); }).then(function (p) { o.ph = p; if (POP.mo) vePop(); })['catch'](function () { }); }

@@ -424,12 +424,11 @@
     f.fs.onSnapshot(f.fs.doc(f.db, 'xhMua', S.mua), function (s) { if (s.exists()) { S.M = s.data(); ve(); } });
     if (!S.toi.laThay) f.fs.onSnapshot(f.fs.doc(f.db, 'xhMua', S.mua, 'em', S.toi.uid), function (s) { S.em = s.exists() ? s.data() : null; ve(); }, function () { });
     f.fs.onSnapshot(f.fs.doc(f.db, 'xhMua', S.mua, 'bang', 'top'), function (s) { S.top = (s.exists() && s.data().ds) || []; ve(); }, function () { });
-    // Đang đấu: mọi trận xếp hạng đang chơi của mùa — hạng cao lên trước (theo tổng điểm hạng hiển thị không có ⇒ theo thứ tự hạng hA/hB)
+    // Đang đấu: mọi trận xếp hạng đang chơi của mùa — v1.439.0 (28/10 thầy: mọi nơi xem trận đang đấu — trận bắt đầu TRƯỚC ở trên, trận mới xuống dưới)
     f.fs.onSnapshot(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('xh', '==', S.mua), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(30)), function (s) {
       var ds = [];
       s.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > bay() - 5000) { t.id = d.id; ds.push(t); } });
-      var bac = function (h) { var p = XH.hien(h), i = ['dong', 'bac', 'vang', 'bk', 'kc', 'ct', 'ht'].indexOf(p.ma); return (i < 0 ? -1 : i) * 3 + ({ III: 0, II: 1, I: 2 }[p.bac] || 0); };
-      ds.sort(function (x, y) { return Math.max(bac(y.hA), bac(y.hB)) - Math.max(bac(x.hA), bac(x.hB)); });
+      ds.sort(function (x, y) { return ((x.batDau || x.ketThuc || 0) - (y.batDau || y.ketThuc || 0)) || (x.id < y.id ? -1 : 1); });
       S.live = ds; napTimLive(); ve();
     }, function (e) { console.warn('[xh] đang đấu', e); });
     if (q.get('tim') === '1' && !camTim()) batDauTim();

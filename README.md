@@ -14,7 +14,14 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.435.0 (28/10/2026) — BÀI TRONG SÁCH: nút ĐẠT ✓ + danh sách em có ảnh, xếp nhóm *(bản mới nhất)*
+## ⭐ v1.436.0 (28/10/2026) — BÀI TRONG SÁCH: bấm ĐẠT là ghi ngay, CHỤP ẢNH khi đã đạt, bấm lại để BỎ ĐẠT *(bản mới nhất)*
+
+- `js/cham-sach.js` (?v=12): ĐẠT chưa tích = nền TRẮNG chữ đen (khoá thì mờ), bấm ⇒ `duyetSach {tat:true, tt:'dat'}` NGAY (không pop-up) ⇒ nút xanh "ĐẠT ✓".
+- Đã ĐẠT ⇒ nút trái đổi CHỤP LỖI → **CHỤP ẢNH** (sáng) ⇒ pop-up chụp ảnh ĐẠT (`moDat`, nay CHỈ chụp, không ghi). Chưa đạt / có lỗi ⇒ CHỤP LỖI như cũ.
+- Bấm lại ĐẠT khi đã đạt ⇒ pop-up hỏi "Bỏ ĐẠT bài của …?" ⇒ BỎ ĐẠT ⇒ `duyetSach {tat:true, tt:'bo'}` (máy chủ app `96cb9bd`: gỡ duyet ĐẠT, trả `dat` về kết quả máy theo `duyet.datMay`).
+- ⛔ BỎ ĐẠT cần DEPLOY hàm `duyetSach` bản mới: `npx -y firebase-tools deploy --only functions:duyetSach --project aword-70dae` (trong `myLesson\app\may-chu`). Chưa deploy thì bấm BỎ ĐẠT báo "Chưa bỏ ĐẠT được".
+
+## ⭐ v1.435.0 (28/10/2026) — BÀI TRONG SÁCH: nút ĐẠT ✓ + danh sách em có ảnh, xếp nhóm
 
 - `js/cham-sach.js` (?v=11) `capNut`: chưa chấm ĐẠT ⇒ nút chỉ chữ "ĐẠT" (bỏ icon); thầy đã bấm ĐẠT (mọi trang `duyet.tt==='dat'`) ⇒ "ĐẠT ✓" (dấu bên phải), CHỤP LỖI mờ, dòng khoá "✓ Thầy đã chấm ĐẠT"; bấm ĐẠT lại vẫn mở chụp ảnh ĐẠT.
 - `veDs`: ảnh em (`em[].av`, dashboard truyền `A.avUrl(lớp gốc, tên)`; thiếu ảnh ⇒ chữ tắt) · xếp nhóm CHỜ CHẤM → ĐÃ TRẢ LẠI → CHƯA NỘP → ĐÃ ĐẠT (tên xanh lá), trong nhóm giữ thứ tự sĩ số (`THU_NHOM`).

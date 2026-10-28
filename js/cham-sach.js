@@ -197,12 +197,16 @@
     var lyDo = !S.dapAnXong ? 'Đang tải đáp án…' : (tk.thieu.length ? '🔒 Còn ' + tk.thieu.length + ' câu chưa có dấu ✓/✕: câu ' + tk.thieu.slice(0, 8).map(tenSo).join(', ') + (tk.thieu.length > 8 ? '…' : '') : '');
     var dat = $('#csDat'), loi = $('#csChupLoi');
     // ⭐ v1.435.0 (thầy chốt 28/10) — chưa chấm ĐẠT: nút chỉ chữ "ĐẠT"; thầy đã bấm ĐẠT (ghi máy chủ) ⇒ "ĐẠT ✓" + CHỤP LỖI mờ.
-    var daDat = !!e && ttEm(e).lop === 'xong';
-    dat.innerHTML = 'ĐẠT' + (daDat ? ico('dat', 16, 2.2).replace('class="cs-ico"', 'class="cs-ico cs-tich"') : '');
-    dat.disabled = !daDat && (!!lyDo || coSai);
-    dat.title = daDat ? 'Thầy đã chấm ĐẠT — bấm lại để chụp lại ảnh ĐẠT' : lyDo || (coSai ? '🔒 Còn dấu ✕ sai — dùng CHỤP LỖI' : 'Chụp ảnh ĐẠT + ghi ĐẠT cả bài');
-    loi.disabled = daDat || !!lyDo || !coSai;
-    loi.title = daDat ? '🔒 Bài đã ĐẠT' : lyDo || (!coSai ? '🔒 Mọi câu đều ✓ đúng — dùng ĐẠT' : 'Chụp từng trang lỗi / trả lại trang');
+    // ⭐ v1.436.0 (thầy chốt 28/10) — bấm ĐẠT là ghi ĐẠT ngay (không pop-up); đã ĐẠT ⇒ nút trái thành CHỤP ẢNH (pop-up chụp ảnh ĐẠT),
+    //   bấm lại ĐẠT ⇒ hỏi BỎ ĐẠT. Chưa ĐẠT / có lỗi ⇒ nút trái là CHỤP LỖI như cũ.
+    var daDat = !!e && ttEm(e).lop === 'xong', dang = !!S.dangGhiDat;
+    dat.className = 'cs-nut dat' + (daDat ? '' : ' chua');
+    dat.innerHTML = dang ? 'Đang ghi…' : 'ĐẠT' + (daDat ? ico('dat', 16, 2.2).replace('class="cs-ico"', 'class="cs-ico cs-tich"') : '');
+    dat.disabled = dang || (!daDat && (!!lyDo || coSai));
+    dat.title = daDat ? 'Đã ĐẠT — bấm lại để BỎ ĐẠT' : lyDo || (coSai ? '🔒 Còn dấu ✕ sai — dùng CHỤP LỖI' : 'Bấm để ghi ĐẠT cả bài');
+    loi.innerHTML = ico('chup', 16, 2.2) + (daDat ? 'CHỤP ẢNH' : 'CHỤP LỖI');
+    loi.disabled = dang || (!daDat && (!!lyDo || !coSai));
+    loi.title = daDat ? 'Chụp ảnh ĐẠT (ảnh ghép mọi trang) để gửi Zalo' : lyDo || (!coSai ? '🔒 Mọi câu đều ✓ đúng — dùng ĐẠT' : 'Chụp từng trang lỗi / trả lại trang');
     $('#csKhoa').textContent = daDat ? '✓ Thầy đã chấm ĐẠT' : lyDo || (coSai ? 'Sai ' + (tk.sai.length + tk.saiTay) + ' chỗ ⇒ CHỤP LỖI' : '✓ Đúng hết ⇒ bấm ĐẠT');
   }
   // Trạng thái một trang (theo dấu đang có): thieu | chan | tra | dung | vang
@@ -379,7 +383,10 @@
     '.cs-nut{border:0;border-radius:11px;padding:11px 18px;font-size:12px;font-weight:900;letter-spacing:.05em}.cs-nut:disabled{background:#64748B!important;color:#E2E8F0!important;box-shadow:none!important;opacity:.45;cursor:not-allowed}' +
     '.cs-luu{font-size:10.5px;font-weight:800;color:#9FE3D6}.cs-luu.dang{color:#FCD34D}.cs-luu.loi{color:#FCA5A5}.cs-khoa{font-size:10.5px;font-weight:800;color:#FCD34D;max-width:260px}' +
     '.cs-nut.dat{background:#16A34A;color:#fff}.cs-nut.loi{background:#F2A93B;color:#3B2A07}' +
-    '.cs-nut.dat .cs-tich{margin-left:8px;margin-right:0}' +   // v1.435.0 dấu ✓ BÊN PHẢI chữ ĐẠT khi thầy đã chấm ĐẠT
+    // v1.436.0 (thầy chốt 28/10) — ĐẠT chưa tích = nền TRẮNG chữ đen; đã tích = xanh + ✓ bên phải. Pop-up hỏi bỏ ĐẠT.
+    '.cs-nut.dat.chua{background:#fff;color:#16232A;box-shadow:inset 0 0 0 1.5px #CBD5D1}.cs-nut.dat.chua:disabled{background:#fff!important;color:#16232A!important;box-shadow:inset 0 0 0 1.5px #CBD5D1!important;opacity:.45}.cs-nut.dat .cs-tich{margin-left:1px}' +
+    '.cs-hoi{background:#fff;border-radius:18px;padding:22px 24px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.4)}.cs-hoi b{display:block;font-size:15px;font-weight:900;margin-bottom:8px}' +
+    '.cs-hoi p{margin:0 0 18px;font-size:12.5px;font-weight:600;color:#5F7370;line-height:1.5}.cs-hoi .cs-hang{display:flex;gap:10px;justify-content:flex-end}.cs-nut.bo{background:#DC2626;color:#fff}' +
     '.cs-ai-dau{display:flex;align-items:center;gap:8px;padding:0 15px 9px;font-size:11px;color:#5F7370;font-weight:700}.cs-ai-dau b{margin-left:auto;font-size:20px;font-weight:900;color:#16232A}' +
     '.cs-bang{overflow:auto;padding:0 10px 10px;flex:1;min-height:0}' +
     '.cs-nhom{display:flex;align-items:center;gap:8px;margin:10px 0 4px;padding:7px 10px;border-radius:10px;font-size:10.5px;font-weight:900;letter-spacing:.05em;color:#fff;cursor:pointer}' +
@@ -471,7 +478,7 @@
         '<div class="cs-vung" id="csVung"><span class="cs-canh" id="csCanh" hidden></span><div class="cs-ve" id="csVe"><canvas id="csCv"></canvas><canvas id="csCvTren"></canvas></div>' +
           '<div class="cs-trong" id="csTrong" hidden>Em chưa nộp trang này.</div></div>' +
         '<div class="cs-cu" id="csCu"></div>' +
-        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 16, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat" id="csDat">ĐẠT</button></div></div>' +
+        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 16, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat chua" id="csDat">ĐẠT</button></div></div>' +
       '<div class="cs-cot cs-ai"><h3>CHẤM THAM KHẢO (AI)<small>Chỉ thầy thấy. Bấm một dòng ⇒ ảnh cuộn tới dấu câu đó.</small></h3>' +
         '<div class="cs-ai-dau"><span id="csAiTrang"></span><b id="csTong"></b></div><div class="cs-bang" id="csBang"></div>' +
         '<div class="cs-nhan"><label>LỜI NHẮN GỬI EM (SOẠN SẴN — SỬA ĐƯỢC)</label><textarea id="csNhan"></textarea>' +
@@ -509,8 +516,8 @@
     $('#csLui').onclick = hoanTac;
     $('#csCaiDat').onclick = function (e) { e.stopPropagation(); if ($('.cs-caidat')) { dongNoi(); return; } moCaiDat($('#csCaiDat')); };
     $('#csXoa').onclick = function () { var o = suaHien(); if (!o.net.length) return; ghiLich(o); o.net = []; veCv(); };
-    $('#csChupLoi').onclick = moChupLoi;
-    $('#csDat').onclick = moDat;
+    $('#csChupLoi').onclick = function () { if (ttEm(emHien()).lop === 'xong') moDat(); else moChupLoi(); };   // v1.436.0
+    $('#csDat').onclick = bamDat;
     $('#csChepNhan').onclick = function () { navigator.clipboard.writeText($('#csNhan').value).then(function () { toast('✓ Đã chép lời nhắn'); }, function () { toast('Trình duyệt chặn clipboard'); }); };
     ganVe($('#csCv'));
   }
@@ -987,7 +994,7 @@
         return '<div class="cs-dat-o" data-p="' + p + '"><b>TRANG ' + p + '</b>' + (trangCua(e, p) ? '<img alt="" data-anh>' : '<div class="rong">Em chưa nộp trang ' + p + '</div>') + '</div>';
       }).join('') + '</div></div>' +
       '<div class="cs-pop-day"><span>' + (thieu.length ? '⚠ Còn thiếu / máy chặn trang ' + thieu.join(', ') + ' — ĐẠT vẫn ghi cho các trang đã nộp. ' : '') +
-        (sai ? '⚠ Còn ' + sai + ' dấu ✕ sai trên ảnh. ' : '') + 'Bấm CHỤP ẢNH ĐẠT ⇒ 1 ảnh ghép mọi trang vào clipboard VÀ ghi bài em là ĐẠT.</span>' +
+        (sai ? '⚠ Còn ' + sai + ' dấu ✕ sai trên ảnh. ' : '') + 'Bấm CHỤP ẢNH ĐẠT ⇒ 1 ảnh ghép mọi trang vào clipboard (Ctrl+V vào Zalo).</span>' +
         '<button class="cs-nut phu" data-dong>ĐÓNG</button><button class="cs-nut dat" id="csChupDat">' + ico('chup', 16, 2.2) + 'CHỤP ẢNH ĐẠT</button></div></div>';
     pop.hidden = false;
     pop.querySelectorAll('[data-dong]').forEach(function (b) { b.onclick = dongPop; });
@@ -995,19 +1002,40 @@
       var img = o.querySelector('[data-anh]'); if (!img) return;
       dungTrang(e, +o.dataset.p, -1, { rong: 900 }).then(function (c) { try { img.src = c.toDataURL('image/jpeg', 0.88); } catch (er) { img.alt = 'Ảnh chưa xuất được (CORS)'; } });
     });
+    // v1.436.0 — pop-up này CHỈ chụp ảnh (ghi ĐẠT đã làm ở nút ĐẠT)
     $('#csChupDat').onclick = function () {
-      var nut = this; nut.disabled = true; nut.textContent = 'Đang chụp + ghi ĐẠT…';
-      var chep = chepAnh(ghepDat(e).then(function (c) { return canvasBlob(c, 'image/png'); })).then(function () { return true; }, function () { return false; });
-      var ghi = hamDuyet().then(function (f) { return f({ id: [S.lop, S.bai, S.bt, e.ma].join('__'), tat: true, tt: 'dat' }); })
-        .then(function () { return S.docLai(e); }).then(function (d) { if (d) e.doc = d; return true; });
-      Promise.all([chep, ghi]).then(function (kq) {
-        toast((kq[0] ? '✓ Ảnh ĐẠT đã vào clipboard (Ctrl+V vào Zalo)' : '⚠ Chưa chép được ảnh') + ' · ✓ Đã ghi ĐẠT cho ' + e.ten);
-        dongPop(); veTat(); if (S.onDoi) S.onDoi();
-      }, function (er) {
-        nut.disabled = false; nut.innerHTML = ico('chup', 16, 2.2) + 'CHỤP ẢNH ĐẠT';
-        chep.then(function (ok) { toast((ok ? 'Ảnh đã vào clipboard nhưng ' : '') + 'chưa ghi ĐẠT được: ' + ((er && er.message) || er)); });
+      var nut = this; nut.disabled = true; nut.textContent = 'Đang chụp…';
+      chepAnh(ghepDat(e).then(function (c) { return canvasBlob(c, 'image/png'); })).then(function () {
+        toast('✓ Ảnh ĐẠT đã vào clipboard (Ctrl+V vào Zalo)'); dongPop();
+      }, function () {
+        nut.disabled = false; nut.innerHTML = ico('chup', 16, 2.2) + 'CHỤP ẢNH ĐẠT'; toast('⚠ Chưa chép được ảnh');
       });
     };
+  }
+  // ⭐ v1.436.0 — nút ĐẠT: chưa ĐẠT ⇒ ghi ĐẠT cả bài ngay · đã ĐẠT ⇒ hỏi BỎ ĐẠT (máy chủ duyetSach tt:'bo' trả về như trước khi ĐẠT)
+  function bamDat() {
+    var e = emHien(); if (!e || S.dangGhiDat) return;
+    if (ttEm(e).lop !== 'xong') return void ghiDat(e, 'dat');
+    var pop = $('#csPop');
+    pop.innerHTML = '<div class="cs-hoi"><b>Bỏ ĐẠT bài của ' + chu(e.ten) + '?</b><p>Bài sẽ trở về CHỜ CHẤM như trước khi thầy bấm ĐẠT. Dấu chấm và nét vẽ vẫn giữ nguyên.</p>' +
+      '<div class="cs-hang"><button class="cs-nut phu" data-dong>HUỶ</button><button class="cs-nut bo" id="csBoDat">BỎ ĐẠT</button></div></div>';
+    pop.hidden = false;
+    pop.querySelectorAll('[data-dong]').forEach(function (b) { b.onclick = dongPop; });
+    $('#csBoDat').onclick = function () { dongPop(); ghiDat(e, 'bo'); };
+    $('#csBoDat').focus();
+  }
+  function ghiDat(e, tt) {
+    S.dangGhiDat = true; capNut();
+    hamDuyet().then(function (f) { return f({ id: [S.lop, S.bai, S.bt, e.ma].join('__'), tat: true, tt: tt }); })
+      .then(function () { return S.docLai(e); })
+      .then(function (d) {
+        if (d) e.doc = d;
+        S.dangGhiDat = false; veTat(); if (S.onDoi) S.onDoi();
+        toast(tt === 'dat' ? '✓ Đã ghi ĐẠT cho ' + e.ten : 'Đã bỏ ĐẠT — ' + e.ten + ' trở về CHỜ CHẤM');
+      }, function (er) {
+        S.dangGhiDat = false; capNut();
+        toast((tt === 'dat' ? 'Chưa ghi ĐẠT được: ' : 'Chưa bỏ ĐẠT được: ') + ((er && er.message) || er));
+      });
   }
 
   /* cfg = { tieuDe, lop, bai, bt, trangs:[32,33,34], sach:'NTTA', em:[{ten, ma, doc, av (url ảnh, v1.435.0)}], docLai(em) ⇒ Promise<doc>, onDoi(), onDong() } */

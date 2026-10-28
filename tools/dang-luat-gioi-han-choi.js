@@ -242,7 +242,8 @@ async function kiem() {
     await ghiAdmin('tdHan/' + A, { ngay: I(NGAY - 1), so: I(50), giai: M({}), cap: M({}) });
     ok('Phiếu 50 trận của HÔM QUA ⇒ hôm nay mời được = 200', (await tao(tk[A], moi())).st, 200);
     await han(A, 0); await han(Bb, 20);
-    ok('B (người được mời) đã hết 20 trận ⇒ A mời = 403', (await tao(tk[A], moi())).st, 403);
+    // 28/10/2026 (dang-luat-moi-giai-doc.js): lúc MỜI không kiểm phiếu của bạn nữa (lượt kiểm mời GIẢI vượt 10 lượt đọc) — chặn ở bước bạn bấm Nhận
+    ok('B (người được mời) đã hết 20 trận ⇒ A vẫn mời được = 200 (chặn lúc B Nhận)', (await tao(tk[A], moi())).st, 200);
     await han(Bb, 0);
     const t1 = await tao(tk[A], moi());
     await han(Bb, 20);

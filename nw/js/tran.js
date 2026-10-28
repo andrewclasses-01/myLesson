@@ -58,6 +58,22 @@ let TU = new Map();          // tên tài liệu từ → { w, v, uid, ok, d, i,
 let LECH = 0;                // giờ máy chủ − giờ máy em (ms)
 let f = null, tranRef = null, toi = null, banThu = false;
 let clockIv = null, nhipIv = null, cdIv = null, bot = null;
+// ⭐ v1.444.0 (28/10, thầy chốt) — BẮT BUỘC HOÀN THÀNH TRẬN: trận mang `buoc` (máy chủ ghi theo công tắc dashboard) ⇒ lúc chưa chốt KHÔNG có
+//   nút Rời trận / nút nhà, Back bị giữ lại, máy tính hỏi khi đóng tab. Thoát bằng cách khác thì mở web lại là js/giu-tran.js đưa về đây.
+//   Bàn thử: &buoc=1.
+const buoc = () => !G.xem && !LUYEN && !!(G.T && G.T.buoc) && G.T.trangThai === "choi";
+let giuBack = false;
+function giuTran() {
+  if (!buoc() || giuBack) return;
+  giuBack = true;
+  try { history.pushState({ giuTran: 1 }, "", location.href); } catch (e) { }
+}
+addEventListener("popstate", () => {
+  if (!giuBack) return;
+  if (buoc()) { try { history.pushState({ giuTran: 1 }, "", location.href); } catch (e) { } return; }
+  giuBack = false; history.back();
+});
+addEventListener("beforeunload", (e) => { if (buoc() && (G.phase === "play" || G.phase === "lobby")) { e.preventDefault(); e.returnValue = ""; } });
 const now = () => Date.now() + LECH;
 // ⭐ v1.361.0 (16/10/2026 chiều, thầy) — lớp NGƯỜI XEM (js/xem.js) nằm trên khung trận: dải ĐANG XEM (avatar), bình luận, tim mỗi bên
 const XM = taoXem({ vp, esc, tenBen: (k) => tenBen(k), ben: () => G.ben, laXem: () => G.xem, gui: (m) => guiMe(m),
@@ -291,6 +307,7 @@ function capNhatPha() {
   else if (T.trangThai === "choi") G.phase = now() < T.batDau ? "lobby" : now() < T.ketThuc ? "play" : "count";
   else if (T.trangThai === "xong") G.phase = "over";
   else { G.phase = "loi"; G.note = { tuchoi: "Bạn đã từ chối lời mời.", huy: "Lời mời đã huỷ.", het: "Lời mời đã hết hạn." }[T.trangThai] || (T.trangThai === "han" && window.GioiHan ? GioiHan.chuHan(T) : "Trận không còn."); }
+  giuTran();   // v1.444.0 bắt buộc hoàn thành trận: giữ nút Back
   if (G.phase !== cu) vaoPha(cu);
   else if (G.phase === "over") render();
   else if (G.phase === "play" && che()) renderCentre();   // gợi ý lật / bàn đổi
@@ -454,7 +471,7 @@ function render0() {
       : stageHtml(port ? L.C : { x: L.C.x, y: L.Y, w: L.C.w, h: L.BH }, centreHtml(), null) +
         stageHtml(port ? L.B : { x: L.B.x, y: L.Y, w: L.B.w, h: L.BH }, boardHtml(), 0)) +
     `<div class="wsg-tools" style="top:${L.tools}px;left:${port || G.xem ? L.W / 2 : L.B.x + L.B.w / 2}px">` +
-      `<button class="wsg-tool" data-do="home" aria-label="${G.xem ? "Thoát xem" : "Rời trận"}"><span><svg class="i" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.53l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span></button>` +
+      (buoc() ? "" : `<button class="wsg-tool" data-do="home" aria-label="${G.xem ? "Thoát xem" : "Rời trận"}"><span><svg class="i" viewBox="0 0 24 24"><path d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"/><path d="M3 10a2 2 0 0 1 .7-1.53l7-6a2 2 0 0 1 2.6 0l7 6A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></svg></span></button>`) +
       `<button class="wsg-tool ${sfx.on ? "" : "off"}" data-do="sound" aria-label="Âm thanh"><span><svg class="i" viewBox="0 0 24 24"><path d="M11 5 6 9H2v6h4l5 4V5Z"/>${sfx.on ? '<path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M19 5a10 10 0 0 1 0 14"/>' : '<path d="m22 9-6 6"/><path d="m16 9 6 6"/>'}</svg></span></button>` +
     `</div>` +
     (G.ask ? `<div class="wsg-ask"><div class="wsg-askbox"><div class="q">Leave the match?</div><div class="sub">${G.T && G.T.giai ? "You will lose this match (0 points)." : "You will lose this friendly match."}</div>` +
@@ -624,7 +641,7 @@ cv.addEventListener("pointerdown", (e) => {
   const b = e.target.closest("[data-do]"); if (!b || b.disabled) return;
   const d = b.dataset.do;
   e.preventDefault();
-  if (d === "home") { if (!G.xem && (G.phase === "play" || G.phase === "lobby")) { G.ask = true; return render(); } return veGiai(); }
+  if (d === "home") { if (buoc()) return; if (!G.xem && (G.phase === "play" || G.phase === "lobby")) { G.ask = true; return render(); } return veGiai(); }
   if (d === "no") { G.ask = false; return render(); }
   if (d === "yes") { G.ask = false; return roiTran(); }
   if (d === "sound") { sfx.on = !sfx.on; return render(); }
@@ -781,7 +798,7 @@ async function chayBanThu() {
     toi = { uid: G.xem ? "may2" : "toi" };
     G.ben = "a";
     G.T = { a: G.xem ? "may2" : "toi", b: "may", tenA: LUYEN ? tenMe : G.xem ? "Gia Bảo" : "BẠN THỬ", tenB: LUYEN ? "MÁY" : q.get("ban") || (G.xem ? "Bảo Nam" : "Gia Bảo"), giai: LUYEN ? "" : q.get("giai") || cheThu ? "thu" : "", phut, lv, chu: chu.join(""),
-      trangThai: "choi", batDau: t0, ketThuc: t0 + phut * 60000, diem: { a: 0, b: 0 } };
+      trangThai: "choi", batDau: t0, ketThuc: t0 + phut * 60000, diem: { a: 0, b: 0 }, buoc: !LUYEN && q.get("buoc") === "1" };
   }
   if (cheThu) {
     KE_THU = keThu(cheThu, boGiai ? boGiai.o || 12 : +q.get("o") || 12);

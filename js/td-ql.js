@@ -43,6 +43,9 @@
     return p.then(function (f) { S.f = f; return f; });
   }
   function ref(f) { return f.fs.doc(f.db, 'nwCauHinh', 'thachDau'); }
+  // ⭐ v1.444.0 (28/10, thầy chốt) — BẮT BUỘC HOÀN THÀNH TRẬN: chế độ có trận 1–1 thật mang `buoc` (thiếu = BẬT). Máy chủ (tran-dau.js docBuoc)
+  //   đọc lúc trận bắt đầu ⇒ khoá trận trên hồ sơ em + giấu nút Rời trận (js/giu-tran.js · nw/js/tran.js · nw/js/xh-tran.js). Luyện tập không có.
+  var BUOC = ['gh', 'giai', 'xh'];
   function sach(c) {   // bản ghi xuống kho: đủ khoá từng chế độ (merge không để sót khoá cũ)
     var tro = {};
     TQ().TRO.forEach(function (t) {
@@ -50,6 +53,7 @@
       t.che.forEach(function (ch) {
         var m = (c.tro[t.ma] || {})[ch.ma] || {};
         tro[t.ma][ch.ma] = { che: m.che || 'bat', tu: +m.tu || 0, den: +m.den || 0, lops: (m.lops || []).slice(), nhan: String(m.nhan || '').trim().slice(0, 300) };
+        if (t.ma === 'ass' && BUOC.indexOf(ch.ma) >= 0) tro[t.ma][ch.ma].buoc = m.buoc !== false;
       });
     });
     return tro;
@@ -192,6 +196,9 @@
           '<p class="tdq-goi">Bỏ trống “Mở từ” = mở ngay · bỏ trống “Đóng lúc” = mở mãi. Ngoài khoảng này học sinh thấy lời nhắn bên dưới.</p></div>' : '') +
         '<div class="tdq-dong2"><span class="tdq-nhan">Mở cho lớp</span><div class="tdq-chips"><button type="button" data-lop=""' + (tatCa ? ' class="chon"' : '') + '>Tất cả lớp</button>' +
           S.lops.map(function (l) { return '<button type="button" data-lop="' + E(l.ma) + '"' + (!tatCa && m.lops.indexOf(l.ma) >= 0 ? ' class="chon"' : '') + '>' + E(l.ten || l.ma) + '</button>'; }).join('') + '</div></div>' +
+        (t.ma === 'ass' && BUOC.indexOf(ch.ma) >= 0 ? '<div class="tdq-dong2"><span class="tdq-nhan">Bắt buộc hoàn thành trận</span><div class="tdq-chips">' +
+          '<button type="button" data-buoc="1"' + (m.buoc !== false ? ' class="chon"' : '') + '>Bật</button><button type="button" data-buoc="0"' + (m.buoc === false ? ' class="chon"' : '') + '>Tắt</button></div>' +
+          '<p class="tdq-goi">Bật: đang đấu không có nút Rời trận; em mở trang khác / tải lại / đóng rồi mở lại web đều bị đưa về trận cho tới khi xong.</p></div>' : '') +
         '<div class="tdq-dong2"><span class="tdq-nhan">Lời nhắn khi đóng</span><textarea rows="2" maxlength="300" data-nhan placeholder="' + E(TQ().CHU_DONG[ch.ma] || '') + '">' + E(m.nhan || '') + '</textarea></div>' +
         '</div>';
     }).join('') + '</div>';
@@ -208,6 +215,7 @@
         if (!l) m.lops = []; else { var k = m.lops.indexOf(l); if (k >= 0) m.lops.splice(k, 1); else m.lops.push(l); }
         ve();
       }; });
+      $$('[data-buoc]', el).forEach(function (b) { b.onclick = function () { m.buoc = b.getAttribute('data-buoc') === '1'; ve(); }; });
       $('[data-nhan]', el).oninput = function () { m.nhan = this.value; veLuu(); };
     });
   }

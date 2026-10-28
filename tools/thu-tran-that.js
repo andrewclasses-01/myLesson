@@ -1,4 +1,5 @@
 // 15/10/2026 — THỬ MỘT TRẬN THẬT đầu-cuối (đấu game online Đợt 2): 2 tài khoản ZTEST mời/nhận/gửi từ/rời trận ⇒ kiểm tdTao·tdDoi·tdTu·tdNhip + bảng giải + lịch sử; dọn sạch.
+//   28/10/2026 v1.444.0: + KHOÁ TRẬN (bắt buộc hoàn thành): tranDang trên hồ sơ hai em lúc choi, em không tự xoá, chot gỡ.
 //   node tools/thu-tran-that.js   (cần khoá quản trị như các công cụ dang-luat-*; cần app myLesson ở E: để nạp ws-chu.js)
 'use strict';
 const fs = require('fs');
@@ -163,6 +164,13 @@ async function thuTran() {
     let t = null;
     for (let i = 0; i < 50; i++) { await ngu(200); t = await tran(); if (t.trangThai === 'choi') break; }
     if (!t || t.trangThai !== 'choi') return ok('máy chủ xếp trận (tdDoi)', false, t ? t.trangThai : '');
+    // ⭐ v1.444.0 — bắt buộc hoàn thành trận (công tắc giai mặc định BẬT)
+    const hsA = async (tk) => docv((await goi(`${FS_GOC}/nwUsers/${A}`, { headers: tk ? H2(tk) : await H() })).json) || {};
+    ok('v1.444: trận mang buoc + khoa hai em', t.buoc === true && Array.isArray(t.khoa) && t.khoa.length === 2, JSON.stringify({ buoc: t.buoc, khoa: t.khoa }));
+    const kA = (await hsA(tA)).tranDang;
+    ok('v1.444: A đọc được khoá trận của mình', kA && kA.id === ID && kA.ketThuc === t.ketThuc && kA.xh === false, JSON.stringify(kA));
+    const xoaKhoa = await goi(`${FS_GOC}/nwUsers/${A}${k}&updateMask.fieldPaths=tranDang`, { method: 'PATCH', headers: H2(tA), json: { fields: {} } });
+    ok('v1.444: A KHÔNG tự xoá được khoá (403)', xoaKhoa.status === 403, xoaKhoa.status);
     const gui = (tk, uid, w) => goi(`${FS_GOC}/tranDau/${ID}/tu${k}&documentId=${w}`, { method: 'POST', headers: H2(tk), json: { fields: { uid: S(uid) } } });
     // ⛔ 19/10/2026 v1.376.0 — chữ chỉ lộ lúc batDau − 150 ms (trước đó không gửi từ được, không biết chữ)
     ok('v1.376: chữ CHƯA lộ lúc đếm ngược', !t.chu && Date.now() < t.batDau - 1000, JSON.stringify({ chu: t.chu || '' }));
@@ -189,6 +197,7 @@ async function thuTran() {
     const roi = await goi(`${FS_GOC}/tranDau/${ID}/nhip/${Bb}${k}`, { method: 'PATCH', headers: H2(tB), json: { fields: { luc: I(Date.now()), roi: B(true) } } });
     ok('B bấm rời trận', roi.status === 200, roi.status);
     for (let i = 0; i < 20; i++) { await ngu(1000); t = await tran(); if (t.trangThai === 'xong') break; }
+    ok('v1.444: chốt xong gỡ khoá cả hai em', !(await hsA()).tranDang && !(docv((await goi(`${FS_GOC}/nwUsers/${Bb}`, { headers: await H() })).json) || {}).tranDang);
     ok('chốt trận (tdNhip): A thắng vì B rời', t.trangThai === 'xong' && t.kq && t.kq.a === 'thang' && t.ly === 'roiB', JSON.stringify({ tt: t.trangThai, kq: t.kq, ly: t.ly, diem: t.diem }));
     const bang = docv((await goi(`${FS_GOC}/giaiDau/${GIAI}/bang/${LOP}`, { headers: await H() })).json);
     ok('bảng xếp hạng giải: A 1 thắng, B 1 thua', bang && bang.em && bang.em[A] && bang.em[A].t === 1 && bang.em[Bb] && bang.em[Bb].b === 1, JSON.stringify(bang && bang.em));

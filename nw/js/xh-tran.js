@@ -74,7 +74,7 @@
     };
     var top = '<div class="xh-dh">' + ben(L, 'l', 'xhDbL') + (C.ngang ? '<div class="xh-dhgiua">' + dongHo + r20 + '</div>' : dongHo) + ben(R, 'r', 'xhDbR') + '</div>';
     var nutChat = '<button class="xh-nutchat" id="xhChatThanh" aria-label="Chat trận">' + IC_CHAT + '<i id="xhChuaDoc" hidden>1</i></button>';
-    var bd = '<div class="xh-bandau"><button class="xh-thoat" id="xhThoat" aria-label="' + (G.xem ? 'Thôi xem' : 'Rời trận') + '">✕</button><div class="xh-soban">BÀN <b id="xhBan">1</b></div>' +
+    var bd = '<div class="xh-bandau"><button class="xh-thoat" id="xhThoat" aria-label="' + (G.xem ? 'Thôi xem' : 'Rời trận') + '"' + (buoc() ? ' style="visibility:hidden" tabindex="-1"' : '') + '>✕</button><div class="xh-soban">BÀN <b id="xhBan">1</b></div>' +
       // ô đang gõ: điện thoại (dọc + ngang) nằm cùng hàng số bàn để dồn chỗ cho bàn chữ; màn ngang lớn nằm dưới bàn chữ
       (G.xem ? '<span class="xh-truc">TRỰC TIẾP · 👁 <b id="xhSoXem">0</b></span>' : (C.ngang && !C.thap ? '<span class="xh-mat xh-so">👁 <span id="xhSoXem">0</span></span>' : '<div class="xh-danggo" id="xhGo"></div>')) +
       (!C.ngang && !C.dai ? nutChat : '') + (C.ngang ? '' : r20) + '</div>';
@@ -293,7 +293,19 @@
     // 27/10 bàn phím KHÔNG chơi được (chỉ chat): chặn cả Space/Enter bấm hộ nút đang được chọn
     if (e.key === ' ' || e.key === 'Enter') { var a = document.activeElement; if (a && a.closest && a.closest('#xhOan, #xhPhim')) e.preventDefault(); }
   });
+  // ⭐ v1.444.0 (28/10, thầy chốt) — BẮT BUỘC HOÀN THÀNH TRẬN: trận mang `buoc` (máy chủ ghi theo công tắc dashboard) ⇒ chưa chốt thì
+  //   ✕ giấu (giữ chỗ), Back bị giữ lại, máy tính hỏi khi đóng tab. Mở web lại ở trang khác ⇒ js/giu-tran.js đưa về đây. Bàn thử: &buoc=1.
+  function buoc() { var t = G.T; return !G.xem && !!t && t.trangThai === 'choi' && !!(t.buoc || (G.thu && /[?&]buoc=1/.test(location.search))); }
+  var giuBack = false;
+  function giuTran() { if (!buoc() || giuBack) return; giuBack = true; try { history.pushState({ giuTran: 1 }, '', location.href); } catch (e) { } }
+  addEventListener('popstate', function () {
+    if (!giuBack) return;
+    if (buoc()) { try { history.pushState({ giuTran: 1 }, '', location.href); } catch (e) { } return; }
+    giuBack = false; history.back();
+  });
+  addEventListener('beforeunload', function (e) { if (buoc()) { e.preventDefault(); e.returnValue = ''; } });
   function thoat() {
+    if (buoc()) return;
     // hết giờ rồi (đang chờ chốt) ⇒ về sảnh, không ghi "rời trận" (không bị xử thua)
     if (G.xem || !G.T || G.T.trangThai !== 'choi' || bay() >= (G.T.ketThuc || 0)) { location.href = G.xem ? 'xephang.html?tab=live' : 'xephang.html'; return; }
     var h = document.createElement('div'); h.className = 'xh-hop';
@@ -444,6 +456,7 @@
   // ---------- pha ----------
   function capPha() {
     var t = G.T; if (!t) return;
+    giuTran();
     if (t.trangThai === 'xong') return veKetQua();
     if (t.trangThai === 'het' || t.trangThai === 'huy') return veTai('Trận không bắt đầu (có bạn chưa sẵn sàng).', true);
     if (t.trangThai === 'han') return veTai('Đã tới giờ nghỉ đêm — trận không bắt đầu.', true);

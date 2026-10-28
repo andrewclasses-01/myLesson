@@ -14,7 +14,14 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.436.0 (28/10/2026) — BÀI TRONG SÁCH: bấm ĐẠT là ghi ngay, CHỤP ẢNH khi đã đạt, bấm lại để BỎ ĐẠT *(bản mới nhất)*
+## ⭐ v1.437.0 (28/10/2026) — CHÉP NHANH danh sách em (icon góc dưới phải hộp chi tiết bài) *(bản mới nhất)*
+
+- `dashboard.html` nút `#hqChep` (chỉ icon chữ T) trong `#bmHop`, hiện ở mọi tab / mọi dạng bài. Bấm = chép **HS Thiếu bài**; chuột phải = menu **HS Thiếu bài** / **HS Chưa luyện tập**.
+- Dòng: `1. Anh Thư @Anh` — tên như bảng (dài > 10 thì viết tắt), @ = chữ đầu tên bỏ dấu ("Đ.N.B.An" ⇒ @An).
+- Thiếu bài (`hqDsThieuBai`): em đang tính có % < 100% (99% vẫn thiếu), thiếu nhiều trước, bằng nhau theo sĩ số. % = trung bình mục trong phạm vi đang xem: act = điểm cao nhất ÷ tối đa (`hqPhanAct`, luật lượt y `hqBxhAct`), worksheet = trang nộp ÷ số trang, lesson CHƯƠNG + mọi bước không điểm (xong/chưa). Mục em bị ✕ riêng không tính. Bước CHƯƠNG chưa đọc xong ⇒ báo bấm lại.
+- Chưa luyện tập (`hqDsChuaLuyen`): `hqTongEm` = 0 (y cột TỔNG THỜI GIAN).
+
+## ⭐ v1.436.0 (28/10/2026) — BÀI TRONG SÁCH: bấm ĐẠT là ghi ngay, CHỤP ẢNH khi đã đạt, bấm lại để BỎ ĐẠT
 
 - `js/cham-sach.js` (?v=12): ĐẠT chưa tích = nền TRẮNG chữ đen (khoá thì mờ), bấm ⇒ `duyetSach {tat:true, tt:'dat'}` NGAY (không pop-up) ⇒ nút xanh "ĐẠT ✓".
 - Đã ĐẠT ⇒ nút trái đổi CHỤP LỖI → **CHỤP ẢNH** (sáng) ⇒ pop-up chụp ảnh ĐẠT (`moDat`, nay CHỈ chụp, không ghi). Chưa đạt / có lỗi ⇒ CHỤP LỖI như cũ.

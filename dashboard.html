@@ -1809,6 +1809,16 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
    1560px để màn rộng ngang (3440) không kéo các cột ra xa nhau. Bản cũ cứng 1040×760 ⇒ bảng THỜI LƯỢNG phải cuộn, chữ nhỏ. */
 .bm-hop.hq{width:min(98vw,1760px); height:96vh; max-height:96vh}   /* v1.141.0 — rộng bằng pop-up chi tiết em (thầy duyệt mẫu v23) */
 .bm-hop.hq .bm-than{padding:0; display:flex; flex-direction:column; overflow:hidden}
+/* ⭐ v1.437.0 — nút CHÉP NHANH (chỉ icon) góc dưới phải hộp chi tiết bài + menu chuột phải */
+.hq-chep{display:none}
+.bm-hop.hq .hq-chep{display:grid; place-items:center; position:absolute; right:8px; bottom:8px; z-index:5; width:32px; height:32px; border-radius:50%;
+  border:1px solid var(--vien); background:var(--the); color:var(--chu); box-shadow:0 4px 14px rgba(0,0,0,.14); cursor:pointer; opacity:.8; transition:opacity .15s, transform .15s}
+.bm-hop.hq .hq-chep:hover{opacity:1; transform:scale(1.08)}
+.hq-chep svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.4; stroke-linecap:round; stroke-linejoin:round}
+.hq-chep-menu{position:fixed; z-index:9500; background:#fff; color:#16232A; border-radius:12px; box-shadow:0 14px 40px rgba(0,0,0,.3); padding:6px; min-width:210px}
+.hq-chep-menu button{display:flex; width:100%; align-items:center; gap:8px; border:0; background:none; padding:10px 12px; border-radius:8px; font:inherit; font-size:13px; font-weight:700; text-align:left; cursor:pointer}
+.hq-chep-menu button:hover{background:#EEF3F2}
+.hq-chep-menu small{margin-left:auto; color:#5F7370; font-weight:800}
 /* ⭐⭐ v1.132.0 (22/09/2026, thầy duyệt mẫu v4) — THANH TỔNG QUAN RIÊNG BỎ: ô hạn + THANH CHẶNG mũi tên + nút ⚙
    dời lên GIỮA HÀNG ĐẦU HỘP (`#bmGiua`, giữa "Thầy Andrew" và tên bài) để tiết kiệm chiều cao cho ruột.
    Mẫu: `D:\OTHERS\CLAUDE\myLesson - thiet ke hop quan ly\mau-v4.html` (v1–v3 giữ để so). */
@@ -4327,6 +4337,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     </div>
   </div>
   <div class="bm-than" id="bmThan"></div>
+  <!-- ⭐ v1.437.0 — CHÉP NHANH danh sách em (bấm = HS thiếu bài · chuột phải = menu), xem `hqChepNhanh` -->
+  <button type="button" class="hq-chep" id="hqChep" title="Chép tên HS thiếu bài (chuột phải: chọn danh sách khác)"><svg viewBox="0 0 24 24"><path d="M4 7V4h16v3"/><path d="M9 20h6"/><path d="M12 4v16"/></svg></button>
 </div>
 <!-- ⭐ v1.131.0 — pop-up CHI TIẾT MỘT EM (đúp tên/ảnh ở tab THỜI LƯỢNG), xem `hqChiTiet`/`hqVeChiTiet` (v1.132.0: Zoom + đồ thị tiến triển) -->
 <div class="hq-ct-nen" id="hqCtNen"><div class="hq-ct-hop" id="hqCtHop"></div></div>
@@ -9121,6 +9133,85 @@ tr.qm-hang-tam td{background:#fffbeb}
       .map(function (x) { return { ma: x.ma, ten: 'QUAY VIDEO', mau: 'QUIZ', quay: true }; });
   }
   function hqLaQuay(ma) { return hqQuayCua(HQ.b).some(function (q) { return q.ma === ma; }); }
+  /* ⭐⭐ v1.437.0 (thầy chốt 28/10) — CHÉP NHANH danh sách em từ hộp chi tiết bài (mọi dạng bài, mọi tab).
+     · HS THIẾU BÀI: em đang tính (bỏ em "không tính") có % đã làm < 100% (99% vẫn thiếu), thiếu nhiều trước, bằng nhau theo sĩ số.
+       % = trung bình các mục của PHẠM VI đang xem (y tab BÀI TẬP): act = điểm cao nhất ÷ tối đa (đủ điểm = 100%), worksheet = trang
+       đã nộp ÷ số trang, lesson CHƯƠNG thêm mọi bước không điểm (xong = 100%). Mục em bị ✕ riêng không tính.
+     · HS CHƯA LUYỆN TẬP: tổng thời gian luyện tập (cột TỔNG THỜI GIAN, `hqTongEm`) = 0.
+     Dòng: "1. Anh Thư @Anh" — tên như bảng (dài quá thì viết tắt), @ = chữ đầu tên, bỏ dấu ("Đ.N.B.An" ⇒ @An). */
+  function hqBoDau(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
+  function hqTenChep(ten) { ten = String(ten || '').trim(); return ten.length > TEN_GON_MAX ? vietTat(ten) : ten; }
+  function hqTagChep(ten) { var w = hqTenChep(ten).split(/\s+/)[0] || ''; w = w.split('.').filter(Boolean).pop() || w; return '@' + hqBoDau(w); }
+  // Phần đã làm (0..1) của một act: đủ điểm = 1; còn lại = lượt nộp điểm cao nhất ÷ mẫu (luật y bảng XẾP HẠNG `hqBxhAct`), < 1.
+  function hqPhanAct(ma, ten) {
+    if (coTrongDiem(DIEM[ma] || [], ten, ma)) return 1;
+    var soCau = (CHUAN[ma] && +CHUAN[ma].soCau) || 0, r = 0;
+    hqGioAct(ma, ten).luot.forEach(function (l) {
+      if ((l.loai !== 'nop' && l.loai !== 'dodang') || l.mistakes) return;
+      var mau = l.loai === 'dodang' ? hqMauAct(ma) : (+l.tong || soCau);
+      if (mau) r = Math.max(r, (+l.diem || 0) / mau);
+    });
+    return Math.min(r, 0.999);
+  }
+  // { ds: [{h, pt}], cho: true khi bước CHƯƠNG chưa đọc xong }
+  function hqDsThieuBai() {
+    var t = HQ.t, b = HQ.b, kt = hqKt(hqSoDangXem()), muc = hqMucDangMo();
+    var hs = hqHocSinh(t).filter(function (h) { return !kt[A.khoaTen(h.ten)]; });
+    var tay = (A.laBaiBuoc(b) && (b.bt || []).length) ? dsTabDb(b, t).filter(function (a) { return a.tay && !/^acts?$/.test(a.buoc.loai); }) : [];
+    var td = tay.length ? CHUONG_TD[b.id] : null, cho = false;
+    if (tay.length && (!td || td === 'dang')) { if (!td) docChuongCuaBai(b, t.maLop); cho = true; }
+    var ds = [];
+    hs.forEach(function (h, i) {
+      var k = A.khoaTen(h.ten), co = 0, N = 0;
+      muc.forEach(function (m) {
+        if (t.stage && m.so != null && hqKt(m.so)[k]) return;
+        if (m.kbq && hqKtMuc(m.kbq)[k]) return;
+        N++; co += m.loai === 'act' ? hqPhanAct(m.ma, h.ten) : m.loai === 'ws' ? Math.min(1, hqEmNopSo(m.o, h) / (m.soTrang || 1)) : 0;
+      });
+      if (!cho) tay.forEach(function (a) { N++; if (xongBuocTayKh(td[h.ten], a.buoc)) co++; });
+      if (N && co < N - 1e-9) ds.push({ h: h, i: i, pt: co / N });
+    });
+    ds.sort(function (x, y) { return (x.pt - y.pt) || (x.i - y.i); });
+    return { ds: ds, cho: cho };
+  }
+  function hqDsChuaLuyen() {
+    var t = HQ.t, kt = hqKt(hqSoDangXem()), pv = hqPhamVi();
+    return hqHocSinh(t).filter(function (h) { return !kt[A.khoaTen(h.ten)] && !(hqTongEm(h.ten, pv) > 0); }).map(function (h) { return { h: h }; });
+  }
+  function hqChepChu(chu) {
+    if (navigator.clipboard && navigator.clipboard.writeText) return navigator.clipboard.writeText(chu);
+    return new Promise(function (ok, no) {
+      var o = document.createElement('textarea'); o.value = chu; o.style.cssText = 'position:fixed;left:-9999px'; document.body.appendChild(o); o.select();
+      var d = false; try { d = document.execCommand('copy'); } catch (e) { } o.remove(); d ? ok() : no(new Error('copy'));
+    });
+  }
+  function hqChepNhanh(loai) {
+    if (!HQ.id || BM_ID !== HQ.id || !HQ.t) return;
+    var kq = loai === 'luyen' ? { ds: hqDsChuaLuyen() } : hqDsThieuBai(), ten = loai === 'luyen' ? 'chưa luyện tập' : 'thiếu bài';
+    if (kq.cho) return void baoToast('Đang tải số liệu các bước của bài — thầy bấm lại sau vài giây.');
+    if (!kq.ds.length) return void baoToast('Không còn em nào ' + ten + ' 🎉');
+    var chu = kq.ds.map(function (d, k) { return (k + 1) + '. ' + hqTenChep(d.h.ten) + ' ' + hqTagChep(d.h.ten); }).join('\n');
+    hqChepChu(chu).then(function () { baoToast('✓ Đã chép ' + kq.ds.length + ' em ' + ten + ' — Ctrl+V vào Zalo'); },
+      function () { baoToast('Trình duyệt chặn chép — thầy thử lại'); });
+  }
+  function hqDongMenuChep() { var m = document.querySelector('.hq-chep-menu'); if (m) m.remove(); }
+  (function () {
+    var nut = $('#hqChep'); if (!nut) return;
+    nut.addEventListener('click', function (e) { e.stopPropagation(); hqDongMenuChep(); hqChepNhanh('thieu'); });
+    nut.addEventListener('contextmenu', function (e) {
+      e.preventDefault(); e.stopPropagation(); hqDongMenuChep();
+      if (!HQ.t) return;
+      var m = document.createElement('div'); m.className = 'hq-chep-menu';
+      m.innerHTML = '<button type="button" data-chep="thieu">HS Thiếu bài</button><button type="button" data-chep="luyen">HS Chưa luyện tập</button>';
+      document.body.appendChild(m);
+      var r = m.getBoundingClientRect();
+      m.style.left = Math.max(8, Math.min(e.clientX, innerWidth - r.width - 8)) + 'px';
+      m.style.top = Math.max(8, Math.min(e.clientY - r.height, innerHeight - r.height - 8)) + 'px';
+      m.addEventListener('click', function (ev) { var b = ev.target.closest('[data-chep]'); if (!b) return; hqDongMenuChep(); hqChepNhanh(b.getAttribute('data-chep')); });
+    });
+    document.addEventListener('pointerdown', function (e) { if (!e.target.closest('.hq-chep-menu')) hqDongMenuChep(); }, true);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && document.querySelector('.hq-chep-menu')) { e.stopImmediatePropagation(); hqDongMenuChep(); } }, true);
+  })();
   function hqTongEm(ten, pv) {
     pv = pv || hqPhamVi();
     var s = hqGioVideo(ten) + (pv.nghe ? hqGioNghe(ten) : 0);

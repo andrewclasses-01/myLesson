@@ -14,7 +14,16 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.442.0 (28/10/2026) — Ô VIDEO: KHOÁ TUA tới đoạn chưa xem *(bản mới nhất)*
+## ⭐ v1.443.0 (28/10/2026) — Ô VIDEO: vòng xoay nạp + "Yêu cầu xem" khoá thẻ bên dưới *(bản mới nhất)*
+
+Thầy chốt (đi cặp app myLesson v2.193.0 + myStudio v0.12.4):
+- Bấm phát: khung phim GIẤU (`.game.dang-nap`, opacity 0) + vòng xoay teal `.vd-nap` tới khi trình phát báo `play` ⇒ hình và tiếng ra cùng lúc.
+- **"Yêu cầu xem"** (khối `yc:1`, app mặc định bật): `khoaSauVideoDoc` — mọi thẻ đứng SAU video chưa xem hết (cả bài STAGE) bị giấu, thay bằng
+  dòng chờ `.card.st-cho.vd-khoa` "BÀI n · tên · 🔒 XEM HẾT VIDEO ĐỂ MỞ". Xem hết (`daXongVideoDoc`) ⇒ mở ngay (một lần, không tải lại).
+  Bài đẩy trước v2.193.0 không có `yc` ⇒ không khoá (thầy đẩy lại bài để bật).
+- Test (bàn thử xem trước, phim live): 2 thẻ act sau video hiện dòng chờ; bấm phát ⇒ vòng xoay ⇒ phim; giả xem hết ⇒ 2 thẻ mở đủ (bìa READY + bảng).
+
+## ⭐ v1.442.0 (28/10/2026) — Ô VIDEO: KHOÁ TUA tới đoạn chưa xem
 
 Thầy chốt: chưa xem hết thì không cho tua tới đoạn chưa xem — kéo lên thì chấm đang phát nhảy về vị trí xem liền xa nhất; xem hết mới tua tuỳ ý.
 - `bai.html veKhoiVideoDoc`: `mocLienVideoDoc` = cuối khúc đã xem liền từ giây 0 (`DOAN_XONG['vo<o>'][0]`, tính cả tiến độ trên máy chủ ⇒

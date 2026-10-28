@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-28 09:31:59",
+  "capNhat": "2026-10-28 15:01:30",
   "bai": {
     "A1C": [
       {
@@ -735,6 +735,54 @@
       }
     ],
     "B2B": [
+      {
+        "id": "B2B_26.10_READING_DW-S2.W2._MOLE_RAT",
+        "tieuDe": "B2B_26.10_READING DW-S2.W2. MOLE RAT",
+        "tenHien": "B2B_26.10_READING DW-S2.W2. MOLE RAT",
+        "dang": "READING",
+        "ngay": "26.10",
+        "han": "2026-10-30T19:45",
+        "maLesson": "DW-S2.W2. MOLE RAT",
+        "taoLuc": "2026-10-28",
+        "trang": "bai",
+        "khoi": [
+          {
+            "loai": "video",
+            "ten": "VIDEO - MOLE RAT",
+            "doc": "video/doc-hieu/dw-s2-w2-mole-rat",
+            "src": "https://document.andrewclasses.com/video/doc-hieu/dw-s2-w2-mole-rat/?nhung=1",
+            "giay": 173,
+            "o": 0,
+            "poster": "https://document.andrewclasses.com/video/doc-hieu/dw-s2-w2-mole-rat/poster.jpg",
+            "yc": 1
+          },
+          {
+            "loai": "act",
+            "ten": "TRUE FALSE",
+            "act": "DW-S2.W2 / 1. TRUE FALSE",
+            "yeuCau": "100% requirement",
+            "ma": "c3prsw",
+            "mau": "TRUE OR FALSE"
+          },
+          {
+            "loai": "act",
+            "ten": "FILLING",
+            "act": "DW-S2.W2 / 2. FILLING",
+            "yeuCau": "100% requirement",
+            "ma": "e8yb5k",
+            "mau": "FIND THE MATCH"
+          },
+          {
+            "loai": "act",
+            "ten": "READING QUIZ",
+            "act": "DW-S2.W2 / 3. READING QUIZ",
+            "yeuCau": "100% requirement",
+            "ma": "2jahcz",
+            "mau": "QUIZ"
+          }
+        ],
+        "giaoLuc": "2026-10-28T15:01"
+      },
       {
         "id": "B2B_19.10_SP_CHECK_DS-S5.I1.W1_BONES_AND_MUSCLES",
         "tieuDe": "B2B_19.10_SP CHECK DS-S5.I1.W1 BONES AND MUSCLES",
@@ -7104,7 +7152,7 @@
   "capNhatLop": {
     "NNTNGK10": "2026-10-26 09:02:43",
     "A1A": "2026-10-26 21:37:29",
-    "B2B": "2026-10-22 13:28:01",
+    "B2B": "2026-10-28 15:01:30",
     "A1C": "2026-10-26 08:23:05",
     "B2A": "2026-10-22 13:25:02",
     "A1B": "2026-10-27 22:06:14",

@@ -14,7 +14,12 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.437.0 (28/10/2026) — CHÉP NHANH danh sách em (icon góc dưới phải hộp chi tiết bài) *(bản mới nhất)*
+## ⭐ v1.437.1 (28/10/2026) — CHÉP NHANH: "thiếu bài" chỉ tính các bảng tab XẾP HẠNG *(bản mới nhất)*
+
+Ca A2B LISTENING SKILL (2 act + worksheet 2 trang + nghe): cả 18 em bị kê vì worksheet, thầy chỉ muốn Kim Ngân + Phúc Hưng (26/30).
+- `hqDsThieuBai`: chỉ act (điểm cao nhất ÷ tối đa) + bước không điểm của lesson CHƯƠNG — y các bảng XẾP HẠNG. Bỏ worksheet (BÀI NỘP) và bài nghe.
+
+## ⭐ v1.437.0 (28/10/2026) — CHÉP NHANH danh sách em (icon góc dưới phải hộp chi tiết bài)
 
 - `dashboard.html` nút `#hqChep` (chỉ icon chữ T) trong `#bmHop`, hiện ở mọi tab / mọi dạng bài. Bấm = chép **HS Thiếu bài**; chuột phải = menu **HS Thiếu bài** / **HS Chưa luyện tập**.
 - Dòng: `1. Anh Thư @Anh` — tên như bảng (dài > 10 thì viết tắt), @ = chữ đầu tên bỏ dấu ("Đ.N.B.An" ⇒ @An).

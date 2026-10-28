@@ -9135,8 +9135,9 @@ tr.qm-hang-tam td{background:#fffbeb}
   function hqLaQuay(ma) { return hqQuayCua(HQ.b).some(function (q) { return q.ma === ma; }); }
   /* ⭐⭐ v1.437.0 (thầy chốt 28/10) — CHÉP NHANH danh sách em từ hộp chi tiết bài (mọi dạng bài, mọi tab).
      · HS THIẾU BÀI: em đang tính (bỏ em "không tính") có % đã làm < 100% (99% vẫn thiếu), thiếu nhiều trước, bằng nhau theo sĩ số.
-       % = trung bình các mục của PHẠM VI đang xem (y tab BÀI TẬP): act = điểm cao nhất ÷ tối đa (đủ điểm = 100%), worksheet = trang
-       đã nộp ÷ số trang, lesson CHƯƠNG thêm mọi bước không điểm (xong = 100%). Mục em bị ✕ riêng không tính.
+       % = trung bình các BẢNG của tab XẾP HẠNG trong phạm vi đang xem: act = điểm cao nhất ÷ tối đa (đủ điểm = 100%), lesson CHƯƠNG
+       thêm mọi bước không điểm (xong = 100%). Mục em bị ✕ riêng không tính.
+       ⭐ v1.437.1 (thầy chốt 28/10, ca A2B LISTENING: cả 18 em bị kê vì worksheet) — KHÔNG tính worksheet (BÀI NỘP) và bài nghe.
      · HS CHƯA LUYỆN TẬP: tổng thời gian luyện tập (cột TỔNG THỜI GIAN, `hqTongEm`) = 0.
      Dòng: "1. Anh Thư @Anh" — tên như bảng (dài quá thì viết tắt), @ = chữ đầu tên, bỏ dấu ("Đ.N.B.An" ⇒ @An). */
   function hqBoDau(x) { return String(x || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
@@ -9155,7 +9156,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   // { ds: [{h, pt}], cho: true khi bước CHƯƠNG chưa đọc xong }
   function hqDsThieuBai() {
-    var t = HQ.t, b = HQ.b, kt = hqKt(hqSoDangXem()), muc = hqMucDangMo();
+    var t = HQ.t, b = HQ.b, kt = hqKt(hqSoDangXem()), muc = hqMucDangMo().filter(function (m) { return m.loai === 'act'; });
     var hs = hqHocSinh(t).filter(function (h) { return !kt[A.khoaTen(h.ten)]; });
     var tay = (A.laBaiBuoc(b) && (b.bt || []).length) ? dsTabDb(b, t).filter(function (a) { return a.tay && !/^acts?$/.test(a.buoc.loai); }) : [];
     var td = tay.length ? CHUONG_TD[b.id] : null, cho = false;
@@ -9166,7 +9167,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       muc.forEach(function (m) {
         if (t.stage && m.so != null && hqKt(m.so)[k]) return;
         if (m.kbq && hqKtMuc(m.kbq)[k]) return;
-        N++; co += m.loai === 'act' ? hqPhanAct(m.ma, h.ten) : m.loai === 'ws' ? Math.min(1, hqEmNopSo(m.o, h) / (m.soTrang || 1)) : 0;
+        N++; co += hqPhanAct(m.ma, h.ten);
       });
       if (!cho) tay.forEach(function (a) { N++; if (xongBuocTayKh(td[h.ten], a.buoc)) co++; });
       if (N && co < N - 1e-9) ds.push({ h: h, i: i, pt: co / N });

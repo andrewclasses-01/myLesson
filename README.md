@@ -14,7 +14,15 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.433.0 (27/10/2026) — VÍ SAO ĐƯỢC ÂM *(bản mới nhất)*
+## ⭐ v1.434.0 (28/10/2026) — tab BÀI TRONG SÁCH (trang chấm bài sách nằm trong hộp chi tiết) *(bản mới nhất)*
+
+Thầy chốt: trang chấm bài sách không còn là pop-up riêng mà là một tab của hộp chi tiết bài, ngay sau BÀI TẬP.
+- `dashboard.html`: tab `sach` "Bài trong sách" (icon sách mở) — chỉ hiện ở bài có bước `loai:'sach'` + `nopAnh`; nhiều bước ⇒ chip chọn bước (`HQ.sachBt`). `hqTabSach` vẽ khung, `hqSauVeSach` gắn trang chấm; `hqVeLai` KHÔNG vẽ lại ruột tab khi trang chấm đã gắn đúng bài/bước (`hqSachConNguyen`) ⇒ dữ liệu tab khác về dần không xoá nét đang vẽ. Rời tab / đóng hộp / đổi bài ⇒ `ChamSach.dong()` (lưu hết).
+- Hàng bước trên thẻ bài bỏ 📷, chỉ còn "BƯỚC n"; bấm vẫn được = LỐI TẮT mở hộp chi tiết ở tab BÀI TRONG SÁCH (`HQ_MO_TAB` ⇒ `moBaiModal`).
+- `js/cham-sach.js` (?v=10): `mo({nhung: khung})` ⇒ trang chấm nằm trong khung (bỏ nền phủ, nút đóng, khoá cuộn); `dong()` trả về body; `ChamSach.nhung()`, `ChamSach.coLop()`. Esc: lớp nổi của trang chấm (menu, cỡ, đang kẻ, pop-up chụp) đóng trước, hết lớp thì Esc về chuỗi đóng của dashboard.
+- Bàn thử: `D:\OTHERS\CLAUDE\myLesson - thiet ke nop sach\ban-thu-tab-sach.html` (8 ảnh thật, khung tab giả).
+
+## ⭐ v1.433.0 (27/10/2026) — VÍ SAO ĐƯỢC ÂM
 
 Thầy: trừ được nhiều hơn số sao đang có ⇒ số âm đỏ, dấu − trước.
 - `js/sao-dash.js`: `ganCT.gioiHan` chỉ kẹp ±tranTay (bỏ kẹp ≥ −số đang có, bỏ khoá nút −N); hàm `soSao(n)` tô đỏ số âm (`.sd-am` ở `css/sao-dash2.css`) — ô tổng lớp, cột sao, pop-up ±, Ví sao một em, Lịch sử ví. `js/sao-xh.js` bỏ `Math.max(0,…)` ví tạm.

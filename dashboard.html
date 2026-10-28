@@ -1868,6 +1868,14 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-tab.mo .so{background:var(--xanh-nhat); color:var(--xanh)}
 .hq-tab .so.co{background:var(--la-nhat); color:#1F7A4D}
 .hq-than{flex:1; min-height:0; background:var(--the); border-top:1px solid var(--vien); overflow:auto; padding:16px 18px}
+/* v1.434.0 — tab BÀI TRONG SÁCH: trang chấm (js/cham-sach.js, `nhung`) lấp đầy ruột tab */
+.hq-than.vua-sach{padding:10px; overflow:hidden; display:flex}
+#hqSach{flex:1; min-width:0; min-height:0; display:flex; flex-direction:column; gap:8px}
+.hq-sach-than{flex:1; min-height:0; display:flex}
+.hq-sach-cho{margin:auto; color:var(--nhat); font-weight:700; font-size:14px}
+.hq-sach-chon{display:flex; gap:6px; flex-wrap:wrap}
+.hq-sach-chon button{border:1px solid var(--vien); background:var(--the); border-radius:999px; padding:6px 12px; font:inherit; font-size:12px; font-weight:800; cursor:pointer}
+.hq-sach-chon button.on{background:#0E7C6E; border-color:#0E7C6E; color:#fff}
 /* tab BÀI TẬP */
 .hq-bt-grid{display:grid; grid-template-columns:1.25fr 1fr; gap:16px; align-items:start}
 .hq-khoi{border:1px solid var(--vien); border-radius:13px; padding:11px 13px; margin-bottom:10px; background:var(--the)}
@@ -6198,29 +6206,66 @@ tr.qm-hang-tam td{background:#fffbeb}
       CHUONG_TD[b.id] = ra;
       veTat();
       if (POP_TAB.b && POP_TAB.b.id === b.id && $('#popNen').classList.contains('mo')) { veTabsDb(); veRuotTabDb(); }   // K10 7
-      if (HQ.b && HQ.b.id === b.id && HQ.tab === 'xh') hqVeLai();   // K10 8 — tab XẾP HẠNG đang mở bài này
+      if (HQ.b && HQ.b.id === b.id && (HQ.tab === 'xh' || HQ.tab === 'sach')) hqVeLai();   // K10 8 — tab XẾP HẠNG / BÀI TRONG SÁCH đang mở bài này
     });
   }
-  /* v1.387.0 (21/10/2026) — NỘP BÀI SÁCH: bấm hàng bước 📷 ⇒ ChamSach.mo (danh sách em cả lớp + kết quả lessonSach đã đọc ở docChuongCuaBai).
+  /* v1.387.0 (21/10/2026) — NỘP BÀI SÁCH: bấm hàng bước nộp ảnh sách ⇒ chấm (danh sách em cả lớp + kết quả lessonSach đã đọc ở docChuongCuaBai).
+     ⭐ v1.434.0 (28/10/2026, thầy chốt) — bỏ pop-up riêng: hàng bước là LỐI TẮT mở hộp chi tiết bài ở tab BÀI TRONG SÁCH (trang chấm nhúng trong tab).
      Bắt ở pha CAPTURE (hàng nằm trong thẻ có click/dblclick riêng). */
-  var CS_HANG = {};
+  var CS_HANG = {}, HQ_MO_TAB = null;
   document.addEventListener('click', function (e) {
     var n = e.target.closest && e.target.closest('[data-cham-sach]'); if (!n) return;
     e.stopPropagation(); e.preventDefault();
-    var h = CS_HANG[n.getAttribute('data-cham-sach')], td = h && CHUONG_TD[h.b.id];
-    if (!h || !window.ChamSach || !td || td === 'dang') return;
-    var lop = A.lopTheoMa(DL, LOP_CHON) || {}, maLop = LOP_CHON;
-    var em = A.caLopCuaBai(lop, h.b).map(function (ten) {
+    var h = CS_HANG[n.getAttribute('data-cham-sach')];
+    if (!h || !window.ChamSach) return;
+    HQ_MO_TAB = { tab: 'sach', bt: h.x.id };
+    try { moBaiModal(h.b.id); } finally { HQ_MO_TAB = null; }
+  }, true);
+  // v1.434.0 — các bước NỘP ẢNH SÁCH của bài đang mở trong hộp chi tiết (rỗng ⇒ không có tab BÀI TRONG SÁCH)
+  function hqDsSach() {
+    if (!window.ChamSach || !window.NopSach || !HQ.b) return [];
+    return (HQ.b.bt || []).filter(function (x) { return x && x.loai === 'sach' && x.nopAnh; });
+  }
+  function hqBuocSach() {
+    var ds = hqDsSach(), x = ds.filter(function (k) { return k.id === HQ.sachBt; })[0] || ds[0];
+    if (x) HQ.sachBt = x.id;
+    return x || null;
+  }
+  // Tab BÀI TRONG SÁCH: vẽ khung trống (+ chip chọn bước khi bài có nhiều bước nộp sách); trang chấm gắn vào sau (`hqSauVeSach`).
+  function hqTabSach() {
+    var ds = hqDsSach(), x = hqBuocSach(), td = CHUONG_TD[HQ.b.id];
+    if (!td) docChuongCuaBai(HQ.b, HQ.lop || LOP_CHON);
+    var cho = !td || td === 'dang';
+    var chip = ds.length > 1 ? '<div class="hq-sach-chon">' + ds.map(function (k, i) {
+      return '<button type="button" data-hqsach="' + A.chuAnToan(k.id) + '"' + (k === x ? ' class="on"' : '') + '>' + A.chuAnToan(k.tieuDe || ('Bài sách ' + (i + 1))) + '</button>';
+    }).join('') + '</div>' : '';
+    return '<div id="hqSach" data-k="' + A.chuAnToan(HQ.b.id + '|' + x.id) + '">' + chip +
+      '<div class="hq-sach-than" id="hqSachThan">' + (cho ? '<div class="hq-sach-cho">Đang tải bài nộp của cả lớp…</div>' : '') + '</div></div>';
+  }
+  // Trang chấm đã gắn đúng bài + bước trong `th` ⇒ vẽ lại tab thì GIỮ NGUYÊN (khỏi mất ảnh/nét đang vẽ, chữ đang gõ).
+  function hqSachConNguyen(th) {
+    var x = hqBuocSach(), k = th.querySelector('#hqSach');
+    return !!(x && k && k.getAttribute('data-k') === HQ.b.id + '|' + x.id && k.querySelector('#csNen'));
+  }
+  // Trước khi xoá ruột tab: trang chấm đang nằm trong đó ⇒ đóng (lưu hết) + trả về body.
+  function hqThaSach(th) { if (window.ChamSach && th && th.querySelector('#csNen')) ChamSach.dong(); }
+  function hqSauVeSach() {
+    if (!window.ChamSach) return;
+    if (HQ.tab !== 'sach') { if (ChamSach.nhung()) ChamSach.dong(); return; }
+    var than = $('#hqSachThan'), x = hqBuocSach(), b = HQ.b, td = CHUONG_TD[b.id];
+    if (!than || !x || than.querySelector('#csNen') || !td || td === 'dang') return;
+    var maLop = HQ.lop || LOP_CHON, lop = A.lopTheoMa(DL, maLop) || {};
+    var em = A.caLopCuaBai(lop, b).map(function (ten) {
       var hs = (lop.hocSinh || []).find(function (q) { return q.ten === ten; }) || {}, c = td[ten] || {};
-      return { ten: ten, ma: String(hs.ma || c.ma || '').trim(), doc: (c.sach || {})[h.x.id] || {} };
+      return { ten: ten, ma: String(hs.ma || c.ma || '').trim(), doc: (c.sach || {})[x.id] || {} };
     }).filter(function (q) { return q.ma; });
     ChamSach.mo({
-      tieuDe: String(h.b.ten || h.b.tieuDe || h.b.id).toUpperCase(), lop: String(maLop).replace(/\s+/g, '').toUpperCase(), bai: h.b.id, bt: h.x.id,
-      trangs: NopSach.cacTrang(h.x.trang), sach: h.x.sach || 'NTTA', em: em,
-      docLai: function (q) { return NopSach.doc(maLop, h.b.id, h.x.id, q.ma).then(function (d) { var c = td[q.ten]; if (d && c) { c.sach = c.sach || {}; c.sach[h.x.id] = d; } return d; }); },
+      tieuDe: String(b.ten || b.tieuDe || b.id).toUpperCase(), lop: String(maLop).replace(/\s+/g, '').toUpperCase(), bai: b.id, bt: x.id,
+      trangs: NopSach.cacTrang(x.trang), sach: x.sach || 'NTTA', em: em, nhung: than,
+      docLai: function (q) { return NopSach.doc(maLop, b.id, x.id, q.ma).then(function (d) { var c = td[q.ten]; if (d && c) { c.sach = c.sach || {}; c.sach[x.id] = d; } return d; }); },
       onDoi: function () { veTat(); }
     });
-  }, true);
+  }
   document.addEventListener('dblclick', function (e) { if (e.target.closest && e.target.closest('[data-cham-sach]')) { e.stopPropagation(); e.preventDefault(); } }, true);
   function hangBuocChuongKh(b, x, i, t) {
     var m = /^\s*B[UƯ]ỚC\s*(\d{1,2})/i.exec(String(x.tieuDe || ''));
@@ -6238,10 +6283,10 @@ tr.qm-hang-tam td{background:#fffbeb}
     var xong = caLop.filter(function (ten) { return xongBuocTayKh(td[ten], x); }).length;
     var pt = siSo ? Math.min(100, Math.round(xong / siSo * 100)) : 0;
     var du = siSo > 0 && xong >= siSo;
-    if (x.loai === 'sach' && x.nopAnh) {   // v1.387.0 — hàng NỘP BÀI SÁCH bấm được ⇒ pop-up chấm (js/cham-sach.js)
+    if (x.loai === 'sach' && x.nopAnh) {   // v1.387.0 — hàng NỘP BÀI SÁCH bấm được ⇒ chấm · v1.434.0 bỏ 📷, mở hộp chi tiết tab BÀI TRONG SÁCH
       CS_HANG[b.id + '|' + x.id] = { b: b, x: x };
-      return '<span class="td-dong cs-hang-bam" data-cham-sach="' + A.chuAnToan(b.id + '|' + x.id) + '" title="Bấm để chấm bài sách">' +
-        '<span class="td-ten" title="' + tieu + '">📷 ' + nhan + '</span>' +
+      return '<span class="td-dong cs-hang-bam" data-cham-sach="' + A.chuAnToan(b.id + '|' + x.id) + '" title="Bấm để chấm bài trong sách">' +
+        '<span class="td-ten" title="' + tieu + '">' + nhan + '</span>' +
         '<span class="td-bar"><i class="' + mauTheoPhanTramKh(pt, du) + '" style="width:' + pt + '%"></i></span>' +
         '<span class="td-so' + (du ? ' m-la' : '') + '">' + xong + '/' + siSo + '</span>' +
         '<span class="td-tich">' + (du ? '✓' : '›') + '</span></span>';
@@ -8387,8 +8432,9 @@ tr.qm-hang-tam td{background:#fffbeb}
         (nhanBm ? ' <span class="kho-nhan ' + nhanBm.lop + '">' + nhanBm.chu + '</span>' : '') +
       '</div>' +
       '<div class="bm-baima">' + A.chuAnToan(A.maLesson(b)) + ' · ' + A.chuAnToan(hqLopGoc(t)) + '</div>';   // v1.132.1 — tên lớp GỐC (NỀN TẢNG 4), bỏ sĩ số (thầy chốt)
-    var giuTab = (BM_ID === id && HQ.id === id) ? HQ.tab : 'xh';   // v1.143.0 — mở hộp vào tab XẾP HẠNG (tab đầu)
+    var giuTab = HQ_MO_TAB ? HQ_MO_TAB.tab : (BM_ID === id && HQ.id === id) ? HQ.tab : 'xh';   // v1.143.0 — mở hộp vào tab XẾP HẠNG (tab đầu) · v1.434.0 lối tắt hàng bước sách ⇒ tab BÀI TRONG SÁCH
     var giuNap = (HQ.id === id);
+    if (HQ.id && HQ.id !== id && window.ChamSach && ChamSach.nhung()) ChamSach.dong();   // v1.434.0 — đổi bài khi trang chấm còn nhúng ⇒ lưu + gỡ
     BM_ID = id;
     HQ = { id: id, tab: giuTab, b: b, t: t,
            video: giuNap ? HQ.video : null, nghe: giuNap ? HQ.nghe : null,
@@ -8396,6 +8442,7 @@ tr.qm-hang-tam td{background:#fffbeb}
            chang: giuNap ? HQ.chang : null, ct: null, nopSheet: giuNap ? (HQ.nopSheet || 0) : 0,
            mucBq: giuNap ? (HQ.mucBq || null) : null,   // v1.202.0 — dòng BÀI TẬP đang xem riêng ({khoa, ten, loai, ma, o, so})
            sx: (giuNap && HQ.sx) ? HQ.sx : { cot: 'tong', giam: true },
+           sachBt: HQ_MO_TAB ? HQ_MO_TAB.bt : (giuNap ? HQ.sachBt : null),   // v1.434.0 — bước nộp sách đang chấm ở tab BÀI TRONG SÁCH
            gd: (giuNap && HQ.gd) || '7', hsEm: giuNap ? HQ.hsEm : null, lop: lop, chiCt: !!chiCt };   // v1.154.0 — khoảng lọc GẦN ĐÂY · em đang xem hồ sơ HIỆU SUẤT   // v1.138.0 — cách xếp THỜI LƯỢNG giữ khi vẽ lại, mở bài khác thì về mặc định
     // ⭐ v1.132.0 — phạm vi mặc định = CHẶNG ĐANG MỞ (thầy chốt); bài không STAGE = cả bài.
     // ⭐ v1.338.0 (14/10/2026, thầy chốt) — mặc định = MỌI CHẶNG ĐÃ MỞ KHOÁ ('mo'); mở hết rồi ⇒ cả hành trình ('all').
@@ -8411,10 +8458,13 @@ tr.qm-hang-tam td{background:#fffbeb}
     HQ_KT = null;
     hqVeDauGiua();
     var cdDt = $('#bmCdDt'); cdDt.setAttribute('data-rail-caidat', HQ.b.id); if (!cdDt.firstChild) cdDt.innerHTML = IC_GEAR_HQ;   // v1.357.0 — ⚙ đầu hộp (điện thoại)
+    if (HQ.tab === 'sach' && !hqDsSach().length) HQ.tab = 'bt';   // v1.434.0
+    hqThaSach($('#bmThan'));
     $('#bmThan').innerHTML = '<div class="hq-tabs" id="hqTabs">' + hqTabsRuot() + '</div>' +
       '<div class="hq-than" id="hqThan">' + hqVeTab() + '</div>';
     if (window.SaoXh) SaoXh.sauVe();   // v1.337.0 huy hiệu sao đã thưởng/phạt ở bài này
     hqVuaKhung();
+    hqSauVeSach();   // v1.434.0 — tab BÀI TRONG SÁCH: gắn trang chấm vào khung
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(hqVuaKhung);   // đo lại khi font web tải xong
   }
   function hqVeLai() {
@@ -8422,10 +8472,14 @@ tr.qm-hang-tam td{background:#fffbeb}
     HQ_KT = null;
     hqVeDauGiua();
     if (HQ.tab === 'nop' && !hqPhamVi().ws.length) HQ.tab = 'bt';   // chặng đang xem không có sheet ⇒ về tab BÀI TẬP
+    if (HQ.tab === 'sach' && !hqDsSach().length) HQ.tab = 'bt';   // v1.434.0
     var tb = $('#hqTabs'); if (tb) tb.innerHTML = hqTabsRuot();
-    var th = $('#hqThan'); if (th) { var cuon = th.scrollTop; th.innerHTML = hqVeTab(); th.scrollTop = cuon; }
+    var th = $('#hqThan');
+    // v1.434.0 — tab BÀI TRONG SÁCH đã gắn trang chấm ⇒ KHÔNG vẽ lại ruột (dữ liệu tab khác về dần không được xoá nét đang vẽ)
+    if (th && !(HQ.tab === 'sach' && hqSachConNguyen(th))) { hqThaSach(th); var cuon = th.scrollTop; th.innerHTML = hqVeTab(); th.scrollTop = cuon; }
     if (window.SaoXh) SaoXh.sauVe();   // v1.337.0
     hqVuaKhung();
+    hqSauVeSach();
     // ⭐ v1.141.0 — chuyển cảnh CHỈ khi thầy thao tác (đổi tab / đổi chặng); dữ liệu về dần thì vẽ lại tĩnh, khỏi nhấp nháy
     if (HQ.hieu) { HQ.hieu = false; hqNhay(th, 'hq-vao'); }
     // pop-up chi tiết em đang mở ⇒ cập nhật theo dữ liệu mới (tĩnh)
@@ -8620,7 +8674,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     tl: '<line x1="10" x2="14" y1="2" y2="2"/><line x1="12" x2="15" y1="14" y2="11"/><circle cx="12" cy="14" r="8"/>',
     gd: '<path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/>',
     hs: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
-    nop: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>'
+    nop: '<rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+    sach: '<path d="M12 7v14"/><path d="M3 18a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h5a4 4 0 0 1 4 4 4 4 0 0 1 4-4h5a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1h-6a3 3 0 0 0-3 3 3 3 0 0 0-3-3z"/>'   // v1.434.0 BÀI TRONG SÁCH
   };
   function hqTabsRuot() {
     var pv = hqPhamVi(), soAct = pv.acts.length;
@@ -8633,7 +8688,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     };
     // ⭐ v1.143.0 (thầy chốt mẫu v30) — tab BÀI NỘP bỏ số "16/19": chỉ hiện ✓ xanh khi CẢ LỚP đã nộp đủ, chưa đủ thì không hiện gì.
     var nopDu = !!nopSo && (function (x) { return +x[1] > 0 && x[0] === x[1]; })(nopSo.split('/'));
-    return tab('xh', 'Xếp hạng', null) + tab('bt', 'Bài tập', soAct ? soAct + '<span class="hq-tab-chu"> act</span>' : null) + tab('tl', 'Thời lượng', null) +
+    return tab('xh', 'Xếp hạng', null) + tab('bt', 'Bài tập', soAct ? soAct + '<span class="hq-tab-chu"> act</span>' : null) +
+      (hqDsSach().length ? tab('sach', 'Bài trong sách', null) : '') +   // ⭐ v1.434.0 (thầy chốt 28/10) — trang chấm bài sách, ngay sau BÀI TẬP
+      tab('tl', 'Thời lượng', null) +
       tab('gd', 'Gần đây', null) + tab('hs', 'Hiệu suất', null) +   // v1.154.0 — thầy chốt mẫu v42 (A · B)
       (ws.length ? tab('nop', 'Bài nộp', nopDu ? '✓' : null, true) : '') +
       // ⭐ v1.337.0 (thầy chốt mẫu v4) — tab XẾP HẠNG: nút ⭐ thưởng/phạt CẢ LỚP ngay trước ⚙ (js/sao-xh.js).
@@ -8647,6 +8704,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (HQ.tab === 'nop') return hqTabBaiNop();
     if (HQ.tab === 'gd') return hqTabGanDay();
     if (HQ.tab === 'hs') return hqTabHieuSuat();
+    if (HQ.tab === 'sach') return hqTabSach();   // v1.434.0
     return hqTabBaiTap();
   }
 
@@ -10046,6 +10104,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     than.classList.toggle('vua-nop', HQ.tab === 'nop');
     than.classList.toggle('vua-gd', HQ.tab === 'gd');
     than.classList.toggle('vua-hs', HQ.tab === 'hs');
+    than.classList.toggle('vua-sach', HQ.tab === 'sach');   // v1.434.0
     than.style.overflowY = '';
     if (HQ.tab === 'tl') hqVuaTl2(than);
     else if (HQ.tab === 'xh') hqVuaXh(than);
@@ -11227,6 +11286,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   function dongBaiModal(boQua) {
     // ⭐ v1.338.0 — còn SAO TẠM chưa đưa vào ví ⇒ hỏi ĐƯA VÀO VÍ / HỦY BỎ trước (js/sao-xh.js gọi lại dongBaiModal(true))
     if (boQua !== true && window.SaoXh && SaoXh.chanDong(function () { dongBaiModal(true); })) return;
+    if (window.ChamSach && ChamSach.nhung()) ChamSach.dong();   // v1.434.0 — trang chấm nhúng ở tab BÀI TRONG SÁCH: lưu hết + gỡ
     $('#bmNen').classList.remove('mo');
     $('#bmHop').classList.remove('mo');
     BM_ID = null;
@@ -13636,6 +13696,8 @@ tr.qm-hang-tam td{background:#fffbeb}
       /* ⭐ v1.131.0 — HỘP QUẢN LÝ 3 TAB: đổi tab · đưa em bỏ qua QUAY LẠI · đóng chi tiết em. */
       var hqTab = e.target.closest('[data-hqtab]');
       if (hqTab) { HQ.tab = hqTab.dataset.hqtab; HQ.hieu = true; hqVeLai(); return; }
+      var hqSa = e.target.closest('[data-hqsach]');   // v1.434.0 — chip chọn bước nộp sách (bài có nhiều bước)
+      if (hqSa) { HQ.sachBt = hqSa.getAttribute('data-hqsach'); hqVeLai(); return; }
       /* ⭐ v1.357.0 — XẾP HẠNG (điện thoại): chạm chip vòng ⇒ hiện bảng đó (không vẽ lại, chỉ đổi class + đo lại cỡ chữ). */
       var xhChip = e.target.closest('[data-xhchip]');
       if (xhChip) { var vC = xhChip.getAttribute('data-xhchip'); HQ.xhChon = vC === 'tg' ? 'tg' : +vC; hqVuaKhung(); return; }
@@ -13907,6 +13969,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       if (e.key !== 'Escape') return;
       var mo = function (sel) { var n = $(sel); return !!(n && n.classList.contains('mo')); };
       var lop = [
+        [function () { return !!(window.ChamSach && ChamSach.nhung() && ChamSach.coLop()); }, function () { }],   // v1.434.0 — lớp nổi của trang chấm nhúng: js/cham-sach.js tự đóng
         [function () { return mo('#chupXem'); }, function () { $('#chupXem').classList.remove('mo'); }],
         [function () { return !!document.querySelector('.nop-lb'); }, function () { var n = document.querySelector('.nop-lb'); if (n) n.remove(); }],
         [function () { return mo('#xnPop'); }, dongXnPop],
@@ -17248,6 +17311,6 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/chuot-phai.js?v=5"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 <script src="js/huy-hieu.js?v=1"></script>   <!-- 24/10/2026 v1.418.0 huy hiệu Chiến binh sau tên -->
 <script src="js/nop-sach.js?v=2"></script>   <!-- v1.387.0 NỘP BÀI SÁCH: đọc lessonSach · v1.397.0 chờ máy kiểm 180 s -->
-<script src="js/cham-sach.js?v=9"></script>   <!-- v1.401.0 chữ gõ trong ⚙ + một font chung · v1.400.0 icon phẳng 2D · v1.399.0 nút ⚙ cài đặt dấu · v1.398.0 giữ Ctrl kéo dấu · v1.397.0 các dạng bài VIẾT (chấm từng ô) · v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) · v1.389.0 dấu ✓/✕ máy tự đặt (Vision) · v1.390.0 menu chuột phải, KẺ, ?, cỡ công cụ, CHỤP LỖI / ĐẠT · v1.391.0 lưu lâu dài + khoá nút -->
+<script src="js/cham-sach.js?v=10"></script>   <!-- v1.434.0 nhúng được trong tab BÀI TRONG SÁCH · v1.401.0 chữ gõ trong ⚙ + một font chung · v1.400.0 icon phẳng 2D · v1.399.0 nút ⚙ cài đặt dấu · v1.398.0 giữ Ctrl kéo dấu · v1.397.0 các dạng bài VIẾT (chấm từng ô) · v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) · v1.389.0 dấu ✓/✕ máy tự đặt (Vision) · v1.390.0 menu chuột phải, KẺ, ?, cỡ công cụ, CHỤP LỖI / ĐẠT · v1.391.0 lưu lâu dài + khoá nút -->
 </body>
 </html>

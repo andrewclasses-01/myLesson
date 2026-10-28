@@ -343,6 +343,9 @@
   var CSS =
     '#csNen{position:fixed;inset:0;z-index:9000;background:rgba(14,24,28,.62);display:grid;place-items:center;padding:14px;font-family:' + FONT + ';color:#16232A}' +
     '#csNen[hidden]{display:none}html.cs-mo{overflow:hidden}#csNen button{font-family:inherit;cursor:pointer}' +
+    // v1.434.0 — nhúng trong khung (tab BÀI TRONG SÁCH): bỏ nền phủ + nút đóng, hộp lấp đầy khung
+    '#csNen.nhung{position:relative;inset:auto;z-index:auto;background:none;padding:0;display:flex;flex:1;min-width:0;min-height:0}#csNen.nhung[hidden]{display:none}' +
+    '#csNen.nhung .cs-hop{width:100%;height:100%;box-shadow:none;border-radius:14px}#csNen.nhung .cs-dong{display:none}' +
     '.cs-hop{width:min(1560px,100%);height:min(960px,100%);background:#EEF3F2;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}' +
     '.cs-dau{display:flex;align-items:center;gap:12px;padding:11px 16px;background:#0E7C6E;color:#fff}.cs-dau b{font-size:14px;font-weight:900;letter-spacing:.04em}' +
     '.cs-dau span{font-size:11.5px;font-weight:700;opacity:.85}.cs-dong{margin-left:auto;border:0;background:rgba(255,255,255,.18);color:#fff;width:34px;height:34px;border-radius:10px;font-size:15px;font-weight:900}' +
@@ -470,7 +473,7 @@
         '<div class="cs-hang"><button id="csChepNhan">' + ico('chep', 15) + 'Chép lời nhắn</button></div></div></div>' +
       '</div></div><div id="csPop" hidden></div><div id="csToast"></div>';
     document.body.appendChild(n);
-    n.addEventListener('click', function (e) { if (e.target === n || e.target.closest('.cs-dong')) dong(); });
+    n.addEventListener('click', function (e) { if ((e.target === n && !nhung()) || e.target.closest('.cs-dong')) dong(); });
     // ⛔ tắt menu chuột phải của trình duyệt trong pop-up (trừ ô gõ chữ — vẫn cần dán/chép)
     n.addEventListener('contextmenu', function (e) { if (!/TEXTAREA|INPUT/.test(e.target.tagName)) e.preventDefault(); });
     document.addEventListener('pointerdown', function (e) { if (!e.target.closest('.cs-menu,.cs-co,#csCaiDat')) dongNoi(); }, true);   // nút ⚙ tự bật/tắt pop-up của nó
@@ -490,7 +493,7 @@
         if ($('.cs-menu') || $('.cs-co')) dongNoi();
         else if (S.keDau) { S.keDau = null; veTren(); }
         else if (!$('#csPop').hidden) dongPop();
-        else dong();
+        else if (!nhung()) dong();   // v1.434.0 — nhúng trong tab: Esc ngoài cùng để dashboard đóng hộp chi tiết
       }
     });
     n.querySelectorAll('[data-cu]').forEach(function (b) {
@@ -507,7 +510,15 @@
     ganVe($('#csCv'));
   }
   function chonCu(cu) { S.cu = cu; S.keDau = null; document.querySelectorAll('#csNen [data-cu]').forEach(function (x) { x.classList.toggle('on', x.dataset.cu === cu); }); veTren(); }
-  function dong() { luuHet(); var n = $('#csNen'); if (n) n.hidden = true; dongNoi(); document.documentElement.classList.remove('cs-mo'); if (S && S.onDong) S.onDong(); }
+  function dong() {
+    luuHet(); var n = $('#csNen');
+    if (n) { n.hidden = true; if (n.classList.contains('nhung')) { n.classList.remove('nhung'); document.body.appendChild(n); } }   // v1.434.0 — nhúng xong trả về body
+    dongNoi(); document.documentElement.classList.remove('cs-mo'); if (S && S.onDong) S.onDong();
+  }
+  // v1.434.0 — đang NHÚNG trong khung trang khác (tab BÀI TRONG SÁCH của dashboard) và đang hiện
+  function nhung() { var n = $('#csNen'); return !!(n && !n.hidden && n.classList.contains('nhung')); }
+  // v1.434.0 — có lớp nổi riêng của trang chấm (menu, thanh cỡ, đang kẻ, pop-up chụp) ⇒ Esc thuộc về trang chấm
+  function coLop() { var n = $('#csNen'); return !!(n && !n.hidden && ($('.cs-menu') || $('.cs-co') || (S && S.keDau) || !$('#csPop').hidden)); }
   function dongNoi() { document.querySelectorAll('.cs-menu,.cs-co').forEach(function (x) { x.remove(); }); }
   function datViTri(el, x, y) {
     document.body.appendChild(el);
@@ -994,8 +1005,11 @@
     S.i = dau >= 0 ? dau : 0;
     $('#csTieu').textContent = 'CHẤM BÀI SÁCH · ' + S.tieuDe;
     $('#csPhu').textContent = 'Trang ' + S.trangs.join(', ');
-    $('#csNen').hidden = false;
-    document.documentElement.classList.add('cs-mo');
+    // v1.434.0 — cfg.nhung = khung chứa ⇒ trang chấm nằm TRONG khung đó (không phủ màn hình, không khoá cuộn trang)
+    var n = $('#csNen');
+    if (cfg.nhung) { n.classList.add('nhung'); cfg.nhung.appendChild(n); }
+    else { n.classList.remove('nhung'); if (n.parentNode !== document.body) document.body.appendChild(n); document.documentElement.classList.add('cs-mo'); }
+    n.hidden = false;
     // nạp sẵn font chung (chữ vẽ trên canvas không tự chờ font) rồi vẽ lại ảnh
     if (document.fonts && document.fonts.load) Promise.all(['500', '600', '800'].map(function (w) { return document.fonts.load(w + ' 20px Montserrat', 'Aạ'); }))
       .then(function () { if (S && S.anh) veCv(); }, function () { /* không tải được font ⇒ dùng font dự phòng trong FONT */ });
@@ -1003,5 +1017,5 @@
     veTat();
     docDapAn(S.sach || 'NTTA', S.trangs).then(function (d) { if (!S) return; S.dapAn = d; S.dapAnXong = true; veDs(); veTab(); veAi(); if (S.anh) veCv(); });
   }
-  window.ChamSach = { mo: mo, dong: dong };
+  window.ChamSach = { mo: mo, dong: dong, nhung: nhung, coLop: coLop };
 })();

@@ -196,11 +196,14 @@
     var e = emHien(), tk = tongKet(e), coSai = tk.sai.length + tk.saiTay > 0;
     var lyDo = !S.dapAnXong ? 'Đang tải đáp án…' : (tk.thieu.length ? '🔒 Còn ' + tk.thieu.length + ' câu chưa có dấu ✓/✕: câu ' + tk.thieu.slice(0, 8).map(tenSo).join(', ') + (tk.thieu.length > 8 ? '…' : '') : '');
     var dat = $('#csDat'), loi = $('#csChupLoi');
-    dat.disabled = !!lyDo || coSai;
-    dat.title = lyDo || (coSai ? '🔒 Còn dấu ✕ sai — dùng CHỤP LỖI' : 'Chụp ảnh ĐẠT + ghi ĐẠT cả bài');
-    loi.disabled = !!lyDo || !coSai;
-    loi.title = lyDo || (!coSai ? '🔒 Mọi câu đều ✓ đúng — dùng ĐẠT' : 'Chụp từng trang lỗi / trả lại trang');
-    $('#csKhoa').textContent = lyDo || (coSai ? 'Sai ' + (tk.sai.length + tk.saiTay) + ' chỗ ⇒ CHỤP LỖI' : '✓ Đúng hết ⇒ ĐẠT');
+    // ⭐ v1.435.0 (thầy chốt 28/10) — chưa chấm ĐẠT: nút chỉ chữ "ĐẠT"; thầy đã bấm ĐẠT (ghi máy chủ) ⇒ "ĐẠT ✓" + CHỤP LỖI mờ.
+    var daDat = !!e && ttEm(e).lop === 'xong';
+    dat.innerHTML = 'ĐẠT' + (daDat ? ico('dat', 16, 2.2).replace('class="cs-ico"', 'class="cs-ico cs-tich"') : '');
+    dat.disabled = !daDat && (!!lyDo || coSai);
+    dat.title = daDat ? 'Thầy đã chấm ĐẠT — bấm lại để chụp lại ảnh ĐẠT' : lyDo || (coSai ? '🔒 Còn dấu ✕ sai — dùng CHỤP LỖI' : 'Chụp ảnh ĐẠT + ghi ĐẠT cả bài');
+    loi.disabled = daDat || !!lyDo || !coSai;
+    loi.title = daDat ? '🔒 Bài đã ĐẠT' : lyDo || (!coSai ? '🔒 Mọi câu đều ✓ đúng — dùng ĐẠT' : 'Chụp từng trang lỗi / trả lại trang');
+    $('#csKhoa').textContent = daDat ? '✓ Thầy đã chấm ĐẠT' : lyDo || (coSai ? 'Sai ' + (tk.sai.length + tk.saiTay) + ' chỗ ⇒ CHỤP LỖI' : '✓ Đúng hết ⇒ bấm ĐẠT');
   }
   // Trạng thái một trang (theo dấu đang có): thieu | chan | tra | dung | vang
   function ttTrang(e, p) {
@@ -354,7 +357,8 @@
     '.cs-cot h3{margin:0;padding:13px 15px 9px;font-size:12px;font-weight:900;letter-spacing:.06em}.cs-cot h3 small{display:block;font-size:10.5px;font-weight:600;color:#5F7370;letter-spacing:0;margin-top:3px}' +
     '.cs-ds{overflow:auto;padding-bottom:10px}.cs-em{display:flex;align-items:center;gap:9px;margin:0 8px;padding:8px 9px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer}' +
     '.cs-em:hover{background:#F4F8F7}.cs-em.chon{background:#E3F1EE;outline:1.5px solid #0E7C6E}' +
-    '.cs-av{width:30px;height:30px;border-radius:50%;background:#94A3B8;display:grid;place-items:center;font-size:10.5px;font-weight:900;color:#fff;flex:none}' +
+    '.cs-av{width:34px;height:34px;border-radius:50%;background:#94A3B8;display:grid;place-items:center;font-size:10.5px;font-weight:900;color:#fff;flex:none;position:relative;overflow:hidden}' +
+    '.cs-av img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.cs-em.xong .cs-ten{color:#15803D}' +   // v1.435.0 ảnh em + tên ĐÃ ĐẠT xanh lá
     '.cs-tt{margin-left:auto;font-size:9px;font-weight:800;padding:3px 7px;border-radius:999px;white-space:nowrap}' +
     '.cs-tt.cho{background:#FEF3C7;color:#B45309}.cs-tt.xong{background:#DCFCE7;color:#15803D}.cs-tt.chua{background:#F1F5F9;color:#94A3B8}.cs-tt.tra{background:#FEE2E2;color:#B91C1C}' +
     '.cs-giua{background:#1E2B30;border-color:#1E2B30}.cs-thanh{display:flex;align-items:center;gap:5px;padding:9px 11px;background:#26363C;flex-wrap:wrap}' +
@@ -375,6 +379,7 @@
     '.cs-nut{border:0;border-radius:11px;padding:11px 18px;font-size:12px;font-weight:900;letter-spacing:.05em}.cs-nut:disabled{background:#64748B!important;color:#E2E8F0!important;box-shadow:none!important;opacity:.45;cursor:not-allowed}' +
     '.cs-luu{font-size:10.5px;font-weight:800;color:#9FE3D6}.cs-luu.dang{color:#FCD34D}.cs-luu.loi{color:#FCA5A5}.cs-khoa{font-size:10.5px;font-weight:800;color:#FCD34D;max-width:260px}' +
     '.cs-nut.dat{background:#16A34A;color:#fff}.cs-nut.loi{background:#F2A93B;color:#3B2A07}' +
+    '.cs-nut.dat .cs-tich{margin-left:8px;margin-right:0}' +   // v1.435.0 dấu ✓ BÊN PHẢI chữ ĐẠT khi thầy đã chấm ĐẠT
     '.cs-ai-dau{display:flex;align-items:center;gap:8px;padding:0 15px 9px;font-size:11px;color:#5F7370;font-weight:700}.cs-ai-dau b{margin-left:auto;font-size:20px;font-weight:900;color:#16232A}' +
     '.cs-bang{overflow:auto;padding:0 10px 10px;flex:1;min-height:0}' +
     '.cs-nhom{display:flex;align-items:center;gap:8px;margin:10px 0 4px;padding:7px 10px;border-radius:10px;font-size:10.5px;font-weight:900;letter-spacing:.05em;color:#fff;cursor:pointer}' +
@@ -466,7 +471,7 @@
         '<div class="cs-vung" id="csVung"><span class="cs-canh" id="csCanh" hidden></span><div class="cs-ve" id="csVe"><canvas id="csCv"></canvas><canvas id="csCvTren"></canvas></div>' +
           '<div class="cs-trong" id="csTrong" hidden>Em chưa nộp trang này.</div></div>' +
         '<div class="cs-cu" id="csCu"></div>' +
-        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 16, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat" id="csDat">' + ico('dat', 16, 2.2) + 'ĐẠT</button></div></div>' +
+        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 16, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat" id="csDat">ĐẠT</button></div></div>' +
       '<div class="cs-cot cs-ai"><h3>CHẤM THAM KHẢO (AI)<small>Chỉ thầy thấy. Bấm một dòng ⇒ ảnh cuộn tới dấu câu đó.</small></h3>' +
         '<div class="cs-ai-dau"><span id="csAiTrang"></span><b id="csTong"></b></div><div class="cs-bang" id="csBang"></div>' +
         '<div class="cs-nhan"><label>LỜI NHẮN GỬI EM (SOẠN SẴN — SỬA ĐƯỢC)</label><textarea id="csNhan"></textarea>' +
@@ -794,9 +799,17 @@
   }
 
   // ───────── vẽ khung ─────────
+  var THU_NHOM = { cho: 0, tra: 1, chua: 2, xong: 3 };
   function veDs() {
     $('#csDs').innerHTML = '<h3>' + chu(S.tieuDe) + '<small>' + S.em.length + ' em · ' + S.em.filter(function (e) { return Object.keys((e.doc || {}).trang || {}).length; }).length + ' đã nộp</small></h3>' +
-      S.em.map(function (e, i) { var t = ttEm(e); return '<div class="cs-em' + (i === S.i ? ' chon' : '') + '" data-i="' + i + '"><span class="cs-av">' + chu(String(e.ten).trim().slice(0, 2).toUpperCase()) + '</span>' + chu(e.ten) + '<span class="cs-tt ' + t.lop + '">' + chu(t.chu) + '</span></div>'; }).join('');
+      // ⭐ v1.435.0 (thầy chốt 28/10) — xếp nhóm: CHỜ CHẤM → ĐÃ TRẢ LẠI (chưa nộp bổ sung) → CHƯA NỘP → ĐÃ ĐẠT (cuối, tên xanh lá); trong nhóm giữ thứ tự sĩ số.
+      S.em.map(function (e, i) { return { e: e, i: i, t: ttEm(e) }; })
+        .sort(function (a, b) { return ((THU_NHOM[a.t.lop] || 0) - (THU_NHOM[b.t.lop] || 0)) || (a.i - b.i); })
+        .map(function (o) {
+          var e = o.e, t = o.t;
+          return '<div class="cs-em ' + t.lop + (o.i === S.i ? ' chon' : '') + '" data-i="' + o.i + '"><span class="cs-av">' + chu(String(e.ten).trim().slice(0, 2).toUpperCase()) +
+            (e.av ? '<img alt="" src="' + chu(e.av) + '" onerror="this.remove()">' : '') + '</span><span class="cs-ten">' + chu(e.ten) + '</span><span class="cs-tt ' + t.lop + '">' + chu(t.chu) + '</span></div>';
+        }).join('');
     $('#csDs').querySelectorAll('.cs-em').forEach(function (r) { r.onclick = function () { S.i = +r.dataset.i; S.p = S.trangs[0]; S.cuChon = -1; S.dangSo = null; veTat(); }; });
   }
   function veTab() {
@@ -997,7 +1010,7 @@
     };
   }
 
-  /* cfg = { tieuDe, lop, bai, bt, trangs:[32,33,34], sach:'NTTA', em:[{ten, ma, doc}], docLai(em) ⇒ Promise<doc>, onDoi(), onDong() } */
+  /* cfg = { tieuDe, lop, bai, bt, trangs:[32,33,34], sach:'NTTA', em:[{ten, ma, doc, av (url ảnh, v1.435.0)}], docLai(em) ⇒ Promise<doc>, onDoi(), onDong() } */
   function mo(cfg) {
     if (!$('#csNen')) dungKhung();
     S = Object.assign({ i: 0, p: cfg.trangs[0], cu: 'but', mau: MAU[0], dapAn: {}, dapAnXong: false, cuChon: -1, hien: null, keDau: null, tam: null, chuot: null, nhay: null, dangSo: null, choNhay: null }, cfg);

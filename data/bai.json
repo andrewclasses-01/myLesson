@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-29 14:17:38",
+  "capNhat": "2026-10-29 14:50:36",
   "bai": {
     "A1C": [
       {
@@ -6175,6 +6175,27 @@
     ],
     "B1B": [
       {
+        "id": "B1B_28.10_WORDS_LSB1-S3.T4.P3-4",
+        "tieuDe": "B1B_28.10_WORDS LSB1-S3.T4.P3-4",
+        "tenHien": "B1B_28.10_WORDS LSB1-S3.T4.P3-4",
+        "dang": "WORDS",
+        "ngay": "28.10",
+        "han": "2026-10-31T19:45",
+        "maLesson": "LSB1-S3.T4.P3-4",
+        "taoLuc": "2026-10-29",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "FIND THE GAP",
+            "act": "LSB1-S3.T4.P3-4 / FIND THE GAP",
+            "yeuCau": "100% requirement",
+            "ma": "n4tzgh",
+            "mau": "FIND THE GAP"
+          }
+        ],
+        "giaoLuc": "2026-10-29T14:50"
+      },
+      {
         "id": "B1B_24.10_WORDS_LSB1-S3.T4.P3-4",
         "tieuDe": "B1B_24.10_WORDS LSB1-S3.T4.P3-4",
         "tenHien": "B1B_24.10_WORDS LSB1-S3.T4.P3-4",
@@ -7227,7 +7248,7 @@
     "A1B": "2026-10-27 22:06:14",
     "NNTNG4": "2026-10-24 11:34:29",
     "A2B": "2026-10-29 14:17:38",
-    "B1B": "2026-10-24 21:41:08",
+    "B1B": "2026-10-29 14:50:36",
     "NNTNGK9": "2026-10-28 09:31:59"
   }
 }

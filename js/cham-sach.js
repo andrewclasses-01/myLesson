@@ -145,7 +145,7 @@
   function henLuu(e, p, cu) {
     var k = khoa(e, p, cu);
     if (HEN[k]) clearTimeout(HEN[k].t);
-    HEN[k] = { t: setTimeout(function () { guiLuu(e, p, cu); }, 1200), e: e, p: p, cu: cu };
+    HEN[k] = { t: setTimeout(function () { if (S && e === emHien()) veTab(); guiLuu(e, p, cu); }, 1200), e: e, p: p, cu: cu };   // v1.449.0 ảnh nhỏ theo nét mới
     hienLuu('dang');
   }
   function guiLuu(e, p, cu, xoa) {
@@ -253,6 +253,18 @@
     }
     return ANH[url];
   }
+  // ⭐ v1.449.0 (thầy chốt "máy chủ tự cắt") — `may.cat` (khung trang, tỉ lệ theo ảnh GỐC, máy chủ dò bằng Vision) ⇒ hình chữ nhật trên
+  //   canvas ĐÃ XOAY { x, y, w, h } + cỡ canvas đầy đủ (cw, ch). Mọi toạ độ dấu/nét vẫn theo canvas đầy đủ; chỉ phần trong khung được vẽ ra.
+  //   Không có `cat` (ảnh cũ / máy không dò được) ⇒ khung = trọn ảnh.
+  function catCv(ban, im, xoay) {
+    var k = coXoay(im, xoay), c = ban && ban.may && ban.may.cat, tron = { x: 0, y: 0, w: k.cw, h: k.ch, cw: k.cw, ch: k.ch };
+    if (!c || !(c.x1 > c.x0 && c.y1 > c.y0)) return tron;
+    var g = [[c.x0, c.y0], [c.x1, c.y0], [c.x1, c.y1], [c.x0, c.y1]].map(function (q) { return anhSangCv(q[0] * k.w, q[1] * k.h, k.w, k.h, k.cw, k.ch, xoay); });
+    var xs = g.map(function (q) { return q[0]; }), ys = g.map(function (q) { return q[1]; });
+    var x0 = Math.max(0, Math.floor(Math.min.apply(null, xs))), y0 = Math.max(0, Math.floor(Math.min.apply(null, ys)));
+    var x1 = Math.min(k.cw, Math.ceil(Math.max.apply(null, xs))), y1 = Math.min(k.ch, Math.ceil(Math.max.apply(null, ys)));
+    return x1 - x0 < 50 || y1 - y0 < 50 ? tron : { x: x0, y: y0, w: x1 - x0, h: y1 - y0, cw: k.cw, ch: k.ch };
+  }
   function coXoay(im, xoay) { var w = im.naturalWidth, h = im.naturalHeight, ngang = xoay === 90 || xoay === 270; return { w: w, h: h, cw: ngang ? h : w, ch: ngang ? w : h }; }
   function anhSangCv(px, py, w, h, cw, ch, xoay) {
     var r = xoay * Math.PI / 180, dx = px - w / 2, dy = py - h / 2;
@@ -325,10 +337,11 @@
     var ban = banCua(e, p, cu);
     if (!ban) return Promise.reject(new Error('chưa nộp'));
     return taiAnh(ban.url).then(function (a) {
-      var xoay = (ban.may && ban.may.xoay) || 0, k = coXoay(a.im, xoay);
-      var pc = document.createElement('canvas'); pc.width = k.cw; pc.height = k.ch;
-      veTrang(pc.getContext('2d'), a.im, xoay, suaCua(e, p, cu), k.cw, k.ch);
-      var tl = opt.rong && k.cw > opt.rong ? opt.rong / k.cw : 1, W = Math.round(k.cw * tl), H = Math.round(k.ch * tl);
+      var xoay = (ban.may && ban.may.xoay) || 0, k = catCv(ban, a.im, xoay);
+      var pc = document.createElement('canvas'); pc.width = k.w; pc.height = k.h;
+      var gp = pc.getContext('2d'); gp.translate(-k.x, -k.y);   // v1.449.0 chỉ phần trong khung trang
+      veTrang(gp, a.im, xoay, suaCua(e, p, cu), k.cw, k.ch);
+      var tl = opt.rong && k.w > opt.rong ? opt.rong / k.w : 1, W = Math.round(k.w * tl), H = Math.round(k.h * tl);
       var dai = opt.dai ? Math.round(W * 0.05) + 14 : 0;
       var c = document.createElement('canvas'); c.width = W; c.height = H + dai;
       var g = c.getContext('2d');
@@ -359,7 +372,22 @@
     '.cs-hop{width:min(1560px,100%);height:min(960px,100%);background:#EEF3F2;border-radius:20px;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)}' +
     '.cs-dau{display:flex;align-items:center;gap:12px;padding:11px 16px;background:#0E7C6E;color:#fff}.cs-dau b{font-size:14px;font-weight:900;letter-spacing:.04em}' +
     '.cs-dau span{font-size:11.5px;font-weight:700;opacity:.85}.cs-dong{margin-left:auto;border:0;background:rgba(255,255,255,.18);color:#fff;width:34px;height:34px;border-radius:10px;font-size:15px;font-weight:900}' +
-    '.cs-khung{flex:1;min-height:0;display:grid;grid-template-columns:240px minmax(0,1fr) 360px;gap:12px;padding:12px}' +
+    '.cs-khung{flex:1;min-height:0;display:grid;grid-template-columns:220px 150px minmax(0,1fr) 340px;gap:10px;padding:10px}' +
+    // ⭐ v1.449.0 (thầy 29/10) — nhúng tab: bỏ dải CHẤM BÀI SÁCH (thông tin lên dải tab dashboard) · cột ảnh nhỏ · nút + thông tin lên thanh trên
+    '#csNen.nhung .cs-dau{display:none}#csNen.nhung .cs-khung{padding:0}' +
+    '.cs-tn-cot{display:flex;flex-direction:column;padding:6px 6px 0}' +
+    '.cs-tn{flex:1 1 0;min-height:0;container-type:size;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;border:0;background:none;border-radius:12px;padding:0}' +
+    '.cs-tn:hover{background:#F4F8F7}.cs-tn.on{background:#E3F1EE}' +
+    '.cs-tn-anh{flex:none;display:flex;justify-content:center}' +
+    '.cs-tn canvas,.cs-tn i{display:block;max-width:calc(100cqw - 14px);max-height:calc(100cqh - 34px);border-radius:6px;border:3px solid #DC2626;background:#fff;box-sizing:border-box}' +
+    '.cs-tn i{width:calc(100cqw - 24px);height:calc(100cqh - 34px);display:grid;place-items:center;font-style:normal;font-size:9px;font-weight:900;color:#DC2626;border-style:dashed;text-align:center}' +
+    '.cs-tn.xanh canvas{border-color:#16A34A}.cs-tn.vang canvas{border-color:#F2A93B}.cs-tn.on canvas,.cs-tn.on i{box-shadow:0 0 0 3px #0E7C6E}' +
+    '.cs-tn-vach{flex:none;height:1px;background:#C9D6D3;margin:4px 8px}' +
+    '.cs-tn-dem{flex:none;text-align:center;padding:7px 0 8px;margin-top:4px;border-top:1px solid #E0EAE7;font-size:12px;font-weight:900;color:#16232A;letter-spacing:.04em}.cs-tn-dem small{color:#94A3B8;font-weight:800}' +
+    '.cs-tn b{flex:none;font-size:10px;font-weight:900;letter-spacing:.05em;color:#5F7370;text-align:center;line-height:1.2}.cs-tn.on b{color:#0E7C6E}' +
+    '.cs-tac{display:flex;align-items:center;gap:6px;min-width:0;flex:1 1 220px}.cs-tac .cs-nut{padding:8px 12px;font-size:11px;flex:none}' +
+    '.cs-tin{display:flex;flex-direction:column;gap:2px;min-width:0;margin-left:4px;line-height:1.25}.cs-tin>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+    '.cs-tin2{display:flex;gap:6px;min-width:0}.cs-tin2>*{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cs-cong{display:flex;align-items:center;gap:4px;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}' +
     '.cs-cot{background:#fff;border:1px solid #E0EAE7;border-radius:16px;overflow:hidden;display:flex;flex-direction:column;min-height:0}' +
     '.cs-cot h3{margin:0;padding:13px 15px 9px;font-size:12px;font-weight:900;letter-spacing:.06em}.cs-cot h3 small{display:block;font-size:10.5px;font-weight:600;color:#5F7370;letter-spacing:0;margin-top:3px}' +
     '.cs-ds{overflow:auto;padding-bottom:10px}.cs-em{display:flex;align-items:center;gap:9px;margin:0 8px;padding:8px 9px;border-radius:12px;font-size:12px;font-weight:700;cursor:pointer}' +
@@ -371,7 +399,7 @@
     '.cs-giua{background:#1E2B30;border-color:#1E2B30}.cs-thanh{display:flex;align-items:center;gap:5px;padding:9px 11px;background:#26363C;flex-wrap:wrap}' +
     '.cs-tab{display:flex;gap:5px;margin-right:auto}.cs-tab button{border:0;border-radius:9px;padding:8px 12px;font-size:11px;font-weight:900;letter-spacing:.03em;color:#fff;opacity:.55}' +
     '.cs-tab button.on{opacity:1;box-shadow:0 0 0 2px #fff}.cs-tab .xanh{background:#16A34A}.cs-tab .vang{background:#F2A93B;color:#3B2A07}.cs-tab .do{background:#DC2626}' +
-    '.cs-cc{border:0;width:34px;height:32px;border-radius:9px;background:#34474D;color:#fff;font-size:14px;font-weight:900;position:relative}.cs-cc.on{background:#fff;color:#DC2626}' +
+    '.cs-cc{border:0;width:31px;height:31px;border-radius:9px;background:#34474D;color:#fff;font-size:14px;font-weight:900;position:relative}.cs-cc.on{background:#fff;color:#DC2626}' +
     '.cs-cc[data-cu="hoi"]{color:#F59E0B}.cs-cc[data-cu="dung"]{color:#4ADE80}.cs-cc[data-cu="sai"]{color:#F87171}.cs-cc.on[data-cu="dung"]{color:#16A34A}' +
     '.cs-mau{width:21px;height:21px;border-radius:50%;border:2px solid #fff;cursor:pointer}.cs-mau.on{outline:3px solid #9FE3D6}.cs-vach{width:1px;height:22px;background:#4B5E63;margin:0 3px}' +
     // v1.448.1 (thầy 29/10) — ảnh trang co TRỌN trong khung giữa (cả bề ngang lẫn bề cao) ⇒ không bao giờ phải cuộn, mọi cỡ màn hình
@@ -383,9 +411,9 @@
     '.cs-cu{display:flex;gap:6px;align-items:center;padding:0 11px;background:#26363C;flex-wrap:wrap}.cs-cu:not(:empty){padding:7px 11px}.cs-cu span{color:#A9BDB9;font-size:10px;font-weight:800}' +
     '.cs-cu button{position:relative;border:2px solid transparent;border-radius:7px;padding:0;background:#34474D;height:44px;overflow:hidden}.cs-cu button.on{border-color:#fff}' +
     '.cs-cu img{height:40px;display:block}.cs-cu b{position:absolute;right:2px;top:1px;color:#FCA5A5;font-size:12px}.cs-cu .ve{color:#fff;font-size:10px;font-weight:800;padding:0 9px}' +
-    '.cs-day{display:flex;gap:8px;padding:9px 11px;background:#26363C;align-items:center;flex-wrap:wrap}.cs-lich{color:#A9BDB9;font-size:10.5px;font-weight:600;margin-right:auto;flex:1;min-width:160px}' +
+    '.cs-lich{color:#A9BDB9;font-size:10px;font-weight:600}' +
     '.cs-nut{border:0;border-radius:11px;padding:11px 18px;font-size:12px;font-weight:900;letter-spacing:.05em}.cs-nut:disabled{background:#64748B!important;color:#E2E8F0!important;box-shadow:none!important;opacity:.45;cursor:not-allowed}' +
-    '.cs-luu{font-size:10.5px;font-weight:800;color:#9FE3D6}.cs-luu.dang{color:#FCD34D}.cs-luu.loi{color:#FCA5A5}.cs-khoa{font-size:10.5px;font-weight:800;color:#FCD34D;max-width:260px}' +
+    '.cs-luu{font-size:10.5px;font-weight:800;color:#9FE3D6}.cs-luu.dang{color:#FCD34D}.cs-luu.loi{color:#FCA5A5}.cs-khoa{font-size:10.5px;font-weight:800;color:#FCD34D}.cs-luu{flex:none;font-size:10px}' +
     '.cs-nut.dat{background:#16A34A;color:#fff}.cs-nut.loi{background:#F2A93B;color:#3B2A07}' +
     // v1.436.0 (thầy chốt 28/10) — ĐẠT chưa tích = nền TRẮNG chữ đen; đã tích = xanh + ✓ bên phải. Pop-up hỏi bỏ ĐẠT.
     '.cs-nut.dat.chua{background:#fff;color:#16232A;box-shadow:inset 0 0 0 1.5px #CBD5D1}.cs-nut.dat.chua:disabled{background:#fff!important;color:#16232A!important;box-shadow:inset 0 0 0 1.5px #CBD5D1!important;opacity:.45}.cs-nut.dat .cs-tich{margin-left:1px}' +
@@ -403,6 +431,12 @@
     '.cs-cau .em-k,.cs-cau .dung-k{text-align:center;font-weight:900;border-radius:7px;padding:3px 0}.cs-cau .em-k{background:#EAF1FF;color:#2F6FED}.cs-cau .dung-k{background:#F1F5F4}' +
     '.cs-cau.sai{border-left-color:#DC2626}.cs-cau.sai .em-k{background:#FEE2E2;color:#DC2626}.cs-cau.dung .kq{color:#16A34A}.cs-cau.sai .kq{color:#DC2626}.cs-cau .kq{text-align:center;font-weight:900}' +
     '.cs-cau.hoi{border-left-color:#F59E0B}.cs-cau.hoi .em-k{background:#FEF3C7;color:#B45309}.cs-cau.hoi .kq{color:#F59E0B}.cs-cau .ghi{font-size:9px;color:#B45309;grid-column:2/-1;font-weight:700}' +
+    // ⭐ v1.449.0 — cột CHẤM THAM KHẢO tự gọn theo 3 nấc (vuaAi) cho tới khi đủ mọi câu không phải cuộn
+    '.cs-ai.g1 h3 small,.cs-ai.g1 .cs-chu-thich{display:none}.cs-ai.g1 h3{padding:10px 13px 4px}.cs-ai.g1 .cs-ai-dau{padding-bottom:4px}.cs-ai.g1 .cs-ai-dau b{font-size:17px}' +
+    '.cs-ai.g1 .cs-cau{padding:3px 8px}.cs-ai.g1 .cs-nhom{margin:6px 0 2px;padding:5px 10px}.cs-ai.g1 .cs-cau .em-k,.cs-ai.g1 .cs-cau .dung-k{padding:1px 0}' +
+    '.cs-ai.g1 .cs-nhan{padding:8px 11px}.cs-ai.g1 .cs-nhan textarea{min-height:48px;height:48px;padding:6px 9px;margin-top:4px}.cs-ai.g1 .cs-hang{margin-top:5px}.cs-ai.g1 .cs-hang button{padding:6px}' +
+    '.cs-ai.g2 .cs-cau .ghi{display:none}.cs-ai.g2 .cs-cau{padding:1px 8px;font-size:11px}.cs-ai.g2 .cs-nhom{margin:4px 0 1px;padding:4px 10px}' +
+    '.cs-ai.g3 .cs-cau{padding:0 8px;font-size:10.5px}.cs-ai.g3 .cs-cau .em-k,.cs-ai.g3 .cs-cau .dung-k{padding:0}.cs-ai.g3 .cs-nhom{margin:3px 0 1px;padding:3px 10px;font-size:10px}.cs-ai.g3 .cs-nhan label{display:none}' +
     '.cs-chu-thich{font-size:9.5px;color:#94A3B8;font-weight:600;padding:8px}' +
     '.cs-ico{display:block;flex:none}.cs-cc{display:inline-grid;place-items:center}.cs-dong{display:inline-grid;place-items:center}' +
     '.cs-nut,.cs-hang button,.cs-cu .ve{display:inline-flex;align-items:center;justify-content:center;gap:7px}.cs-menu i{display:inline-grid;place-items:center}' +
@@ -444,7 +478,7 @@
     '.cs-pop-day .cs-nut{padding:14px 24px;font-size:13px}.cs-nut.phu{background:#EEF3F2;color:#16232A}' +
     '#csToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16232A;color:#fff;padding:12px 18px;border-radius:12px;font-size:12.5px;font-weight:800;opacity:0;transition:.25s;pointer-events:none;z-index:9400}' +
     '#csToast.hien{opacity:1}' +
-    '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-giua{height:max(420px,calc(100vh - 140px))}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:minmax(0,1fr) 230px}.cs-dat-luoi{grid-template-columns:1fr}}' +
+    '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-giua{height:max(420px,calc(100vh - 140px))}.cs-tn-cot{flex-direction:row;min-height:0;height:190px;padding:6px}.cs-tn{max-width:150px}.cs-tn-vach{width:1px;height:auto;margin:8px 4px}.cs-tn-dem{display:none}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:minmax(0,1fr) 230px}.cs-dat-luoi{grid-template-columns:1fr}}' +
     '@media (max-width:640px){.cs-loi-dong,.cs-loi-dong[data-p]{grid-template-columns:1fr;grid-template-rows:72cqh auto;height:auto}}';
   // ⭐ v1.400.0 icon phẳng 2D (nét Lucide, màu theo chữ của nút)
   var ICO = {
@@ -481,16 +515,17 @@
     n.innerHTML =
       '<div class="cs-hop"><div class="cs-dau"><b id="csTieu"></b><span id="csPhu"></span><button type="button" class="cs-dong" title="Đóng (Esc)">' + ico('dong', 18, 2.4) + '</button></div>' +
       '<div class="cs-khung"><div class="cs-cot cs-ds" id="csDs"></div>' +
-      '<div class="cs-cot cs-giua"><div class="cs-thanh"><div class="cs-tab" id="csTab"></div>' +
+      '<div class="cs-cot cs-tn-cot" id="csTab"></div>' +   // v1.449.0 cột ảnh nhỏ các trang (thay nút TRANG)
+      '<div class="cs-cot cs-giua"><div class="cs-thanh"><div class="cs-tac"><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 15, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat chua" id="csDat">ĐẠT</button>' +
+        '<div class="cs-tin"><span class="cs-khoa" id="csKhoa"></span><span class="cs-tin2"><span class="cs-luu" id="csLuu"></span><span class="cs-lich" id="csLich"></span></span></div></div><div class="cs-cong">' +
         CU_NUT.map(function (c) { return '<button class="cs-cc' + (c[0] === 'but' ? ' on' : '') + '" data-cu="' + c[0] + '" title="' + TEN_CU[c[0]] + ' — chuột phải: chọn cỡ">' + c[1] + '</button>'; }).join('') +
         '<span class="cs-vach"></span>' +
         MAU.map(function (m, i) { return '<span class="cs-mau' + (i ? '' : ' on') + '" data-mau="' + m + '" style="background:' + m + '" title="Màu nét vẽ"></span>'; }).join('') +
         '<span class="cs-vach"></span><button class="cs-cc" id="csLui" title="Hoàn tác (Ctrl+Z)">' + ico('lui') + '</button><button class="cs-cc" id="csXoa" title="Xoá hết nét vẽ trang này">' + ico('rac') + '</button>' +
-        '<button class="cs-cc" id="csCaiDat" title="Cài đặt dấu ✓ ✕ ? (cỡ, nét)"><svg class="cs-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button></div>' +
+        '<button class="cs-cc" id="csCaiDat" title="Cài đặt dấu ✓ ✕ ? (cỡ, nét)"><svg class="cs-ico" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>' +
         '<div class="cs-vung" id="csVung"><span class="cs-canh" id="csCanh" hidden></span><div class="cs-ve" id="csVe"><canvas id="csCv"></canvas><canvas id="csCvTren"></canvas></div>' +
           '<div class="cs-trong" id="csTrong" hidden>Em chưa nộp trang này.</div></div>' +
-        '<div class="cs-cu" id="csCu"></div>' +
-        '<div class="cs-day"><span class="cs-lich" id="csLich"></span><span class="cs-luu" id="csLuu"></span><span class="cs-khoa" id="csKhoa"></span><button class="cs-nut loi" id="csChupLoi">' + ico('chup', 16, 2.2) + 'CHỤP LỖI</button><button class="cs-nut dat chua" id="csDat">ĐẠT</button></div></div>' +
+        '<div class="cs-cu" id="csCu"></div></div>' +
       '<div class="cs-cot cs-ai"><h3>CHẤM THAM KHẢO (AI)<small>Chỉ thầy thấy. Bấm một dòng ⇒ ảnh cuộn tới dấu câu đó.</small></h3>' +
         '<div class="cs-ai-dau"><span id="csAiTrang"></span><b id="csTong"></b></div><div class="cs-bang" id="csBang"></div>' +
         '<div class="cs-nhan"><label>LỜI NHẮN GỬI EM (SOẠN SẴN — SỬA ĐƯỢC)</label><textarea id="csNhan"></textarea>' +
@@ -503,7 +538,9 @@
     document.addEventListener('pointerdown', function (e) { if (!e.target.closest('.cs-menu,.cs-co,#csCaiDat')) dongNoi(); }, true);   // nút ⚙ tự bật/tắt pop-up của nó
     var doiCtrl = function (e) {
       if (!S || !S.anh || !$('#csCv')) return;
-      var c = e.ctrlKey || e.metaKey; if (c === !!S.ctrl) return;
+      // ⛔ Alt nhả ra trong Chrome Windows = nhảy vào menu trình duyệt ⇒ chặn khi trang chấm đang mở (ngoài ô gõ)
+      if (e.key === 'Alt' && $('#csNen') && !$('#csNen').hidden && !/TEXTAREA|INPUT/.test(document.activeElement && document.activeElement.tagName)) e.preventDefault();
+      var c = keoPhim(e); if (c === !!S.ctrl) return;
       S.ctrl = c; conTro($('#csCv')); veTren();
     };
     document.addEventListener('keyup', doiCtrl);
@@ -534,6 +571,7 @@
     $('#csDat').ondblclick = function () { var e = emHien(); if (e && this.classList.contains('khoa') && !S.dangGhiDat) ghiDat(e, 'dat'); };   // v1.448.0
     $('#csChepNhan').onclick = function () { navigator.clipboard.writeText($('#csNhan').value).then(function () { toast('✓ Đã chép lời nhắn'); }, function () { toast('Trình duyệt chặn clipboard'); }); };
     ganVe($('#csCv'));
+    if (window.ResizeObserver) new ResizeObserver(function () { if (S) vuaAi(); }).observe(n.querySelector('.cs-ai'));   // v1.449.0 đổi cỡ khung ⇒ gọn lại
   }
   function chonCu(cu) { S.cu = cu; S.keDau = null; document.querySelectorAll('#csNen [data-cu]').forEach(function (x) { x.classList.toggle('on', x.dataset.cu === cu); }); veTren(); }
   function dong() {
@@ -637,8 +675,9 @@
   }
 
   // ───────── vẽ trên ảnh ─────────
-  function kichCo() { var cv = $('#csCv'); return { cw: cv.width, ch: cv.height, w: S.anh.naturalWidth, h: S.anh.naturalHeight, don: Math.max(cv.width, cv.height) / 1000 }; }
-  function toaDo(cv, e) { var r = cv.getBoundingClientRect(); return [(e.clientX - r.left) * cv.width / r.width, (e.clientY - r.top) * cv.height / r.height]; }
+  // v1.449.0 — canvas trên màn chỉ là KHUNG TRANG (S.cat) ⇒ cw/ch = canvas đầy đủ, toạ độ chuột cộng độ dời khung
+  function kichCo() { var c = S.cat; return { cw: c.cw, ch: c.ch, w: S.anh.naturalWidth, h: S.anh.naturalHeight, don: Math.max(c.cw, c.ch) / 1000 }; }
+  function toaDo(cv, e) { var r = cv.getBoundingClientRect(), c = S.cat || { x: 0, y: 0 }; return [(e.clientX - r.left) * cv.width / r.width + c.x, (e.clientY - r.top) * cv.height / r.height + c.y]; }
   // Dấu tay đặt tại điểm p (toạ độ canvas): lưu theo ảnh gốc, hướng đứng thẳng như thầy đang nhìn
   function dauTay(loai, p) {
     var k = kichCo(), a = cvSangAnh(p[0], p[1], k.w, k.h, k.cw, k.ch, S.xoay || 0), r = (S.xoay || 0) * Math.PI / 180;
@@ -691,7 +730,7 @@
       if (!S || !S.anh || e.button !== 0) return;
       dongNoi();
       var p = toaDo(cv, e), o = suaHien(), k = kichCo();
-      if (e.ctrlKey || e.metaKey) {   // KÉO DẤU
+      if (keoPhim(e)) {   // KÉO DẤU (giữ Ctrl hoặc Alt)
         e.preventDefault();
         var mk = dauTai(p); if (!mk) return;
         S.keo = { m: mk, a0: cvSangAnh(p[0], p[1], k.w, k.h, k.cw, k.ch, S.xoay || 0), x0: mk.x, y0: mk.y, daGhi: false };
@@ -708,7 +747,7 @@
     cv.onpointermove = function (e) {
       if (!S || !S.anh) return;
       S.chuot = toaDo(cv, e);
-      S.ctrl = e.ctrlKey || e.metaKey;
+      S.ctrl = keoPhim(e);
       if (S.keo) {
         var k = kichCo(), a = cvSangAnh(S.chuot[0], S.chuot[1], k.w, k.h, k.cw, k.ch, S.xoay || 0);
         if (!S.keo.daGhi) { ghiLich(suaHien()); S.keo.daGhi = true; }   // ghi lịch TRƯỚC khi dời ⇒ Ctrl+Z về chỗ cũ
@@ -725,9 +764,11 @@
     cv.onpointerleave = function () { if (S && !S.tam) { S.chuot = null; veTren(); } };
     cv.oncontextmenu = function (e) { e.preventDefault(); if (!S || !S.anh) return; S.keDau = null; veTren(); moMenu(e.clientX, e.clientY, dauTai(toaDo(cv, e))); };
   }
-  // Con trỏ: giữ Ctrl ⇒ bàn tay (đang kéo = nắm, trên dấu = mở, chỗ trống = mũi tên) · thường ⇒ ẩn (vẽ công cụ đúng cỡ ở lớp trên)
+  // ⭐ v1.449.0 (thầy 29/10) — giữ Alt cũng là chế độ KÉO DẤU như Ctrl, dù đang chọn công cụ nào
+  function keoPhim(e) { return !!(e && (e.ctrlKey || e.metaKey || e.altKey)); }
+  // Con trỏ: giữ Ctrl / Alt ⇒ bàn tay (đang kéo = nắm, trên dấu = mở, chỗ trống = mũi tên) · thường ⇒ ẩn (vẽ công cụ đúng cỡ ở lớp trên)
   function conTro(cv, e) {
-    var ctrl = !!(S && (S.keo || S.ctrl || (e && (e.ctrlKey || e.metaKey))));
+    var ctrl = !!(S && (S.keo || S.ctrl || (e && keoPhim(e))));
     cv.style.cursor = !ctrl ? 'none' : (S.keo ? 'grabbing' : (S.chuot && dauTai(S.chuot) ? 'grab' : 'default'));
   }
   // Ô gõ chữ ngay trên ảnh (⛔ không dùng prompt(): trình duyệt trong app chặn). Enter / bấm ra ngoài = ghi lên ảnh · Esc = bỏ
@@ -749,7 +790,9 @@
   function veCv() {
     var cv = $('#csCv');
     if (!S.anh) { cv.getContext('2d').clearRect(0, 0, cv.width, cv.height); veTren(); return; }
-    veTrang(cv.getContext('2d'), S.anh, S.xoay || 0, suaHien(), cv.width, cv.height);
+    var g = cv.getContext('2d'); g.setTransform(1, 0, 0, 1, -S.cat.x, -S.cat.y);
+    veTrang(g, S.anh, S.xoay || 0, suaHien(), S.cat.cw, S.cat.ch);
+    g.setTransform(1, 0, 0, 1, 0, 0);
     veTren();
   }
   // Lớp trên: con trỏ = công cụ đúng cỡ · nét đang vẽ · đường KẺ bám chuột · dấu nhấp nháy
@@ -757,6 +800,7 @@
     var cv = $('#csCvTren'), g = cv.getContext('2d');
     g.clearRect(0, 0, cv.width, cv.height);
     if (!S || !S.anh) return;
+    g.save(); g.translate(-S.cat.x, -S.cat.y);   // v1.449.0
     var k = kichCo(), p = S.chuot;
     if (S.tam) veNet(g, S.tam);
     if (S.keDau) {
@@ -782,6 +826,7 @@
       g.save(); g.strokeStyle = 'rgba(47,111,237,' + (0.35 + 0.65 * a) + ')'; g.lineWidth = Math.max(3, S.nhay.s * 0.35);
       g.beginPath(); g.arc(S.nhay.x, S.nhay.y, S.nhay.s * (1.8 + a * 0.8), 0, Math.PI * 2); g.stroke(); g.restore();
     }
+    g.restore();
   }
   function napAnh(ban) {
     S.anh = null; S.keDau = null; S.tam = null; S.nhay = null;
@@ -792,8 +837,8 @@
     taiAnh(url).then(function (a) {
       if (!S || S.hien !== ban) return;
       S.anh = a.im; S.ban = a.ban; S.xoay = xoay;
-      var k = coXoay(a.im, xoay);
-      cv.width = tren.width = k.cw; cv.height = tren.height = k.ch;
+      S.cat = catCv(ban, a.im, xoay);   // v1.449.0 khung trang
+      cv.width = tren.width = S.cat.w; cv.height = tren.height = S.cat.h;
       veCv();
       if (S.choNhay != null) { var so = S.choNhay; S.choNhay = null; nhay(so); }
     }, function () { toast('Không tải được ảnh trang ' + S.p); });
@@ -804,7 +849,7 @@
     if (!m || !S.anh) { toast('Câu ' + tenSo(so) + ' chưa có dấu trên ảnh — thầy xem tay nhé.'); return; }
     var k = kichCo(), q = hinhDau(m, k.w, k.h), c = anhSangCv(q.cx, q.cy, k.w, k.h, k.cw, k.ch, S.xoay || 0);
     var cv = $('#csCv'), vung = $('#csVung'), tl = cv.clientHeight / cv.height;
-    vung.scrollTo({ top: Math.max(0, cv.offsetTop + c[1] * tl - vung.clientHeight / 2), behavior: 'smooth' });
+    vung.scrollTo({ top: Math.max(0, cv.offsetTop + (c[1] - S.cat.y) * tl - vung.clientHeight / 2), behavior: 'smooth' });
     S.nhay = { x: c[0], y: c[1], s: q.s, t0: performance.now() };
     var vong = function () {
       if (!S || !S.nhay) return;
@@ -833,15 +878,48 @@
         }).join('');
     $('#csDs').querySelectorAll('.cs-em').forEach(function (r) { r.onclick = function () { S.i = +r.dataset.i; S.p = S.trangs[0]; S.cuChon = -1; S.dangSo = null; veTat(); }; });
   }
+  // ⭐ v1.449.0 (thầy 29/10) — CỘT ẢNH NHỎ các trang (thay hàng nút TRANG): viền xanh / vàng / đỏ theo trạng thái, "TRANG n" dưới ảnh;
+  //   ảnh nhỏ vẽ cả dấu + nét thầy (vẽ lại mỗi lần veTab). Các ô chia đều chiều cao cột ⇒ không phải cuộn.
   function veTab() {
-    var e = emHien();
-    $('#csTab').innerHTML = S.trangs.map(function (p) {
+    var e = emHien(), cot = $('#csTab');
+    cot.innerHTML = S.trangs.map(function (p) {
       var t = ttTrang(e, p), ghi = { thieu: 'chưa nộp', chan: 'máy chặn', tra: 'đã trả lại', dung: 'đúng hết', vang: (t.sai ? 'sai ' + t.sai : '') + (t.hoi ? (t.sai ? ' · ' : '') + t.hoi + ' chưa chắc' : '') || 'chưa đủ dấu' }[t.tt];
-      return '<button class="' + lopNut(t.tt) + (p === S.p ? ' on' : '') + '" data-p="' + p + '" title="Trang ' + p + ': ' + ghi + '">TRANG ' + p + '</button>';
-    }).join('');
-    $('#csTab').querySelectorAll('[data-p]').forEach(function (b) { b.onclick = function () { S.p = +b.dataset.p; S.cuChon = -1; S.dangSo = null; veGiua(); veAi(); }; });
+      return '<button class="cs-tn ' + lopNut(t.tt) + (p === S.p ? ' on' : '') + '" data-p="' + p + '" title="Trang ' + p + ': ' + ghi + '"><span class="cs-tn-anh">' +
+        (trangCua(e, p) ? '<canvas></canvas>' : '<i>CHƯA NỘP</i>') + '</span><b>TRANG ' + p + '</b></button>';
+    }).join('<span class="cs-tn-vach"></span>') +
+      '<div class="cs-tn-dem" title="Trang đang xem / số trang">' + (S.trangs.indexOf(S.p) + 1) + '<small>/' + S.trangs.length + '</small></div>';
+    cot.querySelectorAll('[data-p]').forEach(function (b) {
+      var p = +b.dataset.p, ban = banCua(e, p, -1), c = b.querySelector('canvas');
+      b.onclick = function () { S.p = p; S.cuChon = -1; S.dangSo = null; veGiua(); veAi(); };
+      if (!c || !ban) return;
+      taiAnh(ban.url).then(function (a) {
+        if (!c.isConnected) return;
+        var xoay = (ban.may && ban.may.xoay) || 0, k = catCv(ban, a.im, xoay), tl = 420 / Math.max(k.w, k.h);
+        c.width = Math.round(k.w * tl); c.height = Math.round(k.h * tl);
+        var g = c.getContext('2d'); g.scale(tl, tl); g.translate(-k.x, -k.y);
+        veTrang(g, a.im, xoay, suaCua(e, p, -1), k.cw, k.ch);
+      }, function () { /* ảnh lỗi ⇒ ô trống, ảnh chính báo lỗi */ });
+    });
+  }
+  // ⭐ v1.449.0 — bài nộp TRƯỚC khi có tự cắt: mở em có trang chưa có `may.cat` ⇒ nhờ máy chủ dò khung (catSach, mỗi ảnh một lần Vision)
+  //   rồi đọc lại bài. Hàm chưa deploy / lỗi ⇒ im lặng, ảnh hiện nguyên như cũ. Mỗi em chỉ hỏi một lần mỗi phiên.
+  var DA_BU = {};
+  function buKhung(e) {
+    var id = [S.lop, S.bai, S.bt, e.ma].join('__'), tr = (e.doc || {}).trang || {};
+    if (DA_BU[id]) return;
+    var thieu = Object.keys(tr).some(function (p) { var m = tr[p] && tr[p].may; return m && S.trangs.indexOf(m.trang) >= 0 && !m.cat && !m.catThu; });
+    if (!thieu) return;
+    DA_BU[id] = 1;
+    hamGoi('catSach').then(function (f) { return f({ id: id }); }).then(function (r) {
+      if (!r || !r.data || !r.data.so) return;
+      return S.docLai(e).then(function (d) {
+        if (d) e.doc = d;
+        if (S && emHien() === e && !S.tam && !S.keo) veGiua(); else if (S && emHien() === e) veTab();
+      });
+    })['catch'](function () { /* chưa có hàm / lỗi ⇒ ảnh nguyên */ });
   }
   function veGiua() {
+    if (emHien()) buKhung(emHien());
     veTab();
     var e = emHien(), t = trangCua(e, S.p), hien = banCua(e, S.p, S.cuChon), laCu = S.cuChon >= 0 && hien !== t;
     S.hien = hien;
@@ -900,7 +978,11 @@
         (t ? lech + hang : '<div class="cs-nhom-rong">Em chưa nộp trang này.</div>');
     }).join('');
     $('#csBang').innerHTML = html + '<div class="cs-chu-thich">Cột 2 = em khoanh / em viết · cột 3 = đáp án đúng · ✓ ✕ ? theo dấu đang có trên ảnh · "4·2" = câu 4 ô thứ 2.</div>';
-    $('#csBang').querySelectorAll('.cs-cau').forEach(function (r) { r.onclick = function () { chuyen(+r.dataset.p, +r.dataset.so); }; });
+    $('#csBang').querySelectorAll('.cs-cau').forEach(function (r) {
+      r.onclick = function () { chuyen(+r.dataset.p, +r.dataset.so); };
+      var g = r.querySelector('.ghi'); if (g) r.title = (r.title ? r.title + ' · ' : '') + g.textContent;   // nấc g2 giấu dòng ghi ⇒ rê chuột vẫn đọc được
+    });
+    vuaAi();
     $('#csBang').querySelectorAll('.cs-nhom').forEach(function (r) { r.onclick = function () { var p = +r.dataset.p; if (p !== S.p) { S.p = p; S.cuChon = -1; S.dangSo = null; veGiua(); veAi(); } }; });
     $('#csAiTrang').textContent = S.trangs.length + ' TRANG · ' + tong + ' CÂU';
     $('#csTong').textContent = tong ? dung + '/' + tong : '';
@@ -921,6 +1003,12 @@
       : 'Chào ' + ten + ', bài sách ' + S.tieuDe + ' con làm đúng hết, giỏi lắm! Thầy khen con nhé.';
   }
   function veTat() { veDs(); veGiua(); veAi(); }
+  // ⭐ v1.449.0 — gọn dần cột CHẤM THAM KHẢO (nấc g1 → g3) tới khi bảng câu không còn phải cuộn
+  function vuaAi() {
+    var cot = $('.cs-ai'), bang = $('#csBang'); if (!cot || !bang || !bang.clientHeight) return;
+    cot.classList.remove('g1', 'g2', 'g3');
+    for (var n = 1; n <= 3 && bang.scrollHeight > bang.clientHeight + 1; n++) cot.classList.add('g' + n);
+  }
 
   // ───────── pop-up CHỤP LỖI / ĐẠT ─────────
   function dongPop() { var p = $('#csPop'); p.hidden = true; p.innerHTML = ''; }

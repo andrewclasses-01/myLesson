@@ -14,7 +14,20 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.448.1 (29/10/2026) — BÀI TRONG SÁCH: ảnh trang ở KHUNG CHẤM GIỮA co trọn khung, không phải cuộn *(bản mới nhất)*
+## ⭐ v1.449.0 (29/10/2026) — BÀI TRONG SÁCH: cột ảnh nhỏ các trang · nút lên thanh trên · cột AI tự gọn · Alt kéo dấu · TỰ CẮT phần thừa *(bản mới nhất)*
+
+Thầy duyệt trên bàn thử `D:\OTHERS\CLAUDE\myLesson - thiet ke nop sach\ban-thu-tab-sach.html` rồi chốt. `js/cham-sach.js?v=15`:
+- **Cột ảnh nhỏ** (150px, giữa danh sách em và ảnh chấm) thay hàng nút TRANG: ảnh nhỏ vẽ cả dấu + nét thầy (cập nhật sau mỗi lần lưu), viền xanh / vàng / đỏ,
+  "TRANG n" cách ảnh 7px, vạch mảnh giữa các trang, chân cột **x/y** (trang đang xem / tổng). Mỗi ô `container-type:size` ⇒ ảnh + chữ co theo ô, không cuộn.
+- **CHỤP LỖI · ĐẠT + thông tin** (dòng khoá, trạng thái lưu, giờ nộp) lên góc trái thanh trên; công cụ vẽ bên phải. **Bỏ dải dưới cùng.**
+- Trang chấm nhúng trong tab: bỏ dải "CHẤM BÀI SÁCH · …" — `dashboard.html` `hqSachTt()` đưa "Chấm bài sách · <bài> · Trang …" lên dải tab, sát ⚙ (điện thoại ẩn).
+- **Cột CHẤM THAM KHẢO tự gọn** 3 nấc (`vuaAi`: g1 bỏ dòng hướng dẫn/chú thích + dòng sát · g2 giấu dòng ghi (rê chuột vẫn đọc) · g3 chữ nhỏ) tới khi đủ mọi câu không cuộn; đổi cỡ khung ⇒ chọn lại.
+- **Giữ Alt** = kéo dấu như Ctrl, dù đang chọn công cụ nào (`keoPhim`); chặn Alt nhảy vào menu Chrome khi trang chấm mở.
+- **Tự cắt phần thừa** (máy chủ app `may.cat` = khung trang dò bằng Vision, tỉ lệ theo ảnh gốc): `catCv` ⇒ khung trên canvas đã xoay; canvas trên màn chỉ là khung
+  (`S.cat`), mọi toạ độ dấu/nét giữ theo canvas đầy đủ (`kichCo`, `toaDo` cộng độ dời). Ảnh nhỏ + ảnh CHỤP LỖI / TRẢ LẠI / ĐẠT (`dungTrang`) cũng cắt. Không có `cat` ⇒ trọn ảnh.
+  Bài nộp trước: mở em có trang chưa có khung ⇒ `buKhung` gọi hàm `catSach` (mỗi em một lần/phiên, lỗi ⇒ im lặng) rồi đọc lại bài.
+
+## ⭐ v1.448.1 (29/10/2026) — BÀI TRONG SÁCH: ảnh trang ở KHUNG CHẤM GIỮA co trọn khung, không phải cuộn
 
 - Thầy mở Chrome thấy ảnh khung giữa vẫn to, phải cuộn (v1.448.0 chỉ làm pop-up CHỤP LỖI). `js/cham-sach.js` (?v=14): `.cs-vung` container `size`,
   `.cs-ve` `fit-content` canh giữa, `#csCv` `max-width:100cqw; max-height:100cqh` (giữ tỉ lệ) ⇒ ảnh vừa cả ngang lẫn cao. Nhãn `.cs-canh` nổi (absolute) không chiếm chỗ.

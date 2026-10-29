@@ -1884,6 +1884,11 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
 .hq-sach-than{flex:1; min-height:0; display:flex}
 .hq-sach-cho{margin:auto; color:var(--nhat); font-weight:700; font-size:14px}
 .hq-sach-chon{display:flex; gap:6px; flex-wrap:wrap}
+/* v1.449.0 (thầy 29/10) — thông tin CHẤM BÀI SÁCH dời từ dải riêng lên chỗ trống dải tab, sát nút ⚙ */
+.hq-sach-tt{margin-left:auto; align-self:center; margin-bottom:4px; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  font:800 11px/1.2 var(--font); letter-spacing:.05em; text-transform:uppercase; color:#0E7C6E}
+.hq-sach-tt small{font:700 10.5px/1 var(--font); letter-spacing:0; text-transform:none; color:var(--mo); margin-left:6px}
+.hq-sach-tt + .hq-cd{margin-left:4px}
 .hq-sach-chon button{border:1px solid var(--vien); background:var(--the); border-radius:999px; padding:6px 12px; font:inherit; font-size:12px; font-weight:800; cursor:pointer}
 .hq-sach-chon button.on{background:#0E7C6E; border-color:#0E7C6E; color:#fff}
 /* tab BÀI TẬP */
@@ -3865,6 +3870,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   .hq-tab .so, .hq-tab.mo .so{position:absolute; top:2px; left:calc(50% + 5px); min-width:15px; height:15px; padding:0 4px; font:800 9px/15px var(--font); text-align:center; border-radius:99px; background:var(--xanh); color:#fff; box-shadow:0 0 0 2px var(--the)}
   .hq-tab .so.co, .hq-tab .so.du-nop{background:#16A34A; color:#fff}
   .hq-tabs .hq-cd{display:none}
+  .hq-tabs .hq-sach-tt{display:none}
   .hq-tabs .hq-sao-lop, .hq-tabs .hq-vi-sao{margin:0 0 0 2px}
   .hq-than{padding:10px}
   .hq-than.vua-xh, .hq-than.vua-tl2{padding-top:10px; padding-bottom:10px}
@@ -6290,6 +6296,13 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   // Trước khi xoá ruột tab: trang chấm đang nằm trong đó ⇒ đóng (lưu hết) + trả về body.
   function hqThaSach(th) { if (window.ChamSach && th && th.querySelector('#csNen')) ChamSach.dong(); }
+  // v1.449.0 — chữ "CHẤM BÀI SÁCH · <bài> · Trang 32, 33, 34" trên dải tab (trang chấm nhúng không còn dải đầu riêng)
+  function hqSachTt() {
+    var x = hqBuocSach(), b = HQ.b; if (!x || !b) return '';
+    var tieu = String(b.ten || b.tieuDe || b.id).toUpperCase(), tr = window.NopSach ? NopSach.cacTrang(x.trang) : [];
+    return '<span class="hq-sach-tt" title="' + A.chuAnToan('Chấm bài sách · ' + tieu) + '">Chấm bài sách · ' + A.chuAnToan(tieu) +
+      (tr.length ? '<small>Trang ' + tr.join(', ') + '</small>' : '') + '</span>';
+  }
   function hqSauVeSach() {
     if (!window.ChamSach) return;
     if (HQ.tab !== 'sach') { if (ChamSach.nhung()) ChamSach.dong(); return; }
@@ -8738,6 +8751,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       (ws.length ? tab('nop', 'Bài nộp', nopDu ? '✓' : null, true) : '') +
       // ⭐ v1.337.0 (thầy chốt mẫu v4) — tab XẾP HẠNG: nút ⭐ thưởng/phạt CẢ LỚP ngay trước ⚙ (js/sao-xh.js).
       (HQ.tab === 'xh' && window.SaoXh && HQ.t && !HQ.t.laSp ? SaoXh.nut() : '') +
+      (HQ.tab === 'sach' ? hqSachTt() : '') +   // v1.449.0 thông tin trang chấm sách cạnh ⚙
       // ⭐ v1.132.1 — nút ⚙ Cài đặt bài (chỉ icon) đứng CUỐI dải tab (thầy chốt), menu vẫn qua `data-rail-caidat`.
       '<button type="button" class="hq-cd" data-rail-caidat="' + A.chuAnToan(HQ.b.id) + '" title="Cài đặt bài · đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_HQ + '</button>';
   }
@@ -17448,6 +17462,6 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/chuot-phai.js?v=5"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 <script src="js/huy-hieu.js?v=1"></script>   <!-- 24/10/2026 v1.418.0 huy hiệu Chiến binh sau tên -->
 <script src="js/nop-sach.js?v=2"></script>   <!-- v1.387.0 NỘP BÀI SÁCH: đọc lessonSach · v1.397.0 chờ máy kiểm 180 s -->
-<script src="js/cham-sach.js?v=14"></script>   <!-- v1.448.1 ảnh khung chấm giữa vừa trọn khung · v1.448.0 trả lại ⇄ chấp nhận lại có xác nhận + ảnh vừa khung + tự cuộn trang lỗi + đúp ĐẠT · v1.436.0 ĐẠT ghi ngay + CHỤP ẢNH + bỏ ĐẠT · v1.435.0 nút ĐẠT ✓ khi đã chấm + danh sách em có ảnh, xếp nhóm · v1.434.0 nhúng được trong tab BÀI TRONG SÁCH · v1.401.0 chữ gõ trong ⚙ + một font chung · v1.400.0 icon phẳng 2D · v1.399.0 nút ⚙ cài đặt dấu · v1.398.0 giữ Ctrl kéo dấu · v1.397.0 các dạng bài VIẾT (chấm từng ô) · v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) · v1.389.0 dấu ✓/✕ máy tự đặt (Vision) · v1.390.0 menu chuột phải, KẺ, ?, cỡ công cụ, CHỤP LỖI / ĐẠT · v1.391.0 lưu lâu dài + khoá nút -->
+<script src="js/cham-sach.js?v=15"></script>   <!-- v1.449.0 cột ảnh nhỏ trang + nút lên thanh trên + cột AI tự gọn · v1.448.1 ảnh khung chấm giữa vừa trọn khung · v1.448.0 trả lại ⇄ chấp nhận lại có xác nhận + ảnh vừa khung + tự cuộn trang lỗi + đúp ĐẠT · v1.436.0 ĐẠT ghi ngay + CHỤP ẢNH + bỏ ĐẠT · v1.435.0 nút ĐẠT ✓ khi đã chấm + danh sách em có ảnh, xếp nhóm · v1.434.0 nhúng được trong tab BÀI TRONG SÁCH · v1.401.0 chữ gõ trong ⚙ + một font chung · v1.400.0 icon phẳng 2D · v1.399.0 nút ⚙ cài đặt dấu · v1.398.0 giữ Ctrl kéo dấu · v1.397.0 các dạng bài VIẾT (chấm từng ô) · v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) · v1.389.0 dấu ✓/✕ máy tự đặt (Vision) · v1.390.0 menu chuột phải, KẺ, ?, cỡ công cụ, CHỤP LỖI / ĐẠT · v1.391.0 lưu lâu dài + khoá nút -->
 </body>
 </html>

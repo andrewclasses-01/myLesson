@@ -9,7 +9,8 @@
    B · HÀNG BONG BÓNG đầu danh sách Tin nhắn (nw/js/chat.js · js/tn-pop.js):  DangDau.hang(el)
        ⚡ Đấu ngay + mỗi cặp một bong bóng (2 avatar · LIVE · tỉ số), bấm = xem.
    C · DẢI GHIM ĐẦU KHUNG CHAT NHÓM LỚP (v1.438.0, mẫu dang-dau-chat-v1):  DangDau.chat(el, { dau })  — js/chat-ui.js tự gắn khi trang khai o.dangDau
-       khung hẹp: avatar + "N trận" (bấm = xổ / tấm trượt) · khung ≥ 560px: các cặp chạy ngang + ﹀ · KHÔNG có trận vẫn hiện A SHOW SPEED + ĐẤU NGAY · thầy: không nút Đấu.
+       khung hẹp: avatar + "N trận" (bấm = xổ / tấm trượt) · khung ≥ 560px: các cặp chạy ngang + ﹀ · KHÔNG có trận vẫn hiện A SHOW SPEED + ĐẤU NGAY ·
+       thầy (v1.445.0): nút Đấu MỜ không bấm được + 📊 mở Quản lý giải đấu thẻ Xếp hạng (TdQl.mo({ the: 'xh' })).
 
    Dữ liệu: CÙNG truy vấn với tab Đang đấu của sảnh (nw/js/xephang.js — luật đã cho học sinh đọc):
      caiDat/xepHang { mua } ⇒ tranDau where xh == mua · trangThai == 'choi' · limit 30.
@@ -90,9 +91,13 @@
       '.ddn-g .ddn-chip{height:36px;gap:6px;padding:0 8px 0 4px;border-radius:11px}.ddn-g .ddn-chip .ddn-a{width:26px;height:26px;font-size:9.5px}.ddn-g .ddn-chip .ddn-so{font-size:16px}.ddn-g .ddn-chip .ddn-n{font-size:13px;max-width:96px}' +
       '.ddn-g.trong .ddn-ngay{display:inline}.ddn-g.trong .ddn-cham{background:#B9C7C3;animation:none}' +
       '@container (min-width:560px){.ddn-g{height:54px;gap:12px}.ddn-g .ddn-ten{font-size:16px}.ddn-g .ddn-dem{display:none}.ddn-g .ddn-ds{display:flex}.ddn-g .ddn-mo{display:grid;width:32px;height:32px}.ddn-g .ddn-dau{height:36px;padding:0 14px;font-size:15px}.ddn-g .ddn-ngay{display:inline}}' +
+      '.ddn-dau[disabled]{opacity:.4;filter:grayscale(.7);box-shadow:none;cursor:not-allowed}' +
+      '.ddn-td{flex:none;width:34px;height:34px;border-radius:10px;border:1.5px solid #12A58F;background:#fff;color:#0F7A6C;display:grid;place-items:center;cursor:pointer;padding:0}.ddn-td:hover{background:#E8F6F2}' +
+      '.ddn-td svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}' +
       '.ddn-xo.cg{left:8px;right:8px;width:auto;top:calc(100% + 4px);max-height:min(60vh,380px)}';
     document.head.appendChild(s);
   }
+  var BIEU = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>';
   var SET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2 4 14h7l-1 8 9-12h-7z"/></svg>';
   function tat(t) { var w = String(t || '?').trim().split(/\s+/); return (w.length > 1 ? w[0][0] + w[w.length - 1][0] : w[0].slice(0, 2)).toUpperCase(); }
   function av(ten, anh, lop) {
@@ -156,7 +161,10 @@
             '<span class="ddn-n">' + an(tenB(t)) + '</span>' + av(tenB(t), t.anhB) + '</button>';
         }).join('') + '</div></div>' +
         '<button type="button" class="ddn-mo' + (c.xo ? ' on' : '') + '" data-ddn-mo aria-label="Danh sách trận">' + VUA + '</button>') +
-      (c.dau ? '<button type="button" class="ddn-dau" data-ddn-dau>⚡ ĐẤU<span class="ddn-ngay"> NGAY</span></button>' : '') + '</div>';
+      (c.dau ? '<button type="button" class="ddn-dau" data-ddn-dau>⚡ ĐẤU<span class="ddn-ngay"> NGAY</span></button>'
+        // v1.445.0 (29/10 thầy): bản thầy vẫn thấy nút ĐẤU nhưng mờ, không bấm được · 📊 mở Quản lý giải đấu (chỉ trang có window.TdQl = dashboard)
+        : '<button type="button" class="ddn-dau" disabled title="Chỉ học sinh mới tìm trận được">⚡ ĐẤU<span class="ddn-ngay"> NGAY</span></button>' +
+          (window.TdQl ? '<button type="button" class="ddn-td" data-ddn-td title="Theo dõi A Show Speed" aria-label="Theo dõi A Show Speed">' + BIEU + '</button>' : '')) + '</div>';
     if (c.xo) { if (c.che && c.xoEl && c.xoEl.isConnected) c.xoEl.innerHTML = ds.map(dong).join(''); else veXo(c); }
   }
   function caoThanh() {
@@ -179,6 +187,7 @@
   function bam(e) {
     var x = e.target.closest('[data-ddn]'); if (x) { e.preventDefault(); e.stopPropagation(); return diXem(x.getAttribute('data-ddn')); }
     if (e.target.closest('[data-ddn-dau]')) { e.preventDefault(); e.stopPropagation(); return diDau(); }
+    if (e.target.closest('[data-ddn-td]')) { e.preventDefault(); e.stopPropagation(); if (window.TdQl) TdQl.mo({ the: 'xh' }); return; }
     var m = e.target.closest('[data-ddn-mo]');
     if (m) { e.preventDefault(); var c = S.cho.filter(function (y) { return y.el.contains(m); })[0]; if (!c) return; if (c.xo) dongXo(c); else { veXo(c); var nm = c.el.querySelector('.ddn-mo'); if (nm) nm.classList.add('on'); } }
   }

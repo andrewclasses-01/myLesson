@@ -146,7 +146,8 @@
     if (chuaLuu() && !confirm('Còn thay đổi CHƯA LƯU ở phần chế độ chơi. Đóng và bỏ các thay đổi đó?')) return;
     $('#tdqNen').hidden = true;
   }
-  async function mo() {
+  async function mo(o) {
+    if (o && o.the === 'xh') S.xem = 'mua';   // v1.445.0 — nút 📊 ở dải A SHOW SPEED khung chat dashboard (js/dang-dau.js)
     if (!TQ()) return alert('Chưa nạp được js/the-td.js — thầy tải lại trang nhé.');
     var n = dungKhung(); n.hidden = false;
     $('#tdqThan').innerHTML = '<div class="tdq-rong">Đang tải…</div>'; $('#tdqNav').innerHTML = ''; $('#tdqLuu').innerHTML = '';

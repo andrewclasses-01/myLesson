@@ -14,7 +14,15 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.444.0 (28/10/2026) — A SHOW SPEED: BẮT BUỘC HOÀN THÀNH TRẬN *(bản mới nhất)*
+## ⭐ v1.445.0 (29/10/2026) — DẢI A SHOW SPEED Ở KHUNG CHAT DASHBOARD: nút ĐẤU mờ + 📊 *(bản mới nhất)*
+
+Thầy hỏi 29/10 vì ô chat dashboard không có nút Tìm trận (học sinh thì ĐÃ có “⚡ ĐẤU” — bản thầy cố ý giấu từ v1.438.0). Thầy chốt:
+- `js/dang-dau.js` dải C bản thầy (`dau:false`): vẫn vẽ nút ⚡ ĐẤU nhưng `disabled` (mờ, xám, không bấm) + nút 📊 `data-ddn-td` (chỉ khi trang có `window.TdQl` = dashboard)
+  ⇒ `TdQl.mo({ the: 'xh' })`. Thầy vào trang lớp (`thayvao`) không có TdQl ⇒ chỉ nút mờ.
+- `js/td-ql.js` `mo(o)`: `o.the === 'xh'` ⇒ mở thẳng mục Mùa xếp hạng (tạm, tới khi hộp “Quản lý giải đấu” mẫu `XEP HANG MUA - thiet ke\quan-tri-ass-v2` lên).
+- `dang-dau.js?v=5` (dashboard · lop · khoa · nw/tinnhan), `td-ql.js?v=5`. Thử bàn thử tinnhan ?thu=1: nút mờ bấm không chuyển trang, 📊 gọi đúng {the:'xh'}, khung 400/700px không tràn.
+
+## ⭐ v1.444.0 (28/10/2026) — A SHOW SPEED: BẮT BUỘC HOÀN THÀNH TRẬN
 
 Thầy chốt (nghiên cứu `D:\OTHERS\CLAUDE\DAU GAME ONLINE - thiet ke\NGHIEN CUU CHAN BO TRAN 28-10-2026.md`), đi cặp máy chủ myLesson (tdDoi/tdTu/tdNhip/tdQuet đã deploy):
 - Máy chủ: trận vào `choi` ⇒ đọc công tắc `nwCauHinh/thachDau.tro.ass.<gh|giai|xh>.buoc` (thiếu = BẬT) ⇒ ghi KHOÁ TRẬN `nwUsers/{uid}.tranDang {id, ketThuc, xh}`

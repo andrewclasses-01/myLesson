@@ -24,7 +24,7 @@ Thầy 29/10 (xem bài NTK10 trên dashboard):
 - `ttTrang`: trang đã trả lại vẫn đếm câu sai (trước in "Không có câu sai").
 - Nút ĐẠT bị khoá CHỈ vì còn câu chưa có dấu (không có ✕) ⇒ không `disabled` nữa mà lớp `khoa` (mờ): bấm một lần = nhắc, **bấm đúp = vẫn ghi ĐẠT**
   (ca: xoá dấu máy rồi đặt dấu tay không gắn được câu).
-- Thử: bàn thử `D:\OTHERS\CLAUDE\myLesson - thiet ke nop sachan-thu-tab-sach.html` (cham-sach-tab-thu.js = bản chép + `__hamGia`).
+- Thử: bàn thử `D:\OTHERS\CLAUDE\myLesson - thiet ke nop sach\ban-thu-tab-sach.html` (cham-sach-tab-thu.js = bản chép + `__hamGia`).
 
 ## ⭐ v1.447.1 (29/10/2026) — AWARD cả lớp: nút "Chỉ em đủ bài" đứng TRƯỚC "Cả lớp"
 

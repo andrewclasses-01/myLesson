@@ -14,7 +14,19 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.447.1 (29/10/2026) — AWARD cả lớp: nút "Chỉ em đủ bài" đứng TRƯỚC "Cả lớp" *(bản mới nhất)*
+## ⭐ v1.448.0 (29/10/2026) — BÀI TRONG SÁCH: trả lại ⇄ chấp nhận lại (có xác nhận) · CHỤP LỖI vừa khung + cuộn tới trang lỗi · bấm đúp ĐẠT *(bản mới nhất)*
+
+Thầy 29/10 (xem bài NTK10 trên dashboard):
+- `js/cham-sach.js` (?v=13) pop-up CHỤP LỖI: nút TRẢ LẠI TRANG n ⇄ **ĐÃ TRẢ LẠI TRANG n** (nền đỏ) — đã trả vẫn bấm được ⇒ **CHẤP NHẬN LẠI** = `duyetSach { trang, tt:'dat' }`
+  (máy chủ sẵn có, không deploy). Cả hai chiều hỏi **pop-up nhỏ** `hoiNho` (Esc / HUỶ / bấm nền = thôi); hỏi BỎ ĐẠT cũng dùng `hoiNho`.
+- Mở CHỤP LỖI ⇒ tự cuộn tới **trang đầu tiên có lỗi** (✕ sai · ? chưa chắc · máy chặn).
+- Mỗi trang cao ĐÚNG khung pop-up (`.cs-pop-than` container `size`, hàng `100cqh`), ảnh co trọn ⇒ luôn thấy cả trang, mọi cỡ màn hình (≤ 640px: ảnh 72cqh, cột phải xuống dưới).
+- `ttTrang`: trang đã trả lại vẫn đếm câu sai (trước in "Không có câu sai").
+- Nút ĐẠT bị khoá CHỈ vì còn câu chưa có dấu (không có ✕) ⇒ không `disabled` nữa mà lớp `khoa` (mờ): bấm một lần = nhắc, **bấm đúp = vẫn ghi ĐẠT**
+  (ca: xoá dấu máy rồi đặt dấu tay không gắn được câu).
+- Thử: bàn thử `D:\OTHERS\CLAUDE\myLesson - thiet ke nop sachan-thu-tab-sach.html` (cham-sach-tab-thu.js = bản chép + `__hamGia`).
+
+## ⭐ v1.447.1 (29/10/2026) — AWARD cả lớp: nút "Chỉ em đủ bài" đứng TRƯỚC "Cả lớp"
 
 - Thầy 29/10: trong AWARD đặt "Chỉ em đủ bài" trước, "Cả lớp" sau. `js/sao-xh.js` đảo 2 nút `data-apt` (mặc định vẫn Chỉ em đủ bài); `sao-xh.js?v=6`.
 

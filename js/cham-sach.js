@@ -200,24 +200,27 @@
     // ⭐ v1.436.0 (thầy chốt 28/10) — bấm ĐẠT là ghi ĐẠT ngay (không pop-up); đã ĐẠT ⇒ nút trái thành CHỤP ẢNH (pop-up chụp ảnh ĐẠT),
     //   bấm lại ĐẠT ⇒ hỏi BỎ ĐẠT. Chưa ĐẠT / có lỗi ⇒ nút trái là CHỤP LỖI như cũ.
     var daDat = !!e && ttEm(e).lop === 'xong', dang = !!S.dangGhiDat;
-    dat.className = 'cs-nut dat' + (daDat ? '' : ' chua');
+    // ⭐ v1.448.0 (thầy 29/10) — khoá CHỈ vì còn câu chưa có dấu (vd xoá dấu máy rồi đặt dấu tay không gắn được câu), không có ✕ ⇒
+    //   nút không `disabled` mà mang lớp `khoa`: bấm một lần chỉ nhắc, BẤM ĐÚP vẫn ghi ĐẠT.
+    var khoaThieu = !daDat && !dang && S.dapAnXong && tk.thieu.length > 0 && !coSai;
+    dat.className = 'cs-nut dat' + (daDat ? '' : ' chua') + (khoaThieu ? ' khoa' : '');
     dat.innerHTML = dang ? 'Đang ghi…' : 'ĐẠT' + (daDat ? ico('dat', 16, 2.2).replace('class="cs-ico"', 'class="cs-ico cs-tich"') : '');
-    dat.disabled = dang || (!daDat && (!!lyDo || coSai));
-    dat.title = daDat ? 'Đã ĐẠT — bấm lại để BỎ ĐẠT' : lyDo || (coSai ? '🔒 Còn dấu ✕ sai — dùng CHỤP LỖI' : 'Bấm để ghi ĐẠT cả bài');
+    dat.disabled = dang || (!daDat && !khoaThieu && (!!lyDo || coSai));
+    dat.title = daDat ? 'Đã ĐẠT — bấm lại để BỎ ĐẠT' : (khoaThieu ? lyDo + ' — BẤM ĐÚP để vẫn ghi ĐẠT' : lyDo || (coSai ? '🔒 Còn dấu ✕ sai — dùng CHỤP LỖI' : 'Bấm để ghi ĐẠT cả bài'));
     loi.innerHTML = ico('chup', 16, 2.2) + (daDat ? 'CHỤP ẢNH' : 'CHỤP LỖI');
     loi.disabled = dang || (!daDat && (!!lyDo || !coSai));
     loi.title = daDat ? 'Chụp ảnh ĐẠT (ảnh ghép mọi trang) để gửi Zalo' : lyDo || (!coSai ? '🔒 Mọi câu đều ✓ đúng — dùng ĐẠT' : 'Chụp từng trang lỗi / trả lại trang');
-    $('#csKhoa').textContent = daDat ? '✓ Thầy đã chấm ĐẠT' : lyDo || (coSai ? 'Sai ' + (tk.sai.length + tk.saiTay) + ' chỗ ⇒ CHỤP LỖI' : '✓ Đúng hết ⇒ bấm ĐẠT');
+    $('#csKhoa').textContent = daDat ? '✓ Thầy đã chấm ĐẠT' : (khoaThieu ? lyDo + ' · bấm đúp ĐẠT để vẫn ghi' : '') || lyDo || (coSai ? 'Sai ' + (tk.sai.length + tk.saiTay) + ' chỗ ⇒ CHỤP LỖI' : '✓ Đúng hết ⇒ bấm ĐẠT');
   }
   // Trạng thái một trang (theo dấu đang có): thieu | chan | tra | dung | vang
   function ttTrang(e, p) {
     var t = trangCua(e, p);
     if (!t) return { tt: 'thieu' };
-    if (t.duyet && t.duyet.tt === 'tra') return { tt: 'tra' };
-    if (!t.dat && !(t.duyet && t.duyet.tt === 'dat')) return { tt: 'chan' };
+    var tra = !!(t.duyet && t.duyet.tt === 'tra');   // v1.448.0 — trang đã trả lại vẫn đếm câu sai (pop-up CHỤP LỖI từng in "Không có câu sai")
+    if (!tra && !t.dat && !(t.duyet && t.duyet.tt === 'dat')) return { tt: 'chan' };
     var ds = suaCua(e, p, -1).dau, n = soCau(p).length, dem = { dung: 0, sai: 0, hoi: 0 };
     ds.forEach(function (m) { if (m.so != null && dem[m.loai] != null) dem[m.loai]++; });
-    var tt = (!dem.sai && !dem.hoi && n && dem.dung >= n) ? 'dung' : 'vang';
+    var tt = tra ? 'tra' : ((!dem.sai && !dem.hoi && n && dem.dung >= n) ? 'dung' : 'vang');
     return { tt: tt, dung: dem.dung, sai: dem.sai, hoi: dem.hoi, n: n };
   }
   function lopNut(tt) { return tt === 'dung' ? 'xanh' : (tt === 'vang' ? 'vang' : 'do'); }
@@ -385,6 +388,8 @@
     '.cs-nut.dat{background:#16A34A;color:#fff}.cs-nut.loi{background:#F2A93B;color:#3B2A07}' +
     // v1.436.0 (thầy chốt 28/10) — ĐẠT chưa tích = nền TRẮNG chữ đen; đã tích = xanh + ✓ bên phải. Pop-up hỏi bỏ ĐẠT.
     '.cs-nut.dat.chua{background:#fff;color:#16232A;box-shadow:inset 0 0 0 1.5px #CBD5D1}.cs-nut.dat.chua:disabled{background:#fff!important;color:#16232A!important;box-shadow:inset 0 0 0 1.5px #CBD5D1!important;opacity:.45}.cs-nut.dat .cs-tich{margin-left:1px}' +
+    '.cs-hoi-nen{position:fixed;inset:0;z-index:9200;background:rgba(10,18,22,.5);display:grid;place-items:center;padding:16px}' +   // v1.448.0 pop-up nhỏ xác nhận
+    '.cs-nut.dat.chua.khoa{opacity:.45}.cs-nut.dat.chua.khoa:hover{opacity:.6}.cs-nut.dat.chua.khoa:active{opacity:.6}' +
     '.cs-hoi{background:#fff;border-radius:18px;padding:22px 24px;width:min(420px,100%);box-shadow:0 20px 60px rgba(0,0,0,.4)}.cs-hoi b{display:block;font-size:15px;font-weight:900;margin-bottom:8px}' +
     '.cs-hoi p{margin:0 0 18px;font-size:12.5px;font-weight:600;color:#5F7370;line-height:1.5}.cs-hoi .cs-hang{display:flex;gap:10px;justify-content:flex-end}.cs-nut.bo{background:#DC2626;color:#fff}' +
     '.cs-ai-dau{display:flex;align-items:center;gap:8px;padding:0 15px 9px;font-size:11px;color:#5F7370;font-weight:700}.cs-ai-dau b{margin-left:auto;font-size:20px;font-weight:900;color:#16232A}' +
@@ -420,8 +425,13 @@
     '.cs-pop-hop{width:min(1360px,100%);height:min(940px,100%);background:#fff;border-radius:18px;display:flex;flex-direction:column;overflow:hidden}' +
     '.cs-pop-dau{display:flex;align-items:center;gap:12px;padding:12px 16px;color:#fff}.cs-pop-dau b{font-size:14px;font-weight:900;letter-spacing:.04em}.cs-pop-dau span{font-size:11.5px;font-weight:700;opacity:.9}' +
     '.cs-pop-dau.loi{background:#B45309}.cs-pop-dau.dat{background:#15803D}' +
-    '.cs-pop-than{flex:1;min-height:0;overflow:auto;background:#EEF3F2}' +
+    '.cs-pop-than{flex:1;min-height:0;overflow:auto;background:#EEF3F2;position:relative;container-type:size}' +
     '.cs-loi-dong{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:16px;padding:16px;border-bottom:1px solid #D7E3E0}' +
+    // v1.448.0 (thầy 29/10) — mỗi trang cao ĐÚNG khung pop-up, ảnh co trọn trong đó ⇒ luôn thấy cả trang, không phải cuộn trong một trang
+    '.cs-loi-dong[data-p]{height:100cqh;box-sizing:border-box;grid-template-rows:minmax(0,1fr)}' +
+    '.cs-loi-anh{min-height:0;height:100%;display:flex;justify-content:center;align-items:flex-start}' +
+    '.cs-loi-dong .cs-loi-anh img{width:auto;max-width:100%;max-height:100%;object-fit:contain}' +
+    '.cs-loi-ben{overflow:auto;max-height:100%}.cs-loi-tt[hidden]{display:none}.cs-nut.tra.da{background:#DC2626;color:#fff;box-shadow:none}' +
     '.cs-loi-dong img,.cs-dat-o img{width:100%;display:block;border-radius:10px;background:#fff;box-shadow:0 6px 20px rgba(0,0,0,.12)}' +
     '.cs-loi-ben{display:flex;flex-direction:column;gap:10px;position:sticky;top:12px;align-self:start}.cs-loi-ben h4{margin:0;font-size:15px;font-weight:900}.cs-loi-ben p{margin:0;font-size:12px;font-weight:700;color:#5F7370}' +
     '.cs-loi-ben textarea{border:1.5px solid #D7E3E0;border-radius:10px;padding:9px 10px;font:600 12px/1.5 ' + FONT + ';resize:vertical;min-height:96px}' +
@@ -433,7 +443,8 @@
     '.cs-pop-day .cs-nut{padding:14px 24px;font-size:13px}.cs-nut.phu{background:#EEF3F2;color:#16232A}' +
     '#csToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16232A;color:#fff;padding:12px 18px;border-radius:12px;font-size:12.5px;font-weight:800;opacity:0;transition:.25s;pointer-events:none;z-index:9400}' +
     '#csToast.hien{opacity:1}' +
-    '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:1fr}.cs-dat-luoi{grid-template-columns:1fr}}';
+    '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:minmax(0,1fr) 230px}.cs-dat-luoi{grid-template-columns:1fr}}' +
+    '@media (max-width:640px){.cs-loi-dong,.cs-loi-dong[data-p]{grid-template-columns:1fr;grid-template-rows:72cqh auto;height:auto}}';
   // ⭐ v1.400.0 icon phẳng 2D (nét Lucide, màu theo chữ của nút)
   var ICO = {
     but: '<path d="M21.17 6.81a1 1 0 0 0-3.98-3.98L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/>',
@@ -502,7 +513,8 @@
       var go = /TEXTAREA|INPUT/.test(document.activeElement && document.activeElement.tagName);
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z' && !go) { e.preventDefault(); hoanTac(); }
       if (e.key === 'Escape') {
-        if ($('.cs-menu') || $('.cs-co')) dongNoi();
+        if ($('.cs-hoi-nen')) $('.cs-hoi-nen').remove();
+        else if ($('.cs-menu') || $('.cs-co')) dongNoi();
         else if (S.keDau) { S.keDau = null; veTren(); }
         else if (!$('#csPop').hidden) dongPop();
         else if (!nhung()) dong();   // v1.434.0 — nhúng trong tab: Esc ngoài cùng để dashboard đóng hộp chi tiết
@@ -518,6 +530,7 @@
     $('#csXoa').onclick = function () { var o = suaHien(); if (!o.net.length) return; ghiLich(o); o.net = []; veCv(); };
     $('#csChupLoi').onclick = function () { if (ttEm(emHien()).lop === 'xong') moDat(); else moChupLoi(); };   // v1.436.0
     $('#csDat').onclick = bamDat;
+    $('#csDat').ondblclick = function () { var e = emHien(); if (e && this.classList.contains('khoa') && !S.dangGhiDat) ghiDat(e, 'dat'); };   // v1.448.0
     $('#csChepNhan').onclick = function () { navigator.clipboard.writeText($('#csNhan').value).then(function () { toast('✓ Đã chép lời nhắn'); }, function () { toast('Trình duyệt chặn clipboard'); }); };
     ganVe($('#csCv'));
   }
@@ -530,7 +543,7 @@
   // v1.434.0 — đang NHÚNG trong khung trang khác (tab BÀI TRONG SÁCH của dashboard) và đang hiện
   function nhung() { var n = $('#csNen'); return !!(n && !n.hidden && n.classList.contains('nhung')); }
   // v1.434.0 — có lớp nổi riêng của trang chấm (menu, thanh cỡ, đang kẻ, pop-up chụp) ⇒ Esc thuộc về trang chấm
-  function coLop() { var n = $('#csNen'); return !!(n && !n.hidden && ($('.cs-menu') || $('.cs-co') || (S && S.keDau) || !$('#csPop').hidden)); }
+  function coLop() { var n = $('#csNen'); return !!(n && !n.hidden && ($('.cs-hoi-nen') || $('.cs-menu') || $('.cs-co') || (S && S.keDau) || !$('#csPop').hidden)); }
   function dongNoi() { document.querySelectorAll('.cs-menu,.cs-co').forEach(function (x) { x.remove(); }); }
   function datViTri(el, x, y) {
     document.body.appendChild(el);
@@ -928,36 +941,56 @@
         var t = trangCua(e, p);
         if (!t) return '<div class="cs-loi-dong"><div class="cs-trong" style="color:#94A3B8">Em chưa nộp trang ' + p + '.</div><div></div></div>';
         var tt = ttTrang(e, p), daTra = t.duyet && t.duyet.tt === 'tra';
-        return '<div class="cs-loi-dong" data-p="' + p + '"><div><img alt="Trang ' + p + '" data-anh></div><div class="cs-loi-ben"><h4>TRANG ' + p + '</h4>' +
+        return '<div class="cs-loi-dong" data-p="' + p + '"><div class="cs-loi-anh"><img alt="Trang ' + p + '" data-anh></div><div class="cs-loi-ben"><h4>TRANG ' + p + '</h4>' +
           '<p>' + (tt.tt === 'chan' ? '⚠ Máy chặn ảnh này' : (tt.sai ? 'Sai ' + tt.sai + ' câu' : 'Không có câu sai') + (tt.hoi ? ' · ' + tt.hoi + ' câu chưa chắc' : '')) + '</p>' +
-          (daTra ? '<div class="cs-loi-tt tra">↺ ĐÃ TRẢ LẠI — em đang sửa</div>' : '') +
+          '<div class="cs-loi-tt tra" data-tt' + (daTra ? '' : ' hidden') + '>↺ ĐÃ TRẢ LẠI — em đang sửa</div>' +
           '<textarea data-nhan>' + chu(daTra && t.duyet.nhan ? t.duyet.nhan : loiNhanTrang(e, p)) + '</textarea>' +
-          '<button class="cs-nut chup" data-chup>' + ico('chup', 16, 2.2) + 'CHỤP TRANG ' + p + '</button><button class="cs-nut tra" data-tra>' + ico('tra', 16, 2.2) + 'TRẢ LẠI TRANG ' + p + '</button></div></div>';
+          '<button class="cs-nut chup" data-chup>' + ico('chup', 16, 2.2) + 'CHỤP TRANG ' + p + '</button><button class="cs-nut tra" data-tra></button></div></div>';
       }).join('') + '</div>' +
       '<div class="cs-pop-day"><span>' + ds.length + '/' + S.trangs.length + ' trang đã nộp. Ảnh chụp có dải tên em ở trên — dán thẳng vào Zalo (Ctrl+V).</span><button class="cs-nut phu" data-dong>ĐÓNG</button></div></div>';
     pop.hidden = false;
     pop.querySelectorAll('[data-dong]').forEach(function (b) { b.onclick = dongPop; });
     pop.querySelectorAll('.cs-loi-dong[data-p]').forEach(function (row) {
-      var p = +row.dataset.p, cvP = dungTrang(e, p, -1, { dai: true });
+      var p = +row.dataset.p, cvP = dungTrang(e, p, -1, { dai: true }), nut = row.querySelector('[data-tra]');
       cvP.then(function (c) { try { row.querySelector('[data-anh]').src = c.toDataURL('image/jpeg', 0.9); } catch (er) { row.querySelector('[data-anh]').alt = 'Ảnh chưa xuất được (CORS)'; } });
       row.querySelector('[data-chup]').onclick = function () {
         chepAnh(cvP.then(function (c) { return canvasBlob(c, 'image/png'); }))
           .then(function () { toast('✓ Đã chụp trang ' + p + ' — mở Zalo, Ctrl+V để dán'); }, function (er) { toast('Chưa chép được ảnh: ' + ((er && er.message) || er)); });
       };
-      row.querySelector('[data-tra]').onclick = function () {
-        var nut = this, nhan = row.querySelector('[data-nhan]').value.trim();
-        nut.disabled = true; nut.textContent = 'Đang trả lại…';
-        cvP.then(function (c) {
+      // ⭐ v1.448.0 (thầy 29/10) — nút TRẢ LẠI ⇄ ĐÃ TRẢ LẠI: trả lại xong vẫn bấm được để CHẤP NHẬN LẠI; hai chiều đều hỏi pop-up nhỏ.
+      //   Chấp nhận lại = duyetSach { trang, tt:'dat' } (máy chủ sẵn có: thay duyet TRẢ LẠI bằng ĐẠT trang đó) ⇒ em hết phải chụp lại trang này.
+      var daTra = function () { var t = trangCua(e, p); return !!(t && t.duyet && t.duyet.tt === 'tra'); };
+      var capTra = function () {
+        var tra = daTra();
+        nut.disabled = false; nut.classList.toggle('da', tra);
+        nut.innerHTML = tra ? ico('dat', 16, 2.2) + 'ĐÃ TRẢ LẠI TRANG ' + p : ico('tra', 16, 2.2) + 'TRẢ LẠI TRANG ' + p;
+        nut.title = tra ? 'Bấm để CHẤP NHẬN LẠI trang này (em không phải chụp lại)' : 'Trả lại trang này kèm ảnh đã chấm + lời nhắn';
+        row.querySelector('[data-tt]').hidden = !tra;
+      };
+      capTra();
+      var gui = function (tra) {
+        var nhan = row.querySelector('[data-nhan]').value.trim();
+        nut.disabled = true; nut.textContent = tra ? 'Đang trả lại…' : 'Đang chấp nhận lại…';
+        (tra ? cvP.then(function (c) {
           var anh = ''; try { anh = c.toDataURL('image/jpeg', 0.85); } catch (er) { anh = ''; }
           return hamDuyet().then(function (f) { return f({ id: [S.lop, S.bai, S.bt, e.ma].join('__'), trang: p, tt: 'tra', nhan: nhan, anh: anh }); });
-        }).then(function () { return S.docLai(e); }).then(function (d) {
-          if (d) e.doc = d;
-          nut.innerHTML = ico('dat', 16, 2.2) + 'ĐÃ TRẢ LẠI TRANG ' + p;
-          toast('↺ Đã trả lại trang ' + p + ' — em sẽ thấy ảnh thầy chấm + lời nhắn trên web');
-          veTat(); if (S.onDoi) S.onDoi();
-        })['catch'](function (er) { nut.disabled = false; nut.innerHTML = ico('tra', 16, 2.2) + 'TRẢ LẠI TRANG ' + p; toast('Chưa trả lại được: ' + ((er && er.message) || er)); });
+        }) : hamDuyet().then(function (f) { return f({ id: [S.lop, S.bai, S.bt, e.ma].join('__'), trang: p, tt: 'dat' }); }))
+          .then(function () { return S.docLai(e); }).then(function (d) {
+            if (d) e.doc = d;
+            capTra();
+            toast(tra ? '↺ Đã trả lại trang ' + p + ' — em sẽ thấy ảnh thầy chấm + lời nhắn trên web' : '✓ Đã chấp nhận lại trang ' + p + ' — em không phải chụp lại trang này');
+            veTat(); if (S.onDoi) S.onDoi();
+          })['catch'](function (er) { capTra(); toast((tra ? 'Chưa trả lại được: ' : 'Chưa chấp nhận lại được: ') + ((er && er.message) || er)); });
+      };
+      nut.onclick = function () {
+        if (daTra()) hoiNho('Chấp nhận lại trang ' + p + '?', 'Trang ' + p + ' của ' + e.ten + ' sẽ không còn bị trả lại — em không phải chụp lại trang này nữa.', 'CHẤP NHẬN LẠI', 'dat', function () { gui(false); });
+        else hoiNho('Trả lại trang ' + p + ' cho ' + e.ten + '?', 'Em sẽ thấy ảnh thầy đã chấm + lời nhắn trên web và phải chụp lại trang này.', 'TRẢ LẠI', 'bo', function () { gui(true); });
       };
     });
+    // ⭐ v1.448.0 — mở pop-up là cuộn tới TRANG ĐẦU TIÊN CÓ LỖI (✕ sai · ? chưa chắc · máy chặn); mỗi hàng cao đúng khung nên vị trí biết trước khi ảnh về
+    var dau = S.trangs.filter(function (p) { var t = ttTrang(e, p); return t.tt === 'chan' || t.sai > 0 || t.hoi > 0; })[0];
+    var hang = dau != null && pop.querySelector('.cs-loi-dong[data-p="' + dau + '"]'), than = pop.querySelector('.cs-pop-than');
+    if (hang && than) than.scrollTop = hang.offsetTop;
   }
   function ghepDat(e) {
     var dsP = S.trangs.filter(function (p) { return trangCua(e, p); });
@@ -1015,14 +1048,21 @@
   // ⭐ v1.436.0 — nút ĐẠT: chưa ĐẠT ⇒ ghi ĐẠT cả bài ngay · đã ĐẠT ⇒ hỏi BỎ ĐẠT (máy chủ duyetSach tt:'bo' trả về như trước khi ĐẠT)
   function bamDat() {
     var e = emHien(); if (!e || S.dangGhiDat) return;
+    if (this && this.classList && this.classList.contains('khoa')) return void toast('🔒 Còn câu chưa có dấu ✓/✕ — bấm ĐÚP vào ĐẠT nếu vẫn muốn ghi ĐẠT');   // v1.448.0
     if (ttEm(e).lop !== 'xong') return void ghiDat(e, 'dat');
-    var pop = $('#csPop');
-    pop.innerHTML = '<div class="cs-hoi"><b>Bỏ ĐẠT bài của ' + chu(e.ten) + '?</b><p>Bài sẽ trở về CHỜ CHẤM như trước khi thầy bấm ĐẠT. Dấu chấm và nét vẽ vẫn giữ nguyên.</p>' +
-      '<div class="cs-hang"><button class="cs-nut phu" data-dong>HUỶ</button><button class="cs-nut bo" id="csBoDat">BỎ ĐẠT</button></div></div>';
-    pop.hidden = false;
-    pop.querySelectorAll('[data-dong]').forEach(function (b) { b.onclick = dongPop; });
-    $('#csBoDat').onclick = function () { dongPop(); ghiDat(e, 'bo'); };
-    $('#csBoDat').focus();
+    hoiNho('Bỏ ĐẠT bài của ' + e.ten + '?', 'Bài sẽ trở về CHỜ CHẤM như trước khi thầy bấm ĐẠT. Dấu chấm và nét vẽ vẫn giữ nguyên.', 'BỎ ĐẠT', 'bo', function () { ghiDat(e, 'bo'); });
+  }
+  // ⭐ v1.448.0 — pop-up NHỎ xác nhận (nằm trên mọi lớp của trang chấm, kể cả pop-up CHỤP LỖI). Esc / HUỶ / bấm nền = thôi.
+  function hoiNho(tieu, loi, chuNut, lopNut, ok) {
+    var cu = $('.cs-hoi-nen'); if (cu) cu.remove();
+    var el = document.createElement('div');
+    el.className = 'cs-hoi-nen';
+    el.innerHTML = '<div class="cs-hoi"><b>' + chu(tieu) + '</b><p>' + chu(loi) + '</p>' +
+      '<div class="cs-hang"><button class="cs-nut phu" data-huy>HUỶ</button><button class="cs-nut ' + lopNut + '" data-ok>' + chu(chuNut) + '</button></div></div>';
+    ($('#csNen') || document.body).appendChild(el);
+    el.onclick = function (ev) { if (ev.target === el || ev.target.closest('[data-huy]')) el.remove(); };
+    el.querySelector('[data-ok]').onclick = function () { el.remove(); ok(); };
+    el.querySelector('[data-ok]').focus();
   }
   function ghiDat(e, tt) {
     S.dangGhiDat = true; capNut();

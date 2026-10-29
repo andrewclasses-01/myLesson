@@ -14,7 +14,25 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.445.0 (29/10/2026) — DẢI A SHOW SPEED Ở KHUNG CHAT DASHBOARD: nút ĐẤU mờ + 📊 *(bản mới nhất)*
+## ⭐ v1.446.0 (29/10/2026) — HỘP "QUẢN LÝ GIẢI ĐẤU" (đổi tên Quản lý thách đấu): 4 thẻ · dải + ⚙ · theo dõi trận / em / xếp hạng *(bản mới nhất)*
+
+Mẫu thầy duyệt `D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\quan-tri-ass-v2\index.html` (v1 = các phương án bố cục). Thầy chốt 29/10: đặt TRONG menu cũ, đổi tên,
+4 thẻ ngang có số cơ bản, bấm thẻ ⇒ dải thông số + nút ⚙ Cài đặt cuối dải (thiết đặt KHÔNG bày ra ngoài nữa) + các tab; xếp hạng có Mùa + Mọi thời đại; Luyện tập chỉ bật/tắt.
+- `js/td-ql.js`: bỏ cột trái. Đầu hộp: "Học sinh bị chặn" (đếm đỏ) + ✕. 4 thẻ Giao hữu · Đấu giải · Luyện tập · Xếp hạng (trạng thái chế độ + Hôm nay/Đang đấu/Tổng).
+  Dải: trạng thái · lớp · bắt buộc xong trận · trận/em/bỏ dở hôm nay · tổng (xh: mùa, còn N ngày, số 1). ⚙ mở BẢNG GẬP: thẻ chế độ của đúng thẻ đang chọn
+  (Lưu/Huỷ như cũ) + xh: toàn bộ js/xh-ql.js (mùa, tạo/tạm dừng/chốt & phát sao). Đổi thẻ khi còn chưa lưu ⇒ hỏi. `TdQl.mo({ the })` mở thẳng thẻ.
+- `js/td-xem.js` (MỚI) — tab: Tất cả trận (Hôm nay/Hôm qua/7 ngày/chọn ngày · tìm tên · lớp · chỉ bỏ dở; cờ rời trận/mất kết nối/không tính điểm/gửi quá nhanh;
+  xh có cột ± điểm hạng) ⇒ Chi tiết trận (tỉ số, kết quả, ± hạng, DÒNG THỜI GIAN từng từ theo giây trên/dưới, 2 cột từ, bỏ lỡ, xem như khán giả) ·
+  Học sinh (tìm ⇒ hồ sơ: lọc loại, T/H/B, bỏ dở, cao nhất mùa, đường điểm hạng mùa theo trận, đối thủ hay gặp, lịch sử ≤200 trận; gộp uid cũ cùng tên+lớp) ·
+  Bảng xếp hạng (xh: từng mùa — đủ mọi em, hạng theo SUẤT như xh-ql — hoặc Mọi thời đại; gh/giai: mọi thời đại của loại đó; ⬇ Tải Excel .xls) ·
+  Giải đang chạy (bấm lớp ⇒ GiaiPop) · Các mùa · Luyện tập: chỉ thông tin.
+- Đọc kho KHÔNG cần chỉ mục ghép: tranDau theo `taoLuc` (một trường) rồi lọc ở máy; em = `nguoi array-contains-any`; mùa = xhMua/{mua}/em.
+  MỌI THỜI ĐẠI = tài liệu `nwCauHinh/tdTong` (luật nwCauHinh sẵn có: thầy ghi, em đăng nhập đọc) — mở tab Học sinh/Bảng xếp hạng thì cộng dồn trận có
+  `xongLuc` > `moc` (lần ĐẦU đọc hết mọi trận đã chốt, vài nghìn lượt đọc, một lần). Thầy không vào bảng.
+- Menu cột trái (`js/nw-thanh.js?v=41`) đổi chữ + biểu tượng cúp. `td-ql.js?v=6`, `td-xem.js?v=1`, `td-ql.css?v=3`.
+- Thử: bàn thử tạm (đã xoá) ?thu=1 — 4 thẻ, dải, ⚙ (xh kèm mùa), chặn em, mọi tab, chi tiết, hồ sơ, mùa/mọi thời đại. ⬜ CHƯA đọc kho thật bằng phiên thầy (auto mode chặn khoá quản trị).
+
+## ⭐ v1.445.0 (29/10/2026) — DẢI A SHOW SPEED Ở KHUNG CHAT DASHBOARD: nút ĐẤU mờ + 📊
 
 Thầy hỏi 29/10 vì ô chat dashboard không có nút Tìm trận (học sinh thì ĐÃ có “⚡ ĐẤU” — bản thầy cố ý giấu từ v1.438.0). Thầy chốt:
 - `js/dang-dau.js` dải C bản thầy (`dau:false`): vẫn vẽ nút ⚡ ĐẤU nhưng `disabled` (mờ, xám, không bấm) + nút 📊 `data-ddn-td` (chỉ khi trang có `window.TdQl` = dashboard)

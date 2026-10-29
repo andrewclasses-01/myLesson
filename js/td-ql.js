@@ -1,6 +1,11 @@
 /* ============================================================
-   td-ql.js — HỘP "QUẢN LÝ THÁCH ĐẤU" TRÊN DASHBOARD (24/10/2026, web v1.415.0 — thầy yêu cầu).
-   Mở từ mục "Quản lý thách đấu" ở cột trái (js/nw-thanh.js ⇒ window.TdQl.mo()).
+   td-ql.js — HỘP "QUẢN LÝ GIẢI ĐẤU" TRÊN DASHBOARD (24/10/2026, web v1.415.0 — thầy yêu cầu; tên cũ "Quản lý thách đấu").
+   Mở từ mục "Quản lý giải đấu" ở cột trái (js/nw-thanh.js ⇒ window.TdQl.mo()) hoặc nút 📊 ở dải A SHOW SPEED khung chat (TdQl.mo({ the: 'xh' })).
+   ⭐ v1.446.0 (29/10/2026, mẫu thầy duyệt `D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\quan-tri-ass-v2`): bỏ cột trái —
+     4 THẺ NGANG (Giao hữu · Đấu giải · Luyện tập · Xếp hạng, mỗi thẻ trạng thái + 3 số) ⇒ bấm thẻ: DẢI thông số + nút ⚙ Cài đặt ở cuối
+     (mọi thiết đặt của chế độ gập trong nút này: bật/tắt/hẹn giờ/lớp/bắt buộc/lời nhắn; Xếp hạng thêm mùa — js/xh-ql.js) ⇒ các TAB xem
+     (js/td-xem.js: tất cả trận · chi tiết trận · hồ sơ em · bảng xếp hạng mùa + mọi thời đại · giải đang chạy · các mùa).
+     "Học sinh bị chặn" = nút trên đầu hộp (mở trong cùng bảng gập).
 
    Thầy chỉnh MỌI trò chơi thách đấu của học sinh ở một chỗ (hôm nay: A Show Speed; sau này thêm trò ⇒ thêm vào TdQuan.TRO trong js/the-td.js):
    · Mỗi chế độ (Giao hữu · Đấu giải · Luyện tập): BẬT / TẮT / HẸN GIỜ (mở từ … đóng lúc …, bỏ trống một đầu = không giới hạn đầu đó),
@@ -34,7 +39,7 @@
   var TQ = function () { return window.TdQuan; };
   var laThu = function () { return /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && (/[?&]thu=/.test(location.search) || (TQ() && TQ().thuLocal)); };
   // S.c = bản đang sửa · S.goc = JSON bản đã lưu (so để biết "chưa lưu")
-  var S = { c: null, goc: '', xem: 'ass', lops: [], hs: {}, chonLop: '', tim: '', chonHs: null, f: null };
+  var S = { c: null, goc: '', xem: 'ass', the: 'xh', tab: 'tran', bang: '', lops: [], hs: {}, chonLop: '', tim: '', chonHs: null, f: null, tk: null };
 
   // ── kho ──
   function kho() {
@@ -131,13 +136,19 @@
   function dungKhung() {
     if ($('#tdqNen')) return $('#tdqNen');
     var n = document.createElement('div'); n.id = 'tdqNen'; n.className = 'tdq-nen'; n.hidden = true;
-    n.innerHTML = '<div class="tdq-hop" role="dialog" aria-modal="true" aria-label="Quản lý thách đấu">' +
-      '<aside class="tdq-ben"><div class="tdq-dau"><span class="tdq-ic">' + I.kiem + '</span><h3>Quản lý thách đấu<span>Trò chơi của học sinh</span></h3></div>' +
-        '<nav class="tdq-nav" id="tdqNav"></nav></aside>' +
-      '<section class="tdq-chinh"><header class="tdq-tren"><h2 id="tdqTieuDe"></h2><button class="tdq-dong" type="button" aria-label="Đóng">' + I.x + '</button></header>' +
-        '<div class="tdq-than" id="tdqThan"></div><footer class="tdq-chan-luu" id="tdqLuu"></footer></section></div>';
+    n.innerHTML = '<div class="tdq-hop tdq2" role="dialog" aria-modal="true" aria-label="Quản lý giải đấu">' +
+      '<header class="tdq2-tren"><span class="tdq-ic">' + I.cup + '</span><h3>Quản lý giải đấu<span>A Show Speed · trò chơi của học sinh</span></h3>' +
+        '<button type="button" class="tdq-nut phu nho" data-bang="chan">' + I.chan + 'Học sinh bị chặn<em class="tdq2-dem" id="tdqDemChan" hidden></em></button>' +
+        '<button class="tdq-dong" type="button" aria-label="Đóng">' + I.x + '</button></header>' +
+      '<div class="tdq2-cuon" id="tdqCuon"><div class="tdq2-the4" id="tdqThe4"></div><div class="tdq2-dai" id="tdqDai"></div>' +
+        '<section class="tdq2-bang" id="tdqBang" hidden><header class="tdq-tren"><h2 id="tdqTieuDe"></h2><button type="button" class="tdq-x" data-bang-dong aria-label="Đóng cài đặt">' + I.x + '</button></header>' +
+          '<div class="tdq-than" id="tdqThan"></div><footer class="tdq-chan-luu" id="tdqLuu"></footer>' +
+          '<div class="tdq2-xh" id="tdqXh" hidden><header class="tdq-tren"><h2 id="tdqXhTd"></h2></header><div class="tdq-than" id="tdqXhThan"></div><footer class="tdq-chan-luu" id="tdqXhLuu"></footer></div></section>' +
+        '<nav class="tdq2-tabs" id="tdqTabs"></nav><div class="tdq2-noi" id="tdqNoi"></div></div></div>';
     document.body.appendChild(n);
     $('.tdq-dong', n).onclick = dong;
+    $('[data-bang="chan"]', n).onclick = function () { moBang(S.bang === 'chan' ? '' : 'chan'); };
+    $('[data-bang-dong]', n).onclick = function () { moBang(''); };
     n.addEventListener('mousedown', function (e) { if (e.target === n) dong(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !n.hidden) dong(); });
     return n;
@@ -147,46 +158,114 @@
     $('#tdqNen').hidden = true;
   }
   async function mo(o) {
-    if (o && o.the === 'xh') S.xem = 'mua';   // v1.445.0 — nút 📊 ở dải A SHOW SPEED khung chat dashboard (js/dang-dau.js)
+    if (o && o.the && THE[o.the]) { S.the = o.the; S.tab = TAB(o.the)[0][0]; }   // v1.445.0 — nút 📊 ở dải A SHOW SPEED khung chat dashboard (js/dang-dau.js)
     if (!TQ()) return alert('Chưa nạp được js/the-td.js — thầy tải lại trang nhé.');
-    var n = dungKhung(); n.hidden = false;
-    $('#tdqThan').innerHTML = '<div class="tdq-rong">Đang tải…</div>'; $('#tdqNav').innerHTML = ''; $('#tdqLuu').innerHTML = '';
+    var n = dungKhung(); n.hidden = false; S.bang = ''; $('#tdqBang').hidden = true;
+    $('#tdqThe4').innerHTML = ''; $('#tdqDai').innerHTML = ''; $('#tdqTabs').innerHTML = ''; $('#tdqNoi').innerHTML = '<div class="tdq-rong">Đang tải…</div>';
     try {
       var r = await Promise.all([TQ().nap(true), napLop()]);
       S.c = JSON.parse(JSON.stringify(r[0])); S.c.chan = S.c.chan || {};
       S.lops = r[1]; S.goc = JSON.stringify(sach(S.c)); S.chonHs = null;
       if (!S.chonLop && S.lops[0]) S.chonLop = S.lops[0].ma;
-    } catch (e) { $('#tdqThan').innerHTML = '<div class="tdq-rong">Chưa tải được cài đặt: ' + E(chuLoi(e)) + '</div>'; return; }
-    ve();
+    } catch (e) { $('#tdqNoi').innerHTML = '<div class="tdq-rong">Chưa tải được cài đặt: ' + E(chuLoi(e)) + '</div>'; return; }
+    if (window.TdXem) TdXem.xoaNho();
+    S.tk = null; ve(); napThongKe();
+  }
+  function napThongKe() {
+    if (!window.TdXem) return;
+    TdXem.thongKe({ kho: kho, laThu: laThu() }).then(function (tk) { S.tk = tk; veThe4(); veDai(); }).catch(function (e) { console.warn('[td-ql] thống kê', e); });
   }
 
   // ── vẽ ──
-  // ⭐ 25/10/2026 — mục "Mùa xếp hạng" (js/xh-ql.js tự vẽ thân + chân hộp)
-  function ve() {
-    veNav();
-    if (S.xem === 'mua') return window.XhQl ? XhQl.ve({ than: $('#tdqThan'), tieuDe: $('#tdqTieuDe'), luu: $('#tdqLuu'), kho: kho, toast: toast, laThu: laThu() })
-      : ($('#tdqThan').innerHTML = '<div class="tdq-rong">Chưa nạp js/xh-ql.js — thầy tải lại trang nhé.</div>');
-    if (S.xem === 'chan') veChan(); else veTro(); veLuu();
+  // ⭐ v1.446.0 — 4 THẺ (chế độ của A Show Speed) · dải · bảng gập (⚙ Cài đặt / Học sinh bị chặn) · tab (js/td-xem.js)
+  var THE = {
+    gh: { ten: 'Giao hữu', ic: '🤝', m: '#12A58F' }, giai: { ten: 'Đấu giải', ic: '🏆', m: '#E0A11B' },
+    luyen: { ten: 'Luyện tập', ic: '🎯', m: '#1C7FD6' }, xh: { ten: 'Xếp hạng', ic: '⚡', m: '#8B5CF6' }
+  };
+  var THU_TU = ['gh', 'giai', 'luyen', 'xh'];
+  function TAB(the) { return (window.TdXem && TdXem.TAB[the]) || [['luyen', 'Thông tin']]; }
+  function cheDo(the) { var t = TQ().TRO[0]; S.c.tro[t.ma] = S.c.tro[t.ma] || {}; return S.c.tro[t.ma][the] = S.c.tro[t.ma][the] || { che: 'bat' }; }
+  var soN = function (n) { return n == null ? '—' : Number(n).toLocaleString('vi-VN'); };
+  function ve() { veThe4(); veDai(); veBang(); veTab(); }
+  function veThe4() {
+    var tk = S.tk || {};
+    $('#tdqThe4').innerHTML = THU_TU.map(function (k) {
+      var x = THE[k], p = pill(cheDo(k)), t = tk[k] || {}, o3;
+      if (k === 'luyen') o3 = [['—', 'Không ghi số liệu']];
+      else if (k === 'xh') o3 = [[soN(t.homNay), 'Hôm nay'], [soN(t.dang), 'Đang đấu'], [soN(tk.mua && tk.mua.em), 'Em mùa này']];
+      else o3 = [[soN(t.homNay), 'Hôm nay'], [soN(t.dang), 'Đang đấu'], [t.coTong ? soN(t.tong) : '—', 'Tổng trận']];
+      if (!S.tk && k !== 'luyen') o3 = o3.map(function (y) { return ['…', y[1]]; });
+      var chu = k === 'xh' && tk.mua && p.cls !== 'off' ? tk.mua.ten + ' · ' + (tk.mua.tt === 'dung' ? 'tạm dừng' : 'đang chạy') : k === 'giai' && tk.dsGiai && p.cls !== 'off' ? 'Đang mở · ' + tk.dsGiai.dang + ' giải' : p.chu;
+      return '<button type="button" class="tdq2-the' + (S.the === k ? ' chon' : '') + '" style="--m:' + x.m + '" data-the="' + k + '"><span class="tdq2-the-dau"><span class="tdq2-bieu">' + x.ic + '</span>' +
+        '<span><b>' + E(x.ten) + '</b><span class="tdq-pill ' + p.cls + '">' + E(chu) + '</span></span></span>' +
+        '<span class="tdq2-so">' + o3.map(function (y) { return '<span><i>' + y[0] + '</i><small>' + E(y[1]) + '</small></span>'; }).join('') + '</span></button>';
+    }).join('');
+    $$('[data-the]', $('#tdqThe4')).forEach(function (b) { b.onclick = function () {
+      var k = b.getAttribute('data-the'); if (k === S.the) return;
+      if (S.bang === 'cai' && chuaLuu() && !confirm('Còn thay đổi CHƯA LƯU ở cài đặt ' + THE[S.the].ten + '. Chuyển thẻ và bỏ các thay đổi đó?')) return;
+      if (S.bang === 'cai') { var g = JSON.parse(S.goc); Object.keys(g).forEach(function (q) { S.c.tro[q] = g[q]; }); S.bang = ''; }
+      S.the = k; S.tab = TAB(k)[0][0]; ve();
+    }; });
+    var d = $('#tdqDemChan'), n = soChan(); d.hidden = !n; d.textContent = n;
   }
-  function veNav() {
-    var h = '<div class="tdq-nhom">Trò chơi</div>' + TQ().TRO.map(function (t) {
-      var on = t.che.filter(function (ch) { return TQ().trangThai((S.c.tro[t.ma] || {})[ch.ma]).mo; }).length;
-      return '<button type="button" class="tdq-muc' + (S.xem === t.ma ? ' chon' : '') + '" data-xem="' + t.ma + '">' + I.game +
-        '<span class="ch">' + E(t.ten) + '<small>' + on + '/' + t.che.length + ' chế độ đang mở</small></span></button>';
-    }).join('') +
-      '<div class="tdq-muc tat" title="Trò chơi mới sẽ tự hiện ở đây khi được thêm vào hệ thống">' + I.cong + '<span class="ch">Trò chơi khác<small>Sắp có</small></span></div>' +
-      '<i class="tdq-cach"></i>' +
-      '<button type="button" class="tdq-muc' + (S.xem === 'mua' ? ' chon' : '') + '" data-xem="mua">' + I.cup + '<span class="ch">Mùa xếp hạng<small>Tạo mùa · chốt &amp; phát sao</small></span></button>' +
-      '<button type="button" class="tdq-muc' + (S.xem === 'chan' ? ' chon' : '') + '" data-xem="chan">' + I.chan + '<span class="ch">Học sinh bị chặn<small>Khoá riêng từng em</small></span>' +
-      (soChan() ? '<span class="dem">' + soChan() + '</span>' : '') + '</button>';
-    var nav = $('#tdqNav'); nav.innerHTML = h;
-    $$('[data-xem]', nav).forEach(function (b) { b.onclick = function () { S.xem = b.getAttribute('data-xem'); ve(); }; });
+  function veDai() {
+    var k = S.the, m = cheDo(k), tk = S.tk || {}, t = tk[k] || {}, o = [];
+    var tt = TQ().trangThai(m);
+    o.push([tt.mo ? 'Đang mở' : tt.sap ? 'Hẹn mở' : 'Đang tắt', tt.het ? 'đóng lúc ' + chuLuc(tt.het) : tt.sap ? 'lúc ' + chuLuc(tt.sap) : 'Trạng thái', 1]);
+    if (k === 'xh' && tk.mua) {
+      o.push([tk.mua.ten, chuNgay(tk.mua.tu) + ' → ' + chuNgay(tk.mua.den), 1], [tk.mua.conLai + ' ngày', 'Còn lại', 1]);
+      o.push([soN(t.dang), 'Đang đấu'], [soN(t.homNay), 'Trận hôm nay'], [soN(t.em), 'Em đấu hôm nay'], [soN(t.bo), 'Bỏ dở hôm nay']);
+      if (tk.mua.so1) o.push([soN(tk.mua.so1.diem), 'Số 1 · ' + tk.mua.so1.ten]);
+    } else if (k === 'luyen') {
+      o.push([m.lops && m.lops.length ? m.lops.length + ' lớp' : 'Tất cả lớp', 'Mở cho', 1], ['Không ghi', 'Số liệu', 1]);
+    } else {
+      o.push([m.lops && m.lops.length ? m.lops.length + ' lớp' : 'Tất cả lớp', 'Mở cho', 1]);
+      if (k === 'giai' && tk.dsGiai) o.push([tk.dsGiai.dang ? tk.dsGiai.ten : 'Không có', 'Giải đang chạy', 1]);
+      o.push([m.buoc !== false ? 'Bật' : 'Tắt', 'Bắt buộc xong trận', 1], [soN(t.homNay), 'Trận hôm nay'], [soN(t.em), 'Em đấu hôm nay'], [soN(t.bo), 'Bỏ dở hôm nay']);
+      if (t.coTong) o.push([soN(t.tong), k === 'gh' ? 'Tổng · ' + soN(t.thay) + ' với thầy' : 'Tổng trận']);
+    }
+    if (!S.tk && k !== 'luyen') o = o.map(function (x) { return x[2] ? x : ['…', x[1]]; });
+    $('#tdqDai').innerHTML = o.map(function (x) { return '<div class="tdq2-o' + (x[2] ? ' chu' : '') + '"><b>' + E(x[0]) + '</b><small>' + E(x[1]) + '</small></div>'; }).join('') +
+      '<span class="tdq2-gian"></span><button type="button" class="tdq2-cai' + (S.bang === 'cai' ? ' on' : '') + '" data-cai><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>Cài đặt</button>';
+    $('.tdq2').style.setProperty('--m', THE[k].m);
+    $('[data-cai]', $('#tdqDai')).onclick = function () { moBang(S.bang === 'cai' ? '' : 'cai'); };
   }
+  function chuNgay(ms) { var d = new Date(ms); return d.getDate() + '/' + (d.getMonth() + 1); }
+  function moBang(b) {
+    if (S.bang === 'cai' && b !== 'cai' && chuaLuu() && !confirm('Còn thay đổi CHƯA LƯU ở cài đặt. Đóng và bỏ các thay đổi đó?')) return;
+    if (S.bang === 'cai' && b !== 'cai') { var g = JSON.parse(S.goc); Object.keys(g).forEach(function (q) { S.c.tro[q] = g[q]; }); }
+    S.bang = b; veDai(); veBang();
+    if (b) { var el = $('#tdqBang'); if (el.scrollIntoView) el.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); }
+  }
+  function veBang() {
+    var el = $('#tdqBang'), xh = $('#tdqXh');
+    el.hidden = !S.bang;
+    if (!S.bang || S.bang === 'chan' || S.the !== 'xh') { xh.hidden = true; S.xhVe = false; }
+    if (!S.bang) return;
+    if (S.bang === 'chan') { S.xem = 'chan'; veChan(); veLuu(); return; }
+    S.xem = TQ().TRO[0].ma; veTro(); veLuu();
+    if (S.the === 'xh') {
+      xh.hidden = false;
+      if (S.xhVe) return;   // mùa đã vẽ: bấm Bật/Tắt ở trên không nạp lại mùa
+      S.xhVe = true;
+      if (window.XhQl) XhQl.ve({ than: $('#tdqXhThan'), tieuDe: $('#tdqXhTd'), luu: $('#tdqXhLuu'), kho: kho, toast: toast, laThu: laThu() });
+      else $('#tdqXhThan').innerHTML = '<div class="tdq-rong">Chưa nạp js/xh-ql.js — thầy tải lại trang nhé.</div>';
+    }
+  }
+  function veTab() {
+    var ds = TAB(S.the);
+    if (!ds.some(function (x) { return x[0] === S.tab; }) && S.tab !== 'ct') S.tab = ds[0][0];
+    $('#tdqTabs').innerHTML = ds.map(function (x) { return '<button type="button" data-tab="' + x[0] + '"' + (x[0] === S.tab || (S.tab === 'ct' && x[0] === 'tran') ? ' class="chon"' : '') + '>' + E(x[1]) + '</button>'; }).join('');
+    $$('[data-tab]', $('#tdqTabs')).forEach(function (b) { b.onclick = function () { doiTab(b.getAttribute('data-tab')); }; });
+    if (window.TdXem) TdXem.ve($('#tdqNoi'), { the: S.the, tab: S.tab, kho: kho, laThu: laThu(), doi: doiTab });
+    else $('#tdqNoi').innerHTML = '<div class="tdq-rong">Chưa nạp js/td-xem.js — thầy tải lại trang nhé.</div>';
+  }
+  function doiTab(tab) { S.tab = tab; veTab(); var c = $('#tdqCuon'), t = $('#tdqTabs'); if (c && t && c.scrollTop > t.offsetTop) c.scrollTop = t.offsetTop - 8; }
   function veTro() {
     var t = TQ().TRO.filter(function (x) { return x.ma === S.xem; })[0] || TQ().TRO[0]; S.xem = t.ma;
-    $('#tdqTieuDe').innerHTML = E(t.ten) + '<small>Bật, tắt, hẹn giờ và chọn lớp cho từng chế độ</small>';
+    $('#tdqTieuDe').innerHTML = 'Cài đặt · ' + E((THE[S.the] || {}).ten || t.ten) + '<small>Bật, tắt, hẹn giờ, chọn lớp' + (S.the === 'xh' ? ' · mùa xếp hạng ở dưới' : S.the === 'giai' ? ' · tạo giải, giới hạn chơi ở trang Giải đấu' : '') + '</small>';
     S.c.tro[t.ma] = S.c.tro[t.ma] || {};
-    $('#tdqThan').innerHTML = '<div class="tdq-luoi">' + t.che.map(function (ch) {
+    $('#tdqThan').innerHTML = '<div class="tdq-luoi">' + t.che.filter(function (ch) { return ch.ma === S.the; }).map(function (ch) {
       var m = S.c.tro[t.ma][ch.ma] = S.c.tro[t.ma][ch.ma] || { che: 'bat' }, p = pill(m), tatCa = !(m.lops && m.lops.length);
       var seg = function (v, chu) { return '<button type="button" data-che-v="' + v + '"' + ((m.che || 'bat') === v ? ' class="chon"' : '') + '>' + chu + '</button>'; };
       return '<div class="tdq-the" data-che="' + ch.ma + '">' +
@@ -208,15 +287,15 @@
       $$('[data-che-v]', el).forEach(function (b) { b.onclick = function () {
         m.che = b.getAttribute('data-che-v');
         if (m.che === 'hen' && !m.tu && !m.den) { var d = new Date(); d.setMinutes(0, 0, 0); d.setHours(d.getHours() + 1); m.tu = d.getTime(); m.den = m.tu + 7 * 864e5; }
-        ve();
+        veBang();
       }; });
-      $$('[data-gio]', el).forEach(function (i) { i.onchange = function () { m[i.getAttribute('data-gio')] = tuOGio(i.value); ve(); }; });
+      $$('[data-gio]', el).forEach(function (i) { i.onchange = function () { m[i.getAttribute('data-gio')] = tuOGio(i.value); veBang(); }; });
       $$('[data-lop]', el).forEach(function (b) { b.onclick = function () {
         var l = b.getAttribute('data-lop'); m.lops = m.lops || [];
         if (!l) m.lops = []; else { var k = m.lops.indexOf(l); if (k >= 0) m.lops.splice(k, 1); else m.lops.push(l); }
-        ve();
+        veBang();
       }; });
-      $$('[data-buoc]', el).forEach(function (b) { b.onclick = function () { m.buoc = b.getAttribute('data-buoc') === '1'; ve(); }; });
+      $$('[data-buoc]', el).forEach(function (b) { b.onclick = function () { m.buoc = b.getAttribute('data-buoc') === '1'; veBang(); }; });
       $('[data-nhan]', el).oninput = function () { m.nhan = this.value; veLuu(); };
     });
   }
@@ -227,10 +306,10 @@
     o.innerHTML = '<span class="tdq-goi' + (doi ? ' doi' : '') + '">' + (doi ? '● Có thay đổi chưa lưu' : S.c.capNhat ? 'Đã lưu lúc ' + chuLuc(S.c.capNhat) : 'Chưa lưu lần nào — đang dùng mặc định (Giao hữu tắt, Đấu giải + Luyện tập bật)') + '</span>' +
       (doi ? '<button type="button" class="tdq-nut phu" data-huy>Huỷ thay đổi</button>' : '') +
       '<button type="button" class="tdq-nut" data-luu' + (doi ? '' : ' disabled') + '>Lưu thay đổi</button>';
-    var h = $('[data-huy]', o); if (h) h.onclick = function () { var g = JSON.parse(S.goc); Object.keys(g).forEach(function (k) { S.c.tro[k] = g[k]; }); ve(); };
+    var h = $('[data-huy]', o); if (h) h.onclick = function () { var g = JSON.parse(S.goc); Object.keys(g).forEach(function (k) { S.c.tro[k] = g[k]; }); veBang(); veDai(); veThe4(); };
     $('[data-luu]', o).onclick = async function () {
       var b = this; b.disabled = true; b.textContent = 'Đang lưu…';
-      try { await luuCheDo(); toast('Đã lưu — học sinh thấy thay đổi trong khoảng 1 phút (hoặc khi mở lại trang).'); ve(); }
+      try { await luuCheDo(); toast('Đã lưu — học sinh thấy thay đổi trong khoảng 1 phút (hoặc khi mở lại trang).'); veThe4(); veDai(); veBang(); }
       catch (e) { toast(chuLoi(e), true); b.disabled = false; b.textContent = 'Lưu thay đổi'; }
     };
   }
@@ -281,7 +360,7 @@
     $$('[data-sua]', than).forEach(function (b) { b.onclick = function () { var u = b.getAttribute('data-sua'), x = S.c.chan[u] || {}; S.chonHs = { uid: u, ten: x.ten, lop: x.lop, anh: x.anh || '' }; than.scrollTop = 0; veChan(); }; });
     $$('[data-mo]', than).forEach(function (b) { b.onclick = async function () {
       var u = b.getAttribute('data-mo'), ten = (S.c.chan[u] || {}).ten || 'em'; b.disabled = true;
-      try { await luuChan(u, null); toast('Đã mở khoá cho ' + ten + '.');if (S.chonHs && S.chonHs.uid === u) S.chonHs = null; veNav(); veChan(); }
+      try { await luuChan(u, null); toast('Đã mở khoá cho ' + ten + '.');if (S.chonHs && S.chonHs.uid === u) S.chonHs = null; veThe4(); veChan(); }
       catch (e) { toast(chuLoi(e), true); b.disabled = false; }
     }; });
     if (!c) return;
@@ -296,7 +375,7 @@
       var muc = { ten: c.ten || '', lop: c.lop || '', tro: tro, den: den, ly: String($('[data-ly]', than).value || '').trim().slice(0, 120), luc: Date.now() };
       if (c.anh) muc.anh = c.anh;
       var b = this; b.disabled = true;
-      try { await luuChan(c.uid, muc); toast('Đã chặn ' + c.ten + (den ? ' tới ' + chuLuc(den) : '') + '.'); S.chonHs = null; veNav(); veChan(); }
+      try { await luuChan(c.uid, muc); toast('Đã chặn ' + c.ten + (den ? ' tới ' + chuLuc(den) : '') + '.'); S.chonHs = null; veThe4(); veChan(); }
       catch (e) { toast(chuLoi(e), true); b.disabled = false; }
     };
   }

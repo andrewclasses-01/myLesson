@@ -264,7 +264,7 @@
     { ma: 'dangKy', chu: 'Đăng ký', ic: IC.dangKy, icm: ICM.dangKy },   // v1.152.0 — hộp đăng ký ở dashboard (window.qlMoDangKy)
     { ma: 'top', chu: 'Xếp hạng lớp', ic: ICQ.top, icm: ICM.top },          // v1.166.0 — dời từ menu ☰ (window.qlMoMuc)
     { ma: 'sao', chu: 'Sao', ic: ICQ.sao, icm: ICM.sao },   // ⭐ 10/10/2026 — hộp Sao học sinh: ví + cộng/trừ + lý do nhanh (js/sao-dash.js window.SaoDash)
-    { ma: 'thachDau', chu: 'Quản lý thách đấu', ic: P('<path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M14.5 6.5 18 3h3v3l-3.5 3.5M5 14l4 4M7 17l-3 3M3 19l2 2"/>') },   // ⭐ 24/10/2026 v1.415.0 — bật/tắt/hẹn giờ/lớp/chặn em cho trò chơi thách đấu (js/td-ql.js window.TdQl)
+    { ma: 'thachDau', chu: 'Quản lý giải đấu', ic: P('<path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a1 1 0 0 0-1 1 4 4 0 0 0 4 4M17 6h3a1 1 0 0 1 1 1 4 4 0 0 1-4 4"/>') },   // ⭐ v1.446.0 đổi tên + biểu tượng cúp (thầy 29/10) · 24/10/2026 v1.415.0 — bật/tắt/hẹn giờ/lớp/chặn em cho trò chơi thách đấu (js/td-ql.js window.TdQl)
     { ma: 'duyetAnh', chu: 'Duyệt ảnh', ic: P('<rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-8 8.5"/>') },   // ⭐ 15/10/2026 v1.343.0 — ảnh em gửi chờ duyệt (js/duyet-anh.js window.DuyetAnh)
     { ma: 'qua', chu: 'Quà tặng', ic: ICQ.qua, icm: ICM.qua },
     { ma: 'khoBai', chu: 'Kho bài', ic: ICQ.kho, icm: ICM.khoBai },   // v1.203.0 — thay "Bài đã xoá": pop-up lớn mọi lớp (window.qlMoKhoLon)

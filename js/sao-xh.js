@@ -8,6 +8,7 @@
      Thả sớm / bấm đúp = như cũ (đúp mở chi tiết em `data-hq-em`).
    · Nút ⭐ CẢ LỚP (dải tab, ngay trước ⚙) ⇒ pop-up dưới nút: cả lớp đủ bài ⇒ mặc định AWARD, có em thiếu ⇒ PUNISHMENT
      (phạt: Cả lớp / Chỉ em thiếu bài). Mặc định 1 sao.
+     v1.447.0 — AWARD khi lớp còn em thiếu cũng có hàng chọn: Cả lớp / Chỉ em đủ bài (MẶC ĐỊNH = cả lớp trừ em thiếu).
    · v1.338.0 (thầy chốt mẫu v5): chốt trong pop-up = SAO TẠM (chỉ trong máy, huy hiệu VIỀN ĐỨT) — sao chói giữa màn rồi bay vào
      avatar cột TỔNG THỜI GIAN. Nút VÍ (cạnh ⭐, trước ⚙) ⇒ hỏi lại ⇒ ghi PHIẾU `saoDot` thật (nguon dashboard, bai = id thẻ;
      1 phiếu thưởng + 1 phiếu phạt) ⇒ hàm `apDotSao` cộng/trừ ví ⇒ ảnh em NUỐT sao tạm, huy hiệu thành ĐẶC (= đã vào ví).
@@ -181,6 +182,10 @@
       thuong: [{ t: 'CẢ LỚP ' + lop + ' HOÀN THÀNH ĐỦ BÀI' + d, nhan: 'Cả lớp hoàn thành đủ bài' },
         { t: 'CẢ LỚP ' + lop + ' NỘP ĐÚNG HẠN' + d, nhan: 'Cả lớp nộp đúng hạn' },
         { t: 'LỚP ' + lop + ' LUYỆN TẬP CHĂM CHỈ' + d, nhan: 'Cả lớp chăm chỉ' }],
+      // v1.447.0 — AWARD "Chỉ em đủ bài" (lớp còn em thiếu): lý do không được nói "cả lớp"
+      thuongDu: [{ t: 'HOÀN THÀNH ĐỦ BÀI' + d, nhan: 'Hoàn thành đủ bài' },
+        { t: 'NỘP BÀI ĐÚNG HẠN' + d, nhan: 'Nộp đúng hạn' },
+        { t: 'LUYỆN TẬP CHĂM CHỈ' + d, nhan: 'Luyện tập chăm chỉ' }],
       phat: [{ t: 'LỚP ' + lop + ' CÒN BẠN THIẾU BÀI (' + ten3 + ')' + d, nhan: 'Lớp còn bạn thiếu bài' },
         { t: 'LỚP ' + lop + ' NỘP BÀI CHẬM' + d, nhan: 'Lớp nộp chậm' }]
     };
@@ -366,11 +371,19 @@
   function moLop(nut) {
     var c = ctx(), B = docBang(); if (!c || !B || !B.tong.length) return;
     var gy = goiYLop(c, B), du = !gy.thieu.length;
-    var o = taoPop('lop'), st = { o: o, gy: gy, kieu: du ? 'thuong' : 'phat', n: 1, chon: 0, lyTu: '', lop: true, ap: 'ca', macDinh: function () { return 1; } };
+    // v1.447.0 — `ap` = đối tượng PUNISHMENT (mặc định cả lớp) · `apT` = đối tượng AWARD (mặc định CHỈ EM ĐỦ BÀI = cả lớp trừ em thiếu)
+    var o = taoPop('lop'), st = { o: o, gy: gy, kieu: du ? 'thuong' : 'phat', n: 1, chon: 0, lyTu: '', lop: true, ap: 'ca', apT: 'du', macDinh: function () { return 1; } };
+    var thuongCa = gy.thuong;
     nut.classList.add('sx-mo');
     o.khiDong = function () { var n2 = document.getElementById('hqSaoLop'); if (n2) n2.classList.remove('sx-mo'); nut.classList.remove('sx-mo'); };
-    function nguoi() { return (st.kieu === 'phat' && st.ap === 'thieu') ? gy.thieu.slice() : B.tong.map(function (r) { return r.ten; }); }
+    function chiDu() { return st.kieu === 'thuong' && st.apT === 'du' && gy.thieu.length; }
+    function nguoi() {
+      if (st.kieu === 'phat' && st.ap === 'thieu') return gy.thieu.slice();
+      var ds = B.tong.map(function (r) { return r.ten; });
+      return chiDu() ? ds.filter(function (t) { return gy.thieu.indexOf(t) < 0; }) : ds;
+    }
     function ve() {
+      gy.thuong = chiDu() ? gy.thuongDu : thuongCa;
       var ng = nguoi();
       o.el.className = 'sx-tp lop' + (st.kieu === 'phat' ? ' phat' : '');
       o.el.innerHTML =
@@ -380,11 +393,13 @@
           (gy.thieu.length > 6 ? ' · và ' + (gy.thieu.length - 6) + ' em nữa' : '')) + '</div>' +
         '<div class="sx-tab"><span class="nen"></span><button type="button" data-k="thuong">AWARD</button><button type="button" data-k="phat">PUNISHMENT</button></div>' +
         (st.kieu === 'phat' && gy.thieu.length ? '<div class="sx-ap"><button type="button" data-ap="ca" class="' + (st.ap === 'ca' ? 'on' : '') + '">Cả lớp (' + B.tong.length + ')</button><button type="button" data-ap="thieu" class="' + (st.ap === 'thieu' ? 'on' : '') + '">Chỉ em thiếu bài (' + gy.thieu.length + ')</button></div>' : '') +
+        (st.kieu === 'thuong' && gy.thieu.length ? '<div class="sx-ap"><button type="button" data-apt="ca" class="' + (st.apT === 'ca' ? 'on' : '') + '">Cả lớp (' + B.tong.length + ')</button><button type="button" data-apt="du" class="' + (st.apT === 'du' ? 'on' : '') + '">Chỉ em đủ bài (' + (B.tong.length - gy.thieu.length) + ')</button></div>' : '') +
         phanChung(st) + nutOk(st, ng.length);
       ganChung(st, ve);
       [].forEach.call(o.el.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { st.ap = b.getAttribute('data-ap'); ve(); }; });
+      [].forEach.call(o.el.querySelectorAll('[data-apt]'), function (b) { b.onclick = function () { var k = b.getAttribute('data-apt'); if (st.apT === k) return; st.apT = k; st.chon = 0; st.lyTu = ''; ve(); }; });
       o.el.querySelector('.sx-ok').onclick = function () {
-        if (!st.n) return;
+        if (!st.n || !ng.length) return;
         if (!K.maSo) return baoLoi(o.el, 'Đang đọc sổ học sinh, thử lại sau giây lát.');
         var ds = ng.map(function (t) { return { ten: t, so: soCua(t) }; }), co = ds.filter(function (x) { return x.so; });
         if (!co.length) return baoLoi(o.el, 'Không em nào có số học sinh.');

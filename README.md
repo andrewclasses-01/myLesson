@@ -14,7 +14,16 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.446.0 (29/10/2026) — HỘP "QUẢN LÝ GIẢI ĐẤU" (đổi tên Quản lý thách đấu): 4 thẻ · dải + ⚙ · theo dõi trận / em / xếp hạng *(bản mới nhất)*
+## ⭐ v1.447.0 (29/10/2026) — ⭐ CẢ LỚP: AWARD chọn được "Cả lớp" / "Chỉ em đủ bài" *(bản mới nhất)*
+
+Thầy 29/10: PUNISHMENT cả lớp đã có "Cả lớp / Chỉ em thiếu bài" nhưng AWARD thì chưa ⇒ muốn thưởng cả lớp TRỪ các em thiếu bài.
+- `js/sao-xh.js` `moLop`: khi lớp còn em thiếu bài, tab AWARD hiện hàng chọn **Cả lớp (N)** / **Chỉ em đủ bài (N − thiếu)** — MẶC ĐỊNH "Chỉ em đủ bài".
+  Trạng thái riêng `st.apT` (PUNISHMENT vẫn `st.ap`, mặc định Cả lớp). Lớp đủ bài hết ⇒ không hiện hàng chọn (như cũ).
+- Lý do gợi ý đổi theo đối tượng: "Chỉ em đủ bài" dùng `gy.thuongDu` (HOÀN THÀNH ĐỦ BÀI · NỘP BÀI ĐÚNG HẠN · LUYỆN TẬP CHĂM CHỈ — không nói "cả lớp");
+  "Cả lớp" giữ 3 lý do CẢ LỚP cũ. Đổi đối tượng ⇒ chọn lại lý do đầu. Nút chốt ghi đúng số em (VD "THƯỞNG 1 SAO · 17 EM"); danh sách rỗng ⇒ không làm gì.
+- `dashboard.html`: `sao-xh.js?v=5`. Thử: bàn thử tạm (đã xoá) 5 em, 1 em thiếu ⇒ thưởng chỉ 4 em có sao tạm, em thiếu 0; PUNISHMENT không đổi.
+
+## ⭐ v1.446.0 (29/10/2026) — HỘP "QUẢN LÝ GIẢI ĐẤU" (đổi tên Quản lý thách đấu): 4 thẻ · dải + ⚙ · theo dõi trận / em / xếp hạng
 
 Mẫu thầy duyệt `D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\quan-tri-ass-v2\index.html` (v1 = các phương án bố cục). Thầy chốt 29/10: đặt TRONG menu cũ, đổi tên,
 4 thẻ ngang có số cơ bản, bấm thẻ ⇒ dải thông số + nút ⚙ Cài đặt cuối dải (thiết đặt KHÔNG bày ra ngoài nữa) + các tab; xếp hạng có Mùa + Mọi thời đại; Luyện tập chỉ bật/tắt.

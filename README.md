@@ -14,7 +14,14 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.448.0 (29/10/2026) — BÀI TRONG SÁCH: trả lại ⇄ chấp nhận lại (có xác nhận) · CHỤP LỖI vừa khung + cuộn tới trang lỗi · bấm đúp ĐẠT *(bản mới nhất)*
+## ⭐ v1.448.1 (29/10/2026) — BÀI TRONG SÁCH: ảnh trang ở KHUNG CHẤM GIỮA co trọn khung, không phải cuộn *(bản mới nhất)*
+
+- Thầy mở Chrome thấy ảnh khung giữa vẫn to, phải cuộn (v1.448.0 chỉ làm pop-up CHỤP LỖI). `js/cham-sach.js` (?v=14): `.cs-vung` container `size`,
+  `.cs-ve` `fit-content` canh giữa, `#csCv` `max-width:100cqw; max-height:100cqh` (giữ tỉ lệ) ⇒ ảnh vừa cả ngang lẫn cao. Nhãn `.cs-canh` nổi (absolute) không chiếm chỗ.
+- ≤ 1100px (cột xếp dọc): `.cs-giua` cao `max(420px, 100vh − 140px)` — thiếu chiều cao xác định thì `cqh` = 0 ⇒ ảnh biến mất.
+- Thử bàn thử 1600×860 (khung 882×562 ⇒ ảnh 407×542) và 900×700 (791×417 ⇒ 298×397), không thanh cuộn.
+
+## ⭐ v1.448.0 (29/10/2026) — BÀI TRONG SÁCH: trả lại ⇄ chấp nhận lại (có xác nhận) · CHỤP LỖI vừa khung + cuộn tới trang lỗi · bấm đúp ĐẠT
 
 Thầy 29/10 (xem bài NTK10 trên dashboard):
 - `js/cham-sach.js` (?v=13) pop-up CHỤP LỖI: nút TRẢ LẠI TRANG n ⇄ **ĐÃ TRẢ LẠI TRANG n** (nền đỏ) — đã trả vẫn bấm được ⇒ **CHẤP NHẬN LẠI** = `duyetSach { trang, tt:'dat' }`

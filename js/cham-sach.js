@@ -374,9 +374,10 @@
     '.cs-cc{border:0;width:34px;height:32px;border-radius:9px;background:#34474D;color:#fff;font-size:14px;font-weight:900;position:relative}.cs-cc.on{background:#fff;color:#DC2626}' +
     '.cs-cc[data-cu="hoi"]{color:#F59E0B}.cs-cc[data-cu="dung"]{color:#4ADE80}.cs-cc[data-cu="sai"]{color:#F87171}.cs-cc.on[data-cu="dung"]{color:#16A34A}' +
     '.cs-mau{width:21px;height:21px;border-radius:50%;border:2px solid #fff;cursor:pointer}.cs-mau.on{outline:3px solid #9FE3D6}.cs-vach{width:1px;height:22px;background:#4B5E63;margin:0 3px}' +
-    '.cs-vung{flex:1;min-height:0;overflow:auto;padding:10px;position:relative}.cs-ve{position:relative;width:100%}' +
-    '#csCv{display:block;width:100%;height:auto;border-radius:8px;background:#fff;touch-action:none;cursor:none}#csCvTren{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}' +
-    '.cs-canh{position:sticky;top:0;z-index:2;display:inline-block;background:#DC2626;color:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:900;margin-bottom:8px;max-width:90%}' +
+    // v1.448.1 (thầy 29/10) — ảnh trang co TRỌN trong khung giữa (cả bề ngang lẫn bề cao) ⇒ không bao giờ phải cuộn, mọi cỡ màn hình
+    '.cs-vung{flex:1;min-height:0;overflow:auto;padding:10px;position:relative;container-type:size}.cs-ve{position:relative;width:fit-content;margin:0 auto}' +
+    '#csCv{display:block;width:auto;height:auto;max-width:100cqw;max-height:100cqh;border-radius:8px;background:#fff;touch-action:none;cursor:none}#csCvTren{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}' +
+    '.cs-canh{position:absolute;top:14px;left:14px;z-index:2;display:inline-block;background:#DC2626;color:#fff;border-radius:999px;padding:6px 12px;font-size:11px;font-weight:900;max-width:90%}' +
     '.cs-canh[hidden]{display:none}.cs-o-chu{position:absolute;z-index:3;min-width:180px;border:2px solid #2F6FED;border-radius:8px;padding:4px 8px;font:800 15px ' + FONT + ';background:rgba(255,255,255,.95);outline:none}' +
     '.cs-trong{color:#A9BDB9;font-weight:800;font-size:14px;padding:60px 0;text-align:center}' +
     '.cs-cu{display:flex;gap:6px;align-items:center;padding:0 11px;background:#26363C;flex-wrap:wrap}.cs-cu:not(:empty){padding:7px 11px}.cs-cu span{color:#A9BDB9;font-size:10px;font-weight:800}' +
@@ -443,7 +444,7 @@
     '.cs-pop-day .cs-nut{padding:14px 24px;font-size:13px}.cs-nut.phu{background:#EEF3F2;color:#16232A}' +
     '#csToast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#16232A;color:#fff;padding:12px 18px;border-radius:12px;font-size:12.5px;font-weight:800;opacity:0;transition:.25s;pointer-events:none;z-index:9400}' +
     '#csToast.hien{opacity:1}' +
-    '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:minmax(0,1fr) 230px}.cs-dat-luoi{grid-template-columns:1fr}}' +
+    '@media (max-width:1100px){.cs-khung{grid-template-columns:1fr;overflow:auto}.cs-cot{min-height:420px}.cs-giua{height:max(420px,calc(100vh - 140px))}.cs-ds{max-height:240px;min-height:0}.cs-loi-dong{grid-template-columns:minmax(0,1fr) 230px}.cs-dat-luoi{grid-template-columns:1fr}}' +
     '@media (max-width:640px){.cs-loi-dong,.cs-loi-dong[data-p]{grid-template-columns:1fr;grid-template-rows:72cqh auto;height:auto}}';
   // ⭐ v1.400.0 icon phẳng 2D (nét Lucide, màu theo chữ của nút)
   var ICO = {

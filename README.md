@@ -14,7 +14,11 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.447.0 (29/10/2026) — ⭐ CẢ LỚP: AWARD chọn được "Cả lớp" / "Chỉ em đủ bài" *(bản mới nhất)*
+## ⭐ v1.447.1 (29/10/2026) — AWARD cả lớp: nút "Chỉ em đủ bài" đứng TRƯỚC "Cả lớp" *(bản mới nhất)*
+
+- Thầy 29/10: trong AWARD đặt "Chỉ em đủ bài" trước, "Cả lớp" sau. `js/sao-xh.js` đảo 2 nút `data-apt` (mặc định vẫn Chỉ em đủ bài); `sao-xh.js?v=6`.
+
+## ⭐ v1.447.0 (29/10/2026) — ⭐ CẢ LỚP: AWARD chọn được "Cả lớp" / "Chỉ em đủ bài"
 
 Thầy 29/10: PUNISHMENT cả lớp đã có "Cả lớp / Chỉ em thiếu bài" nhưng AWARD thì chưa ⇒ muốn thưởng cả lớp TRỪ các em thiếu bài.
 - `js/sao-xh.js` `moLop`: khi lớp còn em thiếu bài, tab AWARD hiện hàng chọn **Cả lớp (N)** / **Chỉ em đủ bài (N − thiếu)** — MẶC ĐỊNH "Chỉ em đủ bài".

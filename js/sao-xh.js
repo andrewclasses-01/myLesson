@@ -8,7 +8,7 @@
      Thả sớm / bấm đúp = như cũ (đúp mở chi tiết em `data-hq-em`).
    · Nút ⭐ CẢ LỚP (dải tab, ngay trước ⚙) ⇒ pop-up dưới nút: cả lớp đủ bài ⇒ mặc định AWARD, có em thiếu ⇒ PUNISHMENT
      (phạt: Cả lớp / Chỉ em thiếu bài). Mặc định 1 sao.
-     v1.447.0 — AWARD khi lớp còn em thiếu cũng có hàng chọn: Cả lớp / Chỉ em đủ bài (MẶC ĐỊNH = cả lớp trừ em thiếu).
+     v1.447.0 — AWARD khi lớp còn em thiếu cũng có hàng chọn: Chỉ em đủ bài / Cả lớp (MẶC ĐỊNH = cả lớp trừ em thiếu; v1.447.1 nút "Chỉ em đủ bài" đứng trước).
    · v1.338.0 (thầy chốt mẫu v5): chốt trong pop-up = SAO TẠM (chỉ trong máy, huy hiệu VIỀN ĐỨT) — sao chói giữa màn rồi bay vào
      avatar cột TỔNG THỜI GIAN. Nút VÍ (cạnh ⭐, trước ⚙) ⇒ hỏi lại ⇒ ghi PHIẾU `saoDot` thật (nguon dashboard, bai = id thẻ;
      1 phiếu thưởng + 1 phiếu phạt) ⇒ hàm `apDotSao` cộng/trừ ví ⇒ ảnh em NUỐT sao tạm, huy hiệu thành ĐẶC (= đã vào ví).
@@ -393,7 +393,7 @@
           (gy.thieu.length > 6 ? ' · và ' + (gy.thieu.length - 6) + ' em nữa' : '')) + '</div>' +
         '<div class="sx-tab"><span class="nen"></span><button type="button" data-k="thuong">AWARD</button><button type="button" data-k="phat">PUNISHMENT</button></div>' +
         (st.kieu === 'phat' && gy.thieu.length ? '<div class="sx-ap"><button type="button" data-ap="ca" class="' + (st.ap === 'ca' ? 'on' : '') + '">Cả lớp (' + B.tong.length + ')</button><button type="button" data-ap="thieu" class="' + (st.ap === 'thieu' ? 'on' : '') + '">Chỉ em thiếu bài (' + gy.thieu.length + ')</button></div>' : '') +
-        (st.kieu === 'thuong' && gy.thieu.length ? '<div class="sx-ap"><button type="button" data-apt="ca" class="' + (st.apT === 'ca' ? 'on' : '') + '">Cả lớp (' + B.tong.length + ')</button><button type="button" data-apt="du" class="' + (st.apT === 'du' ? 'on' : '') + '">Chỉ em đủ bài (' + (B.tong.length - gy.thieu.length) + ')</button></div>' : '') +
+        (st.kieu === 'thuong' && gy.thieu.length ? '<div class="sx-ap"><button type="button" data-apt="du" class="' + (st.apT === 'du' ? 'on' : '') + '">Chỉ em đủ bài (' + (B.tong.length - gy.thieu.length) + ')</button><button type="button" data-apt="ca" class="' + (st.apT === 'ca' ? 'on' : '') + '">Cả lớp (' + B.tong.length + ')</button></div>' : '') +
         phanChung(st) + nutOk(st, ng.length);
       ganChung(st, ve);
       [].forEach.call(o.el.querySelectorAll('[data-ap]'), function (b) { b.onclick = function () { st.ap = b.getAttribute('data-ap'); ve(); }; });

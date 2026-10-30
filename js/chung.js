@@ -395,7 +395,7 @@
     var lopDoan = doanLop();
     var quanLy = laTrangQuanLy();
     nhoDl = Promise.all([napJson('data/lop.json'), napJson('data/bai.json'),
-                         napHanSua(), napNghi(),
+                         napHanSua(), (quanLy ? napNghi('', true) : (/lop\.html$/i.test(location.pathname) ? napNghi(lopDoan, false) : Promise.resolve([]))),
                          docKhoWeb('lop'),
                          quanLy ? docMoiBaiKhoWeb() : (lopDoan ? (baiSomCua(lopDoan) || docKhoWeb('bai_' + lopDoan)) : null)])
       .then(function (r) {
@@ -409,7 +409,7 @@
         BO_QUA_CHANG = bang.boQuaChang || {};   // v1.137.0
         HAN_CHANG = bang.hanChang || {};        // v1.142.0
         MO_CHANG = bang.moChang || {};
-        NGHI = r[3] || {};
+        NGHI_DS = r[3] || [];   // v1.452.0
         // ⭐ v1.119.0 — LỚP: bản mới hơn giữa lop.json và lessonWeb/lop.
         var lopDung = moiHon(r[0], r[4]) || {};
         datBangEm(lopDung);                          // v1.134.0 — tên (+ tên cũ) → mã, cho khoaTen/khoaEm
@@ -424,14 +424,22 @@
         if (quanLy) {
           var ds = r[5] || [];
           for (var i = 0; i < ds.length; i++) apBaiKho(dl, baiTinh, ds[i]);
+          chenNghi(dl, NGHI_DS);   // v1.452.0
           return dl;
         }
         var maLop = lopDoan;
         try { var em = emDangHoc(dl); if (em && em.lop) maLop = em.lop; } catch (e) { /* chưa đăng nhập */ }
         if (!maLop) return dl;                       // màn đăng nhập: không cần bài
-        if (maLop === lopDoan) { apBaiKho(dl, baiTinh, r[5]); return dl; }
+        // v1.452.0 — thẻ NO HOMEWORK chỉ trang lớp cần (đọc đúng lớp em; đoán sai lớp ⇒ đọc lại lớp thật)
+        var canNghi = /lop\.html$/i.test(location.pathname);
+        var gan = function () {
+          if (!canNghi) return dl;
+          if (maLop === lopDoan) { chenNghi(dl, NGHI_DS); return dl; }
+          return napNghi(maLop, false).then(function (ds) { NGHI_DS = ds; chenNghi(dl, ds); return dl; });
+        };
+        if (maLop === lopDoan) { apBaiKho(dl, baiTinh, r[5]); return gan(); }
         // đoán sai lớp (em ở 2 nơi vừa đổi nơi, `?nhu=` không kèm `?lop=`) ⇒ xin thêm 1 lượt
-        return docKhoWeb('bai_' + maLop).then(function (doc) { apBaiKho(dl, baiTinh, doc); return dl; });
+        return docKhoWeb('bai_' + maLop).then(function (doc) { apBaiKho(dl, baiTinh, doc); return gan(); });
       });
     return nhoDl;
   }
@@ -2750,67 +2758,112 @@
   // ⛔ ĐỔI KHOÁ ĐỆM khi đổi khuôn bảng (`awc_nghi1` → `awc_nghi2`): máy đang mở
   // trang bản cũ mà đọc trúng khuôn cũ là mất sạch thẻ nghỉ trong 60 giây đầu —
   // đúng bẫy đã gặp với `awc_hansua2`.
-  var NGHI = {};                       // { '<mã lớp>': { han, tt } }
-  var KHOA_NGHI = 'awc_nghi2';
+  // ⭐⭐ v1.452.0 (30/10/2026, thầy chốt "ok build") — NO HOMEWORK THÀNH THẺ BÌNH THƯỜNG THEO NGÀY.
+  //   Mỗi thẻ = MỘT tài liệu `lessonNghi/<LỚP>__<YYYY-MM-DD>` { lop, han, tt:'', luc } — dashboard (nút bút chì) và app myLesson
+  //   (dòng NO HW) cùng ghi. Luật kho GIỮ NGUYÊN (mã tài liệu tự do, 4 trường cũ). Tài liệu CŨ `lessonNghi/<LỚP>` (một thẻ cả lớp,
+  //   trước v1.452.0) = thẻ của NGÀY tạo (`luc`); `han` rỗng = đã gỡ. Mọi trang nhận thẻ như một BÀI ẢO trong `dl.bai[lớp]`
+  //   (`nohw:true`, không act — `baiNghi`) ⇒ đổi hạn / ẩn / tạm khoá / xoá / kho đi qua `lessonHan` y hệt thẻ thường.
+  //   ⛔ Luật 8️⃣ (tiền đọc): trang học sinh chỉ đọc thẻ CỦA LỚP MÌNH (runQuery lop == …) và chỉ ở lop.html; dashboard đọc cả kho.
+  //   ⛔ Khoá đệm đổi `awc_nghi2` → `awc_nghi3` (đổi khuôn) — js/som.js + 6 trang dập sẵn (tools/sinh-som.py) dùng CÙNG khoá.
+  var NGHI_DS = [];                    // [{ lop, ngay:'YYYY-MM-DD', han, tt, luc, cu }]
+  var KHOA_NGHI = 'awc_nghi3';
   var NGHI_CACHE_GIAY = 60;            // cùng nhịp với HAN_CACHE_GIAY
 
-  function docNghiPhien() {
+  function docNghiPhien(pham) {
     try {
       var o = JSON.parse(sessionStorage.getItem(KHOA_NGHI) || 'null');
-      if (o && (Date.now() - o.luc) < NGHI_CACHE_GIAY * 1000) return o.bang;
+      if (o && o.pham === pham && Array.isArray(o.ds) && (Date.now() - o.luc) < NGHI_CACHE_GIAY * 1000) return o.ds;
     } catch (e) {}
     return null;
   }
-
-  // ⛔ CẢ THÂN HÀM TRONG try + tự nuốt lỗi, y hệt `napHanSua()`: chưa dán luật
-  // Firestore hay mất mạng thì mọi trang phải chạy đúng như trước v1.48.0.
-  function napNghi() {
+  function ngayCuc(ms) {
+    var d = new Date(ms), h = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + h(d.getMonth() + 1) + '-' + h(d.getDate());
+  }
+  // Tài liệu REST ⇒ danh sách thẻ. Trùng lớp + ngày (tài liệu cũ và mới cùng ngày) ⇒ giữ tài liệu MỚI.
+  function giaiNghi(docs) {
+    var bang = {};
+    (docs || []).forEach(function (d) {
+      var f = (d && d.fields) || {};
+      var lop = f.lop && f.lop.stringValue, han = String((f.han && f.han.stringValue) || '');
+      if (!lop || !han) return;
+      var ten = String(d.name || '').split('/').pop(), m = /__(\d{4}-\d{2}-\d{2})$/.exec(ten);
+      var luc = +((f.luc && (f.luc.integerValue || f.luc.doubleValue)) || 0);
+      var x = { lop: lop, ngay: m ? m[1] : (luc ? ngayCuc(luc) : han.slice(0, 10)), han: han,
+                tt: (f.tt && f.tt.stringValue === 'an') ? 'an' : '', luc: luc, cu: !m };
+      var k = lop + '|' + x.ngay;
+      if (!bang[k] || (bang[k].cu && !x.cu)) bang[k] = x;
+    });
+    return Object.keys(bang).map(function (k) { return bang[k]; });
+  }
+  // ⛔ CẢ THÂN HÀM TRONG try + tự nuốt lỗi, y hệt `napHanSua()`: mất mạng thì mọi trang chạy như không có thẻ NO HOMEWORK.
+  function napNghi(lop, quanLy) {
     try {
       var db = CFG.AWORD_DB || {};
-      if (!db.projectId || !db.apiKey) return Promise.resolve({});
-      var san = docNghiPhien();
+      lop = String(lop || '');
+      if (!db.projectId || !db.apiKey || (!quanLy && !lop)) return Promise.resolve([]);
+      var pham = quanLy ? '*' : lop, san = docNghiPhien(pham);
       if (san) return Promise.resolve(san);
-      var u = 'https://firestore.googleapis.com/v1/projects/' + db.projectId
-            + '/databases/(default)/documents/lessonNghi?pageSize=100&key='
-            + encodeURIComponent(db.apiKey);
-      // ⭐ v1.54.0 — ưu tiên lượt đã xin sớm ở js/som.js (cùng địa chỉ, cùng luật đệm).
-      return (laySom('lessonNghi') || fetch(u, { cache: 'no-store' }))
-        .then(function (r) { return r.ok ? r.json() : null; })
-        .then(function (j) {
-          var ra = {};
-          var ds = (j && j.documents) || [];
-          for (var i = 0; i < ds.length; i++) {
-            var f = ds[i].fields || {};
-            var lop = f.lop && f.lop.stringValue;
-            if (!lop) continue;
-            var tt = String((f.tt && f.tt.stringValue) || '');
-            ra[lop] = { han: String((f.han && f.han.stringValue) || ''),
-                        tt: (tt === 'an') ? 'an' : '' };
-          }
-          if (j) { try { sessionStorage.setItem(KHOA_NGHI,
-            JSON.stringify({ luc: Date.now(), bang: ra })); } catch (e) {} }
-          return ra;
-        })['catch'](function () { return {}; });
-    } catch (e) { return Promise.resolve({}); }
+      var goc = 'https://firestore.googleapis.com/v1/projects/' + db.projectId + '/databases/(default)/documents';
+      var khoa = encodeURIComponent(db.apiKey), p;
+      if (quanLy) {
+        var gom = [];
+        var trang = function (tok, lan) {
+          var r0 = (!tok && laySom('lessonNghi')) ||
+            fetch(goc + '/lessonNghi?pageSize=300&key=' + khoa + (tok ? '&pageToken=' + encodeURIComponent(tok) : ''), { cache: 'no-store' });
+          return r0.then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+            if (!j) return lan ? gom : null;
+            gom = gom.concat(j.documents || []);
+            return (j.nextPageToken && lan < 9) ? trang(j.nextPageToken, lan + 1) : gom;
+          });
+        };
+        p = trang('', 0);
+      } else {
+        var som = null;
+        try { var s0 = window.__napSom; if (s0 && s0.lessonNghiQ && s0.lessonNghiLop === lop) { som = s0.lessonNghiQ; s0.lessonNghiQ = null; } } catch (e) {}
+        p = (som || fetch(goc + ':runQuery?key=' + khoa, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'lessonNghi' }],
+            where: { fieldFilter: { field: { fieldPath: 'lop' }, op: 'EQUAL', value: { stringValue: lop } } }, limit: 300 } }) }))
+          .then(function (r) { return r.ok ? r.json() : null; })
+          .then(function (ds) { return Array.isArray(ds) ? ds.filter(function (x) { return x && x.document; }).map(function (x) { return x.document; }) : null; });
+      }
+      return p.then(function (docs) {
+        if (!docs) return [];
+        var ra = giaiNghi(docs);
+        try { sessionStorage.setItem(KHOA_NGHI, JSON.stringify({ luc: Date.now(), pham: pham, ds: ra })); } catch (e) {}
+        return ra;
+      })['catch'](function () { return []; });
+    } catch (e) { return Promise.resolve([]); }
   }
-
-  // Mốc hết hạn của thẻ nghỉ một lớp (ms), hoặc null nếu lớp không có thẻ nghỉ.
-  function nghiCua(maLop) {
-    var o = NGHI[String(maLop || '')];
-    if (!o || !o.han) return null;
-    var t = Date.parse(o.han);
-    return isNaN(t) ? null : t;
+  // Mã thẻ ảo (cũng là `baiId` trong `lessonHan`): 'nohw-<LỚP>-<YYYY-MM-DD>'
+  function idNghi(lop, ngay) { return 'nohw-' + lop + '-' + ngay; }
+  // Một thẻ NO HOMEWORK ⇒ BÀI ẢO cùng khuôn bai.json: `ngay` "d.m", `han`, `giaoLuc` = ngày thẻ (sĩ số, xếp chỗ), không act nào.
+  function baiNghi(x) {
+    var p = x.ngay.split('-');
+    return { id: idNghi(x.lop, x.ngay), nohw: true, dang: 'NO HOMEWORK', tenBai: 'NO HOMEWORK',
+             ngay: (+p[2]) + '.' + (+p[1]), han: x.han, giaoLuc: x.ngay, taoLuc: x.ngay + ' 00:00:00',
+             khoi: [], bt: [], nghiCu: !!x.cu };
   }
-  // Trạng thái thẻ nghỉ: '' bình thường · 'an' ẩn với học sinh.
-  function nghiTt(maLop) {
-    var o = NGHI[String(maLop || '')];
-    return (o && o.tt === 'an') ? 'an' : '';
+  // Chèn thẻ NO HOMEWORK của mọi lớp vào `dl.bai` (mảng mới nhất trước): đứng TRƯỚC bài đầu tiên giao NGÀY TRƯỚC đó
+  // (cùng ngày ⇒ bài thật đứng trước). Thẻ cũ thầy đã ẩn bằng nút cũ (`tt:'an'`) ⇒ trạng thái ẩn nếu `lessonHan` chưa có gì.
+  function chenNghi(dl, ds) {
+    (ds || []).forEach(function (x) {
+      if (!dl.bai) dl.bai = {};
+      var b = baiNghi(x), mang = dl.bai[x.lop] = (dl.bai[x.lop] || []).slice();
+      var co = -1; mang.forEach(function (y, k) { if (y && y.id === b.id) co = k; });
+      if (co >= 0) { mang[co] = b; return; }   // tạo lại cùng ngày ⇒ thay (hạn mới)
+      if (x.tt === 'an' && !(b.id in TT_THE)) TT_THE[b.id] = 'an';
+      var i = 0;
+      while (i < mang.length && !((ngayGiaoBai(mang[i]) || '9999') < x.ngay)) i++;
+      mang.splice(i, 0, b);
+    });
   }
-  // Đặt tại chỗ sau khi ghi Firestore xong, khỏi phải chờ hết 60 giây đệm.
-  function datNghi(maLop, han, tt) {
-    NGHI[String(maLop || '')] = { han: String(han || ''), tt: (tt === 'an') ? 'an' : '' };
-    try { sessionStorage.setItem(KHOA_NGHI,
-      JSON.stringify({ luc: Date.now(), bang: NGHI })); } catch (e) {}
+  // Dashboard gọi sau khi tạo thẻ (khỏi chờ hết 60 giây đệm): thêm vào bảng nhớ + đệm phiên.
+  function datNghi(lop, ngay, han) {
+    var x = { lop: String(lop || ''), ngay: ngay, han: String(han || ''), tt: '', luc: Date.now(), cu: false };
+    NGHI_DS = NGHI_DS.filter(function (y) { return !(y.lop === x.lop && y.ngay === x.ngay); }).concat([x]);
+    try { sessionStorage.setItem(KHOA_NGHI, JSON.stringify({ luc: Date.now(), pham: '*', ds: NGHI_DS })); } catch (e) {}
+    return x;
   }
 
   // ---------- LỊCH HỌC (kho myStudent, CHỈ ĐỌC) ----------
@@ -3069,23 +3122,11 @@
     return !!b && luc < b.ketThuc;
   }
 
-  // ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — THẺ NGHỈ CÒN HIỆU LỰC VỚI HỌC SINH?
-  //
-  // ⛔ VÌ SAO PHẢI LÀ HÀM CHUNG: trước v1.81.0 trang lớp và dashboard xét thẻ
-  // nghỉ bằng HAI LUẬT KHÁC NHAU — dashboard chỉ vẽ khi `han` chưa qua, trang lớp
-  // thì vẽ mãi kể cả đã qua. Hậu quả đo được ngày 09/09: A1A và A1B kẹt hai thẻ
-  // thầy bấm thử từ 02/09, học sinh thấy suốt một tuần mà thầy KHÔNG có nút nào
-  // để gỡ vì dashboard coi như chúng không tồn tại. Một luật, một hàm.
-  //
-  // Còn hiệu lực = có thẻ · thầy không ẩn · BUỔI ứng với `han` chưa tan.
-  // ⛔ Không tra được buổi (bản `lop.json` cũ chưa có giờ) thì coi như CÒN hiệu
-  // lực — giữ đúng nếp v1.48.0, đừng để lỡ mất thẻ vì thiếu dữ liệu.
-  function nghiConHieuLuc(dl, maLop) {
-    if (nghiTt(maLop) === 'an') return false;
-    var m = nghiCua(maLop);
-    if (m == null) return false;
-    var b = buoiChuaMoc(dl, maLop, m);
-    return !b || gioNay() < b.ketThuc;
+  // ⛔ v1.452.0 — ĐÃ GỠ `nghiConHieuLuc` (v1.81.0, một thẻ nghỉ cả lớp tự tắt khi buổi tan): thẻ NO HOMEWORK nay là thẻ
+  //   thường theo ngày ⇒ còn hạn / LỚP ĐANG HỌC / hết hạn đi qua đúng `conHan` + `theDangHoc` như mọi thẻ.
+  // Lớp có thẻ NO HOMEWORK đang sống (còn hạn hoặc đang trong buổi học) với học sinh? — trạng thái "không giao bài" của nút lớp.
+  function nghiDangSong(dl, maLop) {
+    return baiCuaLop(dl, maLop).some(function (b) { return b.nohw && (conHan(b) || theDangHoc(dl, maLop, mocHan(b))); });
   }
 
   // ---------- RUỘT THẺ NGHỈ: BÓNG BAY + GAME KHỦNG LONG ----------
@@ -3455,24 +3496,31 @@
   // ⭐ v1.51.0 — đầu thẻ: AVATAR bên trái (to hơn, nằm GIỮA cụm hai dòng theo
   // chiều dọc) · hai dòng chữ CĂN TRÁI THẲNG HÀNG CHỮ ĐẦU (thầy chốt). Cả cụm
   // vẫn nằm giữa thẻ theo chiều ngang.
-  function theNghiHtml(moc, themHtml, an) {
-    return '<div class="the nghi' + (an ? ' an' : '') + '" data-nghi="1">' +
+  // ⭐ v1.452.0 — `opt` (thẻ NO HOMEWORK theo ngày): { ngay:'d/m' ⇒ dòng "NGÀY d/m" như thẻ thường ·
+  //   het:true ⇒ thẻ ĐÃ HẾT HẠN (xám, dưới vạch): thay đồng hồ bằng "(giao - hạn)" `khoang`, không sân chơi (gaTheNghi bỏ qua) ·
+  //   dangHoc:true ⇒ thẻ trong buổi học: đồng hồ đã về 0 ⇒ "ĐÃ ĐẾN GIỜ HỌC" (nhipNghi tự lo) · lop: class thêm }.
+  function theNghiHtml(moc, themHtml, an, opt) {
+    opt = opt || {};
+    return '<div class="the nghi' + (an ? ' an' : '') + (opt.het ? ' het' : '') + (opt.lop ? ' ' + opt.lop : '') + '" data-nghi="1">' +
       '<span class="the-in">' +
         '<span class="the-body nghi-dau">' +
           '<img class="nghi-ava" src="assets/avatar-tron.jpg" alt="">' +
           '<span class="nghi-chuoi">' +
-            '<span class="nghi-chu">NO HOMEWORK, ENJOY YOUR DAY!</span>' +
-            '<span class="nghi-han">' +
-              '<i class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</i>' +
-              '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
-            '</span>' +
+            '<span class="nghi-chu">NO HOMEWORK, ENJOY YOUR DAY!' +
+              (opt.ngay && !opt.het ? '<span class="ngay">NGÀY ' + opt.ngay + '</span>' : '') + '</span>' +
+            (opt.het
+              ? '<span class="nghi-han het"><b class="nghi-khoang">' + (opt.khoang || '') + '</b></span>'
+              : '<span class="nghi-han">' +
+                  '<i class="nghi-nhan">BUỔI HỌC TIẾP THEO TRONG</i>' +
+                  '<b class="dhho-nghi" data-moc="' + (moc || 0) + '">…</b>' +
+                '</span>') +
           '</span>' +
         '</span>' +
         '<span class="the-diem nghi-san">' + (themHtml || '') +
-          '<span class="nghi-khung"><canvas class="nghi-canvas"></canvas></span>' +
+          (opt.het ? '<span class="nghi-tat">Không có bài tập</span>' : '<span class="nghi-khung"><canvas class="nghi-canvas"></canvas></span>') +
         '</span>' +
-        '<button type="button" class="play nghi-play" title="Play the piggy game">' +
-          IC_CHOI + '</button>' +
+        (opt.het ? '<span class="play nghi-play"></span>'
+          : '<button type="button" class="play nghi-play" title="Play the piggy game">' + IC_CHOI + '</button>') +
       '</span>' +
     '</div>';
   }
@@ -3551,7 +3599,7 @@
      doạ em bằng chấm đỏ oan (cùng tinh thần "đừng lùi mù" của luật 8). */
   function coBaiChuaXong(dl, maLop, tenEm) {
     var lx = lopTheoMa(dl, maLop), hx = lx && ((lx.hocSinh || []).filter(function (h) { return h.thu && h.ten === tenEm; })[0]);
-    var ds = baiCuaLop(dl, maLop).filter(conHan).filter(function (b) { return !hx || theChoHocThu(b, hx.vao); }).slice(0, 3);   // v1.309.0 học thử
+    var ds = baiCuaLop(dl, maLop).filter(function (b) { return !b.nohw && conHan(b); }).filter(function (b) { return !hx || theChoHocThu(b, hx.vao); }).slice(0, 3);   // v1.309.0 học thử
     var acts = [];
     for (var i = 0; i < ds.length; i++) {
       var k = actCuaBai(ds[i]);
@@ -3795,11 +3843,11 @@
     dsNoiHoc: dsNoiHoc, laKhoa: laKhoa, moiNoiTheoMa: moiNoiTheoMa,
     coBaiChuaXong: coBaiChuaXong,
     // ⭐ v1.48.0 — thẻ "không giao bài" + lịch học + sân chơi
-    nghiCua: nghiCua, nghiTt: nghiTt, datNghi: datNghi, napLopHoc: napLopHoc,
+    datNghi: datNghi, idNghi: idNghi, ngayCuc: ngayCuc, chenNghi: chenNghi, napLopHoc: napLopHoc,   // v1.452.0 thẻ NO HOMEWORK theo ngày
     buoiTiepTheo: buoiTiepTheo, thuTuChuoi: thuTuChuoi, gaSanNghi: gaSanNghi,
     // ⭐ v1.81.0 — "LỚP ĐANG HỌC" (giờ học nhồi sẵn trong lop.json)
     lichCua: lichCua, coBuoiHomNay: coBuoiHomNay, buoiChuaMoc: buoiChuaMoc, theDangHoc: theDangHoc,
-    nghiConHieuLuc: nghiConHieuLuc,
+    nghiDangSong: nghiDangSong,   // v1.452.0 (thay nghiConHieuLuc)
     theNghiHtml: theNghiHtml, nhipNghi: nhipNghi, gaTheNghi: gaTheNghi,
     chuAnToan: chuAnToan, chuanMa: chuanMa, khoaTen: khoaTen, chuanTen: chuanTen, khoaEm: khoaEm, datBangEm: datBangEm, lopHien: lopHien,
     napDuLieu: napDuLieu, napJson: napJson, lamMoiDl: lamMoiDl,

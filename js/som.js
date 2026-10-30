@@ -23,7 +23,7 @@
    ⛔ BẢN CHÉP — ba thứ dưới đây PHẢI y hệt chung.js, đổi bên kia thì đổi
    đây (xem BAN GIAO.md mục 0⚡):
      · địa chỉ kho: lessonHan?pageSize=300 · lessonNghi?pageSize=100
-     · khoá đệm phiên: 'awc_hansua2' · 'awc_nghi2' — còn hạn (60 giây) thì
+     · khoá đệm phiên: 'awc_hansua2' · 'awc_nghi3' — còn hạn (60 giây) thì
        KHÔNG đọc sớm, kẻo mỗi lần chuyển trang là tốn thêm một lượt đọc
        Firestore vô ích (luật 8️⃣: tính tiền theo số tài liệu).
      · ⭐ v1.119.0 (21/09/2026) KHO WEB TỨC THÌ `lessonWeb`: xin sớm `lessonWeb/lop`
@@ -137,7 +137,10 @@
       'data/lop.json': layDl(gocDl + 'data/lop.json'),
       'data/bai.json': layDl(gocDl + 'data/bai.json'),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
-      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
+      // v1.452.0 — thẻ NO HOMEWORK theo ngày: dashboard đọc cả kho (300/trang) · trang lớp chỉ đọc thẻ CỦA LỚP MÌNH (runQuery) · trang khác không đọc
+      lessonNghi: (goc && /dashboard\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? lay(goc + 'lessonNghi?pageSize=300' + khoa) : null,
+      lessonNghiLop: lopDoan,
+      lessonNghiQ: (goc && lopDoan && /lop\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? (function () { try { return fetch(goc.replace(/\/$/, '') + ':runQuery?key=' + encodeURIComponent(db.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'lessonNghi' }], where: { fieldFilter: { field: { fieldPath: 'lop' }, op: 'EQUAL', value: { stringValue: lopDoan } } }, limit: 300 } }) }); } catch (e) { return null; } })() : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
       lessonWebBaiLop: lopDoan,
       lessonWebBai: (goc && lopDoan) ? lay(goc + 'lessonWeb/bai_' + lopDoan + '?key=' + encodeURIComponent(db.apiKey)) : null

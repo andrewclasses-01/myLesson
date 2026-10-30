@@ -123,7 +123,10 @@
       'data/lop.json': layDl(gocDl + 'data/lop.json'),
       'data/bai.json': layDl(gocDl + 'data/bai.json'),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
-      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
+      // v1.452.0 — thẻ NO HOMEWORK theo ngày: dashboard đọc cả kho (300/trang) · trang lớp chỉ đọc thẻ CỦA LỚP MÌNH (runQuery) · trang khác không đọc
+      lessonNghi: (goc && /dashboard\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? lay(goc + 'lessonNghi?pageSize=300' + khoa) : null,
+      lessonNghiLop: lopDoan,
+      lessonNghiQ: (goc && lopDoan && /lop\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? (function () { try { return fetch(goc.replace(/\/$/, '') + ':runQuery?key=' + encodeURIComponent(db.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'lessonNghi' }], where: { fieldFilter: { field: { fieldPath: 'lop' }, op: 'EQUAL', value: { stringValue: lopDoan } } }, limit: 300 } }) }); } catch (e) { return null; } })() : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
       lessonWebBaiLop: lopDoan,
       lessonWebBai: (goc && lopDoan) ? lay(goc + 'lessonWeb/bai_' + lopDoan + '?key=' + encodeURIComponent(db.apiKey)) : null
@@ -744,6 +747,13 @@ body.dang-sap-xep .lop-btn.chon{outline-color:rgba(255,255,255,.6)}
 .kho-ic:hover{border-color:var(--xanh); color:var(--xanh); background:var(--xanh-nhat)}
 .kho-ic svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2.1;
   stroke-linecap:round; stroke-linejoin:round}
+/* ⭐ v1.452.0 (thầy 30/10) — nút ▶ cạnh ⚙: mở TRANG BÀI TẬP của bài đó (tab mới, danh tính thầy `gv=1`) để xem + chơi như bài thường.
+   Cùng màu tam giác xanh của thẻ. Không có ở bài đã xoá / không có trang (WORKSHEET giấy, NO HOMEWORK). */
+.kho-vao{flex:none; width:28px; height:28px; display:grid; place-items:center; border:0; border-radius:9px; cursor:pointer;
+  background:linear-gradient(135deg,#0E9E85,#22C3A4); transition:background .16s var(--em)}
+.kho-vao:hover{background:linear-gradient(135deg,#0B8672,#16AE92)}
+.kho-vao svg{width:13px; height:13px; fill:#fff; margin-left:2px; filter:drop-shadow(0 1px 1px rgba(0,0,0,.18))}
+.kho-hang .kho-vao + .kho-ic{margin-left:6px}
 .kho-het{margin-top:10px; display:flex; justify-content:flex-end}
 /* ⭐ v1.60.0 — KHO nay giữ CẢ BÀI CŨ, không riêng bài đã xoá:
    · `.kho-loc`  hàng nút lọc theo trạng thái, có số đếm ngay trong nút;
@@ -1720,6 +1730,15 @@ i.m-vang{background:var(--m-vang)} i.m-duong{background:var(--m-duong)} i.m-la{b
   margin-top:3px; font:800 8.5px/1.3 var(--font); letter-spacing:.08em; color:#8A7B5C}
 .the.nghi.da-tan .the-in{background:#F6F6F4}
 .the.nghi.dang-choi:hover .play{background:linear-gradient(135deg,#9A4718,#CE7A2F)}
+/* ⭐ v1.452.0 — thẻ NO HOMEWORK THEO NGÀY (CHÉP Y HỆT lop.html): dòng NGÀY · thẻ HẾT HẠN xám, không sân chơi · thẻ tạm khoá mũi xám. */
+.nghi-chu .ngay{margin-left:8px; font-size:10.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
+.the.nghi.het .the-in{background:#F4F6F6}
+.the.nghi.het .nghi-chu{color:#7D8F8B}
+.the.nghi.het .nghi-ava{filter:grayscale(1); opacity:.75}
+.nghi-khoang{font-size:11.5px; font-weight:700; color:#93A5A1; letter-spacing:.02em}
+.nghi-tat{flex:1; display:grid; place-items:center; font-size:12px; font-weight:700; color:#A7B6B3; letter-spacing:.04em}
+.the.nghi.het .play, .the.nghi.het:hover .play{background:#C9D3D1; cursor:default}
+.the.nghi.khoa .play, .the.nghi.khoa:hover .play{background:#9FB0AC}
 
 /* Ruột pop-up GIAO BÀI TẬP — mỗi dạng bài một ô bấm được. */
 .giao-o{display:flex; align-items:center; gap:12px; width:100%; text-align:left;
@@ -3460,7 +3479,8 @@ button.mk-em:hover{border-color:currentColor}
 .kl-pt u s{display:block; height:100%; background:var(--xanh); text-decoration:none}
 .kl-mo{color:var(--nhat)}
 .kl-loc{margin:0 0 10px}
-.kl-kb-tieu, .kl-kb-hang{display:grid; grid-template-columns:62px minmax(0,1fr) 150px 120px 70px 30px; align-items:center; gap:12px}
+.kl-kb-tieu, .kl-kb-hang{display:grid; grid-template-columns:62px minmax(0,1fr) 150px 120px 70px 64px; align-items:center; gap:12px}
+.kl-nut{display:flex; gap:6px; justify-content:flex-end}   /* v1.452.0 ▶ + ⚙ */
 .kl-kb-tieu{padding:0 6px 6px; font:800 10.5px var(--font); letter-spacing:.05em; color:var(--nhat); text-transform:uppercase}
 .kl-kb-hang{padding:9px 6px; border-top:1px solid #F0F3F2; border-radius:0; cursor:pointer}
 .kl-kb-hang:hover{background:#F6FAF9}
@@ -3481,7 +3501,7 @@ button.mk-em:hover{border-color:currentColor}
   .kl-than{grid-template-columns:1fr; grid-template-rows:auto 1fr}
   .kl-lop{display:flex; overflow:auto; border-right:0; border-bottom:1px solid var(--vien)} .kl-lop button{width:auto; white-space:nowrap} .kl-lop hr{display:none}
   .kl-kpi{grid-template-columns:repeat(2,minmax(0,1fr))} .kl-hai{grid-template-columns:1fr}
-  .kl-kb-tieu, .kl-kb-hang{grid-template-columns:52px minmax(0,1fr) 90px 26px} .kl-an-hep{display:none}
+  .kl-kb-tieu, .kl-kb-hang{grid-template-columns:52px minmax(0,1fr) 90px 62px} .kl-an-hep{display:none}
   .kl-dau{flex-wrap:wrap}
 }
 
@@ -4530,7 +4550,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=97"></script>
+<script src="js/chung.js?v=98"></script>
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
 <script src="js/nhac-tb.js?v=4"></script>   <!-- v1.224.0 thông báo khi bị @nhắc tên -->
@@ -4796,7 +4816,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   function dsBaiConHanMoiLop() {
     var ra = [];
     moiBai(function (b, maLop) {
-      if (!A.conHan(b)) return;           // v1.35.0 — luật chung (khoá còn hạn, ẩn/xoá không)
+      if (b.nohw || !A.conHan(b)) return;   // v1.452.0 thẻ NO HOMEWORK không có act           // v1.35.0 — luật chung (khoá còn hạn, ẩn/xoá không)
       ra.push({ b: b, maLop: maLop });
     });
     return ra;
@@ -4813,7 +4833,8 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ⛔ Bài thật CÒN HẠN đứng trước — thầy chốt: có bài thật thì thẻ nghỉ tự ẩn.
   function trangThaiBai(l) {
     if (l.rong) return 'khong';   // v1.285.0 — lớp chưa có em: không tính chờ bài
-    var ds = A.baiCuaLop(DL, l.maLop, 'ql');
+    // v1.452.0 — thẻ NO HOMEWORK (bài ảo `nohw`) KHÔNG tính là "đã giao bài"; còn sống ⇒ 'khong' (dưới)
+    var ds = A.baiCuaLop(DL, l.maLop, 'ql').filter(function (b) { return !b.nohw; });
     var conHan = ds.some(A.conHan);   // v1.35.0
     if (conHan) return 'giao';
     // ⭐⭐ v1.81.0 — lớp ĐANG TRONG BUỔI HỌC với một thẻ vừa tới hạn thì vẫn là
@@ -4826,7 +4847,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     // ⭐ v1.81.0 — qua `A.nghiConHieuLuc()`: LUẬT CHUNG với trang lớp (có thẻ ·
     // không bị ẩn · buổi ứng với `han` chưa tan). Trước đây chỗ này tự so
     // `m > Date.now()`, chính là nguồn gốc cảnh lệch pha A1A/A1B.
-    if (A.nghiConHieuLuc(DL, l.maLop)) return 'khong';
+    if (A.nghiDangSong(DL, l.maLop)) return 'khong';   // v1.452.0 thẻ NO HOMEWORK theo ngày còn hạn / đang học
     return 'cho';
   }
 
@@ -4861,7 +4882,7 @@ tr.qm-hang-tam td{background:#fffbeb}
   }
   // Bài để in ở dòng 3 + mốc cho dòng 2. giao ⇒ bài còn hạn gần hạn nhất · cho ⇒ bài có hạn MUỘN NHẤT đã qua.
   function baiTheLop(l, tt) {
-    var ds = A.baiCuaLop(DL, l.maLop, 'ql');
+    var ds = A.baiCuaLop(DL, l.maLop, 'ql').filter(function (b) { return !b.nohw; });   // v1.452.0
     var chon = null, moc = null;
     if (tt === 'giao') {
       ds.forEach(function (b) {
@@ -5016,8 +5037,8 @@ tr.qm-hang-tam td{background:#fffbeb}
     ghepLopRong();   // v1.285.0 — lớp/khóa chưa có em
     var xep = DL.lop.slice().sort(function (a, b) {
       // v1.35.0 — lọc bằng `A.conHan` (thẻ khoá đã qua mốc vẫn là còn hạn → xếp lên đầu)
-      var da = A.baiCuaLop(DL, a.maLop, 'ql').filter(A.conHan).map(A.mocHan);
-      var db = A.baiCuaLop(DL, b.maLop, 'ql').filter(A.conHan).map(A.mocHan);
+      var da = A.baiCuaLop(DL, a.maLop, 'ql').filter(function (x) { return !x.nohw && A.conHan(x); }).map(A.mocHan);   // v1.452.0
+      var db = A.baiCuaLop(DL, b.maLop, 'ql').filter(function (x) { return !x.nohw && A.conHan(x); }).map(A.mocHan);
       var ma = da.length ? Math.min.apply(null, da.map(function (m) { return m == null ? Infinity : m; })) : Infinity;
       var mb = db.length ? Math.min.apply(null, db.map(function (m) { return m == null ? Infinity : m; })) : Infinity;
       return ma - mb;
@@ -6478,6 +6499,17 @@ tr.qm-hang-tam td{background:#fffbeb}
   // ⛔ Gọi qua `function (b) { return veTheCard(b, het); }` — `ds.map(veTheCard)` sẽ
   //    truyền CHỈ SỐ vào tham số này.
   function veTheCard(b, het) {
+    // ⭐ v1.452.0 — THẺ NO HOMEWORK THEO NGÀY: giữ vẻ riêng (đồng hồ tới giờ học + bóng bay) + dòng NGÀY; hết hạn ⇒ xám
+    //   "(giao - hạn)". Dải ⚙ trái mở CHUNG menu thẻ (`data-rail-caidat` = mã thẻ ⇒ đổi hạn / ẩn / khoá / xoá qua lessonHan).
+    if (b.nohw) {
+      var ttN = A.trangThaiThe(b), mocN = A.mocHan(b), idN = A.chuAnToan(b.id);
+      var rail = '<span class="diem-ic"><button type="button" data-rail-caidat="' + idN + '" title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button></span>' +
+        '<span class="diem-vach"></span>';
+      var ngN = A.chuAnToan(ngayGach(b.ngay));
+      return A.theNghiHtml(mocN, rail, ttN === 'an', het
+        ? { het: true, khoang: '(' + ngN + ' - ' + (mocN ? (new Date(mocN).getDate() + '/' + (new Date(mocN).getMonth() + 1)) : '') + ')' }
+        : { ngay: ngN, lop: ttN === 'khoa' ? 'khoa' : '' });
+    }
     // ⭐ v1.113.0 — lớp đang chọn là KHÓA HỌC ⇒ thẻ khóa học riêng (xem `veTheCardKhoa`).
     if (laKhoaHoc()) return veTheCardKhoa(b, het);
     var t = tinhBai(b, LOP_CHON);
@@ -7104,16 +7136,27 @@ tr.qm-hang-tam td{background:#fffbeb}
   // kẻo đổi hạn thì xoá mất trạng thái ẩn và ngược lại.
   // ⭐ v1.51.0 — thêm `tt`; `moc` rỗng = gỡ hẳn thẻ (thầy chốt: xoá là gỡ hẳn,
   // giao lại chỉ 2 cú bấm, không có xoá mềm/KHO như thẻ bài).
+  // ⭐⭐ v1.452.0 (thầy chốt 30/10/2026) — nút "KHÔNG GIAO BÀI" TẠO MỘT THẺ NO HOMEWORK CỦA NGÀY HÔM NAY:
+  //   `lessonNghi/<LỚP>__<YYYY-MM-DD>` { lop, han = giờ vào buổi kế tiếp, tt:'', luc }. Tạo lại cùng ngày = sửa đúng thẻ đó; thẻ cùng
+  //   ngày thầy đã ẩn/khoá/xoá/đổi hạn (`lessonHan`) ⇒ gỡ về bình thường để thẻ vừa tạo hiện ra. Mọi thao tác sau đó đi ⚙ như thẻ thường.
+  //   (Nhánh `@nghi` ở menu ⚙ / hộp hạn bên dưới là lối cũ một-thẻ-cả-lớp — không còn thẻ nào mang mã đó.)
   function nghiGhi(moc, nut, tt, loiBao) {
     if (nut && nut.disabled !== undefined) nut.disabled = true;
     if (chuaThay(nut)) return;
-    var maLop = LOP_CHON;
+    if (!moc) { if (nut && nut.disabled !== undefined) nut.disabled = false; return; }
+    var maLop = LOP_CHON, ngay = A.ngayCuc(Date.now()), idN = A.idNghi(maLop, ngay);
+    var cuTt = A.trangThaiThe({ id: idN }), cuHan = A.daSuaHan({ id: idN });
     spDb().then(function (f) {
-      return f.fs.setDoc(f.fs.doc(f.db, 'lessonNghi', maLop), {
-        lop: String(maLop), han: String(moc || ''), tt: String(tt || ''), luc: Date.now()
-      }, { merge: true });
+      return f.fs.setDoc(f.fs.doc(f.db, 'lessonNghi', maLop + '__' + ngay), {
+        lop: String(maLop), han: String(moc), tt: '', luc: Date.now()
+      }).then(function () {
+        if (!cuTt && !cuHan) return;
+        return f.fs.setDoc(f.fs.doc(f.db, 'lessonHan', hsMaTaiLieu(idN)), {
+          baiId: idN, han: '', tt: '', lop: String(maLop), luc: Date.now()
+        }, { merge: true }).then(function () { A.datTrangThai(idN, ''); A.datHanSua(idN, ''); });
+      });
     }).then(function () {
-      A.datNghi(maLop, moc, tt);
+      A.chenNghi(DL, [A.datNghi(maLop, ngay, moc)]);
       dongGiao();
       veLopGrid();
       veKhuThe();
@@ -7557,65 +7600,26 @@ tr.qm-hang-tam td{background:#fffbeb}
       ds = gan.length ? [gan[0]] : [];
     }
     var soConHan = ds.filter(A.conHan).length;
-    // ⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI": chỉ dựng khi lớp KHÔNG có bài thật còn
-    // hạn (thầy chốt: có bài thật thì thẻ nghỉ tự biến mất, dữ liệu vẫn còn).
-    var mocNghi = A.nghiCua(LOP_CHON);
-    // ⭐ v1.51.0 — thẻ ĐANG ẨN vẫn hiện ở dashboard (mờ đi) để thầy còn bấm
-    // "Hiện lại" — đúng nếp thẻ bài; trang học sinh thì không thấy gì.
-    var ttNghi = A.nghiTt(LOP_CHON);
-    // ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — DASHBOARD VẼ NHIỀU HƠN TRANG HỌC SINH,
-    // CỐ Ý. Trước đây chỗ này đòi `mocNghi > Date.now()`, nên thẻ nghỉ vừa quá
-    // giờ là biến khỏi mắt thầy trong khi học sinh VẪN THẤY — thầy không còn nút
-    // nào để gỡ (đo thật 09/09: A1A + A1B kẹt thẻ từ 02/09 suốt một tuần).
-    // Nay: còn tài liệu trong kho thì thầy CÒN THẤY và còn gỡ được bằng nút ⚙;
-    // thẻ nào học sinh đã hết thấy thì đeo nhãn "BUỔI ĐÃ TAN" cho thầy biết.
-    var nghiHieuLuc = A.nghiConHieuLuc(DL, LOP_CHON);
-    var nghiDaTan = mocNghi != null && ttNghi !== 'an' && !nghiHieuLuc;
-    var coNghi = !conHan && mocNghi != null;
-    // Cây bút chỉ hiện khi lớp đang chờ bài: không có bài còn hạn, cũng chưa
-    // giao nghỉ. Đã giao nghỉ rồi thì thẻ nghỉ nằm ngay đó, khỏi giao lại.
-    $('#btnGiao').hidden = !(!conHan && !coNghi);
+    // ⛔ v1.452.0 (thầy chốt 30/10/2026) — ĐÃ GỠ thẻ "không giao bài" CẢ LỚP (`lessonNghi/<LỚP>`, v1.48.0–v1.81.0). Thẻ NO HOMEWORK
+    //   nay là THẺ THƯỜNG THEO NGÀY (bài ảo `nohw` trong `ds`, js/chung.js `chenNghi`) ⇒ còn hạn / hết hạn / ⚙ / kho như mọi thẻ.
+    var soNghi = ds.filter(function (b) { return b.nohw && A.conHan(b); }).length;
+    // Cây bút chỉ hiện khi lớp đang chờ bài: không có thẻ nào còn hạn (kể cả thẻ NO HOMEWORK).
+    $('#btnGiao').hidden = conHan;
     $('#baiPhu').textContent = ((l && l.tenGoc) || LOP_CHON) +
-      /* ⛔ v1.61.0 — ĐÃ BỎ mẩu "· N đang ẩn": thẻ ẩn không còn nằm trong `ds` nữa
-         nên `ds.length` luôn bằng `soConHan`, mẩu chữ đó vĩnh viễn không hiện. */
-      (conHan ? (' · ' + soConHan + ' bài còn hạn')
-        /* ⭐ v1.81.0 — nói rõ thẻ nghỉ nào học sinh CÒN thấy, thẻ nào hết. */
-        : (coNghi ? (nghiDaTan ? ' · thẻ không giao bài đã hết tác dụng'
-                               : ' · đã giao: không có bài tập')
-                  : (giaiLop ? ' · chưa có bài mới · đang có giải đấu' : (ds.length ? ' · bài gần nhất (đã hết hạn)' : ''))));
-    // ⭐ v1.49.0 — thẻ nghỉ ở dashboard có thêm nút ⚙ (đổi hạn / xoá thẻ). Trang
-    // học sinh KHÔNG có nút này — đó là lý do `theNghiHtml` nhận `themHtml` rời.
-    $('#theListDs').innerHTML = coNghi
-      // ⭐ v1.50.0 — dải ⚙ nay dùng ĐÚNG khuôn `.diem-ic` + `.diem-vach` của thẻ
-      // bài thường (nửa dưới bên trái, có vạch ngăn) — thầy chốt; CSS tái dùng
-      // nguyên, không thêm dòng nào.
-      // ⭐ v1.51.0 — nút ⚙ mang `data-rail-caidat="@nghi"` để đi CHUNG tay bắt
-      // và CHUNG menu `#rcMenu` với thẻ bài thường (thầy chốt: phải giống hệt).
-      // `@nghi` là mã đặc biệt — mọi nhánh xử lý nhận ra nó bằng `laNghi()`.
-      ? A.theNghiHtml(mocNghi,
-          '<span class="diem-ic"><button type="button" data-rail-caidat="@nghi" ' +
-          'title="Cài đặt thẻ">' + IC_GEAR_NHO + '</button></span>' +
-          '<span class="diem-vach"></span>', ttNghi === 'an')
-      : (ds.length ? ds.map(function (b) {
+      (conHan ? (soNghi === soConHan ? ' · đã giao: không có bài tập' : (' · ' + (soConHan - soNghi) + ' bài còn hạn' + (soNghi ? ' + NO HOMEWORK' : '')))
+              : (giaiLop ? ' · chưa có bài mới · đang có giải đấu' : (ds.length ? ' · bài gần nhất (đã hết hạn)' : '')));
+    $('#theListDs').innerHTML = ds.length ? ds.map(function (b) {
           /* ⭐ v1.95.0 — thẻ dự phòng ĐÃ HẾT HẠN (không còn hạn, cũng không trong buổi
              học) vẽ nhạt như thẻ cũ bên trang lớp (thầy chốt 13/09). */
           var het = !A.conHan(b) && !A.theDangHoc(DL, LOP_CHON, A.mocHan(b));
           return veTheCard(b, het);
         }).join('')
-                   : '<div data-thg-db="' + A.chuAnToan(LOP_CHON) + '"><div class="trong">Đang chờ bài tập.</div></div>');   // v1.381.0 thẻ đặc biệt
-    // ⭐ v1.81.0 — đeo nhãn cho thẻ nghỉ mà HỌC SINH ĐÃ HẾT THẤY (buổi đã tan).
-    // ⛔ Gắn class SAU khi dựng HTML thay vì thêm tham số cho `theNghiHtml()`:
-    // hàm đó dùng CHUNG với trang học sinh, mà bên đó thẻ này không bao giờ hiện
-    // ⇒ thêm tham số chỉ để một bên dùng là làm hàm chung phình ra vô ích.
-    if (coNghi && nghiDaTan) {
-      var theNghiEl = $('#theListDs').querySelector('.the.nghi');
-      if (theNghiEl) theNghiEl.classList.add('da-tan');
-    }
+      : '<div data-thg-db="' + A.chuAnToan(LOP_CHON) + '"><div class="trong">Đang chờ bài tập.</div></div>';   // v1.381.0 thẻ đặc biệt
     if (window.ThanhGiai) ThanhGiai.dien($('#theListDs'));   // ⭐ v1.381.0
     nhipDongHo();
     canhNhanO();
     napNopBai();   // ⭐ v1.120.0 — số em đã nộp ảnh trên hàng SHEET
-    if (coNghi) {
+    if ($('#theListDs').querySelector('.the.nghi')) {   // v1.452.0 thẻ NO HOMEWORK theo ngày
       A.nhipNghi($('#theListDs'));
       A.gaTheNghi($('#theListDs'), ((l && l.hocSinh) || []).map(function (h) { return h.ten; }),
                   (l && l.tenGoc) || LOP_CHON);
@@ -7937,7 +7941,7 @@ tr.qm-hang-tam td{background:#fffbeb}
     if (bId) return bId;
     var k = hdKhoaTen(ten), l = hdLuotBai().filter(function (x) { return x.lop === lop && hdKhoaTen(x.ten) === k; })[0];
     if (l) return l.bId;
-    var con = A.baiCuaLop(DL, lop, 'ql').filter(A.conHan);
+    var con = A.baiCuaLop(DL, lop, 'ql').filter(function (x) { return !x.nohw && A.conHan(x); });   // v1.452.0
     return con.length ? con[0].id : '';
   }
   document.addEventListener('click', function (e) {
@@ -12909,6 +12913,20 @@ tr.qm-hang-tam td{background:#fffbeb}
   };
   // Trạng thái thẻ → khoá nhóm ('' của `trangThaiThe` là bài bình thường).
   function khoNhom(b) { return A.trangThaiThe(b) || 'bt'; }
+  // ⭐ v1.452.0 — nút ▶ mở trang bài tập của bài (kho nhỏ + kho lớn). '' khi bài đã xoá / không có trang để mở.
+  function nutVaoBai(b, maLop) {
+    if (!b || khoNhom(b) === 'xoa' || b.nohw) return '';
+    if (!/SP\s*CHECK/i.test(b.dang || '') && !A.trangCuaBai(b)) return '';
+    return '<button type="button" class="kho-vao" data-kho-vao="' + A.chuAnToan(b.id) + '" data-kho-vao-lop="' + A.chuAnToan(maLop || LOP_CHON) +
+      '" title="Mở trang bài tập (tab mới) — xem và chơi như học sinh"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg></button>';
+  }
+  function moTrangBai(id, maLop) {
+    var b = A.baiCuaLop(DL, maLop, 'tatca').filter(function (x) { return x.id === id; })[0];
+    if (!b) return;
+    if (/SP\s*CHECK/i.test(b.dang || '')) { window.open('sp-chitiet.html?lop=' + encodeURIComponent(maLop) + '&bai=' + encodeURIComponent(b.id), '_blank'); return; }
+    var trang = A.trangCuaBai(b); if (!trang) return;
+    window.open(trang + '?id=' + encodeURIComponent(b.id) + '&gv=1&lop=' + encodeURIComponent(maLop), '_blank');
+  }
 
   // ⭐ v1.86.0 — MỞ MENU ⚙ CỦA MỘT HÀNG KHO. Ruột dựng lại mỗi lần mở vì số mục
   // đổi theo trạng thái thẻ (xem `KHO_MUC`). Dùng chung khuôn `.rc-menu` và chung
@@ -12986,6 +13004,7 @@ tr.qm-hang-tam td{background:#fffbeb}
             '<span>' + A.chuAnToan(A.tenDang(b.dang || '') || b.dang || '') +
               ' · ngày ' + A.chuAnToan(ngayGach(b.ngay)) +
               (chuHan ? (' · hạn ' + A.chuAnToan(chuHan)) : '') + '</span></div>' +
+          nutVaoBai(b, LOP_CHON) +   // v1.452.0
           '<button type="button" class="kho-ic" data-kho-menu="' + id +
             '" title="Tuỳ chọn thẻ: đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_NHO +
           '</button>' +
@@ -13167,8 +13186,9 @@ tr.qm-hang-tam td{background:#fffbeb}
     return isNaN(t) ? null : t;
   }
   // Mọi bài (trừ đã xoá) có mốc giao + hạn, sắp theo giờ giao.
+  // v1.452.0 — thẻ NO HOMEWORK KHÔNG phải bài: không vào lịch giao / số bài / thời gian chờ (ngày đó là ngày "không có bài"); vẫn ở danh sách kho.
   function klThanh(maLop) {
-    return A.baiCuaLop(DL, maLop, 'ql').map(function (b) {
+    return A.baiCuaLop(DL, maLop, 'ql').filter(function (b) { return !b.nohw; }).map(function (b) {
       var g = klGiao(b), h = A.mocHan(b);
       if (g == null || h == null) return null;
       if (h < g + KL_GIO) h = g + 12 * KL_GIO;
@@ -13399,7 +13419,7 @@ tr.qm-hang-tam td{background:#fffbeb}
           '<div class="lich kl-an-hep">' + (g ? klNgay(g) : '—') + ' → ' + (hn ? klGio(hn) : '—') + '</div>' +
           klPt(sb.pct) +
           '<div class="ph kl-an-hep">' + (sb.phut != null ? Math.round(sb.phut) + '\'<small>/em</small>' : '—') + '</div>' +
-          '<button type="button" class="kho-ic" data-kho-menu="' + id + '" title="Tuỳ chọn thẻ: đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_NHO + '</button></div>';
+          '<span class="kl-nut">' + nutVaoBai(b, maLop) + '<button type="button" class="kho-ic" data-kho-menu="' + id + '" title="Tuỳ chọn thẻ: đổi hạn · ẩn · tạm khoá · xoá">' + IC_GEAR_NHO + '</button></span></div>';
       }).join('') + (hien.length ? '' : '<div class="trong">Không có bài nào ở nhóm này.</div>') + '</div>';
     return h;
   }
@@ -13735,6 +13755,8 @@ tr.qm-hang-tam td{background:#fffbeb}
       // ⛔ Phải đứng TRƯỚC tay bắt `[data-kho-mo]` (cả hàng bấm được) ở dưới.
       var khoIc = e.target.closest('[data-kho-menu]');
       if (khoIc) { moKhoMenu(khoIc, khoIc.dataset.khoMenu); return; }
+      var khoVao = e.target.closest('[data-kho-vao]');   // v1.452.0 nút ▶ — cũng phải đứng TRƯỚC `[data-kho-mo]`
+      if (khoVao) { moTrangBai(khoVao.dataset.khoVao, khoVao.dataset.khoVaoLop); return; }
 
       // ⭐ v1.86.0 — nút trong menu ⚙ (trước v1.86.0 là nút chữ vẽ thẳng trong hàng,
       // nên tay bắt cũ soi `#khoDs`; nay nút nằm trong `#khoMenu` ⇒ bỏ tiền tố).
@@ -13800,6 +13822,7 @@ tr.qm-hang-tam td{background:#fffbeb}
         var idMo = khoMo.dataset.khoMo;
         var bMo = A.baiCuaLop(DL, LOP_CHON, 'tatca')
           .filter(function (x) { return x.id === idMo; })[0];
+        if (bMo && bMo.nohw) return void baoToast('Thẻ NO HOMEWORK không có kết quả để xem — dùng ⚙ để đổi hạn / ẩn / khoá / xoá.');   // v1.452.0
         if (bMo && /SP\s*CHECK/i.test(bMo.dang || '')) {
           // ⛔ `sp-chitiet.html` đọc bài qua cửa 'ql' — thẻ ĐÃ XOÁ không có ở cửa đó,
           // mở ra chỉ được trang trắng. Nói thật thay vì để thầy nhìn trang hỏng.
@@ -15526,7 +15549,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       var l = tatCaLop().filter(function (x) { return x.maLop === n.maLop; })[0];
       if (!l) return;
       A.baiCuaLop(DL, n.maLop, 'ql').forEach(function (b) {
-        if (da[b.id] || hqNgayGiao(b).getTime() < tu) return;
+        if (b.nohw || da[b.id] || hqNgayGiao(b).getTime() < tu) return;   // v1.452.0
         var co;
         try { co = A.caLopCuaBai(l, b).some(function (t) { return A.khoaTen(t) === A.khoaTen(n.tenHs); }); } catch (e) { co = true; }
         if (!co) return;

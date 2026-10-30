@@ -14,7 +14,24 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.451.0 (30/10/2026) — BÀI TRONG SÁCH: dấu máy KHÔNG BAO GIỜ bị khuất ngoài khung trang *(bản mới nhất)*
+## ⭐ v1.452.0 (30/10/2026) — KHO BÀI có nút ▶ mở trang bài · NO HOMEWORK thành THẺ THƯỜNG THEO NGÀY *(bản mới nhất)*
+
+Thầy "ok build" 30/10. Đi cùng app myLesson v2.194.0. `js/chung.js?v=98`, js/som.js + 6 trang dập lại (`tools/sinh-som.py --write`).
+- **Kho bài (nhỏ + lớn) — nút ▶** cạnh ⚙ (`nutVaoBai`/`moTrangBai`): mở `trangCuaBai(b)?id=…&gv=1&lop=…` tab mới (thầy xem + chơi như bài thường);
+  SP CHECK ⇒ `sp-chitiet.html`; không có ở bài đã xoá / không trang (WORKSHEET giấy, NO HOMEWORK). Tay bắt `[data-kho-vao]` đứng TRƯỚC `[data-kho-mo]`.
+- **NO HOMEWORK theo ngày:** mỗi thẻ = `lessonNghi/<LỚP>__<YYYY-MM-DD>` {lop, han, tt:'', luc} (luật kho KHÔNG đổi — mã tài liệu tự do).
+  Tài liệu cũ `lessonNghi/<LỚP>` = thẻ của ngày `luc` (han rỗng = đã gỡ). `chung.js` `napNghi(lop, quanLy)` (dashboard đọc cả kho, 300/trang, theo
+  nextPageToken · lop.html runQuery `lop ==` đúng lớp · trang khác KHÔNG đọc) ⇒ `chenNghi` chèn BÀI ẢO `nohw:true` (id `nohw-<LỚP>-<ngày>`, không act)
+  vào `dl.bai[lớp]` theo ngày giao ⇒ còn hạn / LỚP ĐANG HỌC / hết hạn xám dưới vạch / ⚙ đổi hạn·ẩn·khoá·xoá (qua `lessonHan` như thẻ thường) / kho.
+  Khoá đệm `awc_nghi2` → `awc_nghi3`. Đã gỡ `nghiCua/nghiTt/nghiConHieuLuc`; thêm `nghiDangSong` (nút lớp "Không giao bài"), `idNghi`, `ngayCuc`, `chenNghi`, `datNghi(lop,ngay,han)`.
+- `theNghiHtml(moc, them, an, opt)`: `opt.ngay` ⇒ "NGÀY d/m" · `opt.het` ⇒ thẻ xám "(giao - hạn)" + "Không có bài tập", không sân chơi. CSS chép y hệt lop.html ↔ dashboard.
+- lop.html: `theTuBai` loai `nohw`; `veTheMoi`/`veTheCu` nhánh NO HOMEWORK; `dungCot` bỏ luật thẻ nghỉ cả lớp, `dsThe` rút thẻ nohw (bảng tra theo chỉ số).
+- dashboard: `veTheCard` nhánh nohw (dải ⚙ `data-rail-caidat=<mã thẻ>`); `veKhuThe` thẻ nohw đi chung `ds` ("1 bài còn hạn + NO HOMEWORK" / "đã giao: không có bài tập"),
+  cây bút ẩn khi có thẻ còn hạn; `nghiGhi` tạo thẻ NGÀY HÔM NAY (hạn = buổi kế tiếp) + gỡ `lessonHan` cũ của cùng ngày; bài thật mới tính "giao" (`trangThaiBai`,
+  `baiTheLop`, xếp lớp, `dsBaiConHanMoiLop`, `hdBaiGanNhat`, hồ sơ em, lịch/thống kê kho lớn `klThanh` đều bỏ nohw). Bấm hàng NO HOMEWORK trong kho ⇒ chỉ báo một câu.
+- Bàn thử (KHÔNG commit, `.git/info/exclude`): `ban-thu-nohw-lop.html?lop=B2B` + `ban-thu-nohw-dashboard.html` (kho lessonNghi giả, bỏ cổng đăng nhập — chỉ đọc).
+
+## ⭐ v1.451.0 (30/10/2026) — BÀI TRONG SÁCH: dấu máy KHÔNG BAO GIỜ bị khuất ngoài khung trang
 
 Thầy chụp NTK10: dấu ✓/✕ máy đặt bên trái chữ cái em khoanh, chữ sát gáy sách ⇒ dấu rơi ra ngoài khung tự cắt (`may.cat`), chỉ còn một mẩu ở mép.
 `js/cham-sach.js?v=17`: `khungAnh(ban, w, h)` = phần trang đang hiện (toạ độ ảnh gốc) ⇒ truyền vào `hinhDau(m, w, h, kh)` ở mọi chỗ vẽ (ảnh chính,

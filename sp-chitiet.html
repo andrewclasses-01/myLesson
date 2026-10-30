@@ -123,7 +123,10 @@
       'data/lop.json': layDl(gocDl + 'data/lop.json'),
       'data/bai.json': layDl(gocDl + 'data/bai.json'),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
-      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
+      // v1.452.0 — thẻ NO HOMEWORK theo ngày: dashboard đọc cả kho (300/trang) · trang lớp chỉ đọc thẻ CỦA LỚP MÌNH (runQuery) · trang khác không đọc
+      lessonNghi: (goc && /dashboard\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? lay(goc + 'lessonNghi?pageSize=300' + khoa) : null,
+      lessonNghiLop: lopDoan,
+      lessonNghiQ: (goc && lopDoan && /lop\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? (function () { try { return fetch(goc.replace(/\/$/, '') + ':runQuery?key=' + encodeURIComponent(db.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'lessonNghi' }], where: { fieldFilter: { field: { fieldPath: 'lop' }, op: 'EQUAL', value: { stringValue: lopDoan } } }, limit: 300 } }) }); } catch (e) { return null; } })() : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
       lessonWebBaiLop: lopDoan,
       lessonWebBai: (goc && lopDoan) ? lay(goc + 'lessonWeb/bai_' + lopDoan + '?key=' + encodeURIComponent(db.apiKey)) : null
@@ -681,7 +684,7 @@ details.db .cau-tt{margin-top:4px}
 <script src="js/sp-luat.js?v=1"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=97"></script>
+<script src="js/chung.js?v=98"></script>
 <script src="js/trung.js?v=1"></script>
 <script src="js/sp-bang.js?v=13"></script>
 <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>

@@ -126,7 +126,10 @@
       'data/lop.json': layDl(gocDl + 'data/lop.json'),
       'data/bai.json': layDl(gocDl + 'data/bai.json'),
       lessonHan:  (goc && !conDem('awc_hansua2', 60)) ? lay(goc + 'lessonHan?pageSize=300' + khoa) : null,
-      lessonNghi: (goc && !conDem('awc_nghi2', 60))   ? lay(goc + 'lessonNghi?pageSize=100' + khoa) : null,
+      // v1.452.0 — thẻ NO HOMEWORK theo ngày: dashboard đọc cả kho (300/trang) · trang lớp chỉ đọc thẻ CỦA LỚP MÌNH (runQuery) · trang khác không đọc
+      lessonNghi: (goc && /dashboard\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? lay(goc + 'lessonNghi?pageSize=300' + khoa) : null,
+      lessonNghiLop: lopDoan,
+      lessonNghiQ: (goc && lopDoan && /lop\.html$/i.test(location.pathname) && !conDem('awc_nghi3', 60)) ? (function () { try { return fetch(goc.replace(/\/$/, '') + ':runQuery?key=' + encodeURIComponent(db.apiKey), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ structuredQuery: { from: [{ collectionId: 'lessonNghi' }], where: { fieldFilter: { field: { fieldPath: 'lop' }, op: 'EQUAL', value: { stringValue: lopDoan } } }, limit: 300 } }) }); } catch (e) { return null; } })() : null,
       'lessonWeb/lop': goc ? lay(goc + 'lessonWeb/lop?key=' + encodeURIComponent(db.apiKey)) : null,
       lessonWebBaiLop: lopDoan,
       lessonWebBai: (goc && lopDoan) ? lay(goc + 'lessonWeb/bai_' + lopDoan + '?key=' + encodeURIComponent(db.apiKey)) : null
@@ -827,6 +830,15 @@ i.m-la{background:var(--m-la)}
 .the.nghi .play, .the.nghi:hover .play{background:linear-gradient(135deg,#0E9E85,#22C3A4)}
 .the.nghi.dang-choi .play, .the.nghi.dang-choi:hover .play{
   background:linear-gradient(135deg,#B3541E,#E08A3C)}
+/* ⭐ v1.452.0 — thẻ NO HOMEWORK THEO NGÀY: dòng NGÀY nhỏ sau câu chào · thẻ HẾT HẠN (dưới vạch) xám như thẻ cũ, không sân chơi.
+   ⛔ Khối này CHÉP Y HỆT sang `dashboard.html`. */
+.nghi-chu .ngay{margin-left:8px; font-size:10.5px; font-weight:800; letter-spacing:.06em; color:#93A5A1}
+.the.nghi.het .the-in{background:#F4F6F6}
+.the.nghi.het .nghi-chu{color:#7D8F8B}
+.the.nghi.het .nghi-ava{filter:grayscale(1); opacity:.75}
+.nghi-khoang{font-size:11.5px; font-weight:700; color:#93A5A1; letter-spacing:.02em}
+.nghi-tat{flex:1; display:grid; place-items:center; font-size:12px; font-weight:700; color:#A7B6B3; letter-spacing:.04em}
+.the.nghi.het .play, .the.nghi.het:hover .play{background:#C9D3D1; cursor:default}
 @media (max-width:620px){
   .nghi-dau{padding:9px 10px 7px; gap:0}
   .nghi-ava{width:21px; height:21px}
@@ -1762,7 +1774,7 @@ body.mo-menu .side.trai{transform:none}
 <script src="js/thay-vao.js?v=3"></script>
 <script src="js/app-check.js?v=4"></script>
 <script src="js/ve-doc.js?v=2"></script>   <!-- 02/10/2026 v1.226.0 vé đọc kho (khoá đọc người ngoài GĐ2) -->
-<script src="js/chung.js?v=97"></script>
+<script src="js/chung.js?v=98"></script>
 <script src="js/nw-phien.js?v=9"></script>
 <script src="js/chat.js?v=38"></script>
 <script src="js/hs-uid.js?v=1"></script>   <!-- v1.354.0 MỘT nơi ghép/kiểm uid học sinh -->
@@ -1980,7 +1992,7 @@ function theTuBai(b){
        hộp quản lý ("không tính vào x/N"). */
     siSo: caLop.length,
     dang: b.dang || '',
-    loai: laSp ? 'spcheck' : (laWs ? 'wsheet' : ''),
+    loai: b.nohw ? 'nohw' : (laSp ? 'spcheck' : (laWs ? 'wsheet' : '')),   /* v1.452.0 thẻ NO HOMEWORK theo ngày */
     /* ⭐ v1.103.0 — tiêu đề các worksheet (app v2.70.0 đẩy khối `ws`), cho dòng
        nhắc "EM HÃY HOÀN THÀNH BÀI TẬP <tên>!" (`veWorksheetKhoi`). */
     ws: laWs ? A.tenWorksheet(b) : [],
@@ -3236,6 +3248,9 @@ function chayDongHo(){
      < 6h     → đỏ + hào quang đỏ nhấp nháy
    Thẻ CŨ vẫn theo kết quả bài (đỏ nếu thiếu, xanh lá nếu đủ). */
 function veTheMoi(b, tt){
+  /* ⭐ v1.452.0 — thẻ NO HOMEWORK theo ngày: giữ vẻ riêng (đồng hồ tới giờ học + bóng bay) + dòng NGÀY. Qua hạn mà
+     buổi chưa tan (`dangHoc`) ⇒ đồng hồ tự hiện "ĐÃ ĐẾN GIỜ HỌC". */
+  if (b.loai === 'nohw') return A.theNghiHtml(b.hanMoc, '', false, { ngay: b.giao });
   var gap = (tt === 'gap');
   var bDung = (tt === 'xong') ? xongHetBai(b) : b;
   var th = tinhHinhThe(bDung, tt === 'xong');
@@ -3292,6 +3307,8 @@ function xongHetBai(b){
    · VẪN CÒN HẠN / đang học (hai bài cùng còn hạn — hiếm): giữ lối cũ nguyên vẹn. */
 function veTheCu(b){
   var het = !b.conHan && !b.dangHoc;
+  /* ⭐ v1.452.0 — NO HOMEWORK dưới vạch: hết hạn ⇒ thẻ xám "(giao - hạn)" như mọi thẻ cũ, không sân chơi. */
+  if (b.loai === 'nohw') return A.theNghiHtml(b.hanMoc, '', false, het ? { het: true, khoang: '(' + b.giao + ' - ' + b.hanNgan + ')' } : { ngay: b.giao });
   var th = het ? { lop:'', du:false } : tinhHinhThe(b, true);
   var laWs = (b.loai === 'wsheet');
   return '<button class="the cu' + (het ? ' het' : '') + (th.du ? ' xong-het' : '') +
@@ -3323,35 +3340,14 @@ function dungCot(){
     return;
   }
 
-  /* ⭐ v1.48.0 — THẺ "KHÔNG GIAO BÀI" (thầy giao ở dashboard, kho `lessonNghi`).
-     · Còn hạn (chưa tới giờ vào học buổi kế tiếp) ⇒ nằm TRÊN VẠCH thay dòng nhắn.
-     · Hết hạn ⇒ tụt xuống DƯỚI VẠCH, đứng đầu nhóm bài cũ (thầy chốt).
-     ⛔ Có bài thật CÒN HẠN (`BAI_MOI`) thì thẻ nghỉ TỰ ẨN — thầy chốt; dữ liệu
-     trong kho vẫn còn nguyên, hết bài là nó hiện lại. */
-  /* ⭐ v1.51.0 — thầy ẩn thẻ ở dashboard (`tt:'an'`) thì học sinh KHÔNG thấy gì cả;
-     dashboard vẫn giữ thẻ (mờ đi) để thầy hiện lại. */
-  /* ⭐⭐ v1.81.0 (thầy chốt 09/09/2026) — THẺ NGHỈ TỰ TẮT KHI BUỔI ĐÓ ĐÃ TAN.
-     ⛔ VÌ SAO PHẢI CÓ: `han` chốt cứng lúc thầy bấm và KHÔNG BAO GIỜ tự hết, nên
-     thẻ nghỉ hết hạn sống mãi ở đây — trong khi dashboard lại chỉ vẽ nó lúc CÒN
-     hạn, tức thầy không có nút nào để gỡ. Đo thật 09/09: A1A và A1B kẹt hai thẻ
-     thầy bấm thử từ 02/09, học sinh thấy suốt một tuần. Câu "buổi này không có
-     bài" hết nghĩa ngay khi buổi đó tan ⇒ tắt theo giờ tan là chữa đúng gốc.
-     ⛔ MỘT LUẬT MỘT HÀM: `A.nghiConHieuLuc()` là nơi DUY NHẤT xét việc này —
-     dashboard gọi đúng hàm đó. Đừng viết lại phép so ở đây (chính vì trước đây
-     hai nơi tự xét mà sinh ra cảnh lệch pha trên). */
-  var mocNghi = A.nghiConHieuLuc(DL, LOP_DL) ? A.nghiCua(LOP_DL) : null;
-  var nghiConHan = !BAI_MOI && mocNghi != null && mocNghi > A.gioNay();
-  var nghiHetHan = !BAI_MOI && mocNghi != null && mocNghi <= A.gioNay();
-
+  /* ⛔ v1.452.0 (thầy chốt 30/10/2026) — ĐÃ GỠ thẻ "không giao bài" CẢ LỚP (v1.48.0 → v1.81.0: một thẻ, tự ẩn khi có bài
+     thật còn hạn, tự tắt khi buổi tan). Thẻ NO HOMEWORK nay là thẻ thường THEO NGÀY nằm sẵn trong `cacThe` (js/chung.js
+     `chenNghi`) ⇒ trên vạch / dưới vạch / hết hạn theo đúng luật mọi thẻ. */
   var tren, cu, dsThe;
   if (BAI_MOI) {
     tren = veTheMoi(BAI_MOI, tinhHinhGio(BAI_MOI));
     cu = BAI_CU.slice(0, tong - 1);
     dsThe = [BAI_MOI].concat(cu);
-  } else if (nghiConHan) {
-    tren = A.theNghiHtml(mocNghi);
-    cu = BAI_CU.slice(0, tong - 1);
-    dsThe = cu.slice();          /* thẻ nghỉ KHÔNG nằm trong bảng tra bên dưới */
   } else {
     /* Không có bài nào còn hạn: trên vạch là dòng nhắn, mọi bài xuống dưới.
        v1.215.0 — có thẻ nghỉ đã tan (nằm dưới vạch) thì nó chiếm 1 chỗ trong tổng số thẻ. */
@@ -3359,11 +3355,12 @@ function dungCot(){
     tren = '<div data-thg-db="' + A.chuAnToan(LOP_DL) + '">' + (BAI_CU.length
       ? '<div class="chua-co">' + IC_GIO + 'Bài tập mới sẽ sớm được cập nhật</div>'
       : '<div class="chua-co vui">🎈 No homework, No fun!</div>') + '</div>';
-    cu = BAI_CU.slice(0, nghiHetHan ? tong - 1 : tong);
+    cu = BAI_CU.slice(0, tong);
     dsThe = cu.slice();
   }
-  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' +
-    (nghiHetHan ? A.theNghiHtml(mocNghi) : '') + cu.map(veTheCu).join('');
+  /* v1.452.0 — thẻ NO HOMEWORK là `.the.nghi` (không mở trang nào) ⇒ rút khỏi bảng tra theo chỉ số bên dưới */
+  dsThe = dsThe.filter(function(t){ return t.loai !== 'nohw'; });
+  $('#cotBai').innerHTML = tren + '<div class="vach"></div>' + cu.map(veTheCu).join('');
   if (window.ThanhGiai) ThanhGiai.dien($('#cotBai'));   // v1.381.0
 
   /* ⛔ `:not(.nghi)` BẮT BUỘC: vòng dưới tra `dsThe[i]` THEO CHỈ SỐ, mà thẻ nghỉ

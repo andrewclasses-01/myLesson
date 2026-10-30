@@ -312,6 +312,7 @@
   // ⭐ 27/10 CHỈ CHUỘT / CHẠM (thầy chốt — công bằng): ô chữ, ⌫, SUBMIT nhận lúc ngón tay/chuột CHẠM XUỐNG; bàn phím không chọn chữ, không gửi
   app.addEventListener('pointerdown', function (e) {
     if (!choiDuoc() || !e.isTrusted) return;
+    G.bong = '';  // bấm chuột ⇒ bộ gõ cũng quên chữ đang gõ
     var b = e.target.closest('#xhOan button');
     if (b) { e.preventDefault(); var k = +b.dataset.k, i = G.sel.indexOf(k); if (!G.chu.length) return; if (i >= 0) G.sel.splice(i, 1); else G.sel.push(k); return veGo(); }
     if (e.target.closest('#xhXoa')) { e.preventDefault(); G.sel.pop(); return veGo(); }
@@ -331,23 +332,62 @@
     if (e.target.id !== 'xhChatGo') return; e.preventDefault();
     if (laRong()) { var o = $('#xhOChat'); guiChat(o.value); o.value = ''; }
   });
+  // ⭐ 1/11 BÀN PHÍM THẦY luôn kiểu TIẾNG ANH: đọc phím theo VỊ TRÍ (e.code KeyA..KeyZ) ⇒ bộ gõ Windows Telex (key 'Process') không làm mất phím.
+  //   Unikey/EVKey móc bàn phím: NUỐT phím dấu (s f r x j w, nguyên âm đôi, dd) rồi gửi ⌫ + chữ có dấu (code rỗng) ⇒ trả lại ô vừa bị ⌫ đó xoá,
+  //   suy ra phím bị nuốt = phần chữ có dấu thêm so với chữ cũ (ỏ−o = r, â−a = a, đ−d = d, ư = w; không thêm gì = phím vừa gõ lại để bỏ dấu).
+  //   G.bong = chữ bộ gõ TƯỞNG đang hiện (để biết nó thay chữ nào); xoá khi gửi / Esc / bấm chuột.
+  var DAU = { '́': 's', '̀': 'f', '̉': 'r', '̃': 'x', '̣': 'j', '̆': 'w', '̛': 'w' };
+  function phimGoc(s) {
+    var r = [];
+    Array.from(String(s).toLowerCase()).forEach(function (ch) {
+      if (ch === 'đ') return r.push('d', 'd');
+      var n = ch.normalize('NFD'), b = n[0]; if (!/[a-z]/.test(b)) return; r.push(b);
+      Array.from(n.slice(1)).forEach(function (m) { if (m === '̂') r.push(b); else if (DAU[m]) r.push(DAU[m]); });
+    });
+    return r;
+  }
+  function chonChu(L) {
+    if (!G.chu.length) return;
+    for (var n = 0; n < G.order.length; n++) { var i = G.order[n]; if (G.chu[i] === L && G.sel.indexOf(i) < 0) { G.sel.push(i); return veGo(); } }
+  }
+  G.bong = ''; G.xoaGan = []; G.dot = null;
+  function chotDot() {
+    var d = G.dot; G.dot = null; if (!d) return;
+    var cu = phimGoc(d.cu), moi = phimGoc(d.S);
+    cu.forEach(function (c) { var i = moi.indexOf(c); if (i >= 0) moi.splice(i, 1); });
+    var t = moi.length ? moi[moi.length - 1] : (d.S.match(/[a-z]/gi) || []).pop();
+    G.bong += d.S;
+    if (t) chonChu(t.toUpperCase());
+  }
+  function phimThay(e) {
+    if (e.key === 'Enter') { e.preventDefault(); G.bong = ''; return guiTu(); }
+    if (e.key === 'Escape') { G.bong = ''; G.sel = []; return veGo(); }
+    if (e.key === 'Backspace') {
+      e.preventDefault(); var b = G.bong.slice(-1); G.bong = G.bong.slice(0, -1);
+      G.xoaGan.push({ k: G.sel.pop(), c: b, luc: performance.now() }); return veGo();
+    }
+    var m = /^Key([A-Z])$/.exec(e.code);
+    if (m) { e.preventDefault(); if (e.repeat) return; G.bong += m[1].toLowerCase(); return chonChu(m[1]); }
+    // chữ bộ gõ gửi thay (không có vị trí phím): gom một đợt, trả lại các ô ⌫ vừa xoá trong 120 ms
+    if (e.key && Array.from(e.key).length === 1 && /\p{L}/u.test(e.key)) {
+      e.preventDefault();
+      if (!G.dot) {
+        var bay2 = performance.now(), cu = '';
+        while (G.xoaGan.length && bay2 - G.xoaGan[G.xoaGan.length - 1].luc < 120) {
+          var x = G.xoaGan.pop(); cu += x.c; if (x.k != null && G.sel.indexOf(x.k) < 0) G.sel.push(x.k);
+        }
+        G.xoaGan = []; G.dot = { cu: cu, S: '' }; veGo(); setTimeout(chotDot, 25);
+      }
+      G.dot.S += e.key;
+    }
+  }
   addEventListener('keydown', function (e) {
     if (!G.dungChoi || document.activeElement === $('#xhOChat')) return;
     var c = $('#xhChat');
     if (c && c.classList.contains('mo') && !laRong()) { if (e.key === 'Escape') return dongChat(); return bp.phimMay(e); }
     if (c && c.classList.contains('mo') && e.key === 'Escape') return dongChat();
     // ⭐ 31/10 THẦY HỖ TRỢ: RIÊNG thầy được dùng bàn phím — chữ cái chọn ô (theo thứ tự trên bàn), ⌫ xoá, Enter gửi, Esc bỏ chọn
-    if (G.xem && G.ho && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      if (/^[a-z]$/i.test(e.key)) {
-        e.preventDefault(); var L = e.key.toUpperCase();
-        var k = G.order.filter(function (i) { return G.chu[i] === L && G.sel.indexOf(i) < 0; })[0];
-        if (k != null) { G.sel.push(k); veGo(); }
-        return;
-      }
-      if (e.key === 'Backspace') { e.preventDefault(); G.sel.pop(); return veGo(); }
-      if (e.key === 'Enter') { e.preventDefault(); return guiTu(); }
-      if (e.key === 'Escape') { G.sel = []; return veGo(); }
-    }
+    if (G.xem && G.ho && !e.ctrlKey && !e.metaKey && !e.altKey) return phimThay(e);
     // 27/10 bàn phím KHÔNG chơi được (chỉ chat): chặn cả Space/Enter bấm hộ nút đang được chọn
     if (e.key === ' ' || e.key === 'Enter') { var a = document.activeElement; if (a && a.closest && a.closest('#xhOan, #xhPhim')) e.preventDefault(); }
   });

@@ -311,7 +311,7 @@
       '<li><span>📉</span><span>Điểm càng cao, thắng được càng ít · thua không bao giờ mất nhiều hơn điểm thắng.</span></li>' +
       '<li><span>🛡</span><span>Mỗi lần vượt một <b>mốc 100 điểm</b> (300, 400, 500, 600…): <b>3 trận thua</b> tiếp theo không tụt dưới mốc đó. Mỗi trận thua dùng một lượt khiên.</span></li>' +
       '<li><span>📌</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +
-      '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới.</span></li>' +
+      '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới. Bàn <b>gợi ý tiếng Anh</b> (từ 1100 điểm): <b>30 giây</b> một bàn, trận <b>3 phút</b>.</span></li>' +
       '<li><span>🔤</span><span>Từ <b>1100 điểm</b>: gợi ý bằng <b>tiếng Anh</b>, càng lên cao câu càng dài, càng phải suy luận.</span></li>' +
       '<li><span>🚪</span><span>Thoát giữa trận / mất kết nối = <b>bỏ trận: −25 điểm</b> (kể cả hạng Đồng, khiên không che), khoá tìm trận 2 phút.</span></li>' +
       dongDem() + '</ul></div></div></div>';

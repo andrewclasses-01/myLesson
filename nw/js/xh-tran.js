@@ -5,7 +5,7 @@
 
    Dữ liệu (máy chủ myLesson/app/may-chu/functions/tran-dau.js + xep-hang.js · luật tools/dang-luat-xep-hang.js):
      tranDau/{id}            cho → nhan → choi (chu · goi[{m,n}] · tim{i:uid|'-'} · hien{i:TỪ} · van · doiLuc · diem) → xong (kq · xhKq · lo)
-     tranDau/{id}/tu/{từ_van} người chơi gửi từ (tạo một lần — ai trước được) · máy chủ chấm ok/d/i · `zhet_<van>` = xin đổi bàn khi hết 20 giây
+     tranDau/{id}/tu/{từ_van} người chơi gửi từ (tạo một lần — ai trước được) · máy chủ chấm ok/d/i · `zhet_<van>` = xin đổi bàn khi hết 20 giây (gợi ý tiếng Anh 30 giây)
      tranDau/{id}/chatGui ⇒ chat   tin chờ máy chủ lọc (đáp án / link / 2 giây) ⇒ chat chung người chơi + người xem
      tranDau/{id}/tim/{a|b} {n}   người xem thả tim (máy gộp ≤ 30 mỗi lần ghi) · xem/{uid} người đang xem (nhịp 20 giây)
      tranDau/{id}/nhip/{uid}     người chơi: nhịp 10 giây · xong (hết giờ ở máy em) · roi (rời trận = thua)
@@ -259,14 +259,16 @@
     [].forEach.call($('#xhOan').children, function (e) { e.classList.toggle('chon', G.sel.indexOf(+e.dataset.k) >= 0); });
     var g = $('#xhGo'); if (g && !g.classList.contains('khoa')) g.innerHTML = G.sel.map(function (k) { return '<span>' + esc(G.chu[k]) + '</span>'; }).join('');
   }
+  function banMs(t) { return t && t.goiEn ? 30000 : 20000; }
   function capGio() {
     var t = G.T; if (!t || !G.dungChoi) return;
     var con = (t.ketThuc || 0) - bay(), g = $('#xhGio');
     g.textContent = XH.dongHo(con); g.classList.toggle('gap', con < 15000);
-    var tuLuc = t.doiLuc || t.batDau || 0, c20 = Math.max(0, Math.ceil((20000 - (bay() - tuLuc)) / 1000));
-    $('#xhS20').textContent = c20; $('#xhC20').style.strokeDashoffset = 119.4 * (1 - Math.min(20, c20) / 20); $('#xh20').classList.toggle('gap', c20 <= 5);
+    // ⭐ 31/10 thầy: bàn gợi ý TIẾNG ANH (câu dài) 30 giây, bàn thường 20 giây — khớp máy chủ XH.banMs
+    var BAN = banMs(t), tuLuc = t.doiLuc || t.batDau || 0, c20 = Math.max(0, Math.ceil((BAN - (bay() - tuLuc)) / 1000));
+    $('#xhS20').textContent = c20; $('#xhC20').style.strokeDashoffset = 119.4 * (1 - Math.min(BAN / 1000, c20) / (BAN / 1000)); $('#xh20').classList.toggle('gap', c20 <= 5);
     // hết 20 giây mà bàn chưa xong ⇒ người chơi xin máy chủ đổi bàn (hai máy cùng xin thì máy sau bị từ chối — không sao)
-    if (!G.xem && !G.thu && c20 <= 0 && bay() - tuLuc > 20300 && t.trangThai === 'choi' && !G.xinDoi[t.van] && bay() < t.ketThuc) {
+    if (!G.xem && !G.thu && c20 <= 0 && bay() - tuLuc > BAN + 300 && t.trangThai === 'choi' && !G.xinDoi[t.van] && bay() < t.ketThuc) {
       G.xinDoi[t.van] = 1;
       f.fs.setDoc(f.fs.doc(tRef, 'tu', 'zhet_' + t.van), { uid: G.toi.uid, luc: f.fs.serverTimestamp() })
         .catch(function () { /* bạn đã xin trước */ })
@@ -676,7 +678,7 @@
       G.xem = q.get('xem') === '1'; G.ben = 'a'; G.toi = G.toi || { uid: 'hs_100046', ten: 'Bảo Nam' };
       if (G.xem && q.get('thay')) G.toi = Object.assign({}, G.toi, { uid: 'gv_thu', ten: 'Thầy Andrew', laThay: true });
       G.T = Object.assign({ a: G.xem ? 'u1' : G.toi.uid, b: 'u2', tenA: G.xem ? 'Thiên Phúc' : 'Bảo Nam', tenB: G.xem ? 'Khôi Nguyên' : 'Khánh Linh', lopA: 'A2-B', lopB: 'B1-A', hA: 'vang:II', hB: 'vang:I',
-        xh: 'thu', goiEn: !!q.get('en'), trangThai: 'choi', batDau: t0 + 3500, ketThuc: t0 + 3500 + (q.get('ngan') ? 15000 : 120000), doiLuc: t0 + 3500, van: 0, tim: {}, hien: {}, diem: { a: 0, b: 0 } }, ban(0));
+        xh: 'thu', goiEn: !!q.get('en'), trangThai: 'choi', batDau: t0 + 3500, ketThuc: t0 + 3500 + (q.get('ngan') ? 15000 : q.get('en') ? 180000 : 120000), doiLuc: t0 + 3500, van: 0, tim: {}, hien: {}, diem: { a: 0, b: 0 } }, ban(0));
       if (q.get('thayho')) { G.T.hoTro = { ben: 'a', gv: 'gv_thu', luc: t0 }; G.T.daHoTro = { a: true }; }
       G.chat = [{ uid: 'u2', ten: G.T.tenB, vai: 'b', chu: 'Hi! Chơi đẹp nha 😄', luc: t0 - 3000 }];
       capPha();
@@ -725,7 +727,7 @@
     }
     function nhip() {
       var t = G.T; if (t.trangThai !== 'choi') return;
-      if (Date.now() - t.doiLuc >= 20000 && Date.now() < t.ketThuc) sang();
+      if (Date.now() - t.doiLuc >= banMs(t) && Date.now() < t.ketThuc) sang();
       if (Date.now() >= t.ketThuc) {
         clearTimeout(hen); clearInterval(timHen);
         var a = t.diem.a, b = t.diem.b, kq = a > b ? 'thang' : a < b ? 'thua' : 'hoa';

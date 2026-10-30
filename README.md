@@ -14,7 +14,22 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.449.0 (29/10/2026) — BÀI TRONG SÁCH: cột ảnh nhỏ các trang · nút lên thanh trên · cột AI tự gọn · Alt kéo dấu · TỰ CẮT phần thừa *(bản mới nhất)*
+## ⭐ v1.450.0 (30/10/2026) — BÀI TRONG SÁCH: cột tên không cuộn ngang · ô ảnh nhỏ cố định · dấu ĐÃ SỬA · bấm đúp ĐẠT mọi trường hợp *(bản mới nhất)*
+
+Thầy "ok build" 30/10. `js/cham-sach.js?v=16` + máy chủ app `8b4d990` (ĐÃ DEPLOY `duyetSach` + `kiemSach`):
+- **Cột tên em** `fit-content(360px)`: tự rộng theo hàng dài nhất (tên 1 dòng + nhãn đủ chữ), quá 360px thì tên xuống dòng; tắt cuộn ngang.
+- **Cột ảnh nhỏ**: số x/y lên đầu cột; mỗi trang một Ô CỐ ĐỊNH (thẻ nền riêng, ảnh 160px + "TRANG n") xếp từ trên xuống trong `.cs-tn-ds`;
+  thừa chỗ để trống, nhiều trang thì cuộn (giữ vị trí cuộn khi vẽ lại, chuyển trang ⇒ cuộn ô đang xem vào tầm nhìn). Màn ≤1100px: hàng ngang.
+- **Dấu ĐÃ SỬA** (`loai:"dasua"`): khung vuông xanh lá chữ ĐÃ SỬA. Nút công cụ sau ? (gắn câu ✕ đang chọn trong bảng, không thì câu ✕ gần nhất);
+  chuột phải vào ✕ ⇒ "Đánh ĐÃ SỬA" (đặt bên TRÁI ✕ — lề trang; không vừa phần trang đang hiện ⇒ bên phải). Câu có ĐÃ SỬA TÍNH NHƯ ĐÚNG (`loaiCau`):
+  không chặn ĐẠT, bảng AI hiện khung xanh + chữ em gạch ngang, ảnh nhỏ/nhóm trang xanh khi hết lỗi, lời nhắn không nhắc. ✕ vẫn giữ trên ảnh.
+  Cỡ + nét chỉnh trong ⚙. Máy chủ `luuChamSach` lưu `loai` nguyên như gửi ⇒ không phải đổi.
+- **Bấm đúp ĐẠT = XÁC NHẬN ĐẠT mọi trường hợp** (còn ✕, thiếu dấu, thiếu trang, em chưa nộp gì — em gửi qua Zalo): nút chỉ `disabled` lúc đang ghi;
+  chưa sẵn sàng ⇒ lớp `khoa`, bấm một lần chỉ nhắc. Gọi `duyetSach {tat:true, tt:"dat", tay:true, ten}` ⇒ máy chủ ghi `datTay {luc, thieu}` + `xong:true`
+  (chưa có tài liệu ⇒ tạo mới). Danh sách: "ĐÃ ĐẠT · QUA ZALO" khi thiếu trang. BỎ ĐẠT / TRẢ LẠI một trang ⇒ gỡ `datTay`; kiemSach giữ xong khi còn `datTay`.
+- Bàn thử: `ban-thu-tab-sach.html` (`cham-sach-tab-thu.js?v=9`, hàm giả hiểu `tay`). Thử máy chủ: scratchpad `thu_dat_tay.js` 9/9 (Firestore giả).
+
+## ⭐ v1.449.0 (29/10/2026) — BÀI TRONG SÁCH: cột ảnh nhỏ các trang · nút lên thanh trên · cột AI tự gọn · Alt kéo dấu · TỰ CẮT phần thừa
 
 Thầy duyệt trên bàn thử `D:\OTHERS\CLAUDE\myLesson - thiet ke nop sach\ban-thu-tab-sach.html` rồi chốt. `js/cham-sach.js?v=15`:
 - **Cột ảnh nhỏ** (150px, giữa danh sách em và ảnh chấm) thay hàng nút TRANG: ảnh nhỏ vẽ cả dấu + nét thầy (cập nhật sau mỗi lần lưu), viền xanh / vàng / đỏ,

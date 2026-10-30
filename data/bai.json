@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-29 14:50:36",
+  "capNhat": "2026-10-31 05:53:03",
   "bai": {
     "A1C": [
       {
@@ -6706,6 +6706,212 @@
     ],
     "NNTNGK10": [
       {
+        "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L16",
+        "dang": "KHOA",
+        "kieu": "CHUONG",
+        "nhan": "LESSON 2",
+        "tieuDe": "LESSON 2 — HÌNH DUNG KHÓA HỌC VÀ PHÂN BIỆT TỪ LOẠI",
+        "tenBai": "LESSON 2",
+        "maLesson": "LESSON 2",
+        "noiDung": "HÌNH DUNG KHÓA HỌC VÀ PHÂN BIỆT TỪ LOẠI",
+        "han": "2026-11-08T23:59",
+        "taoLuc": "2026-10-31",
+        "khoaTen": "NEN TANG TIENG ANH",
+        "khoi": [
+          {
+            "loai": "act",
+            "ten": "TRẮC NGHIỆM BÀI GIẢNG 2",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "ddn2a3"
+          },
+          {
+            "loai": "act",
+            "ten": "BT3. RÈN PHẢN XẠ PHÂN BIỆT TỪ LOẠI",
+            "act": "",
+            "mau": "QUIZ",
+            "ma": "4dt5ve"
+          }
+        ],
+        "baiGiang": {
+          "tieuDe": "BÀI GIẢNG 2: HÌNH DUNG KHÓA HỌC VÀ PHÂN BIỆT TỪ LOẠI",
+          "video": "https://www.youtube.com/watch?v=XoCyJVXIsUc",
+          "doan": [
+            {
+              "id": "dmvjsry9ydtn0",
+              "ten": "Tổng quan về buổi học",
+              "tu": "00:00",
+              "den": "00:00:41",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9yedsf"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9yedsf",
+              "ten": "Hình dung về môn tiếng Anh",
+              "tu": "00:00:41",
+              "den": "00:01:47",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9yfp82"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9yfp82",
+              "ten": "Từ vựng hay ngữ pháp quan trọng hơn?",
+              "tu": "00:01:47",
+              "den": "00:06:00",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9ygxgo"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9ygxgo",
+              "ten": "Nhắc lại về việc tự học",
+              "tu": "00:06:00",
+              "den": "07:00",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9yheyo"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9yheyo",
+              "ten": "Tổng quan về việc học từ vựng",
+              "tu": "07:00",
+              "den": "00:07:29",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9yibgz"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9yibgz",
+              "ten": "Tư duy từ vựng số 1: một từ có thể có nhiều nghĩa và nhiều dạng từ loại",
+              "tu": "00:07:29",
+              "den": "00:10:39",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9yjgn0"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9yjgn0",
+              "ten": "Tư duy từ vựng số 2: học cả nghĩa, phát âm và cách đánh vần",
+              "tu": "00:10:39",
+              "den": "00:14:45",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9ykqci"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9ykqci",
+              "ten": "Từ duy từ vựng số 3: phải thực sự hiểu ý nghĩa và hình dung được từ",
+              "tu": "00:14:45",
+              "den": "00:20:22",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9yldv4"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9yldv4",
+              "ten": "Học cách phân biệt từ loại",
+              "tu": "00:20:22",
+              "den": "00:30:54",
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9ymode"
+              ],
+              "bt": []
+            },
+            {
+              "id": "dmvjsry9ymode",
+              "ten": "Hướng dẫn bài tập trong sách",
+              "tu": "00:30:54",
+              "den": "00:33:17",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsry9ypuwk"
+              ]
+            },
+            {
+              "id": "dmvjsry9ynywb",
+              "ten": "Lời kết bài và dặn dò",
+              "tu": "00:33:17",
+              "den": "34:35",
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsry9yo55d"
+              ]
+            }
+          ]
+        },
+        "bt": [
+          {
+            "id": "btmvjsry9yo55d",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "TRẮC NGHIỆM BÀI GIẢNG 2",
+            "actTen": "TRAC NGHIEM BAI GIANG 2 - HINH DUNG MON HOC VA PHAN BIET TU LOAI",
+            "ma": "ddn2a3",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [],
+              "bt": [
+                "btmvjsry9yqsbm"
+              ]
+            }
+          },
+          {
+            "id": "btmvjsry9ypuwk",
+            "loai": "sach",
+            "trang": "39, 40, 41",
+            "nopAnh": true,
+            "tieuDe": "BT2. BÀI TẬP TRONG SÁCH",
+            "actTen": "",
+            "ma": "",
+            "mau": "",
+            "xong": {
+              "lam": "moNhay",
+              "doanMo": [
+                "dmvjsry9ynywb"
+              ],
+              "bt": []
+            }
+          },
+          {
+            "id": "btmvjsry9yqsbm",
+            "loai": "acts",
+            "trang": "",
+            "tieuDe": "BT3. RÈN PHẢN XẠ PHÂN BIỆT TỪ LOẠI",
+            "actTen": "BT3. PHAN BIET TU LOAI",
+            "ma": "4dt5ve",
+            "mau": "QUIZ",
+            "xong": {
+              "lam": "het",
+              "doanMo": [],
+              "bt": []
+            }
+          }
+        ],
+        "giaoLuc": "2026-10-31T05:53"
+      },
+      {
         "id": "NNTNGK10_KHOA_NENTANGTIENGANH_L15",
         "dang": "KHOA",
         "kieu": "CHUONG",
@@ -7240,7 +7446,7 @@
     ]
   },
   "capNhatLop": {
-    "NNTNGK10": "2026-10-26 09:02:43",
+    "NNTNGK10": "2026-10-31 05:53:03",
     "A1A": "2026-10-26 21:37:29",
     "B2B": "2026-10-28 15:01:30",
     "A1C": "2026-10-26 08:23:05",

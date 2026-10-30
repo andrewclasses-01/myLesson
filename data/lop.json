@@ -1,5 +1,5 @@
 {
-  "capNhat": "2026-10-23 11:09:40",
+  "capNhat": "2026-10-30 13:27:02",
   "nguon": "dashboard",
   "lop": [
     {
@@ -953,6 +953,16 @@
           ]
         },
         {
+          "id": 100209,
+          "ten": "Gia Thịnh",
+          "ma": "TRANGIATHINH21062011",
+          "sinhNhat": "06-21",
+          "vao": "2026-10-25",
+          "tenCu": [
+            "Trần Gia Thịnh"
+          ]
+        },
+        {
           "id": 100134,
           "ten": "Lucy",
           "ma": "VUGIALINH13032012",
@@ -1401,6 +1411,17 @@
           ]
         },
         {
+          "id": 100168,
+          "ten": "Đặng Phương Linh",
+          "ma": "DANGPHUONGLINH12072015",
+          "sinhNhat": "",
+          "vao": "2026-10-09",
+          "tenCu": [
+            "Linh",
+            "Phương Linh"
+          ]
+        },
+        {
           "id": 100193,
           "ten": "Đoàn Ngọc Bảo An",
           "ma": "DOANNGOCBAOAN28052015",
@@ -1475,16 +1496,6 @@
           "vao": "2026-10-09"
         },
         {
-          "id": 100198,
-          "ten": "Minh Cường",
-          "ma": "PHAMMINHCUONG07022015",
-          "sinhNhat": "02-07",
-          "vao": "2026-10-09",
-          "tenCu": [
-            "Phạm Minh Cường"
-          ]
-        },
-        {
           "id": 100201,
           "ten": "Minh Quang",
           "ma": "BUIMINHQUANG26032015",
@@ -1546,16 +1557,6 @@
           "vao": "2026-10-09",
           "tenCu": [
             "Đặng Phương Anh"
-          ]
-        },
-        {
-          "id": 100168,
-          "ten": "Phương Linh",
-          "ma": "DANGPHUONGLINH12072015",
-          "sinhNhat": "",
-          "vao": "2026-10-09",
-          "tenCu": [
-            "Linh"
           ]
         },
         {

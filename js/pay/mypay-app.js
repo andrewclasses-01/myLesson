@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.36.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.36.0 (5573f28) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function () {
   'use strict';
 
@@ -2081,6 +2081,8 @@
     hdSan = Promise.all([mo(HD_QR), mo(HD_LOGO), phong]).then(([qr, logo]) => ({ qr, logo }));
     return hdSan;
   }
+  function hdChuanBiHs(dsSo) { return Promise.all([hdChuanBi(), anhHdCho(dsSo)]).then(([a, hs]) => Object.assign({}, a, { hs })); }
+  const soHsUnit = (u) => (!u ? [] : u.kind === 'fam' || u.kind === 'grp' ? (u.members || []).map((x) => x.id) : [u.hsId]);
   let hdNhap = null;   // canvas nháp để đo
   function hdDoG() { if (!hdNhap) hdNhap = document.createElement('canvas').getContext('2d'); return hdNhap; }
   function hdLs(g, ls) { if ('letterSpacing' in g) g.letterSpacing = (ls || 0) + 'px'; }
@@ -2136,6 +2138,37 @@
     for (const p of ds) g.stroke(new Path2D(p));
     if (nha) { g.beginPath(); g.arc(9, 8, 3.2, 0, Math.PI * 2); g.stroke(); g.beginPath(); g.arc(17.2, 9.4, 2.5, 0, Math.PI * 2); g.stroke(); }
     g.restore();
+  }
+  const ANH_HS_HD = new Map();
+  function anhHsHd(so) {
+    so = String(so || '');
+    if (!/^\d+$/.test(so) || !(window.PayWeb && window.PayWeb.thongTinHs)) return Promise.resolve(null);
+    if (!ANH_HS_HD.has(so)) {
+      ANH_HS_HD.set(so, Promise.resolve(window.PayWeb.thongTinHs(so)).then((t) => (t && t.anh ? new Promise((ok) => {
+        const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); im.src = t.anh;
+      }) : null)).catch(() => null));
+    }
+    return ANH_HS_HD.get(so);
+  }
+  function anhHdCho(dsSo) {
+    const ds = [...new Set((dsSo || []).map((s) => String(s || '')).filter(Boolean))];
+    const tat = Promise.all(ds.map(anhHsHd)).then((a) => { const m = new Map(); ds.forEach((s, i) => { if (a[i]) m.set(s, a[i]); }); return m; });
+    return Promise.race([tat, new Promise((ok) => setTimeout(() => ok(new Map()), 4000))]);
+  }
+  function hdAnhTron(g, im, cx, cy, r) {
+    g.save(); g.fillStyle = '#e6f6f3'; g.beginPath(); g.arc(cx, cy, r + 2, 0, Math.PI * 2); g.fill(); g.restore();
+    g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.closePath(); g.clip();
+    const s = Math.max(2 * r / im.width, 2 * r / im.height), w = im.width * s, h = im.height * s;
+    g.drawImage(im, cx - w / 2, cy - h / 2, w, h); g.restore();
+    g.save(); g.strokeStyle = '#ffffff'; g.lineWidth = Math.max(2, r * 0.08); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke(); g.restore();
+  }
+  function hdIconHs(g, cx, cy, ri, d) {
+    const m = d.anhHs;
+    const ds = !m ? [] : d.nha ? (d.con || []).map((c) => m.get(String(c.so))).filter(Boolean) : [m.get(String(d.so))].filter(Boolean);
+    if (!ds.length) { hdIcon(g, cx, cy, !!d.nha, ri); return; }
+    if (ds.length === 1) { hdAnhTron(g, ds[0], cx, cy, ri); return; }
+    const vt = ds.length === 2 ? [[-0.36, -0.3, 0.66], [0.36, 0.3, 0.66]] : [[0, -0.42, 0.56], [-0.46, 0.36, 0.56], [0.46, 0.36, 0.56]];
+    vt.forEach((p, i) => hdAnhTron(g, ds[i], cx + p[0] * ri, cy + p[1] * ri, p[2] * ri));
   }
   function hoaDauHd(s) { s = String(s || '').trim(); return s ? s[0].toLocaleUpperCase('vi') + s.slice(1) : ''; }
   function khongDauHd(s) { return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D'); }
@@ -2206,7 +2239,7 @@
         hdChu(g, ` · Lớp ${c.lop} · Mã số ${c.so}`, xChu + hdDo(g, c.ten, fHd(700, 14.5)), yb, fHd(400, 14.5), '#5d6a82');
       });
     }
-    hdIcon(g, 32 + ri, (chuTren + chuDuoi) / 2, !!d.nha, ri);
+    hdIconHs(g, 32 + ri, (chuTren + chuDuoi) / 2, ri, d);   // v0.37.0 — ảnh thật của em (không có ảnh ⇒ icon như cũ)
     const giua = top + hKhoi / 2;
     g.fillStyle = '#e2e8f0'; g.fillRect(xVach, top + 2, 2, hKhoi - 4);
     hdChu(g, d.nhan, R, giua - 8, fHd(700, 12.5), d.mauNhan || '#0f766e', 'right', 2.25);
@@ -2543,6 +2576,7 @@
     const dau = nha
       ? { nha: true, con: conNha, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` }
       : { ten: u.label, lop: u.phan ? u.phan.map((p) => p.lop).join(' → ') : (u.classes || [])[0] || '', so: u.hsId, nhan: 'ĐIỂM DANH', thang: `${m}/${y}` };
+    dau.anhHs = anh && anh.hs;   // v0.37.0 ảnh thật
     const nl = nhomLichHd(nha ? (u.members || []).map((x) => ({ id: x.id, ten: x.ten, lich: x.lich, laNha: true })) : [{ id: u.hsId, ten: u.label, lich: u.lich }]);
     const { goc, khoan, gocCon } = khoanGiamHd(u);
     const ct = kq.chotTay && kq.chotTay[u.id];
@@ -2625,7 +2659,7 @@
   const MAU_CON_HD = ['#0f8a6a', '#2557d6', '#b45309', '#7c3aed'];
   function veHoaDonTong(o, khoi) {
     const cv = $('#hdTongCanvas');
-    hdChuanBi().then((anh) => { if (document.body.contains(cv)) veHoaDonNo(cv, o, khoi, anh); });
+    hdChuanBiHs(o.loai === 'nha' ? khoi.flatMap((k) => soHsUnit(k.u)) : [o.hsId]).then((anh) => { if (document.body.contains(cv)) veHoaDonNo(cv, o, khoi, anh); });
   }
   function hdLichNho(g, x, y, w, m, yr, lich, hang) {
     const gap = 4; const cw = (w - 6 * gap) / 7; const ch = 44;
@@ -2741,6 +2775,7 @@
     const lop = (uMoi && (uMoi.classes || [])[0]) || o.lop || '';
     const dau = nha ? { nha: true, con: conNha, nhan: 'HỌC PHÍ CHƯA ĐÓNG', mauNhan: '#c2410c', thang, coThang }
       : { ten: o.ten, lop, so: o.hsId, nhan: 'HỌC PHÍ CHƯA ĐÓNG', mauNhan: '#c2410c', thang, coThang };
+    dau.anhHs = anh && anh.hs;   // v0.37.0 ảnh thật
     const mauCon = {}; (conNha || []).forEach((c, i) => { mauCon[String(c.so)] = MAU_CON_HD[i % MAU_CON_HD.length]; });
     const th = khoi.map((k) => {
       const tien = []; let tk = null;
@@ -2855,7 +2890,7 @@
     const thieu = (u.id in kq.done) ? 0 : thieuThucTe(u);
     if (thieu > 0) khoi.push({ m, y, soTien: thieu, u, motPhan: motPhanCua(u) });
     const o = { loai: u.kind === 'fam' ? 'nha' : 'hs', ten: u.label, hsId: u.hsId, idNha: u.idNha, lop: (u.classes || [])[0] || '' };
-    const anh = await hdChuanBi();
+    const anh = await hdChuanBiHs(u.kind === 'fam' ? khoi.flatMap((k) => soHsUnit(k.u)).concat(soHsUnit(u)) : [u.hsId]);
     if (luot !== hdLuot || !document.body.contains(cv)) return;   // thầy đã đổi người / đóng hộp trong lúc chờ
     veHoaDonNo(cv, o, khoi, anh);
   }
@@ -2926,7 +2961,7 @@
     const u = kq.units.find((x) => x.id === uid);
     if (!u) return;
     const cv = $('#hdCanvas'); const m = S.m; const y = S.y;
-    hdChuanBi().then((anh) => { if (document.body.contains(cv)) veHoaDonMot(cv, u, kq, m, y, anh); });
+    hdChuanBiHs(soHsUnit(u)).then((anh) => { if (document.body.contains(cv)) veHoaDonMot(cv, u, kq, m, y, anh); });
   }
   function moCtxHs(x, y, uid) {
     const kq = S.du.ketQua;
@@ -3645,7 +3680,7 @@
   function veHoaDonKhoa(cv, k, h, anh) {
     const W = 760, cd = k.cd, m = monKh(cd), xong = h.tt === 'xong' || h.tt === 'tang';
     const soHs = /^\d+$/.test(h.so) ? ' · Mã số học sinh ' + h.so : '';
-    const dau = { ten: h.ten, dong2: 'Khóa ' + cd.ngan + soHs, nhan: xong ? 'BIÊN NHẬN HỌC PHÍ' : 'HỌC PHÍ KHÓA HỌC', mauNhan: xong ? '#0f8a4a' : m.c1, thang: cd.ngan, tienTo: 'Khóa ' };
+    const dau = { ten: h.ten, so: h.so, anhHs: anh && anh.hs, dong2: 'Khóa ' + cd.ngan + soHs, nhan: xong ? 'BIÊN NHẬN HỌC PHÍ' : 'HỌC PHÍ KHÓA HỌC', mauNhan: xong ? '#0f8a4a' : m.c1, thang: cd.ngan, tienTo: 'Khóa ' };
     const nd = (khongDauHd(h.ten).toUpperCase() + ' ' + khongDauHd(cd.ngan).toUpperCase()).trim();
     hdVe(cv, W, (g) => {
       let yy = hdDau(g, W, 0, dau);
@@ -3686,7 +3721,7 @@
         <button class="btn" id="hkKhoan">Ghi nhận khoản…</button><span class="keo"></span><button class="btn" data-dong>Đóng</button></div>`;
     $('#manHdKhoa').classList.add('on');
     const luot = ++hdKhLuot;
-    const anh = await hdChuanBi();
+    const anh = await hdChuanBiHs([h.so]);
     const cv = $('#hdKhCanvas');
     if (luot !== hdKhLuot || !cv) return;
     veHoaDonKhoa(cv, k, h, anh);

@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.36.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.36.0 (5573f28) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — KHO MẠNG (kho-may.js) · Đợt 1 (03/10/2026)
 
@@ -563,11 +563,14 @@
       lopHoc: uniq(dangHoc.map(function (h) { return h.class_code; })),
       luuTru: !dangHoc.length, lopCu: uniq(dong.map(function (h) { return h.class_code; })), anh: ''
     };
-    if (!ng.w) return Promise.resolve(kq);
+    // ⭐ 30/10/2026 (v0.37.0) sổ nay ghi w = [số web cũ, số mới] (sau đổi số) — kho ảnh có thể giữ cả hai khoá ⇒ lấy ảnh MỚI NHẤT (u)
+    var ws = [].concat(ng.w == null ? [] : ng.w).map(String).filter(function (x) { return /^\d+$/.test(x); });
+    if (!ws.length) return Promise.resolve(kq);
     return napAnh().then(function (m) {
-      var a = m.get(String(ng.w));
+      var a = null;
+      ws.forEach(function (w) { var x = m.get(w); if (x && (!a || Number(x.u || 0) >= Number(a.u || 0))) a = x; });
       if (a) { kq.anh = 'data:image/jpeg;base64,' + a.a; return kq; }
-      return anhTuBoSuuTap(ng.w).then(function (b) { if (b) kq.anh = 'data:image/jpeg;base64,' + b; return kq; });
+      return anhTuBoSuuTap(ws[ws.length - 1]).then(function (b) { if (b) kq.anh = 'data:image/jpeg;base64,' + b; return kq; });
     });
   }
   // Em không còn trong kho ảnh theo lớp (vd đã Lưu trữ) ⇒ hỏi hàm máy chủ qlAnhDaiDien {viec:'kho'} — đúng đường dashboard

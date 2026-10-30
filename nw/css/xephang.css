@@ -680,3 +680,15 @@ body.xh .xh-tabs button[aria-selected="true"]{font-size:15px;font-weight:700;pad
 .xh-lich span.nay{outline:2px solid var(--xh-vang);color:var(--xh-vang)}
 .xh-lich span.sau{opacity:.45}
 .xh-lich span small{position:absolute;top:3px;right:4px;font:700 8px/1 var(--xh-v);color:var(--xh-vang)}
+/* 31/10 ảnh người đang xem trong nhãn TRỰC TIẾP (xh-tran.js veNguoiXem → #xhTrucAv) */
+.xh-truc{display:inline-flex;align-items:center}
+.xh-trucav{display:flex;align-items:center;margin-left:8px;padding-left:5px}
+.xh-trucav:empty{display:none}
+.xh-truc:has(.xh-trucav:not(:empty)){padding-top:3px;padding-bottom:3px;padding-right:4px}
+.xh-trucav .xh-av{width:22px;height:22px;font-size:8.5px;margin-left:-5px;border:2px solid #04110B;box-shadow:0 0 0 1px rgba(255,95,109,.5)}
+.xh-trucav i{font:800 10px/1 var(--xh-g);font-style:normal;letter-spacing:0;color:#FFB0BC;margin:0 4px 0 5px}
+@container (min-width:760px){
+  .xh-trucav .xh-av{width:28px;height:28px;font-size:10px;margin-left:-6px}
+  .xh-trucav{padding-left:6px}
+  .xh-trucav i{font-size:12px}
+}

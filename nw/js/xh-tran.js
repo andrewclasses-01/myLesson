@@ -76,7 +76,7 @@
     var nutChat = '<button class="xh-nutchat" id="xhChatThanh" aria-label="Chat trận">' + IC_CHAT + '<i id="xhChuaDoc" hidden>1</i></button>';
     var bd = '<div class="xh-bandau"><button class="xh-thoat" id="xhThoat" aria-label="' + (G.xem ? 'Thôi xem' : 'Rời trận') + '"' + (buoc() ? ' style="visibility:hidden" tabindex="-1"' : '') + '>✕</button><div class="xh-soban">BÀN <b id="xhBan">1</b></div>' +
       // ô đang gõ: điện thoại (dọc + ngang) nằm cùng hàng số bàn để dồn chỗ cho bàn chữ; màn ngang lớn nằm dưới bàn chữ
-      (G.xem ? '<span class="xh-truc">TRỰC TIẾP · 👁 <b id="xhSoXem">0</b></span>' : (C.ngang && !C.thap ? '<span class="xh-mat xh-so">👁 <span id="xhSoXem">0</span></span>' : '<div class="xh-danggo" id="xhGo"></div>')) +
+      (G.xem ? '<span class="xh-truc">TRỰC TIẾP · 👁 <b id="xhSoXem">0</b><span class="xh-trucav" id="xhTrucAv"></span></span>' : (C.ngang && !C.thap ? '<span class="xh-mat xh-so">👁 <span id="xhSoXem">0</span></span>' : '<div class="xh-danggo" id="xhGo"></div>')) +
       (!C.ngang && !C.dai ? nutChat : '') + (C.ngang ? '' : r20) + '</div>';
     var goi = '<div class="xh-goi" id="xhGoi"></div>';
     var oan = '<div class="xh-oan-o" id="xhOanO"><div class="xh-oan' + (G.xem ? ' xem' : '') + '" id="xhOan"></div></div>';
@@ -535,6 +535,12 @@
   function veNguoiXem() {
     var n = $('#xhSoXem'); if (n) n.textContent = G.nguoiXem.length;
     var c = $('#xhChong'); if (c) c.innerHTML = G.nguoiXem.slice(0, 5).map(function (x) { return XH.av(x.ten, x.anh); }).join('');
+    // 31/10 thầy: ảnh người đang xem ngay trong nhãn TRỰC TIẾP (tối đa 5 + "+N", rê chuột ra tên)
+    var a = $('#xhTrucAv'), ds = G.nguoiXem;
+    if (a) {
+      a.innerHTML = ds.slice(0, 5).map(function (x) { return XH.av(x.ten, x.anh); }).join('') + (ds.length > 5 ? '<i>+' + (ds.length - 5) + '</i>' : '');
+      a.parentNode.title = ds.map(function (x) { return x.ten; }).join(', ');
+    }
   }
   function batXem() {
     var r = f.fs.doc(tRef, 'xem', G.toi.uid);

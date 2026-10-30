@@ -122,7 +122,7 @@
   function phongDo() {
     var ds = (S.em && S.em.ds) || []; if (!ds.length) return '';
     return '<div class="xh-the"><h3>PHONG ĐỘ <span style="letter-spacing:0;font:600 12px/1 var(--xh-v);color:var(--xh-mo)">' + Math.min(7, ds.length) + ' trận gần nhất</span></h3><div class="xh-phong">' +
-      ds.slice(0, 7).map(function (r) { var k = r.kq === 'thang' ? 't' : r.kq === 'thua' ? 'b' : 'h'; return '<span class="xh-kq ' + k + '" title="' + esc((r.vs || '') + ' ' + (r.toi || 0) + '–' + (r.ban || 0)) + '">' + k.toUpperCase().replace('B', 'B') + '</span>'; }).join('') +
+      ds.slice(0, 7).map(function (r) { var k = r.kq === 'thang' ? 't' : r.kq === 'thua' ? 'b' : 'h'; return '<span class="xh-kq ' + k + (r.thay ? ' gv' : '') + '" title="' + esc((r.vs || '') + ' ' + (r.toi || 0) + '–' + (r.ban || 0) + (r.thay ? ' · Thầy Andrew hỗ trợ' : '')) + '">' + k.toUpperCase().replace('B', 'B') + '</span>'; }).join('') +
       '</div></div>';
   }
   function lvHtml(t, i) {

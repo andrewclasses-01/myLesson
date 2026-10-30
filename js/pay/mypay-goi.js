@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.35.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.36.0 (5573f28) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 (function (g) {
   var G = {};
   G["E:\\LAP TRINH APP\\myPay\\src\\main.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
@@ -13,6 +13,7 @@ const engine = require('./main/lib/engine');
 const hoadon = require('./main/lib/hoadon');
 const khoFs = require('./main/lib/kho-fs');
 const dongBoTen = require('./main/lib/dong-bo-ten');
+const khoaHoc = require('./main/lib/khoa-hoc');   // v0.36.0 tab Khóa học
 const fs = require('fs');
 
 let win = null;
@@ -289,6 +290,11 @@ ipcMain.handle('chottay:them', boc(async (dl) => kho.themChotTay(dl)));
 ipcMain.handle('chottay:xoa', boc(async (id) => kho.xoaChotTay(id)));
 ipcMain.handle('ghichu:ghi', boc(async (khoa, chu) => kho.ghiGhiChu(khoa, chu)));
 ipcMain.handle('ngaybatdau:ghi', boc(async (hsId, ngay) => kho.ghiNgayBatDau(hsId, ngay)));
+ipcMain.handle('khoa:doc', boc(async () => khoaHoc.docTatCa()));
+ipcMain.handle('khoa:caidat', boc(async (ma, cd) => khoaHoc.ghiCaiDat(ma, cd)));
+ipcMain.handle('khoa:khoan', boc(async (ma, so, kh) => khoaHoc.themKhoan(ma, so, kh)));
+ipcMain.handle('khoa:xoakhoan', boc(async (ma, so, id) => khoaHoc.xoaKhoan(ma, so, id)));
+ipcMain.handle('khoa:hs', boc(async (ma, so, patch) => khoaHoc.ghiHs(ma, so, patch)));
 
 ipcMain.handle('thang:chot', boc(async (m, y) => {
   const { bang } = tinhKetQuaThang(m, y);
@@ -432,6 +438,11 @@ contextBridge.exposeInMainWorld('mypay', {
   xoaChotTay: goi('chottay:xoa'),
   ghiGhiChu: goi('ghichu:ghi'),
   ghiNgayBatDau: goi('ngaybatdau:ghi'),
+  docKhoa: goi('khoa:doc'),
+  ghiCaiDatKhoa: goi('khoa:caidat'),
+  themKhoanKhoa: goi('khoa:khoan'),
+  xoaKhoanKhoa: goi('khoa:xoakhoan'),
+  ghiHsKhoa: goi('khoa:hs'),
   docPhiCu: goi('phicu:ds'),
   ghiLienHe: goi('lienhe:ghi'),
   moLienKet: goi('lienket:mo'),
@@ -2549,9 +2560,147 @@ function timMa(bang, mm) {
 module.exports = { PROJECT, duongKhoa, coKhoaQuanTri, ghiDoc, dayThang, xayDsDay, goiJson };
 
 };
+  G["E:\\LAP TRINH APP\\myPay\\src\\main\\lib\\khoa-hoc.js"] = function (module, exports, require, __dirname, __filename, process, Buffer) {
+const path = require('path');
+const crypto = require('crypto');
+const kho = require('./kho-pay');
+const diemdanh = require('./diemdanh');
+
+const F_KHOA = path.join(kho.GOC_DATA, 'khoa-hoc.json');
+const MON = ['anh', 'hoa', 'khac'];
+const TRUONG_CD = ['ngan', 'ten', 'mon', 'hocPhi', 'han', 'khaiGiang', 'thoiGian', 'soBai', 'kem', 'chang'];
+
+function docTho() {
+  const d = kho.docJson(F_KHOA, {});
+  if (!d.khoa || typeof d.khoa !== 'object') d.khoa = {};
+  if (!d.hs || typeof d.hs !== 'object') d.hs = {};
+  return d;
+}
+function docDsKhoa() {
+  const d = kho.docJson(path.join(diemdanh.DIR_SHARED(), 'khoa.json'), {});
+  return Array.isArray(d.khoa) ? d.khoa : [];
+}
+function boDau(s) {
+  return String(s == null ? '' : s).normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toUpperCase().trim();
+}
+function tenNgan(ma) {
+  const tu = boDau(ma).split(/\s+/).filter(Boolean);
+  return tu.map((t) => (/^K\d+$/.test(t) ? t : t[0])).join('') || String(ma);
+}
+function doanMon(ma) { return /HOA HOC/.test(boDau(ma)) ? 'hoa' : (/TIENG ANH|NEN TANG K/.test(boDau(ma)) ? 'anh' : 'khac'); }
+function macDinh(ma) {
+  const mon = doanMon(ma);
+  const anh = mon === 'anh';
+  const kSo = (boDau(ma).match(/\bK\d+\b/) || [''])[0];
+  return {
+    ngan: tenNgan(ma), ten: anh ? 'KHÓA NỀN TẢNG TIẾNG ANH' + (kSo ? ' · ' + kSo : '') : 'KHÓA ' + String(ma).toUpperCase(), mon,
+    hocPhi: 0, han: '', khaiGiang: '', thoiGian: anh ? '8 tháng' : '', soBai: '', kem: '',
+    chang: anh ? ['Hiểu bản thân', 'Xác định mục tiêu', 'Từ vựng tư duy', 'Ngữ pháp cốt lõi', '4 thì quan trọng'] : [],
+  };
+}
+function caiDatKhoa(d, ma) { return Object.assign(macDinh(ma), d.khoa[ma] || {}); }
+
+function tinhTien(cd, rec) {
+  const goc = Math.max(0, Math.round(Number(cd.hocPhi) || 0));
+  const g = (rec && rec.giam) || null;
+  let cuoi = goc; const khoan = [];
+  if (g && goc > 0) {
+    const pct = Math.max(0, Math.min(100, Number(g.pct) || 0)), tien = Math.max(0, Math.round(Number(g.tien) || 0));
+    if (pct) { const tru = Math.round(goc * pct / 100); khoan.push({ ten: g.lyDo || 'Giảm học phí', pct, tien: tru }); cuoi -= tru; }
+    if (tien) { khoan.push({ ten: g.lyDoTien || 'Giảm thêm', pct: 0, tien }); cuoi -= tien; }
+    cuoi = Math.max(0, cuoi);
+    if (khoan.length) { const tron = Math.floor(cuoi / 50000) * 50000; khoan[khoan.length - 1].tien += cuoi - tron; cuoi = tron; }
+  }
+  return { goc, khoan, cuoi };
+}
+function trangThai(t, rec) {
+  const nhan = ((rec && rec.khoan) || []).reduce((s, x) => s + (Number(x.tien) || 0), 0);
+  let tt = 'chua';
+  if (rec && rec.tang) tt = 'tang';
+  else if (rec && rec.xongTay) tt = 'xong';
+  else if (t.cuoi > 0 && nhan >= t.cuoi) tt = 'xong';
+  else if (nhan > 0) tt = 'motphan';
+  return { nhan, thieu: Math.max(0, t.cuoi - nhan), tt };
+}
+
+function docTatCa() {
+  const d = docTho();
+  const ds = docDsKhoa().map((k) => {
+    const cd = caiDatKhoa(d, k.ma);
+    const hs = (k.hocSinh || []).map((h) => {
+      const rec = d.hs[k.ma + '|' + h.so] || null;
+      const tien = tinhTien(cd, rec);
+      return Object.assign({ so: h.so, gid: h.gid, ten: h.ten, rec, tien }, trangThai(tien, rec));
+    });
+    return { ma: k.ma, cd, coCaiDat: !!d.khoa[k.ma], hs };
+  });
+  return { khoa: ds };
+}
+
+function ghiTho(d) { kho.ghiJson(F_KHOA, d); }
+function ghiCaiDat(ma, cd) {
+  if (!ma) throw new Error('Thiếu mã khóa');
+  const d = docTho();
+  const moi = Object.assign({}, d.khoa[ma] || {});
+  for (const k of TRUONG_CD) if (cd && k in cd) moi[k] = cd[k];
+  moi.hocPhi = Math.max(0, Math.round(Number(moi.hocPhi) || 0));
+  if (!MON.includes(moi.mon)) moi.mon = doanMon(ma);
+  moi.chang = (Array.isArray(moi.chang) ? moi.chang : []).map((x) => String(x || '').trim().slice(0, 40)).filter(Boolean).slice(0, 8);
+  for (const k of ['ngan', 'ten', 'han', 'khaiGiang', 'thoiGian', 'soBai', 'kem']) moi[k] = String(moi[k] == null ? '' : moi[k]).trim().slice(0, 120);
+  d.khoa[ma] = moi;
+  ghiTho(d);
+  return docTatCa();
+}
+function recCua(d, ma, so) { const k = ma + '|' + so; if (!d.hs[k]) d.hs[k] = {}; return d.hs[k]; }
+function donRec(d, ma, so) {
+  const k = ma + '|' + so, r = d.hs[k];
+  if (!r) return;
+  if (r.khoan && !r.khoan.length) delete r.khoan;
+  for (const x of ['xongTay', 'tang', 'giam', 'ghiChu']) if (!r[x]) delete r[x];
+  if (!Object.keys(r).length) delete d.hs[k];
+}
+function themKhoan(ma, so, kh) {
+  const tien = Math.round(Number(kh && kh.tien) || 0);
+  if (!ma || !so) throw new Error('Thiếu khóa / học sinh');
+  if (!(tien > 0)) throw new Error('Số tiền phải lớn hơn 0');
+  const d = docTho(), r = recCua(d, ma, so);
+  r.khoan = (r.khoan || []).concat([{
+    id: crypto.randomUUID().slice(0, 8), ngay: String((kh && kh.ngay) || '').slice(0, 10), tien,
+    cach: String((kh && kh.cach) || 'Chuyển khoản').slice(0, 30), ghi: String((kh && kh.ghi) || '').trim().slice(0, 120), luc: Date.now(),
+  }]);
+  ghiTho(d);
+  return docTatCa();
+}
+function xoaKhoan(ma, so, id) {
+  const d = docTho(), r = d.hs[ma + '|' + so];
+  if (r && r.khoan) r.khoan = r.khoan.filter((x) => x.id !== id);
+  donRec(d, ma, so);
+  ghiTho(d);
+  return docTatCa();
+}
+function ghiHs(ma, so, patch) {
+  if (!ma || !so) throw new Error('Thiếu khóa / học sinh');
+  const d = docTho(), r = recCua(d, ma, so);
+  const p = patch || {};
+  if ('xongTay' in p) r.xongTay = !!p.xongTay;
+  if ('tang' in p) r.tang = !!p.tang;
+  if ('ghiChu' in p) r.ghiChu = String(p.ghiChu || '').trim().slice(0, 300);
+  if ('giam' in p) {
+    const g = p.giam;
+    const pct = g ? Math.max(0, Math.min(100, Number(g.pct) || 0)) : 0, tien = g ? Math.max(0, Math.round(Number(g.tien) || 0)) : 0;
+    r.giam = (pct || tien) ? { pct, lyDo: String(g.lyDo || '').trim().slice(0, 80), tien, lyDoTien: String(g.lyDoTien || '').trim().slice(0, 80) } : null;
+  }
+  donRec(d, ma, so);
+  ghiTho(d);
+  return docTatCa();
+}
+
+module.exports = { F_KHOA, docTatCa, ghiCaiDat, themKhoan, xoaKhoan, ghiHs, tinhTien, trangThai, tenNgan, doanMon, macDinh };
+
+};
   G.__CHINH = "E:\\LAP TRINH APP\\myPay\\src\\main.js";
   G.__CAU = "E:\\LAP TRINH APP\\myPay\\src\\preload.js";
-  G.__PHIEN_BAN = "0.35.0";
-  G.__MA = "f836a5f";
+  G.__PHIEN_BAN = "0.36.0";
+  G.__MA = "5573f28";
   if (typeof module !== 'undefined' && module.exports) module.exports = G; else g.MyPayGoi = G;
 })(typeof window !== 'undefined' ? window : globalThis);

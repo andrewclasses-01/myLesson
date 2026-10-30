@@ -1,4 +1,4 @@
-/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.35.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
+/* ⛔ FILE SINH TỰ ĐỘNG từ kho myPay v0.36.0 (f836a5f) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY (sửa ở kho myPay rồi đóng gói lại) */
 /* ============================================================
    myPay WEB — DỰNG "FILE" myPay TỪ DỮ LIỆU FIRESTORE (nap-du-lieu.js) · Đợt 1 (03/10/2026)
 
@@ -183,6 +183,23 @@
     });
     return { phien_ban_dinh_dang: 1, app: 'myPay web (Firestore)', tong: ds.length, cac_lop: ds };
   }
+  // ⭐ v0.36.0 (30/10/2026) — KHÓA HỌC (lớp `loai:'khoa'`, vd "NỀN TẢNG K10") — locLop bỏ khóa khỏi lớp chính nên dựng file RIÊNG
+  //   shared\khoa.json cho tab Khóa học: mỗi khóa đang mở + các em đang học (bỏ HS đặc biệt). `so` = SỐ HỌC SINH vĩnh viễn
+  //   (hsSo/soCai) — khoá học phí khóa theo số này; em chưa có số ⇒ 'g:<gid>'.
+  function dungKhoaJson(hsDocs, lopDocs, soHsTheoGid) {
+    var khoa = lopDocs.filter(function (l) { return !l.deleted && !l.archived && l.loai === 'khoa'; })
+      .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); });
+    var ds = khoa.map(function (l) {
+      var hs = hsDocs.filter(function (h) { return h.class_code === l.code && Number(h.active) === 1 && !h.deleted && !h.special_student; })
+        .sort(function (a, b) { return (a.sort_order || 0) - (b.sort_order || 0); })
+        .map(function (h) {
+          var so = soHsTheoGid && soHsTheoGid.get(h.gid);
+          return { so: so ? String(so) : 'g:' + h.gid, gid: h.gid, ten: h.name, ma_dang_nhap: h.login_code || '' };
+        });
+      return { ma: l.code, ten: l.code, hocSinh: hs };
+    });
+    return { phien_ban_dinh_dang: 1, app: 'myPay web (Firestore)', khoa: ds };
+  }
   // Sổ ngày Firestore (cac_lop là CHUỖI JSON) → sổ ngày đúng khuôn file, id đã đổi sang SỐ myPay.
   // ⭐ v0.28.0 (10/10/2026, thầy chốt) — boGid: Set gid HỌC SINH ĐẶC BIỆT (myStudent special_student, vd Nguyễn Hải) ⇒ BỎ HẲN khỏi sổ:
   //   không đơn vị thu, không hóa đơn, không gợi ý gán, không đếm. (Danh sách học sinh vốn đã lọc các em này ở locHocSinh.)
@@ -208,7 +225,7 @@
   var NapDuLieu = {
     SO_DAU: SO_DAU, LOP_THU: LOP_THU, boDau: boDau, tenHoa: tenHoa, isoTuNgayHt: isoTuNgayHt, thangCuaNgayHt: thangCuaNgayHt,
     locLop: locLop, locHocSinh: locHocSinh, noiMotNgay: noiMotNgay, gidCuaSo: gidCuaSo, gidTheoSoHs: gidTheoSoHs, hocIdTuBang: hocIdTuBang, capSo: capSo, bangSoHs: bangSoHs,
-    dungHocSinhJson: dungHocSinhJson, dungLopJson: dungLopJson, dungSoNgay: dungSoNgay
+    dungHocSinhJson: dungHocSinhJson, dungLopJson: dungLopJson, dungSoNgay: dungSoNgay, dungKhoaJson: dungKhoaJson
   };
   if (typeof module !== 'undefined' && module.exports) module.exports = NapDuLieu; else goc.NapDuLieu = NapDuLieu;
 })(typeof window !== 'undefined' ? window : globalThis);

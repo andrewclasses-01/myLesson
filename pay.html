@@ -14,16 +14,15 @@
 <meta name="robots" content="noindex, nofollow">
 <meta name="theme-color" content="#f4f6fa">
 <title>myPay · Học phí · Andrew Classes</title>
-<!-- ⛔ TRANG SINH TỰ ĐỘNG từ kho myPay (web/pay-khung.html + src/renderer/index.html) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY. myPay v0.35.0 -->
+<!-- ⛔ TRANG SINH TỰ ĐỘNG từ kho myPay (web/pay-khung.html + src/renderer/index.html) bằng tools/dong-goi-web.js — ĐỪNG SỬA TAY. myPay v0.36.0 -->
 <!-- v0.24.0 — phông của HÓA ĐƠN mới (canvas chờ document.fonts.load rồi mới vẽ) -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&family=Montserrat:wght@300;600&family=Lexend:wght@500;700&display=swap">
-<link rel="stylesheet" href="css/pay.css?v=dd8da707">
+<link rel="stylesheet" href="css/pay.css?v=2ae4de50">
 <script src="js/app-check.js?v=4"></script>
-<script src="js/pay/ban-thu.js?v=dd8da707"></script>
-<script src="js/pay/giao-dien-web.js?v=dd8da707"></script>
-<script src="js/chan-phim.js?v=1"></script>   <!-- v1.413.0 chặn phím tắt xem mã (không phải bảo mật) -->
+<script src="js/pay/ban-thu.js?v=2ae4de50"></script>
+<script src="js/pay/giao-dien-web.js?v=2ae4de50"></script>
 </head>
 <body>
 <div id="pyMan" class="py-man"><div class="py-the glass"><div class="py-quay"></div><div id="pyManChu">Đang mở myPay…</div></div></div>
@@ -32,7 +31,12 @@
   <nav class="rail">
     <button class="tab on" data-trang="thang">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      Tháng
+      Lớp chính
+    </button>
+    <!-- v0.36.0 (30/10/2026, thầy chốt) — tab KHÓA HỌC: đóng theo khóa, thầy chốt tay -->
+    <button class="tab" data-trang="khoa">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.4 10.2 12 5 2.6 10.2 12 15.4l9.4-5.2z"/><path d="M6.5 12.4v4.2c0 1.6 2.5 3 5.5 3s5.5-1.4 5.5-3v-4.2"/><path d="M21.4 10.2v5"/></svg>
+      Khóa học
     </button>
     <button class="tab" data-trang="giaodich">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -119,6 +123,19 @@
       </div>
     </section>
 
+    <!-- ═══════ TRANG KHÓA HỌC (v0.36.0) ═══════ -->
+    <!-- Mỗi khóa (vd NỀN TẢNG K10) một thẻ "KHÓA NTK10" — không có Tháng. Bút chì = cài đặt khóa (học phí, thông tin, lộ trình).
+         Chuột phải tên em = ghi nhận khoản đã đóng / đã đóng đủ / miễn giảm / tặng / ghi chú; nháy đúp = hóa đơn khóa. -->
+    <section class="trang" id="trangKhoa">
+      <div class="dau">
+        <span style="font-size:19px;font-weight:800">Khóa học</span>
+        <div class="chipset" id="chipKhoaHoc"></div>
+        <span class="keo"></span>
+        <span class="mota" style="font-size:12px">Đóng theo khóa · thầy chốt tay · nháy đúp tên em = hóa đơn</span>
+      </div>
+      <div class="cuon"><div class="luoi" id="luoiKhoa"></div></div>
+    </section>
+
     <!-- ═══════ TRANG NỢ PHÍ (v0.6.0) ═══════ -->
     <!-- Danh sách thầy TỰ THÊM TAY từ trang Tháng (chuột phải tên em → Thêm vào nợ phí).
          KHÔNG gom theo lớp — mỗi em (hoặc mỗi NHÀ) một ô riêng, trong ô là từng tháng nợ. -->
@@ -127,7 +144,7 @@
         <span style="font-size:19px;font-weight:800">Nợ phí</span>
         <div class="chipset" id="chipNoPhi"></div>
         <span class="keo"></span>
-        <span class="mota" style="font-size:12px">Thêm bằng cách chuột phải vào tên em ở trang Tháng</span>
+        <span class="mota" style="font-size:12px">Thêm bằng cách chuột phải vào tên em ở trang Lớp chính</span>
         <button class="btn" id="nutDongPhiTruoc" title="Ghi nhận phụ huynh đã đóng trước — trừ dần vào các tháng sau (chỉ áp dụng học sinh lẻ)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/><path d="M6 15h4"/></svg>
           Đóng phí trước
@@ -229,6 +246,10 @@
 <div class="man" id="manDongPhiTruoc"><div class="hop glass" id="hopDongPhiTruoc" style="width:min(720px,96vw)"></div></div>
 <!-- modal "Thêm nợ phí" tay (v0.12.0) — chọn lớp → em → tháng/năm → số tiền -->
 <div class="man" id="manThemNoPhi"><div class="hop glass" id="hopThemNoPhi" style="width:min(560px,96vw)"></div></div>
+<!-- v0.36.0 — tab Khóa học: hộp ghi nhận khoản / miễn giảm / cài đặt khóa + hộp hóa đơn khóa + menu chuột phải tên em -->
+<div class="man" id="manKhoa"><div class="hop glass" id="hopKhoa" style="width:min(600px,96vw)"></div></div>
+<div class="man" id="manHdKhoa"><div class="hop glass" id="hopHdKhoa" style="width:min(820px,96vw)"></div></div>
+<div class="ctxmenu glass" id="ctxKhoa"></div>
 <!-- menu chuột phải trên số tháng -->
 <div class="ctxmenu glass" id="ctxThang"></div>
 <!-- menu chuột phải trên TÊN HỌC SINH / TÊN NHÀ ở trang Tháng (v0.6.0) -->
@@ -239,10 +260,10 @@
 <div class="toast" id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/pako@2.1.0/dist/pako_inflate.min.js"></script>
-<script src="js/pay/may-ao.js?v=dd8da707"></script>
-<script src="js/pay/nap-du-lieu.js?v=dd8da707"></script>
-<script src="js/pay/mypay-goi.js?v=dd8da707"></script>
-<script src="js/pay/kho-may.js?v=dd8da707"></script>
-<script src="js/pay/mypay-app.js?v=dd8da707"></script>
+<script src="js/pay/may-ao.js?v=2ae4de50"></script>
+<script src="js/pay/nap-du-lieu.js?v=2ae4de50"></script>
+<script src="js/pay/mypay-goi.js?v=2ae4de50"></script>
+<script src="js/pay/kho-may.js?v=2ae4de50"></script>
+<script src="js/pay/mypay-app.js?v=2ae4de50"></script>
 </body>
 </html>

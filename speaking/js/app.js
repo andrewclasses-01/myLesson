@@ -1021,6 +1021,8 @@
     // Trước đây hàm này vứt mất 3 trường đó ⇒ em lưu bài một lần là dấu "thầy đã quyết" biến mất,
     // câu quay lại khối "Cần thầy quyết". Chỉ thêm khi CÓ, để dấu vân tay bản cũ không đổi.
     if (er.thay) { o.thay = String(er.thay); o.thayLuc = +er.thayLuc || 0; o.thayNguon = String(er.thayNguon || ''); }
+    // v1.455.0 — lời thầy giải thích Bỏ/Giữ (mySpeaking app v2.17.0). Vứt mất là em lưu bài một lần là mất lời.
+    if (er.thay && er.thayGhi) o.thayGhi = String(er.thayGhi);
     return o;
   }
   // Dấu vân tay MỘT lỗi — chuẩn hoá trước khi so, vì object trong `state.errors` (do form dựng) và
@@ -1747,6 +1749,7 @@
       err.trangThai = cu.trangThai === 'go' ? 'go' : 'song';
       err.ketLuan = cu.ketLuan || '';
       if (cu.thay) { err.thay = cu.thay; err.thayLuc = cu.thayLuc || 0; err.thayNguon = cu.thayNguon || ''; }   // v1.373.0 giữ phán quyết thầy
+      if (cu.thay && cu.thayGhi) err.thayGhi = cu.thayGhi;   // v1.455.0 giữ lời thầy
     } else {
       err.id = taoErrId();
       err.trangThai = 'song';

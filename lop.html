@@ -1377,7 +1377,16 @@ body.mo-menu .side.trai{transform:none}
 .kq-cau .t{display:flex; gap:6px; align-items:center; flex-wrap:wrap; margin-bottom:3px}
 .kq-gio{font:800 10.5px/1 var(--mono); background:#0F172A; color:#fff; border-radius:6px; padding:3px 6px}
 .kq-bd{font-size:9.5px; font-weight:800; letter-spacing:.05em; padding:3px 8px; border-radius:99px}
-.kq-bd.giu{background:#DCFCE7; color:#15803D} .kq-bd.bo{background:#FEE2E2; color:#B91C1C} .kq-bd.cho{background:#FEF3C7; color:#B45309}
+/* v1.455.0 (thầy chốt 30/10) — ĐẢO MÀU cho khớp app mySpeaking: REMOVED (thầy bỏ lỗi) = XANH LÁ (tin vui),
+   KEPT (vẫn tính lỗi) = ĐỎ. Trước đây ngược lại. */
+.kq-bd.giu{background:#FEE2E2; color:#B91C1C} .kq-bd.bo{background:#DCFCE7; color:#15803D} .kq-bd.cho{background:#FEF3C7; color:#B45309}
+.kq-gach{color:#94A3B8; font-weight:700; text-decoration:line-through}
+/* Bong bóng LỜI THẦY (trường `thayGhi`, mySpeaking app v2.17.0) — cùng màu với nhãn REMOVED/KEPT */
+.kq-thay{display:flex; gap:9px; margin-top:7px; padding:8px 10px; border-radius:12px}
+.kq-thay.bo{background:#F0FDF4; border:1px solid #BBF7D0} .kq-thay.giu{background:#FEF2F2; border:1px solid #FECACA}
+.kq-thay-av{flex:none; width:26px; height:26px; border-radius:50%; background:#1E3A8A; color:#fff; font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center}
+.kq-thay-ten{font-size:10px; font-weight:800; letter-spacing:.04em} .kq-thay.bo .kq-thay-ten{color:#15803D} .kq-thay.giu .kq-thay-ten{color:#B91C1C}
+.kq-thay-chu{font-size:12.5px; font-weight:600; color:#0F172A; white-space:pre-wrap; margin-top:1px}
 .kq-bd.loai{background:#EEF2FF; color:#4338CA}
 .kq-cau i{color:#334155} .kq-loi{color:#DC2626; font-weight:700} .kq-giai{color:#15803D; font-weight:600} .kq-phu{color:#64748B}
 .kq-them{border:0; background:none; padding:4px 0 0; font:700 11.5px/1.3 var(--sans); color:#2563EB; cursor:pointer}
@@ -3906,17 +3915,22 @@ function spVeKetQua(){
         '<div><b style="color:' + (cx == null ? '#94A3B8' : cx >= 90 ? '#16A34A' : cx >= 80 ? '#2563EB' : '#EA580C') + '">' + (cx == null ? '—' : cx + '%') + '</b><span>Accuracy</span></div>' +
         '<div><b>' + (hang ? thu(hang) : '—') + '</b><span>In team</span></div></div></div>' +
     '<div class="kq-the"><div class="kq-nh">Your mistakes</div>' +
-      '<div class="kq-hang"><div><b style="color:#16A34A">' + my.con + '</b><span>Counted</span></div>' +
-        '<div><b style="color:#DC2626">' + my.go + '</b><span>Removed</span></div>' +
+      '<div class="kq-hang"><div><b style="color:#DC2626">' + my.con + '</b><span>Counted</span></div>' +
+        '<div><b style="color:#16A34A">' + my.go + '</b><span>Removed</span></div>' +
         '<div><b style="color:#B45309">' + my.cho + '</b><span>Teacher</span></div></div></div>' +
     '<div class="kq-the"><div class="kq-nh">Teacher\'s decisions</div>' +
       (quyet.length ? quyet.map(function(e){
         var bd = e.thay === 'giu' ? '<span class="kq-bd giu">KEPT</span>' : e.thay === 'bo' ? '<span class="kq-bd bo">REMOVED</span>' : '<span class="kq-bd cho">WAITING</span>';
-        var chu = e.thay === 'bo' ? '<span class="kq-phu">Not counted. Your teacher removed it.</span>'
+        var chu = e.thay === 'bo' ? (e.detail ? '<span class="kq-gach">' + chuAnToan(e.detail) + '</span><br>' : '') +
+              '<span class="kq-phu">Not counted. Your teacher removed it.</span>'
           : e.thay === 'giu' ? '<span class="kq-loi">' + chuAnToan(e.detail || '') + '</span>'
           : '<span class="kq-phu">Your teacher will decide in class.</span>';
+        // v1.455.0 — lời thầy giải thích vì sao bỏ/giữ (thầy chốt tên hiển thị: "Thầy Andrew")
+        var loiThay = (e.thay === 'bo' || e.thay === 'giu') && e.thayGhi
+          ? '<div class="kq-thay ' + e.thay + '"><span class="kq-thay-av">A</span><div><div class="kq-thay-ten">THẦY ANDREW</div>' +
+            '<div class="kq-thay-chu">' + chuAnToan(e.thayGhi) + '</div></div></div>' : '';
         return '<div class="kq-cau"><div class="t"><span class="kq-gio">' + kqGio(e) + '</span>' + bd + kqLoai(e.type) + '</div>' +
-          (e.sentence ? '<i>“' + chuAnToan(e.sentence) + '”</i><br>' : '') + chu + '</div>';
+          (e.sentence ? '<i>“' + chuAnToan(e.sentence) + '”</i><br>' : '') + chu + loiThay + '</div>';
       }).join('') : '<div class="kq-trong">No decisions yet.</div>') + '</div>' +
     '<div class="kq-the"><div class="kq-nh">Found in your talk</div>' +
       '<div class="kq-so" style="color:#EA580C">' + biBat.length + ' <small>mistake' + (biBat.length === 1 ? '' : 's') + '</small></div>' +

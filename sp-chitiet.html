@@ -1466,7 +1466,7 @@ details.db .cau-tt{margin-top:4px}
         e.thay === 'bo' ? '<span class="tt-la">đã BỎ lỗi này</span>'
           : e.thay === 'giu' ? '<span class="tt-do">GIỮ lỗi này</span>'
             : '<span class="tt-nh">dòng trùng — đã gộp vào câu chính, không tính</span>'
-      ) + '</span>');
+      ) + (e.thayGhi ? ' — <i>“' + A.chuAnToan(e.thayGhi) + '”</i>' : '') + '</span>');   // v1.455.0 lời thầy (app mySpeaking)
     }
 
     /* ⭐ v1.72.0 — ô giờ nay là NÚT: bấm là thanh tiếng đầu trang đổi sang video của ĐỘI BỊ
@@ -1841,7 +1841,9 @@ details.db .cau-tt{margin-top:4px}
       (dd.errors || []).forEach(function(er){
         var v = m[er.id];
         if (!v) return;
-        lui.push({ er: er, trangThai: er.trangThai, thay: er.thay, thayLuc: er.thayLuc, thayNguon: er.thayNguon, suaLuc: er.suaLuc });
+        lui.push({ er: er, trangThai: er.trangThai, thay: er.thay, thayLuc: er.thayLuc, thayNguon: er.thayNguon, suaLuc: er.suaLuc, thayGhi: er.thayGhi });
+        // v1.455.0 — đổi phán quyết ở đây thì lời thầy (viết ở app cho phán quyết CŨ) hết đúng ⇒ gỡ
+        if (er.thay !== v.thay) delete er.thayGhi;
         er.trangThai = v.trangThai; er.thay = v.thay; er.thayLuc = nay; er.thayNguon = 'bang'; er.suaLuc = nay;
       });
     });
@@ -1857,7 +1859,9 @@ details.db .cau-tt{margin-top:4px}
         return ds.map(function(er){
           var v = m[er.id];
           if (!v) return er;
-          return Object.assign({}, er, { trangThai: v.trangThai, thay: v.thay, thayLuc: nay, thayNguon: 'bang', suaLuc: nay });
+          var o = Object.assign({}, er, { trangThai: v.trangThai, thay: v.thay, thayLuc: nay, thayNguon: 'bang', suaLuc: nay });
+          if (er.thay !== v.thay) delete o.thayGhi;   // v1.455.0
+          return o;
         });
       });
     })).then(function(){
@@ -1870,6 +1874,7 @@ details.db .cau-tt{margin-top:4px}
       // hơn thấy "đã quyết" mà kho vẫn số cũ. Bản nghe sống sẽ chỉnh lại nếu ghi được một phần.
       lui.forEach(function(o){
         o.er.trangThai = o.trangThai; o.er.thay = o.thay; o.er.thayLuc = o.thayLuc; o.er.thayNguon = o.thayNguon; o.er.suaLuc = o.suaLuc;
+        if (o.thayGhi) o.er.thayGhi = o.thayGhi;
       });
       DOI = tinhDoiSp(BUOI.teams, TONGLOI); gomCham(); veTatCa();
       baoToast('Chưa lưu được — ' + CQ_LUU.loi);

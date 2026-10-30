@@ -332,7 +332,7 @@
     if (e.target.id !== 'xhChatGo') return; e.preventDefault();
     if (laRong()) { var o = $('#xhOChat'); guiChat(o.value); o.value = ''; }
   });
-  // ⭐ 1/11 BÀN PHÍM THẦY luôn kiểu TIẾNG ANH: đọc phím theo VỊ TRÍ (e.code KeyA..KeyZ) ⇒ bộ gõ Windows Telex (key 'Process') không làm mất phím.
+  // ⭐ 31/10 BÀN PHÍM THẦY luôn kiểu TIẾNG ANH: đọc phím theo VỊ TRÍ (e.code KeyA..KeyZ) ⇒ bộ gõ Windows Telex (key 'Process') không làm mất phím.
   //   Unikey/EVKey móc bàn phím: NUỐT phím dấu (s f r x j w, nguyên âm đôi, dd) rồi gửi ⌫ + chữ có dấu (code rỗng) ⇒ trả lại ô vừa bị ⌫ đó xoá,
   //   suy ra phím bị nuốt = phần chữ có dấu thêm so với chữ cũ (ỏ−o = r, â−a = a, đ−d = d, ư = w; không thêm gì = phím vừa gõ lại để bỏ dấu).
   //   G.bong = chữ bộ gõ TƯỞNG đang hiện (để biết nó thay chữ nào); xoá khi gửi / Esc / bấm chuột.

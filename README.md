@@ -14,7 +14,14 @@ Ngay cạnh mỗi game có **bảng xếp hạng cả lớp** đọc thẳng đi
 Mã quản lý cất trong `config.js` dạng **băm SHA-256** (`QUAN_LY_BAM`) — đọc file không suy
 ngược ra mã. ⚠️ Không phải bảo mật thật, chỉ chặn người tình cờ đọc file.
 
-## ⭐ v1.450.0 (30/10/2026) — BÀI TRONG SÁCH: cột tên không cuộn ngang · ô ảnh nhỏ cố định · dấu ĐÃ SỬA · bấm đúp ĐẠT mọi trường hợp *(bản mới nhất)*
+## ⭐ v1.451.0 (30/10/2026) — BÀI TRONG SÁCH: dấu máy KHÔNG BAO GIỜ bị khuất ngoài khung trang *(bản mới nhất)*
+
+Thầy chụp NTK10: dấu ✓/✕ máy đặt bên trái chữ cái em khoanh, chữ sát gáy sách ⇒ dấu rơi ra ngoài khung tự cắt (`may.cat`), chỉ còn một mẩu ở mép.
+`js/cham-sach.js?v=17`: `khungAnh(ban, w, h)` = phần trang đang hiện (toạ độ ảnh gốc) ⇒ truyền vào `hinhDau(m, w, h, kh)` ở mọi chỗ vẽ (ảnh chính,
+ảnh nhỏ, CHỤP LỖI/ĐẠT, con trỏ) và đo (bấm/kéo/nhấp nháy, `kichCo().kh`). Dấu máy không lọt khung ⇒ nhỏ lại 80% và dịch dần (16 nấc) về phía chữ cái
+tới khi lọt — được đè lên "A. B. C. D."; mọi dấu cuối cùng kẹp trong khung. Đo bàn thử 5 trang có 40 dấu từng lọt ngoài: 0 điểm màu dấu chạm mép.
+
+## ⭐ v1.450.0 (30/10/2026) — BÀI TRONG SÁCH: cột tên không cuộn ngang · ô ảnh nhỏ cố định · dấu ĐÃ SỬA · bấm đúp ĐẠT mọi trường hợp
 
 Thầy "ok build" 30/10. `js/cham-sach.js?v=16` + máy chủ app `8b4d990` (ĐÃ DEPLOY `duyetSach` + `kiemSach`):
 - **Cột tên em** `fit-content(360px)`: tự rộng theo hàng dài nhất (tên 1 dòng + nhãn đủ chữ), quá 360px thì tên xuống dòng; tắt cuộn ngang.

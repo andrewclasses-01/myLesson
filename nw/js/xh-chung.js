@@ -51,10 +51,11 @@
     if (s === true) s = 'ht';
     if (laSuat(s)) return { ma: s, bac: '', ten: HANG[s].ten, suat: true };
     var ma = 'dong'; THU_TU.forEach(function (k) { if (d >= HANG[k].tu) ma = k; });
-    var bac = ['III', 'II', 'I'][Math.min(2, Math.floor((d - HANG[ma].tu) / 100))];
-    var san = ma === 'vang' && d >= 1000 ? 1000 : Math.floor(d / 100) * 100;
-    var len = ma === 'vang' && d >= 1000 ? null : san + 100;   // Vàng I: lên tiếp phải giành SUẤT
-    return { ma: ma, bac: bac, ten: HANG[ma].ten + ' ' + bac, trongBac: len ? d - san : null, len: len };
+    var i = Math.min(2, Math.floor((d - HANG[ma].tu) / 100)), bac = ['III', 'II', 'I'][i];
+    // 31/10 bậc I kéo tới hạng kế (Bạc I = 500→800, rộng 300) ⇒ thanh đi trọn bậc, không về 0 mỗi 100 điểm. Vàng I: lên tiếp phải giành SUẤT
+    var san = HANG[ma].tu + i * 100, tiep = THU_TU[THU_TU.indexOf(ma) + 1];
+    var len = i < 2 ? san + 100 : tiep ? HANG[tiep].tu : null;
+    return { ma: ma, bac: bac, ten: HANG[ma].ten + ' ' + bac, trongBac: len ? d - san : null, len: len, rong: len ? len - san : null };
   }
   // chuỗi hạng trên trận ('vang:II' · 'kc:' · 'xl:3')
   function hien(s) {

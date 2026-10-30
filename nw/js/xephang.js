@@ -108,7 +108,7 @@
     var vt = XH.viTriSuat(S.M), d = em.diem || 0, hang = em.hang ? 'Hạng <b>#' + em.hang + '</b> toàn trường' : '';
     var trong = h.trongBac, bar, tiep;
     if (h.suat) { bar = 100; tiep = (hang || 'Đang giữ suất') + ' · suất ' + esc(XH.HANG[h.ma].ten) + ' (top ' + vt[h.ma] + ')'; }
-    else if (h.len) { bar = trong; tiep = '<b>' + trong + '</b>/100 · còn <b>' + (100 - trong) + '</b> điểm lên ' + esc(XH.hangTu(h.len).ten); }
+    else if (h.len) { bar = Math.floor(100 * trong / h.rong); tiep = '<b>' + trong + '</b>/' + h.rong + ' · còn <b>' + (h.len - d) + '</b> điểm lên ' + esc(XH.hangTu(h.len).ten); }
     else {   // Vàng I: muốn lên nữa phải giành SUẤT
       bar = Math.min(100, Math.max(0, Math.round(100 * (d - 1000) / Math.max(1, vt.bkSan - 1000))));
       tiep = (hang ? hang + ' · ' : '') + (d < vt.bkSan ? 'còn <b>' + (vt.bkSan - d) + '</b> điểm + lọt <b>top ' + vt.tong + '</b> để giành suất Bạch kim' : 'lọt <b>top ' + vt.tong + '</b> để giành suất Bạch kim');

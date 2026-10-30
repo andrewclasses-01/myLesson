@@ -943,8 +943,9 @@
     if (s === 'ht' || s === 'ct' || s === 'kc' || s === 'bk') return { ma: s, ten: XH_TEN[s], trong: null };
     var ds = [['dong', 0], ['bac', 300], ['vang', 800]], ma = 'dong', goc = 0;
     ds.forEach(function (x) { if (d >= x[1]) { ma = x[0]; goc = x[1]; } });
-    var bac = ['III', 'II', 'I'][Math.min(2, Math.floor((d - goc) / 100))];
-    return { ma: ma, ten: XH_TEN[ma] + ' ' + bac, trong: ma === 'vang' && d >= 1000 ? null : d - Math.floor(d / 100) * 100 };
+    var i = Math.min(2, Math.floor((d - goc) / 100)), bac = ['III', 'II', 'I'][i], san = goc + i * 100;
+    var len = i < 2 ? san + 100 : ma === 'dong' ? 300 : ma === 'bac' ? 800 : null;   // 31/10 bậc I kéo tới hạng kế (Bạc I = 500→800)
+    return { ma: ma, ten: XH_TEN[ma] + ' ' + bac, trong: len ? d - san : null, rong: len ? len - san : null };
   }
   // hạng + điểm của em trong giải (cùng luật xếp hạng với dải ghim)
   async function hangEm(f, g, lop, uid) {
@@ -1017,7 +1018,7 @@
       else if (tt === 'sap') { toi = xhHh('an') + '<div><b>' + an(M.ten || 'Mùa mới') + ' mở sau</b><small class="td-dem" data-t="' + M.tu + '">' + tongGio(M.tu - bay) + '</small></div>'; nut = 'XEM'; }
       else if (me.laThay) { toi = xhHh('kc') + '<div><b>Xem các trận đang đấu</b><small>Bảng xếp hạng toàn trường</small></div>'; nut = 'XEM'; }
       else if ((em.xl || 0) < 5) { var k = Math.min(5, (em.xl || 0) + 1); toi = xhHh('an') + '<div><b>Phân hạng ' + k + '/5</b><small>Còn ' + (5 - (em.xl || 0)) + ' trận nữa là có hạng</small></div>'; nut = tt === 'mo' ? 'PHÂN HẠNG' : 'XEM'; }
-      else { var h = xhHang(em.diem || 0, em.s || em.ht); toi = xhHh(h.ma) + '<div><b>' + an(h.ten) + (h.trong != null ? ' · ' + h.trong + '/100' : ' · ' + (em.diem || 0) + 'đ') + '</b><small>' + (em.hang ? 'Hạng #' + em.hang + ' toàn trường' : 'Điểm hạng ' + (em.diem || 0)) + '</small></div>'; nut = tt === 'mo' ? 'VÀO ĐẤU' : 'XEM'; }
+      else { var h = xhHang(em.diem || 0, em.s || em.ht); toi = xhHh(h.ma) + '<div><b>' + an(h.ten) + (h.trong != null ? ' · ' + h.trong + '/' + h.rong : ' · ' + (em.diem || 0) + 'đ') + '</b><small>' + (em.hang ? 'Hạng #' + em.hang + ' toàn trường' : 'Điểm hạng ' + (em.diem || 0)) + '</small></div>'; nut = tt === 'mo' ? 'VÀO ĐẤU' : 'XEM'; }
       return '<button type="button" class="td-cd td-xh' + (tt === 'mo' ? '' : ' mo-sap') + '" data-hop="xh"><div class="td-x0"><span class="td-game">A SHOW SPEED</span><span class="td-mua">' + chip + '</span></div>' +
         '<div class="td-x1"><span class="td-ic">' + IC_DIA + '</span><div class="td-nd"><div class="td-nm">Xếp hạng thế giới</div><div class="td-sub">Thi đấu xếp hạng với các đối thủ từ nhiều lớp khác</div></div></div>' +
         '<div class="td-x2"><div class="td-toi">' + toi + '</div><span class="td-vao">' + nut + '</span></div></button>';

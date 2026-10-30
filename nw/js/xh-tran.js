@@ -440,12 +440,12 @@
       } else if ((x.ct || []).some(function (c) { return c[0] === 'xepLop'; })) {
         hang = '<div class="xh-lenhang">' + XH.hhTag(s.ma, s.bac, 72, 'no') + '<div class="xh-tt"><b>EM VÀO HẠNG ' + esc(s.ten.toUpperCase()) + '</b><small>Thắng ' + (x.xlThang || 0) + '/5 trận phân hạng · từ giờ mỗi trận đều tính điểm hạng</small></div></div>';
       } else {
-        var h = XH.hangTu(x.diem), trong = h.trongBac == null ? 100 : h.trongBac;
+        var h = XH.hangTu(x.diem), trong = h.trongBac == null ? 100 : Math.floor(100 * h.trongBac / h.rong);
         var TT = ['dong', 'bac', 'vang', 'bk', 'kc', 'ct', 'ht'], len = x.sau !== x.truoc && TT.indexOf(s.ma) * 3 + ({ III: 0, II: 1, I: 2 }[s.bac] || 0) > TT.indexOf(tr.ma) * 3 + ({ III: 0, II: 1, I: 2 }[tr.bac] || 0);
         hang = '<div class="xh-lenhang">' + XH.hhTag(s.ma, s.bac, 62, x.sau !== x.truoc ? 'no' : '') + '<div class="xh-tt"><b>' +
           (x.sau === x.truoc ? esc(s.ten.toUpperCase()) : (len ? 'THĂNG HẠNG · ' : 'XUỐNG HẠNG · ') + esc(s.ten.toUpperCase())) + '</b>' +
           '<div class="xh-thanh"><u id="xhThanhKq" style="width:0" data-w="' + trong + '"></u></div>' +
-          '<small class="xh-so">' + (h.trongBac == null ? x.diem + ' điểm' : trong + '/100') + (x.baoVe ? ' · 🛡 ' + x.baoVe + ' trận tới thua không rớt hạng' : '') + '</small></div></div>';
+          '<small class="xh-so">' + (h.trongBac == null ? x.diem + ' điểm' : h.trongBac + '/' + h.rong) + (x.baoVe ? ' · 🛡 ' + x.baoVe + ' trận tới thua không rớt hạng' : '') + '</small></div></div>';
       }
     }
     app.innerHTML = '<div class="xh-giua"><div class="xh-kqchu ' + (kq === 'thang' ? '' : kq) + '">' + tieu + '</div>' + tiso + phu + ct + hang + lo + '</div>' +

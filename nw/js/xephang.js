@@ -114,7 +114,7 @@
       tiep = (hang ? hang + ' · ' : '') + (d < vt.bkSan ? 'còn <b>' + (vt.bkSan - d) + '</b> điểm + lọt <b>top ' + vt.tong + '</b> để giành suất Bạch kim' : 'lọt <b>top ' + vt.tong + '</b> để giành suất Bạch kim');
     }
     return '<div class="xh-the"><div class="xh-toi">' + XH.hhTag(h.ma, h.bac, 84) + '<div class="xh-tt"><h2>' + esc(XH.HANG[h.ma].ten.toUpperCase()) + (h.bac ? '<span>' + h.bac + '</span>' : '') + '</h2>' +
-      '<div class="xh-thanh"><u style="width:' + bar + '%"></u></div><p class="xh-so">' + tiep + (em.baoVe ? ' · 🛡' + em.baoVe : '') + '</p></div></div>' +
+      '<div class="xh-thanh"><u style="width:' + bar + '%"></u></div><p class="xh-so">' + tiep + (em.baoVe ? ' · 🛡' + em.baoVe + ' trận giữ mốc ' + XH.mocKhien(d) : '') + '</p></div></div>' +
       '<div class="xh-so3 xh-so"><div><b>' + (em.tran || 0) + '</b><small>trận mùa này</small></div>' +
       '<div><b>' + (em.tran ? Math.round(100 * (em.thang || 0) / em.tran) : 0) + '%</b><small>thắng</small></div>' +
       '<div><b style="color:#FFB3BA">' + (em.chuoi >= 2 ? '🔥' : '') + (em.chuoi || 0) + '</b><small>chuỗi thắng</small></div></div></div>';
@@ -309,11 +309,11 @@
       '<li><span>🔥</span><span>Chuỗi <b>3 trận thắng</b> trở lên: được thêm điểm.</span></li>' +
       (g && g.nhan > 1 ? '<li><span>⚡</span><span>Giờ vàng <b>' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '.</span></li>' : '') +
       '<li><span>📉</span><span>Điểm càng cao, thắng được càng ít · thua không bao giờ mất nhiều hơn điểm thắng.</span></li>' +
-      '<li><span>🛡</span><span>Vừa lên bậc: <b>3 trận</b> thua không rớt bậc.</span></li>' +
+      '<li><span>🛡</span><span>Mỗi lần vượt một <b>mốc 100 điểm</b> (300, 400, 500, 600…): <b>3 trận thua</b> tiếp theo không tụt dưới mốc đó. Mỗi trận thua dùng một lượt khiên.</span></li>' +
       '<li><span>📌</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +
       '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới.</span></li>' +
       '<li><span>🔤</span><span>Từ <b>1100 điểm</b>: gợi ý bằng <b>tiếng Anh</b>, càng lên cao câu càng dài, càng phải suy luận.</span></li>' +
-      '<li><span>🚪</span><span>Thoát giữa trận = thua, khoá tìm trận 2 phút.</span></li>' +
+      '<li><span>🚪</span><span>Thoát giữa trận / mất kết nối = <b>bỏ trận: −25 điểm</b> (kể cả hạng Đồng, khiên không che), khoá tìm trận 2 phút.</span></li>' +
       dongDem() + '</ul></div></div></div>';
   }
   // giờ nghỉ đêm đọc cài đặt thật (caiDat/choiGame qua GioiHan) — thầy đổi ở trang Giải đấu thì dòng này tự theo

@@ -57,6 +57,8 @@
     var len = i < 2 ? san + 100 : tiep ? HANG[tiep].tu : null;
     return { ma: ma, bac: bac, ten: HANG[ma].ten + ' ' + bac, trongBac: len ? d - san : null, len: len, rong: len ? len - san : null };
   }
+  // 🛡 khiên (máy chủ sanBac): vượt mốc 100 nào thì 3 trận thua tới không tụt dưới mốc đó; từ 1000 mốc là 1000
+  function mocKhien(d) { return d >= 1000 ? 1000 : Math.floor((d || 0) / 100) * 100; }
   // chuỗi hạng trên trận ('vang:II' · 'kc:' · 'xl:3')
   function hien(s) {
     var p = String(s || '').split(':');
@@ -179,7 +181,7 @@
     };
   }
 
-  window.XH = { HANG: HANG, THU_TU: THU_TU, hh: hh, veHH: veHH, hhTag: hhTag, hangTu: hangTu, SUAT_MAC: SUAT_MAC, suatCua: suatCua, laSuat: laSuat, viTriSuat: viTriSuat, hien: hien, av: av, esc: esc, chuTat: chuTat,
+  window.XH = { HANG: HANG, THU_TU: THU_TU, hh: hh, veHH: veHH, hhTag: hhTag, hangTu: hangTu, mocKhien: mocKhien, SUAT_MAC: SUAT_MAC, suatCua: suatCua, laSuat: laSuat, viTriSuat: viTriSuat, hien: hien, av: av, esc: esc, chuTat: chuTat,
     dongHo: dongHo, conLai: conLai, ngayGio: ngayGio, phutChu: phutChu, muaHienTai: muaHienTai, ttMua: ttMua, gioVangNay: gioVangNay,
     telexTu: telexTu, BanPhim: BanPhim };
 })();

@@ -412,6 +412,13 @@
   }
   // ---------- KẾT QUẢ ----------
   var CT_TEN = { thang: 'Thắng', chuoi: '🔥 Chuỗi thắng', gioVang: '⚡ Giờ vàng', hoa: 'Hòa', thua: 'Thua', boTran: 'Bỏ trận', xepLop: 'Xong 5 trận phân hạng' };
+  // 31/10 máy chủ giữ điểm (khiên / sàn 0 / mốc an toàn 800) mà không ghi dòng chi tiết ⇒ "Thua −22" mà Điểm hạng −2: thêm dòng giải thích phần chênh
+  function giuDiem(x, tong) {
+    if (x.diem == null || (x.ct || []).some(function (c) { return c[0] === 'xepLop'; })) return '';
+    var chenh = Math.round((x.doi - tong) * 10) / 10; if (Math.abs(chenh) < 0.05) return '';
+    var ten = chenh < 0 ? 'Làm tròn' : x.diem === 0 ? '🧱 Không trừ dưới 0' : x.diem === 800 ? '📌 Mốc an toàn 800' : '🛡 Khiên giữ mốc ' + XH.mocKhien(x.diem);
+    return '<span>' + ten + '</span><b>' + (chenh > 0 ? '+' : '') + String(chenh).replace('.', ',') + '</b>';
+  }
   function veKetQua() {
     if (G.ketQua) return; G.ketQua = true; G.dungChoi = false; G.dungVS = false;
     var t = G.T, d = t.diem || {}, L = trai(), R = phai();
@@ -432,7 +439,7 @@
       // 27/10 máy chủ lưu chi tiết dạng [{k, d}] (Firestore không nhận mảng lồng mảng) — trận cũ còn [['thang', 25]]
       x.ct = (x.ct || []).map(function (c) { return Array.isArray(c) ? c : [c.k, c.d]; });
       ct = '<div class="xh-ct xh-so">' + (x.ct || []).map(function (c) { tong += c[1]; return '<span>' + esc(CT_TEN[c[0]] || c[0]) + '</span><b>' + (c[0] === 'xepLop' ? '' : (c[1] > 0 ? '+' : '') + String(c[1]).replace('.', ',')) + '</b>'; }).join('') +   // từ 2000 điểm máy chủ ghi lẻ (+0,8)
-        (x.diem != null && !(x.ct || []).some(function (c) { return c[0] === 'xepLop'; }) ? '<span class="xh-tong">Điểm hạng</span><b style="color:' + (x.doi >= 0 ? 'var(--xh-neon)' : 'var(--xh-do)') + '">' + (x.doi > 0 ? '+' : '') + x.doi + '</b>' : '') + '</div>';
+        giuDiem(x, tong) + (x.diem != null && !(x.ct || []).some(function (c) { return c[0] === 'xepLop'; }) ? '<span class="xh-tong">Điểm hạng</span><b style="color:' + (x.doi >= 0 ? 'var(--xh-neon)' : 'var(--xh-do)') + '">' + (x.doi > 0 ? '+' : '') + x.doi + '</b>' : '') + '</div>';
       var s = XH.hien(x.sau), tr = XH.hien(x.truoc);
       if (String(x.sau).indexOf('xl:') === 0) {
         var n = (x.xl || 0);
@@ -445,7 +452,7 @@
         hang = '<div class="xh-lenhang">' + XH.hhTag(s.ma, s.bac, 62, x.sau !== x.truoc ? 'no' : '') + '<div class="xh-tt"><b>' +
           (x.sau === x.truoc ? esc(s.ten.toUpperCase()) : (len ? 'THĂNG HẠNG · ' : 'XUỐNG HẠNG · ') + esc(s.ten.toUpperCase())) + '</b>' +
           '<div class="xh-thanh"><u id="xhThanhKq" style="width:0" data-w="' + trong + '"></u></div>' +
-          '<small class="xh-so">' + (h.trongBac == null ? x.diem + ' điểm' : h.trongBac + '/' + h.rong) + (x.baoVe ? ' · 🛡 ' + x.baoVe + ' trận tới thua không rớt hạng' : '') + '</small></div></div>';
+          '<small class="xh-so">' + (h.trongBac == null ? x.diem + ' điểm' : h.trongBac + '/' + h.rong) + (x.baoVe ? ' · 🛡 ' + x.baoVe + ' trận thua tới không tụt dưới ' + XH.mocKhien(x.diem) : '') + '</small></div></div>';
       }
     }
     app.innerHTML = '<div class="xh-giua"><div class="xh-kqchu ' + (kq === 'thang' ? '' : kq) + '">' + tieu + '</div>' + tiso + phu + ct + hang + lo + '</div>' +

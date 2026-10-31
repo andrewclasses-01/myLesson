@@ -551,6 +551,7 @@
       return;
     }
     var kq = (t.kq || {})[G.ben] || 'hoa', x = (t.xhKq || {})[G.ben] || null, ly = t.ly || '';
+    if (x && x.sau == null) x = null;   // 31/10 trận chốt lúc máy chủ lỗi (xhKq chỉ {} / { thay }) ⇒ ẩn ô hạng, không in "undefined"
     var tieu = kq === 'thang' ? 'CHIẾN<br>THẮNG!' : kq === 'thua' ? 'THUA<br>RỒI' : 'HÒA';
     var phu = (kq === 'thang' && /^(roi|mat)/.test(ly)) ? '<p class="xh-ghi">Đối thủ đã rời trận</p>' : (kq === 'thua' && /^(roi|mat)/.test(ly)) ? '<p class="xh-ghi">Em đã rời trận / mất kết nối</p>' : '';
     var ct = '', hang = '', chay = null;

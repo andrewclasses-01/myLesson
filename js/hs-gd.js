@@ -210,7 +210,7 @@
     var chip = '', tien = '';
     if (h && h.cho) chip = '<span class="hgd-chip">' + khien('#8AA09C', 26) + 'Đang phân hạng ' + h.xl + '/5</span>';
     else if (h) {
-      chip = '<span class="hgd-chip">' + khien(mau, 26) + E(HANG[h.ma][0]) + ' · ' + so(h.e.diem) + ' điểm' + (h.e.hang ? ' · <span class="so1">#' + h.e.hang + ' toàn trường</span>' : '') + '</span>';
+      chip = '<span class="hgd-chip">' + khien(mau, 26) + E(HANG[h.ma][0]) + ' · ' + so(h.e.diem) + ' điểm' + (h.e.hang ? ' · <span class="so1">#' + h.e.hang + ' toàn giải</span>' : '') + '</span>';
       if (h.ke) {
         var pt = Math.max(3, Math.min(100, (h.e.diem - h.san) / Math.max(1, h.ke[1] - h.san) * 100));
         tien = '<div class="hgd-tien"><div class="vach"><i style="width:' + pt + '%"></i></div><small><span>' + E(HANG[h.ma][0]) + ' ' + so(h.san) + '</span><span>còn <b>' + so(h.ke[1] - h.e.diem) + '</b> lên ' + E(HANG[h.ke[0]][0]) + (THU_TU.indexOf(h.ke[0]) >= 3 ? ' (cần lọt suất)' : '') + '</span></small></div>';
@@ -446,7 +446,7 @@
     }).join('');
     el.innerHTML = '<div class="hgd-luoi hgd-c4">' +
         oso(khien(mau, 24), mau, h && !h.cho ? so(e.diem) : '—', 'Điểm hạng ' + E(ten), h && h.ma ? HANG[h.ma][0] : h && h.cho ? 'phân hạng ' + h.xl + '/5' : 'chưa đấu') +
-        oso(IC.cup, '#E0A11B', e && e.hang ? '#' + e.hang : '—', 'Thứ hạng toàn trường', M && M.soEm ? '/ ' + so(M.soEm) + ' em có hạng' : '') +
+        oso(IC.cup, '#E0A11B', e && e.hang ? '#' + e.hang : '—', 'Thứ hạng toàn giải', M && M.soEm ? '/ ' + so(M.soEm) + ' em có hạng' : '') +
         oso(IC.lua, '#8B5CF6', e && e.cao != null ? so(e.cao) : '—', 'Cao nhất mùa này', cao ? gio(cao.luc) + ' ' + ngay(cao.luc) : '') +
         oso(IC.kiem, '#12A58F', o.ty + '%', 'Thắng mùa này', o.n + ' trận') + '</div>' +
       '<div class="hgd-luoi hgd-c2">' + the('Đường điểm hạng ' + E(ten), 'Sau 5 trận phân hạng · nền màu = khoảng điểm từng hạng · rê chuột xem, bấm mở trận', '<div class="hgd-bd" data-bd="diem"></div>',

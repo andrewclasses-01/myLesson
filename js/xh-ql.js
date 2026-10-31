@@ -131,7 +131,7 @@
       '<button type="button" class="tdq-nut" data-xemchot>Xem trước &amp; chốt</button></div><div id="xhqChot"></div></div>' : '';
     return '<div class="tdq-the"><div class="tdq-the-dau"><div><b>' + E(M.ten) + '</b><small>Học sinh vào: Khám phá → Xếp hạng</small></div><span class="tdq-pill ' + T.cls + '">' + E(T.chu) + '</span></div>' +
       thongSo + khoa + '<div class="xhq-nut" style="margin-top:10px">' + nut + '</div></div>' + chot +
-      '<div class="tdq-the"><div class="tdq-the-dau"><div><b>Top 20 toàn trường</b><small>Học sinh chỉ thấy top 20 + hạng của chính mình</small></div></div>' + top + '</div>';
+      '<div class="tdq-the"><div class="tdq-the-dau"><div><b>Top 20 toàn giải</b><small>Học sinh chỉ thấy top 20 + hạng của chính mình</small></div></div>' + top + '</div>';
   }
   function veForm() {
     var x = S.sua, g = x.gioVang || {}, vang = g.nhan > 1;

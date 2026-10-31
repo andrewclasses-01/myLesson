@@ -115,7 +115,7 @@
       '<div><span>⭐</span><div><b>' + v.tong + ' suất</b> Bạch kim trở lên cho top đầu</div></div></div>' +
       (t.tu ? '<div class="xh2-ngay"><div><small>' + mua + (sap ? ' mở lúc' : ' kết thúc') + '</small><b>' + gio(sap ? t.tu : t.den) + ' · ' + ngay(sap ? t.tu : t.den) + '</b></div><div class="xh2-dem">' + conLai((sap ? t.tu : t.den) - b) + '<small>' + (sap ? 'nữa' : 'còn lại') + '</small></div></div>' : '');
     if (i === 1) return '<h3>7 HẠNG<small>Đồng–Vàng theo điểm · 4 hạng trên chỉ <b style="color:var(--c)">' + v.tong + ' suất</b></small></h3><div class="xh2-thang">' +
-      [['ht', 'Người số 1 toàn trường', 'Top ' + v.ht, '≥' + v.htSan + ' điểm'], ['ct', '', 'Top ' + v.ct, '≥' + v.ctSan + ' điểm'], ['kc', '', 'Top ' + v.kc, '≥' + v.kcSan + ' điểm'], ['bk', '', 'Top ' + v.bk, '≥' + v.bkSan + ' điểm'],
+      [['ht', 'Top đầu toàn giải', 'Top ' + v.ht, '≥' + v.htSan + ' điểm'], ['ct', '', 'Top ' + v.ct, '≥' + v.ctSan + ' điểm'], ['kc', '', 'Top ' + v.kc, '≥' + v.kcSan + ' điểm'], ['bk', '', 'Top ' + v.bk, '≥' + v.bkSan + ' điểm'],
         ['vang', 'Mốc an toàn', '800', 'A2'], ['bac', '', '300', 'A1–A2'], ['dong', 'Thua không mất điểm', '0', 'A1']].map(function (x) {
         return '<div>' + hh(x[0], '', 30) + '<div><b style="color:' + HANG[x[0]][1] + '">' + HANG[x[0]][0] + '</b>' + (x[1] ? '<small>' + x[1] + '</small>' : '') + '</div><span class="xh2-d">' + x[2] + '<u>' + x[3] + '</u></span></div>';
       }).join('') + '</div><div class="xh2-diem"><div><b style="color:var(--n)">▲</b><small>Thắng</small></div><div><b>＝</b><small>Hòa</small></div><div><b style="color:var(--do)">▼</b><small>Thua</small></div></div>';   // 27/10 thầy: không ghi số điểm từng trận

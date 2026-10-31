@@ -90,7 +90,7 @@
     var g = S.M && S.M.gioVang; if (!g || !(g.nhan > 1)) return '';
     var dang = XH.gioVangNay(S.M, bay()), d = new Date(), p = d.getHours() * 60 + d.getMinutes();
     var phai = dang ? 'ĐANG DIỄN RA' : (p < g.tu ? 'sau ' + Math.floor((g.tu - p) / 60) + 'g' + ('0' + (g.tu - p) % 60).slice(-2) : XH.phutChu(g.tu) + ' mai');
-    return '<div class="xh-gv' + (dang ? ' dang' : '') + '">⚡ <b>GIỜ VÀNG</b> ' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + ' · điểm ×' + String(g.nhan).replace('.', ',') + '<span class="xh-so">' + phai + '</span></div>';
+    return '<div class="xh-gv' + (dang ? ' dang' : '') + '">' + XH.bt('set', 16) + ' <b>GIỜ VÀNG</b> ' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + ' · điểm ×' + String(g.nhan).replace('.', ',') + '<span class="xh-so">' + phai + '</span></div>';
   }
   function theHang() {
     var em = S.em || {}, h = hangEm();
@@ -105,7 +105,7 @@
         '<p>Đấu đủ <b>5 trận phân hạng</b> để máy xếp em vào hạng hợp với sức mình.</p></div></div>' +
         '<div class="xh-nam" style="margin-top:12px">' + o + '</div></div>';
     }
-    var vt = XH.viTriSuat(S.M), d = em.diem || 0, hang = em.hang ? 'Hạng <b>#' + em.hang + '</b> toàn trường' : '';
+    var vt = XH.viTriSuat(S.M), d = em.diem || 0, hang = em.hang ? 'Hạng <b>#' + em.hang + '</b> toàn giải' : '';
     var trong = h.trongBac, bar, tiep;
     if (h.suat) { bar = 100; tiep = (hang || 'Đang giữ suất') + ' · suất ' + esc(XH.HANG[h.ma].ten) + ' (top ' + vt[h.ma] + ')'; }
     else if (h.len) { bar = Math.floor(100 * trong / h.rong); tiep = '<b>' + trong + '</b>/' + h.rong + ' · còn <b>' + (h.len - d) + '</b> điểm lên ' + esc(XH.hangTu(h.len).ten); }
@@ -114,10 +114,10 @@
       tiep = (hang ? hang + ' · ' : '') + (d < vt.bkSan ? 'còn <b>' + (vt.bkSan - d) + '</b> điểm + lọt <b>top ' + vt.tong + '</b> để giành suất Bạch kim' : 'lọt <b>top ' + vt.tong + '</b> để giành suất Bạch kim');
     }
     return '<div class="xh-the"><div class="xh-toi">' + XH.hhTag(h.ma, h.bac, 84) + '<div class="xh-tt"><h2>' + esc(XH.HANG[h.ma].ten.toUpperCase()) + (h.bac ? '<span>' + h.bac + '</span>' : '') + '</h2>' +
-      '<div class="xh-thanh"><u style="width:' + bar + '%"></u></div><p class="xh-so">' + tiep + (em.baoVe ? ' · 🛡' + em.baoVe + ' trận giữ mốc ' + XH.mocKhien(d) : '') + '</p></div></div>' +
+      '<div class="xh-thanh"><u style="width:' + bar + '%"></u></div><p class="xh-so">' + tiep + (em.baoVe ? ' · ' + XH.bt('khien', 14) + em.baoVe + ' trận giữ mốc ' + XH.mocKhien(d) : '') + '</p></div></div>' +
       '<div class="xh-so3 xh-so"><div><b>' + (em.tran || 0) + '</b><small>trận mùa này</small></div>' +
       '<div><b>' + (em.tran ? Math.round(100 * (em.thang || 0) / em.tran) : 0) + '%</b><small>thắng</small></div>' +
-      '<div><b style="color:#FFB3BA">' + (em.chuoi >= 2 ? '🔥' : '') + (em.chuoi || 0) + '</b><small>chuỗi thắng</small></div></div></div>';
+      '<div><b style="color:#FFB3BA">' + (em.chuoi >= 2 ? XH.bt('lua', 18) : '') + (em.chuoi || 0) + '</b><small>chuỗi thắng</small></div></div></div>';
   }
   function phongDo() {
     var ds = (S.em && S.em.ds) || []; if (!ds.length) return '';
@@ -132,8 +132,8 @@
       '<span class="xh-p">' + XH.av(t.tenA, t.anhA) + '<span>' + esc(t.tenA) + '</span>' + XH.hhTag(a.ma, a.bac, 20) + '</span>' +
       '<span class="xh-ts xh-so"><b>' + (d.a || 0) + '</b> – <u>' + (d.b || 0) + '</u></span>' +
       '<span class="xh-p r">' + XH.av(t.tenB, t.anhB) + '<span>' + esc(t.tenB) + '</span>' + XH.hhTag(b.ma, b.bac, 20) + '</span></div>' +
-      '<div class="xh-h2 xh-so"><span>BÀN ' + ((t.van || 0) + 1) + ' · ' + XH.dongHo(con) + '</span>' + (t.xem ? '<span>👁 ' + t.xem + '</span>' : '') +
-      '<span class="xh-tmx">♥ ' + (t.tim || 0) + '</span><span class="xh-vao">XEM ›</span></div></button>';
+      '<div class="xh-h2 xh-so"><span>BÀN ' + ((t.van || 0) + 1) + ' · ' + XH.dongHo(con) + '</span>' + (t.xem ? '<span>' + XH.bt('mat', 14) + ' ' + t.xem + '</span>' : '') +
+      '<span class="xh-tmx">' + XH.bt('tim', 14) + ' ' + (t.tim || 0) + '</span><span class="xh-vao">XEM ›</span></div></button>';
   }
   function topNho() {
     var ds = S.top.slice(0, 3), em = S.em, toi = S.toi && S.toi.uid;
@@ -155,10 +155,10 @@
       : tt === 'het' || tt === 'chot' ? '<div class="xh-bao">Mùa giải đã kết thúc. Phần thưởng gửi vào hộp thông báo khi thầy chốt mùa.</div>' : '';
     $('#xhm-sanh').innerHTML =
       '<div class="xh-sanh"><div class="xh-c1">' + dauMua() + gioVang() + thongBao + bao + theHang() + theDiemDanh() +
-      '<div class="xh-chedo"><button class="xh-cd chon">1–1<small>Đấu đơn</small></button><button class="xh-cd khoa" disabled>2–2<small>Sắp mở 🔒</small></button><button class="xh-cd khoa" disabled>3–3<small>Sắp mở 🔒</small></button></div>' +
+      '<div class="xh-chedo"><button class="xh-cd chon">1–1<small>Đấu đơn</small></button><button class="xh-cd khoa" disabled>2–2<small>Sắp mở ' + XH.bt('khoa', 13) + '</small></button><button class="xh-cd khoa" disabled>3–3<small>Sắp mở ' + XH.bt('khoa', 13) + '</small></button></div>' +
       '</div><div class="xh-c2">' + phongDo() +
       (S.live.length ? '<div class="xh-the"><h3>ĐANG ĐẤU <button data-t="live">Xem tất cả ›</button></h3><div class="xh-live">' + S.live.slice(0, 2).map(lvHtml).join('') + '</div></div>' : '') +
-      '<div class="xh-the"><h3>TOP TOÀN TRƯỜNG <button data-t="bxh">Xem top 20 ›</button></h3>' + topNho() + '</div>' +
+      '<div class="xh-the"><h3>TOP TOÀN GIẢI <button data-t="bxh">Xem top 20 ›</button></h3>' + topNho() + '</div>' +
       '</div></div>' +
       '<div class="xh-day"><button class="xh-nut" id="xhTim"' + (cam ? ' disabled' : '') + '>' + (hangEm() || S.toi.laThay ? 'TÌM TRẬN' : 'PHÂN HẠNG') + '<small>' + (hangEm() || S.toi.laThay ? (S.M.phut || 2) + ' phút · mỗi bàn 3 từ' : 'Trận ' + Math.min(5, ((S.em && S.em.xl) || 0) + 1) + '/5 · ' + (S.M.phut || 2) + ' phút') + '</small></button>' +
       '<p class="xh-ghi">' + esc(cam || 'Máy tìm bạn cùng hạng, chờ lâu sẽ mở rộng dần.') + '</p></div>';
@@ -193,7 +193,7 @@
     }
     $('#xhDem').textContent = con; $('#xhVong').style.strokeDashoffset = 389.6 * (1 - con / 10);
     $('#xhSs1').classList.toggle('ok', da); $('#xhSs2').classList.toggle('ok', ban);
-    var b = $('#xhSS'); b.classList.toggle('da', da); b.textContent = da ? 'ĐÃ SẴN SÀNG ✓' : 'SẴN SÀNG'; b.disabled = da;
+    var b = $('#xhSS'); b.classList.toggle('da', da); b.innerHTML = da ? 'ĐÃ SẴN SÀNG ' + XH.bt('dung', 18) : 'SẴN SÀNG'; b.disabled = da;
   }
   function veLive() {
     $('#xhm-live').innerHTML = '<div class="xh-bxh-dau"><b>ĐANG ĐẤU</b><small>Hạng cao lên trước</small></div>' +
@@ -213,7 +213,7 @@
     }).join('') + '</div>' : '';
     var trong = ds.some(function (x) { return x.uid === toi; });
     var emDong = em && em.diem != null && em.hang && !trong ? '<div class="xh-em-day">' + dongBxh({ ten: 'Em · ' + (S.toi.ten || ''), lop: lopToi(), anh: S.toi.anh, diem: em.diem, s: suatToi() }, em.hang, true) + '</div>' : '';
-    $('#xhm-bxh').innerHTML = '<div class="xh-bxh-dau"><b>TOP 20 TOÀN TRƯỜNG</b><small>' + esc((S.M && S.M.ten) || '') + '</small></div>' + pod +
+    $('#xhm-bxh').innerHTML = '<div class="xh-bxh-dau"><b>TOP 20 TOÀN GIẢI</b><small>' + esc((S.M && S.M.ten) || '') + '</small></div>' + pod +
       (ds.length > 3 ? '<div class="xh-bang">' + ds.slice(3).map(function (x, i) { return dongBxh(x, i + 4, x.uid === toi); }).join('') + '</div>' : '') +
       (!ds.length ? '<div class="xh-rong">Chưa có ai xong 5 trận phân hạng.</div>' : '') + emDong;
   }
@@ -245,18 +245,18 @@
       var ts = ngayK(k);
       dai += '<div class="' + (d.set[k] ? 'd' : '') + (k === d.nay ? ' nay' : '') + '">' + TH[ts.getUTCDay()] + '<span>' + ts.getUTCDate() + '</span></div>';
     }
-    var sao = ddSao(), moc = d.chuoi < 10 ? d.chuoi + '/10 ngày · +' + sao.d10 + '⭐' : d.chuoi < 20 ? d.chuoi + '/20 ngày · +' + sao.d20 + '⭐' : 'Giữ chuỗi tới hết mùa · +' + sao.du + '⭐';
-    return '<button class="xh-the xh-dd" data-dd type="button"><h3>ĐIỂM DANH <span>' + (d.homNay ? '✓ hôm nay' : 'đấu 1 trận hôm nay') + '</span></h3>' +
-      '<div class="xh-dd-lua"><b class="xh-so">🔥' + d.chuoi + '</b><small>ngày liên tiếp<br>Kỷ lục ' + d.max + ' · đạt ' + d.dat + '/' + d.tong + '</small></div>' +
+    var sao = ddSao(), moc = d.chuoi < 10 ? d.chuoi + '/10 ngày · +' + sao.d10 + XH.bt('sao', 13) : d.chuoi < 20 ? d.chuoi + '/20 ngày · +' + sao.d20 + XH.bt('sao', 13) : 'Giữ chuỗi tới hết mùa · +' + sao.du + XH.bt('sao', 13);
+    return '<button class="xh-the xh-dd" data-dd type="button"><h3>ĐIỂM DANH <span>' + (d.homNay ? XH.bt('dung', 13) + ' hôm nay' : 'đấu 1 trận hôm nay') + '</span></h3>' +
+      '<div class="xh-dd-lua"><b class="xh-so">' + XH.bt('lua', 22) + d.chuoi + '</b><small>ngày liên tiếp<br>Kỷ lục ' + d.max + ' · đạt ' + d.dat + '/' + d.tong + '</small></div>' +
       '<div class="xh-dd-bay">' + dai + '</div><div class="xh-dd-moc"><u style="width:' + Math.min(100, Math.round(100 * d.chuoi / (d.chuoi < 10 ? 10 : d.chuoi < 20 ? 20 : d.tong))) + '%"></u><span>' + moc + '</span></div></button>';
   }
   // tab Thưởng: 3 mốc điểm danh (nhận mốc cao nhất khi hết mùa)
   function theDdThuong() {
     var d = ddTinh(), sao = ddSao();
     return '<div class="xh-the"><h3>ĐIỂM DANH <span style="letter-spacing:0;font-weight:600">mỗi ngày đấu ≥ 1 trận · hết mùa nhận mốc cao nhất</span></h3><div class="xh-dd-3">' +
-      '<div' + (d.max >= 10 ? ' class="xong"' : '') + '><b>10</b><small>ngày liên tiếp</small><u>+' + sao.d10 + '⭐</u></div>' +
-      '<div' + (d.max >= 20 ? ' class="xong"' : '') + '><b>20</b><small>ngày liên tiếp</small><u>+' + sao.d20 + '⭐</u></div>' +
-      '<div' + (d.dat >= d.tong ? ' class="xong"' : '') + '><b>' + d.tong + '</b><small>cả mùa</small><u>+' + sao.du + '⭐</u></div></div></div>';
+      '<div' + (d.max >= 10 ? ' class="xong"' : '') + '><b>10</b><small>ngày liên tiếp</small><u>+' + sao.d10 + XH.bt('sao', 13) + '</u></div>' +
+      '<div' + (d.max >= 20 ? ' class="xong"' : '') + '><b>20</b><small>ngày liên tiếp</small><u>+' + sao.d20 + XH.bt('sao', 13) + '</u></div>' +
+      '<div' + (d.dat >= d.tong ? ' class="xong"' : '') + '><b>' + d.tong + '</b><small>cả mùa</small><u>+' + sao.du + XH.bt('sao', 13) + '</u></div></div></div>';
   }
   function moLich() {
     var d = ddTinh(), sao = ddSao(), h = '', TH = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], thang = -1;
@@ -273,11 +273,11 @@
     }
     var hop = document.createElement('div'); hop.className = 'xh-hop xh-lich-hop';
     hop.innerHTML = '<div><h4>ĐIỂM DANH · ' + esc(String(S.M.ten || '').toUpperCase()) + '</h4>' +
-      '<p class="xh-so">🔥 <b>' + d.chuoi + '</b> ngày liên tiếp · kỷ lục <b>' + d.max + '</b> · đạt <b>' + d.dat + '/' + d.tong + '</b></p>' +
+      '<p class="xh-so">' + XH.bt('lua', 16) + ' <b>' + d.chuoi + '</b> ngày liên tiếp · kỷ lục <b>' + d.max + '</b> · đạt <b>' + d.dat + '/' + d.tong + '</b></p>' +
       '<div class="xh-lich">' + h + '</div>' +
-      '<div class="xh-dd-3"><div' + (d.max >= 10 ? ' class="xong"' : '') + '><b>10</b><small>ngày liên tiếp</small><u>+' + sao.d10 + '⭐</u></div>' +
-      '<div' + (d.max >= 20 ? ' class="xong"' : '') + '><b>20</b><small>ngày liên tiếp</small><u>+' + sao.d20 + '⭐</u></div>' +
-      '<div' + (d.dat >= d.tong ? ' class="xong"' : '') + '><b>' + d.tong + '</b><small>cả mùa</small><u>+' + sao.du + '⭐</u></div></div>' +
+      '<div class="xh-dd-3"><div' + (d.max >= 10 ? ' class="xong"' : '') + '><b>10</b><small>ngày liên tiếp</small><u>+' + sao.d10 + XH.bt('sao', 13) + '</u></div>' +
+      '<div' + (d.max >= 20 ? ' class="xong"' : '') + '><b>20</b><small>ngày liên tiếp</small><u>+' + sao.d20 + XH.bt('sao', 13) + '</u></div>' +
+      '<div' + (d.dat >= d.tong ? ' class="xong"' : '') + '><b>' + d.tong + '</b><small>cả mùa</small><u>+' + sao.du + XH.bt('sao', 13) + '</u></div></div>' +
       '<p class="xh-ghi">Mỗi ngày đấu xong ít nhất 1 trận. Hết mùa nhận mốc cao nhất.</p>' +
       '<button class="xh-nut phu" data-dong type="button">Đóng</button></div>';
     document.body.appendChild(hop);
@@ -288,39 +288,40 @@
     var cao = (em.xl || 0) >= 5 && em.cao != null ? (XH.laSuat(s) ? s : XH.hangTu(em.cao).ma) : (em.tran || em.xl ? 'dong' : '');
     $('#xhm-thuong').innerHTML = '<div class="xh-mua"><div><b>THƯỞNG CUỐI ' + esc(String((S.M && S.M.ten) || 'MÙA').toUpperCase()) + '</b><small>Bạch kim trở lên chỉ dành cho ' + vt.tong + ' bạn đứng đầu lúc hết mùa</small></div></div>' +
       '<div class="xh-thuong">' + TH_TEN.map(function (x) {
-        return '<div class="xh-tg' + (x[0] === cao ? ' dat' : '') + '">' + XH.hhTag(x[0], '', 50) + '<b>' + x[1] + '</b><small class="xh-dk">' + esc(dk[x[0]]) + '</small><span class="xh-sao">+' + (sao[x[0]] || 0) + ' ⭐</span>' + (x[0] === cao ? '<small>EM ĐANG Ở ĐÂY</small>' : '') + '</div>';
+        return '<div class="xh-tg' + (x[0] === cao ? ' dat' : '') + '">' + XH.hhTag(x[0], '', 50) + '<b>' + x[1] + '</b><small class="xh-dk">' + esc(dk[x[0]]) + '</small><span class="xh-sao">+' + (sao[x[0]] || 0) + ' ' + XH.bt('sao', 14) + '</span>' + (x[0] === cao ? '<small>EM ĐANG Ở ĐÂY</small>' : '') + '</div>';
       }).join('') + '</div>' + theDdThuong() +
-      '<div class="xh-the"><ul class="xh-luat"><li><span>🏆</span><span><b>Bạch kim → Huyền thoại</b> tính theo <b>thứ hạng lúc hết mùa</b>: phải giữ phong độ tới phút cuối. Suất không ai đủ điểm thì bỏ trống.</span></li>' +
-      '<li><span>🥇</span><span><b>Đồng · Bạc · Vàng</b> tính theo điểm <b>cao nhất</b> em từng đạt. Ngoài top ' + vt.tong + ' thì tối đa là Vàng.</span></li>' +
-      '<li><span>⭐</span><span>Sao vào <b>ví sao</b> khi thầy chốt mùa.</span></li>' +
-      '<li><span>🏁</span><span>Mùa kết thúc lúc <b>' + (S.M ? XH.ngayGio(S.M.den) : '—') + '</b>.</span></li>' +
+      '<div class="xh-the"><ul class="xh-luat"><li><span>' + XH.bt('cup', 20) + '</span><span><b>Bạch kim → Huyền thoại</b> tính theo <b>thứ hạng lúc hết mùa</b>: phải giữ phong độ tới phút cuối. Suất không ai đủ điểm thì bỏ trống.</span></li>' +
+      '<li><span>' + XH.bt('huy', 20) + '</span><span><b>Đồng · Bạc · Vàng</b> tính theo điểm <b>cao nhất</b> em từng đạt. Ngoài top ' + vt.tong + ' thì tối đa là Vàng.</span></li>' +
+      '<li><span>' + XH.bt('sao', 20) + '</span><span>Sao vào <b>ví sao</b> khi thầy chốt mùa.</span></li>' +
+      '<li><span>' + XH.bt('co', 20) + '</span><span>Mùa kết thúc lúc <b>' + (S.M ? XH.ngayGio(S.M.den) : '—') + '</b>.</span></li>' +
       '<li><span>↘</span><span>Mùa mới: đấu lại <b>5 trận phân hạng</b>.</span></li></ul></div>';
   }
   function veLuat() {
     var g = S.M && S.M.gioVang, dk = dieuKien(S.M);
-    var HB = [['ht', dk.ht, 'B2–C1', 'Người số 1 toàn trường'], ['ct', dk.ct, 'B2', 'Suất · không chia bậc'], ['kc', dk.kc, 'B1–B2', 'Suất · không chia bậc'],
+    var HB = [['ht', dk.ht, 'B2–C1', 'Top đầu toàn giải'], ['ct', dk.ct, 'B2', 'Suất · không chia bậc'], ['kc', dk.kc, 'B1–B2', 'Suất · không chia bậc'],
       ['bk', dk.bk, 'B1', 'Suất · không chia bậc'], ['vang', '800', 'A2', 'III · II · I · mốc an toàn'], ['bac', '300', 'A1–A2', 'III · II · I · thua mất ít'], ['dong', '0', 'A1', 'III · II · I · thua không mất điểm']];
     $('#xhm-luat').innerHTML = '<div class="xh-hang-luoi"><div class="xh-hb">' + HB.map(function (x) {
       return '<div class="xh-hbd">' + XH.hhTag(x[0], '', 36) + '<h4 style="color:' + XH.HANG[x[0]].a + '">' + XH.HANG[x[0]].ten + '</h4><span class="xh-moc xh-so">' + x[1] + '<span class="xh-cefr">' + x[2] + '</span></span><p>' + x[3] + '</p></div>';
     // 27/10 thầy: chữ chung chung, KHÔNG ghi số điểm từng trận (công thức điểm đổi ngầm — máy chủ xep-hang.js chuanThang/diemTran)
     }).join('') + '</div><div class="xh-c2"><div class="xh-diem4 xh-so"><div><b style="color:var(--xh-neon)">▲</b><small>Thắng</small></div><div><b>＝</b><small>Hòa</small></div>' +
-      '<div><b style="color:var(--xh-do)">▼</b><small>Thua</small></div><div><b style="color:var(--xh-do)">✕</b><small>Bỏ trận</small></div></div>' +
-      '<div class="xh-the"><ul class="xh-luat"><li><span>💪</span><span>Thắng bạn <b>mạnh hơn</b> được nhiều điểm hơn · thắng bạn yếu hơn được ít.</span></li>' +
-      '<li><span>🔥</span><span>Chuỗi <b>3 trận thắng</b> trở lên: được thêm điểm.</span></li>' +
-      (g && g.nhan > 1 ? '<li><span>⚡</span><span>Giờ vàng <b>' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '.</span></li>' : '') +
-      '<li><span>📉</span><span>Điểm càng cao, thắng được càng ít · thua không bao giờ mất nhiều hơn điểm thắng.</span></li>' +
-      '<li><span>🛡</span><span>Mỗi lần vượt một <b>mốc 100 điểm</b> (300, 400, 500, 600…): <b>3 trận thua</b> tiếp theo không tụt dưới mốc đó. Mỗi trận thua dùng một lượt khiên.</span></li>' +
-      '<li><span>📌</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +
-      '<li><span>⏱</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới. Bàn <b>gợi ý tiếng Anh</b> (từ 1100 điểm): <b>30 giây</b> một bàn, trận <b>3 phút</b>.</span></li>' +
-      '<li><span>🔤</span><span>Từ <b>1100 điểm</b>: gợi ý bằng <b>tiếng Anh</b>, càng lên cao câu càng dài, càng phải suy luận.</span></li>' +
-      '<li><span>🚪</span><span>Thoát giữa trận / mất kết nối = <b>bỏ trận: −25 điểm</b> (kể cả hạng Đồng, khiên không che), khoá tìm trận 2 phút.</span></li>' +
+      '<div><b style="color:var(--xh-do)">▼</b><small>Thua</small></div><div><b>' + XH.bt('sai', 18) + '</b><small>Bỏ trận</small></div></div>' +
+      '<div class="xh-the"><ul class="xh-luat"><li><span>' + XH.bt('tay', 20) + '</span><span>Thắng bạn <b>mạnh hơn</b> được nhiều điểm hơn · thắng bạn yếu hơn được ít.</span></li>' +
+      '<li><span>' + XH.bt('tay', 20) + '</span><span>Thua bạn <b>hạng cao hơn</b>: không bị trừ điểm. Điểm trận đạt <b>70%</b> điểm bạn trở lên thì còn <b>được cộng điểm</b> (tối đa 3 lần mỗi ngày).</span></li>' +
+      '<li><span>' + XH.bt('lua', 20) + '</span><span>Chuỗi <b>3 trận thắng</b> trở lên: được thêm điểm.</span></li>' +
+      (g && g.nhan > 1 ? '<li><span>' + XH.bt('set', 20) + '</span><span>Giờ vàng <b>' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '.</span></li>' : '') +
+      '<li><span>' + XH.bt('giam', 20) + '</span><span>Điểm càng cao, thắng được càng ít · thua không bao giờ mất nhiều hơn điểm thắng.</span></li>' +
+      '<li><span>' + XH.bt('khien', 20) + '</span><span>Mỗi lần vượt một <b>mốc 100 điểm</b> (300, 400, 500, 600…): <b>3 trận thua</b> tiếp theo không tụt dưới mốc đó. Mỗi trận thua dùng một lượt khiên.</span></li>' +
+      '<li><span>' + XH.bt('moc', 20) + '</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +
+      '<li><span>' + XH.bt('gio', 20) + '</span><span>Mỗi bàn <b>3 từ</b> · đủ 3 từ hoặc hết <b>20 giây</b> là sang bàn mới. Bàn <b>gợi ý tiếng Anh</b> (từ 1100 điểm): <b>30 giây</b> một bàn, trận <b>3 phút</b>.</span></li>' +
+      '<li><span>' + XH.bt('chu', 20) + '</span><span>Từ <b>1100 điểm</b>: gợi ý bằng <b>tiếng Anh</b>, càng lên cao câu càng dài, càng phải suy luận.</span></li>' +
+      '<li><span>' + XH.bt('cua', 20) + '</span><span>Thoát giữa trận / mất kết nối = <b>bỏ trận: −25 điểm</b> (kể cả hạng Đồng, khiên không che), khoá tìm trận 2 phút.</span></li>' +
       dongDem() + '</ul></div></div></div>';
   }
   // giờ nghỉ đêm đọc cài đặt thật (caiDat/choiGame qua GioiHan) — thầy đổi ở trang Giải đấu thì dòng này tự theo
   function dongDem() {
     var G = window.GioiHan, c = G && G.cai;
     if (!c || !c.bat) return '';
-    return '<li><span>🌙</span><span>Nghỉ đêm ' + G.gioChu(c.nghiTu) + '–' + G.gioChu(c.nghiDen) + ' không tìm trận.</span></li>';
+    return '<li><span>' + XH.bt('trang', 20) + '</span><span>Nghỉ đêm ' + G.gioChu(c.nghiTu) + '–' + G.gioChu(c.nghiDen) + ' không tìm trận.</span></li>';
   }
   app.addEventListener('click', function (e) {
     var t = e.target.closest('[data-t]'); if (t && !t.closest('#xhTabs')) return moTab(t.dataset.t);

@@ -251,7 +251,7 @@
   function oso(ic, m, b, chu, phu) { return '<div class="hgd-oso"><span class="ic" style="background:' + m + '1A;color:' + m + '">' + ic + '</span><div><b>' + b + '</b><small>' + chu + (phu ? ' · ' + phu : '') + '</small></div></div>'; }
   function the(tieu, phu, noi, phai) { return '<div class="hgd-the"><div class="hgd-the-dau"><div><b>' + tieu + '</b>' + (phu ? '<small>' + phu + '</small>' : '') + '</div>' + (phai || '') + '</div>' + noi + '</div>'; }
   function cotDiem(r) {
-    var x = r.xh; if (!x) return '<span class="mo">—</span>';
+    var x = r.xh; if (!x || x.sau == null) return '<span class="mo">—</span>';   // 31/10 trận chốt lúc máy chủ lỗi (xhKq rỗng) ⇒ không ghi "Phân hạng ?/5"
     if (x.diem == null) return '<span class="hgd-nhan" style="background:#F1EAFE;color:#7C3AED">Phân hạng ' + (x.xl || '?') + '/5</span>';
     return '<b class="' + ((x.doi || 0) >= 0 ? 'hgd-len' : 'hgd-xuong') + '">' + ((x.doi || 0) >= 0 ? '+' : '−') + Math.abs(x.doi || 0) + '</b> <span class="mo">→ ' + so(x.diem) + '</span>';
   }

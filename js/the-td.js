@@ -1010,9 +1010,9 @@
     var IC_DIA = HI('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>');
     function xhThe() {
       var X = S.xh, M = X && X.M, bay = Date.now(), em = (X && X.em) || {};
-      var tt = !M ? 'khong' : M.tt === 'chot' || bay >= M.den ? 'het' : bay < M.tu ? 'sap' : 'mo';
+      var tt = !M ? 'khong' : M.tt === 'chot' || bay >= M.den ? 'het' : bay < M.tu ? 'sap' : M.tt === 'dung' ? 'dung' : 'mo';   // 31/10 mùa tạm dừng ⇒ không mời VÀO ĐẤU
       var ngay = M ? Math.max(0, Math.ceil((M.den - bay) / 864e5)) : 0;
-      var chip = tt === 'sap' ? 'SẮP MỞ' : tt === 'mo' ? an(String(M.ten || 'MÙA').toUpperCase()) + ' · ' + ngay + ' NGÀY' : tt === 'het' ? 'ĐÃ KẾT THÚC' : 'CHƯA MỞ';
+      var chip = tt === 'sap' ? 'SẮP MỞ' : tt === 'mo' ? an(String(M.ten || 'MÙA').toUpperCase()) + ' · ' + ngay + ' NGÀY' : tt === 'het' ? 'ĐÃ KẾT THÚC' : tt === 'dung' ? 'TẠM DỪNG' : 'CHƯA MỞ';
       var toi, nut;
       if (tt === 'khong') { toi = xhHh('an') + '<div><b>Chưa có mùa giải</b><small>Thầy Andrew sắp mở</small></div>'; nut = 'XEM'; }
       else if (tt === 'sap') { toi = xhHh('an') + '<div><b>' + an(M.ten || 'Mùa mới') + ' mở sau</b><small class="td-dem" data-t="' + M.tu + '">' + tongGio(M.tu - bay) + '</small></div>'; nut = 'XEM'; }

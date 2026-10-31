@@ -280,7 +280,7 @@
     if (!G.thu && con <= 0 && t.trangThai === 'choi') {
       g.textContent = 'CHỐT…';
       if (!G.xem && bay() - (G.xongGui || 0) > 5000) { G.xongGui = bay(); nhip({ xong: true }); }
-      if (con < -25000 && !$('#xhCho')) {
+      if (!G.xem && con < -25000 && !$('#xhCho')) {   // người xem không cần hộp này (chữ dành cho người chơi)
         var c = document.createElement('div'); c.id = 'xhCho'; c.className = 'xh-hop';
         c.innerHTML = '<div><h4>Đang chốt kết quả…</h4><p>Điểm trận này vẫn được tính. Em có thể về sảnh, kết quả sẽ hiện trong phong độ.</p><div class="xh-hainut"><button class="xh-nut" style="font-size:17px" data-di="xephang.html">VỀ SẢNH</button></div></div>';
         app.appendChild(c);
@@ -395,7 +395,8 @@
   });
   // ⭐ v1.444.0 (28/10, thầy chốt) — BẮT BUỘC HOÀN THÀNH TRẬN: trận mang `buoc` (máy chủ ghi theo công tắc dashboard) ⇒ chưa chốt thì
   //   ✕ giấu (giữ chỗ), Back bị giữ lại, máy tính hỏi khi đóng tab. Mở web lại ở trang khác ⇒ js/giu-tran.js đưa về đây. Bàn thử: &buoc=1.
-  function buoc() { var t = G.T; return !G.xem && !!t && t.trangThai === 'choi' && !!(t.buoc || (G.thu && /[?&]buoc=1/.test(location.search))); }
+  // 31/10 hết giờ quá 10 giây mà máy chủ chưa chốt ⇒ thôi giữ (trước: chốt lỗi ⇒ em kẹt, VỀ SẢNH bật hộp "Rời trang?", nút Back bị nuốt)
+  function buoc() { var t = G.T; return !G.xem && !!t && t.trangThai === 'choi' && !(t.ketThuc && bay() > t.ketThuc + 10000) && !!(t.buoc || (G.thu && /[?&]buoc=1/.test(location.search))); }
   var giuBack = false;
   function giuTran() { if (!buoc() || giuBack) return; giuBack = true; try { history.pushState({ giuTran: 1 }, '', location.href); } catch (e) { } }
   addEventListener('popstate', function () {
@@ -409,7 +410,9 @@
     // hết giờ rồi (đang chờ chốt) ⇒ về sảnh, không ghi "rời trận" (không bị xử thua)
     if (G.xem || !G.T || G.T.trangThai !== 'choi' || bay() >= (G.T.ketThuc || 0)) { location.href = G.xem ? 'xephang.html?tab=live' : 'xephang.html'; return; }
     var h = document.createElement('div'); h.className = 'xh-hop';
-    h.innerHTML = '<div><h4>Rời trận?</h4><p>Rời giữa trận là <b>THUA</b>, trừ 25 điểm hạng và khoá tìm trận 2 phút.</p>' +
+    // 31/10 trận phân hạng (hA/hB = 'xl:k') máy chủ không trừ điểm ⇒ không ghi "trừ 25 điểm hạng"
+    var xlNay = String(G.T['h' + G.ben.toUpperCase()] || '').indexOf('xl:') === 0;
+    h.innerHTML = '<div><h4>Rời trận?</h4><p>Rời giữa trận là <b>THUA</b>, ' + (xlNay ? 'tính 1 trận phân hạng thua' : 'trừ 25 điểm hạng') + ' và khoá tìm trận 2 phút.</p>' +
       '<div class="xh-hainut"><button class="xh-nut phu" data-k="o">Ở lại</button><button class="xh-nut" style="font-size:17px;background:var(--xh-do);box-shadow:none" data-k="r">RỜI TRẬN</button></div></div>';
     document.body.appendChild(h);
     h.addEventListener('click', function (e) {
@@ -551,10 +554,11 @@
       return;
     }
     var kq = (t.kq || {})[G.ben] || 'hoa', x = (t.xhKq || {})[G.ben] || null, ly = t.ly || '';
-    if (x && x.sau == null) x = null;   // 31/10 trận chốt lúc máy chủ lỗi (xhKq chỉ {} / { thay }) ⇒ ẩn ô hạng, không in "undefined"
+    // 31/10 trận chốt lúc máy chủ lỗi (xhKq chỉ {} / { thay }) ⇒ ẩn ô hạng, không in "undefined"; điểm thật vẫn ghi ở xhMua/em
+    var kqThieu = !!x && x.sau == null; if (kqThieu) x = null;
     var tieu = kq === 'thang' ? 'CHIẾN<br>THẮNG!' : kq === 'thua' ? 'THUA<br>RỒI' : 'HÒA';
     var phu = (kq === 'thang' && /^(roi|mat)/.test(ly)) ? '<p class="xh-ghi">Đối thủ đã rời trận</p>' : (kq === 'thua' && /^(roi|mat)/.test(ly)) ? '<p class="xh-ghi">Em đã rời trận / mất kết nối</p>' : '';
-    var ct = '', hang = '', chay = null;
+    var ct = '', hang = kqThieu ? '<p class="xh-ghi">Điểm hạng đã được tính — xem ở sảnh</p>' : '', chay = null;
     if (x) {
       var tong = 0;
       // 27/10 máy chủ lưu chi tiết dạng [{k, d}] (Firestore không nhận mảng lồng mảng) — trận cũ còn [['thang', 25]]
@@ -808,7 +812,7 @@
       var t0 = Date.now();
       G.xem = q.get('xem') === '1'; G.ben = 'a'; G.toi = G.toi || { uid: 'hs_100046', ten: 'Bảo Nam' };
       if (G.xem && q.get('thay')) G.toi = Object.assign({}, G.toi, { uid: 'gv_thu', ten: 'Thầy Andrew', laThay: true });
-      G.T = Object.assign({ a: G.xem ? 'u1' : G.toi.uid, b: 'u2', tenA: G.xem ? 'Thiên Phúc' : 'Bảo Nam', tenB: G.xem ? 'Khôi Nguyên' : 'Khánh Linh', lopA: 'A2-B', lopB: 'B1-A', hA: 'vang:II', hB: 'vang:I',
+      G.T = Object.assign({ a: G.xem ? 'u1' : G.toi.uid, b: 'u2', tenA: G.xem ? 'Thiên Phúc' : 'Bảo Nam', tenB: G.xem ? 'Khôi Nguyên' : 'Khánh Linh', lopA: 'A2-B', lopB: 'B1-A', hA: /[?&]xl=1/.test(location.search) ? 'xl:2' : 'vang:II', hB: 'vang:I',
         xh: 'thu', goiEn: !!q.get('en'), trangThai: 'choi', batDau: t0 + 3500, ketThuc: t0 + 3500 + (q.get('kb') ? 3000 : q.get('ngan') ? 15000 : q.get('en') ? 180000 : 120000), doiLuc: t0 + 3500, van: 0, tim: {}, hien: {}, diem: { a: 0, b: 0 } }, ban(0));
       if (q.get('thayho')) { G.T.hoTro = { ben: 'a', gv: 'gv_thu', luc: t0 }; G.T.daHoTro = { a: true }; }
       G.chat = [{ uid: 'u2', ten: G.T.tenB, vai: 'b', chu: 'Hi! Chơi đẹp nha 😄', luc: t0 - 3000 }];
@@ -862,14 +866,14 @@
       if (Date.now() >= t.ketThuc) {
         clearTimeout(hen); clearInterval(timHen);
         var a = t.diem.a, b = t.diem.b, kq = a > b ? 'thang' : a < b ? 'thua' : 'hoa';
-        // ?thu=1&kb=… — 31/10 tình huống màn kết quả động: thuong · lenbac · lenhang · suat · khien · thuasat · tut
+        // ?thu=1&kb=… — 31/10 tình huống màn kết quả động: thuong · lenbac · lenhang · suat · khien · thuasat · tut · rong (xhKq rỗng)
         var KB = { thuong: ['thang', 18, [['thang', 12], ['gioVang', 6]], 'vang:II', 'vang:II', 870, 0], lenbac: ['thang', 24, [['thang', 24]], 'bac:II', 'bac:I', 512, 3],
           lenhang: ['thang', 27, [['thang', 24], ['chuoi', 3]], 'bac:I', 'vang:III', 817, 3], suat: ['thang', 18, [['thang', 18]], 'vang:I', 'bk:', 1110, 0],
           khien: ['thua', -5, [['thua', -12]], 'vang:II', 'vang:II', 900, 2], thuasat: ['thua', 6, [['thuaCao', 0], ['thuaSat', 6]], 'bac:II', 'bac:II', 461, 0],
           tut: ['thua', -12, [['thua', -12]], 'vang:II', 'vang:III', 893, 0] }[q.get('kb')];
         if (KB) { kq = KB[0]; t.diem = KB[0] === 'thang' ? { a: 52, b: 40 } : { a: 41, b: 48 }; }
         t.kq = { a: kq, b: kq === 'thang' ? 'thua' : kq === 'thua' ? 'thang' : 'hoa' };
-        t.xhKq = { a: KB ? { doi: KB[1], ct: KB[2], truoc: KB[3], sau: KB[4], diem: KB[5], baoVe: KB[6] }
+        t.xhKq = { a: q.get('kb') === 'rong' ? {} : KB ? { doi: KB[1], ct: KB[2], truoc: KB[3], sau: KB[4], diem: KB[5], baoVe: KB[6] }
           : kq === 'thang' ? Object.assign({ doi: 41, ct: [['thang', 24], ['chuoi', 5], ['gioVang', 12]], truoc: 'vang:II', sau: 'vang:I', diem: 1005, baoVe: 3 }, q.get('thayho') ? { thay: { so: 3, d: 24 } } : {})
           : kq === 'thua' ? { doi: -12, ct: [['thua', -12]], truoc: 'vang:II', sau: 'vang:II', diem: 952 } : { doi: 5, ct: [['hoa', 5]], truoc: 'vang:II', sau: 'vang:II', diem: 969 } };
         t.lo = [{ w: 'WINDOW', m: 'cửa sổ' }]; t.trangThai = 'xong'; capPha();

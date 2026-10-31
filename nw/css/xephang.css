@@ -793,3 +793,34 @@ body.xh .xh-tabs button[aria-selected="true"]{font-size:15px;font-weight:700;pad
 .xh7 .xh-oan-o{position:relative}
 .xh7.giulo .xh-oan-o::after{content:'CHƯA AI TÌM ĐƯỢC · NHỚ TỪ NHÉ';position:absolute;inset:auto 0 50%;margin:auto;width:max-content;max-width:92%;text-align:center;
   font:800 13px/1.25 var(--xh-g);letter-spacing:.08em;color:#fff;background:rgba(255,95,109,.92);padding:8px 12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);pointer-events:none}
+
+/* 31/10 TẠM DỪNG (xh-tran.js veDung/xinDung): nút TRÒN chỉ biểu tượng, nhỏ hơn vòng giờ bàn (78%), không số trong cụm giữa — [đồng hồ · vòng giờ bàn · DỪNG] (màn ngang) / [đồng hồ · DỪNG] (điện thoại)
+   — ba ô CÙNG CAO --hh, cùng bo góc ⇒ cụm cân · đang dừng ⇒ giấu gợi ý + bàn chữ + phím, bảng vàng giữa khu chơi (dưới chat) */
+.xh7 .xh-dhgiua{--hh:34px}
+.xh7.thap .xh-dhgiua{--hh:28px}
+.xh7.rong .xh-dhgiua{--hh:calc(38px * var(--k));gap:calc(10px * var(--k))}
+.xh7 .xh-dhgiua .xh-dongho{height:var(--hh);box-sizing:border-box;display:inline-flex;align-items:center;padding-top:0;padding-bottom:0}
+.xh7 .xh-dhgiua .xh-dem20{width:var(--hh);height:var(--hh)}
+.xh7.rong .xh-dhgiua .xh-dem20 b{font-size:calc(14px * var(--k))}
+.xh7 .xh-dhgiua.doc{display:flex;align-items:center;gap:6px}
+.xh-dungnut{width:calc(var(--hh,32px) * .78);height:calc(var(--hh,32px) * .78);box-sizing:border-box;display:grid;place-items:center;flex:none;padding:0;border-radius:50%;
+  border:1.5px solid rgba(255,201,74,.6);background:rgba(255,201,74,.1);color:var(--xh-vang);cursor:pointer}
+.xh-dungnut svg{width:48%;height:48%}
+.xh-dungnut:not(:disabled):hover{background:rgba(255,201,74,.22)}
+.xh-dungnut:disabled{opacity:.3;cursor:default;filter:grayscale(.7)}
+/* điện thoại: cụm giữa rộng thêm nút DỪNG ⇒ tên hai bên tự rút gọn "…" thay vì tràn đè lên nút */
+.xh7.doc .xh-db .xh-dbt{flex:1 1 0;min-width:0} .xh7.doc .xh-dbten{max-width:100%}
+.xh7.dung .xh-goi,.xh7.dung .xh-oan-o,.xh7.dung .xh-phim,.xh7.dung .xh-danggo,.xh7.dung .xh-dai{visibility:hidden}
+.xh7 .xh-khu{position:relative}
+.xh-dungp{position:absolute;left:0;right:0;top:56%;transform:translateY(-50%);display:flex;justify-content:center;padding:0 16px;pointer-events:none;z-index:6}
+.xh-dungp[hidden]{display:none}
+.xh-dungo{width:min(360px,100%);text-align:center;padding:18px 18px 16px;border-radius:20px;background:linear-gradient(180deg,#2B2208,#120E03);border:2px solid var(--xh-vang);
+  box-shadow:0 0 0 6px rgba(255,201,74,.12),0 18px 50px rgba(0,0,0,.55);display:flex;flex-direction:column;align-items:center;gap:6px}
+.xh-dungic{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;background:var(--xh-vang);color:#2A1A00}
+.xh-dungic svg{width:22px;height:22px}
+.xh-dungo small{font:800 12px/1 var(--xh-g);letter-spacing:.22em;color:var(--xh-vang)}
+.xh-dungai{font:800 20px/1.2 var(--xh-v);color:#fff}
+.xh-dungso{font:italic 800 64px/1 var(--xh-g);color:var(--xh-vang);text-shadow:0 0 24px rgba(255,201,74,.55)}
+.xh-dungthanh{width:100%;height:8px;border-radius:4px;background:rgba(255,255,255,.1);overflow:hidden}
+.xh-dungthanh u{display:block;height:100%;width:100%;background:var(--xh-vang);border-radius:4px;transition:width .25s linear}
+.xh-dungo p{margin:2px 0 0;font-size:12.5px;line-height:1.4;color:#E9DDB8}

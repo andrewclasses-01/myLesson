@@ -87,7 +87,10 @@
       '<div class="xh-con xh-so">' + con + '</div></div>';
   }
   function gioVang() {
-    var g = S.M && S.M.gioVang; if (!g || !(g.nhan > 1)) return '';
+    var g = S.M && S.M.gioVang;
+    // 31/10 Chủ nhật ×1,5 cả ngày: thay dải giờ vàng (trùng giờ vàng hệ số lớn hơn thì máy chủ lấy giờ vàng)
+    if (XH.chuNhatNay(S.M, bay()) && !(XH.gioVangNay(S.M, bay()) && g.nhan > 1.5)) return '<div class="xh-gv dang">' + XH.bt('set', 16) + ' <b>CHỦ NHẬT VÀNG</b> cả ngày · điểm ×1,5<span class="xh-so">ĐANG DIỄN RA</span></div>';
+    if (!g || !(g.nhan > 1)) return '';
     var dang = XH.gioVangNay(S.M, bay()), d = new Date(), p = d.getHours() * 60 + d.getMinutes();
     var phai = dang ? 'ĐANG DIỄN RA' : (p < g.tu ? 'sau ' + Math.floor((g.tu - p) / 60) + 'g' + ('0' + (g.tu - p) % 60).slice(-2) : XH.phutChu(g.tu) + ' mai');
     return '<div class="xh-gv' + (dang ? ' dang' : '') + '">' + XH.bt('set', 16) + ' <b>GIỜ VÀNG</b> ' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + ' · điểm ×' + String(g.nhan).replace('.', ',') + '<span class="xh-so">' + phai + '</span></div>';
@@ -309,6 +312,7 @@
       '<li><span>' + XH.bt('tay', 20) + '</span><span>Thua bạn <b>hạng cao hơn</b>: không bị trừ điểm. Điểm trận đạt <b>70%</b> điểm bạn trở lên thì còn <b>được cộng điểm</b> (tối đa 3 lần mỗi ngày).</span></li>' +
       '<li><span>' + XH.bt('lua', 20) + '</span><span>Chuỗi <b>3 trận thắng</b> trở lên: được thêm điểm.</span></li>' +
       (g && g.nhan > 1 ? '<li><span>' + XH.bt('set', 20) + '</span><span>Giờ vàng <b>' + XH.phutChu(g.tu) + '–' + XH.phutChu(g.den) + '</b>: điểm cộng ×' + String(g.nhan).replace('.', ',') + '.</span></li>' : '') +
+      (S.M && (S.M.gioVang || {}).cn !== false ? '<li><span>' + XH.bt('set', 20) + '</span><span><b>Chủ nhật cả ngày</b>: điểm cộng ×1,5.</span></li>' : '') +
       '<li><span>' + XH.bt('giam', 20) + '</span><span>Điểm càng cao, thắng được càng ít · thua không bao giờ mất nhiều hơn điểm thắng.</span></li>' +
       '<li><span>' + XH.bt('khien', 20) + '</span><span>Mỗi lần vượt một <b>mốc 100 điểm</b> (300, 400, 500, 600…): <b>3 trận thua</b> tiếp theo không tụt dưới mốc đó. Mỗi trận thua dùng một lượt khiên.</span></li>' +
       '<li><span>' + XH.bt('moc', 20) + '</span><span>Đã lên <b>Vàng</b> (800) thì không rớt dưới 800 trong mùa.</span></li>' +

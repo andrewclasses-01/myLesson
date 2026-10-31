@@ -58,6 +58,12 @@
   //   Bố cục theo khung: DỌC (điện thoại) · NGANG (laptop/PC/iPad ngang: cụm game trái + chat cao hết màn bên phải khi rộng ≥ 1200)
   //   · NGANG THẤP (điện thoại xoay ngang). Ô chữ chỉ nhận chuột/chạm (pointerdown) — KHÔNG nhận bàn phím (công bằng).
   var IC_CHAT = '<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.5 11.6a8.4 8.4 0 0 1-12.3 7.4L3.5 20.5l1.4-4.4A8.4 8.4 0 1 1 20.5 11.6Z"/><path d="M8.5 10.5h7M8.5 13.8h4.5"/></svg>';
+  // ⭐ 31/10 thầy — TẠM DỪNG: mỗi em 2 lần × 15 giây. Em bấm ⇒ tài liệu `tu/zdung_<lần>_<bên>` ⇒ máy chủ (tran-dau.js tdTuBo) ghi t.dung {ben, luc, den, lan},
+  //   t.soDung.<bên>, lùi ketThuc + doiLuc 15 giây. Mọi máy (cả người xem): che gợi ý + bàn chữ + phím, bảng giữa màn "<tên> xin tạm dừng" + đếm ngược;
+  //   đồng hồ trận / bàn ĐỨNG YÊN (tính theo dung.den); chat vẫn dùng được.
+  var DUNG_TOI_DA = 2, DUNG_MS = 15000;
+  var IC_DUNG = '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="6" y="5" width="4.2" height="14" rx="1.4" fill="currentColor"/><rect x="13.8" y="5" width="4.2" height="14" rx="1.4" fill="currentColor"/></svg>';
+  function dangDung(t) { return !!(t && t.dung && t.trangThai === 'choi' && bay() < (t.dung.den || 0)); }
   function cheDo() {
     var w = app.clientWidth, h = app.clientHeight, ngang = w > h;
     var C = { ngang: ngang, thap: ngang && h < 450, coChat: ngang && h >= 450 && w >= 1200, dai: !ngang && h >= 800 };
@@ -76,7 +82,9 @@
       return '<div class="xh-db ' + lop + '" id="' + id + '">' + XH.av(ten(k), anh(k)) + '<b class="xh-so" id="' + (lop === 'l' ? 'xhDL' : 'xhDR') + '">0</b>' +
         '<span class="xh-dbt"><small class="xh-dbten">' + esc(tenNho(k)) + '</small><small class="xh-tm xh-so">' + XH.bt('tim', 0, 'em') + ' <span id="' + (lop === 'l' ? 'xhTL' : 'xhTR') + '">0</span></small></span></div>';
     };
-    var giua = C.ngang ? '<div class="xh-dhgiua">' + dongHo + r20 + '</div>' : dongHo;
+    // 31/10 thầy: nút DỪNG CHỈ BIỂU TƯỢNG (2 vạch), nhỏ hơn vòng giờ bàn, không ghi số (hết lượt ⇒ mờ) — màn ngang: bên phải vòng giờ bàn [đồng hồ · vòng · DỪNG] · điện thoại dọc: cạnh đồng hồ [đồng hồ · DỪNG]
+    var nutDung = G.xem ? '' : '<button class="xh-dungnut" id="xhDung" type="button" aria-label="Xin tạm dừng 15 giây">' + IC_DUNG + '</button>';
+    var giua = C.ngang ? '<div class="xh-dhgiua">' + dongHo + r20 + nutDung + '</div>' : nutDung ? '<div class="xh-dhgiua doc">' + dongHo + nutDung + '</div>' : dongHo;
     // 31/10 thầy: nhãn TRỰC TIẾP của người xem nằm GIỮA màn, ngay dưới cụm thời gian
     //   màn ngang: trong cột giữa · màn dọc (điện thoại): hàng riêng canh giữa ngay dưới hàng đồng hồ (cột giữa hẹp, nhãn có dãy ảnh)
     var truc = G.xem ? '<span class="xh-truc">TRỰC TIẾP · ' + XH.bt('mat', 0, 'em') + ' <b id="xhSoXem">0</b><span class="xh-trucav" id="xhTrucAv"></span></span>' : '';
@@ -109,6 +117,7 @@
         '<div class="xh-cotg" id="xhCotG">' + oan + go + phim + (C.coChat ? '' : C.thap ? chatManh : chatNho) + '</div></div></div>' +
         (C.coChat ? '<div class="xh-cotc">' + chat + '</div>' : chat) + '</div><div class="xh-che" id="xhChe"></div>';
     }
+    $('#xh7 .xh-khu').insertAdjacentHTML('beforeend', '<div class="xh-dungp" id="xhDungP" hidden role="status" aria-live="polite"></div>');
     $('#xh7').classList.toggle('phimthat', laRong());   // khung rộng: chat gõ bàn phím thật · điện thoại: bàn phím riêng (Telex)
     bp = XH.BanPhim({ goc: $('#xhBp'), o: $('#xhOGia'), goiY: function () { return G.xem ? 'Cổ vũ hai bạn…' : 'Nhắn cho đối thủ…'; }, gui: guiChat });
     var hai = $('#xhHai');
@@ -281,14 +290,46 @@
     [].forEach.call($('#xhOan').children, function (e) { e.classList.toggle('chon', G.sel.indexOf(+e.dataset.k) >= 0); });
     var g = $('#xhGo'); if (g && !g.classList.contains('khoa')) g.innerHTML = G.sel.map(function (k) { return '<span>' + esc(G.chu[k]) + '</span>'; }).join('');
   }
+  function veDung(t) {
+    var x7 = $('#xh7'); if (!x7 || !t) return;
+    var dung = dangDung(t), p = $('#xhDungP'), n = $('#xhDung');
+    x7.classList.toggle('dung', dung);
+    if (n) {
+      var con = DUNG_TOI_DA - ((t.soDung || {})[G.ben] || 0);
+      n.disabled = con <= 0 || dung || !!G.xinDung || t.trangThai !== 'choi' || bay() < t.batDau || bay() > (t.ketThuc || 0) - 3000;
+      n.title = con <= 0 ? 'Em đã dùng hết ' + DUNG_TOI_DA + ' lần tạm dừng' : 'Tạm dừng 15 giây · còn ' + con + ' lần';
+    }
+    if (!p) return;
+    if (!dung) { if (!p.hidden) { p.hidden = true; p.innerHTML = ''; } return; }
+    var d = t.dung, s = Math.max(0, Math.ceil((d.den - bay()) / 1000)), ai = !G.xem && d.ben === G.ben ? 'Em' : ten(d.ben);
+    if (p.hidden || p.dataset.k !== d.ben + d.luc) {
+      p.dataset.k = d.ben + d.luc; p.hidden = false;
+      p.innerHTML = '<div class="xh-dungo"><span class="xh-dungic">' + IC_DUNG + '</span><small>TẠM DỪNG</small><b class="xh-dungai">' + esc(ai) + ' xin tạm dừng</b>' +
+        '<div class="xh-dungso xh-so" id="xhDungDem">' + s + '</div><div class="xh-dungthanh"><u id="xhDungThanh"></u></div>' +
+        '<p>Lần ' + (d.lan || 1) + '/' + DUNG_TOI_DA + ' của ' + esc(ten(d.ben)) + ' · đồng hồ trận đứng yên · chat vẫn dùng được</p></div>';
+    }
+    var dem = $('#xhDungDem'); if (dem) dem.textContent = s;
+    var th = $('#xhDungThanh'); if (th) th.style.width = Math.max(0, Math.min(100, 100 * (d.den - bay()) / DUNG_MS)) + '%';
+  }
+  function xinDung() {
+    var t = G.T; if (G.xem || !t || t.trangThai !== 'choi' || dangDung(t) || G.xinDung || bay() < t.batDau || bay() > (t.ketThuc || 0) - 3000) return;
+    var so = (t.soDung || {})[G.ben] || 0; if (so >= DUNG_TOI_DA) return;
+    G.xinDung = 1; G.sel = []; veGo(); veDung(t);
+    var xong = function () { setTimeout(function () { G.xinDung = 0; if (G.T) veDung(G.T); }, 1200); };
+    if (G.thu) { THU.dung('a'); return xong(); }
+    f.fs.setDoc(f.fs.doc(tRef, 'tu', 'zdung_' + (so + 1) + '_' + G.ben), { uid: G.toi.uid, luc: f.fs.serverTimestamp() })
+      .catch(function (e) { console.warn('[xh] tạm dừng', e); }).finally(xong);
+  }
   function banMs(t) { return t && t.goiEn ? 30000 : 20000; }
   function capGio() {
     var t = G.T; if (!t || !G.dungChoi) return;
     if (G.giu && !G.giuCuoi && !banGiu(t)) return capChoi();   // hết khoảng giữ bàn cũ ⇒ vẽ bàn mới
-    var con = (t.ketThuc || 0) - bay(), g = $('#xhGio');
+    veDung(t);
+    var nay = dangDung(t) ? t.dung.den : bay();   // đang tạm dừng ⇒ đồng hồ đứng yên ở chỗ lúc bấm dừng
+    var con = (t.ketThuc || 0) - nay, g = $('#xhGio');
     g.textContent = XH.dongHo(con); g.classList.toggle('gap', con < 15000);
     // ⭐ 31/10 thầy: bàn gợi ý TIẾNG ANH (câu dài) 30 giây, bàn thường 20 giây — khớp máy chủ XH.banMs
-    var BAN = banMs(t), tuLuc = t.doiLuc || t.batDau || 0, c20 = Math.max(0, Math.min(BAN / 1000, Math.ceil((BAN - (bay() - tuLuc)) / 1000)));   // lúc giữ bàn cũ: đứng ở đầy
+    var BAN = banMs(t), tuLuc = t.doiLuc || t.batDau || 0, c20 = Math.max(0, Math.min(BAN / 1000, Math.ceil((BAN - (nay - tuLuc)) / 1000)));   // lúc giữ bàn cũ: đứng ở đầy
     $('#xhS20').textContent = c20; $('#xhC20').style.strokeDashoffset = 119.4 * (1 - Math.min(BAN / 1000, c20) / (BAN / 1000)); $('#xh20').classList.toggle('gap', c20 <= 5);
     // hết 20 giây mà bàn chưa xong ⇒ người chơi xin máy chủ đổi bàn (hai máy cùng xin thì máy sau bị từ chối — không sao)
     if (!G.xem && !G.thu && c20 <= 0 && bay() - tuLuc > BAN + 300 && t.trangThai === 'choi' && !G.xinDoi[t.van] && bay() < t.ketThuc) {
@@ -312,7 +353,7 @@
   }
   // ---------- gửi từ ----------
   function guiTu() {
-    if (!choiDuoc() || !G.T || G.T.trangThai !== 'choi' || bay() < G.T.batDau || !G.chu.length || G.giu) return;
+    if (!choiDuoc() || !G.T || G.T.trangThai !== 'choi' || bay() < G.T.batDau || !G.chu.length || G.giu || dangDung(G.T)) return;
     var w = G.sel.map(function (k) { return G.chu[k]; }).join('').toLowerCase();
     if (w.length < 2) return;
     // 27/10 tài liệu RIÊNG của mỗi bên (đuôi _a|_b) ⇒ hai em gửi cùng đáp án gần như cùng lúc vẫn tới máy chủ (≤ 400 ms = cả hai được điểm)
@@ -339,13 +380,14 @@
     if (!choiDuoc() || !e.isTrusted) return;
     G.bong = '';  // bấm chuột ⇒ bộ gõ cũng quên chữ đang gõ
     var b = e.target.closest('#xhOan button');
-    if (b) { e.preventDefault(); var k = +b.dataset.k, i = G.sel.indexOf(k); if (!G.chu.length || G.giu) return; if (i >= 0) G.sel.splice(i, 1); else G.sel.push(k); return veGo(); }
+    if (b) { e.preventDefault(); var k = +b.dataset.k, i = G.sel.indexOf(k); if (!G.chu.length || G.giu || dangDung(G.T)) return; if (i >= 0) G.sel.splice(i, 1); else G.sel.push(k); return veGo(); }
     if (e.target.closest('#xhXoa')) { e.preventDefault(); G.sel.pop(); return veGo(); }
     if (e.target.closest('#xhGui')) { e.preventDefault(); return guiTu(); }
   });
   app.addEventListener('click', function (e) {
     var avh = e.target.closest('.xh-av.xh-bamho'); if (avh) return batHo(avh.closest('#xhDbL') ? trai() : phai());
     if (e.target.closest('#xhThoat')) return thoat();
+    if (e.target.closest('#xhDung')) return xinDung();
     if (e.target.closest('#xhChatThanh') || e.target.closest('#xhChatNho') || e.target.closest('#xhChatManh')) return moChat();
     if (e.target.closest('#xhDongChat') || e.target.closest('#xhChe')) return dongChat();
     var n = e.target.closest('#xhNhanh button'); if (n) return guiChat(n.dataset.chu || n.textContent);
@@ -372,7 +414,7 @@
     return r;
   }
   function chonChu(L) {
-    if (!G.chu.length || G.giu) return;
+    if (!G.chu.length || G.giu || dangDung(G.T)) return;
     for (var n = 0; n < G.order.length; n++) { var i = G.order[n]; if (G.chu[i] === L && G.sel.indexOf(i) < 0) { G.sel.push(i); return veGo(); } }
   }
   G.bong = ''; G.xoaGan = []; G.dot = null;
@@ -540,8 +582,8 @@
   // ---------- KẾT QUẢ ----------
   // ⭐ 31/10 thầy chốt KIỂU B (mẫu D:\OTHERS\CLAUDE\XEP HANG MUA - thiet ke\ket-qua-dong-v2): từng dòng điểm bay vào → tổng đếm lên → thanh chạy từ điểm cũ tới điểm mới
   //   (qua mốc thì thanh về đầu chạy tiếp) · lên bậc = băng vàng rơi xuống · lên hạng / giành suất = phủ màn (tia sáng, huy hiệu cũ vỡ, huy hiệu mới, pháo giấy).
-  var CT_TEN = { thang: 'Thắng', chuoi: 'Chuỗi thắng', gioVang: 'Giờ vàng', hoa: 'Hòa', thua: 'Thua', thuaCao: 'Thua bạn hạng cao hơn · không trừ', thuaSat: 'Thua sát bạn hạng cao', boTran: 'Bỏ trận', xepLop: 'Xong 5 trận phân hạng' };
-  var CT_BT = { chuoi: 'lua', gioVang: 'set', thuaSat: 'tay', boTran: 'cua', xepLop: 'huy' };
+  var CT_TEN = { thang: 'Thắng', chuoi: 'Chuỗi thắng', gioVang: 'Giờ vàng', chuNhat: 'Chủ nhật ×1,5', hoa: 'Hòa', thua: 'Thua', thuaCao: 'Thua bạn hạng cao hơn · không trừ', thuaSat: 'Thua sát bạn hạng cao', boTran: 'Bỏ trận', xepLop: 'Xong 5 trận phân hạng' };
+  var CT_BT = { chuoi: 'lua', gioVang: 'set', chuNhat: 'set', thuaSat: 'tay', boTran: 'cua', xepLop: 'huy' };
   var nhanCt = function (k) { return (CT_BT[k] ? XH.bt(CT_BT[k], 16) : '') + esc(CT_TEN[k] || k); };
   // 31/10 máy chủ giữ điểm (khiên / sàn 0 / mốc an toàn 800) mà không ghi dòng chi tiết ⇒ "Thua −22" mà Điểm hạng −2: thêm dòng giải thích phần chênh
   function giuDiem(x, tong) {
@@ -848,6 +890,7 @@
       if (G.xem && q.get('thay')) G.toi = Object.assign({}, G.toi, { uid: 'gv_thu', ten: 'Thầy Andrew', laThay: true });
       G.T = Object.assign({ a: G.xem ? 'u1' : G.toi.uid, b: 'u2', tenA: G.xem ? 'Thiên Phúc' : 'Bảo Nam', tenB: G.xem ? 'Khôi Nguyên' : 'Khánh Linh', lopA: 'A2-B', lopB: 'B1-A', hA: /[?&]xl=1/.test(location.search) ? 'xl:2' : 'vang:II', hB: 'vang:I',
         xh: 'thu', goiEn: !!q.get('en'), trangThai: 'choi', batDau: t0 + 3500, ketThuc: t0 + 3500 + (q.get('kb') ? 3000 : q.get('ngan') ? 15000 : q.get('en') ? 180000 : 120000), doiLuc: t0 + 3500, van: 0, tim: {}, hien: {}, diem: { a: 0, b: 0 } }, ban(0));
+      if (q.get('dungb')) setTimeout(function () { dung('b'); }, 9000);   // ?thu=1&dungb=1 — đối thủ xin tạm dừng
       if (q.get('thayho')) { G.T.hoTro = { ben: 'a', gv: 'gv_thu', luc: t0 }; G.T.daHoTro = { a: true }; }
       G.chat = [{ uid: 'u2', ten: G.T.tenB, vai: 'b', chu: 'Hi! Chơi đẹp nha 😄', luc: t0 - 3000 }];
       capPha();
@@ -881,8 +924,15 @@
       capChoi();
       setTimeout(function () { if (t.trangThai === 'choi') { Object.assign(t, moi); capChoi(); } }, nghi - 150);
     }
+    // giống máy chủ: dừng 15 giây, lùi ketThuc + doiLuc
+    function dung(k) {
+      var t = G.T, b0 = Date.now(), so = (t.soDung || {})[k] || 0; if (so >= DUNG_TOI_DA || dangDung(t)) return;
+      t.dung = { ben: k, luc: b0, den: b0 + DUNG_MS, lan: so + 1 }; t.soDung = Object.assign({}, t.soDung); t.soDung[k] = so + 1;
+      t.ketThuc += DUNG_MS; t.doiLuc += DUNG_MS; capChoi();
+    }
     function may() {
       var t = G.T; if (t.trangThai !== 'choi') return;
+      if (dangDung(t)) { hen = setTimeout(may, 800); return; }
       if (!t.chu || Date.now() < t.doiLuc) { hen = setTimeout(may, 800); return; }
       var b = BAN[t.van % BAN.length], con = b.w.map(function (_, i) { return i; }).filter(function (i) { return !t.tim[i]; });
       if (con.length && Date.now() >= t.batDau) lay(con[Math.floor(Math.random() * con.length)], G.xem ? (Math.random() < .5 ? t.a : t.b) : t.b);
@@ -920,7 +970,7 @@
         t.trangThai = 'xong'; capPha();
       }
     }
-    return { bat: bat, gui: gui, chat: chat, nhip: nhip };
+    return { bat: bat, gui: gui, chat: chat, nhip: nhip, dung: dung };
   })();
 
   NW.dungThanh({ tab: 'khamPha', hop: true }).then(batDau);

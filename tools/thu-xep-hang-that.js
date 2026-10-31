@@ -129,7 +129,31 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     if (doi > 0) { console.log('  … đợi ' + Math.ceil(doi / 1000) + ' giây cho hết 20 giây của bàn'); await ngu(doi); }
     ok('Hết 20 giây: xin đổi bàn', await tu(tk[A], A, 'zhet_' + vanTruoc) === 200);
     T = await cho('đổi bàn', async () => { const x = await docAdmin('tranDau/' + TID); return x && (x.van || 0) > vanTruoc ? x : null; }, 20000);
-    ok('Máy chủ sang bàn mới', (T.van || 0) === vanTruoc + 1, 'bàn ' + ((T.van || 0) + 1) + ': ' + T.chu);
+    ok('Máy chủ sang bàn mới', (T.van || 0) === vanTruoc + 1, 'bàn ' + ((T.van || 0) + 1));
+    // ── 31/10 GIỮ BÀN CŨ: có từ bỏ lỡ ⇒ giữ 4 giây, chữ + gợi ý bàn mới chưa lộ, timCu mang gợi ý + từ bỏ lỡ ──
+    {
+      const tc = T.timCu || {}, con = (T.doiLuc || 0) - Date.now(), w9 = ke[vanTruoc + 1].w[0].toLowerCase() + '_' + (vanTruoc + 1);
+      ok('Giữ bàn cũ: chữ + gợi ý bàn mới CHƯA lộ', T.chu === '' && (T.goi || []).length === 0, 'chu "' + T.chu + '"');
+      ok('Giữ bàn cũ: bàn mới bắt đầu sau ≤ 4 giây', con > 500 && con <= 4100, 'còn ' + con + ' ms');
+      ok('timCu mang gợi ý + từ bỏ lỡ của bàn cũ', tc.van === vanTruoc && (tc.goi || []).length > 0 && Object.keys(tc.hien || {}).length > 0, JSON.stringify(tc.hien));
+      ok('Gửi từ bàn mới trong lúc giữ ⇒ bị xoá', await tu(tk[A], A, w9) === 200 && !!(await cho('xoá từ sớm', async () => !(await docAdmin('tranDau/' + TID + '/tu/' + w9)) || null, 15000)));
+      T = await cho('lộ chữ bàn mới', async () => { const x = await docAdmin('tranDau/' + TID); return x && x.chu ? x : null; }, 15000);
+      const lech = Date.now() - T.doiLuc;
+      ok('Chữ + gợi ý bàn mới lộ đúng lúc hết giữ', T.chu === ke[vanTruoc + 1].l && (T.goi || []).length === ke[vanTruoc + 1].w.length && lech > -1000 && lech < 3000, T.chu + ' · thấy sau doiLuc ' + lech + ' ms');
+    }
+    // ── 31/10 TẠM DỪNG: 15 giây, mỗi em 2 lần · đồng hồ trận + bàn lùi 15 giây · từ gửi lúc dừng bị xoá · xin khi đang dừng bị xoá (xin lại được) ──
+    {
+      const benA = T.a === A ? 'a' : 'b', kt0 = T.ketThuc, dl0 = T.doiLuc;
+      ok('A xin tạm dừng lần 1', await tu(tk[A], A, 'zdung_1_' + benA) === 200);
+      T = await cho('tạm dừng', async () => { const x = await docAdmin('tranDau/' + TID); return x && x.dung ? x : null; }, 15000);
+      ok('Trận ghi dung + soDung', T.dung.ben === benA && T.dung.den - T.dung.luc === 15000 && (T.soDung || {})[benA] === 1, JSON.stringify(T.dung));
+      ok('ketThuc + doiLuc lùi 15 giây', T.ketThuc - kt0 === 15000 && T.doiLuc - dl0 === 15000, (T.ketThuc - kt0) + ' / ' + (T.doiLuc - dl0));
+      const w8 = ke[T.van].w[0].toLowerCase() + '_' + T.van;
+      ok('B gửi từ lúc đang dừng ⇒ bị xoá', await tu(tk[Bb], Bb, w8) === 200 && !!(await cho('xoá từ lúc dừng', async () => !(await docAdmin('tranDau/' + TID + '/tu/' + w8)) || null, 15000)));
+      ok('A xin lần 2 khi đang dừng ⇒ bị xoá', await tu(tk[A], A, 'zdung_2_' + benA) === 200 && !!(await cho('xoá xin dừng', async () => !(await docAdmin('tranDau/' + TID + '/tu/zdung_2_' + benA)) || null, 15000)));
+      ok('soDung vẫn 1', ((await docAdmin('tranDau/' + TID)).soDung || {})[benA] === 1);
+      ok('Luật: B xin dừng mang đuôi bên A bị chặn', await tu(tk[Bb], Bb, 'zdung_1_' + benA) !== 200);
+    }
     // ── A rời trận ⇒ chốt ──
     ok('A rời trận', await ghiGioMay(tk[A], 'tranDau/' + TID + '/nhip/' + A, { luc: I(Date.now()), roi: B(true) }, ['sv'], false) === 200);
     xoa.push('tranDau/' + TID + '/nhip/' + A);

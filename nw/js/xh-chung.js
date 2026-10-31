@@ -96,6 +96,8 @@
     if (M.tt === 'dung') return 'dung';
     return M.tt === 'mo' ? 'mo' : 'sap';
   }
+  // 31/10 thầy: Chủ nhật cả ngày điểm cộng ×1,5 (giờ VN; mùa tắt bằng gioVang.cn === false) — khớp máy chủ xep-hang.js laChuNhat
+  function chuNhatNay(M, bay) { return !!M && (M.gioVang || {}).cn !== false && new Date(bay + 7 * 3600e3).getUTCDay() === 0; }
   function gioVangNay(M, bay) {
     var g = M && M.gioVang; if (!g || !(g.nhan > 1)) return false;
     var d = new Date(bay), p = d.getHours() * 60 + d.getMinutes();
@@ -269,6 +271,6 @@
   }
 
   window.XH = { HANG: HANG, THU_TU: THU_TU, hh: hh, veHH: veHH, hhTag: hhTag, hangTu: hangTu, mocKhien: mocKhien, SUAT_MAC: SUAT_MAC, suatCua: suatCua, laSuat: laSuat, viTriSuat: viTriSuat, hien: hien, av: av, esc: esc, chuTat: chuTat,
-    dongHo: dongHo, conLai: conLai, ngayGio: ngayGio, phutChu: phutChu, muaHienTai: muaHienTai, ttMua: ttMua, gioVangNay: gioVangNay,
+    dongHo: dongHo, conLai: conLai, ngayGio: ngayGio, phutChu: phutChu, muaHienTai: muaHienTai, ttMua: ttMua, gioVangNay: gioVangNay, chuNhatNay: chuNhatNay,
     telexTu: telexTu, BanPhim: BanPhim, bt: bt, doiEmoji: doiEmoji };
 })();

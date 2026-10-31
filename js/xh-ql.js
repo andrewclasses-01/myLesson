@@ -115,7 +115,7 @@
   function veMua(M, T) {
     var g = M.gioVang || {}, sao = M.sao || {};
     var thongSo = '<div class="xhq-tom"><div><small>Bắt đầu</small><b style="font-size:15px">' + E(ngayGio(M.tu)) + '</b></div><div><small>Kết thúc</small><b style="font-size:15px">' + E(ngayGio(M.den)) + '</b></div>' +
-      '<div><small>Thời gian trận</small><b>' + (M.phut || 2) + ' phút</b></div><div><small>Giờ vàng</small><b style="font-size:15px">' + (g.nhan > 1 ? phut(g.tu) + '–' + phut(g.den) + ' · ×' + String(g.nhan).replace('.', ',') : 'Tắt') + '</b></div></div>' +
+      '<div><small>Thời gian trận</small><b>' + (M.phut || 2) + ' phút</b></div><div><small>Giờ vàng</small><b style="font-size:15px">' + (g.nhan > 1 ? phut(g.tu) + '–' + phut(g.den) + ' · ×' + String(g.nhan).replace('.', ',') : 'Tắt') + '</b></div><div><small>Chủ nhật cả ngày</small><b style="font-size:15px">' + (g.cn === false ? 'Tắt' : '×1,5') + '</b></div></div>' +
       '<div class="xhq-sao" style="margin-top:8px">' + HANG.map(function (x) { return '<span>' + chip(x) + ' ' + (sao[x[0]] || 0) + ' ⭐</span>'; }).join('') + '</div>' +
       '<p class="tdq-goi" style="margin-top:8px">Suất: ' + chuSuat(M) + ' · Vàng từ 800 · ai đấu ≥1 trận được Đồng</p>';
     var nut = '';
@@ -144,6 +144,8 @@
       '<span class="tdq-nhan">Giờ vàng (điểm cộng nhân lên)</span><div class="tdq-seg"><button type="button" data-vang="1"' + (vang ? ' class="chon"' : '') + '>Bật</button><button type="button" data-vang="0"' + (vang ? '' : ' class="chon"') + '>Tắt</button></div>' +
       (vang ? '<div class="xhq-o2"><label>Từ<input class="tdq-o" type="time" data-f="gvTu" value="' + phut(g.tu) + '"></label><label>Đến<input class="tdq-o" type="time" data-f="gvDen" value="' + phut(g.den) + '"></label>' +
         '<label>Hệ số<select class="tdq-o" data-f="gvNhan">' + [1.5, 2].map(function (n) { return '<option value="' + n + '"' + (g.nhan === n ? ' selected' : '') + '>×' + String(n).replace('.', ',') + '</option>'; }).join('') + '</select></label></div>' : '') +
+      // 31/10 thầy: Chủ nhật cả ngày điểm cộng ×1,5 (máy chủ xep-hang.js heSoVang) — mặc định Bật; trùng giờ vàng thì lấy hệ số lớn hơn
+      '<span class="tdq-nhan">Chủ nhật cả ngày (điểm cộng ×1,5)</span><div class="tdq-seg"><button type="button" data-cn="1"' + (g.cn !== false ? ' class="chon"' : '') + '>Bật</button><button type="button" data-cn="0"' + (g.cn === false ? ' class="chon"' : '') + '>Tắt</button></div>' +
       '<span class="tdq-nhan">Sao thưởng cuối mùa</span><div class="xhq-sao">' +
       HANG.map(function (h) { return '<label>' + chip(h) + '<input class="tdq-o" inputmode="numeric" data-sao="' + h[0] + '" value="' + ((x.sao || {})[h[0]] || 0) + '"></label>'; }).join('') + '</div>' +
       '<span class="tdq-nhan">Suất hạng cao (theo thứ hạng lúc hết mùa · số suất + điểm sàn) — Đồng/Bạc/Vàng theo điểm cao nhất, Vàng từ 800</span><div class="xhq-suat">' +
@@ -172,7 +174,8 @@
     b = $('[data-thoi]', th); if (b) b.onclick = function () { S.sua = null; veThan(); };
     $$('[data-dai]', th).forEach(function (x) { x.onclick = function () { docForm(); var d = new Date(S.sua.tu + +x.dataset.dai * 864e5); d.setHours(21, 0, 0, 0); S.sua.den = d.getTime(); veThan(); }; });
     $$('[data-phut]', th).forEach(function (x) { x.onclick = function () { docForm(); S.sua.phut = +x.dataset.phut; veThan(); }; });
-    $$('[data-vang]', th).forEach(function (x) { x.onclick = function () { docForm(); S.sua.gioVang = x.dataset.vang === '1' ? { tu: (S.sua.gioVang || {}).tu || 1170, den: (S.sua.gioVang || {}).den || 1260, nhan: 1.5 } : { tu: 0, den: 0, nhan: 1 }; veThan(); }; });
+    $$('[data-vang]', th).forEach(function (x) { x.onclick = function () { docForm(); var cn = (S.sua.gioVang || {}).cn; S.sua.gioVang = x.dataset.vang === '1' ? { tu: (S.sua.gioVang || {}).tu || 1170, den: (S.sua.gioVang || {}).den || 1260, nhan: 1.5 } : { tu: 0, den: 0, nhan: 1 }; if (cn === false) S.sua.gioVang.cn = false; veThan(); }; });
+    $$('[data-cn]', th).forEach(function (x) { x.onclick = function () { docForm(); S.sua.gioVang = Object.assign({}, S.sua.gioVang, { cn: x.dataset.cn === '1' }); veThan(); }; });
     b = $('[data-luu]', th); if (b) b.onclick = luuMua;
     b = $('[data-xoa]', th); if (b) b.onclick = xoaMua;
     b = $('[data-dung]', th); if (b) b.onclick = function () { doiTT('dung'); };
@@ -185,7 +188,7 @@
     if (v('ten') != null) x.ten = v('ten').trim();
     if (v('tu') != null) x.tu = tuOGio(v('tu'));
     if (v('den') != null) x.den = tuOGio(v('den'));
-    if (v('gvTu') != null) x.gioVang = { tu: tuPhut(v('gvTu')), den: tuPhut(v('gvDen')), nhan: +v('gvNhan') || 1.5 };
+    if (v('gvTu') != null) x.gioVang = { tu: tuPhut(v('gvTu')), den: tuPhut(v('gvDen')), nhan: +v('gvNhan') || 1.5, cn: (x.gioVang || {}).cn };
     x.sao = x.sao || {}; $$('[data-sao]', th).forEach(function (i) { x.sao[i.dataset.sao] = Math.max(0, Math.min(500, parseInt(i.value, 10) || 0)); });
     if ($('[data-sn]', th)) x.suat = SUAT_MAC.map(function (s) {
       var n = $('[data-sn="' + s.t + '"]', th), sn = $('[data-ss="' + s.t + '"]', th);
@@ -201,7 +204,7 @@
     else if (x.tu < b - 60000) loi = 'Ngày bắt đầu đã qua — chọn giờ ở tương lai (mùa bắt đầu là khoá thông số).';
     else if (g.nhan > 1 && (g.tu == null || g.den == null || g.tu === g.den)) loi = 'Giờ vàng chưa đúng.';
     if (loi) { $('#xhqLoi').textContent = loi; return; }
-    var doc = { ten: x.ten.slice(0, 60), tu: x.tu, den: x.den, phut: x.phut || 2, gioVang: { tu: g.tu || 0, den: g.den || 0, nhan: g.nhan > 1 ? g.nhan : 1 },
+    var doc = { ten: x.ten.slice(0, 60), tu: x.tu, den: x.den, phut: x.phut || 2, gioVang: { tu: g.tu || 0, den: g.den || 0, nhan: g.nhan > 1 ? g.nhan : 1, cn: g.cn !== false },
       sao: {}, suat: suatCua(x).map(function (s) { return { t: s.t, n: s.n, san: s.san }; }), tt: 'mo', capNhat: b };
     HANG.forEach(function (h) { doc.sao[h[0]] = (x.sao || {})[h[0]] || 0; });
     try {

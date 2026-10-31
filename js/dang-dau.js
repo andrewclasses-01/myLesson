@@ -18,6 +18,8 @@
      CHỈ khi tab đang hiện và có chỗ vẽ còn gắn trên trang; tab ẩn thì nghỉ, hiện lại thì hỏi ngay. Giờ nghỉ đêm (GioiHan) không hỏi.
    Vào xem: nw/xhtran.html?id=… (máy là người chơi thì tự thành người chơi) · Đấu ngay: nw/xephang.html?tim=1 (sảnh tự bấm Tìm trận).
    Bàn thử (localhost + ?thu=…): 5 trận mẫu, không đọc kho · thêm &ddn=0 ⇒ không có trận.
+   ⭐ v1.470.0 (31/10 thầy): thêm PHÒNG CHỜ công khai (xhPhong where mua == mùa, cùng nhịp hỏi lại) — chip/bong bóng/dòng viền đứt vàng "PHÒNG CHỜ",
+     bấm = nw/xephang.html?xemphong=<uid> (vào xem phòng, cùng hạng thì THAM GIA). Phòng của chính em / đã vào trận / nhịp cũ hơn 30 giây ⇒ bỏ.
    Lớp CSS tiền tố `ddn-` (tự chèn).
    ============================================================ */
 (function () {
@@ -29,7 +31,7 @@
   var an = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); };
   var MAU = ['#E0A11B', '#E5587A', '#12A58F', '#1C7FD6', '#8B5CF6', '#E07B2C', '#2BAE66', '#3B82F6', '#C2410C', '#0891B2'];
   var laThu = function () { return /^(localhost|127\.0\.0\.1)$/.test(location.hostname) && /[?&]thu=/.test(location.search); };
-  var S = { ds: [], mua: '', muaLuc: 0, hen: 0, dang: false, cho: [], toi: '' };
+  var S = { ds: [], ph: [], mua: '', muaLuc: 0, hen: 0, dang: false, cho: [], toi: '' };
 
   // ---------- giao diện ----------
   function napCss() {
@@ -94,7 +96,13 @@
       '.ddn-dau[disabled]{opacity:.4;filter:grayscale(.7);box-shadow:none;cursor:not-allowed}' +
       '.ddn-td{flex:none;width:34px;height:34px;border-radius:10px;border:1.5px solid #12A58F;background:#fff;color:#0F7A6C;display:grid;place-items:center;cursor:pointer;padding:0}.ddn-td:hover{background:#E8F6F2}' +
       '.ddn-td svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}' +
-      '.ddn-xo.cg{left:8px;right:8px;width:auto;top:calc(100% + 4px);max-height:min(60vh,380px)}';
+      '.ddn-xo.cg{left:8px;right:8px;width:auto;top:calc(100% + 4px);max-height:min(60vh,380px)}' +
+      /* v1.470.0 phòng chờ */
+      '.ddn-chip.ph{border-style:dashed;border-color:#E2B53E;background:#FFFBEF}.ddn-chip.ph:hover{border-color:#C48E0E}' +
+      '.ddn-pc{flex:none;font:800 10px/1 "Saira",system-ui,sans-serif;letter-spacing:.08em;color:#7A5300;background:#FFE08A;border-radius:5px;padding:3px 5px}' +
+      '.ddn-dong.ph{grid-template-columns:minmax(0,1fr) auto}.ddn-dong.ph .ddn-trt{font:800 11px/1.2 "Saira",system-ui,sans-serif;letter-spacing:.06em;color:#A06E00;text-align:right}' +
+      '.ddn-bong.ph .ddn-vong{background:conic-gradient(#F2B315,#FFE08A,#F2B315)}.ddn-bong.ph .ddn-vong .ddn-a{width:44px;height:44px;left:5px;top:5px;font-size:14px}' +
+      '.ddn-bong.ph .ddn-live{background:#F2B315;color:#2A1A00}.ddn-bong .ddn-ph{font-weight:700;font-size:11.5px;line-height:1.1;max-width:64px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}';
     document.head.appendChild(s);
   }
   var BIEU = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>';
@@ -111,6 +119,23 @@
       '<span class="ddn-b">' + av(tenA(t), t.anhA) + '<span class="ddn-nm"><b>' + an(tenA(t)) + '</b><small>' + an(t.lopA || '') + '</small></span></span>' + so(t) +
       '<span class="ddn-b r">' + av(tenB(t), t.anhB) + '<span class="ddn-nm"><b>' + an(tenB(t)) + '</b><small>' + an(t.lopB || '') + '</small></span></span></button>';
   }
+  // ---------- v1.470.0 phòng chờ ----------
+  var TT_PH = function (x) { return x.tran ? 'ĐÃ CÓ ĐỐI THỦ' : x.pha === 'tim' ? 'ĐANG TÌM' : 'ĐANG CHỜ'; };
+  function chipPh(x) {
+    return '<button type="button" class="ddn-chip ph" data-ddnp="' + an(x.uid) + '" title="Vào phòng chờ của ' + an(x.ten) + '"><span class="ddn-pc">PHÒNG CHỜ</span>' + av(x.ten, x.anh) +
+      '<span class="ddn-n">' + an(x.ten) + '</span></button>';
+  }
+  function dongPh(x) {
+    return '<button type="button" class="ddn-dong ph" data-ddnp="' + an(x.uid) + '" title="Vào phòng chờ"><span class="ddn-b">' + av(x.ten, x.anh) +
+      '<span class="ddn-nm"><b>' + an(x.ten) + '</b><small>' + an(x.lop || '') + '</small></span></span><span class="ddn-trt"><span class="ddn-pc">PHÒNG CHỜ</span><br>' + TT_PH(x) + '</span></button>';
+  }
+  var demChu = function () { var a = S.ds.length, b = S.ph.length; return (a ? a + ' trận' : '') + (a && b ? ' · ' : '') + (b ? b + ' phòng' : ''); };
+  var dongHet = function () { return S.ds.map(dong).join('') + S.ph.map(dongPh).join(''); };
+  var chongAv = function () { return S.ds.map(function (t) { return av(tenA(t), t.anhA); }).concat(S.ph.map(function (x) { return av(x.ten, x.anh); })).slice(0, 3).join(''); };
+  function diPhong(uid) {
+    var u = GOC + 'nw/xephang.html?' + (laThu() ? 'thu=1&' : '') + 'xemphong=' + encodeURIComponent(uid);
+    if (/dashboard\.html$/.test(location.pathname)) window.open(u, '_blank'); else location.href = u;
+  }
   function diXem(id) {
     var u = GOC + 'nw/xhtran.html?id=' + encodeURIComponent(id) + (laThu() ? '&thu=1&xem=1' : '');
     if (/dashboard\.html$/.test(location.pathname)) window.open(u, '_blank');   // v1.438.0 — thầy xem từ dải chat dashboard: tab mới, không rời trang quản lý
@@ -122,23 +147,23 @@
   var VUA = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
   function veThanh(c) {
     var ds = S.ds, el = c.el;
-    if (!ds.length) { dongXo(c); if (el.innerHTML) el.innerHTML = ''; el.hidden = true; caoThanh(); return; }   // không có trận ⇒ không hiện gì
+    if (!ds.length && !S.ph.length) { dongXo(c); if (el.innerHTML) el.innerHTML = ''; el.hidden = true; caoThanh(); return; }   // không có trận / phòng ⇒ không hiện gì
     el.hidden = false;
     el.innerHTML = '<div class="ddn-t"><span class="ddn-ten"><i class="ddn-cham"></i>A SHOW <em>SPEED</em></span>' +
       '<div class="ddn-ds">' + ds.map(function (t) {
         return '<button type="button" class="ddn-chip" data-ddn="' + an(t.id) + '" title="Xem trận">' + av(tenA(t), t.anhA) + '<span class="ddn-n">' + an(tenA(t)) + '</span>' + so(t) +
           '<span class="ddn-n">' + an(tenB(t)) + '</span>' + av(tenB(t), t.anhB) + '</button>';
-      }).join('') + '</div>' +
-      '<button type="button" class="ddn-dem" data-ddn-mo><span class="ddn-chong">' + ds.slice(0, 3).map(function (t) { return av(tenA(t), t.anhA); }).join('') + '</span>' + ds.length + ' trận</button>' +
+      }).join('') + S.ph.map(chipPh).join('') + '</div>' +
+      '<button type="button" class="ddn-dem" data-ddn-mo><span class="ddn-chong">' + chongAv() + '</span>' + demChu() + '</button>' +
       '<button type="button" class="ddn-dau" data-ddn-dau>⚡ ĐẤU<span class="ddn-ngay"> NGAY</span></button>' +
       '<button type="button" class="ddn-mo' + (c.xo ? ' on' : '') + '" data-ddn-mo aria-label="Danh sách trận">' + VUA + '</button></div>';
-    if (c.xo) { if (c.che && c.xoEl && c.xoEl.isConnected) c.xoEl.innerHTML = ds.map(dong).join(''); else veXo(c); }   // tấm trượt đang mở: chỉ thay chữ, không nảy lại
+    if (c.xo) { if (c.che && c.xoEl && c.xoEl.isConnected) c.xoEl.innerHTML = dongHet(); else veXo(c); }   // tấm trượt đang mở: chỉ thay chữ, không nảy lại
     caoThanh();
   }
   function laDt() { return window.matchMedia && matchMedia('(max-width:640px)').matches; }
   function veXo(c) {
     dongXo(c, true);
-    var xo = document.createElement('div'); xo.className = 'ddn-xo' + (laDt() ? ' truot' : c.loai === 'chat' ? ' cg' : ''); xo.innerHTML = S.ds.map(dong).join('');
+    var xo = document.createElement('div'); xo.className = 'ddn-xo' + (laDt() ? ' truot' : c.loai === 'chat' ? ' cg' : ''); xo.innerHTML = dongHet();
     if (laDt()) { var che = document.createElement('div'); che.className = 'ddn-che'; che.onclick = function () { dongXo(c); }; document.body.appendChild(che); document.body.appendChild(xo); c.che = che; }
     else (c.loai === 'chat' ? c.el : c.el.firstChild).appendChild(xo);   // dải chat: xổ dưới dải, phủ lên tin nhắn
     xo.addEventListener('click', bam);
@@ -151,21 +176,21 @@
   // ---------- C · dải ghim đầu khung chat nhóm lớp (28/10 thầy chốt mẫu dang-dau-chat-v1) ----------
   // Khác thanh A: KHÔNG có trận vẫn hiện (A SHOW SPEED + ⚡ ĐẤU NGAY) · thầy (c.dau = false) không có nút Đấu · ẩn/hiện do ChatUI (phòng riêng thì ẩn).
   function veChat(c) {
-    var ds = S.ds, el = c.el, trong = !ds.length;
+    var ds = S.ds, el = c.el, trong = !ds.length && !S.ph.length;
     if (trong) dongXo(c);
     el.innerHTML = '<div class="ddn-g' + (trong ? ' trong' : '') + '"><span class="ddn-ten"><i class="ddn-cham"></i>A SHOW <em>SPEED</em></span>' +
       (trong ? '<span class="ddn-giua"></span>' :
-        '<div class="ddn-giua"><button type="button" class="ddn-dem" data-ddn-mo><span class="ddn-chong">' + ds.slice(0, 3).map(function (t) { return av(tenA(t), t.anhA); }).join('') + '</span>' + ds.length + ' trận ' + VUA + '</button>' +
+        '<div class="ddn-giua"><button type="button" class="ddn-dem" data-ddn-mo><span class="ddn-chong">' + chongAv() + '</span>' + demChu() + ' ' + VUA + '</button>' +
         '<div class="ddn-ds">' + ds.map(function (t) {
           return '<button type="button" class="ddn-chip" data-ddn="' + an(t.id) + '" title="Xem trận">' + av(tenA(t), t.anhA) + '<span class="ddn-n">' + an(tenA(t)) + '</span>' + so(t) +
             '<span class="ddn-n">' + an(tenB(t)) + '</span>' + av(tenB(t), t.anhB) + '</button>';
-        }).join('') + '</div></div>' +
+        }).join('') + S.ph.map(chipPh).join('') + '</div></div>' +
         '<button type="button" class="ddn-mo' + (c.xo ? ' on' : '') + '" data-ddn-mo aria-label="Danh sách trận">' + VUA + '</button>') +
       (c.dau ? '<button type="button" class="ddn-dau" data-ddn-dau>⚡ ĐẤU<span class="ddn-ngay"> NGAY</span></button>'
         // v1.445.0 (29/10 thầy): bản thầy vẫn thấy nút ĐẤU nhưng mờ, không bấm được · 📊 mở Quản lý giải đấu (chỉ trang có window.TdQl = dashboard)
         : '<button type="button" class="ddn-dau" disabled title="Chỉ học sinh mới tìm trận được">⚡ ĐẤU<span class="ddn-ngay"> NGAY</span></button>' +
           (window.TdQl ? '<button type="button" class="ddn-td" data-ddn-td title="Theo dõi A Show Speed" aria-label="Theo dõi A Show Speed">' + BIEU + '</button>' : '')) + '</div>';
-    if (c.xo) { if (c.che && c.xoEl && c.xoEl.isConnected) c.xoEl.innerHTML = ds.map(dong).join(''); else veXo(c); }
+    if (c.xo) { if (c.che && c.xoEl && c.xoEl.isConnected) c.xoEl.innerHTML = dongHet(); else veXo(c); }
   }
   function caoThanh() {
     var el = document.getElementById('dangDau');
@@ -174,18 +199,22 @@
   // ---------- B · hàng bong bóng ----------
   function veHang(c) {
     var ds = S.ds, el = c.el;
-    if (!ds.length) { if (el.innerHTML) el.innerHTML = ''; el.hidden = true; return; }
+    if (!ds.length && !S.ph.length) { if (el.innerHTML) el.innerHTML = ''; el.hidden = true; return; }
     el.hidden = false;
     el.innerHTML = '<div class="ddn-h"><button type="button" class="ddn-bong dn" data-ddn-dau title="Đấu ngay"><span class="ddn-vong"><span>' + SET + '</span></span><span class="ddn-chu">Đấu ngay</span></button>' +
       ds.map(function (t) {
         return '<button type="button" class="ddn-bong" data-ddn="' + an(t.id) + '" title="' + an(tenA(t) + ' – ' + tenB(t)) + '"><span class="ddn-vong"><span>' + av(tenA(t), t.anhA, 'l') + av(tenB(t), t.anhB, 'r') +
           '<i class="ddn-live">LIVE</i></span></span>' + so(t) + '</button>';
+      }).join('') + S.ph.map(function (x) {
+        return '<button type="button" class="ddn-bong ph" data-ddnp="' + an(x.uid) + '" title="Phòng chờ của ' + an(x.ten) + '"><span class="ddn-vong"><span>' + av(x.ten, x.anh) +
+          '<i class="ddn-live">PHÒNG</i></span></span><span class="ddn-ph">' + an(x.ten) + '</span></button>';
       }).join('') + '</div>';
   }
 
   // ---------- bấm ----------
   function bam(e) {
     var x = e.target.closest('[data-ddn]'); if (x) { e.preventDefault(); e.stopPropagation(); return diXem(x.getAttribute('data-ddn')); }
+    var xp = e.target.closest('[data-ddnp]'); if (xp) { e.preventDefault(); e.stopPropagation(); return diPhong(xp.getAttribute('data-ddnp')); }
     if (e.target.closest('[data-ddn-dau]')) { e.preventDefault(); e.stopPropagation(); return diDau(); }
     if (e.target.closest('[data-ddn-td]')) { e.preventDefault(); e.stopPropagation(); if (window.TdQl) TdQl.mo({ the: 'xh' }); return; }
     var m = e.target.closest('[data-ddn-mo]');
@@ -211,20 +240,32 @@
   }
   function kho() { return window.TheTD && TheTD.kho ? TheTD.kho() : (window.NW && NW.fb) ? NW.fb() : Promise.reject(new Error('chưa có kho')); }
   async function nap() {
-    if (laThu()) { S.ds = mauThu(); return; }
-    if (window.GioiHan && GioiHan.cai && GioiHan.dem && GioiHan.dem()) { S.ds = []; return; }   // giờ nghỉ đêm: không ai đấu được
+    if (laThu()) { S.ds = mauThu(); S.ph = /[?&]ddn=0/.test(location.search) ? [] : [{ uid: 'p1', ten: 'Minh Châu', lop: 'A2-B', pha: 'cho', tran: '' }, { uid: 'p2', ten: 'Gia Huy', lop: 'B2-A', pha: 'tim', tran: '' }]; return; }
+    if (window.GioiHan && GioiHan.cai && GioiHan.dem && GioiHan.dem()) { S.ds = []; S.ph = []; return; }   // giờ nghỉ đêm: không ai đấu được
     var f = await kho();
     if (!S.muaLuc || Date.now() - S.muaLuc > MUA_HAN) {
       var c = await f.fs.getDoc(f.fs.doc(f.db, 'caiDat', 'xepHang'));
       S.mua = c.exists() ? String(c.data().mua || '') : ''; S.muaLuc = Date.now();
     }
-    if (!S.mua) { S.ds = []; return; }
+    if (!S.mua) { S.ds = []; S.ph = []; return; }
     var s = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'tranDau'), f.fs.where('xh', '==', S.mua), f.fs.where('trangThai', '==', 'choi'), f.fs.limit(30)));
     var bay = Date.now(), ds = [];
     s.forEach(function (d) { var t = d.data(); if ((t.ketThuc || 0) > bay - 5000) { t.id = d.id; ds.push(t); } });
     // v1.439.0 (28/10 thầy: mọi nơi xem trận đang đấu — trận bắt đầu TRƯỚC ở trên, trận mới xuống dưới)
     ds.sort(function (x, y) { return ((x.batDau || x.ketThuc || 0) - (y.batDau || y.ketThuc || 0)) || (x.id < y.id ? -1 : 1); });
     S.ds = ds;
+    // v1.470.0 — phòng chờ công khai (luật xhPhong: ai đăng nhập cũng đọc) — hỏng thì bỏ qua, không ảnh hưởng trận
+    try {
+      var q = await f.fs.getDocs(f.fs.query(f.fs.collection(f.db, 'xhPhong'), f.fs.where('mua', '==', S.mua), f.fs.limit(60)));
+      var ph = [], da = {};
+      q.forEach(function (d) {
+        var x = d.data(), luc = x.luc && x.luc.toMillis ? x.luc.toMillis() : 0;
+        if (d.id === S.toi || x.pha === 'vao' || luc < bay - 30000) return;
+        if (x.tran) { if (da[x.tran]) return; da[x.tran] = 1; }
+        x.uid = d.id; ph.push(x);
+      });
+      S.ph = ph;
+    } catch (e) { S.ph = []; }
   }
   // chỗ vẽ "đang hiện" = còn gắn trên trang và KHUNG CHỨA nó có hình (khung Tin nhắn giữ sống nw/tinnhan.html?nhung=1 nằm trong iframe ẩn ⇒ không có)
   function coChoHien() { return S.cho.some(function (c) { var p = c.loai === 'chat' ? c.el : c.el.parentElement; return c.el.isConnected && !!p && p.getClientRects().length > 0; }); }   // dải chat: chính nó (phòng riêng thì ChatUI ẩn dải)
@@ -249,7 +290,7 @@
     S.cho.push(c);
     el.addEventListener('click', bam);
     if (window.TheTD && TheTD.toi && !S.toi) TheTD.toi().then(function (x) { S.toi = (x && x.uid) || ''; }).catch(function () { });
-    if (S.ds.length || S.daNap || loai === 'chat') ve1(c);   // dải chat hiện ngay (chưa có số liệu = như không có trận)
+    if (S.ds.length || S.ph.length || S.daNap || loai === 'chat') ve1(c);   // dải chat hiện ngay (chưa có số liệu = như không có trận)
     if (!S.hen && !S.dang) vong().then(function () { S.daNap = true; });
   }
   window.DangDau = {

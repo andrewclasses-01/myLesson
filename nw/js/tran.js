@@ -372,7 +372,7 @@ async function submit() {
   if (!w) return;
   G.sel = []; renderBoard();
   if (che()) return submitBo(w);
-  if (!lookup(dict, w)) { sfx.bad(-.65); return bubble("bad", "?"); }
+  if (!lookup(dict, w)) { SAI_LUYEN++; sfx.bad(-.65); return bubble("bad", "?"); }
   if (TU.has(w)) { sfx.dup(-.65); return bubble("dup", TU.get(w).uid === myUid() ? "Found" : "Taken"); }
   const p = points(w.length);
   sfx.ok(-.65, p); bubble("ok", "+" + p);
@@ -395,7 +395,7 @@ async function submitBo(w) {
     let p;
     if (i >= 0) { if (tim[i]) return trung({ uid: tim[i] }); p = diemBai(up); }
     else if (che() === "free" && !T.chiBo && w.length >= 3 && lookup(dict, w)) { if (TU.has(id)) return trung(TU.get(id)); p = points(w.length); }
-    else { sfx.bad(-.65); return bubble("bad", "?"); }
+    else { SAI_LUYEN++; sfx.bad(-.65); return bubble("bad", "?"); }
     sfx.ok(-.65, p); bubble("ok", "+" + p);
     return apTu(w, myUid(), true);
   }
@@ -858,9 +858,31 @@ async function chayBanThu() {
         const a = diemBen("a"), b = diemBen("b"); G.T.diem = { a, b }; G.T.kq = { a: a > b ? "thang" : a < b ? "thua" : "hoa", b: a > b ? "thua" : a < b ? "thang" : "hoa" };
         if (G.T.che) { const bb = KE_THU[vanNay()]; G.T.lo = bb ? bb.w.map((w, i) => ({ w, m: bb.m[i] })).filter((_, i) => !G.T.tim[i]) : []; }
         G.T.trangThai = "xong"; capNhatPha();
+        ghiLuyen(boGiai);
       }, 1500);
     }
   }, 500);
+}
+
+// ⭐ v1.463.0 (31/10/2026, thầy chốt) — GHI LƯỢT LUYỆN TẬP: ván luyện với máy xong ⇒ một phiếu `tdLuyen/{tự sinh}` (chỉ tạo; luật
+//   tools/dang-luat-luyen-tap.js) cho tab Luyện tập của hồ sơ Giải đấu trên dashboard (js/hs-gd.js). Bàn thử / thầy chơi thử ⇒ không ghi.
+let daGhiLuyen = false, SAI_LUYEN = 0;   // SAI_LUYEN: số lần gõ từ không có ("?") ở máy em
+async function ghiLuyen(boGiai) {
+  if (!LUYEN || daGhiLuyen || NW.laBanThu() || !NW.toi || NW.toi.laThay || !NW.toi.uid) return;
+  daGhiLuyen = true;
+  try {
+    let dung = 0, sai = SAI_LUYEN, dai = "";
+    TU.forEach((x) => { if (x.uid !== G.T.a) return; if (x.ok === false) sai++; else { dung++; if ((x.w || "").length > dai.length) dai = x.w || ""; } });
+    const so = (n, max) => Math.max(0, Math.min(max, Math.round(+n || 0)));
+    const f = await NW.fb();
+    await f.fs.addDoc(f.fs.collection(f.db, "tdLuyen"), {
+      uid: NW.toi.uid, ten: String(NW.toi.ten || "").slice(0, 60), lop: String(q.get("lop") || "").slice(0, 20), luc: f.fs.serverTimestamp(),
+      phut: G.T.phut, may: [1, 2, 3].includes(+q.get("may")) ? +q.get("may") : 2, bo: boGiai ? "g" : "n",
+      boTen: String((boGiai && boGiai.ten) || "").slice(0, 80), giai: boGiai ? String(q.get("giai") || "").slice(0, 40) : "", che: G.T.che || "",
+      diem: so(G.T.diem.a, 5000), dm: so(G.T.diem.b, 5000), kq: G.T.kq.a, dung: so(dung, 500), sai: so(sai, 500), dai: dai.toUpperCase().slice(0, 16),
+      lam: so(Math.min(Date.now(), G.T.ketThuc) - G.T.batDau, 400000)
+    });
+  } catch (e) { console.warn("[luyện tập] chưa ghi được lượt", e); }
 }
 
 // phiên đăng nhập (không vẽ thanh trên — trận chiếm cả màn) rồi mới vào trận

@@ -4108,6 +4108,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <link rel="stylesheet" href="css/tb-ql.css?v=2">   <!-- 20/10/2026 v1.379.0 hộp THÔNG BÁO -->
 <link rel="stylesheet" href="css/sao-dash2.css?v=5">
 <link rel="stylesheet" href="css/td-ql.css?v=3">
+<link rel="stylesheet" href="css/hs-gd.css?v=1"><!-- ⭐ v1.463.0 pop-up Giải đấu của một em (js/hs-gd.js) -->
 <link rel="stylesheet" href="css/sao-khoe.css?v=1">   <!-- 24/10/2026 v1.416.0 THẺ KHOE SAO -->   <!-- 24/10/2026 v1.415.0 hộp QUẢN LÝ THÁCH ĐẤU -->
 <script src="js/cai-app.js?v=2"></script>   <!-- v1.245.0 nạp ĐỒNG BỘ trước script dựng menu ☰ -->
 <script src="js/day.js?v=6"></script>   <!-- v1.255.0 thông báo đẩy (nút "Bật thông báo" trong menu ☰) -->
@@ -15820,7 +15821,7 @@ tr.qm-hang-tam td{background:#fffbeb}
      "Xem như em" phải mở tab mới trong một cú bấm (trình duyệt chặn tab tự mở) ⇒ hiện dải nút "Mở xem như <tên>". */
   (function acmTuLink() {
     var q = new URLSearchParams(location.search), loai = q.get('acm'), ma = q.get('ma') || '', ten = q.get('ten') || '', lop = q.get('lop') || '';
-    if (!/^(vi|hs|xem)$/.test(loai || '') || !ma) return;
+    if (!/^(vi|hs|xem|gd)$/.test(loai || '') || !ma) return;
     try { history.replaceState(null, '', location.pathname); } catch (e) { }
     var n = 0, hen = setInterval(function () {
       if (++n > 120) return clearInterval(hen);
@@ -15828,6 +15829,7 @@ tr.qm-hang-tam td{background:#fffbeb}
       clearInterval(hen);
       if (loai === 'vi') return SaoDash.moVi({ ma: ma, ten: ten, lop: lop });
       if (loai === 'hs') return window.__moHoSoHs(ma, ten);
+      if (loai === 'gd') return window.HsGd && HsGd.mo({ uid: q.get('uid') || '', ma: ma, ten: ten, lop: lop });   // v1.463.0
       var d = document.createElement('div');
       d.style.cssText = 'position:fixed;z-index:9500;left:50%;top:76px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;padding:10px 12px 10px 16px;border-radius:14px;background:#16232A;color:#fff;font:600 14px var(--font);box-shadow:0 12px 30px rgba(0,0,0,.25)';
       d.innerHTML = '<span>Mở chế độ xem như <b>' + qmE(ten || ma) + '</b>?</span><button type="button" data-c style="border:0;border-radius:10px;padding:8px 14px;background:#2E9E6B;color:#fff;font:800 13.5px var(--font);cursor:pointer">Mở xem như em</button><button type="button" data-k style="border:0;background:none;color:#9AB;font:700 18px var(--font);cursor:pointer">×</button>';
@@ -17470,7 +17472,8 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/sao-dash.js?v=11"></script>
 <script src="js/sao-khoe.js?v=1"></script>   <!-- 24/10/2026 v1.416.0 THẺ KHOE SAO (bấm đúp dòng lịch sử sao) -->
 <script src="js/duyet-anh.js?v=8"></script>
-<script src="js/td-xem.js?v=1"></script>   <!-- 29/10/2026 v1.446.0 THEO DÕI A SHOW SPEED: tab trận · chi tiết · hồ sơ em · bảng xếp hạng (trong hộp Quản lý giải đấu) -->
+<script src="js/td-xem.js?v=2"></script>   <!-- 29/10/2026 v1.446.0 THEO DÕI A SHOW SPEED: tab trận · chi tiết · hồ sơ em · bảng xếp hạng (trong hộp Quản lý giải đấu) -->
+<script src="js/hs-gd.js?v=1"></script>   <!-- 31/10/2026 v1.463.0 chuột phải học sinh ⇒ "Giải đấu": hồ sơ A Show Speed của em (xếp hạng · giải · giao hữu · luyện tập tdLuyen) -->
 <script src="js/td-ql.js?v=6"></script>   <!-- 24/10/2026 v1.415.0 hộp QUẢN LÝ GIẢI ĐẤU (tên cũ Quản lý thách đấu; v1.446.0 4 thẻ + dải + ⚙) (nwCauHinh/thachDau, đọc ở js/the-td.js TdQuan) -->
 <script src="js/xh-ql.js?v=6"></script>   <!-- 25/10/2026 MÙA XẾP HẠNG (mục trong Quản lý thách đấu): tạo mùa · khoá khi chạy · tạm dừng · chốt & phát sao -->
 <script src="js/tb-pop.js?v=1"></script>   <!-- 20/10/2026 v1.379.0 vẽ pop-up thông báo -->
@@ -17482,7 +17485,7 @@ tr.qm-hang-tam td{background:#fffbeb}
 <script src="js/cat-anh.js?v=4"></script>   <!-- 05/10/2026 v1.251.0 bộ cắt ảnh đại diện dùng chung (zoom + khung đầu-vai) · v1.252.0 khung sửa + bộ sưu tập -->
 <script src="js/ktdv-ql.js?v=23"></script>
 <script src="js/nhap-so.js?v=1"></script>   <!-- 07/10/2026 cuộn chuột không đổi số + Enter nhận ô -->   <!-- 02/10/2026 KT ĐẦU VÀO (Kho bài) -->
-<script src="js/chuot-phai.js?v=5"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
+<script src="js/chuot-phai.js?v=6"></script>   <!-- v1.364.0 chuột phải / nhấn giữ riêng + bấm avatar mở trang cá nhân + thành viên nhóm lớp -->
 <script src="js/huy-hieu.js?v=1"></script>   <!-- 24/10/2026 v1.418.0 huy hiệu Chiến binh sau tên -->
 <script src="js/nop-sach.js?v=2"></script>   <!-- v1.387.0 NỘP BÀI SÁCH: đọc lessonSach · v1.397.0 chờ máy kiểm 180 s -->
 <script src="js/cham-sach.js?v=17"></script>   <!-- v1.451.0 dấu máy không bị khuất ngoài khung trang · v1.450.0 cột tên không cuộn ngang + ô ảnh nhỏ cố định + dấu ĐÃ SỬA + bấm đúp ĐẠT mọi trường hợp · v1.449.0 cột ảnh nhỏ trang + nút lên thanh trên + cột AI tự gọn · v1.448.1 ảnh khung chấm giữa vừa trọn khung · v1.448.0 trả lại ⇄ chấp nhận lại có xác nhận + ảnh vừa khung + tự cuộn trang lỗi + đúp ĐẠT · v1.436.0 ĐẠT ghi ngay + CHỤP ẢNH + bỏ ĐẠT · v1.435.0 nút ĐẠT ✓ khi đã chấm + danh sách em có ảnh, xếp nhóm · v1.434.0 nhúng được trong tab BÀI TRONG SÁCH · v1.401.0 chữ gõ trong ⚙ + một font chung · v1.400.0 icon phẳng 2D · v1.399.0 nút ⚙ cài đặt dấu · v1.398.0 giữ Ctrl kéo dấu · v1.397.0 các dạng bài VIẾT (chấm từng ô) · v1.387.0 pop-up CHẤM BÀI SÁCH (mẫu v4) · v1.389.0 dấu ✓/✕ máy tự đặt (Vision) · v1.390.0 menu chuột phải, KẺ, ?, cỡ công cụ, CHỤP LỖI / ĐẠT · v1.391.0 lưu lâu dài + khoá nút -->

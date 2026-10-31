@@ -508,5 +508,11 @@
     } catch (e) { loi(el, e); }
   }
 
-  window.TdXem = { TAB: TAB, ve: ve, thongKe: thongKe, xoaNho: function () { S.cache = {}; S.dsMua = null; S.dsGiai = null; } };
+  // ⭐ v1.463.0 — màn CHI TIẾT MỘT TRẬN vẽ ở chỗ khác (pop-up Giải đấu của em, js/hs-gd.js): o = { id, kho, laThu, lui() }
+  function veTranRieng(el, o) {
+    O = { kho: o.kho, laThu: o.laThu, the: '', tab: 'ct', doi: function (tab) { if (tab !== 'hs' && o.lui) o.lui(); } };
+    S.tranId = o.id; S.tranTu = '';
+    return veCt(el);
+  }
+  window.TdXem = { TAB: TAB, ve: ve, thongKe: thongKe, veTran: veTranRieng, xoaNho: function () { S.cache = {}; S.dsMua = null; S.dsGiai = null; } };
 })();

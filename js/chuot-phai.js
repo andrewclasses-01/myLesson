@@ -17,6 +17,7 @@
       (Thầy Andrew + các em, không gồm em học thử). Bấm avatar/tên ⇒ trang cá nhân; nút tin nhắn cuối dòng ⇒ "Tính năng tin nhắn
       riêng sẽ sớm được ra mắt!" (dòng Thầy Andrew của học sinh ⇒ mở chat với thầy, tính năng đã có).
    4. ⭐ v1.407.0 — DASHBOARD: chuột phải avatar học sinh có thêm "Ví sao" (SaoDash.moVi) + "Hồ sơ học sinh" (window.__moHoSoHs).
+      ⭐ v1.463.0 — + "Giải đấu" (HsGd.mo, js/hs-gd.js: xếp hạng · đấu giải · giao hữu · luyện tập của em). Chỉ thầy.
    API: ACMenu.them(fn(ctx) → [mục]) · ACMenu.mo(muc, x, y) · ACMenu.moCaNhan(uid) · ACMenu.moThanhVien(lop, neo) ·
         ACMenu.bao(chu) · ACMenu.timLop(key) · ACMenu.loiMoiDau(id, t) (lời mời thách đấu bấm từ hộp thông báo).
    mục = { chu, ic?, lam(), nguy? } hoặc '-' (vạch ngăn) hoặc { dau: html } (đầu menu).
@@ -58,7 +59,8 @@
     dong: P('<path d="M6 6l12 12M18 6L6 18"/>'),
     sao: P('<path style="stroke:#E0A019" d="M12 3.5l2.3 5.1 5.5.5-4.2 3.7 1.3 5.4L12 15.4l-4.9 2.8 1.3-5.4-4.2-3.7 5.5-.5z"/>'),   // v1.407.0
     hoSo: P('<rect x="4" y="3" width="16" height="18" rx="2.5"/><circle cx="12" cy="10" r="3"/><path d="M7.5 17.5c.8-2 2.5-3 4.5-3s3.7 1 4.5 3"/>'),
-    xemNhu: P('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>')   // v1.416.0 Xem như em
+    xemNhu: P('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),   // v1.416.0 Xem như em
+    cup: P('<path style="stroke:#D9711C" d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4z"/><path style="stroke:#D9711C" d="M17 5h3v2a3 3 0 0 1-3 3M7 5H4v2a3 3 0 0 0 3 3"/>')   // v1.463.0 Giải đấu
   };
 
   // ---------- CSS (tự chèn — một file cho mọi trang) ----------
@@ -343,6 +345,7 @@
     if (toiLaThay() && !x.thay) {
       muc.push('-',
         { chu: 'Ví sao', ic: IC.sao, lam: function () { moQuanLy(x.lay, 'vi', x.ten); } },
+        { chu: 'Giải đấu', ic: IC.cup, lam: function () { moQuanLy(x.lay, 'gd', x.ten, x.anh); } },   // v1.463.0 hồ sơ A Show Speed của em (js/hs-gd.js)
         { chu: 'Hồ sơ học sinh', ic: IC.hoSo, lam: function () { moQuanLy(x.lay, 'hs', x.ten); } },
         { chu: 'Xem như em', ic: IC.xemNhu, lam: function () { moQuanLy(x.lay, 'xem', x.ten); } });
     }
@@ -359,19 +362,20 @@
     }
     return null;
   }
-  function moQuanLy(lay, loai, ten0) {
+  function moQuanLy(lay, loai, ten0, anh) {
     lay().then(function (ng) {
       var ten = (ng && ng.ten) || ten0 || 'em này';
-      if (!ng || ng.thay || !ng.ma) return M.bao('Chưa tìm thấy ' + (loai === 'vi' ? 'ví sao' : 'hồ sơ') + ' của ' + ten + '.');
+      if (!ng || ng.thay || !ng.ma) return M.bao('Chưa tìm thấy ' + (loai === 'vi' ? 'ví sao' : loai === 'gd' ? 'hồ sơ giải đấu' : 'hồ sơ') + ' của ' + ten + '.');
       var D = dashCua();
       if (!D) {   // trang nw/ mở riêng một tab (không nằm trong dashboard) ⇒ mở dashboard ở tab mới, dashboard tự làm việc này (?acm=)
-        var u = GOC + 'dashboard.html?acm=' + loai + '&ma=' + encodeURIComponent(ng.ma) + '&ten=' + encodeURIComponent(ng.ten || '') + '&lop=' + encodeURIComponent(ng.lop || '');
+        var u = GOC + 'dashboard.html?acm=' + loai + '&ma=' + encodeURIComponent(ng.ma) + '&ten=' + encodeURIComponent(ng.ten || '') + '&lop=' + encodeURIComponent(ng.lop || '') + (loai === 'gd' && ng.uid ? '&uid=' + encodeURIComponent(ng.uid) : '');
         var w = null; try { w = window.open(u, '_blank'); } catch (e) { }
         if (!w) M.bao('Trình duyệt chặn tab mới — <a href="' + an(u) + '" target="_blank" rel="noopener">bấm vào đây</a>.', true);
         return;
       }
       if (D !== window) { try { if (D.TnPop && D.TnPop.dong) D.TnPop.dong(); } catch (e) { } }   // hộp Tin nhắn thả xuống che mất hộp quản lý
-      if (loai === 'vi') D.SaoDash.moVi({ ma: ng.ma, ten: ng.ten, lop: ng.lop });
+      if (loai === 'gd') { if (D.HsGd) D.HsGd.mo({ uid: ng.uid, ma: ng.ma, ten: ng.ten, lop: ng.lop, anh: anh || '' }); else M.bao('Dashboard chưa nạp hồ sơ giải đấu — thầy tải lại trang nhé.'); }
+      else if (loai === 'vi') D.SaoDash.moVi({ ma: ng.ma, ten: ng.ten, lop: ng.lop });
       else if (loai === 'hs') D.__moHoSoHs(ng.ma, ng.ten);
       else D.qlXemNhuEm(ng.ma);   // tab mới "xem như em" (vé chỉ xem) — y nút trong Quản lý & bảo mật
     }, function () { M.bao('Chưa tải được danh sách lớp. Thử lại nhé.'); });

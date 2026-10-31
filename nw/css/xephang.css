@@ -975,3 +975,21 @@ body.xh .xh-tabs button[aria-selected="true"]{font-size:15px;font-weight:700;pad
 .pc-hmdd{font:700 11.5px/1.2 var(--xh-v);color:var(--xh-vang);white-space:nowrap}
 .pc-hmd.ban{opacity:.6}
 @media (max-width:420px){.pc-hmh div{display:none}}
+
+/* 31/10 PHÒNG CHỜ CÔNG KHAI (xephang.js xemPhong/thamGia/pcXemDs/phHtml): ảnh người xem ở GIỮA · nút THAM GIA (ô đối thủ trống) · thẻ phòng trong Đang đấu */
+.pc-xemds{display:flex;align-items:center;gap:6px;color:var(--xh-mo);flex-basis:100%;justify-content:center}
+.pc-xemds span{display:flex;align-items:center}
+.pc-xemds .xh-av{width:28px;height:28px;font-size:10px;margin-left:-7px;border:2px solid #04110B}
+.pc-xemds .xh-av:first-child{margin-left:0}
+.pc-xemds i{font:800 11px/1 var(--xh-g);font-style:normal;margin-left:5px;color:var(--xh-mo)}
+.pc-thay.xem{color:var(--xh-mo);font-size:14px;animation:none;letter-spacing:.08em}
+.pc-sn.tg{color:#03150C;border-color:transparent;background:linear-gradient(180deg,#FFE08A,#F2B315);box-shadow:0 0 22px rgba(255,201,74,.45);cursor:pointer;animation:pc-moi 1.4s ease-in-out infinite}
+.pc-sn.tg:disabled{opacity:.6;animation:none}
+.pc-ds li.xem{background:rgba(255,255,255,.06)}
+.pc-ds li.xem b{color:var(--xh-mo)}
+.pc.xem .pc-tieu{color:var(--xh-vang)}
+.xh-lv.xh-ph{border-style:dashed;border-color:rgba(255,201,74,.4)}
+.xh-lv .xh-h1.ph{grid-template-columns:minmax(0,1fr) auto}
+.xh-lv .xh-phtt{font:800 10.5px/1 var(--xh-g);letter-spacing:.1em;color:var(--xh-vang)}
+.xh-lv .xh-phnhan{color:#2A1A00;background:var(--xh-vang);border-radius:6px;padding:3px 6px;font-size:10px;letter-spacing:.1em}
+@container (min-width:760px){.pc-xemds .xh-av{width:32px;height:32px}}

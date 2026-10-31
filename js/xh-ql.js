@@ -18,7 +18,7 @@
   var HANG = [['dong', 'Đồng', 0, '#C27C4A'], ['bac', 'Bạc', 300, '#8A97A6'], ['vang', 'Vàng', 800, '#E0A11B'], ['bk', 'Bạch kim', null, '#1FAE98'],
     ['kc', 'Kim cương', null, '#3B82F6'], ['ct', 'Cao thủ', null, '#8B5CF6'], ['ht', 'Huyền thoại', null, '#E5385A']];
   var SAO_MAC = { dong: 1, bac: 2, vang: 5, bk: 10, kc: 15, ct: 20, ht: 30 };
-  var SUAT_MAC = [{ t: 'ht', n: 1, san: 2000 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
+  var SUAT_MAC = [{ t: 'ht', n: 2, san: 1800 }, { t: 'ct', n: 2, san: 1600 }, { t: 'kc', n: 3, san: 1400 }, { t: 'bk', n: 6, san: 1100 }];
   function suatCua(M) { return M && Array.isArray(M.suat) && M.suat.length ? M.suat : SUAT_MAC; }
   function hangMa(ma) { return HANG.filter(function (h) { return h[0] === ma; })[0] || null; }
   // chia suất cho danh sách đã xếp điểm giảm dần ⇒ { uid: 'ht'|'ct'|'kc'|'bk' } (cùng luật máy chủ xep-hang.js chiaSuat)

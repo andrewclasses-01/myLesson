@@ -784,3 +784,12 @@ body.xh .xh-tabs button[aria-selected="true"]{font-size:15px;font-weight:700;pad
 .xh-plcu{transition:transform .5s,opacity .5s,filter .5s}
 .xh-plcu.vo{transform:scale(1.6);opacity:0;filter:blur(3px)}
 .xh-plnoi button{margin-top:8px;font:700 14px/1 var(--xh-v);color:var(--xh-chu);background:rgba(255,255,255,.08);border:1px solid var(--xh-vien2);border-radius:999px;padding:10px 18px}
+
+/* 31/10 GIỮ BÀN CŨ (xh-tran.js banGiu/giuCuoi): từ chưa ai tìm hiện trong ô màu đỏ hồng — khác hẳn xanh (em) / lam (bạn) · bàn chữ mờ, không bấm */
+.xh7 .xh-g.lo{opacity:1;border-color:var(--xh-do);background:rgba(255,95,109,.13)}
+.xh7 .xh-g.lo .xh-o i{background:var(--xh-do);color:#fff}
+.xh7 .xh-g.lo .xh-y{color:#FFC2C9}
+.xh7 .xh-oan.giu button{opacity:.4;pointer-events:none;animation:none}
+.xh7 .xh-oan-o{position:relative}
+.xh7.giulo .xh-oan-o::after{content:'CHƯA AI TÌM ĐƯỢC · NHỚ TỪ NHÉ';position:absolute;inset:auto 0 50%;margin:auto;width:max-content;max-width:92%;text-align:center;
+  font:800 13px/1.25 var(--xh-g);letter-spacing:.08em;color:#fff;background:rgba(255,95,109,.92);padding:8px 12px;border-radius:10px;box-shadow:0 6px 20px rgba(0,0,0,.4);pointer-events:none}

@@ -156,11 +156,22 @@
     }, 120);
   });
   // ---------- vẽ khi chơi ----------
+  // ⭐ 31/10 thầy — GIỮ BÀN CŨ (máy chủ sangBan): tìm xong từ cuối ⇒ bàn cũ còn 2 giây · hết 20/30 giây còn từ bỏ lỡ ⇒ 4 giây, từ bỏ lỡ hiện
+  //   trong ô màu đỏ hồng (không ai tìm được) để em nhìn và nhớ. Lúc giữ t.van đã là bàn mới (chữ còn cất ở máy chủ, lộ đúng doiLuc) ⇒ vẽ bàn
+  //   cũ từ t.timCu {van, goi, tim, tim2, hien}; không chọn chữ / không gửi. Hết trận: giữ bàn cuối (giuCuoi) rồi mới sang màn kết quả.
+  function banGiu(t) {
+    var c = t && t.timCu;
+    if (!t || !t.xh || !c || !c.goi || !c.goi.length || c.van !== (t.van || 0) - 1) return null;
+    return bay() < (t.doiLuc || 0) || (G.giuCuoi && G.giuCuoi !== 'het' && !t.chu) ? c : null;
+  }
   function capChoi() {
     var t = G.T; if (!t || !G.dungChoi) return;
-    if (t.van !== G.van || (t.chu || '') !== G.chu.join('')) {
-      var doiVan = G.van >= 0 && t.van !== G.van;
-      G.van = t.van || 0; G.chu = String(t.chu || '').split(''); G.sel = [];
+    var cu = banGiu(t), van = cu ? cu.van : t.van || 0, chu = cu ? (G.van === cu.van ? G.chu.join('') : '') : String(t.chu || '');
+    G.giu = cu ? (Object.keys(cu.hien || {}).length ? 'lo' : 'xong') : G.giuCuoi && G.giuCuoi !== 'het' ? G.giuCuoi : '';
+    if (G.giu) G.sel = [];
+    if (van !== G.van || chu !== G.chu.join('')) {
+      var doiVan = G.van >= 0 && van !== G.van;
+      G.van = van; G.chu = chu.split(''); G.sel = [];
       G.order = G.chu.map(function (_, i) { return i; }).sort(function () { return Math.random() - 0.5; });
       var o = $('#xhOan');
       o.classList.toggle('cho', !G.chu.length);
@@ -169,8 +180,9 @@
       }).join('');
       o.classList.remove('doi'); void o.offsetWidth; if (doiVan || G.chu.length) o.classList.add('doi');
       $('#xhBan').textContent = G.van + 1;
-      veGo();
     }
+    $('#xhOan').classList.toggle('giu', !!G.giu); $('#xh7').classList.toggle('giulo', G.giu === 'lo');
+    veGo();
     var L = trai(), R = phai(), d = t.diem || {};
     $('#xhDL').textContent = d[L] || 0; $('#xhDR').textContent = d[R] || 0;
     veGoi(); veTimTu(); capGio(); veHoTro();
@@ -211,14 +223,24 @@
     f.fs.updateDoc(tRef, o).catch(function (e) { console.warn('[xh] hỗ trợ', e); });
   }
   function veGoi() {
-    var t = G.T, goi = t.goi || [], tim = t.tim || {}, hien = t.hien || {};
+    var t = G.T, cu = banGiu(t), s = cu || t, goi = s.goi || [], tim = Object.assign({}, s.tim), hien = Object.assign({}, s.hien), van = cu ? cu.van : t.van || 0;
+    // hết trận còn từ chưa ai tìm (t.lo, máy chủ không ghi ô) ⇒ ghép vào ô theo gợi ý + độ dài
+    if (G.loCuoi) {
+      var con = G.loCuoi.slice();
+      goi.forEach(function (g, i) {
+        if (tim[i] && tim[i] !== '-') return;
+        var k = con.findIndex(function (x) { return String(x.w).length === g.n && String(x.m || '').slice(0, 120) === String(g.m || '').slice(0, 120); });
+        if (k < 0) k = con.findIndex(function (x) { return String(x.w).length === g.n; });
+        if (k >= 0) { tim[i] = '-'; hien[i] = String(con[k].w).toUpperCase(); con.splice(k, 1); }
+      });
+    }
     // chữ của từ đã tìm: đọc từ tài liệu từ (máy chủ chấm ok + i của bàn này)
     var chuTim = {};
-    G.tu.forEach(function (x) { if (x.ok === true && x.v === (t.van || 0) && x.i >= 0) chuTim[x.i] = x.w.toUpperCase(); });
+    G.tu.forEach(function (x) { if (x.ok === true && x.v === van && x.i >= 0) chuTim[x.i] = x.w.toUpperCase(); });
     // gợi ý TIẾNG ANH (bậc từ 1100 điểm, t.goiEn): câu dài nhiều dòng, ô chữ xuống dòng dưới
     $('#xhGoi').classList.toggle('en', !!t.goiEn);
     var x7 = $('#xh7'); if (x7 && x7.classList.contains('en') !== !!t.goiEn) { x7.classList.toggle('en', !!t.goiEn); xep(); }
-    var tim2 = t.tim2 || {};
+    var tim2 = s.tim2 || {};
     $('#xhGoi').innerHTML = goi.map(function (g, i) {
       var ai = tim[i], lop = !ai ? '' : ai === '-' ? 'lo' : tim2[i] ? 'ca' : ai === uidBen(trai()) ? 'ta' : 'ban';   // ca = hai bạn cùng lúc (≤ 400 ms)
       var w = ai === '-' ? (hien[i] || '') : (chuTim[i] || '');
@@ -262,10 +284,11 @@
   function banMs(t) { return t && t.goiEn ? 30000 : 20000; }
   function capGio() {
     var t = G.T; if (!t || !G.dungChoi) return;
+    if (G.giu && !G.giuCuoi && !banGiu(t)) return capChoi();   // hết khoảng giữ bàn cũ ⇒ vẽ bàn mới
     var con = (t.ketThuc || 0) - bay(), g = $('#xhGio');
     g.textContent = XH.dongHo(con); g.classList.toggle('gap', con < 15000);
     // ⭐ 31/10 thầy: bàn gợi ý TIẾNG ANH (câu dài) 30 giây, bàn thường 20 giây — khớp máy chủ XH.banMs
-    var BAN = banMs(t), tuLuc = t.doiLuc || t.batDau || 0, c20 = Math.max(0, Math.ceil((BAN - (bay() - tuLuc)) / 1000));
+    var BAN = banMs(t), tuLuc = t.doiLuc || t.batDau || 0, c20 = Math.max(0, Math.min(BAN / 1000, Math.ceil((BAN - (bay() - tuLuc)) / 1000)));   // lúc giữ bàn cũ: đứng ở đầy
     $('#xhS20').textContent = c20; $('#xhC20').style.strokeDashoffset = 119.4 * (1 - Math.min(BAN / 1000, c20) / (BAN / 1000)); $('#xh20').classList.toggle('gap', c20 <= 5);
     // hết 20 giây mà bàn chưa xong ⇒ người chơi xin máy chủ đổi bàn (hai máy cùng xin thì máy sau bị từ chối — không sao)
     if (!G.xem && !G.thu && c20 <= 0 && bay() - tuLuc > BAN + 300 && t.trangThai === 'choi' && !G.xinDoi[t.van] && bay() < t.ketThuc) {
@@ -289,7 +312,7 @@
   }
   // ---------- gửi từ ----------
   function guiTu() {
-    if (!choiDuoc() || !G.T || G.T.trangThai !== 'choi' || bay() < G.T.batDau || !G.chu.length) return;
+    if (!choiDuoc() || !G.T || G.T.trangThai !== 'choi' || bay() < G.T.batDau || !G.chu.length || G.giu) return;
     var w = G.sel.map(function (k) { return G.chu[k]; }).join('').toLowerCase();
     if (w.length < 2) return;
     // 27/10 tài liệu RIÊNG của mỗi bên (đuôi _a|_b) ⇒ hai em gửi cùng đáp án gần như cùng lúc vẫn tới máy chủ (≤ 400 ms = cả hai được điểm)
@@ -316,7 +339,7 @@
     if (!choiDuoc() || !e.isTrusted) return;
     G.bong = '';  // bấm chuột ⇒ bộ gõ cũng quên chữ đang gõ
     var b = e.target.closest('#xhOan button');
-    if (b) { e.preventDefault(); var k = +b.dataset.k, i = G.sel.indexOf(k); if (!G.chu.length) return; if (i >= 0) G.sel.splice(i, 1); else G.sel.push(k); return veGo(); }
+    if (b) { e.preventDefault(); var k = +b.dataset.k, i = G.sel.indexOf(k); if (!G.chu.length || G.giu) return; if (i >= 0) G.sel.splice(i, 1); else G.sel.push(k); return veGo(); }
     if (e.target.closest('#xhXoa')) { e.preventDefault(); G.sel.pop(); return veGo(); }
     if (e.target.closest('#xhGui')) { e.preventDefault(); return guiTu(); }
   });
@@ -349,7 +372,7 @@
     return r;
   }
   function chonChu(L) {
-    if (!G.chu.length) return;
+    if (!G.chu.length || G.giu) return;
     for (var n = 0; n < G.order.length; n++) { var i = G.order[n]; if (G.chu[i] === L && G.sel.indexOf(i) < 0) { G.sel.push(i); return veGo(); } }
   }
   G.bong = ''; G.xoaGan = []; G.dot = null;
@@ -697,11 +720,22 @@
       await new Promise(function (ok) { var h = setTimeout(ok, 2600); n.querySelector('button').onclick = function () { clearTimeout(h); ok(); }; });
     } finally { p.classList.remove('hien'); setTimeout(function () { p.remove(); }, 320); }
   }
+  // hết trận: bàn cuối xong hết (t.hetBo) ⇒ giữ 2 giây · còn từ chưa ai tìm (t.lo) ⇒ hiện trong ô 4 giây · rồi mới sang màn kết quả
+  function giuCuoi(t) {
+    if (G.ketQua || !G.dungChoi || G.giuCuoi === 'het') return false;
+    if (G.giuCuoi) return true;
+    var lo = !t.hetBo && (t.lo || []).length > 0, ms = t.hetBo ? 2000 : lo ? 4000 : 0;
+    if (!ms) return false;
+    G.giuCuoi = lo ? 'lo' : 'xong'; G.loCuoi = lo ? t.lo : null;
+    capChoi();
+    setTimeout(function () { G.giuCuoi = 'het'; G.loCuoi = null; capPha(); }, ms);
+    return true;
+  }
   // ---------- pha ----------
   function capPha() {
     var t = G.T; if (!t) return;
     giuTran();
-    if (t.trangThai === 'xong') return veKetQua();
+    if (t.trangThai === 'xong') { if (giuCuoi(t)) return; return veKetQua(); }
     if (t.trangThai === 'het' || t.trangThai === 'huy') return veTai('Trận không bắt đầu (có bạn chưa sẵn sàng).', true);
     if (t.trangThai === 'han') return veTai('Đã tới giờ nghỉ đêm — trận không bắt đầu.', true);
     if (t.trangThai === 'choi' && t.batDau && bay() >= t.batDau - 200) { if (!G.dungChoi || G.veLai) dungChoi(); else capChoi(); return; }
@@ -834,18 +868,22 @@
       t.diem[k] += dd;
       // bàn thử: lần tìm đầu tiên của đối thủ = "CÙNG LÚC" (hai bạn cùng được điểm)
       if (!THU.daCa && uid === t.b) { THU.daCa = true; t.tim2 = {}; t.tim2[i] = t.a; t.diem.a += dd; G.tu.set(w.toLowerCase() + '_' + t.van + '_a', { w: w.toLowerCase(), v: t.van, uid: t.a, ok: true, d: dd, i: i, m: b.m[i], luc: Date.now() }); }
-      if (Object.keys(t.tim).length === 3) setTimeout(sang, 700);
+      if (Object.keys(t.tim).length === 3) sang();
       capChoi(); return true;
     }
+    // giống máy chủ sangBan (31/10): giữ bàn cũ 2 giây (xong hết) / 4 giây (có từ bỏ lỡ) — bàn mới chưa có chữ tới doiLuc
     function sang() {
-      var t = G.T, b = BAN[t.van % BAN.length];
-      if (t.doiDang) return; t.doiDang = true;
-      b.w.forEach(function (w, i) { if (!t.tim[i]) { t.tim[i] = '-'; t.hien[i] = w; t.boLo = (t.boLo || []).concat([{ w: w, m: b.m[i], v: t.van }]); } });
+      var t = G.T, b = BAN[t.van % BAN.length], lo = false;
+      b.w.forEach(function (w, i) { if (!t.tim[i]) { lo = true; t.tim[i] = '-'; t.hien[i] = w; t.boLo = (t.boLo || []).concat([{ w: w, m: b.m[i], v: t.van }]); } });
+      var nghi = lo ? 4000 : 2000, luc = Date.now() + nghi, moi = ban(t.van + 1);
+      t.timCu = { van: t.van, goi: t.goi, tim: t.tim, tim2: t.tim2 || {}, hien: t.hien, den: luc };
+      Object.assign(t, { van: t.van + 1, chu: '', goi: [], tim: {}, tim2: {}, hien: {}, doiLuc: luc });
       capChoi();
-      setTimeout(function () { t.van++; Object.assign(t, ban(t.van), { tim: {}, tim2: {}, hien: {}, doiLuc: Date.now(), doiDang: false }); capChoi(); }, 500);
+      setTimeout(function () { if (t.trangThai === 'choi') { Object.assign(t, moi); capChoi(); } }, nghi - 150);
     }
     function may() {
       var t = G.T; if (t.trangThai !== 'choi') return;
+      if (!t.chu || Date.now() < t.doiLuc) { hen = setTimeout(may, 800); return; }
       var b = BAN[t.van % BAN.length], con = b.w.map(function (_, i) { return i; }).filter(function (i) { return !t.tim[i]; });
       if (con.length && Date.now() >= t.batDau) lay(con[Math.floor(Math.random() * con.length)], G.xem ? (Math.random() < .5 ? t.a : t.b) : t.b);
       hen = setTimeout(may, (G.xem ? 3500 : 6000) + Math.random() * 4000);
@@ -876,7 +914,10 @@
         t.xhKq = { a: q.get('kb') === 'rong' ? {} : KB ? { doi: KB[1], ct: KB[2], truoc: KB[3], sau: KB[4], diem: KB[5], baoVe: KB[6] }
           : kq === 'thang' ? Object.assign({ doi: 41, ct: [['thang', 24], ['chuoi', 5], ['gioVang', 12]], truoc: 'vang:II', sau: 'vang:I', diem: 1005, baoVe: 3 }, q.get('thayho') ? { thay: { so: 3, d: 24 } } : {})
           : kq === 'thua' ? { doi: -12, ct: [['thua', -12]], truoc: 'vang:II', sau: 'vang:II', diem: 952 } : { doi: 5, ct: [['hoa', 5]], truoc: 'vang:II', sau: 'vang:II', diem: 969 } };
-        t.lo = [{ w: 'WINDOW', m: 'cửa sổ' }]; t.trangThai = 'xong'; capPha();
+        // từ chưa ai tìm của bàn cuối (đang giữ bàn cũ ⇒ bàn cũ) — như máy chủ chot
+        var cu = t.chu ? null : t.timCu, bc = BAN[(cu ? cu.van : t.van) % BAN.length], tc = cu ? cu.tim : t.tim;
+        t.lo = bc.w.map(function (w, i) { return { w: w, m: bc.m[i] }; }).filter(function (_, i) { return !tc[i] || tc[i] === '-'; });
+        t.trangThai = 'xong'; capPha();
       }
     }
     return { bat: bat, gui: gui, chat: chat, nhip: nhip };

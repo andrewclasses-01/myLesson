@@ -103,8 +103,21 @@
   function boThe(id) { var t = THE[id]; if (!t) return; clearInterval(t.dem); if (t.el && t.el.parentNode) t.el.parentNode.removeChild(t.el); delete THE[id]; if (NW.laNhung) NW.baoMe('moiDauXoa', { id: id }); }
   // ⭐ thầy giao hữu — THẦY nhận: trận mở ở TAB MỚI (mở ngay trong cú bấm, trình duyệt mới cho). Khung nhúng (dashboard): trang mẹ đã mở tab.
   var urlTran = function (id) { return new URL(NW.duong('tran.html?id=' + encodeURIComponent(id)), location.href).href; };
+  // ⭐ 31/10 MỜI ĐẤU XẾP HẠNG (phòng chờ, js xephang.js): trận `xh` + `moi` — trả lời qua hàm máy chủ xhMoi; Nhận ⇒ vào thẳng PHÒNG CHỜ
+  var LOI_XH = { het: 'Lời mời đã hết hạn hoặc bạn đã huỷ.', dem: 'Đang giờ nghỉ đêm — mai đấu nhé!', khoa: 'Em đang bị khoá tìm trận một lúc.', banBan: 'Một trong hai bạn đang ở trận khác.', dong: 'Mùa xếp hạng đang đóng.' };
+  async function traLoiXh(id, nhan) {
+    if (nhan && window.TdQuan && !(await TdQuan.cho('xh', { uid: NW.toi.uid }))) return;
+    boThe(id);
+    if (NW.laBanThu()) { NW.toast(nhan ? 'Bàn thử: đã nhận — vào phòng chờ' : 'Bàn thử: đã từ chối'); return; }
+    try {
+      var r = await NW.goiHam('xhMoi', { loai: 'traloi', id: id, nhan: !!nhan });
+      if (r.loi) return NW.toast(LOI_XH[r.loi] || 'Chưa nhận được lời mời.', true);
+      if (nhan) di('xephang.html?phong=' + encodeURIComponent(id));
+    } catch (e) { NW.toast(NW.chuLoiKho(e), true); }
+  }
   async function traLoi(id, nhan, meDaMo) {
     var tt = (THE[id] && THE[id].t) || null;
+    if (tt && tt.xh) return traLoiXh(id, nhan);
     var thay = !!(NW.toi && NW.toi.laThay);
     // ⭐ v1.375.0 — giới hạn chơi: em bấm Nhận trận em–em lúc nghỉ đêm / đã đủ trận ⇒ báo, thẻ mời giữ nguyên (còn bấm Từ chối)
     // ⭐ v1.415.0 — Quản lý thách đấu: em Nhận lời mời của BẠN khi chế độ đã đóng / em bị chặn ⇒ báo (thầy mời em thì luôn Nhận được)
@@ -125,11 +138,12 @@
   }
   var CHE = { one: 'One word', list: 'Word list', free: 'Free words' }, LV = { easy: 'Easy', medium: 'Medium', hard: 'Hard' };
   function moTa(t) {
+    if (t.xh) return 'Xếp hạng · A Show Speed ' + (t.phut || 2) + ' phút · vào phòng chờ';
     if (t.gv) { var c = t.cai || {}; return 'Giao hữu · A Show Speed ' + t.phut + ' phút · ' + (c.che ? CHE[c.che] + (c.boTen ? ' · ' + c.boTen : '') : (LV[t.lv] || 'Easy')); }
     return (t.giai ? 'Giải đấu' : 'Giao hữu') + ' · A Show Speed ' + t.phut + ' phút';
   }
   // ⭐ thầy giao hữu — tiêu đề thẻ: thầy mời em · em mời thầy · bạn thách đấu em
-  function tieuDe(t) { return t.gv ? (t.a === t.gv ? 'Thầy Andrew mời em giao hữu' : (t.tenA || 'Bạn') + ' mời thầy giao hữu') : (t.tenA || 'Bạn') + ' thách đấu em'; }
+  function tieuDe(t) { if (t.xh) return (t.tenA || 'Bạn') + ' mời em đấu xếp hạng'; return t.gv ? (t.a === t.gv ? 'Thầy Andrew mời em giao hữu' : (t.tenA || 'Bạn') + ' mời thầy giao hữu') : (t.tenA || 'Bạn') + ' thách đấu em'; }
   function veThe(id, t) {
     if (THE[id]) return;
     if (NW.laNhung) { NW.baoMe('moiDau', { id: id, ten: t.tenA || 'Bạn', tieuDe: tieuDe(t), anh: t.gv && t.a === t.gv, gv: !!t.gv, chu: moTa(t), het: t.het, thay: !!(NW.toi && NW.toi.laThay), url: urlTran(id) }); THE[id] = { el: null, dem: null, t: t }; return; }

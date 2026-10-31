@@ -75,6 +75,17 @@ const sua = (tkn, p, fields) => goi(`${FS_GOC}/${p}${k}` + Object.keys(fields).m
     TID = hA.tran; xoa.push('tranDau/' + TID);
     let T = await docAdmin('tranDau/' + TID);
     ok('Trận xếp hạng đúng khuôn (xh · cho · 2 lớp khác nhau)', T.xh === MUA && T.trangThai === 'cho' && T.lopMaA !== T.lopMaB, `tier ${T.tier} · ${T.hA} vs ${T.hB}`);
+    // ── 31/10 PHÒNG CHỜ: 30 giây · thẻ hai em trong trận · chat lúc trận còn 'cho' (tin đi tiếp vào chat trận) ──
+    ok('Phòng chờ 30 giây (+2 giây trễ mạng)', T.hetSS - T.taoLuc === 32000, (T.hetSS - T.taoLuc) + ' ms');
+    ok('Trận mang thẻ hai em (theA/theB)', !!T.theA && !!T.theB && Array.isArray(T.theA.ds) && T.theA.tran != null, JSON.stringify(T.theA));
+    {
+      const c0 = 'pc' + Date.now();
+      xoa.push('tranDau/' + TID + '/chatGui/' + c0, 'tranDau/' + TID + '/chat/' + c0);
+      ok('A chat trong phòng chờ', await ghiGioMay(tk[A], 'tranDau/' + TID + '/chatGui/' + c0, { uid: S(A), chu: S('Hi! Chơi đẹp nha') }, ['luc'], true) === 200);
+      await cho('chép chat phòng chờ', async () => { const x = await docAdmin('tranDau/' + TID + '/chatGui/' + c0); return x && (x.ok || x.chan) ? x : null; });
+      ok('B đọc được chat phòng chờ', (await goi(`${FS_GOC}/tranDau/${TID}/chat/${c0}${k}`, { headers: H2(tk[Bb]) })).status === 200);
+      await ngu(2100);   // chat trận giới hạn 2 giây/tin
+    }
     // ── sẵn sàng ──
     const ben = T.a === A ? { [A]: 'a', [Bb]: 'b' } : { [A]: 'b', [Bb]: 'a' };
     ok('A bấm Sẵn sàng', await sua(tk[A], 'tranDau/' + TID, { ss: MP({ a: B(ben[A] === 'a'), b: B(ben[A] === 'b') }) }) === 200);

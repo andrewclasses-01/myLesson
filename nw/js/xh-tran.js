@@ -106,7 +106,7 @@
       '<div class="xh-hai" id="xhHai"><div class="xh-cot" id="xhCotL"></div><div class="xh-cot" id="xhCotR"></div></div><button class="xh-muiten" id="xhMuiTen" hidden aria-label="Xem thêm">▾</button></div>';
     var daiTu = '<div class="xh-dai" id="xhDai"></div>';
     var chat = '<div class="xh-chat' + (C.coChat ? ' cot' : '') + '" id="xhChat"><header>CHAT TRẬN <button id="xhDongChat" aria-label="Đóng chat">⌄</button></header><ol id="xhChatDs"></ol>' +
-      '<div class="xh-nhanh" id="xhNhanh">' + (G.xem ? ['Hay quá! 🔥', 'Cố lên 💪', 'Kèo căng 😆', 'Đỉnh 👏', 'GG 👍'] : ['GG 👍', 'Hay quá! 🔥', 'Cố lên 💪', 'Khó ghê 😅', 'Chơi đẹp nha 🤝']).map(function (t) { return '<button type="button" data-chu="' + esc(t) + '">' + XH.doiEmoji(esc(t), 16) + '</button>'; }).join('') + '</div>' +
+      // 31/10 thầy: bỏ câu soạn sẵn ở MỌI chat (trước: dải #xhNhanh 5 câu nhanh)
       '<form class="xh-onhap" id="xhChatGo"><div class="xh-ogia" id="xhOGia"></div><input class="xh-ochat" id="xhOChat" autocomplete="off" maxlength="120" placeholder="' + (G.xem ? 'Cổ vũ hai bạn…' : 'Nhắn cho đối thủ…') + '" aria-label="Nhắn tin trong trận">' +
       '<button class="xh-guichat" aria-label="Gửi">➤</button></form><div class="xh-bp" id="xhBp"></div></div>';
     var lop = 'xh7 ' + (C.ngang ? 'ngang' : 'doc') + (C.thap ? ' thap' : C.ngang ? ' rong' : '') + (C.coChat ? ' cochat' : '') + (G.xem ? ' xem' : '') + (G.ho ? ' thayho' : '') + (G.T && G.T.goiEn ? ' en' : '');
@@ -390,7 +390,6 @@
     if (e.target.closest('#xhDung')) return xinDung();
     if (e.target.closest('#xhChatThanh') || e.target.closest('#xhChatNho') || e.target.closest('#xhChatManh')) return moChat();
     if (e.target.closest('#xhDongChat') || e.target.closest('#xhChe')) return dongChat();
-    var n = e.target.closest('#xhNhanh button'); if (n) return guiChat(n.dataset.chu || n.textContent);
     if (e.target.closest('#xhTimL')) return thaTim(trai());
     if (e.target.closest('#xhTimR')) return thaTim(phai());
     if (e.target.closest('[data-di]')) { location.href = e.target.closest('[data-di]').dataset.di; }
@@ -624,6 +623,7 @@
     var tieu = kq === 'thang' ? 'CHIẾN<br>THẮNG!' : kq === 'thua' ? 'THUA<br>RỒI' : 'HÒA';
     var phu = (kq === 'thang' && /^(roi|mat)/.test(ly)) ? '<p class="xh-ghi">Đối thủ đã rời trận</p>' : (kq === 'thua' && /^(roi|mat)/.test(ly)) ? '<p class="xh-ghi">Em đã rời trận / mất kết nối</p>' : '';
     var ct = '', hang = kqThieu ? '<p class="xh-ghi">Điểm hạng đã được tính — xem ở sảnh</p>' : '', chay = null;
+    if (t.xhKhongTinh) hang = '<p class="xh-ghi">Trận mời thứ 3 trở đi trong ngày · không tính điểm hạng</p>';   // 31/10 mời đấu: 2 trận/ngày/cặp
     if (x) {
       var tong = 0;
       // 27/10 máy chủ lưu chi tiết dạng [{k, d}] (Firestore không nhận mảng lồng mảng) — trận cũ còn [['thang', 25]]
